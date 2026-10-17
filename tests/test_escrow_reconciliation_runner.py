@@ -83,6 +83,10 @@ class ReconciliationRunnerTest(unittest.TestCase):
         sample[0]["records"][0]["op_id"] = "B"
         sample[2]["RocketEntityData"]["resource_escrow"]["markers"] = [dict(op_id="A", seq=1), dict(op_id="B", seq=2)]
         runner.require_state(*sample, "CR_LATER_L2_REPLACED", False)
+        empty = copy.deepcopy(sample)
+        empty[0]["records"].clear()
+        with self.assertRaises(runner.smoke.SmokeError):
+            runner.require_state(*empty, "CR_LATER_L2_REPLACED", False)
         sample[2]["RocketEntityData"]["resource_escrow"]["markers"].pop(0)
         with self.assertRaises(runner.smoke.SmokeError):
             runner.require_state(*sample, "CR_LATER_L2_REPLACED", False)

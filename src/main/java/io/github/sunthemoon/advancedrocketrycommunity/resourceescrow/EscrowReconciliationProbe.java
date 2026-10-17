@@ -24,6 +24,7 @@ final class EscrowReconciliationProbe {
     private RocketEntity rocket;
     private BlockEntity source, second;
     private volatile boolean l1Writing, firstAcknowledged, done;
+    private volatile boolean laterFrontierProved;
     private volatile String selected = "";
     private boolean secondPrepared;
     private int step;
@@ -39,6 +40,9 @@ final class EscrowReconciliationProbe {
     void checkpoint(String name) {
         if (recovery || done || paused.get()) { return; }
         if (cut.equals("CR_STALE_BIND") && name.equals("C7_ACKNOWLEDGED")) { assertStaleBindingRefused(); }
+        if (cut.equals("CR_LATER_L2_REPLACED") && name.equals("C6_JOINT_READBACK") && data.ledger().records().size() == 2) {
+            laterFrontierProved = true;
+        }
         if (name.equals("C4_SOURCE_SELECTED")) { selected = "SOURCE"; }
         if (name.equals("C4_DESTINATION_SELECTED")) { selected = "DESTINATION"; }
         if (l1Writing && (cut.equals("CR_L1_BEFORE") && name.equals("K1") || cut.equals("CR_L1_REPLACED") && name.equals("K2"))
@@ -46,7 +50,8 @@ final class EscrowReconciliationProbe {
                 || cut.equals("CR_" + name)
                 || name.startsWith("BARRIER_") && cut.equals("CR_" + selected + "_" + name.substring("BARRIER_".length()))
                 || cut.equals("CR_STALE_BIND") && name.equals("C7_ACKNOWLEDGED")
-                || cut.equals("CR_LATER_L2_REPLACED") && secondPrepared && name.equals("K9")) { pause(); }
+                // The writer labels a nonempty replacement K2, including A's partial L2 with B retained.
+                || cut.equals("CR_LATER_L2_REPLACED") && laterFrontierProved && name.equals("K2")) { pause(); }
         if (cut.equals("CR_LATER_WAIT") && name.equals("C3_LATER_MEMBER_WAIT") && data.ledger().records().size() == 2) {
             var coordinator = data.bind(server); var endpoint = data.ledger().records().get(0).destination();
             EscrowTags.require(!coordinator.frozen(endpoint.key()) && rocket.escrowSection().epoch() == 1,
