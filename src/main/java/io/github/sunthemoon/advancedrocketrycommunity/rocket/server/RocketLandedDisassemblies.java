@@ -291,7 +291,7 @@ final class RocketLandedDisassemblies {
             return;
         }
         // The failure code of a certified clean rollback, or REGION_BUSY when restoration never started.
-        report(entry);
+        reportContained(entry);
         RocketTransferSavedData journal = entry.journal;
         RocketTransferRecord record = entry.record;
         Presence presence;
@@ -329,9 +329,17 @@ final class RocketLandedDisassemblies {
         }
         entry.progress.beginWriteBack();
         // A stop or an abort refuses the continuation; T then rides the final capture, and P ends here.
-        if (!entry.port.queue(entry.logical(), () -> writeBackAcknowledged(entry), () -> end(entry))) {
+        if (!entry.port.queue(entry.logical(), () -> writeBackAcknowledged(entry), () -> writeBackDiscarded(entry))) {
             end(entry);
         }
+    }
+
+    /**
+     * The write-back's discarded callback. T is already in RAM, so ordinary recovery or the final capture owns it; P
+     * only ends. It reaches no notifier, so nothing in it can throw (W92-R3).
+     */
+    private void writeBackDiscarded(Pending entry) {
+        end(entry);
     }
 
     private boolean writeBackAcknowledged(Pending entry) {
@@ -356,6 +364,20 @@ final class RocketLandedDisassemblies {
         }
         entry.reported = true;
         entry.request.finished(entry.code, entry.result);
+    }
+
+    /**
+     * M3's report. The journal runs discarded callbacks outside any handler (in {@code pollWriter} and while it stops or
+     * aborts), so a notifier failure is logged once, as {@link #report} runs once per P, and M3 goes on (W92-R3).
+     */
+    private static void reportContained(Pending entry) {
+        try {
+            report(entry);
+        } catch (RuntimeException failure) {
+            AdvancedRocketryCommunity.LOGGER.warn(
+                    "ARCE_LANDED_DISASSEMBLY_REPORT_FAILED transfer={} logical={} entity={} code={} error={}",
+                    entry.record.transferId(), entry.logical(), entry.entity, entry.code, failure.toString());
+        }
     }
 
     private static void notRestored(Pending entry, String reason) {

@@ -269,6 +269,35 @@ class RocketLandedDisassembliesTest {
         }
     }
 
+    @Test void aNotifierFailureInTheDiscardPathsIsContainedAndTheWriteBackGoesOn() throws IOException {
+        // W92-R3: the journal runs discarded callbacks outside any handler, in stop() and in pollWriter.
+        var stopped = new Fixture(new RocketPosition(64, 80, 64));
+        stopped.release();
+        stopped.request.notifierFailure = new IllegalStateException("Injected notifier failure in a discard");
+        assertDoesNotThrow(stopped.journal::stop, "The failure left stop() before its drain and final capture");
+        assertFalse(stopped.disassemblies.pending(stopped.logical()));
+        assertSame(stopped.landed, stopped.journal.find(stopped.landed.transferId()).orElseThrow());
+        assertEquals(List.of(stopped.landed.transferId()), stopped.diskRecords(), "T rides the final capture");
+        assertEquals(List.of("REGION_BUSY"), stopped.request.reports, "Reported once");
+        Files.deleteIfExists(file());
+
+        var discarded = new Fixture(new RocketPosition(128, 80, 64));
+        discarded.release();
+        discarded.request.notifierFailure = new IllegalStateException("Injected notifier failure in a discard");
+        var failing = new CheckedSavedDataPolicy(TYPE, (staged, target) -> { throw new IOException("Injected removal failure"); });
+        RocketJournalTestAccess.write(discarded.journal, file(), failing, tick += 1_000);
+        discarded.journal.put(landed(new RocketPosition(2_000, 80, 2_000))); // A disjoint successor generation.
+        assertDoesNotThrow(discarded::acknowledge, "The failure escaped pollWriter");
+        assertEquals(0, discarded.request.restores);
+        assertEquals(Stage.WRITE_BACK, discarded.disassemblies.find(discarded.logical()).stage());
+        assertSame(discarded.landed, discarded.journal.find(discarded.landed.transferId()).orElseThrow());
+        discarded.acknowledge();
+        assertFalse(discarded.disassemblies.pending(discarded.logical()));
+        assertTrue(discarded.diskRecords().contains(discarded.landed.transferId()));
+        assertEquals(List.of("REGION_BUSY"), discarded.request.reports, "Reported once");
+        discarded.close();
+    }
+
     @Test void refusedInsertsEndPendingWithoutTheRecord() {
         for (int mode = 0; mode < 3; mode++) {
             var f = new Fixture(new RocketPosition(64 + mode * 64, 80, 64));
@@ -414,6 +443,7 @@ class RocketLandedDisassembliesTest {
         Error matchesError;
         RuntimeException restoreThrows;
         boolean notifierThrows;
+        RuntimeException notifierFailure;
         boolean restorable = true;
         RuntimeException restorableThrows;
         int restores;
@@ -443,6 +473,7 @@ class RocketLandedDisassembliesTest {
             if (notifierThrows && code == RocketValidationCode.SUCCESS) {
                 throw new IllegalStateException("Injected notifier failure after SUCCESS");
             }
+            if (notifierFailure != null) { throw notifierFailure; }
         }
     }
 
