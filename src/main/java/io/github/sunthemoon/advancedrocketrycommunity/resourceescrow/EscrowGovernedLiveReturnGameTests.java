@@ -76,6 +76,12 @@ public final class EscrowGovernedLiveReturnGameTests {
         new Scenario(helper, false, Fault.CANCEL, false, true).start();
     }
 
+    // N1 / R17 item 5: motion applied after the entity tick is still visible to the proof callback in END.
+    @GameTest(template = "empty", batch = "escrow_return_proof_motion", timeoutTicks = 600)
+    public static void motionDuringReturnProofsIsTransientAndCompletesCancelledF7AndF8(GameTestHelper helper) {
+        new Scenario(helper, false, Fault.CANCEL, false, false, false, true).start();
+    }
+
     private static final class Scenario {
         private final GameTestHelper helper;
         private final ServerLevel level;
@@ -111,6 +117,9 @@ public final class EscrowGovernedLiveReturnGameTests {
         private int vetoes;
         private java.util.function.Consumer<net.minecraftforge.event.entity.EntityJoinLevelEvent> veto;
         private final java.util.Map<BlockPos, net.minecraft.world.level.block.state.BlockState> terrain = new java.util.LinkedHashMap<>();
+        private final boolean proofMotion;
+        private final int[] impulses = new int[2];
+        private final boolean[] proofMotionDone = new boolean[2];
 
         Scenario(GameTestHelper helper, boolean shared) {
             this(helper, shared, Fault.CANCEL);
@@ -125,12 +134,17 @@ public final class EscrowGovernedLiveReturnGameTests {
             this(helper, shared, fault, dismountCut, retryCut, false);
         }
         Scenario(GameTestHelper helper, boolean shared, Fault fault, boolean dismountCut, boolean retryCut, boolean departureAfterReturn) {
+            this(helper, shared, fault, dismountCut, retryCut, departureAfterReturn, false);
+        }
+        Scenario(GameTestHelper helper, boolean shared, Fault fault, boolean dismountCut, boolean retryCut, boolean departureAfterReturn,
+                 boolean proofMotion) {
             this.helper = helper; level = helper.getLevel(); pacer = new GameTestTickPacer(level.getServer());
             this.fault = fault; this.dismountCut = dismountCut;
-            this.departureAfterReturn = departureAfterReturn;
+            this.departureAfterReturn = departureAfterReturn; this.proofMotion = proofMotion;
             this.retryCut = retryCut ? new EscrowTerminalRetryCut() : null;
             position = new BlockPos((shared ? 594_136 : 594_008) + 512 * fault.ordinal()
-                    + (dismountCut ? 2_048 : 0) + (retryCut ? 4_096 : 0) + (departureAfterReturn ? 8_192 : 0), 100, 594_008);
+                    + (dismountCut ? 2_048 : 0) + (retryCut ? 4_096 : 0) + (departureAfterReturn ? 8_192 : 0)
+                    + (proofMotion ? 16_384 : 0), 100, 594_008);
             destination = position.offset(shared ? 4 : 32, 0, 0);
         }
 
@@ -152,7 +166,12 @@ public final class EscrowGovernedLiveReturnGameTests {
             if (rocket == null) { if (journal.retryChecked(server)) { prepare(); } return; }
             helper.assertTrue(!discarded, "Live return launch preparation was discarded");
             if (!accepted) { return; }
-            if (requested) { terminal(journal); return; }
+            if (requested) {
+                terminal(journal);
+                // After this tick's assertions, so the impulse is seen only by END and zeroed by the next entity tick.
+                if (proofMotion && !done) { proofMotion(); }
+                return;
+            }
             var returns = EscrowRuntime.of(server).returns(); var flight = rocket.flightData().orElseThrow();
             helper.assertTrue(flight.fuel().equals(initial.fuel()) && flight.passengers().equals(initial.passengers())
                     && flight.fuel().committedDebits().equals(List.of(previousDebit))
@@ -261,6 +280,8 @@ public final class EscrowGovernedLiveReturnGameTests {
             helper.assertTrue(sawF6 && sawF7 && journal.actionAuthorityAvailable() && journal.find(transfer).isEmpty()
                     && journal.acknowledgedGuard(record.logicalRocketId()).orElseThrow().transfer() == null
                     && data.ledger().armedFlights().equals(otherArms), "F8 did not prune only its exact CANCELLED entry after checked absence");
+            helper.assertTrue(!proofMotion || proofMotionDone[0] && proofMotionDone[1],
+                    "Motion was not applied during both return proof windows: absence=" + impulses[0] + ", F6=" + impulses[1]);
             helper.assertTrue(RocketEscrowGate.idle(rocket) && RocketRuntime.resourceMutationAllowed(rocket)
                     && rocket.flightData().orElseThrow().fuel().totalAmount() == 1_100 && rocket.isAlive()
                     && rocket.getPassengers().equals(departureAfterReturn ? List.of() : List.of(passenger))
@@ -272,7 +293,44 @@ public final class EscrowGovernedLiveReturnGameTests {
             helper.assertTrue(pads.find(transfer, claimedPad.reference()).orElseThrow().claim() == null
                     && otherTransfer.equals(pads.find(transfer, otherPad.reference()).orElseThrow().claim()), "F8 released the wrong pad claim");
             if (fault == Fault.SPAWN) { helper.assertTrue(vetoes == 1, "Failed publication was retried instead of returned"); }
+            // Review N3: F8 drops the retired bindings, and moving the idle survivor afterwards holds nothing.
+            helper.assertTrue(!runtime.sourceFlights().bound(record.logicalRocketId()) && !runtime.arrivals().bound(transfer),
+                    "F8 kept the retired flight's F3 or arrival binding");
+            rocket.setPos(rocket.getX() + 1, rocket.getY(), rocket.getZ());
+            runtime.sourceFlights().observe(rocket); runtime.arrivals().observe(rocket); runtime.flightPhases().observe(rocket);
+            helper.assertTrue(!runtime.executorHolds().held(record), "A retired flight's placement observation recorded a hold");
             finish(journal);
+        }
+
+        /**
+         * Sets motion on every tick of the first absence and the first F6 proof window, from onEachTick after the
+         * entity tick. The callback that ends the window therefore observes it. It must answer "not now": no sticky
+         * flag, no proof kept from that slot, and no executor hold. The rocket itself never moves.
+         */
+        private void proofMotion() {
+            var work = returnWork();
+            if (work == null || work.terminal) { return; }
+            int window = work.returned ? 1 : 0;
+            if (proofMotionDone[window]) { return; }
+            if (work.pending) {
+                if (impulses[window] == 0) { windowStart = rocket.position(); }
+                rocket.setDeltaMovement(new net.minecraft.world.phys.Vec3(0.125, 0, 0)); impulses[window]++; return;
+            }
+            if (impulses[window] == 0) { return; }
+            proofMotionDone[window] = true;
+            helper.assertTrue(work.source.unchanged.get() && work.proofs.isEmpty()
+                    && !EscrowRuntime.of(level.getServer()).executorHolds().held(record),
+                    "Transient motion during a return proof set a sticky flag, kept its proof or held the flight");
+            helper.assertTrue(rocket.position().equals(windowStart) && rocket.getDeltaMovement().equals(net.minecraft.world.phys.Vec3.ZERO),
+                    "The return proof motion fixture moved the rocket or its tick kept the impulse");
+        }
+        private net.minecraft.world.phys.Vec3 windowStart;
+
+        private EscrowGovernedReturn.Work returnWork() {
+            try {
+                var field = EscrowGovernedReturn.class.getDeclaredField("work"); field.setAccessible(true);
+                return (EscrowGovernedReturn.Work) ((java.util.Map<?, ?>) field.get(EscrowRuntime.of(level.getServer()).returns())).get(transfer);
+            } catch (ReflectiveOperationException failure) { throw new IllegalStateException(failure); }
         }
 
         private void verifyStoredSurvivor(List<EscrowEndpoint> slots) {

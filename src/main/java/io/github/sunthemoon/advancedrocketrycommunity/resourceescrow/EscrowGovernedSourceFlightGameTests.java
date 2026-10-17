@@ -27,7 +27,7 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 @PrefixGameTestTemplate(false)
 public final class EscrowGovernedSourceFlightGameTests {
     private enum Fault { NONE, MOTION, DUPLICATE, CLOCK, LANDING, POSITION, REST_POSITION }
-    private enum Departure { NONE, ASCENT, LANDED, LOGOUT }
+    private enum Departure { NONE, ASCENT, LANDED, LOGOUT, MOUNTED_LOGOUT }
     private EscrowGovernedSourceFlightGameTests() { }
 
     @GameTest(template = "empty", batch = "escrow_governed_source_progress", timeoutTicks = 600)
@@ -76,6 +76,17 @@ public final class EscrowGovernedSourceFlightGameTests {
     @GameTest(template = "empty", batch = "escrow_landed_relogin_complete", timeoutTicks = 600)
     public static void logoutDuringAscentAndLoginAfterLandingCompletesHandoffAndCleanup(GameTestHelper helper) {
         new Scenario(helper, Departure.LOGOUT).start();
+    }
+    // Review N4: the passenger is still riding when PlayerList.remove runs, so vanilla dismounts inside the removal.
+    @GameTest(template = "empty", batch = "escrow_mounted_logout_complete", timeoutTicks = 600)
+    public static void mountedLogoutDuringAscentAndLoginAfterLandingCompletesHandoffAndCleanup(GameTestHelper helper) {
+        new Scenario(helper, Departure.MOUNTED_LOGOUT).start();
+    }
+
+    // Review N4: the installed dispatcher's warm COMMITTED descent visits, counted on the arrival and the record.
+    @GameTest(template = "empty", batch = "escrow_governed_descent_cost", timeoutTicks = 600)
+    public static void warmDispatcherDescentVisitsMakeNoCompleteCaptureOrEnvelopeDigest(GameTestHelper helper) {
+        new Scenario(helper, Fault.LANDING, true).start();
     }
 
     // These single-flight fixtures assert the whole journal's acknowledgement at F3.
@@ -147,11 +158,16 @@ public final class EscrowGovernedSourceFlightGameTests {
         private boolean departed, reconnected;
         private long offlineLandedAt = -1;
         private final java.util.Map<BlockPos, net.minecraft.world.level.block.state.BlockState> terrain = new java.util.LinkedHashMap<>();
+        private boolean descentCost;
+        private DescentSample descentAfter;
+        private int descentWarm, descentMeasured;
+        private record DescentSample(long tick, long captures, long digests, long observation, double y) { }
 
-        Scenario(GameTestHelper helper, Fault fault) {
-            this.helper = helper; this.fault = fault; level = helper.getLevel();
+        Scenario(GameTestHelper helper, Fault fault) { this(helper, fault, false); }
+        Scenario(GameTestHelper helper, Fault fault, boolean descentCost) {
+            this.helper = helper; this.fault = fault; this.descentCost = descentCost; level = helper.getLevel();
             pacer = new GameTestTickPacer(level.getServer());
-            position = new BlockPos(590_008 + 128 * fault.ordinal(), 100, 590_008);
+            position = descentCost ? new BlockPos(604_008, 100, 604_008) : new BlockPos(590_008 + 128 * fault.ordinal(), 100, 590_008);
             destination = position.offset(fault == Fault.CLOCK ? 4 : 32, 0, 0);
         }
         Scenario(GameTestHelper helper, boolean shared) {
@@ -172,6 +188,7 @@ public final class EscrowGovernedSourceFlightGameTests {
             position = new BlockPos(602_008 + 128 * departure.ordinal(), 100, 602_008);
             destination = position.offset(32, 0, 0);
         }
+        private boolean logout() { return departure == Departure.LOGOUT || departure == Departure.MOUNTED_LOGOUT; }
         void start() {
             for (var pos : List.of(position, destination)) {
                 var chunk = new ChunkPos(pos); level.getChunkSource().addRegionTicket(TicketType.START, chunk, 2, Unit.INSTANCE);
@@ -207,13 +224,20 @@ public final class EscrowGovernedSourceFlightGameTests {
                 if (rocket.getY() > position.getY() && changedAt < 0) {
                     changedAt = level.getGameTime();
                     frozenHeight = rocket.getY();
-                    if (departure == Departure.ASCENT || departure == Departure.LOGOUT) {
-                        passenger.stopRiding(); departed = true;
-                        helper.assertTrue(passenger.getVehicle() == null, "Ascent departure was prevented");
-                        if (departure == Departure.LOGOUT) {
+                    if (departure == Departure.ASCENT || logout()) {
+                        if (departure == Departure.MOUNTED_LOGOUT) {
+                            helper.assertTrue(passenger.getVehicle() == rocket, "Mounted logout lacks its riding passenger");
+                        } else {
+                            passenger.stopRiding();
+                            helper.assertTrue(passenger.getVehicle() == null, "Ascent departure was prevented");
+                        }
+                        departed = true;
+                        if (logout()) {
                             level.getServer().getPlayerList().remove(passenger);
                             helper.assertTrue(level.getServer().getPlayerList().getPlayer(passenger.getUUID()) == null,
                                     "Logout did not remove the assigned player");
+                            helper.assertTrue(passenger.getVehicle() == null && rocket.isAlive() && rocket.isAddedToWorld()
+                                    && rocket.getPassengers().isEmpty(), "Logout left its player seated or unloaded the rocket with it");
                         }
                     }
                     else if (fault == Fault.MOTION) { rocket.setDeltaMovement(new Vec3(0.125, 0, 0)); }
@@ -338,6 +362,8 @@ public final class EscrowGovernedSourceFlightGameTests {
             var arrival = (RocketEntity) level.getEntity(record.destinationEntityId().orElseThrow());
             helper.assertTrue(arrival != null && rocket.isRemoved() && rocket.getPassengers().isEmpty()
                     && level.getEntity(rocket.getUUID()) == null, "F5 did not remove exactly its emptied source");
+            // Sampled before this fixture's own complete captures below, which the window must not count.
+            var before = descentCost ? sample(record, arrival) : null;
             helper.assertTrue(initial.fuel().equals(rocket.flightData().orElseThrow().fuel()) && wrapper.equals(rocket.escrowSection())
                     && EscrowGovernedPhaseAction.destinationMatches(record, EscrowNativeEnvelope.rocket(arrival))
                     && arrival.escrowSection().epoch() == 0 && !RocketEscrowGate.idle(arrival)
@@ -345,7 +371,7 @@ public final class EscrowGovernedSourceFlightGameTests {
                     "F5 changed credit, repeated a debit or released ARMED before F6/F7");
             if (arrival.flightData().orElseThrow().state() == RocketFlightState.DESCENT
                     && arrival.getY() < destination.getY() + RocketFlightLimits.FLIGHT_ALTITUDE_BLOCKS) { observedDescent = true; }
-            if (departure == Departure.LOGOUT && !reconnected) {
+            if (logout() && !reconnected) {
                 helper.assertTrue(departed && level.getServer().getPlayerList().getPlayer(passenger.getUUID()) == null
                         && arrival.getPassengers().isEmpty(), "Offline assignment was reconstructed or seated");
                 if (arrival.flightData().orElseThrow().state() != RocketFlightState.LANDED) { return; }
@@ -380,8 +406,11 @@ public final class EscrowGovernedSourceFlightGameTests {
                 arrivalY = arrival.getY();
                 if (arrival.flightData().orElseThrow().state() == RocketFlightState.DESCENT) {
                     if (arrival.getY() < destination.getY() + RocketFlightLimits.FLIGHT_ALTITUDE_BLOCKS) { observedDescent = true; }
+                    if (descentCost) { descentCost(before, record, arrival); }
                     return;
                 }
+                helper.assertTrue(!descentCost || descentMeasured == 20,
+                        "The descent cost window covered " + descentMeasured + " of 20 warm dispatcher visits");
                 helper.assertTrue(observedDescent && arrival.flightData().orElseThrow().state() == RocketFlightState.LANDED
                         && arrival.getY() == destination.getY() && arrival.flightData().orElseThrow().plan().isEmpty()
                         && arrival.flightData().orElseThrow().activeTransferId().isEmpty()
@@ -396,6 +425,32 @@ public final class EscrowGovernedSourceFlightGameTests {
                 finish(journal, arrival); return;
             }
             passenger.stopRiding(); arrival.setDeltaMovement(new Vec3(0.125, 0, 0)); changedDestinationAt = level.getGameTime();
+        }
+
+        private DescentSample sample(RocketTransferRecord record, RocketEntity arrival) {
+            return new DescentSample(level.getServer().getTickCount(), arrival.governedCaptures(),
+                    record.nativeTransfer().orElseThrow().envelopeDigests(), arrival.governedObservation(), arrival.getY());
+        }
+
+        /**
+         * Review N4. Between the previous onEachTick and this one, END ran the installed dispatcher's COMMITTED
+         * descent visit and the next entity tick ran the flight observers. Once warm, such a visit makes no complete
+         * capture of the arrival and computes no native envelope digest for the record. Only visits that moved the
+         * arrival down without reaching the landing height count. A chunk save or load changes governedObservation and
+         * revalidates once, so it restarts the warm window instead of being counted.
+         */
+        private void descentCost(DescentSample before, RocketTransferRecord record, RocketEntity arrival) {
+            boolean visited = descentAfter != null && before.tick() == descentAfter.tick() + 1
+                    && before.observation() == descentAfter.observation()
+                    && before.y() < descentAfter.y() && before.y() > destination.getY();
+            if (!visited) { descentWarm = 0; }
+            else if (++descentWarm > 3 && descentMeasured < 20) {
+                helper.assertTrue(before.captures() == descentAfter.captures() && before.digests() == descentAfter.digests(),
+                        "A warm dispatcher descent visit made " + (before.captures() - descentAfter.captures())
+                                + " complete captures and " + (before.digests() - descentAfter.digests()) + " envelope digests");
+                descentMeasured++;
+            }
+            descentAfter = sample(record, arrival);
         }
 
         private void terminal(RocketTransferSavedData journal) {
@@ -461,7 +516,18 @@ public final class EscrowGovernedSourceFlightGameTests {
             helper.assertTrue(pads.find(transfer, claimedPad.reference()).orElseThrow().claim() == null
                     && otherTransfer.equals(pads.find(transfer, otherPad.reference()).orElseThrow().claim()),
                     "F8 did not release only its dependent pad claim");
+            retiredPlacement(record, arrival);
             finish(journal, arrival);
+        }
+
+        /** Review N3: F8 drops the retired bindings, and moving the idle landed rocket afterwards holds nothing. */
+        private void retiredPlacement(RocketTransferRecord record, RocketEntity arrival) {
+            var runtime = EscrowRuntime.of(level.getServer());
+            helper.assertTrue(!runtime.sourceFlights().bound(record.logicalRocketId()) && !runtime.arrivals().bound(record.transferId()),
+                    "F8 kept the retired flight's F3 or arrival binding");
+            arrival.setPos(arrival.getX() + 1, arrival.getY(), arrival.getZ());
+            runtime.sourceFlights().observe(arrival); runtime.arrivals().observe(arrival); runtime.flightPhases().observe(arrival);
+            helper.assertTrue(!runtime.executorHolds().held(record), "A retired flight's placement observation recorded a hold");
         }
 
         private void verifyStoredSurvivor(RocketTransferRecord record, RocketEntity arrival) {
@@ -483,7 +549,7 @@ public final class EscrowGovernedSourceFlightGameTests {
         private void finish(RocketTransferSavedData journal, RocketEntity arrival) {
             if (departure != Departure.NONE) {
                 helper.assertTrue(departed && sawF6 && sawF7 && journal.find(transfer).isEmpty()
-                        && (departure != Departure.LOGOUT || reconnected), "Departure fixture did not finish checked F7/F8");
+                        && (!logout() || reconnected), "Departure fixture did not finish checked F7/F8");
             }
             if (claimedPad != null) {
                 var pads = io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadIndex.get(level.getServer());
@@ -536,7 +602,7 @@ public final class EscrowGovernedSourceFlightGameTests {
 
         private void prepare() {
             data = ResourceEscrowSavedData.forTests(level.getServer()); data.bind(level.getServer());
-            if (departure != Departure.NONE) {
+            if (departure != Departure.NONE || descentCost) {
                 // Remote generated chunks are not covered by the empty GameTest template.
                 // Own and restore only the two-block source and destination footprints.
                 for (var origin : List.of(position, destination)) {
@@ -581,7 +647,7 @@ public final class EscrowGovernedSourceFlightGameTests {
                     && level.getChunkSource().getChunkNow(unloadedChunk.x, unloadedChunk.z) == null,
                     "Governed pad check loaded an absent terrain chunk");
             var to = from.relocated(UUID.randomUUID(), from.sourceDimension(), new RocketPosition(destination.getX(), destination.getY(), destination.getZ()), now);
-            if (departure != Departure.NONE) {
+            if (departure != Departure.NONE || descentCost) {
                 helper.assertTrue(new io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.RocketLandingPadSelector()
                         .availableLoaded(level, to), "Departure fixture's landing footprint is not clear");
             }

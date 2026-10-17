@@ -72,7 +72,7 @@ final class EscrowDestinationProbe {
         if (record.phase() != RocketTransferPhase.DESTINATION_SPAWNED) { return; }
         if (!(level.getEntity(record.sourceEntityId()) instanceof RocketEntity source)
                 || !(level.getEntity(record.destinationEntityId().orElseThrow()) instanceof RocketEntity arrival)) { return; }
-        EscrowTags.require(record.nativeTransfer().orElseThrow().destinationEnvelope(record).equals(EscrowNativeEnvelope.rocket(arrival))
+        EscrowTags.require(fixedDestination(record, EscrowNativeEnvelope.rocket(arrival))
                 && source.flightData().orElseThrow().fuel().equals(record.sourceFlightData().fuel())
                 && source.escrowSection().epoch() == 1 && arrival.escrowSection().epoch() == 0
                 && data.ledger().armedFlights().equals(List.of(record.nativeTransfer().orElseThrow().armed()))
@@ -87,6 +87,17 @@ final class EscrowDestinationProbe {
             EscrowTags.require(result.confirmed(), "Native destination checkpoint failed: " + result.reason());
             result.proof().release(); pause();
         });
+    }
+
+    /**
+     * Review N7: R18's governed comparison of the fixed destination envelope. Live riders must be a duplicate-free
+     * subset of the assignments and are normalized away; the manifest and every other field compare exactly. A
+     * foreign or duplicate rider is a mismatch, not an exception. Shared with the F5 phase probe.
+     */
+    static boolean fixedDestination(io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord record,
+                                    net.minecraft.nbt.CompoundTag arrival) {
+        try { return EscrowGovernedEnvelope.same(record.nativeTransfer().orElseThrow().destinationEnvelope(record), arrival); }
+        catch (IllegalArgumentException | IllegalStateException invalid) { return false; }
     }
 
     private boolean loaded() {

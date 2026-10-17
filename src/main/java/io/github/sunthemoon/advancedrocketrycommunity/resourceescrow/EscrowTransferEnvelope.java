@@ -15,6 +15,8 @@ public final class EscrowTransferEnvelope {
     private final CompoundTag destination;
     private final String digest;
     private final java.util.function.Function<CompoundTag, String> envelopeDigest;
+    // Diagnostics only (review N4): native envelope digests this metadata computed while validating records.
+    private final java.util.concurrent.atomic.AtomicLong envelopeDigests = new java.util.concurrent.atomic.AtomicLong();
     // RocketTransferRecord has identity equality. Values never retain their weak keys.
     private final java.util.Map<RocketTransferRecord, Expanded> validated = new java.util.WeakHashMap<>();
 
@@ -26,7 +28,7 @@ public final class EscrowTransferEnvelope {
                                   java.util.function.Function<CompoundTag, String> envelopeDigest) {
         EscrowTags.require(armed.outcome() == EscrowFlightTables.Outcome.ARMED, "Record requires its original ARMED tuple");
         this.armed = armed; this.source = source.copy(); this.destination = destination.copy();
-        this.envelopeDigest = envelopeDigest;
+        this.envelopeDigest = tag -> { envelopeDigests.incrementAndGet(); return envelopeDigest.apply(tag); };
         digest = CanonicalNbtDigest.of(encode(), MAX_BYTES, 16);
     }
 
@@ -64,6 +66,7 @@ public final class EscrowTransferEnvelope {
 
     public EscrowFlightTables.Armed armed() { return armed; }
     public String digest() { return digest; }
+    long envelopeDigests() { return envelopeDigests.get(); }
 
     public synchronized void validate(RocketTransferRecord record) {
         if (validated.containsKey(record)) { return; }

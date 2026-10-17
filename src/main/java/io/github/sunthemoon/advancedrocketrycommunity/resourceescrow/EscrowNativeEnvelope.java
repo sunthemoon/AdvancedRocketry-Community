@@ -25,6 +25,7 @@ public final class EscrowNativeEnvelope {
     }
     public static CompoundTag rocket(RocketEntity rocket, RocketFlightData flight, RocketEscrowSection wrapper) {
         EscrowTags.require(rocket.operational() && !rocket.level().isClientSide && rocket.getServer().isSameThread(), "Native capture requires server owner thread");
+        rocket.governedCaptured(); // Review N4: a per-instance counter lets a GameTest pin capture-free warm visits.
         var t = frame(rocket);
         var snapshot = rocket.snapshot().orElseThrow();
         t.put("snapshot", RocketSnapshotNbtCodec.encode(snapshot)); t.put("flight", RocketFlightNbtCodec.encode(flight)); t.put("wrapper", wrapper.encode());

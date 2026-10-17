@@ -50,6 +50,8 @@ final class RocketGovernedCleanupDispatcher {
             }
             if (state.record != null && !unclaimed(server, journal, state.record, bays)) { continue; }
             if (!EscrowRuntime.of(server).flightPhases().releaseCompleted(coordinator, journal, arm)) { continue; }
+            // Review N3: the retired flight's F3 and arrival bindings go with F5's captures, after checked absence.
+            EscrowRuntime.of(server).sourceFlights().completed(arm); EscrowRuntime.of(server).arrivals().completed(arm);
             EscrowRuntime.of(server).checkpoint("F8_JOURNAL_ACK");
             // On restart there are no old runtime tickets. A retained record supplies both exact
             // ticket coordinates in the live path; the saved pad index can release by exact T.

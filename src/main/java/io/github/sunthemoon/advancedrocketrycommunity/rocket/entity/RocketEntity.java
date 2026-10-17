@@ -72,6 +72,7 @@ public final class RocketEntity extends Entity implements MenuProvider {
     private RocketEscrowSection escrowSection = RocketEscrowSection.neutral();
     private boolean activeStateLogged;
     private long governedObservation;
+    private long governedCaptures;
 
     public RocketEntity(EntityType<? extends RocketEntity> entityType, Level level) {
         super(entityType, level);
@@ -164,6 +165,9 @@ public final class RocketEntity extends Entity implements MenuProvider {
 
     public RocketEscrowSection escrowSection() { return escrowSection; }
     public long governedObservation() { return governedObservation; }
+    /** Diagnostics only: complete native envelope captures of this instance. Never authority or persisted. */
+    public long governedCaptures() { return governedCaptures; }
+    public void governedCaptured() { governedCaptures++; }
 
     /** The ordinary reconciliation permit publishes native resources and their wrapper as one action. */
     public void applyEscrowFill(io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowReconciliationAction.Permit permit) {
