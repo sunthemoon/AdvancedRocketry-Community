@@ -110,7 +110,9 @@ class EscrowGovernedDispatchTest {
             try (var reservation = journal.reserve(record.logicalRocketId()).orElseThrow()) {
                 assertFalse(authority.valid());
             }
-            assertTrue(authority.valid());
+            assertFalse(authority.valid(), "An observed invalidation permanently retires this governed view");
+            authority = dispatch.authority(() -> root, () -> true, journal, record);
+            assertNotNull(authority); assertTrue(authority.valid());
             journal.put(record);
             assertFalse(authority.valid());
             acknowledge(journal);
