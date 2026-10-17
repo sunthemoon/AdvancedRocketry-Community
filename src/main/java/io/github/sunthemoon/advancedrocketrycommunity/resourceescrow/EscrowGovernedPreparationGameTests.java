@@ -82,6 +82,9 @@ public final class EscrowGovernedPreparationGameTests {
                 helper.assertTrue(!RocketEscrowGate.idle(rocket), "Pending preparation lost its source lock");
                 return;
             }
+            helper.assertTrue(EscrowRuntime.of(level.getServer()).flightCheckpoint().pendingDestinations().stream()
+                    .noneMatch(region -> region.minimum().x() == destination.getX() && region.minimum().z() == destination.getZ()),
+                    "Completed or discarded preparation retained its pending destination");
             if (invalidate) {
                 helper.assertTrue(discarded && !accepted && before.equals(EscrowNativeEnvelope.rocket(rocket)),
                         "Invalidated preparation changed the source or reported success");
@@ -132,11 +135,17 @@ public final class EscrowGovernedPreparationGameTests {
                 helper.assertTrue(!EscrowGovernedPreparation.begin(rocket, countdown, to, record -> false,
                         record -> accepted = true, () -> discarded = true), "Held action boundary started preparation");
                 helper.assertTrue(!accepted && !discarded && RocketEscrowGate.idle(rocket), "Refused preparation mutated callback or lock state");
+                helper.assertTrue(!EscrowGovernedPreparation.pendingDestinations(level.getServer()).contains(
+                        io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRegion.fromSnapshot(to)),
+                        "Refused preparation retained its destination");
             }
             helper.assertTrue(EscrowGovernedPreparation.begin(rocket, countdown, to, record -> allowed,
                     record -> accepted = true, () -> discarded = true), "Live F1 preparation was refused");
             helper.assertTrue(!accepted && !discarded && before.equals(EscrowNativeEnvelope.rocket(rocket))
                     && journal.find(transfer).isEmpty() && RocketEscrowGate.flightFrozen(rocket), "Request did not wait for F1");
+            helper.assertTrue(EscrowGovernedPreparation.pendingDestinations(level.getServer()).contains(
+                    io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRegion.fromSnapshot(to)),
+                    "Accepted F1 did not reserve its destination before returning");
             if (invalidate) { allowed = false; }
         }
     }
