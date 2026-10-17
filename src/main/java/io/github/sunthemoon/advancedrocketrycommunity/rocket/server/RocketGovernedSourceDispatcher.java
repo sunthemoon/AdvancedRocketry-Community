@@ -73,7 +73,7 @@ final class RocketGovernedSourceDispatcher {
         var entity = level == null ? null : level.getEntity(record.nativeTransfer().orElseThrow().armed().destination());
         return entity instanceof RocketEntity arrival
                 && arrival.flightData().filter(flight -> flight.state() == RocketFlightState.LANDED).isPresent()
-                && !EscrowGovernedTerminalPassengers.present(server, record, EscrowFlightTables.Outcome.HANDED_OFF, arrival);
+                && EscrowGovernedTerminalPassengers.hasOffline(server, record);
     }
 
     private static void destination(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
