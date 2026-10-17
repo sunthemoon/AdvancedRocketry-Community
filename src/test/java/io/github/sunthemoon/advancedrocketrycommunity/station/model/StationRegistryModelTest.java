@@ -60,6 +60,28 @@ final class StationRegistryModelTest {
     }
 
     @Test
+    void deletedLandingPadCellsAreReusedByTheAuthorityMatrix() {
+        StationRegistryModel registry = new StationRegistryModel();
+        List<StationState> pads = new ArrayList<>();
+        for (int index = 0; index < 3; index++) {
+            UUID id = UUID.randomUUID();
+            registry.reserve(id, UUID.randomUUID(), "Pad " + index, ModIdentity.id("earth"), 0);
+            pads.add(registry.commit(id));
+        }
+        assertEquals(new StationGridCell(1, 1), pads.get(2).cell());
+        pads.forEach(pad -> assertTrue(registry.delete(pad.stationId()).isPresent()));
+
+        for (int index = 0; index < 3; index++) {
+            UUID id = UUID.randomUUID();
+            var replacement = registry.reserve(id, UUID.randomUUID(), "Matrix " + index,
+                    ModIdentity.id("earth"), 1);
+            assertEquals(pads.get(index).cell(), replacement.cell());
+            assertEquals(pads.get(index).region(), replacement.region());
+            registry.commit(id);
+        }
+    }
+
+    @Test
     void concurrentReservationProducesUniqueCells() throws Exception {
         StationRegistryModel registry = new StationRegistryModel();
         int count = 32;
