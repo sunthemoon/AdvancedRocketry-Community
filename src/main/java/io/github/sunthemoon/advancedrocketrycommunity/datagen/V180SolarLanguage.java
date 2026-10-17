@@ -11,7 +11,7 @@ public final class V180SolarLanguage {
         values.put("block.advancedrocketrycommunity.solar_panel", chinese ? "太阳能板" : "Solar Panel");
         String prefix = "screen.advancedrocketrycommunity.solar.";
         values.put(prefix + "rate", chinese ? "实际产能：%s FE/t" : "Actual credit: %s FE/t");
-        values.put(prefix + "weather", chinese ? "天气透光：%s‰" : "Weather transmission: %s per mille");
+        values.put(prefix + "weather", chinese ? "天气透光：%s‰" : "Weather transmission: %s‰");
         values.put(prefix + "sky.open", chinese ? "上方曝光：开放" : "UP exposure: open");
         values.put(prefix + "sky.blocked", chinese ? "上方曝光：未确认开放" : "UP exposure: not confirmed open");
         values.put(prefix + "day.0", chinese ? "地表：夜晚" : "Surface: night");

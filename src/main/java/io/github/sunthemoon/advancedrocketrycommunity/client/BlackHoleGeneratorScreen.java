@@ -20,6 +20,10 @@ import net.minecraft.world.entity.player.Inventory;
  * remaining burn and the status with its stable code, never colour alone. It has no buttons.
  */
 public final class BlackHoleGeneratorScreen extends AbstractContainerScreen<BlackHoleGeneratorMenu> {
+    static final int PANEL_WIDTH = 236;
+    static final int METRICS_X = 120;
+    static final int METRICS_WIDTH = PANEL_WIDTH - METRICS_X - 8;
+    private final ScreenText text = new ScreenText();
     private static final int PANEL_TOP = 0xFF16121C;
     private static final int PANEL_BOTTOM = 0xFF07060A;
     private static final int EDGE = 0xFFFF9D5C;
@@ -31,7 +35,7 @@ public final class BlackHoleGeneratorScreen extends AbstractContainerScreen<Blac
 
     public BlackHoleGeneratorScreen(BlackHoleGeneratorMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
-        imageWidth = 176;
+        imageWidth = PANEL_WIDTH;
         imageHeight = 186;
         inventoryLabelY = 93;
     }
@@ -44,6 +48,7 @@ public final class BlackHoleGeneratorScreen extends AbstractContainerScreen<Blac
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        text.clear();
         renderBackground(graphics);
         super.render(graphics, mouseX, mouseY, partialTick);
         renderTooltip(graphics, mouseX, mouseY);
@@ -52,14 +57,19 @@ public final class BlackHoleGeneratorScreen extends AbstractContainerScreen<Blac
                     menu.energyStored(), BlackHoleGeneratorBlockEntity.ENERGY_CAPACITY), mouseX, mouseY);
         }
         Optional<EndgameDeviceView> view = EndgameDeviceViewCache.view(menu.containerId);
-        if (view.isPresent() && isHovering(8, 76, 160, 12, mouseX, mouseY) && !view.get().lines().isEmpty()) {
+        if (view.isPresent() && isHovering(8, 76, imageWidth - 16, 12, mouseX, mouseY)) {
             List<Component> lines = new ArrayList<>();
+            lines.add(Component.translatable(EndgameIntentGuard.STATUS_LINE_KEY,
+                    Component.translatable(view.get().status().translationKey()), view.get().status().name()));
             for (EndgameDeviceView.Line line : view.get().lines()) {
                 Component value = line.translated() ? Component.translatable(line.value())
                         : Component.literal(line.value());
                 lines.add(Component.translatable(line.label()).append(": ").append(value));
             }
             graphics.renderComponentTooltip(font, lines, mouseX, mouseY);
+        }
+        if (!isHovering(8, 76, imageWidth - 16, 12, mouseX, mouseY)) {
+            text.renderTooltip(graphics, font, leftPos, topPos, mouseX, mouseY);
         }
     }
 
@@ -89,19 +99,19 @@ public final class BlackHoleGeneratorScreen extends AbstractContainerScreen<Blac
 
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
-        graphics.drawString(font, title, titleLabelX, titleLabelY, TEXT, false);
-        graphics.drawString(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, MUTED, false);
-        graphics.drawString(font, Component.translatable("advancedrocketrycommunity.endgame.view.rate")
-                .append(": " + String.format(Locale.ROOT, "%,d FE/t", menu.rate())), 120, 22, MUTED, false);
-        graphics.drawString(font, Component.translatable("advancedrocketrycommunity.endgame.view.remaining")
-                .append(": " + menu.remaining()), 120, 34, MUTED, false);
+        text.draw(graphics, font, title, titleLabelX, titleLabelY, imageWidth - 16, TEXT);
+        text.draw(graphics, font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, imageWidth - 16, MUTED);
+        text.draw(graphics, font, Component.translatable("advancedrocketrycommunity.endgame.view.rate")
+                .append(": " + String.format(Locale.ROOT, "%,d FE/t", menu.rate())), METRICS_X, 22, METRICS_WIDTH, MUTED);
+        text.draw(graphics, font, Component.translatable("advancedrocketrycommunity.endgame.view.remaining")
+                .append(": " + menu.remaining()), METRICS_X, 34, METRICS_WIDTH, MUTED);
         Optional<EndgameDeviceView> view = EndgameDeviceViewCache.view(menu.containerId);
         if (view.isEmpty()) {
             return;
         }
         EndgameCode status = view.get().status();
-        graphics.drawString(font, Component.translatable(EndgameIntentGuard.STATUS_LINE_KEY,
-                Component.translatable(status.translationKey()), status.name()), 8, 78,
-                status == EndgameCode.GENERATING ? GLOW : WARNING, false);
+        text.draw(graphics, font, Component.translatable(EndgameIntentGuard.STATUS_LINE_KEY,
+                Component.translatable(status.translationKey()), status.name()), 8, 78, imageWidth - 16,
+                status == EndgameCode.GENERATING ? GLOW : WARNING);
     }
 }
