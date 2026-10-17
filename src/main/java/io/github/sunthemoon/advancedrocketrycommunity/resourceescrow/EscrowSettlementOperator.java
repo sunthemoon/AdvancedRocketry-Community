@@ -79,6 +79,8 @@ final class EscrowSettlementOperator {
         return result;
     }
     void close() { previews.clear(); retries.clear(); }
+    /** A copy for the provenance GameTest; no command reads it. */
+    Map<UUID, EscrowSettlementIntent> previewSnapshot() { return previews.snapshot(); }
     static final class PreviewCache {
         private final Map<UUID, EscrowSettlementIntent> entries = new HashMap<>();
         void requireCapacity(UUID actor, long tick) {
@@ -95,6 +97,7 @@ final class EscrowSettlementOperator {
         }
         void remove(UUID actor, EscrowSettlementIntent intent) { entries.remove(actor, intent); }
         int size() { return entries.size(); }
+        Map<UUID, EscrowSettlementIntent> snapshot() { return Map.copyOf(entries); }
         void clear() { entries.clear(); }
     }
 }
