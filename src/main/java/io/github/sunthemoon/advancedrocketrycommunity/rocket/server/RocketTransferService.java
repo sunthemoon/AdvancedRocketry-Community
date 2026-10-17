@@ -43,6 +43,8 @@ final class RocketTransferService {
             new io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.NamedLandingPadStaging();
     private final Set<UUID> liveTransfers = new HashSet<>();
     private final Set<UUID> settledTransfers = new HashSet<>();
+    private final RocketGovernedSourceDispatcher governedSources = new RocketGovernedSourceDispatcher();
+    private final RocketGovernedCleanupDispatcher governedCleanup = new RocketGovernedCleanupDispatcher();
     // BEGIN transfer service diagnostics
     private final TransferFailureDiagnostics diagnostics = new TransferFailureDiagnostics();
     // END transfer service diagnostics
@@ -86,10 +88,9 @@ final class RocketTransferService {
         if (destinationLevel == null) {
             return RocketFlightRequestResult.failure(RocketFlightRequestCode.INVALID_DESTINATION);
         }
-        List<RocketRegion> reservations = journal.entries().stream()
-                .map(RocketTransferRecord::destinationSnapshot)
-                .map(RocketRegion::fromSnapshot)
-                .toList();
+        List<RocketRegion> reservations = landingReservations(journal,
+                io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGovernedPreparation
+                        .pendingDestinations(server));
         RocketLandingPadSelection selected;
         if (plan.destinationStation().isPresent()) {
             StationState station = StationRegistrySavedData.get(server)
@@ -123,6 +124,33 @@ final class RocketTransferService {
                     RocketFlightRequestCode.LANDING_PAD_UNAVAILABLE,
                     plan.requiredFuel(), selected.refusalKey()
             );
+        }
+
+        if (rocket.escrowSection().ledger() != null) {
+            boolean started = io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGovernedPreparation.begin(
+                    rocket, countdown, selected.snapshot().orElseThrow(),
+                    candidate -> RocketGovernedLaunchBoundary.allows(server, journal, candidate, rocket, recovery.bays()),
+                    acknowledged -> {
+                        // The exact F2 callback already consumed START_COUNTDOWN. Never use the legacy idle exemption.
+                        RocketTransferEntities.keepLoaded(sourceLevel, acknowledged.sourceSnapshot(), acknowledged.transferId());
+                        RocketTransferEntities.keepLoaded(destinationLevel, acknowledged.destinationSnapshot(), acknowledged.transferId());
+                        RocketFlightFeedback.countdownAccepted(rocket);
+                        diagnostics.prepared(acknowledged.transferId());
+                        auditPrepare(rocket, plan, selected, RocketFlightRequestCode.SUCCESS);
+                        completion.accepted().run();
+                    }, () -> {
+                        // Only a definitely unarmed/idle failure can release the tentative pad.
+                        if (journal.actionAuthorityAvailable() && journal.find(plan.requestId()).isEmpty()
+                                && resourceMutationAllowed(rocket)) {
+                            io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadService.release(server, plan);
+                        }
+                        completion.discarded().run();
+                    });
+            if (!started) {
+                io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadService.release(server, plan);
+            }
+            return new RocketFlightRequestResult(started ? RocketFlightRequestCode.JOURNAL_PENDING
+                    : RocketFlightRequestCode.TRANSFER_JOURNAL_BLOCKED, plan.requiredFuel());
         }
 
         RocketTransferRecord record;
@@ -191,6 +219,12 @@ final class RocketTransferService {
         return new RocketFlightRequestResult(RocketFlightRequestCode.JOURNAL_PENDING, plan.requiredFuel());
     }
 
+    /** The same reservation inputs feed surface, station and explicitly named station selection. */
+    static List<RocketRegion> landingReservations(RocketTransferSavedData journal, List<RocketRegion> pending) {
+        return java.util.stream.Stream.concat(journal.entries().stream()
+                .map(RocketTransferRecord::destinationSnapshot).map(RocketRegion::fromSnapshot), pending.stream()).toList();
+    }
+
     RocketFlightRequestResult cancelCountdown(RocketEntity rocket) {
         return cancelCountdown(rocket, RocketRequestCompletion.NONE);
     }
@@ -210,6 +244,16 @@ final class RocketTransferService {
             return RocketFlightRequestResult.failure(RocketFlightRequestCode.TRANSFER_JOURNAL_BLOCKED);
         }
         RocketTransferRecord record = journal.find(plan.requestId()).orElse(null);
+        if (record != null && record.nativeTransfer().isPresent()) {
+            if (record.phase() != RocketTransferPhase.PREPARED || !record.sourceEntityId().equals(rocket.getUUID())) {
+                return RocketFlightRequestResult.failure(RocketFlightRequestCode.INVALID_STATE);
+            }
+            boolean queued = failBackToSource(level.getServer(), journal, record, rocket,
+                    RocketTransferReturnReason.COUNTDOWN_CANCELLED, completion);
+            // The request is complete only after the return's native F6 checkpoint, not merely queue admission.
+            return queued ? new RocketFlightRequestResult(RocketFlightRequestCode.JOURNAL_PENDING, plan.requiredFuel())
+                    : RocketFlightRequestResult.failure(RocketFlightRequestCode.TRANSFER_JOURNAL_BLOCKED);
+        }
         if (!io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate.idle(rocket)) {
             return RocketFlightRequestResult.failure(RocketFlightRequestCode.TRANSFER_JOURNAL_BLOCKED);
         }
@@ -240,6 +284,8 @@ final class RocketTransferService {
         if ((journal.isDirty() || !journal.entries().isEmpty()) && !journal.retryChecked(server)) { return; }
         recovery.recoverNext(server, journal);
         recovery.tickReconnects(server, journal);
+        governedSources.tick(server, journal, recovery.bays());
+        governedCleanup.tick(server, journal, recovery.bays());
         List<UUID> active = liveTransfers.stream().sorted().toList();
         for (UUID transferId : active) {
             RocketTransferRecord record = journal.find(transferId).orElse(null);
@@ -247,6 +293,7 @@ final class RocketTransferService {
                 liveTransfers.remove(transferId);
                 continue;
             }
+            if (record.nativeTransfer().isPresent()) { continue; }
             try {
                 // BEGIN transfer service diagnostics
                 diagnostics.dispatch(transferId);
@@ -401,9 +448,30 @@ final class RocketTransferService {
         );
     }
 
+    /** Reconciliation still requires the checked landed authority and an unclaimed bay boundary. */
+    boolean escrowReconciliationBoundary(RocketEntity rocket) {
+        if (!(rocket.level() instanceof ServerLevel level) || !level.getServer().isSameThread() || !rocket.operational()
+                || rocket.flightData().orElseThrow().activeTransferId().isPresent()) { return false; }
+        var journal = RocketTransferSavedData.get(level.getServer());
+        if (!journal.actionAuthorityAvailable()) { return false; }
+        var record = journal.findByLogicalRocket(rocket.assemblyTransactionId().orElseThrow()).orElse(null);
+        if (record == null) { return true; }
+        var bay = recovery.bays().before(level.getServer(), journal, record, RocketTransferBayRecoveryGate.Action.TICK_SOURCE);
+        return bay != null && bay.kind() == RocketTransferBayRecoveryGate.BoundaryKind.UNCLAIMED
+                && reconciliationRecordAllowed(record, settledTransfers.contains(record.transferId()), liveTransfers.contains(record.transferId()),
+                RocketTransferEntities.isReplaceableLandedAuthority(rocket, record),
+                record.nativeTransfer().isPresent() && io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate.terminalSuccessor(rocket));
+    }
+
+    static boolean reconciliationRecordAllowed(RocketTransferRecord record, boolean settled, boolean live,
+                                               boolean stationaryArrival, boolean terminalSuccessor) {
+        return record.nativeTransfer().isPresent() ? terminalSuccessor
+                : resourceMutationAllowed(true, record.phase(), settled && !live, stationaryArrival);
+    }
+
     /** No endpoint may mutate a balance that restart recovery can replace from its journal. */
     boolean resourceMutationAllowed(RocketEntity rocket) {
-        if (!io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate.idle(rocket)) { return false; }
+        if (!io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate.resourcesIdle(rocket)) { return false; }
         if (!(rocket.level() instanceof ServerLevel level) || !level.getServer().isSameThread()
                 || !rocket.operational() || rocket.flightData().orElseThrow().activeTransferId().isPresent()) {
             return false;
@@ -411,6 +479,9 @@ final class RocketTransferService {
         var journal = RocketTransferSavedData.get(level.getServer());
         if (journal.resourceMutationUnproved(rocket.assemblyTransactionId().orElseThrow())) { return false; }
         var record = journal.findByLogicalRocket(rocket.assemblyTransactionId().orElseThrow()).orElse(null);
+        if (record != null && record.nativeTransfer().isPresent()) {
+            return io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate.terminalSuccessor(rocket);
+        }
         return resourceMutationAllowed(journal.operational(), record == null ? null : record.phase(),
                 record != null && settledTransfers.contains(record.transferId()) && !liveTransfers.contains(record.transferId()),
                 record != null && RocketTransferEntities.isReplaceableLandedAuthority(rocket, record));
@@ -450,6 +521,8 @@ final class RocketTransferService {
         liveTransfers.clear();
         settledTransfers.clear();
         recovery.clear();
+        governedSources.clear();
+        governedCleanup.clear();
         // BEGIN transfer service diagnostics
         diagnostics.clear();
         // END transfer service diagnostics
@@ -636,6 +709,9 @@ final class RocketTransferService {
 
     private boolean failBackToSource(MinecraftServer server, RocketTransferSavedData journal,
             RocketTransferRecord record, RocketEntity source, RocketTransferReturnReason reason, RocketRequestCompletion completion) {
+        if (record.nativeTransfer().isPresent()) {
+            return RocketGovernedSourceDispatcher.requestReturn(server, journal, record, source, recovery.bays(), reason, completion.accepted());
+        }
         if (!flightAllowed(server, journal, record, SETTLE_SOURCE)
                 || !recovery.bays().allowed(server, journal, record, REMOVE_JOURNAL)) { return false; }
         RocketFlightData safe = RocketTransferEntities.stationarySource(

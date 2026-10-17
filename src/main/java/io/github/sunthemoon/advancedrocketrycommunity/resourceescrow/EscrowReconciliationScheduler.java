@@ -26,8 +26,9 @@ public final class EscrowReconciliationScheduler {
         int failures;
         long next;
         boolean active;
+        EscrowReason reason;
         EscrowReason manual = EscrowReason.NONE;
-        Retry(EscrowOperation op) { failures = op.phase() == EscrowOperation.Phase.STALLED ? 3 : 0; }
+        Retry(EscrowOperation op) { failures = op.phase() == EscrowOperation.Phase.STALLED ? 3 : 0; reason = op.reason(); }
     }
     private static final org.slf4j.Logger LOGGER = com.mojang.logging.LogUtils.getLogger();
     private final Thread owner = Thread.currentThread();
@@ -36,21 +37,48 @@ public final class EscrowReconciliationScheduler {
     private final Driver driver;
     private final ArrayDeque<UUID> queue = new ArrayDeque<>();
     private final Map<UUID, Retry> retries = new HashMap<>();
+    private EscrowLedger indexed;
+    private Map<UUID, EscrowOperation> current = Map.of();
     private long tick;
 
     public EscrowReconciliationScheduler(Supplier<EscrowLedger> ledger, BiConsumer<UUID, EscrowReason> transition, Driver driver) {
         this.ledger = ledger; this.transition = transition; this.driver = driver;
     }
+    record View(String phase, String reason, long nextTick, int failures, boolean active) { }
+    View view(UUID id) {
+        owner(); var retry = retries.get(id);
+        return retry == null ? new View("QUEUED", "NONE", -1, 0, false)
+                : new View(retry.active ? "IN_FLIGHT" : "WAITING", retry.reason.name(), retry.next, retry.failures, retry.active);
+    }
+    EscrowOperatorRetry.Outcome accelerate(UUID id, long now) {
+        owner(); var op = ledger.get().records().stream().filter(value -> value.id().equals(id)).findFirst().orElse(null);
+        var retry = retries.get(id);
+        if (op == null || op.phase() == EscrowOperation.Phase.REPAIR || op.reason().manual() || !op.settlement().isEmpty()
+                || retry != null && retry.manual.manual()) {
+            return EscrowOperatorRetry.Outcome.REFUSED;
+        }
+        if (retry == null || retry.active) { return EscrowOperatorRetry.Outcome.PENDING; }
+        if (!EscrowOperatorRetry.retryable(retry.reason)) { return EscrowOperatorRetry.Outcome.REFUSED; }
+        if (retry.next <= now) { return EscrowOperatorRetry.Outcome.PENDING; }
+        // Keep queue position and failure history. The next ordinary visit still enforces every budget.
+        retry.next = now;
+        return EscrowOperatorRetry.Outcome.ACCEPTED;
+    }
     public void tick(long now) {
         owner(); tick = now;
-        List<EscrowOperation> records = ledger.get().records();
-        Map<UUID, EscrowOperation> current = new HashMap<>();
-        records.forEach(op -> current.put(op.id(), op));
-        queue.removeIf(id -> !current.containsKey(id)); retries.keySet().retainAll(current.keySet());
-        var queued = new HashSet<>(queue);
-        records.stream().sorted(Comparator.comparingLong(EscrowOperation::sequence)).filter(op -> queued.add(op.id())).forEach(op -> {
-            queue.addLast(op.id()); retries.put(op.id(), new Retry(op));
-        });
+        var root = ledger.get();
+        if (indexed != root) {
+            var next = new HashMap<UUID, EscrowOperation>();
+            root.records().forEach(op -> next.put(op.id(), op)); current = Map.copyOf(next);
+            queue.removeIf(id -> !current.containsKey(id)); retries.keySet().retainAll(current.keySet());
+            var queued = new HashSet<>(queue);
+            root.records().stream().sorted(Comparator.comparingLong(EscrowOperation::sequence))
+                    .filter(op -> queued.add(op.id())).forEach(op -> {
+                        queue.addLast(op.id()); retries.put(op.id(), new Retry(op));
+                    });
+            indexed = root;
+        }
+        List<EscrowOperation> records = root.records();
         int visits = Math.min(VISITS_PER_TICK, queue.size());
         while (visits-- > 0) {
             UUID id = queue.removeFirst(); queue.addLast(id);
@@ -64,6 +92,7 @@ public final class EscrowReconciliationScheduler {
     private void completed(UUID id, Retry retry, Result result) {
         owner(); if (retries.get(id) != retry) { return; }
         EscrowTags.require(retry.active, "Duplicate reconciliation callback"); retry.active = false;
+        retry.reason = result.reason();
         // Design section 5: one bounded line per state change and backoff transition. A continuing stall is silent.
         if (result.reason().manual()) {
             retry.manual = result.reason(); transition.accept(id, result.reason());
@@ -83,7 +112,8 @@ public final class EscrowReconciliationScheduler {
             if (retry.failures > 0) { LOGGER.info("Escrow record {} proof succeeded after {} failures", id, retry.failures); }
             retry.failures = 0; retry.next = tick + 1; transition.accept(id, EscrowReason.NONE);
         } else {
-            retry.next = tick + (result.reason() == EscrowReason.WAITING_UNLOADED ? 20 : 1);
+            retry.next = tick + (result.reason() == EscrowReason.WAITING_UNLOADED
+                    || result.reason() == EscrowReason.RECONCILIATION_UNIMPLEMENTED ? 20 : 1);
         }
     }
     private void owner() { EscrowTags.require(Thread.currentThread() == owner, "Reconciliation requires its owner thread"); }

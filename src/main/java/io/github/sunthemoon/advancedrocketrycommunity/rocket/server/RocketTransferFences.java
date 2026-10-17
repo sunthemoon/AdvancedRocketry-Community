@@ -2,9 +2,12 @@ package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowRecoveryFence;
+import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGovernedDispatch;
+import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.ResourceEscrowSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferPhase;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferPresence;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecoveryDecision;
@@ -49,6 +52,11 @@ final class RocketTransferFences {
         }
         for (var record : journal.entries()) {
             if (bays != null && !bays.classify(server, journal, record)) { continue; }
+            if (record.nativeTransfer().isPresent()) {
+                var route = server == null ? new EscrowGovernedDispatch.Decision(EscrowGovernedDispatch.Route.HOLD, "GOVERNED_ACTION_REQUIRED")
+                        : EscrowRuntime.of(server).governedFlights().classify(server, journal, record);
+                classifyGoverned(record, route, live, settled); continue;
+            }
             var ledger = ledgerReader.apply(server);
             String reason = null;
             if (RocketEscrowGate.logicalLocked(server, record.logicalRocketId())) { reason = "ESCROW_PENDING_OR_TOMBSTONE"; }
@@ -58,6 +66,26 @@ final class RocketTransferFences {
             // An existing detailed conflict is retained during re-evaluation, not reset every tick.
             if (reason != null && !reasons.containsKey(record.transferId())) { fence(record, reason, live, settled); }
         }
+    }
+
+    /** Classification is not permission: both implemented executors repeat their final action checks. */
+    void classifyGoverned(RocketTransferRecord record, EscrowGovernedDispatch.Decision route, Set<UUID> live, Set<UUID> settled) {
+        if (route.route() == EscrowGovernedDispatch.Route.ACTIVE || route.route() == EscrowGovernedDispatch.Route.CLEANUP) {
+            drop(record.transferId()); settled.remove(record.transferId()); live.add(record.transferId()); return;
+        }
+        if (route.route() == EscrowGovernedDispatch.Route.HOLD
+                && ("GOVERNED_JOURNAL_UNACKNOWLEDGED".equals(route.reason())
+                        || "GOVERNED_LEDGER_PENDING".equals(route.reason())
+                        || "GOVERNED_RUNTIME_STOPPED".equals(route.reason()))) {
+            // R10/R11/R14: retain the exclusion during acknowledgement waits or lifecycle stop, without
+            // diagnosing offline repair or replacing a previously observed repair reason.
+            approved.remove(record.transferId());
+            reasons.putIfAbsent(record.transferId(), route.reason());
+            live.remove(record.transferId()); settled.remove(record.transferId()); return;
+        }
+        // R11: CLEANUP is dispatched only to F8, never legacy recovery or a forward phase.
+        // The cleanup executor reports a specific blocked reason when operator action is needed.
+        fence(record, route.reason(), live, settled);
     }
 
     private static boolean loadedProtectedHint(MinecraftServer server, RocketTransferRecord record, boolean proved) {
@@ -88,6 +116,7 @@ final class RocketTransferFences {
     boolean permit(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record, Set<UUID> live, Set<UUID> settled) {
         if (bays != null && !bays.allowed(server, journal, record,
                 RocketTransferBayRecoveryGate.Action.RECOVER_AUTO)) { return false; }
+        if (record.nativeTransfer().isPresent()) { return false; }
         if (!reasons.containsKey(record.transferId())) { return true; }
         long now = server.getTickCount();
         boolean permitted = reevaluate(record.transferId(), now, () -> loadedReason(server, journal, record), live, settled);
@@ -119,8 +148,11 @@ final class RocketTransferFences {
     }
 
     void joined(MinecraftServer server, UUID logical, boolean protectedJoin, RocketTransferSavedData journal, Set<UUID> live, Set<UUID> settled) {
+        if (server != null) { EscrowRuntime.of(server).governedFlights().invalidated(logical); }
         for (var record : journal.entries()) {
             if (logical.equals(record.logicalRocketId()) && bays != null && bays.endpointChanged(server, journal, record)) { continue; }
+            // Record-3 joins invalidate their checked authority above; the governed executor rechecks the entire census.
+            if (server != null && record.nativeTransfer().isPresent()) { continue; }
             if (logical.equals(record.logicalRocketId()) && (protectedJoin || approved.containsKey(record.transferId()) || reasons.containsKey(record.transferId()))) {
                 approved.remove(record.transferId());
                 fence(record, "ENDPOINT_JOIN_PROOF_REQUIRED", live, settled);
@@ -133,6 +165,7 @@ final class RocketTransferFences {
         var boundary = bays == null ? RocketTransferBayRecoveryGate.Boundary.unclaimed()
                 : bays.before(server, journal, record, RocketTransferBayRecoveryGate.Action.ELECT_DUPLICATES);
         if (boundary == null) { return "BAY_HELD"; }
+        if (record.nativeTransfer().isPresent()) { return "GOVERNED_ACTION_REQUIRED"; }
         if (boundary.kind() == RocketTransferBayRecoveryGate.BoundaryKind.PERMIT
                 ? RocketEscrowGate.escrowLogicalLocked(server, record.logicalRocketId())
                 : RocketEscrowGate.logicalLocked(server, record.logicalRocketId())) {
@@ -192,6 +225,7 @@ final class RocketTransferFences {
         var boundary = bays == null ? RocketTransferBayRecoveryGate.Boundary.unclaimed()
                 : bays.before(server, journal, record, RocketTransferBayRecoveryGate.Action.ELECT_DUPLICATES);
         if (boundary == null) { return false; }
+        if (record.nativeTransfer().isPresent()) { return false; }
         var data = ResourceEscrowSavedData.existing(server);
         String reason = sources.size() >= io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightLimits.MAX_TRANSFER_ENTITY_MATCHES
                 || destinations.size() >= io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightLimits.MAX_TRANSFER_ENTITY_MATCHES ? "MATCH_LIMIT"

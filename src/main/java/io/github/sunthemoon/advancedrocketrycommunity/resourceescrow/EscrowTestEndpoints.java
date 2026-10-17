@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.resourceescrow;
 
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNativeResources;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.command.ReleaseTestPlayers;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -23,9 +24,15 @@ public final class EscrowTestEndpoints {
     private static final String SECTION = "resource_escrow";
     private EscrowTestEndpoints() { }
     public static void requireEnabled(MinecraftServer server) {
-        EscrowTags.require(server.isSameThread() && (server instanceof GameTestServer
-                || Boolean.getBoolean(HOOKS) && server.isDedicatedServer() && server.getPlayerList().getPlayerCount() == 0),
-                "Escrow fixture requires a GameTestServer or an empty, gated release-test dedicated server");
+        EscrowTags.require(enabled(server.isSameThread(), server instanceof GameTestServer,
+                Boolean.getBoolean(HOOKS), server.isDedicatedServer(),
+                () -> server instanceof net.minecraft.server.dedicated.DedicatedServer dedicated
+                        && !dedicated.getProperties().enableRcon && ReleaseTestPlayers.ownsAllConnectedPlayers(server)),
+                "Escrow fixture requires a GameTestServer or a gated release-test dedicated server with only test-owned players and no RCON");
+    }
+    static boolean enabled(boolean ownerThread, boolean gameTest, boolean hooks, boolean dedicated,
+                           java.util.function.BooleanSupplier testConnections) {
+        return ownerThread && (gameTest || hooks && dedicated && testConnections.getAsBoolean());
     }
     public record Fixture(ServerLevel level, BlockEntity source, ArmorStand bank, UUID ledger, UUID logical) {
         public EscrowOperation operation(long sequence) {
@@ -101,7 +108,7 @@ public final class EscrowTestEndpoints {
         }
         return new EscrowPrefix.State(ledger, EscrowTags.number(section, "resource_epoch"), signature(identity, amount), markers);
     }
-    private static void putState(CompoundTag persistent, EscrowPrefix.State state, boolean entity) {
+    static void putState(CompoundTag persistent, EscrowPrefix.State state, boolean entity) {
         CompoundTag section = new CompoundTag(); section.putInt("schema_version", 1); section.putUUID("ledger_id", state.ledger());
         section.putLong("resource_epoch", state.epoch()); ListTag markers = new ListTag();
         for (EscrowPrefix.Marker marker : state.markers()) {

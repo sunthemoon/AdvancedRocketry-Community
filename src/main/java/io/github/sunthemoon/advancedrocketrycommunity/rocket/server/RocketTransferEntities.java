@@ -372,6 +372,22 @@ final class RocketTransferEntities {
             RocketStructureSnapshot snapshot,
             UUID transferId
     ) {
+        refreshFlightTicket(level, snapshot, transferId);
+        loadOrigin(level, snapshot);
+    }
+
+    /** Called only after checked ACTIVE classification; never synchronously loads an endpoint. */
+    static void refreshGovernedFlightTickets(MinecraftServer server, RocketTransferRecord record) {
+        if (!server.isSameThread() || record.nativeTransfer().isEmpty()) { return; }
+        var source = level(server, record.sourceSnapshot().sourceDimension());
+        var destination = level(server, record.destinationSnapshot().sourceDimension());
+        if (source == null || destination == null) { return; }
+        // Same two origins, type, level and expiry as legacy flight; no per-footprint ticket expansion.
+        refreshFlightTicket(source, record.sourceSnapshot(), record.transferId());
+        refreshFlightTicket(destination, record.destinationSnapshot(), record.transferId());
+    }
+
+    private static void refreshFlightTicket(ServerLevel level, RocketStructureSnapshot snapshot, UUID transferId) {
         RocketPosition origin = snapshot.sourceOrigin();
         ChunkPos chunk = new ChunkPos(origin.x() >> 4, origin.z() >> 4);
         level.getChunkSource().addRegionTicket(
@@ -380,7 +396,6 @@ final class RocketTransferEntities {
                 FLIGHT_TICKET_LEVEL,
                 transferId
         );
-        loadOrigin(level, snapshot);
     }
 
     static boolean destinationEntityChunkReady(
@@ -391,6 +406,18 @@ final class RocketTransferEntities {
         BlockPos position = new BlockPos(origin.x(), origin.y(), origin.z());
         return level.areEntitiesLoaded(ChunkPos.asLong(origin.x() >> 4, origin.z() >> 4))
                 && level.isPositionEntityTicking(position);
+    }
+
+    /** F8's explicit release; expiry is only a backstop, never its acknowledgement. No chunk loads. */
+    static void releaseFlightTickets(MinecraftServer server, RocketTransferRecord record) {
+        if (!server.isSameThread()) { throw new IllegalStateException("Flight ticket release requires the server thread"); }
+        for (var snapshot : List.of(record.sourceSnapshot(), record.destinationSnapshot())) {
+            var level = level(server, snapshot.sourceDimension());
+            if (level == null) { continue; }
+            var origin = snapshot.sourceOrigin();
+            level.getChunkSource().removeRegionTicket(FLIGHT_TICKET, new ChunkPos(origin.x() >> 4, origin.z() >> 4),
+                    FLIGHT_TICKET_LEVEL, record.transferId());
+        }
     }
 
     private static boolean entityChunkLoaded(

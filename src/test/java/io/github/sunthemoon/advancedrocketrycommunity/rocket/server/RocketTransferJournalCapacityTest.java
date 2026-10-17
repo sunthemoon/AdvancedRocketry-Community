@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
@@ -57,8 +58,18 @@ final class RocketTransferJournalCapacityTest {
     void aFullJournalOfLargeRocketsRoundTripsWithinItsHeapFactor() throws Exception {
         RocketTransferSavedData journal = new RocketTransferSavedData();
         for (int index = 0; index < RocketFlightLimits.MAX_ACTIVE_TRANSFERS; index++) {
-            journal.put(record(new RocketPosition(100 + 40 * index, 80, 8)));
+            var next = record(new RocketPosition(100 + 40 * index, 80, 8));
+            if (index == RocketFlightLimits.MAX_ACTIVE_TRANSFERS - 1) {
+                long sequence = journal.mutationSequence();
+                journal.validateNewRecord(next);
+                assertEquals(sequence, journal.mutationSequence());
+                assertEquals(index, journal.entries().size());
+            }
+            journal.put(next);
         }
+        long sequence = journal.mutationSequence();
+        assertThrows(IllegalArgumentException.class, () -> journal.validateNewRecord(record(new RocketPosition(3000, 80, 8))));
+        assertEquals(sequence, journal.mutationSequence());
         CompoundTag payload = journal.save(new CompoundTag());
         CompoundTag outer = new CompoundTag();
         outer.put("data", payload);

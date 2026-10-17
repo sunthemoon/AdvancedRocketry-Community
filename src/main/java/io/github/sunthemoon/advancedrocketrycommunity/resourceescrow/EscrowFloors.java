@@ -32,22 +32,32 @@ public final class EscrowFloors {
 
     /** Reserve count and maximum section growth before queued L1 state changes. */
     static void preflight(EscrowLedger candidate) {
+        EscrowSettlementIntent.reserve(candidate);
         var usage = usage(candidate, List.of());
         EscrowTags.require(usage.total() <= EscrowLimits.FLOORS, "Escrow floor capacity exhausted");
         Map<Key, CompoundTag> existing = new HashMap<>(); candidate.floors().forEach(floor -> existing.put(key(floor), floor));
-        Map<Key, EscrowOperation> named = new HashMap<>();
         for (var op : candidate.records()) {
             Key key = key(op.guard()); if (key == null) { continue; }
-            named.put(key, op);
             var floor = existing.get(key);
             EscrowTags.require(floor == null || floor.getUUID("entity_id").equals(op.destination().identity()), "Floor identity cannot be rebound");
         }
-        long bytes = RocketNbtSize.uncompressedBytes(EscrowCodec.encode(candidate));
-        for (Key key : named.keySet()) {
+        EscrowTags.require(RocketNbtSize.uncompressedBytes(EscrowCodec.encode(candidate)) + reservedGrowth(candidate)
+                <= EscrowLimits.ROOT_BYTES, "Escrow floor byte reservation exhausted");
+    }
+
+    static long reservedGrowth(EscrowLedger candidate) {
+        Map<Key, CompoundTag> existing = new HashMap<>(); candidate.floors().forEach(floor -> existing.put(key(floor), floor));
+        Set<Key> named = new HashSet<>();
+        // A retained named floor keeps its ceiling even after its operation retires.
+        // Otherwise a later floor intent would reclaim an occupied-size discount.
+        existing.keySet().stream().filter(java.util.Objects::nonNull).forEach(named::add);
+        candidate.records().stream().map(op -> key(op.guard())).filter(java.util.Objects::nonNull).forEach(named::add);
+        long bytes = 0;
+        for (Key key : named) {
             var floor = existing.get(key);
             bytes += 1_024L - (floor == null ? 0 : RocketNbtSize.uncompressedBytes(floor) - 3L);
         }
-        EscrowTags.require(bytes <= EscrowLimits.ROOT_BYTES, "Escrow floor byte reservation exhausted");
+        return bytes;
     }
 
     /** Called inside the exact L2 snapshot, before the ledger writer captures it. */
@@ -58,9 +68,10 @@ public final class EscrowFloors {
             var frontier = frontiers.get(op.destination().key());
             long highest = ledger.records().stream().filter(record -> record.destination().key().equals(op.destination().key()))
                     .mapToLong(EscrowOperation::sequence).max().orElseThrow();
-            CompoundTag floor = EscrowCodec.guard(op.guard()); floor.putInt("schema_version", 1);
+            CompoundTag floor = EscrowCodec.guard(op.guard()); floor.putInt("schema_version", 2);
             floor.putUUID("entity_id", op.destination().identity()); floor.putLong("resource_epoch", frontier.epoch());
             floor.putString("signature", frontier.signature()); floor.putLong("highest_seq", highest);
+            floor.putString("signature_kind", op.nativeBinding().kind().name()); floor.putString("invariant_digest", op.nativeBinding().invariant());
             EscrowCodec.validateSection(floor, false);
             Key key = key(op.guard());
             var previous = floors.stream().filter(value -> key.equals(key(value))).findFirst().orElse(null);
@@ -76,7 +87,7 @@ public final class EscrowFloors {
             floors.add(floor);
         }
         EscrowLedger retired = ledger.retire(ids);
-        return new EscrowLedger(retired.id(), retired.issuedThrough(), retired.writerGeneration(), retired.records(), floors, retired.tombstones());
+        return retired.replace(retired.records(), floors, retired.tombstones());
     }
 
     /** An exact checked journal snapshot without T is necessary; pending/queued references retain it. */
@@ -87,6 +98,6 @@ public final class EscrowFloors {
         });
         List<CompoundTag> floors = ledger.floors().stream().filter(floor -> key(floor) == null
                 || retained.contains(key(floor)) || !absent.test(key(floor).transfer())).toList();
-        return new EscrowLedger(ledger.id(), ledger.issuedThrough(), ledger.writerGeneration(), ledger.records(), floors, ledger.tombstones());
+        return ledger.replace(ledger.records(), floors, ledger.tombstones());
     }
 }

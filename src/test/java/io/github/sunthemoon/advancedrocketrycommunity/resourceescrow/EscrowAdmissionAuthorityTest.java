@@ -108,6 +108,7 @@ final class EscrowAdmissionAuthorityTest {
             try {
                 tick = ledgerIo.tickUntil(coordinator::tick, tick, writer::unavailable);
                 assertTrue(writer.unavailable()); assertEquals(0, acknowledged.get());
+                assertTrue(coordinator.operational(), "Transient writer failure must keep the runtime ticking exact-candidate retries");
                 assertEquals(1, coordinator.admissionAuthority().pendingCount());
                 for (int i = 0; i < 63; i++) { bay.add(pending(1_000 + i, i / 8, Consumer.BAY)); }
                 assertEquals(64, coordinator.admissionAuthority().pendingCount());

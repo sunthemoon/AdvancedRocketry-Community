@@ -71,6 +71,8 @@ public final class RocketEntity extends Entity implements MenuProvider {
     private CompoundTag preservedBlockedData;
     private RocketEscrowSection escrowSection = RocketEscrowSection.neutral();
     private boolean activeStateLogged;
+    private long governedObservation;
+    private long governedCaptures;
 
     public RocketEntity(EntityType<? extends RocketEntity> entityType, Level level) {
         super(entityType, level);
@@ -162,6 +164,97 @@ public final class RocketEntity extends Entity implements MenuProvider {
     }
 
     public RocketEscrowSection escrowSection() { return escrowSection; }
+    public long governedObservation() { return governedObservation; }
+    /** Diagnostics only: complete native envelope captures of this instance. Never authority or persisted. */
+    public long governedCaptures() { return governedCaptures; }
+    public void governedCaptured() { governedCaptures++; }
+
+    /** The ordinary reconciliation permit publishes native resources and their wrapper as one action. */
+    public void applyEscrowFill(io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowReconciliationAction.Permit permit) {
+        var change = Objects.requireNonNull(permit).consume(this);
+        var previousFlight = flightData; var previousSection = escrowSection;
+        flightData = change.flight(); escrowSection = change.wrapper();
+        try { validateBindings(); }
+        catch (RuntimeException failure) { flightData = previousFlight; escrowSection = previousSection; throw failure; }
+        refreshSyncedData();
+    }
+
+    /** Only F4's checked, one-use permit can initialize a new bound destination. */
+    public void initializeGovernedDestination(io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGovernedDestinationAction.Permit permit) {
+        var record = Objects.requireNonNull(permit).consume(this);
+        var envelope = record.nativeTransfer().orElseThrow().destinationEnvelope(record);
+        setUUID(record.nativeTransfer().orElseThrow().armed().destination());
+        initializeTransferred(record.destinationSnapshot(), record.logicalRocketId(), record.ownerId(), record.destinationFlightData());
+        escrowSection = RocketEscrowSection.decode(envelope.getCompound("wrapper"));
+        var pos = envelope.getList("pos", net.minecraft.nbt.Tag.TAG_DOUBLE);
+        var motion = envelope.getList("motion", net.minecraft.nbt.Tag.TAG_DOUBLE);
+        setPos(pos.getDouble(0), pos.getDouble(1), pos.getDouble(2));
+        setDeltaMovement(motion.getDouble(0), motion.getDouble(1), motion.getDouble(2));
+        setNoGravity(envelope.getBoolean("no_gravity")); noPhysics = envelope.getBoolean("no_physics");
+        setOnGround(envelope.getBoolean("on_ground")); setInvulnerable(envelope.getBoolean("invulnerable"));
+        setYRot(envelope.getFloat("yaw")); setXRot(envelope.getFloat("pitch"));
+    }
+
+    public void moveGovernedSource(io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGovernedSourceFlight.MotionPermit permit) {
+        var position = Objects.requireNonNull(permit).consume(this);
+        setPos(position.x, position.y, position.z);
+    }
+
+    /** Descent and landing retain fuel, manifest and wrapper under their own checked action. */
+    public void advanceGovernedArrival(io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGovernedArrival.Permit permit) {
+        var change = Objects.requireNonNull(permit).consume(this);
+        RocketFlightData previous = flightData;
+        flightData = change.flight();
+        try { validateBindings(); }
+        catch (RuntimeException failure) { flightData = previous; throw failure; }
+        setPos(change.position().x, change.position().y, change.position().z);
+        if (flightData != previous) { refreshSyncedData(); }
+    }
+
+    public void pruneSettledEscrow() {
+        escrowSection = io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowSettlementPruning.rocket(this, escrowSection);
+    }
+    public void pruneSettledEscrow(String digest, java.util.Set<UUID> members) {
+        escrowSection = io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowSettlementPruning.rocket(this, escrowSection, digest, members);
+    }
+    public void pruneReconciledEscrow(io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowReconciliationPruning.Permit permit) {
+        escrowSection = Objects.requireNonNull(permit).consume(this);
+    }
+    public void normalizeSettlementEscrow(io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowSettlementNormalization.Permit permit) {
+        escrowSection = Objects.requireNonNull(permit).consume(this);
+    }
+
+    /** A governed source transition retains its native fuel and exact escrow wrapper. */
+    public void advanceGovernedSource(io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGovernedSourceAction.Permit permit) {
+        RocketFlightData candidate = Objects.requireNonNull(permit).consume(this);
+        RocketFlightData previous = flightData;
+        flightData = candidate;
+        try { validateBindings(); }
+        catch (RuntimeException failure) { flightData = previous; throw failure; }
+        refreshSyncedData();
+    }
+
+    /** Exact present-source resume/return. Outcome and resource release still require checked F6-F8. */
+    public void recoverGovernedSource(io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGovernedSourceRecovery.Permit permit) {
+        var change = Objects.requireNonNull(permit).consume(this);
+        RocketFlightData previous = flightData;
+        flightData = change.flight();
+        try { validateBindings(); }
+        catch (RuntimeException failure) { flightData = previous; throw failure; }
+        setPos(change.position().x, change.position().y, change.position().z);
+        refreshSyncedData();
+    }
+
+    /** A post-F4 return requires its own durable absence permit, never a legacy recovery exemption. */
+    public void returnGovernedSource(io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGovernedReturnAction.Permit permit) {
+        var change = Objects.requireNonNull(permit).consume(this);
+        RocketFlightData previous = flightData;
+        flightData = change.flight();
+        try { validateBindings(); }
+        catch (RuntimeException failure) { flightData = previous; throw failure; }
+        setPos(change.position().x, change.position().y, change.position().z);
+        refreshSyncedData();
+    }
 
     public RocketFlightState displayedFlightState() {
         try {
@@ -180,17 +273,23 @@ public final class RocketEntity extends Entity implements MenuProvider {
             throw new IllegalStateException("Only the server may update rocket flight data");
         }
         RocketFlightData previous = flightData;
-        if (previous != null && !previous.fuel().sameResources(updatedFlightData.fuel())
-                && !RocketEscrowGate.idle(this)) {
+        RocketFlightData candidate = normalizeFlightData(Objects.requireNonNull(updatedFlightData, "updatedFlightData"));
+        if (RocketEscrowGate.flightFrozen(this) && !RocketEscrowGate.terminalFuelUpdate(this, candidate)) {
+            throw new IllegalStateException("Rocket flight state requires an exact escrow action permit");
+        }
+        boolean resourceChanged = previous != null && !previous.fuel().sameResources(candidate.fuel());
+        if (resourceChanged && !RocketEscrowGate.resourcesIdle(this)) {
             throw new IllegalStateException("Rocket resources are protected by escrow");
         }
-        flightData = normalizeFlightData(Objects.requireNonNull(updatedFlightData, "updatedFlightData"));
+        RocketEscrowSection nextSection = resourceChanged ? escrowSection.afterNativeResourceMutation() : escrowSection;
+        flightData = candidate;
         try {
             validateBindings();
         } catch (RuntimeException exception) {
             flightData = previous;
             throw exception;
         }
+        escrowSection = nextSection;
         refreshSyncedData();
     }
 
@@ -233,6 +332,7 @@ public final class RocketEntity extends Entity implements MenuProvider {
 
     @Override
     protected void readAdditionalSaveData(CompoundTag parent) {
+        governedObservation++;
         boolean live = isAddedToWorld();
         RocketEscrowSection retained = escrowSection;
         if (live) { io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowAudit.observe(this); }
@@ -342,6 +442,7 @@ public final class RocketEntity extends Entity implements MenuProvider {
 
     @Override
     protected void addAdditionalSaveData(CompoundTag parent) {
+        governedObservation++;
         io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowAudit.observe(this);
         if (preservedBlockedData != null) {
             parent.put(DATA_KEY, io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNativeResources
@@ -366,9 +467,9 @@ public final class RocketEntity extends Entity implements MenuProvider {
     @Override
     public void tick() {
         super.tick();
+        setDeltaMovement(Vec3.ZERO);
         io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowAudit.observe(this);
         setNoGravity(true);
-        setDeltaMovement(Vec3.ZERO);
         if (!level().isClientSide && !activeStateLogged) {
             activeStateLogged = true;
             AdvancedRocketryCommunity.LOGGER.info(

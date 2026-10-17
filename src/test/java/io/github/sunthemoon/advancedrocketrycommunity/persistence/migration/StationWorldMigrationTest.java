@@ -76,9 +76,8 @@ final class StationWorldMigrationTest {
                 assertEquals("authority", row.get("role").getAsString());
                 // W21b: satellite roots are current schema 4; stations migrate 2 -> 5 (ADR-065).
                 boolean satellites = name.equals(ManagedSavedDataType.SATELLITE_MISSIONS.fileName());
-                // v1.7: the endgame root has only its schema 1 (ADR-054 §10); so do escrow and classic progression.
+                // Endgame and classic progression use schema 1; W11b2 escrow uses schema 2.
                 boolean endgame = name.equals(ManagedSavedDataType.ENDGAME.fileName())
-                        || name.equals(ManagedSavedDataType.RESOURCE_ESCROW.fileName())
                         || name.equals(ManagedSavedDataType.CLASSIC_PROGRESSION.fileName());
                 // W44 section 2.2: the current journal is root 3.
                 boolean transfers = name.equals(ManagedSavedDataType.ROCKET_TRANSFERS.fileName());

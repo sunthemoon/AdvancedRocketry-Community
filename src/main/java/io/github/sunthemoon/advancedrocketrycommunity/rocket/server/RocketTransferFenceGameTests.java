@@ -87,7 +87,7 @@ public final class RocketTransferFenceGameTests {
     }
 
     /** Test-only inspection by field type survives mapped and packaged names without expanding the production AT. */
-    static int flightTickets(MinecraftServer server, UUID id) {
+    public static int flightTickets(MinecraftServer server, UUID id) {
         int count = 0;
         try {
             for (var level : server.getAllLevels()) {
@@ -116,9 +116,11 @@ public final class RocketTransferFenceGameTests {
     }
 
     private static CompoundTag floor(RocketTransferRecord record) {
-        var tag = new CompoundTag(); tag.putInt("schema_version", 1); tag.putUUID("rocket_id", record.logicalRocketId());
+        var tag = new CompoundTag(); tag.putInt("schema_version", 2); tag.putUUID("rocket_id", record.logicalRocketId());
         tag.putUUID("transfer_id", record.transferId()); tag.putLong("journal_generation", 1); tag.putString("journal_digest", record.checksum());
         tag.putUUID("entity_id", UUID.randomUUID()); tag.putLong("resource_epoch", 1);
+        // Opaque negative-proof fixture: no loaded frontier is authorized by these synthetic hashes.
+        tag.putString("signature_kind", "FUEL_VECTOR_V1"); tag.putString("invariant_digest", record.checksum());
         tag.putString("signature", record.checksum()); tag.putLong("highest_seq", 1); return tag;
     }
 

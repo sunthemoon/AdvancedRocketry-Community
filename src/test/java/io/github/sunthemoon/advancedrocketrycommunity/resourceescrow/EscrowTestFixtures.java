@@ -23,9 +23,30 @@ final class EscrowTestFixtures {
         return new EscrowLedger(id(500), java.util.Arrays.stream(records).mapToLong(EscrowOperation::sequence).max().orElse(0),
                 0, List.of(records), List.of(), List.of());
     }
+    /** Explicit synthetic envelope hashes for codec/prefix tests, never a live native permit. */
+    static EscrowOperation nativeModel(EscrowOperation op) {
+        return nativeModel(op, null);
+    }
+    static EscrowOperation nativeModel(EscrowOperation op, RocketEscrowSection observed) {
+        var b = op.nativeBinding();
+        var binding = new EscrowNativeBinding(b.kind(), b.physical(), b.logical(), b.owner(), id(900), hash(900), b.invariant(),
+                b.sourceReference(), b.destinationReference(), observed == null ? b.beforeWrapper() : EscrowNativeEnvelope.digest(observed.encode()),
+                b.afterWrapper(), b.beforeFrontier(), b.afterFrontier(),
+                b.sourceBefore(), b.sourceAfter(), b.destinationBefore(), b.destinationAfter(), true);
+        return new EscrowOperation(op.id(), op.sequence(), op.owner(), op.createdTick(), op.phase(), op.reason(), op.payload(), op.payloadHash(),
+                op.source(), op.destination(), op.guard(), op.kind(), op.settlement(), binding);
+    }
     static CompoundTag floor(long id) {
         CompoundTag tag = EscrowCodec.guard(new EscrowGuard(id(id), null, 1, hash(id)));
-        tag.putInt("schema_version", 1); tag.putUUID("entity_id", id(id + 1)); tag.putLong("resource_epoch", 1);
+        tag.putInt("schema_version", 2); tag.putUUID("entity_id", id(id + 1)); tag.putLong("resource_epoch", 1);
+        tag.putString("signature_kind", EscrowSignatureKind.FIXTURE_RESOURCE_V1.name()); tag.putString("invariant_digest", hash(id));
         tag.putString("signature", hash(0)); tag.putLong("highest_seq", 1); return tag;
+    }
+    static CompoundTag receipt(int id) {
+        var op = operation(10_000 + id).withReason(EscrowReason.OTHER_STATE); var root = ledger(op);
+        var observed = EscrowSettlementIntentTest.observations(root, false);
+        var preview = EscrowSettlementIntent.preview(root, op.id(), EscrowSettlementIntent.Choice.ACCEPT_CURRENT, id(700), "operator", 10, observed);
+        var intent = preview.confirm(preview.actor(), preview.digest(), 11, observed);
+        return EscrowSettlementTombstones.create(op, intent);
     }
 }

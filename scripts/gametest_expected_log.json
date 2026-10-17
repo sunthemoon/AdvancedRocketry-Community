@@ -1086,6 +1086,17 @@
       },
       "test": "ClassicFirstEventGameTests.theFirstWarpAwardsOnlyPresentAuthorizedParticipantsAfterTheDurableReceipt",
       "reason": "W44 A1: the fixture refuses the detached registry's replacement after the staged candidate, so the named station operation logs its existing ERROR once, nothing is debited and no event is elected."
+    },
+    {
+      "id": "w11b2-governed-executor-persistent-placement",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_GOVERNED_EXECUTOR_HOLD transfer=[0-9a-f-]{36} reason=PERSISTENT_PLACEMENT",
+      "counts": {
+        "escrow_governed_rest_hold": 1
+      },
+      "test": "EscrowGovernedSourceFlightGameTests.persistentRestPlacementHoldsAndLetsFlightTicketsExpire",
+      "reason": "Root decision R17 item 6 (W11b2 continuation 46): a governed COUNTDOWN rocket displaced at rest is a non-transient executor hold. It logs exactly one WARN for the flight and reason, stops refreshing the flight tickets and keeps the ARMED entry and the checked journal unchanged."
     }
   ]
 }

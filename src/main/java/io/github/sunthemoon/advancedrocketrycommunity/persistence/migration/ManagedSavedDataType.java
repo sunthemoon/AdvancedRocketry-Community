@@ -63,12 +63,14 @@ public enum ManagedSavedDataType {
                     new RequiredTag("save_epoch", Tag.TAG_LONG)
             )
     ),
-    /** D3-A: schema 1 from introduction; missing roots remain absent until gated admission. */
+    /** Unreleased D3-A root 2 replaces development root 1 without a migration reader. */
     RESOURCE_ESCROW(
             "v1.8.0", "advancedrocketrycommunity_resource_escrow", 1_048_576L,
             List.of(new RequiredTag("records", Tag.TAG_LIST), new RequiredTag("floors", Tag.TAG_LIST),
                     new RequiredTag("tombstones", Tag.TAG_LIST), new RequiredTag("ledger_id", Tag.TAG_INT_ARRAY),
-                    new RequiredTag("issued_through", Tag.TAG_LONG), new RequiredTag("writer_generation", Tag.TAG_LONG))
+                    new RequiredTag("issued_through", Tag.TAG_LONG), new RequiredTag("writer_generation", Tag.TAG_LONG),
+                    new RequiredTag("issued_launch_serial", Tag.TAG_LONG), new RequiredTag("rocket_authorities", Tag.TAG_LIST),
+                    new RequiredTag("armed_flights", Tag.TAG_LIST))
     ),
     /** W44 section 3.1: the world-first receipt store, schema 1 from introduction, so there is no legacy migration. */
     CLASSIC_PROGRESSION(
@@ -127,7 +129,8 @@ public enum ManagedSavedDataType {
             case STATIONS -> StationLimits.REGISTRY_SCHEMA_VERSION;
             case SATELLITE_MISSIONS -> SatelliteLimits.REGISTRY_SCHEMA_VERSION;
             case ENDGAME -> EndgameLimits.ROOT_SCHEMA_VERSION;
-            case RESOURCE_ESCROW, CLASSIC_PROGRESSION -> 1;
+            case RESOURCE_ESCROW -> 2;
+            case CLASSIC_PROGRESSION -> 1;
             case ROCKET_TRANSFERS -> FIRST_MOON_LANDING_JOURNAL_SCHEMA;
             default -> SavedDataSchemaMigrator.CURRENT_SCHEMA_VERSION;
         };

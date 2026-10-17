@@ -120,7 +120,8 @@ final class EscrowFloorsTest {
         return new EscrowLedger(EscrowTestFixtures.id(500), 2, 1, records, floors, List.of());
     }
     private static CompoundTag floor(EscrowOperation op) {
-        var tag = EscrowCodec.guard(op.guard()); tag.putInt("schema_version", 1); tag.putUUID("entity_id", op.destination().identity());
+        var tag = EscrowCodec.guard(op.guard()); tag.putInt("schema_version", 2); tag.putUUID("entity_id", op.destination().identity());
+        tag.putString("signature_kind", op.nativeBinding().kind().name()); tag.putString("invariant_digest", op.nativeBinding().invariant());
         tag.putLong("resource_epoch", op.destination().beforeEpoch()); tag.putString("signature", op.destination().beforeSignature());
         tag.putLong("highest_seq", 1); return tag;
     }

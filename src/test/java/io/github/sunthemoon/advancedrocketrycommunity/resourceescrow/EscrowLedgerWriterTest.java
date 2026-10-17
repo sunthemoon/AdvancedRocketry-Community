@@ -145,8 +145,42 @@ class EscrowLedgerWriterTest {
             writer.request(() -> EscrowLedgerWriter.Snapshot.of(base.retire(Set.of(base.records().get(0).id())).generation(2), Set.of()),
                     outcomes::add, valid::get);
             poll(ledgerIo, writer, writer::idle);
-            assertEquals(EscrowLedgerWriter.Outcome.FAILED_BEFORE_REPLACE, outcomes.get(0).outcome());
+            // R17 item 4: the guard's own refusal before any replacement attempt is not an IO failure.
+            assertEquals(EscrowLedgerWriter.Outcome.GUARD_REFUSED, outcomes.get(0).outcome());
+            assertFalse(writer.unavailable());
             assertEquals(base, EscrowCodec.decode(policy.read(file()).orElseThrow()));
+        }
+    }
+    /** R17 item 4: guard refusals never make the writer unavailable; definite pre-replacement IO failures still do. */
+    @Test @Timeout(60) void threeConsecutiveGuardRefusalsLeaveTheWriterAvailable() throws Exception {
+        var base = EscrowTestFixtures.ledger(EscrowTestFixtures.operation(1)).generation(1);
+        var policy = CheckedSavedDataPolicy.atomic(ManagedSavedDataType.RESOURCE_ESCROW);
+        policy.replace(file(), () -> EscrowCodec.encode(base));
+        var outcomes = new ArrayList<EscrowLedgerWriter.Completion>(); AtomicBoolean ioFails = new AtomicBoolean();
+        AtomicInteger moves = new AtomicInteger(); var ledgerIo = new AwaitedLedgerIo();
+        try (var writer = ledgerIo.writer(file(), 1, (staged, target) -> {
+            moves.incrementAndGet(); CheckedSavedDataFile.atomicMove(staged, target);
+        }, cut -> { if (ioFails.get() && cut.equals("K1")) { throw new IllegalStateException("Injected definite pre-replace failure"); } })) {
+            for (long generation = 2; generation <= 4; generation++) {
+                var snapshot = EscrowLedgerWriter.Snapshot.of(base.generation(generation), Set.of());
+                assertTrue(writer.request(() -> snapshot, outcomes::add, () -> false));
+                poll(ledgerIo, writer, writer::idle);
+                assertEquals(EscrowLedgerWriter.Outcome.GUARD_REFUSED, outcomes.get(outcomes.size() - 1).outcome());
+                assertFalse(writer.unavailable(), "Guard refusal " + (generation - 1) + " counted as a writer failure");
+            }
+            assertEquals(0, moves.get()); assertEquals(base, EscrowCodec.decode(policy.read(file()).orElseThrow()));
+            var accepted = EscrowLedgerWriter.Snapshot.of(base.generation(5), Set.of());
+            assertTrue(writer.request(() -> accepted, outcomes::add, () -> true)); poll(ledgerIo, writer, writer::idle);
+            assertEquals(EscrowLedgerWriter.Outcome.COMMITTED, outcomes.get(outcomes.size() - 1).outcome());
+            assertEquals(5, EscrowCodec.decode(policy.read(file()).orElseThrow()).writerGeneration());
+
+            ioFails.set(true);
+            for (long generation = 6; generation <= 8; generation++) {
+                var snapshot = EscrowLedgerWriter.Snapshot.of(base.generation(generation), Set.of());
+                assertTrue(writer.request(() -> snapshot, outcomes::add, () -> true)); poll(ledgerIo, writer, writer::idle);
+                assertEquals(EscrowLedgerWriter.Outcome.FAILED_BEFORE_REPLACE, outcomes.get(outcomes.size() - 1).outcome());
+            }
+            assertTrue(writer.unavailable(), "Three definite IO failures must still make the writer unavailable");
         }
     }
     @Test void queuedRetirementCopiesCallerOwnedIdsAndProofMapBeforeSuccessorCapture() throws Exception {

@@ -55,6 +55,15 @@ public final class EscrowBarrier implements AutoCloseable {
         this.checkpoint = checkpoint; active = lifetime; this.timings = timings;
     }
 
+    /** Read-only scheduling hint. begin still reserves atomically before any capture. */
+    boolean available(EscrowEndpoint endpoint, long tick) {
+        return available(endpoint.level(), endpoint.kind() == EscrowEndpoint.Kind.ENTITY, tick);
+    }
+
+    boolean available(String level, boolean entity, long tick) {
+        owner(); return working.get() && budget.available(level, entity, tick);
+    }
+
     /** One serialization/store/force/readback proves every frozen endpoint in the same Anvil slot. */
     public boolean beginJoint(EscrowChunkStore store, List<Target> targets, long tick, Consumer<JointResult> callback) {
         owner(); List<Target> frozen = List.copyOf(targets);
@@ -92,6 +101,7 @@ public final class EscrowBarrier implements AutoCloseable {
         if (!working.get() || !budget.reserve(endpoint.level(), endpoint.kind() == EscrowEndpoint.Kind.ENTITY, tick)) { return false; }
         EscrowChunkStore.Capture capture;
         long started = System.nanoTime();
+        checkpoint.accept("BARRIER_STORE_BEFORE");
         try { capture = store.captureAndStore(endpoint, validator); }
         catch (RuntimeException failure) {
             EscrowReason reason = captureReason(failure);
@@ -116,6 +126,8 @@ public final class EscrowBarrier implements AutoCloseable {
                 if (storeFailure != null) {
                     attempts.forEach(attempt -> complete(attempt.capture(), attempt.frontier(), attempt.callback(), EscrowReason.BARRIER_IO)); return;
                 }
+                checkpoint.accept("BARRIER_STORE_AFTER");
+                checkpoint.accept("BARRIER_FORCE_BEFORE");
                 checkpoint.accept("K6");
                 // Quiesce cannot overtake a force submission, even when the own future completes off-thread.
                 forced = CompletableFuture.allOf(attempts.stream().map(attempt -> attempt.capture().worker()).distinct()
@@ -128,6 +140,7 @@ public final class EscrowBarrier implements AutoCloseable {
                         if (forceFailure != null) {
                             attempts.forEach(attempt -> complete(attempt.capture(), attempt.frontier(), attempt.callback(), EscrowReason.BARRIER_FORCE)); return;
                         }
+                        checkpoint.accept("BARRIER_FORCE_AFTER");
                         try { reader.execute(() -> attempts.forEach(this::readback)); }
                         catch (java.util.concurrent.RejectedExecutionException stopped) {
                             if (working.get()) { throw stopped; }
@@ -139,12 +152,14 @@ public final class EscrowBarrier implements AutoCloseable {
         if (!working.get()) { return; }
         var capture = attempt.capture(); EscrowReason reason = EscrowReason.NONE;
         long started = System.nanoTime();
+        checkpoint.accept("BARRIER_READBACK_BEFORE");
         try {
             if (capture.generation().get() != capture.capturedGeneration()) { reason = EscrowReason.SUPERSEDING_SAVE; }
             else if (!attempt.validator().test(AnvilRecordReader.read(capture.directory(), capture.chunk()).root())) {
                 reason = EscrowReason.BARRIER_UNSTABLE;
             }
         } catch (Exception failureRead) { reason = readbackReason(failureRead); }
+        if (reason == EscrowReason.NONE) { checkpoint.accept("BARRIER_READBACK_AFTER"); }
         timings.sample("readback_io", System.nanoTime() - started);
         complete(capture, attempt.frontier(), attempt.callback(), reason);
     }

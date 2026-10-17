@@ -18,7 +18,10 @@ public final class EscrowCoordinator implements AutoCloseable {
     private final Map<UUID, Consumer<Boolean>> requests = new HashMap<>();
     private final Map<EscrowEndpoint.Key, EscrowPrefix.State> frontiers = new HashMap<>();
     private final Map<UUID, EscrowReason> transitions = new HashMap<>();
+    private final EscrowReconciliationPruning.Candidates pruningCandidates = new EscrowReconciliationPruning.Candidates();
     private final EscrowAdmissionAuthority admission = new EscrowAdmissionAuthority();
+    private final EscrowFlightWrites flightWrites = new EscrowFlightWrites();
+    private final EscrowReconciliationDriver reconciliation = new EscrowReconciliationDriver(this);
     private long issued;
     private long tick;
     private long lastStart = -10;
@@ -32,18 +35,53 @@ public final class EscrowCoordinator implements AutoCloseable {
                         .flatMap(java.util.function.Function.identity()).map(EscrowAdmissionAuthority.Pending::of).toList()));
     }
     public boolean productionAdmissionEnabled() { return false; }
+    void reconcile(net.minecraft.server.MinecraftServer server, EscrowOperation operation,
+                   Consumer<EscrowReconciliationScheduler.Result> completion) {
+        owner(); reconciliation.attempt(server, operation, completion);
+    }
+    void registerReconciliationTestSource(net.minecraft.server.MinecraftServer server, EscrowEndpoint source) {
+        owner(); reconciliation.registerTestSource(server, source);
+    }
+    boolean reconciliationCheckpointProved(UUID operation) { owner(); return reconciliation.checkpointProved(operation); }
+    public boolean operational() { owner(); return !closed && writer.baselineAvailable(); }
     public EscrowLedger ledger() { return data.ledger(); }
-    public long nextSequence() { owner(); return Math.addExact(issued, 1); }
+    public long nextSequence() { owner(); return Math.addExact(Math.max(issued, data.ledger().issuedThrough()), 1); }
     public EscrowAdmissionAuthority admissionAuthority() { owner(); return admission; }
+    /** Gated C0/C1 entry: observed native state, acknowledged component/guard, then the existing L1 writer. */
+    void prepareNativeTest(EscrowOperation op, io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity rocket,
+                           net.minecraft.world.level.block.entity.BlockEntity source, Consumer<Boolean> completion) {
+        owner(); EscrowTestEndpoints.requireEnabled(rocket.getServer());
+        EscrowTags.require(operational() && writer.idle() && queued.isEmpty(), "C0 waits for the acknowledged ledger");
+        EscrowReconciliationPruning.source(rocket.getServer(), this, op.source());
+        requireNativeSourceAvailable(EscrowTestEndpoints.state(source.getPersistentData(), data.ledger().id(), false));
+        // Rocket restart pruning runs from the ordinary observation hook; C0 never binds a stale wrapper.
+        EscrowReconciliationPruning.observe(rocket);
+        var capture = EscrowNativeBinding.captureCurrentTest(op, rocket, source, data.ledger());
+        var candidate = data.ledger().append(List.of(capture.operation()));
+        EscrowReconciliationView.capture(rocket.getServer(), candidate, EscrowSettlementIntent.component(candidate.records(), op.id()));
+        reconciliation.registerTestSource(rocket.getServer(), op.source());
+        prepareTest(capture.operation(), capture.before(), completion);
+    }
+    /** The fixture's fixed C2 projection supports one source member, not a live source chain. */
+    static void requireNativeSourceAvailable(EscrowPrefix.State source) {
+        EscrowTags.require(source.markers().isEmpty(), "Fixture source still carries an earlier member");
+    }
     /** Caller must already be in an explicitly gated test fixture. No block/item/command invokes this. */
     void prepareTest(EscrowOperation op, Consumer<Boolean> completion) {
+        prepareTest(op, null, completion);
+    }
+    void prepareTest(EscrowOperation op, RocketEscrowSection observed, Consumer<Boolean> completion) {
         owner(); EscrowTags.require(!closed && !writer.unavailable(), "Ledger unavailable");
         EscrowTags.require(op.phase() == EscrowOperation.Phase.PREPARED && op.reason() == EscrowReason.NONE, "Admission must be a fresh preparation");
         EscrowTags.require(op.sequence() == nextSequence() && !queued.containsKey(op.id())
                 && !requests.containsKey(op.id()), "Duplicate or stale admission");
         EscrowTags.require(!frontiers.containsKey(op.source().key()) && !frontiers.containsKey(op.destination().key()), "Frozen endpoint frontier");
+        EscrowTags.require(!flightWrites.locked(op.guard().rocket()) && data.ledger().armedFlights().stream()
+                .noneMatch(arm -> arm.logical().equals(op.guard().rocket())), "Flight authority holds the endpoint");
         var candidate = new ArrayList<>(queued.values()); candidate.add(op);
-        EscrowFloors.preflight(data.ledger().append(candidate)); // Reserve the L2 floor before any queued L1 state changes.
+        EscrowSettlementCapacity.requireAdmission(data.ledger().append(candidate), op, observed);
+        EscrowTags.require(op.nativeBinding().kind() != EscrowSignatureKind.FUEL_VECTOR_V1 || op.nativeBinding().complete(), "Native L1 needs a complete envelope binding");
+        EscrowSettlementCapacity.preflight(data.ledger().append(candidate), op.id());
         var reservation = admission.tryReserve(op.id(), op.owner(), op.guard().rocket(), EscrowAdmissionAuthority.Consumer.PROPULSION);
         EscrowTags.require(reservation == EscrowAdmissionAuthority.Result.RESERVED, "Shared admission refused: " + reservation);
         queued.put(op.id(), op); requests.put(op.id(), completion); issued = op.sequence(); data.setDirty();
@@ -54,10 +92,87 @@ public final class EscrowCoordinator implements AutoCloseable {
         if (writer.request(() -> snapshot(true, null), this::acknowledge)) { lastStart = tick; return true; }
         return false;
     }
+    /** O1 only. This acknowledgement does not prove endpoints, remove journals or authorize unlock. */
+    boolean beginSettlement(EscrowSettlementIntent intent, Consumer<Boolean> completion) {
+        owner();
+        if (closed || !writer.idle() || writer.unavailable() || !queued.isEmpty() || !transitions.isEmpty()
+                || tick - lastStart < 10) { return false; }
+        EscrowLedger candidate;
+        if (intent.choice() == EscrowSettlementIntent.Choice.TRANSFER_FLOOR_RETIRE) {
+            EscrowTags.require(intent.ledger().equals(data.ledger().id())
+                    && data.ledger().floors().stream().anyMatch(intent.floor()::equals)
+                    && data.ledger().records().stream().noneMatch(op -> op.guard().rocket().equals(intent.floor().getUUID("rocket_id"))),
+                    "Floor changed since preview");
+            candidate = EscrowSettlementCapacity.floorRetirement(data.ledger(), intent, nextSequence(), tick);
+        } else {
+            candidate = intent.freeze(data.ledger());
+            EscrowSettlementCapacity.preflight(candidate);
+        }
+        candidate.records().stream().filter(op -> intent.ids().contains(op.id())).forEach(op -> EscrowSettlementTombstones.create(op, intent));
+        var frozen = candidate.generation(Math.addExact(writer.lastGeneration(), 1));
+        if (intent.choice() == EscrowSettlementIntent.Choice.TRANSFER_FLOOR_RETIRE) {
+            var op = candidate.records().stream().filter(record -> intent.ids().contains(record.id())).findFirst().orElseThrow();
+            var reservation = admission.tryReserve(op.id(), op.owner(), op.guard().rocket(), EscrowAdmissionAuthority.Consumer.PROPULSION);
+            EscrowTags.require(reservation == EscrowAdmissionAuthority.Result.RESERVED, "Shared floor-intent admission refused: " + reservation);
+        }
+        boolean accepted = writer.request(() -> writer.snapshot(frozen, Set.of()), result -> {
+            acknowledge(result);
+            if (result.outcome() != EscrowLedgerWriter.Outcome.UNKNOWN && !closed) {
+                completion.accept(result.outcome() == EscrowLedgerWriter.Outcome.COMMITTED
+                        && intent.ids().stream().allMatch(id -> data.ledger().records().stream()
+                        .anyMatch(op -> op.id().equals(id) && op.settlement().equals(intent.encode()))));
+            }
+        });
+        if (accepted) { issued = Math.max(issued, candidate.issuedThrough()); lastStart = tick; admission.refresh(); }
+        return accepted;
+    }
     public void autosave() {
         owner(); if (closed || !data.isDirty() || tick - lastStart < 10) { return; }
+        // R17 item 4: an unavailable writer needs this checked generation to recover; queued flights cannot start first.
+        if (flightWrites.pending() && transitions.isEmpty() && !writer.unavailable()) { return; }
         // Only acknowledged records are included. Queued preparations are never implicit autosave admissions.
         if (writer.request(() -> snapshot(false, null), this::acknowledge)) { lastStart = tick; }
+    }
+    /** O3/O4 use the frozen decision, never the ordinary prefix-retirement path. */
+    boolean settlementWrite(EscrowSettlementIntent intent, Map<EscrowEndpoint.Key, EscrowBarrier.Proof> proofs,
+                            boolean release, java.util.function.BooleanSupplier journalLease, Consumer<Boolean> callback) {
+        return settlementWriteExact(intent, proofs, release, journalLease, acknowledgement -> callback.accept(acknowledgement.committed()));
+    }
+    record SettlementAcknowledgement(UUID ledger, String digest, Set<UUID> members, long generation, boolean committed) { }
+    boolean settlementWriteExact(EscrowSettlementIntent intent, Map<EscrowEndpoint.Key, EscrowBarrier.Proof> proofs,
+                                 boolean release, java.util.function.BooleanSupplier journalLease,
+                                 Consumer<SettlementAcknowledgement> callback) {
+        owner();
+        if (closed || !writer.idle() || writer.unavailable() || !queued.isEmpty() || !transitions.isEmpty()
+                || tick - lastStart < 10) { return false; }
+        var keys = intent.checkpointed().stream().map(observation -> observation.endpoint().key()).collect(java.util.stream.Collectors.toSet());
+        var frozenProofs = Map.copyOf(proofs);
+        EscrowTags.require(frozenProofs.keySet().equals(keys) && frozenProofs.values().stream().allMatch(EscrowBarrier.Proof::valid),
+                "Settlement lacks jointly retained survivor/absence proofs");
+        for (var observation : intent.checkpointed()) {
+            var expected = observation.missing() ? new EscrowPrefix.State(intent.ledger(), 0,
+                    EscrowSettlementTombstones.observationDigest(observation), List.of()) : observation.state();
+            EscrowTags.require(expected.equals(frozenProofs.get(observation.endpoint().key()).frontier()), "Settlement proof does not cover the frozen decision");
+        }
+        EscrowTags.require(data.ledger().records().stream().filter(op -> intent.ids().contains(op.id())).count() == intent.ids().size()
+                && data.ledger().records().stream().filter(op -> intent.ids().contains(op.id())).allMatch(op -> op.settlement().equals(intent.encode())),
+                "Settlement decision is not acknowledged");
+        EscrowLedger candidate = release ? EscrowSettlementTombstones.release(data.ledger(), intent, Math.addExact(writer.lastGeneration(), 1))
+                : EscrowSettlementTombstones.install(data.ledger(), intent);
+        EscrowSettlementCapacity.preflight(candidate);
+        var frozen = candidate.generation(Math.addExact(writer.lastGeneration(), 1));
+        boolean accepted = writer.request(() -> writer.snapshot(frozen, Set.of()), result -> {
+            acknowledge(result);
+            if (result.outcome() == EscrowLedgerWriter.Outcome.UNKNOWN) { return; }
+            // An ordinary C3 freeze may precede a later sticky repair/O1. Only exact O4,
+            // never O1/O3 or a failed/unknown write, supersedes that obsolete frontier.
+            if (release && result.outcome() == EscrowLedgerWriter.Outcome.COMMITTED) {
+                keys.forEach(frontiers::remove); reconciliation.settled(keys);
+            }
+            if (!closed) { callback.accept(new SettlementAcknowledgement(intent.ledger(), intent.digest(), intent.ids(),
+                    result.generation(), result.outcome() == EscrowLedgerWriter.Outcome.COMMITTED)); }
+        }, () -> frozenProofs.values().stream().allMatch(EscrowBarrier.Proof::valid) && journalLease.getAsBoolean());
+        if (accepted) { lastStart = tick; } return accepted;
     }
     void persistTransitions() { owner(); if (!transitions.isEmpty()) { autosave(); } }
     private EscrowLedgerWriter.Snapshot snapshot(boolean admissions, Set<UUID> retire) {
@@ -65,7 +180,7 @@ public final class EscrowCoordinator implements AutoCloseable {
     }
     private EscrowLedgerWriter.Snapshot snapshot(boolean admissions, Set<UUID> retire, Map<EscrowEndpoint.Key, EscrowBarrier.Proof> proofs) {
         EscrowLedger candidate = data.ledger();
-        candidate = new EscrowLedger(candidate.id(), candidate.issuedThrough(), candidate.writerGeneration(),
+        candidate = candidate.replace(
                 candidate.records().stream().map(op -> transitions.containsKey(op.id())
                         ? op.withReason(transitions.get(op.id())) : op).toList(), candidate.floors(), candidate.tombstones());
         if (retire != null) { candidate = EscrowFloors.retire(candidate, retire, proofs.entrySet().stream()
@@ -79,11 +194,12 @@ public final class EscrowCoordinator implements AutoCloseable {
             List<EscrowOperation> additions = queued.values().stream()
                     .filter(op -> candidateContains(data.ledger(), op.id()) == false).toList();
             candidate = candidate.append(additions);
+            EscrowSettlementCapacity.preflight(candidate);
         }
         candidate = candidate.generation(Math.addExact(writer.lastGeneration(), 1));
         Set<UUID> included = candidate.records().stream().map(EscrowOperation::id)
                 .filter(requests::containsKey).collect(java.util.stream.Collectors.toSet());
-        return EscrowLedgerWriter.Snapshot.of(candidate, included);
+        return writer.snapshot(candidate, included);
     }
     private static boolean candidateContains(EscrowLedger ledger, UUID id) {
         return ledger.records().stream().anyMatch(op -> op.id().equals(id));
@@ -101,7 +217,8 @@ public final class EscrowCoordinator implements AutoCloseable {
                 if (callback != null && !closed) { callback.accept(true); }
             }
             data.setDirty(!queued.isEmpty() || !transitions.isEmpty() || !writer.idle());
-        } else if (completion.outcome() == EscrowLedgerWriter.Outcome.FAILED_BEFORE_REPLACE) {
+        } else if (completion.outcome() == EscrowLedgerWriter.Outcome.FAILED_BEFORE_REPLACE
+                || completion.outcome() == EscrowLedgerWriter.Outcome.GUARD_REFUSED) {
             for (UUID id : completion.snapshot().admissions()) {
                 // A captured successor is still a potential durable L1; do not cancel its admission.
                 if (!writer.containsCaptured(id)) {
@@ -157,6 +274,50 @@ public final class EscrowCoordinator implements AutoCloseable {
         if (accepted) { lastStart = tick; }
         return accepted;
     }
+    record RetirementAcknowledgement(UUID ledger, Set<UUID> members, long generation, String digest, boolean committed) {
+        RetirementAcknowledgement { members = Set.copyOf(members); }
+    }
+    /** C7 consumes a native C3-C6 request, not caller-supplied booleans or individual endpoint proofs. */
+    boolean retireNative(EscrowReconciliationCheckpoint request, Consumer<RetirementAcknowledgement> callback) {
+        owner();
+        if (closed || !writer.idle() || writer.unavailable() || !queued.isEmpty() || !transitions.isEmpty()
+                || tick - lastStart < 10 || data.ledger() != request.root || !request.proved()
+                || !ordinaryRetirementAllowed(request.members)) { return false; }
+        var members = request.members;
+        var proofs = Map.copyOf(request.proofs);
+        var lease = request.journalLease;
+        var states = request.ends.entrySet().stream().collect(java.util.stream.Collectors.toMap(
+                Map.Entry::getKey, entry -> entry.getValue().state()));
+        EscrowTags.require(EscrowReconciliationValidation.retirementReady(request.root, members, states),
+                "C7 waits for every later acknowledged member on the affected endpoints");
+        requireCoveringProofs(request.root.records(), members, proofs, frontiers);
+        java.util.function.BooleanSupplier valid = () -> lease.getAsBoolean()
+                && proofs.values().stream().allMatch(EscrowBarrier.Proof::valid);
+        // Idle writer capture is synchronous on the owner thread. No uncaptured successor can
+        // substitute a newer root or a different retirement request beneath this acknowledgement.
+        long generation = Math.addExact(writer.lastGeneration(), 1);
+        boolean accepted = writer.request(() -> {
+            // A racing lease/token loss is a normal refusal, never a sticky endpoint diagnosis.
+            return snapshot(false, data.ledger() == request.root && ordinaryRetirementAllowed(members)
+                    && valid.getAsBoolean() ? members : null, proofs);
+        }, result -> {
+            acknowledge(result);
+            if (result.outcome() == EscrowLedgerWriter.Outcome.UNKNOWN) { return; }
+            boolean committed = result.outcome() == EscrowLedgerWriter.Outcome.COMMITTED
+                    && result.generation() == generation && result.snapshot().ledger().id().equals(request.root.id())
+                    && result.snapshot().ledger().records().stream().noneMatch(op -> members.contains(op.id()));
+            if (committed) {
+                // As with the model-fixture L2 path, release only in this exact writer callback.
+                // Remaining operations still hold their endpoints and require freshly frozen tokens.
+                request.ends.keySet().forEach(frontiers::remove);
+                proofs.values().forEach(EscrowBarrier.Proof::release);
+            }
+            if (!closed) { callback.accept(new RetirementAcknowledgement(request.root.id(), members,
+                    result.generation(), result.digest(), committed)); }
+        }, valid);
+        if (accepted) { lastStart = tick; }
+        return accepted;
+    }
     /** Every endpoint of every retired operation needs a valid frozen proof whose markers contain that operation. */
     static void requireCoveringProofs(List<EscrowOperation> records, Set<UUID> retired,
                                       Map<EscrowEndpoint.Key, EscrowBarrier.Proof> proofs, Map<EscrowEndpoint.Key, EscrowPrefix.State> frontiers) {
@@ -169,7 +330,17 @@ public final class EscrowCoordinator implements AutoCloseable {
             }
         }
     }
-    public void tick(long now) { owner(); tick = now; writer.tick(now); }
+    /** Package-private until the F1/F6 server adapter supplies complete retained proofs and leases. */
+    boolean flightWrite(UUID logical, java.util.function.BiFunction<EscrowLedger, Long, EscrowLedger> change,
+                        java.util.function.BooleanSupplier proofAndJournalLease, Consumer<Boolean> callback) {
+        owner(); if (closed || writer.unavailable() || !queued.isEmpty() || !transitions.isEmpty()) { return false; }
+        return flightWrites.request(logical, change, proofAndJournalLease, callback);
+    }
+    public void tick(long now) {
+        owner(); tick = now; writer.tick(now);
+        if (!closed && queued.isEmpty() && transitions.isEmpty() && tick - lastStart >= 10
+                && flightWrites.start(data::ledger, writer, this::acknowledge)) { lastStart = tick; }
+    }
     public void transition(UUID id, EscrowReason reason) {
         owner();
         EscrowOperation op = data.ledger().records().stream().filter(record -> record.id().equals(id)).findFirst().orElse(null);
@@ -181,10 +352,37 @@ public final class EscrowCoordinator implements AutoCloseable {
         if (previous != reason) { transitions.put(id, reason); data.setDirty(); }
     }
     public boolean frozen(EscrowEndpoint.Key endpoint) { owner(); return frontiers.containsKey(endpoint); }
+    boolean pruningBusy(EscrowEndpoint.Key endpoint) {
+        owner(); return !operational() || EscrowSettlementPruning.busy(endpoint, data.ledger().records(), queued.values(),
+                writer.capturedOperations(), frontiers.keySet());
+    }
     public boolean admitting(EscrowEndpoint.Key endpoint) {
         owner(); return queued.values().stream().anyMatch(op -> op.source().key().equals(endpoint) || op.destination().key().equals(endpoint));
     }
     public boolean writerIdle() { return writer.idle(); }
+    void observePruningCandidate(RocketEscrowSection section, Runnable observation) {
+        owner(); pruningCandidates.observe(data.ledger(), section, observation);
+    }
+    /** Scheduling hint only; every writer entry point still repeats its own checks. */
+    boolean checkedWriteReady() {
+        owner(); return !closed && writer.idle() && !writer.unavailable() && queued.isEmpty()
+                && transitions.isEmpty() && tick - lastStart >= 10;
+    }
+    /** ARMED is consulted by the governed dispatcher, not treated as ordinary idle authority. */
+    boolean governedAvailable(UUID logical) {
+        return governedWaitReason(logical) == null;
+    }
+    /** R11 distinguishes ordinary queued work from a writer or manual-repair failure. */
+    String governedWaitReason(UUID logical) {
+        owner();
+        if (!operational() || writer.unavailable()) { return "GOVERNED_LEDGER_UNAVAILABLE"; }
+        var related = unresolved().filter(op -> logical.equals(op.guard().rocket())
+                || logical.equals(op.source().logicalRocket()) || logical.equals(op.destination().logicalRocket())).toList();
+        if (related.stream().anyMatch(op -> currentReason(op).manual())) { return "GOVERNED_LEDGER_UNAVAILABLE"; }
+        return flightWrites.locked(logical) || !related.isEmpty()
+                || frontiers.keySet().stream().anyMatch(key -> logical.equals(key.logicalRocket()))
+                ? "GOVERNED_LEDGER_PENDING" : null;
+    }
     EscrowReason currentReason(EscrowOperation op) { owner(); return transitions.getOrDefault(op.id(), op.reason()); }
     private boolean ordinaryRetirementAllowed(Set<UUID> ids) {
         owner();
@@ -200,16 +398,24 @@ public final class EscrowCoordinator implements AutoCloseable {
     }
     public boolean logicalLocked(UUID logical) {
         owner();
-        return frontiers.keySet().stream().anyMatch(key -> logical.equals(key.logicalRocket()))
-                || java.util.stream.Stream.concat(data.ledger().records().stream(), queued.values().stream())
+        return !operational() || flightWrites.locked(logical) || data.ledger().armedFlights().stream().anyMatch(arm -> arm.logical().equals(logical))
+                || frontiers.keySet().stream().anyMatch(key -> logical.equals(key.logicalRocket()))
+                || unresolved()
                 .anyMatch(op -> logical.equals(op.guard().rocket()));
     }
     public boolean locked(EscrowEndpoint.Key endpoint) {
-        return frontiers.containsKey(endpoint) || java.util.stream.Stream.concat(data.ledger().records().stream(), queued.values().stream())
+        return !operational() || frontiers.containsKey(endpoint) || EscrowSettlementTombstones.endpointLocked(data.ledger(), endpoint) || unresolved()
                 .anyMatch(op -> op.source().key().equals(endpoint) || op.destination().key().equals(endpoint));
     }
-    @Override public void close() { owner(); if (!closed) { closed = true; writer.close(); frontiers.clear(); } }
+    private java.util.stream.Stream<EscrowOperation> unresolved() {
+        return java.util.stream.Stream.of(data.ledger().records().stream(), queued.values().stream(), writer.capturedOperations().stream())
+                .flatMap(java.util.function.Function.identity());
+    }
+    Set<UUID> unresolvedIds() {
+        owner(); return unresolved().map(EscrowOperation::id).collect(java.util.stream.Collectors.toUnmodifiableSet());
+    }
+    @Override public void close() { owner(); if (!closed) { closed = true; reconciliation.close(); flightWrites.close(); writer.close(); frontiers.clear(); } }
     /** Crash path, where ServerStoppingEvent never ran: no drain or callbacks, but the writer is joined. */
-    public void abort() { owner(); if (!closed) { closed = true; writer.abort(); frontiers.clear(); } }
+    public void abort() { owner(); if (!closed) { closed = true; reconciliation.close(); flightWrites.close(); writer.abort(); frontiers.clear(); } }
     private void owner() { EscrowTags.require(Thread.currentThread() == owner, "Escrow coordinator requires its owner thread"); }
 }

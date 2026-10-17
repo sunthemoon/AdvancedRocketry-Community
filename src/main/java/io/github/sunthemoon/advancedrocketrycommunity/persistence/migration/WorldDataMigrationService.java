@@ -104,30 +104,34 @@ public final class WorldDataMigrationService {
     private List<SourceFile> discoverSources(WorldPaths paths) {
         List<SourceFile> sources = new ArrayList<>();
         for (ManagedSavedDataType type : ManagedSavedDataType.values()) {
-            Path source = safeChild(paths.dataDirectory(), type.fileName(), paths.worldRoot());
-            if (!Files.exists(source, LinkOption.NOFOLLOW_LINKS)) {
-                continue;
-            }
-            requireRegularFile(source);
-            CompoundTag outer = BoundedSavedDataIo.read(source, type);
-            SavedDataSchemaMigrator.MigrationResult migration = SavedDataSchemaMigrator.migrate(
-                    type,
-                    BoundedSavedDataIo.payload(outer, type)
-            );
-            if (migration.status() == SavedDataSchemaMigrator.MigrationStatus.FUTURE) {
-                throw new SavedDataMigrationException(
-                        MigrationDiagnosticId.FUTURE_SCHEMA,
-                        type.dataName() + " uses future schema " + migration.sourceSchema()
+            try {
+                Path source = safeChild(paths.dataDirectory(), type.fileName(), paths.worldRoot());
+                if (!Files.exists(source, LinkOption.NOFOLLOW_LINKS)) {
+                    continue;
+                }
+                requireRegularFile(source);
+                CompoundTag outer = BoundedSavedDataIo.read(source, type);
+                SavedDataSchemaMigrator.MigrationResult migration = SavedDataSchemaMigrator.migrate(
+                        type,
+                        BoundedSavedDataIo.payload(outer, type)
                 );
+                if (migration.status() == SavedDataSchemaMigrator.MigrationStatus.FUTURE) {
+                    throw new SavedDataMigrationException(
+                            MigrationDiagnosticId.FUTURE_SCHEMA,
+                            type.dataName() + " uses future schema " + migration.sourceSchema()
+                    );
+                }
+                ManagedSavedDataPayloadValidator.validate(type, migration.payload(), source);
+                sources.add(new SourceFile(
+                        type,
+                        source,
+                        outer,
+                        migration,
+                        sha256(source)
+                ));
+            } catch (SavedDataMigrationException failure) {
+                throw failure.forType(type);
             }
-            ManagedSavedDataPayloadValidator.validate(type, migration.payload());
-            sources.add(new SourceFile(
-                    type,
-                    source,
-                    outer,
-                    migration,
-                    sha256(source)
-            ));
         }
         return List.copyOf(sources);
     }

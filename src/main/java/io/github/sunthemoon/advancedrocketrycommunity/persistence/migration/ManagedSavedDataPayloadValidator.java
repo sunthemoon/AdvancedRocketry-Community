@@ -14,6 +14,10 @@ final class ManagedSavedDataPayloadValidator {
     }
 
     static void validate(ManagedSavedDataType type, CompoundTag payload) {
+        validate(type, payload, null);
+    }
+
+    static void validate(ManagedSavedDataType type, CompoundTag payload, java.nio.file.Path source) {
         boolean operational;
         try {
             operational = switch (type) {
@@ -26,7 +30,10 @@ final class ManagedSavedDataPayloadValidator {
                 case CLASSIC_PROGRESSION -> io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent
                         .ClassicProgressionSavedData.load(payload).operational();
                 case RESOURCE_ESCROW -> {
-                    io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowCodec.decode(payload);
+                    var loaded = io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowCodec.decode(payload);
+                    if (source != null) {
+                        io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowLedgerBaseline.require(source, loaded);
+                    }
                     yield true;
                 }
             };

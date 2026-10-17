@@ -22,20 +22,37 @@ class EscrowStartupTest {
         assertEquals(0, new WorldDataMigrationService().migrate(world).managedFileCount());
         assertFalse(Files.exists(file())); assertFalse(Files.exists(world.resolve("advancedrocketrycommunity-backups")));
         assertFalse(ManagedSavedDataType.RESOURCE_ESCROW.hasLegacySchema());
-        assertEquals(1, ManagedSavedDataType.RESOURCE_ESCROW.firstEpochSchema());
+        assertEquals(2, ManagedSavedDataType.RESOURCE_ESCROW.firstEpochSchema());
     }
     @Test void futureAndInvalidRootsRefusePreStartAndPreserveTheirBytes() throws Exception {
         Files.createDirectories(world.resolve("data"));
         for (java.util.function.Consumer<CompoundTag> mutation : List.<java.util.function.Consumer<CompoundTag>>of(
-                tag -> tag.putInt("schema_version", 2), tag -> tag.putInt("schema_version", 0),
+                tag -> tag.putInt("schema_version", 3), tag -> tag.putInt("schema_version", 1), tag -> tag.putInt("schema_version", 0),
                 tag -> tag.remove("ledger_id"), tag -> tag.putLong("issued_through", -1),
                 tag -> tag.putInt("unexpected", 1))) {
             CompoundTag root = ResourceEscrowSavedData.create().save(new CompoundTag()); mutation.accept(root);
             CompoundTag outer = new CompoundTag(); outer.put("data", root); NbtIo.writeCompressed(outer, file().toFile());
             byte[] before = Files.readAllBytes(file());
-            assertThrows(SavedDataMigrationException.class, () -> new WorldDataMigrationService().migrate(world));
-            assertArrayEquals(before, Files.readAllBytes(file())); assertFalse(Files.exists(world.resolve("advancedrocketrycommunity-backups")));
+            for (int attempt = 0; attempt < 2; attempt++) {
+                assertThrows(SavedDataMigrationException.class, () -> new WorldDataMigrationService().migrate(world));
+                assertArrayEquals(before, Files.readAllBytes(file())); assertFalse(Files.exists(world.resolve("advancedrocketrycommunity-backups")));
+            }
         }
     }
     private Path file() { return world.resolve("data").resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName()); }
+    @Test void nonIdempotentButDecodableBaselineIsRefusedBeforeStartWithoutTouchingTheFile() throws Exception {
+        Files.createDirectories(world.resolve("data"));
+        var payload = EscrowCodec.encode(EscrowTestFixtures.ledger(EscrowTestFixtures.operation(1)));
+        payload.getList("records", 10).getCompound(0).put("settlement", new CompoundTag());
+        assertDoesNotThrow(() -> EscrowCodec.decode(payload));
+        var outer = new CompoundTag(); outer.put("data", payload); NbtIo.writeCompressed(outer, file().toFile());
+        byte[] before = Files.readAllBytes(file());
+        for (int i = 0; i < 2; i++) {
+            var failure = assertThrows(SavedDataMigrationException.class, () -> new WorldDataMigrationService().migrate(world));
+            assertTrue(failure.getMessage().contains("failed semantic validation"));
+            assertTrue(failure.getCause().getMessage().contains("baseline differs"));
+            assertArrayEquals(before, Files.readAllBytes(file()));
+            assertFalse(Files.exists(world.resolve("advancedrocketrycommunity-backups")));
+        }
+    }
 }

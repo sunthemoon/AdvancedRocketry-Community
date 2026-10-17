@@ -18,29 +18,34 @@ public final class EscrowRecoveryFence {
 
     /** Ledger-only classification, before inspecting endpoint readiness or acquiring tickets. */
     public static boolean known(EscrowLedger ledger, UUID logical, UUID transfer) {
-        return ledger.records().stream().anyMatch(op -> op.guard().rocket().equals(logical))
-                || tombstoned(ledger, logical)
+        return ledger.armedFlights().stream().anyMatch(arm -> arm.logical().equals(logical))
+                || ledger.records().stream().anyMatch(op -> op.guard().rocket().equals(logical))
+                || EscrowSettlementTombstones.history(ledger, logical) || EscrowSettlementTombstones.retiredTransfer(ledger, logical, transfer)
                 || ledger.floors().stream().anyMatch(floor -> logical.equals(floor.getUUID("rocket_id"))
                         && floor.hasUUID("transfer_id") && transfer.equals(floor.getUUID("transfer_id")));
     }
 
     public static boolean tombstoned(EscrowLedger ledger, UUID logical) {
-        return ledger.tombstones().stream().anyMatch(tombstone -> {
-            for (var raw : EscrowTags.list(tombstone, "guards", EscrowLimits.OPERATIONS)) {
-                if (logical.equals(EscrowCodec.guard((net.minecraft.nbt.CompoundTag) raw).rocket())) { return true; }
-            }
-            for (var raw : EscrowTags.list(tombstone, "missing", 2)) {
-                if (logical.equals(EscrowCodec.endpoint((net.minecraft.nbt.CompoundTag) raw).logicalRocket())) { return true; }
-            }
-            return false;
-        });
+        return EscrowSettlementTombstones.logicalLocked(ledger, logical);
+    }
+
+    /** Checked, action-specific present-source authority; never a fresh flag or a KEEP_SOURCE exemption. */
+    static String reason(EscrowGovernedDispatch.Authority authority, EscrowGovernedSourceRecovery.Action action,
+                         EscrowGovernedSourceRecovery.Observation observation, long gameTime) {
+        return EscrowGovernedSourceRecovery.reason(authority, action, observation, gameTime);
     }
 
     /** Inputs are an already-loaded, bounded observation in the election order used by recovery. */
     public static String reason(EscrowLedger ledger, UUID logical, UUID transfer,
                                 RocketTransferRecoveryAction action, List<Rocket> sources, List<Rocket> destinations) {
+        // No generic recovery action consumes ARMED/terminal authority. Only the governed dispatcher
+        // may validate its action-specific checked record and proofs; absence is not a legacy fallback.
+        if (ledger != null && ledger.armedFlights().stream().anyMatch(arm -> arm.logical().equals(logical))) { return "ARMED_AUTHORITY_REQUIRED"; }
         if (ledger != null && ledger.records().stream().anyMatch(op -> op.guard().rocket().equals(logical))) { return "ESCROW_PENDING"; }
-        if (ledger != null && tombstoned(ledger, logical)) { return "TOMBSTONE"; }
+        if (ledger != null && (tombstoned(ledger, logical) || EscrowSettlementTombstones.retiredTransfer(ledger, logical, transfer)
+                || java.util.stream.Stream.concat(sources.stream(), destinations.stream())
+                .anyMatch(rocket -> EscrowSettlementTombstones.identityLocked(ledger, logical, rocket.identity())
+                        || rocket.epoch() < EscrowSettlementTombstones.minimumEpoch(ledger, logical, rocket.identity())))) { return "TOMBSTONE"; }
         if (java.util.stream.Stream.concat(sources.stream(), destinations.stream()).anyMatch(rocket -> !rocket.valid())) { return "INVALID_ENDPOINT"; }
         if (java.util.stream.Stream.concat(sources.stream(), destinations.stream()).anyMatch(Rocket::marked)) { return "ESCROW_MARKER"; }
         boolean destinationAuthority = switch (action) {
@@ -49,6 +54,7 @@ public final class EscrowRecoveryFence {
         };
         List<Rocket> keptSide = destinationAuthority ? destinations : sources;
         List<Rocket> discardedSide = destinationAuthority ? sources : destinations;
+        if (ledger != null && keptSide.isEmpty() && EscrowSettlementTombstones.history(ledger, logical)) { return "TOMBSTONE"; }
         if (discardedSide.stream().anyMatch(Rocket::protectedResources)
                 || keptSide.stream().skip(1).anyMatch(Rocket::protectedResources)) { return "FLOOR_CONFLICT"; }
         // Source recovery replaces flight/resources from the pre-flight record, unlike destination KEEP.
@@ -66,8 +72,11 @@ public final class EscrowRecoveryFence {
 
     /** Assembly credit is not expendable; idle credited DISASSEMBLY still has its normal D1 authority. */
     public static boolean transaction(EscrowLedger ledger, UUID logical, boolean assembly, List<Rocket> candidates) {
-        return ledger != null && (ledger.records().stream().anyMatch(op -> op.guard().rocket().equals(logical))
-                || tombstoned(ledger, logical)
+        return ledger != null && (ledger.armedFlights().stream().anyMatch(arm -> arm.logical().equals(logical))
+                || ledger.records().stream().anyMatch(op -> op.guard().rocket().equals(logical))
+                || tombstoned(ledger, logical) || candidates.stream().anyMatch(rocket -> EscrowSettlementTombstones.identityLocked(ledger, logical, rocket.identity())
+                        || rocket.epoch() < EscrowSettlementTombstones.minimumEpoch(ledger, logical, rocket.identity()))
+                || (assembly || candidates.isEmpty()) && EscrowSettlementTombstones.history(ledger, logical)
                 || assembly && ledger.floors().stream().anyMatch(floor -> logical.equals(floor.getUUID("rocket_id"))))
                 || candidates.stream().anyMatch(rocket -> !rocket.valid() || rocket.marked() || assembly && rocket.epoch() != 0);
     }

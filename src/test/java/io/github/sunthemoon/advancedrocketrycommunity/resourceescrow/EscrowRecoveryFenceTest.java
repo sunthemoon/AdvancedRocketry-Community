@@ -96,14 +96,13 @@ final class EscrowRecoveryFenceTest {
     }
     private static CompoundTag floor(UUID transfer) {
         var tag = EscrowCodec.guard(new EscrowGuard(LOGICAL, transfer, 1, EscrowTestFixtures.hash(1)));
-        tag.putInt("schema_version", 1); tag.putUUID("entity_id", ENTITY); tag.putLong("resource_epoch", 1);
+        tag.putInt("schema_version", 2); tag.putUUID("entity_id", ENTITY); tag.putLong("resource_epoch", 1);
+        tag.putString("signature_kind", EscrowSignatureKind.FIXTURE_RESOURCE_V1.name()); tag.putString("invariant_digest", EscrowTestFixtures.hash(3));
         tag.putString("signature", EscrowTestFixtures.hash(2)); tag.putLong("highest_seq", 1); return tag;
     }
     private static CompoundTag tombstone() {
-        var tag = new CompoundTag(); tag.putInt("schema_version", 1); tag.putUUID("op_id", EscrowTestFixtures.id(22));
-        tag.put("retired", new ListTag()); tag.put("missing", new ListTag()); tag.put("survivors", new ListTag());
+        var tag = EscrowTestFixtures.receipt(22);
         var guards = new ListTag(); guards.add(EscrowCodec.guard(new EscrowGuard(LOGICAL, TRANSFER, 1, EscrowTestFixtures.hash(1))));
-        tag.put("guards", guards); tag.putInt("amount", 1_000); tag.putString("payload_hash", EscrowTestFixtures.hash(2));
-        tag.putLong("audited_loss", 1_000); return tag;
+        tag.put("guards", guards); return tag;
     }
 }

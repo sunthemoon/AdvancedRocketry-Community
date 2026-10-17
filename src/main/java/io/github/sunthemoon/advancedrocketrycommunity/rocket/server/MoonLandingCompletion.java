@@ -93,6 +93,11 @@ final class MoonLandingCompletion {
     private static boolean safeCompletion(MinecraftServer server, RocketTransferSavedData journal,
                                           RocketTransferRecord record, RocketEntity destination,
                                           RocketTransferBayDispatch bays) {
+        if (record.nativeTransfer().isPresent()) {
+            return io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowRuntime.of(server).arrivals()
+                    .ready(server, journal, record, destination,
+                            () -> RocketGovernedLaunchBoundary.allows(server, journal, record, null, destination, bays));
+        }
         if (!journal.operational() || record.phase() != RocketTransferPhase.COMMITTED
                 || !RocketTransferEscrowRules.flightAllowed(server, journal, record, bays, TICK_SOURCE)) {
             return false;

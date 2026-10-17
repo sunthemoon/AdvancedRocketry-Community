@@ -191,6 +191,16 @@ public final class RocketLandingPadSelector {
             UUID allowedRocketId,
             boolean allowMatchingRocket
     ) {
+        return unavailable(target, destination, allowedRocketId, allowMatchingRocket, true);
+    }
+
+    /** Governed final boundaries cannot load terrain while checking their recorded destination. */
+    public boolean availableLoaded(ServerLevel target, RocketStructureSnapshot destination) {
+        return unavailable(target, destination, null, false, false) == null;
+    }
+
+    private String unavailable(ServerLevel target, RocketStructureSnapshot destination, UUID allowedRocketId,
+                               boolean allowMatchingRocket, boolean load) {
         Objects.requireNonNull(target, "target");
         Objects.requireNonNull(destination, "destination");
         if (!target.dimension().location().equals(destination.sourceDimension())) {
@@ -211,7 +221,8 @@ public final class RocketLandingPadSelector {
         if (chunks.size() > RocketFlightLimits.MAX_LANDING_CHUNKS) {
             return UNSAFE;
         }
-        loadChunks(target, chunks);
+        if (load) { loadChunks(target, chunks); }
+        else if (chunks.stream().anyMatch(chunk -> target.getChunkSource().getChunkNow(chunk.x, chunk.z) == null)) { return UNSAFE; }
         int inspected = 0;
         for (RocketBlock block : destination.blocks()) {
             if (++inspected > RocketFlightLimits.MAX_LANDING_BLOCK_INSPECTIONS) {

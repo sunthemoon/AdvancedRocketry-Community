@@ -28,6 +28,16 @@ class RocketEscrowSectionTest {
         assertThrows(IllegalArgumentException.class, () -> new RocketEscrowSection(null, 1,
                 List.of(new EscrowPrefix.Marker(UUID.randomUUID(), 1, "DESTINATION", 1))));
     }
+    @Test void nativeResourceMutationPreservesNeutralityAndAdvancesOnlyAnUnmarkedBoundEpoch() {
+        var neutral = RocketEscrowSection.neutral(); assertSame(neutral, neutral.afterNativeResourceMutation());
+        var bound = new RocketEscrowSection(UUID.randomUUID(), 7, List.of());
+        assertEquals(new RocketEscrowSection(bound.ledger(), 8, List.of()), bound.afterNativeResourceMutation());
+        var marked = new RocketEscrowSection(bound.ledger(), 7, List.of(new EscrowPrefix.Marker(UUID.randomUUID(), 1, "DESTINATION", 7)));
+        assertThrows(IllegalArgumentException.class, marked::afterNativeResourceMutation);
+        var exhausted = new RocketEscrowSection(bound.ledger(), Long.MAX_VALUE, List.of());
+        assertThrows(ArithmeticException.class, exhausted::afterNativeResourceMutation);
+        assertEquals(Long.MAX_VALUE, exhausted.epoch());
+    }
     @Test void eightMarkerLimitAndContiguousEpochsAreEnforced() {
         var markers = IntStream.rangeClosed(1, 8).mapToObj(index ->
                 new EscrowPrefix.Marker(UUID.randomUUID(), index * 3L, "DESTINATION", index)).toList();

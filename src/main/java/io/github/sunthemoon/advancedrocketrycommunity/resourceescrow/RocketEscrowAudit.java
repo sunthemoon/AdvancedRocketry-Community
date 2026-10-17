@@ -9,7 +9,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
 
-/** Loaded-only validation before reconciliation. This adapter never applies or retires credit. */
+/** Loaded-only audit and the server-owned ordinary reconciliation entry point. */
 public final class RocketEscrowAudit {
     public record Placement(UUID identity, UUID logical, String type, String level, int chunkX, int chunkZ,
                             double x, double y, double z, double expectedX, double expectedY, double expectedZ,
@@ -38,7 +38,7 @@ public final class RocketEscrowAudit {
         return EscrowReason.NONE;
     }
 
-    private static EscrowReason placement(EscrowEndpoint endpoint, RocketEntity rocket) {
+    static EscrowReason placement(EscrowEndpoint endpoint, RocketEntity rocket) {
         if (!rocket.operational()) { return EscrowReason.INVALID_ENDPOINT; }
         var flight = rocket.flightData().orElseThrow(); var origin = flight.currentOrigin();
         return placement(endpoint, new Placement(rocket.getUUID(), rocket.assemblyTransactionId().orElseThrow(),
@@ -51,6 +51,7 @@ public final class RocketEscrowAudit {
     /** Called at tracking, tick, live load and serialization boundaries, before any endpoint proof. */
     public static void observe(RocketEntity rocket) {
         if (!(rocket.level() instanceof ServerLevel level) || !level.getServer().isSameThread()) { return; }
+        EscrowRuntime.of(level.getServer()).observeFlight(rocket);
         var data = ResourceEscrowSavedData.existing(level.getServer());
         if (data == null || rocket.assemblyTransactionId().isEmpty()) { return; }
         var coordinator = data.bind(level.getServer());
@@ -65,6 +66,7 @@ public final class RocketEscrowAudit {
                     && op.phase() != EscrowOperation.Phase.SETTLING_ABANDON) { coordinator.transition(op.id(), reason); }
         }
         coordinator.persistTransitions();
+        EscrowReconciliationPruning.observe(rocket);
     }
 
     private static void invalidate(ServerLevel level, EscrowEndpoint endpoint, RocketEntity rocket) {
@@ -73,24 +75,27 @@ public final class RocketEscrowAudit {
         monitor.observed(level.dimension().location().toString(), true, rocket.chunkPosition());
     }
 
-    /** Incomplete production recovery fails closed, but records detectable conflicts durably. */
+    /** Only the coordinator's exact C7 acknowledgement may report scheduler success. */
     static void attempt(EscrowCoordinator coordinator, net.minecraft.server.MinecraftServer server, EscrowOperation op,
                         List<EscrowOperation> records, java.util.function.Consumer<EscrowReconciliationScheduler.Result> completion) {
+        if (!coordinator.operational() || !coordinator.writerIdle()) {
+            completion.accept(EscrowReconciliationScheduler.Result.deferred()); return;
+        }
         var journal = RocketTransferSavedData.get(server);
         if (!journal.retryChecked(server)) {
             completion.accept(new EscrowReconciliationScheduler.Result(EscrowReason.TRANSFER_JOURNAL_UNPROVED, false)); return;
         }
         var reason = journal(op.guard(), journal.acknowledgedGuard(op.guard().rocket()).orElse(null));
-        if (reason != EscrowReason.NONE) {
-            completion.accept(new EscrowReconciliationScheduler.Result(reason, false)); return;
-        }
+        if (reason != EscrowReason.NONE) { completion.accept(new EscrowReconciliationScheduler.Result(reason, false)); return; }
         ServerLevel level = server.getLevel(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.DIMENSION,
                 net.minecraft.resources.ResourceLocation.tryParse(op.destination().level())));
         if (level != null && level.getEntity(op.destination().identity()) instanceof RocketEntity rocket) {
             reason = placement(op.destination(), rocket);
-            if (reason != EscrowReason.NONE) { invalidate(level, op.destination(), rocket); }
+            if (reason != EscrowReason.NONE) {
+                invalidate(level, op.destination(), rocket);
+                completion.accept(new EscrowReconciliationScheduler.Result(reason, false)); return;
+            }
         }
-        // No historical fuel reconstruction, missing-identity election or unproved L2 fallback.
-        completion.accept(new EscrowReconciliationScheduler.Result(reason == EscrowReason.NONE ? EscrowReason.WAITING_UNLOADED : reason, false));
+        coordinator.reconcile(server, op, completion);
     }
 }

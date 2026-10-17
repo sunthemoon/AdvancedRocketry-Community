@@ -47,7 +47,7 @@ public final class RocketTransferSavedData extends SavedData {
     private final Map<UUID, RocketTransferRecord> entries = new LinkedHashMap<>();
     private CompoundTag preservedBlockedData;
     private final RocketJournalCheckpoint checkpoint = new RocketJournalCheckpoint();
-    private long mutationSequence = 1;
+    private volatile long mutationSequence = 1;
     private MinecraftServer ownerServer;
     private boolean saveFailureReported;
     private long lastAttemptTick;
@@ -62,6 +62,7 @@ public final class RocketTransferSavedData extends SavedData {
     /** W44 section 3.6: how this root was first obtained; a detached root behaves as loaded. */
     private ManagedRootPresence presence = ManagedRootPresence.LOADED;
     private final RocketJournalFirstWrite firstWrite = new RocketJournalFirstWrite();
+    private final RocketJournalLeases leases = new RocketJournalLeases();
     private static final class Effect {
         final UUID logical;
         final RocketTransferRecord expected;
@@ -241,6 +242,19 @@ public final class RocketTransferSavedData extends SavedData {
                 .findFirst();
     }
 
+    /** Read-only F1 reservation check; neither a candidate nor this check acknowledges PREPARED. */
+    public void validateNewRecord(RocketTransferRecord record) {
+        Objects.requireNonNull(record, "record");
+        if (!operational() || stopping || entries.containsKey(record.transferId())
+                || entries.size() >= RocketFlightLimits.MAX_ACTIVE_TRANSFERS) {
+            throw new IllegalArgumentException("New transfer authority is unavailable");
+        }
+        ensureNoAuthorityConflict(record);
+        var candidate = new java.util.ArrayList<>(entries()); candidate.add(record);
+        try { encode(candidate, firstMoonLanding, new CompoundTag()); }
+        catch (IllegalStateException invalid) { throw new IllegalArgumentException("New transfer does not fit the journal", invalid); }
+    }
+
     public void put(RocketTransferRecord record) {
         if (!operational()) {
             throw new IllegalStateException("Transfer journal is blocked by unsupported or invalid data");
@@ -265,7 +279,9 @@ public final class RocketTransferSavedData extends SavedData {
         }
         entries.put(record.transferId(), record);
         mutationSequence++;
+        leases.changed(record.logicalRocketId(), mutationSequence, existing);
         setDirty();
+        publishLeases();
     }
 
     /** Replaces a committed schema-1 record with its checksum-rebound schema-2 form. */
@@ -296,16 +312,21 @@ public final class RocketTransferSavedData extends SavedData {
         }
         entries.put(migrated.transferId(), migrated);
         mutationSequence++;
+        leases.changed(migrated.logicalRocketId(), mutationSequence, legacy);
         setDirty();
+        publishLeases();
     }
 
     public void remove(UUID transferId) {
         if (!operational()) {
             throw new IllegalStateException("Transfer journal is blocked by unsupported or invalid data");
         }
-        if (entries.remove(Objects.requireNonNull(transferId, "transferId")) != null) {
+        var removed = entries.remove(Objects.requireNonNull(transferId, "transferId"));
+        if (removed != null) {
             mutationSequence++;
+            leases.changed(removed.logicalRocketId(), mutationSequence, removed);
             setDirty();
+            publishLeases();
         }
     }
 
@@ -334,7 +355,9 @@ public final class RocketTransferSavedData extends SavedData {
             throw exception;
         }
         mutationSequence++;
+        leases.changed(replacement.logicalRocketId(), mutationSequence, previous);
         setDirty();
+        publishLeases();
     }
 
     /** Enqueues only this journal, never an unrelated world-wide SavedData save. */
@@ -367,7 +390,54 @@ public final class RocketTransferSavedData extends SavedData {
         return operational() && !isDirty() && checkpoint.current(mutationSequence);
     }
 
+    /** Owner-thread effects need current authority and a live journal, not just an unchanged IO lease. */
+    public boolean actionAuthorityAvailable() {
+        return !stopping && !failedWrite && acknowledgedCurrent();
+    }
+
     public long mutationSequence() { return mutationSequence; }
+
+    /** Owner-thread acquisition; the returned lease reads only a volatile sequence off-thread. */
+    public java.util.function.BooleanSupplier acknowledgedLease() {
+        if (ownerServer != null && !ownerServer.isSameThread()) { throw new IllegalStateException("Journal lease requires the owner thread"); }
+        if (!acknowledgedCurrent()) { return () -> false; }
+        long captured = mutationSequence; return () -> mutationSequence == captured;
+    }
+
+    /** R17 item 3: this rocket's latest change is in the exact acknowledged generation; other rockets may be pending. */
+    public boolean logicalAcknowledged(UUID logical) {
+        return operational() && !stopping && leases.acknowledged(logical);
+    }
+
+    /** {@link #actionAuthorityAvailable()} for one logical rocket: another rocket's pending change does not refuse it. */
+    public boolean actionAuthorityAvailable(UUID logical) {
+        return !stopping && !failedWrite && logicalAcknowledged(logical);
+    }
+
+    /** {@link #acknowledgedGuard} for one logical rocket, read from the latest acknowledged generation. */
+    public Optional<JournalGuard> logicalGuard(UUID logical) {
+        if (!logicalAcknowledged(logical)) { return Optional.empty(); }
+        var acknowledged = checkpoint.acknowledged().orElseThrow();
+        var record = findByLogicalRocket(logical).orElse(null);
+        return Optional.of(new JournalGuard(logical, record == null ? null : record.transferId(),
+                record == null ? null : acknowledged.records().get(record.transferId()),
+                acknowledged.digest(), acknowledged.sequence()));
+    }
+
+    /**
+     * R17 item 3: the checked lease of logical rocket L for F1, F7, F8, the pre-F2 cancellation, settlement O3/O4 and
+     * reconciliation C3 to C7. Null {@code transfer} or a serial below 1 checks no T or serial; another record that names
+     * them refuses it in RAM or in the last acknowledged generation (LR1). Owner-thread acquisition; the returned lease
+     * reads only an immutable published view, so the ledger writer may check it before replacement.
+     */
+    public java.util.function.BooleanSupplier logicalLease(UUID logical, UUID transfer, long serial) {
+        if (ownerServer != null && !ownerServer.isSameThread()) { throw new IllegalStateException("Journal lease requires the owner thread"); }
+        return leases.lease(logical, transfer, serial, mutationSequence);
+    }
+
+    private void publishLeases() {
+        leases.publish(operational() && !stopping, checkpoint.acknowledged().orElse(null), entries.values());
+    }
 
     /** Current and last acknowledged authority protect removal failures without locking new identities. */
     public boolean resourceMutationUnproved(UUID logical) {
@@ -468,6 +538,7 @@ public final class RocketTransferSavedData extends SavedData {
                     firstMoonLanding.event());
         }
         setDirty(!checkpoint.current(mutationSequence) || failedWrite);
+        publishLeases();
         if (failedWrite && !saveFailureReported) {
             com.mojang.logging.LogUtils.getLogger().error("ARCE_TRANSFER_JOURNAL_UNACKNOWLEDGED retained dirty authority; dependent effects are blocked");
             saveFailureReported = true;
@@ -484,6 +555,7 @@ public final class RocketTransferSavedData extends SavedData {
         firstMoonLanding = FirstEventOutbox.empty();
         discardEffects();
         setDirty(false);
+        publishLeases();
         AdvancedRocketryCommunity.LOGGER.error("ARCE_MANAGED_ROOT_UNREADABLE type={} file={} stage=first_write",
                 DATA_NAME, writerFile);
     }
@@ -494,7 +566,7 @@ public final class RocketTransferSavedData extends SavedData {
                     .resolve("data").resolve(ManagedSavedDataType.ROCKET_TRANSFERS.fileName()),
                     RocketJournalFailurePolicy.checked(ownerServer));
         }
-        stopping = true; discardEffects();
+        stopping = true; publishLeases(); discardEffects();
         if (writer != null) {
             writer.drain(this::publish);
             if (operational() && isDirty() && !failedWrite) {
@@ -507,7 +579,7 @@ public final class RocketTransferSavedData extends SavedData {
         var pending = List.copyOf(effects.values()); effects.clear();
         pending.forEach(effect -> effect.discarded.run());
     }
-    public void abort() { stopping = true; discardEffects(); if (writer != null) { writer.abort(); } }
+    public void abort() { stopping = true; publishLeases(); discardEffects(); if (writer != null) { writer.abort(); } }
 
     @Override
     public void save(java.io.File file) {
@@ -541,6 +613,7 @@ public final class RocketTransferSavedData extends SavedData {
             writer = new RocketJournalWriter(normalized, FirstEventCutSeams.journalDirectoryForce(ownerServer));
         }
         if (!writerFile.equals(normalized)) { throw new IllegalArgumentException("Journal writer cannot rebind its target"); }
+        policy = io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowTerminalProbe.journalPolicy(ownerServer, policy);
         return writer.request(capture(), presence == ManagedRootPresence.PROVEN_ABSENT ? firstWriteChecked(policy) : policy);
     }
 

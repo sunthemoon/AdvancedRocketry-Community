@@ -77,7 +77,7 @@ final class EscrowRocketAuditProbe {
             case 0 -> {
                 var journal = RocketTransferSavedData.get(server); if (!journal.retryChecked(server)) { return; }
                 source = EscrowTestEndpoints.create(level, POSITION, data.ledger().id());
-                rocket = createRocket(source.logical(), true); EscrowTags.require(level.addFreshEntity(rocket), "Rocket publication failed");
+                rocket = createRocket(level, source.logical(), true); EscrowTags.require(level.addFreshEntity(rocket), "Rocket publication failed");
                 EscrowTags.require(rocket.startRiding(source.bank(), true), "Neutral forced-mount control failed"); rocket.stopRiding();
                 commandTeleport(65.5D); EscrowTags.require(rocket.getX() == 65.5D, "Neutral command-teleport control failed"); commandTeleport(64.5D);
                 EscrowTags.require(!travelCanceled(), "Neutral dimension-event control failed");
@@ -86,9 +86,11 @@ final class EscrowRocketAuditProbe {
                         ModIdentity.id("rocket").toString(), 4, 0, 4, EscrowEndpoint.Unit.PRIMARY, 0, fuel.resourceSignature(),
                         fuel.withFluidBank(false, ResourceLocation.tryParse("minecraft:water"), null, 1_000).resourceSignature());
                 var guard = journal.acknowledgedGuard(source.logical()).orElseThrow();
-                var op = new EscrowOperation(sample.id(), sample.sequence(), sample.owner(), sample.createdTick(), sample.phase(), sample.reason(),
+                var op = new EscrowOperation(sample.id(), sample.sequence(), rocket.ownerId().orElseThrow(), sample.createdTick(), sample.phase(), sample.reason(),
                         sample.payload(), sample.payloadHash(), sample.source(), destination, new EscrowGuard(source.logical(), null, Math.max(1, guard.sequence()), guard.rootDigest()));
-                coordinator.prepareTest(op, committed -> { EscrowTags.require(committed, "Rocket fixture L1 failed"); waiting = false; step = 2; }); step = 1;
+                var capture = EscrowNativeBinding.captureTest(op, rocket, source.source(), fuel,
+                        fuel.withFluidBank(false, ResourceLocation.tryParse("minecraft:water"), null, 1_000), data.ledger());
+                coordinator.prepareTest(capture.operation(), capture.before(), committed -> { EscrowTags.require(committed, "Rocket fixture L1 failed"); waiting = false; step = 2; }); step = 1;
             }
             case 1 -> waiting = coordinator.commitPreparations();
             case 2 -> {
@@ -122,13 +124,16 @@ final class EscrowRocketAuditProbe {
         net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(event); return event.isCanceled();
     }
 
-    private RocketEntity createRocket(UUID logical, boolean typed) {
+    static RocketEntity createRocket(ServerLevel level, UUID logical, boolean typed) {
+        return createRocket(level, logical, typed, new RocketPosition(64, 100, 64));
+    }
+    static RocketEntity createRocket(ServerLevel level, UUID logical, boolean typed, RocketPosition origin) {
         var descriptor = new RocketPropulsion(RocketPropulsion.Mode.MONO, 2_000, 0, 1, 1,
                 RocketPropulsion.Settings.DEFAULTS.withAllowedFluids(Map.of(RocketPropulsion.Role.MONO, List.of("minecraft:water"),
                         RocketPropulsion.Role.BIPROPELLANT_FUEL, List.of(), RocketPropulsion.Role.OXIDIZER, List.of(), RocketPropulsion.Role.WORKING_FLUID, List.of())));
         var blocks = List.of(new RocketBlock(new RocketPosition(0, 0, 0), new RocketBlockState(ResourceLocation.tryParse("minecraft:iron_block"), Map.of())),
                 new RocketBlock(new RocketPosition(0, 1, 0), new RocketBlockState(ResourceLocation.tryParse("minecraft:iron_block"), Map.of())));
-        var snapshot = RocketStructureSnapshot.create(UUID.randomUUID(), level.dimension().location(), new RocketPosition(64, 100, 64),
+        var snapshot = RocketStructureSnapshot.create(UUID.randomUUID(), level.dimension().location(), origin,
                 blocks, List.of(new RocketPosition(0, 1, 0)), new RocketStats(2, 100, 1_000, 2_000, 1, 1, 1, 0), 0, typed ? descriptor : null);
         var created = ModEntities.ROCKET.get().create(level); EscrowTags.require(created != null, "Missing rocket type");
         created.initialize(snapshot, logical, UUID.randomUUID()); return created;
@@ -136,7 +141,7 @@ final class EscrowRocketAuditProbe {
     private void migration() {
         EscrowTags.require(ResourceEscrowSavedData.existing(server) == null, "Neutral migration created a ledger");
         if (!recovery) {
-            rocket = createRocket(UUID.randomUUID(), false);
+            rocket = createRocket(level, UUID.randomUUID(), false);
             var legacy = rocket.saveWithoutId(new CompoundTag()); var wrapper = legacy.getCompound("RocketEntityData");
             var expected = wrapper.copy();
             wrapper.putInt("schema_version", 2); wrapper.remove("resource_escrow"); rocket.load(legacy);

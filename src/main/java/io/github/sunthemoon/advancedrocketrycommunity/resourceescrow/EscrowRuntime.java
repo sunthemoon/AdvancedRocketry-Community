@@ -38,8 +38,70 @@ public final class EscrowRuntime {
     private EscrowChainReleaseProbe chainProbe;
     private EscrowRecoveryReleaseProbe recoveryProbe;
     private EscrowBenchmarkProbe benchmark;
+    private volatile EscrowFlightBenchmarkProbe flightBenchmark;
     private EscrowRocketAuditProbe rocketAuditProbe;
-    EscrowTimingSink timings() { return benchmark == null ? EscrowTimingSink.NONE : benchmark; }
+    private EscrowSettlementProbe settlementProbe;
+    private EscrowSettlementCompletionProbe settlementCompletionProbe;
+    private EscrowPreF2Probe preF2Probe;
+    private volatile EscrowReconciliationProbe reconciliationProbe;
+    private EscrowSourceClockProbe sourceClockProbe;
+    private EscrowDestinationProbe destinationProbe;
+    private EscrowPhaseProbe phaseProbe;
+    private volatile EscrowTerminalProbe terminalProbe;
+    private volatile java.util.function.Consumer<String> terminalTestCut;
+    void terminalCutForTests(MinecraftServer server, java.util.function.Consumer<String> cut) {
+        EscrowTestEndpoints.requireEnabled(server);
+        EscrowTags.require(server.isSameThread() && (cut == null || terminalTestCut == null), "Terminal cut requires exclusive owner-thread setup");
+        terminalTestCut = cut;
+    }
+    private EscrowReturnProbe returnProbe;
+    private final EscrowSettlementOperator settlement = new EscrowSettlementOperator();
+    private final EscrowSettlementRecovery settlements = new EscrowSettlementRecovery();
+    private final EscrowPreF2Cancellation preF2Cancellation = new EscrowPreF2Cancellation();
+    private final EscrowFlightCheckpoint flightCheckpoint = new EscrowFlightCheckpoint();
+    private final EscrowGovernedDispatch governedFlights = new EscrowGovernedDispatch();
+    private final EscrowGovernedExecutorHolds executorHolds = new EscrowGovernedExecutorHolds();
+    public EscrowGovernedExecutorHolds executorHolds() { return executorHolds; }
+    private final EscrowGovernedSourceFlight sourceFlights = new EscrowGovernedSourceFlight();
+    private final EscrowGovernedDestination destinations = new EscrowGovernedDestination();
+    private final EscrowGovernedPhases flightPhases = new EscrowGovernedPhases();
+    private final EscrowGovernedArrival arrivals = new EscrowGovernedArrival();
+    private final EscrowGovernedReturn returns = new EscrowGovernedReturn();
+    private final EscrowGovernedTerminal terminal = new EscrowGovernedTerminal();
+    public EscrowGovernedTerminal terminal() { return terminal; }
+    public EscrowGovernedReturn returns() { return returns; }
+    public EscrowGovernedArrival arrivals() { return arrivals; }
+    public EscrowGovernedPhases flightPhases() { return flightPhases; }
+    // The explicitly enabled DP_* cut fixture observes F4 only, including its asynchronous own-store.
+    // Do not let a newly implemented later executor race that fixture's historical cut boundary.
+    boolean destinationCutActive() { return destinationProbe != null; }
+    boolean phaseCutActive() { return phaseProbe != null && phaseProbe.holdsArrival(); }
+    // Historical native return cuts stop at F6; live returns continue through the terminal executor.
+    boolean returnCutActive() { return returnProbe != null; }
+    public EscrowGovernedDestination destinations() { return destinations; }
+    public EscrowGovernedSourceFlight sourceFlights() { return sourceFlights; }
+    public EscrowGovernedDispatch governedFlights() { return governedFlights; }
+    EscrowFlightCheckpoint flightCheckpoint() { return flightCheckpoint; }
+    void observeFlight(io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity rocket) {
+        sourceFlights.observe(rocket);
+        destinations.observe(rocket);
+        flightPhases.observe(rocket);
+        arrivals.observe(rocket);
+        returns.observe(rocket);
+        terminal.observe(rocket);
+        flightCheckpoint.observe(rocket); preF2Cancellation.observe(rocket);
+    }
+    void invalidateFlight(io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity rocket) {
+        flightCheckpoint.invalidated(rocket); preF2Cancellation.invalidated(rocket);
+        terminal.invalidated(rocket);
+        rocket.assemblyTransactionId().ifPresent(governedFlights::invalidated);
+    }
+    EscrowSettlementOperator settlement() { return settlement; }
+    EscrowSettlementRecovery settlementRecovery() { return settlements; }
+    EscrowReconciliationScheduler reconciliationScheduler() { return scheduler; }
+    String settlementPhase() { return settlements.phase(); }
+    EscrowTimingSink timings() { return flightBenchmark != null ? flightBenchmark.metrics : benchmark == null ? EscrowTimingSink.NONE : benchmark; }
+    java.util.List<EscrowSettlementPruning.Group> settlementGroups(EscrowLedger root) { return settlements.pruningGroups(root); }
     private EscrowReconciliationScheduler scheduler;
     private EscrowTestReconciliation reconciliation;
     boolean stopping() { return stopping; }
@@ -51,8 +113,19 @@ public final class EscrowRuntime {
         return reconciliation;
     }
     public void checkpoint(String cut) {
+        var measured = flightBenchmark; if (measured != null) { measured.metrics.checkpoint(cut); }
+        var ordinary = reconciliationProbe; if (ordinary != null) { ordinary.checkpoint(cut); }
+        var terminalCut = terminalTestCut; if (terminalCut != null) { terminalCut.accept(cut); }
+        var nativeTerminal = terminalProbe; if (nativeTerminal != null) { nativeTerminal.checkpoint(cut); }
+        if (returnProbe != null) { returnProbe.checkpoint(cut); }
+        if (phaseProbe != null) { phaseProbe.checkpoint(cut); }
+        if (destinationProbe != null) { destinationProbe.checkpoint(cut); }
         if (probe != null) { probe.checkpoint(cut); }
         if (rocketAuditProbe != null) { rocketAuditProbe.checkpoint(cut); }
+        if (settlementProbe != null) { settlementProbe.checkpoint(cut); }
+        if (settlementCompletionProbe != null) { settlementCompletionProbe.checkpoint(cut); }
+        if (preF2Probe != null) { preF2Probe.checkpoint(cut); }
+        if (sourceClockProbe != null) { sourceClockProbe.checkpoint(cut); }
     }
     io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile.Committer ledgerCommitter(MinecraftServer server) {
         String testCase = System.getProperty("advancedrocketrycommunity.escrowCase", "");
@@ -86,7 +159,7 @@ public final class EscrowRuntime {
         if (barrier == null) { barrier = new EscrowBarrier(this::checkpoint, new java.util.concurrent.atomic.AtomicBoolean(true), timings()); } return barrier;
     }
     public EscrowChunkStore store(ServerLevel level) {
-        EscrowTags.require(!stopping && (stores.containsKey(level.dimension()) || stores.size() < 64), "Escrow Level service limit exceeded");
+        EscrowReconciliationView.requireStoreCapacity(stopping, stores.containsKey(level.dimension()), stores.size());
         return stores.computeIfAbsent(level.dimension(), key -> new EscrowChunkStore(level, monitor));
     }
     @Mod.EventBusSubscriber(modid = ModIdentity.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
@@ -106,9 +179,27 @@ public final class EscrowRuntime {
     @SubscribeEvent public static void tick(TickEvent.ServerTickEvent event) {
         if (event.phase != TickEvent.Phase.END) { return; }
         var runtime = of(event.getServer()); if (runtime.stopping) { return; }
+        if (Boolean.getBoolean(EscrowTestEndpoints.HOOKS)
+                && EscrowFlightBenchmarkProbe.CASE.equals(System.getProperty("advancedrocketrycommunity.escrowCase"))
+                && System.getProperty("advancedrocketrycommunity.escrowScenario") != null && runtime.flightBenchmark == null) {
+            runtime.flightBenchmark = new EscrowFlightBenchmarkProbe(event.getServer());
+        }
+        if (Boolean.getBoolean(EscrowTestEndpoints.HOOKS)
+                && System.getProperty("advancedrocketrycommunity.escrowCase", "").startsWith("SR_")) {
+            if (runtime.settlementCompletionProbe == null) { runtime.settlementCompletionProbe = new EscrowSettlementCompletionProbe(event.getServer()); }
+            runtime.settlementCompletionProbe.tick();
+        }
+        if (Boolean.getBoolean(EscrowTestEndpoints.HOOKS)
+                && System.getProperty("advancedrocketrycommunity.escrowScenario") != null
+                && System.getProperty("advancedrocketrycommunity.escrowCase", "").startsWith("SO_")) {
+            // Observe retained O1 before recovery can publish normalization or advance O2.
+            if (runtime.settlementProbe == null) { runtime.settlementProbe = new EscrowSettlementProbe(event.getServer()); }
+            runtime.settlementProbe.tick();
+        }
         ResourceEscrowSavedData data = ResourceEscrowSavedData.existing(event.getServer());
         if (data != null) {
             var coordinator = data.bind(event.getServer());
+            if (!data.operational()) { return; }
             if (runtime.scheduler == null) {
                 runtime.scheduler = new EscrowReconciliationScheduler(coordinator::ledger, coordinator::transition,
                         (op, records, completion) -> RocketEscrowAudit.attempt(coordinator, event.getServer(), op, records, completion));
@@ -120,13 +211,47 @@ public final class EscrowRuntime {
             }
         }
         if (runtime.barrier != null) { runtime.barrier.tick(event.getServer().getTickCount()); }
+        if (Boolean.getBoolean(EscrowTestEndpoints.HOOKS)
+                && System.getProperty("advancedrocketrycommunity.escrowCase", "").startsWith("CR_")) {
+            if (runtime.reconciliationProbe == null) { runtime.reconciliationProbe = new EscrowReconciliationProbe(event.getServer()); }
+            runtime.reconciliationProbe.beforeReconciliation();
+        }
         if (runtime.scheduler != null && data != null) {
             runtime.scheduler.tick(event.getServer().getTickCount()); data.bind(event.getServer()).persistTransitions();
         }
+        if (data != null) { runtime.settlements.tick(event.getServer(), data.bind(event.getServer()), runtime); }
+        if (data != null) { runtime.preF2Cancellation.tick(event.getServer(), data.bind(event.getServer()), runtime); }
         if (Boolean.getBoolean(EscrowTestEndpoints.HOOKS)
                 && System.getProperty("advancedrocketrycommunity.escrowScenario") != null) {
             String testCase = System.getProperty("advancedrocketrycommunity.escrowCase", "");
-            if (testCase.startsWith("RA_")) {
+            if (testCase.equals(EscrowFlightBenchmarkProbe.CASE)) {
+                runtime.flightBenchmark.tick();
+            } else if (testCase.startsWith("CR_")) {
+                if (runtime.reconciliationProbe == null) { runtime.reconciliationProbe = new EscrowReconciliationProbe(event.getServer()); }
+                runtime.reconciliationProbe.tick();
+            } else if (testCase.startsWith("FT_")) {
+                if (runtime.terminalProbe == null) { runtime.terminalProbe = new EscrowTerminalProbe(event.getServer()); }
+                runtime.terminalProbe.tick();
+            } else if (testCase.startsWith("RT_")) {
+                if (runtime.returnProbe == null) { runtime.returnProbe = new EscrowReturnProbe(event.getServer()); }
+                runtime.returnProbe.tick();
+            } else if (testCase.startsWith("FP_") || testCase.startsWith("FD_")) {
+                if (runtime.phaseProbe == null) { runtime.phaseProbe = new EscrowPhaseProbe(event.getServer()); }
+                runtime.phaseProbe.tick();
+            } else if (testCase.startsWith("DP_")) {
+                if (runtime.destinationProbe == null) { runtime.destinationProbe = new EscrowDestinationProbe(event.getServer()); }
+                runtime.destinationProbe.tick();
+            } else if (testCase.startsWith("SC_")) {
+                if (runtime.sourceClockProbe == null) { runtime.sourceClockProbe = new EscrowSourceClockProbe(event.getServer()); }
+                runtime.sourceClockProbe.tick();
+            } else if (testCase.startsWith("PF_")) {
+                if (runtime.preF2Probe == null) { runtime.preF2Probe = new EscrowPreF2Probe(event.getServer()); }
+                runtime.preF2Probe.tick();
+            } else if (testCase.startsWith("SR_")) {
+                // This probe runs before settlement recovery so its deliberate veto precedes every O2 attempt.
+            } else if (testCase.startsWith("SO_")) {
+                // The O1 probe observes before recovery above, then follows eventual O2-O4.
+            } else if (testCase.startsWith("RA_")) {
                 if (runtime.rocketAuditProbe == null) { runtime.rocketAuditProbe = new EscrowRocketAuditProbe(event.getServer()); }
                 runtime.rocketAuditProbe.tick();
             } else if (testCase.equals("BENCH")) {
@@ -147,18 +272,27 @@ public final class EscrowRuntime {
     @SubscribeEvent(priority = EventPriority.HIGHEST) public static void benchmarkStart(TickEvent.ServerTickEvent event) {
         if (event.phase == TickEvent.Phase.START) {
             var benchmark = of(event.getServer()).benchmark; if (benchmark != null) { benchmark.startTick(); }
+            var flights = of(event.getServer()).flightBenchmark; if (flights != null) { flights.startTick(); }
         }
     }
     @SubscribeEvent(priority = EventPriority.LOWEST) public static void benchmarkEnd(TickEvent.ServerTickEvent event) {
         if (event.phase == TickEvent.Phase.END) {
             var benchmark = of(event.getServer()).benchmark; if (benchmark != null) { benchmark.endTick(); }
+            var flights = of(event.getServer()).flightBenchmark; if (flights != null) { flights.endTick(); }
         }
     }
     @SubscribeEvent(priority = EventPriority.HIGHEST) public static void stopping(ServerStoppingEvent event) {
         EscrowRuntime runtime = of(event.getServer()); runtime.stopping = true;
+        runtime.settlement.close();
         if (runtime.barrier != null) { runtime.barrier.quiesce(); }
         ResourceEscrowSavedData data = ResourceEscrowSavedData.existing(event.getServer());
         if (data != null) { data.stop(); }
+        runtime.settlements.close();
+        runtime.preF2Cancellation.close();
+        runtime.flightCheckpoint.close();
+        runtime.terminal.close();
+        runtime.governedFlights.close(); runtime.destinations.close();
+        runtime.executorHolds.clear(); runtime.sourceFlights.clear(); runtime.flightPhases.clear(); runtime.arrivals.clear(); runtime.returns.close();
         if (runtime.barrier != null) { runtime.barrier.close(); }
         if (runtime.reconciliation != null) { runtime.reconciliation.close(); }
     }
@@ -178,15 +312,22 @@ public final class EscrowRuntime {
         EscrowRuntime runtime = overworld.getCapability(CAPABILITY).resolve().orElse(null);
         if (runtime == null || runtime.stopping) { return; }
         runtime.stopping = true;
+        runtime.settlement.close();
         if (runtime.barrier != null) { runtime.barrier.close(); } // Discards unfinished barriers; no new synchronization.
         ResourceEscrowSavedData data = ResourceEscrowSavedData.existing(server);
         if (data != null) { data.abort(); }
+        runtime.settlements.close();
+        runtime.preF2Cancellation.close();
+        runtime.flightCheckpoint.close();
+        runtime.terminal.close();
+        runtime.governedFlights.close(); runtime.destinations.close();
+        runtime.executorHolds.clear(); runtime.sourceFlights.clear(); runtime.flightPhases.clear(); runtime.arrivals.clear(); runtime.returns.close();
         if (runtime.reconciliation != null) { runtime.reconciliation.close(); }
     }
     private static final class Provider implements ICapabilityProvider {
         private final EscrowRuntime runtime = new EscrowRuntime();
         private final LazyOptional<EscrowRuntime> value = LazyOptional.of(() -> runtime);
-        private void invalidate() { runtime.stopping = true; runtime.monitor.clear(); runtime.stores.clear(); value.invalidate(); }
+        private void invalidate() { runtime.stopping = true; runtime.terminal.close(); runtime.governedFlights.close(); runtime.destinations.close(); runtime.executorHolds.clear(); runtime.sourceFlights.clear(); runtime.flightPhases.clear(); runtime.arrivals.clear(); runtime.monitor.clear(); runtime.stores.clear(); value.invalidate(); }
         @Override @NotNull public <T> LazyOptional<T> getCapability(@NotNull Capability<T> requested, @Nullable Direction side) {
             return CAPABILITY.orEmpty(requested, value);
         }

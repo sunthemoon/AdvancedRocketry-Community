@@ -29,6 +29,7 @@ public final class EscrowPrefix {
     public static Map<EscrowEndpoint.Key, List<Link>> chains(List<EscrowOperation> records) {
         var chains = new HashMap<EscrowEndpoint.Key, List<Link>>();
         records.stream().sorted(Comparator.comparingLong(EscrowOperation::sequence)).forEach(op -> {
+            if (op.kind() == EscrowOperation.Kind.TRANSFER_FLOOR_RETIRE) { return; }
             chains.computeIfAbsent(op.source().key(), key -> new ArrayList<>()).add(new Link(op, op.source(), "SOURCE"));
             chains.computeIfAbsent(op.destination().key(), key -> new ArrayList<>()).add(new Link(op, op.destination(), "DESTINATION"));
         });

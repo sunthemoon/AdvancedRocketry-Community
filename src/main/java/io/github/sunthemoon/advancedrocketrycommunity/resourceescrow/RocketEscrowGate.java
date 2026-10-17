@@ -12,6 +12,26 @@ public final class RocketEscrowGate {
         return escrowIdle(rocket);
     }
 
+    public static boolean resourcesIdle(RocketEntity rocket) {
+        return escrowIdle(rocket) || terminalSuccessor(rocket);
+    }
+
+    public static boolean terminalSuccessor(RocketEntity rocket) { return EscrowTerminalSuccessor.released(rocket); }
+
+    public static boolean terminalFuelUpdate(RocketEntity rocket,
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightData candidate) {
+        return EscrowTerminalSuccessor.fuelUpdate(rocket, candidate);
+    }
+
+    /** Frozen flight authority also protects non-resource state and the boarded manifest. */
+    public static boolean flightFrozen(RocketEntity rocket) {
+        if (!(rocket.level() instanceof ServerLevel level) || !level.getServer().isSameThread()) { return true; }
+        if (rocket.assemblyTransactionId().filter(EscrowRuntime.of(level.getServer()).flightCheckpoint()::locked).isPresent()) { return true; }
+        var data = ResourceEscrowSavedData.existing(level.getServer());
+        return data != null && data.ledger().armedFlights().stream()
+                .anyMatch(arm -> rocket.assemblyTransactionId().filter(arm.logical()::equals).isPresent());
+    }
+
     /** Bay-scoped permits may bypass only the bay hold, never these existing escrow protections. */
     public static boolean escrowIdle(RocketEntity rocket) {
         if (!(rocket.level() instanceof ServerLevel level) || !level.getServer().isSameThread()) {
@@ -19,24 +39,28 @@ public final class RocketEscrowGate {
         }
         var section = rocket.escrowSection();
         UUID logical = rocket.assemblyTransactionId().orElse(null);
+        if (logical != null && EscrowRuntime.of(level.getServer()).flightCheckpoint().locked(logical)) { return false; }
         if (!section.markers().isEmpty()) { return false; }
         var data = ResourceEscrowSavedData.existing(level.getServer());
         if (data == null) { return section.ledger() == null; }
         var ledger = data.ledger();
-        if (section.ledger() != null) { return false; }
+        if (logical != null && ledger.armedFlights().stream().anyMatch(arm -> arm.logical().equals(logical))) { return false; }
+        if (section.ledger() != null && !section.ledger().equals(ledger.id())) { return false; }
         if (logical != null && data.bind(level.getServer()).logicalLocked(logical)) { return false; }
-        if (data.ledger().records().stream().anyMatch(record -> rocket.getUUID().equals(record.source().identity())
+        if (ledger.records().stream().anyMatch(record -> rocket.getUUID().equals(record.source().identity())
                 || rocket.getUUID().equals(record.destination().identity()))) { return false; }
-        return ledger.tombstones().stream().noneMatch(tombstone -> {
-            for (var raw : EscrowTags.list(tombstone, "missing", 2)) {
-                var endpoint = EscrowCodec.endpoint((net.minecraft.nbt.CompoundTag) raw);
-                if (rocket.getUUID().equals(endpoint.identity()) || logical != null && logical.equals(endpoint.logicalRocket())) { return true; }
-            }
-            for (var raw : EscrowTags.list(tombstone, "guards", 64)) {
-                if (logical != null && logical.equals(EscrowCodec.guard((net.minecraft.nbt.CompoundTag) raw).rocket())) { return true; }
-            }
-            return false;
-        });
+        if (logical == null) { return false; }
+        // An unrelated ledger/receipt must not require a legacy rocket to have a native fuel vector.
+        if (!EscrowSettlementTombstones.history(ledger, logical)) { return true; }
+        if (rocket.flightData().isEmpty() || rocket.snapshot().isEmpty()
+                || rocket.flightData().orElseThrow().fuel().propulsion().isEmpty()) { return false; }
+        String signature = rocket.flightData().orElseThrow().fuel().resourceSignature();
+        var head = ledger.rocketAuthorities().stream().filter(value -> value.logical().equals(logical)).findFirst().orElse(null);
+        if (head != null && (head.kind() != EscrowSignatureKind.FUEL_VECTOR_V1 || !head.owner().equals(rocket.ownerId().orElseThrow())
+                || !head.invariant().equals(EscrowInvariant.rocket(rocket)) || section.epoch() < head.epoch()
+                || section.epoch() == head.epoch() && !signature.equals(head.signature()))) { return false; }
+        return !EscrowSettlementTombstones.stateLocked(ledger, logical, rocket.getUUID(), section, signature,
+                rocket.flightData().orElseThrow().fuel().totalAmount());
     }
 
     public static boolean logicalLocked(net.minecraft.server.MinecraftServer server, UUID logical) {
@@ -44,16 +68,9 @@ public final class RocketEscrowGate {
     }
 
     public static boolean escrowLogicalLocked(net.minecraft.server.MinecraftServer server, UUID logical) {
+        if (EscrowRuntime.of(server).flightCheckpoint().locked(logical)) { return true; }
         var data = ResourceEscrowSavedData.existing(server);
         if (data == null) { return false; }
-        return data.bind(server).logicalLocked(logical) || data.ledger().tombstones().stream().anyMatch(tombstone -> {
-            for (var raw : EscrowTags.list(tombstone, "guards", 64)) {
-                if (logical.equals(EscrowCodec.guard((net.minecraft.nbt.CompoundTag) raw).rocket())) { return true; }
-            }
-            for (var raw : EscrowTags.list(tombstone, "missing", 2)) {
-                if (logical.equals(EscrowCodec.endpoint((net.minecraft.nbt.CompoundTag) raw).logicalRocket())) { return true; }
-            }
-            return false;
-        });
+        return data.bind(server).logicalLocked(logical) || EscrowSettlementTombstones.logicalLocked(data.ledger(), logical);
     }
 }
