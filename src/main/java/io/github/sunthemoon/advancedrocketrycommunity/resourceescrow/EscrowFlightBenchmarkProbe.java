@@ -24,6 +24,7 @@ final class EscrowFlightBenchmarkProbe {
     final EscrowFlightBenchmarkMetrics metrics = new EscrowFlightBenchmarkMetrics();
     private final MinecraftServer server;
     private final EscrowFlightBenchmarkLoad load;
+    private final EscrowFlightBenchmarkDefer worldFirst = new EscrowFlightBenchmarkDefer();
     private final boolean recovery;
     private final List<RocketEntity> sources = new ArrayList<>();
     private final List<UUID> logical = new ArrayList<>();
@@ -46,6 +47,7 @@ final class EscrowFlightBenchmarkProbe {
     void tick() {
         try { tickWork(); }
         catch (RuntimeException failure) {
+            worldFirst.close();
             try { failureSnapshot(failure); }
             catch (Exception observationFailure) { failure.addSuppressed(observationFailure); }
             throw failure;
@@ -89,6 +91,7 @@ final class EscrowFlightBenchmarkProbe {
             AdvancedRocketryCommunity.LOGGER.info("ARCE_GOVERNED_BENCH_STARTED players=2 oxygen=16 stations=10 tasks=100");
         }
         elapsed++;
+        worldFirst.arm(server, journal);
         if (elapsed % 100 == 1) {
             long allocated = EscrowFlightBenchmarkMetrics.allocated(), start = System.nanoTime();
             var encoded = EscrowCodec.encode(ceiling);
@@ -128,6 +131,7 @@ final class EscrowFlightBenchmarkProbe {
             EscrowTags.require(accepted == 8 && peakConcurrent == 8 && load.assembled() && load.activeVents() == 16 && load.activeProviders() == 16,
                     "Benchmark did not retain the required concurrent load");
             finishing = true;
+            worldFirst.verify();
         }
     }
     private void failureSnapshot(RuntimeException failure) throws java.io.IOException {
@@ -160,6 +164,7 @@ final class EscrowFlightBenchmarkProbe {
         }
         report.add("generation_topology", gson.toJsonTree(metrics.topology()));
         report.add("checkpoints", gson.toJsonTree(metrics.checkpoints()));
+        report.add("world_first_hold", gson.toJsonTree(worldFirst.report()));
         Files.writeString(root.resolve("governed-benchmark.json"), gson.toJson(report));
         AdvancedRocketryCommunity.LOGGER.info("ARCE_GOVERNED_BENCH_FAILED age={} elapsed={} accepted={} saves={} load={}",
                 age, elapsed, accepted, saves, load.diagnostics());
@@ -245,6 +250,7 @@ final class EscrowFlightBenchmarkProbe {
             report.addProperty("root_encode_kind", "encode-only synthetic ceiling; never admitted or installed");
             report.add("generation_topology", new com.google.gson.Gson().toJsonTree(metrics.topology()));
             report.add("checkpoints", new com.google.gson.Gson().toJsonTree(metrics.checkpoints()));
+            report.add("world_first_hold", new com.google.gson.Gson().toJsonTree(worldFirst.report()));
             Files.writeString(root.resolve("governed-benchmark.json"), new com.google.gson.GsonBuilder().setPrettyPrinting().create().toJson(report));
         } catch (java.io.IOException failure) { throw new IllegalStateException("Benchmark export failed", failure); }
         AdvancedRocketryCommunity.LOGGER.info("ARCE_GOVERNED_BENCH_DONE ticks={} flights=8 peak=8 saves={}", elapsed, saves); done = true;

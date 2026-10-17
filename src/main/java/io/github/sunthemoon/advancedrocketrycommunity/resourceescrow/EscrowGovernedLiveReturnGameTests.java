@@ -99,6 +99,7 @@ public final class EscrowGovernedLiveReturnGameTests {
         private RocketTransferRecord record;
         private boolean accepted;
         private boolean discarded;
+        private EscrowGameTestLaunch launch;
         private boolean requested;
         private boolean done;
         private final boolean dismountCut;
@@ -165,6 +166,7 @@ public final class EscrowGovernedLiveReturnGameTests {
             var server = level.getServer(); var journal = RocketTransferSavedData.get(server);
             if (rocket == null) { if (journal.retryChecked(server)) { prepare(); } return; }
             helper.assertTrue(!discarded, "Live return launch preparation was discarded");
+            launch.tick();
             if (!accepted) { return; }
             if (requested) {
                 terminal(journal);
@@ -411,8 +413,11 @@ public final class EscrowGovernedLiveReturnGameTests {
             var plan = new RocketFlightPlan(3, transfer, RocketFlightPlanner.EARTH.bodyId(), RocketFlightPlanner.MOON.bodyId(),
                     from.sourceDimension(), from.sourceDimension(), 500, now).withPropulsionDebit(new RocketPropulsionDebit(500, 0,
                     fuel.propulsion().orElseThrow().revision(), fuel.resourceSignature(), RocketNativeResources.hash("Live return fixture")));
-            helper.assertTrue(EscrowGovernedPreparation.begin(rocket, initial.withPlan(plan).startCountdown(now), to,
-                    candidate -> true, candidate -> accepted = true, () -> discarded = true), "Live F1 return fixture was refused");
+            launch = new EscrowGameTestLaunch(helper, data.ledger().id(), initial.logicalRocketId(), transfer,
+                    (accept, discard) -> EscrowGovernedPreparation.begin(rocket,
+                            initial.withPlan(plan).startCountdown(level.getGameTime()), to, candidate -> true, accept, discard),
+                    candidate -> accepted = true, () -> discarded = true);
+            launch.begin();
         }
     }
 }

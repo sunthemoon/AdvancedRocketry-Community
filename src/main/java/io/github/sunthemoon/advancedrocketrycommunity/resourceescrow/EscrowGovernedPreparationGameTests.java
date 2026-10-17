@@ -51,6 +51,7 @@ public final class EscrowGovernedPreparationGameTests {
         private boolean allowed = true;
         private boolean accepted;
         private boolean discarded;
+        private EscrowGameTestLaunch launch;
         private int step;
 
         Scenario(GameTestHelper helper, boolean invalidate) {
@@ -76,6 +77,14 @@ public final class EscrowGovernedPreparationGameTests {
             if (step == 0) {
                 if (!journal.retryChecked(level.getServer())) { return; }
                 prepare(journal); step = 1; return;
+            }
+            if (!invalidate) {
+                launch.tick();
+                if (launch.retryPending()) {
+                    helper.assertTrue(before.equals(EscrowNativeEnvelope.rocket(rocket)) && RocketEscrowGate.idle(rocket)
+                            && journal.find(transfer).isEmpty(), "Superseded F1 changed E or minted authority");
+                    return;
+                }
             }
             if (!accepted && !discarded) {
                 helper.assertTrue(before.equals(EscrowNativeEnvelope.rocket(rocket)), "Preparation changed E before F2 acknowledgement");
@@ -139,8 +148,16 @@ public final class EscrowGovernedPreparationGameTests {
                         io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRegion.fromSnapshot(to)),
                         "Refused preparation retained its destination");
             }
-            helper.assertTrue(EscrowGovernedPreparation.begin(rocket, countdown, to, record -> allowed,
-                    record -> accepted = true, () -> discarded = true), "Live F1 preparation was refused");
+            if (invalidate) {
+                helper.assertTrue(EscrowGovernedPreparation.begin(rocket, countdown, to, record -> allowed,
+                        record -> accepted = true, () -> discarded = true), "Live F1 preparation was refused");
+            } else {
+                launch = new EscrowGameTestLaunch(helper, data.ledger().id(), countdown.logicalRocketId(), transfer,
+                        (accept, discard) -> EscrowGovernedPreparation.begin(rocket,
+                                rocket.flightData().orElseThrow().withPlan(plan).startCountdown(level.getGameTime()), to,
+                                record -> allowed, accept, discard), record -> accepted = true, () -> discarded = true);
+                launch.begin();
+            }
             helper.assertTrue(!accepted && !discarded && before.equals(EscrowNativeEnvelope.rocket(rocket))
                     && journal.find(transfer).isEmpty() && RocketEscrowGate.flightFrozen(rocket), "Request did not wait for F1");
             helper.assertTrue(EscrowGovernedPreparation.pendingDestinations(level.getServer()).contains(
