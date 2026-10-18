@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.BoundedNbt;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile;
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNbtSize;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
 import java.nio.file.Path;
@@ -90,7 +91,7 @@ class EscrowCargoCapacityTest {
                 var base = EscrowCombinedReservationTest.retainedFloors(floors);
                 var data = ResourceEscrowSavedData.load(EscrowCodec.encode(base)); var io = new AwaitedLedgerIo();
                 var file = java.nio.file.Files.createDirectories(temp.resolve(kind + "-floors-" + floors)).resolve(
-                        io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType.RESOURCE_ESCROW.fileName());
+                        ManagedSavedDataType.RESOURCE_ESCROW.fileName());
                 try (var writer = io.writer(file, 0, CheckedSavedDataFile::atomicMove);
                         var coordinator = new EscrowCoordinator(data, writer)) {
                     var admitted = new ArrayList<EscrowOperation>(); EscrowOperation refused = null;

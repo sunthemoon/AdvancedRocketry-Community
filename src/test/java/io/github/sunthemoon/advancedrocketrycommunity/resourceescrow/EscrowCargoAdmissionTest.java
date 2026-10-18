@@ -5,6 +5,7 @@ import static io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.Escr
 import static org.junit.jupiter.api.Assertions.*;
 
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile;
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -23,7 +24,7 @@ class EscrowCargoAdmissionTest {
         for (var kind : KINDS) {
             var root = ledger(); var data = ResourceEscrowSavedData.load(EscrowCodec.encode(root)); var io = new AwaitedLedgerIo();
             var file = java.nio.file.Files.createDirectories(temp.resolve(kind.name())).resolve(
-                    io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType.RESOURCE_ESCROW.fileName());
+                    ManagedSavedDataType.RESOURCE_ESCROW.fileName());
             try (var writer = io.writer(file, 0, CheckedSavedDataFile::atomicMove); var coordinator = new EscrowCoordinator(data, writer)) {
                 var op = operation(kind, 1, 99); var replies = new ArrayList<Boolean>();
                 assertFalse(coordinator.productionAdmissionEnabled());
