@@ -234,7 +234,9 @@ class RocketLandedDisassembliesTest {
         }
     }
 
-    @Test void aLaterAcknowledgedGenerationDiscardsTheRemovalContinuationIntoAWriteBack() {
+    @Test void aLaterAcknowledgedGenerationAcknowledgesTheRemovalAndRestoresOnce() {
+        // Root decision R28 (R23): a committed generation captured after T's removal lacks T, as the removal's own would,
+        // so it acknowledges the removal. L's continuation runs once, restores, and T is never written back.
         var f = new Fixture(new RocketPosition(64, 80, 64));
         f.release();
         var failing = new CheckedSavedDataPolicy(TYPE, (staged, target) -> { throw new IOException("Injected removal failure"); });
@@ -242,15 +244,24 @@ class RocketLandedDisassembliesTest {
         assertEquals(RocketTransferSavedData.WriteOutcome.NOT_COMMITTED, f.journal.checkedWriteResult().outcome());
         f.disassemblies.reportUnacknowledged();
         f.disassemblies.reportUnacknowledged();
+        assertEquals(0, f.request.restores, "The continuation ran after a failed write");
+        assertEquals(Stage.RELEASED, f.disassemblies.find(f.logical()).stage());
         var other = landed(new RocketPosition(2_000, 80, 2_000));
         f.journal.put(other); // A disjoint successor generation.
         f.acknowledge();
-        assertEquals(0, f.request.restores, "The discarded removal never restores");
-        assertSame(f.landed, f.journal.find(f.landed.transferId()).orElseThrow());
-        assertEquals(List.of("REGION_BUSY"), f.request.reports);
+        assertEquals(1, f.request.restores, "The acknowledged removal did not restore exactly once");
+        assertTrue(f.journal.find(f.landed.transferId()).isEmpty(), "T was written back");
+        assertEquals(List.of("SUCCESS"), f.request.reports);
+        assertEquals(List.of("released"), f.port.events, "A write-back was queued or acknowledged");
+        assertEquals(List.of(other.transferId()), f.diskRecords(), "T is in the committed file");
+        assertTrue(f.world.rockets.isEmpty() && f.world.blocks.size() == f.snapshot().blocks().size());
+        assertEquals(0, f.disassemblies.heldSlots(f.journal));
+        assertTrue(f.disassemblies.reservations(f.journal).isEmpty());
         f.acknowledge();
         assertFalse(f.disassemblies.pending(f.logical()));
-        assertEquals(2, f.diskRecords().size());
+        assertEquals(List.of(other.transferId()), f.diskRecords(), "T came back on disk");
+        assertEquals(1, f.request.restores);
+        assertEquals(List.of("SUCCESS"), f.request.reports);
         f.close();
     }
 
@@ -281,21 +292,26 @@ class RocketLandedDisassembliesTest {
         assertEquals(List.of("REGION_BUSY"), stopped.request.reports, "Reported once");
         Files.deleteIfExists(file());
 
-        var discarded = new Fixture(new RocketPosition(128, 80, 64));
-        discarded.release();
-        discarded.request.notifierFailure = new IllegalStateException("Injected notifier failure in a discard");
+        // Root decision R28 (R23): the later generation acknowledges the removal, so M2 runs in pollWriter instead of the
+        // discard. The notifier then fails after SUCCESS, which M2 contains as an uncertain mutation: no write-back.
+        var acknowledged = new Fixture(new RocketPosition(128, 80, 64));
+        acknowledged.release();
+        acknowledged.request.notifierFailure = new IllegalStateException("Injected notifier failure in a discard");
         var failing = new CheckedSavedDataPolicy(TYPE, (staged, target) -> { throw new IOException("Injected removal failure"); });
-        RocketJournalTestAccess.write(discarded.journal, file(), failing, tick += 1_000);
-        discarded.journal.put(landed(new RocketPosition(2_000, 80, 2_000))); // A disjoint successor generation.
-        assertDoesNotThrow(discarded::acknowledge, "The failure escaped pollWriter");
-        assertEquals(0, discarded.request.restores);
-        assertEquals(Stage.WRITE_BACK, discarded.disassemblies.find(discarded.logical()).stage());
-        assertSame(discarded.landed, discarded.journal.find(discarded.landed.transferId()).orElseThrow());
-        discarded.acknowledge();
-        assertFalse(discarded.disassemblies.pending(discarded.logical()));
-        assertTrue(discarded.diskRecords().contains(discarded.landed.transferId()));
-        assertEquals(List.of("REGION_BUSY"), discarded.request.reports, "Reported once");
-        discarded.close();
+        RocketJournalTestAccess.write(acknowledged.journal, file(), failing, tick += 1_000);
+        acknowledged.journal.put(landed(new RocketPosition(2_000, 80, 2_000))); // A disjoint successor generation.
+        assertDoesNotThrow(acknowledged::acknowledge, "The failure escaped pollWriter");
+        assertEquals(1, acknowledged.request.restores);
+        assertFalse(acknowledged.disassemblies.pending(acknowledged.logical()));
+        assertTrue(acknowledged.journal.find(acknowledged.landed.transferId()).isEmpty(), "T was written back");
+        acknowledged.acknowledge();
+        assertFalse(acknowledged.disassemblies.pending(acknowledged.logical()));
+        assertFalse(acknowledged.diskRecords().contains(acknowledged.landed.transferId()), "T is in the committed file");
+        assertEquals(List.of("SUCCESS"), acknowledged.request.reports, "Reported once");
+        assertEquals(List.of("released"), acknowledged.port.events, "A write-back was queued or acknowledged");
+        assertTrue(acknowledged.world.rockets.isEmpty()
+                && acknowledged.world.blocks.size() == acknowledged.snapshot().blocks().size());
+        acknowledged.close();
     }
 
     @Test void refusedInsertsEndPendingWithoutTheRecord() {

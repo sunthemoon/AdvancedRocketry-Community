@@ -419,42 +419,67 @@ public final class RocketLandedDisassemblyGameTests {
         s.then(() -> {
             var owner = a.requester(a.owner);
             a.release(owner);
-            // G8: the removal ends UNKNOWN; a later generation is acknowledged first and discards its continuation.
+            // G8: the removal ends UNKNOWN; a later generation, captured after T's removal, commits first. Under R23
+            // (Root decision R28) that generation acknowledges the removal, so M2 restores once and T is not written back.
             a.write(moveThenError(), true);
             s.check(a.detached.checkedWriteResult().outcome() == RocketTransferSavedData.WriteOutcome.UNKNOWN,
                     "The removal did not end UNKNOWN");
+            s.check("RELEASED".equals(a.support.stage(a.logical())) && !a.anyRestored() && a.rocket.isAlive(),
+                    "The continuation ran after an UNKNOWN write");
             s.check(a.detached.electFirstMoonLanding(moonEvent()), "Fixture successor refused");
             a.write(CheckedSavedDataPolicy.atomic(TYPE), true);
-            s.check(!a.anyRestored() && a.rocket.isAlive() && code(owner, "region_busy")
-                    && a.detached.find(a.landed.transferId()).orElse(null) == a.landed,
-                    "The discarded removal restored or did not write T back");
+            s.check(restoredOnceWithoutWriteBack(a, owner) && a.detached.acknowledgedCurrent(),
+                    "The later generation did not restore the rocket once without a write-back");
             a.write(CheckedSavedDataPolicy.atomic(TYPE), true);
-            s.check(!a.support.pending(a.rocket) && a.diskTransfers().contains(a.landed.transferId()),
-                    "The written-back T is not acknowledged on disk");
+            s.check(!a.support.pending(a.rocket) && restoredOnceWithoutWriteBack(a, owner),
+                    "T came back on disk or the rocket was restored again");
         });
     }
 
     private static void committedRemovalWithADelayedSuccessor(Script s, Arrival a) {
         long[] requested = new long[1];
+        var owner = new Requester[1];
         s.then(() -> {
-            a.release(a.requester(a.owner));
+            owner[0] = a.requester(a.owner);
+            a.release(owner[0]);
             requested[0] = a.earth.getGameTime();
-            // G11: the removal commits, but a successor generation is in RAM before its continuation can run.
+            // G11: the removal commits, and a successor generation is in RAM before its continuation can run. The
+            // successor changes only the outbox, not L's record, so under R23 (Root decision R28) it does not hold L's
+            // continuation: the first poll after the committed removal restores once.
             a.write(CheckedSavedDataPolicy.atomic(TYPE), false);
             s.check(a.detached.electFirstMoonLanding(moonEvent()), "Fixture successor refused");
+            s.check("RELEASED".equals(a.support.stage(a.logical())) && !a.anyRestored() && a.rocket.isAlive(),
+                    "The continuation ran before its acknowledgement was polled");
             RocketJournalGameTestSupport.pollDetached(s.helper, a.detached);
-            s.check("RELEASED".equals(a.support.stage(a.logical())) && !a.anyRestored(),
-                    "The continuation ran before the whole journal was acknowledged");
+            s.check(restoredOnceWithoutWriteBack(a, owner[0]) && !a.detached.acknowledgedCurrent(),
+                    "The committed removal did not restore the rocket once while the unrelated successor waits");
         });
         s.waitUntil(() -> a.ready() && a.earth.getGameTime() > requested[0] + 200);
         s.then(() -> {
             a.write(CheckedSavedDataPolicy.atomic(TYPE), true);
-            s.check(!a.anyRestored() && a.rocket.isAlive() && "WRITE_BACK".equals(a.support.stage(a.logical())),
-                    "A late committed removal restored the rocket");
+            s.check(restoredOnceWithoutWriteBack(a, owner[0]) && a.detached.acknowledgedCurrent(),
+                    "The delayed successor restored the rocket again or wrote T back");
             a.write(CheckedSavedDataPolicy.atomic(TYPE), true);
-            s.check(!a.support.pending(a.rocket) && a.diskTransfers().contains(a.landed.transferId()) && !a.anyRestored(),
-                    "The write-back did not finish without a block");
+            s.check(!a.support.pending(a.rocket) && restoredOnceWithoutWriteBack(a, owner[0]),
+                    "T came back on disk or the rocket was restored again");
         });
+    }
+
+    /**
+     * R28: M2 ran once and restored. E is removed and no rocket of L is loaded, every footprint block is restored, T is
+     * in neither RAM nor the committed file, P has ended, its region and slot are free, and the requester saw no failure
+     * code. SUCCESS reaches it as the literal "disassembly committed" line, which {@link Requester} does not record, and
+     * an unfueled rocket has no fuel message.
+     */
+    private static boolean restoredOnceWithoutWriteBack(Arrival a, Requester owner) {
+        return a.rocket.isRemoved() && RocketFlightGameTestFixtures.loadedLogicalRocket(a.moon, a.logical()) == null
+                && RocketFlightGameTestFixtures.loadedLogicalRocket(a.earth, a.logical()) == null && a.allRestored()
+                && "NONE".equals(a.support.stage(a.logical())) && !a.support.pending(a.rocket)
+                && a.detached.findByLogicalRocket(a.logical()).isEmpty()
+                && !a.diskTransfers().contains(a.landed.transferId())
+                && !a.support.launchReservations(a.detached).contains(a.region())
+                && a.support.slotsInUse(a.detached) == a.detached.entries().size()
+                && owner.actionBar.isEmpty() && owner.messages.isEmpty();
     }
 
     private static void unknownMovedRemovalRetriedLate(Script s, Arrival a) {
