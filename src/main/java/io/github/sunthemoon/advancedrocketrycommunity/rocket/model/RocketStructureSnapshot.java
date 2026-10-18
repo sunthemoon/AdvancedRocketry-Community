@@ -221,7 +221,8 @@ public final class RocketStructureSnapshot {
     /**
      * Derived, never persisted: SHA-256 with prefix {@code arce-rocket-structure-1:} over the schema, dimension, origin,
      * bounds, each block's position, state and payload adapter ID (not payload data), the anchors, the stats and the
-     * propulsion signature. Equal digests under one snapshot ID differ only in payload data (W11CD-DESIGN section 2.5).
+     * propulsion signature. Two snapshots with one snapshot ID and equal digests differ at most in payload data and in
+     * the creation time, which no hash covers (W11CD-DESIGN section 2.5).
      */
     public String structureDigest() {
         return structureDigest;
