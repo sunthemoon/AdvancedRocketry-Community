@@ -10,8 +10,13 @@ import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBoots
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import net.minecraft.nbt.CompoundTag;
 import org.junit.jupiter.api.BeforeAll;
@@ -27,6 +32,23 @@ class RocketJournalScheduleMatrixTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
     private Path file() { return directory.resolve(TYPE.fileName()); }
     private void commit(RocketTransferSavedData data) { data.saveChecked(file(), CheckedSavedDataPolicy.atomic(TYPE)); }
+
+    /**
+     * W91R (R30 item 6): {@link #commit} through the same writer, checkpoint, file and atomic policy, but the owner polls
+     * for the one completion instead of sleeping a millisecond per drain tick. With nothing queued, pollWriter's visit
+     * runs nothing, so the result is the drain's.
+     */
+    private void commitPolled(RocketTransferSavedData data) {
+        assertEquals(0, data.outstandingEffectCount(), "A visit would run queued work that the drain leaves queued");
+        long before = data.completedWriteCount();
+        assertTrue(data.requestWrite(file(), CheckedSavedDataPolicy.atomic(TYPE)), "The write was not requested");
+        long deadline = System.nanoTime() + 10_000_000_000L;
+        while (data.completedWriteCount() == before) {
+            assertTrue(System.nanoTime() < deadline, "The journal writer did not complete within ten seconds");
+            data.pollWriter(0); Thread.yield();
+        }
+        assertEquals(RocketTransferSavedData.WriteOutcome.COMMITTED, data.checkedWriteResult().outcome());
+    }
 
     @Test void recordTouchedAbsenceAndUntouchedAbsenceFollowTheAcknowledgementTable() {
         for (boolean baseline : List.of(false, true)) {
@@ -109,54 +131,87 @@ class RocketJournalScheduleMatrixTest {
         var data = new RocketTransferSavedData();
         var absent = RocketJournalScheduleFixtures.pendingAbsence(data, 1);
         try {
-            commit(data); var lease = data.actionableLease(absent); assertTrue(lease.getAsBoolean());
+            commitPolled(data); var lease = data.actionableLease(absent); assertTrue(lease.getAsBoolean());
             for (int i = 2; i < RocketJournalLeases.MAX_HISTORY + 4; i++) {
                 RocketJournalScheduleFixtures.pendingAbsence(data, i);
-                commit(data);
+                commitPolled(data);
                 // R23 preserves R17's bounded history floor: dropping L itself is harmless, a later floor is conservative.
                 assertEquals(i <= RocketJournalLeases.MAX_HISTORY + 1, lease.getAsBoolean());
             }
             lease = data.actionableLease(absent); assertTrue(lease.getAsBoolean());
             RocketJournalScheduleFixtures.pendingAbsence(data, 1);
-            assertFalse(lease.getAsBoolean()); commit(data); assertFalse(lease.getAsBoolean());
+            assertFalse(lease.getAsBoolean()); commitPolled(data); assertFalse(lease.getAsBoolean());
         } finally { data.abort(); }
     }
 
-    @Test void generatedCommitsFailuresAndStopsPreserveCapacityAndExactlyOnceCompletion() {
+    @Test void generatedCommitsFailuresAndStopsPreserveCapacityAndExactlyOnceCompletion() throws Exception {
+        // W91R (R30 item 6): the eight sessions share only the random stream, and every session draws a fixed sequence
+        // (one rocket per step and one outcome every 16 steps). The draws are taken in the original order, and each
+        // session then runs on its own owner thread and file, so the failed writes' drain backoffs overlap.
         var random = new java.util.Random(91_006);
+        var draws = new int[8][85];
         for (int session = 0; session < 8; session++) {
-            var data = new RocketTransferSavedData(); var accepted = new AtomicInteger();
-            var ran = new AtomicInteger(); var discarded = new AtomicInteger();
-            try {
-                commit(data);
-                for (int step = 0; step < 80; step++) {
-                    var record = RocketJournalScheduleFixtures.record(1 + random.nextInt(128));
-                    if (data.actionable(record.logicalRocketId()) && (data.find(record.transferId()).isPresent() || data.entries().size() < 64)) {
-                        try (var token = data.reserve(record.logicalRocketId()).orElseThrow()) {
-                            if (data.find(record.transferId()).isPresent()) { data.remove(record.transferId()); }
-                            else { data.put(record); }
-                            assertTrue(data.queueEffect(token, false, false, () -> { ran.incrementAndGet(); return true; }, discarded::incrementAndGet));
-                            accepted.incrementAndGet();
-                        }
-                    }
-                    assertTrue(data.outstandingEffectCount() <= 128);
-                    assertEquals(accepted.get(), ran.get() + discarded.get() + data.outstandingEffectCount());
-                    if (step % 16 == 15) {
-                        int outcome = random.nextInt(3);
-                        if (outcome == 0) { commit(data); }
-                        else {
-                            data.saveChecked(file(), new CheckedSavedDataPolicy(TYPE, (staged, target) -> {
-                                if (outcome == 1) { throw new IOException("Generated definite failure"); }
-                                throw new AssertionError("Generated unknown outcome");
-                            }));
-                        }
-                        data.pollWriter(step);
+            for (int step = 0, next = 0; step < 80; step++) {
+                draws[session][next++] = random.nextInt(128);
+                if (step % 16 == 15) { draws[session][next++] = random.nextInt(3); }
+            }
+        }
+        var pool = Executors.newFixedThreadPool(draws.length);
+        try {
+            var sessions = new ArrayList<Future<?>>();
+            for (int session = 0; session < draws.length; session++) {
+                int index = session;
+                sessions.add(pool.submit(() -> { generatedSession(index, draws[index]); return null; }));
+            }
+            for (var session : sessions) {
+                try { session.get(); }
+                catch (ExecutionException failure) {
+                    if (failure.getCause() instanceof Error error) { throw error; }
+                    throw new AssertionError("A generated session failed", failure.getCause());
+                }
+            }
+        } finally {
+            pool.shutdownNow();
+            assertTrue(pool.awaitTermination(10, TimeUnit.SECONDS), "A generated session did not stop");
+        }
+    }
+
+    /** One generated session, unchanged except that its file is its own and its draws were taken in advance. */
+    private void generatedSession(int session, int[] draws) throws IOException {
+        var file = directory.resolve("session-" + session).resolve(TYPE.fileName());
+        Files.createDirectories(file.getParent());
+        var data = new RocketTransferSavedData(); var accepted = new AtomicInteger();
+        var ran = new AtomicInteger(); var discarded = new AtomicInteger();
+        int next = 0;
+        try {
+            data.saveChecked(file, CheckedSavedDataPolicy.atomic(TYPE));
+            for (int step = 0; step < 80; step++) {
+                var record = RocketJournalScheduleFixtures.record(1 + draws[next++]);
+                if (data.actionable(record.logicalRocketId()) && (data.find(record.transferId()).isPresent() || data.entries().size() < 64)) {
+                    try (var token = data.reserve(record.logicalRocketId()).orElseThrow()) {
+                        if (data.find(record.transferId()).isPresent()) { data.remove(record.transferId()); }
+                        else { data.put(record); }
+                        assertTrue(data.queueEffect(token, false, false, () -> { ran.incrementAndGet(); return true; }, discarded::incrementAndGet));
+                        accepted.incrementAndGet();
                     }
                 }
-                if (session % 2 == 0) { data.stop(); } else { data.abort(); }
-                assertEquals(accepted.get(), ran.get() + discarded.get()); assertEquals(0, data.outstandingEffectCount());
-                data.stop(); data.abort(); assertEquals(accepted.get(), ran.get() + discarded.get());
-            } finally { data.abort(); }
-        }
+                assertTrue(data.outstandingEffectCount() <= 128);
+                assertEquals(accepted.get(), ran.get() + discarded.get() + data.outstandingEffectCount());
+                if (step % 16 == 15) {
+                    int outcome = draws[next++];
+                    if (outcome == 0) { data.saveChecked(file, CheckedSavedDataPolicy.atomic(TYPE)); }
+                    else {
+                        data.saveChecked(file, new CheckedSavedDataPolicy(TYPE, (staged, target) -> {
+                            if (outcome == 1) { throw new IOException("Generated definite failure"); }
+                            throw new AssertionError("Generated unknown outcome");
+                        }));
+                    }
+                    data.pollWriter(step);
+                }
+            }
+            if (session % 2 == 0) { data.stop(); } else { data.abort(); }
+            assertEquals(accepted.get(), ran.get() + discarded.get()); assertEquals(0, data.outstandingEffectCount());
+            data.stop(); data.abort(); assertEquals(accepted.get(), ran.get() + discarded.get());
+        } finally { data.abort(); }
     }
 }

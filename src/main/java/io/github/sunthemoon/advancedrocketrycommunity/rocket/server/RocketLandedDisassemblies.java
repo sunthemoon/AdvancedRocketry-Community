@@ -67,6 +67,12 @@ final class RocketLandedDisassemblies {
         /** Queues L's continuation with the reservation that the caller took before its mutation, consuming it. */
         boolean queue(Reservation reservation, BooleanSupplier action, Runnable discarded);
 
+        /**
+         * {@link #queue} for M1's removal continuation (M2), which opts in to run during another record's failed write
+         * (W86 section 3, Root decision R30). No other continuation opts in.
+         */
+        boolean queueRemoval(Reservation reservation, BooleanSupplier action, Runnable discarded);
+
         /** M2 step 1: audit {@code landed_reservation_released} and drop T from the session sets. */
         void released(RocketTransferRecord record, UUID entity);
 
@@ -253,7 +259,7 @@ final class RocketLandedDisassemblies {
                 Objects.requireNonNull(request, "request"), Objects.requireNonNull(port, "port"), journal);
         pending.put(entry.logical(), entry);
         journal.remove(record.transferId());
-        if (!port.queue(reservation, () -> removalAcknowledged(entry), () -> removalDiscarded(entry))) {
+        if (!port.queueRemoval(reservation, () -> removalAcknowledged(entry), () -> removalDiscarded(entry))) {
             end(entry);
             try {
                 journal.put(record);
@@ -265,7 +271,10 @@ final class RocketLandedDisassemblies {
         return RocketValidationCode.DISASSEMBLY_PENDING;
     }
 
-    /** M2, inside the removal's exact-acknowledgement continuation. Every handled case returns true (N1). */
+    /**
+     * M2, inside the removal's exact-acknowledgement continuation; it also runs while another record's write has failed
+     * definitely, because the acknowledgement that it needs is already retained. Every handled case returns true (N1).
+     */
     private boolean removalAcknowledged(Pending entry) {
         if (!current(entry) || entry.stage() != Stage.RELEASED) {
             return true;

@@ -15,7 +15,8 @@ final class EscrowFlightBenchmarkDefer implements AutoCloseable {
     private UUID firstLogical;
 
     void arm(MinecraftServer server, RocketTransferSavedData journal) {
-        if (hold != null || !journal.acknowledgedCurrent()) { return; }
+        // R23 item 4: release-test hooks wait for a clean root, not only an acknowledged-current one (W91-R5).
+        if (hold != null || !journal.clean()) { return; }
         var first = journal.entries().stream().filter(record -> record.phase() == RocketTransferPhase.COMMITTED)
                 .filter(record -> {
                     var level = server.getLevel(net.minecraft.resources.ResourceKey.create(
