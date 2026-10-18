@@ -14,10 +14,12 @@ class AtmosphereBoundarySmokeTests(unittest.TestCase):
     def test_exactly_one_expected_startup_event_and_version(self):
         runner.validate_registration([runner.REGISTERED], False)
         runner.validate_registration([runner.SKIPPED], True)
+        older = runner.REGISTERED.replace(f"API {runner.recovery.API}", "API 1.1")
+        self.assertNotEqual(runner.REGISTERED, older)
         for lines, skipped in (([], False), ([runner.REGISTERED] * 2, False),
                                ([runner.REGISTERED, runner.SKIPPED], False),
                                ([runner.SKIPPED], False), ([runner.REGISTERED], True),
-                               ([runner.REGISTERED.replace("1.7", "1.1")], False)):
+                               ([older], False)):
             with self.subTest(lines=lines, skipped=skipped), self.assertRaises(runner.SmokeError):
                 runner.validate_registration(lines, skipped)
 

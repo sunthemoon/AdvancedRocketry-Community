@@ -61,16 +61,19 @@ class ComponentSmokeTests(unittest.TestCase):
             runner.validate_disk(state, "skipped", receipt, previous)
 
     def test_registration_receipt_is_exact_for_each_variant_and_version(self):
-        lines = {"assemble": "Registered rocket components (variant standard, API 1.7, event 1)",
+        api = runner.recovery.API
+        lines = {"assemble": f"Registered rocket components (variant standard, API {api}, event 1)",
                  "skipped": "Skipped rocket components (event 1)",
-                 "updated": "Registered rocket components (variant updated, API 1.7, event 1)"}
+                 "updated": f"Registered rocket components (variant updated, API {api}, event 1)"}
         for phase, line in lines.items():
             runner.validate_registration([line], phase)
             for invalid in ([], [line, line], [line.replace("event 1", "event 2")], [line + " extra"]):
                 with self.assertRaises(runner.SmokeError):
                     runner.validate_registration(invalid, phase)
+        older = lines["assemble"].replace(f"API {api}", "API 1.4")
+        self.assertNotEqual(lines["assemble"], older)
         with self.assertRaises(runner.SmokeError):
-            runner.validate_registration([lines["assemble"].replace("API 1.7", "API 1.4")], "assemble")
+            runner.validate_registration([older], "assemble")
         with self.assertRaises(runner.SmokeError):
             runner.validate_registration([lines["assemble"]], "updated")
 

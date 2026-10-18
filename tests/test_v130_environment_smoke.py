@@ -29,9 +29,11 @@ def fixture():
 class EnvironmentSmokeTest(unittest.TestCase):
     def test_lifecycle_requires_single_current_handle_and_ordered_expiry(self):
         runner.validate_lifecycle([runner.READY, runner.EXPIRED])
+        older = runner.READY.replace(f"API {runner.recovery.API}", "API 1.5")
+        self.assertNotEqual(runner.READY, older)
         for lines in ([], [runner.READY], [runner.EXPIRED, runner.READY],
                       [runner.READY, runner.READY, runner.EXPIRED],
-                      [runner.READY.replace("1.7", "1.5"), runner.EXPIRED]):
+                      [older, runner.EXPIRED]):
             with self.assertRaises(runner.SmokeError):
                 runner.validate_lifecycle(lines)
 

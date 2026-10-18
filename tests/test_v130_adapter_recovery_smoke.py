@@ -200,8 +200,10 @@ class RecoveryParsingTests(unittest.TestCase):
             runner.validate_registration([runner.REGISTERED] * 2, "assemble")
         with self.assertRaises(runner.SmokeError):
             runner.validate_registration([runner.SKIPPED], "mod-uninstalled")
+        older = runner.REGISTERED.replace(f"API {runner.API}", "API 1.0")
+        self.assertNotEqual(runner.REGISTERED, older)
         with self.assertRaises(runner.SmokeError):
-            runner.validate_registration([runner.REGISTERED.replace("API 1.7", "API 1.0")], "assemble")
+            runner.validate_registration([older], "assemble")
 
     def test_actual_status_checks_mod_set_version_and_no_players(self):
         mods = {runner.HOST: "1.20.1-1.3.0-dev", runner.FIXTURE: "1.0.0", "forge": "", "minecraft": "1.20.1"}

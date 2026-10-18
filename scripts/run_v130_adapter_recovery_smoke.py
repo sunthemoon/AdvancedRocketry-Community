@@ -27,6 +27,7 @@ if __package__:
     from . import run_dedicated_server_smoke as server_smoke
     from . import run_v050_rocket_server_smoke as rocket_smoke
     from . import v120_precision_world_fixture as region_nbt
+    from . import v130_api_version as api_version
     from .inspect_celestial_saved_data import NbtReader
     from .run_v100_transaction_forced_stop import read_journal, uuid_from_nbt
     from .v100_beta_world_fixture import wait_condition
@@ -34,6 +35,7 @@ else:
     import run_dedicated_server_smoke as server_smoke
     import run_v050_rocket_server_smoke as rocket_smoke
     import v120_precision_world_fixture as region_nbt
+    import v130_api_version as api_version
     from inspect_celestial_saved_data import NbtReader
     from run_v100_transaction_forced_stop import read_journal, uuid_from_nbt
     from v100_beta_world_fixture import wait_condition
@@ -56,8 +58,9 @@ INVENTORY = {"Items": [
      "tag": {"display": {"Name": '{"text":"Public adapter cargo"}'}}},
     {"Slot": 1, "id": "minecraft:iron_ingot", "Count": 64},
 ]}
-REGISTERED = "Registered rocket adapter arce_adapter_test:cargo_inventory (payload 1, API 1.7, event 1)"
-SKIPPED = "Skipped rocket adapter arce_adapter_test:cargo_inventory (API 1.7, event 1)"
+API = api_version.CURRENT  # The host's ApiVersions.CURRENT; every v1.3 smoke expects it (W101).
+REGISTERED = f"Registered rocket adapter arce_adapter_test:cargo_inventory (payload 1, API {API}, event 1)"
+SKIPPED = f"Skipped rocket adapter arce_adapter_test:cargo_inventory (API {API}, event 1)"
 PHASES = ("assemble", "entity-restart", "provider-skipped", "mod-uninstalled",
           "provider-reinstalled", "container-restart")
 JOURNAL = "advancedrocketrycommunity_rocket_transactions.dat"
