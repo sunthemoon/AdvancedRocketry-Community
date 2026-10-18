@@ -184,6 +184,17 @@ def assemble(process, index: int) -> dict:
     return dict(entity=entity, logical=fueled["logical"], fuel=fueled["amount"])
 
 
+def launch_wave(process, flights: list[dict], staggered: bool, start: int) -> None:
+    for flight in flights:
+        process.command(f"arce rocket release-test launch {flight['entity']} moon")
+        if staggered:
+            # A slow first launch can exceed the wall delay. Wait for its actual
+            # admission receipt before delaying, so requests do not pile into one tick.
+            pattern = re.compile(LAUNCH_LOG.pattern.replace("logical=([0-9a-f-]{36})", "logical=(" + flight["logical"] + ")"))
+            process.wait_for(pattern, 45, start_at=start)
+            time.sleep(.5)
+
+
 @contextmanager
 def heavy_lock(timeout=10_800):
     deadline = time.monotonic() + timeout
@@ -244,10 +255,7 @@ def run_case(args, case: str, evidence: Path) -> dict:
                 process.command("arce rocket release-test journal-probe-start")
                 process.wait_for(re.compile("ARCE_JOURNAL_PROBE_STARTED"), 30)
                 start = len(process.lines)
-                for flight in flights:
-                    process.command(f"arce rocket release-test launch {flight['entity']} moon")
-                    if case in ("staggered", "held"):
-                        time.sleep(.5)
+                launch_wave(process, flights, case in ("staggered", "held"), start)
                 for flight in flights:
                     pattern = re.compile(LAUNCH_LOG.pattern.replace("logical=([0-9a-f-]{36})", "logical=(" + flight["logical"] + ")"))
                     match = pattern.search(process.lines[process.wait_for(pattern, 45, start_at=start)])

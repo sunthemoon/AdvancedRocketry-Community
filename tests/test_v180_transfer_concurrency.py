@@ -3,6 +3,7 @@ import copy
 from pathlib import Path
 import sys
 import unittest
+from unittest.mock import patch
 import uuid
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
@@ -78,6 +79,22 @@ class ConcurrencyTests(unittest.TestCase):
         self.assertEqual(uuid.UUID("ffffffff-0000-0000-0000-000000000001"), runner.nbt_uuid([-1, 0, 0, 1]))
         self.assertEqual(95, runner.summary(list(range(1, 101)))["p95"])
         self.assertEqual(0, runner.summary([])["count"])
+
+    def test_staggered_requests_wait_for_actual_admission_receipts(self):
+        actions = []
+        class Process:
+            def command(self, value):
+                actions.append("command")
+            def wait_for(self, pattern, timeout, start_at):
+                self.assertions = (timeout, start_at)
+                actions.append("receipt")
+        flights = [dict(entity=str(uuid.UUID(int=i + 1)), logical=str(uuid.UUID(int=i + 11))) for i in range(8)]
+        with patch.object(runner.time, "sleep", side_effect=lambda seconds: actions.append("delay")):
+            runner.launch_wave(Process(), flights, True, 0)
+        self.assertEqual(["command", "receipt", "delay"] * 8, actions)
+        actions.clear()
+        runner.launch_wave(Process(), flights, False, 0)
+        self.assertEqual(["command"] * 8, actions)
 
 
 if __name__ == "__main__":
