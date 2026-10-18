@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
+import net.minecraft.gametest.framework.AfterBatch;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
@@ -32,12 +33,28 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 @GameTestHolder(ModIdentity.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class EscrowPendingLandingGameTests {
+    private static final String BATCH = "escrow_benchmark_supply";
+    /** The two-slot world root while the flights run; server thread only. */
+    private static RocketTransferSavedData bounded;
+
     private EscrowPendingLandingGameTests() { }
 
     // Reuses the vent-only batch; it adds no batch name or journal-writing peer.
-    @GameTest(template = "empty", batch = "escrow_benchmark_supply", timeoutTicks = 1200)
+    @GameTest(template = "empty", batch = BATCH, timeoutTicks = 1200)
     public static void concurrentPlayerLaunchesReserveDistinctPadsAndLandAfterCallbackOverflow(GameTestHelper helper) {
         new Flights(helper).start();
+    }
+
+    /**
+     * W91-R3: runs after the batch on every path, so that a failed or timed-out run leaves neither its two-slot world
+     * root nor its terminal-cut hook to every later batch. After a success both are already restored.
+     */
+    @AfterBatch(batch = BATCH)
+    public static void restoreTheWorldJournal(ServerLevel level) {
+        var server = level.getServer(); var fixture = bounded; bounded = null;
+        EscrowRuntime.of(server).terminalCutForTests(server, null);
+        io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence
+                .RocketJournalSchedulingGameTestSupport.restoreFullBound(server, fixture);
     }
 
     private static final class Flights {
@@ -89,6 +106,7 @@ public final class EscrowPendingLandingGameTests {
                 if (!RocketTransferSavedData.get(server).retryChecked(server)) { return; }
                 fixtureJournal = io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence
                         .RocketJournalSchedulingGameTestSupport.boundedFixture(helper, 2);
+                bounded = fixtureJournal;
             }
             var journal = fixtureJournal;
             if (!started) {

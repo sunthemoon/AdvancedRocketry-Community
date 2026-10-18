@@ -14,6 +14,23 @@ public final class RocketJournalSchedulingGameTestSupport {
         if (!(server instanceof GameTestServer) || !server.isSameThread()) { throw new IllegalStateException("Not a GameTest fixture"); }
         var previous = RocketTransferSavedData.get(server);
         helper.assertTrue(previous.clean(), "Fixture replacement requires a settled root");
+        return replace(server, previous, limit);
+    }
+
+    /**
+     * W91-R3: puts a 128-slot copy back after {@link #boundedFixture} on every path, also after a failed or timed-out
+     * test whose root is not settled; its records ride the copy and its continuations are discarded, as at a stop.
+     * Nothing happens unless {@code fixture} is still the world root.
+     */
+    public static void restoreFullBound(net.minecraft.server.MinecraftServer server, RocketTransferSavedData fixture) {
+        if (!(server instanceof GameTestServer) || !server.isSameThread()) { throw new IllegalStateException("Not a GameTest fixture"); }
+        if (fixture != null && RocketTransferSavedData.existing(server) == fixture) {
+            replace(server, fixture, RocketJournalSchedule.LIMIT);
+        }
+    }
+
+    private static RocketTransferSavedData replace(net.minecraft.server.MinecraftServer server,
+                                                   RocketTransferSavedData previous, int limit) {
         var replacement = RocketTransferSavedData.load(previous.save(new net.minecraft.nbt.CompoundTag()), limit);
         previous.stop();
         server.overworld().getDataStorage().set(RocketTransferSavedData.DATA_NAME, replacement);
