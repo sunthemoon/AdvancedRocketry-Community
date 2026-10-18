@@ -374,10 +374,21 @@ class FlightRun(recovery.RecoveryRun):
             f"arce rocket release-test launch {source['entity']} {'moon' if destination == MOON else 'earth'}"), flight.LAUNCH_LOG)
         transfer, entity, logical, dimension, target, checkpoint, code, required, before = match.groups()
         require((entity, logical, dimension, target, checkpoint, code) ==
-                (source["entity"], source["logical"], source["dimension"], destination, "none", "SUCCESS")
+                (source["entity"], source["logical"], source["dimension"], destination, "none", "JOURNAL_PENDING")
                 and int(required) == REQUIRED_FUEL and int(before) == source["fuel"], "Launch quote/authority differs")
-        end = process.wait_for(re.compile(rf"ARCE_TRANSFER_PHASE transfer={transfer} .*event=landed_reservation_retained "), 30, start_at=start)
-        phases = [m for line in process.lines[start:end + 1] if (m := flight.PHASE_LOG.search(line)) and m.group(1) == transfer]
+        # v1.8 (W11b2, W91): the request answers JOURNAL_PENDING, and the countdown starts only when the checked
+        # transfer journal acknowledges the record, which logs ARCE_TRANSFER_PREPARE code=SUCCESS. The acknowledgement
+        # and the flight share the unchanged 30-second budget from the launch receipt.
+        deadline = time.monotonic() + 30
+        acknowledged = process.wait_for(re.compile(re.escape(
+            f"ARCE_TRANSFER_PREPARE transfer={transfer} logical={logical} source={dimension} destination={target} "
+            "code=SUCCESS ")), 30, start_at=start)
+        end = process.wait_for(re.compile(rf"ARCE_TRANSFER_PHASE transfer={transfer} .*event=landed_reservation_retained "),
+                               max(0.0, deadline - time.monotonic()), start_at=start)
+        phases = [(index, m) for index, line in enumerate(process.lines[start:end + 1], start)
+                  if (m := flight.PHASE_LOG.search(line)) and m.group(1) == transfer]
+        require(phases and acknowledged < phases[0][0], "Flight phase preceded the journal acknowledgement")
+        phases = [m for _, m in phases]
         require([m.group(4) for m in phases] == flight.EXPECTED_FLIGHT_EVENTS, "Flight phase sequence differs")
         for phase in phases:
             require(phase.group(2) == logical and int(phase.group(6)) == int(before)

@@ -206,6 +206,74 @@ class OracleTests(unittest.TestCase):
                 self.verify(disk, observed, legs, True)
 
 
+class ScriptedProcess:
+    """Appends the scripted server lines when the launch command arrives; wait_for scans as CapturedProcess does."""
+
+    def __init__(self, lines):
+        self.lines, self.scripted, self.timeouts = [], lines, []
+
+    def command(self, value):
+        if " release-test launch " in value:
+            self.lines.extend(self.scripted)
+
+    def wait_for(self, marker, timeout, *, start_at=0):
+        self.timeouts.append(timeout)
+        for index, line in enumerate(self.lines[start_at:], start_at):
+            if marker.search(line):
+                return index
+        raise runner.SmokeError(f"timed out waiting for {marker.pattern}")
+
+
+class LaunchProtocolTests(unittest.TestCase):
+    """v1.8: the launch answers JOURNAL_PENDING and flies only after the journal's acknowledgement (W101)."""
+    TRANSFER, SOURCE, ARRIVAL = uid(30), uid(10), uid(11)
+
+    def lines(self, code="JOURNAL_PENDING", prepare="SUCCESS", transfer=None, acknowledged_at=0):
+        prefix = "[05:02:06] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: "
+        launch = (f"ARCE_RELEASE_TEST_LAUNCH request={self.TRANSFER} entity={self.SOURCE} logical={uid(1)} "
+                  f"source={runner.EARTH} destination={runner.MOON} checkpoint=none code={code} "
+                  f"required_fuel=372 fuel_before=1000")
+        phases = [f"ARCE_TRANSFER_PHASE transfer={self.TRANSFER} logical={uid(1)} phase=COMMITTED event={event} "
+                  f"entity={self.ARRIVAL if event.startswith('landing') or event == 'landed_reservation_retained' else self.SOURCE} "
+                  f"fuel_before=1000 fuel_after=628 required=372" for event in runner.flight.EXPECTED_FLIGHT_EVENTS]
+        prepared = (f"ARCE_TRANSFER_PREPARE transfer={transfer or self.TRANSFER} logical={uid(1)} source={runner.EARTH} "
+                    f"destination={runner.MOON} code={prepare} candidates=1 chunks=2 detail=selected")
+        body = phases[:acknowledged_at] + [prepared] + phases[acknowledged_at:] if prepare else phases
+        return [prefix + line for line in [launch] + body]
+
+    def launch(self, lines):
+        run = runner.FlightRun(Path("unused"), Path("unused"), [], "unused", 1, 1)
+        run.reports = reports()[:1]
+        process = ScriptedProcess(lines)
+        with patch.object(runner.flight.FlightHarness, "report", return_value=reports()[1]):
+            run.launch(process, runner.MOON)
+        return run, process
+
+    def test_a_pending_launch_flies_after_its_acknowledgement_within_the_unchanged_budget(self):
+        run, process = self.launch(self.lines())
+        self.assertEqual([{"transfer": self.TRANSFER, "required": 372, "fuel_before": 1000, "fuel_after": 628,
+                           "events": runner.flight.EXPECTED_FLIGHT_EVENTS}], run.legs)
+        self.assertEqual(self.ARRIVAL, run.reports[-1]["entity"])
+        # The receipt query, then the acknowledgement and the flight sharing one 30-second budget.
+        self.assertEqual(30, process.timeouts[1])
+        self.assertTrue(0 <= process.timeouts[2] <= 30, process.timeouts)
+
+    def test_an_immediate_success_or_a_refusal_is_not_the_v18_launch(self):
+        for code in ("SUCCESS", "TRANSFER_JOURNAL_BLOCKED"):
+            with self.subTest(code=code), self.assertRaisesRegex(runner.SmokeError, "Launch quote/authority differs"):
+                self.launch(self.lines(code=code))
+
+    def test_a_missing_foreign_or_unsuccessful_acknowledgement_fails(self):
+        for lines in (self.lines(prepare=None), self.lines(transfer=uid(99)),
+                      self.lines(prepare="LANDING_PAD_UNAVAILABLE")):
+            with self.subTest(lines=lines[1]), self.assertRaisesRegex(runner.SmokeError, "ARCE_TRANSFER_PREPARE"):
+                self.launch(lines)
+
+    def test_a_flight_phase_before_the_acknowledgement_fails(self):
+        with self.assertRaisesRegex(runner.SmokeError, "preceded the journal acknowledgement"):
+            self.launch(self.lines(acknowledged_at=1))
+
+
 class BoundsAndDriverTests(unittest.TestCase):
     def test_disassembly_rejects_implicit_and_wrong_amount_before_explicit_disposal(self):
         run = runner.FlightRun(Path("unused"), Path("unused"), [], "unused", 1, 1)
