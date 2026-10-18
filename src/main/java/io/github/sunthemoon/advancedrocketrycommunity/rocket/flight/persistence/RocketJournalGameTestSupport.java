@@ -79,6 +79,47 @@ public final class RocketJournalGameTestSupport {
         acknowledgeFixture(helper);
     }
 
+    /**
+     * W85 A1: queues a dependent continuation on a detached journal without the flush that {@code afterAcknowledged}
+     * adds, so that the test chooses when, and with which committer, the generation is written.
+     */
+    public static boolean queueDetached(GameTestHelper helper, RocketTransferSavedData journal, java.util.UUID logical,
+                                        java.util.function.BooleanSupplier action, Runnable discarded) {
+        helper.assertTrue(helper.getLevel().getServer() instanceof GameTestServer, "Not a GameTest fixture");
+        return journal.queueEffect(logical, action, discarded);
+    }
+
+    /**
+     * W85 A1: one generation of a detached journal through the given committer and the writer's bounded retries.
+     * With {@code poll}, the owner then runs the continuations that the result allows.
+     */
+    public static void writeDetached(GameTestHelper helper, RocketTransferSavedData journal, java.nio.file.Path file,
+                                     io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataPolicy policy,
+                                     boolean poll) {
+        helper.assertTrue(helper.getLevel().getServer() instanceof GameTestServer, "Not a GameTest fixture");
+        journal.requestWrite(file, policy); journal.drainForTests();
+        if (poll) { journal.pollWriter(helper.getLevel().getServer().getTickCount()); }
+    }
+
+    /** W85 A1: runs the continuations of whatever a detached journal's writer already published. */
+    public static void pollDetached(GameTestHelper helper, RocketTransferSavedData journal) {
+        helper.assertTrue(helper.getLevel().getServer() instanceof GameTestServer, "Not a GameTest fixture");
+        journal.pollWriter(helper.getLevel().getServer().getTickCount());
+    }
+
+    /**
+     * W85 A1: one fixture drain whose continuation may queue the next generation (a landed record's write-back), so
+     * the journal need not be current afterwards. {@link #acknowledgeFixture} then acknowledges that generation.
+     */
+    public static void drainFixture(GameTestHelper helper) {
+        var server = helper.getLevel().getServer();
+        if (!(server instanceof GameTestServer) || !server.isSameThread()) {
+            throw new IllegalStateException("Journal fixture drain requires a GameTestServer");
+        }
+        var journal = RocketTransferSavedData.get(server);
+        journal.flushChecked(server); journal.drainForTests(); journal.pollWriter(server.getTickCount());
+    }
+
     public static void acknowledgeFixture(GameTestHelper helper) {
         var server = helper.getLevel().getServer();
         if (!(server instanceof GameTestServer) || !server.isSameThread()) {

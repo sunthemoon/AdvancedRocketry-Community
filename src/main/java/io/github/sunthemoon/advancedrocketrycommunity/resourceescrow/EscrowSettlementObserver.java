@@ -69,8 +69,12 @@ final class EscrowSettlementObserver {
                     && level.areEntitiesLoaded(chunk.toLong())
                     && level.isPositionEntityTicking(new BlockPos(chunk.getMinBlockX(), level.getMinBuildHeight(), chunk.getMinBlockZ())),
                     "WAITING_UNLOADED: endpoint slot must be FULL, entity-loaded and ticking");
-            if (endpoint.kind() == EscrowEndpoint.Kind.BLOCK_ENTITY) {
-                // No production source adapter is registered. Only already-gated source fixtures are supported.
+            if (endpoint.kind() == EscrowEndpoint.Kind.BLOCK_ENTITY && EscrowLoaderEndpoint.is(endpoint)) {
+                // The registered production source adapter; it needs no release-test hooks.
+                result.add(EscrowLoaderEndpoint.observe(level.getChunkSource().getChunkNow(chunk.x, chunk.z)
+                        .getBlockEntity(EscrowLoaderEndpoint.position(endpoint)), endpoint, ledger));
+            } else if (endpoint.kind() == EscrowEndpoint.Kind.BLOCK_ENTITY) {
+                // Every other source is an already-gated fixture.
                 EscrowTestEndpoints.requireEnabled(server);
                 var source = level.getChunkSource().getChunkNow(chunk.x, chunk.z)
                         .getBlockEntity(new BlockPos(endpoint.x(), endpoint.y(), endpoint.z()));

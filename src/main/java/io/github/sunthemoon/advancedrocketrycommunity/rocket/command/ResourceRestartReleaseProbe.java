@@ -41,6 +41,8 @@ public final class ResourceRestartReleaseProbe {
     private int ticks;
     private int step;
     private boolean done;
+    /** The arrival's snapshot once its single disassembly request is pending (W85). */
+    private io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot disassembled;
 
     private ResourceRestartReleaseProbe(MinecraftServer server, String scenario, String stage) {
         this.server = server; this.scenario = scenario; this.stage = stage;
@@ -109,6 +111,10 @@ public final class ResourceRestartReleaseProbe {
             complete("entities=0 primary=0 oxidizer=0 containers=2000 journal=0"); return;
         }
         var candidates = rockets();
+        if (disassembled != null) {
+            if (candidates.isEmpty()) { disassembled(); }
+            return;
+        }
         if (candidates.isEmpty() && ticks < 200) { return; }
         require(candidates.size() == 1, "Expected exactly one live rocket, found " + candidates.size());
         var rocket = candidates.get(0);
@@ -141,26 +147,29 @@ public final class ResourceRestartReleaseProbe {
                     "Arrival reservation missing");
         }
         if (stage.equals("disassemble")) {
-            var snapshot = rocket.snapshot().orElseThrow();
-            RocketRuntime.requestDisassembly(owner, rocket);
-            if (step == 1 && !rocket.isRemoved()) {
-                // The first player request starts durable reservation retirement and refuses
-                // until its real asynchronous write acknowledges. Retry only after that ack.
-                require(journal().find(TRANSFER).isEmpty() && !journal().acknowledgedCurrent(),
+            if (step == 1) {
+                // W85: one player request starts the reservation's checked removal and answers pending; the
+                // rocket is restored by the removal's acknowledged continuation, without a second request.
+                disassembled = rocket.snapshot().orElseThrow();
+                RocketRuntime.requestDisassembly(owner, rocket);
+                require(!rocket.isRemoved() && journal().find(TRANSFER).isEmpty() && !journal().acknowledgedCurrent(),
                         "Disassembly did not begin journal retirement");
                 step = 2;
-                return;
             }
-            require(rocket.isRemoved(), "Arrival disassembly refused");
-            require(journal().find(TRANSFER).isEmpty(), "Disassembly retained COMMITTED record");
-            for (var block : snapshot.blocks()) {
-                var at = snapshot.sourceOrigin().add(block.position());
-                require(net.minecraftforge.registries.ForgeRegistries.BLOCKS.getKey(rocket.level()
-                        .getBlockState(new net.minecraft.core.BlockPos(at.x(), at.y(), at.z())).getBlock())
-                        .equals(block.state().blockId()), "Disassembly did not restore a snapshot block");
-            }
-            complete("entities=0 primary=0 oxidizer=0 containers=2000 journal=0 restored=" + snapshot.blocks().size());
         } else { complete("entities=1 primary=0 oxidizer=0 containers=2000 journal=1 state=ASSEMBLED"); }
+    }
+
+    private void disassembled() {
+        require(journal().find(TRANSFER).isEmpty(), "Disassembly retained COMMITTED record");
+        ensureOwner(levels().get(1));
+        require(containerFluid() == 2_000, "Arrival owner inventory lost or duplicated fuel");
+        for (var block : disassembled.blocks()) {
+            var at = disassembled.sourceOrigin().add(block.position());
+            require(net.minecraftforge.registries.ForgeRegistries.BLOCKS.getKey(levels().get(1)
+                    .getBlockState(new net.minecraft.core.BlockPos(at.x(), at.y(), at.z())).getBlock())
+                    .equals(block.state().blockId()), "Disassembly did not restore a snapshot block");
+        }
+        complete("entities=0 primary=0 oxidizer=0 containers=2000 journal=0 restored=" + disassembled.blocks().size());
     }
 
     private void source(RocketEntity rocket) {

@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.resourceescrow;
 
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.EscrowGameTestProof;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataPolicy;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
@@ -62,7 +63,7 @@ public final class EscrowGovernedReadinessGameTests {
         private CompoundTag frozen;
         private EscrowFlightTables.Armed arm;
         private boolean stored;
-        private boolean pending;
+        private EscrowGameTestProof<EscrowBarrier.Result> sourceProof;
         private boolean observedWait;
         private boolean observedAscent;
         private long installedAt;
@@ -165,15 +166,17 @@ public final class EscrowGovernedReadinessGameTests {
         }
 
         private void checkpoint() {
-            if (pending) { return; }
-            var capture = new EscrowFlightSource(source); var runtime = EscrowRuntime.of(level.getServer());
-            pending = true;
-            if (!runtime.barrier().begin(runtime.store(level), capture.endpoint, capture.frontier, capture.validator(),
-                    level.getServer().getTickCount(), result -> {
-                        pending = false;
-                        helper.assertTrue(result.confirmed(), "Readiness source checkpoint failed: " + result.reason());
-                        result.proof().release(); stored = true;
-                    })) { pending = false; }
+            if (sourceProof == null) {
+                var capture = new EscrowFlightSource(source); var runtime = EscrowRuntime.of(level.getServer());
+                sourceProof = new EscrowGameTestProof<>(level.getServer()::getTickCount,
+                        (tick, completed) -> runtime.barrier().begin(runtime.store(level), capture.endpoint,
+                                capture.frontier, capture.validator(), tick, completed),
+                        EscrowBarrier.Result::confirmed, EscrowBarrier.Result::reason, result -> {
+                            helper.assertTrue(result.confirmed(), "Readiness source checkpoint failed: " + result.reason());
+                            result.proof().release(); stored = true;
+                        });
+            }
+            sourceProof.tick();
         }
 
         private void installCheckedRoots(RocketTransferSavedData journal) {

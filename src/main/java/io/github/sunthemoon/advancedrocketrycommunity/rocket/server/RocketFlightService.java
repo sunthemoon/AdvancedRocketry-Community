@@ -625,6 +625,22 @@ final class RocketFlightService {
         return transfers.releaseLandedReservation(rocket);
     }
 
+    io.github.sunthemoon.advancedrocketrycommunity.rocket.validation.RocketValidationCode beginLandedDisassembly(
+            RocketEntity rocket, java.util.function.Supplier<Optional<
+                    io.github.sunthemoon.advancedrocketrycommunity.rocket.validation.RocketValidationCode>> preflight,
+            RocketLandedDisassemblies.Request request) {
+        return transfers.beginLandedDisassembly(rocket, preflight, request);
+    }
+
+    boolean landedDisassemblyPending(RocketEntity rocket) {
+        return transfers.landedDisassemblyPending(rocket);
+    }
+
+    /** W85 A1: the GameTest bridge reads P's inputs to a new flight from this session's transfer service. */
+    RocketTransferService transfers() {
+        return transfers;
+    }
+
     boolean resourceMutationAllowed(RocketEntity rocket) {
         return transfers.resourceMutationAllowed(rocket);
     }

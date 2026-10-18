@@ -88,6 +88,7 @@ public final class RocketLanguageProvider extends LanguageProvider {
             case MIXED_PROPULSION_MODES, WRONG_PROPULSION_TANK_ROLE, EXTERNAL_COMPONENT_ABSTRACT_ONLY,
                     MISSING_PROPULSION_TANK, NUCLEAR_CORE_SUPPORT_REQUIRED, PROPULSION_CAPACITY_EXCEEDED,
                     PROPULSION_AGGREGATE_OVERFLOW -> V180PropulsionLanguage.entries(false).get(code.translationKey());
+            case DISASSEMBLY_PENDING -> V180LandedDisassemblyLanguage.entries(false).get(code.translationKey());
         };
     }
 
@@ -135,6 +136,7 @@ public final class RocketLanguageProvider extends LanguageProvider {
             case MIXED_PROPULSION_MODES, WRONG_PROPULSION_TANK_ROLE, EXTERNAL_COMPONENT_ABSTRACT_ONLY,
                     MISSING_PROPULSION_TANK, NUCLEAR_CORE_SUPPORT_REQUIRED, PROPULSION_CAPACITY_EXCEEDED,
                     PROPULSION_AGGREGATE_OVERFLOW -> V180PropulsionLanguage.entries(true).get(code.translationKey());
+            case DISASSEMBLY_PENDING -> V180LandedDisassemblyLanguage.entries(true).get(code.translationKey());
         };
     }
 }

@@ -1,5 +1,6 @@
 package io.github.sunthemoon.advancedrocketrycommunity.resourceescrow;
 
+import com.mojang.logging.LogUtils;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import java.util.HashMap;
 import java.util.Map;
@@ -18,6 +19,7 @@ import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.level.ChunkDataEvent;
 import net.minecraftforge.event.level.LevelEvent;
+import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
@@ -26,10 +28,17 @@ import net.minecraftforge.fml.common.Mod;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-/** Overworld-lifetime service handle. Static members are event adapters/capability identity, never world state. */
+/**
+ * Runtime-owned escrow services: a capability of the Overworld ServerLevel, so it lives as long as the running server.
+ * It owns the one admission authority for fills and the bay; each ledger-owned coordinator attaches to its PROPULSION
+ * delegate. Static members are event adapters/capability identity, never world state.
+ */
 @Mod.EventBusSubscriber(modid = ModIdentity.MOD_ID)
 public final class EscrowRuntime {
     public static final Capability<EscrowRuntime> CAPABILITY = CapabilityManager.get(new CapabilityToken<>() { });
+    private static final org.slf4j.Logger LOGGER = LogUtils.getLogger();
+    private EscrowAdmissionAuthority admission;
+    private EscrowAdmissionAuthority.Delegate propulsion;
     private final EscrowSaveMonitor monitor = new EscrowSaveMonitor();
     private final Map<ResourceKey<Level>, EscrowChunkStore> stores = new HashMap<>();
     private EscrowBarrier barrier;
@@ -48,6 +57,7 @@ public final class EscrowRuntime {
     private EscrowDestinationProbe destinationProbe;
     private EscrowPhaseProbe phaseProbe;
     private volatile EscrowTerminalProbe terminalProbe;
+    private volatile EscrowLoaderReleaseProbe loaderProbe;
     private volatile java.util.function.Consumer<String> terminalTestCut;
     void terminalCutForTests(MinecraftServer server, java.util.function.Consumer<String> cut) {
         EscrowTestEndpoints.requireEnabled(server);
@@ -103,20 +113,47 @@ public final class EscrowRuntime {
     EscrowTimingSink timings() { return flightBenchmark != null ? flightBenchmark.metrics : benchmark == null ? EscrowTimingSink.NONE : benchmark; }
     java.util.List<EscrowSettlementPruning.Group> settlementGroups(EscrowLedger root) { return settlements.pruningGroups(root); }
     private EscrowReconciliationScheduler scheduler;
+    /** The coordinator the scheduler drives; a test hook's ledger replacement makes the tick rebuild it. */
+    private EscrowCoordinator scheduled;
     private EscrowTestReconciliation reconciliation;
+    private EscrowFillQueue fills;
+    /** GameTest half of the gated switch: admission for exactly these devices, never a production enable. */
+    private final java.util.Set<java.util.UUID> admissionDevices = new java.util.HashSet<>();
     boolean stopping() { return stopping; }
     EscrowTestReconciliation reconcileTests(EscrowCoordinator coordinator, java.util.List<EscrowTestEndpoints.Fixture> fixtures,
                                           java.util.function.Predicate<EscrowEndpoint> veto) {
         if (reconciliation != null) { reconciliation.close(); }
         reconciliation = new EscrowTestReconciliation(coordinator, this, fixtures, veto);
         scheduler = new EscrowReconciliationScheduler(coordinator::ledger, coordinator::transition, reconciliation);
+        scheduled = coordinator;
         return reconciliation;
     }
+    /** The loaders' fair queue, created on the server thread. */
+    EscrowFillQueue fills(MinecraftServer server) {
+        if (fills == null) {
+            EscrowTags.require(server.isSameThread(), "The fill queue lives on the server thread");
+            fills = new EscrowFillQueue();
+        }
+        return fills;
+    }
+    /**
+     * The gated switch for GameTests (W11B3-DESIGN section 2): opens or closes admission for one loader device. It
+     * needs the release-test gate; production admission stays disabled.
+     */
+    public void loaderAdmissionForTests(MinecraftServer server, java.util.UUID device, boolean allowed) {
+        EscrowTestEndpoints.requireEnabled(server);
+        if (!allowed) { admissionDevices.remove(device); return; }
+        EscrowTags.require(admissionDevices.contains(device) || admissionDevices.size() < EscrowLimits.OPERATIONS,
+                "Too many gated loader devices");
+        admissionDevices.add(device);
+    }
+    boolean loaderAdmissionAllowed(java.util.UUID device) { return admissionDevices.contains(device); }
     public void checkpoint(String cut) {
         var measured = flightBenchmark; if (measured != null) { measured.metrics.checkpoint(cut); }
         var ordinary = reconciliationProbe; if (ordinary != null) { ordinary.checkpoint(cut); }
         var terminalCut = terminalTestCut; if (terminalCut != null) { terminalCut.accept(cut); }
         var nativeTerminal = terminalProbe; if (nativeTerminal != null) { nativeTerminal.checkpoint(cut); }
+        var loader = loaderProbe; if (loader != null) { loader.checkpoint(cut); }
         if (returnProbe != null) { returnProbe.checkpoint(cut); }
         if (phaseProbe != null) { phaseProbe.checkpoint(cut); }
         if (destinationProbe != null) { destinationProbe.checkpoint(cut); }
@@ -152,6 +189,45 @@ public final class EscrowRuntime {
     }
     public static EscrowRuntime of(MinecraftServer server) {
         return server.overworld().getCapability(CAPABILITY).orElseThrow(() -> new IllegalStateException("Missing escrow lifetime service"));
+    }
+    /**
+     * The one PROPULSION delegate, registered on the server thread at ServerStartingEvent. A ledger bound earlier, while
+     * the Levels prepare, registers it at that bind instead; there is never a second registration.
+     */
+    EscrowAdmissionAuthority.Delegate propulsion(MinecraftServer server) {
+        if (propulsion == null) {
+            EscrowTags.require(server.isSameThread(), "Escrow admission registers on the server thread");
+            admission = new EscrowAdmissionAuthority();
+            propulsion = admission.register(EscrowAdmissionAuthority.Consumer.PROPULSION);
+        }
+        return propulsion;
+    }
+    /**
+     * The only path that replaces the ledger SavedData, for test hooks. It retargets the PROPULSION delegate on the
+     * owner thread and returns false, changing nothing and throwing nothing, while the attached coordinator still holds
+     * queued, captured or UNKNOWN work. A null ledger returns the delegate to NO_FILE; a replaced coordinator stays open
+     * and attaches again if its ledger is restored.
+     */
+    public boolean replaceLedgerForTests(MinecraftServer server, @Nullable ResourceEscrowSavedData next) {
+        EscrowTestEndpoints.requireEnabled(server);
+        var delegate = propulsion(server);
+        if (ResourceEscrowSavedData.existing(server) != next && delegate.holdsWork()) { return false; }
+        server.overworld().getDataStorage().set(io.github.sunthemoon.advancedrocketrycommunity.persistence.migration
+                .ManagedSavedDataType.RESOURCE_ESCROW.dataName(), next);
+        return next == null ? delegate.retarget(null) : next.bind(server).attachAdmission();
+    }
+    /**
+     * Startup lookup, before the first tick: the load-only {@code existing} never creates a file. An existing ledger
+     * binds at once, so its coordinator's index is LOADED before any admission; no file means NO_FILE. A file that did
+     * not load (the pre-start check normally refuses startup first) keeps the delegate NOT_LOADED, so admission refuses.
+     */
+    @SubscribeEvent public static void starting(ServerStartingEvent event) {
+        var server = event.getServer(); var delegate = of(server).propulsion(server);
+        if (delegate.state() != EscrowAdmissionAuthority.Delegate.State.NOT_LOADED) { return; }
+        var data = ResourceEscrowSavedData.existing(server);
+        if (data != null) { data.bind(server); }
+        else if (!java.nio.file.Files.exists(ResourceEscrowSavedData.file(server))) { delegate.noFile(); }
+        else { LOGGER.warn("ARCE_ESCROW_LEDGER_NOT_LOADED; the ledger file did not load, so escrow admission stays refused"); }
     }
     public EscrowSaveMonitor monitor() { return monitor; }
     public EscrowBarrier barrier() {
@@ -196,13 +272,16 @@ public final class EscrowRuntime {
             if (runtime.settlementProbe == null) { runtime.settlementProbe = new EscrowSettlementProbe(event.getServer()); }
             runtime.settlementProbe.tick();
         }
+        // The loaders' fair queue first: at most one capture per tick, possibly a world's first fill and its ledger.
+        runtime.fills(event.getServer()).tick(event.getServer());
         ResourceEscrowSavedData data = ResourceEscrowSavedData.existing(event.getServer());
         if (data != null) {
             var coordinator = data.bind(event.getServer());
             if (!data.operational()) { return; }
-            if (runtime.scheduler == null) {
+            if (runtime.scheduler == null || runtime.scheduled != coordinator) {
                 runtime.scheduler = new EscrowReconciliationScheduler(coordinator::ledger, coordinator::transition,
                         (op, records, completion) -> RocketEscrowAudit.attempt(coordinator, event.getServer(), op, records, completion));
+                runtime.scheduled = coordinator;
             }
             data.tick(event.getServer().getTickCount());
             if (data.ledger().floors().stream().anyMatch(floor -> floor.hasUUID("transfer_id"))) {
@@ -229,6 +308,9 @@ public final class EscrowRuntime {
             } else if (testCase.startsWith("CR_")) {
                 if (runtime.reconciliationProbe == null) { runtime.reconciliationProbe = new EscrowReconciliationProbe(event.getServer()); }
                 runtime.reconciliationProbe.tick();
+            } else if (testCase.startsWith(EscrowLoaderReleaseProbe.PREFIX)) {
+                if (runtime.loaderProbe == null) { runtime.loaderProbe = new EscrowLoaderReleaseProbe(event.getServer()); }
+                runtime.loaderProbe.tick();
             } else if (testCase.startsWith("FT_")) {
                 if (runtime.terminalProbe == null) { runtime.terminalProbe = new EscrowTerminalProbe(event.getServer()); }
                 runtime.terminalProbe.tick();
@@ -269,6 +351,15 @@ public final class EscrowRuntime {
             }
         }
     }
+    /** W95's native restart fixture inspects the START of the first tick, before level ticking can bind a ledger lazily. */
+    @SubscribeEvent(priority = EventPriority.HIGHEST) public static void loaderProbeStart(TickEvent.ServerTickEvent event) {
+        if (event.phase != TickEvent.Phase.START || !Boolean.getBoolean(EscrowTestEndpoints.HOOKS)
+                || System.getProperty("advancedrocketrycommunity.escrowScenario") == null
+                || !System.getProperty("advancedrocketrycommunity.escrowCase", "").startsWith(EscrowLoaderReleaseProbe.PREFIX)) { return; }
+        var runtime = of(event.getServer()); if (runtime.stopping) { return; }
+        if (runtime.loaderProbe == null) { runtime.loaderProbe = new EscrowLoaderReleaseProbe(event.getServer()); }
+        runtime.loaderProbe.startTick();
+    }
     @SubscribeEvent(priority = EventPriority.HIGHEST) public static void benchmarkStart(TickEvent.ServerTickEvent event) {
         if (event.phase == TickEvent.Phase.START) {
             var benchmark = of(event.getServer()).benchmark; if (benchmark != null) { benchmark.startTick(); }
@@ -283,6 +374,7 @@ public final class EscrowRuntime {
     }
     @SubscribeEvent(priority = EventPriority.HIGHEST) public static void stopping(ServerStoppingEvent event) {
         EscrowRuntime runtime = of(event.getServer()); runtime.stopping = true;
+        if (runtime.fills != null) { runtime.fills.clear(); }
         runtime.settlement.close();
         if (runtime.barrier != null) { runtime.barrier.quiesce(); }
         ResourceEscrowSavedData data = ResourceEscrowSavedData.existing(event.getServer());
@@ -312,6 +404,7 @@ public final class EscrowRuntime {
         EscrowRuntime runtime = overworld.getCapability(CAPABILITY).resolve().orElse(null);
         if (runtime == null || runtime.stopping) { return; }
         runtime.stopping = true;
+        if (runtime.fills != null && server.isSameThread()) { runtime.fills.clear(); }
         runtime.settlement.close();
         if (runtime.barrier != null) { runtime.barrier.close(); } // Discards unfinished barriers; no new synchronization.
         ResourceEscrowSavedData data = ResourceEscrowSavedData.existing(server);

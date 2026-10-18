@@ -28,6 +28,13 @@ public final class EscrowReconciliationAction {
             return new Change(RocketFlightNbtCodec.decode(value.getCompound("flight")).data().orElseThrow(),
                     RocketEscrowSection.decode(value.getCompound("wrapper")));
         }
+        /** The loader's debit: its exact current envelope in, the fixed AFTER root out, once. */
+        public CompoundTag consume(io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderBlockEntity loader) {
+            EscrowTags.require(!destination && EscrowLoaderEndpoint.is(operation.source())
+                    && loader.getBlockPos().equals(EscrowLoaderEndpoint.position(operation.source())), "Fill permit names another endpoint");
+            return consume(loader::saveWithFullMetadata).getCompound(
+                    io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.LoaderRoot.KEY);
+        }
         CompoundTag consume(Supplier<CompoundTag> capture) {
             EscrowTags.require(Thread.currentThread() == owner && !consumed, "Fill permit is off-thread or already consumed");
             consumed = true;
@@ -41,7 +48,7 @@ public final class EscrowReconciliationAction {
                 && authority.getAsBoolean(), "Fill needs an acknowledged ordinary member");
         CompoundTag after;
         try { after = destination ? EscrowReconciliationChange.rocket(root.id(), operation, before)
-                : EscrowReconciliationChange.fixture(root.id(), operation, before); }
+                : EscrowReconciliationChange.source(root.id(), operation, before); }
         catch (IllegalArgumentException | IllegalStateException | java.util.NoSuchElementException invalid) {
             throw new EscrowReconciliationView.Refusal(EscrowReason.OTHER_STATE);
         }
@@ -56,6 +63,8 @@ public final class EscrowReconciliationAction {
         var runtime = EscrowRuntime.of(end.level().getServer());
         runtime.checkpoint(destination ? "C2_DESTINATION_BEFORE" : "C2_SOURCE_BEFORE");
         if (destination) { end.rocket().applyEscrowFill(permit); }
+        else if (end.source() instanceof io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderBlockEntity loader
+                && EscrowLoaderEndpoint.is(op.source())) { loader.applyEscrowDebit(permit); }
         else {
             EscrowTestEndpoints.requireEnabled(end.level().getServer());
             var after = permit.consume(end.source()::saveWithFullMetadata).getCompound("ForgeData");

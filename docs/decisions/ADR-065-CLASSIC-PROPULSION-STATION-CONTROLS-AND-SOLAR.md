@@ -1333,8 +1333,8 @@ or accept a risk. The risks are R-031, R-032 and R-035.
 - **Design:** `records/W11B2-DESIGN-2.md` (frozen at `238f4b9a`) and its independent review.
 - **Root decisions:** R1 to R20 (with R19A), in `D:/GitHub/ARCE-Task-Evidence/root-queue/` and summarized in
   the W11b2 records; each continuation's TASK names the ones it applies.
-- **Implementation:** W11b2 continuations 06 to 53 and W89, recorded in `records/W11B2.md`,
-  `records/W11B2-F7F8.md`, `records/W11B2-C41.md`, `records/W11B2-C46.md` to `records/W11B2-C53.md`
+- **Implementation:** W11b2 continuations 06 to 54 and W89, recorded in `records/W11B2.md`,
+  `records/W11B2-F7F8.md`, `records/W11B2-C41.md`, `records/W11B2-C46.md` to `records/W11B2-C54.md`
   and `records/W89.md`.
 - **Reviews.** The settlement, C09, C11 and C0 to C8 reviews; the final review part A
   (settlement, receipts, capacity, operator; MERGE-WITH-FOLLOWUP, SHA-256 `4d9d8273…`) and part B
@@ -1509,22 +1509,25 @@ exclusions remain.
 (design 2 section 1 says O3 names it). This has no safety effect: L is locked from O1 to O4, and
 O4 reads the previous head from the root it replaces.
 
-**Benchmark.** Continuation 53's native run on `453094c3` ran continuation 45's eight-flight
+**Benchmark.** Continuation 54's native run on `20304245` ran continuation 45's eight-flight
 reference load on the Windows 11 host (12 logical CPUs; the JVM limited to 4 processors and 4 GiB;
 not the Debian reference node): two connected players, 16 active oxygen vents, ten stations, 100
 satellite tasks, a 2,048-block assembly, eight concurrent governed flights through the player
 entry (all eight landed as checked idle survivors, six of them through F3's countdown fallback),
-one ordinary C0 to C8 retirement, settlement O1 to O4 with pruning, seven periodic saves and one
-restart. Over 1,400 measured ticks the main thread's mean was 4.14 ms, P95 12.42 ms and P99
-36.81 ms (budgets 25, 50 and 100 ms); the largest non-save tick was 164 ms (budget 500 ms) and the
-peak RSS 1.40 GiB (5.5 GiB). From the F1 request to the checked idle landed survivor took 19.6 s
-on average and 25.3 s at most. The runner reported one coverage gap, the world-first DEFER (R16
-item 3(c)), which continuation 54 adds. These short-run numbers are development evidence, not a
-soak, a reference-node measurement or a Gate result.
+a world-first DEFER held for 20 ticks over 77 dispatcher visits (R16 item 3(c)), one ordinary C0
+to C8 retirement, settlement O1 to O4 with pruning, seven periodic saves and one restart. The
+runner reported full coverage. Over 1,400 measured ticks the main thread's mean was 4.17 ms, P95
+12.04 ms and P99 39.43 ms (budgets 25, 50 and 100 ms); the largest non-save tick was 156 ms
+(budget 500 ms) and the peak RSS 1.78 GiB (5.5 GiB); the 20 ticks containing the DEFER averaged
+7.18 ms. From the F1 request to the checked idle landed survivor took 20.6 s on average and 26.4 s
+at most. Its first attempt completed the same workload but its process monitor reported an
+incomplete JVM inventory, so the runner rejected it before the restart; it is retained, not used.
+These short-run numbers are development evidence, not a soak, a reference-node measurement or a
+Gate result.
 
 **Open before W11b3 or any admission:**
-- Part 1's F3, F8 and N2 (designs W86 and W85, frozen; code after the merge). F9 was fixed by W77
-  and N1 by part 2.
+- Part 1's F3 and N2 (design W86, frozen; W91 implements them). F8 was fixed by W92 (the P1-F8
+  note below), F9 by W77 and N1 by part 2.
 - Signed per-fluid accounting.
 - Governed readiness (W90): dispatch needs each end's whole discovery margin loaded and
   entity-ticking, but the flight tickets make only each end's origin chunk entity-ticking, so a
@@ -1540,6 +1543,41 @@ soak, a reference-node measurement or a Gate result.
 - W83 (arrival entity readiness) before admission, as Root recommends.
 
 This is a development implementation note, not owner acceptance or a Gate result.
+
+### P1-F8 implementation note: landed disassembly keeps its claim (W92, Design M of W85 revision 3)
+
+Implemented by W92 (commits `2a28c604` to `df25825a`, record `records/W92.md`, merged at the W92 merge) and reviewed independently (W92-review, MERGE-WITH-FOLLOWUP, SHA-256 `4c8b9c2d…`). Root's decisions on the review: M2 also rechecks the v0.5 journal's operability and pending recovery before restoring (W92-R2), and a non-native schema-1 record may be disassembled with an identical write-back (W92-R4); both, with the review's other low findings, follow in W92F. The diagnostic native cuts K6 and K11 move to the S2 campaign.
+
+Disassembly of a landed arrival keeps the existing order: the checked removal of its transfer record
+T is acknowledged before any block is restored, so the transfer journal never rebuilds the rocket
+over restored blocks. This is not a promise that a stale native entity cannot reappear. No record,
+key, schema or root is added, and older jars read the journal unchanged. A request first runs the
+restoration's no-mutation checks; a predictable failure answers its code and keeps T. Otherwise the
+service reserves a journal continuation, removes T, keeps T's destination region and journal slot
+reserved for new flights in a session-only pending entry (at most 64), and answers
+DISASSEMBLY_PENDING. Repeated requests answer DISASSEMBLY_PENDING after the actor, identity, range
+and permission checks, and zero-fuel arrivals take the same path. On the removal's exact
+acknowledgement, and at most 200 ticks after the request, the continuation sets a one-way
+restoration latch and restores the rocket. The identical T is written back only when restoration
+never started (a late acknowledgement, a failed precondition or a discarded continuation) or after a
+certified complete rollback. Once mutation is uncertain (ROLLBACK_FAILED, or an exception or `Error`
+after the latch), nothing writes T back, and the v0.5 recovery stays the only owner of its record. A
+written-back T keeps the pending entry and the rocket's interlocks until its write is acknowledged,
+with no time limit; no timeout releases unacknowledged state. Residuals (R-035): ROLLBACK_FAILED or
+an uncertain mutation, a refused write-back, and a process stop while disk lacks T leave T released.
+That disk gap is about one tick or one checked write when uncontended, and unbounded while a
+successor write is late or failing or after an UNKNOWN outcome. The spot is then protected only by
+the loaded-rocket occupancy check and, once merged, W83's footprint readiness, which does not see an
+unloaded rocket whose entity lies outside the footprint. A process stop after the removal reaches
+disk loses an arrival whose entity section was never saved. A write-back that keeps failing locks
+the rocket and, while F3 is open, pauses every flight until storage is repaired. After a successful
+restoration, vanilla saves terrain chunks and entity sections independently, so a stop can leave a
+stale entity together with saved blocks, lose the unsaved chunks' blocks of a never-saved arrival,
+or, when the entity's removal was saved while a footprint chunk was inside its 10-second save
+cooldown, lose those blocks of an arrival that had been saved. These belong to the existing v0.5
+disassembly class. Only ROLLBACK_FAILED is detected, and a restart makes the losses and duplicates
+permanent. Repair needs a known-consistent whole-world backup from before the operation. This is a
+development implementation note, not owner acceptance or a Gate result.
 
 ## 11. Network, provenance, progression and verification
 

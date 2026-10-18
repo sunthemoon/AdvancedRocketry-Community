@@ -4,7 +4,9 @@ import com.mojang.logging.LogUtils;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.tank.TankContainerExchange;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlockEntities;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
-import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.ResourceEscrowSavedData;
+import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowLoaderAdmission;
+import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowReconciliationAction;
+import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowReconciliationPruning;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Optional;
@@ -37,7 +39,9 @@ import org.slf4j.Logger;
 /**
  * Design section 3: a thin bridge from the native lifecycle to one {@link LoaderRoot}. The held root is kept exactly as
  * loaded or last written, so an unsupported root saves unchanged. One all-side Fluid port, the owner's menu and local
- * container use are the only surfaces; admission is not wired, so nothing here ever moves fuel into a rocket.
+ * container use are the only surfaces. Fuel reaches a rocket only through escrow: a paced attempt waits in the fair
+ * queue, and only reconciliation's one-use permits debit the tank or prune its marker. Production admission stays
+ * disabled; the escrow adapter's gated switch opens it for release tests.
  */
 public final class FluidFuelLoaderBlockEntity extends BlockEntity implements MenuProvider {
     public static final double MAX_ACTOR_DISTANCE = 8.0D;
@@ -54,9 +58,9 @@ public final class FluidFuelLoaderBlockEntity extends BlockEntity implements Men
     @Nullable private RefillPacer pacer;
     @Nullable private FluidFuelLoaderStatus attempted;
     private boolean operationLock;
-    private long ledgerCheckedAt = Long.MIN_VALUE;
-    @Nullable private UUID ledgerCheckedFor;
-    private boolean ledgerNamesDevice;
+    private long progressCheckedAt = Long.MIN_VALUE;
+    @Nullable private UUID progressCheckedFor;
+    @Nullable private FluidFuelLoaderStatus progress;
     private long capEpoch;
     private LazyOptional<IFluidHandler> fluidCap;
 
@@ -104,8 +108,8 @@ public final class FluidFuelLoaderBlockEntity extends BlockEntity implements Men
     }
 
     /**
-     * Escrow holds this device: its section has a marker, or a durable ledger record names it. Admission is not wired,
-     * so no queued or captured operation can name a device yet; B3-E adds them. Reading never creates a ledger.
+     * Escrow holds this device: its section has a marker, or a durable, queued, captured or UNKNOWN operation, a frozen
+     * proof or a settlement receipt names it. Reading never creates a ledger.
      */
     public boolean escrowLocked() {
         if (root == null) {
@@ -117,17 +121,35 @@ public final class FluidFuelLoaderBlockEntity extends BlockEntity implements Men
         if (!(level instanceof ServerLevel server) || !server.getServer().isSameThread()) {
             return true;
         }
-        // The ledger lookup touches the disk when no ledger exists, so ports polled every tick reuse it within a tick.
-        long now = server.getGameTime();
-        UUID device = root.device();
-        if (ledgerCheckedAt != now || !device.equals(ledgerCheckedFor)) {
-            ResourceEscrowSavedData data = ResourceEscrowSavedData.existing(server.getServer());
-            ledgerNamesDevice = data != null && data.ledger().records().stream().anyMatch(op ->
-                    device.equals(op.source().identity()) || device.equals(op.destination().identity()));
-            ledgerCheckedAt = now;
-            ledgerCheckedFor = device;
+        return escrowProgress() != null;
+    }
+
+    /**
+     * The device's escrow progress (PREPARING, TRANSFERRING, ESCROW_PENDING or LEDGER_UNAVAILABLE), or null when escrow
+     * names nothing for it. Ports polled every tick reuse one lookup per tick; an admission refreshes it at once.
+     */
+    @Nullable
+    public FluidFuelLoaderStatus escrowProgress() {
+        if (root == null || !(level instanceof ServerLevel server) || !server.getServer().isSameThread()) {
+            return null;
         }
-        return ledgerNamesDevice;
+        long now = server.getGameTime();
+        if (progressCheckedAt != now || !root.device().equals(progressCheckedFor)) {
+            progress = EscrowLoaderAdmission.progress(this);
+            progressCheckedAt = now;
+            progressCheckedFor = root.device();
+        }
+        return progress;
+    }
+
+    /** The fair queue admitted this device: its port and binding lock in this very tick, before any capture repeats. */
+    public void escrowAdmitted() {
+        if (root != null && level instanceof ServerLevel server) {
+            progress = FluidFuelLoaderStatus.PREPARING;
+            progressCheckedAt = server.getGameTime();
+            progressCheckedFor = root.device();
+            attempted = FluidFuelLoaderStatus.PREPARING;
+        }
     }
 
     /** R-038 for the loader: an escrow-locked device or an unsupported root refuses removal, explosions and drops. */
@@ -145,7 +167,10 @@ public final class FluidFuelLoaderBlockEntity extends BlockEntity implements Men
                 && getBlockState().is(ModBlocks.FLUID_FUEL_LOADER.get());
     }
 
-    /** The refusal that the device's own state gives, before any rocket is looked up; null when there is none. */
+    /**
+     * The status the device's own state gives, before any rocket is looked up; null when there is none. While escrow
+     * holds the device this is its progress, so the owner sees PREPARING or TRANSFERRING rather than a bare lock.
+     */
     @Nullable
     public FluidFuelLoaderStatus deviceRefusal() {
         if (status == LoaderRoot.Status.INVALID) {
@@ -161,16 +186,24 @@ public final class FluidFuelLoaderBlockEntity extends BlockEntity implements Men
             return FluidFuelLoaderStatus.NOT_OWNER;
         }
         if (escrowLocked()) {
-            return FluidFuelLoaderStatus.ESCROW_PENDING;
+            FluidFuelLoaderStatus held = escrowProgress();
+            return held == null ? FluidFuelLoaderStatus.ESCROW_PENDING : held;
         }
         return root.binding() == null ? FluidFuelLoaderStatus.UNBOUND : null;
     }
 
-    /** What the menu shows: a device refusal at once, else the last paced attempt; admission is disabled throughout. */
+    /**
+     * What the menu shows: the device's own status or escrow progress at once, else the last paced attempt or fair-queue
+     * visit. A progress member whose operation has since resolved no longer describes anything, so it reads as READY
+     * until the next attempt refreshes it.
+     */
     public FluidFuelLoaderStatus displayStatus() {
         FluidFuelLoaderStatus refusal = deviceRefusal();
         if (refusal != null) {
             return refusal;
+        }
+        if (attempted == FluidFuelLoaderStatus.PREPARING || attempted == FluidFuelLoaderStatus.TRANSFERRING) {
+            return FluidFuelLoaderStatus.READY;
         }
         return attempted == null ? FluidFuelLoaderStatus.ADMISSION_DISABLED : attempted;
     }
@@ -186,13 +219,19 @@ public final class FluidFuelLoaderBlockEntity extends BlockEntity implements Men
             loader.pacer = RefillPacer.loadedAt(level.getGameTime());
         }
         if (loader.pacer.tryStart(level.getGameTime())) {
+            if (loader.root != null && loader.root.escrow().locked() && loader.live()) {
+                // Restart and next-observation cleanup of a retired marker; live records belong to reconciliation.
+                EscrowReconciliationPruning.observe(loader);
+            }
             loader.attempted = loader.attempt();
         }
     }
 
     /**
-     * One attempt, which the ticker runs at most once per refill interval. It runs every eligibility check a fill would
-     * and ends with ADMISSION_DISABLED where a fill would start: it never captures, reserves or moves anything.
+     * One attempt, which the ticker runs at most once per refill interval. It runs every eligibility check a fill would.
+     * Where a fill would start it gives ADMISSION_DISABLED, unless the escrow adapter's gated switch is open: then the
+     * device waits once in the fair queue (READY), or gets ESCROW_FULL when that bounded queue is full, and only the
+     * queue's visit captures or reserves anything.
      */
     public FluidFuelLoaderStatus attempt() {
         FluidFuelLoaderStatus refusal = deviceRefusal();
@@ -202,7 +241,47 @@ public final class FluidFuelLoaderBlockEntity extends BlockEntity implements Men
         if (!live()) {
             return FluidFuelLoaderStatus.WAITING_UNLOADED;
         }
-        return LoaderEligibility.check((ServerLevel) level, worldPosition, root);
+        ServerLevel server = (ServerLevel) level;
+        FluidFuelLoaderStatus status = LoaderEligibility.evaluate(server, worldPosition, root).refusal();
+        if (status != null) {
+            return status;
+        }
+        if (!EscrowLoaderAdmission.enabled(server.getServer(), root.device())) {
+            return FluidFuelLoaderStatus.ADMISSION_DISABLED;
+        }
+        return EscrowLoaderAdmission.offer(this, this::admitFromQueue);
+    }
+
+    /**
+     * One fair-queue visit (design section 2, "One attempt"): every device and eligibility check again, then at most one
+     * capture and admission. Returns true when it ran a capture, whatever the outcome; the status is kept for the menu.
+     */
+    public boolean admitFromQueue() {
+        FluidFuelLoaderStatus refusal = deviceRefusal();
+        if (refusal != null || !live()) {
+            attempted = refusal != null ? refusal : FluidFuelLoaderStatus.WAITING_UNLOADED;
+            return false;
+        }
+        LoaderEligibility.Resolved eligible = LoaderEligibility.evaluate((ServerLevel) level, worldPosition, root);
+        if (eligible.refusal() != null) {
+            attempted = eligible.refusal();
+            return false;
+        }
+        EscrowLoaderAdmission.Visit visit = EscrowLoaderAdmission.admit(this, eligible.rocket());
+        attempted = visit.status();
+        return visit.captured();
+    }
+
+    /** The ordinary reconciliation permit debits the tank and records its SOURCE marker as one write. */
+    public void applyEscrowDebit(EscrowReconciliationAction.Permit permit) {
+        LoaderRoot after = LoaderRoot.decode(Objects.requireNonNull(permit, "permit").consume(this));
+        write(after);
+    }
+
+    /** C8 and O4: the one-use permit removes only retired markers; the tank and epoch stay. */
+    public void pruneReconciledEscrow(EscrowReconciliationPruning.SourcePermit permit) {
+        LoaderEscrowSection section = Objects.requireNonNull(permit, "permit").consume(this);
+        write(new LoaderRoot(root.owner(), root.device(), root.binding(), root.tank(), section));
     }
 
     /** The owner, never a spectator, a fake player or another player (operators included), within 8 blocks. */
@@ -278,6 +357,7 @@ public final class FluidFuelLoaderBlockEntity extends BlockEntity implements Men
         root = next;
         status = LoaderRoot.Status.VALID;
         retainedByReference = false;
+        progressCheckedAt = Long.MIN_VALUE;
         setChanged();
     }
 
@@ -468,6 +548,7 @@ public final class FluidFuelLoaderBlockEntity extends BlockEntity implements Men
         held = null;
         root = null;
         attempted = null;
+        progressCheckedAt = Long.MIN_VALUE;
         retainedByReference = false;
         LoaderRoot.Read read = LoaderRoot.read(outer);
         status = read.status();

@@ -36,26 +36,52 @@ public final class ResourceEscrowSavedData extends SavedData {
     public EscrowCoordinator bind(MinecraftServer server) {
         if (!server.isSameThread()) { throw new IllegalStateException("Escrow binding requires the server thread"); }
         if (coordinator == null) {
-            var file = server.getWorldPath(LevelResource.ROOT).resolve("data")
-                    .resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName());
-            var writer = new EscrowLedgerWriter(file, ledger.writerGeneration(),
-                    EscrowRuntime.of(server).ledgerCommitter(server),
-                    EscrowRuntime.of(server)::checkpoint);
-            writer.timings(EscrowRuntime.of(server).timings());
+            var runtime = EscrowRuntime.of(server);
+            var writer = new EscrowLedgerWriter(file(server), ledger.writerGeneration(),
+                    runtime.ledgerCommitter(server),
+                    runtime::checkpoint);
+            writer.timings(runtime.timings());
             writer.baseline(ledger);
-            attach(new EscrowCoordinator(this, writer), () -> server.isRunning() && !server.isStopped());
+            // The coordinator attaches to the runtime's one PROPULSION delegate; it never registers an index.
+            attach(new EscrowCoordinator(this, writer, runtime.propulsion(server)), () -> server.isRunning() && !server.isStopped());
             coordinator.tick(server.getTickCount()); // The first explicit write uses the real server clock, not tick zero.
         }
         return coordinator;
     }
+    static java.nio.file.Path file(MinecraftServer server) {
+        return server.getWorldPath(LevelResource.ROOT).resolve("data").resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName());
+    }
+    /** Load-only lookup: it never creates a ledger or a file. */
     public static ResourceEscrowSavedData existing(MinecraftServer server) {
         return server.overworld().getDataStorage().get(ResourceEscrowSavedData::load,
                 ManagedSavedDataType.RESOURCE_ESCROW.dataName());
     }
+    /**
+     * Production creation (W11B3-DESIGN section 2, step 2), only from a first fill that the authority has already
+     * reserved while the PROPULSION delegate was NO_FILE. The ledger carries the ID the virtual empty root was checked
+     * against; its coordinator attaches to the delegate, which becomes LOADED, in creation-baseline mode. Creation has
+     * no refusal path of its own: a failed bind-time readback leaves the coordinator unavailable, and the caller's queue
+     * entry then cancels at once.
+     */
+    static EscrowCoordinator createForFill(MinecraftServer server, UUID id) {
+        EscrowTags.require(server.isSameThread() && existing(server) == null
+                && EscrowRuntime.of(server).propulsion(server).state() == EscrowAdmissionAuthority.Delegate.State.NO_FILE,
+                "Production ledger creation needs a NO_FILE world");
+        var created = new ResourceEscrowSavedData(EscrowLedger.empty(id));
+        server.overworld().getDataStorage().set(ManagedSavedDataType.RESOURCE_ESCROW.dataName(), created);
+        var coordinator = created.bind(server);
+        coordinator.beginCreationBaseline();
+        return coordinator;
+    }
+    /** Gated test creation goes through the runtime's retarget method, so a new ledger never registers a second index. */
     public static ResourceEscrowSavedData forTests(MinecraftServer server) {
         EscrowTestEndpoints.requireEnabled(server);
-        return server.overworld().getDataStorage().computeIfAbsent(ResourceEscrowSavedData::load,
-                ResourceEscrowSavedData::create, ManagedSavedDataType.RESOURCE_ESCROW.dataName());
+        var current = existing(server);
+        if (current != null) { return current; }
+        var created = create();
+        // No ledger is stored, so no attached coordinator holds work and the retarget cannot refuse.
+        EscrowTags.require(EscrowRuntime.of(server).replaceLedgerForTests(server, created), "Escrow test ledger creation was refused");
+        return created;
     }
     public void tick(long tick) { if (coordinator != null) { coordinator.tick(tick); } }
     public void stop() { if (coordinator != null) { coordinator.close(); } }

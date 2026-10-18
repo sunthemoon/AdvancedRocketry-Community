@@ -62,4 +62,15 @@ class EscrowFlightBenchmarkMetricsTest {
         assertEquals(2, metrics.samples().stream().filter(sample -> sample.phase().equals("allocation_bytes")).count());
         assertEquals(1, metrics.samples().stream().filter(sample -> sample.phase().equals("tick_main_nonsave")).count());
     }
+    @Test void deferCountsRemainRealCheckpointsAndTimingIsOnlyTheContainingTick() {
+        var metrics = new EscrowFlightBenchmarkMetrics(); metrics.start();
+        metrics.startTick(); metrics.endTick(false);
+        metrics.startTick(); metrics.checkpoint("WORLD_FIRST_DEFER"); metrics.checkpoint("WORLD_FIRST_DEFER"); metrics.endTick(false);
+        metrics.startTick(); metrics.endTick(false);
+        assertEquals(2, metrics.checkpoints().get("WORLD_FIRST_DEFER"));
+        var ticks = metrics.samples().stream().filter(sample -> sample.phase().equals("tick_main")).toList();
+        var deferred = metrics.samples().stream().filter(sample -> sample.phase().equals("tick_main_world_first_defer")).toList();
+        assertEquals(3, ticks.size()); assertEquals(1, deferred.size());
+        assertEquals(ticks.get(1).value(), deferred.get(0).value());
+    }
 }

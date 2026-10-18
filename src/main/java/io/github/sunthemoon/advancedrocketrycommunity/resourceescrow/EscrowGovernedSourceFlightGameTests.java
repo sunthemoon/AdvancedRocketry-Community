@@ -73,6 +73,12 @@ public final class EscrowGovernedSourceFlightGameTests {
     public static void landedDismountCompletesCheckedHandoffAndCleanup(GameTestHelper helper) {
         new Scenario(helper, Departure.LANDED).start();
     }
+    @GameTest(template = "empty", batch = "escrow_superseding_f1_complete", timeoutTicks = 600)
+    public static void supersedingF1SaveRetriesThenCompletesCheckedHandoff(GameTestHelper helper) {
+        var scenario = new Scenario(helper, Departure.LANDED);
+        scenario.supersedeF1 = true;
+        scenario.start();
+    }
     @GameTest(template = "empty", batch = "escrow_landed_relogin_complete", timeoutTicks = 600)
     public static void logoutDuringAscentAndLoginAfterLandingCompletesHandoffAndCleanup(GameTestHelper helper) {
         new Scenario(helper, Departure.LOGOUT).start();
@@ -133,6 +139,8 @@ public final class EscrowGovernedSourceFlightGameTests {
         private RocketEscrowSection wrapper;
         private boolean accepted;
         private boolean discarded;
+        private EscrowGameTestLaunch launch;
+        private boolean supersedeF1;
         private boolean observedAscent;
         private long changedAt = -1;
         private double previousY;
@@ -210,6 +218,7 @@ public final class EscrowGovernedSourceFlightGameTests {
                 prepare(); step = 1; return;
             }
             helper.assertTrue(!discarded, "Source preparation was discarded");
+            launch.tick();
             if (!accepted) { return; }
             var flight = rocket.flightData().orElseThrow();
             helper.assertTrue(initial.fuel().equals(flight.fuel()) && initial.passengers().equals(flight.passengers())
@@ -492,6 +501,27 @@ public final class EscrowGovernedSourceFlightGameTests {
                     helper.assertTrue(transfer.equals(pads.find(transfer, claimedPad.reference()).orElseThrow().claim()),
                             "Pad claim was released before checked journal absence");
                     verifyStoredSurvivor(record, arrival);
+                    // W85 G9: the terminal successor passes resource validation, but its record-3 T is refused
+                    // before any release; nothing changes and no pending disassembly starts.
+                    var landedSession = io.github.sunthemoon.advancedrocketrycommunity.rocket.server
+                            .RocketLandedDisassemblyGameTestSupport.create(helper);
+                    var owner = new io.github.sunthemoon.advancedrocketrycommunity.rocket.server
+                            .RocketLandedDisassemblyGameTestSupport.Requester((ServerLevel) arrival.level(), arrival.ownerId().orElseThrow());
+                    owner.setPos(arrival.position());
+                    var governedRecord = journal.find(transfer).orElseThrow();
+                    // W92-R1: every other M0 condition holds (landed authority, bay gate, effect queue, capacity and
+                    // preflight), so the record clause alone refuses the release.
+                    var withoutClause = landedSession.admission(arrival, false);
+                    var withClause = landedSession.admission(arrival, true);
+                    helper.assertTrue(withoutClause == io.github.sunthemoon.advancedrocketrycommunity.rocket.validation
+                            .RocketValidationCode.DISASSEMBLY_PENDING && withClause == io.github.sunthemoon
+                            .advancedrocketrycommunity.rocket.validation.RocketValidationCode.REGION_BUSY,
+                            "The record clause is not the only refusing M0 condition: " + withoutClause + " " + withClause);
+                    landedSession.requestDisassembly(owner, arrival);
+                    helper.assertTrue(owner.token != null && !landedSession.confirmDisassembly(owner, owner.token)
+                            && "validation.advancedrocketrycommunity.rocket.region_busy".equals(owner.lastActionBar())
+                            && journal.find(transfer).orElse(null) == governedRecord && !landedSession.pending(arrival)
+                            && arrival.isAlive() && journal.actionAuthorityAvailable(), "A record-3 arrival reached a landed release");
                     var flight = arrival.flightData().orElseThrow();
                     arrival.updateFlightData(flight.withFuel(flight.fuel().withFluidBank(false, ModIdentity.id("rocket_fuel"), null, 600), level.getGameTime()));
                     helper.assertTrue(arrival.escrowSection().epoch() == 1 && arrival.flightData().orElseThrow().fuel().committedDebits().equals(List.of(transfer)),
@@ -547,6 +577,13 @@ public final class EscrowGovernedSourceFlightGameTests {
         }
 
         private void finish(RocketTransferSavedData journal, RocketEntity arrival) {
+            if (supersedeF1) {
+                helper.assertTrue(launch.attempts() == 2 && launch.superseded() == 1,
+                        "Forced F1 supersession did not finish via exactly one retry");
+                io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity.LOGGER.info(
+                        "ARCE_GAMETEST_F1_RETRY_COMPLETED logical={} transfer={} attempts=2 superseded=1",
+                        initial.logicalRocketId(), transfer);
+            }
             if (departure != Departure.NONE) {
                 helper.assertTrue(departed && sawF6 && sawF7 && journal.find(transfer).isEmpty()
                         && (!logout() || reconnected), "Departure fixture did not finish checked F7/F8");
@@ -654,8 +691,21 @@ public final class EscrowGovernedSourceFlightGameTests {
             var plan = new RocketFlightPlan(3, transfer, RocketFlightPlanner.EARTH.bodyId(), RocketFlightPlanner.MOON.bodyId(),
                     from.sourceDimension(), from.sourceDimension(), 500, now).withPropulsionDebit(new RocketPropulsionDebit(500, 0,
                     fuel.propulsion().orElseThrow().revision(), fuel.resourceSignature(), RocketNativeResources.hash("F3 source fixture")));
-            helper.assertTrue(EscrowGovernedPreparation.begin(rocket, initial.withPlan(plan).startCountdown(now), to, record -> true,
-                    record -> accepted = true, () -> discarded = true), "F1 preparation was refused");
+            launch = new EscrowGameTestLaunch(helper, data.ledger().id(), initial.logicalRocketId(), transfer,
+                    (accept, discard) -> EscrowGovernedPreparation.begin(rocket,
+                            initial.withPlan(plan).startCountdown(level.getGameTime()), to, record -> true, accept, discard),
+                    record -> {
+                        if (supersedeF1) {
+                            helper.assertTrue(launch.attempts() == 2 && launch.superseded() == 1,
+                                    "Forced supersession did not complete via exactly one F1 retry");
+                        }
+                        accepted = true;
+                    }, () -> discarded = true);
+            launch.begin();
+            if (supersedeF1) {
+                helper.assertTrue(level.entityManager.storeChunkSections(rocket.chunkPosition().toLong(), entity -> { }),
+                        "Forced superseding entity save was refused");
+            }
         }
     }
 }

@@ -67,10 +67,12 @@ public final class RocketResourceRecoveryGameTests {
             fixture.reload();
             fixture.recover(RocketTransferRecoveryReport.Status.RECOVERED);
             fixture.assertBalances(0, 0, 2_000);
+            // W85: one zero-fuel request answers pending; the acknowledged removal's continuation restores the rocket.
             fixture.manager.requestDisassembly(fixture.player, fixture.rocket);
-            helper.assertTrue(fixture.rocket.isAlive(), "Unacknowledged retirement disassembled an arrival");
+            helper.assertTrue(fixture.rocket.isAlive() && fixture.player.refusal != null
+                    && fixture.player.refusal.getContents() instanceof net.minecraft.network.chat.contents.TranslatableContents pending
+                    && pending.getKey().endsWith("disassembly_pending"), "Unacknowledged retirement disassembled an arrival");
             io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport.acknowledgeFixture(helper);
-            fixture.manager.requestDisassembly(fixture.player, fixture.rocket);
             helper.assertTrue(fixture.rocket.isRemoved(), "Empty arrival disassembly refused");
             helper.assertTrue(fixture.journal().find(fixture.record.transferId()).isEmpty(),
                     "Disassembly retained reconstructable arrival resources");

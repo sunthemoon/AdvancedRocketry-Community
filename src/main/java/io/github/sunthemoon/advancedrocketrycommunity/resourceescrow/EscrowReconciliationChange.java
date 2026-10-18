@@ -35,6 +35,11 @@ final class EscrowReconciliationChange {
         return after;
     }
 
+    /** The source's fixed debit: the registered loader adapter, or the gated chest fixture. */
+    static CompoundTag source(UUID ledger, EscrowOperation op, CompoundTag before) {
+        return EscrowLoaderEndpoint.is(op.source()) ? EscrowLoaderEndpoint.change(ledger, op, before) : fixture(ledger, op, before);
+    }
+
     static CompoundTag fixture(UUID ledger, EscrowOperation op, CompoundTag before) {
         var after = before.copy(); var persistent = after.getCompound("ForgeData");
         var state = EscrowTestEndpoints.state(persistent, ledger, false);

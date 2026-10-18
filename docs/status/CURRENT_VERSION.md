@@ -38,12 +38,12 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: eff6eff3 (the W11b2 merge)
-latest_hosted_regression: run 39044351335 at c420e521 (the W11b2 head merged by eff6eff3), passed
+latest_code_commit: c7b5b99f (W11b2 continuation 54 merged after the W11b2 merge)
+latest_hosted_regression: run 39070027622 at 39887e72 (after the W93, W94 and W95 merges), failed two escrow proof GameTests at their 200-tick timeout (W94's retries; W94B fixes them); the last passing run is 39049214708 at d9a7c0e9
 ledger_planned_units: 19
 asset_review_items: 154
 required_gates_approved: none
-last_updated: 2026-10-17
+last_updated: 2026-10-18
 ```
 
 ## Current state
@@ -61,7 +61,7 @@ branch. Each merge records its hosted run and independent review in
   settings.
 - The D3-A escrow core and its rocket integration (W11b2: settlement, ordinary reconciliation and
   governed flights) are merged with admission disabled. Before admission: W11b3, W90a and W90b
-  (governed readiness and the destination warm-up), part 1's F3, F8 and N2, and W83.
+  (governed readiness and the destination warm-up), part 1's F3 and N2 (W91), and W83. P1-F8 is merged (W92).
 
 The hosted regression runs on the exact pushed commit:
 - a clean build with the unit tests;
@@ -87,6 +87,11 @@ What is still open:
 - **Assets.** 154 legacy assets are still under REVIEW (ADR-066 section 7.3).
 - **S1.** W11b1 and W44 have native dedicated-server restart evidence as development evidence.
   No S1 campaign has run.
+- **Intermittent GameTest.** Hosted run 39047343116 at `b01f441e` failed
+  `EscrowCoreGameTests.ownTerrainAndEntityStoresConfirmTheExactFrozenFrontier` once with
+  `SUPERSEDING_SAVE` (a test-timing race, W36's class); the next run passed. W94 (merged `ec7214c5`)
+  lets such proof tests retry only that reason; 30 of 30 local batch runs passed. Its two new
+  forced-supersession GameTests then timed out on hosted run 39060903571 at `8c3f5717`; W94B fixes them.
 - **S2.** W11b2's crash cuts passed natively as development evidence (the W11b2 records). The
   S2 campaign waits for W11b3.
 - **V1 and V2.** No slice has real-GPU or two-client evidence.
