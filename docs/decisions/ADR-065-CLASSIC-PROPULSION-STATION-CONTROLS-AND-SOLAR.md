@@ -1348,19 +1348,24 @@ and credited-world reconciliation are not part of part 1.
   baseline.
 - **Downgrade.** After schema-3 saves, an older jar quarantines every rocket verbatim, so a
   downgrade needs a whole-world backup.
-- **Paused transfers (F3, open).** While any journal write is unacknowledged, no live transfer
-  advances. Phase advances are serialized across the server. At the measured eight-transfer
-  writer p95 of about 125 ms, an advance pauses every flight for 2 to 3 ticks. At the largest
-  legal journal it pauses them for about 117 ticks.
+- **Paused transfers (F3).** Superseded by the P1-F3 and P1-N2 note below (W91): a flight now
+  waits only for its own record's snapshot. The text it replaces said that while any journal write
+  was unacknowledged no live transfer advanced, pausing every flight for 2 to 3 ticks per advance
+  at the measured writer p95 of about 125 ms, and for about 117 ticks at the largest legal journal.
 
 **Open before W11b3 or any admission:**
-- F3: per-record scheduling, with native multi-transfer timing evidence.
+- F3: closed by W91 (`264c4e30`, with W91R `843ea4dc`); see the P1-F3 and P1-N2 note below.
 - F8: the landed reservation is released before a disassembly that can still fail.
 - F9: a failing respawn rewrites the journal on each recovery attempt.
 - N1: a section bound to the current ledger is never idle. Restore "another ledger, or no
   ledger, is not idle", and add a test.
-- N2: with two queued generations, `failBackToSource` removes the record in RAM but cannot queue
-  its effect, so the landing pad stays reserved.
+- N2: closed by W91 (the fail-back reserves its continuation before it changes anything); its
+  native refused-reservation and named-pad cuts are still to run (the W96 leaf N3-C).
+- P1-N3 (found by W91K's native cuts, 2026-10-18; it predates W91): an ordinary fail-back changes
+  the source in RAM and then removes the record, with no entity save between, so a crash after the
+  removal is durable and before the source chunk saves leaves the rocket in its saved in-flight image
+  with no record. The design W96 is frozen with its review's amendments (Root decision R34); W98
+  implements the first leaf.
 
 This is a development implementation note, not owner acceptance or a Gate result.
 
@@ -1566,8 +1571,9 @@ These short-run numbers are development evidence, not a soak, a reference-node m
 Gate result.
 
 **Open before W11b3 or any admission:**
-- Part 1's F3 and N2 (design W86, frozen; W91 implements them). F8 was fixed by W92 (the P1-F8
-  note below), F9 by W77 and N1 by part 2.
+- Part 1's F3 and N2 are fixed by W91 (the P1-F3 and P1-N2 note below), F8 by W92 (the P1-F8
+  note below), F9 by W77 and N1 by part 2. P1-N3 (part 1 open item above) and N2's remaining
+  native cuts remain.
 - Signed per-fluid accounting.
 - Governed readiness and cold destinations (W90): fixed by W90a (`e80069c6`, one ticket per
   checked margin column) and W90b (`fcd549c9`, the bounded destination warm-up); see the W90
@@ -1611,7 +1617,8 @@ successor write is late or failing or after an UNKNOWN outcome. The spot is then
 the loaded-rocket occupancy check and, once merged, W83's footprint readiness, which does not see an
 unloaded rocket whose entity lies outside the footprint. A process stop after the removal reaches
 disk loses an arrival whose entity section was never saved. A write-back that keeps failing locks
-the rocket and, while F3 is open, pauses every flight until storage is repaired. After a successful
+the rocket and, while F3 was open, paused every flight until storage was repaired (superseded:
+since W91 it holds only that rocket). After a successful
 restoration, vanilla saves terrain chunks and entity sections independently, so a stop can leave a
 stale entity together with saved blocks, lose the unsaved chunks' blocks of a never-saved arrival,
 or, when the entity's removal was saved while a footprint chunk was inside its 10-second save
@@ -1619,6 +1626,49 @@ cooldown, lose those blocks of an arrival that had been saved. These belong to t
 disassembly class. Only ROLLBACK_FAILED is detected, and a restart makes the losses and duplicates
 permanent. Repair needs a known-consistent whole-world backup from before the operation. This is a
 development implementation note, not owner acceptance or a Gate result.
+
+### P1-F3 and P1-N2 implementation note: per-record journal scheduling (W91, design W86)
+
+This note records W91 (merged `264c4e30`, review W91-review MERGE-WITH-FOLLOWUP, follow-ups W91R
+`843ea4dc`) and its native evidence (W91N and W91N2 `0d6b839a`, W91K `93eb3ad2`). It changes no
+decision status and accepts no risk. The risk is R-035.
+
+- **The rule (Root decision R23).** The transfer journal keeps one file, one writer and one exact
+  acknowledgement. Each record slot, and the Moon-landing outbox, counts as acknowledged when the
+  acknowledged snapshot was captured at or after the slot's last change in RAM. A rocket is
+  actionable when its slot is acknowledged and it has no queued continuation and no held
+  reservation. Live flights, recovery, reconnection and governed flight permits check that the
+  rocket is actionable instead of a clean journal. A generation already in flight when a change is
+  made does not acknowledge it.
+- **Continuations (P1-N2).** Every ordinary journal mutation first reserves its continuation, one
+  per logical rocket; a refused reservation changes nothing. The exceptions are W11b2's F2 put,
+  settlement's O3J removal, the Moon-landing delivery, a write-back at a stop, and test fixtures,
+  each under its own frozen or whole-journal rule. Only W85's M2 (the landed removal's
+  continuation) runs while another record's write has failed (W91R).
+- **Failures.** UNKNOWN, a blocked or unreadable journal, and the time before a session's first
+  acknowledgement still pause every transfer; a legacy launch before that first acknowledgement is
+  admitted and counts down only after it (W91R). A definite failure stops only steps that need a
+  new write, and queued continuations wait for the retry.
+- **Whole-journal consumers (Root decision R31).** Escrow settlement, floor collection, the escrow
+  audit, governed F1 admission, pre-F2 cancellation and the test hooks still need a clean journal
+  with no queued continuation, and F1 admission, pre-F2 cancellation and settlement also need no
+  journal mutation during their asynchronous barrier and ledger write. Under eight-flight
+  staggered native traffic they completed in 907 ms, 986 ms and 2,988 ms (W91N2), but no journal
+  mutation fell inside those windows; under continuous traffic their wait has no bound.
+- **Measured (W91N, development evidence, not a reference-node result).** Five native sessions of
+  eight concurrent flights, staggered, simultaneous and with one record's write held, had no
+  missed actionable step, no step beyond the three-write bound, and mean, P95 and P99 tick times
+  within 25, 50 and 100 ms; each session had one tick over 500 ms at the first admission, recorded
+  for the reference campaign. `RocketJournalBenchmark` reran unchanged.
+- **Crash cuts (W91K).** The F3 held-successor, F3 UNKNOWN and governed exact-source return cuts
+  passed with two restarts each. The ordinary fail-back cuts after the removal's move and after an
+  UNKNOWN removal found P1-N3 (above).
+- **W92's landed disassembly** is on the per-record API (W91H): its request, removal and write-back
+  reserve before their mutation, and a later committed generation captured after T's removal
+  acknowledges that removal (Root decision R28).
+
+No saved format changes. This is a development implementation note, not owner acceptance or a
+Gate result.
 
 ## 11. Network, provenance, progression and verification
 
