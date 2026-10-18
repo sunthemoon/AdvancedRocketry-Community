@@ -26,7 +26,11 @@ public enum RocketFlightRequestCode {
     INSUFFICIENT_CAPACITY,
     INSUFFICIENT_FUEL,
     ARITHMETIC_OVERFLOW,
-    DISCOVERY_REQUIRED;
+    DISCOVERY_REQUIRED,
+    /** W90 (R21 item 3): a governed source whose checked margin is not admissible. Never saved or sent. */
+    LAUNCH_CHUNK_BUDGET,
+    /** W90 (R22 answer 4): a governed source whose checked margin is not wholly loaded and entity-ticking. */
+    LAUNCH_AREA_INACTIVE;
 
     public String translationKey() {
         return "flight.advancedrocketrycommunity.request."

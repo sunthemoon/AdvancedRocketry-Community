@@ -22,6 +22,13 @@ public final class NamedLandingPadStaging {
 
     public RocketLandingPadSelection select(ServerLevel level, RocketStructureSnapshot source, UUID transfer,
             StationState station, LandingPadReference reference, List<RocketRegion> reservations, long gameTime) {
+        return select(level, source, transfer, station, reference, reservations, gameTime, false);
+    }
+
+    /** {@code governed}: the checked margin replaces the region count (W90, R21 item 3); every other rule stays. */
+    public RocketLandingPadSelection select(ServerLevel level, RocketStructureSnapshot source, UUID transfer,
+            StationState station, LandingPadReference reference, List<RocketRegion> reservations, long gameTime,
+            boolean governed) {
         LandingPadEntry entry = LandingPadService.resolve(level.getServer(), station.stationId(), reference);
         if (entry == null) { return refusal("message.advancedrocketrycommunity.pad.reason.identity"); }
         try {
@@ -34,7 +41,7 @@ public final class NamedLandingPadStaging {
             var snapshot = source.relocated(UUID.nameUUIDFromBytes((transfer + ":pad:" + reference.padId())
                     .getBytes(StandardCharsets.UTF_8)), level.dimension().location(), origin, gameTime);
             var region = RocketRegion.fromSnapshot(snapshot);
-            String reason = unavailable(level, snapshot, station);
+            String reason = unavailable(level, snapshot, station, governed);
             if (reason != null) { return refusal(reason); }
             if (reservations.stream().anyMatch(region::overlaps)) { return refusal("message.advancedrocketrycommunity.pad.reason.reserved"); }
             if (!LandingPadService.claim(level.getServer(), entry, transfer)) { return refusal("message.advancedrocketrycommunity.pad.reason.claimed"); }
@@ -55,6 +62,11 @@ public final class NamedLandingPadStaging {
 
     /** Counts every inspected clearance/support block before the first world access. */
     public String unavailable(ServerLevel level, RocketStructureSnapshot snapshot, StationState station) {
+        return unavailable(level, snapshot, station, false);
+    }
+
+    /** {@code governed}: after the block budget and before any chunk or block read, the checked margin decides. */
+    public String unavailable(ServerLevel level, RocketStructureSnapshot snapshot, StationState station, boolean governed) {
         var region = RocketRegion.fromSnapshot(snapshot);
         long width = (long) region.maximum().x() - region.minimum().x() + 1;
         long depth = (long) region.maximum().z() - region.minimum().z() + 1;
@@ -66,7 +78,10 @@ public final class NamedLandingPadStaging {
         }
         long chunkWidth = (long) (region.maximum().x() >> 4) - (region.minimum().x() >> 4) + 1;
         long chunkDepth = (long) (region.maximum().z() >> 4) - (region.minimum().z() >> 4) + 1;
-        if (chunkWidth * chunkDepth > RocketFlightLimits.MAX_LANDING_CHUNKS) { return "message.advancedrocketrycommunity.pad.reason.chunk_budget"; }
+        if (governed ? !RocketDiscoveryColumns.of(snapshot).admissible()
+                : chunkWidth * chunkDepth > RocketFlightLimits.MAX_LANDING_CHUNKS) {
+            return RocketLandingPadSelector.CHUNK_BUDGET;
+        }
         if (!level.dimension().location().equals(snapshot.sourceDimension())
                 || region.minimum().y() <= level.getMinBuildHeight() || region.maximum().y() >= level.getMaxBuildHeight()
                 || !station.region().contains(region.minimum().x(), region.minimum().z())

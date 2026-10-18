@@ -13,8 +13,9 @@ import net.minecraft.server.MinecraftServer;
 
 /** Runtime-lifetime diagnostics only; a hold never supplies action or recovery authority. */
 public final class EscrowGovernedExecutorHolds {
+    /** W90 (R21 item 2): {@code DISCOVERY_MARGIN} is a recorded end whose checked column set is invalid or lacks its origin. */
     public enum Reason { PERSISTENT_PLACEMENT, SOURCE_ENVELOPE, DESTINATION_ENVELOPE, PHASE_ENVELOPE,
-        ARRIVAL_ENVELOPE, RETURN_ENVELOPE, TERMINAL_ENVELOPE, NATIVE_ENDPOINT }
+        ARRIVAL_ENVELOPE, RETURN_ENVELOPE, TERMINAL_ENVELOPE, NATIVE_ENDPOINT, DISCOVERY_MARGIN }
     record Notice(UUID transfer, Reason reason) { }
     private final Map<UUID, State> flights = new HashMap<>();
     private final Consumer<Notice> logger;
@@ -38,6 +39,10 @@ public final class EscrowGovernedExecutorHolds {
         if (state.reported.add(reason)) { logger.accept(new Notice(transfer, reason)); }
     }
     public boolean held(RocketTransferRecord record) { return held(record.transferId()); }
+    /** The active hold's reason, for the read-only inspect field. */
+    public java.util.Optional<Reason> reason(UUID transfer) {
+        var state = flights.get(transfer); return java.util.Optional.ofNullable(state == null ? null : state.active);
+    }
     boolean held(UUID transfer) { var state = flights.get(transfer); return state != null && state.active != null; }
     void healthy(RocketTransferRecord record) { healthy(record.transferId()); }
     void healthy(UUID transfer) { var state = flights.get(transfer); if (state != null) { state.active = null; } }

@@ -19,9 +19,30 @@ public record RocketTransferInspection(
         int passengerCount,
         String checksum,
         int sourceMatches,
-        int destinationMatches
+        int destinationMatches,
+        Readiness readiness
 ) {
+    /**
+     * W90 (Root decision R21 item 6): {@code k/n} or {@code invalid} per recorded end, NONE, LOADING, CENSUS or
+     * HOLD:reason, and the size of the last refreshed ticket set. Read from RAM and the loaded index only.
+     */
+    public record Readiness(String sourceMargin, String destinationMargin, String waitState, int tickets) {
+        private static final int MAX_FIELD_LENGTH = 64;
+
+        public Readiness {
+            for (String field : new String[] {sourceMargin, destinationMargin, waitState}) {
+                if (Objects.requireNonNull(field, "readiness field").length() > MAX_FIELD_LENGTH) {
+                    throw new IllegalArgumentException("Transfer inspection readiness field exceeds its bound");
+                }
+            }
+            if (tickets < 0 || tickets > 2 * RocketFlightLimits.MAX_LANDING_CHUNKS) {
+                throw new IllegalArgumentException("Transfer inspection ticket count is outside its bound");
+            }
+        }
+    }
+
     public RocketTransferInspection {
+        Objects.requireNonNull(readiness, "readiness");
         Objects.requireNonNull(transferId, "transferId");
         Objects.requireNonNull(logicalRocketId, "logicalRocketId");
         Objects.requireNonNull(phase, "phase");

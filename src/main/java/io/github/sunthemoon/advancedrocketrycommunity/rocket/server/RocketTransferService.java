@@ -91,6 +91,8 @@ final class RocketTransferService {
         if (destinationLevel == null) {
             return RocketFlightRequestResult.failure(RocketFlightRequestCode.INVALID_DESTINATION);
         }
+        var admission = RocketGovernedAdmission.check(server, rocket, plan); // W90: governed-only source and pad bounds
+        if (admission.refusal() != null) { return admission.refusal(); }
         List<RocketRegion> reservations = launchReservations(server, journal);
         RocketLandingPadSelection selected;
         if (plan.destinationStation().isPresent()) {
@@ -102,13 +104,13 @@ final class RocketTransferService {
             }
             selected = plan.landingPad() != null ? namedPads.select(destinationLevel,
                     rocket.snapshot().orElseThrow(), plan.requestId(), station, plan.landingPad(), reservations,
-                    scheduledArrival(countdown)) : pads.selectStation(
+                    scheduledArrival(countdown), admission.governed()) : pads.selectStation(
                     destinationLevel,
                     rocket.snapshot().orElseThrow(),
                     plan.requestId(),
                     station,
                     reservations,
-                    scheduledArrival(countdown)
+                    scheduledArrival(countdown), admission.governed()
             );
         } else {
             selected = pads.select(
@@ -116,7 +118,7 @@ final class RocketTransferService {
                     rocket.snapshot().orElseThrow(),
                     plan.requestId(),
                     reservations,
-                    scheduledArrival(countdown)
+                    scheduledArrival(countdown), admission.governed()
             );
         }
         if (!selected.success()) {
@@ -127,7 +129,7 @@ final class RocketTransferService {
             );
         }
 
-        if (rocket.escrowSection().ledger() != null) {
+        if (admission.governed()) {
             boolean started = io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGovernedPreparation.begin(
                     rocket, countdown, selected.snapshot().orElseThrow(),
                     candidate -> RocketGovernedLaunchBoundary.allows(server, journal, candidate, rocket, recovery.bays()),
@@ -427,7 +429,7 @@ final class RocketTransferService {
                 record.sourceFlightData().passengers().assignments().size(),
                 record.checksum(),
                 RocketTransferEntities.loadedMatches(server, record, false).size(),
-                RocketTransferEntities.loadedMatches(server, record, true).size()
+                RocketTransferEntities.loadedMatches(server, record, true).size(), governedSources.readiness(server, record)
         ));
     }
 

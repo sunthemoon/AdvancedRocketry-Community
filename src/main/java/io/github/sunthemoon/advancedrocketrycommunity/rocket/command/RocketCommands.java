@@ -195,6 +195,10 @@ public final class RocketCommands {
                                 + " fuel=" + inspection.fuelBefore() + "->" + inspection.fuelAfter()
                                 + " passengers=" + inspection.passengerCount()
                                 + " checksum=" + inspection.checksum()
+                                + " margin=source:" + inspection.readiness().sourceMargin()
+                                + ",destination:" + inspection.readiness().destinationMargin()
+                                + " wait=" + inspection.readiness().waitState()
+                                + " tickets=" + inspection.readiness().tickets()
                 ),
                 false
         );

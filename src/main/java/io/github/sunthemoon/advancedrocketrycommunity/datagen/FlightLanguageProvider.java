@@ -66,6 +66,8 @@ public final class FlightLanguageProvider extends LanguageProvider {
             );
         }
         for (RocketFlightRequestCode code : RocketFlightRequestCode.values()) {
+            // Added by the v1.8 provider; the v0.6 output root never changes.
+            if (code == RocketFlightRequestCode.LAUNCH_CHUNK_BUDGET || code == RocketFlightRequestCode.LAUNCH_AREA_INACTIVE) { continue; }
             add(code.translationKey(), chinese ? requestChinese(code) : requestEnglish(code));
         }
     }
@@ -142,6 +144,7 @@ public final class FlightLanguageProvider extends LanguageProvider {
             case INSUFFICIENT_FUEL -> "Not enough fuel; route requires %s units";
             case ARITHMETIC_OVERFLOW -> "Route calculation exceeded its fixed bounds";
             case DISCOVERY_REQUIRED -> "Discover this body with a Data Satellite first";
+            case LAUNCH_CHUNK_BUDGET, LAUNCH_AREA_INACTIVE -> throw new IllegalArgumentException("The v1.8 provider adds " + code);
         };
     }
 
@@ -171,6 +174,7 @@ public final class FlightLanguageProvider extends LanguageProvider {
             case INSUFFICIENT_FUEL -> "燃料不足；航程需要 %s 单位";
             case ARITHMETIC_OVERFLOW -> "航程计算超出固定边界";
             case DISCOVERY_REQUIRED -> "请先通过数据卫星发现此天体";
+            case LAUNCH_CHUNK_BUDGET, LAUNCH_AREA_INACTIVE -> throw new IllegalArgumentException("The v1.8 provider adds " + code);
         };
     }
 }

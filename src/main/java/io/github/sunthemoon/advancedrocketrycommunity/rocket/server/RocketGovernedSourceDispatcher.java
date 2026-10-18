@@ -11,6 +11,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlight
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferPhase;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.RocketDiscoveryColumns;
 import java.util.List;
 import net.minecraft.server.MinecraftServer;
 
@@ -18,18 +19,80 @@ import net.minecraft.server.MinecraftServer;
 final class RocketGovernedSourceDispatcher {
     static final int VISITS_PER_TICK = 8;
     private int cursor;
+    private final RocketGovernedWaits waits = new RocketGovernedWaits();
 
     void tick(MinecraftServer server, RocketTransferSavedData journal, RocketTransferBayDispatch bays) {
         var holds = EscrowRuntime.of(server).executorHolds();
-        holds.retain(journal.entries());
+        holds.retain(journal.entries()); waits.retain(journal.entries());
         cursor = visit(journal.entries(), cursor, true, record -> {
             var boundary = bays.before(server, journal, record, RocketTransferBayRecoveryGate.Action.TICK_SOURCE);
-            if (boundary == null || boundary.kind() != RocketTransferBayRecoveryGate.BoundaryKind.UNCLAIMED) { return; }
-            afterClassification(EscrowRuntime.of(server).governedFlights().classify(server, journal, record),
-                    () -> holds.held(record), () -> RocketTransferEntities.refreshGovernedFlightTickets(server, record),
-                    () -> RocketTransferEntities.recoveryEndsAlreadyLoaded(server, record),
+            if (boundary == null || boundary.kind() != RocketTransferBayRecoveryGate.BoundaryKind.UNCLAIMED) {
+                waits.excluded(record.transferId()); return;
+            }
+            var decision = EscrowRuntime.of(server).governedFlights().classify(server, journal, record);
+            afterClassification(decision, () -> holds.held(record),
+                    () -> waits.tickets(record.transferId(), RocketTransferEntities.refreshGovernedFlightTickets(server, record)),
+                    () -> ready(server, journal, record, bays),
                     () -> dispatchLoaded(server, journal, record, bays));
+            if (decision.route() != EscrowGovernedDispatch.Route.ACTIVE || holds.held(record)) { waits.excluded(record.transferId()); }
         });
+    }
+
+    /**
+     * W90 (R21 item 2): a recorded end outside the checked column set is a {@code DISCOVERY_MARGIN} hold before any
+     * readiness, execution or refresh. Otherwise the unchanged readiness predicate decides; an unheld visit also
+     * records its wait (R21 item 6) from read-only checks.
+     */
+    private boolean ready(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
+                          RocketTransferBayDispatch bays) {
+        var holds = EscrowRuntime.of(server).executorHolds();
+        if (!marginsAdmissible(record)) {
+            holds.hold(server, record, io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGovernedExecutorHolds.Reason.DISCOVERY_MARGIN);
+            return false;
+        }
+        boolean loaded = RocketTransferEntities.recoveryEndsAlreadyLoaded(server, record);
+        if (holds.held(record)) { return loaded; }
+        var wait = !loaded ? RocketGovernedWaits.Wait.LOADING
+                : censusAllows(server, journal, record, bays) ? RocketGovernedWaits.Wait.NONE : RocketGovernedWaits.Wait.CENSUS;
+        waits.observe(record, server.getTickCount(), wait, () -> "source=" + RocketTransferEntities.marginStatus(server, record.sourceSnapshot())
+                + " destination=" + RocketTransferEntities.marginStatus(server, record.destinationSnapshot()));
+        return loaded;
+    }
+
+    static boolean marginsAdmissible(RocketTransferRecord record) {
+        return RocketDiscoveryColumns.of(record.sourceSnapshot()).admissible()
+                && RocketDiscoveryColumns.of(record.destinationSnapshot()).admissible();
+    }
+
+    /** The wait log's census, with the participants that the executors pass; read-only like the boundary itself. */
+    private static boolean censusAllows(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
+                                        RocketTransferBayDispatch bays) {
+        var sourceLevel = RocketTransferEntities.level(server, record.sourceSnapshot().sourceDimension());
+        var destinationLevel = RocketTransferEntities.level(server, record.destinationSnapshot().sourceDimension());
+        if (sourceLevel == null || destinationLevel == null) { return false; }
+        var sourceEntity = sourceLevel.getEntity(record.sourceEntityId());
+        var arrivalEntity = record.phase() == RocketTransferPhase.PREPARED ? null
+                : destinationLevel.getEntity(record.nativeTransfer().orElseThrow().armed().destination());
+        if (sourceEntity != null && !(sourceEntity instanceof RocketEntity)
+                || arrivalEntity != null && !(arrivalEntity instanceof RocketEntity)) { return false; }
+        var source = sourceEntity instanceof RocketEntity rocket && !rocket.isRemoved() ? rocket : null;
+        return arrivalEntity instanceof RocketEntity arrival
+                ? RocketGovernedLaunchBoundary.allows(server, journal, record, source, arrival, bays)
+                : RocketGovernedLaunchBoundary.allows(server, journal, record, source, bays);
+    }
+
+    /**
+     * Inspect (R21 item 6), read-only: both recorded margins, the active hold or the current wait, and the size of the
+     * set refreshed at the last visit (0 while held or not ACTIVE).
+     */
+    io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferInspection.Readiness readiness(
+            MinecraftServer server, RocketTransferRecord record) {
+        var hold = EscrowRuntime.of(server).executorHolds().reason(record.transferId());
+        return new io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferInspection.Readiness(
+                RocketTransferEntities.marginStatus(server, record.sourceSnapshot()),
+                RocketTransferEntities.marginStatus(server, record.destinationSnapshot()),
+                hold.map(reason -> "HOLD:" + reason).orElseGet(() -> waits.wait(record.transferId()).name()),
+                waits.tickets(record.transferId()));
     }
 
     private static void dispatchLoaded(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
@@ -181,5 +244,5 @@ final class RocketGovernedSourceDispatcher {
         return (start + count) % sources.size();
     }
 
-    void clear() { cursor = 0; }
+    void clear() { cursor = 0; waits.clear(); }
 }

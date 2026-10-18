@@ -147,6 +147,8 @@
   "body.advancedrocketrycommunity.tau_ceti_g": "鲸鱼座τ g",
   "enchantment.advancedrocketrycommunity.space_breathing": "太空呼吸",
   "flight.advancedrocketrycommunity.request.journal_pending": "等待转移日志持久化确认；需要燃料 %s",
+  "flight.advancedrocketrycommunity.request.launch_area_inactive": "火箭发射区域有部分未激活；整个发射区域激活（或缩小火箭）后才能再次发射",
+  "flight.advancedrocketrycommunity.request.launch_chunk_budget": "火箭发射区域超过 16 区块预算",
   "fluid_type.advancedrocketrycommunity.enriched_lava": "富集熔岩",
   "fluid_type.advancedrocketrycommunity.hydrogen": "氢气",
   "fluid_type.advancedrocketrycommunity.nitrogen": "氮气",
