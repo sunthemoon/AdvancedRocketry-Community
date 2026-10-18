@@ -39,7 +39,7 @@ development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
 latest_code_commit: e80069c6 (W90a merged: governed flight readiness)
-latest_hosted_regression: run 39085135243 at 0a3964e7 (the W92F merge) failed only EscrowProofRetryGameTests.supersededEntityProofRetriesTheSameFrontierAfterBackoff at its 200-tick timeout (W94's forced-supersession test; W94B fixes it), and every other GameTest passed; Repository governance passed (run 39085135245); the last fully passing regression is 39049214708 at d9a7c0e9
+latest_hosted_regression: run 39091589526 at e80069c6 (the W90a merge) failed only EscrowProofRetryGameTests.supersededEntityProofRetriesTheSameFrontierAfterBackoff at its 200-tick timeout (W94's forced-supersession test; W94B fixes it), as run 39085135243 at 0a3964e7 did, and every other GameTest passed; Repository governance passed (run 39091589547); the last fully passing regression is 39049214708 at d9a7c0e9
 ledger_planned_units: 19
 asset_review_items: 154
 required_gates_approved: none
@@ -93,7 +93,7 @@ What is still open:
   `SUPERSEDING_SAVE` (a test-timing race, W36's class); the next run passed. W94 (merged `ec7214c5`)
   lets such proof tests retry only that reason; 30 of 30 local batch runs passed. Its two new
   forced-supersession GameTests then timed out on hosted run 39060903571 at `8c3f5717`, and one of them again
-  on run 39085135243 at `0a3964e7`; W94B fixes them.
+  on runs 39085135243 at `0a3964e7` and 39091589526 at `e80069c6`; W94B fixes them.
 - **S2.** W11b2's crash cuts passed natively as development evidence (the W11b2 records). The
   S2 campaign waits for W11b3.
 - **V1 and V2.** No slice has real-GPU or two-client evidence.
