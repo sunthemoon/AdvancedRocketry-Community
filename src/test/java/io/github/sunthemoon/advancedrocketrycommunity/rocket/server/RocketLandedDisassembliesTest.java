@@ -310,6 +310,69 @@ class RocketLandedDisassembliesTest {
         f.close();
     }
 
+    @Test void anAcknowledgedRemovalRestoresWhileADisjointGenerationFailsDefinitely() {
+        // Root decision R30 (W91-R1): M2 opts in to run during a failed write. The removal's own generation commits, and
+        // a disjoint generation ends NOT_COMMITTED before the visit, as when both complete in one writer tick. M2 still
+        // runs within the confirmation lifetime. Nothing else opts in: the ordinary continuation that the same
+        // acknowledgement covers waits for the retry, and so does mode 1's write-back after a clean failure.
+        for (int mode = 0; mode < 2; mode++) {
+            var f = new Fixture(new RocketPosition(64 + mode * 64, 80, 64));
+            if (mode == 1) { f.world.blocks.put(f.absolute(1), new RocketWorldBlock(state("minecraft:stone"), null)); } // 0 of 0
+            assertEquals(RocketValidationCode.DISASSEMBLY_PENDING, f.release());
+            var covered = landed(new RocketPosition(2_000, 80, 2_000));
+            var ran = new ArrayList<String>();
+            try (var token = f.journal.reserve(covered.logicalRocketId()).orElseThrow()) {
+                f.journal.put(covered);
+                assertTrue(RocketJournalTestAccess.queue(f.journal, token, () -> ran.add("covered"), () -> ran.add("discarded")));
+            }
+            RocketJournalTestAccess.request(f.journal, file(), CheckedSavedDataPolicy.atomic(TYPE)); // T absent, covered present
+            RocketJournalTestAccess.awaitWriter(f.journal); // Published; no visit has run.
+            assertEquals(RocketTransferSavedData.WriteOutcome.COMMITTED, f.journal.checkedWriteResult().outcome());
+            var disjoint = landed(new RocketPosition(3_000, 80, 3_000));
+            f.journal.put(disjoint);
+            var failing = new CheckedSavedDataPolicy(TYPE, (staged, target) -> { throw new IOException("Injected disjoint failure"); });
+            RocketJournalTestAccess.request(f.journal, file(), failing);
+            RocketJournalTestAccess.awaitWriter(f.journal);
+            assertEquals(RocketTransferSavedData.WriteOutcome.NOT_COMMITTED, f.journal.checkedWriteResult().outcome());
+            assertEquals(0, f.request.restores, "M2 ran before the visit");
+            f.port.now = RocketDisassemblyConfirmations.LIFETIME_TICKS / 2;
+            f.journal.pollWriter(tick += 1);
+            assertEquals(RocketTransferSavedData.WriteOutcome.NOT_COMMITTED, f.journal.checkedWriteResult().outcome());
+            assertEquals(1, f.request.restores, "The acknowledged removal did not restore during the disjoint failure");
+            assertEquals(List.of(), ran, "An ordinary continuation ran during the failed write");
+            assertFalse(f.journal.actionable(covered.logicalRocketId()), "The waiting continuation was dropped");
+            assertEquals(List.of("released"), f.port.events);
+            assertEquals(List.of(covered.transferId()), f.diskRecords(), "The failed generation reached the disk");
+            if (mode == 0) {
+                assertEquals(List.of("SUCCESS"), f.request.reports);
+                assertFalse(f.disassemblies.pending(f.logical()));
+                assertTrue(f.journal.find(f.landed.transferId()).isEmpty(), "T was written back");
+                assertTrue(f.world.rockets.isEmpty() && f.world.blocks.size() == f.snapshot().blocks().size());
+            } else {
+                assertEquals(List.of("TARGET_OCCUPIED"), f.request.reports);
+                assertEquals(Stage.WRITE_BACK, f.disassemblies.find(f.logical()).stage());
+                assertSame(f.landed, f.journal.find(f.landed.transferId()).orElseThrow(), "The identical record");
+                assertTrue(f.world.rockets.containsKey(f.entity), "E survives a clean failure");
+                assertTrue(f.journal.resourceMutationUnproved(f.logical()));
+            }
+            f.acknowledge(); // The retry commits.
+            assertEquals(List.of("covered"), ran);
+            assertFalse(f.disassemblies.pending(f.logical()));
+            assertEquals(1, f.request.restores);
+            assertEquals(List.of(mode == 0 ? "SUCCESS" : "TARGET_OCCUPIED"), f.request.reports, "Reported once");
+            var disk = new ArrayList<>(List.of(covered.transferId(), disjoint.transferId()));
+            if (mode == 1) {
+                assertEquals(List.of("released", "restored settle=true"), f.port.events);
+                assertFalse(f.journal.resourceMutationUnproved(f.logical()));
+                disk.add(f.landed.transferId());
+            } else {
+                assertEquals(List.of("released"), f.port.events, "A write-back was queued or acknowledged");
+            }
+            assertEquals(Set.copyOf(disk), Set.copyOf(f.diskRecords()));
+            f.close();
+        }
+    }
+
     @Test void theRemovalsOwnRefusalsAndAChangeOfItsRecordStillWriteTheRecordBack() {
         // R28 item 3: the causes that still reach M3 without restoring under R23, where no other test had them.
         for (int mode = 0; mode < 4; mode++) {
@@ -619,6 +682,10 @@ class RocketLandedDisassembliesTest {
         @Override public boolean queue(RocketTransferSavedData.Reservation reservation, BooleanSupplier action,
                                        Runnable discarded) {
             return detached || RocketJournalTestAccess.queue(journal, reservation, wrap.apply(action), discarded);
+        }
+        @Override public boolean queueRemoval(RocketTransferSavedData.Reservation reservation, BooleanSupplier action,
+                                              Runnable discarded) {
+            return detached || RocketJournalTestAccess.queue(journal, reservation, true, wrap.apply(action), discarded);
         }
         @Override public void released(RocketTransferRecord record, UUID entity) { events.add("released"); }
         @Override public void restored(RocketTransferRecord record, UUID entity, boolean settle) {

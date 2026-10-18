@@ -17,7 +17,13 @@ public final class RocketJournalTestAccess {
      */
     public static boolean queue(RocketTransferSavedData journal, RocketTransferSavedData.Reservation reservation,
                                 BooleanSupplier action, Runnable discarded) {
-        return journal.queueEffect(reservation, false, false, action, discarded);
+        return queue(journal, reservation, false, action, discarded);
+    }
+
+    /** {@link #queue}, opting in to run during a failed write as W85's M2 does (Root decision R30). */
+    public static boolean queue(RocketTransferSavedData journal, RocketTransferSavedData.Reservation reservation,
+                                boolean duringFailure, BooleanSupplier action, Runnable discarded) {
+        return journal.queueEffect(reservation, false, duringFailure, action, discarded);
     }
 
     /**

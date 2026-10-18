@@ -87,8 +87,15 @@ public final class RocketJournalGameTestSupport {
     public static boolean queueDetached(GameTestHelper helper, RocketTransferSavedData journal,
                                         RocketTransferSavedData.Reservation reservation,
                                         java.util.function.BooleanSupplier action, Runnable discarded) {
+        return queueDetached(helper, journal, reservation, false, action, discarded);
+    }
+
+    /** {@link #queueDetached}, opting in to run during a failed write as W85's M2 does (Root decision R30). */
+    public static boolean queueDetached(GameTestHelper helper, RocketTransferSavedData journal,
+                                        RocketTransferSavedData.Reservation reservation, boolean duringFailure,
+                                        java.util.function.BooleanSupplier action, Runnable discarded) {
         helper.assertTrue(helper.getLevel().getServer() instanceof GameTestServer, "Not a GameTest fixture");
-        return journal.queueEffect(reservation, false, false, action, discarded);
+        return journal.queueEffect(reservation, false, duringFailure, action, discarded);
     }
 
     /**

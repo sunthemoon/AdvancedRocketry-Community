@@ -42,6 +42,12 @@ final class RocketLandedDisassemblyPort implements RocketLandedDisassemblies.Por
     }
 
     @Override
+    public boolean queueRemoval(RocketTransferSavedData.Reservation reservation, BooleanSupplier action,
+                                Runnable discarded) {
+        return journal.afterAcknowledged(server, reservation, false, true, action, discarded);
+    }
+
+    @Override
     public void released(RocketTransferRecord record, UUID entity) {
         liveTransfers.remove(record.transferId());
         settledTransfers.remove(record.transferId());

@@ -123,6 +123,10 @@ public final class RocketLandedDisassemblyGameTestSupport {
                                            Runnable discarded) {
                 return RocketJournalGameTestSupport.queueDetached(helper, journal, reservation, action, discarded);
             }
+            @Override public boolean queueRemoval(RocketTransferSavedData.Reservation reservation, BooleanSupplier action,
+                                                  Runnable discarded) {
+                return RocketJournalGameTestSupport.queueDetached(helper, journal, reservation, true, action, discarded);
+            }
             @Override public void released(RocketTransferRecord record, UUID entity) { production.released(record, entity); }
             @Override public void restored(RocketTransferRecord record, UUID entity, boolean settle) {
                 production.restored(record, entity, settle);
