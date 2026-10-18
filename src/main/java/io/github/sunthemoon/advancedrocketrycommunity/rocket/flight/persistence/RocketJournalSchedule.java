@@ -66,12 +66,16 @@ final class RocketJournalSchedule {
         var effect = new Effect(token.logical(), journal.findByLogicalRocket(token.logical()).orElse(null),
                 journal.mutationSequence(), outbox ? journal.firstMoonLandingRam() : null,
                 duringFailure, action, discarded);
+        if (journal.nativeProbe() != null) { journal.nativeProbe().event(token.logical(), "continuation_submit", effect.sequence, "", size()); }
         reservations.remove(token.logical(), token); // Consume even on the immediate path, before the body.
         resetBudget(now);
         if (!visiting && acknowledged(effect) && (!journal.effectWriteFailed() || duringFailure)
                 && runs < RUNS_PER_TICK) {
             publish(); runs++; visiting = true;
-            try { effect.run(); } finally { visiting = false; }
+            try {
+                if (journal.nativeProbe() != null) { journal.nativeProbe().event(effect.logical, "continuation_run", effect.sequence, "IMMEDIATE", size()); }
+                effect.run();
+            } finally { visiting = false; }
         } else { effects.put(effect.logical, effect); queue.addLast(effect); publish(); }
         return true;
     }
@@ -93,6 +97,7 @@ final class RocketJournalSchedule {
                 }
                 queue.removeFirst();
                 effects.remove(effect.logical, effect); publish(); runs++;
+                if (journal.nativeProbe() != null) { journal.nativeProbe().event(effect.logical, changed ? "continuation_discard" : "continuation_run", effect.sequence, "QUEUED", size()); }
                 if (changed) { effect.discarded.run(); continue; }
                 try { effect.run(); }
                 catch (RuntimeException failure) {

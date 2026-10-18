@@ -552,11 +552,11 @@ final class RocketTransferService {
         // END transfer service diagnostics
     }
 
-    void tickLive(
-            MinecraftServer server,
-            RocketTransferSavedData journal,
-            RocketTransferRecord record
-    ) {
+    void tickLive(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record) {
+        if (journal.nativeProbe() != null) {
+            journal.nativeProbe().event(record.logicalRocketId(), "visit", journal.mutationSequence(), record.phase().name(),
+                    journal.actionable(record.logicalRocketId()) && journal.find(record.transferId()).orElse(null) == record ? 1 : 0);
+        }
         if (!journal.actionable(record.logicalRocketId()) || journal.find(record.transferId()).orElse(null) != record
                 || !flightAllowed(server, journal, record, TICK_SOURCE)) { return; }
         ServerLevel sourceLevel = RocketTransferEntities.level(server, record.sourceSnapshot().sourceDimension());
@@ -570,6 +570,10 @@ final class RocketTransferService {
         if (destinationLevel != null) {
             RocketTransferEntities.keepLoaded(destinationLevel, record.destinationSnapshot(), record.transferId());
         }
+        if (journal.nativeProbe() != null) { journal.nativeProbe().event(record.logicalRocketId(), "step", journal.mutationSequence(), record.phase().name(), 0); }
+        if (journal.nativeProbe() != null && record.phase() != RocketTransferPhase.PREPARED && record.phase() != RocketTransferPhase.COMMITTED) {
+            journal.nativeProbe().event(record.logicalRocketId(), "due", journal.mutationSequence(), record.phase().name(), 0);
+        }
         switch (record.phase()) {
             case PREPARED -> tickSource(server, journal, record);
             case DESTINATION_SPAWNED -> transferPassengers(server, journal, record);
@@ -579,11 +583,7 @@ final class RocketTransferService {
         }
     }
 
-    private void tickSource(
-            MinecraftServer server,
-            RocketTransferSavedData journal,
-            RocketTransferRecord record
-    ) {
+    private void tickSource(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record) {
         if (!journal.actionable(record.logicalRocketId())) { return; }
         UUID readySource = recovery.bays().source(record.transferId());
         RocketEntity source = readySource == null ? RocketTransferEntities.findSource(server, record)
@@ -598,6 +598,7 @@ final class RocketTransferService {
         }
         RocketFlightData flight = source.flightData().orElseThrow();
         long now = source.level().getGameTime();
+        if (journal.nativeProbe() != null) { journal.nativeProbe().event(record.logicalRocketId(), "flight", journal.mutationSequence(), flight.state().name(), Double.doubleToLongBits(source.getY())); }
         // BEGIN transfer service diagnostics
         if (flight.state() == RocketFlightState.TRANSIT) {
             diagnostics.branch(record.transferId(), TransferFailureDiagnostics.Branch.TRANSIT_NOT_DUE);
@@ -605,14 +606,18 @@ final class RocketTransferService {
         // END transfer service diagnostics
         if (flight.state() == RocketFlightState.COUNTDOWN
                 && elapsed(now, flight.stateStartedGameTime()) >= RocketFlightLimits.COUNTDOWN_TICKS) {
+            if (journal.nativeProbe() != null) { journal.nativeProbe().event(record.logicalRocketId(), "due", journal.mutationSequence(), "COUNTDOWN", 0); }
             source.updateFlightData(flight.completeCountdown(now));
+            if (journal.nativeProbe() != null) { journal.nativeProbe().event(record.logicalRocketId(), "work", journal.mutationSequence(), "COUNTDOWN", 0); }
             flight = source.flightData().orElseThrow();
             RocketFlightFeedback.ascentStarted(source);
             auditPhase(record, "countdown_complete", source.getUUID());
         }
         if (flight.state() == RocketFlightState.ASCENT) {
+            if (journal.nativeProbe() != null) { journal.nativeProbe().event(record.logicalRocketId(), "due", journal.mutationSequence(), "ASCENT", 0); }
             long elapsed = elapsed(now, flight.stateStartedGameTime());
             RocketTransferEntities.positionAscent(source, record.sourceSnapshot().sourceOrigin(), elapsed);
+            if (journal.nativeProbe() != null) { journal.nativeProbe().event(record.logicalRocketId(), "work", journal.mutationSequence(), "ASCENT", 0); }
             RocketFlightFeedback.ascentTrail(source, elapsed);
             if (elapsed >= RocketFlightLimits.ASCENT_TICKS) {
                 source.updateFlightData(flight.beginTransit(record.transferId(), now));
@@ -625,6 +630,7 @@ final class RocketTransferService {
         }
         if (flight.state() == RocketFlightState.TRANSIT
                 && elapsed(now, flight.stateStartedGameTime()) >= RocketFlightLimits.TRANSIT_TICKS) {
+            if (journal.nativeProbe() != null) { journal.nativeProbe().event(record.logicalRocketId(), "due", journal.mutationSequence(), "TRANSIT", 0); }
             spawnDestination(server, journal, record, source);
         } else if (flight.state() != RocketFlightState.COUNTDOWN
                 && flight.state() != RocketFlightState.ASCENT
@@ -636,12 +642,8 @@ final class RocketTransferService {
         }
     }
 
-    void spawnDestination(
-            MinecraftServer server,
-            RocketTransferSavedData journal,
-            RocketTransferRecord record,
-            RocketEntity source
-    ) {
+    void spawnDestination(MinecraftServer server, RocketTransferSavedData journal,
+                          RocketTransferRecord record, RocketEntity source) {
         if (!journal.actionable(record.logicalRocketId()) || journal.find(record.transferId()).orElse(null) != record
                 || !flightAllowed(server, journal, record, SPAWN_DESTINATION)) { return; }
         ServerLevel destinationLevel = RocketTransferEntities.level(
@@ -656,6 +658,7 @@ final class RocketTransferService {
         if (destinationLevel != null
                 && !RocketTransferEntities.destinationEntityChunkReady(
                         destinationLevel, record.destinationSnapshot())) {
+            if (journal.nativeProbe() != null) { journal.nativeProbe().event(record.logicalRocketId(), "owned_wait", journal.mutationSequence(), "DESTINATION_CHUNK", 0); }
             // BEGIN transfer service diagnostics
             diagnostics.readinessWait(record.transferId());
             // END transfer service diagnostics
@@ -667,6 +670,7 @@ final class RocketTransferService {
                 : namedPads.recheck(destinationLevel, record.destinationSnapshot(), arrivalPlan.destinationStationId(),
                         arrivalPlan.landingPad(), record.transferId()));
         if (!landingAvailable) {
+            if (journal.nativeProbe() != null) { journal.nativeProbe().event(record.logicalRocketId(), "owned_wait", journal.mutationSequence(), "DESTINATION_PAD", 0); }
             // BEGIN transfer service diagnostics
             diagnostics.branch(record.transferId(), TransferFailureDiagnostics.Branch.DESTINATION_UNAVAILABLE);
             // END transfer service diagnostics
@@ -679,6 +683,7 @@ final class RocketTransferService {
         // END transfer service diagnostics
         if (destination == null) {
             failBackToSource(server, journal, record, source, RocketTransferReturnReason.DESTINATION_ENTITY_CREATE_FAILED, RocketRequestCompletion.NONE);
+            if (journal.nativeProbe() != null) { journal.nativeProbe().event(record.logicalRocketId(), "owned_wait", journal.mutationSequence(), "ENTITY_CREATE", 0); }
             return;
         }
         destination.initializeTransferred(
@@ -709,13 +714,10 @@ final class RocketTransferService {
         });
     }
 
-    private void transferPassengers(
-            MinecraftServer server,
-            RocketTransferSavedData journal,
-            RocketTransferRecord record
-    ) {
+    private void transferPassengers(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record) {
         RocketEntity destination = RocketTransferEntities.findDestination(server, record);
         if (destination == null) {
+            if (journal.nativeProbe() != null) { journal.nativeProbe().event(record.logicalRocketId(), "owned_wait", journal.mutationSequence(), "DESTINATION_ENTITY", 0); }
             liveTransfers.remove(record.transferId());
             return;
         }
@@ -736,11 +738,7 @@ final class RocketTransferService {
         });
     }
 
-    private void removeSource(
-            MinecraftServer server,
-            RocketTransferSavedData journal,
-            RocketTransferRecord record
-    ) {
+    private void removeSource(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record) {
         updatePhase(server, journal, record.advance(RocketTransferPhase.SOURCE_REMOVED), () -> {
             RocketEntity source = RocketTransferEntities.findSource(server, record);
             if (source != null) { source.discard(); }

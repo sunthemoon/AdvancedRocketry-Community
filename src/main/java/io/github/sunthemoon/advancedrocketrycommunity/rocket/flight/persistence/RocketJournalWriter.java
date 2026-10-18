@@ -49,6 +49,9 @@ final class RocketJournalWriter implements AutoCloseable {
     private boolean running, closed, draining;
     private long tick, retryAt, lastSequence;
     private int drainUnknown;
+    private RocketJournalNativeProbe probe;
+
+    void observe(RocketJournalNativeProbe observation) { owner(); probe = observation; }
 
     RocketJournalWriter(Path file) { this(file, CheckedSavedDataPolicy.DirectoryForce.PLATFORM); }
     /** The directory force is resolved on the owner thread; a gated release-test cut may replace it (W44 6.1). */
@@ -65,6 +68,12 @@ final class RocketJournalWriter implements AutoCloseable {
         if (active != null && successor != null) { return false; }
         lastSequence = snapshot.sequence();
         var request = new Request(snapshot, policy);
+        if (probe != null) {
+            probe.event(null, "snapshot", snapshot.sequence(), "ACCEPTED", (active == null ? 0 : 1) + 1);
+            for (var record : snapshot.records()) {
+                probe.event(record.logicalRocketId(), "snapshot", snapshot.sequence(), record.phase().name(), 0);
+            }
+        }
         if (active == null) { active = request; start(); } else { successor = request; }
         return true;
     }

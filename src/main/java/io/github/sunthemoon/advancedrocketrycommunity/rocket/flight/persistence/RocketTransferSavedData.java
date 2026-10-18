@@ -67,6 +67,44 @@ public final class RocketTransferSavedData extends SavedData {
     private final RocketJournalSchedule schedule;
     private long lastWriterNanos;
     private long completedWriteCount;
+    private RocketJournalNativeProbe nativeProbe;
+    private RocketJournalHold nativeHold;
+
+    public RocketJournalNativeProbe nativeProbe() { return nativeProbe; }
+
+    public void startNativeProbe(MinecraftServer server) {
+        RocketJournalNativeProbe.requireGate(server);
+        if (nativeProbe != null) { throw new IllegalStateException("Probe already started in this session"); }
+        nativeProbe = new RocketJournalNativeProbe();
+        if (writer != null) { writer.observe(nativeProbe); }
+        AdvancedRocketryCommunity.LOGGER.info("ARCE_JOURNAL_PROBE_STARTED");
+    }
+
+    void observeForTests(RocketJournalNativeProbe probe) {
+        if (ownerServer != null) { throw new IllegalStateException("Detached probe only"); }
+        nativeProbe = probe;
+        if (writer != null) { writer.observe(probe); }
+    }
+
+    public void dumpNativeProbe(MinecraftServer server) throws java.io.IOException {
+        RocketJournalNativeProbe.requireGate(server);
+        if (nativeProbe != null) { nativeProbe.write(server.getServerDirectory().toPath()); }
+    }
+
+    RocketJournalHold nativeHold(MinecraftServer server) {
+        RocketJournalNativeProbe.requireGate(server);
+        if (!"HOLD".equals(System.getProperty(RocketJournalFailurePolicy.PROPERTY))) {
+            throw new IllegalStateException("Selected-record hold requires HOLD mode");
+        }
+        if (nativeHold == null) {
+            nativeHold = new RocketJournalHold(Long.getLong(RocketJournalHold.BOUND_PROPERTY, RocketJournalHold.MAX_MILLIS));
+        }
+        return nativeHold;
+    }
+
+    public void selectNativeHold(MinecraftServer server, UUID logical) { nativeHold(server).select(logical); }
+    public void releaseNativeHold(MinecraftServer server) { nativeHold(server).release(); }
+    public boolean nativeHoldWaiting(MinecraftServer server) { return nativeHold(server).waiting(); }
 
     public RocketTransferSavedData() { this(RocketJournalSchedule.LIMIT); }
 
@@ -197,6 +235,7 @@ public final class RocketTransferSavedData extends SavedData {
         if (!operational() || stopping || !firstMoonLanding.isEmpty()) { return false; }
         firstMoonLanding = FirstEventOutbox.elected(event);
         mutationSequence++;
+        if (nativeProbe != null) { nativeProbe.event(null, "mutation", mutationSequence, "MOON_ELECTED", 0); }
         outboxSequence = mutationSequence;
         setDirty();
         return true;
@@ -209,6 +248,7 @@ public final class RocketTransferSavedData extends SavedData {
         if (firstMoonLanding.state() == FirstEventOutbox.State.DELIVERED) { return true; }
         firstMoonLanding = firstMoonLanding.delivered();
         mutationSequence++;
+        if (nativeProbe != null) { nativeProbe.event(null, "mutation", mutationSequence, "MOON_DELIVERED", 0); }
         outboxSequence = mutationSequence;
         setDirty();
         return true;
@@ -286,6 +326,7 @@ public final class RocketTransferSavedData extends SavedData {
         entries.put(record.transferId(), record);
         mutationSequence++;
         leases.changed(record.logicalRocketId(), mutationSequence, existing);
+        if (nativeProbe != null) { nativeProbe.event(record.logicalRocketId(), "mutation", mutationSequence, record.phase().name(), 0); }
         setDirty();
         publishLeases();
     }
@@ -319,6 +360,7 @@ public final class RocketTransferSavedData extends SavedData {
         entries.put(migrated.transferId(), migrated);
         mutationSequence++;
         leases.changed(migrated.logicalRocketId(), mutationSequence, legacy);
+        if (nativeProbe != null) { nativeProbe.event(migrated.logicalRocketId(), "mutation", mutationSequence, migrated.phase().name(), 0); }
         setDirty();
         publishLeases();
     }
@@ -331,6 +373,7 @@ public final class RocketTransferSavedData extends SavedData {
         if (removed != null) {
             mutationSequence++;
             leases.changed(removed.logicalRocketId(), mutationSequence, removed);
+            if (nativeProbe != null) { nativeProbe.event(removed.logicalRocketId(), "mutation", mutationSequence, "REMOVED", 0); }
             setDirty();
             publishLeases();
         }
@@ -362,6 +405,7 @@ public final class RocketTransferSavedData extends SavedData {
         }
         mutationSequence++;
         leases.changed(replacement.logicalRocketId(), mutationSequence, previous);
+        if (nativeProbe != null) { nativeProbe.event(replacement.logicalRocketId(), "mutation", mutationSequence, replacement.phase().name(), 0); }
         setDirty();
         publishLeases();
     }
@@ -561,6 +605,7 @@ public final class RocketTransferSavedData extends SavedData {
     }
 
     private void publish(RocketJournalWriter.Completion completion) {
+        if (nativeProbe != null) { nativeProbe.event(null, "completion", completion.sequence(), completion.outcome().name(), completion.writerNanos()); }
         completedWriteCount++;
         firstWrite.completed(completion.outcome());
         if (firstWrite.appeared() && presence == ManagedRootPresence.PROVEN_ABSENT) {
@@ -648,6 +693,7 @@ public final class RocketTransferSavedData extends SavedData {
         if (writer == null) {
             writerFile = normalized;
             writer = new RocketJournalWriter(normalized, FirstEventCutSeams.journalDirectoryForce(ownerServer));
+            writer.observe(nativeProbe);
         }
         if (!writerFile.equals(normalized)) { throw new IllegalArgumentException("Journal writer cannot rebind its target"); }
         policy = io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowTerminalProbe.journalPolicy(ownerServer, policy);

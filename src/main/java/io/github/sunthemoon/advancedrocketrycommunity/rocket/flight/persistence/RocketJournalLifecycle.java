@@ -23,12 +23,25 @@ public final class RocketJournalLifecycle {
     public static void tick(TickEvent.ServerTickEvent event) {
         if (event.phase == TickEvent.Phase.START) {
             var journal = existing(event.getServer());
+            if (journal != null && journal.nativeProbe() != null) { journal.nativeProbe().tickStart(event.getServer().getTickCount()); }
             if (journal != null) { journal.pollWriter(event.getServer().getTickCount()); }
+        }
+    }
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void tickEnd(TickEvent.ServerTickEvent event) {
+        if (!RocketJournalNativeProbe.REQUESTED) { return; }
+        if (event.phase == TickEvent.Phase.END) {
+            var journal = existing(event.getServer());
+            if (journal != null && journal.nativeProbe() != null) { journal.nativeProbe().tickEnd(); }
         }
     }
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void stopping(ServerStoppingEvent event) {
         var journal = existing(event.getServer()); if (journal != null) { journal.stop(); }
+        if (journal != null && journal.nativeProbe() != null) {
+            try { journal.dumpNativeProbe(event.getServer()); }
+            catch (java.io.IOException failed) { AdvancedRocketryCommunity.LOGGER.error("Cannot write native journal observations", failed); }
+        }
     }
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void unload(LevelEvent.Unload event) {
