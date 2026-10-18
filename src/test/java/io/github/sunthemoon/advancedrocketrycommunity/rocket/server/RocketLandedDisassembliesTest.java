@@ -351,6 +351,97 @@ class RocketLandedDisassembliesTest {
         journal.stop();
     }
 
+    @Test void aMissingReservationRefusesTheReleaseBeforeAnyChange() {
+        // W91H (R23, N2): without L's own canQueueEffect(L) reservation, M1 changes nothing.
+        for (int mode = 0; mode < 3; mode++) {
+            var f = new Fixture(new RocketPosition(64 + mode * 64, 80, 64));
+            var held = new ArrayList<RocketTransferSavedData.Reservation>();
+            if (mode == 0) { held.add(f.journal.reserve(f.logical()).orElseThrow()); } // L's slot is busy.
+            if (mode == 1) { // Other rockets hold the whole per-record bound.
+                for (var next = f.journal.reserve(UUID.randomUUID()); next.isPresent(); next = f.journal.reserve(UUID.randomUUID())) {
+                    held.add(next.get());
+                }
+            }
+            if (mode == 2) { // A failed write of a disjoint generation; L's own slot stays acknowledged.
+                f.journal.put(landed(new RocketPosition(2_000, 80, 2_000)));
+                var failing = new CheckedSavedDataPolicy(TYPE, (staged, target) -> { throw new IOException("Injected failure"); });
+                RocketJournalTestAccess.write(f.journal, file(), failing, tick += 1_000);
+                assertEquals(RocketTransferSavedData.WriteOutcome.NOT_COMMITTED, f.journal.checkedWriteResult().outcome());
+            }
+            long sequence = f.journal.mutationSequence();
+            int outstanding = f.journal.outstandingEffectCount();
+            assertEquals(RocketValidationCode.REGION_BUSY, f.release());
+            assertSame(f.landed, f.journal.find(f.landed.transferId()).orElseThrow(), "T was removed");
+            assertEquals(sequence, f.journal.mutationSequence());
+            assertEquals(outstanding, f.journal.outstandingEffectCount(), "Something was queued or reserved");
+            assertFalse(f.disassemblies.pending(f.logical()));
+            assertEquals(0, f.disassemblies.heldSlots(f.journal));
+            assertTrue(f.request.reports.isEmpty() && f.request.restores == 0 && f.port.events.isEmpty());
+            assertTrue(f.world.rockets.containsKey(f.entity) && f.world.blocks.isEmpty());
+            held.forEach(RocketTransferSavedData.Reservation::close);
+            if (mode == 2) { f.acknowledge(); }
+            assertEquals(RocketValidationCode.DISASSEMBLY_PENDING, f.release(), "The refusal left the rocket stranded");
+            f.acknowledge();
+            assertEquals(List.of("SUCCESS"), f.request.reports);
+            assertFalse(f.diskRecords().contains(f.landed.transferId()));
+            f.close();
+        }
+    }
+
+    @Test void thePlainRemovalRefusesBeforeAnyChangeUnlessTheRocketIsActionableAndReserved() {
+        // W91H: W91's checks in the FM12a hook, moved into releasePlain with W92.
+        for (int mode = 0; mode < 2; mode++) {
+            var f = new Fixture(new RocketPosition(64 + mode * 64, 80, 64));
+            var held = new ArrayList<RocketTransferSavedData.Reservation>();
+            if (mode == 0) { f.journal.put(f.landed); } // An unacknowledged change of L.
+            if (mode == 1) { // L is actionable, but other rockets hold the whole per-record bound.
+                for (var next = f.journal.reserve(UUID.randomUUID()); next.isPresent(); next = f.journal.reserve(UUID.randomUUID())) {
+                    held.add(next.get());
+                }
+                assertTrue(f.journal.actionable(f.logical()));
+            }
+            long sequence = f.journal.mutationSequence();
+            int outstanding = f.journal.outstandingEffectCount();
+            assertFalse(RocketLandedDisassemblies.removePlain(f.journal, f.landed, f.entity, f.port));
+            assertSame(f.landed, f.journal.find(f.landed.transferId()).orElseThrow(), "T was removed");
+            assertEquals(sequence, f.journal.mutationSequence());
+            assertEquals(outstanding, f.journal.outstandingEffectCount(), "Something was queued or reserved");
+            assertTrue(f.port.events.isEmpty());
+            held.forEach(RocketTransferSavedData.Reservation::close);
+            if (mode == 0) { f.acknowledge(); }
+            assertTrue(RocketLandedDisassemblies.removePlain(f.journal, f.landed, f.entity, f.port));
+            assertTrue(f.journal.find(f.landed.transferId()).isEmpty());
+            assertTrue(f.port.events.isEmpty(), "Released before the removal's acknowledgement");
+            f.acknowledge();
+            assertEquals(List.of("released"), f.port.events);
+            assertTrue(f.diskRecords().isEmpty());
+            f.close();
+        }
+    }
+
+    @Test void aWriteBackWithoutAReservationKeepsTheRecordInRamAndEndsPending() {
+        // W91H: M3 reserves before put(T). Should L's reservation be absent while the journal still schedules work,
+        // T is still put back, as at a stop, and only P ends; nothing releases T.
+        var f = new Fixture(new RocketPosition(64, 80, 64));
+        f.world.blocks.put(f.absolute(1), new RocketWorldBlock(state("minecraft:stone"), null)); // 0 of 0
+        var held = new RocketTransferSavedData.Reservation[1];
+        f.port.wrap = action -> () -> { held[0] = f.journal.reserve(f.logical()).orElseThrow(); return action.getAsBoolean(); };
+        assertEquals(RocketValidationCode.DISASSEMBLY_PENDING, f.release());
+        f.acknowledge();
+        assertNotNull(held[0], "The removal continuation did not run");
+        assertFalse(f.disassemblies.pending(f.logical()));
+        assertSame(f.landed, f.journal.find(f.landed.transferId()).orElseThrow(), "T was not put back");
+        assertEquals(List.of("TARGET_OCCUPIED"), f.request.reports);
+        assertEquals(List.of("released"), f.port.events, "No write-back continuation was queued");
+        assertTrue(f.world.rockets.containsKey(f.entity));
+        assertTrue(f.journal.resourceMutationUnproved(f.logical()));
+        held[0].close();
+        f.acknowledge();
+        assertEquals(List.of(f.landed.transferId()), f.diskRecords());
+        assertFalse(f.journal.resourceMutationUnproved(f.logical()));
+        f.close();
+    }
+
     private final class Fixture {
         final RocketTransferSavedData journal = new RocketTransferSavedData();
         final RocketLandedDisassemblies disassemblies = new RocketLandedDisassemblies();
