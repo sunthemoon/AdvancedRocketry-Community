@@ -61,7 +61,7 @@ class EscrowCargoSettlementTest {
                 var armed = EscrowFlightAuthority.arm(released, launch, 8);
                 assertEquals(1, armed.armedFlights().size()); assertEquals(head.anchor(), armed.armedFlights().get(0).anchor());
                 var following = operation(kind, 2, 99);
-                assertEquals(java.util.Optional.of(EscrowCoordinator.Fill.RECEIPT_BACKED), EscrowCoordinator.fillRefusal(released, List.of(),
+                assertEquals(java.util.Optional.of(EscrowCoordinator.Transfer.RECEIPT_BACKED), EscrowTransferAdmission.refusal(released, List.of(),
                         new EscrowNativeBinding.Admission(following, wrapper(0))));
             }
         }

@@ -65,8 +65,14 @@ public final class EscrowLoaderAdmission {
             case UNAVAILABLE, IDENTITY_CONFLICT -> FluidFuelLoaderStatus.LEDGER_UNAVAILABLE;
             case INVALID -> FluidFuelLoaderStatus.INVALID_DATA;
             case STALE, ENDPOINT_BUSY -> FluidFuelLoaderStatus.ESCROW_PENDING;
-            case ROCKET_BUSY, OTHER_TRANSFER_PENDING, RECEIPT_BACKED -> FluidFuelLoaderStatus.ROCKET_BUSY;
             case ROCKET_LIMIT, ESCROW_FULL, SERVER_FULL, ROCKET_FULL -> FluidFuelLoaderStatus.ESCROW_FULL;
+        };
+    }
+    /** Cargo scheduling refusals are player-facing ROCKET_BUSY without changing the legacy fill dictionary. */
+    static FluidFuelLoaderStatus status(EscrowCoordinator.Transfer transfer) {
+        return switch (transfer) {
+            case ROCKET_BUSY, OTHER_TRANSFER_PENDING, RECEIPT_BACKED -> FluidFuelLoaderStatus.ROCKET_BUSY;
+            default -> status(transfer.fill());
         };
     }
 
@@ -130,9 +136,9 @@ public final class EscrowLoaderAdmission {
         var fills = runtime.fills(server);
         fills.preparing(op.id());
         Consumer<Boolean> completion = committed -> fills.resolved(op.id());
-        var result = coordinator == null ? create(server, runtime, ledger, capture.admission(), completion)
-                : coordinator.prepareFill(capture.admission(), completion);
-        if (result == EscrowCoordinator.Fill.QUEUED) { loader.escrowAdmitted(); } else { fills.resolved(op.id()); }
+        var result = coordinator == null ? EscrowCoordinator.Transfer.of(create(server, runtime, ledger, capture.admission(), completion))
+                : coordinator.prepareTransfer(capture.admission(), completion);
+        if (result == EscrowCoordinator.Transfer.QUEUED) { loader.escrowAdmitted(); } else { fills.resolved(op.id()); }
         return new Visit(status(result), true);
     }
 

@@ -173,8 +173,19 @@ public final class EscrowCoordinator implements AutoCloseable {
         enqueue(op, completion);
     }
     /** prepareFill's typed outcome. Every member but QUEUED is a refusal that changed nothing. */
-    enum Fill { QUEUED, UNAVAILABLE, INVALID, STALE, ENDPOINT_BUSY, ROCKET_LIMIT, ESCROW_FULL, SERVER_FULL, ROCKET_FULL,
-        IDENTITY_CONFLICT, ROCKET_BUSY, OTHER_TRANSFER_PENDING, RECEIPT_BACKED }
+    enum Fill { QUEUED, UNAVAILABLE, INVALID, STALE, ENDPOINT_BUSY, ROCKET_LIMIT, ESCROW_FULL, SERVER_FULL, ROCKET_FULL, IDENTITY_CONFLICT }
+    /** The generalized transfer result does not expand W11b3's closed fill result contract. */
+    enum Transfer {
+        QUEUED, UNAVAILABLE, INVALID, STALE, ENDPOINT_BUSY, ROCKET_LIMIT, ESCROW_FULL, SERVER_FULL, ROCKET_FULL,
+        IDENTITY_CONFLICT, ROCKET_BUSY, OTHER_TRANSFER_PENDING, RECEIPT_BACKED;
+        static Transfer of(Fill fill) { return valueOf(fill.name()); }
+        Fill fill() {
+            return switch (this) {
+                case ROCKET_BUSY, OTHER_TRANSFER_PENDING, RECEIPT_BACKED -> Fill.ENDPOINT_BUSY;
+                default -> Fill.valueOf(name());
+            };
+        }
+    }
     /**
      * Production fill admission (W11B3-DESIGN sections 2 and 4), beside the gated {@link #prepareTest}: the pure
      * {@link #fillRefusal} check, then the shared {@code tryReserve}, then the queue entry that locks both endpoints,
@@ -183,38 +194,38 @@ public final class EscrowCoordinator implements AutoCloseable {
      * No device calls this yet; production admission stays disabled.
      */
     Fill prepareFill(EscrowNativeBinding.Admission capture, Consumer<Boolean> completion) {
-        return prepareTransfer(capture, completion);
+        return prepareTransfer(capture, completion).fill();
     }
     /** Shared owner-thread entry. Cargo has no production caller until C-E; no publication permit is issued here. */
-    Fill prepareTransfer(EscrowNativeBinding.Admission capture, Consumer<Boolean> completion) {
+    Transfer prepareTransfer(EscrowNativeBinding.Admission capture, Consumer<Boolean> completion) {
         owner(); var op = capture.operation();
-        if (closed || writer.unavailable()) { return Fill.UNAVAILABLE; }
-        if (EscrowTransferAdmission.invalid(op)) { return Fill.INVALID; }
+        if (closed || writer.unavailable()) { return Transfer.UNAVAILABLE; }
+        if (EscrowTransferAdmission.invalid(op)) { return Transfer.INVALID; }
         if (op.sequence() != nextSequence() || requests.containsKey(op.id())
-                || unresolved().anyMatch(existing -> existing.id().equals(op.id()))) { return Fill.STALE; }
+                || unresolved().anyMatch(existing -> existing.id().equals(op.id()))) { return Transfer.STALE; }
         if (frontiers.containsKey(op.source().key()) || frontiers.containsKey(op.destination().key())
                 || flightWrites.locked(op.guard().rocket())
                 || data.ledger().armedFlights().stream().anyMatch(arm -> arm.logical().equals(op.guard().rocket()))) {
-            return Fill.ENDPOINT_BUSY;
+            return Transfer.ENDPOINT_BUSY;
         }
         var seen = new java.util.HashSet<UUID>();
         var pending = unresolved().filter(member -> !durable(member.id()) && seen.add(member.id())).toList();
-        var refusal = fillRefusal(data.ledger(), pending, capture);
+        var refusal = EscrowTransferAdmission.refusal(data.ledger(), pending, capture);
         if (refusal.isPresent()) {
-            if (refusal.get() == Fill.OTHER_TRANSFER_PENDING || refusal.get() == Fill.ROCKET_BUSY) {
+            if (refusal.get() == Transfer.OTHER_TRANSFER_PENDING || refusal.get() == Transfer.ROCKET_BUSY) {
                 transferTurns.blocked(op.device().identity(), op.guard().rocket());
             }
             return refusal.get();
         }
         if (!transferTurns.allows(op.device().identity(), op.guard().rocket())) {
-            return op.kind().cargo() ? Fill.OTHER_TRANSFER_PENDING : Fill.ROCKET_BUSY;
+            return op.kind().cargo() ? Transfer.OTHER_TRANSFER_PENDING : Transfer.ROCKET_BUSY;
         }
         var reservation = admission.tryReserve(op.id(), op.owner(), op.guard().rocket(), EscrowAdmissionAuthority.Consumer.PROPULSION);
-        if (reservation != EscrowAdmissionAuthority.Result.RESERVED) { return fill(reservation); }
+        if (reservation != EscrowAdmissionAuthority.Result.RESERVED) { return Transfer.of(fill(reservation)); }
         // Nothing that can fail runs between the reservation and its queue entry: a reservation has no release call.
         enqueue(op, completion);
         transferTurns.admitted(op.device().identity(), op.guard().rocket());
-        return Fill.QUEUED;
+        return Transfer.QUEUED;
     }
     /** Not a fresh FLUID_PROPULSION_FILL with a complete FUEL_VECTOR_V1 binding. */
     static boolean invalid(EscrowOperation op) {
@@ -243,8 +254,6 @@ public final class EscrowCoordinator implements AutoCloseable {
                                                 EscrowNativeBinding.Admission capture) {
         var op = capture.operation();
         if (capture.before().ledger() != null && !capture.before().ledger().equals(root.id())) { return java.util.Optional.of(Fill.STALE); }
-        var exclusive = EscrowTransferAdmission.exclusive(root, admissions, capture);
-        if (exclusive.isPresent()) { return exclusive; }
         var candidate = new ArrayList<>(admissions); candidate.add(op);
         EscrowLedger prospective;
         try { prospective = root.append(candidate); }

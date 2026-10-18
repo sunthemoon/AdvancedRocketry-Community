@@ -28,15 +28,16 @@ class EscrowCargoAdmissionTest {
             try (var writer = io.writer(file, 0, CheckedSavedDataFile::atomicMove); var coordinator = new EscrowCoordinator(data, writer)) {
                 var op = operation(kind, 1, 99); var replies = new ArrayList<Boolean>();
                 assertFalse(coordinator.productionAdmissionEnabled());
-                assertEquals(EscrowCoordinator.Fill.QUEUED, coordinator.prepareTransfer(capture(op, 0), replies::add));
+                assertEquals(EscrowCoordinator.Transfer.QUEUED, coordinator.prepareTransfer(capture(op, 0), replies::add));
                 for (int stage = 0; stage < 3; stage++) {
                     assertTrue(coordinator.cargoPending(op.guard().rocket()));
                     for (var otherKind : KINDS) {
                         var other = operation(otherKind, 2, 99);
-                        assertEquals(EscrowCoordinator.Fill.OTHER_TRANSFER_PENDING, coordinator.prepareTransfer(capture(other, 0), ignored -> fail()));
+                        assertEquals(EscrowCoordinator.Transfer.OTHER_TRANSFER_PENDING, coordinator.prepareTransfer(capture(other, 0), ignored -> fail()));
                     }
                     var fill = EscrowSettlementCapacityTest.operation(2, 99, 0, true);
-                    assertEquals(EscrowCoordinator.Fill.ROCKET_BUSY, coordinator.prepareFill(capture(fill, 0), ignored -> fail()));
+                    assertEquals(EscrowCoordinator.Transfer.ROCKET_BUSY, coordinator.prepareTransfer(capture(fill, 0), ignored -> fail()));
+                    assertEquals(EscrowCoordinator.Fill.ENDPOINT_BUSY, coordinator.prepareFill(capture(fill, 0), ignored -> fail()));
                     assertEquals(2, coordinator.nextSequence()); assertEquals(1, coordinator.admissionAuthority().pendingCount());
                     if (stage == 0) { assertTrue(coordinator.commitPreparations()); }
                     if (stage == 1) { io.tickUntil(coordinator::tick, 1, writer::idle); assertEquals(List.of(true), replies); }
@@ -51,13 +52,13 @@ class EscrowCargoAdmissionTest {
         var data = ResourceEscrowSavedData.load(EscrowCodec.encode(root));
         try (var writer = new EscrowLedgerWriter(temp.resolve("fuel"), 0); var coordinator = new EscrowCoordinator(data, writer)) {
             for (var kind : KINDS) {
-                assertEquals(EscrowCoordinator.Fill.OTHER_TRANSFER_PENDING, coordinator.prepareTransfer(capture(operation(kind, 2, 99), 0), ignored -> fail()));
+                assertEquals(EscrowCoordinator.Transfer.OTHER_TRANSFER_PENDING, coordinator.prepareTransfer(capture(operation(kind, 2, 99), 0), ignored -> fail()));
             }
             assertEquals(2, coordinator.nextSequence()); assertEquals(root, coordinator.ledger()); assertFalse(data.isDirty());
             assertTrue(writer.idle()); assertTrue(writer.capturedOperations().isEmpty()); assertEquals(1, coordinator.admissionAuthority().pendingCount());
         }
         assertEquals(io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderStatus.ROCKET_BUSY,
-                EscrowLoaderAdmission.status(EscrowCoordinator.Fill.ROCKET_BUSY));
+                EscrowLoaderAdmission.status(EscrowCoordinator.Transfer.ROCKET_BUSY));
     }
 
     @Test void sameCaptureCountsAllFiveMarkersAndRefusesTheSixthBeforeSideEffects() {
@@ -70,11 +71,19 @@ class EscrowCargoAdmissionTest {
                 var wrong = new RocketEscrowSection(id(500), retained + 1, List.of());
                 assertThrows(IllegalArgumentException.class, () -> new EscrowNativeBinding.Admission(op, wrong));
                 assertThrows(IllegalArgumentException.class, () -> EscrowSettlementCapacity.requireAdmission(root.append(List.of(op)), op, wrong));
+                if (retained < 5) {
+                    assertDoesNotThrow(() -> EscrowSettlementCapacity.requireAdmission(root.append(List.of(op)), op, before));
+                    assertDoesNotThrow(() -> EscrowSettlementCapacity.preflight(root.append(List.of(op)), op.id()));
+                } else {
+                    assertThrows(IllegalArgumentException.class, () -> EscrowSettlementCapacity.requireAdmission(root.append(List.of(op)), op, before));
+                }
                 try (var writer = new EscrowLedgerWriter(temp.resolve(kind + "-" + retained), 0); var coordinator = new EscrowCoordinator(data, writer)) {
                     var result = coordinator.prepareTransfer(new EscrowNativeBinding.Admission(op, before), ignored -> { });
-                    if (retained < 5) { assertEquals(EscrowCoordinator.Fill.QUEUED, result); }
+                    if (retained == 0) { assertEquals(EscrowCoordinator.Transfer.QUEUED, result); }
                     else {
-                        assertEquals(EscrowCoordinator.Fill.ROCKET_LIMIT, result); assertEquals(100, coordinator.nextSequence());
+                        // Codec fit is not retirement authority for unknown captured markers.
+                        assertEquals(retained == 5 ? EscrowCoordinator.Transfer.ROCKET_LIMIT : EscrowCoordinator.Transfer.OTHER_TRANSFER_PENDING, result);
+                        assertEquals(100, coordinator.nextSequence());
                         assertEquals(0, coordinator.admissionAuthority().pendingCount()); assertFalse(data.isDirty());
                         assertFalse(coordinator.commitPreparations()); assertTrue(writer.capturedOperations().isEmpty());
                     }
@@ -111,7 +120,7 @@ class EscrowCargoAdmissionTest {
         try (var writer = new EscrowLedgerWriter(temp.resolve("turn-hold"), 0); var coordinator = new EscrowCoordinator(data, writer)) {
             var op = operation(EscrowOperation.Kind.FLUID_CARGO_LOAD, 1, 201); var turns = coordinator.transferTurns();
             turns.register(op.device().identity(), op.guard().rocket()); turns.blocked(op.device().identity(), op.guard().rocket());
-            assertEquals(EscrowCoordinator.Fill.ENDPOINT_BUSY, coordinator.prepareTransfer(capture(op, 0), ignored -> fail()));
+            assertEquals(EscrowCoordinator.Transfer.ENDPOINT_BUSY, coordinator.prepareTransfer(capture(op, 0), ignored -> fail()));
             assertEquals(1, turns.size()); assertEquals(1, coordinator.nextSequence()); assertFalse(data.isDirty());
             coordinator.abort(); assertEquals(0, turns.size());
         }
@@ -127,9 +136,9 @@ class EscrowCargoAdmissionTest {
                     preferred.payload(), preferred.payloadHash(), otherDevice, preferred.rocket(), preferred.guard(), preferred.kind(), preferred.settlement()), wrapper(0));
             var turns = coordinator.transferTurns(); turns.register(preferred.device().identity(), preferred.guard().rocket());
             turns.blocked(preferred.device().identity(), preferred.guard().rocket());
-            assertEquals(EscrowCoordinator.Fill.OTHER_TRANSFER_PENDING, coordinator.prepareTransfer(capture(other, 0), ignored -> fail()));
+            assertEquals(EscrowCoordinator.Transfer.OTHER_TRANSFER_PENDING, coordinator.prepareTransfer(capture(other, 0), ignored -> fail()));
             assertEquals(1, coordinator.nextSequence()); assertFalse(data.isDirty()); assertEquals(0, coordinator.admissionAuthority().pendingCount());
-            assertEquals(EscrowCoordinator.Fill.QUEUED, coordinator.prepareTransfer(capture(preferred, 0), ignored -> { }));
+            assertEquals(EscrowCoordinator.Transfer.QUEUED, coordinator.prepareTransfer(capture(preferred, 0), ignored -> { }));
             assertEquals(0, turns.size()); assertEquals(2, coordinator.nextSequence());
         }
     }
@@ -140,10 +149,24 @@ class EscrowCargoAdmissionTest {
             for (var kind : KINDS) {
                 var wrapper = new RocketEscrowSection(root.id(), 1, List.of());
                 var op = nativeModel(operation(kind, 1, 99), wrapper);
-                assertEquals(EscrowCoordinator.Fill.STALE, coordinator.prepareTransfer(new EscrowNativeBinding.Admission(op, wrapper), ignored -> fail()));
+                assertEquals(EscrowCoordinator.Transfer.STALE, coordinator.prepareTransfer(new EscrowNativeBinding.Admission(op, wrapper), ignored -> fail()));
             }
             assertEquals(1, coordinator.nextSequence()); assertEquals(0, coordinator.admissionAuthority().pendingCount());
             assertFalse(data.isDirty()); assertTrue(writer.capturedOperations().isEmpty());
+        }
+    }
+
+    @Test void generalizedResultsPreserveTheClosedFuelContractAndMapCargoSchedulingToRocketBusy() {
+        for (var fill : EscrowCoordinator.Fill.values()) {
+            var transfer = EscrowCoordinator.Transfer.of(fill);
+            assertEquals(fill, transfer.fill());
+            assertEquals(EscrowLoaderAdmission.status(fill), EscrowLoaderAdmission.status(transfer));
+        }
+        for (var transfer : List.of(EscrowCoordinator.Transfer.ROCKET_BUSY, EscrowCoordinator.Transfer.OTHER_TRANSFER_PENDING,
+                EscrowCoordinator.Transfer.RECEIPT_BACKED)) {
+            assertEquals(EscrowCoordinator.Fill.ENDPOINT_BUSY, transfer.fill());
+            assertEquals(io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderStatus.ROCKET_BUSY,
+                    EscrowLoaderAdmission.status(transfer));
         }
     }
 }

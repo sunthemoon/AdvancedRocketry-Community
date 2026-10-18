@@ -38,7 +38,7 @@ class EscrowCargoCapacityTest {
             var empty = new EscrowLedger(id(500), 99, 0, List.of(), List.of(), List.of());
             var widestData = ResourceEscrowSavedData.load(EscrowCodec.encode(empty));
             try (var writer = new EscrowLedgerWriter(temp.resolve(kind + "-widest"), 0); var coordinator = new EscrowCoordinator(widestData, writer)) {
-                assertEquals(EscrowCoordinator.Fill.ESCROW_FULL, coordinator.prepareTransfer(EscrowCargoAdmissionTest.capture(widest, 4), ignored -> fail()));
+                assertEquals(EscrowCoordinator.Transfer.ESCROW_FULL, coordinator.prepareTransfer(EscrowCargoAdmissionTest.capture(widest, 4), ignored -> fail()));
                 assertEquals(100, coordinator.nextSequence()); assertEquals(0, coordinator.admissionAuthority().pendingCount());
                 assertEquals(empty, coordinator.ledger()); assertFalse(widestData.isDirty()); assertTrue(writer.capturedOperations().isEmpty());
             }
@@ -82,7 +82,7 @@ class EscrowCargoCapacityTest {
                 assertTrue(BoundedNbt.fits(next.payload(), 8_192, 12, 384));
                 var data = ResourceEscrowSavedData.load(EscrowCodec.encode(empty));
                 try (var writer = new EscrowLedgerWriter(temp.resolve(kind + "-" + retained), 0); var coordinator = new EscrowCoordinator(data, writer)) {
-                    assertEquals(EscrowCoordinator.Fill.ESCROW_FULL, coordinator.prepareTransfer(EscrowCargoAdmissionTest.capture(next, retained), ignored -> fail()));
+                    assertEquals(EscrowCoordinator.Transfer.ESCROW_FULL, coordinator.prepareTransfer(EscrowCargoAdmissionTest.capture(next, retained), ignored -> fail()));
                     assertEquals(100, coordinator.nextSequence()); assertFalse(data.isDirty()); assertEquals(empty, coordinator.ledger());
                     assertEquals(0, coordinator.admissionAuthority().pendingCount()); assertTrue(writer.capturedOperations().isEmpty());
                 }
@@ -112,7 +112,7 @@ class EscrowCargoCapacityTest {
             assertTrue(BoundedNbt.fits(EscrowCodec.operation(op), 12_288, 16, 512));
             var root = ledger(); var data = ResourceEscrowSavedData.load(EscrowCodec.encode(root));
             try (var writer = new EscrowLedgerWriter(temp.resolve(kind + "-nodes"), 0); var coordinator = new EscrowCoordinator(data, writer)) {
-                assertEquals(EscrowCoordinator.Fill.ESCROW_FULL, coordinator.prepareTransfer(EscrowCargoAdmissionTest.capture(op, 0), ignored -> fail()));
+                assertEquals(EscrowCoordinator.Transfer.ESCROW_FULL, coordinator.prepareTransfer(EscrowCargoAdmissionTest.capture(op, 0), ignored -> fail()));
                 assertEquals(1, coordinator.nextSequence()); assertEquals(root, coordinator.ledger()); assertFalse(data.isDirty());
                 assertEquals(0, coordinator.admissionAuthority().pendingCount()); assertTrue(writer.capturedOperations().isEmpty());
             }
@@ -132,8 +132,8 @@ class EscrowCargoCapacityTest {
                     for (int i = 0; i < 64; i++) {
                         var op = operation(kind, coordinator.nextSequence(), 40_000 + i);
                         var result = coordinator.prepareTransfer(EscrowCargoAdmissionTest.capture(op, 0), ignored -> { });
-                        if (result == EscrowCoordinator.Fill.QUEUED) { admitted.add(op); }
-                        else { assertEquals(EscrowCoordinator.Fill.ESCROW_FULL, result); refused = op; break; }
+                        if (result == EscrowCoordinator.Transfer.QUEUED) { admitted.add(op); }
+                        else { assertEquals(EscrowCoordinator.Transfer.ESCROW_FULL, result); refused = op; break; }
                     }
                     assertNotNull(refused); assertEquals(floors == 0 ? 62 : 60, admitted.size());
                     assertEquals(refused.sequence(), coordinator.nextSequence()); assertEquals(admitted.size(), coordinator.admissionAuthority().pendingCount());
