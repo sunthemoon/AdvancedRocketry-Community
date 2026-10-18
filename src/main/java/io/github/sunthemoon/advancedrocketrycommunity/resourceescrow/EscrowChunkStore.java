@@ -48,7 +48,7 @@ public final class EscrowChunkStore {
         AtomicLong generation = monitor.watch(endpoint.level(), entity, pos);
         long capturedGeneration = generation.get(); // BEFORE serialization/event, never after store.
         if (entity) {
-            try { return entities(endpoint, pos, generation, capturedGeneration, validator); }
+            try { return entities(endpoint.level(), pos, generation, capturedGeneration, validator); }
             catch (RuntimeException failure) { monitor.release(endpoint.level(), true, pos); throw failure; }
         }
         LevelChunk chunk = level.getChunkSource().getChunkNow(pos.x, pos.z);
@@ -74,7 +74,23 @@ public final class EscrowChunkStore {
                     () -> monitor.release(endpoint.level(), false, pos));
         } catch (RuntimeException failure) { restore.run(); monitor.release(endpoint.level(), false, pos); throw failure; }
     }
-    private Capture entities(EscrowEndpoint endpoint, ChunkPos pos, AtomicLong generation, long capturedGeneration,
+    /** W98: an ordinary entity-slot capture, the same path as an ENTITY endpoint's, with no escrow identity. */
+    public Capture captureEntitySlot(ChunkPos pos, Predicate<CompoundTag> validator) {
+        EscrowTags.require(level.getServer().isSameThread(), "Wrong entity-slot thread");
+        String id = level.dimension().location().toString();
+        AtomicLong generation = monitor.watch(id, true, pos);
+        long capturedGeneration = generation.get(); // BEFORE serialization/event, never after store.
+        try { return entities(id, pos, generation, capturedGeneration, validator); }
+        catch (RuntimeException failure) { monitor.release(id, true, pos); throw failure; }
+    }
+
+    /** W98 (W96-R5(c)): false when another mod has replaced this Level's entity storage, so no own-store proof exists. */
+    public boolean entityCaptureSupported() {
+        var storage = level.entityManager.permanentStorage;
+        return entities != null ? storage == entities : storage instanceof net.minecraft.world.level.chunk.storage.EntityStorage;
+    }
+
+    private Capture entities(String endpointLevel, ChunkPos pos, AtomicLong generation, long capturedGeneration,
                              Predicate<CompoundTag> validator) {
         EscrowTags.require(level.areEntitiesLoaded(pos.toLong()), "Endpoint entity sections are not loaded");
         if (entities == null) { entities = new EscrowEntityStore(level, monitor); }
@@ -88,7 +104,7 @@ public final class EscrowChunkStore {
             return root;
         });
         return new Capture(stored, entities.original().worker, directory(true), pos, generation, capturedGeneration, bytes[0], () -> { },
-                () -> monitor.release(endpoint.level(), true, pos));
+                () -> monitor.release(endpointLevel, true, pos));
     }
     private static CompoundTag serialize(Entity entity) {
         CompoundTag tag = new CompoundTag();
