@@ -27,6 +27,7 @@ final class EscrowLoaderReleaseProbe {
     private final MinecraftServer server;
     private final String cut;
     private final boolean recovery;
+    private final EscrowLoaderCutProbe matrix;
     private final AtomicBoolean paused = new AtomicBoolean();
     private boolean firstTick, done;
     private int step;
@@ -36,6 +37,8 @@ final class EscrowLoaderReleaseProbe {
         EscrowTestEndpoints.requireEnabled(server); this.server = server;
         cut = System.getProperty("advancedrocketrycommunity.escrowCase");
         recovery = "recover".equals(System.getProperty("advancedrocketrycommunity.escrowScenario"));
+        matrix = EscrowLoaderCutProbe.selected(cut) ? new EscrowLoaderCutProbe(server, cut, recovery) : null;
+        if (matrix != null) { return; }
         EscrowTags.require(cut.startsWith(PREFIX) && (recovery || Boolean.getBoolean(EscrowLoaderAdmission.SWITCH)),
                 "The loader restart fixture starts only through the gated switch");
     }
@@ -45,6 +48,7 @@ final class EscrowLoaderReleaseProbe {
      * restarted world's ledger was already bound at ServerStartingEvent, with its reservations indexed.
      */
     void startTick() {
+        if (matrix != null) { matrix.startTick(); return; }
         if (firstTick) { return; }
         firstTick = true;
         var delegate = EscrowRuntime.of(server).propulsion(server);
@@ -64,6 +68,7 @@ final class EscrowLoaderReleaseProbe {
     }
 
     void checkpoint(String name) {
+        if (matrix != null) { matrix.checkpoint(name); return; }
         if (recovery || done || step < 1 || !cut.equals(PREFIX + name)) { return; }
         if (!paused.compareAndSet(false, true)) { return; }
         AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_LOADER_PAUSED cut={}", cut);
@@ -72,6 +77,7 @@ final class EscrowLoaderReleaseProbe {
     }
 
     void tick() {
+        if (matrix != null) { matrix.tick(); return; }
         var level = server.overworld();
         if (done || paused.get() || !level.areEntitiesLoaded(new ChunkPos(ORIGIN).toLong()) || !level.isPositionEntityTicking(ORIGIN)) { return; }
         var journal = RocketTransferSavedData.get(server);
