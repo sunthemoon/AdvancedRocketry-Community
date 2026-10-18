@@ -95,7 +95,9 @@ What is still open:
 - **Open defect P1-N3 (2026-10-18).** W91K's native cuts showed that a hard kill after an ordinary
   fail-back's journal removal is durable, and before the source rocket's chunk is saved, leaves the rocket in
   its saved in-flight image with no transfer record, which nothing recovers. It predates W91 and affects
-  ordinary flights in every world. W96 writes the design note; the fix follows its review (Root decision R33).
+  ordinary flights in every world. W96's design note is frozen with its independent review's amendments (Root
+  decision R34); W98 implements its first leaf. The review also inferred a no-crash variant (a passenger who
+  reconnects during ascent), which W98 confirms or refutes with a GameTest first.
 - **Intermittent GameTest.** Hosted run 39047343116 at `b01f441e` failed
   `EscrowCoreGameTests.ownTerrainAndEntityStoresConfirmTheExactFrozenFrontier` once with
   `SUPERSEDING_SAVE` (a test-timing race, W36's class); the next run passed. W94 (merged `ec7214c5`)
