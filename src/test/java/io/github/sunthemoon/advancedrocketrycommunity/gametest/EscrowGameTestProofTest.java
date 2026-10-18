@@ -139,6 +139,26 @@ class EscrowGameTestProofTest {
         proof.tick(); assertEquals(List.of(SUPERSEDED), delivered); assertEquals(1, proof.attempts());
     }
 
+    @Test void entityCaptureKeepsTheWholeProofWindowAwayFromVanillaAutosave() {
+        assertFalse(EscrowProofRetryGameTests.entityCaptureWindow(0));
+        assertTrue(EscrowProofRetryGameTests.entityCaptureWindow(1));
+        assertTrue(EscrowProofRetryGameTests.entityCaptureWindow(5_959));
+        assertFalse(EscrowProofRetryGameTests.entityCaptureWindow(5_960));
+        assertFalse(EscrowProofRetryGameTests.entityCaptureWindow(5_999));
+        assertFalse(EscrowProofRetryGameTests.entityCaptureWindow(6_000));
+        assertTrue(EscrowProofRetryGameTests.entityCaptureWindow(6_001));
+    }
+
+    @Test void entityWindowDeferralIsBoundedAndDoesNotDependOnTheAutosaveCycleNumber() {
+        for (long cycle : new long[] {0, 6_000, 36_000, 6_000_000_000L}) {
+            int deferred = 0;
+            long tick = cycle + 5_960;
+            while (!EscrowProofRetryGameTests.entityCaptureWindow(tick++)) { deferred++; }
+            assertEquals(41, deferred);
+            assertTrue(EscrowProofRetryGameTests.entityCaptureWindow(cycle + 5_959));
+        }
+    }
+
     private static EscrowGameTestProof<Result> driver(AtomicLong clock, EscrowGameTestProof.Request<Result> request,
                                                      List<Result> delivered) {
         return new EscrowGameTestProof<>(clock::get, request, Result::confirmed, Result::reason, delivered::add);

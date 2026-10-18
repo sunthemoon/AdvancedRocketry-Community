@@ -21,11 +21,20 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 @GameTestHolder(ModIdentity.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class EscrowProofRetryGameTests {
-    // Two captures only: up to 200 ticks of fixture preparation, two 20-tick force windows plus one
-    // completion tick each, and the first product backoff (100). No third attempt / 400-tick backoff.
+    // Two captures only: 200 shared preparation ticks, two bounded proof windows and the first product
+    // backoff (100). Each window allows the 20-tick force batch plus 20 ticks for IO/owner-thread completion.
+    // No third attempt / 400-tick backoff. Both preparation and pending-proof budgets are asserted below.
     private static final int PREPARATION_TICKS = 200;
-    private static final int TIMEOUT_TICKS = PREPARATION_TICKS + 2 * (20 + 1) + 100;
+    private static final int PROOF_TICKS = 20 + 20;
+    private static final int TIMEOUT_TICKS = PREPARATION_TICKS + 2 * PROOF_TICKS + 100;
     private EscrowProofRetryGameTests() { }
+
+    static boolean entityCaptureWindow(long tick) {
+        // MinecraftServer autosaves every 6,000 server ticks. Entity slots have no terrain cooldown.
+        // Do not change the server clock or suppress any save; defer this fixture's capture instead.
+        long phase = Math.floorMod(tick, 6_000);
+        return phase > 0 && phase + PROOF_TICKS < 6_000;
+    }
 
     @GameTest(template = "empty", batch = "escrow_core", timeoutTicks = TIMEOUT_TICKS)
     public static void supersededTerrainProofRetriesTheSameFrontierAfterBackoff(GameTestHelper helper) {
@@ -50,6 +59,8 @@ public final class EscrowProofRetryGameTests {
         private final long startedAt;
         private long refusedAt = -1;
         private int preparationTicks;
+        private boolean awaitingResult;
+        private long capturedAt;
 
         Scenario(GameTestHelper helper, boolean entity) {
             this.helper = helper; this.entity = entity;
@@ -70,18 +81,22 @@ public final class EscrowProofRetryGameTests {
             pacer = new GameTestTickPacer(server);
             proof = new EscrowGameTestProof<>(server::getTickCount,
                     (tick, completed) -> {
-                        if (!entity && !EscrowGameTestProof.freshTerrainSave(level, chunk)) {
+                        if (entity ? !entityCaptureWindow(tick) : !EscrowGameTestProof.freshTerrainSave(level, chunk)) {
                             preparationTick(); return false;
                         }
                         checkpoint("capture");
-                        return barrier.begin(store, endpoint, frontier, validator, tick, result -> {
-                        if (!result.confirmed()) {
-                            helper.assertTrue(result.reason() == EscrowReason.SUPERSEDING_SAVE, "Injected save produced another refusal: " + result.reason());
-                            refusedAt = server.getTickCount();
-                            checkpoint("superseded");
-                        }
-                        completed.accept(result);
+                        capturedAt = tick; awaitingResult = true;
+                        boolean admitted = barrier.begin(store, endpoint, frontier, validator, tick, result -> {
+                            awaitingResult = false;
+                            if (!result.confirmed()) {
+                                helper.assertTrue(result.reason() == EscrowReason.SUPERSEDING_SAVE, "Injected save produced another refusal: " + result.reason());
+                                refusedAt = server.getTickCount();
+                                checkpoint("superseded");
+                            }
+                            completed.accept(result);
                         });
+                        if (!admitted) { awaitingResult = false; }
+                        return admitted;
                     }, EscrowBarrier.Result::confirmed, EscrowBarrier.Result::reason, result -> {
                         helper.assertTrue(result.confirmed(), "Retried proof was not confirmed: " + result.reason());
                         helper.assertTrue(injected && attempts() == 2 && barrier.supersedingSaves() == 1
@@ -106,6 +121,8 @@ public final class EscrowProofRetryGameTests {
             pacer.pace(); var level = helper.getLevel();
             barrier.tick(level.getServer().getTickCount());
             if (closed) { return; }
+            helper.assertTrue(!awaitingResult || level.getServer().getTickCount() - capturedAt < PROOF_TICKS,
+                    "Retry fixture proof exceeded its explicit force/IO completion budget");
             if (entity && !level.areEntitiesLoaded(chunk.toLong())) { preparationTick(); return; }
             proof.tick();
             if (proof.attempts() == 1 && !injected) {
