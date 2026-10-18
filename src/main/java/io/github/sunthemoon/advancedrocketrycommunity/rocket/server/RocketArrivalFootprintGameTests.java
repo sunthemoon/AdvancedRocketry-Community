@@ -279,7 +279,8 @@ public final class RocketArrivalFootprintGameTests {
         void flyIntoFree() {
             var server = earth.getServer();
             service.tickLive(server, journal, record);
-            var spawned = journal.find(transfer).orElseThrow();
+            var spawned = journal.find(transfer).orElse(null);
+            helper.assertTrue(spawned != null, "A ready, free footprint returned to its source: " + lines("ARCE_"));
             helper.assertTrue(spawned.phase() == RocketTransferPhase.DESTINATION_SPAWNED && spawned.destinationEntityId().isPresent(),
                     "A ready, free footprint did not acquire destination authority on its first due visit");
             helper.assertTrue(lines("ARCE_ARRIVAL_ENTITIES_").stream().noneMatch(line -> line.contains("transfer=" + transfer)),
