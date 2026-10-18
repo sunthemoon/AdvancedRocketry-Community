@@ -20,6 +20,14 @@ public final class RocketJournalTestAccess {
         return journal.queueEffect(reservation, false, false, action, discarded);
     }
 
+    /**
+     * R28: captures one checked generation of a detached journal now, without waiting for it; {@link #awaitWriter} then
+     * publishes its completion on the owner thread.
+     */
+    public static void request(RocketTransferSavedData journal, Path file, CheckedSavedDataPolicy policy) {
+        journal.requestWrite(file, policy);
+    }
+
     /** Requests one checked generation of a detached journal, waits for it, then runs its continuations at {@code tick}. */
     public static void write(RocketTransferSavedData journal, Path file, CheckedSavedDataPolicy policy, long tick) {
         journal.requestWrite(file, policy); journal.drainForTests(); journal.pollWriter(tick);

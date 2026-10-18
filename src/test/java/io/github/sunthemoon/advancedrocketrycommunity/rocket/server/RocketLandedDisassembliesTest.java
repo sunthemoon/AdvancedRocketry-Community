@@ -14,6 +14,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketLegacy
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketPassengerManifest;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferPhase;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalScheduleFixtures;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalTestAccess;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketBlock;
@@ -45,7 +46,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
 import java.util.function.UnaryOperator;
 import net.minecraft.nbt.CompoundTag;
@@ -265,6 +269,87 @@ class RocketLandedDisassembliesTest {
         f.close();
     }
 
+    @Test void aGenerationCapturedBeforeTheRemovalDoesNotRunItsContinuation() {
+        // R28 item 2, the boundary R23 relies on: the generation in flight when T is removed was captured with T. Its
+        // commit does not acknowledge the removal; only a later generation, captured after it, does.
+        var f = new Fixture(new RocketPosition(64, 80, 64));
+        var other = landed(new RocketPosition(2_000, 80, 2_000));
+        f.journal.put(other); // A disjoint change, so that the generation in flight is a new one.
+        var removed = new CountDownLatch(1);
+        var held = new CheckedSavedDataPolicy(TYPE, (staged, target) -> {
+            try {
+                if (!removed.await(30, TimeUnit.SECONDS)) { throw new IOException("The removal never happened"); }
+            } catch (InterruptedException interrupted) {
+                Thread.currentThread().interrupt();
+                throw new IOException(interrupted);
+            }
+            CheckedSavedDataFile.atomicMove(staged, target);
+        });
+        RocketJournalTestAccess.request(f.journal, file(), held); // Captured now, with T; its move waits for the removal.
+        assertEquals(RocketValidationCode.DISASSEMBLY_PENDING, f.release());
+        removed.countDown();
+        RocketJournalTestAccess.awaitWriter(f.journal);
+        f.journal.pollWriter(tick += 1_000);
+        assertEquals(RocketTransferSavedData.WriteOutcome.COMMITTED, f.journal.checkedWriteResult().outcome());
+        assertFalse(f.journal.acknowledgedCurrent(), "The removal is in the generation in flight");
+        assertEquals(Set.of(f.landed.transferId(), other.transferId()), Set.copyOf(f.diskRecords()));
+        assertEquals(0, f.request.restores, "The continuation ran on a generation captured before the removal");
+        assertEquals(Stage.RELEASED, f.disassemblies.find(f.logical()).stage());
+        assertTrue(f.request.reports.isEmpty() && f.port.events.isEmpty());
+        assertEquals(1, f.disassemblies.heldSlots(f.journal), "P released T's slot before the removal was acknowledged");
+        assertEquals(List.of(RocketRegion.fromSnapshot(f.snapshot())), f.disassemblies.reservations(f.journal));
+        assertTrue(f.world.rockets.containsKey(f.entity) && f.world.blocks.isEmpty());
+        f.acknowledge(); // The first generation captured after the removal.
+        assertEquals(1, f.request.restores);
+        assertEquals(List.of("SUCCESS"), f.request.reports);
+        assertEquals(List.of("released"), f.port.events);
+        assertFalse(f.disassemblies.pending(f.logical()));
+        assertTrue(f.journal.find(f.landed.transferId()).isEmpty(), "T was written back");
+        assertEquals(List.of(other.transferId()), f.diskRecords());
+        assertTrue(f.world.rockets.isEmpty() && f.world.blocks.size() == f.snapshot().blocks().size());
+        f.close();
+    }
+
+    @Test void theRemovalsOwnRefusalsAndAChangeOfItsRecordStillWriteTheRecordBack() {
+        // R28 item 3: the causes that still reach M3 without restoring under R23, where no other test had them.
+        for (int mode = 0; mode < 4; mode++) {
+            var f = new Fixture(new RocketPosition(64 + mode * 64, 80, 64));
+            assertEquals(RocketValidationCode.DISASSEMBLY_PENDING, f.release());
+            if (mode == 0) { f.world.hash = "0".repeat(64); } // E no longer equals S but stays landed authority (G14).
+            if (mode == 1) { f.port.bay = false; } // The bay gate refuses at M2.
+            if (mode == 2) { // L's own record changes before the acknowledgement: the journal discards the continuation.
+                var changed = landed(new RocketPosition(2_000, 80, 2_000), f.logical());
+                f.journal.put(changed);
+                f.journal.remove(changed.transferId());
+                // That discard runs inside pollWriter outside any handler; a notifier failure stays contained (W92-R3).
+                f.request.notifierFailure = new IllegalStateException("Injected notifier failure in a discard");
+            }
+            if (mode == 3) { // More than RocketJournalLeases' 1,024 other rockets change after L: W91's history floor.
+                for (int index = 1; index <= 1_100; index++) { RocketJournalScheduleFixtures.pendingAbsence(f.journal, index); }
+            }
+            assertDoesNotThrow(f::acknowledge, "The failure escaped pollWriter");
+            assertEquals(0, f.request.restores, "Restored although the removal's continuation refused or was discarded");
+            assertEquals(List.of("REGION_BUSY"), f.request.reports, "Reported once");
+            assertEquals(Stage.WRITE_BACK, f.disassemblies.find(f.logical()).stage());
+            assertSame(f.landed, f.journal.find(f.landed.transferId()).orElseThrow(), "The identical record");
+            assertEquals(0, f.disassemblies.heldSlots(f.journal), "Not counted a second time in WRITE_BACK");
+            assertTrue(f.disassemblies.reservations(f.journal).isEmpty());
+            assertTrue(f.world.rockets.containsKey(f.entity) && f.world.blocks.isEmpty());
+            assertTrue(f.journal.resourceMutationUnproved(f.logical()));
+            // M2 audits the release before it refuses; a discarded continuation never reaches M2.
+            List<String> released = mode < 2 ? List.of("released") : List.of();
+            assertEquals(released, f.port.events);
+            f.acknowledge();
+            assertFalse(f.disassemblies.pending(f.logical()));
+            var events = new ArrayList<>(released);
+            events.add("restored settle=true");
+            assertEquals(events, f.port.events);
+            assertEquals(List.of(f.landed.transferId()), f.diskRecords());
+            assertFalse(f.journal.resourceMutationUnproved(f.logical()));
+            f.close();
+        }
+    }
+
     @Test void stopAndAbortCarryTheRecordBackInRamAndCleanupIsIdempotent() throws IOException {
         for (boolean abort : List.of(false, true)) {
             var f = new Fixture(new RocketPosition(64, 80, 64));
@@ -294,6 +379,7 @@ class RocketLandedDisassembliesTest {
 
         // Root decision R28 (R23): the later generation acknowledges the removal, so M2 runs in pollWriter instead of the
         // discard. The notifier then fails after SUCCESS, which M2 contains as an uncertain mutation: no write-back.
+        // theRemovalsOwnRefusalsAndAChangeOfItsRecordStillWriteTheRecordBack keeps a discard inside pollWriter.
         var acknowledged = new Fixture(new RocketPosition(128, 80, 64));
         acknowledged.release();
         acknowledged.request.notifierFailure = new IllegalStateException("Injected notifier failure in a discard");
@@ -625,8 +711,12 @@ class RocketLandedDisassembliesTest {
 
     /** A COMMITTED schema-2 landed record T for a three-block rocket at {@code arrival} on the Moon. */
     private static RocketTransferRecord landed(RocketPosition arrival) {
+        return landed(arrival, UUID.randomUUID());
+    }
+
+    /** {@link #landed(RocketPosition)} for the given logical rocket. */
+    private static RocketTransferRecord landed(RocketPosition arrival, UUID logical) {
         UUID transfer = UUID.randomUUID();
-        UUID logical = UUID.randomUUID();
         List<RocketBlock> blocks = List.of(new RocketBlock(new RocketPosition(0, 0, 0), state("minecraft:iron_block")),
                 new RocketBlock(new RocketPosition(0, 1, 0), state("minecraft:iron_block")),
                 new RocketBlock(new RocketPosition(0, 2, 0), state("minecraft:iron_block")));
