@@ -30,8 +30,24 @@ class EscrowCargoCapacityTest {
                 catch (IllegalArgumentException refused) { break; }
             }
             assertTrue(longest > 0 && longest < 128, "The reference envelope, not the individual ID limit, decides eligibility");
-            final String level = "a:" + "b".repeat(longest - 2);
             assertThrows(IllegalArgumentException.class, () -> operation(kind, 100, 99, 4, -1, "a:" + "b".repeat(126)));
+            final String longestReferenceLevel = "a:" + "b".repeat(longest - 2);
+            // A locally valid 512-byte reference is not an assertion that the five-marker receipt fits.
+            var widest = operation(kind, 100, 99, 4, -1, longestReferenceLevel);
+            assertThrows(IllegalArgumentException.class, () -> EscrowSettlementCapacity.preflight(ledger(widest), widest.id()));
+            var empty = new EscrowLedger(id(500), 99, 0, List.of(), List.of(), List.of());
+            var widestData = ResourceEscrowSavedData.load(EscrowCodec.encode(empty));
+            try (var writer = new EscrowLedgerWriter(temp.resolve(kind + "-widest"), 0); var coordinator = new EscrowCoordinator(widestData, writer)) {
+                assertEquals(EscrowCoordinator.Fill.ESCROW_FULL, coordinator.prepareTransfer(EscrowCargoAdmissionTest.capture(widest, 4), ignored -> fail()));
+                assertEquals(100, coordinator.nextSequence()); assertEquals(0, coordinator.admissionAuthority().pendingCount());
+                assertEquals(empty, coordinator.ledger()); assertFalse(widestData.isDirty()); assertTrue(writer.capturedOperations().isEmpty());
+            }
+            int admittedLength = longest;
+            while (admittedLength >= 3 && !fits(kind, 4, 0, "a:" + "b".repeat(admittedLength - 2))) { admittedLength--; }
+            assertTrue(admittedLength >= "minecraft:overworld".length());
+            System.out.println("CARGO_REFERENCE kind=" + kind + " local_max_level_chars=" + longest + " local_max_refused=true"
+                    + " five_marker_max_level_chars=" + admittedLength);
+            final String level = "a:" + "b".repeat(admittedLength - 2);
             for (int retained = 0; retained <= 4; retained++) {
                 int low = 0, high = 8_192;
                 while (low < high) {
@@ -42,7 +58,7 @@ class EscrowCargoCapacityTest {
                 var op = operation(kind, 100, 99, retained, low, level).withReason(EscrowReason.JOURNAL_GUARD_MISMATCH);
                 var root = ledger(op);
                 System.out.println("CARGO_SIZE kind=" + kind + " retained=" + retained + " total_markers=" + (retained + 1)
-                        + " level_chars=" + longest + " max_blob=" + low + " five_marker_preview=true");
+                        + " level_chars=" + admittedLength + " max_blob=" + low + " five_marker_preview=true");
                 report("payload", op.payload()); report("rocket_reference", EscrowCodec.endpoint(op.rocket()));
                 report("device_reference", EscrowCodec.endpoint(op.device())); report("unsettled_operation", EscrowCodec.operation(op));
                 for (int missing = 0; missing <= 2; missing++) {
@@ -64,7 +80,6 @@ class EscrowCargoCapacityTest {
                 final int nextBlob = low + 1; final int retainedCount = retained;
                 var next = operation(kind, 100, 99, retainedCount, nextBlob, level);
                 assertTrue(BoundedNbt.fits(next.payload(), 8_192, 12, 384));
-                var empty = new EscrowLedger(id(500), 99, 0, List.of(), List.of(), List.of());
                 var data = ResourceEscrowSavedData.load(EscrowCodec.encode(empty));
                 try (var writer = new EscrowLedgerWriter(temp.resolve(kind + "-" + retained), 0); var coordinator = new EscrowCoordinator(data, writer)) {
                     assertEquals(EscrowCoordinator.Fill.ESCROW_FULL, coordinator.prepareTransfer(EscrowCargoAdmissionTest.capture(next, retained), ignored -> fail()));
