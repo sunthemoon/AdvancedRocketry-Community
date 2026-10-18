@@ -57,7 +57,7 @@ final class RocketTransferService {
     /** W44 N6: the COMMITTED destination tick and its world-first Moon completion. */
     private final RocketDestinationCompletion destinations = new RocketDestinationCompletion(
             liveTransfers, settledTransfers, recovery.bays());
-    private final RocketTransferContinuations continuations = new RocketTransferContinuations(liveTransfers, recovery.bays());
+    private final RocketTransferContinuations continuations = new RocketTransferContinuations(liveTransfers, recovery.bays(), recovery.retirements());
     /** W85 Design M: pending landed disassemblies keep T's region and slot while T is absent from RAM. */
     private final RocketLandedDisassemblies landed = new RocketLandedDisassemblies();
     private final RocketArrivalFootprintWait arrivalFootprints = new RocketArrivalFootprintWait(liveTransfers); // W83b
@@ -299,6 +299,7 @@ final class RocketTransferService {
         journal.retryChecked(server);
         recovery.recoverNext(server, journal);
         recovery.tickReconnects(server, journal);
+        recovery.tickRetirements(server); // W98: ordinary source returns awaiting their survivor proof
         governedSources.tick(server, journal, recovery.bays());
         governedCleanup.tick(server, journal, recovery.bays());
         List<UUID> active = liveTransfers.stream().sorted().toList();
