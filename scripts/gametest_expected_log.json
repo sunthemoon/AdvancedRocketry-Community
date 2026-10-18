@@ -1108,6 +1108,17 @@
       "reason": "Root decision R17 item 6 (W11b2 continuation 46): a governed COUNTDOWN rocket displaced at rest is a non-transient executor hold. It logs exactly one WARN for the flight and reason, stops refreshing the flight tickets and keeps the ARMED entry and the checked journal unchanged."
     },
     {
+      "id": "w90a-governed-executor-discovery-margin",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_GOVERNED_EXECUTOR_HOLD transfer=[0-9a-f-]{36} reason=DISCOVERY_MARGIN",
+      "counts": {
+        "escrow_transfer_fence": 2
+      },
+      "test": "EscrowGovernedMarginGameTests.aRecordedSeventeenColumnDestinationHoldsWithoutMarginTickets and EscrowGovernedMarginGameTests.aRecordedOutsideOriginDestinationHoldsWithoutMarginTickets",
+      "reason": "Root decision R21 item 2 (W90a): a decoded governed record whose destination's checked column set is invalid (17 columns) or lacks its origin column is executor hold DISCOVERY_MARGIN. Each logs exactly one WARN for the flight and reason, gets no margin ticket and keeps its record, ARMED entry and source unchanged."
+    },
+    {
       "id": "w92-landed-reservation-not-restored-mismatch",
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
