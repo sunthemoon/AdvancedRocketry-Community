@@ -32,12 +32,12 @@ public record EscrowSettlementIntent(Choice choice, UUID ledger, UUID actor, Str
     public record Observation(EscrowEndpoint endpoint, EscrowPrefix.State state, boolean bound, long quantity,
                               EscrowSignatureKind signatureKind, String invariantDigest) {
         public Observation(EscrowEndpoint endpoint, EscrowPrefix.State state, boolean bound, long quantity) {
-            this(endpoint, state, bound, quantity, EscrowSignatureKind.endpoint(endpoint), EscrowInvariant.reference(endpoint));
+            this(endpoint, state, bound, quantity, EscrowSignatureKind.settlement(endpoint), EscrowInvariant.reference(endpoint));
         }
         public Observation {
             java.util.Objects.requireNonNull(endpoint);
             java.util.Objects.requireNonNull(signatureKind); EscrowTags.digest(invariantDigest);
-            EscrowTags.require(signatureKind == EscrowSignatureKind.endpoint(endpoint), "Unexpected settlement signature projection");
+            EscrowTags.require(signatureKind == EscrowSignatureKind.settlement(endpoint), "Unexpected settlement signature projection");
             EscrowTags.require(quantity >= 0 && (state != null || quantity == 0 && !bound), "Invalid missing observation");
             EscrowTags.require(state == null || bound || state.epoch() == 0 && state.markers().isEmpty(), "Invalid neutral observation");
         }
@@ -95,7 +95,7 @@ public record EscrowSettlementIntent(Choice choice, UUID ledger, UUID actor, Str
                                                  String actorName, long tick, List<Observation> observations) {
         EscrowTags.require(choice != Choice.TRANSFER_FLOOR_RETIRE, "Use an explicit floor preview");
         var component = component(root.records(), selected);
-        EscrowTags.require(component.stream().allMatch(op -> op.kind() == EscrowOperation.Kind.FLUID_PROPULSION_FILL
+        EscrowTags.require(component.stream().allMatch(op -> op.kind().transfer()
                 && op.settlement().isEmpty() && (op.phase() == EscrowOperation.Phase.PREPARED
                 || op.phase() == EscrowOperation.Phase.REPAIR || op.phase() == EscrowOperation.Phase.STALLED)
                 && op.reason() != EscrowReason.RELOCATED_ENDPOINT && op.reason() != EscrowReason.FLOOR_CONFLICT),

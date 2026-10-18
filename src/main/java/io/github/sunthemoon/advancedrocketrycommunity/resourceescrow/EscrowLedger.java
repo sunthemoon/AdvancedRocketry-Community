@@ -28,10 +28,14 @@ public record EscrowLedger(UUID id, long issuedThrough, long writerGeneration,
         for (EscrowOperation op : records) {
             EscrowTags.require(ids.add(op.id()) && sequences.add(op.sequence()) && op.sequence() <= issuedThrough,
                     "Duplicate or unissued operation");
-            EscrowTags.require(op.kind() != EscrowOperation.Kind.FLUID_PROPULSION_FILL
-                    || devices.add(op.source().identity()), "Multiple operations for a device");
-            int count = rockets.merge(op.destination().logicalRocket(), 1, Integer::sum);
+            EscrowTags.require(!op.kind().transfer()
+                    || devices.add(op.device().identity()), "Multiple operations for a device");
+            int count = rockets.merge(op.rocket().logicalRocket(), 1, Integer::sum);
             EscrowTags.require(count <= EscrowLimits.PER_ROCKET, "Rocket pending limit exceeded");
+        }
+        for (EscrowOperation op : records) {
+            EscrowTags.require(!op.kind().cargo() || rockets.get(op.rocket().logicalRocket()) == 1,
+                    "Cargo cannot chain or share a rocket with another operation");
         }
         EscrowPrefix.validateChains(records);
         EscrowSettlementIntent.validateComponents(records);

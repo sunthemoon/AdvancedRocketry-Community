@@ -69,7 +69,7 @@ final class EscrowSettlementCapacity {
             var chain = chains.get(endpoint.key()); var last = chain.get(chain.size() - 1);
             var markers = new ArrayList<>(chain.stream().map(EscrowPrefix.Link::marker).toList());
             long epoch = last.endpoint().afterEpoch();
-            if (EscrowSignatureKind.endpoint(endpoint) == EscrowSignatureKind.FUEL_VECTOR_V1) {
+            if (EscrowAdapterIds.nativeRocket(endpoint)) {
                 // Charge the whole admission allowance, including retired markers not yet pruned.
                 // UUIDs/longs have fixed encoded widths; these are sizing observations, never proofs.
                 for (int i = markers.size(); i < ADMISSION_PER_ROCKET; i++) {
@@ -82,15 +82,16 @@ final class EscrowSettlementCapacity {
                     markers.set(i, new EscrowPrefix.Marker(markers.get(i).operation(), i + 1, "DESTINATION", epoch - markers.size() + i + 1));
                 }
             }
-            String invariant = component.stream().filter(op -> op.destination().key().equals(endpoint.key())).map(op -> op.nativeBinding().invariant())
+            String invariant = component.stream().filter(op -> op.rocket().key().equals(endpoint.key())).map(op -> op.nativeBinding().invariant())
                     .findFirst().orElseGet(() -> EscrowInvariant.reference(endpoint));
             observations.add(new EscrowSettlementIntent.Observation(endpoint,
                     new EscrowPrefix.State(prospective.id(), epoch, last.endpoint().afterSignature(), markers), true,
-                    Long.MAX_VALUE, EscrowSignatureKind.endpoint(endpoint), invariant));
+                    Long.MAX_VALUE, EscrowSignatureKind.settlement(endpoint), invariant));
         }
         // NUL uses two modified-UTF bytes per one UTF-8 byte: the worst allowed actor-name encoding.
         var hypothetical = prospective.replace(prospective.records().stream().map(op -> component.contains(op)
-                && !op.reason().manual() ? op.withReason(EscrowReason.OTHER_STATE) : op).toList(), prospective.floors(), prospective.tombstones());
+                && !op.reason().manual() ? op.withReason(op.kind().cargo() ? EscrowReason.JOURNAL_GUARD_MISMATCH : EscrowReason.OTHER_STATE) : op).toList(),
+                prospective.floors(), prospective.tombstones());
         EscrowSettlementIntent preview;
         try {
             preview = EscrowSettlementIntent.preview(hypothetical, selected, EscrowSettlementIntent.Choice.ACCEPT_CURRENT,
@@ -109,7 +110,7 @@ final class EscrowSettlementCapacity {
         var markers = new java.util.HashSet<UUID>();
         prospective.records().stream().filter(op -> op.guard().rocket().equals(candidate.guard().rocket()))
                 .map(EscrowOperation::id).forEach(markers::add);
-        if (candidate.nativeBinding().kind() == EscrowSignatureKind.FUEL_VECTOR_V1) {
+        if (EscrowAdapterIds.nativeRocket(candidate.rocket())) {
             EscrowTags.require(observed != null && (observed.ledger() == null || prospective.id().equals(observed.ledger())),
                     "Native admission needs the current endpoint marker section");
             EscrowTags.require(EscrowNativeEnvelope.digest(observed.encode()).equals(candidate.nativeBinding().beforeWrapper()),
