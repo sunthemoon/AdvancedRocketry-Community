@@ -38,8 +38,8 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: 264c4e30 (W91 merged: part 1's N2 and P1-F3, per-record journal scheduling)
-latest_hosted_regression: run 39091589526 at e80069c6 (the W90a merge) failed only EscrowProofRetryGameTests.supersededEntityProofRetriesTheSameFrontierAfterBackoff at its 200-tick timeout (W94's forced-supersession test; W94B fixes it), as run 39085135243 at 0a3964e7 did, and every other GameTest passed; Repository governance passed (run 39091589547); the last fully passing regression is 39049214708 at d9a7c0e9
+latest_code_commit: 0d6b839a (W91N and W91N2 merged: P1-F3's gated native timing hooks, after the W91 merge 264c4e30)
+latest_hosted_regression: run 39096930031 at 264c4e30 (the W91 merge) passed end to end, the unit suite, every GameTest and the unchanged log checker; Repository governance passed (run 39096930073). The two runs before it (39085135243 at 0a3964e7 and 39091589526 at e80069c6) failed only the intermittent EscrowProofRetryGameTests.supersededEntityProofRetriesTheSameFrontierAfterBackoff timeout that W94B fixes
 ledger_planned_units: 19
 asset_review_items: 154
 required_gates_approved: none
