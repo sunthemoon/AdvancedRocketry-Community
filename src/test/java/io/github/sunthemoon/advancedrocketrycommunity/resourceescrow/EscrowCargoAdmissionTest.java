@@ -22,7 +22,9 @@ class EscrowCargoAdmissionTest {
     @Test void bothDirectionsUseTheExistingExactL1WriterAndRefuseQueuedCapturedAndDurableMixing() throws Exception {
         for (var kind : KINDS) {
             var root = ledger(); var data = ResourceEscrowSavedData.load(EscrowCodec.encode(root)); var io = new AwaitedLedgerIo();
-            try (var writer = io.writer(temp.resolve(kind.name()), 0, CheckedSavedDataFile::atomicMove); var coordinator = new EscrowCoordinator(data, writer)) {
+            var file = java.nio.file.Files.createDirectories(temp.resolve(kind.name())).resolve(
+                    io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType.RESOURCE_ESCROW.fileName());
+            try (var writer = io.writer(file, 0, CheckedSavedDataFile::atomicMove); var coordinator = new EscrowCoordinator(data, writer)) {
                 var op = operation(kind, 1, 99); var replies = new ArrayList<Boolean>();
                 assertFalse(coordinator.productionAdmissionEnabled());
                 assertEquals(EscrowCoordinator.Fill.QUEUED, coordinator.prepareTransfer(capture(op, 0), replies::add));
@@ -36,7 +38,7 @@ class EscrowCargoAdmissionTest {
                     assertEquals(EscrowCoordinator.Fill.ROCKET_BUSY, coordinator.prepareFill(capture(fill, 0), ignored -> fail()));
                     assertEquals(2, coordinator.nextSequence()); assertEquals(1, coordinator.admissionAuthority().pendingCount());
                     if (stage == 0) { assertTrue(coordinator.commitPreparations()); }
-                    if (stage == 1) { io.tickUntil(coordinator::tick, 1, writer::idle); }
+                    if (stage == 1) { io.tickUntil(coordinator::tick, 1, writer::idle); assertEquals(List.of(true), replies); }
                 }
                 assertEquals(List.of(true), replies); assertEquals(List.of(op), coordinator.ledger().records());
             }

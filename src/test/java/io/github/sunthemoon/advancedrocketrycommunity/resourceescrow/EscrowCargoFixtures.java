@@ -54,7 +54,7 @@ final class EscrowCargoFixtures {
             var state = absent ? null : new EscrowPrefix.State(root.id(), rocket && neutral ? 0 : end.afterEpoch(),
                     rocket ? hash(777) : end.afterSignature(), rocket && neutral ? List.of() : markers);
             result.add(new EscrowSettlementIntent.Observation(end, state, !absent && !(rocket && neutral), absent ? 0 : Long.MAX_VALUE,
-                    EscrowSignatureKind.settlement(end), rocket ? op.nativeBinding().invariant() : EscrowInvariant.reference(end)));
+                    EscrowSignatureKind.settlement(end), rocket ? hash(778) : EscrowInvariant.reference(end)));
         }
         return result;
     }

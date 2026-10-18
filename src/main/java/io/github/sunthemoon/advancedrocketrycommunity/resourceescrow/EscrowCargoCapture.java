@@ -24,6 +24,8 @@ final class EscrowCargoCapture {
         var beforeFuel = RocketFlightNbtCodec.decode(EscrowTags.compound(rocketBefore, "flight")).data().orElseThrow();
         var afterFuel = RocketFlightNbtCodec.decode(EscrowTags.compound(rocketAfter, "flight")).data().orElseThrow();
         EscrowTags.require(beforeFuel.fuel().propulsion().isPresent() && afterFuel.fuel().propulsion().isPresent()
+                && op.rocket().logicalRocket().equals(beforeFuel.logicalRocketId())
+                && op.rocket().logicalRocket().equals(afterFuel.logicalRocketId())
                 && beforeFuel.fuel().resourceSignature().equals(afterFuel.fuel().resourceSignature()), "Cargo changed propulsion or is legacy");
         var endpoint = op.rocket();
         EscrowTags.require(endpoint.beforeSignature().equals(EscrowSignatureKind.composite(endpoint.logicalRocket(), before.contentHash(), beforeFuel.fuel().resourceSignature()))

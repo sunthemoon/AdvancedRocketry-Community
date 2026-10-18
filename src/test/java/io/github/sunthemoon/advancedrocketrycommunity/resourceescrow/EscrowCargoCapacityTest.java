@@ -89,7 +89,9 @@ class EscrowCargoCapacityTest {
             for (int floors : List.of(0, 29)) {
                 var base = EscrowCombinedReservationTest.retainedFloors(floors);
                 var data = ResourceEscrowSavedData.load(EscrowCodec.encode(base)); var io = new AwaitedLedgerIo();
-                try (var writer = io.writer(temp.resolve(kind + "-floors-" + floors), 0, CheckedSavedDataFile::atomicMove);
+                var file = java.nio.file.Files.createDirectories(temp.resolve(kind + "-floors-" + floors)).resolve(
+                        io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType.RESOURCE_ESCROW.fileName());
+                try (var writer = io.writer(file, 0, CheckedSavedDataFile::atomicMove);
                         var coordinator = new EscrowCoordinator(data, writer)) {
                     var admitted = new ArrayList<EscrowOperation>(); EscrowOperation refused = null;
                     for (int i = 0; i < 64; i++) {
@@ -110,6 +112,21 @@ class EscrowCargoCapacityTest {
                     assertTrue(coordinator.commitPreparations()); io.tickUntil(coordinator::tick, 1, writer::idle);
                     if (floors == 29) {
                         var intent = floorIntent(coordinator.ledger(), 0); var results = new ArrayList<Boolean>();
+                        var terminal = coordinator.ledger();
+                        for (int i = 1; i <= 64; i++) {
+                            terminal = EscrowFlightAuthority.arm(terminal, EscrowFlightAuthorityTest.launch(terminal, i), 2);
+                            var arm = terminal.armedFlights().get(terminal.armedFlights().size() - 1);
+                            terminal = EscrowFlightAuthority.finish(terminal, arm, EscrowFlightTables.Outcome.CANCELLED,
+                                    arm.source(), arm.epoch(), hash(2), hash(3));
+                        }
+                        var beforeRetirement = EscrowSettlementCapacity.floorRetirement(terminal, intent, coordinator.nextSequence(), 220);
+                        long reservedBefore = EscrowSettlementCapacity.reservedBytes(terminal);
+                        for (var arm : List.copyOf(terminal.armedFlights())) { terminal = EscrowFlightAuthority.prune(terminal, arm); }
+                        assertEquals(reservedBefore, EscrowSettlementCapacity.reservedBytes(terminal));
+                        var afterRetirement = EscrowSettlementCapacity.floorRetirement(terminal, intent, coordinator.nextSequence(), 220);
+                        assertEquals(EscrowSettlementCapacity.reservedBytes(beforeRetirement), EscrowSettlementCapacity.reservedBytes(afterRetirement));
+                        System.out.println("CARGO_R9 kind=" + kind + " cargo=60 floors=29 terminal_slots=64 before_after=" + reservedBefore
+                                + " retirement_before_after=" + EscrowSettlementCapacity.reservedBytes(afterRetirement));
                         coordinator.tick(220); assertTrue(coordinator.beginSettlement(intent, results::add));
                         io.tickUntil(coordinator::tick, 221, writer::idle); assertEquals(List.of(true), results);
                         assertEquals(61, coordinator.ledger().records().size());

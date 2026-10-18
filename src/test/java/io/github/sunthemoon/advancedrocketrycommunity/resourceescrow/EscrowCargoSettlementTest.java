@@ -44,6 +44,7 @@ class EscrowCargoSettlementTest {
                 assertEquals(EscrowSignatureKind.FUEL_VECTOR_V1, head.kind());
                 assertEquals(hash(777), head.signature()); assertNotEquals(op.rocket().afterSignature(), head.signature());
                 assertEquals(observation.invariantDigest(), head.invariant()); assertEquals(EscrowFlightTables.Outcome.READY, head.outcome());
+                assertNotEquals(op.nativeBinding().invariant(), head.invariant(), "O4 keeps O1's chosen OTHER content, not the operation's after snapshot");
                 // Pruning uses released group authority, not a new cargo projection or an after-snapshot lookup.
                 var groups = EscrowSettlementPruning.groups(released); assertEquals(1, groups.size());
                 var cursor = new EscrowSettlementPruning.Cursor();
