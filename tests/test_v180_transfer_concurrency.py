@@ -96,6 +96,56 @@ class ConcurrencyTests(unittest.TestCase):
         runner.launch_wave(Process(), flights, False, 0)
         self.assertEqual(["command"] * 8, actions)
 
+    def consumer_fixture(self, case="f1", complete=True):
+        ids, journal = self.fixture()
+        start = case + (".start" if case == "settlement" else ".attempt")
+        journal["global"].append(event("consumer", detail=start, nanos=200))
+        # A global outbox mutation is just as relevant as any ordinary record's mutation.
+        journal["global"].append(event("mutation", nanos=300))
+        rows = [dict(phase=start, nanos=10_000, value=0),
+                dict(phase=case + ".barrier", nanos=10_100, value=70),
+                dict(phase="ledger_io", nanos=10_150, value=30),
+                dict(phase=case + ".wait.JOURNAL", nanos=10_160, value=0)]
+        if complete:
+            rows.append(dict(phase=case + ".complete", nanos=10_200, value=0))
+            journal["global"].append(event("consumer", detail=case + ".complete", nanos=400))
+        return ids, journal, dict(schema=1, capped=False, events=rows)
+
+    def test_consumer_completion_uses_its_own_window_and_clock(self):
+        for case in runner.CONSUMERS:
+            ids, journal, timing = self.consumer_fixture(case)
+            result = runner.analyze_consumer(timing, journal, case, ids)
+            self.assertTrue(result["completed"])
+            self.assertEqual(.0002, result["completion_ms"])
+            self.assertEqual(.0001, result["longest_no_mutation_while_waiting_ms"])
+            self.assertEqual(.00007, result["barrier_ms"]["maximum"])
+            self.assertEqual(.00003, result["ledger_write_ms"]["maximum"])
+            self.assertEqual({case + ".wait.JOURNAL": 1}, result["reasons"])
+
+    def test_incomplete_consumer_is_reported_not_called_zero_latency(self):
+        ids, journal, timing = self.consumer_fixture(complete=False)
+        result = runner.analyze_consumer(timing, journal, "f1", ids)
+        self.assertFalse(result["completed"])
+        self.assertIsNone(result["completion_ms"])
+        self.assertEqual(.0007, result["longest_no_mutation_while_waiting_ms"])
+
+    def test_consumer_requires_real_start_uncapped_evidence_and_completion_agreement(self):
+        for fault in ("missing_start", "cap", "completion"):
+            ids, journal, timing = self.consumer_fixture()
+            if fault == "missing_start": timing["events"] = timing["events"][1:]
+            if fault == "cap": timing["capped"] = True
+            if fault == "completion": timing["events"] = timing["events"][:-1]
+            with self.assertRaises(runner.smoke.SmokeError): runner.analyze_consumer(timing, journal, "f1", ids)
+
+    def test_consumer_start_after_landing_does_not_prove_traffic_overlap(self):
+        ids, journal, timing = self.consumer_fixture()
+        journal["global"][2]["nanos"] = 600
+        with self.assertRaises(runner.smoke.SmokeError): runner.analyze_consumer(timing, journal, "f1", ids)
+
+    def test_spike_report_keeps_the_tick_and_value(self):
+        ids, journal = self.fixture(); journal["ticks"][0]["nanos"] = 501_000_000
+        self.assertEqual([dict(tick=1, ms=501)], runner.analyze(journal, ids)["spikes_over_500_ms"])
+
 
 if __name__ == "__main__":
     unittest.main()

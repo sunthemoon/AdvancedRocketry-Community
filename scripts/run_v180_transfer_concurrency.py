@@ -19,11 +19,14 @@ import run_dedicated_server_smoke as smoke
 from inspect_celestial_saved_data import NbtReader
 from run_v060_flight_server_smoke import FlightHarness, EARTH, MOON, ASSEMBLY_LOG, LAUNCH_LOG, PHASE_LOG, _server_command
 from run_v180_rocket_journal_failures import allocated_slots, JOURNAL
-from run_v180_escrow_forced_stop import digest, record
+from run_v180_escrow_forced_stop import digest, record, ledger, LEDGER
 from run_v180_governed_benchmark import java_processes, utc
+from run_v180_escrow_pre_f2 import assert_pin
 
-CASES = ("staggered", "simultaneous", "held")
+CONSUMERS = {"f1": "PF_CONSUMER_F1", "cancel": "PF_CONSUMER_CANCEL", "settlement": "SR_ACCEPT__CONSUMER"}
+CASES = ("staggered", "simultaneous", "held", *CONSUMERS)
 PROBE = "rocket-journal-probe.json"
+CONSUMER_PROBE = "escrow-consumer-timing.json"
 LOCK = Path("D:/GitHub/ARCE-Task-Evidence/locks/heavy-jvm")
 TEMP = Path("D:/GitHub/ARCE-Task-Evidence/Temp")
 
@@ -121,10 +124,80 @@ def analyze(probe: dict, logical_ids: list[str]) -> dict:
                 continuation_ms=summary(latencies), writer_ms=summary([e["value"] / 1e6 for e in completions]),
                 largest_continuation_queue=largest_queue, largest_writer_queue=max(e["value"] for e in snapshots),
                 main_thread_ms=tick_ms, main_thread_budget_pass=budget,
+                spikes_over_500_ms=[dict(tick=t["tick"], ms=t["nanos"] / 1e6) for t in probe["ticks"] if t["nanos"] > 500_000_000],
                 acknowledged_writes=sum(e["detail"] == "COMMITTED" for e in completions),
                 w11b2_reference_writes=48,
                 longest_no_mutation_ms=max(b - a for a, b in zip(times, times[1:])) / 1e6,
                 window_ms=probe["elapsed_nanos"] / 1e6)
+
+
+def analyze_consumer(timing: dict, journal: dict, case: str, logical_ids: list[str]) -> dict:
+    if timing.get("schema") != 1 or timing.get("capped") is not False or journal.get("capped") is not False:
+        raise smoke.SmokeError("Missing or capped consumer measurement")
+    events = timing.get("events", [])
+    start_phase = case + (".start" if case == "settlement" else ".attempt")
+    starts = [e for e in events if e["phase"] == start_phase]
+    markers = [e for e in journal["global"] if e["kind"] == "consumer"]
+    began = next((e for e in markers if e["detail"] == start_phase), None)
+    if not starts or began is None:
+        raise smoke.SmokeError("Consumer never started")
+    finish = next((e for e in events if e["phase"] == case + ".complete"), None)
+    ended = next((e for e in markers if e["detail"] == case + ".complete"), None)
+    if bool(finish) != bool(ended):
+        raise smoke.SmokeError("Consumer completion observations disagree")
+    # Use journal-native timestamps for gaps; the independent sink shares no relative origin.
+    end = ended["nanos"] if ended else journal["elapsed_nanos"]
+    admissions, landings = [], []
+    mutations = [e["nanos"] for e in journal["global"] if e["kind"] == "mutation"]
+    for logical, rows in journal["records"].items():
+        mutations.extend(e["nanos"] for e in rows if e["kind"] == "mutation")
+        if logical in logical_ids:
+            admissions.append(min(e["nanos"] for e in rows if e["kind"] == "mutation"))
+            landings.append(min(e["nanos"] for e in rows if e["kind"] == "flight" and e["detail"] == "LANDED"))
+    if len(admissions) != 8 or not max(admissions) <= began["nanos"] < min(landings):
+        raise smoke.SmokeError("Consumer did not start during the eight-flight overlap")
+    boundaries = [began["nanos"]] + sorted(n for n in mutations if began["nanos"] < n < end) + [end]
+    window = [e for e in events if e["nanos"] >= starts[0]["nanos"]
+              and (finish is None or e["nanos"] <= finish["nanos"])]
+    reasons = {}
+    for e in window:
+        if any(e["phase"].startswith(case + "." + label + ".") for label in ("wait", "stall", "refused")):
+            reasons[e["phase"]] = reasons.get(e["phase"], 0) + 1
+    return dict(completed=finish is not None, start_tick=began["tick"], end_tick=ended["tick"] if ended else None,
+                completion_ms=(finish["nanos"] - starts[0]["nanos"]) / 1e6 if finish else None,
+                observation_ms=(end - began["nanos"]) / 1e6,
+                attempts=sum(e["phase"] == case + ".attempt" for e in window), reasons=reasons,
+                confirmation_attempts=sum(e["phase"] == case + ".confirm_attempt" for e in window),
+                barrier_ms=summary([e["value"] / 1e6 for e in window if e["phase"] == case + ".barrier"]),
+                ledger_write_ms=summary([e["value"] / 1e6 for e in window if e["phase"] == "ledger_io"]),
+                timing_samples=window,
+                longest_no_mutation_while_waiting_ms=max(b - a for a, b in zip(boundaries, boundaries[1:])) / 1e6)
+
+
+def consumer_disk(world: Path, logical_ids: list[str], case: str) -> dict:
+    root = ledger(world / "data" / LEDGER)
+    others = []
+    for region in sorted(world.rglob("r.*.mca")):
+        if region.parent.name != "entities":
+            continue
+        for slot in allocated_slots(region):
+            for entity in record(region, slot).get("Entities", []):
+                data = entity.get("RocketEntityData")
+                if data and str(nbt_uuid(data["assembly_transaction_id"])) not in logical_ids:
+                    others.append(dict(entity=entity["UUID"], data=data, position=entity["Pos"]))
+    if len(others) != 1:
+        raise smoke.SmokeError("Consumer has missing or duplicate survivor")
+    flight = others[0]["data"]["flight_data"]
+    if flight["fuel"]["amount"] != 1000 or flight["fuel"].get("committed_debits", []):
+        raise smoke.SmokeError("Consumer changed its fuel")
+    if root["records"] or root["armed_flights"] or root["floors"]:
+        raise smoke.SmokeError("Consumer did not retire its authority")
+    if case == "settlement":
+        if len(root["tombstones"]) != 1 or not root["tombstones"][0]["released"]:
+            raise smoke.SmokeError("Settlement lacks acknowledged release")
+    elif root["issued_launch_serial"] != 1 or root["tombstones"]:
+        raise smoke.SmokeError("Pre-F2 cancellation changed serial or receipts")
+    return dict(ledger=root, survivor=others[0])
 
 
 def disk_authority(world: Path, logical_ids: list[str]) -> dict:
@@ -245,9 +318,15 @@ def run_case(args, case: str, evidence: Path) -> dict:
         command = _server_command(args.java); command[2] = "-Xmx4G"
         command.insert(1, "-Dadvancedrocketrycommunity.rocketJournalFailure=" + ("HOLD" if case == "held" else "OBSERVE"))
         for restart in range(2):
+            assert_pin(args.source_commit)
             check_space()
-            row["starts"].append(dict(restart=restart, at=utc(), other_java=java_processes(), command=command))
-            process = smoke.CapturedProcess(command, session, evidence / f"start-{restart}.log")
+            start_command = list(command)
+            if case in CONSUMERS and restart == 0:
+                start_command[1:1] = ["-Dadvancedrocketrycommunity.escrowConsumerTiming=true",
+                                      "-Dadvancedrocketrycommunity.escrowScenario=start",
+                                      "-Dadvancedrocketrycommunity.escrowCase=" + CONSUMERS[case]]
+            row["starts"].append(dict(restart=restart, at=utc(), other_java=java_processes(), command=start_command))
+            process = smoke.CapturedProcess(start_command, session, evidence / f"start-{restart}.log")
             process.wait_for(smoke.READY_MARKER, args.startup_timeout)
             if restart == 0:
                 flights = [assemble(process, i) for i in range(8)]; row["flights"] = flights
@@ -255,7 +334,7 @@ def run_case(args, case: str, evidence: Path) -> dict:
                 process.command("arce rocket release-test journal-probe-start")
                 process.wait_for(re.compile("ARCE_JOURNAL_PROBE_STARTED"), 30)
                 start = len(process.lines)
-                launch_wave(process, flights, case in ("staggered", "held"), start)
+                launch_wave(process, flights, case != "simultaneous", start)
                 for flight in flights:
                     pattern = re.compile(LAUNCH_LOG.pattern.replace("logical=([0-9a-f-]{36})", "logical=(" + flight["logical"] + ")"))
                     match = pattern.search(process.lines[process.wait_for(pattern, 45, start_at=start)])
@@ -282,6 +361,15 @@ def run_case(args, case: str, evidence: Path) -> dict:
                                          + r" phase=COMMITTED event=landed_reservation_retained entity=([0-9a-f-]{36})")
                     match = landing.search(process.lines[process.wait_for(landing, 120, start_at=start)])
                     flight["destination_entity"] = match.group(2)
+                if case in CONSUMERS:
+                    done = re.compile("ARCE_CONSUMER_FIXTURE_DONE" if case != "settlement"
+                                      else "ARCE_RELEASE_SETTLEMENT_COMPLETION_RESULT.*state=RELEASED")
+                    deadline = time.monotonic() + 120
+                    while not any(done.search(line) for line in process.lines[start:]) and time.monotonic() < deadline:
+                        if process.process.poll() is not None:
+                            raise smoke.SmokeError("Consumer server exited before observation ended")
+                        time.sleep(.1)
+                    row["consumer_fixture_completed"] = any(done.search(line) for line in process.lines[start:])
                 process.command("arce rocket release-test journal-probe-dump")
                 process.wait_for(re.compile("ARCE_JOURNAL_PROBE_WRITTEN"), 30)
                 shutil.copy2(session / PROBE, evidence / PROBE)
@@ -301,7 +389,13 @@ def run_case(args, case: str, evidence: Path) -> dict:
             if code != 0 or any("/ERROR]" in line or "/FATAL]" in line for line in process.lines):
                 raise smoke.SmokeError("Native server failed or logged ERROR/FATAL")
             process = None
+            if case in CONSUMERS and restart == 0:
+                shutil.copy2(session / CONSUMER_PROBE, evidence / CONSUMER_PROBE)
+                row["consumer"] = analyze_consumer(json.loads((evidence / CONSUMER_PROBE).read_text(encoding="utf-8")),
+                        json.loads((evidence / PROBE).read_text(encoding="utf-8")), case, [f["logical"] for f in flights])
             disk = disk_authority(session / "world", [f["logical"] for f in flights])
+            if case in CONSUMERS and row.get("consumer_fixture_completed"):
+                disk["consumer"] = consumer_disk(session / "world", [f["logical"] for f in flights], case)
             for flight in flights:
                 fuel = disk["survivors"][flight["logical"]]["data"]["flight_data"]["fuel"]["amount"]
                 if fuel != flight["fuel"] - flight["required_fuel"]:
@@ -311,7 +405,11 @@ def run_case(args, case: str, evidence: Path) -> dict:
                 baseline = disk
             elif disk["survivors"] != baseline["survivors"] or disk["entries"] != baseline["entries"]:
                 raise smoke.SmokeError("Restart changed durable flight authority")
+            elif disk.get("consumer") != baseline.get("consumer"):
+                raise smoke.SmokeError("Restart changed consumer authority or survivor")
         row["status"] = "PASS" if row["metrics"]["main_thread_budget_pass"] and not row["metrics"]["three_write_bound_findings"] else "FINDING"
+        if case in CONSUMERS and (not row["consumer"]["completed"] or not row["consumer_fixture_completed"]):
+            row["status"] = "FINDING"
         return row
     except Exception as failure:
         row.update(status="FAILED", error=str(failure)); raise

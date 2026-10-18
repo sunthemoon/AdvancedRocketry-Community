@@ -42,7 +42,7 @@ final class EscrowPreF2Probe {
         EscrowTestEndpoints.requireEnabled(server); this.server = server;
         cut = System.getProperty("advancedrocketrycommunity.escrowCase");
         EscrowTags.require(List.of("PF_ARM_BEFORE", "PF_ARM_REPLACED", "PF_ARM_ACK", "PF_T_ACK", "PF_GOVERNED_T_ACK",
-                "PF_LIVE_F2_ACK", "PF_LIVE_COUNTDOWN").contains(cut), "Unknown pre-F2 cut");
+                "PF_LIVE_F2_ACK", "PF_LIVE_COUNTDOWN", "PF_CONSUMER_F1", "PF_CONSUMER_CANCEL").contains(cut), "Unknown pre-F2 cut");
         recovery = "recover".equals(System.getProperty("advancedrocketrycommunity.escrowScenario"));
         restart = Integer.getInteger("advancedrocketrycommunity.escrowPreF2Restart", 0);
         EscrowTags.require(!recovery || !(cancellationCut() || governedTransfer()) || restart == 1 || restart == 2,
@@ -76,6 +76,10 @@ final class EscrowPreF2Probe {
 
     void tick() {
         var level = server.overworld();
+        if (consumerCase(cut) && data == null) {
+            var traffic = RocketTransferSavedData.get(server);
+            if (traffic.nativeProbe() == null || traffic.entries().size() < 8) { return; }
+        }
         if (done || waiting || !level.areEntitiesLoaded(new ChunkPos(POSITION).toLong()) || !level.isPositionEntityTicking(POSITION)) { return; }
         if (data == null) {
             data = ResourceEscrowSavedData.forTests(server); data.bind(server); began = server.getTickCount();
@@ -126,7 +130,7 @@ final class EscrowPreF2Probe {
             prepared = prepared(rocket, transfer);
             var guard = journal.acknowledgedGuard(logical).orElseThrow();
             var checked = new EscrowGuard(logical, null, Math.max(1, guard.sequence()), guard.rootDigest());
-            if (cut.equals("PF_GOVERNED_T_ACK")) {
+            if (cut.equals("PF_GOVERNED_T_ACK") || consumerCase(cut)) {
                 var countdown = rocket.flightData().orElseThrow().withPlan(prepared.sourceFlightData().plan().orElseThrow())
                         .startCountdown(level.getGameTime());
                 governed = EscrowGovernedLaunch.prepare(data.ledger(), frozen.envelope, prepared.sourceSnapshot(), countdown,
@@ -149,8 +153,12 @@ final class EscrowPreF2Probe {
             }
             if (governed != null) {
                 waiting = EscrowRuntime.of(server).flightCheckpoint().begin(rocket, governed, record -> {
-                    waiting = false; EscrowTags.require(record != null, "Native governed F1 checkpoint/ARMED failed");
-                    prepared = record; journal.put(prepared); journal.flushChecked(server); step = 2;
+                    waiting = false;
+                    if (consumerCase(cut) && record == null) { return; }
+                    EscrowTags.require(record != null, "Native governed F1 checkpoint/ARMED failed");
+                    prepared = record;
+                    if (!consumerCase(cut)) { journal.put(prepared); journal.flushChecked(server); }
+                    step = 2;
                 });
                 return;
             }
@@ -160,8 +168,20 @@ final class EscrowPreF2Probe {
                     journal.put(prepared); journal.flushChecked(server); step = 2;
                 }
             });
+        } else if (step == 2 && consumerCase(cut)) {
+            if (!data.ledger().armedFlights().isEmpty() || !data.bind(server).writerIdle()) { return; }
+            var flight = rocket.flightData().orElseThrow();
+            EscrowTags.require(data.ledger().issuedLaunchSerial() == 1 && data.ledger().records().isEmpty()
+                    && journal.findByLogicalRocket(rocket.assemblyTransactionId().orElseThrow()).isEmpty()
+                    && flight.fuel().totalAmount() == 1_000 && flight.fuel().committedDebits().isEmpty()
+                    && flight.passengers().assignments().size() == 1 && flight.state().acceptsFuel()
+                    && rocket.escrowSection().epoch() == 1 && RocketEscrowGate.idle(rocket), "Consumer cancellation changed its source");
+            AdvancedRocketryCommunity.LOGGER.info("ARCE_CONSUMER_FIXTURE_DONE case={} source={}", cut, rocket.getUUID());
+            done = true;
         } else if (step == 2 && journal.clean()) { pause(); }
     }
+
+    static boolean consumerCase(String value) { return value.equals("PF_CONSUMER_F1") || value.equals("PF_CONSUMER_CANCEL"); }
 
     private boolean cancellationCut() {
         return cut.equals("PF_ARM_REPLACED") || cut.equals("PF_ARM_ACK");

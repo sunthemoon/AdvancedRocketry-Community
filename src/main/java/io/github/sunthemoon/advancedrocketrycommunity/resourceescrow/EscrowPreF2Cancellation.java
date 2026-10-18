@@ -52,37 +52,44 @@ final class EscrowPreF2Cancellation implements AutoCloseable {
         });
         if (arms.isEmpty()) { return; }
         var arm = arms.get(Math.floorMod(cursor++, arms.size()));
+        var observation = runtime.timings();
+        if (arm.outcome() == EscrowFlightTables.Outcome.ARMED) { EscrowConsumerTimingProbe.mark(server, "cancel.attempt"); }
         var state = work.computeIfAbsent(arm.logical(), ignored -> new Work());
-        if (state.pending || !state.retry.ready(server.getTickCount())) { return; }
+        if (state.pending || !state.retry.ready(server.getTickCount())) { observation.sample("cancel.wait.PENDING_OR_RETRY", 0); return; }
         if (state.source != null) { state.source.observe(); }
         var journal = RocketTransferSavedData.get(server);
         // R17 item 3: wait for L's checked state, not for a quiet journal.
-        if (!journal.retryChecked(server) && !journal.actionAuthorityAvailable(arm.logical())) { return; }
+        if (!journal.retryChecked(server) && !journal.actionAuthorityAvailable(arm.logical())) { observation.sample("cancel.wait.JOURNAL", 0); return; }
         var noTransfer = EscrowFlightJournal.noTransfer(journal, arm.logical(), arm.transfer(), arm.serial());
-        if (!noTransfer.getAsBoolean() || arm.outcome() != EscrowFlightTables.Outcome.ARMED) { state.release(); return; }
-        if (!coordinator.governedAvailable(arm.logical())) { return; }
+        if (!noTransfer.getAsBoolean() || arm.outcome() != EscrowFlightTables.Outcome.ARMED) { observation.sample("cancel.wait.NOT_ARMED_OR_NO_TRANSFER", 0); state.release(); return; }
+        if (!coordinator.governedAvailable(arm.logical())) { observation.sample("cancel.wait.COORDINATOR", 0); return; }
         try {
             RocketEntity rocket = source(server, arm);
             // Already-loaded UUID polling is cheap and silent; absence is not authority to reconstruct.
-            if (rocket == null) { state.release(); return; }
+            if (rocket == null) { observation.sample("cancel.wait.SOURCE_UNLOADED", 0); state.release(); return; }
             if (state.proof == null && !runtime.barrier().available(rocket.level().dimension().location().toString(),
-                    true, server.getTickCount())) { return; }
+                    true, server.getTickCount())) { observation.sample("cancel.wait.BARRIER_BUDGET", 0); return; }
             if (state.source == null || !state.source.observe()) { state.release(); state.source = new EscrowFlightSource(rocket); }
             var frozen = state.source;
             if (!eligible(coordinator.ledger(), arm, frozen.digest, noTransfer)) {
+                observation.sample("cancel.stall.SOURCE_OR_AUTHORITY_CHANGED", 0);
                 state.failed(arm, "F1_CANCEL_PROOF", "SOURCE_OR_AUTHORITY_CHANGED", server.getTickCount()); return;
             }
             if (state.proof != null && !state.proof.valid()) {
+                observation.sample("cancel.stall.SUPERSEDING_SAVE", 0);
                 state.failed(arm, "F1_CANCEL_PROOF", "SUPERSEDING_SAVE", server.getTickCount()); return;
             }
             if (state.proof == null) {
                 state.pending = true;
+                long barrierBegan = observation == EscrowTimingSink.NONE ? 0 : System.nanoTime();
                 boolean started = runtime.barrier().begin(runtime.store((ServerLevel) rocket.level()), frozen.endpoint, frozen.frontier,
                         frozen.validator(), server.getTickCount(), result -> {
+                            if (observation != EscrowTimingSink.NONE) { observation.sample("cancel.barrier", System.nanoTime() - barrierBegan); }
                             state.pending = false;
                             if (closed || !result.confirmed() || !frozen.observe() || !noTransfer.getAsBoolean()) {
                                 String reason = result.confirmed() ? "SOURCE_OR_JOURNAL_CHANGED"
                                         : result.reason() == EscrowReason.NONE ? "SUPERSEDING_SAVE" : result.reason().name();
+                                observation.sample("cancel.stall." + reason, 0);
                                 if (result.proof() != null) { result.proof().release(); }
                                 state.release();
                                 if (!closed) { state.failed(arm, "F1_CANCEL_PROOF", reason, server.getTickCount()); }
@@ -90,7 +97,7 @@ final class EscrowPreF2Cancellation implements AutoCloseable {
                             }
                             state.proof = result.proof();
                         });
-                if (!started) { state.pending = false; }
+                if (!started) { observation.sample("cancel.wait.BARRIER_BEGIN", 0); state.pending = false; }
                 return;
             }
             var proof = state.proof;
@@ -100,11 +107,13 @@ final class EscrowPreF2Cancellation implements AutoCloseable {
                         frozen.signature, frozen.invariant);
             }, () -> proof.valid() && frozen.unchanged.get() && noTransfer.getAsBoolean(), committed -> {
                 state.pending = false; state.release();
-                if (committed) { runtime.checkpoint("F1_CANCELLED"); }
-                else if (!closed) { state.failed(arm, "F1_CANCEL_WRITE", "LEDGER_WRITE_FAILED", server.getTickCount()); }
+                if (committed) { EscrowConsumerTimingProbe.mark(server, "cancel.complete"); runtime.checkpoint("F1_CANCELLED"); }
+                else if (!closed) { observation.sample("cancel.stall.LEDGER_WRITE_FAILED", 0); state.failed(arm, "F1_CANCEL_WRITE", "LEDGER_WRITE_FAILED", server.getTickCount()); }
             });
+            if (!state.pending) { observation.sample("cancel.wait.LEDGER_QUEUE_OR_SYNC_COMPLETION", 0); }
             // A full checked-writer queue is an ordinary silent wait, not a failed write.
         } catch (IllegalArgumentException | java.util.NoSuchElementException refused) {
+            observation.sample("cancel.stall.SOURCE_OR_AUTHORITY_CHANGED", 0);
             state.failed(arm, "F1_CANCEL_PROOF", "SOURCE_OR_AUTHORITY_CHANGED", server.getTickCount());
         }
     }

@@ -39,6 +39,8 @@ public final class EscrowRuntime {
     private EscrowRecoveryReleaseProbe recoveryProbe;
     private EscrowBenchmarkProbe benchmark;
     private volatile EscrowFlightBenchmarkProbe flightBenchmark;
+    private EscrowTimingSink consumerTimings = EscrowTimingSink.NONE;
+    private boolean consumerTimingSelected;
     private EscrowRocketAuditProbe rocketAuditProbe;
     private EscrowSettlementProbe settlementProbe;
     private EscrowSettlementCompletionProbe settlementCompletionProbe;
@@ -100,7 +102,7 @@ public final class EscrowRuntime {
     EscrowSettlementRecovery settlementRecovery() { return settlements; }
     EscrowReconciliationScheduler reconciliationScheduler() { return scheduler; }
     String settlementPhase() { return settlements.phase(); }
-    EscrowTimingSink timings() { return flightBenchmark != null ? flightBenchmark.metrics : benchmark == null ? EscrowTimingSink.NONE : benchmark; }
+    EscrowTimingSink timings() { return flightBenchmark != null ? flightBenchmark.metrics : benchmark == null ? consumerTimings : benchmark; }
     java.util.List<EscrowSettlementPruning.Group> settlementGroups(EscrowLedger root) { return settlements.pruningGroups(root); }
     private EscrowReconciliationScheduler scheduler;
     private EscrowTestReconciliation reconciliation;
@@ -179,6 +181,11 @@ public final class EscrowRuntime {
     @SubscribeEvent public static void tick(TickEvent.ServerTickEvent event) {
         if (event.phase != TickEvent.Phase.END) { return; }
         var runtime = of(event.getServer()); if (runtime.stopping) { return; }
+        if (!runtime.consumerTimingSelected) {
+            runtime.consumerTimings = EscrowConsumerTimingProbe.select(Boolean.getBoolean(EscrowTestEndpoints.HOOKS),
+                    Boolean.getBoolean(EscrowConsumerTimingProbe.PROPERTY), () -> EscrowTestEndpoints.requireEnabled(event.getServer()));
+            runtime.consumerTimingSelected = true;
+        }
         if (Boolean.getBoolean(EscrowTestEndpoints.HOOKS)
                 && EscrowFlightBenchmarkProbe.CASE.equals(System.getProperty("advancedrocketrycommunity.escrowCase"))
                 && System.getProperty("advancedrocketrycommunity.escrowScenario") != null && runtime.flightBenchmark == null) {
@@ -295,6 +302,7 @@ public final class EscrowRuntime {
         runtime.executorHolds.clear(); runtime.sourceFlights.clear(); runtime.flightPhases.clear(); runtime.arrivals.clear(); runtime.returns.close();
         if (runtime.barrier != null) { runtime.barrier.close(); }
         if (runtime.reconciliation != null) { runtime.reconciliation.close(); }
+        if (runtime.consumerTimings instanceof EscrowConsumerTimingProbe consumer) { consumer.write(event.getServer().getServerDirectory().toPath()); }
     }
     /**
      * Crash path: runServer calls stopServer without ServerStoppingEvent. stopServer still unloads the overworld after
