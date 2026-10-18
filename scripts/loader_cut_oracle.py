@@ -8,12 +8,14 @@ from run_v180_escrow_forced_stop import LEDGER, digest, ledger, record
 from run_v180_escrow_pre_f2 import journal
 
 PREFIX = "LF_M_"
-CREATION = ("N0", "N1", "N3_FULL", "N3_PREFLIGHT", "N3_NOT_LOADED")
+CREATION = ("N0", "N1", "N3_FULL", "N3_NOT_LOADED")
+CREATION_SUPPLEMENTAL = ("N3_ELIGIBILITY",)
 NORMAL = tuple(f"K{i}" for i in range(11)) + ("K2_BI", "K6_BI", "K9_BI")
 SUPPLEMENTAL = ("K2_ACK", "K3_DEBIT", "K6_FORCED", "K10_ACK")
-CASES = tuple(PREFIX + name for name in CREATION + NORMAL + SUPPLEMENTAL)
+CASES = tuple(PREFIX + name for name in CREATION + NORMAL + SUPPLEMENTAL + CREATION_SUPPLEMENTAL)
 NOT_RUN = {"LF_M_N2_DEFINITE": "Existing failure hooks exclude generation 1; new failure injection is not authorized.",
-           "LF_M_N2_UNKNOWN": "Existing UNKNOWN hook excludes generation 1; three unresolved baseline outcomes cannot be injected."}
+           "LF_M_N2_UNKNOWN": "Existing UNKNOWN hook excludes generation 1; three unresolved baseline outcomes cannot be injected.",
+           "LF_M_N3_PREFLIGHT": "An eligibility refusal is not a capacity preflight refusal; no decision-changing seam is authorized."}
 LOADER = "advancedrocketrycommunity:fluid_fuel_loader"
 ROCKET = "advancedrocketrycommunity:rocket"
 FUEL = "advancedrocketrycommunity:rocket_fuel"
@@ -43,7 +45,7 @@ def expected(cut: str, restart: int) -> dict:
     require(cut in CASES, "Unknown cut")
     name = cut.removeprefix(PREFIX).removesuffix("_BI")
     bi = cut.endswith("_BI")
-    creation = name in CREATION
+    creation = name in CREATION + CREATION_SUPPLEMENTAL
     if creation:
         complete = restart == 2  # Second restart first checks unchanged state, then exercises the next attempt.
         return dict(source=int(complete), destination=int(complete), markers=0, records=0,

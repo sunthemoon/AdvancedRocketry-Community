@@ -110,7 +110,7 @@ def run_cut(args, cut: str, evidence: Path, owner: str, pins: dict) -> dict:
             command = _server_command(args.java); command[2] = "-Xmx4G"
             command[1:1] = ["-Dadvancedrocketrycommunity.escrowScenario=" + ("recover" if restart else "start"),
                             "-Dadvancedrocketrycommunity.escrowCase=" + cut]
-            creation = cut.removeprefix(oracle.PREFIX) in oracle.CREATION
+            creation = cut.removeprefix(oracle.PREFIX) in oracle.CREATION + oracle.CREATION_SUPPLEMENTAL
             if creation and restart == 2:
                 command.insert(1, "-Dadvancedrocketrycommunity.escrowLoaderRetry=true")
             start = dict(restart=restart, command=command, free_bytes=free, lock_owner=owner)

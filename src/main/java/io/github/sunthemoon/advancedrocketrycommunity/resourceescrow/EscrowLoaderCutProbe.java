@@ -30,7 +30,7 @@ final class EscrowLoaderCutProbe {
     private final AtomicBoolean paused = new AtomicBoolean();
     private final List<FluidFuelLoaderBlockEntity> loaders = new ArrayList<>();
     private RocketEntity rocket;
-    private boolean firstTick, done, retrying;
+    private boolean firstTick, done, retrying, pendingObserved;
     private volatile boolean armed;
     private volatile String firstStore = "NONE";
     private int step, stores;
@@ -45,7 +45,7 @@ final class EscrowLoaderCutProbe {
         this.server = server; this.cut = cut; this.recovery = recovery;
         bi = cut.endsWith("_BI"); boundary = cut.substring(PREFIX.length()).replace("_BI", "");
         creation = boundary.startsWith("N");
-        EscrowTags.require(boundary.matches("N[01]|N3_(FULL|PREFLIGHT|NOT_LOADED)|K([0-9]|10)|K2_ACK|K3_DEBIT|K6_FORCED|K10_ACK")
+        EscrowTags.require(boundary.matches("N[01]|N3_(FULL|ELIGIBILITY|NOT_LOADED)|K([0-9]|10)|K2_ACK|K3_DEBIT|K6_FORCED|K10_ACK")
                 && (!bi || boundary.matches("K[269]")), "Unknown loader cut");
     }
 
@@ -74,9 +74,13 @@ final class EscrowLoaderCutProbe {
                 }
             }
             if (recovery) { return; }
+            if (armed && !pendingObserved) {
+                EscrowTags.require(loader().escrowProgress() == FluidFuelLoaderStatus.PREPARING
+                        && loader().displayStatus() == FluidFuelLoaderStatus.PREPARING, "Pending baseline/L1 is not PREPARING");
+                pendingObserved = true; observe("pending");
+            }
             if (armed && (boundary.equals("N0") || boundary.equals("K0") && data.ledger().writerGeneration() > 0)) {
-                EscrowTags.require(loader().escrowProgress() == FluidFuelLoaderStatus.PREPARING, "Pending baseline/L1 is not PREPARING");
-                observe("pending"); pause(name); return;
+                pause(name); return;
             }
         }
         if (recovery || !armed) { return; }
@@ -159,12 +163,12 @@ final class EscrowLoaderCutProbe {
         }
         runtime.loaderAdmissionForTests(server, device(loader()), true);
         FluidFuelLoaderStatus status;
-        if (boundary.equals("N3_PREFLIGHT")) {
+        if (boundary.equals("N3_ELIGIBILITY")) {
             // A transient rider is a real eligibility refusal; it never changes either saved resource envelope.
             var rider = new ArmorStand(server.overworld(), 64, 100, 64);
-            EscrowTags.require(rider.startRiding(rocket, true), "Preflight rider setup refused");
+            EscrowTags.require(rider.startRiding(rocket, true), "Eligibility rider setup refused");
             status = loader().attempt(); rider.stopRiding(); rider.discard();
-            EscrowTags.require(status == FluidFuelLoaderStatus.ROCKET_BUSY, "Occupied rocket passed preflight");
+            EscrowTags.require(status == FluidFuelLoaderStatus.ROCKET_BUSY, "Occupied rocket passed eligibility");
         } else {
             EscrowTags.require(loader().attempt() == FluidFuelLoaderStatus.READY, "Refusal did not visit the queue");
             runtime.fills(server).visit(); status = loader().lastAttempt();
@@ -229,12 +233,12 @@ final class EscrowLoaderCutProbe {
 
     private void observe(String phase) {
         var data = ResourceEscrowSavedData.existing(server);
-        AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_MATRIX_STATE cut={} phase={} tanks={} banks={},{} epochs={} rocket_epoch={} source_markers={} rocket_markers={} issued={} records={} pending={}",
+        AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_MATRIX_STATE cut={} phase={} tanks={} banks={},{} epochs={} rocket_epoch={} source_markers={} rocket_markers={} issued={} records={} pending={} status={}",
                 cut, phase, loaders.stream().map(FluidFuelLoaderEscrowFixtures::amount).toList(), bank(rocket, false), bank(rocket, true),
                 loaders.stream().map(l -> section(l).epoch()).toList(), rocket.escrowSection().epoch(),
                 loaders.stream().map(l -> section(l).markers().size()).toList(), rocket.escrowSection().markers().size(),
                 data == null ? 0 : data.ledger().issuedThrough(), data == null ? 0 : data.ledger().records().size(),
-                EscrowRuntime.of(server).propulsion(server).authority().pendingCount());
+                EscrowRuntime.of(server).propulsion(server).authority().pendingCount(), loader().displayStatus());
     }
 
     private void result() { AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_MATRIX_RESULT cut={}", cut); }

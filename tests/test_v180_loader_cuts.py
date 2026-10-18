@@ -43,9 +43,9 @@ def fixture(cut, restart):
 
 class LoaderCutsTest(unittest.TestCase):
     def test_matrix_counts_and_explicit_missing_baseline_failures(self):
-        self.assertEqual(5, len(oracle.CREATION))
+        self.assertEqual(4, len(oracle.CREATION))
         self.assertEqual(14, len(oracle.NORMAL))
-        self.assertEqual({"LF_M_N2_DEFINITE", "LF_M_N2_UNKNOWN"}, set(oracle.NOT_RUN))
+        self.assertEqual({"LF_M_N2_DEFINITE", "LF_M_N2_UNKNOWN", "LF_M_N3_PREFLIGHT"}, set(oracle.NOT_RUN))
         self.assertEqual(["K2_BI", "K6_BI", "K9_BI"], [c for c in oracle.NORMAL if c.endswith("BI")])
 
     def test_raw_cut_boundaries_are_not_status_aliases(self):
