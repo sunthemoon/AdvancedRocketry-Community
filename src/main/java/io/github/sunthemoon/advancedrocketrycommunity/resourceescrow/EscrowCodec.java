@@ -162,7 +162,7 @@ public final class EscrowCodec {
             EscrowTags.digest(EscrowTags.string(survivor, "digest")); EscrowTags.digest(EscrowTags.string(survivor, "signature"));
             EscrowTags.digest(EscrowTags.string(survivor, "invariant_digest"));
             EscrowTags.require(EscrowTags.enumeration(EscrowSignatureKind.class, survivor, "signature_kind")
-                    == EscrowSignatureKind.endpoint(endpoint(EscrowTags.compound(survivor, "endpoint"))), "Receipt signature kind mismatch");
+                    == EscrowSignatureKind.settlement(endpoint(EscrowTags.compound(survivor, "endpoint"))), "Receipt signature kind mismatch");
         }
         EscrowTags.require(!identities.isEmpty(), "Empty settlement receipt");
     }

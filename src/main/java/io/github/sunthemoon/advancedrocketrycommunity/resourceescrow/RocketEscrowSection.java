@@ -18,7 +18,7 @@ public record RocketEscrowSection(UUID ledger, long epoch, List<EscrowPrefix.Mar
         long previousEpoch = epoch - markers.size();
         for (EscrowPrefix.Marker marker : markers) {
             EscrowTags.require(ids.add(marker.operation()) && marker.sequence() > previousSequence
-                    && marker.epochAfter() == previousEpoch + 1 && marker.role().equals("DESTINATION"),
+                    && marker.epochAfter() == previousEpoch + 1,
                     "Invalid rocket marker prefix");
             previousSequence = marker.sequence();
             previousEpoch = marker.epochAfter();
