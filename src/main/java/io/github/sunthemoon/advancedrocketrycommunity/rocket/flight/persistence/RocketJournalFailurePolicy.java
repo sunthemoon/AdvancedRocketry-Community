@@ -28,6 +28,8 @@ final class RocketJournalFailurePolicy {
         if (cut.isPresent()) {
             return cut.orElseThrow();
         }
+        var removalCut = RocketJournalRemovalCut.checked(server);
+        if (removalCut.isPresent()) { return removalCut.orElseThrow(); }
         String mode = System.getProperty(PROPERTY, "");
         if (server != null && Boolean.getBoolean(EscrowTestEndpoints.HOOKS)
                 && System.getProperty("advancedrocketrycommunity.escrowCase", "").startsWith("SR_")) {

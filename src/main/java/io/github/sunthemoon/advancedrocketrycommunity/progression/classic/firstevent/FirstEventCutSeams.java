@@ -452,7 +452,7 @@ public final class FirstEventCutSeams {
             case FM6A -> Optional.of(unreadableAfterMove(type, FirstEventCutSeams::electionGeneration));
             case FP6 -> Optional.of(unreadableAfterMove(type, (staged, target) -> {
                 var candidate = CheckedSavedDataFile.readPayload(staged, type).orElseThrow();
-                var current = CheckedSavedDataFile.readPayload(target, type).orElseThrow();
+                var current = CheckedSavedDataFile.readPayload(target, type).orElse(null);
                 return unrelatedGeneration(candidate, current) && UNRELATED_FAILED.compareAndSet(false, true);
             }));
             default -> Optional.empty();
@@ -461,6 +461,7 @@ public final class FirstEventCutSeams {
 
     /** FP6 selects an actual unrelated record change, not the identical first-session baseline capture. */
     static boolean unrelatedGeneration(net.minecraft.nbt.CompoundTag candidate, net.minecraft.nbt.CompoundTag current) {
+        if (current == null) { return false; } // A fresh world's baseline is not an unrelated post-DELIVERED mutation.
         String key = ManagedSavedDataType.FIRST_MOON_LANDING_KEY;
         return candidate.getCompound(key).getString("state").equals("DELIVERED")
                 && candidate.getCompound(key).equals(current.getCompound(key))

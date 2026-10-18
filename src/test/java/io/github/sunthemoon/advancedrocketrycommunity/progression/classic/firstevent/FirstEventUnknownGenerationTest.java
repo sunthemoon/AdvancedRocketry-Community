@@ -15,6 +15,16 @@ import org.junit.jupiter.api.Test;
 class FirstEventUnknownGenerationTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
 
+    @Test void absentJournalTargetDoesNotSelectAnUnknownWrite() {
+        var baseline = SavedDataSchemaMigrator.migrate(ManagedSavedDataType.ROCKET_TRANSFERS,
+                MoonLandingSourceTestSupport.committedMoonJournalRootTwo()).payload();
+        assertFalse(FirstEventCutSeams.unrelatedGeneration(baseline, null));
+        var event = FirstEventFixtures.moon(44, List.of(FirstEventCutSeams.P1));
+        baseline.put(ManagedSavedDataType.FIRST_MOON_LANDING_KEY,
+                FirstEventOutbox.elected(event).delivered().encode(event.kind()));
+        assertFalse(FirstEventCutSeams.unrelatedGeneration(baseline, null));
+    }
+
     @Test void selectsOnlyAnUnrelatedRecordChangeAfterTheSameDeliveredEvent() {
         var changed = SavedDataSchemaMigrator.migrate(ManagedSavedDataType.ROCKET_TRANSFERS,
                 MoonLandingSourceTestSupport.committedMoonJournalRootTwo()).payload();
