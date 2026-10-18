@@ -38,7 +38,7 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: 843ea4dc (W91R merged: the W91 review's follow-ups)
+latest_code_commit: 38b437a7 (W94B merged: the forced-supersession proof GameTests)
 latest_hosted_regression: run 39102812313 at 93eb3ad2 (the W91K merge) failed three GameTests: the two intermittent W94 escrow proof timeouts that W94B fixes, and C16cRestartGameTests.etcherJobCrossesARealChunkUnloadAndReloadWithExactAccounting ("Timed out waiting for the fixture chunk to unload"), which also failed on run 39099242168 at fcd549c9 (the W90b merge) and passed on run 39097355473 at 0d6b839a with the same batch order; Root is reproducing it. The last run that passed end to end is 39096930031 at 264c4e30 (the W91 merge). Repository governance passes on every commit since
 ledger_planned_units: 19
 asset_review_items: 154
@@ -103,7 +103,9 @@ What is still open:
   `SUPERSEDING_SAVE` (a test-timing race, W36's class); the next run passed. W94 (merged `ec7214c5`)
   lets such proof tests retry only that reason; 30 of 30 local batch runs passed. Its two new
   forced-supersession GameTests then timed out on hosted run 39060903571 at `8c3f5717`, and one of them again
-  on runs 39085135243 at `0a3964e7` and 39091589526 at `e80069c6`; W94B fixes them.
+  on runs 39085135243 at `0a3964e7` and 39091589526 at `e80069c6`. W94B (merged `38b437a7`) sets their timeout
+  from the retry arithmetic with per-phase budgets; 30 of 30 loaded runs passed. A second natural supersession
+  can still exhaust the existing 200-tick tests (residual).
 - **S2.** W11b2's crash cuts passed natively as development evidence (the W11b2 records). The
   S2 campaign waits for W11b3.
 - **V1 and V2.** No slice has real-GPU or two-client evidence.
