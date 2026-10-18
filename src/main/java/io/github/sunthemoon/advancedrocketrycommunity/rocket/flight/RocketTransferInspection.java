@@ -20,23 +20,29 @@ public record RocketTransferInspection(
         String checksum,
         int sourceMatches,
         int destinationMatches,
-        // W90 (R21 item 6): k/n or "invalid" per end, NONE/LOADING/CENSUS/HOLD:reason, and the last refreshed set size.
-        String sourceMargin,
-        String destinationMargin,
-        String readinessWait,
-        int marginTickets
+        Readiness readiness
 ) {
-    private static final int MAX_FIELD_LENGTH = 64;
+    /**
+     * W90 (Root decision R21 item 6): {@code k/n} or {@code invalid} per recorded end, NONE, LOADING, CENSUS or
+     * HOLD:reason, and the size of the last refreshed ticket set. Read from RAM and the loaded index only.
+     */
+    public record Readiness(String sourceMargin, String destinationMargin, String waitState, int tickets) {
+        private static final int MAX_FIELD_LENGTH = 64;
 
-    public RocketTransferInspection {
-        for (String field : new String[] {sourceMargin, destinationMargin, readinessWait}) {
-            if (Objects.requireNonNull(field, "margin field").length() > MAX_FIELD_LENGTH) {
-                throw new IllegalArgumentException("Transfer inspection margin field exceeds its bound");
+        public Readiness {
+            for (String field : new String[] {sourceMargin, destinationMargin, waitState}) {
+                if (Objects.requireNonNull(field, "readiness field").length() > MAX_FIELD_LENGTH) {
+                    throw new IllegalArgumentException("Transfer inspection readiness field exceeds its bound");
+                }
+            }
+            if (tickets < 0 || tickets > 2 * RocketFlightLimits.MAX_LANDING_CHUNKS) {
+                throw new IllegalArgumentException("Transfer inspection ticket count is outside its bound");
             }
         }
-        if (marginTickets < 0 || marginTickets > 2 * RocketFlightLimits.MAX_LANDING_CHUNKS) {
-            throw new IllegalArgumentException("Transfer inspection ticket count is outside its bound");
-        }
+    }
+
+    public RocketTransferInspection {
+        Objects.requireNonNull(readiness, "readiness");
         Objects.requireNonNull(transferId, "transferId");
         Objects.requireNonNull(logicalRocketId, "logicalRocketId");
         Objects.requireNonNull(phase, "phase");

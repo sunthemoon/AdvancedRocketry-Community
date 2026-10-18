@@ -81,9 +81,19 @@ final class RocketGovernedSourceDispatcher {
                 : RocketGovernedLaunchBoundary.allows(server, journal, record, source, bays);
     }
 
-    /** Inspect: the size of the set refreshed at the last visit, 0 while held or not ACTIVE. */
-    int tickets(java.util.UUID transfer) { return waits.tickets(transfer); }
-    RocketGovernedWaits.Wait waitOf(java.util.UUID transfer) { return waits.wait(transfer); }
+    /**
+     * Inspect (R21 item 6), read-only: both recorded margins, the active hold or the current wait, and the size of the
+     * set refreshed at the last visit (0 while held or not ACTIVE).
+     */
+    io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferInspection.Readiness readiness(
+            MinecraftServer server, RocketTransferRecord record) {
+        var hold = EscrowRuntime.of(server).executorHolds().reason(record.transferId());
+        return new io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferInspection.Readiness(
+                RocketTransferEntities.marginStatus(server, record.sourceSnapshot()),
+                RocketTransferEntities.marginStatus(server, record.destinationSnapshot()),
+                hold.map(reason -> "HOLD:" + reason).orElseGet(() -> waits.wait(record.transferId()).name()),
+                waits.tickets(record.transferId()));
+    }
 
     private static void dispatchLoaded(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
                                        RocketTransferBayDispatch bays) {

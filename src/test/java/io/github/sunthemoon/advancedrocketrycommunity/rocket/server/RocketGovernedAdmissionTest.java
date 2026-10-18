@@ -42,13 +42,13 @@ class RocketGovernedAdmissionTest {
 
     @Test void theGovernedSourceNeedsAnAdmissibleSetBeforeItsReadinessIsRead() {
         var earth = Level.OVERWORLD.location();
-        assertNull(RocketTransferService.governedSourceRefusal(RocketMarginTicketsTest.snapshot(earth, 15, 15, 0), () -> true));
+        assertNull(RocketGovernedAdmission.sourceRefusal(RocketMarginTicketsTest.snapshot(earth, 15, 15, 0), () -> true));
         assertEquals(RocketFlightRequestCode.LAUNCH_AREA_INACTIVE,
-                RocketTransferService.governedSourceRefusal(RocketMarginTicketsTest.snapshot(earth, 15, 15, 0), () -> false));
+                RocketGovernedAdmission.sourceRefusal(RocketMarginTicketsTest.snapshot(earth, 15, 15, 0), () -> false));
         for (var refused : List.of(RocketMarginTicketsTest.snapshot(earth, 2, 8, 0, 252),
                 RocketMarginTicketsTest.snapshot(earth, 15, 8, 5, 6),
                 RocketMarginTicketsTest.snapshot(earth, Integer.MAX_VALUE, 8, 0))) {
-            assertEquals(RocketFlightRequestCode.LAUNCH_CHUNK_BUDGET, RocketTransferService.governedSourceRefusal(refused,
+            assertEquals(RocketFlightRequestCode.LAUNCH_CHUNK_BUDGET, RocketGovernedAdmission.sourceRefusal(refused,
                     () -> { fail("An inadmissible source read its readiness"); return true; }));
         }
         // The source refusal is a code alone; RocketFlightRequestResult accepts only pad detail keys.
