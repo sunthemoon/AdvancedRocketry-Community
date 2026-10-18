@@ -447,8 +447,19 @@ final class RocketTransferService {
                 record.sourceFlightData().passengers().assignments().size(),
                 record.checksum(),
                 RocketTransferEntities.loadedMatches(server, record, false).size(),
-                RocketTransferEntities.loadedMatches(server, record, true).size()
+                RocketTransferEntities.loadedMatches(server, record, true).size(),
+                RocketTransferEntities.marginStatus(server, record.sourceSnapshot()),
+                RocketTransferEntities.marginStatus(server, record.destinationSnapshot()),
+                governedWait(server, record),
+                governedSources.tickets(record.transferId())
         ));
+    }
+
+    /** W90 (R21 item 6): the active executor hold, else the dispatcher's current wait; RAM only, read-only. */
+    private String governedWait(MinecraftServer server, RocketTransferRecord record) {
+        var hold = io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowRuntime.of(server)
+                .executorHolds().reason(record.transferId());
+        return hold.map(reason -> "HOLD:" + reason).orElseGet(() -> governedSources.waitOf(record.transferId()).name());
     }
 
     RocketTransferRecoveryReport recover(MinecraftServer server, UUID transferId) {

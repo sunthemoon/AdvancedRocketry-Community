@@ -19,9 +19,24 @@ public record RocketTransferInspection(
         int passengerCount,
         String checksum,
         int sourceMatches,
-        int destinationMatches
+        int destinationMatches,
+        // W90 (R21 item 6): k/n or "invalid" per end, NONE/LOADING/CENSUS/HOLD:reason, and the last refreshed set size.
+        String sourceMargin,
+        String destinationMargin,
+        String readinessWait,
+        int marginTickets
 ) {
+    private static final int MAX_FIELD_LENGTH = 64;
+
     public RocketTransferInspection {
+        for (String field : new String[] {sourceMargin, destinationMargin, readinessWait}) {
+            if (Objects.requireNonNull(field, "margin field").length() > MAX_FIELD_LENGTH) {
+                throw new IllegalArgumentException("Transfer inspection margin field exceeds its bound");
+            }
+        }
+        if (marginTickets < 0 || marginTickets > 2 * RocketFlightLimits.MAX_LANDING_CHUNKS) {
+            throw new IllegalArgumentException("Transfer inspection ticket count is outside its bound");
+        }
         Objects.requireNonNull(transferId, "transferId");
         Objects.requireNonNull(logicalRocketId, "logicalRocketId");
         Objects.requireNonNull(phase, "phase");
