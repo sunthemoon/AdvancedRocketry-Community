@@ -18,6 +18,7 @@ final class EscrowTransferAdmission {
         var related = java.util.stream.Stream.concat(root.records().stream(), pending.stream())
                 .filter(member -> logical.equals(member.rocket().logicalRocket())).toList();
         if (op.kind().cargo()) {
+            if (capture.before().epoch() != op.rocket().beforeEpoch()) { return Optional.of(EscrowCoordinator.Fill.STALE); }
             if (EscrowSettlementTombstones.history(root, logical)
                     || root.rocketAuthorities().stream().anyMatch(head -> logical.equals(head.logical()))) {
                 return Optional.of(EscrowCoordinator.Fill.RECEIPT_BACKED);

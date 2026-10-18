@@ -116,4 +116,34 @@ class EscrowCargoAdmissionTest {
             coordinator.abort(); assertEquals(0, turns.size());
         }
     }
+
+    @Test void onlyTheRegisteredNextDeviceGetsTheIdleTurnAndAdmissionConsumesIt() {
+        var root = ledger(); var data = ResourceEscrowSavedData.load(EscrowCodec.encode(root));
+        try (var writer = new EscrowLedgerWriter(temp.resolve("next-turn"), 0); var coordinator = new EscrowCoordinator(data, writer)) {
+            var preferred = operation(EscrowOperation.Kind.FLUID_CARGO_LOAD, 1, 99); var old = preferred.device();
+            var otherDevice = new EscrowEndpoint(old.kind(), old.level(), id(42), null, old.type(), old.x(), old.y(), old.z(),
+                    old.unit(), old.beforeEpoch(), old.beforeSignature(), old.afterSignature());
+            var other = nativeModel(new EscrowOperation(preferred.id(), 1, preferred.owner(), 1, preferred.phase(), preferred.reason(),
+                    preferred.payload(), preferred.payloadHash(), otherDevice, preferred.rocket(), preferred.guard(), preferred.kind(), preferred.settlement()), wrapper(0));
+            var turns = coordinator.transferTurns(); turns.register(preferred.device().identity(), preferred.guard().rocket());
+            turns.blocked(preferred.device().identity(), preferred.guard().rocket());
+            assertEquals(EscrowCoordinator.Fill.OTHER_TRANSFER_PENDING, coordinator.prepareTransfer(capture(other, 0), ignored -> fail()));
+            assertEquals(1, coordinator.nextSequence()); assertFalse(data.isDirty()); assertEquals(0, coordinator.admissionAuthority().pendingCount());
+            assertEquals(EscrowCoordinator.Fill.QUEUED, coordinator.prepareTransfer(capture(preferred, 0), ignored -> { }));
+            assertEquals(0, turns.size()); assertEquals(2, coordinator.nextSequence());
+        }
+    }
+
+    @Test void cargoCannotSubstituteAnotherEpochEvenWithASelfConsistentWrapperDigest() {
+        var root = ledger(); var data = ResourceEscrowSavedData.load(EscrowCodec.encode(root));
+        try (var writer = new EscrowLedgerWriter(temp.resolve("wrong-epoch"), 0); var coordinator = new EscrowCoordinator(data, writer)) {
+            for (var kind : KINDS) {
+                var wrapper = new RocketEscrowSection(root.id(), 1, List.of());
+                var op = nativeModel(operation(kind, 1, 99), wrapper);
+                assertEquals(EscrowCoordinator.Fill.STALE, coordinator.prepareTransfer(new EscrowNativeBinding.Admission(op, wrapper), ignored -> fail()));
+            }
+            assertEquals(1, coordinator.nextSequence()); assertEquals(0, coordinator.admissionAuthority().pendingCount());
+            assertFalse(data.isDirty()); assertTrue(writer.capturedOperations().isEmpty());
+        }
+    }
 }

@@ -100,6 +100,25 @@ class EscrowCargoCapacityTest {
         } catch (IllegalArgumentException refused) { return false; }
     }
 
+    @Test void framedPayloadAndUnsettledOperationCanFitWhileEmbeddedO1ExceedsTheNodeBound() {
+        for (var kind : KINDS) {
+            var original = operation(kind, 1, 99); var fluid = fluid(-1); var tag = new CompoundTag();
+            for (int i = 0; i < 350; i++) { tag.putByte("n" + i, (byte) 1); }
+            fluid.put("Tag", tag); var payload = new EscrowCargoPayload(cursor(), fluid).encode();
+            assertTrue(BoundedNbt.fits(payload, 8_192, 12, 384));
+            var op = new EscrowOperation(original.id(), 1, original.owner(), 1, original.phase(), original.reason(), payload,
+                    io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNativeResources.signature(payload),
+                    original.source(), original.destination(), original.guard(), original.kind(), original.settlement(), original.nativeBinding());
+            assertTrue(BoundedNbt.fits(EscrowCodec.operation(op), 12_288, 16, 512));
+            var root = ledger(); var data = ResourceEscrowSavedData.load(EscrowCodec.encode(root));
+            try (var writer = new EscrowLedgerWriter(temp.resolve(kind + "-nodes"), 0); var coordinator = new EscrowCoordinator(data, writer)) {
+                assertEquals(EscrowCoordinator.Fill.ESCROW_FULL, coordinator.prepareTransfer(EscrowCargoAdmissionTest.capture(op, 0), ignored -> fail()));
+                assertEquals(1, coordinator.nextSequence()); assertEquals(root, coordinator.ledger()); assertFalse(data.isDirty());
+                assertEquals(0, coordinator.admissionAuthority().pendingCount()); assertTrue(writer.capturedOperations().isEmpty());
+            }
+        }
+    }
+
     @Test void r6HeadroomAndR8CeilingChargesRefuseBeforeReservationAndStillPermitR9Retirement() throws Exception {
         for (var kind : KINDS) {
             for (int floors : List.of(0, 29)) {

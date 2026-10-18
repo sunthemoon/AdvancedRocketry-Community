@@ -21,8 +21,12 @@ class EscrowCargoCompatibilityTest {
 
     @Test void fuelAndFloorReceiptBytesAndInspectorOutputStayPinned() throws Exception {
         var actual = pins();
-        // Values are independently compared with 38b437a7 by the W100 baseline encoder run.
-        assertEquals(4, actual.size());
+        // Raw NbtIo bytes and UTF-8 inspector output, independently encoded with 38b437a7's classes.
+        assertEquals(Map.of(
+                "fuel_receipt", "1311:0e26ae03e11c7d043d6191ca231d6de04a49d91fba2d27e15ee76dfa0c0fe83f",
+                "fuel_inspect", "3b0e2eedcbeee82d60dadefc30b06358c43de14313cbdaea18534a3b99e3442a",
+                "floor_receipt", "798:6644ac4e62cb3085031cd83a9e65b06eec831b70cb73e254961f18e17243276e",
+                "floor_inspect", "941735ad2a349ddfc47ee642defa096975222aa4f47368b75f1d086695624a4d"), actual);
         actual.forEach((name, value) -> System.out.println("COMPATIBILITY " + name + "=" + value));
     }
     static Map<String, String> pins() throws Exception {
