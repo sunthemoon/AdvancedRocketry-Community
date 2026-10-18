@@ -130,15 +130,17 @@ public final class EscrowGovernedPhases {
 
     private static Result advance(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
                                   RocketTransferPhase phase) {
-        if (!journal.canQueueEffect()) { return Result.HELD; }
-        var next = record.advance(phase); journal.put(next);
-        EscrowRuntime.of(server).checkpoint("F5_" + phase + "_REQUESTED");
-        // No captured entity/permit crosses this callback. The dispatcher repeats all checks next visit.
-        journal.afterAcknowledged(server, record.logicalRocketId(), () -> {
-            if (authority(server, journal, next) == null) { return false; }
-            EscrowRuntime.of(server).checkpoint("F5_" + phase + "_ACK"); return true;
-        }, () -> { });
-        return Result.WAITING;
+        try (var reservation = journal.canQueueEffect(record.logicalRocketId()).orElse(null)) {
+            if (reservation == null) { return Result.HELD; }
+            var next = record.advance(phase); journal.put(next);
+            EscrowRuntime.of(server).checkpoint("F5_" + phase + "_REQUESTED");
+            // No captured entity/permit crosses this callback. The dispatcher repeats all checks next visit.
+            journal.afterAcknowledged(server, reservation, () -> {
+                if (authority(server, journal, next) == null) { return false; }
+                EscrowRuntime.of(server).checkpoint("F5_" + phase + "_ACK"); return true;
+            }, () -> { });
+            return Result.WAITING;
+        }
     }
 
     boolean passengerAttemptDue(java.util.UUID logical, long tick) { return passengerRetries.ready(logical, tick); }

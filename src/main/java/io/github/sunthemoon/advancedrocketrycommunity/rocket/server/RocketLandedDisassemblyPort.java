@@ -37,8 +37,8 @@ final class RocketLandedDisassemblyPort implements RocketLandedDisassemblies.Por
     }
 
     @Override
-    public boolean queue(UUID logical, BooleanSupplier action, Runnable discarded) {
-        return journal.afterAcknowledged(server, logical, action, discarded);
+    public boolean queue(RocketTransferSavedData.Reservation reservation, BooleanSupplier action, Runnable discarded) {
+        return journal.afterAcknowledged(server, reservation, action, discarded);
     }
 
     @Override

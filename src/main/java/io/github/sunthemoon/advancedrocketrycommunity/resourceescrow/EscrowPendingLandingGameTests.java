@@ -52,6 +52,7 @@ public final class EscrowPendingLandingGameTests {
         private final List<ObservingPlayer> players = new ArrayList<>();
         private final List<io.netty.channel.embedded.EmbeddedChannel> channels = new ArrayList<>();
         private ResourceEscrowSavedData data;
+        private RocketTransferSavedData fixtureJournal;
         private RocketEntity refusedSource;
         private int requested, peakPending;
         private boolean started, overflow, refusalChecked, done;
@@ -83,7 +84,13 @@ public final class EscrowPendingLandingGameTests {
             for (int i = 0; i < 8; i++) {
                 if (!loaded(earth, source(i)) || !loaded(moon, pad(i))) { return; }
             }
-            var server = earth.getServer(); var journal = RocketTransferSavedData.get(server); var runtime = EscrowRuntime.of(server);
+            var server = earth.getServer(); var runtime = EscrowRuntime.of(server);
+            if (fixtureJournal == null) {
+                if (!RocketTransferSavedData.get(server).retryChecked(server)) { return; }
+                fixtureJournal = io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence
+                        .RocketJournalSchedulingGameTestSupport.boundedFixture(helper, 2);
+            }
+            var journal = fixtureJournal;
             if (!started) {
                 if (!journal.retryChecked(server)) { return; }
                 RocketJournalGameTestSupport.occupyFirstMoonLanding(helper);
@@ -108,7 +115,9 @@ public final class EscrowPendingLandingGameTests {
                 runtime.terminalCutForTests(server, cut -> {
                     checkpoints.merge(cut, 1, Integer::sum);
                     if (cut.equals("F1_ARM_ACK")) {
-                        overflow |= !journal.canQueueEffect();
+                        try (var reservation = journal.canQueueEffect(UUID.randomUUID()).orElse(null)) {
+                            overflow |= reservation == null;
+                        }
                         helper.assertTrue(!runtime.flightCheckpoint().pendingDestinations().isEmpty(),
                                 "F1 acknowledgement released its pad before F2 publication");
                     }
@@ -168,7 +177,10 @@ public final class EscrowPendingLandingGameTests {
                 helper.assertTrue(count(cut) == 8, "Missing exact eight-flight checkpoint " + cut + ": " + count(cut));
             }
             helper.assertTrue(runtime.flightCheckpoint().pendingDestinations().isEmpty(), "Completed launches leaked pending pads");
+            if (!journal.retryChecked(server)) { return; }
             runtime.terminalCutForTests(server, null);
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence
+                    .RocketJournalSchedulingGameTestSupport.boundedFixture(helper, 128);
             arrivals.forEach(RocketEntity::discard); refusedSource.discard();
             players.forEach(player -> server.getPlayerList().remove(player)); channels.forEach(channel -> channel.finishAndReleaseAll());
             terrain.forEach((level, blocks) -> blocks.forEach((pos, state) -> level.setBlock(pos, state, 3)));

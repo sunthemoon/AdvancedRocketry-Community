@@ -2,7 +2,6 @@ package io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence
 
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataPolicy;
 import java.nio.file.Path;
-import java.util.UUID;
 import java.util.function.BooleanSupplier;
 
 /** Lets unit tests in other packages await a detached journal's own writer completion instead of polling a wall clock. */
@@ -12,9 +11,21 @@ public final class RocketJournalTestAccess {
     /** Pumps the owner side until the submitted generation completes; failures stop after the writer's bounded drain retries. */
     public static void awaitWriter(RocketTransferSavedData journal) { journal.drainForTests(); }
 
-    /** W85 A0: queues a dependent continuation on a detached journal as {@code afterAcknowledged} does, without a server. */
-    public static boolean queue(RocketTransferSavedData journal, UUID logical, BooleanSupplier action, Runnable discarded) {
-        return journal.queueEffect(logical, action, discarded);
+    /**
+     * W85 A0: queues a dependent continuation on a detached journal as {@code afterAcknowledged} does, without a server,
+     * consuming the caller's reservation (R23).
+     */
+    public static boolean queue(RocketTransferSavedData journal, RocketTransferSavedData.Reservation reservation,
+                                BooleanSupplier action, Runnable discarded) {
+        return journal.queueEffect(reservation, false, false, action, discarded);
+    }
+
+    /**
+     * R28: captures one checked generation of a detached journal now, without waiting for it; {@link #awaitWriter} then
+     * publishes its completion on the owner thread.
+     */
+    public static void request(RocketTransferSavedData journal, Path file, CheckedSavedDataPolicy policy) {
+        journal.requestWrite(file, policy);
     }
 
     /** Requests one checked generation of a detached journal, waits for it, then runs its continuations at {@code tick}. */

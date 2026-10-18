@@ -42,7 +42,7 @@ class EscrowGovernedLandingActionTest {
                 var authority = EscrowGovernedDispatch.acquire(root::get, () -> true, journal, record);
                 var before = EscrowGovernedArrivalStateTest.descent(record, 500, 80);
                 var permit = EscrowGovernedLandingAction.issue(authority, before, 580, boundary::get);
-                if (fault.equals("journal")) { journal.setDirty(); }
+                if (fault.equals("journal")) { journal.put(record); }
                 if (fault.equals("ledger")) { root.set(root.get().generation(root.get().writerGeneration() + 1)); }
                 if (fault.equals("boundary")) { boundary.set(false); }
                 if (fault.equals("rider")) { before.getList("passengers", 10).add(new net.minecraft.nbt.CompoundTag()); }

@@ -341,7 +341,7 @@ public final class EscrowCoordinator implements AutoCloseable {
                         ? op.withReason(transitions.get(op.id())) : op).toList(), candidate.floors(), candidate.tombstones());
         if (retire != null) { candidate = EscrowFloors.retire(candidate, retire, proofs.entrySet().stream()
                 .collect(java.util.stream.Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().frontier()))); }
-        if (floorJournal != null && floorJournal.acknowledgedCurrent()) {
+        if (floorJournal != null && floorJournal.clean()) {
             // This capture runs on the owner thread. It never collects from a RAM-only journal removal.
             candidate = EscrowFloors.collect(candidate, java.util.stream.Stream.concat(data.ledger().records().stream(), queued.values().stream()).toList(),
                     id -> floorJournal.find(id).isEmpty());
@@ -555,7 +555,7 @@ public final class EscrowCoordinator implements AutoCloseable {
     public EscrowFloors.Usage floorUsage() { owner(); return EscrowFloors.usage(data.ledger(), queued.values()); }
     void collectFloors(io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData journal) {
         owner(); floorJournal = journal;
-        if (closed || !journal.acknowledgedCurrent()) { return; }
+        if (closed || !journal.clean()) { return; }
         var candidate = EscrowFloors.collect(data.ledger(), queued.values(), id -> journal.find(id).isEmpty());
         if (candidate.floors().size() != data.ledger().floors().size()) { data.setDirty(); autosave(); }
     }

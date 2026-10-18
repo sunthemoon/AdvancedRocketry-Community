@@ -56,8 +56,10 @@ final class JackhammerFixture implements AutoCloseable {
         drops().forEach(entity -> initialLoot.add(entity.getUUID()));
         try {
             // Loading is owned test setup, not item admission from an arbitrary client location.
-            level.getChunkAt(target);
-            for (BlockPos pos : List.of(target, target.east(), target.west(), target.below(), target.west().below())) {
+            var cells = List.of(target, target.east(), target.west(), target.below(), target.west().below());
+            cells.stream().map(net.minecraft.world.level.ChunkPos::new).distinct()
+                    .forEach(chunk -> level.getChunk(chunk.x, chunk.z));
+            for (BlockPos pos : cells) {
                 helper.assertTrue(level.hasChunkAt(pos) && level.getBlockEntity(pos) == null,
                         "Owned fixture requires loaded BE-free cells");
                 before.put(pos, level.getBlockState(pos));

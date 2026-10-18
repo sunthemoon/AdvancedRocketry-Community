@@ -103,7 +103,7 @@ public final class ResourceRestartReleaseProbe {
             step = 1;
             return;
         }
-        if (!journal().acknowledgedCurrent()) { return; }
+        if (!journal().clean()) { return; }
         if (stage.equals("empty")) {
             require(rockets().isEmpty() && journal().entries().isEmpty(), "Disassembled arrival rebuilt or journal retained");
             ensureOwner(levels().get(1));

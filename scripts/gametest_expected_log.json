@@ -3,6 +3,42 @@
   "description": "Every ERROR and WARN entry that a complete runGameTestServer log is expected to contain. Each expectation records a deliberate refusal or failure path that a named GameTest drives, or a bounded environment warning. scripts/check_gametest_log.py fails on any FATAL entry, any entry not listed here and any count that differs.",
   "expectations": [
     {
+      "id": "w91f-blocked-arrival-return",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RETURNED_TO_SOURCE transfer=[0-9a-f-]{36} logical=[0-9a-f-]{36} reason=destination_pad_blocked fuel=1000",
+      "counts": {"journal_fail_back_admission": 1},
+      "test": "RocketFailBackHeldWriterGameTests.blockedArrivalRefusesFullQueueThenReturnsAfterOneDependencyCommits",
+      "reason": "A blocked named arrival first refuses before mutation with both continuation slots occupied, then reports exactly one acknowledged return after one slot becomes free."
+    },
+    {
+      "id": "w91f-aborted-return-restart",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RECOVERY transfer=[0-9a-f-]{36} phase=PREPARED source_count=1 destination_count=0 action=KEEP_SOURCE status=RECOVERED",
+      "counts": {"journal_fail_back_admission": 1},
+      "test": "RocketFailBackHeldWriterGameTests.abortedQueuedReturnRecoversFromCheckedJournalAndSavedEntity",
+      "reason": "The new session reads the checked pre-removal journal and saved entity NBT, retains the one intact source, then acknowledges removal and releases its pad."
+    },
+    {
+      "id": "w91f-journal-scheduling-write-failures",
+      "level": "ERROR",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData/",
+      "message": "ARCE_TRANSFER_JOURNAL_UNACKNOWLEDGED retained dirty authority; dependent effects are blocked",
+      "counts": {"journal_concurrent_flight": 3, "journal_fail_back_admission": 1},
+      "test": "RocketUnknownSchedulingGameTests, RocketDefiniteFailureGameTests, MoonConcurrentLandingGameTests.definiteFailureRefusesMoonElectionUntilRetry, RocketFailBackHeldWriterGameTests.unknownRemovalRetainsItsContinuationUntilRetryAndCheckedReload",
+      "reason": "Four detached checked writers deliberately fail. Each journal reports the first failure once while retries retain continuations; subsequent checked acknowledgements release them."
+    },
+    {
+      "id": "w91f-unloaded-capture-source-recovery",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RECOVERY transfer=[0-9a-f-]{36} phase=DESTINATION_SPAWNED source_count=1 destination_count=0 action=KEEP_SOURCE status=RECOVERED",
+      "counts": {"journal_concurrent_flight": 1},
+      "test": "RocketUnknownSchedulingGameTests.unknownBeyondTicketExpiryRechecksLoadedAndUnloadedCaptures",
+      "reason": "After UNKNOWN outlasts the flight tickets, the stale unloaded source capture refuses publication. Reloading its entity NBT allows ordinary recovery to retain exactly that source."
+    },
+    {
       "id": "transfer-spawn-retry-rebuild",
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",

@@ -208,7 +208,7 @@ class EscrowGovernedSourceRecoveryTest {
     @Test void supersededJournalLedgerAndTerminalOutcomeInvalidateDeferredActions() throws Exception {
         try (var state = state()) {
             var permit = issue(state, RETURN_EXACT_SOURCE, state.fixture.source());
-            state.journal.setDirty();
+            state.journal.put(state.fixture.record());
             assertThrows(IllegalArgumentException.class, () -> permit.consume(state.fixture.source()::copy));
             acknowledge(state.journal);
             var authority = EscrowGovernedDispatch.acquire(state.root::get, () -> true, state.journal, state.fixture.record());

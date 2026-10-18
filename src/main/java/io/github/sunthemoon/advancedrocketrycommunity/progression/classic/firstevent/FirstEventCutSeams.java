@@ -250,7 +250,7 @@ public final class FirstEventCutSeams {
         AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_TEST first_event_fixture completion_wait");
         if (observedHolds.size() == FirstEventKind.values().length
                 && io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData
-                        .get(server).acknowledgedCurrent()) {
+                        .get(server).clean()) {
             FirstEventAvailabilityCut.status(server);
             halt(Cut.FP7A, FIRST_STEP, null);
         }

@@ -81,12 +81,14 @@ public final class RocketJournalGameTestSupport {
 
     /**
      * W85 A1: queues a dependent continuation on a detached journal without the flush that {@code afterAcknowledged}
-     * adds, so that the test chooses when, and with which committer, the generation is written.
+     * adds, so that the test chooses when, and with which committer, the generation is written. It consumes the
+     * caller's reservation for the continuation's logical rocket (R23).
      */
-    public static boolean queueDetached(GameTestHelper helper, RocketTransferSavedData journal, java.util.UUID logical,
+    public static boolean queueDetached(GameTestHelper helper, RocketTransferSavedData journal,
+                                        RocketTransferSavedData.Reservation reservation,
                                         java.util.function.BooleanSupplier action, Runnable discarded) {
         helper.assertTrue(helper.getLevel().getServer() instanceof GameTestServer, "Not a GameTest fixture");
-        return journal.queueEffect(logical, action, discarded);
+        return journal.queueEffect(reservation, false, false, action, discarded);
     }
 
     /**

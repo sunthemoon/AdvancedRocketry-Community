@@ -34,7 +34,7 @@ final class RocketTransferBayDispatch {
     Set<UUID> moving() { var ids = new HashSet<>(live); ids.addAll(excluded()); return ids; }
 
     void prune(RocketTransferSavedData journal) {
-        if (!journal.acknowledgedCurrent()) { return; }
+        if (!journal.clean()) { return; }
         var present = journal.entries().stream().map(RocketTransferRecord::transferId)
                 .collect(java.util.stream.Collectors.toSet());
         claimedTransfers.retainAll(present); claims.keySet().retainAll(present);

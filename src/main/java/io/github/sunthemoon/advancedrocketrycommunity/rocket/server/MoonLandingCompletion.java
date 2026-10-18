@@ -49,40 +49,50 @@ final class MoonLandingCompletion {
         // 3. The RAM slot is classified, never treated as proof: this transfer's event is projected.
         var ram = journal.firstMoonLandingRam();
         if (ram.event() instanceof FirstEvent.MoonLanding held && held.transferId().equals(record.transferId())) {
-            journal.afterAcknowledged(server, record.logicalRocketId(), publish, () -> { });
-            return Result.LANDED_NOW;
+            try (var reservation = journal.reserve(record.logicalRocketId()).orElse(null)) {
+                return reservation != null && journal.afterAcknowledged(server, reservation, true, false, publish, () -> { })
+                        ? Result.LANDED_NOW : Result.WAIT;
+            }
         }
+        // Another lander's RAM election is not yet authority for a NOT_FIRST landing (W86 section 4).
+        if (!ram.isEmpty() && journal.durableFirstMoonLanding().knownEvent().isEmpty()) { return Result.WAIT; }
         FirstEventDisposition disposition = dispositions.disposition(server, FirstEventKind.FIRST_MOON_LANDING,
                 journal.durableFirstMoonLanding(), ram);
         if (disposition == FirstEventDisposition.NOT_FIRST) {
             return Result.ORDINARY;
         }
         // 4. The writer needs a continuation slot and no failed write.
-        if (disposition == FirstEventDisposition.DEFER || !journal.canQueueEffect()) {
+        if (disposition == FirstEventDisposition.DEFER) {
             FirstEventCutSeams.moonDeferred(server);
             return Result.WAIT;
         }
-        // 5. Snapshot the event: the aboard, eligible players, sorted; never truncated.
-        List<UUID> participants = FirstEventCutSeams.participants(server, FirstEventKind.FIRST_MOON_LANDING)
-                .orElseGet(() -> RocketTransferEntities.aboard(destination).stream()
-                        .filter(ClassicAdvancementEvents::eligible).map(ServerPlayer::getUUID).sorted().toList());
-        if (participants.size() > RocketFlightLimits.MAX_PASSENGERS) {
-            return Result.WAIT;
+        try (var reservation = journal.canQueueEffect(record.logicalRocketId()).orElse(null)) {
+            if (reservation == null) {
+                FirstEventCutSeams.moonDeferred(server);
+                return Result.WAIT;
+            }
+            // 5. Snapshot the event: the aboard, eligible players, sorted; never truncated.
+            List<UUID> participants = FirstEventCutSeams.participants(server, FirstEventKind.FIRST_MOON_LANDING)
+                    .orElseGet(() -> RocketTransferEntities.aboard(destination).stream()
+                            .filter(ClassicAdvancementEvents::eligible).map(ServerPlayer::getUUID).sorted().toList());
+            if (participants.size() > RocketFlightLimits.MAX_PASSENGERS) {
+                return Result.WAIT;
+            }
+            var origin = record.destinationSnapshot().sourceOrigin();
+            FirstEvent.MoonLanding event = FirstEvent.MoonLanding.create(UUID.randomUUID(), record.transferId(),
+                    record.logicalRocketId(), record.ownerId(), destination.getUUID(), record.checksum(), origin.x(),
+                    origin.y(), origin.z(), destination.level().getGameTime(), participants);
+            FirstEventCutSeams.beforeMoonElection(server, () -> server.saveEverything(false, true, true));
+            // 6. EMPTY to ELECTED in RAM; 7. LANDED and the notifications wait for the exact confirmation.
+            if (!journal.electFirstMoonLanding(event)) {
+                return Result.WAIT;
+            }
+            AdvancedRocketryCommunity.LOGGER.info(
+                    "ARCE_FIRST_EVENT_ELECTED kind=first_moon_landing event={} transfer={} participants={}",
+                    event.eventId(), record.transferId(), participants.size());
+            journal.afterAcknowledged(server, reservation, true, false, publish, () -> { });
+            return Result.LANDED_NOW;
         }
-        var origin = record.destinationSnapshot().sourceOrigin();
-        FirstEvent.MoonLanding event = FirstEvent.MoonLanding.create(UUID.randomUUID(), record.transferId(),
-                record.logicalRocketId(), record.ownerId(), destination.getUUID(), record.checksum(), origin.x(),
-                origin.y(), origin.z(), destination.level().getGameTime(), participants);
-        FirstEventCutSeams.beforeMoonElection(server, () -> server.saveEverything(false, true, true));
-        // 6. EMPTY to ELECTED in RAM; 7. LANDED and the notifications wait for the exact confirmation.
-        if (!journal.electFirstMoonLanding(event)) {
-            return Result.WAIT;
-        }
-        AdvancedRocketryCommunity.LOGGER.info(
-                "ARCE_FIRST_EVENT_ELECTED kind=first_moon_landing event={} transfer={} participants={}",
-                event.eventId(), record.transferId(), participants.size());
-        journal.afterAcknowledged(server, record.logicalRocketId(), publish, () -> { });
-        return Result.LANDED_NOW;
     }
 
     /**
@@ -93,6 +103,9 @@ final class MoonLandingCompletion {
     private static boolean safeCompletion(MinecraftServer server, RocketTransferSavedData journal,
                                           RocketTransferRecord record, RocketEntity destination,
                                           RocketTransferBayDispatch bays) {
+        if (!journal.actionable(record.logicalRocketId()) || journal.find(record.transferId()).orElse(null) != record) {
+            return false;
+        }
         if (record.nativeTransfer().isPresent()) {
             return io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowRuntime.of(server).arrivals()
                     .ready(server, journal, record, destination,

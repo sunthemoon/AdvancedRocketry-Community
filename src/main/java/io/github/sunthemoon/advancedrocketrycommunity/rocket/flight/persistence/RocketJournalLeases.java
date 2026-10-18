@@ -106,6 +106,14 @@ final class RocketJournalLeases {
 
     boolean acknowledged(UUID logical) { return view.acknowledged(Objects.requireNonNull(logical)); }
 
+    /** Owner-thread scheduling reads the same published change history, including its conservative overflow floor. */
+    boolean unchangedSince(UUID logical, long sequence) { return view.changed(logical) <= sequence; }
+    boolean untouched(UUID logical) { return view.changed(logical) == 0; }
+    boolean rootAcknowledged(long sequence) {
+        var current = view;
+        return current.usable() && current.acknowledged() != null && current.acknowledged().sequence() == sequence;
+    }
+
     /** Acquired on the owner thread; {@code since} is the journal's current mutation sequence. */
     BooleanSupplier lease(UUID logical, UUID transfer, long serial, long since) {
         Objects.requireNonNull(logical, "logical");

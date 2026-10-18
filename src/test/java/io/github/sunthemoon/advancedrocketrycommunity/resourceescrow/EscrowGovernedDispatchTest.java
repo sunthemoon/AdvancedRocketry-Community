@@ -94,6 +94,33 @@ class EscrowGovernedDispatchTest {
         } finally { dispatch.close(); journal.stop(); }
     }
 
+    @Test void authoritySurvivesADisjointPutButNotItsOwnIdenticalPut() throws Exception {
+        var record = GovernedTransferFixture.create().record(); var root = root(record);
+        var journal = new RocketTransferSavedData(); journal.put(record);
+        try (var dispatch = new EscrowGovernedDispatch()) {
+            acknowledge(journal);
+            var authority = dispatch.authority(() -> root, () -> true, journal, record);
+            assertNotNull(authority); assertTrue(authority.valid());
+            var other = io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence
+                    .RocketJournalScheduleFixtures.record(901);
+            journal.put(other);
+            assertFalse(journal.clean()); assertFalse(journal.actionable(other.logicalRocketId()));
+            assertTrue(authority.valid());
+            assertSame(authority, dispatch.authority(() -> root, () -> true, journal, record));
+            try (var reservation = journal.reserve(record.logicalRocketId()).orElseThrow()) {
+                assertFalse(authority.valid());
+            }
+            assertFalse(authority.valid(), "An observed invalidation permanently retires this governed view");
+            authority = dispatch.authority(() -> root, () -> true, journal, record);
+            assertNotNull(authority); assertTrue(authority.valid());
+            journal.put(record);
+            assertFalse(authority.valid());
+            acknowledge(journal);
+            assertFalse(authority.valid(), "An identical own put cannot revive the previous lease");
+            assertNotNull(dispatch.authority(() -> root, () -> true, journal, record));
+        } finally { journal.stop(); }
+    }
+
     @Test void rootAndAvailabilityChangesJoinsAndShutdownInvalidateCachedViews() throws Exception {
         var record = GovernedTransferFixture.create().record(); var root = new AtomicReference<>(root(record));
         var available = new AtomicBoolean(true); var journal = new RocketTransferSavedData(); journal.put(record);

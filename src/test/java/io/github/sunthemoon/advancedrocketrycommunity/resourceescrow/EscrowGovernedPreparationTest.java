@@ -33,7 +33,7 @@ class EscrowGovernedPreparationTest {
 
     @Test void unacknowledgedOrStoppedJournalDoesNotIssueACountdownPermit() throws Exception {
         try (var state = state()) {
-            state.journal.setDirty();
+            state.journal.put(state.fixture.record());
             assertNull(EscrowGovernedPreparation.countdownPermit(state.authority(), state.fixture.source(), 20, () -> true));
             acknowledge(state.journal); state.journal.stop();
             assertNull(EscrowGovernedPreparation.countdownPermit(state.authority(), state.fixture.source(), 20, () -> true));
@@ -84,14 +84,18 @@ class EscrowGovernedPreparationTest {
     /** Review B F9: once PREPARED is written, a full callback queue leaves the launch pending, not discarded. */
     @Test void aFullCallbackQueueAfterPreparedIsWrittenDoesNotDiscardTheLaunch() throws Exception {
         var server = io.github.sunthemoon.advancedrocketrycommunity.testsupport.UnstartedServer.owned();
-        var record = GovernedTransferFixture.create().record(); var journal = new RocketTransferSavedData();
+        var record = GovernedTransferFixture.create().record(); var journal = new RocketTransferSavedData(2);
         var countdowns = new java.util.concurrent.atomic.AtomicInteger(); var discards = new java.util.concurrent.atomic.AtomicInteger();
         try {
             acknowledge(journal);
-            // Two earlier generations still await their acknowledgement, which fills the bounded callback queue.
-            journal.put(record); assertTrue(journal.afterAcknowledged(server, GovernedTransferFixture.id(901), () -> true, () -> { }));
-            journal.remove(record.transferId()); assertTrue(journal.afterAcknowledged(server, GovernedTransferFixture.id(902), () -> true, () -> { }));
-            assertFalse(journal.canQueueEffect());
+            // Both dependencies are changed absences, not untouched identities that can run immediately.
+            var first = io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence
+                    .RocketJournalScheduleFixtures.pendingAbsence(journal, 901);
+            assertTrue(journal.afterAcknowledged(server, first, () -> true, () -> { }));
+            var second = io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence
+                    .RocketJournalScheduleFixtures.pendingAbsence(journal, 902);
+            assertTrue(journal.afterAcknowledged(server, second, () -> true, () -> { }));
+            assertTrue(journal.canQueueEffect(record.logicalRocketId()).isEmpty());
             assertFalse(EscrowGovernedPreparation.prepare(journal, server, record,
                     () -> { countdowns.incrementAndGet(); return true; }, discards::incrementAndGet));
             assertEquals(0, discards.get(), "A written PREPARED record was reported as a discarded launch");

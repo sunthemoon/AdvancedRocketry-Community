@@ -42,6 +42,21 @@ final class RocketTransferEntities {
     private RocketTransferEntities() {
     }
 
+    /** A delayed continuation must not act on a captured object that unloaded or ceased to be this record's entity. */
+    static boolean currentEntity(RocketEntity entity, RocketTransferRecord record, boolean destination) {
+        return loadedEntity(entity)
+                && (destination ? record.destinationEntityId().filter(entity.getUUID()::equals).isPresent()
+                        : record.sourceEntityId().equals(entity.getUUID()))
+                && entity.assemblyTransactionId().filter(record.logicalRocketId()::equals).isPresent()
+                && entity.ownerId().filter(record.ownerId()::equals).isPresent();
+    }
+
+    static boolean loadedEntity(RocketEntity entity) {
+        return entity != null && entity.isAlive() && entity.isAddedToWorld()
+                && entity.level() instanceof ServerLevel level && level.areEntitiesLoaded(entity.chunkPosition().toLong())
+                && level.getEntity(entity.getUUID()) == entity;
+    }
+
     static RocketEntity rebuildSource(MinecraftServer server, RocketTransferRecord record) {
         ServerLevel level = level(server, record.sourceSnapshot().sourceDimension());
         if (level == null) {

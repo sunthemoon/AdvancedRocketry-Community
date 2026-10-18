@@ -160,7 +160,7 @@ final class EscrowPreF2Probe {
                     journal.put(prepared); journal.flushChecked(server); step = 2;
                 }
             });
-        } else if (step == 2 && journal.acknowledgedCurrent()) { pause(); }
+        } else if (step == 2 && journal.clean()) { pause(); }
     }
 
     private boolean cancellationCut() {
