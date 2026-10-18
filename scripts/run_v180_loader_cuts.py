@@ -137,14 +137,22 @@ def run_cut(args, cut: str, evidence: Path, owner: str, pins: dict) -> dict:
             if creation and restart:
                 oracle.require(any("phase=creation_restart " in line for line in lines), "Missing unchanged creation-restart observation")
             disk = oracle.inspect(session / "world"); start["disk"] = disk
-            observed_identity = oracle.check(disk, actual_cut, restart)
-            oracle.require(identity is None or observed_identity == identity, "Restart changed native identities or binding")
+            try:
+                observed_identity = oracle.check(disk, actual_cut, restart)
+                oracle.require(identity is None or observed_identity == identity, "Restart changed native identities or binding")
+                identity = observed_identity
+            except smoke.SmokeError as failure:
+                # A raw-state finding must remain a failure, but still collect both restart outcomes.
+                start["validation_error"] = str(failure)
+                row.setdefault("findings", []).append(dict(restart=restart, error=str(failure)))
             if previous and previous["ledger"] and disk["ledger"]:
                 oracle.require(previous["ledger"]["ledger_id"] == disk["ledger"]["ledger_id"]
                                and disk["ledger"]["writer_generation"] >= previous["ledger"]["writer_generation"], "Ledger identity/generation regressed")
-            identity = observed_identity; previous = disk
+            previous = disk
             (evidence / "result.json").write_text(json.dumps(row, indent=2), encoding="utf-8")
-        row["status"] = "PASS" if ordered else "NOT_COVERED"
+        row["status"] = "FAILED" if row.get("findings") else "PASS" if ordered else "NOT_COVERED"
+        if row.get("findings"):
+            row["error"] = "Raw-state validation failed; see findings and both restart observations."
         if not ordered:
             row["reason"] = "Unmodified driver chose the opposite first store; this is not evidence for the requested cut."
         return row

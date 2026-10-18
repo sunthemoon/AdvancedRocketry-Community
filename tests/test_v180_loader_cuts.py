@@ -3,6 +3,7 @@ import copy
 from pathlib import Path
 import sys
 import tempfile
+from types import SimpleNamespace
 import unittest
 from unittest import mock
 
@@ -124,6 +125,45 @@ class LoaderCutsTest(unittest.TestCase):
         for free in (10*1024**3, 9*1024**3):
             with mock.patch.object(runner.shutil, "disk_usage", return_value=mock.Mock(free=free)):
                 with self.assertRaises(oracle.smoke.SmokeError): runner.disk_space()
+
+    def test_raw_cut_failure_stays_failed_and_collects_both_restarts(self):
+        cut = "LF_M_K5"
+        snapshots = [fixture(cut, index) for index in range(3)]
+        snapshots[0]["loaders"][0]["arce_fluid_fuel_loader"]["tank"]["Amount"] = 4000
+        processes = []
+
+        class Process:
+            def __init__(self, command, session, log):
+                index = len(processes); processes.append(self)
+                self.process = mock.Mock()
+                prior = snapshots[index-1]["ledger"] if index else None
+                records = len(prior["records"]) if prior else 0
+                self.lines = [f"ARCE_LOADER_MATRIX_FIRST cut={cut} recovery={str(bool(index)).lower()} "
+                              f"delegate={'LOADED' if prior else 'NO_FILE'} issued={prior['issued_through'] if prior else 0} "
+                              f"records={records} pending={records}",
+                              f"ARCE_LOADER_MATRIX_PAUSED cut={cut} hook=BARRIER_FORCE_AFTER first_store=DESTINATION thread=fixture"]
+            def wait_for(self, pattern, timeout): pass
+            def abort(self): pass
+            def command(self, command): pass
+            def finish(self): return 0
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory); sessions = root / "sessions"; sessions.mkdir()
+            template = root / "template"; (template / "libraries").mkdir(parents=True)
+            jar = root / "fixture.jar"; jar.write_bytes(b"fixture")
+            args = SimpleNamespace(session_parent=sessions, source_server=template, jar=jar,
+                                   java="fixture-java", source_commit="fixture-commit", startup_timeout=240)
+            with mock.patch.object(runner, "assert_pin"), mock.patch.object(runner, "require_lock"), \
+                    mock.patch.object(runner, "disk_space", return_value={"C:/": 11*1024**3, "D:/": 11*1024**3}), \
+                    mock.patch.object(runner.smoke, "CapturedProcess", Process), \
+                    mock.patch.object(runner.oracle, "inspect", side_effect=snapshots):
+                result = runner.run_cut(args, cut, root / "evidence", "fixture-owner", {"jar_sha256": runner.digest(jar)})
+            self.assertEqual("FAILED", result["status"])
+            self.assertEqual([{"restart": 0, "error": "Wrong raw tank payload/quantity"}], result["findings"])
+            self.assertEqual([0, 1, 2], [start["restart"] for start in result["starts"]])
+            self.assertEqual(3, len(processes))
+            self.assertTrue(result["cleanup"])
+            self.assertFalse(Path(result["session"]).exists())
 
 
 if __name__ == "__main__": unittest.main()
