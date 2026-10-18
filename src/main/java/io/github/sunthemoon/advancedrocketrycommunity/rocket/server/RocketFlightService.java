@@ -205,7 +205,7 @@ final class RocketFlightService {
                         player.getUUID(),
                         player.hasPermissions(2),
                         requestId,
-                        pad
+                        pad, player.getUUID()
                 );
                 case CANCEL -> cancel(access.rocket(), target, player, requestId);
                 case BOARD -> board(player, access.rocket());
@@ -237,12 +237,13 @@ final class RocketFlightService {
             boolean operator,
             UUID requestId
     ) {
-        return launch(rocket, destination, actorId, operator, requestId, null);
+        return launch(rocket, destination, actorId, operator, requestId, null, null);
     }
 
+    /** {@code requester}: the initiating player of a C2S intent, or null for admin and release-test launches (W90b). */
     private RocketFlightRequestResult launch(RocketEntity rocket, TravelTarget destination, UUID actorId,
             boolean operator, UUID requestId,
-            io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadReference pad) {
+            io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadReference pad, UUID requester) {
         RocketFlightData flight = rocket.flightData().orElseThrow();
         if (flight.state() == RocketFlightState.LANDED && flight.fuel().availableForLaunch()) {
             flight = flight.withFuel(flight.fuel(), rocket.level().getGameTime());
@@ -318,7 +319,7 @@ final class RocketFlightService {
                 report(player, rocket, RocketFlightAction.LAUNCH, destination, requestId,
                         new RocketFlightRequestResult(RocketFlightRequestCode.SUCCESS, planned.requiredFuel()));
             }
-        }, () -> requests.finish(requestId, false)));
+        }, () -> requests.finish(requestId, false), requester));
     }
 
     RocketFlightRequestResult requestAdminPadFlight(RocketEntity rocket, UUID stationId,
@@ -326,7 +327,7 @@ final class RocketFlightService {
         if (!(rocket.level() instanceof ServerLevel) || !rocket.operational()) {
             return RocketFlightRequestResult.failure(RocketFlightRequestCode.ENTITY_UNAVAILABLE);
         }
-        return launch(rocket, new TravelTarget.Station(stationId), rocket.ownerId().orElseThrow(), true, requestId, pad);
+        return launch(rocket, new TravelTarget.Station(stationId), rocket.ownerId().orElseThrow(), true, requestId, pad, null);
     }
 
     RocketFlightRequestResult requestAdminFlight(
@@ -612,6 +613,11 @@ final class RocketFlightService {
             UUID transferId
     ) {
         return transfers.inspect(server, transferId);
+    }
+
+    /** W90b: a logical rocket's destination warm-up line, when no journal entry has that ID. */
+    Optional<String> inspectWarmup(net.minecraft.server.MinecraftServer server, UUID logicalRocketId) {
+        return transfers.warmups.inspect(server, logicalRocketId);
     }
 
     RocketTransferRecoveryReport recoverTransfer(

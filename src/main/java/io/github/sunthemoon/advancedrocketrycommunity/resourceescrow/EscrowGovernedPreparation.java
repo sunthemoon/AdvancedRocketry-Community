@@ -22,8 +22,17 @@ public final class EscrowGovernedPreparation {
         return EscrowRuntime.of(server).flightCheckpoint().pendingDestinations();
     }
 
-    public static boolean begin(RocketEntity rocket, RocketFlightData countdown, RocketStructureSnapshot destination,
-            Predicate<RocketTransferRecord> boundary, Consumer<RocketTransferRecord> accepted, Runnable discarded) {
+    /**
+     * W90b (design 7.2 item 4): {@link #begin}'s preconditions without a side effect. L's journal lease is checked
+     * without {@code retryChecked}, which can start a write, so this may refuse where begin would proceed; it never
+     * admits what begin refuses. The destination warm-up allocates or binds nothing when it fails.
+     */
+    public static boolean available(RocketEntity rocket, RocketFlightData countdown) {
+        return preconditions(rocket, countdown, false);
+    }
+
+    /** begin's own preconditions, in begin's order; {@code retry} lets L's lease check push a pending journal write. */
+    private static boolean preconditions(RocketEntity rocket, RocketFlightData countdown, boolean retry) {
         if (!(rocket.level() instanceof ServerLevel level) || !level.getServer().isSameThread()
                 || !rocket.operational() || !RocketEscrowGate.idle(rocket)) { return false; }
         var server = level.getServer(); var data = ResourceEscrowSavedData.existing(server);
@@ -31,13 +40,21 @@ public final class EscrowGovernedPreparation {
         var journal = RocketTransferSavedData.get(server);
         if (data == null || !data.bind(server).governedAvailable(countdown.logicalRocketId())) { return false; }
         // R17 item 3: F1 acquires L's checked lease; another rocket's pending journal change does not refuse the launch.
-        if (!journal.retryChecked(server) && !journal.actionAuthorityAvailable(countdown.logicalRocketId())) { return false; }
+        if (!(retry && journal.retryChecked(server)) && !journal.actionAuthorityAvailable(countdown.logicalRocketId())) { return false; }
         if (!EscrowRuntime.of(server).barrier().available(level.dimension().location().toString(), true, server.getTickCount())) {
             return false;
         }
         var guard = journal.logicalGuard(countdown.logicalRocketId()).orElse(null);
         // COMMITTED-predecessor replacement has its own F7/F8 prerequisite; never treat it as no-T.
-        if (guard == null || guard.transfer() != null) { return false; }
+        return guard != null && guard.transfer() == null && EscrowRuntime.of(server).flightCheckpoint().admits(countdown.logicalRocketId());
+    }
+
+    public static boolean begin(RocketEntity rocket, RocketFlightData countdown, RocketStructureSnapshot destination,
+            Predicate<RocketTransferRecord> boundary, Consumer<RocketTransferRecord> accepted, Runnable discarded) {
+        if (!preconditions(rocket, countdown, true)) { return false; }
+        var level = (ServerLevel) rocket.level(); var server = level.getServer(); var data = ResourceEscrowSavedData.existing(server);
+        var journal = RocketTransferSavedData.get(server);
+        var guard = journal.logicalGuard(countdown.logicalRocketId()).orElseThrow();
         EscrowGovernedLaunch prepared;
         try {
             prepared = EscrowGovernedLaunch.prepare(data.ledger(), EscrowGovernedEnvelope.capture(rocket),

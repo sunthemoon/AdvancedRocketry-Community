@@ -74,7 +74,18 @@ class CommonConfigTest {
         // W37 adds the two consumed ADR-066 section 3.3 planet-respawn options.
         assertSame(CommonConfig.ALLOW_PLANET_RESPAWN, CommonConfig.SPEC.getValues().get("PLANET.allowPlanetRespawn"));
         assertSame(CommonConfig.FORCE_PLANET_RESPAWN, CommonConfig.SPEC.getValues().get("PLANET.forcePlanetRespawn"));
-        assertEquals(97, countValues(CommonConfig.SPEC.getValues()));
+        // W90b adds the three destination warm-up limits (Root decision R22 amendment 3).
+        assertSame(CommonConfig.DESTINATION_WARMUPS_GLOBAL, CommonConfig.SPEC.getValues().get("rocketFlight.destinationWarmupsGlobal"));
+        assertEquals(100, countValues(CommonConfig.SPEC.getValues()));
+    }
+
+    @Test
+    void destinationWarmupLimitsOnlyLowerTheirFixedCeilings() {
+        assertRangeAndDefault("rocketFlight.destinationWarmupsGlobal", CommonConfig.DESTINATION_WARMUPS_GLOBAL, 1, 8, 8);
+        assertRangeAndDefault("rocketFlight.destinationWarmupsPerPlayer", CommonConfig.DESTINATION_WARMUPS_PER_PLAYER, 1, 2, 2);
+        assertRangeAndDefault("rocketFlight.destinationWarmupTicks", CommonConfig.DESTINATION_WARMUP_TICKS, 200, 600, 600);
+        assertEquals(io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.RocketWarmupSettings.DEFAULTS,
+                CommonConfig.destinationWarmupSettings());
     }
 
     @Test

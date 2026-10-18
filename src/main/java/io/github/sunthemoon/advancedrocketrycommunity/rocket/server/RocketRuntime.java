@@ -35,6 +35,11 @@ public final class RocketRuntime {
         service = null;
     }
 
+    /** W90b GameTest support only: the installed manager's transfer service, or null without a manager. */
+    static RocketTransferService installedTransfers() {
+        return service instanceof RocketManager manager ? manager.transfers() : null;
+    }
+
     public static void onRocketJoined(RocketEntity rocket) {
         if (service instanceof RocketManager manager) { manager.onRocketJoined(rocket); }
     }

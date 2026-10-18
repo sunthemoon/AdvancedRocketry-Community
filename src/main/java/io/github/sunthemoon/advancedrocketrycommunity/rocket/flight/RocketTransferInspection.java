@@ -24,13 +24,22 @@ public record RocketTransferInspection(
 ) {
     /**
      * W90 (Root decision R21 item 6): {@code k/n} or {@code invalid} per recorded end, NONE, LOADING, CENSUS or
-     * HOLD:reason, and the size of the last refreshed ticket set. Read from RAM and the loaded index only.
+     * HOLD:reason, and the size of the last refreshed ticket set. Read from RAM and the loaded index only. W90b adds
+     * {@code warmup}: {@code BOUND remaining=<ticks>} while a destination warm-up is bound to the transfer, else none.
      */
-    public record Readiness(String sourceMargin, String destinationMargin, String waitState, int tickets) {
+    public record Readiness(String sourceMargin, String destinationMargin, String waitState, int tickets, String warmup) {
         private static final int MAX_FIELD_LENGTH = 64;
 
+        public Readiness(String sourceMargin, String destinationMargin, String waitState, int tickets) {
+            this(sourceMargin, destinationMargin, waitState, tickets, "none");
+        }
+
+        public Readiness withWarmup(String value) {
+            return new Readiness(sourceMargin, destinationMargin, waitState, tickets, value);
+        }
+
         public Readiness {
-            for (String field : new String[] {sourceMargin, destinationMargin, waitState}) {
+            for (String field : new String[] {sourceMargin, destinationMargin, waitState, warmup}) {
                 if (Objects.requireNonNull(field, "readiness field").length() > MAX_FIELD_LENGTH) {
                     throw new IllegalArgumentException("Transfer inspection readiness field exceeds its bound");
                 }

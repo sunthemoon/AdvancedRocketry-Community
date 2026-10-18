@@ -11,6 +11,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameLimit
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameSettings;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.railgun.RailgunSettings;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.transit.TransitLimits;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.RocketWarmupSettings;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.RegistryLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.scan.ScanSettings;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationLimits;
@@ -387,6 +388,21 @@ public final class CommonConfig {
                     "and never skips the loaded, solid or liquid hazard, station permission or missing-body checks.")
             .define("PLANET.forcePlanetRespawn", false);
 
+    // W90b (Root decision R22 amendment 3): the governed destination warm-up. Each value can only lower its fixed
+    // ceiling; a change applies to the next warm-up, and a live warm-up keeps its values and deadline.
+    public static final ForgeConfigSpec.IntValue DESTINATION_WARMUPS_GLOBAL = BUILDER
+            .comment("Destination warm-ups of governed rocket launches on the server at once (W90b; 1..8).")
+            .defineInRange("rocketFlight.destinationWarmupsGlobal", RocketWarmupSettings.MAX_GLOBAL, 1,
+                    RocketWarmupSettings.MAX_GLOBAL);
+    public static final ForgeConfigSpec.IntValue DESTINATION_WARMUPS_PER_PLAYER = BUILDER
+            .comment("Destination warm-ups one player's launches may hold at once (W90b; 1..2).")
+            .defineInRange("rocketFlight.destinationWarmupsPerPlayer", RocketWarmupSettings.MAX_PER_PLAYER, 1,
+                    RocketWarmupSettings.MAX_PER_PLAYER);
+    public static final ForgeConfigSpec.IntValue DESTINATION_WARMUP_TICKS = BUILDER
+            .comment("Server ticks a destination warm-up lives before it is released; never renewed (W90b; 200..600).")
+            .defineInRange("rocketFlight.destinationWarmupTicks", RocketWarmupSettings.MAX_LIFETIME_TICKS,
+                    RocketWarmupSettings.MIN_LIFETIME_TICKS, RocketWarmupSettings.MAX_LIFETIME_TICKS);
+
     public static final RocketPropulsionConfig ROCKET = new RocketPropulsionConfig(BUILDER);
 
     public static final ForgeConfigSpec SPEC = BUILDER.build();
@@ -398,6 +414,15 @@ public final class CommonConfig {
     public static boolean lowGravityBoots() { return serverSwitchValue(LOW_GRAVITY_BOOTS); }
     public static boolean allowPlanetRespawn() { return serverSwitchValue(ALLOW_PLANET_RESPAWN); }
     public static boolean forcePlanetRespawn() { return serverSwitchValue(FORCE_PLANET_RESPAWN); }
+
+    /** W90b destination warm-up settings, read at each allocation; the ceilings until the COMMON config is loaded. */
+    public static RocketWarmupSettings destinationWarmupSettings() {
+        if (!SPEC.isLoaded()) {
+            return RocketWarmupSettings.DEFAULTS;
+        }
+        return new RocketWarmupSettings(DESTINATION_WARMUPS_GLOBAL.get(), DESTINATION_WARMUPS_PER_PLAYER.get(),
+                DESTINATION_WARMUP_TICKS.get());
+    }
 
     /** ADR-054 framework settings; the defaults (the limits at their maxima) until the COMMON config is loaded. */
     public static EndgameSettings endgameSettings() {

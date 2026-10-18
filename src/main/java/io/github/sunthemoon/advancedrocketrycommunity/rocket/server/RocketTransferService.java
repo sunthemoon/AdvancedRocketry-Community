@@ -44,7 +44,8 @@ final class RocketTransferService {
             new io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.NamedLandingPadStaging();
     private final Set<UUID> liveTransfers = new HashSet<>();
     private final Set<UUID> settledTransfers = new HashSet<>();
-    private final RocketGovernedSourceDispatcher governedSources = new RocketGovernedSourceDispatcher();
+    final RocketDestinationWarmups warmups = new RocketDestinationWarmups(); // W90b: RAM only, never saved
+    private final RocketGovernedSourceDispatcher governedSources = new RocketGovernedSourceDispatcher(warmups::handover);
     private final RocketGovernedCleanupDispatcher governedCleanup = new RocketGovernedCleanupDispatcher();
     // BEGIN transfer service diagnostics
     private final TransferFailureDiagnostics diagnostics = new TransferFailureDiagnostics();
@@ -64,6 +65,10 @@ final class RocketTransferService {
     }
 
     RocketFlightRequestResult prepareLaunch(RocketEntity rocket, RocketFlightData countdown, RocketRequestCompletion completion) {
+        return prepare(rocket, countdown, warmups.observe(rocket, countdown, completion)); // W90b: R22 S4's discard
+    }
+
+    private RocketFlightRequestResult prepare(RocketEntity rocket, RocketFlightData countdown, RocketRequestCompletion completion) {
         Objects.requireNonNull(rocket, "rocket");
         Objects.requireNonNull(countdown, "countdown");
         if (!(rocket.level() instanceof ServerLevel sourceLevel) || !rocket.operational()) {
@@ -91,35 +96,22 @@ final class RocketTransferService {
         if (destinationLevel == null) {
             return RocketFlightRequestResult.failure(RocketFlightRequestCode.INVALID_DESTINATION);
         }
-        var admission = RocketGovernedAdmission.check(server, rocket, plan); // W90: governed-only source and pad bounds
+        // W90: governed-only source and pad bounds. W90b: a live warm-up's starting request and its kept pad (R22 S1, S2).
+        var admission = RocketGovernedAdmission.check(server, rocket, countdown, warmups);
         if (admission.refusal() != null) { return admission.refusal(); }
-        List<RocketRegion> reservations = launchReservations(server, journal);
+        List<RocketRegion> reservations = warmups.reservations(launchReservations(server, journal), countdown.logicalRocketId());
         RocketLandingPadSelection selected;
         if (plan.destinationStation().isPresent()) {
-            StationState station = StationRegistrySavedData.get(server)
-                    .find(plan.destinationStation().orElseThrow())
-                    .orElse(null);
-            if (station == null) {
-                return RocketFlightRequestResult.failure(RocketFlightRequestCode.INVALID_DESTINATION);
-            }
+            StationState station = StationRegistrySavedData.get(server).find(plan.destinationStation().orElseThrow()).orElse(null);
+            if (station == null) { return RocketFlightRequestResult.failure(RocketFlightRequestCode.INVALID_DESTINATION); }
             selected = plan.landingPad() != null ? namedPads.select(destinationLevel,
                     rocket.snapshot().orElseThrow(), plan.requestId(), station, plan.landingPad(), reservations,
-                    scheduledArrival(countdown), admission.governed()) : pads.selectStation(
-                    destinationLevel,
-                    rocket.snapshot().orElseThrow(),
-                    plan.requestId(),
-                    station,
-                    reservations,
-                    scheduledArrival(countdown), admission.governed()
-            );
+                    scheduledArrival(countdown), admission.governed()) : pads.selectStation(destinationLevel,
+                    rocket.snapshot().orElseThrow(), plan.requestId(), station, reservations, scheduledArrival(countdown),
+                    admission.governed());
         } else {
-            selected = pads.select(
-                    destinationLevel,
-                    rocket.snapshot().orElseThrow(),
-                    plan.requestId(),
-                    reservations,
-                    scheduledArrival(countdown), admission.governed()
-            );
+            selected = pads.select(destinationLevel, rocket.snapshot().orElseThrow(), plan.requestId(), reservations,
+                    scheduledArrival(countdown), admission.governed(), admission.kept());
         }
         if (!selected.success()) {
             auditPrepare(rocket, plan, selected, RocketFlightRequestCode.LANDING_PAD_UNAVAILABLE);
@@ -130,6 +122,8 @@ final class RocketTransferService {
         }
 
         if (admission.governed()) {
+            var warming = warmups.decide(server, rocket, countdown, selected.snapshot().orElseThrow(), completion); // W90b
+            if (warming != null) { return warming; }
             boolean started = io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGovernedPreparation.begin(
                     rocket, countdown, selected.snapshot().orElseThrow(),
                     candidate -> RocketGovernedLaunchBoundary.allows(server, journal, candidate, rocket, recovery.bays()),
@@ -152,6 +146,7 @@ final class RocketTransferService {
             if (!started) {
                 io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadService.release(server, plan);
             }
+            warmups.afterBegin(started); // W90b: bound on F1's acceptance, released on its refusal
             return new RocketFlightRequestResult(started ? RocketFlightRequestCode.JOURNAL_PENDING
                     : RocketFlightRequestCode.TRANSFER_JOURNAL_BLOCKED, plan.requiredFuel());
         }
@@ -280,6 +275,7 @@ final class RocketTransferService {
 
     void tick(MinecraftServer server) {
         Objects.requireNonNull(server, "server");
+        warmups.tick(server); // W90b: deadline, disconnect, removal and polling run whether or not the journal is blocked
         // BEGIN transfer service diagnostics
         diagnostics.enterTick(server.getTickCount());
         // END transfer service diagnostics
@@ -429,7 +425,8 @@ final class RocketTransferService {
                 record.sourceFlightData().passengers().assignments().size(),
                 record.checksum(),
                 RocketTransferEntities.loadedMatches(server, record, false).size(),
-                RocketTransferEntities.loadedMatches(server, record, true).size(), governedSources.readiness(server, record)
+                RocketTransferEntities.loadedMatches(server, record, true).size(),
+                governedSources.readiness(server, record).withWarmup(warmups.bound(server, record.transferId()))
         ));
     }
 
@@ -517,6 +514,7 @@ final class RocketTransferService {
     }
 
     void clear() {
+        warmups.clear();
         landed.clear();
         liveTransfers.clear();
         settledTransfers.clear();

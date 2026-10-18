@@ -178,6 +178,12 @@ public final class RocketCommands {
                 transferId
         ).orElse(null);
         if (inspection == null) {
+            // W90b: no journal entry has this ID, but it may name a logical rocket whose destination warm-up lives.
+            var warmup = rockets.inspectWarmup(source.getServer(), transferId).orElse(null);
+            if (warmup != null) {
+                source.sendSuccess(() -> Component.literal(warmup), false);
+                return 1;
+            }
             source.sendFailure(Component.literal(
                     "No operational rocket transfer journal entry " + transferId
             ));
@@ -199,6 +205,7 @@ public final class RocketCommands {
                                 + ",destination:" + inspection.readiness().destinationMargin()
                                 + " wait=" + inspection.readiness().waitState()
                                 + " tickets=" + inspection.readiness().tickets()
+                                + " warmup=" + inspection.readiness().warmup()
                 ),
                 false
         );

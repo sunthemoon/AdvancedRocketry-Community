@@ -287,6 +287,16 @@ public final class RocketManager implements RocketOperationService {
         return flights.inspectTransfer(server, transferId);
     }
 
+    /** W90b: the destination warm-up of logical rocket {@code logicalRocketId}, read-only. */
+    public Optional<String> inspectWarmup(MinecraftServer server, UUID logicalRocketId) {
+        return flights.inspectWarmup(server, logicalRocketId);
+    }
+
+    /** W90b GameTest support only: this session's transfer service, for its warm-ups and reservation inputs. */
+    RocketTransferService transfers() {
+        return flights.transfers();
+    }
+
     public RocketTransferRecoveryReport recoverTransfer(MinecraftServer server, UUID transferId) {
         return flights.recoverTransfer(server, transferId);
     }

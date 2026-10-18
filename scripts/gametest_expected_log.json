@@ -784,11 +784,51 @@
       "id": "forge-config-key-defaulted",
       "level": "WARN",
       "logger": "net.minecraftforge.common.ForgeConfigSpec/CORE",
-      "message": "Incorrect key (?!research(?:\\s|\\.)|machines\\.(?:sawmillVanillaWood|crystallizerMaximumGravity)\\b|forceField(?:\\.enabled)? was|(?:OXYGEN|ROCKET|PLANET)(?:\\s|\\.)|equipment\\.(?:jetPackForce|lowGravityBoots)\\s)[\\w.]+ was corrected from null to its default, .*",
+      "message": "Incorrect key (?!research(?:\\s|\\.)|rocketFlight(?:\\s|\\.)|machines\\.(?:sawmillVanillaWood|crystallizerMaximumGravity)\\b|forceField(?:\\.enabled)? was|(?:OXYGEN|ROCKET|PLANET)(?:\\s|\\.)|equipment\\.(?:jetPackForce|lowGravityBoots)\\s)[\\w.]+ was corrected from null to its default, .*",
       "max": 99,
       "batches": ["<startup>"],
       "test": "environment: configuration files created by the run",
       "reason": "Forge fills each key missing from a newly created configuration file; a run that reuses existing files logs fewer. A key corrected from a non-null value does not match."
+    },
+    {
+      "id": "w90b-rocket-flight-section-defaulted",
+      "level": "WARN",
+      "logger": "net.minecraftforge.common.ForgeConfigSpec/CORE",
+      "message": "Incorrect key rocketFlight was corrected from null to its default, SimpleCommentedConfig:\\{\\}\\.\\s*",
+      "max": 1,
+      "batches": ["<startup>"],
+      "test": "environment: W90b destination warm-up configuration created by the run",
+      "reason": "Root decision R22 amendment 3 adds the rocketFlight COMMON section; it is defaulted once on a new configuration, and the generic budget remains 99."
+    },
+    {
+      "id": "w90b-destination-warmups-global-defaulted",
+      "level": "WARN",
+      "logger": "net.minecraftforge.common.ForgeConfigSpec/CORE",
+      "message": "Incorrect key rocketFlight\\.destinationWarmupsGlobal was corrected from null to its default, 8\\.\\s*",
+      "max": 1,
+      "batches": ["<startup>"],
+      "test": "environment: W90b destination warm-up configuration created by the run",
+      "reason": "The global warm-up cap defaults to its ceiling of 8 once on a new configuration. Non-null corrections and other values do not match."
+    },
+    {
+      "id": "w90b-destination-warmups-per-player-defaulted",
+      "level": "WARN",
+      "logger": "net.minecraftforge.common.ForgeConfigSpec/CORE",
+      "message": "Incorrect key rocketFlight\\.destinationWarmupsPerPlayer was corrected from null to its default, 2\\.\\s*",
+      "max": 1,
+      "batches": ["<startup>"],
+      "test": "environment: W90b destination warm-up configuration created by the run",
+      "reason": "The per-player warm-up limit defaults to its ceiling of 2 once on a new configuration. Non-null corrections and other values do not match."
+    },
+    {
+      "id": "w90b-destination-warmup-ticks-defaulted",
+      "level": "WARN",
+      "logger": "net.minecraftforge.common.ForgeConfigSpec/CORE",
+      "message": "Incorrect key rocketFlight\\.destinationWarmupTicks was corrected from null to its default, 600\\.\\s*",
+      "max": 1,
+      "batches": ["<startup>"],
+      "test": "environment: W90b destination warm-up configuration created by the run",
+      "reason": "The warm-up lifetime defaults to its ceiling of 600 ticks once on a new configuration. Non-null corrections and other values do not match."
     },
     {
       "id": "w21c-research-section-defaulted",
