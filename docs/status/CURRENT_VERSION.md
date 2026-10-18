@@ -39,7 +39,7 @@ development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
 latest_code_commit: 93eb3ad2 (W91K merged: the P1-F3 and P1-N2 native cut harness, after the W90b merge fcd549c9)
-latest_hosted_regression: run 39096930031 at 264c4e30 (the W91 merge) passed end to end, the unit suite, every GameTest and the unchanged log checker; Repository governance passed (run 39096930073). The two runs before it (39085135243 at 0a3964e7 and 39091589526 at e80069c6) failed only the intermittent EscrowProofRetryGameTests.supersededEntityProofRetriesTheSameFrontierAfterBackoff timeout that W94B fixes
+latest_hosted_regression: run 39102812313 at 93eb3ad2 (the W91K merge) failed three GameTests: the two intermittent W94 escrow proof timeouts that W94B fixes, and C16cRestartGameTests.etcherJobCrossesARealChunkUnloadAndReloadWithExactAccounting ("Timed out waiting for the fixture chunk to unload"), which also failed on run 39099242168 at fcd549c9 (the W90b merge) and passed on run 39097355473 at 0d6b839a with the same batch order; Root is reproducing it. The last run that passed end to end is 39096930031 at 264c4e30 (the W91 merge). Repository governance passes on every commit since
 ledger_planned_units: 19
 asset_review_items: 154
 required_gates_approved: none
