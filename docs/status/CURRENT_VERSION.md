@@ -38,7 +38,7 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: fcd549c9 (W90b merged: the governed destination warm-up)
+latest_code_commit: 93eb3ad2 (W91K merged: the P1-F3 and P1-N2 native cut harness, after the W90b merge fcd549c9)
 latest_hosted_regression: run 39096930031 at 264c4e30 (the W91 merge) passed end to end, the unit suite, every GameTest and the unchanged log checker; Repository governance passed (run 39096930073). The two runs before it (39085135243 at 0a3964e7 and 39091589526 at e80069c6) failed only the intermittent EscrowProofRetryGameTests.supersededEntityProofRetriesTheSameFrontierAfterBackoff timeout that W94B fixes
 ledger_planned_units: 19
 asset_review_items: 154
@@ -61,7 +61,7 @@ branch. Each merge records its hosted run and independent review in
   settings.
 - The D3-A escrow core and its rocket integration (W11b2: settlement, ordinary reconciliation and
   governed flights) are merged with admission disabled. Before admission: W11b3, W83, W91's review
-  follow-ups (W91R), the F3 and N2 kill/restart cuts (W91K), and W90's measured cold-destination costs.
+  follow-ups (W91R), the P1-N3 fix and the remaining N2 cuts, and W90's measured cold-destination costs.
   Merged: W90a and W90b (governed readiness and the destination warm-up), P1-F8 (W92, with W92F's
   follow-ups), and part 1's N2 and P1-F3 (W91, with
   its native timing W91N and W91N2: no missed step, and the three whole-root escrow consumers completed in 0.9
@@ -91,6 +91,10 @@ What is still open:
 - **Assets.** 154 legacy assets are still under REVIEW (ADR-066 section 7.3).
 - **S1.** W11b1 and W44 have native dedicated-server restart evidence as development evidence.
   No S1 campaign has run.
+- **Open defect P1-N3 (2026-10-18).** W91K's native cuts showed that a hard kill after an ordinary
+  fail-back's journal removal is durable, and before the source rocket's chunk is saved, leaves the rocket in
+  its saved in-flight image with no transfer record, which nothing recovers. It predates W91 and affects
+  ordinary flights in every world. W96 writes the design note; the fix follows its review (Root decision R33).
 - **Intermittent GameTest.** Hosted run 39047343116 at `b01f441e` failed
   `EscrowCoreGameTests.ownTerrainAndEntityStoresConfirmTheExactFrozenFrontier` once with
   `SUPERSEDING_SAVE` (a test-timing race, W36's class); the next run passed. W94 (merged `ec7214c5`)
