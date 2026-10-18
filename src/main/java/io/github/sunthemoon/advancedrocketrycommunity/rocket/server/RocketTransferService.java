@@ -154,10 +154,8 @@ final class RocketTransferService {
         }
 
         RocketTransferRecord record;
-        if (!journal.actionable(countdown.logicalRocketId())) {
-            io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadService.release(server, plan);
-            return RocketFlightRequestResult.failure(RocketFlightRequestCode.TRANSFER_JOURNAL_BLOCKED);
-        }
+        // The interlock above and reserve(L) refuse every state the journal must; before the session's first
+        // acknowledgement an untouched absent rocket is proved, so its launch is admitted (Root decision R30, W91-R2).
         try (var reservation = journal.reserve(countdown.logicalRocketId()).orElse(null)) {
             if (reservation == null) {
                 io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadService.release(server, plan);
