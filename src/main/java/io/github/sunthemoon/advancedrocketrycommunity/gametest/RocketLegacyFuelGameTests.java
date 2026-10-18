@@ -105,16 +105,29 @@ public final class RocketLegacyFuelGameTests {
             assertPendingLaunch(helper, RocketRuntime.requestAdminFlight(rocket, RocketDestination.MOON, transfer), rocket);
             level.getServer().saveEverything(false, true, true);
             var recoveryManager = new RocketManager();
-            var report = RocketJournalGameTestSupport.recoverFixture(helper,
-                    () -> recoveryManager.recoverTransfer(level.getServer(), transfer));
-            helper.assertTrue(report.action().orElse(null) == RocketTransferRecoveryAction.KEEP_SOURCE,
-                    "Legacy source recovery did not KEEP_SOURCE: " + report);
-            helper.assertTrue(rocket.isAlive() && rocket.flightData().orElseThrow().state() == RocketFlightState.FUELED
-                    && rocket.flightData().orElseThrow().fuel().amount() == before
-                    && rocket.flightData().orElseThrow().fuel().committedDebits().isEmpty(), "KEEP_SOURCE changed scalar resources");
-            helper.assertTrue(RocketTransferSavedData.get(level.getServer()).find(transfer).isEmpty(), "Recovery retained completed journal entry");
-            rocket.discard(); helper.succeed();
+            keepSourceReport(helper, driver, new GameTestTickPacer(level.getServer()), recoveryManager, transfer, 0, report -> {
+                helper.assertTrue(report.action().orElse(null) == RocketTransferRecoveryAction.KEEP_SOURCE,
+                        "Legacy source recovery did not KEEP_SOURCE: " + report);
+                helper.assertTrue(rocket.isAlive() && rocket.flightData().orElseThrow().state() == RocketFlightState.FUELED
+                        && rocket.flightData().orElseThrow().fuel().amount() == before
+                        && rocket.flightData().orElseThrow().fuel().committedDebits().isEmpty(), "KEEP_SOURCE changed scalar resources");
+                helper.assertTrue(RocketTransferSavedData.get(level.getServer()).find(transfer).isEmpty(), "Recovery retained completed journal entry");
+                rocket.discard(); helper.succeed();
+            });
         });
+    }
+
+    /**
+     * W98 (N3-A1): a KEEP_SOURCE recovery removes its record only after the returned source's own entity slot is read
+     * back, so its RECOVERED report arrives a few ticks after the first, pending, RETRY_LATER call.
+     */
+    private static void keepSourceReport(GameTestHelper helper, GameTestTickDriver driver, GameTestTickPacer pacer, RocketManager manager,
+            UUID transfer, int attempt, java.util.function.Consumer<io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecoveryReport> done) {
+        var report = RocketJournalGameTestSupport.recoverFixture(helper, () -> manager.recoverTransfer(helper.getLevel().getServer(), transfer));
+        if (report.status() != io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecoveryReport.Status.RETRY_LATER
+                || attempt >= 40) { done.accept(report); return; }
+        pacer.pace();
+        driver.after(1, () -> keepSourceReport(helper, driver, pacer, manager, transfer, attempt + 1, done));
     }
 
     static RocketEntity decodedRocket(GameTestHelper helper) {

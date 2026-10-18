@@ -188,11 +188,23 @@ public final class LandingPadGameTests {
             io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport.acknowledgeFixture(helper);
             helper.assertTrue(service.cancelCountdown(source).code() == RocketFlightRequestCode.JOURNAL_PENDING,
                     "Cancellation did not await its removal acknowledgement");
-            io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport.acknowledgeFixture(helper);
-            helper.assertTrue(LandingPadIndex.get(f.space.getServer()).find(f.station.stationId(), entry.reference()).orElseThrow().claim() == null, "Cancel claim retained");
-            helper.assertTrue(RocketTransferSavedData.get(f.space.getServer()).find(transfer).isEmpty(), "Cancelled transfer retained");
-            source.discard(); cleanup(helper, f); helper.succeed();
+            // W98 (N3-A1): the record and claim stay until the returned source's own entity slot is read back.
+            helper.assertTrue(RocketTransferSavedData.get(f.space.getServer()).find(transfer).isPresent()
+                    && transfer.equals(LandingPadIndex.get(f.space.getServer()).find(f.station.stationId(), entry.reference()).orElseThrow().claim()),
+                    "Cancellation released its record or claim before the survivor proof");
+            await(helper, driver, helper.getTick() + 60, () -> retired(helper, service, transfer), () -> {
+                helper.assertTrue(LandingPadIndex.get(f.space.getServer()).find(f.station.stationId(), entry.reference()).orElseThrow().claim() == null, "Cancel claim retained");
+                helper.assertTrue(RocketTransferSavedData.get(f.space.getServer()).find(transfer).isEmpty(), "Cancelled transfer retained");
+                source.discard(); cleanup(helper, f); helper.succeed();
+            });
         });
+    }
+
+    /** W98: drive a detached service's ordinary retirements and acknowledge; true once the record has left the journal. */
+    private static boolean retired(GameTestHelper helper, RocketTransferService service, UUID transfer) {
+        RocketSourceRetirementFixtures.recovery(service).tickRetirements(helper.getLevel().getServer());
+        io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport.acknowledgeFixture(helper);
+        return RocketTransferSavedData.get(helper.getLevel().getServer()).find(transfer).isEmpty();
     }
 
     @GameTest(template = "rocket_test", batch = "landing_pads", timeoutTicks = 300)
@@ -200,70 +212,87 @@ public final class LandingPadGameTests {
         var driver = new GameTestTickDriver(helper);
         Fixture f = fixture(helper); var snapshot = sourceSnapshot(helper);
         var entry = LandingPadService.register(f.space, f.pad, f.station.ownerId(), false, "Recovery");
-        await(helper, driver, 100, () -> ready(helper.getLevel(), snapshot.sourceOrigin()) && f.space.areEntitiesLoaded(new ChunkPos(f.pad).toLong()), () -> {
-            int cuts = 0;
-            for (RocketTransferPhase phase : RocketTransferPhase.values()) {
-                for (int presence = 0; presence < 4; presence++) {
-                    var source = addSource(helper, snapshot, f.station.ownerId()); UUID transfer = UUID.randomUUID();
-                    var countdown = countdown(source, f.station, entry, transfer);
-                    var selection = new NamedLandingPadStaging().select(f.space, snapshot, transfer, f.station, entry.reference(), List.of(), 0);
-                    helper.assertTrue(selection.success(), "Recovery staging failed: " + selection.detail());
-                    var transit = countdown.completeCountdown(countdown.stateStartedGameTime() + 60).beginTransit(transfer, countdown.stateStartedGameTime() + 140);
-                    var destinationSnapshot = selection.destinationSnapshot();
-                    var arrival = transit.arriveAtDestination(transit.fuel().debit(transit.plan().orElseThrow()).state(),
-                            f.station.orbitBody(), CelestialIds.SPACE_LEVEL.location(), destinationSnapshot.sourceOrigin(), transit.stateStartedGameTime() + 20);
-                    source.updateFlightData(transit);
-                    RocketEntity destination = ModEntities.ROCKET.get().create(f.space);
-                    helper.assertTrue(destination != null, "Recovery destination could not be created");
-                    destination.initializeTransferred(destinationSnapshot, transit.logicalRocketId(), f.station.ownerId(), arrival);
-                    RocketTransferEntities.positionAtAltitude(destination, destinationSnapshot.sourceOrigin());
-                    var record = RocketTransferRecord.create(transfer, transit.logicalRocketId(), f.station.ownerId(), source.getUUID(), snapshot,
-                            destinationSnapshot, transit, arrival, transit.plan().orElseThrow().requiredFuel(), 0);
-                    if (phase != RocketTransferPhase.PREPARED) {
-                        record = record.destinationSpawned(destination.getUUID());
-                        while (record.phase() != phase) { record = record.advance(RocketTransferPhase.values()[record.phase().ordinal() + 1]); }
-                    }
-                    if ((presence & 1) == 0) { source.discard(); }
-                    if ((presence & 2) != 0) { helper.assertTrue(f.space.addFreshEntity(destination), "Recovery destination spawn failed"); }
-                    var journal = RocketTransferSavedData.get(f.space.getServer()); journal.put(record); journal.flush(f.space.getServer());
-                    f.retainFlight(transfer);
-                    io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport.acknowledgeFixture(helper);
-                    // Real native SavedData files + BE serializer, then fresh Java lifecycle owners.
-                    var storage = f.space.getServer().overworld().getDataStorage(); storage.save();
-                    var padBe = LandingPadService.loadedPad(f.space, f.pad); var padTag = padBe.saveWithFullMetadata();
-                    var restoredPad = new LandingPadBlockEntity(f.pad, f.space.getBlockState(f.pad)); restoredPad.load(padTag); f.space.setBlockEntity(restoredPad);
-                    try {
-                        var folder = f.space.getServer().getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT).resolve("data");
-                        var root = NbtIo.readCompressed(folder.resolve(LandingPadIndex.DATA_NAME + ".dat").toFile()).getCompound("data");
-                        storage.set(LandingPadIndex.DATA_NAME, LandingPadIndex.load(root));
-                        var transferRoot = NbtIo.readCompressed(folder.resolve(RocketTransferSavedData.DATA_NAME + ".dat").toFile()).getCompound("data");
-                        journal.stop();
-                        storage.set(RocketTransferSavedData.DATA_NAME, RocketTransferSavedData.load(transferRoot));
-                    } catch (java.io.IOException failure) { throw new java.io.UncheckedIOException(failure); }
-                    var recovery = new RocketTransferService();
-                    var report = io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport
-                            .recoverFixture(helper, () -> recovery.recover(f.space.getServer(), transfer));
-                    helper.assertTrue(report.status() == RocketTransferRecoveryReport.Status.RECOVERED, "Recovery cut " + phase + "/" + presence + " failed: " + report.status());
-                    helper.assertTrue(LandingPadIndex.get(f.space.getServer()).find(f.station.stationId(), entry.reference()).orElseThrow().claim() == null, "Recovery cut retained claim: " + phase + "/" + presence);
-                    var restoredRecord = RocketTransferSavedData.get(f.space.getServer()).find(transfer).orElse(null);
-                    helper.assertTrue(report.action().orElseThrow() == RocketTransferRecoveryDecision.decide(phase,
-                            new RocketTransferPresence((presence & 1) != 0, (presence & 2) != 0)), "Recovery authority decision changed");
-                    if (restoredRecord != null) {
-                        RocketTransferEntities.discardAll(RocketTransferEntities.findMatches(f.space.getServer(), restoredRecord, false));
-                        RocketTransferEntities.discardAll(RocketTransferEntities.findMatches(f.space.getServer(), restoredRecord, true));
-                        RocketTransferSavedData.get(f.space.getServer()).remove(transfer);
-                    }
-                    source.discard(); destination.discard();
-                    // Source recovery removes the journal first; remove its rebuilt authority explicitly.
-                    for (var entity : helper.getLevel().getEntitiesOfClass(RocketEntity.class, source.getBoundingBox().inflate(2, 100, 2))) {
-                        if (entity.assemblyTransactionId().filter(transit.logicalRocketId()::equals).isPresent()) { entity.discard(); }
-                    }
-                    cuts++;
-                }
+        await(helper, driver, 100, () -> ready(helper.getLevel(), snapshot.sourceOrigin()) && f.space.areEntitiesLoaded(new ChunkPos(f.pad).toLong()),
+                () -> recoveryCut(helper, driver, f, snapshot, entry, 0));
+    }
+
+    /**
+     * One phase/presence cut, then the next. W98 (N3-A1): a source-side recovery keeps its record until the returned or
+     * rebuilt source's own slot is read back, so its RECOVERED report follows a short wait; every assertion is unchanged.
+     */
+    private static void recoveryCut(GameTestHelper helper, GameTestTickDriver driver, Fixture f, RocketStructureSnapshot snapshot,
+                                    LandingPadEntry entry, int cut) {
+        if (cut / 4 == RocketTransferPhase.values().length) {
+            helper.assertTrue(cut == 20, "Recovery matrix did not cover every phase/presence cut");
+            cleanup(helper, f); helper.succeed(); return;
+        }
+        RocketTransferPhase phase = RocketTransferPhase.values()[cut / 4]; int presence = cut % 4;
+        var source = addSource(helper, snapshot, f.station.ownerId()); UUID transfer = UUID.randomUUID();
+        var countdown = countdown(source, f.station, entry, transfer);
+        var selection = new NamedLandingPadStaging().select(f.space, snapshot, transfer, f.station, entry.reference(), List.of(), 0);
+        helper.assertTrue(selection.success(), "Recovery staging failed: " + selection.detail());
+        var transit = countdown.completeCountdown(countdown.stateStartedGameTime() + 60).beginTransit(transfer, countdown.stateStartedGameTime() + 140);
+        var destinationSnapshot = selection.destinationSnapshot();
+        var arrival = transit.arriveAtDestination(transit.fuel().debit(transit.plan().orElseThrow()).state(),
+                f.station.orbitBody(), CelestialIds.SPACE_LEVEL.location(), destinationSnapshot.sourceOrigin(), transit.stateStartedGameTime() + 20);
+        source.updateFlightData(transit);
+        RocketEntity destination = ModEntities.ROCKET.get().create(f.space);
+        helper.assertTrue(destination != null, "Recovery destination could not be created");
+        destination.initializeTransferred(destinationSnapshot, transit.logicalRocketId(), f.station.ownerId(), arrival);
+        RocketTransferEntities.positionAtAltitude(destination, destinationSnapshot.sourceOrigin());
+        var record = RocketTransferRecord.create(transfer, transit.logicalRocketId(), f.station.ownerId(), source.getUUID(), snapshot,
+                destinationSnapshot, transit, arrival, transit.plan().orElseThrow().requiredFuel(), 0);
+        if (phase != RocketTransferPhase.PREPARED) {
+            record = record.destinationSpawned(destination.getUUID());
+            while (record.phase() != phase) { record = record.advance(RocketTransferPhase.values()[record.phase().ordinal() + 1]); }
+        }
+        if ((presence & 1) == 0) { source.discard(); }
+        if ((presence & 2) != 0) { helper.assertTrue(f.space.addFreshEntity(destination), "Recovery destination spawn failed"); }
+        var journal = RocketTransferSavedData.get(f.space.getServer()); journal.put(record); journal.flush(f.space.getServer());
+        f.retainFlight(transfer);
+        io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport.acknowledgeFixture(helper);
+        // Real native SavedData files + BE serializer, then fresh Java lifecycle owners.
+        var storage = f.space.getServer().overworld().getDataStorage(); storage.save();
+        var padBe = LandingPadService.loadedPad(f.space, f.pad); var padTag = padBe.saveWithFullMetadata();
+        var restoredPad = new LandingPadBlockEntity(f.pad, f.space.getBlockState(f.pad)); restoredPad.load(padTag); f.space.setBlockEntity(restoredPad);
+        try {
+            var folder = f.space.getServer().getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT).resolve("data");
+            var root = NbtIo.readCompressed(folder.resolve(LandingPadIndex.DATA_NAME + ".dat").toFile()).getCompound("data");
+            storage.set(LandingPadIndex.DATA_NAME, LandingPadIndex.load(root));
+            var transferRoot = NbtIo.readCompressed(folder.resolve(RocketTransferSavedData.DATA_NAME + ".dat").toFile()).getCompound("data");
+            journal.stop();
+            storage.set(RocketTransferSavedData.DATA_NAME, RocketTransferSavedData.load(transferRoot));
+        } catch (java.io.IOException failure) { throw new java.io.UncheckedIOException(failure); }
+        var recovery = new RocketTransferService();
+        var first = io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport
+                .recoverFixture(helper, () -> recovery.recover(f.space.getServer(), transfer));
+        var reports = new ArrayList<RocketTransferRecoveryReport>(List.of(first));
+        Runnable finish = () -> {
+            var report = reports.get(reports.size() - 1);
+            helper.assertTrue(report.status() == RocketTransferRecoveryReport.Status.RECOVERED, "Recovery cut " + phase + "/" + presence + " failed: " + report.status());
+            helper.assertTrue(LandingPadIndex.get(f.space.getServer()).find(f.station.stationId(), entry.reference()).orElseThrow().claim() == null, "Recovery cut retained claim: " + phase + "/" + presence);
+            var restoredRecord = RocketTransferSavedData.get(f.space.getServer()).find(transfer).orElse(null);
+            helper.assertTrue(report.action().orElseThrow() == RocketTransferRecoveryDecision.decide(phase,
+                    new RocketTransferPresence((presence & 1) != 0, (presence & 2) != 0)), "Recovery authority decision changed");
+            if (restoredRecord != null) {
+                RocketTransferEntities.discardAll(RocketTransferEntities.findMatches(f.space.getServer(), restoredRecord, false));
+                RocketTransferEntities.discardAll(RocketTransferEntities.findMatches(f.space.getServer(), restoredRecord, true));
+                RocketTransferSavedData.get(f.space.getServer()).remove(transfer);
             }
-            helper.assertTrue(cuts == 20, "Recovery matrix did not cover every phase/presence cut");
-            cleanup(helper, f); helper.succeed();
-        });
+            source.discard(); destination.discard();
+            // Source recovery removes the journal first; remove its rebuilt authority explicitly.
+            for (var entity : helper.getLevel().getEntitiesOfClass(RocketEntity.class, source.getBoundingBox().inflate(2, 100, 2))) {
+                if (entity.assemblyTransactionId().filter(transit.logicalRocketId()::equals).isPresent()) { entity.discard(); }
+            }
+            recoveryCut(helper, driver, f, snapshot, entry, cut + 1);
+        };
+        if (first.status() != RocketTransferRecoveryReport.Status.RETRY_LATER) { finish.run(); return; }
+        // W98: a source-side recovery's record is removed only after its survivor proof; its report follows that removal.
+        await(helper, driver, helper.getTick() + 40, () -> {
+            if (!retired(helper, recovery, transfer)) { return false; }
+            reports.add(recovery.recover(f.space.getServer(), transfer));
+            return true;
+        }, finish);
     }
 
     private static RocketFlightData countdown(RocketEntity source, StationState station, LandingPadEntry entry, UUID transfer) {

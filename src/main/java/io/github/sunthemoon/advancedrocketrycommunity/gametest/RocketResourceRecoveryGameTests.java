@@ -91,6 +91,7 @@ public final class RocketResourceRecoveryGameTests {
 
     @GameTest(template = "rocket_test", batch = "resource_source_recovery", timeoutTicks = 400)
     public static void offlinePassengerRecoveryLocksBothBanksAcrossRepeatedReloads(GameTestHelper helper) {
+        var driver = new GameTestTickDriver(helper);
         var fixture = new Fixture(helper, true);
         fixture.whenReady(() -> {
             fixture.source();
@@ -127,28 +128,43 @@ public final class RocketResourceRecoveryGameTests {
             var connection = new net.minecraft.network.Connection(net.minecraft.network.protocol.PacketFlow.SERVERBOUND);
             new io.netty.channel.embedded.EmbeddedChannel(connection);
             fixture.earth.getServer().getPlayerList().placeNewPlayer(connection, passenger);
-            try {
-                fixture.manager.onInstalled();
-                fixture.manager.onPlayerLoggedIn(new net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent(passenger));
-                helper.assertTrue(passenger.getVehicle() == fixture.rocket, "Offline passenger did not reconnect to source");
-                io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport.acknowledgeFixture(helper);
-                helper.assertTrue(fixture.journal().find(fixture.record.transferId()).isEmpty(),
-                        "Passenger reconnect did not retire source recovery authority");
-                helper.assertTrue(fixture.manager.resourceMutationAllowed(fixture.rocket), "Reconnected source stayed locked");
-                fixture.assertBalances(2_000, 1_000, 2_000);
-                fixture.player.getInventory().selected = 2;
-                helper.assertTrue(RocketPropulsionInteraction.exchange(fixture.player, fixture.rocket,
-                        InteractionHand.MAIN_HAND) == InteractionResult.CONSUME,
-                        "Reconciled source did not resume lossless container exchange");
-                fixture.assertBalances(1_000, 1_000, 3_000);
-            } finally {
+            Runnable cleanup = () -> {
                 passenger.stopRiding();
                 fixture.earth.getServer().getPlayerList().remove(passenger);
                 fixture.rocket.discard();
                 clearTransferJournal(fixture.earth);
-            }
-            helper.succeed();
+            };
+            try {
+                fixture.manager.onInstalled();
+                fixture.manager.onPlayerLoggedIn(new net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent(passenger));
+                helper.assertTrue(passenger.getVehicle() == fixture.rocket, "Offline passenger did not reconnect to source");
+            } catch (RuntimeException | Error failure) { cleanup.run(); throw failure; }
+            // W98 (N3-A1): the last reconnect retires the record only after the source's own entity slot is read back.
+            reconnectRetired(helper, driver, new GameTestTickPacer(fixture.earth.getServer()), fixture, cleanup, 0);
         });
+    }
+
+    private static void reconnectRetired(GameTestHelper helper, GameTestTickDriver driver, GameTestTickPacer pacer, Fixture fixture,
+                                         Runnable cleanup, int attempt) {
+        try {
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport.acknowledgeFixture(helper);
+            if (fixture.journal().find(fixture.record.transferId()).isPresent() && attempt < 60) {
+                pacer.pace();
+                driver.after(1, () -> reconnectRetired(helper, driver, pacer, fixture, cleanup, attempt + 1));
+                return;
+            }
+            helper.assertTrue(fixture.journal().find(fixture.record.transferId()).isEmpty(),
+                    "Passenger reconnect did not retire source recovery authority");
+            helper.assertTrue(fixture.manager.resourceMutationAllowed(fixture.rocket), "Reconnected source stayed locked");
+            fixture.assertBalances(2_000, 1_000, 2_000);
+            fixture.player.getInventory().selected = 2;
+            helper.assertTrue(RocketPropulsionInteraction.exchange(fixture.player, fixture.rocket,
+                    InteractionHand.MAIN_HAND) == InteractionResult.CONSUME,
+                    "Reconciled source did not resume lossless container exchange");
+            fixture.assertBalances(1_000, 1_000, 3_000);
+        } catch (RuntimeException | Error failure) { cleanup.run(); throw failure; }
+        cleanup.run();
+        helper.succeed();
     }
 
     /**

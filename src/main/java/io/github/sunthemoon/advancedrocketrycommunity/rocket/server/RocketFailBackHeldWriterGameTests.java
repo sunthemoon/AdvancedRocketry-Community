@@ -81,7 +81,7 @@ public final class RocketFailBackHeldWriterGameTests {
         RocketTransferSavedData restarted;
         RocketTransferRecoveryService recovery;
         int step, waits;
-        boolean closed;
+        boolean closed, returned;
 
         Scenario(GameTestHelper helper, boolean abort) {
             this(helper, abort, false);
@@ -127,8 +127,18 @@ public final class RocketFailBackHeldWriterGameTests {
                                     new RocketRequestCompletion(accepted::incrementAndGet, discarded::incrementAndGet)),
                                     "Fail-back was refused after one slot became free");
                         }
-                        helper.assertTrue(journal.find(record.transferId()).isEmpty()
+                        // W98 (N3-A1): T stays in RAM, settled, until the returned source's own entity slot is read back.
+                        returned = true;
+                        helper.assertTrue(journal.find(record.transferId()).orElse(null) == record
                                 && source.flightData().orElseThrow().state() == RocketFlightState.FUELED,
+                                "Admitted fail-back did not restore the source, or removed T before its survivor proof");
+                        assertRetained(); step = 8;
+                    }
+                    case 8 -> {
+                        journal.pollWriter(server.getTickCount());
+                        RocketSourceRetirementFixtures.recovery(service).tickRetirements(server);
+                        if (journal.find(record.transferId()).isPresent()) { assertRetained(); break; }
+                        helper.assertTrue(source.flightData().orElseThrow().state() == RocketFlightState.FUELED,
                                 "Admitted fail-back did not restore the source and remove RAM authority");
                         assertRetained(); step = 3;
                     }
@@ -169,6 +179,7 @@ public final class RocketFailBackHeldWriterGameTests {
                     case 7 -> {
                         var result = recovery.recoverById(server, restarted, record.transferId());
                         restarted.pollWriter(server.getTickCount());
+                        recovery.tickRetirements(server); // W98: the recovered source's survivor proof precedes removal
                         if (result.status() != RocketTransferRecoveryService.Status.RECOVERED) { break; }
                         helper.assertTrue(restarted.find(record.transferId()).isEmpty() && restarted.actionable(record.logicalRocketId())
                                 && RocketTransferEntities.loadedMatches(server, record, false).size() == 1
@@ -262,10 +273,14 @@ public final class RocketFailBackHeldWriterGameTests {
         void assertRetained() {
             helper.assertTrue(accepted.get() == 0 && discarded.get() == 0,
                     "A dependent completion ran before the removal acknowledgement");
-            helper.assertTrue(RocketFailBackAdmissionGameTests.live(service).contains(record.transferId())
-                    && record.transferId().equals(LandingPadIndex.get(helper.getLevel().getServer())
+            // W98: an admitted return leaves forward dispatch for settled membership; neither is released before the ack.
+            var id = record.transferId();
+            helper.assertTrue((returned ? !RocketFailBackAdmissionGameTests.live(service).contains(id)
+                            && RocketSourceRetirementFixtures.settled(service).contains(id)
+                            : RocketFailBackAdmissionGameTests.live(service).contains(id))
+                    && id.equals(LandingPadIndex.get(helper.getLevel().getServer())
                             .find(station, pad.reference()).orElseThrow().claim()),
-                    "Unacknowledged removal released the live ID or named pad");
+                    "Unacknowledged removal released the session membership or named pad");
         }
 
         void assertReload(boolean retained) {
