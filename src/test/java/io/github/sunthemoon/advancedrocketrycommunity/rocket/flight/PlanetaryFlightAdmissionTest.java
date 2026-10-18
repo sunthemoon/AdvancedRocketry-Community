@@ -22,18 +22,18 @@ import java.util.Optional;
 import java.util.UUID;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 class PlanetaryFlightAdmissionTest {
+    // W91-R4: the fields below read CelestialIds, which needs the registries. Bootstrap first, in textual order, so that
+    // a filtered run that starts with this class does not fail its initialization and the classes after it.
+    static {
+        MinecraftBootstrap.initialize();
+    }
+
     private static final UUID STATION = UUID.fromString("123e4567-e89b-42d3-a456-426614174721");
     private static final TravelTarget EARTH = new TravelTarget.BodySurface(CelestialIds.EARTH_ID);
     private static final TravelTarget MOON = new TravelTarget.BodySurface(CelestialIds.MOON_ID);
-
-    @BeforeAll
-    static void bootstrap() {
-        MinecraftBootstrap.initialize();
-    }
 
     @Test
     void closedMappedSurfaceRetainsAnExitButRejectsNewEntry() {
