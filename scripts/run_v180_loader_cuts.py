@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """W97 loader creation/normal cuts: committed source, real native stores, two restarts, per-cut lock/cleanup.
 
-N2 remains NOT_RUN: no new storage-failure injection is authorized. K4/K5 record the first store chosen by the
+N2 and candidate preflight remain NOT_RUN; eligibility coverage is supplemental. K4/K5 record the first store chosen by the
 unmodified driver; an opposite order is NOT_COVERED, not a passed cut. A new invocation may observe the other order.
 """
 from __future__ import annotations
@@ -49,7 +49,8 @@ def heavy_lock(owner: str):
         except FileExistsError:
             oracle.require(time.time() - LOCK.stat().st_mtime < 3 * 3600 and time.monotonic() < deadline,
                            "Heavy-JVM lock is over three hours old or wait expired; not breaking it")
-            time.sleep(15)
+            # Catch short between-cut handoffs without changing the three-hour bound or stealing a held lock.
+            time.sleep(1)
     try:
         (LOCK / "owner.txt").write_text(owner, encoding="utf-8")
         disk_space()
