@@ -1246,6 +1246,69 @@
       },
       "test": "RocketLandedDisassemblyGameTests.lateDiscardedAndFailingWritesNeverRestoreLateOrReleaseUnacknowledgedState",
       "reason": "W85 G8, G12, G13 and G13b: each isolated checked journal file is given one injected failure episode (UNKNOWN after the move twice, NOT_COMMITTED, UNKNOWN); the journal's existing ERROR appears once per episode. The world journal is never failed."
+    },
+    {
+      "id": "w98-blocked-pad-return",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RETURNED_TO_SOURCE transfer=[0-9a-f-]{36} logical=[0-9a-f-]{36} reason=destination_pad_blocked fuel=1000",
+      "counts": {"ordinary_source_retirement": 1},
+      "test": "RocketSourceRetirementGameTests.blockedPadFailBackWaitsForItsOfflinePassengerUntilTheReconnect",
+      "reason": "A blocked end-of-transit fail-back waits for its offline passenger and reports the return once, after the reconnect, the survivor proof and the removal acknowledgement."
+    },
+    {
+      "id": "w98-publication-refusal-return",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RETURNED_TO_SOURCE transfer=[0-9a-f-]{36} logical=[0-9a-f-]{36} reason=destination_entity_spawn_failed fuel=1000",
+      "counts": {"ordinary_source_retirement": 1},
+      "test": "RocketSourceRetirementGameTests.publicationRefusalReturnsTheCurrentDestinationSpawnedRecord",
+      "reason": "A refused publication returns the current DESTINATION_SPAWNED record's source and reports the return once, after the survivor proof and the removal acknowledgement."
+    },
+    {
+      "id": "w98-keep-source-recovery",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RECOVERY transfer=[0-9a-f-]{36} phase=PREPARED source_count=1 destination_count=0 action=KEEP_SOURCE status=RECOVERED",
+      "counts": {"ordinary_source_retirement": 1},
+      "test": "RocketSourceRetirementGameTests.keepSourceRecoveryRetiresAnInFlightImageOnlyAfterTheReturnIsSaved",
+      "reason": "Recovery of an in-flight source image reports RECOVERED once, after its survivor proof removes the record."
+    },
+    {
+      "id": "w98-remove-destination-keep-source-recovery",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RECOVERY transfer=[0-9a-f-]{36} phase=PREPARED source_count=1 destination_count=1 action=REMOVE_DESTINATION_KEEP_SOURCE status=RECOVERED",
+      "counts": {"ordinary_source_retirement": 1},
+      "test": "RocketSourceRetirementGameTests.removeDestinationKeepSourceAlsoProvesTheDiscardedCopyAbsent",
+      "reason": "Recovery discards a destination copy and reports RECOVERED once, after the survivor's slot and the discarded copy's slot are both proved."
+    },
+    {
+      "id": "w98-rebuild-source-recovery",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RECOVERY transfer=[0-9a-f-]{36} phase=PREPARED source_count=0 destination_count=0 action=REBUILD_SOURCE status=RECOVERED",
+      "counts": {"ordinary_source_retirement": 1},
+      "test": "RocketSourceRetirementGameTests.rebuildSourceRetiresOnlyAfterTheRebuiltRocketIsSaved",
+      "reason": "Recovery with neither end present rebuilds the source and reports RECOVERED once, after the rebuilt rocket's slot is proved."
+    },
+    {
+      "id": "w98-recovered-source-waits-for-passenger",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RECOVERY transfer=[0-9a-f-]{36} phase=PREPARED source_count=1 destination_count=0 action=KEEP_SOURCE status=WAITING_FOR_PASSENGERS",
+      "counts": {"ordinary_source_retirement": 1},
+      "test": "RocketSourceRetirementGameTests.recoveredSourceWaitsForItsOfflinePassengerAndTheLastReconnectRetiresIt",
+      "reason": "A recovered source with an offline passenger waits, settled and unreserved, until the passenger's reconnect places them and the survivor proof retires the record."
+    },
+    {
+      "id": "w98-save-off-retirement-hold",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RETIREMENT_SAVE_OFF level=advancedrocketrycommunity:space; ordinary returns there keep their records until saving resumes",
+      "counts": {"ordinary_source_retirement": 1},
+      "test": "RocketSourceRetirementGameTests.aSaveOffLevelHoldsTheReturnWithoutAReservationUntilSavingResumes",
+      "reason": "W96-R5(d): a save-off Level holds an ordinary return with its record retained and no reservation, with one WARN per Level until saving resumes."
     }
   ]
 }
