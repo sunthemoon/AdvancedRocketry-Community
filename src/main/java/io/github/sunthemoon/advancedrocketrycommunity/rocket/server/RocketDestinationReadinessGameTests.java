@@ -100,7 +100,11 @@ public final class RocketDestinationReadinessGameTests {
 
     private static void awaitReady(Fixture fixture, int attempt) {
         fixture.driver.after(1, () -> fixture.guard(() -> {
-            if (!RocketTransferEntities.destinationEntityChunkReady(fixture.moon, fixture.record.destinationSnapshot())) {
+            // W83b: the PREPARED wait also needs every destination ticket column's entities, so the next step's
+            // blocked-pad return starts from a loaded footprint, not from a still-loading neighbour column.
+            var footprint = RocketTransferEntities.destinationTicketSet(fixture.record.destinationSnapshot());
+            if (!RocketTransferEntities.destinationEntityChunkReady(fixture.moon, fixture.record.destinationSnapshot())
+                    || RocketTransferEntities.entitiesLoadedColumns(footprint, fixture.moon::areEntitiesLoaded) < footprint.size()) {
                 fixture.helper.assertTrue(attempt < READINESS_ATTEMPTS, "Ticketed destination did not become ready");
                 fixture.assertWaitUnchanged();
                 fixture.pacer.pace();
