@@ -38,7 +38,7 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: 93eb3ad2 (W91K merged: the P1-F3 and P1-N2 native cut harness, after the W90b merge fcd549c9)
+latest_code_commit: ff5e5dc1 (W83b merged: an arrival waits for its footprint's entity sections)
 latest_hosted_regression: run 39102812313 at 93eb3ad2 (the W91K merge) failed three GameTests: the two intermittent W94 escrow proof timeouts that W94B fixes, and C16cRestartGameTests.etcherJobCrossesARealChunkUnloadAndReloadWithExactAccounting ("Timed out waiting for the fixture chunk to unload"), which also failed on run 39099242168 at fcd549c9 (the W90b merge) and passed on run 39097355473 at 0d6b839a with the same batch order; Root is reproducing it. The last run that passed end to end is 39096930031 at 264c4e30 (the W91 merge). Repository governance passes on every commit since
 ledger_planned_units: 19
 asset_review_items: 154
@@ -60,9 +60,10 @@ branch. Each merge records its hosted run and independent review in
   observatory and processor with all 17 advancements, and the C18d HUD, sounds and client
   settings.
 - The D3-A escrow core and its rocket integration (W11b2: settlement, ordinary reconciliation and
-  governed flights) are merged with admission disabled. Before admission: W11b3, W83, W91's review
+  governed flights) are merged with admission disabled. Before admission: W11b3, W91's review
   follow-ups (W91R), the P1-N3 fix and the remaining N2 cuts, and W90's measured cold-destination costs.
-  Merged: W90a and W90b (governed readiness and the destination warm-up), P1-F8 (W92, with W92F's
+  Merged: W83b (arrival footprint readiness), W90a and W90b (governed readiness and the destination
+  warm-up), P1-F8 (W92, with W92F's
   follow-ups), and part 1's N2 and P1-F3 (W91, with
   its native timing W91N and W91N2: no missed step, and the three whole-root escrow consumers completed in 0.9
   to 3.0 s under eight-flight traffic).

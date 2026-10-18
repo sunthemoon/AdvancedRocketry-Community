@@ -1576,7 +1576,12 @@ Gate result.
 - A launch-boundary refusal at the exact moment of a return proof callback holds that return
   until a restart (flight fix review residual).
 - N6: the arrival executor runs twice per COMMITTED visit (cost only; no state effect).
-- W83 (arrival entity readiness) before admission, as Root recommends.
+- Arrival entity readiness (W13-N1): fixed by W83b (`ff5e5dc1`, Root decision R32). An arrival waits at its
+  PREPARED wait until every column of the destination's checked column set has its entity sections
+  loaded; the check only reads. To end that wait, every flight's destination ticket covers that set (at
+  most 16 columns, an explicit change from one origin ticket for legacy flights, 1,024 at 64 transfers);
+  a destination whose set is not admissible keeps its origin ticket. The recovery rebuild path's missing
+  occupancy guard and a rocket whose entity lies outside the checked set remain residuals.
 
 This is a development implementation note, not owner acceptance or a Gate result.
 
