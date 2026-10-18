@@ -34,6 +34,8 @@ public final class RocketLandingPadSelector {
     public static final String UNSAFE = "unsafe";
     /** W90 (R21 item 3): a governed destination whose checked margin is not admissible. */
     public static final String CHUNK_BUDGET = "message.advancedrocketrycommunity.pad.reason.chunk_budget";
+    /** W83b (Root decision R32 item 1): a due arrival waits until its destination columns' entity sections load. */
+    public static final String ENTITIES_LOADING = "message.advancedrocketrycommunity.pad.reason.entities_loading";
     private static final int PAD_SPACING = 64;
     private static final int[][] OFFSETS = {
             {0, 0},

@@ -398,6 +398,7 @@ class ManifestValidationTests(unittest.TestCase):
         rules = load_manifest(DEFAULT_MANIFEST)
         returned = next(item for item in rules if item.id == "transfer-returned-to-source")
         # W24 adds the legacy (unnamed station pad) pre-spawn refusal in its own batch.
+        # W83b adds the refusal by a rocket parked in a footprint column whose entities loaded during the wait.
         self.assertEqual(
             {
                 "destination_readiness": 1,
@@ -405,6 +406,7 @@ class ManifestValidationTests(unittest.TestCase):
                 "planetary_changed_pad": 1,
                 "named_pad_occupancy": 1,
                 "legacy_pad_occupancy": 1,
+                "arrival_footprint": 1,
             },
             returned.counts,
         )

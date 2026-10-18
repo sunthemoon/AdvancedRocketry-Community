@@ -361,6 +361,7 @@
   "message.advancedrocketrycommunity.pad.reason.bounds": "Landing leaves station, build-height or world-border bounds.",
   "message.advancedrocketrycommunity.pad.reason.chunk_budget": "Landing footprint exceeds the 16-chunk budget.",
   "message.advancedrocketrycommunity.pad.reason.claimed": "Pad claimed by another transfer.",
+  "message.advancedrocketrycommunity.pad.reason.entities_loading": "Arrival waiting: the landing area's entities are still loading.",
   "message.advancedrocketrycommunity.pad.reason.entity_budget": "Nearby rocket occupancy inspection exceeds the 64-rocket budget.",
   "message.advancedrocketrycommunity.pad.reason.identity": "Pad unloaded, removed, stale or no longer owned by this station.",
   "message.advancedrocketrycommunity.pad.reason.obstructed": "Landing clearance is obstructed.",
