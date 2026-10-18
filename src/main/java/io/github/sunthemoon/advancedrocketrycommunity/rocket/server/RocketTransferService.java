@@ -60,6 +60,7 @@ final class RocketTransferService {
     private final RocketTransferContinuations continuations = new RocketTransferContinuations(liveTransfers, recovery.bays());
     /** W85 Design M: pending landed disassemblies keep T's region and slot while T is absent from RAM. */
     private final RocketLandedDisassemblies landed = new RocketLandedDisassemblies();
+    private final RocketArrivalFootprintWait arrivalFootprints = new RocketArrivalFootprintWait(liveTransfers); // W83b
 
     RocketFlightRequestResult prepareLaunch(RocketEntity rocket, RocketFlightData countdown) {
         return prepareLaunch(rocket, countdown, RocketRequestCompletion.NONE);
@@ -131,7 +132,7 @@ final class RocketTransferService {
                     acknowledged -> {
                         // The exact F2 callback already consumed START_COUNTDOWN. Never use the legacy idle exemption.
                         RocketTransferEntities.keepLoaded(sourceLevel, acknowledged.sourceSnapshot(), acknowledged.transferId());
-                        RocketTransferEntities.keepLoaded(destinationLevel, acknowledged.destinationSnapshot(), acknowledged.transferId());
+                        RocketTransferEntities.keepDestinationLoaded(destinationLevel, acknowledged.destinationSnapshot(), acknowledged.transferId());
                         RocketFlightFeedback.countdownAccepted(rocket);
                         diagnostics.prepared(acknowledged.transferId());
                         auditPrepare(rocket, plan, selected, RocketFlightRequestCode.SUCCESS);
@@ -199,7 +200,7 @@ final class RocketTransferService {
                 }
                 if (previous != null) { liveTransfers.remove(previous.transferId()); settledTransfers.remove(previous.transferId()); }
                 RocketTransferEntities.keepLoaded(sourceLevel, record.sourceSnapshot(), record.transferId());
-                RocketTransferEntities.keepLoaded(destinationLevel, record.destinationSnapshot(), record.transferId());
+                RocketTransferEntities.keepDestinationLoaded(destinationLevel, record.destinationSnapshot(), record.transferId());
                 rocket.updateFlightData(countdown.cancelCountdown(sourceLevel.getGameTime()).startCountdown(sourceLevel.getGameTime()));
                 RocketFlightFeedback.countdownAccepted(rocket);
                 liveTransfers.add(record.transferId()); diagnostics.prepared(record.transferId());
@@ -536,6 +537,7 @@ final class RocketTransferService {
     void clear() {
         warmups.clear();
         landed.clear();
+        arrivalFootprints.clear();
         liveTransfers.clear();
         settledTransfers.clear();
         recovery.clear();
@@ -562,7 +564,7 @@ final class RocketTransferService {
             RocketTransferEntities.keepLoaded(sourceLevel, record.sourceSnapshot(), record.transferId());
         }
         if (destinationLevel != null) {
-            RocketTransferEntities.keepLoaded(destinationLevel, record.destinationSnapshot(), record.transferId());
+            RocketTransferEntities.keepDestinationLoaded(destinationLevel, record.destinationSnapshot(), record.transferId());
         }
         if (journal.nativeProbe() != null) { journal.nativeProbe().event(record.logicalRocketId(), "step", journal.mutationSequence(), record.phase().name(), 0); }
         if (journal.nativeProbe() != null && record.phase() != RocketTransferPhase.PREPARED && record.phase() != RocketTransferPhase.COMMITTED) {
@@ -656,6 +658,10 @@ final class RocketTransferService {
             // BEGIN transfer service diagnostics
             diagnostics.readinessWait(record.transferId());
             // END transfer service diagnostics
+            return;
+        }
+        if (destinationLevel != null && !arrivalFootprints.ready(destinationLevel, record, source)) { // W83b: R32 item 1
+            if (journal.nativeProbe() != null) { journal.nativeProbe().event(record.logicalRocketId(), "owned_wait", journal.mutationSequence(), "DESTINATION_ENTITIES", 0); }
             return;
         }
         var arrivalPlan = record.sourceFlightData().plan().orElseThrow();

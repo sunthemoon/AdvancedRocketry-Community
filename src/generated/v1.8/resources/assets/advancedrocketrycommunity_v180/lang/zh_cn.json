@@ -361,6 +361,7 @@
   "message.advancedrocketrycommunity.pad.reason.bounds": "着陆超出空间站区域、建造高度或世界边界。",
   "message.advancedrocketrycommunity.pad.reason.chunk_budget": "着陆覆盖范围超过 16 区块预算。",
   "message.advancedrocketrycommunity.pad.reason.claimed": "平台已被其他转移占用。",
+  "message.advancedrocketrycommunity.pad.reason.entities_loading": "到达等待中：着陆区域的实体仍在加载。",
   "message.advancedrocketrycommunity.pad.reason.entity_budget": "附近火箭的占用检查超过 64 枚预算。",
   "message.advancedrocketrycommunity.pad.reason.identity": "平台未加载、已移除、身份过期或所有权已变更。",
   "message.advancedrocketrycommunity.pad.reason.obstructed": "着陆空间被方块阻挡。",

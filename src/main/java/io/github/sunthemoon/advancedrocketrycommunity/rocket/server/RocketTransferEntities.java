@@ -411,6 +411,42 @@ final class RocketTransferEntities {
         loadOrigin(level, snapshot);
     }
 
+    /** W83b (Root decision R32 item 2): the destination end's flight tickets over its ticket set, then today's origin load. */
+    static void keepDestinationLoaded(ServerLevel level, RocketStructureSnapshot destination, UUID transferId) {
+        addDestinationTickets(transferId, destination, levelTickets(level.getServer()));
+        loadOrigin(level, destination);
+    }
+
+    /**
+     * R32 item 2, an explicit change of the legacy one-origin budget: one flight ticket on each column of the
+     * destination's {@link #destinationTicketSet}, in the destination's own Level. At most 16 per transfer, so 1,024 at
+     * 64 transfers. Returns the number of columns ticketed; none when that Level is absent.
+     */
+    static int addDestinationTickets(UUID transfer, RocketStructureSnapshot destination, FlightTickets tickets) {
+        if (!tickets.present(destination.sourceDimension())) { return 0; }
+        var columns = destinationTicketSet(destination);
+        columns.forEach(column -> tickets.add(destination.sourceDimension(), column, transfer));
+        return columns.size();
+    }
+
+    /**
+     * The destination's ticket and arrival-readiness set: every column of an admissible checked set (the footprint and
+     * the occupancy census, the origin among them), otherwise the origin alone as before. It is exactly the destination
+     * end's {@link RocketDiscoveryColumns#releaseSet}, so {@link #releaseMargins} removes what was added.
+     */
+    static List<ChunkPos> destinationTicketSet(RocketStructureSnapshot destination) {
+        return RocketDiscoveryColumns.of(destination).releaseSet();
+    }
+
+    /** R32 item 1: how many of the columns have their entity sections loaded. Reads only; never loads or tickets. */
+    static int entitiesLoadedColumns(List<ChunkPos> columns, java.util.function.LongPredicate entitiesLoaded) {
+        int loaded = 0;
+        for (var column : columns) {
+            if (entitiesLoaded.test(column.toLong())) { loaded++; }
+        }
+        return loaded;
+    }
+
     /**
      * Called only after checked ACTIVE classification of an unheld record; never synchronously loads an endpoint.
      * Returns the number of distinct columns ticketed: at most 16 per end and 32 per transfer.
