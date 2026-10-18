@@ -68,6 +68,23 @@ public final class RocketLandingPadSelector {
             long gameTime,
             boolean governed
     ) {
+        return select(target, source, transferId, reservations, gameTime, governed, null);
+    }
+
+    /**
+     * {@code kept}: W90b (Root decision R22 amendment 1). The origin of the rocket's live warm-up pad, or null. The
+     * fixed candidate with that origin is revalidated first with every ordinary check (terrain, occupancy and every
+     * other reservation); ordinary selection runs only when it is invalid, so reservation churn cannot move a warm-up.
+     */
+    public RocketLandingPadSelection select(
+            ServerLevel target,
+            RocketStructureSnapshot source,
+            UUID transferId,
+            List<RocketRegion> reservations,
+            long gameTime,
+            boolean governed,
+            RocketPosition kept
+    ) {
         Objects.requireNonNull(target, "target");
         Objects.requireNonNull(source, "source");
         Objects.requireNonNull(transferId, "transferId");
@@ -80,8 +97,13 @@ public final class RocketLandingPadSelector {
                 : target.dimension().equals(CelestialIds.MOON_LEVEL) ? SafeCelestialTravel.FIXED_FEET_POSITION : BlockPos.ZERO;
         int candidates = 0;
         int chunksLoaded = 0;
-        for (int index = 0; index < OFFSETS.length
-                && index < RocketFlightLimits.MAX_LANDING_PAD_CANDIDATES; index++) {
+        int first = keptIndex(target, source, base, kept);
+        for (int step = first < 0 ? 0 : -1; step < OFFSETS.length
+                && step < RocketFlightLimits.MAX_LANDING_PAD_CANDIDATES; step++) {
+            if (step == first) {
+                continue;
+            }
+            int index = step < 0 ? first : step;
             candidates++;
             Candidate candidate = candidate(target, source, base, OFFSETS[index]);
             if (candidate == null) {
@@ -349,6 +371,20 @@ public final class RocketLandingPadSelector {
         } catch (ArithmeticException exception) {
             return null;
         }
+    }
+
+    /** The fixed candidate whose origin x and z are the kept pad's, or -1; reads no terrain. */
+    private static int keptIndex(ServerLevel target, RocketStructureSnapshot source, BlockPos base, RocketPosition kept) {
+        if (kept == null) {
+            return -1;
+        }
+        for (int index = 0; index < OFFSETS.length && index < RocketFlightLimits.MAX_LANDING_PAD_CANDIDATES; index++) {
+            Candidate candidate = candidate(target, source, base, OFFSETS[index]);
+            if (candidate != null && candidate.originX() == kept.x() && candidate.originZ() == kept.z()) {
+                return index;
+            }
+        }
+        return -1;
     }
 
     private static RocketPosition originAtSurface(

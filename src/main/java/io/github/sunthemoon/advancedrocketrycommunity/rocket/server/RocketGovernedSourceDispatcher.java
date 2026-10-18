@@ -20,6 +20,14 @@ final class RocketGovernedSourceDispatcher {
     static final int VISITS_PER_TICK = 8;
     private int cursor;
     private final RocketGovernedWaits waits = new RocketGovernedWaits();
+    /** W90b: called with T right after a successful margin refresh, in the same visit (the warm-up handover). */
+    private final java.util.function.BiConsumer<MinecraftServer, java.util.UUID> refreshed;
+
+    RocketGovernedSourceDispatcher() { this((server, transfer) -> { }); }
+
+    RocketGovernedSourceDispatcher(java.util.function.BiConsumer<MinecraftServer, java.util.UUID> refreshed) {
+        this.refreshed = java.util.Objects.requireNonNull(refreshed, "refreshed");
+    }
 
     void tick(MinecraftServer server, RocketTransferSavedData journal, RocketTransferBayDispatch bays) {
         var holds = EscrowRuntime.of(server).executorHolds();
@@ -31,7 +39,7 @@ final class RocketGovernedSourceDispatcher {
             }
             var decision = EscrowRuntime.of(server).governedFlights().classify(server, journal, record);
             afterClassification(decision, () -> holds.held(record),
-                    () -> waits.tickets(record.transferId(), RocketTransferEntities.refreshGovernedFlightTickets(server, record)),
+                    () -> refresh(server, record),
                     () -> ready(server, journal, record, bays),
                     () -> dispatchLoaded(server, journal, record, bays));
             if (decision.route() != EscrowGovernedDispatch.Route.ACTIVE || holds.held(record)) { waits.excluded(record.transferId()); }
@@ -57,6 +65,13 @@ final class RocketGovernedSourceDispatcher {
         waits.observe(record, server.getTickCount(), wait, () -> "source=" + RocketTransferEntities.marginStatus(server, record.sourceSnapshot())
                 + " destination=" + RocketTransferEntities.marginStatus(server, record.destinationSnapshot()));
         return loaded;
+    }
+
+    /** T's margin tickets first; only a refresh that ticketed columns hands a bound warm-up over (R22 amendment 4). */
+    private void refresh(MinecraftServer server, RocketTransferRecord record) {
+        int columns = RocketTransferEntities.refreshGovernedFlightTickets(server, record);
+        waits.tickets(record.transferId(), columns);
+        if (columns > 0) { refreshed.accept(server, record.transferId()); }
     }
 
     static boolean marginsAdmissible(RocketTransferRecord record) {

@@ -30,7 +30,11 @@ public enum RocketFlightRequestCode {
     /** W90 (R21 item 3): a governed source whose checked margin is not admissible. Never saved or sent. */
     LAUNCH_CHUNK_BUDGET,
     /** W90 (R22 answer 4): a governed source whose checked margin is not wholly loaded and entity-ticking. */
-    LAUNCH_AREA_INACTIVE;
+    LAUNCH_AREA_INACTIVE,
+    /** W90b (R21 item 4): the destination is being warmed up; launch again with a fresh request when it is ready. */
+    DESTINATION_LOADING,
+    /** W90b (R22 answer 2): a cold destination at the global or per-player warm-up limit. */
+    DESTINATION_LOADING_LIMIT;
 
     public String translationKey() {
         return "flight.advancedrocketrycommunity.request."

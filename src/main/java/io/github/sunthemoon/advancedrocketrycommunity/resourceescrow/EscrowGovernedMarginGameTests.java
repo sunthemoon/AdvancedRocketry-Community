@@ -20,6 +20,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructu
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketMarginGameTestSupport;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketTransferFenceGameTests;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketWarmupGameTestSupport;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.stats.RocketStats;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRegion;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.RocketDiscoveryColumns;
@@ -50,7 +51,7 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 @GameTestHolder(ModIdentity.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class EscrowGovernedMarginGameTests {
-    /** Test-only support until F2; the product destination warm-up is W90b. */
+    /** Test-only tickets: a source margin until F2 (no source warm-up exists, R22 answer 4), hold fixtures and observation. */
     private static final TicketType<UUID> FIXTURE = TicketType.create("arce_w90a_margin_fixture", UUID::compareTo);
     private EscrowGovernedMarginGameTests() { }
 
@@ -123,11 +124,15 @@ public final class EscrowGovernedMarginGameTests {
     }
 
     /**
-     * R21 item 1 end to end: 14-block footprints give 2 x 2 margins at both ends (the product's fixed Moon pads are
-     * 64 blocks apart, so the source origin shares their x and z alignment). A test-only ticket holds both margins
-     * through F2 and is then removed; the destination Moon has no player and no forced chunk, past its 300-tick idle
-     * threshold. The flight's own 8 tickets then carry it to F8, through an in-process restart (T's tickets removed and
-     * the checked journal reloaded) that re-tickets the same 8 columns.
+     * R21 items 1 and 4 end to end: 14-block footprints give 2 x 2 margins at both ends (the product's fixed Moon pads
+     * are 64 blocks apart, so the source origin shares their x and z alignment). The destination Moon has no player
+     * and no forced chunk, past its 300-tick idle threshold, and the predicted pad's margin is cold. W90b: the first
+     * admin request answers DESTINATION_LOADING and the product's destination warm-up tickets exactly that margin; a
+     * replay of its starting request is refused through the trusted admin entry (R22 amendment 2); once READY, a fresh
+     * request binds the same warm-up and passes F1 and F2; the handover leaves no warm-up ticket and both flight sets
+     * in place. A test-only ticket holds the source margin until F2, as no source warm-up exists (R22 answer 4). The
+     * flight's own 8 tickets then carry it to F8, through an in-process restart (T's tickets removed and the checked
+     * journal reloaded) that re-tickets the same 8 columns.
      */
     private static final class Flight {
         private static final int[][] FOOTPRINT = {{0, 0}, {13, 13}};
@@ -136,13 +141,14 @@ public final class EscrowGovernedMarginGameTests {
         private final ServerLevel moon;
         private final GameTestTickPacer pacer;
         private final BlockPos position = new BlockPos(630_002, 100, 630_002);
-        private final UUID launch = UUID.randomUUID(), key = UUID.randomUUID();
+        private final UUID first = UUID.randomUUID(), launch = UUID.randomUUID(), key = UUID.randomUUID();
         private final Map<ServerLevel, List<ChunkPos>> fixtures = new LinkedHashMap<>();
         private ResourceEscrowSavedData data;
         private RocketEntity rocket;
         private RocketStructureSnapshot destination;
         private RocketTransferRecord prepared;
         private RocketFlightData departure;
+        private RocketWarmupGameTestSupport.View warming;
         private Set<String> ticketed;
         private long moonEmptySince = -1, restartedAt, observedAt = -1;
         private int step;
@@ -155,7 +161,7 @@ public final class EscrowGovernedMarginGameTests {
         void start() { helper.onEachTick(this::tick); }
 
         private void tick() {
-            if (step == 9) { return; }
+            if (step == 11) { return; }
             pacer.pace();
             var server = earth.getServer(); var journal = RocketTransferSavedData.get(server);
             boolean empty = moon.players().isEmpty() && moon.getForcedChunks().isEmpty()
@@ -164,12 +170,14 @@ public final class EscrowGovernedMarginGameTests {
             moonEmptySince = !empty ? -1 : moonEmptySince < 0 ? server.getTickCount() : moonEmptySince;
             switch (step) {
                 case 0 -> setup(server, journal);
-                case 1 -> launchWhenReady(server, journal);
-                case 2 -> awaitF2(journal);
-                case 3 -> flightTicketsOnly(server, journal);
-                case 4 -> restart(server, journal);
-                case 5 -> reticketed(server);
-                case 6 -> landed(server, journal);
+                case 1 -> launchWhenCold(server, journal);
+                case 2 -> relaunchWhenReady(server, journal);
+                case 3 -> awaitF2(journal);
+                case 4 -> handover(server, journal);
+                case 5 -> flightTicketsOnly(server, journal);
+                case 6 -> restart(server, journal);
+                case 7 -> reticketed(server);
+                case 8 -> landed(server, journal);
                 default -> { }
             }
         }
@@ -178,9 +186,9 @@ public final class EscrowGovernedMarginGameTests {
             if (!journal.retryChecked(server)) { return; }
             data = ResourceEscrowSavedData.forTests(server); data.bind(server);
             rocket = rocket(earth, position, data.ledger().id(), FOOTPRINT);
-            var reservations = new ArrayList<RocketRegion>();
-            journal.entries().forEach(entry -> reservations.add(RocketRegion.fromSnapshot(entry.destinationSnapshot())));
-            reservations.addAll(EscrowGovernedPreparation.pendingDestinations(server));
+            // The product's own reservation inputs, other rockets' destination warm-ups included (W90b).
+            var reservations = RocketWarmupGameTestSupport.launchReservations(server, journal,
+                    rocket.assemblyTransactionId().orElseThrow());
             var selected = new RocketLandingPadSelector().select(moon, rocket.snapshot().orElseThrow(), launch, reservations,
                     moon.getGameTime(), true);
             helper.assertTrue(selected.success(), "No admissible Moon pad for the margin fixture: " + selected.detail());
@@ -188,22 +196,66 @@ public final class EscrowGovernedMarginGameTests {
             for (var end : List.of(Map.entry(earth, rocket.snapshot().orElseThrow()), Map.entry(moon, destination))) {
                 var columns = RocketDiscoveryColumns.of(end.getValue());
                 helper.assertTrue(columns.admissible() && columns.count() == 4, "The fixture end is not a 2 x 2 margin: " + columns);
-                columns.columns().forEach(column -> end.getKey().getChunkSource().addRegionTicket(FIXTURE, column, 2, key));
                 fixtures.put(end.getKey(), columns.columns());
             }
+            // Test-only source support until F2: there is no source warm-up (R22 answer 4).
+            fixtures.get(earth).forEach(column -> earth.getChunkSource().addRegionTicket(FIXTURE, column, 2, key));
             step = 1;
         }
 
-        private void launchWhenReady(MinecraftServer server, RocketTransferSavedData journal) {
-            if (!ready(earth, fixtures.get(earth), position.getY()) || !ready(moon, fixtures.get(moon), destination.sourceOrigin().y())) { return; }
+        /** The source is ready, the Moon has been empty past its idle threshold and the predicted pad is cold. */
+        private void launchWhenCold(MinecraftServer server, RocketTransferSavedData journal) {
+            if (!ready(earth, fixtures.get(earth), position.getY()) || ready(moon, fixtures.get(moon), destination.sourceOrigin().y())) { return; }
             if (moonEmptySince < 0 || server.getTickCount() - moonEmptySince <= 300) { return; }
             if (!rocket.isAddedToWorld()) { helper.assertTrue(earth.addFreshEntity(rocket), "Margin fixture publication failed"); return; }
             if (!journal.retryChecked(server)) { return; }
             departure = rocket.flightData().orElseThrow();
+            var logical = rocket.assemblyTransactionId().orElseThrow();
+            var result = RocketRuntime.requestAdminFlight(rocket, RocketDestination.MOON, first);
+            helper.assertTrue(result.code() == RocketFlightRequestCode.DESTINATION_LOADING,
+                    "The cold governed launch was not refused for warming: " + result.code() + " " + result.detailKey());
+            warming = RocketWarmupGameTestSupport.warmup(server, logical).orElse(null);
+            helper.assertTrue(warming != null && warming.state().equals("WARMING") && warming.request().equals(first)
+                    && warming.player() == null && warming.region().equals(RocketRegion.fromSnapshot(destination)),
+                    "The warm-up did not start on the predicted pad: " + warming);
+            var expected = RocketWarmupGameTestSupport.columns(warming);
+            helper.assertTrue(expected.size() == 4 && RocketWarmupGameTestSupport.warmupTicketColumns(server, logical).equals(expected),
+                    "The warm-up did not ticket exactly the destination margin: " + expected);
+            unlaunched(journal, logical, first);
+            // R22 amendment 2 through the trusted admin entry, which never consults the operation ledger.
+            var replay = RocketRuntime.requestAdminFlight(rocket, RocketDestination.MOON, first);
+            helper.assertTrue(replay.code() == RocketFlightRequestCode.REQUEST_REPLAYED, "The starting request was reused: " + replay.code());
+            helper.assertTrue(RocketWarmupGameTestSupport.warmup(server, logical).filter(warming::equals).isPresent()
+                    && RocketWarmupGameTestSupport.warmupTicketColumns(server, logical).equals(expected), "The replay changed the warm-up");
+            step = 2;
+        }
+
+        private void relaunchWhenReady(MinecraftServer server, RocketTransferSavedData journal) {
+            var logical = rocket.assemblyTransactionId().orElseThrow();
+            var current = RocketWarmupGameTestSupport.warmup(server, logical).orElse(null);
+            helper.assertTrue(current != null && current.started() == warming.started(), "The warm-up ended or restarted while warming");
+            unlaunched(journal, logical, first);
+            if (!current.state().equals("READY")) { return; }
+            var line = inspect(server, logical);
+            helper.assertTrue(line.startsWith("Warm-up logical=" + logical + " state=READY request=" + first + " transfer=none level=")
+                    && line.contains(" columns=4/4 ") && line.endsWith(" player=none"), "Inspect lost the warm-up line: " + line);
+            if (!journal.retryChecked(server)) { return; }
             var result = RocketRuntime.requestAdminFlight(rocket, RocketDestination.MOON, launch);
             helper.assertTrue(result.code() == RocketFlightRequestCode.JOURNAL_PENDING,
                     "The governed border-crossing launch was refused: " + result.code() + " " + result.detailKey());
-            step = 2;
+            var bound = RocketWarmupGameTestSupport.warmup(server, logical).orElse(null);
+            helper.assertTrue(bound != null && bound.state().equals("BOUND") && launch.equals(bound.transfer())
+                    && bound.started() == warming.started() && bound.region().equals(warming.region())
+                    && RocketWarmupGameTestSupport.warmupTicketColumns(server, logical).equals(RocketWarmupGameTestSupport.columns(warming)),
+                    "The relaunch did not bind the same warm-up: " + bound);
+            step = 3;
+        }
+
+        private void unlaunched(RocketTransferSavedData journal, UUID logical, UUID request) {
+            helper.assertTrue(journal.find(request).isEmpty() && journal.findByLogicalRocket(logical).isEmpty()
+                    && data.ledger().armedFlights().stream().noneMatch(arm -> arm.logical().equals(logical))
+                    && RocketEscrowGate.idle(rocket) && rocket.flightData().orElseThrow().equals(departure),
+                    "A warming request armed, wrote a record or changed the rocket");
         }
 
         private void awaitF2(RocketTransferSavedData journal) {
@@ -214,8 +266,27 @@ public final class EscrowGovernedMarginGameTests {
             helper.assertTrue(RocketRegion.fromSnapshot(record.destinationSnapshot()).equals(RocketRegion.fromSnapshot(destination)),
                     "The product selected another pad than the fixture's prediction");
             prepared = record;
-            fixtures.forEach((level, columns) -> columns.forEach(column -> level.getChunkSource().removeRegionTicket(FIXTURE, column, 2, key)));
-            step = 3;
+            fixtures.get(earth).forEach(column -> earth.getChunkSource().removeRegionTicket(FIXTURE, column, 2, key));
+            step = 4;
+        }
+
+        /** The first successful ACTIVE refresh releases the warm-up in the same visit: T's 8 columns are then in place. */
+        private void handover(MinecraftServer server, RocketTransferSavedData journal) {
+            var logical = prepared.logicalRocketId();
+            var current = RocketWarmupGameTestSupport.warmup(server, logical).orElse(null);
+            if (current != null) {
+                helper.assertTrue(current.state().equals("BOUND") && server.getTickCount() - current.started() < current.lifetime(),
+                        "The bound warm-up changed before its handover: " + current);
+                var line = inspect(server, launch);
+                helper.assertTrue(line.matches("(?s)Transfer .* warmup=BOUND remaining=\\d+"), "Inspect lost the bound warm-up: " + line);
+                return;
+            }
+            helper.assertTrue(journal.find(launch).isPresent(), "The launch ended instead of handing its warm-up over");
+            helper.assertTrue(server.getTickCount() - warming.started() <= warming.lifetime(), "The warm-up expired instead of handing over");
+            helper.assertTrue(RocketWarmupGameTestSupport.warmupTicketColumns(server, logical).isEmpty(), "The handover left a warm-up ticket");
+            helper.assertTrue(RocketMarginGameTestSupport.flightTicketColumns(server, launch).equals(RocketMarginGameTestSupport.marginColumns(prepared)),
+                    "The handover released the warm-up before T's margin tickets were in place");
+            step = 5;
         }
 
         private void flightTicketsOnly(MinecraftServer server, RocketTransferSavedData journal) {
@@ -231,7 +302,7 @@ public final class EscrowGovernedMarginGameTests {
             }));
             if (!current.equals(expected) || !ready(earth, fixtures.get(earth), position.getY())
                     || !ready(moon, fixtures.get(moon), destination.sourceOrigin().y())) { return; }
-            step = 4;
+            step = 6;
         }
 
         private void restart(MinecraftServer server, RocketTransferSavedData journal) {
@@ -254,7 +325,7 @@ public final class EscrowGovernedMarginGameTests {
                     && restored.find(launch).filter(found -> found.checksum().equals(record.checksum())).isPresent(),
                     "The reloaded journal changed the flight record");
             server.overworld().getDataStorage().set(ManagedSavedDataType.ROCKET_TRANSFERS.dataName(), restored);
-            restartedAt = server.getTickCount(); step = 5;
+            restartedAt = server.getTickCount(); step = 7;
         }
 
         private void reticketed(MinecraftServer server) {
@@ -263,8 +334,9 @@ public final class EscrowGovernedMarginGameTests {
             if (!ready(earth, fixtures.get(earth), position.getY()) || !ready(moon, fixtures.get(moon), destination.sourceOrigin().y())) { return; }
             var line = inspect(server, launch);
             if (!line.contains(" wait=NONE ")) { return; }
-            helper.assertTrue(line.contains(" margin=source:4/4,destination:4/4 wait=NONE tickets=8"), "Inspect lost the margin field: " + line);
-            step = 6;
+            helper.assertTrue(line.contains(" margin=source:4/4,destination:4/4 wait=NONE tickets=8 warmup=none"),
+                    "Inspect lost the margin field: " + line);
+            step = 8;
         }
 
         private void landed(MinecraftServer server, RocketTransferSavedData journal) {
@@ -291,9 +363,11 @@ public final class EscrowGovernedMarginGameTests {
                     .filter(found -> found.assemblyTransactionId().filter(prepared.logicalRocketId()::equals).isPresent()).toList();
             helper.assertTrue(copies.equals(List.of(arrival)), "The destination margin holds other copies: " + copies.size());
             helper.assertTrue(RocketMarginGameTestSupport.flightTicketColumns(server, launch).isEmpty()
-                    && RocketTransferFenceGameTests.flightTickets(server, launch) == 0, "F8 left a flight ticket");
+                    && RocketTransferFenceGameTests.flightTickets(server, launch) == 0
+                    && RocketWarmupGameTestSupport.warmupTicketColumns(server, prepared.logicalRocketId()).isEmpty(),
+                    "F8 left a flight or warm-up ticket");
             arrival.discard(); moon.getChunkSource().removeRegionTicket(FIXTURE, survivorColumn(), 2, key);
-            step = 9; helper.succeed();
+            step = 11; helper.succeed();
         }
 
         private ChunkPos survivorColumn() {

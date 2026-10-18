@@ -37,6 +37,13 @@ public final class V180LanguageProvider extends LanguageProvider {
         add("flight.advancedrocketrycommunity.request.launch_area_inactive", chinese
                 ? "火箭发射区域有部分未激活；整个发射区域激活（或缩小火箭）后才能再次发射"
                 : "Part of the rocket's launch area is not active; the whole area must be active (or the rocket made smaller) before launching again");
+        // W90b (Root decisions R21 item 4 and R22): the governed destination warm-up.
+        add("flight.advancedrocketrycommunity.request.destination_loading", chinese
+                ? "正在准备目的地，就绪后请再次发射" : "Preparing the destination; launch again when it is ready");
+        add("flight.advancedrocketrycommunity.request.destination_loading_limit", chinese
+                ? "正在准备的目的地过多，请稍后再试" : "Too many destinations are being prepared; try again shortly");
+        add("message.advancedrocketrycommunity.flight.destination_ready", chinese
+                ? "目的地已就绪，请再次发射" : "Destination ready; launch again to depart");
         V180ResearchLanguage.entries(chinese).forEach(this::add);
         V180LandingPadData.language(chinese).forEach(this::add);
         V180PumpLanguage.translations(chinese).forEach(this::add);

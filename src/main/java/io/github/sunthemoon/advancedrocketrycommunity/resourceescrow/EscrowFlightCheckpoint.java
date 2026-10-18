@@ -20,6 +20,8 @@ final class EscrowFlightCheckpoint implements AutoCloseable {
     private boolean closed;
 
     boolean locked(UUID logical) { return pending.containsKey(logical); }
+    /** W90b: begin's own capacity and lock test, read-only, so the warm-up's preconditions cannot drift from it. */
+    boolean admits(UUID logical) { return !closed && pending.size() < 64 && !locked(logical); }
     List<RocketRegion> pendingDestinations() { return List.copyOf(destinations.values()); }
     boolean retryReady(UUID logical, long tick) {
         var retry = retries.get(logical);
@@ -86,7 +88,7 @@ final class EscrowFlightCheckpoint implements AutoCloseable {
                           Preparation preparation, java.util.function.BooleanSupplier boundary,
                           java.util.function.Supplier<RocketRegion> destination,
                           Consumer<EscrowFlightTables.Armed> completion) {
-        if (closed || pending.size() >= 64 || locked(launch.logical()) || !RocketEscrowGate.idle(rocket)
+        if (!admits(launch.logical()) || !RocketEscrowGate.idle(rocket)
                 || !(rocket.level() instanceof ServerLevel level)) {
             if (rocket.level() instanceof ServerLevel observedLevel) {
                 EscrowConsumerTimingProbe.mark(observedLevel.getServer(), "f1.refused.CLOSED_CAPACITY_LOCK_OR_SOURCE");
