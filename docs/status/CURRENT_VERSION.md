@@ -38,7 +38,7 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: 0d6b839a (W91N and W91N2 merged: P1-F3's gated native timing hooks, after the W91 merge 264c4e30)
+latest_code_commit: fcd549c9 (W90b merged: the governed destination warm-up)
 latest_hosted_regression: run 39096930031 at 264c4e30 (the W91 merge) passed end to end, the unit suite, every GameTest and the unchanged log checker; Repository governance passed (run 39096930073). The two runs before it (39085135243 at 0a3964e7 and 39091589526 at e80069c6) failed only the intermittent EscrowProofRetryGameTests.supersededEntityProofRetriesTheSameFrontierAfterBackoff timeout that W94B fixes
 ledger_planned_units: 19
 asset_review_items: 154
@@ -60,9 +60,10 @@ branch. Each merge records its hosted run and independent review in
   observatory and processor with all 17 advancements, and the C18d HUD, sounds and client
   settings.
 - The D3-A escrow core and its rocket integration (W11b2: settlement, ordinary reconciliation and
-  governed flights) are merged with admission disabled. Before admission: W11b3, W90b (the
-  destination warm-up), W83, W91's review follow-ups (W91R), and the F3 and N2 kill/restart cuts (W91K).
-  Merged: W90a (governed readiness), P1-F8 (W92, with W92F's follow-ups), and part 1's N2 and P1-F3 (W91, with
+  governed flights) are merged with admission disabled. Before admission: W11b3, W83, W91's review
+  follow-ups (W91R), the F3 and N2 kill/restart cuts (W91K), and W90's measured cold-destination costs.
+  Merged: W90a and W90b (governed readiness and the destination warm-up), P1-F8 (W92, with W92F's
+  follow-ups), and part 1's N2 and P1-F3 (W91, with
   its native timing W91N and W91N2: no missed step, and the three whole-root escrow consumers completed in 0.9
   to 3.0 s under eight-flight traffic).
 

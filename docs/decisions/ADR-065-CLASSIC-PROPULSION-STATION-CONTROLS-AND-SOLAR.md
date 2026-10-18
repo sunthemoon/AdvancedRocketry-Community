@@ -1286,6 +1286,46 @@ or accept a risk. The risks are R-031, R-032 and R-035.
   - Re-evaluation is bounded and loaded-only.
   - Final guards apply at every entry in the design.
   - The bay recovery gate is inert while no production caller installs it.
+- **Governed readiness (W90; W90a merged `e80069c6`, W90b merged `fcd549c9`).** The bullets below record
+  Root decisions R21 and R22 as implemented.
+- **Flight tickets (W90, Root decision R21 item 1).** This is an explicit change from two origin tickets per transfer.
+  - After a checked ACTIVE classification, and never while the record is held, the governed dispatch refreshes one
+    `arce_rocket_flight` region ticket (distance 2, keyed by transfer) on each column of each server-recorded end's
+    checked discovery-margin column set: at most 16 per end, 32 per transfer and 2,048 at 64 transfers.
+  - The F2 callback's origin tickets remain a named exception, and legacy flights keep their two origin tickets.
+  - F8 removes the origin ticket and the same set in each end's Level. Without a refresh, the tickets expire at the
+    first purge with age greater than 400 ticks. Tickets are not persisted.
+  - Ordinary reconciliation, pruning, held repair, the HOLD and CLEANUP routes and the legacy fences add none.
+- **Checked column set (R21 item 2).**
+  - One server-free, overflow-checked helper defines the columns for readiness, governed pad admission, F1's source,
+    refresh and release.
+  - New governed admission requires at most 16 columns, including the origin column. The 16-chunk limit is applied to
+    the margin and not raised.
+  - A recorded governed end that fails the helper becomes executor hold `DISCOVERY_MARGIN`: no margin ticket, no
+    further refresh, one WARN per flight and reason, and offline repair. Its scope is one transfer.
+- **Governed admission budget (R21 item 3).**
+  - For governed launches, surface, station and named-pad selection count margin columns before terrain access and
+    refuse with `chunk_budget`, and F1's source refuses with `LAUNCH_CHUNK_BUDGET`.
+  - Legacy selection is unchanged.
+- **Destination warm-up (W90b, Root decisions R21 item 4 and R22 amendments 1 to 4).**
+  - Immediately before F1's begin, after every existing check and the server's pad selection, and only when F1's
+    read-only preconditions hold and a slot is free (a global cap and a per-initiating-player limit, each counting
+    WARMING, READY and BOUND; admin and release-test launches count only globally), a governed launch gets one plain
+    `arce_rocket_warmup` region ticket (distance 2, keyed by the logical rocket, added once and never renewed) on each
+    column of the selected destination's checked set, and a RAM reservation of that exact region.
+  - A ready destination calls begin at once and is BOUND on F1's acceptance; an unready one answers
+    `DESTINATION_LOADING` and the player launches again with a fresh request ID. Without a slot, a ready destination
+    launches without a warm-up and an unready one answers `DESTINATION_LOADING_LIMIT`.
+  - A repeated request for the same destination and source geometry revalidates the kept candidate first and keeps its
+    region, tickets and deadline. The starting request ID is refused while the warm-up lives.
+  - Releases: the handover right after T's first ACTIVE refresh that ticketed columns; F1's refusal or the launch's
+    `discarded` callback, which may follow `journal.put` and releases only the warm-up; replacement; disconnect and
+    source removal for WARMING and READY only; expiry at the captured lifetime; and the runtime clear.
+  - Operator settings can only lower the ceilings of 8 warm-ups, 2 per player and 600 ticks, and apply to the next
+    allocation. The flight-ticket bound stays `MAX_LANDING_CHUNKS`.
+  - It is an explicit exception to "only ACTIVE adds tickets", and F1 and F2 keep every check and proof. It does not
+    change "Pads do not force chunks or take independent flight tickets": the warm-up ticket is a non-forced,
+    non-persistent launch-preflight ticket keyed by the logical rocket, never held by a pad.
 - **The shared admission authority:** 64 per server and 8 per rocket. It lives inside a
   coordinator that has a ledger. W27c1 lifts it to server lifetime.
 - **The interlocks.**
@@ -1529,14 +1569,10 @@ Gate result.
 - Part 1's F3 and N2 (design W86, frozen; W91 implements them). F8 was fixed by W92 (the P1-F8
   note below), F9 by W77 and N1 by part 2.
 - Signed per-fluid accounting.
-- Governed readiness (W90): dispatch needs each end's whole discovery margin loaded and
-  entity-ticking, but the flight tickets make only each end's origin chunk entity-ticking, so a
-  flight whose margin crosses a chunk border, with no other ticket providing readiness at that
-  end, never reaches F3. Root decision R21 accepts one ticket per margin column (at most 16 per
-  end) for governed records.
-- Cold destinations (W90 Q1): F1 and F2 require the destination margin to be ready, so a governed
-  launch to an unready destination is refused. R21 chooses a bounded preflight warm-up of the
-  server-selected destination (option B); admission cannot be enabled before it.
+- Governed readiness and cold destinations (W90): fixed by W90a (`e80069c6`, one ticket per
+  checked margin column) and W90b (`fcd549c9`, the bounded destination warm-up); see the W90
+  bullets in the part 1 note. The measured cold, border-crossing and largest-margin costs and
+  readiness times remain before admission (R22 answer 6).
 - A launch-boundary refusal at the exact moment of a return proof callback holds that return
   until a restart (flight fix review residual).
 - N6: the arrival executor runs twice per COMMITTED visit (cost only; no state effect).
