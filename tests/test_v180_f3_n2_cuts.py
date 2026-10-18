@@ -37,8 +37,12 @@ class CutTests(unittest.TestCase):
                                   destination_entity_id=ident(number + 10)))
         if case == "F3_HELD" and restart:
             transfers = []
-        return flights, dict(entities=entities, journal=dict(transfers=transfers,
+        disk = dict(entities=entities, journal=dict(transfers=transfers,
             classic_first_moon_landing={"state": "DELIVERED" if case == "F3_UNKNOWN" and restart else "EMPTY"}))
+        if case == "F3_HELD" and restart == 0:
+            disk["pending"] = copy.deepcopy(disk["journal"])
+            disk["pending"]["transfers"][1]["phase"] = "DESTINATION_SPAWNED"
+        return flights, disk
 
     def test_held_prepared_records_recover_two_intact_sources(self):
         flights, initial = self.fixture()
@@ -107,7 +111,7 @@ class CutTests(unittest.TestCase):
 
     def test_default_campaign_reports_unavailable_rows_not_passes(self):
         self.assertEqual(6, len(cuts.CASES))
-        self.assertEqual({"N2_REFUSED", "N2_MOVED", "N2_UNKNOWN"}, set(cuts.BLOCKED))
+        self.assertEqual({"N2_REFUSED"}, set(cuts.BLOCKED))
         self.assertEqual("RT_CANCEL_SEPARATE_0_READBACK_AFTER", cuts.GOVERNED)
 
     def test_save_waits_for_its_own_marker(self):
@@ -116,6 +120,38 @@ class CutTests(unittest.TestCase):
         cuts.save(process)
         process.command.assert_called_once_with("save-all flush")
         process.wait_for.assert_called_once_with(cuts.smoke.SAVE_MARKER, 60, start_at=1)
+
+    def test_hold_requires_the_actual_staged_successor(self):
+        flights, disk = self.fixture()
+        disk.pop("pending")
+        with self.assertRaises(cuts.smoke.SmokeError):
+            cuts.verify_ordinary(disk, flights, "F3_HELD", 0, None)
+
+    def removal(self):
+        flights, before = self.fixture("F3_UNKNOWN", 1)
+        source = before["entities"][1]["entity"]
+        source["RocketEntityData"]["flight_data"].update(state="ASCENT", current_dimension=cuts.EARTH)
+        before["journal"]["transfers"][1]["phase"] = "PREPARED"
+        row = dict(flights=flights, before_removal=copy.deepcopy(before))
+        disk = copy.deepcopy(before)
+        disk["journal"]["transfers"].pop()
+        return row, disk
+
+    def test_removal_preserves_both_rockets_and_only_retires_b(self):
+        row, disk = self.removal()
+        cuts.verify_removal(disk, row, 0)
+        source = disk["entities"][1]["entity"]
+        source["RocketEntityData"]["flight_data"]["state"] = "FUELED"
+        source["Pos"] = row["flights"][1]["source_position"]
+        cuts.verify_removal(disk, row, 1)
+        disk["journal"]["transfers"] = []
+        with self.assertRaises(cuts.smoke.SmokeError):
+            cuts.verify_removal(disk, row, 1)
+
+    def test_removal_cannot_silently_accept_an_orphaned_inflight_source(self):
+        row, disk = self.removal()
+        with self.assertRaisesRegex(cuts.smoke.SmokeError, "stationary source"):
+            cuts.verify_removal(disk, row, 1)
 
 
 if __name__ == "__main__":
