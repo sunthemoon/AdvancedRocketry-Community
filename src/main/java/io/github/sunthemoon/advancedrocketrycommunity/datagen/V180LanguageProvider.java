@@ -31,6 +31,12 @@ public final class V180LanguageProvider extends LanguageProvider {
     protected void addTranslations() {
         add("flight.advancedrocketrycommunity.request.journal_pending", chinese
                 ? "等待转移日志持久化确认；需要燃料 %s" : "Waiting for durable transfer confirmation; required fuel %s");
+        // W90 (Root decisions R21 item 3 and R22 answer 4): governed launch-area refusals.
+        add("flight.advancedrocketrycommunity.request.launch_chunk_budget", chinese
+                ? "火箭发射区域超过 16 区块预算" : "The rocket's launch area exceeds the 16-chunk budget");
+        add("flight.advancedrocketrycommunity.request.launch_area_inactive", chinese
+                ? "火箭发射区域有部分未激活；整个发射区域激活（或缩小火箭）后才能再次发射"
+                : "Part of the rocket's launch area is not active; the whole area must be active (or the rocket made smaller) before launching again");
         V180ResearchLanguage.entries(chinese).forEach(this::add);
         V180LandingPadData.language(chinese).forEach(this::add);
         V180PumpLanguage.translations(chinese).forEach(this::add);

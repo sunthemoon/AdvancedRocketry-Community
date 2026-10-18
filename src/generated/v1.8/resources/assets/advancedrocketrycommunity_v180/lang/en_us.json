@@ -147,6 +147,8 @@
   "body.advancedrocketrycommunity.tau_ceti_g": "Tau Ceti g",
   "enchantment.advancedrocketrycommunity.space_breathing": "Space Breathing",
   "flight.advancedrocketrycommunity.request.journal_pending": "Waiting for durable transfer confirmation; required fuel %s",
+  "flight.advancedrocketrycommunity.request.launch_area_inactive": "Part of the rocket's launch area is not active; the whole area must be active (or the rocket made smaller) before launching again",
+  "flight.advancedrocketrycommunity.request.launch_chunk_budget": "The rocket's launch area exceeds the 16-chunk budget",
   "fluid_type.advancedrocketrycommunity.enriched_lava": "Enriched Lava",
   "fluid_type.advancedrocketrycommunity.hydrogen": "Hydrogen",
   "fluid_type.advancedrocketrycommunity.nitrogen": "Nitrogen",

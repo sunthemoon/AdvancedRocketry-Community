@@ -32,6 +32,8 @@ import net.minecraft.world.phys.AABB;
 public final class RocketLandingPadSelector {
     /** Audit-only refusal: terrain, bounds, budgets or a transfer reservation. */
     public static final String UNSAFE = "unsafe";
+    /** W90 (R21 item 3): a governed destination whose checked margin is not admissible. */
+    public static final String CHUNK_BUDGET = "message.advancedrocketrycommunity.pad.reason.chunk_budget";
     private static final int PAD_SPACING = 64;
     private static final int[][] OFFSETS = {
             {0, 0},
@@ -50,6 +52,21 @@ public final class RocketLandingPadSelector {
             UUID transferId,
             List<RocketRegion> reservations,
             long gameTime
+    ) {
+        return select(target, source, transferId, reservations, gameTime, false);
+    }
+
+    /**
+     * {@code governed}: W90 (R21 item 3) replaces the region chunk count with the checked discovery-margin column set,
+     * before any terrain access. Legacy selection is unchanged.
+     */
+    public RocketLandingPadSelection select(
+            ServerLevel target,
+            RocketStructureSnapshot source,
+            UUID transferId,
+            List<RocketRegion> reservations,
+            long gameTime,
+            boolean governed
     ) {
         Objects.requireNonNull(target, "target");
         Objects.requireNonNull(source, "source");
@@ -70,7 +87,13 @@ public final class RocketLandingPadSelector {
             if (candidate == null) {
                 continue;
             }
-            if (candidate.chunkCount() > RocketFlightLimits.MAX_LANDING_CHUNKS) {
+            if (governed) {
+                // The fixed pads are 64 blocks apart, so every candidate shares one chunk alignment and one count:
+                // the first failure ends selection before loadChunks and the surface read.
+                if (!RocketDiscoveryColumns.of(candidate.originX(), candidate.originZ(), source.bounds()).admissible()) {
+                    return RocketLandingPadSelection.failure(candidates, chunksLoaded, CHUNK_BUDGET);
+                }
+            } else if (candidate.chunkCount() > RocketFlightLimits.MAX_LANDING_CHUNKS) {
                 continue;
             }
             chunksLoaded += loadChunks(target, candidate.chunks());
@@ -114,6 +137,19 @@ public final class RocketLandingPadSelector {
             List<RocketRegion> reservations,
             long gameTime
     ) {
+        return selectStation(target, source, transferId, station, reservations, gameTime, false);
+    }
+
+    /** {@code governed}: the checked margin replaces the region count before loadChunks (W90, R21 item 3). */
+    public RocketLandingPadSelection selectStation(
+            ServerLevel target,
+            RocketStructureSnapshot source,
+            UUID transferId,
+            StationState station,
+            List<RocketRegion> reservations,
+            long gameTime,
+            boolean governed
+    ) {
         Objects.requireNonNull(target, "target");
         Objects.requireNonNull(source, "source");
         Objects.requireNonNull(transferId, "transferId");
@@ -155,7 +191,11 @@ public final class RocketLandingPadSelector {
                 return RocketLandingPadSelection.failure(1, 0, "rocket leaves station region");
             }
             Set<ChunkPos> chunks = chunks(region);
-            if (chunks.size() > RocketFlightLimits.MAX_LANDING_CHUNKS) {
+            if (governed) {
+                if (!RocketDiscoveryColumns.of(relocated).admissible()) {
+                    return RocketLandingPadSelection.failure(1, 0, CHUNK_BUDGET);
+                }
+            } else if (chunks.size() > RocketFlightLimits.MAX_LANDING_CHUNKS) {
                 return RocketLandingPadSelection.failure(1, 0, "station landing exceeds chunk bound");
             }
             int loaded = loadChunks(target, chunks);
@@ -305,7 +345,7 @@ public final class RocketLandingPadSelector {
                     )
             );
             Set<ChunkPos> chunks = chunks(horizontal);
-            return withinBorder(target, horizontal) ? new Candidate(centerX, centerZ, chunks) : null;
+            return withinBorder(target, horizontal) ? new Candidate(centerX, centerZ, originX, originZ, chunks) : null;
         } catch (ArithmeticException exception) {
             return null;
         }
@@ -415,7 +455,7 @@ public final class RocketLandingPadSelector {
         return supported;
     }
 
-    private record Candidate(int centerX, int centerZ, Set<ChunkPos> chunks) {
+    private record Candidate(int centerX, int centerZ, int originX, int originZ, Set<ChunkPos> chunks) {
         private int chunkCount() {
             return chunks.size();
         }

@@ -91,6 +91,13 @@ final class RocketTransferService {
         if (destinationLevel == null) {
             return RocketFlightRequestResult.failure(RocketFlightRequestCode.INVALID_DESTINATION);
         }
+        // W90 (R21 item 3, R22 answer 4): governed launches only, before pad selection, terrain, a named-pad claim or F1.
+        boolean governed = rocket.escrowSection().ledger() != null;
+        if (governed) {
+            var source = rocket.snapshot().orElseThrow();
+            var refusal = governedSourceRefusal(source, () -> RocketTransferEntities.endAlreadyLoaded(server, source));
+            if (refusal != null) { return RocketFlightRequestResult.failure(refusal, plan.requiredFuel()); }
+        }
         List<RocketRegion> reservations = launchReservations(server, journal);
         RocketLandingPadSelection selected;
         if (plan.destinationStation().isPresent()) {
@@ -102,13 +109,14 @@ final class RocketTransferService {
             }
             selected = plan.landingPad() != null ? namedPads.select(destinationLevel,
                     rocket.snapshot().orElseThrow(), plan.requestId(), station, plan.landingPad(), reservations,
-                    scheduledArrival(countdown)) : pads.selectStation(
+                    scheduledArrival(countdown), governed) : pads.selectStation(
                     destinationLevel,
                     rocket.snapshot().orElseThrow(),
                     plan.requestId(),
                     station,
                     reservations,
-                    scheduledArrival(countdown)
+                    scheduledArrival(countdown),
+                    governed
             );
         } else {
             selected = pads.select(
@@ -116,7 +124,8 @@ final class RocketTransferService {
                     rocket.snapshot().orElseThrow(),
                     plan.requestId(),
                     reservations,
-                    scheduledArrival(countdown)
+                    scheduledArrival(countdown),
+                    governed
             );
         }
         if (!selected.success()) {
@@ -127,7 +136,7 @@ final class RocketTransferService {
             );
         }
 
-        if (rocket.escrowSection().ledger() != null) {
+        if (governed) {
             boolean started = io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGovernedPreparation.begin(
                     rocket, countdown, selected.snapshot().orElseThrow(),
                     candidate -> RocketGovernedLaunchBoundary.allows(server, journal, candidate, rocket, recovery.bays()),
@@ -218,6 +227,17 @@ final class RocketTransferService {
             );
         }
         return new RocketFlightRequestResult(RocketFlightRequestCode.JOURNAL_PENDING, plan.requiredFuel());
+    }
+
+    /**
+     * W90: a governed source must be an admissible checked column set ({@code LAUNCH_CHUNK_BUDGET}) whose columns are all
+     * loaded and entity-ticking ({@code LAUNCH_AREA_INACTIVE}); null when F1 may proceed to pad selection.
+     */
+    static RocketFlightRequestCode governedSourceRefusal(RocketStructureSnapshot source, java.util.function.BooleanSupplier ready) {
+        if (!io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.RocketDiscoveryColumns.of(source).admissible()) {
+            return RocketFlightRequestCode.LAUNCH_CHUNK_BUDGET;
+        }
+        return ready.getAsBoolean() ? null : RocketFlightRequestCode.LAUNCH_AREA_INACTIVE;
     }
 
     /** prepareLaunch's input: the journal, governed pre-F2 destinations and P's regions while T is absent (W85-R6). */
