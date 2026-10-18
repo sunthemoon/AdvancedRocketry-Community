@@ -119,8 +119,9 @@ public final class RocketLandedDisassemblyGameTestSupport {
         RocketLandedDisassemblies.Port port = new RocketLandedDisassemblies.Port() {
             @Override public long now() { return production.now(); }
             @Override public boolean bayAllowsRemoval(RocketTransferRecord record) { return production.bayAllowsRemoval(record); }
-            @Override public boolean queue(UUID logical, BooleanSupplier action, Runnable discarded) {
-                return RocketJournalGameTestSupport.queueDetached(helper, journal, logical, action, discarded);
+            @Override public boolean queue(RocketTransferSavedData.Reservation reservation, BooleanSupplier action,
+                                           Runnable discarded) {
+                return RocketJournalGameTestSupport.queueDetached(helper, journal, reservation, action, discarded);
             }
             @Override public void released(RocketTransferRecord record, UUID entity) { production.released(record, entity); }
             @Override public void restored(RocketTransferRecord record, UUID entity, boolean settle) {

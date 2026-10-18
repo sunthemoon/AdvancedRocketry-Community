@@ -25,6 +25,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketT
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.validation.RocketValidationCode;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import net.minecraft.gametest.framework.GameTest;
@@ -393,17 +394,23 @@ public final class RocketLandedDisassemblyGameTests {
 
     private static void fullEffectQueueRefusesBeforeRelease(Script s, Arrival a) {
         s.then(() -> {
-            // G7: two queued generations leave no continuation slot, so the request changes nothing.
+            // G7: other rockets hold every reservation of the per-record queue (R23), so L's own reservation is absent
+            // and the request changes nothing.
             var journal = a.detached;
             s.check(journal.electFirstMoonLanding(moonEvent()), "Fixture election refused");
-            RocketJournalGameTestSupport.queueDetached(s.helper, journal, UUID.randomUUID(), () -> true, () -> { });
             s.check(journal.deliverFirstMoonLanding(journal.firstMoonLandingRam().event()), "Fixture delivery refused");
-            RocketJournalGameTestSupport.queueDetached(s.helper, journal, UUID.randomUUID(), () -> true, () -> { });
-            s.check(!journal.canQueueEffect(), "The fixture did not fill the continuation queue");
+            var held = new ArrayList<RocketTransferSavedData.Reservation>();
+            for (var next = journal.reserve(UUID.randomUUID()); next.isPresent(); next = journal.reserve(UUID.randomUUID())) {
+                held.add(next.get());
+            }
+            try (var own = journal.canQueueEffect(a.logical()).orElse(null)) {
+                s.check(own == null, "The fixture did not fill the continuation queue");
+            }
             long sequence = journal.mutationSequence();
             s.check(a.release(a.requester(a.owner)) == RocketValidationCode.REGION_BUSY, "A full queue did not refuse");
             s.check(journal.find(a.landed.transferId()).orElse(null) == a.landed && journal.mutationSequence() == sequence
                     && !a.support.pending(a.rocket) && a.rocket.isAlive(), "A refused request changed something");
+            held.forEach(RocketTransferSavedData.Reservation::close);
             a.write(CheckedSavedDataPolicy.atomic(TYPE), true);
         });
     }

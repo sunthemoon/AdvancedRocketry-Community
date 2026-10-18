@@ -5,6 +5,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData.Reservation;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketLandedDisassemblyRules.Outcome;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketLandedDisassemblyRules.Presence;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketLandedDisassemblyRules.Progress;
@@ -63,7 +64,8 @@ final class RocketLandedDisassemblies {
 
         boolean bayAllowsRemoval(RocketTransferRecord record);
 
-        boolean queue(UUID logical, BooleanSupplier action, Runnable discarded);
+        /** Queues L's continuation with the reservation that the caller took before its mutation, consuming it. */
+        boolean queue(Reservation reservation, BooleanSupplier action, Runnable discarded);
 
         /** M2 step 1: audit {@code landed_reservation_released} and drop T from the session sets. */
         void released(RocketTransferRecord record, UUID entity);
@@ -137,25 +139,46 @@ final class RocketLandedDisassemblies {
             return RocketValidationCode.DISASSEMBLY_PENDING;
         }
         RocketTransferRecord record = journal.findByLogicalRocket(logical).orElse(null);
-        var decision = admission(rocket, record, journal, port, preflight, true);
-        return decision.admission() == RocketLandedDisassemblyRules.Admission.RELEASE
-                ? release(journal, record, rocket.getUUID(), request, port) : decision.code();
+        // N2: L's own reservation is taken before any change and held through M1's removal and its queueing.
+        try (var reservation = reservation(journal, record)) {
+            var decision = admission(rocket, record, journal, port, preflight, true, reservation);
+            return decision.admission() == RocketLandedDisassemblyRules.Admission.RELEASE
+                    ? release(journal, record, rocket.getUUID(), request, port, reservation) : decision.code();
+        }
     }
 
     /**
      * M0's read-only decision for L's record. Production always applies the record clause; W92-R1's G9 also evaluates
-     * it without the clause to show that the clause alone refuses a governed record.
+     * it without the clause to show that the clause alone refuses a governed record. L's reservation is taken and
+     * closed here, so nothing changes.
      */
     RocketLandedDisassemblyRules.Decision admission(RocketEntity rocket, RocketTransferRecord record,
                                                     RocketTransferSavedData journal, Port port,
                                                     Supplier<Optional<RocketValidationCode>> preflight,
                                                     boolean recordClause) {
+        try (var reservation = reservation(journal, record)) {
+            return admission(rocket, record, journal, port, preflight, recordClause, reservation);
+        }
+    }
+
+    private RocketLandedDisassemblyRules.Decision admission(RocketEntity rocket, RocketTransferRecord record,
+                                                            RocketTransferSavedData journal, Port port,
+                                                            Supplier<Optional<RocketValidationCode>> preflight,
+                                                            boolean recordClause, Reservation reservation) {
         return RocketLandedDisassemblyRules.admit(record != null,
                 journal.resourceMutationUnproved(rocket.assemblyTransactionId().orElseThrow()),
                 () -> (!recordClause || RocketLandedDisassemblyRules.landedRecordAdmitted(record.schemaVersion(),
                         record.nativeTransfer().isPresent()))
                         && RocketTransferEntities.isReplaceableLandedAuthority(rocket, record),
-                () -> port.bayAllowsRemoval(record), journal.canQueueEffect(), hasCapacity(), preflight);
+                () -> port.bayAllowsRemoval(record), reservation != null, hasCapacity(), preflight);
+    }
+
+    /**
+     * {@code canQueueEffect(L)} for a present T: null while L has a continuation or a reservation, the bound is
+     * reached, the journal stops or a write has failed. Without T nothing is removed, so none is taken.
+     */
+    private static Reservation reservation(RocketTransferSavedData journal, RocketTransferRecord record) {
+        return record == null ? null : journal.canQueueEffect(record.logicalRocketId()).orElse(null);
     }
 
     /**
@@ -174,16 +197,27 @@ final class RocketLandedDisassemblies {
         RocketTransferRecord record = journal.findByLogicalRocket(rocket.assemblyTransactionId().orElseThrow())
                 .orElse(null);
         if (record != null && RocketTransferEntities.isReplaceableLandedAuthority(rocket, record)) {
-            Port port = ports.apply(level.getServer(), journal);
-            if (!port.bayAllowsRemoval(record)) { return false; }
-            journal.remove(record.transferId());
-            port.queue(record.logicalRocketId(), () -> {
-                if (port.bayAllowsRemoval(record)) { port.released(record, rocket.getUUID()); }
-                return true;
-            }, () -> { });
+            removePlain(journal, record, rocket.getUUID(), ports.apply(level.getServer(), journal));
             return false;
         }
         return !journal.resourceMutationUnproved(rocket.assemblyTransactionId().orElseThrow());
+    }
+
+    /**
+     * The plain removal of T. W91 (R23): L must be actionable, and its reservation is taken before the removal and
+     * consumed by the continuation; otherwise nothing changes. True when T was removed.
+     */
+    static boolean removePlain(RocketTransferSavedData journal, RocketTransferRecord record, UUID entity, Port port) {
+        if (!journal.actionable(record.logicalRocketId()) || !port.bayAllowsRemoval(record)) { return false; }
+        try (var reservation = journal.reserve(record.logicalRocketId()).orElse(null)) {
+            if (reservation == null) { return false; }
+            journal.remove(record.transferId());
+            port.queue(reservation, () -> {
+                if (port.bayAllowsRemoval(record)) { port.released(record, entity); }
+                return true;
+            }, () -> { });
+            return true;
+        }
     }
 
     boolean pending(UUID logical) {
@@ -203,22 +237,23 @@ final class RocketLandedDisassemblies {
     }
 
     /**
-     * M1, after M0 admitted the release: record P, remove T, then queue the removal's continuation. M0 checked that the
-     * continuation can be queued, so the refusal branch is unreachable; it restores the identical T in RAM before any
-     * capture can have seen its absence.
+     * M1, after M0 admitted the release: record P, remove T, then queue the removal's continuation with L's reservation,
+     * which M0 took and which is held through the removal. Without it nothing changes. The queue refusal branch is
+     * therefore unreachable; it restores the identical T in RAM before any capture can have seen its absence.
      */
     RocketValidationCode release(RocketTransferSavedData journal, RocketTransferRecord record, UUID entity,
-                                 Request request, Port port) {
+                                 Request request, Port port, Reservation reservation) {
         Objects.requireNonNull(journal, "journal");
         Objects.requireNonNull(record, "record");
-        if (pending.containsKey(record.logicalRocketId()) || !hasCapacity()) {
+        if (pending.containsKey(record.logicalRocketId()) || !hasCapacity() || reservation == null
+                || !reservation.logical().equals(record.logicalRocketId())) {
             return RocketValidationCode.REGION_BUSY;
         }
         Pending entry = new Pending(record, Objects.requireNonNull(entity, "entity"), port.now(),
                 Objects.requireNonNull(request, "request"), Objects.requireNonNull(port, "port"), journal);
         pending.put(entry.logical(), entry);
         journal.remove(record.transferId());
-        if (!port.queue(entry.logical(), () -> removalAcknowledged(entry), () -> removalDiscarded(entry))) {
+        if (!port.queue(reservation, () -> removalAcknowledged(entry), () -> removalDiscarded(entry))) {
             end(entry);
             try {
                 journal.put(record);
@@ -332,17 +367,22 @@ final class RocketLandedDisassemblies {
             end(entry);
             return;
         }
-        try {
-            journal.put(record);
-        } catch (RuntimeException refused) {
-            notRestored(entry, "journal");
-            end(entry);
-            return;
-        }
-        entry.progress.beginWriteBack();
-        // A stop or an abort refuses the continuation; T then rides the final capture, and P ends here.
-        if (!entry.port.queue(entry.logical(), () -> writeBackAcknowledged(entry), () -> writeBackDiscarded(entry))) {
-            end(entry);
+        // The write-back's reservation is taken before its put. The removal's own continuation was consumed before
+        // this callback ran, so it is absent only while the journal refuses all work (a stop or an abort): T then
+        // rides the final capture, and P ends here, as when the continuation is refused.
+        try (var reservation = journal.reserve(entry.logical()).orElse(null)) {
+            try {
+                journal.put(record);
+            } catch (RuntimeException refused) {
+                notRestored(entry, "journal");
+                end(entry);
+                return;
+            }
+            entry.progress.beginWriteBack();
+            if (reservation == null || !entry.port.queue(reservation, () -> writeBackAcknowledged(entry),
+                    () -> writeBackDiscarded(entry))) {
+                end(entry);
+            }
         }
     }
 

@@ -328,10 +328,10 @@ class RocketLandedDisassembliesTest {
             journal.put(record); records.add(record);
         }
         for (var record : records) {
-            assertEquals(RocketValidationCode.DISASSEMBLY_PENDING, disassemblies.release(journal, record,
+            assertEquals(RocketValidationCode.DISASSEMBLY_PENDING, release(disassemblies, journal, record,
                     record.destinationEntityId().orElseThrow(), new FakeRequest(new FakeWorld(), record), port));
             if (disassemblies.size() == 1) {
-                assertEquals(RocketValidationCode.REGION_BUSY, disassemblies.release(journal, record,
+                assertEquals(RocketValidationCode.REGION_BUSY, release(disassemblies, journal, record,
                         record.destinationEntityId().orElseThrow(), new FakeRequest(new FakeWorld(), record), port),
                         "One P per logical rocket");
             }
@@ -343,7 +343,7 @@ class RocketLandedDisassembliesTest {
         assertEquals(records.stream().map(record -> RocketRegion.fromSnapshot(record.destinationSnapshot())).toList(),
                 disassemblies.reservations(journal));
         var extra = landed(new RocketPosition(9_000, 80, 8));
-        assertEquals(RocketValidationCode.REGION_BUSY, disassemblies.release(journal, extra,
+        assertEquals(RocketValidationCode.REGION_BUSY, release(disassemblies, journal, extra,
                 extra.destinationEntityId().orElseThrow(), new FakeRequest(new FakeWorld(), extra), port));
         disassemblies.clear();
         assertEquals(0, disassemblies.size());
@@ -378,7 +378,7 @@ class RocketLandedDisassembliesTest {
         RocketStructureSnapshot snapshot() { return landed.destinationSnapshot(); }
         UUID logical() { return landed.logicalRocketId(); }
         RocketPosition absolute(int index) { return snapshot().sourceOrigin().add(snapshot().blocks().get(index).position()); }
-        RocketValidationCode release() { return disassemblies.release(journal, landed, entity, request, port); }
+        RocketValidationCode release() { return RocketLandedDisassembliesTest.release(disassemblies, journal, landed, entity, request, port); }
 
         RocketTransferRecord held() {
             return disassemblies.reservations(journal).isEmpty() ? null : landed;
@@ -423,8 +423,9 @@ class RocketLandedDisassembliesTest {
         FakePort(RocketTransferSavedData journal) { this.journal = journal; }
         @Override public long now() { return now; }
         @Override public boolean bayAllowsRemoval(RocketTransferRecord record) { return bay; }
-        @Override public boolean queue(UUID logical, BooleanSupplier action, Runnable discarded) {
-            return detached || RocketJournalTestAccess.queue(journal, logical, wrap.apply(action), discarded);
+        @Override public boolean queue(RocketTransferSavedData.Reservation reservation, BooleanSupplier action,
+                                       Runnable discarded) {
+            return detached || RocketJournalTestAccess.queue(journal, reservation, wrap.apply(action), discarded);
         }
         @Override public void released(RocketTransferRecord record, UUID entity) { events.add("released"); }
         @Override public void restored(RocketTransferRecord record, UUID entity, boolean settle) {
@@ -502,6 +503,15 @@ class RocketLandedDisassembliesTest {
             return snapshotId.equals(rockets.get(rocketId)) && contentHash.equals(hash);
         }
         @Override public boolean removeRocket(UUID rocketId, UUID snapshotId) { return rockets.remove(rocketId, snapshotId); }
+    }
+
+    /** M1 as {@code begin} calls it, with L's own {@code canQueueEffect(L)} reservation held through the call (R23). */
+    private static RocketValidationCode release(RocketLandedDisassemblies disassemblies, RocketTransferSavedData journal,
+                                                RocketTransferRecord record, UUID entity,
+                                                RocketLandedDisassemblies.Request request, RocketLandedDisassemblies.Port port) {
+        try (var reservation = journal.canQueueEffect(record.logicalRocketId()).orElse(null)) {
+            return disassemblies.release(journal, record, entity, request, port, reservation);
+        }
     }
 
     private static RocketBlockState state(String id) { return new RocketBlockState(ResourceLocation.tryParse(id), Map.of()); }
