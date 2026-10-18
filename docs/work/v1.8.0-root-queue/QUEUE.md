@@ -193,7 +193,7 @@ Updated 2026-10-15. Dispatch order: progress first, then the parallel bugs.
 
 - **Escrow chain** (the remaining C17a and C17c ledger rows):
   - W11b2: **complete**, merged into the shared branch at `eff6eff3` and `c7b5b99f` (continuation 54), admission disabled;
-  - W75: the W11b3 design note (frozen, `52a0a293`); its leaves started after the W11b2 merge: W93 (B3-U and `prepareFill`), W92 (P1-F8) and W95 with W95F (B3-E) merged; W92F (P1-F8's follow-ups) merged; W90a (governed readiness) merged; W91 (P1-N2 and P1-F3: W91I, W91N) and W90b are active; W83 and the S2 cut families follow;
+  - W75: the W11b3 design note (frozen, `52a0a293`); its leaves started after the W11b2 merge: W93 (B3-U and `prepareFill`), W92 (P1-F8) and W95 with W95F (B3-E) merged; W92F (P1-F8's follow-ups) merged; W90a (governed readiness) and W91 (P1-N2 and P1-F3) merged; W91R (its review follow-ups), W91N2 (its consumer measurements) and W90b are active; W83, the F3 and N2 cuts and the S2 cut families follow;
   - W79: the cargo loader design note (W11c and W11d), frozen at `49f7e08b`; its leaves follow W11b3; W77 fixed F9; F8's design (W85) and F3 and N2's design (W86) are frozen; their code follows the W11b2 merge, with N2 as the first commit of the P1-F3 leaf;
   - W11b3: `fluid_fuel_loader` and the linker's rocket-binding half, with packaged S2 evidence
     (also W02 F3's refill);
