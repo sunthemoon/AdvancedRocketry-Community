@@ -38,7 +38,7 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: 0a3964e7 (W92F merged: the W92 review's follow-ups)
+latest_code_commit: e80069c6 (W90a merged: governed flight readiness)
 latest_hosted_regression: run 39085135243 at 0a3964e7 (the W92F merge) failed only EscrowProofRetryGameTests.supersededEntityProofRetriesTheSameFrontierAfterBackoff at its 200-tick timeout (W94's forced-supersession test; W94B fixes it), and every other GameTest passed; Repository governance passed (run 39085135245); the last fully passing regression is 39049214708 at d9a7c0e9
 ledger_planned_units: 19
 asset_review_items: 154
@@ -60,9 +60,9 @@ branch. Each merge records its hosted run and independent review in
   observatory and processor with all 17 advancements, and the C18d HUD, sounds and client
   settings.
 - The D3-A escrow core and its rocket integration (W11b2: settlement, ordinary reconciliation and
-  governed flights) are merged with admission disabled. Before admission: W11b3, W90a and W90b
-  (governed readiness and the destination warm-up), part 1's F3 and N2 (W91), and W83. P1-F8 is merged (W92, with
-  W92F's follow-ups).
+  governed flights) are merged with admission disabled. Before admission: W11b3, W90b (the
+  destination warm-up), part 1's F3 and N2 (W91), and W83. W90a (governed readiness) and P1-F8 (W92, with W92F's
+  follow-ups) are merged.
 
 The hosted regression runs on the exact pushed commit:
 - a clean build with the unit tests;
