@@ -22,6 +22,7 @@ public final class EscrowGameTestProof<R> {
     private final Predicate<R> confirmed;
     private final Function<R, EscrowReason> reason;
     private final Consumer<R> completed;
+    private final int maxAttempts;
     private int attempts;
     private boolean pending;
     private boolean done;
@@ -29,8 +30,15 @@ public final class EscrowGameTestProof<R> {
 
     public EscrowGameTestProof(LongSupplier clock, Request<R> request, Predicate<R> confirmed,
                               Function<R, EscrowReason> reason, Consumer<R> completed) {
+        this(clock, request, confirmed, reason, completed, 3);
+    }
+
+    public EscrowGameTestProof(LongSupplier clock, Request<R> request, Predicate<R> confirmed,
+                              Function<R, EscrowReason> reason, Consumer<R> completed, int maxAttempts) {
+        if (maxAttempts < 1 || maxAttempts > 3) { throw new IllegalArgumentException("Expected one to three proof attempts"); }
         this.clock = clock; this.request = request; this.confirmed = confirmed;
         this.reason = reason; this.completed = completed;
+        this.maxAttempts = maxAttempts;
     }
 
     public void tick() {
@@ -45,7 +53,7 @@ public final class EscrowGameTestProof<R> {
 
     private void complete(R result) {
         pending = false;
-        if (!confirmed.test(result) && reason.apply(result) == EscrowReason.SUPERSEDING_SAVE && attempts < 3) {
+        if (!confirmed.test(result) && reason.apply(result) == EscrowReason.SUPERSEDING_SAVE && attempts < maxAttempts) {
             retryAt = clock.getAsLong() + EscrowReason.backoff(attempts);
             return;
         }
@@ -54,4 +62,30 @@ public final class EscrowGameTestProof<R> {
     }
 
     public int attempts() { return attempts; }
+
+    /** Refresh W36's precondition immediately before a terrain capture, never while a proof is pending. */
+    public static boolean freshTerrainSave(net.minecraft.server.level.ServerLevel level, net.minecraft.world.level.ChunkPos chunk) {
+        return TerrainPreparation.save(level, chunk);
+    }
+
+    // Lazy native access keeps the request driver's unit tests independent of Minecraft bootstrap.
+    private static final class TerrainPreparation {
+        private static final java.lang.reflect.Field COOLDOWNS = net.minecraftforge.fml.util.ObfuscationReflectionHelper
+                .findField(net.minecraft.server.level.ChunkMap.class, "f_202981_");
+
+        private static boolean save(net.minecraft.server.level.ServerLevel level, net.minecraft.world.level.ChunkPos chunk) {
+            try {
+                var loaded = level.getChunkSource().getChunkNow(chunk.x, chunk.z);
+                if (loaded == null) { return false; }
+                // Expire only this fixture's old cooldown. The actual vanilla save must succeed and install its own
+                // new 10-second cooldown; a synthetic Save event or an old watcher observation is not sufficient.
+                var cooldowns = (it.unimi.dsi.fastutil.longs.Long2LongMap) COOLDOWNS.get(level.getChunkSource().chunkMap);
+                cooldowns.remove(chunk.toLong());
+                loaded.setUnsaved(true);
+                return VanillaChunkSave.saveIfNeeded(level, chunk);
+            } catch (IllegalAccessException failure) {
+                throw new IllegalStateException("Fixture save cooldown unavailable", failure);
+            }
+        }
+    }
 }
