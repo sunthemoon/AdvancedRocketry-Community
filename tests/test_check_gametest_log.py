@@ -369,8 +369,9 @@ class ManifestValidationTests(unittest.TestCase):
         # W37J adds seven deliberate interruption windows (w37j-respawn-save-listener-interruptions).
         # W37B adds five earlier time-check interruptions: four command-window cases and one next-START save.
         # W92 adds four injected failures of isolated landed-disassembly journals (w92-isolated-landed-journal-unacknowledged).
+        # W90b adds one failed F2 countdown effect after publication (w90b-post-publication-discard-effect-failed).
         self.assertEqual(
-            102, sum(sum(item.counts.values()) for item in expectations if item.level == "ERROR")
+            103, sum(sum(item.counts.values()) for item in expectations if item.level == "ERROR")
         )
 
     def test_legacy_scalar_recovery_warning_has_one_separate_batch_count(self) -> None:

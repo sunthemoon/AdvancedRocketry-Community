@@ -791,6 +791,15 @@
       "reason": "Forge fills each key missing from a newly created configuration file; a run that reuses existing files logs fewer. A key corrected from a non-null value does not match."
     },
     {
+      "id": "w90b-post-publication-discard-effect-failed",
+      "level": "ERROR",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData/",
+      "message": "ARCE_TRANSFER_EFFECT_FAILED logical=[0-9a-f-]{36} generation=\\d+; retain journal authority for recovery",
+      "counts": {"rocket_warmup_discard": 1},
+      "test": "EscrowGovernedWarmupRefusalGameTests.aDiscardAfterPublicationReleasesOnlyTheWarmupAndTheFlightLands",
+      "reason": "W90b, Root decision R22 amendment 4: a test cut throws once inside F2's countdown effect after journal.put, so the launch's discarded callback runs with PREPARED published; the journal's existing ERROR reports the failed effect once and keeps its authority."
+    },
+    {
       "id": "w90b-rocket-flight-section-defaulted",
       "level": "WARN",
       "logger": "net.minecraftforge.common.ForgeConfigSpec/CORE",
