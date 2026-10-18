@@ -54,6 +54,17 @@ class RocketLandedDisassemblyRulesTest {
         }
     }
 
+    @Test void schemaOneAndTwoRecordsWithoutANativeTransferAreAdmitted() {
+        // W92-R4: a settled schema-1 record is disassembled in place; governed record 3 stays excluded (G9).
+        assertTrue(RocketLandedDisassemblyRules.landedRecordAdmitted(1, false), "Settled schema-1 record");
+        assertTrue(RocketLandedDisassemblyRules.landedRecordAdmitted(2, false));
+        assertFalse(RocketLandedDisassemblyRules.landedRecordAdmitted(3, true), "Governed record 3");
+        assertFalse(RocketLandedDisassemblyRules.landedRecordAdmitted(3, false));
+        assertFalse(RocketLandedDisassemblyRules.landedRecordAdmitted(1, true));
+        assertFalse(RocketLandedDisassemblyRules.landedRecordAdmitted(2, true));
+        assertFalse(RocketLandedDisassemblyRules.landedRecordAdmitted(4, false), "A future schema");
+    }
+
     @Test void pendingStatusRunsActorRangeIdentityAndPermissionInThatOrder() {
         assertEquals(RocketValidationCode.ENTITY_STATE_INVALID, RocketLandedDisassemblyRules.status(false, false,
                 RocketValidationCode.UNSUPPORTED_SCHEMA, false));
@@ -69,12 +80,18 @@ class RocketLandedDisassemblyRulesTest {
 
     @Test void restorationNeedsTheLifetimeAnUnchangedArrivalAndTheBayGate() {
         long limit = RocketDisassemblyConfirmations.LIFETIME_TICKS;
-        assertTrue(RocketLandedDisassemblyRules.restore(100, 100, true, true));
-        assertTrue(RocketLandedDisassemblyRules.restore(100, 100 + limit, true, true));
-        assertFalse(RocketLandedDisassemblyRules.restore(100, 101 + limit, true, true), "Late acknowledgement");
-        assertFalse(RocketLandedDisassemblyRules.restore(100, 99, true, true), "Clock moved backwards");
-        assertFalse(RocketLandedDisassemblyRules.restore(100, 101, false, true), "E no longer equals S");
-        assertFalse(RocketLandedDisassemblyRules.restore(100, 101, true, false), "Bay gate refused");
+        assertTrue(RocketLandedDisassemblyRules.restore(100, 100, true, true, true));
+        assertTrue(RocketLandedDisassemblyRules.restore(100, 100 + limit, true, true, true));
+        assertFalse(RocketLandedDisassemblyRules.restore(100, 101 + limit, true, true, true), "Late acknowledgement");
+        assertFalse(RocketLandedDisassemblyRules.restore(100, 99, true, true, true), "Clock moved backwards");
+        assertFalse(RocketLandedDisassemblyRules.restore(100, 101, false, true, true), "E no longer equals S");
+        assertFalse(RocketLandedDisassemblyRules.restore(100, 101, true, true, false), "Bay gate refused");
+    }
+
+    @Test void restorationNeedsAnOperationalTransactionJournalWithoutOverlappingRecovery() {
+        // W92-R2: the v0.5 checks that validateRocket ran before today's execute are rechecked at M2.
+        assertFalse(RocketLandedDisassemblyRules.restore(100, 101, true, false, true),
+                "A v0.5 recovery overlapping E, or a non-operational v0.5 journal");
     }
 
     @Test void onlyAFullyRolledBackFailureWithAnUnchangedArrivalIsCertifiedClean() {

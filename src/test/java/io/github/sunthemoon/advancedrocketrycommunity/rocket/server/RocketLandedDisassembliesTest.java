@@ -10,6 +10,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlight
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightPlan;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightPlanner;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFuelState;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketLegacyTransferFixture;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketPassengerManifest;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferPhase;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord;
@@ -34,6 +35,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketT
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionWorld;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketWorldBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.validation.RocketValidationCode;
+import io.github.sunthemoon.advancedrocketrycommunity.testsupport.GovernedTransferFixture;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -46,6 +48,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BooleanSupplier;
 import java.util.function.UnaryOperator;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -119,6 +122,54 @@ class RocketLandedDisassembliesTest {
             assertFalse(f.journal.resourceMutationUnproved(f.logical()));
             f.close();
         }
+    }
+
+    @Test void aPendingTransactionRecoveryAtTheAcknowledgementWritesBackWithoutRestoring() {
+        // W92-R2: a v0.5 record overlapping E (or a v0.5 journal that is not operational) appears between M0 and M2.
+        for (int mode = 0; mode < 2; mode++) {
+            var f = new Fixture(new RocketPosition(64 + mode * 64, 80, 64));
+            assertEquals(RocketValidationCode.DISASSEMBLY_PENDING, f.release());
+            if (mode == 0) { f.request.restorable = false; }
+            if (mode == 1) { f.request.restorableThrows = new IllegalStateException("v0.5 journal unavailable"); }
+            f.acknowledge();
+            assertEquals(0, f.request.restores, "M2 restored over a pending v0.5 recovery");
+            assertEquals(List.of("REGION_BUSY"), f.request.reports);
+            assertEquals(Stage.WRITE_BACK, f.disassemblies.find(f.logical()).stage());
+            assertSame(f.landed, f.journal.find(f.landed.transferId()).orElseThrow(), "The identical record");
+            assertTrue(f.world.rockets.containsKey(f.entity) && f.world.blocks.isEmpty());
+            f.acknowledge();
+            assertFalse(f.disassemblies.pending(f.logical()));
+            assertEquals(List.of("released", "restored settle=true"), f.port.events);
+            assertEquals(List.of(f.landed.transferId()), f.diskRecords());
+            f.close();
+        }
+    }
+
+    @Test void aSettledSchemaOneRecordIsDisassembledInPlaceAndWrittenBackUnchanged() throws IOException {
+        // W92-R4: the clause admits the schema-1 record; the governed record 3 stays refused.
+        assertFalse(RocketLandedDisassemblyRules.landedRecordAdmitted(GovernedTransferFixture.create().record()
+                .schemaVersion(), true));
+        var clean = new Fixture(new RocketPosition(64, 80, 64), RocketLegacyTransferFixture::schemaOne);
+        assertEquals(1, clean.landed.schemaVersion());
+        assertTrue(RocketLandedDisassemblyRules.landedRecordAdmitted(clean.landed.schemaVersion(),
+                clean.landed.nativeTransfer().isPresent()));
+        CompoundTag before = clean.diskRecord();
+        clean.world.blocks.put(clean.absolute(1), new RocketWorldBlock(state("minecraft:stone"), null)); // 0 of 0
+        assertEquals(RocketValidationCode.DISASSEMBLY_PENDING, clean.release());
+        clean.acknowledge();
+        assertSame(clean.landed, clean.journal.find(clean.landed.transferId()).orElseThrow(), "The identical record");
+        clean.acknowledge();
+        assertFalse(clean.disassemblies.pending(clean.logical()));
+        assertEquals(before, clean.diskRecord(), "The write-back is the byte-identical schema-1 record");
+        assertEquals(1, before.getInt("schema_version"));
+        clean.close();
+
+        var success = new Fixture(new RocketPosition(128, 80, 64), RocketLegacyTransferFixture::schemaOne);
+        assertEquals(RocketValidationCode.DISASSEMBLY_PENDING, success.release());
+        success.acknowledge();
+        assertEquals(List.of("SUCCESS"), success.request.reports);
+        assertTrue(success.world.rockets.isEmpty() && success.diskRecords().isEmpty());
+        success.close();
     }
 
     @Test void uncertainMutationNeverWritesTheRecordBack() {
@@ -218,6 +269,35 @@ class RocketLandedDisassembliesTest {
         }
     }
 
+    @Test void aNotifierFailureInTheDiscardPathsIsContainedAndTheWriteBackGoesOn() throws IOException {
+        // W92-R3: the journal runs discarded callbacks outside any handler, in stop() and in pollWriter.
+        var stopped = new Fixture(new RocketPosition(64, 80, 64));
+        stopped.release();
+        stopped.request.notifierFailure = new IllegalStateException("Injected notifier failure in a discard");
+        assertDoesNotThrow(stopped.journal::stop, "The failure left stop() before its drain and final capture");
+        assertFalse(stopped.disassemblies.pending(stopped.logical()));
+        assertSame(stopped.landed, stopped.journal.find(stopped.landed.transferId()).orElseThrow());
+        assertEquals(List.of(stopped.landed.transferId()), stopped.diskRecords(), "T rides the final capture");
+        assertEquals(List.of("REGION_BUSY"), stopped.request.reports, "Reported once");
+        Files.deleteIfExists(file());
+
+        var discarded = new Fixture(new RocketPosition(128, 80, 64));
+        discarded.release();
+        discarded.request.notifierFailure = new IllegalStateException("Injected notifier failure in a discard");
+        var failing = new CheckedSavedDataPolicy(TYPE, (staged, target) -> { throw new IOException("Injected removal failure"); });
+        RocketJournalTestAccess.write(discarded.journal, file(), failing, tick += 1_000);
+        discarded.journal.put(landed(new RocketPosition(2_000, 80, 2_000))); // A disjoint successor generation.
+        assertDoesNotThrow(discarded::acknowledge, "The failure escaped pollWriter");
+        assertEquals(0, discarded.request.restores);
+        assertEquals(Stage.WRITE_BACK, discarded.disassemblies.find(discarded.logical()).stage());
+        assertSame(discarded.landed, discarded.journal.find(discarded.landed.transferId()).orElseThrow());
+        discarded.acknowledge();
+        assertFalse(discarded.disassemblies.pending(discarded.logical()));
+        assertTrue(discarded.diskRecords().contains(discarded.landed.transferId()));
+        assertEquals(List.of("REGION_BUSY"), discarded.request.reports, "Reported once");
+        discarded.close();
+    }
+
     @Test void refusedInsertsEndPendingWithoutTheRecord() {
         for (int mode = 0; mode < 3; mode++) {
             var f = new Fixture(new RocketPosition(64 + mode * 64, 80, 64));
@@ -281,7 +361,11 @@ class RocketLandedDisassembliesTest {
         final FakeRequest request;
 
         Fixture(RocketPosition arrival) {
-            landed = landed(arrival);
+            this(arrival, UnaryOperator.identity());
+        }
+
+        Fixture(RocketPosition arrival, UnaryOperator<RocketTransferRecord> form) {
+            landed = form.apply(landed(arrival));
             entity = landed.destinationEntityId().orElseThrow();
             world.rockets.put(entity, snapshot().snapshotId());
             world.hash = snapshot().contentHash();
@@ -311,6 +395,15 @@ class RocketLandedDisassembliesTest {
         List<UUID> diskRecords() {
             var payload = CheckedSavedDataFile.readPayload(file(), TYPE).orElseThrow();
             return RocketTransferSavedData.load(payload).entries().stream().map(RocketTransferRecord::transferId).toList();
+        }
+
+        /** T's encoded record on disk, or an empty tag. */
+        CompoundTag diskRecord() {
+            for (var raw : CheckedSavedDataFile.readPayload(file(), TYPE).orElseThrow().getList("transfers", 10)) {
+                var tag = (CompoundTag) raw;
+                if (tag.getUUID("transfer_id").equals(landed.transferId())) { return tag.copy(); }
+            }
+            return new CompoundTag();
         }
 
         void close() {
@@ -350,6 +443,9 @@ class RocketLandedDisassembliesTest {
         Error matchesError;
         RuntimeException restoreThrows;
         boolean notifierThrows;
+        RuntimeException notifierFailure;
+        boolean restorable = true;
+        RuntimeException restorableThrows;
         int restores;
 
         FakeRequest(FakeWorld world, RocketTransferRecord record) { this.world = world; this.record = record; }
@@ -359,6 +455,10 @@ class RocketLandedDisassembliesTest {
             if (matchesThrows != null) { throw matchesThrows; }
             var snapshot = record.destinationSnapshot();
             return world.rocketMatches(record.destinationEntityId().orElseThrow(), snapshot.snapshotId(), snapshot.contentHash());
+        }
+        @Override public boolean restorable() {
+            if (restorableThrows != null) { throw restorableThrows; }
+            return restorable;
         }
         @Override public Presence presence(RocketTransferRecord ignored) { return presence; }
         @Override public RocketTransactionResult restore() {
@@ -373,6 +473,7 @@ class RocketLandedDisassembliesTest {
             if (notifierThrows && code == RocketValidationCode.SUCCESS) {
                 throw new IllegalStateException("Injected notifier failure after SUCCESS");
             }
+            if (notifierFailure != null) { throw notifierFailure; }
         }
     }
 

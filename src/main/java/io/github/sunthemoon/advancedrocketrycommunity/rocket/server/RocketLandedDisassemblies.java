@@ -41,6 +41,12 @@ final class RocketLandedDisassemblies {
         /** E is alive and loaded and still equals S. */
         boolean matches();
 
+        /**
+         * W92-R2, read-only: the v0.5 transaction journal is operational and has no pending recovery overlapping E's
+         * region, as {@code validateRocket} checked before today's one-tick {@code execute}.
+         */
+        boolean restorable();
+
         /** M3's view of E for the record that would be written back. */
         Presence presence(RocketTransferRecord record);
 
@@ -131,13 +137,25 @@ final class RocketLandedDisassemblies {
             return RocketValidationCode.DISASSEMBLY_PENDING;
         }
         RocketTransferRecord record = journal.findByLogicalRocket(logical).orElse(null);
-        var decision = RocketLandedDisassemblyRules.admit(record != null, journal.resourceMutationUnproved(logical),
-                () -> record.schemaVersion() == RocketFlightLimits.TRANSFER_JOURNAL_SCHEMA_VERSION
-                        && record.nativeTransfer().isEmpty()
-                        && RocketTransferEntities.isReplaceableLandedAuthority(rocket, record),
-                () -> port.bayAllowsRemoval(record), journal.canQueueEffect(), hasCapacity(), preflight);
+        var decision = admission(rocket, record, journal, port, preflight, true);
         return decision.admission() == RocketLandedDisassemblyRules.Admission.RELEASE
                 ? release(journal, record, rocket.getUUID(), request, port) : decision.code();
+    }
+
+    /**
+     * M0's read-only decision for L's record. Production always applies the record clause; W92-R1's G9 also evaluates
+     * it without the clause to show that the clause alone refuses a governed record.
+     */
+    RocketLandedDisassemblyRules.Decision admission(RocketEntity rocket, RocketTransferRecord record,
+                                                    RocketTransferSavedData journal, Port port,
+                                                    Supplier<Optional<RocketValidationCode>> preflight,
+                                                    boolean recordClause) {
+        return RocketLandedDisassemblyRules.admit(record != null,
+                journal.resourceMutationUnproved(rocket.assemblyTransactionId().orElseThrow()),
+                () -> (!recordClause || RocketLandedDisassemblyRules.landedRecordAdmitted(record.schemaVersion(),
+                        record.nativeTransfer().isPresent()))
+                        && RocketTransferEntities.isReplaceableLandedAuthority(rocket, record),
+                () -> port.bayAllowsRemoval(record), journal.canQueueEffect(), hasCapacity(), preflight);
     }
 
     /**
@@ -221,7 +239,7 @@ final class RocketLandedDisassemblies {
             entry.port.probe("K2", entry.record);
             entry.port.released(entry.record, entry.entity);
             if (!RocketLandedDisassemblyRules.restore(entry.requestedAt, entry.port.now(), entry.request.matches(),
-                    entry.port.bayAllowsRemoval(entry.record))) {
+                    entry.request.restorable(), entry.port.bayAllowsRemoval(entry.record))) {
                 writeBack(entry);
                 return true;
             }
@@ -285,7 +303,7 @@ final class RocketLandedDisassemblies {
             return;
         }
         // The failure code of a certified clean rollback, or REGION_BUSY when restoration never started.
-        report(entry);
+        reportContained(entry);
         RocketTransferSavedData journal = entry.journal;
         RocketTransferRecord record = entry.record;
         Presence presence;
@@ -323,9 +341,17 @@ final class RocketLandedDisassemblies {
         }
         entry.progress.beginWriteBack();
         // A stop or an abort refuses the continuation; T then rides the final capture, and P ends here.
-        if (!entry.port.queue(entry.logical(), () -> writeBackAcknowledged(entry), () -> end(entry))) {
+        if (!entry.port.queue(entry.logical(), () -> writeBackAcknowledged(entry), () -> writeBackDiscarded(entry))) {
             end(entry);
         }
+    }
+
+    /**
+     * The write-back's discarded callback. T is already in RAM, so ordinary recovery or the final capture owns it; P
+     * only ends. It reaches no notifier, so nothing in it can throw (W92-R3).
+     */
+    private void writeBackDiscarded(Pending entry) {
+        end(entry);
     }
 
     private boolean writeBackAcknowledged(Pending entry) {
@@ -350,6 +376,20 @@ final class RocketLandedDisassemblies {
         }
         entry.reported = true;
         entry.request.finished(entry.code, entry.result);
+    }
+
+    /**
+     * M3's report. The journal runs discarded callbacks outside any handler (in {@code pollWriter} and while it stops or
+     * aborts), so a notifier failure is logged once, as {@link #report} runs once per P, and M3 goes on (W92-R3).
+     */
+    private static void reportContained(Pending entry) {
+        try {
+            report(entry);
+        } catch (RuntimeException failure) {
+            AdvancedRocketryCommunity.LOGGER.warn(
+                    "ARCE_LANDED_DISASSEMBLY_REPORT_FAILED transfer={} logical={} entity={} code={} error={}",
+                    entry.record.transferId(), entry.logical(), entry.entity, entry.code, failure.toString());
+        }
     }
 
     private static void notRestored(Pending entry, String reason) {

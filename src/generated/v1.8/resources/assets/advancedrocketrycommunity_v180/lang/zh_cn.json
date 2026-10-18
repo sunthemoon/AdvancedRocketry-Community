@@ -719,7 +719,7 @@
   "tooltip.advancedrocketrycommunity.linker.selection": "已选择位于 %s, %s, %s 的装载器",
   "tooltip.advancedrocketrycommunity.seal_detector.measurement_only": "单个边界不能证明整个房间密封",
   "tooltip.advancedrocketrycommunity.tank.contents": "%s：%s mB",
-  "validation.advancedrocketrycommunity.rocket.disassembly_pending": "拆解已开始：正在确认移除着陆预留，确认后火箭会自动拆解。",
+  "validation.advancedrocketrycommunity.rocket.disassembly_pending": "此火箭的拆解请求仍在处理中，请在处理完成后再试。",
   "validation.advancedrocketrycommunity.rocket.external_component_abstract_only": "外部推力或容量组件仅支持抽象燃料，不能混入原生流体推进系统。",
   "validation.advancedrocketrycommunity.rocket.missing_propulsion_tank": "此推进模式需要匹配的燃料箱；双组元还需要氧化剂箱。",
   "validation.advancedrocketrycommunity.rocket.mixed_propulsion_modes": "发动机混合了不兼容的推进模式。",

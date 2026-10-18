@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightData;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.validation.RocketValidationCode;
 import java.util.EnumSet;
 import java.util.Objects;
@@ -51,6 +52,16 @@ final class RocketLandedDisassemblyRules {
     }
 
     /**
+     * M0's record clause: a record without a native transfer that M3 can put back unchanged. Besides schema 2 it admits
+     * a settled schema-1 record whose target migration is blocked; its write-back is the identical schema-1 record, so no
+     * format changes (W92-R4, Root's decision in TASK W92F). Governed record 3 stays excluded (G9).
+     */
+    static boolean landedRecordAdmitted(int schemaVersion, boolean nativeTransfer) {
+        return !nativeTransfer
+                && (schemaVersion == 1 || schemaVersion == RocketFlightLimits.TRANSFER_JOURNAL_SCHEMA_VERSION);
+    }
+
+    /**
      * N6: with a P, a request runs the actor, range, identity and owner-or-permission checks in that order and then
      * only reports DISASSEMBLY_PENDING. It mutates nothing, issues no offer and starts nothing.
      */
@@ -70,11 +81,13 @@ final class RocketLandedDisassemblyRules {
 
     /**
      * M2 step 2, checked when the removal's continuation runs: at most the confirmation lifetime after the request, E
-     * still equal to S and the bay gate still allowing the removal. It is not a timer and bounds nothing.
+     * still equal to S, an operational v0.5 transaction journal with no pending recovery overlapping E (W92-R2), and
+     * the bay gate still allowing the removal. It is not a timer and bounds nothing.
      */
-    static boolean restore(long requestedAt, long now, boolean entityMatches, boolean bayAllowsRemoval) {
+    static boolean restore(long requestedAt, long now, boolean entityMatches, boolean transactionsClear,
+                           boolean bayAllowsRemoval) {
         return now >= requestedAt && now - requestedAt <= RocketDisassemblyConfirmations.LIFETIME_TICKS
-                && entityMatches && bayAllowsRemoval;
+                && entityMatches && transactionsClear && bayAllowsRemoval;
     }
 
     enum Outcome { SUCCESS, CLEAN_ROLLBACK, UNCERTAIN }

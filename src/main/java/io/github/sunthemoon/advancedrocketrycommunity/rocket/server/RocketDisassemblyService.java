@@ -349,6 +349,12 @@ final class RocketDisassemblyService {
         }
 
         @Override
+        public boolean restorable() {
+            RocketTransactionSavedData savedData = RocketTransactionSavedData.get(level.getServer());
+            return savedData.operational() && !service.transactions.hasPendingRecovery(savedData, structure);
+        }
+
+        @Override
         public RocketLandedDisassemblyRules.Presence presence(
                 io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord record) {
             RocketEntity rocket = rocket();

@@ -509,6 +509,14 @@ public final class EscrowGovernedSourceFlightGameTests {
                             .RocketLandedDisassemblyGameTestSupport.Requester((ServerLevel) arrival.level(), arrival.ownerId().orElseThrow());
                     owner.setPos(arrival.position());
                     var governedRecord = journal.find(transfer).orElseThrow();
+                    // W92-R1: every other M0 condition holds (landed authority, bay gate, effect queue, capacity and
+                    // preflight), so the record clause alone refuses the release.
+                    var withoutClause = landedSession.admission(arrival, false);
+                    var withClause = landedSession.admission(arrival, true);
+                    helper.assertTrue(withoutClause == io.github.sunthemoon.advancedrocketrycommunity.rocket.validation
+                            .RocketValidationCode.DISASSEMBLY_PENDING && withClause == io.github.sunthemoon
+                            .advancedrocketrycommunity.rocket.validation.RocketValidationCode.REGION_BUSY,
+                            "The record clause is not the only refusing M0 condition: " + withoutClause + " " + withClause);
                     landedSession.requestDisassembly(owner, arrival);
                     helper.assertTrue(owner.token != null && !landedSession.confirmDisassembly(owner, owner.token)
                             && "validation.advancedrocketrycommunity.rocket.region_busy".equals(owner.lastActionBar())
