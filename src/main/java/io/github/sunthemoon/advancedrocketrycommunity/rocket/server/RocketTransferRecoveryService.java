@@ -466,9 +466,10 @@ final class RocketTransferRecoveryService {
         if (!journal.actionable(record.logicalRocketId())
                 || !bays.allowed(server, journal, record, RocketTransferBayRecoveryGate.Action.SETTLE_SOURCE)
                 || bays.source(record.transferId()) != null) { return; }
+        // W96-R2: a reconnect during a live source phase only remounts; it never retires the flight's record.
         if (record.phase().destinationAuthoritative()
-                || authority.flightData().map(RocketFlightData::state)
-                        .orElse(RocketFlightState.FAILED_RECOVERABLE) == RocketFlightState.LANDED
+                || !recoveredStationarySource(record, authority, settledTransfers.contains(record.transferId()),
+                        liveTransfers.contains(record.transferId()))
                 || !allPassengersOnline(server, record)) {
             return;
         }
@@ -487,6 +488,22 @@ final class RocketTransferRecoveryService {
               );
             });
         }
+    }
+
+    /**
+     * W96-R2: the reconnect cleanup's authority is recovery's settled, non-live source: FUELED or ASSEMBLED, with no
+     * plan and no active transfer, at its snapshot origin.
+     */
+    static boolean recoveredStationarySource(RocketTransferRecord record, RocketEntity authority, boolean settled, boolean live) {
+        var origin = record.sourceSnapshot().sourceOrigin();
+        return recoveredStationarySource(settled, live, authority.flightData().orElse(null),
+                authority.getX() == origin.x() + 0.5D && authority.getY() == origin.y() && authority.getZ() == origin.z() + 0.5D);
+    }
+
+    static boolean recoveredStationarySource(boolean settled, boolean live, RocketFlightData flight, boolean atOrigin) {
+        return settled && !live && atOrigin && flight != null
+                && (flight.state() == RocketFlightState.FUELED || flight.state() == RocketFlightState.ASSEMBLED)
+                && flight.plan().isEmpty() && flight.activeTransferId().isEmpty();
     }
 
     private static boolean allPassengersOnline(MinecraftServer server, RocketTransferRecord record) {
