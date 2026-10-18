@@ -829,7 +829,7 @@
     {
       "id": "w90b-post-publication-discard-effect-failed",
       "level": "ERROR",
-      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData/",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalSchedule/",
       "message": "ARCE_TRANSFER_EFFECT_FAILED logical=[0-9a-f-]{36} generation=\\d+; retain journal authority for recovery",
       "counts": {"rocket_warmup_discard": 1},
       "test": "EscrowGovernedWarmupRefusalGameTests.aDiscardAfterPublicationReleasesOnlyTheWarmupAndTheFlightLands",
