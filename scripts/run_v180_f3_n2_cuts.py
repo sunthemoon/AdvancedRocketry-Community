@@ -277,6 +277,11 @@ def cut_removal(process, world, case, row):
                         else "ARCE_TRANSFER_JOURNAL_UNACKNOWLEDGED retained dirty authority")
     at = process.wait_for(marker, 60)
     row["boundary"] = process.lines[at].strip()
+    if case == "N2_UNKNOWN":
+        begin = len(process.lines)
+        process.command("arce progression release-test journal-proof")
+        proof = process.wait_for(re.compile("first_event_fixture journal_proof result=.*outcome=UNKNOWN"), 20, start_at=begin)
+        row["unknown_proof"] = process.lines[proof].strip()
     process.process.kill()
     code = process.finish(timeout=30)
     if code == 0:
@@ -400,6 +405,8 @@ def run_case(args, case, evidence):
                           "ARCE_TRANSFER_JOURNAL_UNACKNOWLEDGED retained dirty authority" in line)]
             if unexpected:
                 raise smoke.SmokeError("Unexpected native ERROR/FATAL; inspect retained logs")
+            if expected_unknown and len(entry["errors"]) != 1:
+                raise smoke.SmokeError("UNKNOWN removal requires exactly its one injected journal failure")
             if case.startswith("N2_") and case != "N2_GOVERNED":
                 if restart == 0 and entry["return_reasons"]:
                     row["findings"].append(dict(restart=restart, error="Return reason published before removal acknowledgement"))
