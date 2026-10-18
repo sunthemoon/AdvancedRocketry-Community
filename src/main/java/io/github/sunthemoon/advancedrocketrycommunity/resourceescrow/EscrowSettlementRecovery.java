@@ -82,15 +82,17 @@ final class EscrowSettlementRecovery implements AutoCloseable {
         long pruningStart = System.nanoTime();
         pruning.tick(server, coordinator);
         runtime.timings().sample("settlement_pruning_main", System.nanoTime() - pruningStart);
-        if (!coordinator.operational() || !coordinator.writerIdle()) { return; }
+        if (!coordinator.operational() || !coordinator.writerIdle()) { runtime.timings().sample("settlement.wait.COORDINATOR_OR_WRITER", 0); return; }
         var intents = intents(coordinator.ledger());
         var live = intents.stream().map(EscrowSettlementIntent::digest).collect(java.util.stream.Collectors.toSet());
         work.entrySet().removeIf(entry -> { if (live.contains(entry.getKey())) { return false; } entry.getValue().clear(); return true; });
         if (intents.isEmpty()) { return; }
         var intent = intents.get(Math.floorMod(cursor++, intents.size()));
+        var observation = runtime.timings();
+        observation.sample("settlement.attempt", 0);
         var state = work.computeIfAbsent(intent.digest(), ignored -> new Work());
         long tick = server.getTickCount();
-        if (state.writing || !state.busy.isEmpty() || tick < state.retryAt) { return; }
+        if (state.writing || !state.busy.isEmpty() || tick < state.retryAt) { observation.sample("settlement.wait.WRITING_PROOF_OR_RETRY", 0); return; }
         state.proofs.entrySet().removeIf(entry -> { if (entry.getValue().valid()) { return false; } entry.getValue().release(); return true; });
         try {
             var references = intent.observations().stream().map(EscrowSettlementIntent.Observation::endpoint).toList();
@@ -98,30 +100,32 @@ final class EscrowSettlementRecovery implements AutoCloseable {
             var members = coordinator.ledger().records().stream().filter(op -> intent.ids().contains(op.id())).toList();
             // R17 item 3: O3/O4 wait for each member rocket's checked state, not for a quiet journal.
             if (!journal.retryChecked(server) && !members.stream().allMatch(op -> journal.actionAuthorityAvailable(op.guard().rocket()))) {
-                return;
+                observation.sample("settlement.wait.JOURNAL", 0); return;
             }
             boolean installed = EscrowSettlementTombstones.installed(coordinator.ledger(), intent);
             requireJournal(coordinator.ledger(), intent, journal, installed);
             var next = intent.checkpointed().stream().filter(end -> !state.proofs.containsKey(end.endpoint().key())).findFirst();
             if (next.isPresent() ? !runtime.barrier().available(next.orElseThrow().endpoint(), tick)
-                    : !coordinator.checkedWriteReady()) { return; }
-            if (EscrowSettlementNormalization.publish(server, coordinator, intent, journal.acknowledgedLease(), runtime)) { return; }
+                    : !coordinator.checkedWriteReady()) { observation.sample("settlement.wait.BARRIER_OR_WRITER_BUDGET", 0); return; }
+            if (EscrowSettlementNormalization.publish(server, coordinator, intent, journal.acknowledgedLease(), runtime)) { observation.sample("settlement.wait.NORMALIZATION", 0); return; }
             var current = EscrowSettlementObserver.observe(server, intent.ledger(), references);
             EscrowTags.require(current.equals(intent.checkpointed()), "Frozen settlement endpoint changed");
-            for (var observation : intent.checkpointed()) {
-                if (state.proofs.containsKey(observation.endpoint().key())) { continue; }
+            for (var endpointObservation : intent.checkpointed()) {
+                if (state.proofs.containsKey(endpointObservation.endpoint().key())) { continue; }
                 var targets = new ArrayList<EscrowBarrier.Target>();
                 for (var candidate : intent.checkpointed()) {
-                    if (!EscrowBarrier.sameSlot(observation.endpoint(), candidate.endpoint())) { continue; }
+                    if (!EscrowBarrier.sameSlot(endpointObservation.endpoint(), candidate.endpoint())) { continue; }
                     // One physical save must prove all references in that slot together.
                     var frontier = candidate.missing() ? new EscrowPrefix.State(intent.ledger(), 0,
                             EscrowSettlementTombstones.observationDigest(candidate), List.of()) : candidate.state();
                     targets.add(new EscrowBarrier.Target(candidate.endpoint(), frontier, EscrowSettlementDisk.validator(candidate, intent.ledger())));
                 }
                 var keys = targets.stream().map(target -> target.endpoint().key()).toList();
-                var endpoint = observation.endpoint();
+                var endpoint = endpointObservation.endpoint();
                 var level = server.getLevel(ResourceKey.create(Registries.DIMENSION, ResourceLocation.tryParse(endpoint.level())));
-                begin(state.busy, keys, () -> runtime.store(level), store -> runtime.barrier().beginJoint(store, targets, tick, result -> {
+                long barrierBegan = observation == EscrowTimingSink.NONE ? 0 : System.nanoTime();
+                boolean started = begin(state.busy, keys, () -> runtime.store(level), store -> runtime.barrier().beginJoint(store, targets, tick, result -> {
+                    if (observation != EscrowTimingSink.NONE) { observation.sample("settlement.barrier", System.nanoTime() - barrierBegan); }
                     state.busy.removeAll(keys);
                     if (closed) { result.proofs().values().forEach(EscrowBarrier.Proof::release); return; }
                     if (!result.confirmed()) { stalled(runtime, intent, state, result.reason().name(), server.getTickCount()); return; }
@@ -131,9 +135,10 @@ final class EscrowSettlementRecovery implements AutoCloseable {
                         runtime.checkpoint("O2_AFTER_" + index(intent, key));
                     });
                 }));
+                if (!started) { observation.sample("settlement.wait.BARRIER_BEGIN", 0); }
                 return;
             }
-            if (!state.proofs.values().stream().allMatch(EscrowBarrier.Proof::valid)) { return; }
+            if (!state.proofs.values().stream().allMatch(EscrowBarrier.Proof::valid)) { observation.sample("settlement.wait.INVALID_PROOF", 0); return; }
             if (!installed) {
                 state.phase = "O3"; state.writing = true;
                 runtime.checkpoint("O3_CAPTURE");
@@ -141,7 +146,7 @@ final class EscrowSettlementRecovery implements AutoCloseable {
                     state.writing = false;
                     if (committed) { runtime.checkpoint("O3_AFTER"); }
                     else { stalled(runtime, intent, state, "O3_WRITE_UNACKNOWLEDGED", server.getTickCount()); }
-                })) { state.writing = false; }
+                })) { observation.sample("settlement.wait.O3_QUEUE", 0); state.writing = false; }
                 return;
             }
             // Every named removal was checked against the frozen digest above, before any RAM mutation.
@@ -150,20 +155,21 @@ final class EscrowSettlementRecovery implements AutoCloseable {
                 if (!intent.ids().contains(op.id()) || op.guard().transfer() == null) { continue; }
                 if (journal.find(op.guard().transfer()).isPresent()) { journal.remove(op.guard().transfer()); removed = true; }
             }
-            if (removed) { state.phase = "O3J"; journal.flushChecked(server); return; }
-            if (!members.stream().allMatch(op -> journal.actionAuthorityAvailable(op.guard().rocket()))) { return; }
+            if (removed) { observation.sample("settlement.wait.JOURNAL_REMOVAL", 0); state.phase = "O3J"; journal.flushChecked(server); return; }
+            if (!members.stream().allMatch(op -> journal.actionAuthorityAvailable(op.guard().rocket()))) { observation.sample("settlement.wait.MEMBER_AUTHORITY", 0); return; }
             runtime.checkpoint("O3J_AFTER");
             state.phase = "O4"; state.writing = true;
             runtime.checkpoint("O4_CAPTURE");
             if (!coordinator.settlementWriteExact(intent, state.proofs, true, EscrowFlightJournal.members(journal, members), acknowledgement -> {
                 state.writing = false;
                 if (acknowledgement.committed()) {
+                    EscrowConsumerTimingProbe.mark(server, "settlement.complete");
                     runtime.checkpoint("O4_AFTER"); state.clear();
                     pruning.enqueue(coordinator.ledger(), acknowledgement);
                     com.mojang.logging.LogUtils.getLogger().info("ARCE_ESCROW_O4 actor={} choice={} digest={} operations={} released=acknowledged",
                             intent.actor(), intent.choice(), intent.digest(), intent.ids());
                 } else { stalled(runtime, intent, state, "O4_WRITE_UNACKNOWLEDGED", server.getTickCount()); }
-            })) { state.writing = false; }
+            })) { observation.sample("settlement.wait.O4_QUEUE", 0); state.writing = false; }
         } catch (IllegalArgumentException | java.util.NoSuchElementException refused) {
             stalled(runtime, intent, state, refused.getMessage(), tick);
         }
@@ -212,6 +218,7 @@ final class EscrowSettlementRecovery implements AutoCloseable {
         }
     }
     private static void stalled(EscrowRuntime runtime, EscrowSettlementIntent intent, Work state, String reason, long tick) {
+        runtime.timings().sample("settlement.stall." + reason, 0);
         state.clear(); state.retryAt = tick + 200;
         runtime.checkpoint("O_VETO");
         if (!java.util.Objects.equals(state.lastReason, reason)) {

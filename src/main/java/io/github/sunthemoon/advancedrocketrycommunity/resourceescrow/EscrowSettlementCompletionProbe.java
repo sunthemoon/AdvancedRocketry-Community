@@ -80,6 +80,10 @@ final class EscrowSettlementCompletionProbe {
         throw new IllegalStateException("Settlement completion forced stop did not arrive within 30 seconds");
     }
     void tick() {
+        if (boundary.equals("CONSUMER") && data == null) {
+            var traffic = RocketTransferSavedData.get(server);
+            if (traffic.nativeProbe() == null || traffic.entries().size() < 8) { return; }
+        }
         if (done || waiting || !level.areEntitiesLoaded(new ChunkPos(POSITION).toLong()) || !level.isPositionEntityTicking(POSITION)) { return; }
         if (data == null) { data = ResourceEscrowSavedData.forTests(server); coordinator = data.bind(server); startTick = server.getTickCount(); }
         if (holdObserved) { held(); return; }
@@ -156,14 +160,19 @@ final class EscrowSettlementCompletionProbe {
             case 4 -> {
                 if ((abandon || floor) && server.getTickCount() - preview.previewTick() < 200) { return; }
                 writingIntent = true;
+                if (boundary.equals("CONSUMER")) { EscrowConsumerTimingProbe.mark(server, "settlement.start"); }
+                if (boundary.equals("CONSUMER")) { EscrowRuntime.of(server).timings().sample("settlement.confirm_attempt", 0); }
                 waiting = EscrowRuntime.of(server).settlement().confirm(server, selected, choice(), ACTOR, preview.digest(), committed -> {
                     EscrowTags.require(committed, "Completion O1 was not acknowledged"); writingIntent = false; waiting = false; step = 5;
                     if (boundary.equals("O1_AFTER")) { pause(boundary); }
                     if (veto) { installVeto(); }
                 });
+                if (boundary.equals("CONSUMER") && !waiting) { EscrowRuntime.of(server).timings().sample("settlement.refused.O1_QUEUE", 0); }
             }
             case 5 -> {
                 if (veto && !vetoInstalled) { installVeto(); }
+                if (boundary.equals("CONSUMER") && data.ledger().records().isEmpty()
+                        && !data.ledger().tombstones().isEmpty()) { completed(); }
             }
             default -> throw new IllegalStateException("Unknown completion fixture stage");
         }

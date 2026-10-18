@@ -78,6 +78,17 @@ public final class RocketCommands {
                                 .executes(this::recoverTransfer)));
         if (Boolean.getBoolean(RELEASE_TEST_HOOK_PROPERTY)) {
             root.then(Commands.literal("release-test")
+                    .then(Commands.literal("journal-probe-start").executes(context -> journalProbe(context, "start")))
+                    .then(Commands.literal("journal-probe-dump").executes(context -> journalProbe(context, "dump")))
+                    .then(Commands.literal("journal-hold-release").executes(context -> journalProbe(context, "release")))
+                    .then(Commands.literal("journal-hold-status").executes(context -> journalProbe(context, "status")))
+                    .then(Commands.literal("journal-hold").then(Commands.argument("logical", UuidArgument.uuid())
+                            .executes(context -> {
+                                var server = context.getSource().getServer();
+                                io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData.get(server)
+                                        .selectNativeHold(server, UuidArgument.getUuid(context, "logical"));
+                                context.getSource().sendSuccess(() -> Component.literal("Journal hold selected"), false); return 1;
+                            })))
                     .then(Commands.literal("stage-recovery")
                             .then(Commands.argument(ROCKET_ARGUMENT, EntityArgument.entity())
                                     .executes(this::stageRecovery)))
@@ -117,6 +128,26 @@ public final class RocketCommands {
         }
         event.getDispatcher().register(Commands.literal("arce").then(root));
         RocketDisassemblyCommands.register(event.getDispatcher(), rockets);
+    }
+
+    private int journalProbe(CommandContext<CommandSourceStack> context, String operation) throws CommandSyntaxException {
+        var server = context.getSource().getServer();
+        var journal = io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData.get(server);
+        try {
+            switch (operation) {
+                case "start" -> journal.startNativeProbe(server);
+                case "dump" -> journal.dumpNativeProbe(server);
+                case "release" -> journal.releaseNativeHold(server);
+                case "status" -> {
+                    boolean waiting = journal.nativeHoldWaiting(server);
+                    context.getSource().sendSuccess(() -> Component.literal("Journal hold waiting=" + waiting), false);
+                }
+                default -> throw new IllegalArgumentException("Unknown probe operation");
+            }
+            return 1;
+        } catch (java.io.IOException | IllegalStateException | IllegalArgumentException failure) {
+            throw new SimpleCommandExceptionType(Component.literal(failure.getMessage())).create();
+        }
     }
 
     private int queue(CommandContext<CommandSourceStack> context, boolean assemble) {

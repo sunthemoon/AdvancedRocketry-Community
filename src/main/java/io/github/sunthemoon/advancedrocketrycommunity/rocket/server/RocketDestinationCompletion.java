@@ -56,7 +56,9 @@ final class RocketDestinationCompletion {
             return;
         }
         RocketFlightData flight = destination.flightData().orElseThrow();
+        if (journal.nativeProbe() != null) { journal.nativeProbe().event(record.logicalRocketId(), "flight", journal.mutationSequence(), flight.state().name(), Double.doubleToLongBits(destination.getY())); }
         if (flight.state() == RocketFlightState.DESCENT) {
+            if (journal.nativeProbe() != null) { journal.nativeProbe().event(record.logicalRocketId(), "due", journal.mutationSequence(), "DESCENT", 0); }
             long elapsed = elapsed(destination.level().getGameTime(), flight.stateStartedGameTime());
             RocketTransferEntities.positionDescent(
                     destination,
@@ -64,6 +66,7 @@ final class RocketDestinationCompletion {
                     elapsed
             );
             RocketFlightFeedback.descentTrail(destination, elapsed);
+            if (journal.nativeProbe() != null) { journal.nativeProbe().event(record.logicalRocketId(), "work", journal.mutationSequence(), "DESCENT", 0); }
             if (elapsed >= RocketFlightLimits.DESCENT_TICKS) {
                 UUID destinationId = destination.getUUID();
                 var completion = MoonLandingCompletion.complete(server, journal, record, destination, bays,
@@ -78,6 +81,7 @@ final class RocketDestinationCompletion {
             }
         }
         cleanupLandedIfComplete(server, journal, record, destination);
+        if (journal.nativeProbe() != null) { journal.nativeProbe().event(record.logicalRocketId(), "flight", journal.mutationSequence(), destination.flightData().orElseThrow().state().name(), Double.doubleToLongBits(destination.getY())); }
     }
 
     /** The ordinary landing: LANDED, the terminal pose, feedback, the audit line and {@code moon_landing}. */

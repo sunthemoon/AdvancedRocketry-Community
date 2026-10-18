@@ -57,6 +57,15 @@ final class RocketJournalFailurePolicy {
             return CheckedSavedDataPolicy.atomic(TYPE);
         }
         EscrowTestEndpoints.requireEnabled(server);
+        if (mode.equals("OBSERVE")) { return CheckedSavedDataPolicy.atomic(TYPE); }
+        if (mode.equals("HOLD")) {
+            var hold = RocketTransferSavedData.get(server).nativeHold(server);
+            return new CheckedSavedDataPolicy(TYPE, (staged, target) -> {
+                hold.beforeReplace(CheckedSavedDataFile.readPayload(staged, TYPE).orElseThrow(),
+                        CheckedSavedDataFile.readPayload(target, TYPE).orElse(null));
+                CheckedSavedDataFile.atomicMove(staged, target);
+            });
+        }
         if (!mode.equals("ADMISSION") && !mode.equals("ADVANCEMENT") && !mode.equals("LANDED_REMOVAL")) {
             throw new IllegalArgumentException("Unknown journal release-test failure mode");
         }

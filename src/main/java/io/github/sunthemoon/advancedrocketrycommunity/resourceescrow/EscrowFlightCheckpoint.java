@@ -49,6 +49,7 @@ final class EscrowFlightCheckpoint implements AutoCloseable {
                   java.util.function.Predicate<io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord> boundary,
                   Consumer<io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord> completion) {
         if (!(rocket.level() instanceof ServerLevel level) || !level.getServer().isSameThread()) { return false; }
+        EscrowConsumerTimingProbe.mark(level.getServer(), "f1.attempt");
         var journal = RocketTransferSavedData.get(level.getServer());
         var captured = new java.util.concurrent.atomic.AtomicReference<io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord>();
         return begin(rocket, prepared.launch(), (root, launch, generation) -> {
@@ -86,18 +87,24 @@ final class EscrowFlightCheckpoint implements AutoCloseable {
                           java.util.function.Supplier<RocketRegion> destination,
                           Consumer<EscrowFlightTables.Armed> completion) {
         if (closed || pending.size() >= 64 || locked(launch.logical()) || !RocketEscrowGate.idle(rocket)
-                || !(rocket.level() instanceof ServerLevel level)) { return false; }
+                || !(rocket.level() instanceof ServerLevel level)) {
+            if (rocket.level() instanceof ServerLevel observedLevel) {
+                EscrowConsumerTimingProbe.mark(observedLevel.getServer(), "f1.refused.CLOSED_CAPACITY_LOCK_OR_SOURCE");
+            }
+            return false;
+        }
         var server = level.getServer(); var data = ResourceEscrowSavedData.existing(server);
-        if (data == null) { return false; }
+        var observation = EscrowRuntime.of(server).timings();
+        if (data == null) { observation.sample("f1.refused.NO_LEDGER", 0); return false; }
         retries.entrySet().removeIf(entry -> entry.getValue().rocket().isRemoved() && !pending.containsKey(entry.getKey()));
         if (!retryReady(launch.logical(), server.getTickCount())
-                || !retries.containsKey(launch.logical()) && retries.size() >= 64) { return false; }
+                || !retries.containsKey(launch.logical()) && retries.size() >= 64) { observation.sample("f1.refused.RETRY_WAIT_OR_CAPACITY", 0); return false; }
         var coordinator = data.bind(server); var journal = RocketTransferSavedData.get(server);
         // R17 item 3: L's checked state, not a quiet journal; the retry still pushes any pending journal write.
         if (!coordinator.operational() || !journal.retryChecked(server) && !journal.actionAuthorityAvailable(launch.logical())
-                || !io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime.resourceMutationAllowed(rocket)) { return false; }
+                || !io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime.resourceMutationAllowed(rocket)) { observation.sample("f1.refused.COORDINATOR_JOURNAL_OR_RESOURCE_AUTHORITY", 0); return false; }
         if (!EscrowRuntime.of(server).barrier().available(level.dimension().location().toString(), true, server.getTickCount())) {
-            return false;
+            observation.sample("f1.refused.BARRIER_BUDGET", 0); return false;
         }
         EscrowFlightSource frozen;
         try {
@@ -112,10 +119,10 @@ final class EscrowFlightCheckpoint implements AutoCloseable {
                     "F1 source or journal binding changed");
             EscrowSettlementCapacity.preflight(preparation.capture(coordinator.ledger(), launch,
                     Math.addExact(coordinator.ledger().writerGeneration(), 1)));
-        } catch (IllegalArgumentException | ArithmeticException refused) { return false; }
+        } catch (IllegalArgumentException | ArithmeticException refused) { observation.sample("f1.refused.BINDING_OR_PREFLIGHT", 0); return false; }
         var noTransfer = EscrowFlightJournal.noTransfer(journal, launch.logical(), launch.transfer(),
                 Math.addExact(coordinator.ledger().issuedLaunchSerial(), 1));
-        if (!noTransfer.getAsBoolean() || !frozen.observe()) { return false; }
+        if (!noTransfer.getAsBoolean() || !frozen.observe()) { observation.sample("f1.refused.SOURCE_OR_JOURNAL_CHANGED", 0); return false; }
         var retry = retries.computeIfAbsent(launch.logical(), key -> new Retry(rocket, new EscrowSuccessorRetry())).schedule();
         // Zero means not yet assigned by the actual coalesced writer capture, not a reserved serial.
         var serial = new java.util.concurrent.atomic.AtomicLong();
@@ -127,11 +134,14 @@ final class EscrowFlightCheckpoint implements AutoCloseable {
             finally { destinations.remove(launch.logical(), region); }
         };
         runtime.checkpoint("F1_STORE_BEFORE");
+        long barrierBegan = observation == EscrowTimingSink.NONE ? 0 : System.nanoTime();
         boolean started = runtime.barrier().begin(runtime.store(level), frozen.endpoint, frozen.frontier, frozen.validator(),
                 server.getTickCount(), result -> {
+                    if (observation != EscrowTimingSink.NONE) { observation.sample("f1.barrier", System.nanoTime() - barrierBegan); }
                     if (closed || !result.confirmed() || !frozen.observe() || !noTransfer.getAsBoolean()) {
                         String reason = result.confirmed() ? "SOURCE_OR_JOURNAL_CHANGED"
                                 : result.reason() == EscrowReason.NONE ? "SUPERSEDING_SAVE" : result.reason().name();
+                        observation.sample("f1.stall." + reason, 0);
                         if (result.proof() != null) { result.proof().release(); }
                         if (!closed) { retry.failed(coordinator.ledger().id(), launch.logical(), launch.transfer(), 0, "F1_PROOF",
                                 reason, server.getTickCount()); }
@@ -150,15 +160,18 @@ final class EscrowFlightCheckpoint implements AutoCloseable {
                         if (committed) {
                             retries.remove(launch.logical());
                             runtime.checkpoint("F1_ARM_ACK");
+                            EscrowConsumerTimingProbe.mark(server, "f1.complete");
                             finished.accept(coordinator.ledger().armedFlights().stream()
                                     .filter(arm -> arm.logical().equals(launch.logical()) && arm.transfer().equals(launch.transfer())).findFirst().orElseThrow());
                         } else {
+                            observation.sample("f1.stall.LEDGER_WRITE_FAILED", 0);
                             if (!closed) { retry.failed(coordinator.ledger().id(), launch.logical(), launch.transfer(), serial.get(),
                                     "F1_WRITE", "LEDGER_WRITE_FAILED", server.getTickCount()); }
                             finished.accept(null);
                         }
                     });
                     if (!queued) {
+                        observation.sample("f1.stall.LEDGER_QUEUE_WAIT", 0);
                         proof.release(); pending.remove(launch.logical(), frozen);
                         if (!closed) { retry.failed(coordinator.ledger().id(), launch.logical(), launch.transfer(), 0,
                                 "F1_WRITE", "LEDGER_QUEUE_WAIT", server.getTickCount()); }
@@ -166,6 +179,7 @@ final class EscrowFlightCheckpoint implements AutoCloseable {
                     }
                 });
         if (!started) {
+            observation.sample("f1.refused.BARRIER_BEGIN", 0);
             pending.remove(launch.logical(), frozen);
             destinations.remove(launch.logical(), region);
             if (retry.failures() == 0) { retries.remove(launch.logical()); }
