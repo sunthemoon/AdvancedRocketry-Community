@@ -1,0 +1,371 @@
+{
+  "batch_id": "v1.8.0-c17a-rocket-fluid-cargo-w109",
+  "authoring_commit": "f3be84cdcc17286518a0e791779edc838606c8bd",
+  "license": "MIT",
+  "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+  "author": "Codex W109 implementer",
+  "reviewer": "Pending Root independent review",
+  "declared_at": "2026-10-20",
+  "entries": [
+    {
+      "status": "GENERATED",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/rocket_fluid_loader.png",
+      "target_sha256": "f3de66f811010dd93f87ceb0ec4aa3cff5ab2d025a62e418ef57dc35769231f0",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w109",
+      "source_commit": "f3be84cdcc17286518a0e791779edc838606c8bd",
+      "authoring_commit": "f3be84cdcc17286518a0e791779edc838606c8bd",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180RocketCargoArt.java",
+      "source_sha256": "9b2eae5382402e19a9663fedaf88e1eff76438ce94b948427ef19b1db5419560",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180RocketCargoArt",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Original code-authored cargo coupling pixels or resource/text definitions; deterministic DataGen. No upstream or vanilla asset input."
+      ],
+      "generator_dependencies": [
+        {
+          "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180MaterialArt.java",
+          "source_sha256": "d2f3b864a574ae57a062c32ad21de5706b62b559a67fd7f403dfeda72d16b9c3"
+        }
+      ]
+    },
+    {
+      "status": "GENERATED",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/rocket_fluid_loader.json",
+      "target_sha256": "cae68a15aa1493661bacf7828408bfbc9ebae5279155cba15360f67ce578a4f3",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w109",
+      "source_commit": "f3be84cdcc17286518a0e791779edc838606c8bd",
+      "authoring_commit": "f3be84cdcc17286518a0e791779edc838606c8bd",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180RocketCargoData.java",
+      "source_sha256": "4c8a1347c5d30bde876e1ce331ef6f1c51acb65154c5bf54de1b97937ae1fa4d",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180RocketCargoData",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Original code-authored cargo coupling pixels or resource/text definitions; deterministic DataGen. No upstream or vanilla asset input."
+      ]
+    },
+    {
+      "status": "GENERATED",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/rocket_fluid_loader.json",
+      "target_sha256": "86602921c84d9c1591c4f99d043e2158ec90bfbe3b9ce7898bda933bcaada9f4",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w109",
+      "source_commit": "f3be84cdcc17286518a0e791779edc838606c8bd",
+      "authoring_commit": "f3be84cdcc17286518a0e791779edc838606c8bd",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180RocketCargoData.java",
+      "source_sha256": "4c8a1347c5d30bde876e1ce331ef6f1c51acb65154c5bf54de1b97937ae1fa4d",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180RocketCargoData",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Original code-authored cargo coupling pixels or resource/text definitions; deterministic DataGen. No upstream or vanilla asset input."
+      ]
+    },
+    {
+      "status": "GENERATED",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/rocket_fluid_loader.json",
+      "target_sha256": "6368b3524dda2602ec7585178de2e619df23e7424078d02b46da0cda0dd29684",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w109",
+      "source_commit": "f3be84cdcc17286518a0e791779edc838606c8bd",
+      "authoring_commit": "f3be84cdcc17286518a0e791779edc838606c8bd",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180RocketCargoData.java",
+      "source_sha256": "4c8a1347c5d30bde876e1ce331ef6f1c51acb65154c5bf54de1b97937ae1fa4d",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180RocketCargoData",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Original code-authored cargo coupling pixels or resource/text definitions; deterministic DataGen. No upstream or vanilla asset input."
+      ]
+    },
+    {
+      "status": "GENERATED",
+      "target_path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/loot_tables/blocks/rocket_fluid_loader.json",
+      "target_sha256": "d7cf183cd1745cd06900889e4b3f7f38a81da149377302f61fb97c1df7f753bd",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w109",
+      "source_commit": "f3be84cdcc17286518a0e791779edc838606c8bd",
+      "authoring_commit": "f3be84cdcc17286518a0e791779edc838606c8bd",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180RocketCargoData.java",
+      "source_sha256": "4c8a1347c5d30bde876e1ce331ef6f1c51acb65154c5bf54de1b97937ae1fa4d",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180RocketCargoData",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Original code-authored cargo coupling pixels or resource/text definitions; deterministic DataGen. No upstream or vanilla asset input."
+      ]
+    },
+    {
+      "status": "GENERATED",
+      "target_path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/recipes/rocket_fluid_loader.json",
+      "target_sha256": "d86c2c48947b93eb2d78aaf60487dda481d15b445e238a5c691b86d7f244debd",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w109",
+      "source_commit": "f3be84cdcc17286518a0e791779edc838606c8bd",
+      "authoring_commit": "f3be84cdcc17286518a0e791779edc838606c8bd",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180RocketCargoData.java",
+      "source_sha256": "4c8a1347c5d30bde876e1ce331ef6f1c51acb65154c5bf54de1b97937ae1fa4d",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180RocketCargoData",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Original code-authored cargo coupling pixels or resource/text definitions; deterministic DataGen. No upstream or vanilla asset input."
+      ]
+    },
+    {
+      "status": "GENERATED",
+      "target_path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/advancements/recipes/misc/rocket_fluid_loader.json",
+      "target_sha256": "af9f02c5b1880e2b1515e8cb1a1bb9391ecaa59c9326608b0335634190952e71",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w109",
+      "source_commit": "f3be84cdcc17286518a0e791779edc838606c8bd",
+      "authoring_commit": "f3be84cdcc17286518a0e791779edc838606c8bd",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180RocketCargoData.java",
+      "source_sha256": "4c8a1347c5d30bde876e1ce331ef6f1c51acb65154c5bf54de1b97937ae1fa4d",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180RocketCargoData",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Original code-authored cargo coupling pixels or resource/text definitions; deterministic DataGen. No upstream or vanilla asset input."
+      ]
+    },
+    {
+      "status": "GENERATED",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/rocket_fluid_unloader.png",
+      "target_sha256": "4a12610cc75223c9261ed050bda444da9a459388878d3cb08bcb16bd7ff56927",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w109",
+      "source_commit": "f3be84cdcc17286518a0e791779edc838606c8bd",
+      "authoring_commit": "f3be84cdcc17286518a0e791779edc838606c8bd",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180RocketCargoArt.java",
+      "source_sha256": "9b2eae5382402e19a9663fedaf88e1eff76438ce94b948427ef19b1db5419560",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180RocketCargoArt",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Original code-authored cargo coupling pixels or resource/text definitions; deterministic DataGen. No upstream or vanilla asset input."
+      ],
+      "generator_dependencies": [
+        {
+          "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180MaterialArt.java",
+          "source_sha256": "d2f3b864a574ae57a062c32ad21de5706b62b559a67fd7f403dfeda72d16b9c3"
+        }
+      ]
+    },
+    {
+      "status": "GENERATED",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/rocket_fluid_unloader.json",
+      "target_sha256": "b9f08b507845957f988f09d1a341aaa06cb27d453672fdf23382b252c0abebbf",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w109",
+      "source_commit": "f3be84cdcc17286518a0e791779edc838606c8bd",
+      "authoring_commit": "f3be84cdcc17286518a0e791779edc838606c8bd",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180RocketCargoData.java",
+      "source_sha256": "4c8a1347c5d30bde876e1ce331ef6f1c51acb65154c5bf54de1b97937ae1fa4d",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180RocketCargoData",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Original code-authored cargo coupling pixels or resource/text definitions; deterministic DataGen. No upstream or vanilla asset input."
+      ]
+    },
+    {
+      "status": "GENERATED",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/rocket_fluid_unloader.json",
+      "target_sha256": "e50c22554a561d406788d81f156e7dfe743f5675ea1b30600ce9812f5453d831",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w109",
+      "source_commit": "f3be84cdcc17286518a0e791779edc838606c8bd",
+      "authoring_commit": "f3be84cdcc17286518a0e791779edc838606c8bd",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180RocketCargoData.java",
+      "source_sha256": "4c8a1347c5d30bde876e1ce331ef6f1c51acb65154c5bf54de1b97937ae1fa4d",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180RocketCargoData",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Original code-authored cargo coupling pixels or resource/text definitions; deterministic DataGen. No upstream or vanilla asset input."
+      ]
+    },
+    {
+      "status": "GENERATED",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/rocket_fluid_unloader.json",
+      "target_sha256": "2b2bb7a5c7dc17d47b8c9d6f7a58ae36b284654d3c0a99ac135b031d34a41f4c",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w109",
+      "source_commit": "f3be84cdcc17286518a0e791779edc838606c8bd",
+      "authoring_commit": "f3be84cdcc17286518a0e791779edc838606c8bd",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180RocketCargoData.java",
+      "source_sha256": "4c8a1347c5d30bde876e1ce331ef6f1c51acb65154c5bf54de1b97937ae1fa4d",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180RocketCargoData",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Original code-authored cargo coupling pixels or resource/text definitions; deterministic DataGen. No upstream or vanilla asset input."
+      ]
+    },
+    {
+      "status": "GENERATED",
+      "target_path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/loot_tables/blocks/rocket_fluid_unloader.json",
+      "target_sha256": "a5ecc8f50e76eaaa7148e91fb76434aa39530e4ae57104f1a9c5a2e540b97528",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w109",
+      "source_commit": "f3be84cdcc17286518a0e791779edc838606c8bd",
+      "authoring_commit": "f3be84cdcc17286518a0e791779edc838606c8bd",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180RocketCargoData.java",
+      "source_sha256": "4c8a1347c5d30bde876e1ce331ef6f1c51acb65154c5bf54de1b97937ae1fa4d",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180RocketCargoData",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Original code-authored cargo coupling pixels or resource/text definitions; deterministic DataGen. No upstream or vanilla asset input."
+      ]
+    },
+    {
+      "status": "GENERATED",
+      "target_path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/recipes/rocket_fluid_unloader.json",
+      "target_sha256": "286deba331b51347283577179b6a883d7a4e25a92047763675f86cbc6f5c07e6",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w109",
+      "source_commit": "f3be84cdcc17286518a0e791779edc838606c8bd",
+      "authoring_commit": "f3be84cdcc17286518a0e791779edc838606c8bd",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180RocketCargoData.java",
+      "source_sha256": "4c8a1347c5d30bde876e1ce331ef6f1c51acb65154c5bf54de1b97937ae1fa4d",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180RocketCargoData",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Original code-authored cargo coupling pixels or resource/text definitions; deterministic DataGen. No upstream or vanilla asset input."
+      ]
+    },
+    {
+      "status": "GENERATED",
+      "target_path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/advancements/recipes/misc/rocket_fluid_unloader.json",
+      "target_sha256": "d8d185a3610d8afaa3c4d10f954ee6eaf2b0b6588d349a873b313016bf51dbc6",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w109",
+      "source_commit": "f3be84cdcc17286518a0e791779edc838606c8bd",
+      "authoring_commit": "f3be84cdcc17286518a0e791779edc838606c8bd",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180RocketCargoData.java",
+      "source_sha256": "4c8a1347c5d30bde876e1ce331ef6f1c51acb65154c5bf54de1b97937ae1fa4d",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180RocketCargoData",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Original code-authored cargo coupling pixels or resource/text definitions; deterministic DataGen. No upstream or vanilla asset input."
+      ]
+    },
+    {
+      "status": "GENERATED",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity_v180/lang/en_us.json",
+      "target_sha256": "d22664783493d537d4f87b76a2fe89991f4c77fe56abbc829db7bbd7943df7b8",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w109",
+      "source_commit": "f3be84cdcc17286518a0e791779edc838606c8bd",
+      "authoring_commit": "f3be84cdcc17286518a0e791779edc838606c8bd",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180RocketCargoData.java",
+      "source_sha256": "4c8a1347c5d30bde876e1ce331ef6f1c51acb65154c5bf54de1b97937ae1fa4d",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180RocketCargoData",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Original code-authored cargo coupling pixels or resource/text definitions; deterministic DataGen. No upstream or vanilla asset input."
+      ],
+      "new_keys": [
+        "block.advancedrocketrycommunity.rocket_fluid_loader",
+        "block.advancedrocketrycommunity.rocket_fluid_unloader",
+        "message.advancedrocketrycommunity.rocket_cargo.admission_disabled",
+        "message.advancedrocketrycommunity.rocket_cargo.cargo_full",
+        "message.advancedrocketrycommunity.rocket_cargo.cargo_too_large",
+        "message.advancedrocketrycommunity.rocket_cargo.device_empty",
+        "message.advancedrocketrycommunity.rocket_cargo.device_full",
+        "message.advancedrocketrycommunity.rocket_cargo.escrow_full",
+        "message.advancedrocketrycommunity.rocket_cargo.escrow_pending",
+        "message.advancedrocketrycommunity.rocket_cargo.incompatible_cargo",
+        "message.advancedrocketrycommunity.rocket_cargo.invalid_data",
+        "message.advancedrocketrycommunity.rocket_cargo.ledger_unavailable",
+        "message.advancedrocketrycommunity.rocket_cargo.legacy_rocket",
+        "message.advancedrocketrycommunity.rocket_cargo.no_cargo",
+        "message.advancedrocketrycommunity.rocket_cargo.no_cargo_storage",
+        "message.advancedrocketrycommunity.rocket_cargo.not_owner",
+        "message.advancedrocketrycommunity.rocket_cargo.other_transfer_pending",
+        "message.advancedrocketrycommunity.rocket_cargo.out_of_range",
+        "message.advancedrocketrycommunity.rocket_cargo.preparing",
+        "message.advancedrocketrycommunity.rocket_cargo.ready",
+        "message.advancedrocketrycommunity.rocket_cargo.receipt_backed",
+        "message.advancedrocketrycommunity.rocket_cargo.rocket_busy",
+        "message.advancedrocketrycommunity.rocket_cargo.stale_binding",
+        "message.advancedrocketrycommunity.rocket_cargo.transfer_journal_unproved",
+        "message.advancedrocketrycommunity.rocket_cargo.transferring",
+        "message.advancedrocketrycommunity.rocket_cargo.unbound",
+        "message.advancedrocketrycommunity.rocket_cargo.unresolved_loot",
+        "message.advancedrocketrycommunity.rocket_cargo.unsupported_data",
+        "message.advancedrocketrycommunity.rocket_cargo.waiting_unloaded",
+        "screen.advancedrocketrycommunity.rocket_fluid_cargo.bound",
+        "screen.advancedrocketrycommunity.rocket_fluid_cargo.contents",
+        "screen.advancedrocketrycommunity.rocket_fluid_cargo.cursor",
+        "screen.advancedrocketrycommunity.rocket_fluid_cargo.empty",
+        "screen.advancedrocketrycommunity.rocket_fluid_cargo.status_unknown",
+        "screen.advancedrocketrycommunity.rocket_fluid_cargo.unbound",
+        "screen.advancedrocketrycommunity.rocket_fluid_cargo.unknown_fluid"
+      ]
+    },
+    {
+      "status": "GENERATED",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity_v180/lang/zh_cn.json",
+      "target_sha256": "469c5b7933b34e7de439b40e9d4064822a485fc2c4eb46d06730c3917a39f39a",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w109",
+      "source_commit": "f3be84cdcc17286518a0e791779edc838606c8bd",
+      "authoring_commit": "f3be84cdcc17286518a0e791779edc838606c8bd",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180RocketCargoData.java",
+      "source_sha256": "4c8a1347c5d30bde876e1ce331ef6f1c51acb65154c5bf54de1b97937ae1fa4d",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180RocketCargoData",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Original code-authored cargo coupling pixels or resource/text definitions; deterministic DataGen. No upstream or vanilla asset input."
+      ],
+      "new_keys": [
+        "block.advancedrocketrycommunity.rocket_fluid_loader",
+        "block.advancedrocketrycommunity.rocket_fluid_unloader",
+        "message.advancedrocketrycommunity.rocket_cargo.admission_disabled",
+        "message.advancedrocketrycommunity.rocket_cargo.cargo_full",
+        "message.advancedrocketrycommunity.rocket_cargo.cargo_too_large",
+        "message.advancedrocketrycommunity.rocket_cargo.device_empty",
+        "message.advancedrocketrycommunity.rocket_cargo.device_full",
+        "message.advancedrocketrycommunity.rocket_cargo.escrow_full",
+        "message.advancedrocketrycommunity.rocket_cargo.escrow_pending",
+        "message.advancedrocketrycommunity.rocket_cargo.incompatible_cargo",
+        "message.advancedrocketrycommunity.rocket_cargo.invalid_data",
+        "message.advancedrocketrycommunity.rocket_cargo.ledger_unavailable",
+        "message.advancedrocketrycommunity.rocket_cargo.legacy_rocket",
+        "message.advancedrocketrycommunity.rocket_cargo.no_cargo",
+        "message.advancedrocketrycommunity.rocket_cargo.no_cargo_storage",
+        "message.advancedrocketrycommunity.rocket_cargo.not_owner",
+        "message.advancedrocketrycommunity.rocket_cargo.other_transfer_pending",
+        "message.advancedrocketrycommunity.rocket_cargo.out_of_range",
+        "message.advancedrocketrycommunity.rocket_cargo.preparing",
+        "message.advancedrocketrycommunity.rocket_cargo.ready",
+        "message.advancedrocketrycommunity.rocket_cargo.receipt_backed",
+        "message.advancedrocketrycommunity.rocket_cargo.rocket_busy",
+        "message.advancedrocketrycommunity.rocket_cargo.stale_binding",
+        "message.advancedrocketrycommunity.rocket_cargo.transfer_journal_unproved",
+        "message.advancedrocketrycommunity.rocket_cargo.transferring",
+        "message.advancedrocketrycommunity.rocket_cargo.unbound",
+        "message.advancedrocketrycommunity.rocket_cargo.unresolved_loot",
+        "message.advancedrocketrycommunity.rocket_cargo.unsupported_data",
+        "message.advancedrocketrycommunity.rocket_cargo.waiting_unloaded",
+        "screen.advancedrocketrycommunity.rocket_fluid_cargo.bound",
+        "screen.advancedrocketrycommunity.rocket_fluid_cargo.contents",
+        "screen.advancedrocketrycommunity.rocket_fluid_cargo.cursor",
+        "screen.advancedrocketrycommunity.rocket_fluid_cargo.empty",
+        "screen.advancedrocketrycommunity.rocket_fluid_cargo.status_unknown",
+        "screen.advancedrocketrycommunity.rocket_fluid_cargo.unbound",
+        "screen.advancedrocketrycommunity.rocket_fluid_cargo.unknown_fluid"
+      ]
+    }
+  ]
+}
