@@ -204,6 +204,8 @@ public final class BayReceiptWriter implements AutoCloseable {
     /** The active captured generation, including an exact unknown candidate until it resolves; null when idle. */
     @Nullable BayReceiptRoot captured() { owner(); return captured; }
     public boolean unavailable() { owner(); return baselineFailed || failures >= UNAVAILABLE_FAILURES; }
+    /** Unavailable through counted write failures, not a failed baseline, so a checked generation can recover it. */
+    boolean recoverable() { owner(); return !baselineFailed && failures >= UNAVAILABLE_FAILURES; }
     public boolean idle() { owner(); return active == null; }
     boolean hasSuccessor() { owner(); return successor != null; }
     boolean unknown() { owner(); return uncertain; }

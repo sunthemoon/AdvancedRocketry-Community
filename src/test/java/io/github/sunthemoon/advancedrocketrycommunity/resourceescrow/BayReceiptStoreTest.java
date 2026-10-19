@@ -4,11 +4,14 @@ import static io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayR
 import static org.junit.jupiter.api.Assertions.*;
 
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile;
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.TreeSet;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -199,6 +202,37 @@ final class BayReceiptStoreTest {
     private static Path stagingBlocked(BayReceiptHarness harness) throws Exception {
         // Staging is refused before any replacement: every write fails definitely until this directory is removed.
         return Files.createDirectory(harness.file.resolveSibling(harness.file.getFileName() + ".arce-pending"));
+    }
+
+    /** W27C1-R1 under R37 item 1, the review's probe 1 inverted: a repaired storage recovers the store without a new change. */
+    @Test void afterThreeDefiniteFailuresAGenerationWithNoNewChangeRecoversTheStoreOnceTheStorageIsRepaired() throws Exception {
+        try (var harness = BayReceiptHarness.empty(temp)) {
+            var a = intent(1, id(30)); assertQueued(harness.put(a)); harness.settle();
+            Path pending = stagingBlocked(harness);
+            for (long n = 2; n <= 4; n++) { assertQueued(harness.put(rejected(n, OWNER))); harness.settle(); }
+            var failed = BayReceiptWriter.Outcome.FAILED_BEFORE_REPLACE;
+            assertEquals(List.of(BayReceiptWriter.Outcome.COMMITTED, failed, failed, failed), harness.outcomes);
+            assertTrue(harness.store().unavailable(), "three definite failures make the store unavailable");
+            assertEquals(BayReceiptStore.Status.STORE_UNAVAILABLE, harness.put(rejected(5, OWNER)).status());
+            long generation = harness.store().writer().durableGeneration();
+            // While the storage stays broken, a generation with no new change is retried at most once per 200 ticks.
+            var starts = new TreeSet<Long>(); int[] ticks = {0};
+            harness.until(() -> { starts.add(harness.store().writer().lastIoStart()); return ++ticks[0] > 700; });
+            var gaps = new ArrayList<Long>(); Long previous = null;
+            for (long start : starts) { if (previous != null) { gaps.add(start - previous); } previous = start; }
+            assertTrue(gaps.size() == 3 && gaps.stream().allMatch(gap -> gap >= BayReceiptWriter.RETRY_TICKS), gaps::toString);
+            assertTrue(harness.store().unavailable()); assertEquals(List.of(a), harness.store().receipts());
+            assertEquals(4, harness.outcomes.size(), "a generation with no new change answers no caller");
+            Files.delete(pending); // The storage is repaired.
+            harness.until(() -> !harness.store().unavailable());
+            assertFalse(harness.store().unavailable(), "available again after an exact commit");
+            assertTrue(harness.store().writer().idle() && harness.store().writer().durableGeneration() > generation);
+            assertEquals(List.of(a), harness.store().durable().receipts(), "no new change was written");
+            assertEquals(List.of(a), BayReceiptCodec.decode(CheckedSavedDataFile.readPayload(harness.file,
+                    ManagedSavedDataType.BAY_RECEIPTS).orElseThrow()).receipts());
+            assertQueued(harness.put(rejected(5, OWNER))); harness.settle();
+            assertEquals(BayReceiptWriter.Outcome.COMMITTED, harness.outcomes.get(harness.outcomes.size() - 1));
+        }
     }
 
     /** W27C1-R2, the review's probe 2 with R37 item 2's expectation: a second change of one satellite waits. */

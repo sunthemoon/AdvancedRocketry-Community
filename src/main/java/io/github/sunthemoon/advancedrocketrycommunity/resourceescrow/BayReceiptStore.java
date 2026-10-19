@@ -41,7 +41,7 @@ public final class BayReceiptStore implements EscrowAdmissionAuthority.Store {
     private final List<Mutation> queued = new ArrayList<>();
     private List<Mutation> capturedMutations = List.of();
     private BayReceiptRoot durable;
-    private long issuedThrough;
+    private long issuedThrough, lastTick, recoveryAt;
     private boolean closed;
     private View view;
 
@@ -138,6 +138,7 @@ public final class BayReceiptStore implements EscrowAdmissionAuthority.Store {
     }
     private void completed(BayReceiptWriter.Completion completion) {
         var outcome = completion.outcome();
+        if (outcome != BayReceiptWriter.Outcome.COMMITTED) { recoveryAt = lastTick + BayReceiptWriter.RETRY_TICKS; }
         if (outcome == BayReceiptWriter.Outcome.COMMITTED) {
             durable = completion.root();
         } else if (outcome != BayReceiptWriter.Outcome.UNKNOWN) {
@@ -154,8 +155,18 @@ public final class BayReceiptStore implements EscrowAdmissionAuthority.Store {
     }
 
     public void tick(long now) {
-        owner(); writer.tick(now);
-        if (!writer.hasSuccessor() && !queued.isEmpty() && writer.idle()) { requestWrite(); }
+        owner(); lastTick = now; writer.tick(now);
+        if (closed || !writer.idle()) { return; }
+        if (!queued.isEmpty()) {
+            requestWrite();
+        } else if (writer.recoverable() && now >= recoveryAt) {
+            // R37 item 1 (W27C1-R1): unavailable with no write in flight, the store writes one generation with no new
+            // change at most once per 200 ticks after its last failed write, and its exact commit makes it available
+            // again. An idle writer means RAM holds exactly the acknowledged receipts (R37 item 2), so this publishes
+            // no queued change; only the issued-sequence counter may be higher.
+            recoveryAt = now + BayReceiptWriter.RETRY_TICKS;
+            writer.request(this::capture, this::completed);
+        }
     }
     /** ServerStoppingEvent: drain the writer, then refuse new work. */
     void close() { owner(); if (closed) { return; } writer.close(); closed = true; changed(); }
