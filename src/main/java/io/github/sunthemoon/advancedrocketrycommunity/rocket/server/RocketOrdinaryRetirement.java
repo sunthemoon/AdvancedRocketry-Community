@@ -80,6 +80,7 @@ final class RocketOrdinaryRetirement {
     private enum State { WAITING, PROVING, REMOVING }
 
     private static final class Pending {
+        final MinecraftServer server;
         final RocketTransferSavedData journal;
         final RocketTransferRecord record;
         final UUID survivor;
@@ -96,10 +97,11 @@ final class RocketOrdinaryRetirement {
         int attempt, cursor, attempts;
         long created, started, notBefore;
         String reason;
+        boolean woken;
 
-        Pending(RocketTransferSavedData journal, RocketTransferRecord record, UUID survivor, Site site, boolean offlineAllowed,
-                Effects effects) {
-            this.journal = journal; this.record = record; this.survivor = survivor; this.site = site;
+        Pending(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record, UUID survivor, Site site,
+                boolean offlineAllowed, Effects effects) {
+            this.server = server; this.journal = journal; this.record = record; this.survivor = survivor; this.site = site;
             this.offlineAllowed = offlineAllowed; this.effects = effects;
         }
         UUID logical() { return record.logicalRocketId(); }
@@ -199,7 +201,7 @@ final class RocketOrdinaryRetirement {
             return;
         }
         live.remove(record.transferId()); settled.add(record.transferId());
-        var entry = new Pending(journal, record, survivor.getUUID(), site, offlineAllowed, effects);
+        var entry = new Pending(server, journal, record, survivor.getUUID(), site, offlineAllowed, effects);
         var origin = record.sourceSnapshot().sourceOrigin();
         entry.census.add(new RocketRetirementProof.Slot(record.sourceSnapshot().sourceDimension(), new ChunkPos(origin.x() >> 4, origin.z() >> 4)));
         discarded.forEach(candidate -> addSlot(entry, candidate));
@@ -252,7 +254,9 @@ final class RocketOrdinaryRetirement {
         if (entry.journal.find(record.transferId()).orElse(null) != record) { return "RECORD_CHANGED"; }
         if (fenced.get().contains(record.transferId())) { return "FENCED"; }
         if (bays.ids().contains(record.transferId())) { return "BAY_CLAIMED"; }
-        if (live.contains(record.transferId()) || !settled.contains(record.transferId())) { return "RECLASSIFIED"; }
+        if (live.contains(record.transferId())) { return "RECLASSIFIED"; }
+        // A bay's RELEASED_TO_ORDINARY handoff unclassifies T on each classification; ordinary rules are this return's.
+        settled.add(record.transferId());
         return null;
     }
 
@@ -299,7 +303,7 @@ final class RocketOrdinaryRetirement {
             var runtime = EscrowRuntime.of(server);
             var barrier = runtime.barrier();
             String id = slot.dimension().toString();
-            if (!barrier.availableOrdinary(id, now)) { return; }
+            if (!barrier.availableOrdinary(id, now)) { wake(entry); return; }
             int attempt = entry.attempt;
             var frozen = entry.frozen;
             UUID logical = entry.logical(), survivor = entry.survivor;
@@ -405,6 +409,7 @@ final class RocketOrdinaryRetirement {
         entry.releaseProofs();
         if (entry.site != Site.FAIL_BACK || entry.created != now) { entry.releaseToken(); }
         entry.state = State.WAITING; entry.notBefore = now + delay;
+        if (delay == 1) { wake(entry); }
         if (!reason.equals(entry.reason)) {
             entry.reason = reason;
             if (fault) {
@@ -415,6 +420,21 @@ final class RocketOrdinaryRetirement {
                         entry.record.transferId(), entry.logical(), entry.site, reason);
             }
         }
+    }
+
+    /**
+     * A one-shot continuation on the next tick through the server's task queue, so a one-tick wait (a busy capture
+     * budget, a superseding save) never depends on who ticks this coordinator. Longer waits use the service tick.
+     */
+    private void wake(Pending entry) {
+        if (entry.woken) { return; }
+        entry.woken = true;
+        var server = entry.server;
+        server.tell(new net.minecraft.server.TickTask(server.getTickCount(), () -> {
+            entry.woken = false;
+            // Queued tasks run after the tick that queued them, before the next one begins: act as that next tick.
+            if (pending.get(entry.logical()) == entry && entry.state != State.REMOVING) { guarded(server, entry, server.getTickCount() + 1L); }
+        }));
     }
 
     /** R5(d): a save-off Level holds every return there, with one WARN per Level until saving resumes. */
