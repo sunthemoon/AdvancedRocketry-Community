@@ -102,7 +102,7 @@ def check(disk: dict, cut: str, restart: int) -> dict:
             and not flight["passengers"]["assignments"] and "active_transfer_id" not in flight
             and data["assembly_transaction_id"] == flight["logical_rocket_id"], "Changed native flight identity/authority")
     propulsion = flight["fuel"]["propulsion"]
-    require(not flight["fuel"].get("committed_debits", []) and "flight_plan" not in flight,
+    require(not flight["fuel"].get("committed_debits", []) and "plan" not in flight,
             "Fill introduced a flight withdrawal or plan")
     amounts = [propulsion[key]["amount"] for key in ("primary", "oxidizer")]
     require(amounts == ([1000, 1000 * exp["destination"]] if bi else [1000 * exp["destination"], 0]), "Wrong raw fuel vector")
@@ -150,7 +150,7 @@ def check_chain(disk: dict, cut: str, restart: int) -> dict:
             and not flight["passengers"]["assignments"] and "active_transfer_id" not in flight
             and data["assembly_transaction_id"] == flight["logical_rocket_id"], "Changed chain flight identity/authority")
     propulsion = flight["fuel"]["propulsion"]
-    require(not flight["fuel"].get("committed_debits", []) and "flight_plan" not in flight,
+    require(not flight["fuel"].get("committed_debits", []) and "plan" not in flight,
             "Chain introduced a flight withdrawal or plan")
     require([propulsion[k]["amount"] for k in ("primary", "oxidizer")] ==
             ([1000, 1000 * (prefix - 1)] if bi else [1000 * prefix, 0]), "Wrong chain raw fuel vector")

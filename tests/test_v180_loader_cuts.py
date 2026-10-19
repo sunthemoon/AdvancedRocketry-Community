@@ -92,6 +92,7 @@ class LoaderCutsTest(unittest.TestCase):
             mutations = [lambda d: d["ledger"]["records"][0].update(seq=9),
                          lambda d: d["ledger"]["records"][0]["destination"].update(before_epoch=7),
                          lambda d: d["rocket"]["RocketEntityData"]["flight_data"]["fuel"].update(committed_debits=[{}]),
+                         lambda d: d["rocket"]["RocketEntityData"]["flight_data"].update(plan={}),
                          lambda d: d["loaders"][1]["arce_fluid_fuel_loader"]["tank"].update(Amount=5000),
                          lambda d: d["rocket"]["RocketEntityData"]["resource_escrow"].update(resource_epoch=0),
                          lambda d: d["rocket"]["RocketEntityData"]["resource_escrow"]["markers"][0].update(op_id="other"),
