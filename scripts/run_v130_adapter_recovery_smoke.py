@@ -69,6 +69,15 @@ SNAPSHOT_SCHEMA = 2
 JOURNAL = "advancedrocketrycommunity_rocket_transactions.dat"
 MISSING_MAPPING_ERROR = "There are unidentified mappings in this world - we are going to attempt to process anyway"
 MISSING_BLOCK_ERROR = "Unidentified mapping from registry minecraft:block"
+MISSING_ITEM_ERROR = "Unidentified mapping from registry minecraft:item"
+# Each diagnostic Forge logs when the fixture JAR is absent, with exactly the fixture's registry entries. v1.8's
+# fixture also registers four items (FixturePlacementProbeItem, FixtureThermiteItems), so its item diagnostic
+# joins the block one.
+MISSING_MAPPINGS = {
+    MISSING_BLOCK_ERROR: {CARGO, BOUNDARY},
+    MISSING_ITEM_ERROR: {FIXTURE + ":placement_probe", FIXTURE + ":thermite_aluminum_dust",
+                         FIXTURE + ":thermite_dust", FIXTURE + ":thermite_iron_dust"},
+}
 # W44 section 3.3: a v1.8 start may hold the first Moon landing event once while the transfer journal's startup
 # baseline is unconfirmed, then clear the hold with an INFO line (the GameTest manifest's
 # w44-first-moon-landing-startup-baseline). Only this WARN, at most once per process and cleared, is accepted.
@@ -190,17 +199,18 @@ def audit_log(lines: list[str], phase: str) -> list[str]:
     known_mapping_lines = set()
     if phase == "mod-uninstalled":
         for index, line in enumerate(lines):
-            if (server_smoke.ERROR_LINE.search(line) and registry_logger.search(line)
-                    and line.rstrip().endswith(MISSING_BLOCK_ERROR)):
+            header = next((value for value in MISSING_MAPPINGS if line.rstrip().endswith(value)), None)
+            if server_smoke.ERROR_LINE.search(line) and registry_logger.search(line) and header is not None:
                 entries = []
                 for following in lines[index + 1:]:
                     if not following.strip():
                         break
                     entries.append(following.strip())
                 mappings = [re.fullmatch(r"([a-z0-9_.-]+:[a-z0-9/._-]+): [0-9]+", entry) for entry in entries]
-                if (len(mappings) != 2 or any(match is None for match in mappings)
-                        or {match.group(1) for match in mappings} != {CARGO, BOUNDARY}):
-                    raise SmokeError("Missing-block diagnostic contains unexpected registry entries")
+                expected = MISSING_MAPPINGS[header]
+                if (len(mappings) != len(expected) or any(match is None for match in mappings)
+                        or {match.group(1) for match in mappings} != expected):
+                    raise SmokeError("Missing-mapping diagnostic contains unexpected registry entries")
                 known_mapping_lines.add(line.rstrip())
     holds = [index for index, line in enumerate(lines) if STARTUP_HOLD.search(line)]
     if len(holds) > 1 or holds and not any(STARTUP_HOLD_CLEARED.search(line) for line in lines[holds[0] + 1:]):

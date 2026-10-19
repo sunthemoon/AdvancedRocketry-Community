@@ -251,6 +251,25 @@ class RecoveryParsingTests(unittest.TestCase):
             with self.subTest(lines=lines, phase=phase), self.assertRaises(runner.SmokeError):
                 runner.audit_log(lines, phase)
 
+    def test_the_missing_item_diagnostic_requires_exactly_the_fixture_items(self):
+        # The diagnostics as the v1.8 host logged them in W101's native4 mod-uninstalled phase (22:47:11).
+        block = ["[22:47:11] [main/ERROR] [ne.mi.re.GameData/REGISTRIES]: " + runner.MISSING_BLOCK_ERROR,
+                 "\tarce_adapter_test:cargo_container: 1130", "\tarce_adapter_test:state_boundary: 1131", ""]
+        item = ["[22:47:11] [main/ERROR] [ne.mi.re.GameData/REGISTRIES]: " + runner.MISSING_ITEM_ERROR,
+                "\tarce_adapter_test:placement_probe: 1503", "\tarce_adapter_test:thermite_aluminum_dust: 1500",
+                "\tarce_adapter_test:thermite_dust: 1502", "\tarce_adapter_test:thermite_iron_dust: 1501", ""]
+        self.assertEqual([block[0], item[0]], runner.audit_log(block + item, "mod-uninstalled"))
+        self.assertEqual([item[0]], runner.audit_log(item, "mod-uninstalled"))
+        for lines, phase in ((block + item, "provider-skipped"), (item, "assemble"),
+                             (item[:-2] + [""], "mod-uninstalled"),
+                             (item[:-1] + ["\tarce_adapter_test:extra_item: 1504", ""], "mod-uninstalled"),
+                             (item[:1] + ["\tother:placement_probe: 1503"] + item[2:], "mod-uninstalled"),
+                             (item[:1] + [item[1]] * 2 + item[3:], "mod-uninstalled"),
+                             ([item[0].replace("minecraft:item", "minecraft:fluid")] + item[1:], "mod-uninstalled"),
+                             ([item[0]] + block[1:3] + [""], "mod-uninstalled")):
+            with self.subTest(lines=lines, phase=phase), self.assertRaises(runner.SmokeError):
+                runner.audit_log(lines, phase)
+
     def test_the_reload_receipt_carries_the_host_jars_bundled_counts(self):
         # The line as the v1.8 host logged it in W101's native3 atmosphere run (21:04:10).
         line = ("[21:04:10] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: "
