@@ -48,6 +48,14 @@ class EscrowLoaderCutProbeTest {
         assertFalse(EscrowLoaderCutProbe.selected(null));
     }
 
+    @Test void oneSidedDestinationCutsPrimeOnlyUnchangedPreAdmissionTerrain() {
+        assertTrue(EscrowLoaderCutProbe.primeTerrain("K5"));
+        assertTrue(EscrowLoaderCutProbe.primeTerrain("C4_BEFORE"));
+        for (String boundary : List.of("C4_AFTER", "CHAIN_PREFIX", "CHAIN_PROVED", "K4")) {
+            assertFalse(EscrowLoaderCutProbe.primeTerrain(boundary));
+        }
+    }
+
     @Test void baselineObservationsBracketTheSameNativeReplacementWithoutChangingAcknowledgement() throws Exception {
         Path file = temporary.resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName());
         var root = EscrowLedger.empty(UUID.randomUUID()).generation(1);

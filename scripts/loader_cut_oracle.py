@@ -13,7 +13,7 @@ CREATION_SUPPLEMENTAL = ("N3_ELIGIBILITY",)
 NORMAL = tuple(f"K{i}" for i in range(11)) + ("K2_BI", "K6_BI", "K9_BI")
 SUPPLEMENTAL = ("K2_ACK", "K3_DEBIT", "K6_FORCED", "K10_ACK")
 D2 = {"D2_C0": "K0", "D2_C1_BEFORE": "K1", "D2_C1_REPLACED": "K2", "D2_C1_ACK": "K2_ACK",
-      "D2_C2": "K3", "D2_C3": "K3", "D2_C4_BEFORE": "K4", "D2_C4_AFTER": "K6",
+      "D2_C2": "K3", "D2_C3": "K3", "D2_C4_BEFORE": "K5", "D2_C4_AFTER": "K6",
       "D2_C5_BEFORE": "K6", "D2_C5_AFTER": "K6_FORCED", "D2_C6_BEFORE": "K6",
       "D2_C6_AFTER": "K6", "D2_C6_JOINT": "K7", "D2_C7_BEFORE": "K8",
       "D2_C7_REPLACED": "K9", "D2_C7_ACK": "K10_ACK", "D2_C8": "K10", "D2_C7_REPLACED_BI": "K9_BI"}

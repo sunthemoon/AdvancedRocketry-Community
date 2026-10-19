@@ -79,6 +79,12 @@ def chain_fixture(cut, restart):
 
 
 class LoaderCutsTest(unittest.TestCase):
+    def test_c4_before_requires_destination_only_durable_state(self):
+        self.assertEqual(oracle.expected("LF_M_K5", 0), oracle.expected("LF_M_D2_C4_BEFORE", 0))
+        for wrong in ("LF_M_K4", "LF_M_K6"):
+            with self.assertRaises(oracle.smoke.SmokeError):
+                oracle.check(fixture(wrong, 0), "LF_M_D2_C4_BEFORE", 0)
+
     def test_s3_covers_every_reconciliation_stage_and_both_chain_modes(self):
         self.assertEqual(18, len(oracle.D2))
         self.assertEqual(5, len(oracle.CHAINS))

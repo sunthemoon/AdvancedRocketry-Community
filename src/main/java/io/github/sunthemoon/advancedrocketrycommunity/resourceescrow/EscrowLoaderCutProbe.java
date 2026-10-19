@@ -54,7 +54,7 @@ final class EscrowLoaderCutProbe {
         creation = boundary.startsWith("N");
         EscrowTags.require(boundary.matches("N[01]|N2_(DEFINITE|UNKNOWN)|N3_(FULL|ELIGIBILITY|NOT_LOADED|PREFLIGHT)|K([0-9]|10)|K2_ACK|K3_DEBIT|K6_FORCED|K10_ACK|C3_FROZEN|C4_BEFORE|C4_AFTER|C6_BEFORE|C6_AFTER|CHAIN_(PREFIX|PROVED|REPLACED|RELEASED)")
                 && (!bi || boundary.matches("K[269]|CHAIN_REPLACED")), "Unknown loader cut");
-        if (!recovery && boundary.equals("K5")) {
+        if (!recovery && (primeTerrain(boundary) || chain)) {
             saves = event -> {
                 if (step == 0 || event.getLevel() != server.overworld() || !event.getChunk().getPos().equals(new ChunkPos(A))) { return; }
                 var trace = java.util.Arrays.stream(Thread.currentThread().getStackTrace())
@@ -67,7 +67,8 @@ final class EscrowLoaderCutProbe {
                 long epoch = saved.getCompound("resource_escrow").getLong("resource_epoch");
                 AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_MATRIX_SAVE cut={} tick={} stores={} first_store={} tank={} epoch={} trace={}",
                         cut, server.getTickCount(), stores, firstStore, amount, epoch, trace);
-                if (!armed && !primed && trace.stream().anyMatch(frame -> frame.contains("net.minecraft.server.level.ChunkMap."))) {
+                if (primeTerrain(boundary) && !armed && !primed
+                        && trace.stream().anyMatch(frame -> frame.contains("net.minecraft.server.level.ChunkMap."))) {
                     EscrowTags.require(amount == 5_000 && epoch == 0 && stores == 0, "Priming save was not the unchanged baseline");
                     primed = true;
                     AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_MATRIX_PRIMED cut={} tank=5000 epoch=0 stores=0", cut);
@@ -76,6 +77,8 @@ final class EscrowLoaderCutProbe {
             net.minecraftforge.common.MinecraftForge.EVENT_BUS.addListener(saves);
         }
     }
+
+    static boolean primeTerrain(String boundary) { return boundary.equals("K5") || boundary.equals("C4_BEFORE"); }
 
     static String boundary(String cut) {
         String name = cut.substring(PREFIX.length()).replace("_BI", "");
@@ -260,8 +263,8 @@ final class EscrowLoaderCutProbe {
                 }
             }
             EscrowTags.require(server.saveEverything(false, true, true), "Fixture baseline refused");
-            step = 1; armed = (chain || !bi) && !boundary.equals("K5");
-            if (boundary.equals("K5")) {
+            step = 1; armed = (chain || !bi) && !primeTerrain(boundary);
+            if (primeTerrain(boundary)) {
                 // A normal save before admission starts vanilla's existing 10-second chunk-save cooldown. Never
                 // suppress saves, change that cooldown or alter dirty state after admission. This prevents the
                 // fixture's first incremental save from racing the destination-first barrier with the source AFTER.
@@ -270,7 +273,7 @@ final class EscrowLoaderCutProbe {
             if (boundary.equals("N3_PREFLIGHT")) { preflight(); return; }
             if (boundary.startsWith("N3_")) { refuse(); return; }
             open(loaders.get(0));
-        } else if (boundary.equals("K5") && !armed && primed) {
+        } else if (primeTerrain(boundary) && !armed && primed) {
             step = 2; armed = true; open(loader());
         } else if (boundary.equals("N2_DEFINITE") && failures > 0 && failures < 3) {
             var data = ResourceEscrowSavedData.existing(server);

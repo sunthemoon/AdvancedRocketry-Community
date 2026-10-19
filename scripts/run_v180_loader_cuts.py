@@ -144,7 +144,8 @@ def run_cut(args, cut: str, evidence: Path, owner: str, pins: dict) -> dict:
                     ordered = paused[3] == ("SOURCE" if cut.endswith("K4") else "DESTINATION")
                 actual_cut = ("LF_M_K4" if paused[3] == "SOURCE" else "LF_M_K5") if not ordered else cut
                 if cut == "LF_M_D2_C4_BEFORE":
-                    actual_cut = "LF_M_K4" if paused[3] == "SOURCE" else "LF_M_K5"
+                    actual_cut = "LF_M_K5"
+                    ordered = paused[3] == "DESTINATION"
             else:
                 process.wait_for(re.compile(r"ARCE_LOADER_MATRIX_RESULT cut=" + re.escape(cut) + r"(?:\s|$)"), args.startup_timeout)
                 process.command("stop"); start["exit_code"] = process.finish()
@@ -158,8 +159,8 @@ def run_cut(args, cut: str, evidence: Path, owner: str, pins: dict) -> dict:
                 oracle.require(not any("/ERROR]" in line or "/FATAL]" in line for line in lines), "Native start logged ERROR/FATAL")
                 if restart == 0 and cut.removeprefix(oracle.PREFIX) in oracle.CHAINS and cut != "LF_M_C1":
                     one_match(re.compile(r"ARCE_LOADER_MATRIX_CHAIN cut=" + re.escape(cut) + r" latest=2 reverse_refused=true records=2"), lines)
-                if cut == "LF_M_K5" and restart == 0:
-                    one_match(re.compile(r"ARCE_LOADER_MATRIX_PRIMED cut=LF_M_K5 tank=5000 epoch=0 stores=0"), lines)
+                if cut in ("LF_M_K5", "LF_M_D2_C4_BEFORE") and restart == 0:
+                    one_match(re.compile(r"ARCE_LOADER_MATRIX_PRIMED cut=" + re.escape(cut) + r" tank=5000 epoch=0 stores=0"), lines)
                 if creation and restart == 0:
                     creation_observations(cut, lines)
                 if creation and restart:
@@ -214,7 +215,7 @@ def run(args) -> dict:
     report = dict(status="IN_PROGRESS", pins=pins, cases=[], not_run=oracle.NOT_RUN,
                   limits="Selected S2 process-stop cuts only; no power-loss guarantee. R35 extends existing fault generation selection.")
     for cut in args.case or oracle.CASES:
-        owner = f"{'W105' if cut in oracle.S3 else 'W97B'} {cut} pid={os.getpid()} {datetime.now(timezone.utc).isoformat()}"
+        owner = f"{args.task_id} {cut} pid={os.getpid()} {datetime.now(timezone.utc).isoformat()}"
         print(f"Waiting for heavy-JVM lock: {cut}", flush=True)
         with heavy_lock(owner):
             row = run_cut(args, cut, evidence / cut, owner, pins)
@@ -235,6 +236,7 @@ def main() -> int:
     for key in ("jar", "session-parent", "evidence-dir"):
         parser.add_argument("--" + key, type=Path, required=True)
     parser.add_argument("--source-commit", required=True); parser.add_argument("--java", required=True)
+    parser.add_argument("--task-id", default="W107", help="Owner of this invocation's heavy-JVM lock")
     parser.add_argument("--case", action="append", choices=oracle.CASES)
     parser.add_argument("--s3", action="store_true", help="Select the complete B3-S3 matrix (unless --case is supplied)")
     parser.add_argument("--startup-timeout", type=float, default=240)
