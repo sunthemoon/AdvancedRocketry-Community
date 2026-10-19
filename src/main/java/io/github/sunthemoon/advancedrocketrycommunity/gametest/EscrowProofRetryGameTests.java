@@ -51,7 +51,7 @@ public final class EscrowProofRetryGameTests {
         private final boolean entity;
         private final BlockPos position;
         private final ChunkPos chunk;
-        private final EscrowBarrier barrier = new EscrowBarrier();
+        private final EscrowBarrier barrier;
         private final GameTestTickPacer pacer;
         private final EscrowTestEndpoints.Fixture fixture;
         private final EscrowGameTestProof<EscrowBarrier.Result> proof;
@@ -66,6 +66,7 @@ public final class EscrowProofRetryGameTests {
             this.helper = helper; this.entity = entity;
             var level = helper.getLevel(); var server = level.getServer();
             startedAt = server.getTickCount();
+            barrier = new EscrowBarrier(new EscrowProofTrace(entity ? "retry_entity" : "retry_terrain", server).barrier());
             position = new BlockPos(entity ? 548_001 : 546_001, 100, 546_001); chunk = new ChunkPos(position);
             level.getChunkSource().addRegionTicket(TicketType.START, chunk, 2, Unit.INSTANCE);
             level.getChunk(chunk.x, chunk.z);

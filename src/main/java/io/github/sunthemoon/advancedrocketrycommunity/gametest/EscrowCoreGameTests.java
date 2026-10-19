@@ -42,13 +42,21 @@ public final class EscrowCoreGameTests {
         // barrier attempt, which refreshes that path's 10-second cooldown. Vanilla cannot
         // save the chunk until the generation around it finishes, and that generation's lighting and the chunk's
         // post-processing dirty it again after the barrier's capture, so the barrier waits for the save.
-        var runtime = EscrowRuntime.of(level.getServer()); var barrier = new EscrowBarrier();
+        var trace = new EscrowProofTrace("joint", level.getServer());
+        trace.stage("terrain", "start", "generated=" + VanillaChunkSave.generated(level, chunk));
+        var runtime = EscrowRuntime.of(level.getServer()); var barrier = new EscrowBarrier(trace.barrier());
         var targets = List.of(
                 new EscrowBarrier.Target(op1.source(), first.sourceState(), EscrowTestEndpoints.validator(op1.source(), first.sourceState())),
                 new EscrowBarrier.Target(op2.source(), second.sourceState(), EscrowTestEndpoints.validator(op2.source(), second.sourceState())));
         var proof = new EscrowGameTestProof<EscrowBarrier.JointResult>(level.getServer()::getTickCount,
-                (tick, completed) -> EscrowGameTestProof.freshTerrainSave(level, chunk)
-                        && barrier.beginJoint(runtime.store(level), targets, tick, completed),
+                (tick, completed) -> {
+                    if (!EscrowGameTestProof.freshTerrainSave(level, chunk)) { return false; }
+                    trace.stage("terrain", "capture", "after vanilla save");
+                    return barrier.beginJoint(runtime.store(level), targets, tick, result -> {
+                        trace.stage("terrain", "result", result.reason());
+                        completed.accept(result);
+                    });
+                },
                 EscrowBarrier.JointResult::confirmed, EscrowBarrier.JointResult::reason, result -> {
                     helper.assertTrue(result.confirmed() && result.proofs().size() == 2, "Joint terrain proof did not confirm both endpoints: " + result.reason() + ", proofs " + result.proofs().size());
                     var a = result.proofs().get(op1.source().key()); var b = result.proofs().get(op2.source().key());
@@ -79,15 +87,24 @@ public final class EscrowCoreGameTests {
         var fixture = EscrowTestEndpoints.create(level, position, UUID.randomUUID());
         var op = fixture.operation(1); fixture.apply(op);
         level.entityManager.storeChunkSections(chunk.toLong(), value -> { });
-        var store = EscrowRuntime.of(level.getServer()).store(level); var barrier = new EscrowBarrier();
+        var trace = new EscrowProofTrace("own", level.getServer());
+        trace.stage("terrain", "start", "generated=" + VanillaChunkSave.generated(level, chunk));
+        var store = EscrowRuntime.of(level.getServer()).store(level); var barrier = new EscrowBarrier(trace.barrier());
         AtomicInteger phase = new AtomicInteger();
         var proofs = new java.util.ArrayList<EscrowGameTestProof<EscrowBarrier.Result>>();
         for (int index = 0; index < 2; index++) {
             var endpoint = index == 0 ? op.source() : op.destination(); var frontier = index == 0 ? fixture.sourceState() : fixture.bankState();
+            String name = endpoint.kind() == EscrowEndpoint.Kind.ENTITY ? "entity" : "terrain";
             proofs.add(new EscrowGameTestProof<>(level.getServer()::getTickCount,
-                    (tick, completed) -> (endpoint.kind() == EscrowEndpoint.Kind.ENTITY
-                            || EscrowGameTestProof.freshTerrainSave(level, chunk))
-                            && barrier.begin(store, endpoint, frontier, EscrowTestEndpoints.validator(endpoint, frontier), tick, completed),
+                    (tick, completed) -> {
+                        if (endpoint.kind() != EscrowEndpoint.Kind.ENTITY && !EscrowGameTestProof.freshTerrainSave(level, chunk)) { return false; }
+                        boolean admitted = barrier.begin(store, endpoint, frontier, EscrowTestEndpoints.validator(endpoint, frontier), tick, result -> {
+                            trace.stage(name, "result", result.reason());
+                            completed.accept(result);
+                        });
+                        if (admitted) { trace.stage(name, "capture", "admitted"); }
+                        return admitted;
+                    },
                     EscrowBarrier.Result::confirmed, EscrowBarrier.Result::reason, result -> {
                         helper.assertTrue(result.confirmed(), "Own-store/force/stable readback did not confirm: " + result.reason());
                         helper.assertTrue(result.proof().capture().stored().isDone()
@@ -100,10 +117,11 @@ public final class EscrowCoreGameTests {
         // chunk before every terrain attempt. Its cooldown does not cover entity autosaves or guarantee a wall-clock
         // deadline. Each frozen frontier may retry only SUPERSEDING_SAVE, after the unchanged product backoff.
         // Pace the asynchronous chunk, entity and IO waits to real server ticks (WORKER-RULES).
-        var pacer = new GameTestTickPacer(helper.getLevel().getServer());
+        var pacer = new GameTestTickPacer(helper.getLevel().getServer()); AtomicBoolean loaded = new AtomicBoolean();
         helper.onEachTick(() -> {
             pacer.pace();
             barrier.tick(level.getServer().getTickCount()); if (!level.areEntitiesLoaded(fixture.bank().chunkPosition().toLong())) { return; }
+            if (loaded.compareAndSet(false, true)) { trace.stage("entity", "loaded", "entity sections"); }
             int index = phase.get(); if (index >= 2) {
                 helper.assertTrue(EscrowTestEndpoints.amount(fixture.source().getPersistentData()) == 4_000
                         && EscrowTestEndpoints.amount(fixture.bank().getPersistentData()) == 1_000, "Native conservation failed");
