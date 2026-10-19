@@ -1,7 +1,8 @@
 # TASK W100-review: independent read-only review of cargo leaf C-K (the escrow core's cargo kinds)
 
 Root: Claude. Date: 2026-10-19. Read [WORKER-RULES](WORKER-RULES.md) first. You are a new session and a reviewer: change
-nothing in any repository worktree. Do not start subagents. Codex implemented W100, so this is a fresh Claude session.
+nothing in any repository worktree. Do not start subagents. Codex implemented W100. Both Claude slots were busy, so Root runs this
+review in a fresh Codex session that shares no context with the implementer.
 
 | Item | Value |
 |---|---|
