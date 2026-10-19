@@ -32,6 +32,7 @@ final class EscrowLoaderCutProbe {
     private final boolean recovery, bi, creation, chain;
     private final AtomicBoolean paused = new AtomicBoolean();
     private final List<FluidFuelLoaderBlockEntity> loaders = new ArrayList<>();
+    private final EscrowLoaderStorageProbe storage;
     private RocketEntity rocket;
     private boolean firstTick, done, retrying, pendingObserved, primed;
     private volatile boolean armed;
@@ -52,7 +53,9 @@ final class EscrowLoaderCutProbe {
         bi = cut.endsWith("_BI"); boundary = boundary(cut);
         chain = boundary.matches("CHAIN_.*");
         creation = boundary.startsWith("N");
-        EscrowTags.require(boundary.matches("N[01]|N2_(DEFINITE|UNKNOWN)|N3_(FULL|ELIGIBILITY|NOT_LOADED|PREFLIGHT)|K([0-9]|10)|K2_ACK|K3_DEBIT|K6_FORCED|K10_ACK|C3_FROZEN|C4_BEFORE|C4_AFTER|C6_BEFORE|C6_AFTER|CHAIN_(PREFIX|PROVED|REPLACED|RELEASED)")
+        storage = !recovery && EscrowLoaderStorageProbe.selected(boundary)
+                ? new EscrowLoaderStorageProbe(server, cut, boundary, this::pause) : null;
+        EscrowTags.require((EscrowLoaderStorageProbe.selected(boundary) || boundary.matches("N[01]|N2_(DEFINITE|UNKNOWN)|N3_(FULL|ELIGIBILITY|NOT_LOADED|PREFLIGHT)|K([0-9]|10)|K2_ACK|K3_DEBIT|K6_FORCED|K10_ACK|C3_FROZEN|C4_BEFORE|C4_AFTER|C6_BEFORE|C6_AFTER|CHAIN_(PREFIX|PROVED|REPLACED|RELEASED)"))
                 && (!bi || boundary.matches("K[269]|CHAIN_REPLACED")), "Unknown loader cut");
         if (!recovery && (primeTerrain(boundary) || chain)) {
             saves = event -> {
@@ -83,6 +86,12 @@ final class EscrowLoaderCutProbe {
     static String boundary(String cut) {
         String name = cut.substring(PREFIX.length()).replace("_BI", "");
         return switch (name) {
+            case "E4L1_BEFORE" -> "K1";
+            case "E4L1_REPLACED" -> "K2";
+            case "E4L1_ACK" -> "K2_ACK";
+            case "E4L2_BEFORE" -> "K8";
+            case "E4L2_REPLACED" -> "K9";
+            case "E4L2_ACK" -> "K10_ACK";
             case "D2_C0" -> "K0";
             case "D2_C1_BEFORE" -> "K1";
             case "D2_C1_REPLACED" -> "K2";
@@ -149,6 +158,7 @@ final class EscrowLoaderCutProbe {
             }
         }
         if (recovery || !armed) { return; }
+        if (storage != null) { storage.checkpoint(name, loader(), rocket); }
         if (chain) { chainCheckpoint(name); }
         if (boundary.equals("N2_DEFINITE") && (name.equals("BASELINE_STAGED") || name.equals("K8"))) {
             // A definite failure cancels its request, so a later baseline attempt has a later writer generation.
@@ -236,6 +246,7 @@ final class EscrowLoaderCutProbe {
 
     private void pause(String hook) {
         if (!paused.compareAndSet(false, true)) { return; }
+        if (storage != null) { storage.close(); }
         if (saves != null) { net.minecraftforge.common.MinecraftForge.EVENT_BUS.unregister(saves); saves = null; }
         AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_MATRIX_PAUSED cut={} hook={} first_store={} thread={}",
                 cut, hook, firstStore, Thread.currentThread().getName());
@@ -251,6 +262,7 @@ final class EscrowLoaderCutProbe {
         if (began < 0) { began = server.getTickCount(); }
         EscrowTags.require(server.getTickCount() - began <= 2_400, "Loader matrix exceeded its bounded wait");
         if (recovery) { recover(); return; }
+        if (storage != null && step > 0) { storage.tick(loader(), rocket); }
         if (step == 0) {
             var owner = UUID.randomUUID();
             rocket = rocket(level, ORIGIN, owner, bi ? bipropellant(2_000, 2_000) : mono(boundary.equals("N3_PREFLIGHT") ? 8_000 : 2_000));
@@ -407,7 +419,7 @@ final class EscrowLoaderCutProbe {
         long total = loaders.stream().mapToLong(FluidFuelLoaderEscrowFixtures::amount).sum()
                 + bank(rocket, false) + bank(rocket, true) + held(server, rocket, loaders);
         EscrowTags.require(total == loaders.size() * 5_000L, "Native restart violated raw control total");
-        long expected = boundary.equals("K0") || boundary.equals("K1") ? 0 : bi || chain ? 2 : 1;
+        long expected = boundary.equals("K0") || boundary.equals("K1") || boundary.startsWith("E4L1_") ? 0 : bi || chain ? 2 : 1;
         if (server.getTickCount() - began >= 100 && settled(expected)) { observe("recovered"); done = true; result(); }
     }
 

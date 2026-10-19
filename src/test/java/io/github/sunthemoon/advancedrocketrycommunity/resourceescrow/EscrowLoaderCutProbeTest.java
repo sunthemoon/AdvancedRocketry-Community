@@ -56,6 +56,19 @@ class EscrowLoaderCutProbeTest {
         }
     }
 
+    @Test void loaderStorageAliasesSelectOnlyTheExistingFaultCases() {
+        assertEquals("E4L1_UNKNOWN", EscrowLoaderStorageProbe.writerCase("LF_M_E4L1_UNKNOWN"));
+        assertEquals("E4L2_UNKNOWN", EscrowLoaderStorageProbe.writerCase("LF_M_E4L2_UNKNOWN"));
+        assertEquals("E4L2_RESAVE", EscrowLoaderStorageProbe.writerCase("LF_M_E4L2_RESAVE_RESOLVED"));
+        for (String name : List.of("LF_M_N2_UNKNOWN", "E4L1_UNKNOWN", "LF_M_E1", "", "LF_M_K1")) {
+            assertEquals(name, EscrowLoaderStorageProbe.writerCase(name));
+        }
+        assertTrue(EscrowLoaderStorageProbe.selected("E4L1_FAIL"));
+        assertTrue(EscrowLoaderStorageProbe.selected("E4L2_RESAVE_RESOLVED"));
+        assertFalse(EscrowLoaderStorageProbe.selected("E1"));
+        assertFalse(EscrowLoaderStorageProbe.selected("E4L1_RESAVE"));
+    }
+
     @Test void baselineObservationsBracketTheSameNativeReplacementWithoutChangingAcknowledgement() throws Exception {
         Path file = temporary.resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName());
         var root = EscrowLedger.empty(UUID.randomUUID()).generation(1);

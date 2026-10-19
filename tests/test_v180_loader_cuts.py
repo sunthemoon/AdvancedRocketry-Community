@@ -79,6 +79,23 @@ def chain_fixture(cut, restart):
 
 
 class LoaderCutsTest(unittest.TestCase):
+    def test_storage_failure_requires_exact_pending_reservation_and_outcome(self):
+        for name in ("E4L1_FAIL", "E4L1_UNKNOWN", "E4L2_FAIL", "E4L2_UNKNOWN"):
+            cut = oracle.PREFIX + name
+            unknown = name.endswith("UNKNOWN"); l1 = name.startswith("E4L1")
+            line = (f"ARCE_LOADER_MATRIX_FAILURE cut={cut} unknown={str(unknown).lower()} "
+                    f"records={int(not l1)} pending={int(unknown or not l1)} issued={int(not l1)}")
+            runner.storage_observations(cut, [line])
+            for bad in ([], [line, line], [line.replace("issued=", "issued=9")], [line.replace("pending=", "pending=9")]):
+                with self.assertRaises(oracle.smoke.SmokeError): runner.storage_observations(cut, bad)
+
+    def test_storage_l1_failure_does_not_apply_and_l2_failure_never_retires(self):
+        for cut in ("LF_M_E4L1_FAIL", "LF_M_E4L1_UNKNOWN"):
+            for restart in range(3):
+                self.assertEqual(oracle.expected("LF_M_K1", restart), oracle.expected(cut, restart))
+        for cut in ("LF_M_E4L2_FAIL", "LF_M_E4L2_UNKNOWN", "LF_M_E4L2_RESAVE", "LF_M_E4L2_RESAVE_RESOLVED"):
+            with self.assertRaises(oracle.smoke.SmokeError): oracle.check(fixture("LF_M_K9", 0), cut, 0)
+
     def test_c4_before_requires_destination_only_durable_state(self):
         self.assertEqual(oracle.expected("LF_M_K5", 0), oracle.expected("LF_M_D2_C4_BEFORE", 0))
         for wrong in ("LF_M_K4", "LF_M_K6"):

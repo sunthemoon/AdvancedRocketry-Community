@@ -167,7 +167,7 @@ public final class EscrowRuntime {
         if (sourceClockProbe != null) { sourceClockProbe.checkpoint(cut); }
     }
     io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile.Committer ledgerCommitter(MinecraftServer server) {
-        String testCase = System.getProperty("advancedrocketrycommunity.escrowCase", "");
+        String testCase = EscrowLoaderStorageProbe.writerCase(System.getProperty("advancedrocketrycommunity.escrowCase", ""));
         if (Boolean.getBoolean(EscrowTestEndpoints.HOOKS)
                 && "start".equals(System.getProperty("advancedrocketrycommunity.escrowScenario"))
                 && (testCase.equals("E4L1_UNKNOWN") || testCase.equals("E4L2_UNKNOWN") || testCase.equals("E4L2_RESAVE")

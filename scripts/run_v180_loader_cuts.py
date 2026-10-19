@@ -27,11 +27,32 @@ from run_v180_rocket_settlement_completion import require_lock
 REPO = Path(__file__).resolve().parents[1]
 LOCK = Path("D:/GitHub/ARCE-Task-Evidence/locks/heavy-jvm")
 HOOK_FILES = tuple("src/main/java/io/github/sunthemoon/advancedrocketrycommunity/resourceescrow/" + name + ".java"
-                   for name in ("EscrowLoaderReleaseProbe", "EscrowLoaderCutProbe", "EscrowReleaseProbe", "EscrowLedgerWriter", "EscrowFillQueue",
+                   for name in ("EscrowLoaderReleaseProbe", "EscrowLoaderCutProbe", "EscrowLoaderStorageProbe", "EscrowReleaseProbe", "EscrowLedgerWriter", "EscrowFillQueue",
                                 "EscrowReconciliationAction", "EscrowReconciliationDriver", "EscrowRuntime", "EscrowBarrier"))
 FIRST = re.compile(r"ARCE_LOADER_MATRIX_FIRST cut=(\S+) recovery=(true|false) delegate=(\w+) issued=(\d+) records=(\d+) pending=(\d+)")
 PAUSED = re.compile(r"ARCE_LOADER_MATRIX_PAUSED cut=(\S+) hook=(\S+) first_store=(\w+) thread=(.+)")
 BASELINE_FAILURE = re.compile(r"ARCE_LOADER_MATRIX_BASELINE_FAILURE cut=(\S+) failure=(\d+) outcome=(\w+) pending=(\d+) unavailable=(true|false) status=(\w+)")
+STORAGE_FAILURE = re.compile(r"ARCE_LOADER_MATRIX_FAILURE cut=(\S+) unknown=(true|false) records=(\d+) pending=(\d+) issued=(\d+)")
+
+
+def storage_observations(cut: str, lines: list[str]) -> None:
+    name = cut.removeprefix(oracle.PREFIX)
+    if name == "E2_CAPTURE":
+        one_match(re.compile(r"ARCE_LOADER_MATRIX_SUPERSEDED cut=" + re.escape(cut)
+                             + r" saves=1 io_failures=0 records=1 pending=1"), lines)
+    if name.endswith(("_FAIL", "_UNKNOWN")) or name.startswith("E4L2_RESAVE"):
+        failures = [match for line in lines if (match := STORAGE_FAILURE.search(line))]
+        unknown = not name.endswith("_FAIL")
+        l1 = name.startswith("E4L1")
+        expected = [(unknown, int(not l1), int(unknown or not l1), int(not l1))]
+        if "RESAVE" in name:
+            expected.append(expected[0])
+            one_match(re.compile(r"ARCE_LOADER_MATRIX_RESAVE cut=" + re.escape(cut) + r" proof_before=true proof_after=false"), lines)
+        if name.endswith("_RESOLVED"):
+            expected.append((False, 1, 1, 1))
+        oracle.require(all(m[1] == cut for m in failures)
+                       and [(m[2] == "true", int(m[3]), int(m[4]), int(m[5])) for m in failures] == expected,
+                       "Failure outcome changed records, issued sequence or uncertain reservations")
 
 
 def creation_observations(cut: str, lines: list[str]) -> None:
@@ -146,6 +167,10 @@ def run_cut(args, cut: str, evidence: Path, owner: str, pins: dict) -> dict:
                 if cut == "LF_M_D2_C4_BEFORE":
                     actual_cut = "LF_M_K5"
                     ordered = paused[3] == "DESTINATION"
+                if cut == "LF_M_E2_CAPTURE":
+                    # The source capture is superseded. A destination-first driver's earlier proof already stored
+                    # its bank; a source-first driver has not stored the bank. Neither case permits retirement.
+                    actual_cut = "LF_M_K6" if paused[3] == "DESTINATION" else "LF_M_K4"
             else:
                 process.wait_for(re.compile(r"ARCE_LOADER_MATRIX_RESULT cut=" + re.escape(cut) + r"(?:\s|$)"), args.startup_timeout)
                 process.command("stop"); start["exit_code"] = process.finish()
@@ -163,6 +188,8 @@ def run_cut(args, cut: str, evidence: Path, owner: str, pins: dict) -> dict:
                     one_match(re.compile(r"ARCE_LOADER_MATRIX_PRIMED cut=" + re.escape(cut) + r" tank=5000 epoch=0 stores=0"), lines)
                 if creation and restart == 0:
                     creation_observations(cut, lines)
+                if cut in oracle.S4 and restart == 0:
+                    storage_observations(cut, lines)
                 if creation and restart:
                     oracle.require(any("phase=creation_restart " in line for line in lines), "Missing unchanged creation-restart observation")
             except smoke.SmokeError as failure:
@@ -239,10 +266,13 @@ def main() -> int:
     parser.add_argument("--task-id", default="W107", help="Owner of this invocation's heavy-JVM lock")
     parser.add_argument("--case", action="append", choices=oracle.CASES)
     parser.add_argument("--s3", action="store_true", help="Select the complete B3-S3 matrix (unless --case is supplied)")
+    parser.add_argument("--s4", action="store_true", help="Select implemented B3-S4 cuts; this is not a claim of full family coverage")
     parser.add_argument("--startup-timeout", type=float, default=240)
     args = parser.parse_args()
     if args.s3 and not args.case:
         args.case = oracle.S3
+    if args.s4 and not args.case:
+        args.case = oracle.S4
     try:
         report = run(args)
         return 0 if report["status"] == "PASS_SELECTED" else 1

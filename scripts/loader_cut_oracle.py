@@ -19,7 +19,12 @@ D2 = {"D2_C0": "K0", "D2_C1_BEFORE": "K1", "D2_C1_REPLACED": "K2", "D2_C1_ACK": 
       "D2_C7_REPLACED": "K9", "D2_C7_ACK": "K10_ACK", "D2_C8": "K10", "D2_C7_REPLACED_BI": "K9_BI"}
 CHAINS = ("C1", "C2", "C2_PARTIAL_REPLACED", "C2_PARTIAL_RELEASED", "C2_PARTIAL_REPLACED_BI")
 S3 = tuple(PREFIX + name for name in tuple(D2) + CHAINS)
-CASES = tuple(PREFIX + name for name in CREATION + NORMAL + SUPPLEMENTAL + CREATION_SUPPLEMENTAL) + S3
+STORAGE = {"E4L1_FAIL": "K1", "E4L1_UNKNOWN": "K1", "E4L2_FAIL": "K8", "E4L2_UNKNOWN": "K8",
+           "E4L2_RESAVE": "K8", "E4L2_RESAVE_RESOLVED": "K8", "E2_CAPTURE": "K4",
+           "E4L1_BEFORE": "K1", "E4L1_REPLACED": "K2", "E4L1_ACK": "K2_ACK",
+           "E4L2_BEFORE": "K8", "E4L2_REPLACED": "K9", "E4L2_ACK": "K10_ACK"}
+S4 = tuple(PREFIX + name for name in STORAGE)
+CASES = tuple(PREFIX + name for name in CREATION + NORMAL + SUPPLEMENTAL + CREATION_SUPPLEMENTAL) + S3 + S4
 NOT_RUN = {}
 CAPACITY_POSITIONS = [(66, 100, 64), (66, 100, 65), (67, 100, 64), (67, 100, 65), (68, 100, 65), (69, 100, 65)]
 LOADER = "advancedrocketrycommunity:fluid_fuel_loader"
@@ -51,6 +56,8 @@ def expected(cut: str, restart: int) -> dict:
     require(cut in CASES, "Unknown cut")
     if cut.removeprefix(PREFIX) in D2:
         cut = PREFIX + D2[cut.removeprefix(PREFIX)]
+    if cut.removeprefix(PREFIX) in STORAGE:
+        cut = PREFIX + STORAGE[cut.removeprefix(PREFIX)]
     name = cut.removeprefix(PREFIX).removesuffix("_BI")
     bi = cut.endswith("_BI")
     creation = name in CREATION + CREATION_SUPPLEMENTAL
