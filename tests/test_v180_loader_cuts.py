@@ -69,7 +69,8 @@ def chain_fixture(cut, restart):
             rocket["resource_escrow"]["markers"].append(dict(marker, role="DESTINATION", epoch_after=seq))
         if not restart and ("PARTIAL" not in cut or seq == 2):
             root["records"].append(dict(op_id=marker["op_id"], seq=seq,
-                source=dict(identity=loader["device"], type=oracle.LOADER), destination=dict(identity="physical"),
+                source=dict(identity=loader["device"], type=oracle.LOADER, before_epoch=0, after_epoch=1),
+                destination=dict(identity="physical", before_epoch=seq-1, after_epoch=seq),
                 payload=dict(FluidName=fluid, Amount=1000), native_binding=dict(complete=1, kind="FUEL_VECTOR_V1")))
     propulsion = rocket["flight_data"]["fuel"]["propulsion"]
     propulsion["primary"]["amount"] = 1000 if bi else 1000 * prefix
@@ -89,6 +90,8 @@ class LoaderCutsTest(unittest.TestCase):
         for cut in ("LF_M_C1", "LF_M_C2", "LF_M_C2_PARTIAL_REPLACED", "LF_M_C2_PARTIAL_REPLACED_BI"):
             good = fixture(cut, 0)
             mutations = [lambda d: d["ledger"]["records"][0].update(seq=9),
+                         lambda d: d["ledger"]["records"][0]["destination"].update(before_epoch=7),
+                         lambda d: d["rocket"]["RocketEntityData"]["flight_data"]["fuel"].update(committed_debits=[{}]),
                          lambda d: d["loaders"][1]["arce_fluid_fuel_loader"]["tank"].update(Amount=5000),
                          lambda d: d["rocket"]["RocketEntityData"]["resource_escrow"].update(resource_epoch=0),
                          lambda d: d["rocket"]["RocketEntityData"]["resource_escrow"]["markers"][0].update(op_id="other"),

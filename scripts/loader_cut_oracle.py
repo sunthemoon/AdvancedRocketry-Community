@@ -102,6 +102,8 @@ def check(disk: dict, cut: str, restart: int) -> dict:
             and not flight["passengers"]["assignments"] and "active_transfer_id" not in flight
             and data["assembly_transaction_id"] == flight["logical_rocket_id"], "Changed native flight identity/authority")
     propulsion = flight["fuel"]["propulsion"]
+    require(not flight["fuel"].get("committed_debits", []) and "flight_plan" not in flight,
+            "Fill introduced a flight withdrawal or plan")
     amounts = [propulsion[key]["amount"] for key in ("primary", "oxidizer")]
     require(amounts == ([1000, 1000 * exp["destination"]] if bi else [1000 * exp["destination"], 0]), "Wrong raw fuel vector")
     sequence = 2 if bi else 1
@@ -148,6 +150,8 @@ def check_chain(disk: dict, cut: str, restart: int) -> dict:
             and not flight["passengers"]["assignments"] and "active_transfer_id" not in flight
             and data["assembly_transaction_id"] == flight["logical_rocket_id"], "Changed chain flight identity/authority")
     propulsion = flight["fuel"]["propulsion"]
+    require(not flight["fuel"].get("committed_debits", []) and "flight_plan" not in flight,
+            "Chain introduced a flight withdrawal or plan")
     require([propulsion[k]["amount"] for k in ("primary", "oxidizer")] ==
             ([1000, 1000 * (prefix - 1)] if bi else [1000 * prefix, 0]), "Wrong chain raw fuel vector")
     identity = dict(physical=rocket["UUID"], logical=data["assembly_transaction_id"], owner=data["owner_id"], loaders=[])
@@ -181,6 +185,8 @@ def check_chain(disk: dict, cut: str, restart: int) -> dict:
         seq = op["seq"]; loader = devices[seq - 1]["arce_fluid_fuel_loader"]
         require(op["op_id"] == ids[seq] and op["source"]["identity"] == loader["device"]
                 and op["source"]["type"] == LOADER and op["destination"]["identity"] == rocket["UUID"]
+                and (op["source"]["before_epoch"], op["source"]["after_epoch"]) == (0, 1)
+                and (op["destination"]["before_epoch"], op["destination"]["after_epoch"]) == (seq - 1, seq)
                 and op["payload"] == {"FluidName": loader["tank"]["FluidName"], "Amount": 1000}
                 and op["native_binding"]["complete"] == 1 and op["native_binding"]["kind"] == "FUEL_VECTOR_V1",
                 "Chain record is not its complete native fill")
