@@ -43,6 +43,28 @@ Art, models, recipes, final text and provenance are C-D's. If an existing check 
 status text for a registered block, add only the English and Chinese strings of section 5.4 and 5.5 through
 the existing language providers and say so in the record; if a check needs art or a recipe, stop and report.
 
+## Root decision (2026-10-20, after W109 stopped at `87985dc3`): C-A takes C-D's resource part
+
+The unchanged `RegisteredContentResourcesTest` requires a blockstate, a loot table, an item model and English and
+Chinese names for every registered block, and `RegisteredItemReachabilityTest` requires a reachable recipe for every
+item, so C-A cannot merge without them. C-A therefore also builds the resource part of C-D, exactly as
+[records/W11CD-DESIGN.md](records/W11CD-DESIGN.md) section 5.5 states for the two fluid devices:
+- before authoring, `docs/provenance/v1.8.0-c17a-rocket-fluid-cargo-preauthoring.md` (NEW code and text and GENERATED
+  output, MIT, author, reviewer and date, as docs/08 requires);
+- original 16x16 textures drawn in code (`V180RocketCargoArt`, with distinct port marks for load and unload), models,
+  blockstates, loot, the two shaped recipes of section 5.5 (H `minecraft:hopper`, L `liquid_io_board`, M
+  `machine_casing`, T an empty `pressurized_tank` through the existing `EmptyTankIngredient`), and the names and
+  status text in en_us and zh_cn through the providers (`V180RocketCargoData`), all under `src/generated/v1.8/resources`;
+- after generation, the matching provenance `.json` records with generator and target hashes, checked by
+  `scripts/validate_v180_provenance.py`, and the art screen
+  `tools/audit/screen_generated_art.py --root src/generated/v1.8/resources` with both pinned client JARs (as W53 ran
+  it): every texture CLEAR, with no tool or threshold change; if a texture lands near a vanilla one, change the design;
+- no upstream, LibVulpes, Minecraft or Forge asset.
+
+Then remove the stop above for art and recipes: the unchanged resource and reachability tests must pass. C-D's S1
+(packaged sidedness, unchanged old chest rockets, two restarts of a tank snapshot fixture, protected roots and cut-G2
+natively) stays for a later leaf. `runData` runs twice with a clean diff.
+
 ## Tests (the C-A row)
 
 A1 (GameTests) for: the local capabilities; simulation, stale and reentrant calls; ownership, range and
@@ -70,7 +92,8 @@ Write scope: the new device classes, menu, screen, carrier use, status enum, lin
 registration classes, loot and language providers and data generation entry points (append this leaf's
 entries only), the generated output, and the record.
 
-Not in this task: admission and escrow operations (C-E), art, recipes and provenance (C-D), item cargo (W11d),
+Not in this task: admission and escrow operations (C-E), C-D's native S1 checks (the resource part is now in scope,
+as Root's decision above says), item cargo (W11d),
 S2 cuts, ADRs, the risk register, status files, the ledger, build scripts and workflows (Root). No Mixin and no
 network packet. If R-035 or ADR-065's cargo note does not match what you build, stop and report. A class over
 500 lines gets a responsibility check in the record; one over 800 lines is a stop and report.
