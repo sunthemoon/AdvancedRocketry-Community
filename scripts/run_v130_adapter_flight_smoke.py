@@ -41,6 +41,9 @@ RELATIVE = {(-1, 0, 0): HOST + ":rocket_fuel_tank", (0, 0, 0): HOST + ":rocket_m
             (1, 0, 0): CARGO, (0, 1, 0): HOST + ":rocket_seat", (0, 2, 0): HOST + ":guidance_computer"}
 PHASES = ("moon-landing", "earth-landing", "disassembly", "container-restart")
 TRANSFER_JOURNAL = "advancedrocketrycommunity_rocket_transfers.dat"
+# v1.8 (W44): the journal root is schema 3 and also holds the world-first Moon landing state and its format epoch
+# (ManagedSavedDataType.FIRST_MOON_LANDING_JOURNAL_SCHEMA); each transfer record keeps its own schema 2.
+TRANSFER_ROOT_SCHEMA = 3
 OWNER = "00000000-0000-0000-0000-000000000005"
 REQUIRED_FUEL = 372  # Bundled route 50, mass 210, gravity 1000/165; no data packs.
 RELOCATED = {"snapshot_id", "source_dimension", "source_origin", "created_at_game_time", "content_hash"}
@@ -118,7 +121,7 @@ def read_transfers(path: Path) -> dict:
     require(len(payload) <= 4 * 1024**2, "Transfer journal exceeds decoded bound")
     root = recovery.NbtReader(payload).read_root()
     data = root.get("data") if isinstance(root, dict) else None
-    require(isinstance(data, dict) and data.get("schema_version") == 2
+    require(isinstance(data, dict) and data.get("schema_version") == TRANSFER_ROOT_SCHEMA
             and isinstance(data.get("transfers"), list), "Invalid transfer journal root")
     return data
 

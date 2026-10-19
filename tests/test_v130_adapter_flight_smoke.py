@@ -350,13 +350,15 @@ class BoundsAndDriverTests(unittest.TestCase):
                 runner.decode_entities(value, -1, 0)
 
     def test_transfer_reader_checks_real_root_and_expansion_bound(self):
-        raw = b"\x0a\x00\x00\x0a\x00\x04data\x03\x00\x0eschema_version\x00\x00\x00\x02"
+        raw = b"\x0a\x00\x00\x0a\x00\x04data\x03\x00\x0eschema_version\x00\x00\x00\x03"
         raw += b"\x09\x00\x09transfers\x0a\x00\x00\x00\x00\x00\x00"
         with tempfile.TemporaryDirectory() as temp:
             path = Path(temp) / "transfers.dat"
             path.write_bytes(gzip.compress(raw))
-            self.assertEqual({"schema_version": 2, "transfers": []}, runner.read_transfers(path))
-            for bad in (raw.replace(b"transfers", b"wronglist"), b"x" * (4 * 1024**2 + 1)):
+            self.assertEqual({"schema_version": 3, "transfers": []}, runner.read_transfers(path))
+            for bad in (raw.replace(b"transfers", b"wronglist"), b"x" * (4 * 1024**2 + 1),
+                        raw.replace(b"\x00\x00\x00\x03", b"\x00\x00\x00\x02"),
+                        raw.replace(b"\x00\x00\x00\x03", b"\x00\x00\x00\x04")):
                 path.write_bytes(gzip.compress(bad))
                 with self.assertRaises((runner.SmokeError, ValueError)):
                     runner.read_transfers(path)
