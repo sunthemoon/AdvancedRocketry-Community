@@ -158,7 +158,7 @@ class EnvironmentRun(recovery.RecoveryRun):
                     definition = json.loads(archive.read(MOON_DATA))
                 definition["gravity_multiplier"] = 0.4
                 write_json(target, definition)
-                self.query(process, "reload", re.compile(r"Accepted celestial catalog generation 2 with 3 bodies"), 60)
+                self.query(process, "reload", recovery.planetary_catalog(Path(self.artifacts[0]["path"]), "2"), 60)
                 probes.append(self.probe(process, "reloaded_moon", HOST + ":moon", FAR, surface("moon", 0.4), True))
                 probes.append(self.probe(process, "reloaded_orbit", HOST + ":space", self.receipts["moon"]["pad"],
                                          orbital("moon", self.receipts["moon"]["id"])))

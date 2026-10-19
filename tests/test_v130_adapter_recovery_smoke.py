@@ -251,6 +251,33 @@ class RecoveryParsingTests(unittest.TestCase):
             with self.subTest(lines=lines, phase=phase), self.assertRaises(runner.SmokeError):
                 runner.audit_log(lines, phase)
 
+    def test_the_reload_receipt_carries_the_host_jars_bundled_counts(self):
+        # The line as the v1.8 host logged it in W101's native3 atmosphere run (21:04:10).
+        line = ("[21:04:10] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: "
+                "Accepted planetary catalog generation 2 with 11 bodies, 12 routes and 13 anchors")
+        with tempfile.TemporaryDirectory() as temp:
+            def jar(bodies, routes):
+                path = Path(temp) / f"host-{bodies}-{routes}.jar"
+                with zipfile.ZipFile(path, "w") as archive:
+                    for index in range(bodies):
+                        archive.writestr(f"data/{runner.HOST}/celestial_bodies/body{index}.json", "{}")
+                    for index in range(routes):
+                        archive.writestr(f"data/{runner.HOST}/travel_routes/route{index}.json", "{}")
+                    archive.writestr(f"data/{runner.HOST}/celestial_bodies/readme.txt", "")
+                    archive.writestr(f"data/other/celestial_bodies/foreign.json", "{}")
+                return path
+            receipt = runner.planetary_catalog(jar(11, 12), "[2-9][0-9]*")
+            self.assertIsNotNone(receipt.search(line))
+            self.assertIsNotNone(runner.planetary_catalog(jar(11, 12), "2").search(line))
+            for wrong in (line.replace("11 bodies", "3 bodies"), line.replace("12 routes", "11 routes"),
+                          line.replace("generation 2", "generation 1"),
+                          line.replace("planetary catalog", "celestial catalog")):
+                self.assertIsNone(receipt.search(wrong), wrong)
+            self.assertIsNone(runner.planetary_catalog(jar(11, 12), "3").search(line))
+            for bodies, routes in ((2, 12), (127, 12), (11, 0)):
+                with self.subTest(bodies=bodies, routes=routes), self.assertRaises(runner.SmokeError):
+                    runner.planetary_catalog(jar(bodies, routes), "2")
+
     def test_only_one_cleared_first_event_startup_hold_is_accepted(self):
         # The lines as the v1.8 host logged them in W101's first native run (flight, moon-landing, 20:33:32).
         prefix = "[20:33:32] [Server thread/{}] [io.gi.su.ad.AdvancedRocketryCommunity/]: "

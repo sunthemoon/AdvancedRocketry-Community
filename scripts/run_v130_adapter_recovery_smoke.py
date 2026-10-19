@@ -125,6 +125,19 @@ def artifact(path: Path, mod_id: str, version: str) -> dict:
             "bytes": path.stat().st_size, "sha256": server_smoke.digest_file(path)}
 
 
+def planetary_catalog(host_jar: Path, generation: str) -> re.Pattern:
+    """The reload receipt of the bundled catalog. v1.4 replaced the celestial catalog's receipt ("with 3 bodies") with
+    the planetary catalog's; the body and route counts are the tested host JAR's bundled definitions, counted as
+    run_v140_celestial_schema_smoke counts them (W101)."""
+    with zipfile.ZipFile(safe_path(host_jar)) as archive:
+        names = archive.namelist()
+    bodies, routes = (sum(name.startswith(f"data/{HOST}/{directory}/") and name.endswith(".json") for name in names)
+                      for directory in ("celestial_bodies", "travel_routes"))
+    if not 3 <= bodies <= 126 or not 1 <= routes <= 512:
+        raise SmokeError(f"Host JAR bundles an implausible catalog: {bodies} bodies, {routes} routes")
+    return re.compile(rf"Accepted planetary catalog generation {generation} with {bodies} bodies, {routes} routes and \d+ anchors")
+
+
 def validate_inputs(server: Path, evidence: Path, host: Path, fixture: Path, version: str) -> tuple:
     server, evidence, host, fixture = map(safe_path, (server, evidence, host, fixture))
     if (not server.is_dir() or {p.name for p in server.iterdir()} != {"libraries"}

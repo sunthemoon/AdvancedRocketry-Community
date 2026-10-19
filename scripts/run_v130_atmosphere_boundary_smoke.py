@@ -118,7 +118,7 @@ class AtmosphereRun(recovery.RecoveryRun):
                    {"replace": False, "values": [BOUNDARY] if enabled else []})
 
     def reload(self, process) -> None:
-        self.query(process, "reload", re.compile(r"Accepted celestial catalog generation [2-9][0-9]* with 3 bodies"))
+        self.query(process, "reload", recovery.planetary_catalog(Path(self.artifacts[0]["path"]), "[2-9][0-9]*"))
 
     def _run_phase(self, phase: str, directory: Path, document: dict) -> dict:
         if self.world_identity:
