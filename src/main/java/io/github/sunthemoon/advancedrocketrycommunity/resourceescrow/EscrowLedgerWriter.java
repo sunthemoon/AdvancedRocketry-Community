@@ -151,12 +151,16 @@ public final class EscrowLedgerWriter implements AutoCloseable {
             var policy = new CheckedSavedDataPolicy(ManagedSavedDataType.RESOURCE_ESCROW, (staged, target) -> {
                 if (snapshot.ledger().writerGeneration() > 1) {
                     checkpoint.accept(snapshot.ledger().records().isEmpty() ? "K8" : "K1");
+                } else {
+                    checkpoint.accept("BASELINE_STAGED");
                 }
                 refused[0] = !beforeReplace.getAsBoolean();
                 EscrowTags.require(!refused[0], "Proof invalidated before ledger replacement");
                 attempted[0] = true; committer.commit(staged, target);
                 if (snapshot.ledger().writerGeneration() > 1) {
                     checkpoint.accept(snapshot.ledger().records().isEmpty() ? "K9" : "K2");
+                } else {
+                    checkpoint.accept("BASELINE_REPLACED");
                 }
             });
             try {

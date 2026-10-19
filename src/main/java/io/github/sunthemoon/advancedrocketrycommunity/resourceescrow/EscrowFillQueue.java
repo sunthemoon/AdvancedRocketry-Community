@@ -39,6 +39,7 @@ public final class EscrowFillQueue {
     void tick(MinecraftServer server) {
         visit();
         if (preparing.isEmpty()) { return; }
+        EscrowRuntime.of(server).checkpoint("LOADER_PREPARATIONS_QUEUED");
         var data = ResourceEscrowSavedData.existing(server);
         if (data != null && data.operational()) { data.bind(server).commitPreparations(); }
     }
