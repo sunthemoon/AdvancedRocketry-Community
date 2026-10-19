@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime;
 
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestChunkUnloadPump;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickDriver;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
 import java.util.LinkedHashMap;
@@ -131,24 +132,12 @@ public final class C16cRestartGameTests {
                     }
                 }
                 fixture.releaseChunks();
-                // Never touch the chunk while waiting: a block entity lookup would load it again. The unload waits on
-                // worldgen and saves that run in wall-clock time, so each waiting tick gets a server tick's length.
+                // Never look up a block entity while waiting: that would load the chunk again. Pacing lets background
+                // generation finish, but cannot drain ChunkMap's separate unload queue when the tick has no spare time.
+                // Pump only already-ready vanilla callbacks; they still perform the real save, event and removal.
                 var pacer = new GameTestTickPacer(level.getServer());
-                int[] observations = {0};
                 await(driver, 600, "the fixture chunk to unload", () -> {
-                    if (++observations[0] % 100 == 0) {
-                        try {
-                            var map = level.getChunkSource().chunkMap;
-                            var pendingField = map.getClass().getDeclaredField("pendingUnloads"); pendingField.setAccessible(true);
-                            var queueField = map.getClass().getDeclaredField("unloadQueue"); queueField.setAccessible(true);
-                            var pending = (it.unimi.dsi.fastutil.longs.Long2ObjectMap<?>) pendingField.get(map);
-                            var holder = (net.minecraft.server.level.ChunkHolder) pending.get(chunk.toLong());
-                            System.out.println("W102_UNLOAD_PROBE wait=" + observations[0] + " event=" + unloaded.get()
-                                    + " loaded=" + level.hasChunkAt(origin) + " removed=" + original.isRemoved()
-                                    + " pending=" + (holder != null) + " saveReady=" + (holder != null && holder.getChunkToSave().isDone())
-                                    + " queue=" + ((java.util.Queue<?>) queueField.get(map)).size());
-                        } catch (ReflectiveOperationException failure) { throw new IllegalStateException(failure); }
-                    }
+                    if (!unloaded.get()) { GameTestChunkUnloadPump.drainReady(level); }
                     return unloaded.get() && !level.hasChunkAt(origin) && original.isRemoved();
                 }, pacer, () -> {
                     helper.assertTrue(parts.values().stream().allMatch(BlockEntity::isRemoved), "A hatch outlived its chunk");
