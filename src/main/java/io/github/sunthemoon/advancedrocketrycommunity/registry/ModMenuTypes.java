@@ -134,6 +134,10 @@ public final class ModMenuTypes {
             FLUID_FUEL_LOADER = MENUS.register("fluid_fuel_loader", () -> IForgeMenuType.create(
                     io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderMenu::new));
 
+    public static final RegistryObject<MenuType<io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketFluidCargoMenu>>
+            ROCKET_FLUID_CARGO = MENUS.register("rocket_fluid_cargo", () -> IForgeMenuType.create(
+                    io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketFluidCargoMenu::new));
+
     private ModMenuTypes() {
     }
 

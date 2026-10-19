@@ -1,6 +1,9 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader;
 
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketFluidCargoBlock;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketFluidCargoBlockEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketFluidCargoLinker;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightData;
 import java.util.List;
 import java.util.Optional;
@@ -61,7 +64,8 @@ public final class LinkerItem extends Item {
 
     /** A connected, living, non-fake, non-spectator player whose hand still holds a linker. */
     static boolean actor(Player player, InteractionHand hand) {
-        return player instanceof ServerPlayer server && !(player instanceof FakePlayer) && !server.hasDisconnected()
+        return player instanceof ServerPlayer server && server.getServer().isSameThread()
+                && !(player instanceof FakePlayer) && !server.hasDisconnected()
                 && player.isAlive() && !player.isSpectator() && player.getItemInHand(hand).getItem() instanceof LinkerItem;
     }
 
@@ -83,10 +87,15 @@ public final class LinkerItem extends Item {
         BlockPos position = context.getClickedPos();
         if (level.isClientSide) {
             return level.getBlockState(position).getBlock() instanceof FluidFuelLoaderBlock
+                    || level.getBlockState(position).getBlock() instanceof RocketFluidCargoBlock
                     ? InteractionResult.SUCCESS : InteractionResult.PASS;
         }
         Player player = context.getPlayer();
         InteractionHand hand = context.getHand();
+        if (player != null && actor(player, hand) && level.isLoaded(position)
+                && level.getBlockEntity(position) instanceof RocketFluidCargoBlockEntity) {
+            return RocketFluidCargoLinker.select(context);
+        }
         if (player == null || !actor(player, hand) || !level.isLoaded(position)
                 || !(level.getBlockEntity(position) instanceof FluidFuelLoaderBlockEntity loader)) {
             return InteractionResult.PASS;
@@ -180,6 +189,9 @@ public final class LinkerItem extends Item {
         // The selected chunk must already be loaded before anything is looked up there.
         if (level.getChunkSource().getChunkNow(selection.pos().getX() >> 4, selection.pos().getZ() >> 4) == null) {
             return refuse(player, FluidFuelLoaderStatus.WAITING_UNLOADED.translationKey());
+        }
+        if (level.getBlockEntity(selection.pos()) instanceof RocketFluidCargoBlockEntity) {
+            return RocketFluidCargoLinker.bindRocket(player, hand, rocket);
         }
         if (!(level.getBlockEntity(selection.pos()) instanceof FluidFuelLoaderBlockEntity loader)
                 || !loader.root().map(LoaderRoot::device).filter(selection.device()::equals).isPresent()) {
