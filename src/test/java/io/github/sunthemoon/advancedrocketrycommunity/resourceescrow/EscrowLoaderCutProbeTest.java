@@ -57,4 +57,60 @@ class EscrowLoaderCutProbeTest {
             assertFalse(writer.unknown());
         }
     }
+
+    @Test void baselineSelectionIncludesFirstGenerationButExcludesIssuedAdmissions() {
+        var empty = EscrowCodec.encode(EscrowLedger.empty(UUID.randomUUID()).generation(1));
+        assertTrue(EscrowLoaderCutProbe.baselineCandidate(empty));
+        empty.putLong("writer_generation", 3);
+        assertTrue(EscrowLoaderCutProbe.baselineCandidate(empty));
+        empty.putLong("issued_through", 1);
+        assertFalse(EscrowLoaderCutProbe.baselineCandidate(empty));
+        empty.putLong("issued_through", 0); empty.putLong("writer_generation", 0);
+        assertFalse(EscrowLoaderCutProbe.baselineCandidate(empty));
+    }
+
+    @Test void threeDefiniteBaselineFailuresBecomeUnavailableWithoutAFile() throws Exception {
+        baselineFailures(false);
+    }
+
+    @Test void threeUnknownBaselineFailuresKeepTheExactFirstGenerationAndBecomeUnavailable() throws Exception {
+        baselineFailures(true);
+    }
+
+    private void baselineFailures(boolean unknown) throws Exception {
+        Path file = temporary.resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName());
+        var root = EscrowLedger.empty(UUID.randomUUID());
+        var replies = new CopyOnWriteArrayList<EscrowLedgerWriter.Completion>();
+        var events = new CopyOnWriteArrayList<String>();
+        var writer = new EscrowLedgerWriter(file, 0, (staged, target) -> {
+            if (unknown) { throw new java.io.IOException("Release-test ambiguous replacement outcome"); }
+            fail("Definite pre-replacement failure reached the committer");
+        }, name -> {
+            if (!unknown && (name.equals("BASELINE_STAGED") || name.equals("K8"))) { EscrowReleaseProbe.definiteFailure(); }
+            events.add(name);
+        });
+        try {
+            long deadline = System.nanoTime() + java.util.concurrent.TimeUnit.SECONDS.toNanos(10);
+            for (long tick = 0; replies.size() < 3 && System.nanoTime() < deadline; tick++) {
+                if (writer.idle()) {
+                    var next = root.generation(writer.lastGeneration() + 1);
+                    assertTrue(writer.request(() -> EscrowLedgerWriter.Snapshot.of(next, Set.of()), replies::add));
+                }
+                writer.tick(tick); Thread.sleep(1);
+            }
+            assertEquals(3, replies.size());
+            assertTrue(writer.unavailable());
+            assertEquals(unknown, writer.unknown());
+            assertEquals(!unknown, writer.idle());
+            assertFalse(java.nio.file.Files.exists(file));
+            assertEquals(3, events.stream().filter(name -> name.equals(unknown ? "WRITE_UNKNOWN" : "WRITE_FAILED_BEFORE_REPLACE")).count());
+            for (int i = 0; i < 3; i++) {
+                assertEquals(unknown ? EscrowLedgerWriter.Outcome.UNKNOWN : EscrowLedgerWriter.Outcome.FAILED_BEFORE_REPLACE, replies.get(i).outcome());
+                assertEquals(unknown ? 1 : i + 1, replies.get(i).generation());
+                assertEquals(0, replies.get(i).snapshot().ledger().issuedThrough());
+                assertTrue(replies.get(i).snapshot().ledger().records().isEmpty());
+                if (unknown) { assertSame(replies.get(0).snapshot(), replies.get(i).snapshot()); }
+            }
+        } finally { writer.abort(); }
+    }
 }

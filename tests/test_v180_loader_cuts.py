@@ -25,9 +25,11 @@ def fixture(cut, restart):
         return result
 
     loaders = []
-    for index in range(2 if bi else 1):
-        prior = bi and index == 0; moved = 1 if prior else exp["source"]
-        loaders.append(dict(id=oracle.LOADER, x=66+index, y=100, z=64, arce_fluid_fuel_loader=dict(
+    capacity = cut == "LF_M_N3_PREFLIGHT"
+    for index in range(6 if capacity else 2 if bi else 1):
+        prior = bi and index == 0; moved = 0 if capacity and index else 1 if prior else exp["source"]
+        x, y, z = oracle.CAPACITY_POSITIONS[index] if capacity else (66+index, 100, 64)
+        loaders.append(dict(id=oracle.LOADER, x=x, y=y, z=z, arce_fluid_fuel_loader=dict(
             device="device"+str(index), owner="owner", binding=dict(physical_rocket="physical", logical_rocket="logical"),
             tank=dict(FluidName=oracle.HYDROGEN if prior else oracle.OXYGEN if bi else oracle.FUEL, Amount=5000-1000*moved),
             resource_escrow=section(moved, 0 if prior else moved*exp["markers"], "SOURCE"))))
@@ -43,10 +45,10 @@ def fixture(cut, restart):
 
 
 class LoaderCutsTest(unittest.TestCase):
-    def test_matrix_counts_and_explicit_missing_baseline_failures(self):
-        self.assertEqual(4, len(oracle.CREATION))
+    def test_matrix_counts_include_r35_creation_cuts(self):
+        self.assertEqual(7, len(oracle.CREATION))
         self.assertEqual(14, len(oracle.NORMAL))
-        self.assertEqual({"LF_M_N2_DEFINITE", "LF_M_N2_UNKNOWN", "LF_M_N3_PREFLIGHT"}, set(oracle.NOT_RUN))
+        self.assertEqual({}, oracle.NOT_RUN)
         self.assertEqual(["K2_BI", "K6_BI", "K9_BI"], [c for c in oracle.NORMAL if c.endswith("BI")])
 
     def test_raw_cut_boundaries_are_not_status_aliases(self):
@@ -57,6 +59,27 @@ class LoaderCutsTest(unittest.TestCase):
         for cut, values in table.items():
             exp = oracle.expected("LF_M_"+cut, 0)
             self.assertEqual(values, tuple(exp[key] for key in ("source", "destination", "records", "issued")), cut)
+
+    def test_failed_baseline_requires_three_outcomes_and_final_unavailable(self):
+        for mode in ("DEFINITE", "UNKNOWN"):
+            cut = "LF_M_N2_" + mode
+            outcome = "WRITE_UNKNOWN" if mode == "UNKNOWN" else "WRITE_FAILED_BEFORE_REPLACE"
+            lines = ["ARCE_LOADER_MATRIX_STATE phase=pending status=PREPARING"] + [
+                f"ARCE_LOADER_MATRIX_BASELINE_FAILURE cut={cut} failure={i} outcome={outcome} pending={int(mode == 'UNKNOWN')} "
+                f"unavailable={str(i == 3).lower()} status={'LEDGER_UNAVAILABLE' if i == 3 else 'PREPARING'}" for i in range(1, 4)]
+            runner.creation_observations(cut, lines)
+            for changed in (lines[:-1], lines + [lines[-1]], [line.replace("unavailable=true", "unavailable=false") for line in lines],
+                            [line.replace("status=LEDGER_UNAVAILABLE", "status=PREPARING") for line in lines], lines[1:]):
+                with self.assertRaises(oracle.smoke.SmokeError): runner.creation_observations(cut, changed)
+
+    def test_capacity_refusal_checks_all_six_unchanged_native_sources(self):
+        for restart in range(3):
+            good = fixture("LF_M_N3_PREFLIGHT", restart)
+            for index in range(6):
+                changed = copy.deepcopy(good)
+                changed["loaders"][index]["arce_fluid_fuel_loader"]["tank"]["Amount"] -= 1
+                with self.assertRaises(oracle.smoke.SmokeError): oracle.check(changed, "LF_M_N3_PREFLIGHT", restart)
+        with self.assertRaises(oracle.smoke.SmokeError): runner.creation_observations("LF_M_N3_PREFLIGHT", [])
 
     def test_all_supported_cuts_and_two_restarts(self):
         for cut in oracle.CASES:

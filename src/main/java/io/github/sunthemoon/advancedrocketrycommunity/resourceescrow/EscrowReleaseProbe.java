@@ -48,7 +48,7 @@ final class EscrowReleaseProbe {
     void checkpoint(String name) {
         if (!injected && (cut.equals("E4L1_FAIL") && name.equals("K1")
                 || cut.equals("E4L2_FAIL") && name.equals("K8"))) {
-            injected = true; throw new IllegalStateException("Release-test definite pre-replacement failure");
+            injected = true; definiteFailure();
         }
         if (cut.equals("E4L2_RESAVE") && name.equals("WRITE_UNKNOWN") && !resaved) {
             EscrowTags.require(!coordinator.writerIdle() && data.ledger().records().size() == 1, "Unknown L2 released its candidate");
@@ -71,6 +71,8 @@ final class EscrowReleaseProbe {
         AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_ESCROW_PAUSED cut={} thread={}", name, Thread.currentThread().getName());
         pause();
     }
+    /** The same pre-replacement injection, selected also for W97B's gated baseline generations. */
+    static void definiteFailure() { throw new IllegalStateException("Release-test definite pre-replacement failure"); }
     private static void pause() {
         try { TimeUnit.SECONDS.sleep(30); }
         catch (InterruptedException interrupted) { Thread.currentThread().interrupt(); }

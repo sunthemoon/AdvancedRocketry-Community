@@ -8,14 +8,13 @@ from run_v180_escrow_forced_stop import LEDGER, digest, ledger, record
 from run_v180_escrow_pre_f2 import journal
 
 PREFIX = "LF_M_"
-CREATION = ("N0", "N1", "N3_FULL", "N3_NOT_LOADED")
+CREATION = ("N0", "N1", "N2_DEFINITE", "N2_UNKNOWN", "N3_FULL", "N3_NOT_LOADED", "N3_PREFLIGHT")
 CREATION_SUPPLEMENTAL = ("N3_ELIGIBILITY",)
 NORMAL = tuple(f"K{i}" for i in range(11)) + ("K2_BI", "K6_BI", "K9_BI")
 SUPPLEMENTAL = ("K2_ACK", "K3_DEBIT", "K6_FORCED", "K10_ACK")
 CASES = tuple(PREFIX + name for name in CREATION + NORMAL + SUPPLEMENTAL + CREATION_SUPPLEMENTAL)
-NOT_RUN = {"LF_M_N2_DEFINITE": "Existing failure hooks exclude generation 1; new failure injection is not authorized.",
-           "LF_M_N2_UNKNOWN": "Existing UNKNOWN hook excludes generation 1; three unresolved baseline outcomes cannot be injected.",
-           "LF_M_N3_PREFLIGHT": "An eligibility refusal is not a capacity preflight refusal; no decision-changing seam is authorized."}
+NOT_RUN = {}
+CAPACITY_POSITIONS = [(66, 100, 64), (66, 100, 65), (67, 100, 64), (67, 100, 65), (68, 100, 65), (69, 100, 65)]
 LOADER = "advancedrocketrycommunity:fluid_fuel_loader"
 ROCKET = "advancedrocketrycommunity:rocket"
 FUEL = "advancedrocketrycommunity:rocket_fuel"
@@ -35,7 +34,7 @@ def inspect(world: Path) -> dict:
     entities = record(world / "entities/r.0.0.mca")["Entities"]
     rockets = [entry for entry in entities if "RocketEntityData" in entry or entry.get("id") == ROCKET]
     require(len(rockets) == 1 and not journal(world)["transfers"], "Missing/duplicate rocket or unexpected transfer")
-    devices = sorted((entry for entry in terrain["block_entities"] if entry.get("id") == LOADER), key=lambda e: e["x"])
+    devices = sorted((entry for entry in terrain["block_entities"] if entry.get("id") == LOADER), key=lambda e: (e["x"], e["y"], e["z"]))
     return dict(ledger=root, loaders=devices, rocket=rockets[0],
                 files={name: digest(world / name) if (world / name).is_file() else None
                        for name in ("data/" + LEDGER, "region/r.0.0.mca", "entities/r.0.0.mca")})
@@ -77,7 +76,8 @@ def check(disk: dict, cut: str, restart: int) -> dict:
     exp = expected(cut, restart)
     root, devices, rocket = disk["ledger"], disk["loaders"], disk["rocket"]
     bi = exp["bi"]
-    require(len(devices) == (2 if bi else 1), "Wrong native loader count")
+    capacity = cut == PREFIX + "N3_PREFLIGHT"
+    require(len(devices) == (6 if capacity else 2 if bi else 1), "Wrong native loader count")
     require(bool(root) == exp["ledger"], "Missing/unexpected ledger")
     if root:
         require(root["issued_through"] == exp["issued"] and len(root["records"]) == exp["records"], "Wrong raw sequence/records")
@@ -97,13 +97,14 @@ def check(disk: dict, cut: str, restart: int) -> dict:
     check_section(wrapper, int(bi) + exp["destination"], exp["destination"] * exp["markers"], root, "DESTINATION", sequence)
     identity = dict(physical=rocket["UUID"], logical=data["assembly_transaction_id"], owner=data["owner_id"], loaders=[])
     for index, device in enumerate(devices):
-        require([device.get(key) for key in ("x", "y", "z")] == [66 + index, 100, 64] and device["id"] == LOADER,
+        position = CAPACITY_POSITIONS[index] if capacity else (66 + index, 100, 64)
+        require(tuple(device.get(key) for key in ("x", "y", "z")) == position and device["id"] == LOADER,
                 "Wrong native loader position/type")
         loader = device["arce_fluid_fuel_loader"]
         require(loader["owner"] == data["owner_id"] and loader["binding"]["physical_rocket"] == rocket["UUID"]
                 and loader["binding"]["logical_rocket"] == data["assembly_transaction_id"], "Changed native owner/binding")
         prior = bi and index == 0
-        moved = 1 if prior else exp["source"]
+        moved = 0 if capacity and index else 1 if prior else exp["source"]
         fuel = HYDROGEN if prior else OXYGEN if bi else FUEL
         require(loader["tank"] == {"FluidName": fuel, "Amount": 5000 - 1000 * moved}, "Wrong raw tank payload/quantity")
         check_section(loader["resource_escrow"], moved, 0 if prior else moved * exp["markers"], root, "SOURCE", sequence)
