@@ -1718,6 +1718,13 @@ scope (`93659768`). It changes no decision status and accepts no risk.
 - **Admission.** Cargo admission has its own per-kind switches and stays off until the cargo S2
   evidence, the part-1 closures and the benchmarks pass and the Root or owner decision is recorded
   with the source and the JAR. R-031, R-032 and the Required Gates are unchanged.
+- **Packaging of the tank tag (C-P).** One resource set holds every version's generated root, so a
+  v1.8 `rocket_movable` file at the sealed v0.5 path cannot merge with it at build time. As for the
+  v1.8 tool tags (ADR-063) and the v1.8 gas table (ADR-064 section 5), the v1.8 copy is complete:
+  every sealed v0.5 value in its order, then `pressurized_tank`, without `replace: true`. The build
+  excludes the v0.5 copy from the runtime resources and the sources JAR; the v0.5 provider and
+  output stay byte-identical with their provenance. A test fails if a v0.5 value is missing from
+  the v1.8 copy or the packaged JAR holds anything else.
 
 No saved format of a published world changes: the escrow root is unpublished under R-035. This is a
 development implementation note, not owner acceptance or a Gate result.

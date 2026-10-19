@@ -225,9 +225,16 @@ def supersededV140Planets = [
         'data/advancedrocketrycommunity/worldgen/noise_settings/mars.json',
         'data/advancedrocketrycommunity/worldgen/noise_settings/venus.json'
 ] as Set
+// ADR-065 (W11c and W11d implementation note; design W11CD section 2.4, leaf C-P): the v1.8 rocket_movable copy holds
+// every sealed v0.5 value plus the pressurized tank and supersedes the v0.5 copy, which stays byte-identical.
+def supersededV050RocketMovable = 'data/advancedrocketrycommunity/tags/blocks/rocket_movable.json'
 
 tasks.named('processResources') {
     eachFile { details ->
+        if (details.file.toPath().startsWith(file('src/generated/v0.5/resources').toPath())
+                && details.path == supersededV050RocketMovable) {
+            details.exclude()
+        }
         if (details.file.toPath().startsWith(file('src/generated/v1.2/resources').toPath())
                 && supersededV120ProcessRecipes.contains(details.path)) {
             details.exclude()
@@ -298,6 +305,10 @@ tasks.named('processResources') {
 
 tasks.named('sourcesJar') {
     eachFile { details ->
+        if (details.file.toPath().startsWith(file('src/generated/v0.5/resources').toPath())
+                && details.path == supersededV050RocketMovable) {
+            details.exclude()
+        }
         if (details.file.toPath().startsWith(file('src/generated/v1.2/resources').toPath())
                 && supersededV120ProcessRecipes.contains(details.path)) {
             details.exclude()
