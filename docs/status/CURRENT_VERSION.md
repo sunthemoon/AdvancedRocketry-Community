@@ -38,7 +38,7 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: 9f6668aa (W107 merged in part: 16 more loader cuts in the gated harness, test code only; before it, 3075a240 merged W106 in part, cargo leaf C-P's tank host, pure mutation checks and complete v1.8 rocket_movable tag)
+latest_code_commit: 67dee026 (W98 with W98F merged, P1-N3 leaf N3-A1: an ordinary source return keeps its transfer record until the survivor is proved on disk, and the Space sleep fixtures moved out of every station cell; before it, 9f6668aa merged W107 in part)
 latest_hosted_regression: run 39302851008 at 3075a240 (the W106 merge) passed all required GameTests and the log checker. The two runs before it, 39295247351 at bd1c78b9 and 39293852197 at d2f0d00c, each failed EscrowCoreGameTests.ownTerrainAndEntityStoresConfirmTheExactFrozenFrontier after 200 ticks, right after a concurrent retry test's injected terrain save (W111, first in the queue). The run at 9f6668aa is in progress
 ledger_planned_units: 19
 asset_review_items: 154
@@ -92,7 +92,7 @@ What is still open:
 - **Assets.** 154 legacy assets are still under REVIEW (ADR-066 section 7.3).
 - **S1.** W11b1 and W44 have native dedicated-server restart evidence as development evidence.
   No S1 campaign has run.
-- **Open defect P1-N3 (2026-10-18).** W91K's native cuts showed that a hard kill after an ordinary
+- **P1-N3 (2026-10-18), first leaf merged.** N3-A1 (W98, `8f6dd016`) closes I1 to I3: the W91K cuts now keep the rocket FUELED at its origin on both restarts. Open: N3-A2 (W98-R1, R3, R6, R10, R12) and N3-B (I6, I7). The original finding: W91K's native cuts showed that a hard kill after an ordinary
   fail-back's journal removal is durable, and before the source rocket's chunk is saved, leaves the rocket in
   its saved in-flight image with no transfer record, which nothing recovers. It predates W91 and affects
   ordinary flights in every world. W96's design note is frozen with its independent review's amendments (Root
