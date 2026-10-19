@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.resourceescrow;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -18,14 +19,17 @@ import javax.annotation.Nullable;
  * writer is unavailable. Production creates no receipt: only gated test hooks call {@link #put} and {@link #remove}.
  */
 public final class BayReceiptStore implements EscrowAdmissionAuthority.Store {
-    public enum Status { QUEUED, STORE_UNAVAILABLE, INVALID, RELEASED_LOCKED, RETAIN_REFUSED, RESERVE_REFUSED }
+    /** BUSY: the op or its satellite already has a queued or captured change; retry after its exact acknowledgement. */
+    public enum Status { QUEUED, STORE_UNAVAILABLE, BUSY, INVALID, RELEASED_LOCKED, RETAIN_REFUSED, RESERVE_REFUSED }
     /** A put or removal: queued with its exact acknowledgement to follow, or refused with nothing changed. */
     public record Admission(Status status, @Nullable EscrowAdmissionAuthority.Retention retention,
                             @Nullable EscrowAdmissionAuthority.Result reservation) {
         static Admission of(Status status) { return new Admission(status, null, null); }
         public boolean queued() { return status == Status.QUEUED; }
     }
-    private record Mutation(UUID op, @Nullable BayReceipt before, @Nullable BayReceipt after, Consumer<BayReceiptWriter.Outcome> completion) { }
+    private record Mutation(UUID op, @Nullable BayReceipt before, @Nullable BayReceipt after, Consumer<BayReceiptWriter.Outcome> completion) {
+        UUID satellite() { return (after != null ? after : before).satellite(); }
+    }
     /** Derived from the three states and cached until the next change. */
     private record View(EscrowAdmissionAuthority.Index index, Set<UUID> blockingSatellites, Set<UUID> heldRockets) { }
     private final Thread owner = Thread.currentThread();
@@ -55,17 +59,23 @@ public final class BayReceiptStore implements EscrowAdmissionAuthority.Store {
     /**
      * Appends or replaces the receipt of {@code next.op()}. A new op needs a retained slot, and a pending phase needs a
      * pending slot; both are checked before either is charged. Released receipts keep their flag and never re-arm.
+     * While the op or its satellite has a change in flight, the put refuses with BUSY (R37 item 2).
      */
     Admission put(BayReceipt next, Consumer<BayReceiptWriter.Outcome> completion) {
         owner(); Objects.requireNonNull(next); Objects.requireNonNull(completion);
         if (unavailable()) { return Admission.of(Status.STORE_UNAVAILABLE); }
+        if (inFlight(next.op(), next.satellite())) { return Admission.of(Status.BUSY); }
         BayReceipt before = current.get(next.op());
         if (before != null && before.released() && (!next.released() || next.phase() == BayReceipt.Phase.INTENT && before.phase() != BayReceipt.Phase.INTENT)) {
             return Admission.of(Status.RELEASED_LOCKED);
         }
-        for (BayReceipt other : current.values()) {
-            if (!other.op().equals(next.op()) && (other.key().equals(next.key()) || other.satellite().equals(next.satellite()))) {
-                return Admission.of(Status.INVALID);
+        // Unique key and satellite against every state, not RAM alone, so a cancelled change can return to its old state.
+        BayReceiptRoot captured = writer.captured();
+        for (Collection<BayReceipt> state : List.of(durable.receipts(), captured == null ? List.<BayReceipt>of() : captured.receipts(), current.values())) {
+            for (BayReceipt other : state) {
+                if (!other.op().equals(next.op()) && (other.key().equals(next.key()) || other.satellite().equals(next.satellite()))) {
+                    return Admission.of(Status.INVALID);
+                }
             }
         }
         if (before != null && (!before.owner().equals(next.owner()) || !before.satellite().equals(next.satellite()))) {
@@ -94,6 +104,7 @@ public final class BayReceiptStore implements EscrowAdmissionAuthority.Store {
         owner(); Objects.requireNonNull(completion);
         if (unavailable()) { return Admission.of(Status.STORE_UNAVAILABLE); }
         BayReceipt before = current.get(op);
+        if (inFlight(op, before == null ? null : before.satellite())) { return Admission.of(Status.BUSY); }
         if (before == null) { return Admission.of(Status.INVALID); }
         if (before.released()) { return Admission.of(Status.RELEASED_LOCKED); }
         current.remove(op);
@@ -101,6 +112,15 @@ public final class BayReceiptStore implements EscrowAdmissionAuthority.Store {
         return Admission.of(Status.QUEUED);
     }
 
+    /** A queued or captured (active or exact unknown) change of this op or of this satellite. */
+    private boolean inFlight(UUID op, @Nullable UUID satellite) {
+        for (List<Mutation> mutations : List.of(queued, capturedMutations)) {
+            for (Mutation mutation : mutations) {
+                if (mutation.op().equals(op) || mutation.satellite().equals(satellite)) { return true; }
+            }
+        }
+        return false;
+    }
     private void queue(Mutation mutation) {
         queued.add(mutation); changed();
         // The index now owns the reservations queued in the authority, so a later cancellation releases them.
@@ -121,12 +141,10 @@ public final class BayReceiptStore implements EscrowAdmissionAuthority.Store {
         if (outcome == BayReceiptWriter.Outcome.COMMITTED) {
             durable = completion.root();
         } else if (outcome != BayReceiptWriter.Outcome.UNKNOWN) {
-            // A definite failure before replacement cancels the generation's mutations that nothing later superseded.
-            for (int i = capturedMutations.size() - 1; i >= 0; i--) {
-                Mutation mutation = capturedMutations.get(i);
-                if (Objects.equals(current.get(mutation.op()), mutation.after())) {
-                    if (mutation.before() == null) { current.remove(mutation.op()); } else { current.put(mutation.op(), mutation.before()); }
-                }
+            // A definite failure before replacement cancels the generation's mutations. Nothing later can supersede one,
+            // because an op or satellite has at most one change in flight, so each returns exactly to what it replaced.
+            for (Mutation mutation : capturedMutations) {
+                if (mutation.before() == null) { current.remove(mutation.op()); } else { current.put(mutation.op(), mutation.before()); }
             }
         }
         var finished = capturedMutations;

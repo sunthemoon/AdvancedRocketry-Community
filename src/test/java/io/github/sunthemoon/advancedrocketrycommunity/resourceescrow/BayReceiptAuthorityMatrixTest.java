@@ -89,12 +89,17 @@ final class BayReceiptAuthorityMatrixTest {
             server.bay.committer.set(BayReceiptHarness.AMBIGUOUS);
             queued(server.bay.put(x.withPhase(BayReceipt.Phase.REPAIR, "BAY_CONFLICT", 3)));
             server.bay.until(server.bay.store().writer()::unknown);
-            queued(server.bay.put(x.withPhase(BayReceipt.Phase.REPAIR, "BAY_CONFLICT", 4).withReleased()));
+            var released = x.withPhase(BayReceipt.Phase.REPAIR, "BAY_CONFLICT", 4).withReleased();
+            assertEquals(BayReceiptStore.Status.BUSY, server.bay.put(released).status(), "one change of an op in flight at a time");
+            // A REJECTED receipt of another op makes the successor; it needs no pending slot.
+            queued(server.bay.put(receipt(2, OWNER, BayReceiptFixtures.id(501), BayReceipt.Phase.REJECTED)));
             assertTrue(server.bay.store().writer().hasSuccessor());
             assertEquals(64, server.pending(), "durable, captured, UNKNOWN and successor copies cost one slot");
             assertEquals(EscrowAdmissionAuthority.Result.ALREADY_HELD, server.bay.reserve(x));
             assertEquals(EscrowAdmissionAuthority.Result.SERVER_FULL, server.fill(EscrowTestFixtures.operation(64, 2_000, 0)));
             server.bay.committer.set(CheckedSavedDataFile::atomicMove); server.bay.settle();
+            queued(server.bay.put(released)); server.bay.settle();
+            assertEquals(released, server.bay.store().durable().receipts().get(0));
             assertEquals(64, server.pending(), "a released REPAIR receipt keeps its slot");
         }
     }

@@ -75,15 +75,19 @@ final class BayReceiptStoreTest {
         try (var harness = BayReceiptHarness.empty(temp)) {
             var x = intent(1, id(30)); assertQueued(harness.put(x)); harness.settle();
             harness.committer.set(BayReceiptHarness.AMBIGUOUS);
-            assertQueued(harness.put(x.withPhase(BayReceipt.Phase.REPAIR, "REGISTRY_SIGNATURE_CONFLICT", 5)));
+            var repair = x.withPhase(BayReceipt.Phase.REPAIR, "REGISTRY_SIGNATURE_CONFLICT", 5); assertQueued(harness.put(repair));
             harness.until(harness.store().writer()::unknown);
-            var successor = x.withPhase(BayReceipt.Phase.REPAIR, "BAY_CONFLICT", 6); assertQueued(harness.put(successor));
+            assertEquals(BayReceiptStore.Status.BUSY, harness.put(x.withPhase(BayReceipt.Phase.REPAIR, "BAY_CONFLICT", 6)).status(),
+                    "one change of an op in flight at a time (R37 item 2)");
+            // Another op's change makes the successor, whose RAM capture holds X's copy as well.
+            var other = rejected(2, OWNER); assertQueued(harness.put(other));
             assertTrue(harness.store().writer().hasSuccessor());
-            assertEquals(1, harness.authority.pendingCount()); assertEquals(1, harness.authority.retainedCount());
+            assertEquals(1, harness.authority.pendingCount(), "X's durable, captured, UNKNOWN and successor copies cost one pending slot");
+            assertEquals(2, harness.authority.retainedCount(), "one retained slot each for X and the REJECTED receipt");
             assertEquals(EscrowAdmissionAuthority.Result.ALREADY_HELD, harness.reserve(x));
             assertEquals(List.of(BayReceiptWriter.Outcome.COMMITTED, BayReceiptWriter.Outcome.UNKNOWN), harness.outcomes);
             harness.committer.set(CheckedSavedDataFile::atomicMove); harness.settle();
-            assertEquals(List.of(successor), harness.store().durable().receipts());
+            assertEquals(List.of(repair, other), harness.store().durable().receipts());
             assertEquals(1, harness.authority.pendingCount(), "a REPAIR receipt keeps its slot");
         }
     }
@@ -189,6 +193,79 @@ final class BayReceiptStoreTest {
                     authority.checkRetain(id(1), OWNER));
             assertEquals(!absent, receipts.blocksInsertion(id(3)), "a file that exists but did not load keeps NOT_LOADED");
             if (!absent) { assertThrows(IllegalArgumentException.class, () -> receipts.createForAdmission(temp.resolve("x.dat"), 0)); }
+        }
+    }
+
+    private static Path stagingBlocked(BayReceiptHarness harness) throws Exception {
+        // Staging is refused before any replacement: every write fails definitely until this directory is removed.
+        return Files.createDirectory(harness.file.resolveSibling(harness.file.getFileName() + ".arce-pending"));
+    }
+
+    /** W27C1-R2, the review's probe 2 with R37 item 2's expectation: a second change of one satellite waits. */
+    @Test void aSatelliteWithARemovalInFlightRefusesAnotherOperationAndTheFailedRemovalRestoresExactly() throws Exception {
+        try (var harness = BayReceiptHarness.empty(temp)) {
+            var a = receipt(1, OWNER, id(40), BayReceipt.Phase.REJECTED);
+            assertQueued(harness.put(a)); harness.settle();
+            Path pending = stagingBlocked(harness);
+            assertQueued(harness.remove(a));
+            var b = new BayReceipt(id(2), 2, id(41), new RocketPosition(9, 9, 9), a.satellite(), OWNER, a.definition(), a.kind(),
+                    a.orbit(), a.packageSig(), id(400_002), a.srcBefore(), null, a.dstBefore(), null, BayReceipt.Phase.INTENT, "NONE",
+                    false, false, 0, 1, 1, 0);
+            assertEquals(BayReceiptStore.Admission.of(BayReceiptStore.Status.BUSY), harness.put(b), "the satellite has a change in flight");
+            assertFalse(harness.store().writer().hasSuccessor(), "the refusal queued nothing");
+            assertEquals(0, harness.authority.pendingCount(), "and charged nothing");
+            harness.settle();
+            assertEquals(List.of(BayReceiptWriter.Outcome.COMMITTED, BayReceiptWriter.Outcome.FAILED_BEFORE_REPLACE), harness.outcomes);
+            assertEquals(List.of(a), harness.store().receipts(), "the failed removal restores A, and only A");
+            assertEquals(List.of(a), harness.store().durable().receipts());
+            Files.delete(pending);
+            assertEquals(BayReceiptStore.Status.INVALID, harness.put(b).status(), "A still holds the satellite");
+            assertQueued(harness.remove(a)); harness.settle();
+            assertQueued(harness.put(b)); harness.settle();
+            assertEquals(List.of(b), harness.store().durable().receipts());
+            assertEquals(List.of(BayReceiptWriter.Outcome.COMMITTED, BayReceiptWriter.Outcome.FAILED_BEFORE_REPLACE,
+                    BayReceiptWriter.Outcome.COMMITTED, BayReceiptWriter.Outcome.COMMITTED), harness.outcomes);
+        }
+    }
+
+    /** W27C1-R2, the review's probe 3 with R37 item 2's expectation: a definitely failed change never becomes durable. */
+    @Test void aSecondChangeOfOneOperationWaitsSoADefinitelyFailedChangeNeverBecomesDurable() throws Exception {
+        try (var harness = BayReceiptHarness.empty(temp)) {
+            var a = intent(1, id(50));
+            assertQueued(harness.put(a)); harness.settle();
+            Path pending = stagingBlocked(harness);
+            var first = a.withPhase(BayReceipt.Phase.REJECTED, "INTERRUPTED", 2);
+            assertQueued(harness.put(first));
+            var second = a.withPhase(BayReceipt.Phase.REPAIR, "BAY_CONFLICT", 3);
+            assertEquals(BayReceiptStore.Admission.of(BayReceiptStore.Status.BUSY), harness.put(second), "the op has a change in flight");
+            assertFalse(harness.store().writer().hasSuccessor());
+            harness.settle();
+            assertEquals(List.of(BayReceiptWriter.Outcome.COMMITTED, BayReceiptWriter.Outcome.FAILED_BEFORE_REPLACE), harness.outcomes);
+            assertEquals(List.of(a), harness.store().receipts(), "the failed change is cancelled exactly");
+            Files.delete(pending);
+            assertQueued(harness.put(receipt(2, OWNER, id(51), BayReceipt.Phase.REJECTED))); // Unrelated work.
+            harness.settle();
+            assertEquals(a, harness.store().durable().receipts().get(0), "the FAILED change never became durable");
+            assertQueued(harness.put(second)); harness.settle();
+            assertEquals(second, harness.store().durable().receipts().get(0), "the retried change is acknowledged");
+        }
+    }
+
+    /** W27C1-R2: a key is unique against every state, so a cancelled re-key can return to its old key. */
+    @Test void aKeyHeldInTheDurableOrCapturedStateRefusesAnotherOperationWhileTheReKeyIsInFlight() throws Exception {
+        try (var harness = BayReceiptHarness.empty(temp)) {
+            var x = rejected(1, OWNER);
+            assertQueued(harness.put(x)); harness.settle();
+            Path pending = stagingBlocked(harness);
+            assertQueued(harness.put(reKeyed(x, id(31), new RocketPosition(4, 4, 4))));
+            var y = reKeyed(rejected(2, OWNER), x.rocket(), x.bay());
+            assertEquals(BayReceiptStore.Status.INVALID, harness.put(y).status(), "the durable and captured states still hold X's key");
+            harness.settle();
+            assertEquals(List.of(x), harness.store().receipts(), "the failed re-key returns X to its key");
+            Files.delete(pending);
+            assertEquals(BayReceiptStore.Status.INVALID, harness.put(y).status());
+            assertQueued(harness.put(rejected(2, OWNER))); harness.settle();
+            assertEquals(List.of(x, rejected(2, OWNER)), harness.store().durable().receipts());
         }
     }
 }
