@@ -5,6 +5,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.FirstEventGameTestPlayers;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
+import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightState;
@@ -210,6 +211,10 @@ public final class RocketSourceRetirementGameTests {
         boolean before() {
             var server = server();
             if (!waited) {
+                // W98-R5: a first attempt keeps the reservation it was given only when its capture can run at once, so
+                // the returns that assert that reservation start on a tick whose capture another test has not taken.
+                if (!offline && !EscrowRuntime.of(server).barrier().availableOrdinary(level().dimension().location().toString(),
+                        server.getTickCount())) { return false; }
                 var result = recovery().recoverById(server, journal, record.transferId());
                 // A pending source return reports RETRY_LATER with no action; its completion later reports the action.
                 if (!recovery().retirements().pending(record.logicalRocketId())) {
