@@ -195,6 +195,8 @@ Root cannot make these; each blocks only the work named.
 | Task | Scope | Dispatch when |
 |---|---|---|
 | [W27c1](TASK-W27C1-BAY-RECEIPT-STORE.md) | The bay receipt store (schema-1 `BAY_RECEIPTS`), its checked off-thread writer and startup index, the BAY consumer of the shared admission authority with `tryRetain`, the bay's insertion refusal and the N5 command; deployment disabled; persistence slice (plan first, read-only review before merge) | Next free implementer slot (progress; the bay chain W27c2 to W27e follows) |
+| [W109](TASK-W109-CARGO-C-A-FLUID-DEVICES.md) | Cargo leaf C-A: the rocket fluid loader and unloader (block, block entity, root, capability, menu and screen, drop carrier, linker roles, status, protection), admission unwired; art, recipes and provenance stay C-D's | When W106 (C-P) is merged; a Codex slot, since the cargo chain continues with C-E |
+| [W110](TASK-W110-CARGO-D-K-ITEM-KINDS.md) | Cargo leaf D-K (W11d): the item cargo kinds, `CONTAINER`, the stack codec and the buffer signature, with the real-encoder size report; persistence slice (plan first, read-only review before merge); no native start | After W27c1 takes a slot (it needs only C-K, merged) |
 | [W108](TASK-W108-SATELLITE-SMOKE-FIXTURE.md) | Parallel bug (W101 finding): the v1.3 satellite smoke's fixture sends assemble and launch in one tick, which ADR-049 C8a refuses; space the actions by at least 10 ticks in the fixture and smoke, then run the smoke natively | A free slot that does not delay progress tasks |
 
 Hosted CI runs on each implementer branch after Root pushes it (workflow change
