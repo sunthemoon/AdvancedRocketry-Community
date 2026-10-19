@@ -38,12 +38,12 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: 38b437a7 (W94B merged: the forced-supersession proof GameTests)
-latest_hosted_regression: run 39113531249 at 38b437a7 (the W94B merge) failed only C16cRestartGameTests.etcherJobCrossesARealChunkUnloadAndReloadWithExactAccounting ("Timed out waiting for the fixture chunk to unload"); W94's two forced-supersession tests passed there for the first time on a hosted runner. The etcher test failed on 3 of the 6 hosted runs since fcd549c9 and passed locally, so it is an intermittent hosted-runner failure that needs its own fix. The last run that passed end to end is 39096930031 at 264c4e30 (the W91 merge)
+latest_code_commit: fe25244b (W97B merged: all 21 B3-S1 and B3-S2 loader cuts have native evidence)
+latest_hosted_regression: runs 39248274281 at 83a7408e (the W97 merge) and 39248847444 at fac40f53 (the W99 merge) passed every required GameTest (1,226 and 1,227) and failed only the log checker's host-lag ceiling (6 notices against 5). Root raised that ceiling to 8 with an ADR-072 exception (497c702b); the first run with it, at fdedf1eb, is in progress. The etcher unload test passed on both runs; W102's deterministic fix is in Root verification. The last run that passed end to end is 39096930031 at 264c4e30 (the W91 merge)
 ledger_planned_units: 19
 asset_review_items: 154
 required_gates_approved: none
-last_updated: 2026-10-18
+last_updated: 2026-10-19
 ```
 
 ## Current state
@@ -106,8 +106,9 @@ What is still open:
   on runs 39085135243 at `0a3964e7` and 39091589526 at `e80069c6`. W94B (merged `38b437a7`) sets their timeout
   from the retry arithmetic with per-phase budgets; 30 of 30 loaded runs passed. A second natural supersession
   can still exhaust the existing 200-tick tests (residual).
-- **S2.** W11b2's crash cuts passed natively as development evidence (the W11b2 records). The
-  S2 campaign waits for W11b3.
+- **S2.** W11b2's crash cuts passed natively as development evidence (the W11b2 records). Of
+  W11b3's loader cut families, B3-S1 and B3-S2 (all 21 cuts, two restarts each) have native
+  evidence (W97 and W97B, merged `fe25244b`); W105 runs B3-S3; B3-S4 to B3-S6 remain.
 - **V1 and V2.** No slice has real-GPU or two-client evidence.
 - **C19.** W58 audited it (`records/W58.md`). Merged since: the validator chain and the G4 fix
   (C19-A), the portable evidence links (W60), correction files in the Markdown check and the
