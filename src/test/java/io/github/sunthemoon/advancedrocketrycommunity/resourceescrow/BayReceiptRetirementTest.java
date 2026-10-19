@@ -120,6 +120,48 @@ final class BayReceiptRetirementTest {
         }
     }
 
+    /** The retirement audit lines, captured from the root logger. */
+    private static final class AuditLines extends org.apache.logging.log4j.core.appender.AbstractAppender implements AutoCloseable {
+        private final org.apache.logging.log4j.core.Logger root = (org.apache.logging.log4j.core.Logger) org.apache.logging.log4j.LogManager.getRootLogger();
+        private final List<String> lines = new java.util.concurrent.CopyOnWriteArrayList<>();
+        AuditLines() {
+            super("bay-receipt-retirement-audit", null, null, true, org.apache.logging.log4j.core.config.Property.EMPTY_ARRAY);
+            start(); root.addAppender(this);
+        }
+        @Override public void append(org.apache.logging.log4j.core.LogEvent event) {
+            String line = event.getMessage().getFormattedMessage();
+            if (line.startsWith("ARCE_BAY_RECEIPT_RETIREMENT ")) { lines.add(event.getLevel() + " " + line); }
+        }
+        @Override public void close() { root.removeAppender(this); stop(); }
+    }
+    private static String audit(BayReceipt receipt, String operator, String outcome) {
+        return "INFO ARCE_BAY_RECEIPT_RETIREMENT operator=" + operator + " rocket=" + receipt.rocket() + " bay=" + receipt.bay().x() + ","
+                + receipt.bay().y() + "," + receipt.bay().z() + " satellite=" + receipt.satellite() + " op=" + receipt.op() + " outcome=" + outcome;
+    }
+
+    /** W27C1-R5 under R37 item 3: the operator's action is audited when queued, and the final outcome adds a second line. */
+    @Test void theAuditLineIsWrittenWhenTheRemovalIsQueuedAndTheFinalOutcomeAddsASecondLine() throws Exception {
+        try (var logs = new AuditLines(); var harness = BayReceiptHarness.empty(temp)) {
+            var first = orphan(1); var second = orphan(2); String operator = "Operator/" + OWNER;
+            assertTrue(harness.put(first).queued()); assertTrue(harness.put(second).queued()); harness.settle();
+            var done = new ArrayList<BayReceiptWriter.Outcome>();
+            assertTrue(BayReceiptRetirement.retire(harness.store(), first, operator, done::add).queued());
+            assertEquals(List.of(audit(first, operator, "REQUESTED")), logs.lines, "audited when the removal is queued");
+            harness.settle();
+            assertEquals(List.of(BayReceiptWriter.Outcome.COMMITTED), done);
+            assertEquals(List.of(audit(first, operator, "REQUESTED"), audit(first, operator, "COMMITTED")), logs.lines);
+            assertFalse(BayReceiptRetirement.retire(harness.store(), first, "Server", done::add).queued());
+            assertEquals(2, logs.lines.size(), "a refused removal writes no line");
+            // The stop drain gives up after three unknown outcomes: no final outcome, but the action stays audited.
+            harness.committer.set(BayReceiptHarness.AMBIGUOUS);
+            assertTrue(BayReceiptRetirement.retire(harness.store(), second, "Server", done::add).queued());
+            harness.store().close();
+            assertEquals(List.of(BayReceiptWriter.Outcome.COMMITTED), done, "no final outcome was published");
+            assertEquals(List.of(audit(first, operator, "REQUESTED"), audit(first, operator, "COMMITTED"), audit(second, "Server", "REQUESTED")),
+                    logs.lines);
+        }
+    }
+
     @Test void theAuditOperatorIsBoundedAndPrintable() {
         assertEquals("Ops_name_x", BayReceiptRetirement.operator("Ops name\nx"));
         assertEquals(80, BayReceiptRetirement.operator("x".repeat(500)).length());

@@ -74,17 +74,24 @@ public final class BayReceiptRetirement {
     }
 
     /**
-     * Writes the removal through the receipt writer. {@code done} and the one audit line follow the final outcome; an
-     * unknown outcome only retries the exact candidate.
+     * Writes the removal through the receipt writer. The audit line is written when the removal is queued, with
+     * {@code outcome=REQUESTED}, so the operator's action is audited even if the outcome never resolves (R37 item 3); a
+     * second line and {@code done} follow the final outcome. An unknown outcome only retries the exact candidate.
      */
     static BayReceiptStore.Admission retire(BayReceiptStore store, BayReceipt receipt, String operator, Consumer<BayReceiptWriter.Outcome> done) {
         String audited = operator(operator);
-        return store.remove(receipt.op(), outcome -> {
+        var admission = store.remove(receipt.op(), outcome -> {
             if (outcome == BayReceiptWriter.Outcome.UNKNOWN) { return; }
-            LOGGER.info("ARCE_BAY_RECEIPT_RETIREMENT operator={} rocket={} bay={},{},{} satellite={} op={} outcome={}", audited,
-                    receipt.rocket(), receipt.bay().x(), receipt.bay().y(), receipt.bay().z(), receipt.satellite(), receipt.op(), outcome);
+            audit(audited, receipt, outcome.name());
             done.accept(outcome);
         });
+        // Outcomes arrive only from a later writer tick, so the REQUESTED line always comes first.
+        if (admission.queued()) { audit(audited, receipt, "REQUESTED"); }
+        return admission;
+    }
+    private static void audit(String operator, BayReceipt receipt, String outcome) {
+        LOGGER.info("ARCE_BAY_RECEIPT_RETIREMENT operator={} rocket={} bay={},{},{} satellite={} op={} outcome={}", operator,
+                receipt.rocket(), receipt.bay().x(), receipt.bay().y(), receipt.bay().z(), receipt.satellite(), receipt.op(), outcome);
     }
     /** At most 80 printable characters, so a custom source name cannot forge or flood audit lines. */
     static String operator(String raw) {
