@@ -1696,6 +1696,33 @@ decision status and accepts no risk. The risk is R-035.
 No saved format changes. This is a development implementation note, not owner acceptance or a
 Gate result.
 
+### P1-N3 leaf N3-A1 implementation note: ordinary source returns keep T until the survivor is proved (W98, design W96)
+
+This note records W98 and its review follow-ups W98F (design W96 frozen by Root decision R34 with the review
+amendments W96-R1 to W96-R5; independent review W98-review APPROVE-WITH-CHANGES, SHA-256 `493187a7…042b`). It
+changes no decision status and accepts no risk. The risk is R-035.
+
+- **The order.** An ordinary source return (I1 fail-back, I2 source recovery, I3 last reconnect) keeps the actual
+  transfer record T until the survivor's origin-column entity slot, and the slot of each discarded copy, are
+  stored, forced and read back; only then is T removed, and the call site's effects run on that acknowledgement.
+  W91K's two P1-N3 cuts now leave the rocket FUELED at its origin on both restarts, and three new cuts before the
+  store, the force and the removal keep T on disk until the first restart proves the rocket.
+- **Bounds.** The journal reservation is held for one proof attempt of at most 100 ticks and released on any wait
+  (W96-R1, W98-R5); at most 64 pending returns; an ordinary sub-quota of 8 captures and 4 entity captures per Level
+  per batch in the shared barrier, with a silent checkpoint sink, and ordinary captures take the tick's capture only
+  after governed dispatch and cleanup (W98-R4). A save-off Level holds its returns, checked before each capture.
+- **W96-R2** was a real defect: a reconnect during a live source phase removed a live flight's record. Retirement on
+  reconnect now requires a settled record whose source is stationary at its origin.
+- **Fallback (R5(c), W98-R11).** Only the exact vanilla entity storage supports the own-store proof; elsewhere T is
+  removed after the in-memory return, as before W98, with one WARN per Level.
+- **Root decision R35, corrected.** R35 item 1 chose that fallback for a world whose escrow ledger is present but not
+  operational. W98F showed that such a world already fences every rocket (`EscrowCoordinator.logicalLocked`), as
+  before W98, so no fallback is needed and none was built.
+- **Open (leaf N3-A2 and later):** W98-R1 (an ordinary capture invalidates a governed proof of the same entity slot,
+  before governed admission opens), W98-R3, R6, R10 and R12, N3-B (I6, I7) and the player checkpoint adapter.
+
+No saved format changes. This is a development implementation note, not owner acceptance or a Gate result.
+
 ### W11c and W11d implementation note: rocket cargo scope and protections (design W11CD, admission disabled)
 
 This note records the cargo design (W11CD, frozen at `49f7e08b`) and its first leaves: C-I, the
