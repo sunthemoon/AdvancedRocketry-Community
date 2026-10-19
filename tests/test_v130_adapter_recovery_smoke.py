@@ -33,7 +33,7 @@ def entity():
     data = {"schema_version": 3, "resource_escrow": {"schema_version": 1, "resource_epoch": 0, "markers": []},
             "owner_id": nbt_uuid("00000000-0000-0000-0000-000000000005"),
             "assembly_transaction_id": nbt_uuid(TRANSACTION_ID),
-            "snapshot": {"schema_version": 1, "snapshot_id": SNAPSHOT_ID,
+            "snapshot": {"schema_version": runner.SNAPSHOT_SCHEMA, "propulsion": {"schema": 1}, "snapshot_id": SNAPSHOT_ID,
                          "content_hash": RECEIPT[0], "source_origin": list(runner.ORIGIN),
                          "source_dimension": "minecraft:overworld", "relative_blocks": blocks,
                          "block_palette": [{"id": name, "properties": {}} for name in names]},
@@ -95,6 +95,16 @@ class RecoveryOracleTests(unittest.TestCase):
         state["entities"][0]["RocketEntityData"]["future_field"] = "changed"
         with self.assertRaisesRegex(runner.SmokeError, "Opaque RocketEntityData"):
             runner.validate_disk(state, "entity-restart", RECEIPT, entity()["RocketEntityData"], None)
+
+    def test_the_v18_snapshot_schema_and_its_propulsion_descriptor_are_required(self):
+        validated = runner.validate_entity(entity(), RECEIPT)
+        self.assertEqual(runner.SNAPSHOT_SCHEMA, validated["snapshot"]["schema_version"])
+        for change in (lambda s: s.update(schema_version=1), lambda s: s.update(schema_version=3),
+                       lambda s: s.pop("propulsion"), lambda s: s.update(propulsion=[])):
+            value = entity()
+            change(value["RocketEntityData"]["snapshot"])
+            with self.assertRaisesRegex(runner.SmokeError, "schema, hash, bounds or source"):
+                runner.validate_entity(value, RECEIPT)
 
     def test_missing_duplicate_and_dropped_authorities_rejected(self):
         for entities in ([], [entity(), entity()], [entity(), {"id": "minecraft:item"}]):
@@ -200,8 +210,10 @@ class RecoveryParsingTests(unittest.TestCase):
             runner.validate_registration([runner.REGISTERED] * 2, "assemble")
         with self.assertRaises(runner.SmokeError):
             runner.validate_registration([runner.SKIPPED], "mod-uninstalled")
+        older = runner.REGISTERED.replace(f"API {runner.API}", "API 1.0")
+        self.assertNotEqual(runner.REGISTERED, older)
         with self.assertRaises(runner.SmokeError):
-            runner.validate_registration([runner.REGISTERED.replace("API 1.7", "API 1.0")], "assemble")
+            runner.validate_registration([older], "assemble")
 
     def test_actual_status_checks_mod_set_version_and_no_players(self):
         mods = {runner.HOST: "1.20.1-1.3.0-dev", runner.FIXTURE: "1.0.0", "forge": "", "minecraft": "1.20.1"}
@@ -238,6 +250,69 @@ class RecoveryParsingTests(unittest.TestCase):
                              ([header, body, "[main/ERROR] [example]: broken"], "mod-uninstalled")):
             with self.subTest(lines=lines, phase=phase), self.assertRaises(runner.SmokeError):
                 runner.audit_log(lines, phase)
+
+    def test_the_missing_item_diagnostic_requires_exactly_the_fixture_items(self):
+        # The diagnostics as the v1.8 host logged them in W101's native4 mod-uninstalled phase (22:47:11).
+        block = ["[22:47:11] [main/ERROR] [ne.mi.re.GameData/REGISTRIES]: " + runner.MISSING_BLOCK_ERROR,
+                 "\tarce_adapter_test:cargo_container: 1130", "\tarce_adapter_test:state_boundary: 1131", ""]
+        item = ["[22:47:11] [main/ERROR] [ne.mi.re.GameData/REGISTRIES]: " + runner.MISSING_ITEM_ERROR,
+                "\tarce_adapter_test:placement_probe: 1503", "\tarce_adapter_test:thermite_aluminum_dust: 1500",
+                "\tarce_adapter_test:thermite_dust: 1502", "\tarce_adapter_test:thermite_iron_dust: 1501", ""]
+        self.assertEqual([block[0], item[0]], runner.audit_log(block + item, "mod-uninstalled"))
+        self.assertEqual([item[0]], runner.audit_log(item, "mod-uninstalled"))
+        for lines, phase in ((block + item, "provider-skipped"), (item, "assemble"),
+                             (item[:-2] + [""], "mod-uninstalled"),
+                             (item[:-1] + ["\tarce_adapter_test:extra_item: 1504", ""], "mod-uninstalled"),
+                             (item[:1] + ["\tother:placement_probe: 1503"] + item[2:], "mod-uninstalled"),
+                             (item[:1] + [item[1]] * 2 + item[3:], "mod-uninstalled"),
+                             ([item[0].replace("minecraft:item", "minecraft:fluid")] + item[1:], "mod-uninstalled"),
+                             ([item[0]] + block[1:3] + [""], "mod-uninstalled")):
+            with self.subTest(lines=lines, phase=phase), self.assertRaises(runner.SmokeError):
+                runner.audit_log(lines, phase)
+
+    def test_the_reload_receipt_carries_the_host_jars_bundled_counts(self):
+        # The line as the v1.8 host logged it in W101's native3 atmosphere run (21:04:10).
+        line = ("[21:04:10] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: "
+                "Accepted planetary catalog generation 2 with 11 bodies, 12 routes and 13 anchors")
+        with tempfile.TemporaryDirectory() as temp:
+            def jar(bodies, routes):
+                path = Path(temp) / f"host-{bodies}-{routes}.jar"
+                with zipfile.ZipFile(path, "w") as archive:
+                    for index in range(bodies):
+                        archive.writestr(f"data/{runner.HOST}/celestial_bodies/body{index}.json", "{}")
+                    for index in range(routes):
+                        archive.writestr(f"data/{runner.HOST}/travel_routes/route{index}.json", "{}")
+                    archive.writestr(f"data/{runner.HOST}/celestial_bodies/readme.txt", "")
+                    archive.writestr(f"data/other/celestial_bodies/foreign.json", "{}")
+                return path
+            receipt = runner.planetary_catalog(jar(11, 12), "[2-9][0-9]*")
+            self.assertIsNotNone(receipt.search(line))
+            self.assertIsNotNone(runner.planetary_catalog(jar(11, 12), "2").search(line))
+            for wrong in (line.replace("11 bodies", "3 bodies"), line.replace("12 routes", "11 routes"),
+                          line.replace("generation 2", "generation 1"),
+                          line.replace("planetary catalog", "celestial catalog")):
+                self.assertIsNone(receipt.search(wrong), wrong)
+            self.assertIsNone(runner.planetary_catalog(jar(11, 12), "3").search(line))
+            for bodies, routes in ((2, 12), (127, 12), (11, 0)):
+                with self.subTest(bodies=bodies, routes=routes), self.assertRaises(runner.SmokeError):
+                    runner.planetary_catalog(jar(bodies, routes), "2")
+
+    def test_only_one_cleared_first_event_startup_hold_is_accepted(self):
+        # The lines as the v1.8 host logged them in W101's first native run (flight, moon-landing, 20:33:32).
+        prefix = "[20:33:32] [Server thread/{}] [io.gi.su.ad.AdvancedRocketryCommunity/]: "
+        hold = prefix.format("WARN") + "ARCE_FIRST_EVENT_HELD kind=first_moon_landing reason=SOURCE_UNCONFIRMED"
+        cleared = prefix.format("INFO") + "ARCE_FIRST_EVENT_HOLD_CLEARED kind=first_moon_landing reason=SOURCE_UNCONFIRMED"
+        for phase in runner.PHASES:
+            self.assertEqual([], runner.audit_log([hold, cleared], phase))
+            self.assertEqual([], runner.audit_log([cleared], phase))
+        other = prefix.format("WARN") + "ARCE_LANDED_DISASSEMBLY_UNACKNOWLEDGED logical=x stage=removal"
+        for lines in ([hold], [cleared, hold], [hold, cleared, hold, cleared],
+                      [hold.replace("SOURCE_UNCONFIRMED", "ROOT_UNREADABLE"), cleared],
+                      [hold.replace("first_moon_landing", "first_station"), cleared],
+                      [hold.replace("/WARN]", "/ERROR]"), cleared], [hold + " extra", cleared],
+                      [hold, cleared.replace("/INFO]", "/WARN]")], [hold, cleared, other]):
+            with self.subTest(lines=lines), self.assertRaises(runner.SmokeError):
+                runner.audit_log(lines, "assemble")
 
 
 class RecoverySafetyTests(unittest.TestCase):

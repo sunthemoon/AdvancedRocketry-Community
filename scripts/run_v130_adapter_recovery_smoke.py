@@ -27,6 +27,7 @@ if __package__:
     from . import run_dedicated_server_smoke as server_smoke
     from . import run_v050_rocket_server_smoke as rocket_smoke
     from . import v120_precision_world_fixture as region_nbt
+    from . import v130_api_version as api_version
     from .inspect_celestial_saved_data import NbtReader
     from .run_v100_transaction_forced_stop import read_journal, uuid_from_nbt
     from .v100_beta_world_fixture import wait_condition
@@ -34,6 +35,7 @@ else:
     import run_dedicated_server_smoke as server_smoke
     import run_v050_rocket_server_smoke as rocket_smoke
     import v120_precision_world_fixture as region_nbt
+    import v130_api_version as api_version
     from inspect_celestial_saved_data import NbtReader
     from run_v100_transaction_forced_stop import read_journal, uuid_from_nbt
     from v100_beta_world_fixture import wait_condition
@@ -56,13 +58,33 @@ INVENTORY = {"Items": [
      "tag": {"display": {"Name": '{"text":"Public adapter cargo"}'}}},
     {"Slot": 1, "id": "minecraft:iron_ingot", "Count": 64},
 ]}
-REGISTERED = "Registered rocket adapter arce_adapter_test:cargo_inventory (payload 1, API 1.7, event 1)"
-SKIPPED = "Skipped rocket adapter arce_adapter_test:cargo_inventory (API 1.7, event 1)"
+API = api_version.CURRENT  # The host's ApiVersions.CURRENT; every v1.3 smoke expects it (W101).
+REGISTERED = f"Registered rocket adapter arce_adapter_test:cargo_inventory (payload 1, API {API}, event 1)"
+SKIPPED = f"Skipped rocket adapter arce_adapter_test:cargo_inventory (API {API}, event 1)"
 PHASES = ("assemble", "entity-restart", "provider-skipped", "mod-uninstalled",
           "provider-reinstalled", "container-restart")
+# v1.8 saves a rocket snapshot with its propulsion descriptor as schema 2 (RocketSnapshotNbtCodec); the v1.3
+# smokes that read snapshots expect that schema.
+SNAPSHOT_SCHEMA = 2
 JOURNAL = "advancedrocketrycommunity_rocket_transactions.dat"
 MISSING_MAPPING_ERROR = "There are unidentified mappings in this world - we are going to attempt to process anyway"
 MISSING_BLOCK_ERROR = "Unidentified mapping from registry minecraft:block"
+MISSING_ITEM_ERROR = "Unidentified mapping from registry minecraft:item"
+# Each diagnostic Forge logs when the fixture JAR is absent, with exactly the fixture's registry entries. v1.8's
+# fixture also registers four items (FixturePlacementProbeItem, FixtureThermiteItems), so its item diagnostic
+# joins the block one.
+MISSING_MAPPINGS = {
+    MISSING_BLOCK_ERROR: {CARGO, BOUNDARY},
+    MISSING_ITEM_ERROR: {FIXTURE + ":placement_probe", FIXTURE + ":thermite_aluminum_dust",
+                         FIXTURE + ":thermite_dust", FIXTURE + ":thermite_iron_dust"},
+}
+# W44 section 3.3: a v1.8 start may hold the first Moon landing event once while the transfer journal's startup
+# baseline is unconfirmed, then clear the hold with an INFO line (the GameTest manifest's
+# w44-first-moon-landing-startup-baseline). Only this WARN, at most once per process and cleared, is accepted.
+STARTUP_HOLD = re.compile(r"\[[^\]]+/WARN\] \[[^\]]*AdvancedRocketryCommunity/\]: "
+                          r"ARCE_FIRST_EVENT_HELD kind=first_moon_landing reason=SOURCE_UNCONFIRMED\s*$")
+STARTUP_HOLD_CLEARED = re.compile(r"\[[^\]]+/INFO\] \[[^\]]*AdvancedRocketryCommunity/\]: "
+                                  r"ARCE_FIRST_EVENT_HOLD_CLEARED kind=first_moon_landing reason=SOURCE_UNCONFIRMED\s*$")
 
 
 def write_json(path: Path, value: object) -> None:
@@ -110,6 +132,19 @@ def artifact(path: Path, mod_id: str, version: str) -> dict:
             raise SmokeError("Host JAR bundles the fixture")
     return {"path": str(path), "name": path.name, "mod_id": mod_id, "version": version,
             "bytes": path.stat().st_size, "sha256": server_smoke.digest_file(path)}
+
+
+def planetary_catalog(host_jar: Path, generation: str) -> re.Pattern:
+    """The reload receipt of the bundled catalog. v1.4 replaced the celestial catalog's receipt ("with 3 bodies") with
+    the planetary catalog's; the body and route counts are the tested host JAR's bundled definitions, counted as
+    run_v140_celestial_schema_smoke counts them (W101)."""
+    with zipfile.ZipFile(safe_path(host_jar)) as archive:
+        names = archive.namelist()
+    bodies, routes = (sum(name.startswith(f"data/{HOST}/{directory}/") and name.endswith(".json") for name in names)
+                      for directory in ("celestial_bodies", "travel_routes"))
+    if not 3 <= bodies <= 126 or not 1 <= routes <= 512:
+        raise SmokeError(f"Host JAR bundles an implausible catalog: {bodies} bodies, {routes} routes")
+    return re.compile(rf"Accepted planetary catalog generation {generation} with {bodies} bodies, {routes} routes and \d+ anchors")
 
 
 def validate_inputs(server: Path, evidence: Path, host: Path, fixture: Path, version: str) -> tuple:
@@ -164,25 +199,29 @@ def audit_log(lines: list[str], phase: str) -> list[str]:
     known_mapping_lines = set()
     if phase == "mod-uninstalled":
         for index, line in enumerate(lines):
-            if (server_smoke.ERROR_LINE.search(line) and registry_logger.search(line)
-                    and line.rstrip().endswith(MISSING_BLOCK_ERROR)):
+            header = next((value for value in MISSING_MAPPINGS if line.rstrip().endswith(value)), None)
+            if server_smoke.ERROR_LINE.search(line) and registry_logger.search(line) and header is not None:
                 entries = []
                 for following in lines[index + 1:]:
                     if not following.strip():
                         break
                     entries.append(following.strip())
                 mappings = [re.fullmatch(r"([a-z0-9_.-]+:[a-z0-9/._-]+): [0-9]+", entry) for entry in entries]
-                if (len(mappings) != 2 or any(match is None for match in mappings)
-                        or {match.group(1) for match in mappings} != {CARGO, BOUNDARY}):
-                    raise SmokeError("Missing-block diagnostic contains unexpected registry entries")
+                expected = MISSING_MAPPINGS[header]
+                if (len(mappings) != len(expected) or any(match is None for match in mappings)
+                        or {match.group(1) for match in mappings} != expected):
+                    raise SmokeError("Missing-mapping diagnostic contains unexpected registry entries")
                 known_mapping_lines.add(line.rstrip())
+    holds = [index for index, line in enumerate(lines) if STARTUP_HOLD.search(line)]
+    if len(holds) > 1 or holds and not any(STARTUP_HOLD_CLEARED.search(line) for line in lines[holds[0] + 1:]):
+        raise SmokeError("The first-event startup hold repeated or never cleared")
     accepted = []
     for finding in server_smoke.scan_log(lines):
         if (phase == "mod-uninstalled" and server_smoke.ERROR_LINE.search(finding)
                 and registry_logger.search(finding)
                 and (finding.rstrip().endswith(MISSING_MAPPING_ERROR) or finding in known_mapping_lines)):
             accepted.append(finding)
-        else:
+        elif not STARTUP_HOLD.search(finding):
             raise SmokeError(f"Blocking log finding: {finding}")
     return accepted
 
@@ -233,7 +272,7 @@ def validate_entity(entity: dict, receipt: tuple) -> dict:
     blocks, palette = snapshot.get("relative_blocks", []), snapshot.get("block_palette", [])
     if (data.get("schema_version") != 3
             or data.get("resource_escrow") != {"schema_version": 1, "resource_epoch": 0, "markers": []}
-            or snapshot.get("schema_version") != 1
+            or snapshot.get("schema_version") != SNAPSHOT_SCHEMA or not isinstance(snapshot.get("propulsion"), dict)
             or snapshot.get("content_hash") != snapshot_hash or len(blocks) != 4
             or snapshot.get("source_origin") != list(ORIGIN)
             or snapshot.get("source_dimension") != "minecraft:overworld"):

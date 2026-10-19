@@ -34,7 +34,7 @@ POSITION = (264, 101, 264)
 SAVED = f"world/data/{HOST}_satellite_missions.dat"
 PACK = "world/datapacks/satellite_payload"
 DEFINITION_FILE = PACK + "/data/arce_adapter_test/satellite_definitions/research_payload.json"
-REGISTERED = f"Registered satellite payload {DEFINITION} (API 1.7, event 1)"
+REGISTERED = f"Registered satellite payload {DEFINITION} (API {recovery.API}, event 1)"
 PROBE = re.compile(r"ARCE_SAT_PAYLOAD (\{.*\})\s*$")
 SCHEDULED = re.compile(r"ARCE_SATELLITE_SCHEDULER completed=1 inspected=1 remaining=0")
 

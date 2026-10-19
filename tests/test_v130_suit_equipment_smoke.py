@@ -12,9 +12,11 @@ class SuitEquipmentSmokeTests(unittest.TestCase):
     def test_registration_is_exactly_once_at_the_expected_version(self):
         runner.validate_registration([runner.REGISTERED], False)
         runner.validate_registration([runner.SKIPPED], True)
+        older = runner.REGISTERED.replace(f"API {runner.recovery.API}", "API 1.2")
+        self.assertNotEqual(runner.REGISTERED, older)
         for lines, skipped in (([], False), ([runner.REGISTERED] * 2, False),
                                ([runner.REGISTERED, runner.SKIPPED], False), ([runner.REGISTERED], True),
-                               ([runner.SKIPPED], False), ([runner.REGISTERED.replace("1.7", "1.2")], False)):
+                               ([runner.SKIPPED], False), ([older], False)):
             with self.subTest(lines=lines), self.assertRaises(runner.SmokeError):
                 runner.validate_registration(lines, skipped)
 

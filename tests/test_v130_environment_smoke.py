@@ -18,8 +18,11 @@ def nbt_uuid(value):
 def fixture():
     receipts = {body: {"id": str(uuid.UUID(int=index + 1)), "pad": [index * 1024, 128, 0]}
                 for index, body in enumerate(("earth", "moon"))}
-    data = {"schema_version": 2, "reservations": [], "stations": [
-        {"schema_version": 1, "station_id": nbt_uuid(receipt["id"]), "landing_pad": receipt["pad"],
+    data = {"schema_version": runner.STATION_ROOT_SCHEMA, "reservations": [], "warp_energy": [],
+            "orbital_clock": {"schema_version": 1, "logical_tick": 6},
+            "classic_first_warp": {"schema_version": 1, "state": "EMPTY"},
+            "format_epoch": "v1.8.0-station-first-warp", "stations": [
+        {"schema_version": runner.STATION_SCHEMA, "station_id": nbt_uuid(receipt["id"]), "landing_pad": receipt["pad"],
          "orbit_body": runner.HOST + ":" + body,
          "environment": {"gravity_milli": 0, "vacuum": 1, "solar_angle_milli_degrees": 270000}}
         for body, receipt in receipts.items()]}
@@ -29,9 +32,11 @@ def fixture():
 class EnvironmentSmokeTest(unittest.TestCase):
     def test_lifecycle_requires_single_current_handle_and_ordered_expiry(self):
         runner.validate_lifecycle([runner.READY, runner.EXPIRED])
+        older = runner.READY.replace(f"API {runner.recovery.API}", "API 1.5")
+        self.assertNotEqual(runner.READY, older)
         for lines in ([], [runner.READY], [runner.EXPIRED, runner.READY],
                       [runner.READY, runner.READY, runner.EXPIRED],
-                      [runner.READY.replace("1.7", "1.5"), runner.EXPIRED]):
+                      [older, runner.EXPIRED]):
             with self.assertRaises(runner.SmokeError):
                 runner.validate_lifecycle(lines)
 
@@ -71,6 +76,37 @@ class EnvironmentSmokeTest(unittest.TestCase):
         bad["stations"][0]["extra"] = "changed"
         with self.assertRaises(runner.SmokeError):
             runner.validate_stations(bad, receipts, data)
+
+    def test_only_the_orbital_clock_may_advance_across_the_query_only_restart(self):
+        receipts, data = fixture()
+        later = copy.deepcopy(data)
+        later["orbital_clock"]["logical_tick"] = 950
+        runner.validate_stations(later, receipts, data)
+        for change in (lambda d: d["orbital_clock"].update(logical_tick=5),
+                       lambda d: d["orbital_clock"].update(schema_version=2),
+                       lambda d: d["orbital_clock"].update(extra=1),
+                       lambda d: d["orbital_clock"].update(logical_tick="7"),
+                       lambda d: d.pop("orbital_clock"),
+                       lambda d: d["classic_first_warp"].update(state="DELIVERED"),
+                       lambda d: d["warp_energy"].append({}),
+                       lambda d: d.update(format_epoch="other")):
+            bad = copy.deepcopy(later)
+            change(bad)
+            with self.assertRaises(runner.SmokeError):
+                runner.validate_stations(bad, receipts, data)
+        old_station = copy.deepcopy(data)
+        old_station["stations"][0]["schema_version"] = 1
+        with self.assertRaises(runner.SmokeError):
+            runner.validate_stations(old_station, receipts, None)
+
+    def test_native_decode_requires_the_v18_root_schema(self):
+        import gzip
+        _, data = fixture()
+        with patch.object(runner.recovery, "NbtReader") as reader:
+            for schema in (2, 4, 6):
+                reader.return_value.read_root.return_value = {"data": dict(data, schema_version=schema)}
+                with self.subTest(schema=schema), self.assertRaises(runner.SmokeError):
+                    runner.decode_stations(gzip.compress(b"fixture"))
 
     def test_native_decode_requires_exact_schema_and_finite_station_count(self):
         import gzip

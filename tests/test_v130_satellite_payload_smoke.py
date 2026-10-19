@@ -45,8 +45,10 @@ class SatellitePayloadSmokeTest(unittest.TestCase):
     def test_registration_requires_one_correct_delivery_or_actual_absence(self):
         runner.validate_registration([runner.REGISTERED], True)
         runner.validate_registration([], False)
+        older = runner.REGISTERED.replace(f"API {runner.recovery.API}", "API 1.6")
+        self.assertNotEqual(runner.REGISTERED, older)
         for lines, installed in (([], True), ([runner.REGISTERED] * 2, True), ([runner.REGISTERED], False),
-                                 ([runner.REGISTERED.replace("1.7", "1.6")], True)):
+                                 ([older], True)):
             with self.assertRaises(runner.SmokeError): runner.validate_registration(lines, installed)
 
     def test_probe_preserves_identity_consumption_and_authoritative_result(self):

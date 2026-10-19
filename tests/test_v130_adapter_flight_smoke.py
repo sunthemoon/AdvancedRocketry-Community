@@ -37,7 +37,8 @@ def snapshot(report, index):
         if name == runner.CARGO:
             block["block_entity"] = {"adapter": runner.recovery.ADAPTER,
                                      "data": {"payload_version": 1, "data": copy.deepcopy(runner.recovery.INVENTORY)}}
-    return {"schema_version": 1, "snapshot_id": uid(20 + index), "source_dimension": report["dimension"],
+    return {"schema_version": runner.recovery.SNAPSHOT_SCHEMA, "propulsion": {"schema": 1, "mode": "MONO"},
+            "snapshot_id": uid(20 + index), "source_dimension": report["dimension"],
             "source_origin": report["origin"], "content_hash": report["snapshot"], "created_at_game_time": index * 100,
             "bounding_box": [-1, 0, 0, 1, 2, 0], "relative_blocks": blocks,
             "block_palette": [{"id": name, "properties": {}} for _, name in pairs], "passenger_anchors": [[0, 1, 0]],
@@ -175,7 +176,8 @@ class OracleTests(unittest.TestCase):
     def test_snapshot_receipt_position_bounds_and_metrics_checked(self):
         report = reports()[0]
         for key, value in (("source_dimension", runner.MOON), ("source_origin", [0, 1, 2]),
-                           ("bounding_box", [0] * 6), ("content_hash", "f" * 64), ("mass_inputs", {})):
+                           ("bounding_box", [0] * 6), ("content_hash", "f" * 64), ("mass_inputs", {}),
+                           ("schema_version", 1), ("schema_version", 3), ("propulsion", None)):
             changed = snapshot(report, 0)
             changed[key] = value
             with self.subTest(key=key), self.assertRaises(runner.SmokeError):
@@ -204,6 +206,74 @@ class OracleTests(unittest.TestCase):
             mutate(disk)
             with self.assertRaises(runner.SmokeError):
                 self.verify(disk, observed, legs, True)
+
+
+class ScriptedProcess:
+    """Appends the scripted server lines when the launch command arrives; wait_for scans as CapturedProcess does."""
+
+    def __init__(self, lines):
+        self.lines, self.scripted, self.timeouts = [], lines, []
+
+    def command(self, value):
+        if " release-test launch " in value:
+            self.lines.extend(self.scripted)
+
+    def wait_for(self, marker, timeout, *, start_at=0):
+        self.timeouts.append(timeout)
+        for index, line in enumerate(self.lines[start_at:], start_at):
+            if marker.search(line):
+                return index
+        raise runner.SmokeError(f"timed out waiting for {marker.pattern}")
+
+
+class LaunchProtocolTests(unittest.TestCase):
+    """v1.8: the launch answers JOURNAL_PENDING and flies only after the journal's acknowledgement (W101)."""
+    TRANSFER, SOURCE, ARRIVAL = uid(30), uid(10), uid(11)
+
+    def lines(self, code="JOURNAL_PENDING", prepare="SUCCESS", transfer=None, acknowledged_at=0):
+        prefix = "[05:02:06] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: "
+        launch = (f"ARCE_RELEASE_TEST_LAUNCH request={self.TRANSFER} entity={self.SOURCE} logical={uid(1)} "
+                  f"source={runner.EARTH} destination={runner.MOON} checkpoint=none code={code} "
+                  f"required_fuel=372 fuel_before=1000")
+        phases = [f"ARCE_TRANSFER_PHASE transfer={self.TRANSFER} logical={uid(1)} phase=COMMITTED event={event} "
+                  f"entity={self.ARRIVAL if event.startswith('landing') or event == 'landed_reservation_retained' else self.SOURCE} "
+                  f"fuel_before=1000 fuel_after=628 required=372" for event in runner.flight.EXPECTED_FLIGHT_EVENTS]
+        prepared = (f"ARCE_TRANSFER_PREPARE transfer={transfer or self.TRANSFER} logical={uid(1)} source={runner.EARTH} "
+                    f"destination={runner.MOON} code={prepare} candidates=1 chunks=2 detail=selected")
+        body = phases[:acknowledged_at] + [prepared] + phases[acknowledged_at:] if prepare else phases
+        return [prefix + line for line in [launch] + body]
+
+    def launch(self, lines):
+        run = runner.FlightRun(Path("unused"), Path("unused"), [], "unused", 1, 1)
+        run.reports = reports()[:1]
+        process = ScriptedProcess(lines)
+        with patch.object(runner.flight.FlightHarness, "report", return_value=reports()[1]):
+            run.launch(process, runner.MOON)
+        return run, process
+
+    def test_a_pending_launch_flies_after_its_acknowledgement_within_the_unchanged_budget(self):
+        run, process = self.launch(self.lines())
+        self.assertEqual([{"transfer": self.TRANSFER, "required": 372, "fuel_before": 1000, "fuel_after": 628,
+                           "events": runner.flight.EXPECTED_FLIGHT_EVENTS}], run.legs)
+        self.assertEqual(self.ARRIVAL, run.reports[-1]["entity"])
+        # The receipt query, then the acknowledgement and the flight sharing one 30-second budget.
+        self.assertEqual(30, process.timeouts[1])
+        self.assertTrue(0 <= process.timeouts[2] <= 30, process.timeouts)
+
+    def test_an_immediate_success_or_a_refusal_is_not_the_v18_launch(self):
+        for code in ("SUCCESS", "TRANSFER_JOURNAL_BLOCKED"):
+            with self.subTest(code=code), self.assertRaisesRegex(runner.SmokeError, "Launch quote/authority differs"):
+                self.launch(self.lines(code=code))
+
+    def test_a_missing_foreign_or_unsuccessful_acknowledgement_fails(self):
+        for lines in (self.lines(prepare=None), self.lines(transfer=uid(99)),
+                      self.lines(prepare="LANDING_PAD_UNAVAILABLE")):
+            with self.subTest(lines=lines[1]), self.assertRaisesRegex(runner.SmokeError, "ARCE_TRANSFER_PREPARE"):
+                self.launch(lines)
+
+    def test_a_flight_phase_before_the_acknowledgement_fails(self):
+        with self.assertRaisesRegex(runner.SmokeError, "preceded the journal acknowledgement"):
+            self.launch(self.lines(acknowledged_at=1))
 
 
 class BoundsAndDriverTests(unittest.TestCase):
@@ -280,13 +350,15 @@ class BoundsAndDriverTests(unittest.TestCase):
                 runner.decode_entities(value, -1, 0)
 
     def test_transfer_reader_checks_real_root_and_expansion_bound(self):
-        raw = b"\x0a\x00\x00\x0a\x00\x04data\x03\x00\x0eschema_version\x00\x00\x00\x02"
+        raw = b"\x0a\x00\x00\x0a\x00\x04data\x03\x00\x0eschema_version\x00\x00\x00\x03"
         raw += b"\x09\x00\x09transfers\x0a\x00\x00\x00\x00\x00\x00"
         with tempfile.TemporaryDirectory() as temp:
             path = Path(temp) / "transfers.dat"
             path.write_bytes(gzip.compress(raw))
-            self.assertEqual({"schema_version": 2, "transfers": []}, runner.read_transfers(path))
-            for bad in (raw.replace(b"transfers", b"wronglist"), b"x" * (4 * 1024**2 + 1)):
+            self.assertEqual({"schema_version": 3, "transfers": []}, runner.read_transfers(path))
+            for bad in (raw.replace(b"transfers", b"wronglist"), b"x" * (4 * 1024**2 + 1),
+                        raw.replace(b"\x00\x00\x00\x03", b"\x00\x00\x00\x02"),
+                        raw.replace(b"\x00\x00\x00\x03", b"\x00\x00\x00\x04")):
                 path.write_bytes(gzip.compress(bad))
                 with self.assertRaises((runner.SmokeError, ValueError)):
                     runner.read_transfers(path)

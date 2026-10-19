@@ -41,6 +41,9 @@ RELATIVE = {(-1, 0, 0): HOST + ":rocket_fuel_tank", (0, 0, 0): HOST + ":rocket_m
             (1, 0, 0): CARGO, (0, 1, 0): HOST + ":rocket_seat", (0, 2, 0): HOST + ":guidance_computer"}
 PHASES = ("moon-landing", "earth-landing", "disassembly", "container-restart")
 TRANSFER_JOURNAL = "advancedrocketrycommunity_rocket_transfers.dat"
+# v1.8 (W44): the journal root is schema 3 and also holds the world-first Moon landing state and its format epoch
+# (ManagedSavedDataType.FIRST_MOON_LANDING_JOURNAL_SCHEMA); each transfer record keeps its own schema 2.
+TRANSFER_ROOT_SCHEMA = 3
 OWNER = "00000000-0000-0000-0000-000000000005"
 REQUIRED_FUEL = 372  # Bundled route 50, mass 210, gravity 1000/165; no data packs.
 RELOCATED = {"snapshot_id", "source_dimension", "source_origin", "created_at_game_time", "content_hash"}
@@ -118,7 +121,7 @@ def read_transfers(path: Path) -> dict:
     require(len(payload) <= 4 * 1024**2, "Transfer journal exceeds decoded bound")
     root = recovery.NbtReader(payload).read_root()
     data = root.get("data") if isinstance(root, dict) else None
-    require(isinstance(data, dict) and data.get("schema_version") == 2
+    require(isinstance(data, dict) and data.get("schema_version") == TRANSFER_ROOT_SCHEMA
             and isinstance(data.get("transfers"), list), "Invalid transfer journal root")
     return data
 
@@ -158,7 +161,8 @@ def capture_disk(server: Path, evidence: Path, locations: list[dict]) -> dict:
 
 
 def validate_snapshot(snapshot: dict, report: dict) -> None:
-    require(snapshot.get("schema_version") == 1 and snapshot.get("content_hash") == report["snapshot"]
+    require(snapshot.get("schema_version") == recovery.SNAPSHOT_SCHEMA and isinstance(snapshot.get("propulsion"), dict)
+            and snapshot.get("content_hash") == report["snapshot"]
             and snapshot.get("source_dimension") == report["dimension"]
             and snapshot.get("source_origin") == report["origin"]
             and snapshot.get("bounding_box") == [-1, 0, 0, 1, 2, 0], "Snapshot receipt/location/bounds differ")
@@ -374,10 +378,21 @@ class FlightRun(recovery.RecoveryRun):
             f"arce rocket release-test launch {source['entity']} {'moon' if destination == MOON else 'earth'}"), flight.LAUNCH_LOG)
         transfer, entity, logical, dimension, target, checkpoint, code, required, before = match.groups()
         require((entity, logical, dimension, target, checkpoint, code) ==
-                (source["entity"], source["logical"], source["dimension"], destination, "none", "SUCCESS")
+                (source["entity"], source["logical"], source["dimension"], destination, "none", "JOURNAL_PENDING")
                 and int(required) == REQUIRED_FUEL and int(before) == source["fuel"], "Launch quote/authority differs")
-        end = process.wait_for(re.compile(rf"ARCE_TRANSFER_PHASE transfer={transfer} .*event=landed_reservation_retained "), 30, start_at=start)
-        phases = [m for line in process.lines[start:end + 1] if (m := flight.PHASE_LOG.search(line)) and m.group(1) == transfer]
+        # v1.8 (W11b2, W91): the request answers JOURNAL_PENDING, and the countdown starts only when the checked
+        # transfer journal acknowledges the record, which logs ARCE_TRANSFER_PREPARE code=SUCCESS. The acknowledgement
+        # and the flight share the unchanged 30-second budget from the launch receipt.
+        deadline = time.monotonic() + 30
+        acknowledged = process.wait_for(re.compile(re.escape(
+            f"ARCE_TRANSFER_PREPARE transfer={transfer} logical={logical} source={dimension} destination={target} "
+            "code=SUCCESS ")), 30, start_at=start)
+        end = process.wait_for(re.compile(rf"ARCE_TRANSFER_PHASE transfer={transfer} .*event=landed_reservation_retained "),
+                               max(0.0, deadline - time.monotonic()), start_at=start)
+        phases = [(index, m) for index, line in enumerate(process.lines[start:end + 1], start)
+                  if (m := flight.PHASE_LOG.search(line)) and m.group(1) == transfer]
+        require(phases and acknowledged < phases[0][0], "Flight phase preceded the journal acknowledgement")
+        phases = [m for _, m in phases]
         require([m.group(4) for m in phases] == flight.EXPECTED_FLIGHT_EVENTS, "Flight phase sequence differs")
         for phase in phases:
             require(phase.group(2) == logical and int(phase.group(6)) == int(before)
