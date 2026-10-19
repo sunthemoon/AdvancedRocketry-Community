@@ -39,7 +39,7 @@ development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
 latest_code_commit: 38b437a7 (W94B merged: the forced-supersession proof GameTests)
-latest_hosted_regression: run 39102812313 at 93eb3ad2 (the W91K merge) failed three GameTests: the two intermittent W94 escrow proof timeouts that W94B fixes, and C16cRestartGameTests.etcherJobCrossesARealChunkUnloadAndReloadWithExactAccounting ("Timed out waiting for the fixture chunk to unload"), which also failed on run 39099242168 at fcd549c9 (the W90b merge) and passed on run 39097355473 at 0d6b839a with the same batch order; it passed again on runs 39107209401 and 39107331408 and in Root's local reproduction, so it is intermittent on hosted runners. The last run that passed end to end is 39096930031 at 264c4e30 (the W91 merge). Repository governance passes on every commit since
+latest_hosted_regression: run 39113531249 at 38b437a7 (the W94B merge) failed only C16cRestartGameTests.etcherJobCrossesARealChunkUnloadAndReloadWithExactAccounting ("Timed out waiting for the fixture chunk to unload"); W94's two forced-supersession tests passed there for the first time on a hosted runner. The etcher test failed on 3 of the 6 hosted runs since fcd549c9 and passed locally, so it is an intermittent hosted-runner failure that needs its own fix. The last run that passed end to end is 39096930031 at 264c4e30 (the W91 merge)
 ledger_planned_units: 19
 asset_review_items: 154
 required_gates_approved: none
