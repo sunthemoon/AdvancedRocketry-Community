@@ -204,6 +204,7 @@ public final class EscrowCoordinator implements AutoCloseable {
         owner();
         var result = prepared.result();
         if (result.status() != io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.RocketCargoSelection.Status.ELIGIBLE) {
+            prepared.discard();
             return result.status() == io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.RocketCargoSelection.Status.CARGO_TOO_LARGE
                     ? Transfer.ESCROW_FULL : Transfer.INVALID;
         }

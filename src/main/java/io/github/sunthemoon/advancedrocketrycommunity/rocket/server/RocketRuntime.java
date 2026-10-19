@@ -41,8 +41,12 @@ public final class RocketRuntime {
         return io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowRuntime.of(server).cargoPreparations();
     }
     public static boolean cargoPreparing(RocketEntity rocket) {
-        return rocket.getServer() != null && rocket.assemblyTransactionId()
-                .filter(cargoPreparations(rocket.getServer())::locked).isPresent();
+        var server = rocket.getServer();
+        if (server == null || server.overworld() == null) { return false; }
+        if (!server.isSameThread()) { return true; }
+        var runtime = server.overworld().getCapability(io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowRuntime.CAPABILITY)
+                .resolve().orElse(null);
+        return runtime != null && rocket.assemblyTransactionId().filter(runtime::cargoPreparing).isPresent();
     }
     public static void cargoRemoved(RocketEntity rocket) {
         if (rocket.getServer() != null && rocket.getServer().overworld() != null) {

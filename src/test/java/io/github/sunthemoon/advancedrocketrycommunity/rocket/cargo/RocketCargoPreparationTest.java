@@ -110,5 +110,29 @@ class RocketCargoPreparationTest {
         }
         var after = RocketCargoMutation.apply(before, CargoTestFixtures.delta(before, 0, new FluidStack(Fluids.WATER, 1)), true);
         assertFalse(RocketSnapshotNbtCodec.verifies(RocketSnapshotNbtCodec.encode(after), before));
+        var unknown = root.copy(); unknown.getCompound("mass_inputs").putInt("extra", 1);
+        assertFalse(RocketSnapshotNbtCodec.verifies(unknown, before));
+        unknown = root.copy(); unknown.getList("relative_blocks", net.minecraft.nbt.Tag.TAG_COMPOUND).getCompound(0).putInt("extra", 1);
+        assertFalse(RocketSnapshotNbtCodec.verifies(unknown, before));
+        unknown = root.copy(); unknown.getList("block_palette", net.minecraft.nbt.Tag.TAG_COMPOUND).getCompound(0).putInt("extra", 1);
+        assertFalse(RocketSnapshotNbtCodec.verifies(unknown, before));
+        unknown = root.copy(); var unused = new net.minecraft.nbt.CompoundTag(); unused.putString("id", "zzzz:unused");
+        unused.put("properties", new net.minecraft.nbt.CompoundTag());
+        unknown.getList("block_palette", net.minecraft.nbt.Tag.TAG_COMPOUND).add(unused);
+        assertFalse(RocketSnapshotNbtCodec.verifies(unknown, before));
+    }
+
+    @Test void nearLimitArrayPayloadDoesNotEscapeThePerRecordReservation() {
+        var data = new net.minecraft.nbt.CompoundTag();
+        var bytes = new byte[262_100]; Arrays.fill(bytes, (byte) -128); data.putByteArray("blob", bytes);
+        var block = new RocketBlock(new RocketPosition(0, 0, 0), new RocketBlockState(ResourceLocation.tryParse("minecraft:barrel"), Map.of()),
+                new RocketBlockEntityPayload(ResourceLocation.tryParse("fixture:payload"), data));
+        var before = CargoTestFixtures.snapshot(List.of(block));
+        var cursor = new RocketSnapshotPreparation(before, -1, null);
+        while (!cursor.done()) {
+            long bound = cursor.nextByteBound(); var work = cursor.step(); assertTrue(work.bytes() <= bound);
+        }
+        assertEquals(before.contentHash(), cursor.result().contentHash());
+        assertEquals(before.structureDigest(), cursor.result().structureDigest());
     }
 }

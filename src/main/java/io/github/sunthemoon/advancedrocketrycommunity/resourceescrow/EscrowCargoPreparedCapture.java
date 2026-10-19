@@ -15,6 +15,8 @@ final class EscrowCargoPreparedCapture {
     private final RocketCargoPreparation prepared;
     private final EscrowOperation operation;
     private final CompoundTag[] inputs;
+    private List<java.util.function.Supplier<CompoundTag>> captures;
+    private java.util.function.BooleanSupplier current;
     private final CompoundTag[] owned = new CompoundTag[4];
     private final String[] digests = new String[4];
     private final int[] sizes = new int[4];
@@ -28,6 +30,38 @@ final class EscrowCargoPreparedCapture {
             CompoundTag rocketBefore, CompoundTag rocketAfter, CompoundTag deviceBefore, CompoundTag deviceAfter, int capacity) {
         this.prepared = prepared; this.operation = operation;
         inputs = new CompoundTag[] {rocketBefore, rocketAfter, deviceBefore, deviceAfter}; this.capacity = capacity;
+        captures = null; current = () -> true;
+    }
+
+    /** Native encoders run here, inside the reservation, rather than in the caller before preparation starts. */
+    EscrowCargoPreparedCapture(RocketCargoPreparation prepared, EscrowOperation operation,
+            List<java.util.function.Supplier<CompoundTag>> captures, java.util.function.BooleanSupplier current, int capacity) {
+        EscrowTags.require(captures.size() == 4, "Cargo needs four native captures");
+        this.prepared = prepared; this.operation = operation; this.captures = List.copyOf(captures);
+        this.current = current; this.capacity = capacity; inputs = new CompoundTag[4];
+    }
+
+    /** C-E's native entry: it supplies only its two device projections and exact unchanged-device predicate. */
+    static EscrowCargoPreparedCapture nativeCapture(io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.RocketCargoPreparations.Ticket ticket,
+            java.util.UUID ledger, EscrowOperation operation, java.util.function.Supplier<CompoundTag> deviceBefore,
+            java.util.function.Supplier<CompoundTag> deviceAfter, java.util.function.BooleanSupplier deviceCurrent, int capacity) {
+        var frame = new CompoundTag[1];
+        var rocket = ticket.rocket();
+        java.util.function.Supplier<CompoundTag> before = () -> {
+            EscrowTags.require(ticket.valid(), "Cargo native capture lost its preparation lock");
+            frame[0] = EscrowNativeEnvelope.frame(rocket);
+            return EscrowNativeEnvelope.rocket(rocket);
+        };
+        java.util.function.Supplier<CompoundTag> after = () -> {
+            var endpoint = operation.rocket(); var markers = new ArrayList<>(rocket.escrowSection().markers());
+            markers.add(new EscrowPrefix.Link(operation, endpoint,
+                    operation.kind() == EscrowOperation.Kind.FLUID_CARGO_LOAD ? "DESTINATION" : "SOURCE").marker());
+            return EscrowNativeEnvelope.rocket(rocket, ticket.cursor().after(), rocket.flightData().orElseThrow(),
+                    new RocketEscrowSection(ledger, endpoint.afterEpoch(), markers));
+        };
+        return new EscrowCargoPreparedCapture(ticket.cursor(), operation, List.of(before, after, deviceBefore, deviceAfter),
+                () -> ticket.valid() && deviceCurrent.getAsBoolean()
+                        && (frame[0] == null || frame[0].equals(EscrowNativeEnvelope.frame(rocket))), capacity);
     }
 
     boolean advance(long tick, RocketCargoWorkBudget budget, EscrowLedger root, List<EscrowOperation> pending) {
@@ -35,26 +69,30 @@ final class EscrowCargoPreparedCapture {
         if (result != null) { return true; }
         if (prepared.state() != RocketCargoPreparation.State.READY || !budget.claim(tick, prepared)) { return false; }
         while (result == null) {
-            int visits = step == 4 || step == 5 ? 8 * prepared.before().blocks().size()
+            int visits = step == 4 || step == 5 || step < 4 && captures != null ? 8 * prepared.before().blocks().size()
                     : 3 * prepared.before().blocks().size();
             try {
                 if (!budget.perform(tick, 8L * 1_048_576, visits, false,
                         () -> advanceStep(root, pending, visits))) { return false; }
             } catch (EscrowCargoEligibility.TooLarge exceeded) {
                 result = new EscrowCargoEligibility.Result(Status.CARGO_TOO_LARGE, null);
+                discard();
             } catch (IllegalArgumentException | java.util.NoSuchElementException | ArithmeticException invalid) {
                 result = new EscrowCargoEligibility.Result(Status.INVALID_DATA, null);
+                discard();
             }
         }
         return true;
     }
 
     private Work advanceStep(EscrowLedger root, List<EscrowOperation> pending, int visits) {
+        EscrowTags.require(current.getAsBoolean(), "Cargo input changed during capture");
         if (step < 4) {
+            if (captures != null) { inputs[step] = captures.get(step).get(); }
             EscrowCargoEligibility.envelope(inputs[step]);
             owned[step] = inputs[step].copy();
             sizes[step] = RocketNbtSize.uncompressedBytes(owned[step]);
-            long bytes = 3L * sizes[step]; step++;
+            long bytes = (captures == null ? 3L : 7L) * sizes[step]; step++;
             return new Work(bytes, visits);
         }
         if (step == 4 || step == 5) {
@@ -102,6 +140,7 @@ final class EscrowCargoPreparedCapture {
     /** Changed input requires a new full preparation; an old after snapshot never follows a changed before state. */
     boolean unchanged() {
         if (discarded) { return false; }
+        if (captures != null) { return current.getAsBoolean(); }
         for (int i = 0; i < inputs.length; i++) {
             EscrowCargoEligibility.envelope(inputs[i]);
             if (!owned[i].equals(inputs[i])) { return false; }
@@ -111,5 +150,6 @@ final class EscrowCargoPreparedCapture {
     void discard() {
         discarded = true; prepared.close();
         java.util.Arrays.fill(inputs, null); java.util.Arrays.fill(owned, null);
+        captures = null; current = () -> false;
     }
 }

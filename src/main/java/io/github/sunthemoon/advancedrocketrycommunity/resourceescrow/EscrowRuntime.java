@@ -54,6 +54,7 @@ public final class EscrowRuntime {
     public void cargoRemoved(io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity rocket) {
         if (cargo != null) { cargo.removed(rocket); }
     }
+    public boolean cargoPreparing(java.util.UUID logical) { return cargo != null && cargo.locked(logical); }
     private EscrowReleaseProbe probe;
     private EscrowChainReleaseProbe chainProbe;
     private EscrowRecoveryReleaseProbe recoveryProbe;
