@@ -79,6 +79,20 @@ acceptance review unless the owner reaffirms the precise source/rule inventory.
 Rollback removes the checker, manifest, its tests and workflow command; product
 code, persistence and protocol are unaffected. No Gate is approved by this ADR.
 
+## Implementation note: the host-lag ceiling (2026-10-19)
+
+Root raised the `server-overloaded` ceiling from five to eight. The first ceiling came from local complete runs, which
+logged one notice each. Hosted runners log more. In 16 hosted regression logs from 2026-10-17 17:53 UTC to 2026-10-19,
+after the GameTest batch order changed, the count was 2 to 6, with 6 in six of them, for example run 39248274281 at
+`83a7408e`, where all 1,226 required tests passed and only this ceiling failed. The 15 hosted runs from 2026-10-16 to
+2026-10-17 16:38 UTC logged 2 or 3. Every notice fell in the first minutes of the run: the server start and then the heavy single-test
+batches that follow it. Vanilla logs at most one notice per 15 seconds of server clock, so the count follows the batch
+order and the runner's speed, not a product change.
+
+This is the decision 5 category: a diagnostic count ceiling for host lag. It does not bound delay duration, tick time
+or reliability, and it does not change any performance budget, test assertion or timeout. A run above eight still
+fails and needs review. The ceiling expires with this ADR at the v1.8 release acceptance review.
+
 ## Verification and operation
 
 Root independently reran the original 27 tests and audited seven positive and

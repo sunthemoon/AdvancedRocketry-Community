@@ -1139,9 +1139,9 @@
       "level": "WARN",
       "logger": "net.minecraft.server.MinecraftServer/",
       "message": "Can't keep up! Is the server overloaded\\? Running \\d+ms or \\d+ ticks behind",
-      "max": 5,
+      "max": 8,
       "test": "environment: host speed",
-      "reason": "Recognizes at most five vanilla host-lag notices; complete retained runs logged one each. This count is a diagnostic ceiling, not a duration, tick-performance or reliability qualification. All existing performance budgets and native test outcomes remain independent."
+      "reason": "Recognizes at most eight vanilla host-lag notices. Local complete runs logged one each; 16 hosted runs from 2026-10-17 to 2026-10-19, after the batch order changed, logged 2 to 6, all in the first minutes of the run, and vanilla logs at most one per 15 seconds of server clock (ADR-072 implementation note). This count is a diagnostic ceiling, not a duration, tick-performance or reliability qualification. All existing performance budgets and native test outcomes remain independent."
     },
     {
       "id": "vanilla-worldgen-dummy-block-entity",
