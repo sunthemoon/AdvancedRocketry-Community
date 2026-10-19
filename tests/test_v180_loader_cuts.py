@@ -164,6 +164,7 @@ class LoaderCutsTest(unittest.TestCase):
                 self.lines = [f"ARCE_LOADER_MATRIX_FIRST cut={cut} recovery={str(bool(index)).lower()} "
                               f"delegate={'LOADED' if prior else 'NO_FILE'} issued={prior['issued_through'] if prior else 0} "
                               f"records={records} pending={records}",
+                              "ARCE_LOADER_MATRIX_PRIMED cut=LF_M_K5 tank=5000 epoch=0 stores=0",
                               f"ARCE_LOADER_MATRIX_PAUSED cut={cut} hook=BARRIER_FORCE_AFTER first_store=DESTINATION thread=fixture"]
             def wait_for(self, pattern, timeout): pass
             def abort(self): pass

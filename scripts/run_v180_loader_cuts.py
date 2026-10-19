@@ -152,6 +152,8 @@ def run_cut(args, cut: str, evidence: Path, owner: str, pins: dict) -> dict:
             start["first_tick"] = first_tick(lines, cut, restart, previous)
             oracle.require(not any("/ERROR]" in line or "/FATAL]" in line for line in lines), "Native start logged ERROR/FATAL")
             start["observations"] = [line for line in lines if "ARCE_LOADER_MATRIX_" in line]
+            if cut == "LF_M_K5" and restart == 0:
+                one_match(re.compile(r"ARCE_LOADER_MATRIX_PRIMED cut=LF_M_K5 tank=5000 epoch=0 stores=0"), lines)
             if creation and restart == 0:
                 creation_observations(cut, lines)
             if creation and restart:

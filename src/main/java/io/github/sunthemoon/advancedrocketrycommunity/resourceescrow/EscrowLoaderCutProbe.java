@@ -33,7 +33,7 @@ final class EscrowLoaderCutProbe {
     private final AtomicBoolean paused = new AtomicBoolean();
     private final List<FluidFuelLoaderBlockEntity> loaders = new ArrayList<>();
     private RocketEntity rocket;
-    private boolean firstTick, done, retrying, pendingObserved;
+    private boolean firstTick, done, retrying, pendingObserved, primed;
     private volatile boolean armed;
     private volatile String firstStore = "NONE";
     private int step, stores, failures;
@@ -57,8 +57,18 @@ final class EscrowLoaderCutProbe {
                 var trace = java.util.Arrays.stream(Thread.currentThread().getStackTrace())
                         .filter(frame -> frame.getClassName().contains("ChunkMap") || frame.getClassName().contains("Escrow"))
                         .map(StackTraceElement::toString).toList();
-                AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_MATRIX_SAVE cut={} tick={} stores={} first_store={} trace={}",
-                        cut, server.getTickCount(), stores, firstStore, trace);
+                var saved = event.getData().getList("block_entities", 10).stream().map(tag -> (CompoundTag) tag)
+                        .filter(tag -> tag.getInt("x") == A.getX() && tag.getInt("y") == A.getY() && tag.getInt("z") == A.getZ())
+                        .findFirst().orElseThrow().getCompound("arce_fluid_fuel_loader");
+                int amount = saved.getCompound("tank").getInt("Amount");
+                long epoch = saved.getCompound("resource_escrow").getLong("resource_epoch");
+                AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_MATRIX_SAVE cut={} tick={} stores={} first_store={} tank={} epoch={} trace={}",
+                        cut, server.getTickCount(), stores, firstStore, amount, epoch, trace);
+                if (!armed && !primed && trace.stream().anyMatch(frame -> frame.contains("net.minecraft.server.level.ChunkMap."))) {
+                    EscrowTags.require(amount == 5_000 && epoch == 0 && stores == 0, "Priming save was not the unchanged baseline");
+                    primed = true;
+                    AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_MATRIX_PRIMED cut={} tank=5000 epoch=0 stores=0", cut);
+                }
             };
             net.minecraftforge.common.MinecraftForge.EVENT_BUS.addListener(saves);
         }
@@ -165,10 +175,18 @@ final class EscrowLoaderCutProbe {
                 }
             }
             EscrowTags.require(server.saveEverything(false, true, true), "Fixture baseline refused");
-            step = 1; armed = !bi;
+            step = 1; armed = !bi && !boundary.equals("K5");
+            if (boundary.equals("K5")) {
+                // A normal save before admission starts vanilla's existing 10-second chunk-save cooldown. Never
+                // suppress saves, change that cooldown or alter dirty state after admission. This prevents the
+                // fixture's first incremental save from racing the destination-first barrier with the source AFTER.
+                level.getChunkAt(A).setUnsaved(true); return;
+            }
             if (boundary.equals("N3_PREFLIGHT")) { preflight(); return; }
             if (boundary.startsWith("N3_")) { refuse(); return; }
             open(loaders.get(0));
+        } else if (boundary.equals("K5") && !armed && primed) {
+            step = 2; armed = true; open(loader());
         } else if (boundary.equals("N2_DEFINITE") && failures > 0 && failures < 3) {
             var data = ResourceEscrowSavedData.existing(server);
             if (data.bind(server).writerIdle() && data.bind(server).unresolvedNaming(device(loader())).isEmpty()) { open(loader()); }
