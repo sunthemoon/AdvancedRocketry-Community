@@ -13,6 +13,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.level.ChunkPos;
@@ -24,17 +25,20 @@ final class EscrowLoaderCutProbe {
     private static final BlockPos ORIGIN = new BlockPos(64, 100, 64);
     private static final BlockPos A = new BlockPos(66, 100, 64);
     private static final BlockPos B = new BlockPos(67, 100, 64);
+    private static final List<BlockPos> CAPACITY_LOADERS = List.of(B, new BlockPos(66, 100, 65), new BlockPos(67, 100, 65),
+            new BlockPos(68, 100, 65), new BlockPos(69, 100, 65));
     private final MinecraftServer server;
     private final String cut, boundary;
     private final boolean recovery, bi, creation;
     private final AtomicBoolean paused = new AtomicBoolean();
     private final List<FluidFuelLoaderBlockEntity> loaders = new ArrayList<>();
     private RocketEntity rocket;
-    private boolean firstTick, done, retrying, pendingObserved;
+    private boolean firstTick, done, retrying, pendingObserved, primed;
     private volatile boolean armed;
     private volatile String firstStore = "NONE";
-    private int step, stores;
+    private int step, stores, failures;
     private long began = -1;
+    private java.util.function.Consumer<net.minecraftforge.event.level.ChunkDataEvent.Save> saves;
 
     static boolean selected(String cut) { return cut != null && cut.startsWith(PREFIX); }
 
@@ -45,8 +49,35 @@ final class EscrowLoaderCutProbe {
         this.server = server; this.cut = cut; this.recovery = recovery;
         bi = cut.endsWith("_BI"); boundary = cut.substring(PREFIX.length()).replace("_BI", "");
         creation = boundary.startsWith("N");
-        EscrowTags.require(boundary.matches("N[01]|N3_(FULL|ELIGIBILITY|NOT_LOADED)|K([0-9]|10)|K2_ACK|K3_DEBIT|K6_FORCED|K10_ACK")
+        EscrowTags.require(boundary.matches("N[01]|N2_(DEFINITE|UNKNOWN)|N3_(FULL|ELIGIBILITY|NOT_LOADED|PREFLIGHT)|K([0-9]|10)|K2_ACK|K3_DEBIT|K6_FORCED|K10_ACK")
                 && (!bi || boundary.matches("K[269]")), "Unknown loader cut");
+        if (!recovery && boundary.equals("K5")) {
+            saves = event -> {
+                if (step == 0 || event.getLevel() != server.overworld() || !event.getChunk().getPos().equals(new ChunkPos(A))) { return; }
+                var trace = java.util.Arrays.stream(Thread.currentThread().getStackTrace())
+                        .filter(frame -> frame.getClassName().contains("ChunkMap") || frame.getClassName().contains("Escrow"))
+                        .map(StackTraceElement::toString).toList();
+                var saved = event.getData().getList("block_entities", 10).stream().map(tag -> (CompoundTag) tag)
+                        .filter(tag -> tag.getInt("x") == A.getX() && tag.getInt("y") == A.getY() && tag.getInt("z") == A.getZ())
+                        .findFirst().orElseThrow().getCompound("arce_fluid_fuel_loader");
+                int amount = saved.getCompound("tank").getInt("Amount");
+                long epoch = saved.getCompound("resource_escrow").getLong("resource_epoch");
+                AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_MATRIX_SAVE cut={} tick={} stores={} first_store={} tank={} epoch={} trace={}",
+                        cut, server.getTickCount(), stores, firstStore, amount, epoch, trace);
+                if (!armed && !primed && trace.stream().anyMatch(frame -> frame.contains("net.minecraft.server.level.ChunkMap."))) {
+                    EscrowTags.require(amount == 5_000 && epoch == 0 && stores == 0, "Priming save was not the unchanged baseline");
+                    primed = true;
+                    AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_MATRIX_PRIMED cut={} tank=5000 epoch=0 stores=0", cut);
+                }
+            };
+            net.minecraftforge.common.MinecraftForge.EVENT_BUS.addListener(saves);
+        }
+    }
+
+    /** Generation selection only; the existing ambiguous committer still performs the injection behind its gate. */
+    static boolean baselineCandidate(CompoundTag payload) {
+        return payload.getLong("writer_generation") >= 1 && payload.getLong("issued_through") == 0
+                && payload.getList("records", 10).isEmpty();
     }
 
     void startTick() {
@@ -84,6 +115,13 @@ final class EscrowLoaderCutProbe {
             }
         }
         if (recovery || !armed) { return; }
+        if (boundary.equals("N2_DEFINITE") && (name.equals("BASELINE_STAGED") || name.equals("K8"))) {
+            // A definite failure cancels its request, so a later baseline attempt has a later writer generation.
+            EscrowReleaseProbe.definiteFailure();
+        }
+        if (boundary.startsWith("N2_") && name.equals(boundary.equals("N2_UNKNOWN") ? "WRITE_UNKNOWN" : "WRITE_FAILED_BEFORE_REPLACE")) {
+            baselineFailure(name); return;
+        }
         if (server.isSameThread() && (name.startsWith("C2_") || name.equals("C6_JOINT_READBACK")
                 || name.equals("C7_ACKNOWLEDGED") || name.equals("C8_RELEASED"))) { observe(name); }
         if (name.equals("C4_SOURCE_SELECTED") || name.equals("C4_DESTINATION_SELECTED")) {
@@ -110,6 +148,7 @@ final class EscrowLoaderCutProbe {
 
     private void pause(String hook) {
         if (!paused.compareAndSet(false, true)) { return; }
+        if (saves != null) { net.minecraftforge.common.MinecraftForge.EVENT_BUS.unregister(saves); saves = null; }
         AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_MATRIX_PAUSED cut={} hook={} first_store={} thread={}",
                 cut, hook, firstStore, Thread.currentThread().getName());
         try { TimeUnit.SECONDS.sleep(30); }
@@ -126,19 +165,83 @@ final class EscrowLoaderCutProbe {
         if (recovery) { recover(); return; }
         if (step == 0) {
             var owner = UUID.randomUUID();
-            rocket = rocket(level, ORIGIN, owner, bi ? bipropellant(2_000, 2_000) : mono(2_000));
+            rocket = rocket(level, ORIGIN, owner, bi ? bipropellant(2_000, 2_000) : mono(boundary.equals("N3_PREFLIGHT") ? 8_000 : 2_000));
             EscrowTags.require(level.addFreshEntity(rocket), "Native rocket publication failed");
             loaders.add(FluidFuelLoaderEscrowFixtures.loader(level, A, owner, tank(bi ? HYDROGEN : ROCKET_FUEL, 5_000), binding(rocket)));
             if (bi) { loaders.add(FluidFuelLoaderEscrowFixtures.loader(level, B, owner, tank(OXYGEN, 5_000), binding(rocket))); }
+            if (boundary.equals("N3_PREFLIGHT")) {
+                for (var pos : CAPACITY_LOADERS) {
+                    loaders.add(FluidFuelLoaderEscrowFixtures.loader(level, pos, owner, tank(ROCKET_FUEL, 5_000), binding(rocket)));
+                }
+            }
             EscrowTags.require(server.saveEverything(false, true, true), "Fixture baseline refused");
-            step = 1; armed = !bi;
+            step = 1; armed = !bi && !boundary.equals("K5");
+            if (boundary.equals("K5")) {
+                // A normal save before admission starts vanilla's existing 10-second chunk-save cooldown. Never
+                // suppress saves, change that cooldown or alter dirty state after admission. This prevents the
+                // fixture's first incremental save from racing the destination-first barrier with the source AFTER.
+                level.getChunkAt(A).setUnsaved(true); return;
+            }
+            if (boundary.equals("N3_PREFLIGHT")) { preflight(); return; }
             if (boundary.startsWith("N3_")) { refuse(); return; }
             open(loaders.get(0));
+        } else if (boundary.equals("K5") && !armed && primed) {
+            step = 2; armed = true; open(loader());
+        } else if (boundary.equals("N2_DEFINITE") && failures > 0 && failures < 3) {
+            var data = ResourceEscrowSavedData.existing(server);
+            if (data.bind(server).writerIdle() && data.bind(server).unresolvedNaming(device(loader())).isEmpty()) { open(loader()); }
         } else if (bi && step == 1 && settled(1)) {
             // Establish the primary fill normally, before cutting the oxidizer fill. This is not a chain test.
             EscrowTags.require(server.saveEverything(false, true, true), "Bipropellant primary baseline refused");
             step = 2; armed = true; open(loaders.get(1));
         }
+    }
+
+    private void baselineFailure(String outcome) {
+        var data = ResourceEscrowSavedData.existing(server); var coordinator = data.bind(server);
+        failures++;
+        boolean unknown = boundary.equals("N2_UNKNOWN");
+        EscrowTags.require(failures <= 3 && data.ledger().writerGeneration() == 0 && data.ledger().issuedThrough() == 0
+                && data.ledger().records().isEmpty() && coordinator.creationBaselinePending()
+                && coordinator.writerUnknown() == unknown && coordinator.writerIdle() != unknown
+                && coordinator.admissionAuthority().pendingCount() == (unknown ? 1 : 0)
+                && amount(loader()) == 5_000 && bank(rocket, false) == 0 && section(loader()).epoch() == 0
+                && rocket.escrowSection().epoch() == 0, "Baseline failure changed authority or resources");
+        if (failures == 3) {
+            EscrowTags.require(coordinator.writerUnavailable(), "Three unresolved failures did not make writer unavailable");
+            // Definite failure has no named preparation left; query the real attempt with its gate open.
+            if (!unknown) {
+                EscrowRuntime.of(server).loaderAdmissionForTests(server, device(loader()), true);
+                EscrowTags.require(loader().attempt() == FluidFuelLoaderStatus.READY, "Unavailable attempt did not enter queue");
+                EscrowRuntime.of(server).fills(server).visit();
+                EscrowRuntime.of(server).loaderAdmissionForTests(server, device(loader()), false);
+            }
+            EscrowTags.require(loader().displayStatus() == FluidFuelLoaderStatus.LEDGER_UNAVAILABLE,
+                    "Unavailable baseline did not show LEDGER_UNAVAILABLE");
+        }
+        AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_MATRIX_BASELINE_FAILURE cut={} failure={} outcome={} pending={} unavailable={} status={}",
+                cut, failures, outcome, coordinator.admissionAuthority().pendingCount(), coordinator.writerUnavailable(), loader().displayStatus());
+        observe("baseline_failure");
+        if (failures == 3) { pause(outcome); }
+    }
+
+    private void preflight() {
+        var runtime = EscrowRuntime.of(server);
+        for (var extra : loaders.subList(1, loaders.size())) {
+            open(extra); runtime.fills(server).visit(); runtime.loaderAdmissionForTests(server, device(extra), false);
+            EscrowTags.require(extra.lastAttempt() == FluidFuelLoaderStatus.PREPARING, "Capacity filler was not admitted");
+        }
+        var data = ResourceEscrowSavedData.existing(server); var coordinator = data.bind(server);
+        var before = counts(server, rocket.assemblyTransactionId().orElseThrow());
+        var source = loader().saveWithFullMetadata(); var destination = EscrowNativeEnvelope.rocket(rocket);
+        EscrowTags.require(before.pending() == 5 && before.next() == 6 && data.ledger().writerGeneration() == 0
+                && data.ledger().issuedThrough() == 0 && coordinator.writerIdle(), "Fixture did not reach five real queued fills");
+        open(loader()); runtime.fills(server).visit(); runtime.loaderAdmissionForTests(server, device(loader()), false);
+        EscrowTags.require(loader().lastAttempt() == FluidFuelLoaderStatus.ESCROW_FULL && before.equals(counts(server, rocket.assemblyTransactionId().orElseThrow()))
+                && source.equals(loader().saveWithFullMetadata()) && destination.equals(EscrowNativeEnvelope.rocket(rocket))
+                && coordinator.unresolvedNaming(device(loader())).isEmpty(), "Candidate preflight changed resources, issued a sequence or reserved a slot");
+        AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_MATRIX_PREFLIGHT cut={} admitted=5 refused=ESCROW_FULL next=6 pending=5 issued=0 records=0", cut);
+        observe("preflight_refused"); pause("N3_PREFLIGHT");
     }
 
     private FluidFuelLoaderBlockEntity loader() { return loaders.get(bi ? 1 : 0); }
@@ -193,6 +296,9 @@ final class EscrowLoaderCutProbe {
             EscrowTags.require(found.size() == 1, "Native restart duplicated rocket");
             rocket = found.get(0); loaders.add(a);
             if (bi) { loaders.add((FluidFuelLoaderBlockEntity) server.overworld().getBlockEntity(B)); }
+            if (boundary.equals("N3_PREFLIGHT")) {
+                for (var pos : CAPACITY_LOADERS) { loaders.add((FluidFuelLoaderBlockEntity) server.overworld().getBlockEntity(pos)); }
+            }
         }
         var data = ResourceEscrowSavedData.existing(server);
         if (creation && !retrying) {
@@ -201,7 +307,9 @@ final class EscrowLoaderCutProbe {
             EscrowTags.require(amount(loader()) == 5_000 && bank(rocket, false) == 0 && section(loader()).epoch() == 0
                     && section(loader()).markers().isEmpty() && rocket.escrowSection().epoch() == 0
                     && rocket.escrowSection().markers().isEmpty()
-                    && EscrowRuntime.of(server).propulsion(server).authority().pendingCount() == 0, "Creation restart changed resources");
+                    && EscrowRuntime.of(server).propulsion(server).authority().pendingCount() == 0
+                    && loaders.stream().allMatch(l -> amount(l) == 5_000 && section(l).epoch() == 0 && section(l).markers().isEmpty()),
+                    "Creation restart changed resources");
             observe("creation_restart");
             if (Boolean.getBoolean("advancedrocketrycommunity.escrowLoaderRetry")) {
                 retrying = true; open(loader()); return;
@@ -210,7 +318,7 @@ final class EscrowLoaderCutProbe {
         }
         long total = loaders.stream().mapToLong(FluidFuelLoaderEscrowFixtures::amount).sum()
                 + bank(rocket, false) + bank(rocket, true) + held(server, rocket, loaders);
-        EscrowTags.require(total == (bi ? 10_000 : 5_000), "Native restart violated raw control total");
+        EscrowTags.require(total == loaders.size() * 5_000L, "Native restart violated raw control total");
         long expected = boundary.equals("K0") || boundary.equals("K1") ? 0 : bi ? 2 : 1;
         if (server.getTickCount() - began >= 100 && settled(expected)) { observe("recovered"); done = true; result(); }
     }

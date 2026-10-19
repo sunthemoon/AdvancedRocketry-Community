@@ -170,7 +170,8 @@ public final class EscrowRuntime {
         String testCase = System.getProperty("advancedrocketrycommunity.escrowCase", "");
         if (Boolean.getBoolean(EscrowTestEndpoints.HOOKS)
                 && "start".equals(System.getProperty("advancedrocketrycommunity.escrowScenario"))
-                && (testCase.equals("E4L1_UNKNOWN") || testCase.equals("E4L2_UNKNOWN") || testCase.equals("E4L2_RESAVE"))) {
+                && (testCase.equals("E4L1_UNKNOWN") || testCase.equals("E4L2_UNKNOWN") || testCase.equals("E4L2_RESAVE")
+                    || testCase.equals("LF_M_N2_UNKNOWN"))) {
             EscrowTestEndpoints.requireEnabled(server);
             var first = new java.util.concurrent.atomic.AtomicBoolean(true);
             return (staged, target) -> {
@@ -179,7 +180,9 @@ public final class EscrowRuntime {
                 boolean empty = payload.getList("records", 10).isEmpty();
                 // E4L2_RESAVE: only the first L2 move is ambiguous; a later move would succeed if a guard ever allowed it.
                 // The generation-1 baseline is also empty, so it must not consume that single injection.
-                boolean ambiguous = payload.getLong("writer_generation") > 1 && (testCase.equals("E4L2_RESAVE")
+                boolean ambiguous = testCase.equals("LF_M_N2_UNKNOWN")
+                        ? EscrowLoaderCutProbe.baselineCandidate(payload)
+                        : payload.getLong("writer_generation") > 1 && (testCase.equals("E4L2_RESAVE")
                         ? empty && first.getAndSet(false) : testCase.equals("E4L2_UNKNOWN") == empty);
                 if (ambiguous) {
                     throw new java.io.IOException("Release-test ambiguous replacement outcome");

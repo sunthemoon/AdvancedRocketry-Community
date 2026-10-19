@@ -27,10 +27,28 @@ from run_v180_rocket_settlement_completion import require_lock
 REPO = Path(__file__).resolve().parents[1]
 LOCK = Path("D:/GitHub/ARCE-Task-Evidence/locks/heavy-jvm")
 HOOK_FILES = tuple("src/main/java/io/github/sunthemoon/advancedrocketrycommunity/resourceescrow/" + name + ".java"
-                   for name in ("EscrowLoaderReleaseProbe", "EscrowLoaderCutProbe", "EscrowLedgerWriter", "EscrowFillQueue",
+                   for name in ("EscrowLoaderReleaseProbe", "EscrowLoaderCutProbe", "EscrowReleaseProbe", "EscrowLedgerWriter", "EscrowFillQueue",
                                 "EscrowReconciliationAction", "EscrowReconciliationDriver", "EscrowRuntime", "EscrowBarrier"))
 FIRST = re.compile(r"ARCE_LOADER_MATRIX_FIRST cut=(\S+) recovery=(true|false) delegate=(\w+) issued=(\d+) records=(\d+) pending=(\d+)")
 PAUSED = re.compile(r"ARCE_LOADER_MATRIX_PAUSED cut=(\S+) hook=(\S+) first_store=(\w+) thread=(.+)")
+BASELINE_FAILURE = re.compile(r"ARCE_LOADER_MATRIX_BASELINE_FAILURE cut=(\S+) failure=(\d+) outcome=(\w+) pending=(\d+) unavailable=(true|false) status=(\w+)")
+
+
+def creation_observations(cut: str, lines: list[str]) -> None:
+    if cut in ("LF_M_N2_DEFINITE", "LF_M_N2_UNKNOWN"):
+        unknown = cut.endswith("UNKNOWN")
+        failures = [match for line in lines if (match := BASELINE_FAILURE.search(line))]
+        oracle.require(len(failures) == 3, "Baseline did not expose exactly three unresolved failures")
+        for index, match in enumerate(failures, 1):
+            oracle.require(match[1] == cut and int(match[2]) == index
+                           and match[3] == ("WRITE_UNKNOWN" if unknown else "WRITE_FAILED_BEFORE_REPLACE")
+                           and int(match[4]) == int(unknown) and match[5] == str(index == 3).lower(),
+                           "Wrong baseline failure outcome, reservation or unavailable transition")
+        oracle.require(failures[-1][6] == "LEDGER_UNAVAILABLE", "Final baseline display was not LEDGER_UNAVAILABLE")
+        oracle.require(any("phase=pending " in line and "status=PREPARING" in line for line in lines),
+                       "Missing PREPARING observation before baseline failure")
+    if cut == "LF_M_N3_PREFLIGHT":
+        one_match(re.compile(r"ARCE_LOADER_MATRIX_PREFLIGHT cut=LF_M_N3_PREFLIGHT admitted=5 refused=ESCROW_FULL next=6 pending=5 issued=0 records=0"), lines)
 
 
 def disk_space() -> dict:
@@ -134,6 +152,10 @@ def run_cut(args, cut: str, evidence: Path, owner: str, pins: dict) -> dict:
             start["first_tick"] = first_tick(lines, cut, restart, previous)
             oracle.require(not any("/ERROR]" in line or "/FATAL]" in line for line in lines), "Native start logged ERROR/FATAL")
             start["observations"] = [line for line in lines if "ARCE_LOADER_MATRIX_" in line]
+            if cut == "LF_M_K5" and restart == 0:
+                one_match(re.compile(r"ARCE_LOADER_MATRIX_PRIMED cut=LF_M_K5 tank=5000 epoch=0 stores=0"), lines)
+            if creation and restart == 0:
+                creation_observations(cut, lines)
             if creation and restart:
                 oracle.require(any("phase=creation_restart " in line for line in lines), "Missing unchanged creation-restart observation")
             disk = oracle.inspect(session / "world"); start["disk"] = disk
@@ -182,9 +204,9 @@ def run(args) -> dict:
                 hooks={path: digest(REPO / path) for path in HOOK_FILES},
                 harness={path: digest(REPO / path) for path in ("scripts/run_v180_loader_cuts.py", "scripts/loader_cut_oracle.py")})
     report = dict(status="IN_PROGRESS", pins=pins, cases=[], not_run=oracle.NOT_RUN,
-                  limits="S2 process-stop evidence only; no power-loss guarantee. No new storage-failure injection.")
+                  limits="Selected S2 process-stop cuts only; no power-loss guarantee. R35 extends existing fault generation selection.")
     for cut in args.case or oracle.CASES:
-        owner = f"W97 {cut} pid={os.getpid()} {datetime.now(timezone.utc).isoformat()}"
+        owner = f"W97B {cut} pid={os.getpid()} {datetime.now(timezone.utc).isoformat()}"
         print(f"Waiting for heavy-JVM lock: {cut}", flush=True)
         with heavy_lock(owner):
             row = run_cut(args, cut, evidence / cut, owner, pins)
@@ -193,7 +215,7 @@ def run(args) -> dict:
         print(f"{cut}: {row['status']} {row.get('error', row.get('reason', ''))}", flush=True)
         # Give a waiting worker a chance between every cut; never keep the shared lock for the whole matrix.
         time.sleep(2)
-    report["status"] = "INCOMPLETE" if all(row["status"] == "PASS" for row in report["cases"]) else "FINDINGS"
+    report["status"] = "PASS_SELECTED" if all(row["status"] == "PASS" for row in report["cases"]) else "FINDINGS"
     assert_pin(args.source_commit)
     (evidence / "results.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
     return report
@@ -210,7 +232,7 @@ def main() -> int:
     args = parser.parse_args()
     try:
         report = run(args)
-        return 0 if report["status"] == "INCOMPLETE" else 1
+        return 0 if report["status"] == "PASS_SELECTED" else 1
     except (OSError, smoke.SmokeError) as failure:
         print(f"FAIL: {failure}"); return 1
 

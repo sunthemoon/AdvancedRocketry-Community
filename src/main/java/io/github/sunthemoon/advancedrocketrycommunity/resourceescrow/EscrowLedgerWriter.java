@@ -222,6 +222,7 @@ public final class EscrowLedgerWriter implements AutoCloseable {
                     if (active != null) { captureAndStart(); }
                     finished.callback().accept(completion);
                 }
+                if (completion.outcome() == Outcome.FAILED_BEFORE_REPLACE) { checkpoint.accept("WRITE_FAILED_BEFORE_REPLACE"); }
             }
         }
         if (active != null && captured != null && !running && tick >= retryAt) { startIo(); }
