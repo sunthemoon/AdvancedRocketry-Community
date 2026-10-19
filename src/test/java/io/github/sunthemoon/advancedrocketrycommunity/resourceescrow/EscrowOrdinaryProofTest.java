@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
 import java.util.ArrayList;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.chunk.storage.EntityStorage;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -86,5 +87,16 @@ class EscrowOrdinaryProofTest {
             barrier.tick(5);
             assertEquals(3, runs.get(), "A stopped barrier drops its retries");
         }
+    }
+
+    /** W98-R11: the own store bypasses a subclass's storeEntities, so only the exact vanilla class supports a proof. */
+    @Test void onlyTheExactVanillaEntityStorageSupportsAnOrdinaryProof() {
+        assertTrue(EscrowChunkStore.vanillaEntityStorage(EntityStorage.class));
+        assertFalse(EscrowChunkStore.vanillaEntityStorage(ModdedEntityStorage.class), "Another mod's entity storage subclass");
+    }
+
+    /** Never constructed: it stands for another mod's replacement of a Level's entity storage. */
+    private static final class ModdedEntityStorage extends EntityStorage {
+        private ModdedEntityStorage() { super(null, null, null, false, null); }
     }
 }

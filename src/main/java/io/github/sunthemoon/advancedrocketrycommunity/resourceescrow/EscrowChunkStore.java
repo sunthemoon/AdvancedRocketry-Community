@@ -84,11 +84,17 @@ public final class EscrowChunkStore {
         catch (RuntimeException failure) { monitor.release(id, true, pos); throw failure; }
     }
 
-    /** W98 (W96-R5(c)): false when another mod has replaced this Level's entity storage, so no own-store proof exists. */
+    /**
+     * W98 (W96-R5(c), W98-R11): true only for the exact vanilla entity storage, or this store's decorator over it. Another
+     * mod's subclass may override {@code storeEntities}, which the own store bypasses, so it leaves no own-store proof.
+     */
     public boolean entityCaptureSupported() {
         var storage = level.entityManager.permanentStorage;
-        return entities != null ? storage == entities : storage instanceof net.minecraft.world.level.chunk.storage.EntityStorage;
+        return entities != null ? storage == entities && vanillaEntityStorage(entities.original().getClass())
+                : vanillaEntityStorage(storage.getClass());
     }
+
+    static boolean vanillaEntityStorage(Class<?> storage) { return storage == net.minecraft.world.level.chunk.storage.EntityStorage.class; }
 
     private Capture entities(String endpointLevel, ChunkPos pos, AtomicLong generation, long capturedGeneration,
                              Predicate<CompoundTag> validator) {
