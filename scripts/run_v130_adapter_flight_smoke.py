@@ -158,7 +158,8 @@ def capture_disk(server: Path, evidence: Path, locations: list[dict]) -> dict:
 
 
 def validate_snapshot(snapshot: dict, report: dict) -> None:
-    require(snapshot.get("schema_version") == 1 and snapshot.get("content_hash") == report["snapshot"]
+    require(snapshot.get("schema_version") == recovery.SNAPSHOT_SCHEMA and isinstance(snapshot.get("propulsion"), dict)
+            and snapshot.get("content_hash") == report["snapshot"]
             and snapshot.get("source_dimension") == report["dimension"]
             and snapshot.get("source_origin") == report["origin"]
             and snapshot.get("bounding_box") == [-1, 0, 0, 1, 2, 0], "Snapshot receipt/location/bounds differ")

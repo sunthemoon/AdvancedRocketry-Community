@@ -37,7 +37,8 @@ def snapshot(report, index):
         if name == runner.CARGO:
             block["block_entity"] = {"adapter": runner.recovery.ADAPTER,
                                      "data": {"payload_version": 1, "data": copy.deepcopy(runner.recovery.INVENTORY)}}
-    return {"schema_version": 1, "snapshot_id": uid(20 + index), "source_dimension": report["dimension"],
+    return {"schema_version": runner.recovery.SNAPSHOT_SCHEMA, "propulsion": {"schema": 1, "mode": "MONO"},
+            "snapshot_id": uid(20 + index), "source_dimension": report["dimension"],
             "source_origin": report["origin"], "content_hash": report["snapshot"], "created_at_game_time": index * 100,
             "bounding_box": [-1, 0, 0, 1, 2, 0], "relative_blocks": blocks,
             "block_palette": [{"id": name, "properties": {}} for _, name in pairs], "passenger_anchors": [[0, 1, 0]],
@@ -175,7 +176,8 @@ class OracleTests(unittest.TestCase):
     def test_snapshot_receipt_position_bounds_and_metrics_checked(self):
         report = reports()[0]
         for key, value in (("source_dimension", runner.MOON), ("source_origin", [0, 1, 2]),
-                           ("bounding_box", [0] * 6), ("content_hash", "f" * 64), ("mass_inputs", {})):
+                           ("bounding_box", [0] * 6), ("content_hash", "f" * 64), ("mass_inputs", {}),
+                           ("schema_version", 1), ("schema_version", 3), ("propulsion", None)):
             changed = snapshot(report, 0)
             changed[key] = value
             with self.subTest(key=key), self.assertRaises(runner.SmokeError):

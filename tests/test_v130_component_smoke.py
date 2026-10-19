@@ -8,7 +8,8 @@ class ComponentSmokeTests(unittest.TestCase):
     def state(self, updated=False):
         number = 2 if updated else 1
         snapshot = {
-            "schema_version": 1, "snapshot_id": f"00000000-0000-0000-0000-{number:012d}",
+            "schema_version": runner.recovery.SNAPSHOT_SCHEMA, "propulsion": {"schema": 1, "mode": "ABSTRACT"},
+            "snapshot_id": f"00000000-0000-0000-0000-{number:012d}",
             "source_dimension": "minecraft:overworld", "source_origin": list(runner.ORIGIN),
             "bounding_box": [-1, 0, 0, 1, 2, 0], "content_hash": str(number) * 64,
             "mass_inputs": runner.expected_stats(updated), "passenger_anchors": [[0, 1, 0]],
@@ -19,7 +20,9 @@ class ComponentSmokeTests(unittest.TestCase):
                 "owner_id": [0, 0, 0, 5], "assembly_transaction_id": [0, 0, 1, number],
                 "snapshot": snapshot, "flight_data": {"schema_version": 2, "state": "ASSEMBLED",
                 "logical_rocket_id": [0, 0, 1, number], "fuel": {"capacity": 2000 if updated else 1500,
-                "amount": 0, "committed_debits": []}, "passengers": {"seat_capacity": 1, "assignments": []}}}
+                "amount": 0, "committed_debits": [], "propulsion": {"schema": 1, "revision": 0,
+                "primary": {"amount": 0, "branch": "EMPTY"}, "oxidizer": {"amount": 0, "branch": "EMPTY"}}},
+                "passengers": {"seat_capacity": 1, "assignments": []}}}
         state = {"entities": [{"id": runner.ROCKET, "UUID": [0, 0, 0, number], "RocketEntityData": data}],
                  "blocks": {str(pos): {"Name": "minecraft:air"} for pos in runner.POSITIONS},
                  "block_entities": [{"id": runner.HOST + ":rocket_assembler", "x": 264, "y": 100, "z": 264}],
@@ -38,6 +41,15 @@ class ComponentSmokeTests(unittest.TestCase):
     def test_stats_roles_capacity_anchors_blocks_and_entities_are_binding(self):
         mutations = [lambda s: s["entities"][0]["RocketEntityData"]["snapshot"]["mass_inputs"].update(mass=10),
                      lambda s: s["entities"][0]["RocketEntityData"]["flight_data"]["fuel"].update(capacity=1000),
+                     lambda s: s["entities"][0]["RocketEntityData"]["flight_data"]["fuel"].update(extra=1),
+                     lambda s: s["entities"][0]["RocketEntityData"]["flight_data"]["fuel"].pop("propulsion"),
+                     lambda s: s["entities"][0]["RocketEntityData"]["flight_data"]["fuel"]["propulsion"].update(
+                         primary={"amount": 1, "branch": "ABSTRACT"}),
+                     lambda s: s["entities"][0]["RocketEntityData"]["flight_data"]["fuel"]["propulsion"].update(
+                         oxidizer={"amount": 0, "branch": "FLUID"}),
+                     lambda s: s["entities"][0]["RocketEntityData"]["flight_data"].update(fuel=[]),
+                     lambda s: s["entities"][0]["RocketEntityData"]["snapshot"].update(schema_version=1),
+                     lambda s: s["entities"][0]["RocketEntityData"]["snapshot"].pop("propulsion"),
                      lambda s: s["entities"][0]["RocketEntityData"]["snapshot"].update(passenger_anchors=[]),
                      lambda s: s["entities"][0]["RocketEntityData"]["snapshot"]["block_palette"][0].update(id="minecraft:stone"),
                      lambda s: s["blocks"][str(runner.ORIGIN)].update(Name="minecraft:diamond_block"),

@@ -33,7 +33,7 @@ def entity():
     data = {"schema_version": 3, "resource_escrow": {"schema_version": 1, "resource_epoch": 0, "markers": []},
             "owner_id": nbt_uuid("00000000-0000-0000-0000-000000000005"),
             "assembly_transaction_id": nbt_uuid(TRANSACTION_ID),
-            "snapshot": {"schema_version": 1, "snapshot_id": SNAPSHOT_ID,
+            "snapshot": {"schema_version": runner.SNAPSHOT_SCHEMA, "propulsion": {"schema": 1}, "snapshot_id": SNAPSHOT_ID,
                          "content_hash": RECEIPT[0], "source_origin": list(runner.ORIGIN),
                          "source_dimension": "minecraft:overworld", "relative_blocks": blocks,
                          "block_palette": [{"id": name, "properties": {}} for name in names]},
@@ -95,6 +95,16 @@ class RecoveryOracleTests(unittest.TestCase):
         state["entities"][0]["RocketEntityData"]["future_field"] = "changed"
         with self.assertRaisesRegex(runner.SmokeError, "Opaque RocketEntityData"):
             runner.validate_disk(state, "entity-restart", RECEIPT, entity()["RocketEntityData"], None)
+
+    def test_the_v18_snapshot_schema_and_its_propulsion_descriptor_are_required(self):
+        validated = runner.validate_entity(entity(), RECEIPT)
+        self.assertEqual(runner.SNAPSHOT_SCHEMA, validated["snapshot"]["schema_version"])
+        for change in (lambda s: s.update(schema_version=1), lambda s: s.update(schema_version=3),
+                       lambda s: s.pop("propulsion"), lambda s: s.update(propulsion=[])):
+            value = entity()
+            change(value["RocketEntityData"]["snapshot"])
+            with self.assertRaisesRegex(runner.SmokeError, "schema, hash, bounds or source"):
+                runner.validate_entity(value, RECEIPT)
 
     def test_missing_duplicate_and_dropped_authorities_rejected(self):
         for entities in ([], [entity(), entity()], [entity(), {"id": "minecraft:item"}]):

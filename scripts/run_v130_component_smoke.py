@@ -63,7 +63,7 @@ def validate_disk(state: dict, phase: str, receipt: tuple, previous: dict | None
     snapshot, flight_data = data["snapshot"], data["flight_data"]
     require(data.get("schema_version") == 3
             and data.get("resource_escrow") == {"schema_version": 1, "resource_epoch": 0, "markers": []}
-            and snapshot.get("schema_version") == 1
+            and snapshot.get("schema_version") == recovery.SNAPSHOT_SCHEMA and isinstance(snapshot.get("propulsion"), dict)
             and snapshot.get("source_dimension") == "minecraft:overworld"
             and snapshot.get("source_origin") == list(ORIGIN)
             and snapshot.get("bounding_box") == [-1, 0, 0, 1, 2, 0]
@@ -82,8 +82,13 @@ def validate_disk(state: dict, phase: str, receipt: tuple, previous: dict | None
     require(actual == RELATIVE and snapshot.get("passenger_anchors") == [[0, 1, 0]], "Component blocks/anchors differ")
     expected = expected_stats(phase in ("updated", "restart"))
     require(snapshot.get("mass_inputs") == expected, "Captured component metrics differ")
+    # v1.8 adds the fuel's propulsion bank beside the three v1.3 fields; zero fuel leaves both of its stores empty.
+    fuel = flight_data.get("fuel") if isinstance(flight_data.get("fuel"), dict) else {}
+    bank = fuel.get("propulsion") if isinstance(fuel.get("propulsion"), dict) else {}
     require(flight_data.get("schema_version") == 2 and flight_data.get("state") == "ASSEMBLED"
-            and flight_data.get("fuel") == {"capacity": expected["fuel_capacity"], "amount": 0, "committed_debits": []}
+            and {key: value for key, value in fuel.items() if key != "propulsion"}
+            == {"capacity": expected["fuel_capacity"], "amount": 0, "committed_debits": []}
+            and bank.get("primary") == bank.get("oxidizer") == {"amount": 0, "branch": "EMPTY"}
             and flight_data.get("passengers") == {"seat_capacity": 1, "assignments": []}, "Flight fuel/seats differ")
     expected_blocks = {str(pos): {"Name": "minecraft:air"} for pos in POSITIONS}
     expected_blocks[str(ASSEMBLER)] = {"Name": HOST + ":rocket_assembler"}

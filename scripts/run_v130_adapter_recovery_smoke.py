@@ -63,6 +63,9 @@ REGISTERED = f"Registered rocket adapter arce_adapter_test:cargo_inventory (payl
 SKIPPED = f"Skipped rocket adapter arce_adapter_test:cargo_inventory (API {API}, event 1)"
 PHASES = ("assemble", "entity-restart", "provider-skipped", "mod-uninstalled",
           "provider-reinstalled", "container-restart")
+# v1.8 saves a rocket snapshot with its propulsion descriptor as schema 2 (RocketSnapshotNbtCodec); the v1.3
+# smokes that read snapshots expect that schema.
+SNAPSHOT_SCHEMA = 2
 JOURNAL = "advancedrocketrycommunity_rocket_transactions.dat"
 MISSING_MAPPING_ERROR = "There are unidentified mappings in this world - we are going to attempt to process anyway"
 MISSING_BLOCK_ERROR = "Unidentified mapping from registry minecraft:block"
@@ -246,7 +249,7 @@ def validate_entity(entity: dict, receipt: tuple) -> dict:
     blocks, palette = snapshot.get("relative_blocks", []), snapshot.get("block_palette", [])
     if (data.get("schema_version") != 3
             or data.get("resource_escrow") != {"schema_version": 1, "resource_epoch": 0, "markers": []}
-            or snapshot.get("schema_version") != 1
+            or snapshot.get("schema_version") != SNAPSHOT_SCHEMA or not isinstance(snapshot.get("propulsion"), dict)
             or snapshot.get("content_hash") != snapshot_hash or len(blocks) != 4
             or snapshot.get("source_origin") != list(ORIGIN)
             or snapshot.get("source_dimension") != "minecraft:overworld"):
