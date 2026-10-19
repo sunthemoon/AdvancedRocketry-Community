@@ -16,6 +16,20 @@ W97's K5 finding and W97B) first. You are a new session.
 
 ## What to do
 
+0. **First, W105's two B3-S3 coverage gaps** (added by Root on 2026-10-20 after W105 merged as `bd1c78b9`; see
+   `records/W105.md`, "C1 coverage gap" and "D2-C4-before coverage gap"). Both cuts recovered to the control totals
+   on both restarts, but their stopped snapshots were not the required persisted states:
+   - C1: the durable unequal prefix (both loader tanks at 4,000 with their markers, the rocket bank at 1,000 at
+     epoch 1, both L1 records). At the pause, disk still held the state before both fills;
+   - D2-C4-before: the one-sided stored snapshot (tank 5,000 at epoch 0 without a marker, bank 1,000 at epoch 1 with
+     its marker, one L1 record). Both stores were already AFTER.
+
+   Find which save makes each native store durable relative to the pause, then add a gated stop point after the
+   exact durable store if one is needed, under the rule below. Rerun those two cuts with two restarts each. If you
+   change the chain checkpoint, rerun C2 and the three C2_PARTIAL cuts too; if you change the C4 selection, rerun
+   D2_C4_AFTER. If the existing driver cannot produce a persisted state without a new failure injection or a changed
+   save order, report it as a coverage finding with evidence, as W97's K5 did. Never change the oracle to accept the
+   observed snapshot.
 1. **B3-S4, storage failures** (about 11 cuts, 33 starts; real loader, mono-propellant):
    - cut-E1: an observed own-store failure and an observed superseding-store failure;
    - cut-E2: a newer save, a newer generation or an unstable header, an external `.mcc`, and decoded bounds;
