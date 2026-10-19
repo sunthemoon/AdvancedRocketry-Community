@@ -88,6 +88,22 @@ final class RocketRetirementProofTest {
     }
 
     @Test
+    void aFullCensusRefusesANewSlotInsteadOfDroppingIt() {
+        var census = new java.util.ArrayList<RocketRetirementProof.Slot>();
+        var dimension = net.minecraft.resources.ResourceLocation.tryParse("minecraft:overworld");
+        for (int x = 0; x < 3; x++) { assertTrue(RocketRetirementProof.addSlot(census, slot(dimension, x), 3)); }
+        assertTrue(RocketRetirementProof.addSlot(census, slot(dimension, 1), 3), "A slot already in the census needs no room");
+        assertFalse(RocketRetirementProof.addSlot(census, slot(dimension, 3), 3), "A new slot past the limit is refused (W98-R7)");
+        assertEquals(List.of(slot(dimension, 0), slot(dimension, 1), slot(dimension, 2)), census, "Nothing is dropped or replaced");
+        assertEquals(1 + 2 * io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightLimits.MAX_TRANSFER_ENTITY_MATCHES,
+                RocketOrdinaryRetirement.MAX_SLOTS, "The survivor's slot plus every discarded candidate of both ends");
+    }
+
+    private static RocketRetirementProof.Slot slot(net.minecraft.resources.ResourceLocation dimension, int x) {
+        return new RocketRetirementProof.Slot(dimension, new net.minecraft.world.level.ChunkPos(x, 0));
+    }
+
+    @Test
     void theStationarySourceKeepsTheRecordsSourceFuelAndDebits() {
         var record = RocketStationMotionRuleTest.record(new RocketPosition(72, 80, 8));
         var stationary = RocketTransferEntities.stationarySource(record, 900L);

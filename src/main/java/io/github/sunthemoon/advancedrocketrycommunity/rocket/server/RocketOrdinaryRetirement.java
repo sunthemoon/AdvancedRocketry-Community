@@ -91,6 +91,7 @@ final class RocketOrdinaryRetirement {
         final Map<RocketRetirementProof.Slot, EscrowBarrier.Proof> proofs = new HashMap<>();
         Effects effects;
         RocketTransferSavedData.Reservation token;
+        boolean censusFull;
         State state = State.WAITING;
         CompoundTag frozen;
         Consumer<String> sink = label -> { };
@@ -220,7 +221,11 @@ final class RocketOrdinaryRetirement {
 
     private static void addSlot(Pending entry, RocketEntity candidate) {
         var slot = new RocketRetirementProof.Slot(candidate.level().dimension().location(), candidate.chunkPosition());
-        if (!entry.census.contains(slot) && entry.census.size() < MAX_SLOTS) { entry.census.add(slot); }
+        if (RocketRetirementProof.addSlot(entry.census, slot, MAX_SLOTS) || entry.censusFull) { return; }
+        // W98-R7: a slot the census cannot hold is never treated as proved absent; the return holds, with one WARN.
+        entry.censusFull = true;
+        AdvancedRocketryCommunity.LOGGER.warn("ARCE_TRANSFER_RETIREMENT_HELD transfer={} logical={} reason=CENSUS_LIMIT slots={} repair=offline-whole-world",
+                entry.record.transferId(), entry.logical(), MAX_SLOTS);
     }
 
     void tick(MinecraftServer server) {
@@ -267,6 +272,7 @@ final class RocketOrdinaryRetirement {
     }
 
     private void start(MinecraftServer server, Pending entry, long now) {
+        if (entry.censusFull) { fail(entry, "CENSUS_LIMIT", now, RETRY_TICKS, false); return; }
         if (entry.token == null && attempting() >= MAX_ATTEMPTS) { return; }
         var record = entry.record;
         var level = RocketTransferEntities.level(server, record.sourceSnapshot().sourceDimension());
@@ -303,6 +309,8 @@ final class RocketOrdinaryRetirement {
     }
 
     private void prove(MinecraftServer server, Pending entry, long now) {
+        // A nudge may add slots during an attempt; an overflow ends it before any removal (W98-R7).
+        if (entry.censusFull) { fail(entry, "CENSUS_LIMIT", now, RETRY_TICKS, false); return; }
         if (now - entry.started > ATTEMPT_TICKS) { fail(entry, "DEADLINE", now, RETRY_TICKS, true); return; }
         if (entry.proofs.values().stream().anyMatch(proof -> !proof.valid())) { fail(entry, "SUPERSEDING_SAVE", now, 1, false); return; }
         if (entry.cursor < entry.census.size()) {

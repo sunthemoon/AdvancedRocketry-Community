@@ -29,6 +29,17 @@ final class RocketRetirementProof {
         Slot { Objects.requireNonNull(dimension); Objects.requireNonNull(chunk); }
     }
 
+    /**
+     * W98-R7: adds a census slot once. A new slot past {@code limit} is refused, never dropped: truncation is not absence,
+     * so the caller holds the return.
+     */
+    static boolean addSlot(List<Slot> census, Slot slot, int limit) {
+        if (census.contains(slot)) { return true; }
+        if (census.size() >= limit) { return false; }
+        census.add(slot);
+        return true;
+    }
+
     /** A crew member's observed placement. */
     enum Seat { OFFLINE, PLACED, UNPLACED }
 
