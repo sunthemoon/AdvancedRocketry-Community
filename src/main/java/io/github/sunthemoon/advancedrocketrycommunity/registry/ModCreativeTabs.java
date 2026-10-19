@@ -96,6 +96,8 @@ public final class ModCreativeTabs {
                         output.accept(ModItems.FUEL_LOADER.get());
                         output.accept(ModItems.ROCKET_SATELLITE_BAY.get());
                         output.accept(ModItems.FLUID_FUEL_LOADER.get());
+                        output.accept(ModItems.ROCKET_FLUID_LOADER.get());
+                        output.accept(ModItems.ROCKET_FLUID_UNLOADER.get());
                         output.accept(ModItems.LINKER.get());
                         output.accept(ModItems.ROCKET_FUEL_CELL.get());
                         output.accept(ModItems.STATION_DEPLOYMENT_KIT.get());

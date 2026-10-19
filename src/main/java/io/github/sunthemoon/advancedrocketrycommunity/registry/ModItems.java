@@ -241,6 +241,13 @@ public final class ModItems {
     public static final RegistryObject<Item> FLUID_FUEL_LOADER = ITEMS.register("fluid_fuel_loader", () ->
             new io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderItem(
                     ModBlocks.FLUID_FUEL_LOADER.get(), new Item.Properties().stacksTo(1)));
+    /** W11c reuses the bounded owner/tank carrier and BlockEntityTag refusal unchanged. */
+    public static final RegistryObject<Item> ROCKET_FLUID_LOADER = ITEMS.register("rocket_fluid_loader", () ->
+            new io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderItem(
+                    ModBlocks.ROCKET_FLUID_LOADER.get(), new Item.Properties().stacksTo(1)));
+    public static final RegistryObject<Item> ROCKET_FLUID_UNLOADER = ITEMS.register("rocket_fluid_unloader", () ->
+            new io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderItem(
+                    ModBlocks.ROCKET_FLUID_UNLOADER.get(), new Item.Properties().stacksTo(1)));
     /** W11b3: the linker's rocket-binding half; its other roles arrive with W11e. */
     public static final RegistryObject<Item> LINKER = ITEMS.register("linker", () ->
             new io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.LinkerItem(

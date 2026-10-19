@@ -419,6 +419,18 @@ public final class ModBlocks {
             new io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderBlock(
                     metalProperties().pushReaction(PushReaction.BLOCK)));
 
+    /** W11c C-A: fixed-role fluid cargo devices; admission remains unwired. */
+    public static final RegistryObject<io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketFluidCargoBlock>
+            ROCKET_FLUID_LOADER = BLOCKS.register("rocket_fluid_loader", () ->
+            new io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketFluidCargoBlock(
+                    io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketCargoRole.LOAD,
+                    metalProperties().pushReaction(PushReaction.BLOCK)));
+    public static final RegistryObject<io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketFluidCargoBlock>
+            ROCKET_FLUID_UNLOADER = BLOCKS.register("rocket_fluid_unloader", () ->
+            new io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketFluidCargoBlock(
+                    io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketCargoRole.UNLOAD,
+                    metalProperties().pushReaction(PushReaction.BLOCK)));
+
     /** Passive ordinary lights: native support/placement, distinct registered loot tables. */
     public static final RegistryObject<TorchBlock> THERMITE_TORCH = BLOCKS.register("thermite_torch", () ->
             new TorchBlock(thermiteTorchProperties(), ParticleTypes.FLAME));

@@ -100,6 +100,8 @@ public final class OperatorItemNbtGameTests {
             io.github.sunthemoon.advancedrocketrycommunity.atmosphere.torch.UnlitTorchBlockEntity.class,
             // W27b: the satellite bay's owner, package identity and guarded roots.
             io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.SatelliteBayBlockEntity.class,
+            // W109: both fixed cargo roles keep owner, placement identity, binding and protected native roots.
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketFluidCargoBlockEntity.class,
             // W82: the fluid fuel loader's owner, device identity, binding and escrow section.
             io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderBlockEntity.class);
     /** Block entities that save no root of their own, so item NBT reaches no server-decided state. */

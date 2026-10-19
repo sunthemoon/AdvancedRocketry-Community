@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "H": {
+      "item": "minecraft:hopper"
+    },
+    "L": {
+      "item": "advancedrocketrycommunity:liquid_io_board"
+    },
+    "M": {
+      "item": "advancedrocketrycommunity:machine_casing"
+    },
+    "T": {
+      "type": "advancedrocketrycommunity:empty_pressurized_tank"
+    }
+  },
+  "pattern": [
+    "LMT",
+    " H "
+  ],
+  "result": {
+    "item": "advancedrocketrycommunity:rocket_fluid_unloader"
+  }
+}
