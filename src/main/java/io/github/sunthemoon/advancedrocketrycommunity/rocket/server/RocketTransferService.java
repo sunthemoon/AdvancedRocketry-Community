@@ -299,9 +299,9 @@ final class RocketTransferService {
         journal.retryChecked(server);
         recovery.recoverNext(server, journal);
         recovery.tickReconnects(server, journal);
-        recovery.tickRetirements(server); // W98: ordinary source returns awaiting their survivor proof
         governedSources.tick(server, journal, recovery.bays());
         governedCleanup.tick(server, journal, recovery.bays());
+        recovery.tickRetirements(server); // W98 (W98-R4): ordinary survivor proofs take the tick's capture after governed work
         List<UUID> active = liveTransfers.stream().sorted().toList();
         for (UUID transferId : active) {
             RocketTransferRecord record = journal.find(transferId).orElse(null);
