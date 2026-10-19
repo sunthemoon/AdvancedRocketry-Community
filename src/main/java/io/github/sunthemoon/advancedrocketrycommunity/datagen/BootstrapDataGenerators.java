@@ -91,7 +91,8 @@ public final class BootstrapDataGenerators {
                 new V180SatelliteBayData(output, event.includeClient(), event.includeServer()));
         generator.addProvider(event.includeClient() || event.includeServer(),
                 new V180FluidFuelLoaderData(output, event.includeClient(), event.includeServer()));
-        generator.addProvider(event.includeServer(), new V180RocketFluidCargoLoot(output));
+        generator.addProvider(event.includeClient() || event.includeServer(),
+                new V180RocketCargoData(output, event.includeClient(), event.includeServer()));
         generator.addProvider(event.includeClient() || event.includeServer(),
                 new V180ThermiteData(output, event.includeClient(), event.includeServer()));
         generator.addProvider(event.includeClient() || event.includeServer(),

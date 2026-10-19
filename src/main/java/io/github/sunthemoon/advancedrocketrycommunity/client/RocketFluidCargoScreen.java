@@ -22,7 +22,7 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
  */
 @Mod.EventBusSubscriber(modid = ModIdentity.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public final class RocketFluidCargoScreen extends AbstractContainerScreen<RocketFluidCargoMenu> {
-    public static final String PREFIX = "screen.advancedrocketrycommunity.fluid_fuel_loader.";
+    public static final String PREFIX = "screen.advancedrocketrycommunity.rocket_fluid_cargo.";
     private static final int GAUGE_X = 12;
     private static final int GAUGE_Y = 22;
     private static final int GAUGE_WIDTH = 16;
@@ -80,7 +80,7 @@ public final class RocketFluidCargoScreen extends AbstractContainerScreen<Rocket
         Component status = view.status() == null ? Component.translatable(PREFIX + "status_unknown")
                 : Component.translatable(view.status().translationKey());
         if (view.cursor() != null) {
-            drawLine(graphics, Component.literal(view.cursor().getX() + ", " + view.cursor().getY() + ", " + view.cursor().getZ()),
+            drawLine(graphics, Component.translatable(PREFIX + "cursor", view.cursor().getX(), view.cursor().getY(), view.cursor().getZ()),
                     36, 88, width, 0xFFACC5D7);
         }
         // Status text wraps onto at most two lines inside the panel.
