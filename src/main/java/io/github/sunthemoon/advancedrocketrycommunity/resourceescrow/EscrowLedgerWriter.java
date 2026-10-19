@@ -16,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
+import java.util.function.LongSupplier;
 import net.minecraft.nbt.CompoundTag;
 
 /** One captured generation and one successor request. All state/capture/callbacks belong to the owner thread. */
@@ -44,6 +45,7 @@ public final class EscrowLedgerWriter implements AutoCloseable {
     }
     public record Completion(long generation, String digest, Outcome outcome, Snapshot snapshot) { }
     private record Request(Supplier<Snapshot> capture, Consumer<Completion> callback, BooleanSupplier beforeReplace, long requestedAt) { }
+    @FunctionalInterface interface DrainWait { void sleep(long nanos) throws InterruptedException; }
     /** Shutdown stops retrying one unresolved candidate after this many further unknown outcomes. */
     static final int DRAIN_UNKNOWN_ATTEMPTS = 3;
     private static final org.slf4j.Logger LOGGER = LogUtils.getLogger();
@@ -260,14 +262,23 @@ public final class EscrowLedgerWriter implements AutoCloseable {
     public long lastGeneration() { owner(); return lastGeneration; }
     long lastIoStart() { owner(); return lastIoStart; }
     public void drain() {
+        drain(System::nanoTime, TimeUnit.NANOSECONDS::sleep);
+    }
+    /** Unit-test seam: production always uses the monotonic JVM clock and an interruptible wait. */
+    void drain(LongSupplier nanoTime, DrainWait wait) {
         owner(); draining = true; drainUnknown = 0;
         // Continue the server clock: lastIoStart holds a real tick, so restarting at retryAt (0 unless an UNKNOWN
         // happened) would wait out the cadence for as many iterations as the server's uptime in ticks.
-        long tick = Math.max(this.tick, retryAt);
+        long firstTick = Math.max(this.tick, retryAt);
+        long started = nanoTime.getAsLong();
         // Only this bounded completion queue is pumped; no gameplay, applies or new barriers.
         while (active != null) {
-            tick(tick++);
-            try { Thread.sleep(1); } catch (InterruptedException interrupted) {
+            // Coarse timer wakeups may span many empty ticks. Count elapsed time, not rounded sleeps.
+            tick(firstTick + TimeUnit.NANOSECONDS.toMillis(nanoTime.getAsLong() - started));
+            try {
+                long elapsed = nanoTime.getAsLong() - started;
+                wait.sleep(1_000_000 - elapsed % 1_000_000);
+            } catch (InterruptedException interrupted) {
                 Thread.currentThread().interrupt(); throw new IllegalStateException("Escrow shutdown drain interrupted", interrupted);
             }
         }

@@ -13,6 +13,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.function.LongSupplier;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 
@@ -37,13 +38,12 @@ final class RocketJournalWriter implements AutoCloseable {
     record Completion(long sequence, RocketJournalCheckpoint.Outcome outcome,
                       RocketJournalCheckpoint.Acknowledgement acknowledged, long writerNanos) { }
     private record Request(Snapshot snapshot, CheckedSavedDataPolicy policy) { }
+    @FunctionalInterface interface DrainWait { void sleep(long nanos) throws InterruptedException; }
     static final int DRAIN_UNKNOWN_ATTEMPTS = 3;
     private final Thread owner = Thread.currentThread();
     private final Path file;
     private final RocketJournalCheckpoint disk;
-    private final ExecutorService io = Executors.newSingleThreadExecutor(r -> {
-        var thread = new Thread(r, "ARCE-rocket-journal"); thread.setDaemon(true); return thread;
-    });
+    private final ExecutorService io;
     private final ArrayBlockingQueue<Completion> completions = new ArrayBlockingQueue<>(1);
     private Request active, successor;
     private boolean running, closed, draining;
@@ -56,8 +56,15 @@ final class RocketJournalWriter implements AutoCloseable {
     RocketJournalWriter(Path file) { this(file, CheckedSavedDataPolicy.DirectoryForce.PLATFORM); }
     /** The directory force is resolved on the owner thread; a gated release-test cut may replace it (W44 6.1). */
     RocketJournalWriter(Path file, CheckedSavedDataPolicy.DirectoryForce force) {
+        this(file, force, Executors.newSingleThreadExecutor(r -> {
+            var thread = new Thread(r, "ARCE-rocket-journal"); thread.setDaemon(true); return thread;
+        }));
+    }
+    /** Unit-test seam for awaiting the real IO thread independently of the drain clock. */
+    RocketJournalWriter(Path file, CheckedSavedDataPolicy.DirectoryForce force, ExecutorService io) {
         this.file = file.toAbsolutePath().normalize();
         this.disk = new RocketJournalCheckpoint(force);
+        this.io = io;
     }
     boolean request(Snapshot snapshot, CheckedSavedDataPolicy policy) {
         owner();
@@ -125,12 +132,21 @@ final class RocketJournalWriter implements AutoCloseable {
     }
     boolean idle() { owner(); return active == null; }
     void drain(Consumer<Completion> publish) {
+        drain(publish, System::nanoTime, TimeUnit.NANOSECONDS::sleep);
+    }
+    /** Unit-test seam: production always uses the monotonic JVM clock and an interruptible wait. */
+    void drain(Consumer<Completion> publish, LongSupplier nanoTime, DrainWait wait) {
         owner(); draining = true; drainUnknown = 0;
         // Continue the actual owner clock, including a long-lived server and failure backoff.
-        long now = Math.max(tick, retryAt);
+        long firstTick = Math.max(tick, retryAt);
+        long started = nanoTime.getAsLong();
         while (!idle()) {
-            tick(now++, publish);
-            try { Thread.sleep(1); }
+            // Coarse timer wakeups may span many empty ticks. Count elapsed time, not rounded sleeps.
+            tick(firstTick + TimeUnit.NANOSECONDS.toMillis(nanoTime.getAsLong() - started), publish);
+            try {
+                long elapsed = nanoTime.getAsLong() - started;
+                wait.sleep(1_000_000 - elapsed % 1_000_000);
+            }
             catch (InterruptedException interrupted) {
                 Thread.currentThread().interrupt(); throw new IllegalStateException("Journal drain interrupted", interrupted);
             }
