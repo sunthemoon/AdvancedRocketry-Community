@@ -29,6 +29,9 @@ public final class EscrowProofRetryGameTests {
     private static final int TIMEOUT_TICKS = PREPARATION_TICKS + 2 * PROOF_TICKS + 100;
     private EscrowProofRetryGameTests() { }
 
+    /** The remote fixture of each scenario; EscrowCoreFixtureAreas prepares and holds its area (W111). */
+    static BlockPos fixture(boolean entity) { return new BlockPos(entity ? 548_001 : 546_001, 100, 546_001); }
+
     static boolean entityCaptureWindow(long tick) {
         // MinecraftServer autosaves every 6,000 server ticks. Entity slots have no terrain cooldown.
         // Do not change the server clock or suppress any save; defer this fixture's capture instead.
@@ -67,10 +70,12 @@ public final class EscrowProofRetryGameTests {
             var level = helper.getLevel(); var server = level.getServer();
             startedAt = server.getTickCount();
             barrier = new EscrowBarrier(new EscrowProofTrace(entity ? "retry_entity" : "retry_terrain", server).barrier());
-            position = new BlockPos(entity ? 548_001 : 546_001, 100, 546_001); chunk = new ChunkPos(position);
+            position = fixture(entity); chunk = new ChunkPos(position);
             level.getChunkSource().addRegionTicket(TicketType.START, chunk, 2, Unit.INSTANCE);
             level.getChunk(chunk.x, chunk.z);
-            fixture = EscrowTestEndpoints.create(level, position, UUID.randomUUID());
+            // W111: the batch hook generated, saved and flushed this area before the timed ticks started.
+            helper.assertTrue(EscrowCoreFixtureAreas.prepared(level, chunk), "Retry fixture area was not prepared before the batch");
+            fixture =EscrowTestEndpoints.create(level, position, UUID.randomUUID());
             var operation = fixture.operation(1); fixture.apply(operation);
             // Request this nonempty entity slot's disk load now, rather than waiting for the surrounding
             // terrain's entity-ticking promotion to request it much later. This is vanilla's normal save path.

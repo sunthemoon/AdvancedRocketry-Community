@@ -27,13 +27,18 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 @GameTestHolder(ModIdentity.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class EscrowCoreGameTests {
+    // Remote fixture chunks; EscrowCoreFixtureAreas generates, saves and holds their areas for the whole batch (W111).
+    static final BlockPos JOINT_FIXTURE = new BlockPos(530_001, 100, 530_001);
+    static final BlockPos OWN_FIXTURE = new BlockPos(520_001, 100, 520_001);
     private EscrowCoreGameTests() { }
     @GameTest(template = "empty", batch = "escrow_core", timeoutTicks = 200)
     public static void jointTerrainSlotProofRetainsTheOtherEndpointLease(GameTestHelper helper) {
-        var level = helper.getLevel(); BlockPos position = new BlockPos(530_001, 100, 530_001);
+        var level = helper.getLevel(); BlockPos position = JOINT_FIXTURE;
         var chunk = new net.minecraft.world.level.ChunkPos(position);
         level.getChunkSource().addRegionTicket(net.minecraft.server.level.TicketType.START, chunk, 2, net.minecraft.util.Unit.INSTANCE);
         level.getChunk(chunk.x, chunk.z);
+        // W111: the batch hook generated, saved and flushed this area before the timed ticks started.
+        helper.assertTrue(EscrowCoreFixtureAreas.prepared(level, chunk), "Joint fixture area was not prepared before the batch");
         var first = EscrowTestEndpoints.create(level, position, UUID.randomUUID());
         var op1 = first.operation(1); first.apply(op1);
         var second = EscrowTestEndpoints.chainSource(first, position.offset(4, 0, 0));
@@ -80,10 +85,12 @@ public final class EscrowCoreGameTests {
     public static void ownTerrainAndEntityStoresConfirmTheExactFrozenFrontier(GameTestHelper helper) {
         var level = helper.getLevel();
         // The framework's template cleanup and the other adversarial fixture must not save this slot.
-        BlockPos position = new BlockPos(520_001, 100, 520_001);
+        BlockPos position = OWN_FIXTURE;
         var chunk = new net.minecraft.world.level.ChunkPos(position);
         level.getChunkSource().addRegionTicket(net.minecraft.server.level.TicketType.START, chunk, 2, net.minecraft.util.Unit.INSTANCE);
         level.getChunk(chunk.x, chunk.z); // Explicit fixed test setup, never endpoint-request loading.
+        // W111: the batch hook generated, saved and flushed this area before the timed ticks started.
+        helper.assertTrue(EscrowCoreFixtureAreas.prepared(level, chunk), "Own-store fixture area was not prepared before the batch");
         var fixture = EscrowTestEndpoints.create(level, position, UUID.randomUUID());
         var op = fixture.operation(1); fixture.apply(op);
         level.entityManager.storeChunkSections(chunk.toLong(), value -> { });
@@ -130,7 +137,7 @@ public final class EscrowCoreGameTests {
                 helper.succeed(); return;
             }
             // These are independent terrain/entity slots. Start both prepared proofs together so one 100-tick
-            // retry plus two 21-tick windows fits the existing 200 ticks after W36's readiness wait.
+            // retry plus two 21-tick windows fits the existing 200 ticks. W111: generation no longer runs inside them.
             proofs.forEach(EscrowGameTestProof::tick);
         });
     }

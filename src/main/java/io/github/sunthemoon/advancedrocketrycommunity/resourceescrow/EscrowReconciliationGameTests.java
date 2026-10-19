@@ -23,7 +23,11 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 @GameTestHolder(ModIdentity.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class EscrowReconciliationGameTests {
+    /** The scenarios' remote fixtures, one per {@code missing} value; EscrowCoreFixtureAreas holds their areas (W111). */
+    public static final int FIXTURES = 6;
     private EscrowReconciliationGameTests() { }
+
+    public static BlockPos fixture(int missing) { return new BlockPos(681_008 + missing * 32, 100, 681_008); }
 
     @GameTest(template = "empty", batch = "escrow_core", timeoutTicks = 400)
     public static void nativeL1AppliesEachEndpointOnceWithoutReportingProof(GameTestHelper helper) throws Exception {
@@ -73,7 +77,7 @@ public final class EscrowReconciliationGameTests {
 
         Scenario(GameTestHelper helper, int missing) throws Exception {
             this.helper = helper; this.missing = missing;
-            position = new BlockPos(681_008 + missing * 32, 100, 681_008); chunk = new ChunkPos(position);
+            position = fixture(missing); chunk = new ChunkPos(position);
             pacer = new GameTestTickPacer(helper.getLevel().getServer());
             directory = Files.createTempDirectory("arce-c35-reconcile-");
             coordinator = new EscrowCoordinator(data, new EscrowLedgerWriter(directory.resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName()), 0));
@@ -82,6 +86,9 @@ public final class EscrowReconciliationGameTests {
             var level = helper.getLevel();
             level.getChunkSource().addRegionTicket(TicketType.START, chunk, 2, Unit.INSTANCE);
             level.getChunk(chunk.x, chunk.z); // Fixed test setup, not reconciliation loading.
+            // W111: the escrow_core batch hook generated, saved and flushed this area before the timed ticks started.
+            helper.assertTrue(io.github.sunthemoon.advancedrocketrycommunity.gametest.EscrowCoreFixtureAreas.prepared(level, chunk),
+                    "Reconciliation fixture area was not prepared before the batch");
             helper.onEachTick(this::tick);
         }
         void tick() {
