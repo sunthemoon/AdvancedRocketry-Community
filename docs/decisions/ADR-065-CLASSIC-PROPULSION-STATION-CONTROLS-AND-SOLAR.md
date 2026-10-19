@@ -1670,6 +1670,58 @@ decision status and accepts no risk. The risk is R-035.
 No saved format changes. This is a development implementation note, not owner acceptance or a
 Gate result.
 
+### W11c and W11d implementation note: rocket cargo scope and protections (design W11CD, admission disabled)
+
+This note records the cargo design (W11CD, frozen at `49f7e08b`) and its first leaves: C-I, the
+structure digest and the grouped recognition predicate (W99, merged `fac40f53`), and C-K, the escrow
+core's fluid cargo kinds (W100 with W100F, merged `c3f80822`). It states the protection scope before
+leaf C-P implements the tank payload host, as AGENTS section 3.3 requires. R-035 registers the same
+scope (`93659768`). It changes no decision status and accepts no risk.
+
+- **What cargo is.** W11c adds `rocket_fluid_loader` and `rocket_fluid_unloader`, the
+  `pressurized_tank_v1` payload host and the cargo projection `ROCKET_COMPOSITE_V1`; W11d adds
+  `rocket_item_loader` and `rocket_item_unloader` for vanilla chest and barrel payloads. Each device
+  holds one 16,000 mB Fluid or 4 slots of at most 64 items and 4 KiB per stack, and moves at most
+  1,000 mB or one stack per 20 ticks into or out of one payload the server chooses deterministically,
+  never a propulsion bank. A cargo operation publishes a whole new snapshot with the same snapshot ID
+  through the shared fair queue and the runtime-owned authority, with Root-R6's headroom and Root-R8's
+  charging. Disassembly restores the latest cargo exactly once; rocket epochs and transfer floors stop
+  an older snapshot from recreating unloaded cargo. One live cargo operation per rocket, no chains, no
+  mixing of fuel and cargo or of load and unload.
+- **Protections and their scope (AGENTS section 3.3).**
+  - *One device:* an invalid, future, quarantined or unregistered-content device root is kept
+    unchanged and the device is disabled. Player removal is refused before loot, explosions skip it,
+    extraction is refused and nothing drops. This lasts until the cause is resolved (the missing mod
+    restored and verified at the next load, or a supporting jar or offline repair for future or
+    invalid data); a restart alone does not clear it. An escrow lock lasts separately, until a proved
+    reconciliation or an operator settlement releases it.
+  - *One terrain chunk:* only an observed native incompatibility vetoes that chunk's terrain save,
+    through `GuardedChunkSaves`. A raw root that can be written and read back losslessly, or that
+    exceeds the bounded native check budget, is saved unchanged; runtime oversize alone never refuses
+    a save.
+  - *One Level:* after the inherited saturation bound of 256 refused coordinates, that ServerLevel's
+    later terrain saves are vetoed until the Level closes. Entities, players and global stores still
+    save separately; this is not an atomic world pause, and closing the Level ends the veto without
+    clearing the incompatible data. No new Level-wide entity-save veto is added.
+  - *Entity records and barriers:* unsupported tank or container payloads follow the existing rocket
+    entity quarantine and retention rules. If cargo makes a rocket's native entity record exceed the
+    supported inline sector read, cut-E2 keeps its operation and endpoints locked and refuses
+    retirement until a valid proof or an offline repair; unobservable native failures stay diagnostic
+    residuals, not new guarantees.
+  - *Logging:* one bounded audit line per state, reason or backoff transition, never per tick.
+    Repeated transitions and the inherited native or Forge save errors have no lifetime log cap.
+  - *Recovery:* stop the server and keep the originals and hashes of every Level's terrain, entity
+    and POI files, the global journal, ledger and data, player data and metadata; repair only a
+    whole-world copy, verify conservation and fresh proofs with two saves and restarts, then replace
+    the world as a whole. Never restore a single store, substitute a cleaned root or treat a restart
+    as repair.
+- **Admission.** Cargo admission has its own per-kind switches and stays off until the cargo S2
+  evidence, the part-1 closures and the benchmarks pass and the Root or owner decision is recorded
+  with the source and the JAR. R-031, R-032 and the Required Gates are unchanged.
+
+No saved format of a published world changes: the escrow root is unpublished under R-035. This is a
+development implementation note, not owner acceptance or a Gate result.
+
 ## 11. Network, provenance, progression and verification
 
 ### 11.1 Exact proposed protocol transitions and message table
