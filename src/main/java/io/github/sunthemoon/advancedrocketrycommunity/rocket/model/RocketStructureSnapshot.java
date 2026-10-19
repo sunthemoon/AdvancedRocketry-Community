@@ -24,6 +24,8 @@ public final class RocketStructureSnapshot {
     private final long createdAtGameTime;
     private final String contentHash;
     private final RocketPropulsion propulsion;
+    private final String structureDigest;
+    private final int structureDigestBytes;
 
     private RocketStructureSnapshot(
             UUID snapshotId,
@@ -139,6 +141,11 @@ public final class RocketStructureSnapshot {
             throw new RocketSnapshotException(RocketValidationCode.STATS_MISMATCH, "Propulsion capacity differs from stats");
         }
         contentHash = propulsion == null ? structureHash : RocketNativeResources.hash(structureHash + ":" + propulsion.signature());
+        // C-I: one pass per constructed snapshot, so recognition never hashes; the codec never writes it.
+        var structure = RocketSnapshotHasher.structure(schemaVersion, sourceDimension, sourceOrigin, bounds, this.blocks,
+                this.passengerAnchors, stats, propulsion);
+        structureDigest = structure.digest();
+        structureDigestBytes = structure.bytes();
     }
 
     public static RocketStructureSnapshot create(
@@ -209,6 +216,24 @@ public final class RocketStructureSnapshot {
 
     public String contentHash() {
         return contentHash;
+    }
+
+    /**
+     * Derived, never persisted: SHA-256 with prefix {@code arce-rocket-structure-1:} over the schema, dimension, origin,
+     * bounds, each block's position, state and payload adapter ID (not payload data), the anchors, the stats and the
+     * propulsion signature. Two snapshots with one snapshot ID and equal digests differ at most in payload data and in
+     * the creation time, which no hash covers (W11CD-DESIGN section 2.5).
+     */
+    public String structureDigest() {
+        return structureDigest;
+    }
+
+    /**
+     * The byte work of the digest's one pass, for ADR-065 section 4.1.1's reconstruction budget; the pass visits each
+     * of {@link #blocks()} once. It never includes payload data.
+     */
+    public int structureDigestBytes() {
+        return structureDigestBytes;
     }
 
     /** Creates a location-bound identity for the same immutable block payload. */

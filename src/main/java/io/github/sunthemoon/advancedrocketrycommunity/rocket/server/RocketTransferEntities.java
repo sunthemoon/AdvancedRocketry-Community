@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModEntities;
+import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.ResourceEscrowSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightLimits;
@@ -290,11 +291,36 @@ final class RocketTransferEntities {
                 && rocket.operational()
                 && rocket.ownerId().filter(record.ownerId()::equals).isPresent()
                 && rocket.assemblyTransactionId().filter(record.logicalRocketId()::equals).isPresent()
-                && rocket.snapshot().filter(snapshot -> snapshot.snapshotId()
-                        .equals(record.destinationSnapshot().snapshotId()))
-                        .filter(snapshot -> snapshot.contentHash()
-                                .equals(record.destinationSnapshot().contentHash()))
-                        .isPresent();
+                && recognizes(rocket, record.destinationSnapshot());
+    }
+
+    /**
+     * W11c leaf C-I (W11CD-DESIGN section 2.5): {@code sameSnapshotId && (sameContentHash || (sameStructureDigest
+     * && currentLedgerBinding && epoch > 0))}. Recognition only: owner, logical, physical and state checks stay with the
+     * caller, and every fence, floor, veto and governed route still decides the action. A neutral rocket keeps the
+     * exact-hash rule and never reads the escrow ledger.
+     */
+    static boolean recognizes(RocketStructureSnapshot recorded, RocketStructureSnapshot current,
+                              java.util.function.BooleanSupplier currentLedgerBinding, long epoch) {
+        return current.snapshotId().equals(recorded.snapshotId())
+                && (current.contentHash().equals(recorded.contentHash())
+                        || epoch > 0 && current.structureDigest().equals(recorded.structureDigest())
+                        && currentLedgerBinding.getAsBoolean());
+    }
+
+    static boolean recognizes(RocketEntity rocket, RocketStructureSnapshot recorded) {
+        return rocket.snapshot().filter(current -> recognizes(recorded, current, () -> currentLedgerBinding(rocket),
+                rocket.escrowSection().epoch())).isPresent();
+    }
+
+    /** The section names the loaded escrow ledger; read on the server thread only, as {@code RocketEscrowGate} does. */
+    static boolean currentLedgerBinding(RocketEntity rocket) {
+        UUID bound = rocket.escrowSection().ledger();
+        if (bound == null || !(rocket.level() instanceof ServerLevel level) || !level.getServer().isSameThread()) {
+            return false;
+        }
+        var data = ResourceEscrowSavedData.existing(level.getServer());
+        return data != null && bound.equals(data.ledger().id());
     }
 
     private static RocketFlightState authorityState(RocketEntity rocket) {
@@ -568,8 +594,7 @@ final class RocketTransferEntities {
         if (!rocket.operational()
                 || rocket.ownerId().filter(record.ownerId()::equals).isEmpty()
                 || rocket.assemblyTransactionId().filter(record.logicalRocketId()::equals).isEmpty()
-                || rocket.snapshot().filter(value -> value.snapshotId().equals(snapshot.snapshotId()))
-                        .filter(value -> value.contentHash().equals(snapshot.contentHash())).isEmpty()) {
+                || !recognizes(rocket, snapshot)) {
             return false;
         }
         // The current entity owns its resources even after draining clears fuel/state/plan.
