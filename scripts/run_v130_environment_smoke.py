@@ -35,6 +35,10 @@ EXPIRED = "Environment query handle expired at server stopping"
 STATIONS = "world/data/advancedrocketrycommunity_stations.dat"
 MOON_DATA = f"data/{HOST}/celestial_bodies/moon.json"
 FAR = (28_000_000, 0, -28_000_000)
+# v1.8's station registry: root schema 5 (StationLimits.CONTROLS_REGISTRY_SCHEMA_VERSION) and station records of
+# schema 3 (STATE_SCHEMA_VERSION). The root's orbital clock advances once per server tick (StationOrbitalClock).
+STATION_ROOT_SCHEMA = 5
+STATION_SCHEMA = 3
 
 
 def validate_lifecycle(lines: list[str]) -> None:
@@ -78,7 +82,7 @@ def decode_stations(raw: bytes) -> dict:
     root = recovery.NbtReader(payload).read_root()
     require(isinstance(root, dict) and isinstance(root.get("data"), dict), "Missing SavedData root")
     data = root["data"]
-    require(data.get("schema_version") == 2 and data.get("reservations") == []
+    require(data.get("schema_version") == STATION_ROOT_SCHEMA and data.get("reservations") == []
             and isinstance(data.get("stations"), list) and len(data["stations"]) == 2,
             "Native station count/schema differs")
     return data
@@ -91,12 +95,20 @@ def validate_stations(data: dict, receipts: dict, previous: dict | None) -> None
             "Native station identities differ")
     for body, receipt in receipts.items():
         value = actual[receipt["id"]]
-        require(value.get("schema_version") == 1 and value.get("orbit_body") == HOST + ":" + body
+        require(value.get("schema_version") == STATION_SCHEMA and value.get("orbit_body") == HOST + ":" + body
                 and value.get("landing_pad") == receipt["pad"] and value.get("environment") == {
                     "gravity_milli": 0, "vacuum": 1, "solar_angle_milli_degrees": 270000},
                 "Native station environment/context differs")
     if previous is not None:
-        require(data == previous, "Station registry changed across query-only restart")
+        clock, before = data.get("orbital_clock"), previous.get("orbital_clock")
+        require(isinstance(clock, dict) and isinstance(before, dict)
+                and set(clock) == set(before) == {"schema_version", "logical_tick"}
+                and clock["schema_version"] == before["schema_version"]
+                and type(clock["logical_tick"]) is int and clock["logical_tick"] >= before["logical_tick"],
+                "Station orbital clock changed shape or went back")
+        require({key: value for key, value in data.items() if key != "orbital_clock"}
+                == {key: value for key, value in previous.items() if key != "orbital_clock"},
+                "Station registry changed across query-only restart")
 
 
 class EnvironmentRun(recovery.RecoveryRun):
