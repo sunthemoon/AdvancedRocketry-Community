@@ -38,12 +38,19 @@ classes, which bounds, which refusals and which tests), and Root has a read-only
    reconstruction per server tick, 16 MiB charged bytes and 16,384 block visits; the transient preparation lock makes
    `RocketRuntime.resourceMutationAllowed`, launch and disassembly refuse; publication revalidates. The publication
    permit stays gated: no production caller admits cargo (admission remains disabled; the loader devices are C-A).
-5. **The v1.8 production tag extension** (section 2.4): a generated current-version `rocket_movable` extension for
-   `pressurized_tank` under `src/generated/v1.8/resources`, `replace: false`, with preauthoring and generated-hash
-   provenance; do not edit the sealed v0.5 provider or output. Trapped chest joins only if a test proves
-   capture/restore equality with the unchanged `VanillaContainerRocketAdapter` on an actual vanilla trapped chest;
-   otherwise leave it out and say so. If including the extension needs a build-resource change, stop and report: build
-   scripts are Root's.
+5. **The v1.8 production tag** (section 2.4). *Amended by Root on 2026-10-19 at 23:55 after W106 stopped here (`32e97fdd`):*
+   one resource set holds every version's generated root, so a v1.8 file at the sealed v0.5 path cannot merge with
+   it at build time. As for the v1.8 tool tags (`V180MaterialResourcesTest.theToolTagsAreCompleteCopiesAndTheHardOresNeedIron`)
+   and the v1.8 gas table, the v1.8 `rocket_movable` is a complete copy: every value of the sealed v0.5 copy in its
+   order, then `advancedrocketrycommunity:pressurized_tank`, without `replace: true`, generated under
+   `src/generated/v1.8/resources` with preauthoring and generated-hash provenance. Root's commit `b8d27c8d` on your
+   branch excludes the v0.5 copy from `processResources` and `sourcesJar` and states the packaging in ADR-065's cargo
+   note; do not change build scripts further, and do not edit the sealed v0.5 provider or output. Until your copy
+   exists, the branch packages no `rocket_movable` tag, so generate it before any GameTest. Add a test that fails if a
+   v0.5 value is missing from the v1.8 copy, and make the packaged tag check show that the JAR holds exactly the v1.8
+   copy. Trapped chest joins only if a test proves capture/restore equality with the unchanged
+   `VanillaContainerRocketAdapter` on an actual vanilla trapped chest; otherwise leave it out and say so. Any other
+   build-resource change is still a stop and report.
 6. **Tests** (the C-P row's A0 and A1): 1, 749 and 1,000 mB; over-capacity, incompatible and unknown Fluid; every nested
    bound including inner-passes-outer-fails for bytes, depth and nodes with O1 and full device and snapshot overhead;
    unchanged propulsion, geometry and snapshot ID with a new content hash; deterministic recomputation; budget
