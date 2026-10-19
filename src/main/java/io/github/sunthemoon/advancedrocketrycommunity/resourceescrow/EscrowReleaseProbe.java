@@ -177,7 +177,12 @@ final class EscrowReleaseProbe {
         }
     }
     private void newerSave() {
-        var chunk = level.getChunkAt(POSITION);
+        newerSave(level, POSITION);
+    }
+    /** The existing E2/E4 save fixture, shared with the gated real-loader probe. */
+    static void newerSave(ServerLevel level, BlockPos position) {
+        EscrowTestEndpoints.requireEnabled(level.getServer());
+        var chunk = level.getChunkAt(position);
         var newer = net.minecraft.world.level.chunk.storage.ChunkSerializer.write(level, chunk);
         net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(new net.minecraftforge.event.level.ChunkDataEvent.Save(chunk, level, newer));
         level.getChunkSource().chunkMap.write(chunk.getPos(), newer);
