@@ -153,7 +153,9 @@ public final class RocketFluidCargoLinker {
         if (refusal != null) {
             return refusal == RocketCargoStatus.OUT_OF_RANGE ? refuse(player, TOO_FAR) : refuse(player, refusal.translationKey());
         }
-        if (!rocket.operational() || !RocketCargoBindingChecks.loaded(level, rocket.blockPosition())) {
+        if (!rocket.operational() || !RocketCargoBindingChecks.loaded(level, rocket.blockPosition())
+                || !RocketCargoBindingChecks.atOrigin(rocket)
+                || !rocket.flightData().orElseThrow().currentDimension().equals(level.dimension().location())) {
             return refuse(player, RocketCargoStatus.STALE_BINDING.translationKey());
         }
         if (!rocket.ownerId().filter(player.getUUID()::equals).isPresent()) {

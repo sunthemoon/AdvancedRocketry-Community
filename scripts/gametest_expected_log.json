@@ -3,6 +3,42 @@
   "description": "Every ERROR and WARN entry that a complete runGameTestServer log is expected to contain. Each expectation records a deliberate refusal or failure path that a named GameTest drives, or a bounded environment warning. scripts/check_gametest_log.py fails on any FATAL entry, any entry not listed here and any count that differs.",
   "expectations": [
     {
+      "id": "w109-cargo-unsupported-keepable",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketFluidCargoBlockEntity/",
+      "message": "ARCE_FLUID_CARGO_UNSUPPORTED pos=-?\\d+, -?\\d+, -?\\d+ status=(?:FUTURE|INVALID|UNREGISTERED_FLUID) keepable=true",
+      "counts": {"rocket_fluid_cargo": 12},
+      "test": "RocketFluidCargoProtectionGameTests.protectedRootsRefuseBreakExplosionExtractionAndLiveReplacement, nativeWorkBudgetExcessPreservesRawWithoutDenyingTerrain",
+      "reason": "Each role loads five unsupported but natively keepable roots and one root beyond the native work budget. All are retained raw; work-budget excess alone does not veto a save."
+    },
+    {
+      "id": "w109-cargo-observed-native-incompatibility",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketFluidCargoBlockEntity/",
+      "message": "ARCE_FLUID_CARGO_UNSUPPORTED pos=-?\\d+, -?\\d+, -?\\d+ status=FUTURE keepable=false",
+      "counts": {"rocket_fluid_cargo": 2},
+      "test": "RocketFluidCargoProtectionGameTests.observedNativeVetoSurvivesUnloadedAndReplacedChunkObjects",
+      "reason": "One noncanonical NaN root per role is retained unchanged and records a native terrain-save denial. The test catches the exact denial and restores only the disposable GameTest fixture."
+    },
+    {
+      "id": "w109-cargo-live-replacement-refused",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketFluidCargoBlockEntity/",
+      "message": "ARCE_FLUID_CARGO_LIVE_REPLACEMENT_REFUSED pos=-?\\d+, -?\\d+, -?\\d+",
+      "counts": {"rocket_fluid_cargo": 12},
+      "test": "RocketFluidCargoProtectionGameTests.protectedRootsRefuseBreakExplosionExtractionAndLiveReplacement",
+      "reason": "One live load is refused for each of five unsupported roots and one held root, for both roles."
+    },
+    {
+      "id": "w109-cargo-command-replacement-residual",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketFluidCargoBlockEntity/",
+      "message": "ARCE_FLUID_CARGO_PROTECTED_ROOT_REMOVED pos=-?\\d+, -?\\d+, -?\\d+ unsupported=(?:true|false)",
+      "counts": {"rocket_fluid_cargo": 4},
+      "test": "RocketFluidCargoProtectionGameTests.protectedRootsRefuseBreakExplosionExtractionAndLiveReplacement",
+      "reason": "The future and held root of each role is replaced by /setblock. This is a logged residual with no carrier drop, not prevented salvage."
+    },
+    {
       "id": "w91f-blocked-arrival-return",
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",

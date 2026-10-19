@@ -36,12 +36,14 @@ final class RocketCargoFluidPort implements IFluidHandler {
         } finally { owner.endLocal(); }
     }
     @Override @NotNull public FluidStack drain(FluidStack matching, FluidAction action) {
-        return matching == null ? FluidStack.EMPTY : drain(matching.getAmount(), matching, action);
+        return matching == null ? FluidStack.EMPTY : drain(0, matching, action);
     }
     @Override @NotNull public FluidStack drain(int amount, FluidAction action) { return drain(amount, null, action); }
     private FluidStack drain(int maximum, FluidStack matching, FluidAction action) {
         if (!owner.currentPort(epoch) || owner.role() != RocketCargoRole.UNLOAD || !owner.beginLocal()) { return FluidStack.EMPTY; }
         try {
+            // Inspect caller-controlled stacks only after acquiring the same non-reentrant lock as fill.
+            if (matching != null) { maximum = matching.getAmount(); }
             LoaderTank before = owner.tank();
             if (before.isEmpty() || maximum <= 0 || matching != null && !before.fluidStack().isFluidEqual(matching)) {
                 return FluidStack.EMPTY;

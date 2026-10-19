@@ -57,7 +57,7 @@ public final class RocketFluidCargoMenu extends AbstractContainerMenu {
 
     public static ContainerData readOpenData(FriendlyByteBuf buffer) {
         if (buffer.readVarInt() != FORMAT || buffer.isReadable()) {
-            throw new IllegalArgumentException("Unsupported fluid fuel loader menu format");
+            throw new IllegalArgumentException("Unsupported rocket fluid cargo menu format");
         }
         return new SimpleContainerData(DATA_COUNT);
     }

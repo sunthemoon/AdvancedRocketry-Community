@@ -56,7 +56,9 @@ final class RocketCargoBindingChecks {
             return Resolved.refused(RocketCargoStatus.STALE_BINDING);
         }
         RocketFlightData flight = rocket.flightData().orElseThrow();
-        if (!flight.logicalRocketId().equals(binding.logicalRocket()) || !origin(flight).equals(at)
+        if (!loaded(level, rocket.blockPosition()) || !flight.logicalRocketId().equals(binding.logicalRocket())
+                || !flight.currentDimension().equals(binding.level()) || !origin(flight).equals(at)
+                || !atOrigin(rocket)
                 || !Objects.equals(station(flight), binding.station()) || duplicated(level, device, rocket)) {
             return Resolved.refused(RocketCargoStatus.STALE_BINDING);
         }
@@ -90,7 +92,15 @@ final class RocketCargoBindingChecks {
     /** ASSEMBLED, FUELED or LANDED, with no transfer in progress and not riding anything. */
     static boolean stationary(RocketEntity rocket) {
         RocketFlightData flight = rocket.flightData().orElseThrow();
-        return flight.state().acceptsFuel() && flight.activeTransferId().isEmpty() && !rocket.isPassenger();
+        return flight.state().acceptsFuel() && flight.activeTransferId().isEmpty() && !rocket.isPassenger()
+                && rocket.getDeltaMovement().lengthSqr() == 0;
+    }
+
+    static boolean atOrigin(RocketEntity rocket) {
+        BlockPos origin = origin(rocket.flightData().orElseThrow());
+        return Double.compare(rocket.getX(), origin.getX() + 0.5D) == 0
+                && Double.compare(rocket.getY(), origin.getY()) == 0
+                && Double.compare(rocket.getZ(), origin.getZ() + 0.5D) == 0;
     }
 
     /** Design section 3, stricter than ADR-065: actual or assigned passengers, or anything riding the rocket. */
