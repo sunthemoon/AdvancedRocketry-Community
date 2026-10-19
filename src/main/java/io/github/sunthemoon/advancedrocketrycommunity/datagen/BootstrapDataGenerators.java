@@ -130,5 +130,6 @@ public final class BootstrapDataGenerators {
         generator.addProvider(event.includeClient(), new V180ClosureModels(output));
         generator.addProvider(event.includeServer(), new V180AtmosphereEntityTags(output, event.getLookupProvider(),
                 existingFiles));
+        generator.addProvider(event.includeServer(), new V180RocketCargoTags(output, event.getLookupProvider(), existingFiles));
     }
 }

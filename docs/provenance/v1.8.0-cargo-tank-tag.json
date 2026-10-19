@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "batch_id": "v1.8.0-w106-cargo-tank-tag",
+  "target_version": "v1.8.0",
+  "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+  "source_branch": "codex/v1.8.0-w106",
+  "source_commit": "3d4e84b354af459181fcb38e5b76435a00481e84",
+  "license": "MIT",
+  "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+  "entries": [
+    {
+      "target_path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/tags/blocks/rocket_movable.json",
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w106",
+      "source_commit": "3d4e84b354af459181fcb38e5b76435a00481e84",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180RocketCargoTags.java",
+      "source_sha256": "7f4eebdbc5636ea89549fbb8aef802a33c4f4e7fcfd83602d860e607bda0132c",
+      "target_sha256": "22853668f97cf30ca1050a7f78e31bd2b141b9bd047624f3febca3dd063a0959",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Generate the complete current tag, preserving all ten sealed v0.5 values in order, then adding pressurized_tank without replace: true.",
+        "The preauthoring declaration identifies the local baseline and its hash. No upstream code, JSON, artwork or other mod asset is imported. Trapped chest is omitted."
+      ]
+    }
+  ],
+  "review": {
+    "status": "PENDING_HUMAN_REVIEW",
+    "content_digest": "6fca5167f8c09a25d252283736b12f0097cfe8eab149d2d6eda6b221e5d90b11",
+    "reviewer": null,
+    "reviewed_at": null,
+    "findings": []
+  }
+}
