@@ -16,4 +16,10 @@ final class EscrowAdapterIds {
         return endpoint.kind() == EscrowEndpoint.Kind.BLOCK_ENTITY && endpoint.type().equals(LOADER)
                 && endpoint.unit() == EscrowEndpoint.Unit.TANK;
     }
+    /** Reserved C-A identities; recognizing a projection does not register a device or enable admission. */
+    static boolean fluidCargoDevice(EscrowEndpoint endpoint) {
+        return endpoint.kind() == EscrowEndpoint.Kind.BLOCK_ENTITY && endpoint.unit() == EscrowEndpoint.Unit.TANK
+                && (endpoint.type().equals(ModIdentity.id("rocket_fluid_loader").toString())
+                || endpoint.type().equals(ModIdentity.id("rocket_fluid_unloader").toString()));
+    }
 }

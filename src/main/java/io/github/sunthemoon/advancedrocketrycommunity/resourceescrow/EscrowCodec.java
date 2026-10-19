@@ -66,8 +66,8 @@ public final class EscrowCodec {
         requirePersistedBinding(operation); return operation;
     }
     private static void requirePersistedBinding(EscrowOperation operation) {
-        EscrowTags.require(operation.kind() != EscrowOperation.Kind.FLUID_PROPULSION_FILL
-                || EscrowSignatureKind.endpoint(operation.destination()) != EscrowSignatureKind.FUEL_VECTOR_V1
+        EscrowTags.require(!operation.kind().transfer()
+                || !EscrowAdapterIds.nativeRocket(operation.rocket())
                 || operation.nativeBinding().complete(), "Incomplete native operation binding");
     }
     public static CompoundTag endpoint(EscrowEndpoint endpoint) {
@@ -119,7 +119,7 @@ public final class EscrowCodec {
             }
             guard(journal); EscrowTags.uuid(tag, "entity_id"); EscrowTags.digest(EscrowTags.string(tag, "signature"));
             EscrowTags.digest(EscrowTags.string(tag, "invariant_digest"));
-            EscrowTags.require(EscrowTags.enumeration(EscrowSignatureKind.class, tag, "signature_kind") != EscrowSignatureKind.ROCKET_COMPOSITE_V1, "Unsupported new floor projection");
+            EscrowTags.enumeration(EscrowSignatureKind.class, tag, "signature_kind");
             EscrowTags.require(EscrowTags.number(tag, "resource_epoch") >= 0 && EscrowTags.number(tag, "highest_seq") > 0, "Invalid floor counters");
         }
         EscrowTags.require(EscrowTags.integer(tag, "schema_version") == 2, "Invalid escrow section schema");
@@ -162,7 +162,7 @@ public final class EscrowCodec {
             EscrowTags.digest(EscrowTags.string(survivor, "digest")); EscrowTags.digest(EscrowTags.string(survivor, "signature"));
             EscrowTags.digest(EscrowTags.string(survivor, "invariant_digest"));
             EscrowTags.require(EscrowTags.enumeration(EscrowSignatureKind.class, survivor, "signature_kind")
-                    == EscrowSignatureKind.endpoint(endpoint(EscrowTags.compound(survivor, "endpoint"))), "Receipt signature kind mismatch");
+                    == EscrowSignatureKind.settlement(endpoint(EscrowTags.compound(survivor, "endpoint"))), "Receipt signature kind mismatch");
         }
         EscrowTags.require(!identities.isEmpty(), "Empty settlement receipt");
     }

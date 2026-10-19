@@ -39,7 +39,7 @@ public final class EscrowFloors {
         for (var op : candidate.records()) {
             Key key = key(op.guard()); if (key == null) { continue; }
             var floor = existing.get(key);
-            EscrowTags.require(floor == null || floor.getUUID("entity_id").equals(op.destination().identity()), "Floor identity cannot be rebound");
+            EscrowTags.require(floor == null || floor.getUUID("entity_id").equals(op.rocket().identity()), "Floor identity cannot be rebound");
         }
         EscrowTags.require(RocketNbtSize.uncompressedBytes(EscrowCodec.encode(candidate)) + reservedGrowth(candidate)
                 <= EscrowLimits.ROOT_BYTES, "Escrow floor byte reservation exhausted");
@@ -65,18 +65,18 @@ public final class EscrowFloors {
         var floors = new ArrayList<>(ledger.floors());
         for (var op : ledger.records()) {
             if (!ids.contains(op.id()) || op.guard().transfer() == null) { continue; }
-            var frontier = frontiers.get(op.destination().key());
-            long highest = ledger.records().stream().filter(record -> record.destination().key().equals(op.destination().key()))
+            var frontier = frontiers.get(op.rocket().key());
+            long highest = ledger.records().stream().filter(record -> record.rocket().key().equals(op.rocket().key()))
                     .mapToLong(EscrowOperation::sequence).max().orElseThrow();
             CompoundTag floor = EscrowCodec.guard(op.guard()); floor.putInt("schema_version", 2);
-            floor.putUUID("entity_id", op.destination().identity()); floor.putLong("resource_epoch", frontier.epoch());
+            floor.putUUID("entity_id", op.rocket().identity()); floor.putLong("resource_epoch", frontier.epoch());
             floor.putString("signature", frontier.signature()); floor.putLong("highest_seq", highest);
             floor.putString("signature_kind", op.nativeBinding().kind().name()); floor.putString("invariant_digest", op.nativeBinding().invariant());
             EscrowCodec.validateSection(floor, false);
             Key key = key(op.guard());
             var previous = floors.stream().filter(value -> key.equals(key(value))).findFirst().orElse(null);
             if (previous != null) {
-                EscrowTags.require(previous.getUUID("entity_id").equals(op.destination().identity())
+                EscrowTags.require(previous.getUUID("entity_id").equals(op.rocket().identity())
                         && previous.getLong("resource_epoch") <= frontier.epoch()
                         && previous.getLong("highest_seq") <= highest, "Floor authority would regress");
                 if (previous.getLong("resource_epoch") == frontier.epoch()) {

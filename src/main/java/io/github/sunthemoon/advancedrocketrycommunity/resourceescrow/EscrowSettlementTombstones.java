@@ -86,7 +86,7 @@ final class EscrowSettlementTombstones {
             if (chosen.missing()) { continue; }
             EscrowTags.require(logicals.add(logical), "Settlement has multiple physical candidates for one logical rocket");
             var previous = root.rocketAuthorities().stream().filter(head -> head.logical().equals(logical)).findFirst().orElse(null);
-            var member = root.records().stream().filter(op -> intent.ids().contains(op.id()) && op.destination().key().equals(chosen.endpoint().key())).findFirst().orElseThrow();
+            var member = root.records().stream().filter(op -> intent.ids().contains(op.id()) && op.rocket().key().equals(chosen.endpoint().key())).findFirst().orElseThrow();
             heads.add(new EscrowFlightTables.Head(logical, member.owner(), anchor, generation, chosen.endpoint().identity(), chosen.state().epoch(),
                     chosen.signatureKind(), chosen.state().signature(), chosen.invariantDigest(), previous == null ? 0 : previous.issued(),
                     previous == null ? 0 : previous.completed(), EscrowFlightTables.Outcome.READY));

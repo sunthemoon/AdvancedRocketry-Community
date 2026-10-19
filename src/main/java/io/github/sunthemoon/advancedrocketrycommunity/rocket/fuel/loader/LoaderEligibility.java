@@ -88,7 +88,7 @@ final class LoaderEligibility {
             return resolved;
         }
         RocketEntity rocket = resolved.rocket();
-        if (!stationary(rocket) || occupied(rocket)) {
+        if (!stationary(rocket) || occupied(rocket) || EscrowLoaderAdmission.cargoPending(rocket)) {
             return Resolved.refused(FluidFuelLoaderStatus.ROCKET_BUSY);
         }
         if (RocketEscrowGate.idle(rocket)) {

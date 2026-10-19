@@ -35,6 +35,8 @@ public final class EscrowCoordinator implements AutoCloseable {
         @Override public boolean holdsWork() { return !queued.isEmpty() || !writer.idle(); }
     };
     private final EscrowFlightWrites flightWrites = new EscrowFlightWrites();
+    private final EscrowTransferTurns transferTurns = new EscrowTransferTurns();
+    EscrowTransferTurns transferTurns() { owner(); return transferTurns; }
     private final EscrowReconciliationDriver reconciliation = new EscrowReconciliationDriver(this);
     private long issued;
     private long tick;
@@ -100,7 +102,7 @@ public final class EscrowCoordinator implements AutoCloseable {
      */
     boolean ordinaryFillsOnly(UUID logical, EscrowEndpoint.Key destination) {
         owner();
-        return unresolved().filter(op -> logical.equals(op.guard().rocket()) || logical.equals(op.destination().logicalRocket()))
+        return unresolved().filter(op -> logical.equals(op.guard().rocket()) || logical.equals(op.rocket().logicalRocket()))
                 .allMatch(op -> op.kind() == EscrowOperation.Kind.FLUID_PROPULSION_FILL && op.settlement().isEmpty()
                         && currentReason(op) == EscrowReason.NONE && op.phase() == EscrowOperation.Phase.PREPARED
                         && EscrowLoaderEndpoint.is(op.source()) && op.destination().key().equals(destination));
@@ -112,6 +114,9 @@ public final class EscrowCoordinator implements AutoCloseable {
                 && seen.add(op.id())).toList();
     }
     boolean durable(UUID operation) { owner(); return data.ledger().records().stream().anyMatch(op -> op.id().equals(operation)); }
+    boolean cargoPending(UUID logical) {
+        owner(); return unresolved().anyMatch(op -> op.kind().cargo() && logical.equals(op.rocket().logicalRocket()));
+    }
     boolean writerUnknown() { owner(); return writer.unknown(); }
     /** A failed baseline or three unresolved writes (EscrowLedgerWriter#unavailable); operational() covers only the first. */
     boolean writerUnavailable() { owner(); return writer.unavailable(); }
@@ -161,7 +166,7 @@ public final class EscrowCoordinator implements AutoCloseable {
                 .noneMatch(arm -> arm.logical().equals(op.guard().rocket())), "Flight authority holds the endpoint");
         var candidate = new ArrayList<>(queued.values()); candidate.add(op);
         EscrowSettlementCapacity.requireAdmission(data.ledger().append(candidate), op, observed);
-        EscrowTags.require(op.nativeBinding().kind() != EscrowSignatureKind.FUEL_VECTOR_V1 || op.nativeBinding().complete(), "Native L1 needs a complete envelope binding");
+        EscrowTags.require(!EscrowAdapterIds.nativeRocket(op.rocket()) || op.nativeBinding().complete(), "Native L1 needs a complete envelope binding");
         EscrowSettlementCapacity.preflight(data.ledger().append(candidate), op.id());
         var reservation = admission.tryReserve(op.id(), op.owner(), op.guard().rocket(), EscrowAdmissionAuthority.Consumer.PROPULSION);
         EscrowTags.require(reservation == EscrowAdmissionAuthority.Result.RESERVED, "Shared admission refused: " + reservation);
@@ -169,6 +174,18 @@ public final class EscrowCoordinator implements AutoCloseable {
     }
     /** prepareFill's typed outcome. Every member but QUEUED is a refusal that changed nothing. */
     enum Fill { QUEUED, UNAVAILABLE, INVALID, STALE, ENDPOINT_BUSY, ROCKET_LIMIT, ESCROW_FULL, SERVER_FULL, ROCKET_FULL, IDENTITY_CONFLICT }
+    /** The generalized transfer result does not expand W11b3's closed fill result contract. */
+    enum Transfer {
+        QUEUED, UNAVAILABLE, INVALID, STALE, ENDPOINT_BUSY, ROCKET_LIMIT, ESCROW_FULL, SERVER_FULL, ROCKET_FULL,
+        IDENTITY_CONFLICT, ROCKET_BUSY, OTHER_TRANSFER_PENDING, RECEIPT_BACKED;
+        static Transfer of(Fill fill) { return valueOf(fill.name()); }
+        Fill fill() {
+            return switch (this) {
+                case ROCKET_BUSY, OTHER_TRANSFER_PENDING, RECEIPT_BACKED -> Fill.ENDPOINT_BUSY;
+                default -> Fill.valueOf(name());
+            };
+        }
+    }
     /**
      * Production fill admission (W11B3-DESIGN sections 2 and 4), beside the gated {@link #prepareTest}: the pure
      * {@link #fillRefusal} check, then the shared {@code tryReserve}, then the queue entry that locks both endpoints,
@@ -177,23 +194,38 @@ public final class EscrowCoordinator implements AutoCloseable {
      * No device calls this yet; production admission stays disabled.
      */
     Fill prepareFill(EscrowNativeBinding.Admission capture, Consumer<Boolean> completion) {
+        return prepareTransfer(capture, completion).fill();
+    }
+    /** Shared owner-thread entry. Cargo has no production caller until C-E; no publication permit is issued here. */
+    Transfer prepareTransfer(EscrowNativeBinding.Admission capture, Consumer<Boolean> completion) {
         owner(); var op = capture.operation();
-        if (closed || writer.unavailable()) { return Fill.UNAVAILABLE; }
-        if (invalid(op)) { return Fill.INVALID; }
+        if (closed || writer.unavailable()) { return Transfer.UNAVAILABLE; }
+        if (EscrowTransferAdmission.invalid(op)) { return Transfer.INVALID; }
         if (op.sequence() != nextSequence() || requests.containsKey(op.id())
-                || unresolved().anyMatch(existing -> existing.id().equals(op.id()))) { return Fill.STALE; }
+                || unresolved().anyMatch(existing -> existing.id().equals(op.id()))) { return Transfer.STALE; }
         if (frontiers.containsKey(op.source().key()) || frontiers.containsKey(op.destination().key())
                 || flightWrites.locked(op.guard().rocket())
                 || data.ledger().armedFlights().stream().anyMatch(arm -> arm.logical().equals(op.guard().rocket()))) {
-            return Fill.ENDPOINT_BUSY;
+            return Transfer.ENDPOINT_BUSY;
         }
-        var refusal = fillRefusal(data.ledger(), queued.values(), capture);
-        if (refusal.isPresent()) { return refusal.get(); }
+        var seen = new java.util.HashSet<UUID>();
+        var pending = unresolved().filter(member -> !durable(member.id()) && seen.add(member.id())).toList();
+        var refusal = EscrowTransferAdmission.refusal(data.ledger(), pending, capture);
+        if (refusal.isPresent()) {
+            if (refusal.get() == Transfer.OTHER_TRANSFER_PENDING || refusal.get() == Transfer.ROCKET_BUSY) {
+                transferTurns.blocked(op.device().identity(), op.guard().rocket());
+            }
+            return refusal.get();
+        }
+        if (!transferTurns.allows(op.device().identity(), op.guard().rocket())) {
+            return op.kind().cargo() ? Transfer.OTHER_TRANSFER_PENDING : Transfer.ROCKET_BUSY;
+        }
         var reservation = admission.tryReserve(op.id(), op.owner(), op.guard().rocket(), EscrowAdmissionAuthority.Consumer.PROPULSION);
-        if (reservation != EscrowAdmissionAuthority.Result.RESERVED) { return fill(reservation); }
+        if (reservation != EscrowAdmissionAuthority.Result.RESERVED) { return Transfer.of(fill(reservation)); }
         // Nothing that can fail runs between the reservation and its queue entry: a reservation has no release call.
         enqueue(op, completion);
-        return Fill.QUEUED;
+        transferTurns.admitted(op.device().identity(), op.guard().rocket());
+        return Transfer.QUEUED;
     }
     /** Not a fresh FLUID_PROPULSION_FILL with a complete FUEL_VECTOR_V1 binding. */
     static boolean invalid(EscrowOperation op) {
@@ -577,8 +609,8 @@ public final class EscrowCoordinator implements AutoCloseable {
     Set<UUID> unresolvedIds() {
         owner(); return unresolved().map(EscrowOperation::id).collect(java.util.stream.Collectors.toUnmodifiableSet());
     }
-    @Override public void close() { owner(); if (!closed) { closed = true; reconciliation.close(); flightWrites.close(); writer.close(); frontiers.clear(); } }
+    @Override public void close() { owner(); if (!closed) { closed = true; transferTurns.close(); reconciliation.close(); flightWrites.close(); writer.close(); frontiers.clear(); } }
     /** Crash path, where ServerStoppingEvent never ran: no drain or callbacks, but the writer is joined. */
-    public void abort() { owner(); if (!closed) { closed = true; reconciliation.close(); flightWrites.close(); writer.abort(); frontiers.clear(); } }
+    public void abort() { owner(); if (!closed) { closed = true; transferTurns.close(); reconciliation.close(); flightWrites.close(); writer.abort(); frontiers.clear(); } }
     private void owner() { EscrowTags.require(Thread.currentThread() == owner, "Escrow coordinator requires its owner thread"); }
 }

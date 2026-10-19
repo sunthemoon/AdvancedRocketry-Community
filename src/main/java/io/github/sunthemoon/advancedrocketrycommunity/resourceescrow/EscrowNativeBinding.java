@@ -13,8 +13,8 @@ public record EscrowNativeBinding(EscrowSignatureKind kind, UUID physical, UUID 
     public EscrowNativeBinding {
         java.util.Objects.requireNonNull(kind); java.util.Objects.requireNonNull(physical);
         java.util.Objects.requireNonNull(logical); java.util.Objects.requireNonNull(owner);
-        EscrowTags.require(kind != EscrowSignatureKind.ROCKET_COMPOSITE_V1 && (snapshot != null || !complete
-                || kind == EscrowSignatureKind.FIXTURE_RESOURCE_V1), "Missing native snapshot binding");
+        EscrowTags.require(snapshot != null || !complete
+                || kind == EscrowSignatureKind.FIXTURE_RESOURCE_V1, "Missing native snapshot binding");
         for (String digest : List.of(snapshotHash, invariant, sourceReference, destinationReference, beforeWrapper, afterWrapper,
                 beforeFrontier, afterFrontier, sourceBefore, sourceAfter, destinationBefore, destinationAfter)) { EscrowTags.digest(digest); }
     }
@@ -42,17 +42,19 @@ public record EscrowNativeBinding(EscrowSignatureKind kind, UUID physical, UUID 
                 EscrowFlightTables.digest(t, "source_after"), EscrowFlightTables.digest(t, "destination_before"), EscrowFlightTables.digest(t, "destination_after"), t.getBoolean("complete"));
     }
     void requireOperation(UUID expectedOwner, EscrowEndpoint source, EscrowEndpoint destination) {
-        EscrowTags.require(owner.equals(expectedOwner) && physical.equals(destination.identity()) && logical.equals(destination.logicalRocket())
-                && kind == EscrowSignatureKind.endpoint(destination) && sourceReference.equals(reference(source))
-                && destinationReference.equals(reference(destination)) && beforeFrontier.equals(destination.beforeSignature())
-                && afterFrontier.equals(destination.afterSignature()), "Native binding does not match operation");
+        var rocket = EscrowOperation.rocket(source, destination);
+        EscrowTags.require(owner.equals(expectedOwner) && physical.equals(rocket.identity()) && logical.equals(rocket.logicalRocket())
+                && kind == EscrowSignatureKind.endpoint(rocket) && sourceReference.equals(reference(source))
+                && destinationReference.equals(reference(destination)) && beforeFrontier.equals(rocket.beforeSignature())
+                && afterFrontier.equals(rocket.afterSignature()), "Native binding does not match operation");
     }
     static String reference(EscrowEndpoint endpoint) { return RocketNativeResources.signature(EscrowCodec.endpoint(endpoint)); }
     /** Pure model fixtures cannot produce a native publication permit or pass native L1 admission. */
     static EscrowNativeBinding model(UUID owner, EscrowEndpoint source, EscrowEndpoint destination) {
         String s = reference(source), d = reference(destination);
-        return new EscrowNativeBinding(EscrowSignatureKind.endpoint(destination), destination.identity(), destination.logicalRocket(), owner, null,
-                d, EscrowInvariant.reference(destination), s, d, d, d, destination.beforeSignature(), destination.afterSignature(),
+        var rocket = EscrowOperation.rocket(source, destination);
+        return new EscrowNativeBinding(EscrowSignatureKind.endpoint(rocket), rocket.identity(), rocket.logicalRocket(), owner, null,
+                d, EscrowInvariant.reference(rocket), s, d, d, d, rocket.beforeSignature(), rocket.afterSignature(),
                 source.beforeSignature(), source.afterSignature(), destination.beforeSignature(), destination.afterSignature(), false);
     }
     record Admission(EscrowOperation operation, RocketEscrowSection before) {

@@ -119,7 +119,7 @@ final class EscrowReconciliationView {
                         || !head.invariant().equals(EscrowInvariant.rocket(rocket)))) { throw new Refusal(EscrowReason.FLOOR_CONFLICT); }
                 for (var floor : root.floors()) {
                     var key = EscrowFloors.key(floor);
-                    if (key == null || members.stream().noneMatch(op -> endpoint.key().equals(op.destination().key())
+                    if (key == null || members.stream().noneMatch(op -> endpoint.key().equals(op.rocket().key())
                             && key.equals(EscrowFloors.key(op.guard())))) { continue; }
                     if (!EscrowReconciliationValidation.floorMatches(floor, endpoint, observation.state(), EscrowInvariant.rocket(rocket))) {
                         throw new Refusal(EscrowReason.FLOOR_CONFLICT);

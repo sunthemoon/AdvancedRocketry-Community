@@ -215,7 +215,7 @@ public final class EscrowReconciliationPruning {
                     || root.armedFlights().stream().anyMatch(arm -> arm.logical().equals(endpoint.logicalRocket()))
                     || EscrowRuntime.of(server).flightCheckpoint().locked(endpoint.logicalRocket())
                     || root.records().stream().anyMatch(op -> op.guard().rocket().equals(endpoint.logicalRocket())
-                    && (!op.destination().identity().equals(endpoint.identity()) || coordinator.currentReason(op).manual()))
+                    && rocketConflict(op, endpoint.identity(), coordinator.currentReason(op)))
                     || EscrowSettlementTombstones.stateLocked(root, endpoint.logicalRocket(), endpoint.identity(),
                     rocket.escrowSection(), state.signature(), observed.quantity())) { return; }
             for (var floor : root.floors()) {
@@ -246,5 +246,9 @@ public final class EscrowReconciliationPruning {
         EscrowRuntime.of(server).monitor().observed(endpoint.level(), endpoint.kind() == EscrowEndpoint.Kind.ENTITY,
                 endpoint.kind() == EscrowEndpoint.Kind.ENTITY ? new ChunkPos(endpoint.x(), endpoint.z())
                         : new ChunkPos(new BlockPos(endpoint.x(), endpoint.y(), endpoint.z())));
+    }
+
+    static boolean rocketConflict(EscrowOperation operation, UUID identity, EscrowReason reason) {
+        return !operation.rocket().identity().equals(identity) || reason.manual();
     }
 }

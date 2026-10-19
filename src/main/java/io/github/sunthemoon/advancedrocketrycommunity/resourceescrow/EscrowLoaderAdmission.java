@@ -68,6 +68,20 @@ public final class EscrowLoaderAdmission {
             case ROCKET_LIMIT, ESCROW_FULL, SERVER_FULL, ROCKET_FULL -> FluidFuelLoaderStatus.ESCROW_FULL;
         };
     }
+    /** Cargo scheduling refusals are player-facing ROCKET_BUSY without changing the legacy fill dictionary. */
+    static FluidFuelLoaderStatus status(EscrowCoordinator.Transfer transfer) {
+        return switch (transfer) {
+            case ROCKET_BUSY, OTHER_TRANSFER_PENDING, RECEIPT_BACKED -> FluidFuelLoaderStatus.ROCKET_BUSY;
+            default -> status(transfer.fill());
+        };
+    }
+
+    /** Mirror C-K's exclusivity without loading or creating a ledger. */
+    public static boolean cargoPending(RocketEntity rocket) {
+        if (!(rocket.level() instanceof ServerLevel level) || !level.getServer().isSameThread()) { return false; }
+        var data = ResourceEscrowSavedData.existing(level.getServer());
+        return data != null && data.operational() && data.bind(level.getServer()).cargoPending(rocket.assemblyTransactionId().orElseThrow());
+    }
 
     /**
      * Design section 2, step 1, for a same-direction chain: the rocket's only escrow holds are ordinary loader fills
@@ -103,6 +117,7 @@ public final class EscrowLoaderAdmission {
         if (!enabled(server, root.device())) { return new Visit(FluidFuelLoaderStatus.ADMISSION_DISABLED, false); }
         var runtime = EscrowRuntime.of(server);
         if (runtime.stopping()) { return new Visit(FluidFuelLoaderStatus.LEDGER_UNAVAILABLE, false); }
+        if (cargoPending(rocket)) { return new Visit(FluidFuelLoaderStatus.ROCKET_BUSY, false); }
         var journal = RocketTransferSavedData.get(server).acknowledgedGuard(rocket.assemblyTransactionId().orElseThrow()).orElse(null);
         if (journal == null) { return new Visit(FluidFuelLoaderStatus.TRANSFER_JOURNAL_UNPROVED, false); }
         var data = ResourceEscrowSavedData.existing(server);
@@ -121,9 +136,9 @@ public final class EscrowLoaderAdmission {
         var fills = runtime.fills(server);
         fills.preparing(op.id());
         Consumer<Boolean> completion = committed -> fills.resolved(op.id());
-        var result = coordinator == null ? create(server, runtime, ledger, capture.admission(), completion)
-                : coordinator.prepareFill(capture.admission(), completion);
-        if (result == EscrowCoordinator.Fill.QUEUED) { loader.escrowAdmitted(); } else { fills.resolved(op.id()); }
+        var result = coordinator == null ? EscrowCoordinator.Transfer.of(create(server, runtime, ledger, capture.admission(), completion))
+                : coordinator.prepareTransfer(capture.admission(), completion);
+        if (result == EscrowCoordinator.Transfer.QUEUED) { loader.escrowAdmitted(); } else { fills.resolved(op.id()); }
         return new Visit(status(result), true);
     }
 

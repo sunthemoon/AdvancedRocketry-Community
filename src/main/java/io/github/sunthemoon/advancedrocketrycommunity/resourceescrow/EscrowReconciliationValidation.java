@@ -56,7 +56,7 @@ final class EscrowReconciliationValidation {
     /** A retained floor for the exact checked T remains a lower bound during ordinary fills. */
     static boolean floorMatches(CompoundTag floor, EscrowEndpoint endpoint, EscrowPrefix.State state, String invariant) {
         return floor.getInt("schema_version") == 2 && endpoint.identity().equals(floor.getUUID("entity_id"))
-                && EscrowSignatureKind.FUEL_VECTOR_V1.name().equals(floor.getString("signature_kind"))
+                && EscrowSignatureKind.endpoint(endpoint).name().equals(floor.getString("signature_kind"))
                 && invariant.equals(floor.getString("invariant_digest")) && state.epoch() >= floor.getLong("resource_epoch")
                 && (state.epoch() != floor.getLong("resource_epoch") || state.signature().equals(floor.getString("signature")));
     }

@@ -24,10 +24,16 @@ public final class EscrowNativeEnvelope {
         return rocket(rocket, rocket.flightData().orElseThrow(), rocket.escrowSection());
     }
     public static CompoundTag rocket(RocketEntity rocket, RocketFlightData flight, RocketEscrowSection wrapper) {
+        return rocket(rocket, rocket.snapshot().orElseThrow(), flight, wrapper);
+    }
+    /** Capture only; publishing a changed snapshot remains a separate permit-gated adapter operation. */
+    public static CompoundTag rocket(RocketEntity rocket,
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot snapshot,
+            RocketFlightData flight, RocketEscrowSection wrapper) {
         EscrowTags.require(rocket.operational() && !rocket.level().isClientSide && rocket.getServer().isSameThread(), "Native capture requires server owner thread");
         rocket.governedCaptured(); // Review N4: a per-instance counter lets a GameTest pin capture-free warm visits.
         var t = frame(rocket);
-        var snapshot = rocket.snapshot().orElseThrow();
+        t.putUUID("assembly_snapshot", snapshot.snapshotId()); t.putString("content_hash", snapshot.contentHash());
         t.put("snapshot", RocketSnapshotNbtCodec.encode(snapshot)); t.put("flight", RocketFlightNbtCodec.encode(flight)); t.put("wrapper", wrapper.encode());
         EscrowTags.bound(t, MAX_BYTES, 24, 131_072); return t;
     }
