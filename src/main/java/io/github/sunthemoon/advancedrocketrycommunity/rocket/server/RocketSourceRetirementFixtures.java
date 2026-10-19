@@ -84,7 +84,7 @@ final class RocketSourceRetirementFixtures {
     }
 
     static Flight countdown(ServerLevel level, BlockPos origin, BlockPos target, List<UUID> crew, long countdownAge) {
-        long now = level.getGameTime(), started = now - countdownAge;
+        long now = level.getGameTime(), started = Math.max(0L, now - countdownAge);
         UUID logical = UUID.randomUUID(), transfer = UUID.randomUUID(), owner = UUID.randomUUID();
         int seats = Math.max(1, crew.size());
         var propulsion = new RocketPropulsion(RocketPropulsion.Mode.ABSTRACT, (int) FUEL, 0, 1, 1, RocketPropulsion.Settings.DEFAULTS);
