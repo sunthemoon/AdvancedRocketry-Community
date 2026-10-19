@@ -133,6 +133,28 @@ final class BayReceiptStoreTest {
         }
     }
 
+    /** W27C1-R10: a released receipt never changes phase or key online; other fields may still change. */
+    @Test void aReleasedReceiptNeverChangesPhaseOrKeyOnline() throws Exception {
+        try (var harness = BayReceiptHarness.empty(temp)) {
+            var held = receipt(1, OWNER, id(30), BayReceipt.Phase.REGISTERED).withPhase(BayReceipt.Phase.INTENT, "NONE", 2).withReleased();
+            assertQueued(harness.put(held)); harness.settle();
+            for (var changed : List.of(held.withPhase(BayReceipt.Phase.REGISTERED, "NONE", 3), held.withPhase(BayReceipt.Phase.REJECTED, "INTERRUPTED", 3),
+                    held.withPhase(BayReceipt.Phase.REPAIR, "BAY_CONFLICT", 3), reKeyed(held, id(31), new RocketPosition(4, 4, 4)),
+                    reKeyed(held, held.rocket(), new RocketPosition(5, 5, 5)))) {
+                assertEquals(BayReceiptStore.Admission.of(BayReceiptStore.Status.RELEASED_LOCKED), harness.put(changed), changed::toString);
+            }
+            assertEquals(List.of(held), harness.store().receipts(), "every refusal changed nothing");
+            var blocked = held.withPhase(BayReceipt.Phase.INTENT, "REGISTRY_BLOCKED", 4);
+            assertQueued(harness.put(blocked)); harness.settle();
+            assertEquals(List.of(blocked), harness.store().durable().receipts(), "the same phase and key with a new reason");
+            var repair = receipt(2, OWNER, id(32), BayReceipt.Phase.REPAIR);
+            assertQueued(harness.put(repair)); harness.settle();
+            assertQueued(harness.put(repair.withReleased()));
+            harness.settle();
+            assertEquals(BayReceiptStore.Status.RELEASED_LOCKED, harness.put(repair.withReleased().withPhase(BayReceipt.Phase.INTENT, "NONE", 5)).status());
+        }
+    }
+
     @Test void aRejectedReceiptReArmsWithItsOwnOperationOnlyWhenAPendingSlotIsFree() throws Exception {
         try (var harness = BayReceiptHarness.empty(temp)) {
             var x = intent(1, id(30)); assertQueued(harness.put(x)); harness.settle();

@@ -58,7 +58,8 @@ public final class BayReceiptStore implements EscrowAdmissionAuthority.Store {
 
     /**
      * Appends or replaces the receipt of {@code next.op()}. A new op needs a retained slot, and a pending phase needs a
-     * pending slot; both are checked before either is charged. Released receipts keep their flag and never re-arm.
+     * pending slot; both are checked before either is charged. Released receipts keep their flag, phase and key: they
+     * never promote, register, reject, re-arm or move online (W27A section 4's restart classification, W27C1-R10).
      * While the op or its satellite has a change in flight, the put refuses with BUSY (R37 item 2).
      */
     Admission put(BayReceipt next, Consumer<BayReceiptWriter.Outcome> completion) {
@@ -66,7 +67,7 @@ public final class BayReceiptStore implements EscrowAdmissionAuthority.Store {
         if (unavailable()) { return Admission.of(Status.STORE_UNAVAILABLE); }
         if (inFlight(next.op(), next.satellite())) { return Admission.of(Status.BUSY); }
         BayReceipt before = current.get(next.op());
-        if (before != null && before.released() && (!next.released() || next.phase() == BayReceipt.Phase.INTENT && before.phase() != BayReceipt.Phase.INTENT)) {
+        if (before != null && before.released() && (!next.released() || next.phase() != before.phase() || !next.key().equals(before.key()))) {
             return Admission.of(Status.RELEASED_LOCKED);
         }
         // Unique key and satellite against every state, not RAM alone, so a cancelled change can return to its old state.
