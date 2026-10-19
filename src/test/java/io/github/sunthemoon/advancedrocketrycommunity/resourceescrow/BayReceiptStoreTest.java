@@ -199,6 +199,30 @@ final class BayReceiptStoreTest {
         }
     }
 
+    /** W27C1-R8: a charge that answers differently from its check throws instead of silently over-admitting. */
+    @Test void aPendingChargeThatDiffersFromItsCheckThrowsAndQueuesNothing() throws Exception {
+        var authority = new EscrowAdmissionAuthority(); var harness = new BayReceiptHarness(authority, temp);
+        UUID rocket = id(77); int[] reads = {0}, fullFrom = {Integer.MAX_VALUE};
+        var eight = new ArrayList<EscrowAdmissionAuthority.Pending>();
+        for (int i = 0; i < 8; i++) { eight.add(new EscrowAdmissionAuthority.Pending(id(80_000 + i), OWNER, rocket, EscrowAdmissionAuthority.Consumer.PROPULSION)); }
+        // A PROPULSION index that changes between two reads: from read fullFrom on, eight fills hold the rocket.
+        authority.registerIndex(EscrowAdmissionAuthority.Consumer.PROPULSION,
+                () -> new EscrowAdmissionAuthority.Index(true, ++reads[0] >= fullFrom[0] ? eight : List.of()));
+        harness.receipts.start(null, CheckedSavedDataFile.Presence.ABSENT, harness.file, 0);
+        harness.receipts.createForAdmission(harness.file, 0);
+        try (harness) {
+            // put reads the indexes once per authority call: checkRetain, checkReserve and then tryReserve. From the third
+            // read, the check has answered RESERVED and the charge answers ROCKET_FULL.
+            fullFrom[0] = reads[0] + 3;
+            var x = intent(1, rocket);
+            var thrown = assertThrows(IllegalArgumentException.class, () -> harness.put(x));
+            assertEquals("Bay pending charge ROCKET_FULL differs from its check RESERVED", thrown.getMessage());
+            assertTrue(harness.store().receipts().isEmpty() && !harness.store().holdsWork(), "nothing was queued");
+            assertEquals(0, harness.authority.retainedCount(), "the retained slot was never charged");
+            assertEquals(8, harness.authority.pendingCount(), "only the eight fills hold the rocket");
+        }
+    }
+
     /** W27C1-R7: W95's test index substitution refuses while NOT_LOADED and restores exactly NO_FILE or the bound store. */
     @Test void theTestIndexSubstitutionRefusesWhileNotLoadedAndRestoresTheExactPriorState() throws Exception {
         var full = new ArrayList<EscrowAdmissionAuthority.Pending>();

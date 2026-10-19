@@ -115,7 +115,10 @@ public final class EscrowAdmissionAuthority {
         var next = new HashMap<>(union); next.put(op, request); union = Map.copyOf(next);
         return Result.RESERVED;
     }
-    /** The result {@link #tryReserve} would return now; it charges nothing. */
+    /**
+     * The result {@link #tryReserve} would return now. It charges and reserves nothing, so no consumer may act on a check
+     * alone; a later {@code tryReserve} decides.
+     */
     public Result checkReserve(UUID op, UUID owner, UUID rocket, Consumer consumer) {
         owner(); refresh(); return reserveCheck(new Pending(op, owner, rocket, consumer));
     }
@@ -141,7 +144,7 @@ public final class EscrowAdmissionAuthority {
         if (result == Retention.RESERVED) { queuedRetentions.put(op, owner); }
         return result;
     }
-    /** The result {@link #tryRetain} would return now; it charges nothing. */
+    /** The result {@link #tryRetain} would return now. Like {@link #checkReserve}, it reserves nothing. */
     public Retention checkRetain(UUID op, UUID owner) { owner(); refresh(); return retainCheck(op, owner); }
     private Retention retainCheck(UUID op, UUID owner) {
         Objects.requireNonNull(op); Objects.requireNonNull(owner);

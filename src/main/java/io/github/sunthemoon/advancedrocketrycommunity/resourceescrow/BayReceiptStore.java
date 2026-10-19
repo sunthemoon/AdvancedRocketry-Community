@@ -91,9 +91,12 @@ public final class BayReceiptStore implements EscrowAdmissionAuthority.Store {
             if (reservation != EscrowAdmissionAuthority.Result.RESERVED && reservation != EscrowAdmissionAuthority.Result.ALREADY_HELD) {
                 return new Admission(Status.RESERVE_REFUSED, retention, reservation);
             }
-            authority.tryReserve(next.op(), next.owner(), next.rocket(), EscrowAdmissionAuthority.Consumer.BAY);
+            // The checks reserve nothing, so each charge must answer exactly as its check did (W27C1-R8).
+            var charged = authority.tryReserve(next.op(), next.owner(), next.rocket(), EscrowAdmissionAuthority.Consumer.BAY);
+            EscrowTags.require(charged == reservation, "Bay pending charge " + charged + " differs from its check " + reservation);
         }
-        authority.tryRetain(next.op(), next.owner());
+        var held = authority.tryRetain(next.op(), next.owner());
+        EscrowTags.require(held == retention, "Bay retained charge " + held + " differs from its check " + retention);
         current.put(next.op(), next); issuedThrough = Math.max(issuedThrough, next.seq());
         queue(new Mutation(next.op(), before, next, completion));
         return new Admission(Status.QUEUED, retention, reservation);
