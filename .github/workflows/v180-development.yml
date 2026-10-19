@@ -32,7 +32,10 @@ concurrency:
 jobs:
   regression:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    # A hang guard for the whole job, not a test budget: every GameTest keeps its own tick timeout. Root raised it from
+    # 45 on 2026-10-20, after run 39266165628 at efdd7f23 passed every step and was cancelled at 45.0 minutes; runs
+    # since 2026-10-18 took 39 to 44 minutes (7 for the build, 31 to 35 for about 1,227 GameTests).
+    timeout-minutes: 75
     env:
       REVIEW_COMMIT: ${{ github.sha }}
       PYTHONDONTWRITEBYTECODE: "1"
