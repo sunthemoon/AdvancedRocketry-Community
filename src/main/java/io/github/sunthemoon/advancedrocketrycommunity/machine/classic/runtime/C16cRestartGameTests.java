@@ -134,7 +134,23 @@ public final class C16cRestartGameTests {
                 // Never touch the chunk while waiting: a block entity lookup would load it again. The unload waits on
                 // worldgen and saves that run in wall-clock time, so each waiting tick gets a server tick's length.
                 var pacer = new GameTestTickPacer(level.getServer());
-                await(driver, 600, "the fixture chunk to unload", () -> unloaded.get() && !level.hasChunkAt(origin) && original.isRemoved(), pacer, () -> {
+                int[] observations = {0};
+                await(driver, 600, "the fixture chunk to unload", () -> {
+                    if (++observations[0] % 100 == 0) {
+                        try {
+                            var map = level.getChunkSource().chunkMap;
+                            var pendingField = map.getClass().getDeclaredField("pendingUnloads"); pendingField.setAccessible(true);
+                            var queueField = map.getClass().getDeclaredField("unloadQueue"); queueField.setAccessible(true);
+                            var pending = (it.unimi.dsi.fastutil.longs.Long2ObjectMap<?>) pendingField.get(map);
+                            var holder = (net.minecraft.server.level.ChunkHolder) pending.get(chunk.toLong());
+                            System.out.println("W102_UNLOAD_PROBE wait=" + observations[0] + " event=" + unloaded.get()
+                                    + " loaded=" + level.hasChunkAt(origin) + " removed=" + original.isRemoved()
+                                    + " pending=" + (holder != null) + " saveReady=" + (holder != null && holder.getChunkToSave().isDone())
+                                    + " queue=" + ((java.util.Queue<?>) queueField.get(map)).size());
+                        } catch (ReflectiveOperationException failure) { throw new IllegalStateException(failure); }
+                    }
+                    return unloaded.get() && !level.hasChunkAt(origin) && original.isRemoved();
+                }, pacer, () -> {
                     helper.assertTrue(parts.values().stream().allMatch(BlockEntity::isRemoved), "A hatch outlived its chunk");
                     fixture.retainChunks();
                     fixture.rebind();
