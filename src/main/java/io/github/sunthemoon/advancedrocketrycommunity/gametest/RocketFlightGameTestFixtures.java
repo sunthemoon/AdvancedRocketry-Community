@@ -144,6 +144,23 @@ final class RocketFlightGameTestFixtures {
                 && RocketTransferSavedData.get(destination.getServer()).acknowledgedCurrent(), assertions);
     }
 
+    /**
+     * W98 (P1-N3 N3-A1): an ordinary source return keeps its record until the returned rocket's own entity slot is read
+     * back, so the record leaves, and its acknowledged effects run, a few ticks after the rocket turns FUELED. The same
+     * bounded wait as {@link #awaitFlightState}, which also waits for that retirement; the assertions decide as before.
+     */
+    static void awaitSourceReturned(GameTestHelper helper, GameTestTickDriver driver, ServerLevel source, UUID logical,
+            int ticks, Runnable assertions) {
+        awaitPaced(helper, driver, helper.getTick() + ticks, () -> hasFlightState(source, logical, RocketFlightState.FUELED)
+                && sourceRetired(source.getServer(), logical), assertions);
+    }
+
+    /** No record names {@code logical}, its removal is acknowledged and no continuation for it is pending. */
+    public static boolean sourceRetired(net.minecraft.server.MinecraftServer server, UUID logical) {
+        var journal = RocketTransferSavedData.get(server);
+        return journal.acknowledgedCurrent() && journal.findByLogicalRocket(logical).isEmpty() && journal.actionable(logical);
+    }
+
     static void assertPendingLaunch(GameTestHelper helper,
             io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightRequestResult result,
             RocketEntity rocket) {

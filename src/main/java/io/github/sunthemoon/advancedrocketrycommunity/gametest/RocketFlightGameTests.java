@@ -365,7 +365,8 @@ public final class RocketFlightGameTests {
             BlockPos blockedPosition = new BlockPos(blocked.x(), blocked.y(), blocked.z());
             moon.setBlock(blockedPosition, Blocks.STONE.defaultBlockState(), Block.UPDATE_ALL);
 
-            awaitFlightState(helper, driver, earth, logical, RocketFlightState.FUELED, 190, () -> {
+            // W98 (N3-A1): the record leaves a few ticks after FUELED, once the returned rocket's own slot is read back.
+            awaitSourceReturned(helper, driver, earth, logical, 190, () -> {
                 RocketEntity recovered = findLogicalRocket(earth, logical);
                 helper.assertTrue(recovered != null, "Blocked destination lost the source rocket");
                 helper.assertTrue(

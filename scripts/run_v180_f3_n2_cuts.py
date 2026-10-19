@@ -3,6 +3,9 @@
 
 Unavailable ordinary N2 fixtures are explicit BLOCKED rows, never passing cuts.
 Uses HOLD, FM6b, FP6, RT and the passive N2_REMOVAL_MOVED release-test pause.
+W98 adds three opt-in N3 cuts (``--case``): the gated ordinary-retirement pause
+before the survivor proof's own store, after that store and before its force,
+and after its readback and before B's record is removed.
 """
 from __future__ import annotations
 
@@ -31,6 +34,8 @@ CASES = ("F3_HELD", "F3_UNKNOWN", "N2_REFUSED", "N2_MOVED", "N2_UNKNOWN", "N2_GO
 BLOCKED = {
     "N2_REFUSED": "No native refusal fixture; production has 128 slots, detached tests use two. Needs scope decision.",
 }
+# W98 (P1-N3 leaf N3-A1): not in the default campaign; each pauses B's ordinary retirement once.
+N3_CUTS = {"N3_STORE": "BARRIER_STORE_BEFORE", "N3_FORCE": "BARRIER_FORCE_BEFORE", "N3_REMOVAL": "ORDINARY_REMOVAL_BEFORE"}
 GOVERNED = "RT_CANCEL_SEPARATE_0_READBACK_AFTER"
 RETURN = re.compile(r"ARCE_TRANSFER_RETURNED_TO_SOURCE transfer=(\S+) logical=(\S+) reason=(\S+) fuel=(\d+)")
 
@@ -274,6 +279,7 @@ def cut_removal(process, world, case, row):
     if before[flights[1]["logical"]]["phase"] != "PREPARED":
         raise smoke.SmokeError("Removal baseline was not PREPARED")
     marker = re.compile("ARCE_N2_REMOVAL_PAUSED boundary=after_atomic_move" if case == "N2_MOVED"
+                        else "ARCE_N3_RETIREMENT_PAUSED boundary=" + N3_CUTS[case] if case in N3_CUTS
                         else "ARCE_TRANSFER_JOURNAL_UNACKNOWLEDGED retained dirty authority")
     at = process.wait_for(marker, 60)
     row["boundary"] = process.lines[at].strip()
@@ -303,6 +309,30 @@ def verify_removal(disk, row, restart):
     if restart and (source["RocketEntityData"]["flight_data"]["state"] != "FUELED"
                     or source["Pos"] != flights[1]["source_position"]):
         raise smoke.SmokeError("Removed B has not recovered its stationary source at the origin")
+
+
+def verify_retirement(disk, row, restart, case):
+    """W98: until B's survivor proof removes its record, that record still owns recovery; then B stands alone."""
+    flights = row["flights"]
+    entities, transfers = selected(disk, flights)
+    before_entities, before_transfers = selected(row["before_removal"], flights)
+    a, b = (flight["logical"] for flight in flights)
+    if transfers.get(a) != before_transfers[a]:
+        raise smoke.SmokeError("Cut changed A's durable record")
+    if restart == 0:
+        if set(transfers) != {a, b} or transfers[b] != before_transfers[b]:
+            raise smoke.SmokeError("The cut lost B's record before its survivor proof")
+    elif set(transfers) != {a}:
+        raise smoke.SmokeError("Recovery did not retire B's record after its survivor proof")
+    for logical in (a, b):
+        if conserved(entities[logical]["entity"]) != conserved(before_entities[logical]["entity"]):
+            raise smoke.SmokeError("Cut lost, duplicated or changed conserved entity authority")
+    source = entities[b]["entity"]
+    stationary = (source["RocketEntityData"]["flight_data"]["state"] == "FUELED"
+                  and source["Pos"] == flights[1]["source_position"])
+    # Before the store, B's slot may still hold its last in-flight save; from the store on it holds the return.
+    if (restart or case != "N3_STORE") and not stationary:
+        raise smoke.SmokeError("B is not the stationary source at its origin")
 
 
 def run_case(args, case, evidence):
@@ -340,7 +370,9 @@ def run_case(args, case, evidence):
                 command.insert(1, {"F3_HELD": "-Dadvancedrocketrycommunity.rocketJournalFailure=HOLD",
                                    "F3_UNKNOWN": "-Darce.releaseTest.firstEventCut=FM6b",
                                    "N2_MOVED": "-Dadvancedrocketrycommunity.rocketJournalFailure=N2_REMOVAL_MOVED",
-                                   "N2_UNKNOWN": "-Darce.releaseTest.firstEventCut=FP6"}[case])
+                                   "N2_UNKNOWN": "-Darce.releaseTest.firstEventCut=FP6",
+                                   **{name: "-Dadvancedrocketrycommunity.ordinaryRetirementCut=" + label
+                                      for name, label in N3_CUTS.items()}}[case])
             entry = dict(restart=restart, command=command, at=utc(),
                          free_bytes={drive: shutil.disk_usage(drive).free for drive in ("C:/", "D:/")})
             row["starts"].append(entry)
@@ -367,12 +399,16 @@ def run_case(args, case, evidence):
             else:
                 process.wait_for(smoke.READY_MARKER, args.startup_timeout)
                 if restart == 0:
-                    code = (cut_removal if case.startswith("N2_") else cut_ordinary)(process, world, case, row)
+                    code = (cut_removal if case.startswith(("N2_", "N3_")) else cut_ordinary)(process, world, case, row)
                 else:
-                    if case.startswith("N2_"):
+                    if case.startswith(("N2_", "N3_")):
                         for i, flight in enumerate(row["flights"]):
                             entity = flight["entity"] if i else flight["destination_entity"]
                             process.wait_for(re.compile("ARCE_ROCKET_ENTITY_ACTIVE entity=" + entity), 45)
+                        if case in N3_CUTS and restart == 1:
+                            # Recovery returns B again and removes its record only after the survivor proof.
+                            proved = re.compile("ARCE_TRANSFER_RETIREMENT_PROVED transfer=" + row["flights"][1]["transfer"])
+                            entry["proof"] = process.lines[process.wait_for(proved, 120)].strip()
                         time.sleep(2)
                     else:
                         wait_recovered(process, row["flights"], case)
@@ -385,7 +421,12 @@ def run_case(args, case, evidence):
                         flight["destination_entity"] = str(nbt_uuid(transfer["destination_entity_id"]))
                         origin = transfer["destination_flight"]["current_origin"]
                         flight["destination_position"] = [origin[0] + .5, float(origin[1]), origin[2] + .5]
-                if case.startswith("N2_"):
+                if case in N3_CUTS:
+                    try:
+                        verify_retirement(disk, row, restart, case)
+                    except smoke.SmokeError as finding:
+                        row["findings"].append(dict(restart=restart, error=str(finding)))
+                elif case.startswith("N2_"):
                     try:
                         verify_removal(disk, row, restart)
                     except smoke.SmokeError as finding:
@@ -407,7 +448,7 @@ def run_case(args, case, evidence):
                 raise smoke.SmokeError("Unexpected native ERROR/FATAL; inspect retained logs")
             if expected_unknown and len(entry["errors"]) != 1:
                 raise smoke.SmokeError("UNKNOWN removal requires exactly its one injected journal failure")
-            if case.startswith("N2_") and case != "N2_GOVERNED":
+            if case.startswith(("N2_", "N3_")) and case != "N2_GOVERNED":
                 if restart == 0 and entry["return_reasons"]:
                     row["findings"].append(dict(restart=restart, error="Return reason published before removal acknowledgement"))
                 # These real Moon flights have no named landing pad. Do not claim named-pad coverage.
@@ -435,7 +476,7 @@ def main():
     parser.add_argument("--evidence-dir", type=Path, required=True)
     parser.add_argument("--source-commit", required=True)
     parser.add_argument("--java", required=True)
-    parser.add_argument("--case", action="append", choices=CASES)
+    parser.add_argument("--case", action="append", choices=CASES + tuple(N3_CUTS))
     parser.add_argument("--startup-timeout", type=float, default=240)
     args = parser.parse_args()
     try:

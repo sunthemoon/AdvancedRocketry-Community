@@ -28,9 +28,10 @@ public final class EscrowBarrier implements AutoCloseable {
         public boolean confirmed() { return !proofs.isEmpty() && proofs.values().stream().allMatch(Proof::valid); }
     }
     private record Pending(EscrowChunkStore.Capture capture, EscrowPrefix.State frontier,
-                            Consumer<Result> callback, EscrowReason failure) { }
+                            Consumer<Result> callback, EscrowReason failure, boolean ordinary) { }
+    /** W98 (W96-R5): each attempt reports to its own sink; an ordinary one never reaches the governed checkpoint. */
     private record Attempt(EscrowChunkStore.Capture capture, EscrowPrefix.State frontier,
-                            Predicate<CompoundTag> validator, Consumer<Result> callback) { }
+                            Predicate<CompoundTag> validator, Consumer<Result> callback, Consumer<String> sink, boolean ordinary) { }
     private final Thread owner = Thread.currentThread();
     private final ExecutorService reader = Executors.newSingleThreadExecutor(r -> {
         Thread thread = new Thread(r, "ARCE-escrow-readback"); thread.setDaemon(true); return thread;
@@ -43,6 +44,7 @@ public final class EscrowBarrier implements AutoCloseable {
     private final Map<String, List<Attempt>> staged = new HashMap<>();
     private final Map<String, Long> nextForce = new HashMap<>();
     private final java.util.Set<EscrowChunkStore.Capture> outstanding = new java.util.HashSet<>();
+    private final java.util.Set<Runnable> ordinaryRetries = new java.util.LinkedHashSet<>();
     private int ioFailures;
     private int supersedingSaves;
     private int refusals;
@@ -111,11 +113,41 @@ public final class EscrowBarrier implements AutoCloseable {
         budget.captured(capture.bytes());
         outstanding.add(capture);
         capture.stored().whenComplete((ignored, failure) -> timings.sample("own_store_io", System.nanoTime() - started));
-        staged.computeIfAbsent(endpoint.level(), key -> new ArrayList<>()).add(new Attempt(capture, frontier, validator, callback));
+        staged.computeIfAbsent(endpoint.level(), key -> new ArrayList<>())
+                .add(new Attempt(capture, frontier, validator, callback, checkpoint, false));
         nextForce.putIfAbsent(endpoint.level(), tick + 20);
         return true;
     }
+
+    /**
+     * W98 (W96-R5): an ordinary source-retirement proof of one entity slot. It shares the Level's batch, force and
+     * readback and every quota, within the ordinary sub-quota. Its labels go only to {@code sink}, and it adds no timing
+     * sample or failure count, so governed probes and counters never observe it. No ledger frontier.
+     */
+    public boolean beginOrdinary(EscrowChunkStore store, String level, net.minecraft.world.level.ChunkPos slot,
+                                 Predicate<CompoundTag> validator, long tick, Consumer<String> sink, Consumer<Result> callback) {
+        owner();
+        if (!working.get() || !budget.reserveOrdinary(level, tick)) { return false; }
+        EscrowChunkStore.Capture capture;
+        sink.accept("BARRIER_STORE_BEFORE");
+        try { capture = store.captureEntitySlot(slot, validator); }
+        catch (RuntimeException failure) {
+            budget.releaseOrdinary(AnvilRecordReader.DECODED_BYTES); callback.accept(new Result(null, captureReason(failure))); return true;
+        }
+        budget.captured(capture.bytes());
+        outstanding.add(capture);
+        staged.computeIfAbsent(level, key -> new ArrayList<>()).add(new Attempt(capture, null, validator, callback, sink, true));
+        nextForce.putIfAbsent(level, tick + 20);
+        return true;
+    }
+
+    /** Read-only hint for {@link #beginOrdinary}; it still reserves atomically. */
+    public boolean availableOrdinary(String level, long tick) { owner(); return working.get() && budget.availableOrdinary(level, tick); }
+
     private void forceBatch(List<Attempt> attempts) {
+        // Each batch label goes once to every distinct sink; an all-governed batch reaches only the governed checkpoint.
+        var sinks = attempts.stream().map(Attempt::sink).distinct().toList();
+        boolean governed = attempts.stream().anyMatch(attempt -> !attempt.ordinary());
         // Keep every own future: synchronize's pending set is not a completed-error history.
         CompletableFuture.allOf(attempts.stream().map(attempt -> attempt.capture().stored())
                 .toArray(CompletableFuture[]::new)).whenComplete((stored, storeFailure) -> {
@@ -124,23 +156,23 @@ public final class EscrowBarrier implements AutoCloseable {
             synchronized (lifecycle) {
                 if (!working.get()) { return; }
                 if (storeFailure != null) {
-                    attempts.forEach(attempt -> complete(attempt.capture(), attempt.frontier(), attempt.callback(), EscrowReason.BARRIER_IO)); return;
+                    attempts.forEach(attempt -> complete(attempt, EscrowReason.BARRIER_IO)); return;
                 }
-                checkpoint.accept("BARRIER_STORE_AFTER");
-                checkpoint.accept("BARRIER_FORCE_BEFORE");
-                checkpoint.accept("K6");
+                sinks.forEach(sink -> sink.accept("BARRIER_STORE_AFTER"));
+                sinks.forEach(sink -> sink.accept("BARRIER_FORCE_BEFORE"));
+                sinks.forEach(sink -> sink.accept("K6"));
                 // Quiesce cannot overtake a force submission, even when the own future completes off-thread.
                 forced = CompletableFuture.allOf(attempts.stream().map(attempt -> attempt.capture().worker()).distinct()
                         .map(worker -> worker.synchronize(true)).toArray(CompletableFuture[]::new));
             }
             // A cache-wide force occurs at most once per original worker in this Level's 20-tick batch.
             forced.whenComplete((ignored, forceFailure) -> {
-                        timings.sample("force_io", System.nanoTime() - forceStarted);
+                        if (governed) { timings.sample("force_io", System.nanoTime() - forceStarted); }
                         if (!working.get()) { return; }
                         if (forceFailure != null) {
-                            attempts.forEach(attempt -> complete(attempt.capture(), attempt.frontier(), attempt.callback(), EscrowReason.BARRIER_FORCE)); return;
+                            attempts.forEach(attempt -> complete(attempt, EscrowReason.BARRIER_FORCE)); return;
                         }
-                        checkpoint.accept("BARRIER_FORCE_AFTER");
+                        sinks.forEach(sink -> sink.accept("BARRIER_FORCE_AFTER"));
                         try { reader.execute(() -> attempts.forEach(this::readback)); }
                         catch (java.util.concurrent.RejectedExecutionException stopped) {
                             if (working.get()) { throw stopped; }
@@ -152,20 +184,21 @@ public final class EscrowBarrier implements AutoCloseable {
         if (!working.get()) { return; }
         var capture = attempt.capture(); EscrowReason reason = EscrowReason.NONE;
         long started = System.nanoTime();
-        checkpoint.accept("BARRIER_READBACK_BEFORE");
+        attempt.sink().accept("BARRIER_READBACK_BEFORE");
         try {
             if (capture.generation().get() != capture.capturedGeneration()) { reason = EscrowReason.SUPERSEDING_SAVE; }
             else if (!attempt.validator().test(AnvilRecordReader.read(capture.directory(), capture.chunk()).root())) {
                 reason = EscrowReason.BARRIER_UNSTABLE;
             }
         } catch (Exception failureRead) { reason = readbackReason(failureRead); }
-        if (reason == EscrowReason.NONE) { checkpoint.accept("BARRIER_READBACK_AFTER"); }
-        timings.sample("readback_io", System.nanoTime() - started);
-        complete(capture, attempt.frontier(), attempt.callback(), reason);
+        if (reason == EscrowReason.NONE) { attempt.sink().accept("BARRIER_READBACK_AFTER"); }
+        if (!attempt.ordinary()) { timings.sample("readback_io", System.nanoTime() - started); }
+        complete(attempt, reason);
     }
-    private void complete(EscrowChunkStore.Capture capture, EscrowPrefix.State frontier,
-                          Consumer<Result> callback, EscrowReason reason) {
-        if (working.get()) { completions.add(new Pending(capture, frontier, callback, reason)); }
+    private void complete(Attempt attempt, EscrowReason reason) {
+        if (working.get()) {
+            completions.add(new Pending(attempt.capture(), attempt.frontier(), attempt.callback(), reason, attempt.ordinary()));
+        }
     }
     public void tick(long tick) {
         owner();
@@ -178,7 +211,9 @@ public final class EscrowBarrier implements AutoCloseable {
         }
         owner(); Pending result; int callbacks = 32;
         while (callbacks-- > 0 && (result = completions.poll()) != null) {
-            budget.release(result.capture().bytes()); EscrowReason reason = result.failure();
+            if (result.ordinary()) { budget.releaseOrdinary(result.capture().bytes()); }
+            else { budget.release(result.capture().bytes()); }
+            EscrowReason reason = result.failure();
             outstanding.remove(result.capture());
             if (reason == EscrowReason.NONE && result.capture().generation().get() != result.capture().capturedGeneration()) {
                 reason = EscrowReason.SUPERSEDING_SAVE;
@@ -188,9 +223,23 @@ public final class EscrowBarrier implements AutoCloseable {
             } else {
                 result.capture().restoreDirty().run();
                 result.capture().releaseWatch().run();
-                count(reason); result.callback().accept(new Result(null, reason));
+                if (!result.ordinary()) { count(reason); }
+                result.callback().accept(new Result(null, reason));
             }
         }
+        if (!ordinaryRetries.isEmpty()) {
+            var due = List.copyOf(ordinaryRetries); ordinaryRetries.clear();
+            due.forEach(Runnable::run);
+        }
+    }
+
+    /**
+     * W98: an ordinary attempt that found its capture budget busy runs once more at the end of the next barrier tick,
+     * on this owner thread, whoever owns the attempt. At most 64 are held; a re-request in that run waits a further tick.
+     */
+    public void retryOrdinaryNextTick(Runnable retry) {
+        owner();
+        if (working.get() && (ordinaryRetries.contains(retry) || ordinaryRetries.size() < 64)) { ordinaryRetries.add(retry); }
     }
     /** Design reason table: IO/force/unstable and superseding saves differ from veto/external/bounds refusals. */
     static EscrowReason captureReason(RuntimeException failure) {
@@ -213,7 +262,7 @@ public final class EscrowBarrier implements AutoCloseable {
     /** Discard unfinished barriers without invalidating proofs held by already-frozen ledger generations. */
     public void quiesce() {
         owner(); synchronized (lifecycle) {
-            working.set(false); completions.clear(); staged.clear(); reader.shutdown();
+            working.set(false); completions.clear(); staged.clear(); reader.shutdown(); ordinaryRetries.clear();
             outstanding.forEach(capture -> { capture.restoreDirty().run(); capture.releaseWatch().run(); }); outstanding.clear();
         }
     }

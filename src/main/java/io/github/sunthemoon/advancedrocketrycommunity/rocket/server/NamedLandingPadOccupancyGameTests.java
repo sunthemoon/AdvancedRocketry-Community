@@ -119,17 +119,19 @@ public final class NamedLandingPadOccupancyGameTests {
             helper.assertTrue(transfer.equals(f.currentEntry().claim()), "Recheck created/replaced the prepared claim");
             source.updateFlightData(record.sourceFlightData());
             service.spawnDestination(f.space.getServer(), journal, record, source);
-            io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport.acknowledgeFixture(helper);
-            f.assertNoClaimOrDestination(transfer);
-            helper.assertTrue(!source.isRemoved() && source.flightData().orElseThrow().state() == RocketFlightState.FUELED
-                    && source.flightData().orElseThrow().fuel().equals(record.sourceFlightData().fuel()),
-                    "Occupied destination did not retain undebited source authority");
-            // W13F review N2: the captured record is immutable, so look for the destination itself.
-            helper.assertTrue(f.spaceRockets().stream().noneMatch(rocket -> rocket.assemblyTransactionId()
-                            .filter(record.logicalRocketId()::equals).isPresent() || rocket.snapshot().filter(snapshot ->
-                            snapshot.snapshotId().equals(record.destinationSnapshot().snapshotId())).isPresent()),
-                    "Pre-spawn refusal created a destination rocket");
-            f.close(); helper.succeed();
+            // W98 (N3-A1): the record and claim leave once the returned source's own entity slot is read back.
+            f.afterRetired(service, record.logicalRocketId(), () -> {
+                f.assertNoClaimOrDestination(transfer);
+                helper.assertTrue(!source.isRemoved() && source.flightData().orElseThrow().state() == RocketFlightState.FUELED
+                        && source.flightData().orElseThrow().fuel().equals(record.sourceFlightData().fuel()),
+                        "Occupied destination did not retain undebited source authority");
+                // W13F review N2: the captured record is immutable, so look for the destination itself.
+                helper.assertTrue(f.spaceRockets().stream().noneMatch(rocket -> rocket.assemblyTransactionId()
+                                .filter(record.logicalRocketId()::equals).isPresent() || rocket.snapshot().filter(snapshot ->
+                                snapshot.snapshotId().equals(record.destinationSnapshot().snapshotId())).isPresent()),
+                        "Pre-spawn refusal created a destination rocket");
+                helper.succeed();
+            });
         });
     }
 
@@ -191,7 +193,7 @@ public final class NamedLandingPadOccupancyGameTests {
         private final List<RocketEntity> rockets = new ArrayList<>();
         private final GameTestTickPacer pacer;
         private final UUID ticket = UUID.randomUUID();
-        private boolean closed;
+        private boolean closed, deferred;
 
         private Fixture(GameTestHelper helper) {
             this.helper = helper;
@@ -217,6 +219,29 @@ public final class NamedLandingPadOccupancyGameTests {
             clearEntry = LandingPadService.register(space, clearPad, station.ownerId(), false, "Clear Dock");
         }
 
+        /**
+         * W98 (N3-A1): an ordinary return keeps its record until the returned source's own entity slot is read back.
+         * Keeps this fixture open, drives the detached service's retirement until no record names {@code logical}, then
+         * runs {@code then} and closes; the assertions in {@code then} decide.
+         */
+        private void afterRetired(RocketTransferService service, UUID logical, Runnable then) {
+            deferred = true;
+            retiredStep(service, logical, then, helper.getTick() + 60);
+        }
+
+        private void retiredStep(RocketTransferService service, UUID logical, Runnable then, long deadline) {
+            boolean waiting = false;
+            try {
+                RocketSourceRetirementFixtures.recovery(service).tickRetirements(space.getServer());
+                io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport.acknowledgeFixture(helper);
+                var journal = RocketTransferSavedData.get(space.getServer());
+                if ((journal.findByLogicalRocket(logical).isPresent() || !journal.actionable(logical)) && helper.getTick() < deadline) {
+                    waiting = true; pacer.pace(); driver.after(1, () -> retiredStep(service, logical, then, deadline)); return;
+                }
+                then.run();
+            } finally { if (!waiting) { close(); } }
+        }
+
         private void awaitReady(Runnable action) {
             boolean ready = helper.getLevel().areEntitiesLoaded(new ChunkPos(sourceOrigin).toLong())
                     && space.isPositionEntityTicking(pad.above());
@@ -227,7 +252,7 @@ public final class NamedLandingPadOccupancyGameTests {
             }
             if (ready || helper.getTick() >= 80) {
                 helper.assertTrue(ready, "Occupancy fixture entity chunks did not become ready");
-                try { action.run(); } finally { close(); }
+                try { action.run(); } finally { if (!deferred) { close(); } }
             } else {
                 pacer.pace(); driver.after(1, () -> awaitReady(action));
             }

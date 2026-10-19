@@ -154,7 +154,11 @@ public final class RocketTransferBayGameTests {
         }
         void assertOrdinary() {
             journal.pollWriter(helper.getLevel().getServer().getTickCount());
-            if (!journal.acknowledgedCurrent()) { waitFor(this::assertOrdinary); return; }
+            // W98 (N3-A1): the stationary source's own slot is read back before its record is removed.
+            recovery.tickRetirements(helper.getLevel().getServer());
+            if (!journal.acknowledgedCurrent() || recovery.retirements().pending(record.logicalRocketId())) {
+                waitFor(this::assertOrdinary); return;
+            }
             helper.assertTrue(journal.find(record.transferId()).isEmpty(), "Stationary settlement journal was not removed");
             helper.assertTrue(source.flightData().orElseThrow().state() == RocketFlightState.FUELED
                     && source.flightData().orElseThrow().fuel().amount() == 1_000

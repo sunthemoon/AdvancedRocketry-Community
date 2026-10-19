@@ -153,6 +153,44 @@ class CutTests(unittest.TestCase):
         with self.assertRaisesRegex(cuts.smoke.SmokeError, "stationary source"):
             cuts.verify_removal(disk, row, 1)
 
+    def returned(self, disk, row):
+        source = disk["entities"][1]["entity"]
+        source["RocketEntityData"]["flight_data"]["state"] = "FUELED"
+        source["Pos"] = list(row["flights"][1]["source_position"])
+        return disk
+
+    def test_n3_cuts_keep_b_record_until_its_survivor_proof(self):
+        row, removed = self.removal()
+        held = copy.deepcopy(row["before_removal"])
+        cuts.verify_retirement(held, row, 0, "N3_STORE")
+        for case in ("N3_FORCE", "N3_REMOVAL"):
+            with self.assertRaisesRegex(cuts.smoke.SmokeError, "stationary source"):
+                cuts.verify_retirement(held, row, 0, case)
+        cuts.verify_retirement(self.returned(copy.deepcopy(held), row), row, 0, "N3_REMOVAL")
+        with self.assertRaisesRegex(cuts.smoke.SmokeError, "lost B's record"):
+            cuts.verify_retirement(self.returned(copy.deepcopy(removed), row), row, 0, "N3_REMOVAL")
+
+    def test_n3_restarts_retire_b_only_with_the_stationary_survivor(self):
+        row, removed = self.removal()
+        for case in cuts.N3_CUTS:
+            cuts.verify_retirement(self.returned(copy.deepcopy(removed), row), row, 1, case)
+            with self.assertRaisesRegex(cuts.smoke.SmokeError, "stationary source"):
+                cuts.verify_retirement(removed, row, 2, case)
+            with self.assertRaisesRegex(cuts.smoke.SmokeError, "did not retire"):
+                cuts.verify_retirement(self.returned(copy.deepcopy(row["before_removal"]), row), row, 1, case)
+        changed = self.returned(copy.deepcopy(removed), row)
+        changed["entities"][1]["entity"]["RocketEntityData"]["flight_data"]["fuel"]["amount"] -= 100
+        with self.assertRaisesRegex(cuts.smoke.SmokeError, "conserved"):
+            cuts.verify_retirement(changed, row, 1, "N3_FORCE")
+        duplicated = self.returned(copy.deepcopy(removed), row)
+        duplicated["entities"].append(copy.deepcopy(duplicated["entities"][1]))
+        with self.assertRaisesRegex(cuts.smoke.SmokeError, "duplicated"):
+            cuts.verify_retirement(duplicated, row, 1, "N3_FORCE")
+
+    def test_n3_cuts_are_opt_in_and_name_existing_boundaries(self):
+        self.assertEqual({"BARRIER_STORE_BEFORE", "BARRIER_FORCE_BEFORE", "ORDINARY_REMOVAL_BEFORE"}, set(cuts.N3_CUTS.values()))
+        self.assertFalse(set(cuts.N3_CUTS) & set(cuts.CASES))
+
 
 if __name__ == "__main__":
     unittest.main()

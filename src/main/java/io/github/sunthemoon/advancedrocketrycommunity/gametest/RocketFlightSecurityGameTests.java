@@ -164,12 +164,17 @@ public final class RocketFlightSecurityGameTests {
                             rocket.flightData().orElseThrow().fuel().amount() == fuelBefore,
                             "Hostile or cancelled request consumed fuel"
                     );
-                    helper.assertTrue(
-                            RocketTransferSavedData.get(earth.getServer()).entries().isEmpty(),
-                            "Countdown cancellation retained a transfer journal"
-                    );
-                    rocket.discard();
-                    helper.succeed();
+                    // W98 (N3-A1): the record leaves once the returned rocket's own entity slot is read back.
+                    UUID logical = rocket.assemblyTransactionId().orElseThrow();
+                    RocketFlightGameTestFixtures.awaitPaced(helper, driver, helper.getTick() + 60,
+                            () -> RocketFlightGameTestFixtures.sourceRetired(earth.getServer(), logical), () -> {
+                        helper.assertTrue(
+                                RocketTransferSavedData.get(earth.getServer()).entries().isEmpty(),
+                                "Countdown cancellation retained a transfer journal"
+                        );
+                        rocket.discard();
+                        helper.succeed();
+                    });
                 });
             });
         });
