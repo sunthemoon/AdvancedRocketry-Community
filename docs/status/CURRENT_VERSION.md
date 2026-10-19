@@ -38,8 +38,8 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: fe25244b (W97B merged: all 21 B3-S1 and B3-S2 loader cuts have native evidence)
-latest_hosted_regression: runs 39248274281 at 83a7408e (the W97 merge) and 39248847444 at fac40f53 (the W99 merge) passed every required GameTest (1,226 and 1,227) and failed only the log checker's host-lag ceiling (6 notices against 5). Root raised that ceiling to 8 with an ADR-072 exception (497c702b); the first run with it, at fdedf1eb, is in progress. The etcher unload test passed on both runs; W102's deterministic fix is in Root verification. The last run that passed end to end is 39096930031 at 264c4e30 (the W91 merge)
+latest_code_commit: c6aad5c6 (W102 merged: the etcher unload GameTest pumps ready vanilla unload callbacks; before it, 250029a5 merged W104, monotonic journal and ledger drain clocks, and c3f80822 merged cargo leaf C-K)
+latest_hosted_regression: the first two runs with the host-lag ceiling of 8 (497c702b) each failed one required GameTest, so the log checker did not run (their logs hold 5 and 3 host-lag notices, within 8): 39257586033 at fdedf1eb failed the etcher unload test (W102, merged since as c6aad5c6), and 39264984282 at 6d120bc8 failed EscrowProofRetryGameTests.supersededTerrainProofRetriesTheSameFrontierAfterBackoff once (its 40-tick proof IO budget; an open item in QUEUE). The runs at efdd7f23 and later are in progress or queued. The last run that passed end to end is 39096930031 at 264c4e30 (the W91 merge)
 ledger_planned_units: 19
 asset_review_items: 154
 required_gates_approved: none
