@@ -55,6 +55,14 @@ def storage_observations(cut: str, lines: list[str]) -> None:
                        "Failure outcome changed records, issued sequence or uncertain reservations")
 
 
+def unload_observations(cut: str, lines: list[str]) -> None:
+    failures = [match for line in lines if (match := STORAGE_FAILURE.search(line))]
+    oracle.require(bool(failures) and all(m[1] == cut and tuple(m.groups()[1:]) == ("true", "0", "1", "0") for m in failures),
+                   "UNKNOWN unload did not retain its unacknowledged reservation")
+    one_match(re.compile(r"ARCE_LOADER_MATRIX_UNLOADED cut=" + re.escape(cut)
+                         + r" ticks=20 records=0 pending=1 issued=0 same_candidate=true"), lines)
+
+
 def creation_observations(cut: str, lines: list[str]) -> None:
     if cut in ("LF_M_N2_DEFINITE", "LF_M_N2_UNKNOWN"):
         unknown = cut.endswith("UNKNOWN")
@@ -178,7 +186,7 @@ def run_cut(args, cut: str, evidence: Path, owner: str, pins: dict) -> dict:
                 actual_cut = cut
             lines = list(process.lines); process = None
             start["observations"] = [line for line in lines if "ARCE_LOADER_MATRIX_" in line]
-            disk = oracle.inspect(session / "world"); start["disk"] = disk
+            disk = oracle.inspect(session / "world", cut); start["disk"] = disk
             try:
                 start["first_tick"] = first_tick(lines, cut, restart, previous)
                 oracle.require(not any("/ERROR]" in line or "/FATAL]" in line for line in lines), "Native start logged ERROR/FATAL")
@@ -190,6 +198,8 @@ def run_cut(args, cut: str, evidence: Path, owner: str, pins: dict) -> dict:
                     creation_observations(cut, lines)
                 if cut in oracle.S4 and restart == 0:
                     storage_observations(cut, lines)
+                if cut in oracle.S5 and restart == 0:
+                    unload_observations(cut, lines)
                 if creation and restart:
                     oracle.require(any("phase=creation_restart " in line for line in lines), "Missing unchanged creation-restart observation")
             except smoke.SmokeError as failure:

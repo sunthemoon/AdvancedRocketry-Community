@@ -24,7 +24,8 @@ STORAGE = {"E4L1_FAIL": "K1", "E4L1_UNKNOWN": "K1", "E4L2_FAIL": "K8", "E4L2_UNK
            "E4L1_BEFORE": "K1", "E4L1_REPLACED": "K2", "E4L1_ACK": "K2_ACK",
            "E4L2_BEFORE": "K8", "E4L2_REPLACED": "K9", "E4L2_ACK": "K10_ACK"}
 S4 = tuple(PREFIX + name for name in STORAGE)
-CASES = tuple(PREFIX + name for name in CREATION + NORMAL + SUPPLEMENTAL + CREATION_SUPPLEMENTAL) + S3 + S4
+S5 = (PREFIX + "R1_UNKNOWN_UNLOAD",)
+CASES = tuple(PREFIX + name for name in CREATION + NORMAL + SUPPLEMENTAL + CREATION_SUPPLEMENTAL) + S3 + S4 + S5
 NOT_RUN = {}
 CAPACITY_POSITIONS = [(66, 100, 64), (66, 100, 65), (67, 100, 64), (67, 100, 65), (68, 100, 65), (69, 100, 65)]
 LOADER = "advancedrocketrycommunity:fluid_fuel_loader"
@@ -39,21 +40,30 @@ def require(ok: bool, message: str) -> None:
         raise smoke.SmokeError(message)
 
 
-def inspect(world: Path) -> dict:
+def origin(cut: str) -> int:
+    return 2048 if cut == PREFIX + "R1_UNKNOWN_UNLOAD" else 64
+
+
+def inspect(world: Path, cut: str = "") -> dict:
     path = world / "data" / LEDGER
     root = ledger(path) if path.is_file() else None
-    terrain = record(world / "region/r.0.0.mca")
-    entities = record(world / "entities/r.0.0.mca")["Entities"]
+    chunk = origin(cut) // 16
+    region = f"r.{chunk // 32}.{chunk // 32}.mca"
+    slot = chunk % 32 + (chunk % 32) * 32
+    terrain = record(world / "region" / region, slot)
+    entities = record(world / "entities" / region, slot)["Entities"]
     rockets = [entry for entry in entities if "RocketEntityData" in entry or entry.get("id") == ROCKET]
     require(len(rockets) == 1 and not journal(world)["transfers"], "Missing/duplicate rocket or unexpected transfer")
     devices = sorted((entry for entry in terrain["block_entities"] if entry.get("id") == LOADER), key=lambda e: (e["x"], e["y"], e["z"]))
     return dict(ledger=root, loaders=devices, rocket=rockets[0],
                 files={name: digest(world / name) if (world / name).is_file() else None
-                       for name in ("data/" + LEDGER, "region/r.0.0.mca", "entities/r.0.0.mca")})
+                       for name in ("data/" + LEDGER, "region/" + region, "entities/" + region)})
 
 
 def expected(cut: str, restart: int) -> dict:
     require(cut in CASES, "Unknown cut")
+    if cut in S5:
+        cut = PREFIX + "K1"
     if cut.removeprefix(PREFIX) in D2:
         cut = PREFIX + D2[cut.removeprefix(PREFIX)]
     if cut.removeprefix(PREFIX) in STORAGE:
@@ -105,7 +115,8 @@ def check(disk: dict, cut: str, restart: int) -> dict:
                 "Wrong raw ledger generation")
     data = rocket["RocketEntityData"]
     flight, wrapper = data["flight_data"], data["resource_escrow"]
-    require(rocket["id"] == ROCKET and rocket["Pos"] == [64.5, 100.0, 64.5] and not rocket.get("Passengers")
+    at = origin(cut)
+    require(rocket["id"] == ROCKET and rocket["Pos"] == [at + .5, 100.0, at + .5] and not rocket.get("Passengers")
             and not flight["passengers"]["assignments"] and "active_transfer_id" not in flight
             and data["assembly_transaction_id"] == flight["logical_rocket_id"], "Changed native flight identity/authority")
     propulsion = flight["fuel"]["propulsion"]
@@ -117,7 +128,7 @@ def check(disk: dict, cut: str, restart: int) -> dict:
     check_section(wrapper, int(bi) + exp["destination"], exp["destination"] * exp["markers"], root, "DESTINATION", sequence)
     identity = dict(physical=rocket["UUID"], logical=data["assembly_transaction_id"], owner=data["owner_id"], loaders=[])
     for index, device in enumerate(devices):
-        position = CAPACITY_POSITIONS[index] if capacity else (66 + index, 100, 64)
+        position = CAPACITY_POSITIONS[index] if capacity else (at + 2 + index, 100, at)
         require(tuple(device.get(key) for key in ("x", "y", "z")) == position and device["id"] == LOADER,
                 "Wrong native loader position/type")
         loader = device["arce_fluid_fuel_loader"]

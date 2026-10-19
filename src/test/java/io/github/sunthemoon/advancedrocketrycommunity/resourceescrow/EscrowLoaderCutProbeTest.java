@@ -58,6 +58,8 @@ class EscrowLoaderCutProbeTest {
 
     @Test void loaderStorageAliasesSelectOnlyTheExistingFaultCases() {
         assertEquals("E4L1_UNKNOWN", EscrowLoaderStorageProbe.writerCase("LF_M_E4L1_UNKNOWN"));
+        assertEquals("E4L1_UNKNOWN", EscrowLoaderStorageProbe.writerCase("LF_M_R1_UNKNOWN_UNLOAD"));
+        assertTrue(EscrowLoaderStorageProbe.selected("R1_UNKNOWN_UNLOAD"));
         assertEquals("E4L2_UNKNOWN", EscrowLoaderStorageProbe.writerCase("LF_M_E4L2_UNKNOWN"));
         assertEquals("E4L2_RESAVE", EscrowLoaderStorageProbe.writerCase("LF_M_E4L2_RESAVE_RESOLVED"));
         for (String name : List.of("LF_M_N2_UNKNOWN", "E4L1_UNKNOWN", "LF_M_E1", "", "LF_M_K1")) {

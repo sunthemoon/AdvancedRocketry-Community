@@ -14,20 +14,21 @@ final class EscrowLoaderStorageProbe {
     private final MinecraftServer server;
     private final String cut, boundary;
     private final Consumer<String> pause;
+    private final Runnable unload;
     private boolean injected, resave, resaved, capture;
     private Consumer<ChunkDataEvent.Save> listener;
 
-    EscrowLoaderStorageProbe(MinecraftServer server, String cut, String boundary, Consumer<String> pause) {
+    EscrowLoaderStorageProbe(MinecraftServer server, String cut, String boundary, Consumer<String> pause, Runnable unload) {
         EscrowTestEndpoints.requireEnabled(server);
-        this.server = server; this.cut = cut; this.boundary = boundary; this.pause = pause;
+        this.server = server; this.cut = cut; this.boundary = boundary; this.pause = pause; this.unload = unload;
     }
 
-    static boolean selected(String boundary) { return boundary.equals("E2_CAPTURE") || boundary.matches("E4L[12]_(FAIL|UNKNOWN)|E4L2_RESAVE(_RESOLVED)?"); }
+    static boolean selected(String boundary) { return boundary.equals("R1_UNKNOWN_UNLOAD") || boundary.equals("E2_CAPTURE") || boundary.matches("E4L[12]_(FAIL|UNKNOWN)|E4L2_RESAVE(_RESOLVED)?"); }
 
     /** Aliases select the already gated committer, including its existing one-shot resave variant. */
     static String writerCase(String selected) {
         return switch (selected) {
-            case "LF_M_E4L1_UNKNOWN" -> "E4L1_UNKNOWN";
+            case "LF_M_E4L1_UNKNOWN", "LF_M_R1_UNKNOWN_UNLOAD" -> "E4L1_UNKNOWN";
             case "LF_M_E4L2_UNKNOWN" -> "E4L2_UNKNOWN";
             case "LF_M_E4L2_RESAVE", "LF_M_E4L2_RESAVE_RESOLVED" -> "E4L2_RESAVE";
             default -> selected;
@@ -49,9 +50,10 @@ final class EscrowLoaderStorageProbe {
             };
             net.minecraftforge.common.MinecraftForge.EVENT_BUS.addListener(listener);
         }
-        if (name.equals("WRITE_UNKNOWN") && boundary.startsWith("E4")) {
+        if (name.equals("WRITE_UNKNOWN") && (boundary.startsWith("E4") || boundary.equals("R1_UNKNOWN_UNLOAD"))) {
             retained(loader, rocket, true);
-            if (boundary.startsWith("E4L2_RESAVE")) { resave = true; }
+            if (boundary.equals("R1_UNKNOWN_UNLOAD")) { unload.run(); }
+            else if (boundary.startsWith("E4L2_RESAVE")) { resave = true; }
             else { pause.accept(name); }
         }
         if (name.equals("WRITE_FAILED_BEFORE_REPLACE") && boundary.startsWith("E4")) {
@@ -87,7 +89,7 @@ final class EscrowLoaderStorageProbe {
 
     private void retained(FluidFuelLoaderBlockEntity loader, RocketEntity rocket, boolean unknown) {
         var data = ResourceEscrowSavedData.existing(server); var coordinator = data.bind(server);
-        boolean l1 = boundary.startsWith("E4L1");
+        boolean l1 = boundary.startsWith("E4L1") || boundary.equals("R1_UNKNOWN_UNLOAD");
         int pending = l1 && !unknown ? 0 : 1;
         EscrowTags.require(data.ledger().records().size() == (l1 ? 0 : 1)
                 && data.ledger().issuedThrough() == (l1 ? 0 : 1)

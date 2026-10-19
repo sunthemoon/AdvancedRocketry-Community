@@ -30,12 +30,13 @@ def fixture(cut, restart):
     capacity = cut == "LF_M_N3_PREFLIGHT"
     for index in range(6 if capacity else 2 if bi else 1):
         prior = bi and index == 0; moved = 0 if capacity and index else 1 if prior else exp["source"]
-        x, y, z = oracle.CAPACITY_POSITIONS[index] if capacity else (66+index, 100, 64)
+        at = oracle.origin(cut)
+        x, y, z = oracle.CAPACITY_POSITIONS[index] if capacity else (at+2+index, 100, at)
         loaders.append(dict(id=oracle.LOADER, x=x, y=y, z=z, arce_fluid_fuel_loader=dict(
             device="device"+str(index), owner="owner", binding=dict(physical_rocket="physical", logical_rocket="logical"),
             tank=dict(FluidName=oracle.HYDROGEN if prior else oracle.OXYGEN if bi else oracle.FUEL, Amount=5000-1000*moved),
             resource_escrow=section(moved, 0 if prior else moved*exp["markers"], "SOURCE"))))
-    rocket = dict(id=oracle.ROCKET, UUID="physical", Pos=[64.5, 100.0, 64.5], RocketEntityData=dict(
+    rocket = dict(id=oracle.ROCKET, UUID="physical", Pos=[oracle.origin(cut)+.5, 100.0, oracle.origin(cut)+.5], RocketEntityData=dict(
         owner_id="owner", assembly_transaction_id="logical", resource_escrow=section(int(bi)+exp["destination"], exp["destination"]*exp["markers"], "DESTINATION"),
         flight_data=dict(logical_rocket_id="logical", passengers=dict(assignments=[]), fuel=dict(propulsion=dict(
             primary=dict(amount=1000 if bi else exp["destination"]*1000), oxidizer=dict(amount=exp["destination"]*1000 if bi else 0))))))
@@ -79,6 +80,21 @@ def chain_fixture(cut, restart):
 
 
 class LoaderCutsTest(unittest.TestCase):
+    def test_unknown_unload_requires_retained_candidate_and_native_unload(self):
+        cut = "LF_M_R1_UNKNOWN_UNLOAD"
+        lines = [f"ARCE_LOADER_MATRIX_FAILURE cut={cut} unknown=true records=0 pending=1 issued=0",
+                 f"ARCE_LOADER_MATRIX_UNLOADED cut={cut} ticks=20 records=0 pending=1 issued=0 same_candidate=true"]
+        runner.unload_observations(cut, lines)
+        for bad in (lines[:1], lines[1:], [line.replace("pending=1", "pending=0") for line in lines],
+                    [line.replace("same_candidate=true", "same_candidate=false") for line in lines]):
+            with self.assertRaises(oracle.smoke.SmokeError): runner.unload_observations(cut, bad)
+        for restart in range(3):
+            disk = fixture(cut, restart)
+            self.assertEqual(5000, disk["loaders"][0]["arce_fluid_fuel_loader"]["tank"]["Amount"])
+            oracle.check(disk, cut, restart)
+            disk["rocket"]["Pos"] = [64.5, 100., 64.5]
+            with self.assertRaises(oracle.smoke.SmokeError): oracle.check(disk, cut, restart)
+
     def test_storage_failure_requires_exact_pending_reservation_and_outcome(self):
         for name in ("E4L1_FAIL", "E4L1_UNKNOWN", "E4L2_FAIL", "E4L2_UNKNOWN"):
             cut = oracle.PREFIX + name
