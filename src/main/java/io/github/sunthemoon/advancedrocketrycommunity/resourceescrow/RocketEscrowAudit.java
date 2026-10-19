@@ -56,11 +56,12 @@ public final class RocketEscrowAudit {
         if (data == null || rocket.assemblyTransactionId().isEmpty()) { return; }
         var coordinator = data.bind(level.getServer());
         for (var op : data.ledger().records()) {
-            if (!op.destination().identity().equals(rocket.getUUID())
+            var endpoint = op.rocket();
+            if (!endpoint.identity().equals(rocket.getUUID())
                     && !op.guard().rocket().equals(rocket.assemblyTransactionId().orElseThrow())) { continue; }
-            var reason = placement(op.destination(), rocket);
+            var reason = placement(endpoint, rocket);
             if (reason == EscrowReason.NONE) { continue; }
-            invalidate(level, op.destination(), rocket);
+            invalidate(level, endpoint, rocket);
             // Manual choices and settlements are sticky. Never replace one with an automatic diagnosis.
             if (!coordinator.currentReason(op).manual() && op.phase() != EscrowOperation.Phase.SETTLING_ACCEPT
                     && op.phase() != EscrowOperation.Phase.SETTLING_ABANDON) { coordinator.transition(op.id(), reason); }
@@ -87,12 +88,13 @@ public final class RocketEscrowAudit {
         }
         var reason = journal(op.guard(), journal.acknowledgedGuard(op.guard().rocket()).orElse(null));
         if (reason != EscrowReason.NONE) { completion.accept(new EscrowReconciliationScheduler.Result(reason, false)); return; }
+        var endpoint = op.rocket();
         ServerLevel level = server.getLevel(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.DIMENSION,
-                net.minecraft.resources.ResourceLocation.tryParse(op.destination().level())));
-        if (level != null && level.getEntity(op.destination().identity()) instanceof RocketEntity rocket) {
-            reason = placement(op.destination(), rocket);
+                net.minecraft.resources.ResourceLocation.tryParse(endpoint.level())));
+        if (level != null && level.getEntity(endpoint.identity()) instanceof RocketEntity rocket) {
+            reason = placement(endpoint, rocket);
             if (reason != EscrowReason.NONE) {
-                invalidate(level, op.destination(), rocket);
+                invalidate(level, endpoint, rocket);
                 completion.accept(new EscrowReconciliationScheduler.Result(reason, false)); return;
             }
         }
