@@ -1,12 +1,13 @@
 # W112: resumable cargo preparation plan
 
-Status: in-progress. Base: `9f6668aadd64015f669810a00b75f6254b6a02a8`.
+Status: implemented and locally verified; independent review pending. Base:
+`9f6668aadd64015f669810a00b75f6254b6a02a8`. Results: [W112](W112.md).
 Authority: TASK-W112, the frozen [cargo design](W11CD-DESIGN.md), sections 2.3,
 2.4 and 3.2, and ADR-065 section 4.1.1. This is the pre-Java persistence plan.
 
 ## Scope and implementation
 
-- **P1 (ready): snapshot reconstruction.** Add a payload-only preparation cursor
+- **P1 (verified): snapshot reconstruction.** Add a payload-only preparation cursor
   beside the immutable snapshot model. Reuse the existing canonical hash writers,
   streaming their header, individual block records and trailer into two SHA-256
   states. Construction accepts only the internal completed computation, never
@@ -14,7 +15,7 @@ Authority: TASK-W112, the frozen [cargo design](W11CD-DESIGN.md), sections 2.3,
   A codec hook verifies all decoded fields against that exact prepared snapshot,
   avoiding another synchronous hash of identical canonical input. Ordinary decode
   still computes and checks its hashes normally.
-- **P2 (planned, depends on P1): bounded cargo preparation.** One server-session
+- **P2 (verified, depends on P1): bounded cargo preparation.** One server-session
   owner holds one active reconstruction, its logical rocket UUID, snapshot UUID,
   before hash, block index and charged totals. Reserve conservative step costs
   before copies/encodes/hashes, then charge actual work. Retain only bounded
@@ -22,14 +23,14 @@ Authority: TASK-W112, the frozen [cargo design](W11CD-DESIGN.md), sections 2.3,
   envelopes; never accumulate hash input for the whole rocket or tick credit.
   An active large request keeps its turn until completion/cancellation; small
   requests cannot displace it. C-E still owns the shared fair admission queue.
-- **P3 (planned, depends on P2): lock and publication.** The session-owned cursor
+- **P3 (verified, depends on P2): lock and publication.** The session-owned cursor
   locks resource mutation, launch and disassembly. Removal/unload, cancellation,
   server-capability invalidation and server stop discard it, without changing the old
   snapshot. A privately issued, owner-thread, one-use permit binds the exact
   before snapshot, flight/resources, wrapper and frozen after digests. Recheck
   those bindings at consumption, then publish snapshot, flight, wrapper/revision
   and synchronized hash together. No public snapshot setter is introduced.
-- **P4 (planned, depends on P2/P3): capture checks.** Reuse W106 eligibility before
+- **P4 (verified, depends on P2/P3): capture checks.** Reuse W106 eligibility before
   sequence issuance, reservation and queue entry, and repeat changed-input
   validation at final capture. Immutable prepared snapshots may supply verified
   codec witnesses, but no payload, envelope, capacity or O1 check is omitted.
@@ -53,8 +54,8 @@ entity and escrow hooks, tests, this plan and W112.md. No device, shared fair
 queue, production gate, art/data, save format/bound, proof, lease, replay,
 ADR/risk/status/ledger or S2 changes. No upstream files are imported.
 
-Implementation checkpoint: P1-P4 are implemented-unverified pending the committed
-isolated/full-suite and A1 runs. The Overworld's existing `EscrowRuntime`
+Implementation checkpoint: P1-P4 have passed the committed isolated tests, full
+unit suite and full A1 run recorded in W112.md. The Overworld's existing `EscrowRuntime`
 capability owns the single preparation slot, not the common-setup rocket manager;
 this avoids retaining world state or the setup thread across server sessions.
 Native-envelope publication checks run separately for BEFORE and AFTER so their
