@@ -172,10 +172,8 @@ public final class RocketTransferRecoveryGameTests {
                 clearRecoveryScenario(earth, moon);
                 prepareRecoveryScenario(helper, driver, new BlockPos(9, 2, 3), both -> {
                     spawnRecoveryDestination(moon, both);
-                    RocketTransferRecoveryReport bothReport = recoverAcknowledged(
-                            helper, recoveryManager,
-                            both.transferId()
-                    );
+                    // W98 (N3-A1): the source-side report follows the survivor and discarded-copy proofs.
+                    awaitRecovered(helper, driver, recoveryManager, both.transferId(), 1, new GameTestTickPacer(earth.getServer()), bothReport -> {
                     assertRecovery(
                             helper,
                             bothReport,
@@ -211,8 +209,24 @@ public final class RocketTransferRecoveryGameTests {
                         clearRecoveryScenario(earth, moon);
                         helper.succeed();
                     });
+                    });
                 });
             });
+    }
+
+    /**
+     * W98 (N3-A1): a source-side recovery reports RECOVERED once the returned source's own slot, and any discarded copy's
+     * slot, are read back; until then each call is RETRY_LATER. One retry per tick, bounded by two barrier batches.
+     */
+    private static void awaitRecovered(GameTestHelper helper, GameTestTickDriver driver, RocketManager manager, UUID transfer,
+            int attempt, GameTestTickPacer pacer, java.util.function.Consumer<RocketTransferRecoveryReport> done) {
+        RocketTransferRecoveryReport report = recoverAcknowledged(helper, manager, transfer);
+        if (report.status() == RocketTransferRecoveryReport.Status.RETRY_LATER && attempt < 40) {
+            pacer.pace();
+            driver.after(1, () -> awaitRecovered(helper, driver, manager, transfer, attempt + 1, pacer, done));
+            return;
+        }
+        done.accept(report);
     }
 
     private static void prepareRecoveryScenario(

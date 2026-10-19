@@ -112,7 +112,7 @@ public final class RocketDestinationReadinessGameTests {
                 return;
             }
             fixture.assertBlockedPadReturn();
-            awaitJournal(fixture, () -> {
+            awaitRetired(fixture, () -> awaitJournal(fixture, () -> {
                 fixture.prepareReadySpawn();
                 awaitJournal(fixture, () -> {
                     fixture.service.spawnDestination(fixture.earth.getServer(), fixture.journal, fixture.record, fixture.source);
@@ -122,7 +122,20 @@ public final class RocketDestinationReadinessGameTests {
                         fixture.assertCleanup(); fixture.helper.succeed();
                     }, 1);
                 }, 1);
-            }, 1);
+            }, 1), 1);
+        }));
+    }
+
+    /** W98 (N3-A1): the blocked return's record leaves once the returned source's own entity slot is read back. */
+    private static void awaitRetired(Fixture fixture, Runnable ready, int attempt) {
+        fixture.driver.after(1, () -> fixture.guard(() -> {
+            fixture.journal.pollWriter(fixture.earth.getServer().getTickCount());
+            RocketSourceRetirementFixtures.recovery(fixture.service).tickRetirements(fixture.earth.getServer());
+            if (fixture.journal.find(fixture.record.transferId()).isPresent() || !fixture.journal.actionable(fixture.logical)) {
+                fixture.helper.assertTrue(attempt < READINESS_ATTEMPTS, "Blocked pad retained an active transfer");
+                fixture.pacer.pace(); awaitRetired(fixture, ready, attempt + 1); return;
+            }
+            ready.run();
         }));
     }
 
@@ -284,7 +297,8 @@ public final class RocketDestinationReadinessGameTests {
             obstructionBefore = moon.getBlockState(MOON_ORIGIN);
             moon.setBlock(MOON_ORIGIN, Blocks.STONE.defaultBlockState(), Block.UPDATE_ALL);
             service.spawnDestination(earth.getServer(), journal, record, source);
-            helper.assertTrue(journal.find(record.transferId()).isEmpty(), "Blocked pad retained an active transfer");
+            // W98 (N3-A1): the record stays until the survivor proof; awaitRetired then requires its removal.
+            helper.assertTrue(journal.find(record.transferId()).isPresent(), "Blocked pad removed its record before the survivor proof");
             helper.assertTrue(!source.isRemoved() && source.flightData().orElseThrow().state() == RocketFlightState.FUELED
                             && source.flightData().orElseThrow().fuel().equals(record.sourceFlightData().fuel())
                             && source.flightData().orElseThrow().activeTransferId().isEmpty(),

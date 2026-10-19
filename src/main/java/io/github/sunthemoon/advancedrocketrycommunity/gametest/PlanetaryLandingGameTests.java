@@ -76,7 +76,8 @@ public final class PlanetaryLandingGameTests {
                         helper.succeed();
                         return;
                     }
-                    RocketFlightGameTestFixtures.awaitFlightState(helper, driver, helper.getLevel(), logical, RocketFlightState.FUELED, 190, () -> {
+                    // W98 (N3-A1): the record leaves a few ticks after FUELED, once the returned rocket's own slot is read back.
+                    RocketFlightGameTestFixtures.awaitSourceReturned(helper, driver, helper.getLevel(), logical, 190, () -> {
                         try {
                             var state = source.flightData().orElseThrow();
                             helper.assertTrue(source.isAlive() && state.state() == RocketFlightState.FUELED,

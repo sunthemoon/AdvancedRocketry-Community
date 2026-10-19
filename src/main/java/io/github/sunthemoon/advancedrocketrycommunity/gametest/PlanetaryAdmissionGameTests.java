@@ -117,13 +117,19 @@ public final class PlanetaryAdmissionGameTests {
             var manager = new RocketManager(catalogs.celestialView(), catalogs);
             var owner = player(helper.getLevel(), UUID.randomUUID());
             RocketFlightGameTestFixtures.assembleFueledRocket(helper, driver, new BlockPos(3, 2, 3), owner.getUUID(), rocket -> {
-                try {
-                    launchAndCancel(helper, manager, rocket, owner, MOON);
-                } finally {
+                Runnable cleanup = () -> {
                     manager.clear();
                     rocket.discard();
+                };
+                try {
+                    launchAndCancel(helper, driver, manager, rocket, owner, MOON, () -> {
+                        cleanup.run();
+                        helper.succeed();
+                    }, cleanup);
+                } catch (RuntimeException | Error failure) {
+                    cleanup.run();
+                    throw failure;
                 }
-                helper.succeed();
             });
         });
     }
@@ -175,7 +181,7 @@ public final class PlanetaryAdmissionGameTests {
                         space.getChunkSource().addRegionTicket(FIXTURE_TICKET, ticketChunk.get(), 2, stationId);
                         space.getChunkAt(rocket.blockPosition());
                         helper.assertTrue(space.addFreshEntity(rocket), "Station rocket was not installed");
-                        awaitVisible(helper, driver, space, rocket, () -> {
+                        awaitVisible(helper, driver, space, rocket, finish -> {
                             var owner = player(space, ownerId);
                             owner.setPos(rocket.getX(), rocket.getY(), rocket.getZ());
                             // Transferring ownership retains the old owner as a member; explicitly revoke both.
@@ -191,9 +197,11 @@ public final class PlanetaryAdmissionGameTests {
                             helper.assertTrue(RocketTransferSavedData.get(server).save(new CompoundTag()).equals(before),
                                     "Station access denial changed journal");
                             stations.transferOwnership(stationId, ownerId);
-                            launchAndCancel(helper, manager, rocket, owner, EARTH);
-                            helper.assertTrue(stations.find(stationId).orElseThrow().orbitBody().equals(CelestialIds.EARTH_ID),
-                                    "Departure rewrote the station orbit identity");
+                            launchAndCancel(helper, driver, manager, rocket, owner, EARTH, () -> {
+                                helper.assertTrue(stations.find(stationId).orElseThrow().orbitBody().equals(CelestialIds.EARTH_ID),
+                                        "Departure rewrote the station orbit identity");
+                                finish.run();
+                            }, cleanup);
                         }, cleanup);
                     } catch (RuntimeException | Error exception) {
                         cleanup.run();
@@ -262,7 +270,7 @@ public final class PlanetaryAdmissionGameTests {
                         space.getChunkSource().addRegionTicket(FIXTURE_TICKET, ticketChunk.get(), 2, stationId);
                         space.getChunkAt(rocket.blockPosition());
                         helper.assertTrue(space.addFreshEntity(rocket), "Station rocket was not installed");
-                        awaitVisible(helper, driver, space, rocket, () -> {
+                        awaitVisible(helper, driver, space, rocket, finish -> {
                             var owner = player(space, ownerId);
                             owner.setPos(rocket.getX(), rocket.getY(), rocket.getZ());
                             var committed = stations.checkedRelocation(server, stations.find(stationId).orElseThrow(),
@@ -271,12 +279,14 @@ public final class PlanetaryAdmissionGameTests {
                                     "Relocation did not commit: " + committed);
                             helper.assertTrue(rocket.flightData().orElseThrow().currentBody().equals(CelestialIds.EARTH_ID),
                                     "The fixture must carry the stale pre-warp body");
-                            launchAndCancel(helper, manager, rocket, owner, MOON);
-                            helper.assertTrue(stations.find(stationId).orElseThrow().orbitBody().equals(CelestialIds.MOON_ID),
-                                    "Departure rewrote the relocated orbit");
-                            // ADR-044 §5 (WARP review R4): the departure recorded the station's current orbit.
-                            helper.assertTrue(rocket.flightData().orElseThrow().currentBody().equals(CelestialIds.MOON_ID),
-                                    "The departure kept the stale body: " + rocket.flightData().orElseThrow().currentBody());
+                            launchAndCancel(helper, driver, manager, rocket, owner, MOON, () -> {
+                                helper.assertTrue(stations.find(stationId).orElseThrow().orbitBody().equals(CelestialIds.MOON_ID),
+                                        "Departure rewrote the relocated orbit");
+                                // ADR-044 §5 (WARP review R4): the departure recorded the station's current orbit.
+                                helper.assertTrue(rocket.flightData().orElseThrow().currentBody().equals(CelestialIds.MOON_ID),
+                                        "The departure kept the stale body: " + rocket.flightData().orElseThrow().currentBody());
+                                finish.run();
+                            }, cleanup);
                         }, cleanup);
                     } catch (RuntimeException | Error exception) {
                         cleanup.run();
@@ -328,13 +338,17 @@ public final class PlanetaryAdmissionGameTests {
         });
     }
 
+    /**
+     * Runs {@code assertions} once the rocket is visible. They receive the finish step (succeed, then clean up), which
+     * W98's deferred cancellation check calls later; a synchronous failure still cleans up here.
+     */
     private static void awaitVisible(GameTestHelper helper, GameTestTickDriver driver, ServerLevel level, RocketEntity rocket,
-            Runnable assertions, Runnable cleanup) {
+            java.util.function.Consumer<Runnable> assertions, Runnable cleanup) {
         awaitVisible(helper, driver, level, rocket, assertions, cleanup, new GameTestTickPacer(level.getServer()));
     }
 
     private static void awaitVisible(GameTestHelper helper, GameTestTickDriver driver, ServerLevel level, RocketEntity rocket,
-            Runnable assertions, Runnable cleanup, GameTestTickPacer pacer) {
+            java.util.function.Consumer<Runnable> assertions, Runnable cleanup, GameTestTickPacer pacer) {
         driver.after(1, () -> {
             boolean scheduled = false;
             try {
@@ -345,8 +359,10 @@ public final class PlanetaryAdmissionGameTests {
                     awaitVisible(helper, driver, level, rocket, assertions, cleanup, pacer);
                     scheduled = true;
                 } else {
-                    assertions.run();
-                    helper.succeed();
+                    assertions.accept(() -> {
+                        try { helper.succeed(); } finally { cleanup.run(); }
+                    });
+                    scheduled = true;
                 }
             } finally {
                 if (!scheduled) {
@@ -356,8 +372,13 @@ public final class PlanetaryAdmissionGameTests {
         });
     }
 
-    private static void launchAndCancel(GameTestHelper helper, RocketManager manager, RocketEntity rocket,
-            FakePlayer owner, TravelTarget destination) {
+    /**
+     * Launches and cancels synchronously, then (W98, N3-A1) waits, bounded, until the cancelled record leaves once the
+     * returned rocket's own entity slot is read back; the saved-authority check and {@code then} follow. A failure after
+     * the wait began runs {@code failed} once; a synchronous failure is the caller's to clean up, as before.
+     */
+    private static void launchAndCancel(GameTestHelper helper, GameTestTickDriver driver, RocketManager manager, RocketEntity rocket,
+            FakePlayer owner, TravelTarget destination, Runnable then, Runnable failed) {
         owner.setPos(rocket.getX(), rocket.getY(), rocket.getZ());
         var journal = RocketTransferSavedData.get(helper.getLevel().getServer());
         var before = journal.save(new CompoundTag());
@@ -377,13 +398,37 @@ public final class PlanetaryAdmissionGameTests {
             helper.assertTrue(rocket.flightData().orElseThrow().state() == RocketFlightState.FUELED,
                     "Cancellation did not restore fueled state");
             helper.assertTrue(rocket.flightData().orElseThrow().fuel().equals(fuel), "Cancelled departure changed fuel");
-            helper.assertTrue(journal.save(new CompoundTag()).equals(before), "Cancelled departure changed saved authority");
-        } finally {
-            // Only this test's request may be removed if an assertion fails.
-            if (journal.find(transfer).isPresent()) {
-                journal.remove(transfer);
-                journal.flush(helper.getLevel().getServer());
+        } catch (RuntimeException | Error failure) {
+            removeOwnRequest(helper, journal, transfer);
+            throw failure;
+        }
+        cancelRetired(helper, driver, new GameTestTickPacer(helper.getLevel().getServer()), journal, before, transfer,
+                rocket.assemblyTransactionId().orElseThrow(), helper.getTick() + 40, then, failed);
+    }
+
+    private static void cancelRetired(GameTestHelper helper, GameTestTickDriver driver, GameTestTickPacer pacer,
+            RocketTransferSavedData journal, CompoundTag before, UUID transfer, UUID logical, long deadline, Runnable then, Runnable failed) {
+        try {
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport.acknowledgeFixture(helper);
+            if ((journal.find(transfer).isPresent() || !journal.actionable(logical)) && helper.getTick() < deadline) {
+                pacer.pace();
+                driver.after(1, () -> cancelRetired(helper, driver, pacer, journal, before, transfer, logical, deadline, then, failed));
+                return;
             }
+            helper.assertTrue(journal.save(new CompoundTag()).equals(before), "Cancelled departure changed saved authority");
+            then.run();
+        } catch (RuntimeException | Error failure) {
+            removeOwnRequest(helper, journal, transfer);
+            failed.run();
+            throw failure;
+        }
+    }
+
+    /** Only this test's request may be removed if an assertion fails. */
+    private static void removeOwnRequest(GameTestHelper helper, RocketTransferSavedData journal, UUID transfer) {
+        if (journal.find(transfer).isPresent()) {
+            journal.remove(transfer);
+            journal.flush(helper.getLevel().getServer());
         }
     }
 

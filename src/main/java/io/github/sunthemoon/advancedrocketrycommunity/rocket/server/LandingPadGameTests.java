@@ -289,6 +289,8 @@ public final class LandingPadGameTests {
         if (first.status() != RocketTransferRecoveryReport.Status.RETRY_LATER) { finish.run(); return; }
         // W98: a source-side recovery's record is removed only after its survivor proof; its report follows that removal.
         await(helper, driver, helper.getTick() + 40, () -> {
+            // await evaluates its predicate again before finishing; the completed report can be taken only once.
+            if (reports.size() > 1) { return true; }
             if (!retired(helper, recovery, transfer)) { return false; }
             reports.add(recovery.recover(f.space.getServer(), transfer));
             return true;
