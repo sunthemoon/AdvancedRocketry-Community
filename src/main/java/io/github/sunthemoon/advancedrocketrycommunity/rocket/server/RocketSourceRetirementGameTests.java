@@ -155,7 +155,8 @@ public final class RocketSourceRetirementGameTests {
                 if (space == null) {
                     space = helper.getLevel().getServer().getLevel(CelestialIds.SPACE_LEVEL);
                     helper.assertTrue(space != null, "No Space Level");
-                    origin = new BlockPos(2056, 80, 2056); target = new BlockPos(2056, 80, 2067);
+                    // Both ends in the one forced chunk (2048..2063): its neighbours are not entity-ticking.
+                    origin = new BlockPos(2050, 80, 2052); target = new BlockPos(2061, 80, 2052);
                     forced = new ChunkPos(origin);
                     space.getChunkSource().addRegionTicket(TicketType.FORCED, forced, 2, forced);
                 }

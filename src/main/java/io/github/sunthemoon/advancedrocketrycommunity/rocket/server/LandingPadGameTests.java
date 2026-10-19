@@ -173,7 +173,11 @@ public final class LandingPadGameTests {
         });
     }
 
-    @GameTest(template = "rocket_test", batch = "landing_pads", timeoutTicks = 180)
+    /**
+     * W98: its own batch. Its return now waits a few ticks for the survivor proof, and the recovery matrix in
+     * landing_pads replaces the world journal object (a restart simulation), which would abandon that pending return.
+     */
+    @GameTest(template = "rocket_test", batch = "landing_pads_cancel", timeoutTicks = 180)
     public static void cancellationReleasesExactlyOneTransferClaim(GameTestHelper helper) {
         var driver = new GameTestTickDriver(helper);
         Fixture f = fixture(helper); var snapshot = sourceSnapshot(helper);
