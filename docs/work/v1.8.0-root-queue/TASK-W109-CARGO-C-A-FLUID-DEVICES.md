@@ -10,7 +10,7 @@ Root: Claude. Date: 2026-10-20. Read [WORKER-RULES](WORKER-RULES.md) first. You 
 | Evidence | `D:/GitHub/ARCE-Task-Evidence/root-queue/W109/` |
 | Contract | [records/W11CD-DESIGN.md](records/W11CD-DESIGN.md), frozen at `49f7e08b`: section 5.1 (shared contract, the fluid column), 5.2, 5.4, section 7's protection scope, and the C-A row of section 6's leaf table. [records/W11B3-DESIGN.md](records/W11B3-DESIGN.md) sections 3 and 4 apply unchanged where 5.1 says so |
 | Risk and ADR | R-035's cargo paragraph and ADR-065's "W11c and W11d implementation note" (`efdd7f23`), recorded by Root before C-P and C-A |
-| Prior leaves | C-I (W99), C-K (W100) and C-P (W106) are merged; read their records for the cargo kinds, cursors, the tank host and the identity rule |
+| Prior leaves | C-I (W99), C-K (W100) and the first part of C-P (W106, merged `3075a240`: the tank host, the pure mutation, selection and eligibility checks, and the tag) are merged; read their records for the cargo kinds, cursors, the tank host and the identity rule. C-P's resumable preparation and publication (C-P2, W112) are not merged and C-A does not need them |
 
 ## Scope (the C-A row)
 
