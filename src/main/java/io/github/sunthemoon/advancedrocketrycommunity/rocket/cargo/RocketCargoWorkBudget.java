@@ -9,6 +9,29 @@ public final class RocketCargoWorkBudget {
     private long bytes;
     private int visits;
     private int reconstructions;
+    private long claimedTick = Long.MIN_VALUE;
+    private Object claimed;
+
+    /** A continuation also owns this tick's reconstruction slot; a different cursor must defer. */
+    public boolean claim(long serverTick, Object cursor) {
+        java.util.Objects.requireNonNull(cursor);
+        if (Thread.currentThread() != owner) { throw new IllegalStateException("Cargo budget requires its owner thread"); }
+        if (serverTick == claimedTick) { return claimed == cursor; }
+        if (!charge(serverTick, 0, 0, true)) { return false; }
+        claimedTick = serverTick; claimed = cursor; return true;
+    }
+
+    /** Reserve before executing; unused byte/visit capacity is returned only after the bounded step finishes. */
+    public boolean perform(long serverTick, long byteBound, int visitBound, boolean reconstruction,
+            java.util.function.Supplier<io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketSnapshotPreparation.Work> work) {
+        if (!charge(serverTick, byteBound, visitBound, reconstruction)) { return false; }
+        var actual = work.get();
+        if (actual.bytes() < 0 || actual.bytes() > byteBound || actual.visits() < 0 || actual.visits() > visitBound) {
+            throw new IllegalStateException("Cargo work exceeded its reserved step bound");
+        }
+        bytes -= byteBound - actual.bytes(); visits -= visitBound - actual.visits();
+        return true;
+    }
 
     /** Reserve a conservative whole step before doing any copy, encode, hash or construction. */
     public boolean charge(long serverTick, long byteWork, int blockVisits, boolean reconstruction) {

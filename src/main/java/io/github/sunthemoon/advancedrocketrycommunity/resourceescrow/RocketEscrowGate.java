@@ -26,6 +26,7 @@ public final class RocketEscrowGate {
     /** Frozen flight authority also protects non-resource state and the boarded manifest. */
     public static boolean flightFrozen(RocketEntity rocket) {
         if (!(rocket.level() instanceof ServerLevel level) || !level.getServer().isSameThread()) { return true; }
+        if (io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime.cargoPreparing(rocket)) { return true; }
         if (rocket.assemblyTransactionId().filter(EscrowRuntime.of(level.getServer()).flightCheckpoint()::locked).isPresent()) { return true; }
         var data = ResourceEscrowSavedData.existing(level.getServer());
         return data != null && data.ledger().armedFlights().stream()
@@ -37,6 +38,7 @@ public final class RocketEscrowGate {
         if (!(rocket.level() instanceof ServerLevel level) || !level.getServer().isSameThread()) {
             return false;
         }
+        if (io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime.cargoPreparing(rocket)) { return false; }
         var section = rocket.escrowSection();
         UUID logical = rocket.assemblyTransactionId().orElse(null);
         if (logical != null && EscrowRuntime.of(level.getServer()).flightCheckpoint().locked(logical)) { return false; }

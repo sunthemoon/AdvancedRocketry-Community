@@ -196,6 +196,31 @@ public final class EscrowCoordinator implements AutoCloseable {
     Fill prepareFill(EscrowNativeBinding.Admission capture, Consumer<Boolean> completion) {
         return prepareTransfer(capture, completion).fill();
     }
+    /** C-P capture entry for C-E: all eligibility passes finish before issuing a sequence or reserving anything. */
+    Transfer prepareCargo(EscrowCargoPreparedCapture prepared, long serverTick,
+                          io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.RocketCargoWorkBudget budget,
+                          java.util.function.BooleanSupplier unchanged,
+                          Consumer<Boolean> completion) {
+        owner();
+        var result = prepared.result();
+        if (result.status() != io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.RocketCargoSelection.Status.ELIGIBLE) {
+            return result.status() == io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.RocketCargoSelection.Status.CARGO_TOO_LARGE
+                    ? Transfer.ESCROW_FULL : Transfer.INVALID;
+        }
+        // Changed native inputs are discarded and must repeat the full eligibility capture, not merely its digests.
+        var outcome = new Transfer[] {Transfer.UNAVAILABLE};
+        budget.perform(serverTick, 16L * 1_048_576, 16_384, false, () -> {
+            if (!unchanged.getAsBoolean() || !prepared.unchanged()) { outcome[0] = Transfer.STALE; }
+            else {
+                // Repeat sequence, root, O1 and combined reservation against the final acknowledged root.
+                outcome[0] = prepareTransfer(result.capture(), completion);
+            }
+            // Capture retains only frozen digests; apply must construct again from the frozen before state.
+            prepared.discard();
+            return new io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketSnapshotPreparation.Work(16L * 1_048_576, 16_384);
+        });
+        return outcome[0];
+    }
     /** Shared owner-thread entry. Cargo has no production caller until C-E; no publication permit is issued here. */
     Transfer prepareTransfer(EscrowNativeBinding.Admission capture, Consumer<Boolean> completion) {
         owner(); var op = capture.operation();

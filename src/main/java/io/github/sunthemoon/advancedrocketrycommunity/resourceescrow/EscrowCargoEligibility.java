@@ -11,7 +11,7 @@ import java.util.Collection;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraftforge.fluids.FluidStack;
 
-/** Synchronous capture-envelope check; not wired into admission or tick-budgeted preparation. */
+/** Shared capture-envelope rules; the staged path uses verified resumable snapshots instead of rehashing. */
 final class EscrowCargoEligibility {
     static final String DEVICE_ROOT = "arce_rocket_fluid_cargo";
     private EscrowCargoEligibility() { }
@@ -65,7 +65,7 @@ final class EscrowCargoEligibility {
         }
     }
 
-    private static void device(EscrowLedger ledger, EscrowOperation op, EscrowCargoPayload delta,
+    static void device(EscrowLedger ledger, EscrowOperation op, EscrowCargoPayload delta,
                                CompoundTag before, CompoundTag after, boolean load) {
         var a = EscrowTags.compound(before, DEVICE_ROOT); var b = EscrowTags.compound(after, DEVICE_ROOT);
         var endpoint = op.device();
@@ -100,8 +100,8 @@ final class EscrowCargoEligibility {
     }
 
     static void envelope(CompoundTag value) { bound(value, EscrowNativeEnvelope.MAX_BYTES, 24, 131_072); }
-    private static void bound(net.minecraft.nbt.Tag value, int bytes, int depth, int nodes) {
+    static void bound(net.minecraft.nbt.Tag value, int bytes, int depth, int nodes) {
         if (!BoundedNbt.fits(value, bytes, depth, nodes)) { throw new TooLarge(); }
     }
-    private static final class TooLarge extends IllegalArgumentException { }
+    static final class TooLarge extends IllegalArgumentException { }
 }

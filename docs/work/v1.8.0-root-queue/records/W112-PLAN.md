@@ -24,7 +24,7 @@ Authority: TASK-W112, the frozen [cargo design](W11CD-DESIGN.md), sections 2.3,
   requests cannot displace it. C-E still owns the shared fair admission queue.
 - **P3 (planned, depends on P2): lock and publication.** The session-owned cursor
   locks resource mutation, launch and disassembly. Removal/unload, cancellation,
-  runtime replacement and server stop discard it, without changing the old
+  server-capability invalidation and server stop discard it, without changing the old
   snapshot. A privately issued, owner-thread, one-use permit binds the exact
   before snapshot, flight/resources, wrapper and frozen after digests. Recheck
   those bindings at consumption, then publish snapshot, flight, wrapper/revision
@@ -52,3 +52,12 @@ Write scope is the TASK's snapshot/codec, new cargo classes, minimal runtime,
 entity and escrow hooks, tests, this plan and W112.md. No device, shared fair
 queue, production gate, art/data, save format/bound, proof, lease, replay,
 ADR/risk/status/ledger or S2 changes. No upstream files are imported.
+
+Implementation checkpoint: P1-P4 are implemented-unverified pending the committed
+isolated/full-suite and A1 runs. The Overworld's existing `EscrowRuntime`
+capability owns the single preparation slot, not the common-setup rocket manager;
+this avoids retaining world state or the setup thread across server sessions.
+Native-envelope publication checks run separately for BEFORE and AFTER so their
+block walks cannot be combined into an over-budget tick. Hash writes are counted
+exactly; native steps charge conservative pass ceilings at actual input sizes,
+with a whole tick reserved for the final O1/admission and publication steps.

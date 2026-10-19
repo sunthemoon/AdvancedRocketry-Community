@@ -35,6 +35,22 @@ public final class RocketRuntime {
         service = null;
     }
 
+    /** Only this installed server session owns preparation state; nothing is saved or restored. */
+    public static io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.RocketCargoPreparations cargoPreparations(MinecraftServer server) {
+        if (!server.isSameThread()) { throw new IllegalStateException("Cargo preparation requires the server thread"); }
+        return io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowRuntime.of(server).cargoPreparations();
+    }
+    public static boolean cargoPreparing(RocketEntity rocket) {
+        return rocket.getServer() != null && rocket.assemblyTransactionId()
+                .filter(cargoPreparations(rocket.getServer())::locked).isPresent();
+    }
+    public static void cargoRemoved(RocketEntity rocket) {
+        if (rocket.getServer() != null && rocket.getServer().overworld() != null) {
+            rocket.getServer().overworld().getCapability(io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowRuntime.CAPABILITY)
+                    .ifPresent(runtime -> runtime.cargoRemoved(rocket));
+        }
+    }
+
     /** W90b GameTest support only: the installed manager's transfer service, or null without a manager. */
     static RocketTransferService installedTransfers() {
         return service instanceof RocketManager manager ? manager.transfers() : null;
@@ -54,13 +70,14 @@ public final class RocketRuntime {
 
     public static RocketFlightRequestResult requestAdminPadFlight(RocketEntity rocket, UUID stationId,
             io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadReference pad, UUID requestId) {
+        if (cargoPreparing(rocket)) { return RocketFlightRequestResult.failure(RocketFlightRequestCode.TRANSFER_JOURNAL_BLOCKED); }
         return service instanceof RocketManager manager ? manager.requestAdminPadFlight(rocket, stationId, pad, requestId)
                 : RocketFlightRequestResult.failure(RocketFlightRequestCode.ENTITY_UNAVAILABLE);
     }
 
     /** Server endpoint admission; an unavailable or unsupported lifecycle owner fails closed. */
     public static boolean resourceMutationAllowed(RocketEntity rocket) {
-        return service instanceof RocketManager manager && manager.resourceMutationAllowed(rocket);
+        return !cargoPreparing(rocket) && service instanceof RocketManager manager && manager.resourceMutationAllowed(rocket);
     }
 
     /** Other interlocks only; this read-only boundary never grants an escrow publication permit. */
@@ -229,6 +246,7 @@ public final class RocketRuntime {
             RocketDestination destination,
             UUID requestId
     ) {
+        if (cargoPreparing(rocket)) { return RocketFlightRequestResult.failure(RocketFlightRequestCode.TRANSFER_JOURNAL_BLOCKED); }
         RocketOperationService current = service;
         if (current == null) {
             return RocketFlightRequestResult.failure(RocketFlightRequestCode.ENTITY_UNAVAILABLE);
@@ -242,6 +260,7 @@ public final class RocketRuntime {
             TravelTarget destination,
             UUID requestId
     ) {
+        if (cargoPreparing(rocket)) { return RocketFlightRequestResult.failure(RocketFlightRequestCode.TRANSFER_JOURNAL_BLOCKED); }
         RocketOperationService current = service;
         if (current == null) {
             return RocketFlightRequestResult.failure(RocketFlightRequestCode.ENTITY_UNAVAILABLE);
@@ -255,6 +274,7 @@ public final class RocketRuntime {
             UUID stationId,
             UUID requestId
     ) {
+        if (cargoPreparing(rocket)) { return RocketFlightRequestResult.failure(RocketFlightRequestCode.TRANSFER_JOURNAL_BLOCKED); }
         RocketOperationService current = service;
         if (current == null) {
             return RocketFlightRequestResult.failure(RocketFlightRequestCode.ENTITY_UNAVAILABLE);

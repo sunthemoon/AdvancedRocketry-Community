@@ -111,6 +111,49 @@ public final class RocketSnapshotNbtCodec {
     }
 
     public static RocketSnapshotDecodeResult decode(CompoundTag source) {
+        return decode(source, null);
+    }
+
+    /**
+     * Validate an encoded round trip against an already hashed immutable snapshot. Every decoded
+     * canonical input is compared, so no caller can supply digests or bypass a payload check.
+     * Unlike ordinary decode this does not hash the same expanded palette a second time.
+     */
+    public static boolean verifies(CompoundTag source, RocketStructureSnapshot expected) {
+        java.util.Objects.requireNonNull(expected);
+        return decode(source, expected).snapshot().filter(value -> value == expected).isPresent()
+                && canonicalEncoding(source, expected);
+    }
+
+    /** Fields that ordinary decode can normalize must still match an encode/decode/encode round trip exactly. */
+    private static boolean canonicalEncoding(CompoundTag root, RocketStructureSnapshot expected) {
+        if (!root.getString(SNAPSHOT_ID).equals(expected.snapshotId().toString())
+                || !root.getString(SOURCE_DIMENSION).equals(expected.sourceDimension().toString())
+                || !root.getCompound(MASS_INPUTS).getAllKeys().equals(Set.of("block_count", "mass", "thrust", "fuel_capacity",
+                        "engine_count", "seat_count", "guidance_count", "block_entity_count"))) { return false; }
+        if (expected.propulsion().isPresent()
+                && !RocketPropulsionCodec.encode(expected.propulsion().orElseThrow()).equals(root.getCompound("propulsion"))) { return false; }
+        var palette = root.getList(PALETTE, Tag.TAG_COMPOUND);
+        var used = new java.util.BitSet(palette.size());
+        for (var raw : palette) {
+            var entry = (CompoundTag) raw;
+            if (!entry.getAllKeys().equals(Set.of("id", "properties"))
+                    || !parseIdentifier(entry.getString("id")).toString().equals(entry.getString("id"))) { return false; }
+        }
+        for (var raw : root.getList(BLOCKS, Tag.TAG_COMPOUND)) {
+            var block = (CompoundTag) raw; used.set(block.getInt("palette"));
+            if (!block.getAllKeys().equals(block.contains("block_entity") ? Set.of("position", "palette", "block_entity")
+                    : Set.of("position", "palette"))) { return false; }
+            if (block.contains("block_entity")) {
+                var payload = block.getCompound("block_entity");
+                if (!payload.getAllKeys().equals(Set.of("adapter", "data"))
+                        || !parseIdentifier(payload.getString("adapter")).toString().equals(payload.getString("adapter"))) { return false; }
+            }
+        }
+        return used.cardinality() == palette.size();
+    }
+
+    private static RocketSnapshotDecodeResult decode(CompoundTag source, RocketStructureSnapshot expected) {
         if (source == null) {
             return RocketSnapshotDecodeResult.invalid(
                     new CompoundTag(),
@@ -157,7 +200,15 @@ public final class RocketSnapshotNbtCodec {
                 throw malformed("Rocket snapshot hash is not lowercase SHA-256");
             }
 
-            RocketStructureSnapshot snapshot = RocketStructureSnapshot.create(
+            var propulsion = schema == 2 ? RocketPropulsionCodec.decode(requirePropulsion(source)) : null;
+            if (expected != null && (schema != expected.schemaVersion() || !snapshotId.equals(expected.snapshotId())
+                    || !sourceDimension.equals(expected.sourceDimension()) || !sourceOrigin.equals(expected.sourceOrigin())
+                    || !blocks.equals(expected.blocks()) || !anchors.equals(expected.passengerAnchors())
+                    || !stats.equals(expected.stats()) || createdAt != expected.createdAtGameTime()
+                    || !java.util.Objects.equals(propulsion, expected.propulsion().orElse(null)))) {
+                throw malformed("Decoded snapshot differs from the immutable hash input");
+            }
+            RocketStructureSnapshot snapshot = expected != null ? expected : RocketStructureSnapshot.create(
                     snapshotId,
                     sourceDimension,
                     sourceOrigin,
@@ -165,7 +216,7 @@ public final class RocketSnapshotNbtCodec {
                     anchors,
                     stats,
                     createdAt,
-                    schema == 2 ? RocketPropulsionCodec.decode(requirePropulsion(source)) : null
+                    propulsion
             );
             if (!encodedBounds.equals(snapshot.bounds())) {
                 throw malformed("Rocket snapshot bounding box does not match its blocks");
