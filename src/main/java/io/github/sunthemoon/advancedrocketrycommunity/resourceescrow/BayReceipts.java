@@ -20,6 +20,7 @@ public final class BayReceipts {
     /** Null in production: each writer starts its own IO thread. Unit tests supply an IO thread they can await. */
     @Nullable private final java.util.function.Supplier<java.util.concurrent.ExecutorService> io;
     private BayReceiptStore store;
+    @Nullable private EscrowAdmissionAuthority.Store substitute; // W95's synthetic index while its fixture holds it
     private EscrowAdmissionAuthority.Delegate.State firstTick;
 
     BayReceipts(EscrowAdmissionAuthority.Delegate bay, CheckedSavedDataFile.Committer committer) { this(bay, committer, null); }
@@ -107,11 +108,16 @@ public final class BayReceipts {
     void observeTickStart() { if (firstTick == null) { firstTick = bay.state(); } }
 
     /**
-     * W95's gated N3 fixture seam: a synthetic BAY index replaces the store's attachment, and null restores it (or
-     * NO_FILE when no store is bound). False, with nothing changed, while the attached store holds work.
+     * W95's gated N3 fixture seam: a synthetic BAY index replaces the store's attachment, and null restores the exact
+     * prior state, the bound store or NO_FILE. False, with nothing changed, while the index is NOT_LOADED (a restoration
+     * cannot return there and would open admission over an unloaded receipt file, W27C1-R7), when there is nothing to
+     * restore, or while the attached store holds work.
      */
     boolean substituteForTests(@Nullable EscrowAdmissionAuthority.Store synthetic) {
-        return bay.retarget(synthetic != null ? synthetic : store);
+        if (synthetic == null ? substitute == null : bay.state() == EscrowAdmissionAuthority.Delegate.State.NOT_LOADED) { return false; }
+        if (!bay.retarget(synthetic != null ? synthetic : store)) { return false; }
+        substitute = synthetic;
+        return true;
     }
 
     void tick(long now) { if (store != null) { store.tick(now); } }

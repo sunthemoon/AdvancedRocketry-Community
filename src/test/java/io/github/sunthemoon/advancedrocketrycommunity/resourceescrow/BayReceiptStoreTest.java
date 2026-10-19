@@ -199,6 +199,49 @@ final class BayReceiptStoreTest {
         }
     }
 
+    /** W27C1-R7: W95's test index substitution refuses while NOT_LOADED and restores exactly NO_FILE or the bound store. */
+    @Test void theTestIndexSubstitutionRefusesWhileNotLoadedAndRestoresTheExactPriorState() throws Exception {
+        var full = new ArrayList<EscrowAdmissionAuthority.Pending>();
+        for (int i = 0; i < EscrowLimits.OPERATIONS; i++) {
+            full.add(new EscrowAdmissionAuthority.Pending(id(50_000 + i), OWNER, id(60_000 + i), EscrowAdmissionAuthority.Consumer.BAY));
+        }
+        var synthetic = new EscrowAdmissionAuthority.Store() {
+            @Override public EscrowAdmissionAuthority.Index index() { return new EscrowAdmissionAuthority.Index(true, full); }
+            @Override public boolean holdsWork() { return false; }
+        };
+        for (var presence : List.of(CheckedSavedDataFile.Presence.PRESENT, CheckedSavedDataFile.Presence.UNKNOWN)) {
+            var authority = new EscrowAdmissionAuthority();
+            authority.registerIndex(EscrowAdmissionAuthority.Consumer.PROPULSION, () -> new EscrowAdmissionAuthority.Index(true, List.of()));
+            var receipts = new BayReceipts(authority.register(EscrowAdmissionAuthority.Consumer.BAY), CheckedSavedDataFile::atomicMove);
+            receipts.start(null, presence, temp.resolve(presence.name()), 0);
+            assertFalse(receipts.substituteForTests(synthetic), "a NOT_LOADED index could never be restored");
+            assertFalse(receipts.substituteForTests(null), "nothing was substituted");
+            assertEquals(EscrowAdmissionAuthority.Delegate.State.NOT_LOADED, receipts.state());
+            assertEquals(EscrowAdmissionAuthority.Result.UNAVAILABLE, authority.checkReserve(id(1), OWNER, id(2), EscrowAdmissionAuthority.Consumer.PROPULSION));
+            assertTrue(receipts.blocksInsertion(id(3)), "admission and insertion stay refused");
+        }
+        var authority = new EscrowAdmissionAuthority();
+        authority.registerIndex(EscrowAdmissionAuthority.Consumer.PROPULSION, () -> new EscrowAdmissionAuthority.Index(true, List.of()));
+        var noFile = new BayReceipts(authority.register(EscrowAdmissionAuthority.Consumer.BAY), CheckedSavedDataFile::atomicMove);
+        noFile.start(null, CheckedSavedDataFile.Presence.ABSENT, temp.resolve("absent.dat"), 0);
+        assertTrue(noFile.substituteForTests(synthetic));
+        assertEquals(EscrowLimits.OPERATIONS, authority.pendingCount(), "the synthetic index answers");
+        assertTrue(noFile.substituteForTests(null));
+        assertEquals(EscrowAdmissionAuthority.Delegate.State.NO_FILE, noFile.state()); assertEquals(0, authority.pendingCount());
+        assertFalse(noFile.substituteForTests(null), "a restoration happens once");
+        try (var harness = BayReceiptHarness.empty(temp.resolve("loaded"))) {
+            var x = intent(1, id(30)); assertQueued(harness.put(x));
+            assertFalse(harness.receipts.substituteForTests(synthetic), "the attached store holds work");
+            harness.settle();
+            assertTrue(harness.receipts.substituteForTests(synthetic));
+            assertEquals(EscrowLimits.OPERATIONS, harness.authority.pendingCount());
+            assertTrue(harness.receipts.substituteForTests(null));
+            assertEquals(EscrowAdmissionAuthority.Delegate.State.LOADED, harness.receipts.state());
+            assertEquals(1, harness.authority.pendingCount(), "the bound store answers again");
+            assertTrue(harness.receipts.blocksInsertion(x.satellite()));
+        }
+    }
+
     private static Path stagingBlocked(BayReceiptHarness harness) throws Exception {
         // Staging is refused before any replacement: every write fails definitely until this directory is removed.
         return Files.createDirectory(harness.file.resolveSibling(harness.file.getFileName() + ".arce-pending"));
