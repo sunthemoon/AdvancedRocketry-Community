@@ -82,8 +82,10 @@ final class RocketTransferRecoveryService {
         if (entries.isEmpty()) { return Result.notFound(null); }
         journal.retryChecked(server);
         var promoted = fences.reevaluateOne(server, journal, liveTransfers, settledTransfers);
-        if (promoted != null) { return recover(server, journal, promoted, true); }
-        Step step = step(entries.stream().filter(candidate -> journal.actionable(candidate.logicalRocketId())).toList(),
+        // W98-R8: a return the ordinary coordinator holds is that coordinator's; recovery never runs it again.
+        if (promoted != null && !retirements.pending(promoted.logicalRocketId())) { return recover(server, journal, promoted, true); }
+        Step step = step(entries.stream().filter(candidate -> journal.actionable(candidate.logicalRocketId())
+                        && !retirements.pending(candidate.logicalRocketId())).toList(),
                 liveTransfers, settledTransfers, bays.excluded(), recoveryCursor,
                 candidate -> RocketTransferEntities.recoveryEntityChunksLoaded(server, candidate));
         recoveryCursor = step.cursor();

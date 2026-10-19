@@ -4,11 +4,18 @@ import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecoveryAction;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.TicketType;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraftforge.gametest.GameTestHolder;
@@ -116,6 +123,57 @@ public final class RocketSourceRetirementFollowUpGameTests {
                 if (space != null) { space.noSave = wasOff; space.getChunkSource().removeRegionTicket(TicketType.FORCED, forced, 3, forced); }
             }
         }.start();
+    }
+
+    /**
+     * W98-R8: while a fail-back waits for its offline passenger, a bay gate that releases T to ordinary rules on every
+     * classification never lets recoverNext run the return again, and a second fail-back's request is discarded at once.
+     */
+    @GameTest(template = "rocket_test", batch = BATCH, timeoutTicks = 400)
+    public static void aHeldReturnIsNotRecoveredAgainAndASecondRequestIsDiscarded(GameTestHelper helper) {
+        UUID passenger = UUID.randomUUID();
+        new RocketSourceRetirementGameTests.Case(helper, List.of(passenger)) {
+            final AtomicInteger acceptedAgain = new AtomicInteger(), discardedAgain = new AtomicInteger();
+            ServerPlayer player; int held;
+            void act() {
+                recovery().bays().install(new ReleasedToOrdinary());
+                source = flight.spawnInFlight(helper, level()); prepare(true);
+                helper.assertTrue(service.failBackToSource(server(), journal, record, source,
+                        RocketTransferReturnReason.DESTINATION_ENTITY_CREATE_FAILED, completion()), "The fail-back was refused");
+                assertReturnedAndHeld(true);
+            }
+            boolean before() {
+                if (held++ >= 40) { return true; }
+                var result = recovery().recoverNext(server(), journal);
+                helper.assertTrue(!record.transferId().equals(result.transferId()),
+                        "Recovery ran a return its coordinator holds again: " + result.status() + " (W98-R8)");
+                helper.assertTrue(journal.find(record.transferId()).orElse(null) == record && accepted.get() == 0,
+                        "The waiting return lost its record or completed");
+                if (held == 10) {
+                    helper.assertTrue(service.failBackToSource(server(), journal, record, source, RocketTransferReturnReason.DESTINATION_ENTITY_CREATE_FAILED,
+                            new RocketRequestCompletion(acceptedAgain::incrementAndGet, discardedAgain::incrementAndGet)), "The second fail-back was refused");
+                    helper.assertTrue(discardedAgain.get() == 1 && acceptedAgain.get() == 0, "A nudge kept the second request's effects (W98-R8)");
+                }
+                if (held == 40) {
+                    player = join(passenger, origin.above(4));
+                    recovery().onPlayerLoggedIn(player, journal);
+                    helper.assertTrue(player.getVehicle() == source, "The reconnect did not place the passenger on the survivor");
+                }
+                return false;
+            }
+            void retired() {
+                helper.assertTrue(acceptedAgain.get() == 0 && discardedAgain.get() == 1, "The discarded second request completed");
+            }
+        }.start();
+    }
+
+    /** A bay gate that releases every record to ordinary rules at each classification and never holds an action. */
+    private static final class ReleasedToOrdinary implements RocketTransferBayRecoveryGate {
+        @Override public Claim claim(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record) {
+            return Claim.ordinary();
+        }
+        @Override public Boundary beforeAction(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
+                                               Action action) { return Boundary.unclaimed(); }
     }
 
     private static void assertRecovered(RocketSourceRetirementGameTests.Case test, RocketTransferRecoveryAction action) {

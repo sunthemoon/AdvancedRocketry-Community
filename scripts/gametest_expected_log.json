@@ -1336,6 +1336,15 @@
       "counts": {"ordinary_source_retirement_followups": 1},
       "test": "RocketSourceRetirementFollowUpGameTests.aSaveOffDuringAnAttemptHoldsItsNextCapture",
       "reason": "W98-R9: the held recovery reports RECOVERED once, after saving resumes and both census slots are proved."
+    },
+    {
+      "id": "w98f-held-return-not-recovered-again",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RETURNED_TO_SOURCE transfer=[0-9a-f-]{36} logical=[0-9a-f-]{36} reason=destination_entity_create_failed fuel=1000",
+      "counts": {"ordinary_source_retirement_followups": 1},
+      "test": "RocketSourceRetirementFollowUpGameTests.aHeldReturnIsNotRecoveredAgainAndASecondRequestIsDiscarded",
+      "reason": "W98-R8: a fail-back waiting for its offline passenger is neither recovered again nor completed by a second request; it reports the return once, after the reconnect, the survivor proof and the removal acknowledgement."
     }
   ]
 }

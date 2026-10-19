@@ -179,8 +179,8 @@ final class RocketOrdinaryRetirement {
     /**
      * Registers a return after the caller's mutation and starts its first attempt at once under the caller's
      * reservation; T leaves forward dispatch and is settled. An existing entry for the same T is nudged and given the
-     * newly discarded slots (a waiting one retries under the caller's reservation); one for another journal or record
-     * is replaced.
+     * newly discarded slots (a waiting one retries under the caller's reservation), and the caller's effects are
+     * discarded; one for another journal or record is replaced.
      */
     void begin(MinecraftServer server, RocketTransferSavedData journal, Site site, RocketTransferRecord record, RocketEntity survivor,
                List<RocketEntity> discarded, boolean offlineAllowed, Held held, Effects effects) {
@@ -199,6 +199,8 @@ final class RocketOrdinaryRetirement {
                 nudged.token = held.take(); nudged.created = now;
                 guarded(server, nudged, now);
             }
+            // W98-R8: the existing entry's effects follow its removal; the nudging caller's never run.
+            effects.discarded().run();
             return;
         }
         live.remove(record.transferId()); settled.add(record.transferId());
