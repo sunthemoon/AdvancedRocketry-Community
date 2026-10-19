@@ -18,6 +18,14 @@ class EscrowLoaderCutProbeTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
     @TempDir Path temporary;
 
+    @Test void reversedNativeRequestIsAValidationRefusalWithoutChangingTheOriginal() {
+        var op = EscrowTestFixtures.operation(1, 1, 0);
+        var before = EscrowCodec.operation(op);
+        assertTrue(EscrowLoaderCutProbe.oppositeRefused(op));
+        assertEquals(before, EscrowCodec.operation(op));
+        assertEquals(op, EscrowCodec.operation(before));
+    }
+
     @Test void reconciliationNamesSelectExistingAcknowledgementAndNativeBarrierBoundaries() {
         String[][] cases = {{"D2_C0", "K0"}, {"D2_C1_BEFORE", "K1"}, {"D2_C1_REPLACED", "K2"},
                 {"D2_C1_ACK", "K2_ACK"}, {"D2_C2", "K3"}, {"D2_C3", "C3_FROZEN"},

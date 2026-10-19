@@ -216,9 +216,16 @@ class LoaderCutsTest(unittest.TestCase):
                 with self.assertRaises(oracle.smoke.SmokeError): runner.disk_space()
 
     def test_raw_cut_failure_stays_failed_and_collects_both_restarts(self):
+        self.failed_cut(False)
+
+    def test_native_log_error_stays_failed_but_does_not_skip_raw_stores_or_restarts(self):
+        self.failed_cut(True)
+
+    def failed_cut(self, log_error):
         cut = "LF_M_K5"
         snapshots = [fixture(cut, index) for index in range(3)]
-        snapshots[0]["loaders"][0]["arce_fluid_fuel_loader"]["tank"]["Amount"] = 4000
+        if not log_error:
+            snapshots[0]["loaders"][0]["arce_fluid_fuel_loader"]["tank"]["Amount"] = 4000
         processes = []
 
         class Process:
@@ -232,6 +239,7 @@ class LoaderCutsTest(unittest.TestCase):
                               f"records={records} pending={records}",
                               "ARCE_LOADER_MATRIX_PRIMED cut=LF_M_K5 tank=5000 epoch=0 stores=0",
                               f"ARCE_LOADER_MATRIX_PAUSED cut={cut} hook=BARRIER_FORCE_AFTER first_store=DESTINATION thread=fixture"]
+                if log_error and index == 0: self.lines.append("[fixture/ERROR] failed")
             def wait_for(self, pattern, timeout): pass
             def abort(self): pass
             def command(self, command): pass
@@ -249,7 +257,9 @@ class LoaderCutsTest(unittest.TestCase):
                     mock.patch.object(runner.oracle, "inspect", side_effect=snapshots):
                 result = runner.run_cut(args, cut, root / "evidence", "fixture-owner", {"jar_sha256": runner.digest(jar)})
             self.assertEqual("FAILED", result["status"])
-            self.assertEqual([{"restart": 0, "error": "Wrong raw tank payload/quantity"}], result["findings"])
+            self.assertEqual([{"restart": 0, "error": "Native start logged ERROR/FATAL" if log_error
+                               else "Wrong raw tank payload/quantity"}], result["findings"])
+            self.assertTrue(all("disk" in start for start in result["starts"]))
             self.assertEqual([0, 1, 2], [start["restart"] for start in result["starts"]])
             self.assertEqual(3, len(processes))
             self.assertTrue(result["cleanup"])

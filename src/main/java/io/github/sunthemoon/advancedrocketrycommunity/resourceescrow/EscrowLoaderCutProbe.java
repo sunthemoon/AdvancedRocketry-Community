@@ -203,13 +203,7 @@ final class EscrowLoaderCutProbe {
             EscrowTags.require(rocket.escrowSection().epoch() == 2 && rocket.escrowSection().markers().size() == 2,
                     "Chain proof did not cover the latest frontier");
             var op = data.ledger().records().get(1);
-            boolean refused = false;
-            try {
-                new EscrowOperation(UUID.randomUUID(), data.bind(server).nextSequence(), op.owner(), server.overworld().getGameTime(),
-                        EscrowOperation.Phase.PREPARED, EscrowReason.NONE, op.payload(), op.payloadHash(),
-                        op.destination(), op.source(), op.guard());
-            } catch (IllegalArgumentException expected) { refused = true; }
-            EscrowTags.require(refused, "Opposite-direction request was accepted");
+            EscrowTags.require(oppositeRefused(op), "Opposite-direction request was accepted");
             latestProved = true;
             AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_MATRIX_CHAIN cut={} latest=2 reverse_refused=true records=2", cut);
             if (boundary.equals("CHAIN_PROVED")) { pause(name); }
@@ -225,6 +219,16 @@ final class EscrowLoaderCutProbe {
             observe("chain_partial_release");
             if (boundary.equals("CHAIN_RELEASED")) { pause(name); }
         }
+    }
+
+    /** A reversed native request must fail validation, without the model-only constructor inventing a binding. */
+    static boolean oppositeRefused(EscrowOperation op) {
+        try {
+            new EscrowOperation(UUID.randomUUID(), op.sequence(), op.owner(), op.createdTick(),
+                    EscrowOperation.Phase.PREPARED, EscrowReason.NONE, op.payload(), op.payloadHash(),
+                    op.destination(), op.source(), op.guard(), op.kind(), op.settlement(), op.nativeBinding());
+            return false;
+        } catch (IllegalArgumentException refused) { return true; }
     }
 
     private void pause(String hook) {

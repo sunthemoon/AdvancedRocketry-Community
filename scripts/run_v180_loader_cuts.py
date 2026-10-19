@@ -151,18 +151,22 @@ def run_cut(args, cut: str, evidence: Path, owner: str, pins: dict) -> dict:
                 oracle.require(start["exit_code"] == 0, "Native restart exit was not zero")
                 actual_cut = cut
             lines = list(process.lines); process = None
-            start["first_tick"] = first_tick(lines, cut, restart, previous)
-            oracle.require(not any("/ERROR]" in line or "/FATAL]" in line for line in lines), "Native start logged ERROR/FATAL")
             start["observations"] = [line for line in lines if "ARCE_LOADER_MATRIX_" in line]
-            if restart == 0 and cut.removeprefix(oracle.PREFIX) in oracle.CHAINS and cut != "LF_M_C1":
-                one_match(re.compile(r"ARCE_LOADER_MATRIX_CHAIN cut=" + re.escape(cut) + r" latest=2 reverse_refused=true records=2"), lines)
-            if cut == "LF_M_K5" and restart == 0:
-                one_match(re.compile(r"ARCE_LOADER_MATRIX_PRIMED cut=LF_M_K5 tank=5000 epoch=0 stores=0"), lines)
-            if creation and restart == 0:
-                creation_observations(cut, lines)
-            if creation and restart:
-                oracle.require(any("phase=creation_restart " in line for line in lines), "Missing unchanged creation-restart observation")
             disk = oracle.inspect(session / "world"); start["disk"] = disk
+            try:
+                start["first_tick"] = first_tick(lines, cut, restart, previous)
+                oracle.require(not any("/ERROR]" in line or "/FATAL]" in line for line in lines), "Native start logged ERROR/FATAL")
+                if restart == 0 and cut.removeprefix(oracle.PREFIX) in oracle.CHAINS and cut != "LF_M_C1":
+                    one_match(re.compile(r"ARCE_LOADER_MATRIX_CHAIN cut=" + re.escape(cut) + r" latest=2 reverse_refused=true records=2"), lines)
+                if cut == "LF_M_K5" and restart == 0:
+                    one_match(re.compile(r"ARCE_LOADER_MATRIX_PRIMED cut=LF_M_K5 tank=5000 epoch=0 stores=0"), lines)
+                if creation and restart == 0:
+                    creation_observations(cut, lines)
+                if creation and restart:
+                    oracle.require(any("phase=creation_restart " in line for line in lines), "Missing unchanged creation-restart observation")
+            except smoke.SmokeError as failure:
+                start["observation_error"] = str(failure)
+                row.setdefault("findings", []).append(dict(restart=restart, error=str(failure)))
             try:
                 observed_identity = oracle.check(disk, actual_cut, restart)
                 oracle.require(identity is None or observed_identity == identity, "Restart changed native identities or binding")
@@ -178,7 +182,7 @@ def run_cut(args, cut: str, evidence: Path, owner: str, pins: dict) -> dict:
             (evidence / "result.json").write_text(json.dumps(row, indent=2), encoding="utf-8")
         row["status"] = "FAILED" if row.get("findings") else "PASS" if ordered else "NOT_COVERED"
         if row.get("findings"):
-            row["error"] = "Raw-state validation failed; see findings and both restart observations."
+            row["error"] = "Validation failed; see findings and both restart observations."
         if not ordered:
             row["reason"] = "Unmodified driver chose the opposite first store; this is not evidence for the requested cut."
         return row
