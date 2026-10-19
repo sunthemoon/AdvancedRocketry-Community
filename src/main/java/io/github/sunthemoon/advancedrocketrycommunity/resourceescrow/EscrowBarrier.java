@@ -44,6 +44,7 @@ public final class EscrowBarrier implements AutoCloseable {
     private final Map<String, List<Attempt>> staged = new HashMap<>();
     private final Map<String, Long> nextForce = new HashMap<>();
     private final java.util.Set<EscrowChunkStore.Capture> outstanding = new java.util.HashSet<>();
+    private final java.util.Set<Runnable> ordinaryRetries = new java.util.LinkedHashSet<>();
     private int ioFailures;
     private int supersedingSaves;
     private int refusals;
@@ -226,6 +227,19 @@ public final class EscrowBarrier implements AutoCloseable {
                 result.callback().accept(new Result(null, reason));
             }
         }
+        if (!ordinaryRetries.isEmpty()) {
+            var due = List.copyOf(ordinaryRetries); ordinaryRetries.clear();
+            due.forEach(Runnable::run);
+        }
+    }
+
+    /**
+     * W98: an ordinary attempt that found its capture budget busy runs once more at the end of the next barrier tick,
+     * on this owner thread, whoever owns the attempt. At most 64 are held; a re-request in that run waits a further tick.
+     */
+    public void retryOrdinaryNextTick(Runnable retry) {
+        owner();
+        if (working.get() && (ordinaryRetries.contains(retry) || ordinaryRetries.size() < 64)) { ordinaryRetries.add(retry); }
     }
     /** Design reason table: IO/force/unstable and superseding saves differ from veto/external/bounds refusals. */
     static EscrowReason captureReason(RuntimeException failure) {
@@ -248,7 +262,7 @@ public final class EscrowBarrier implements AutoCloseable {
     /** Discard unfinished barriers without invalidating proofs held by already-frozen ledger generations. */
     public void quiesce() {
         owner(); synchronized (lifecycle) {
-            working.set(false); completions.clear(); staged.clear(); reader.shutdown();
+            working.set(false); completions.clear(); staged.clear(); reader.shutdown(); ordinaryRetries.clear();
             outstanding.forEach(capture -> { capture.restoreDirty().run(); capture.releaseWatch().run(); }); outstanding.clear();
         }
     }

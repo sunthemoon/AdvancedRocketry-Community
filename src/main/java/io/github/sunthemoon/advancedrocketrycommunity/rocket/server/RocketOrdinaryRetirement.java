@@ -97,7 +97,7 @@ final class RocketOrdinaryRetirement {
         int attempt, cursor, attempts;
         long created, started, notBefore;
         String reason;
-        boolean woken;
+        Runnable retry = () -> { };
 
         Pending(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record, UUID survivor, Site site,
                 boolean offlineAllowed, Effects effects) {
@@ -207,6 +207,12 @@ final class RocketOrdinaryRetirement {
         discarded.forEach(candidate -> addSlot(entry, candidate));
         entry.token = held.take();
         entry.created = now; entry.notBefore = now;
+        entry.retry = () -> {
+            if (pending.get(entry.logical()) != entry || entry.state == State.REMOVING) { return; }
+            // The barrier may tick later in the same server tick; a one-tick wait then retries on the next one.
+            if (entry.state == State.WAITING && entry.notBefore == server.getTickCount() + 1L) { wake(entry); return; }
+            guarded(server, entry, server.getTickCount());
+        };
         pending.put(entry.logical(), entry);
         // The first attempt starts at once under the caller's reservation; later steps follow the barrier's callbacks.
         guarded(server, entry, now);
@@ -423,18 +429,14 @@ final class RocketOrdinaryRetirement {
     }
 
     /**
-     * A one-shot continuation on the next tick through the server's task queue, so a one-tick wait (a busy capture
-     * budget, a superseding save) never depends on who ticks this coordinator. Longer waits use the service tick.
+     * A one-tick wait (a busy capture budget, a superseding save) retries once at the end of the next barrier tick, so
+     * it never depends on who ticks this coordinator; at most once per real tick. Longer waits use the service tick.
      */
     private void wake(Pending entry) {
-        if (entry.woken) { return; }
-        entry.woken = true;
-        var server = entry.server;
-        server.tell(new net.minecraft.server.TickTask(server.getTickCount(), () -> {
-            entry.woken = false;
-            // Queued tasks run after the tick that queued them, before the next one begins: act as that next tick.
-            if (pending.get(entry.logical()) == entry && entry.state != State.REMOVING) { guarded(server, entry, server.getTickCount() + 1L); }
-        }));
+        try { EscrowRuntime.of(entry.server).barrier().retryOrdinaryNextTick(entry.retry); }
+        catch (RuntimeException stopping) {
+            // A stopping escrow runtime: the service tick or the stop's clear decides this entry.
+        }
     }
 
     /** R5(d): a save-off Level holds every return there, with one WARN per Level until saving resumes. */

@@ -66,4 +66,25 @@ class EscrowOrdinaryProofTest {
             assertTrue(governed.isEmpty());
         }
     }
+
+    @Test void anOrdinaryRetryRunsOncePerBarrierTickAndARerequestWaitsForTheNextOne() {
+        try (var barrier = new EscrowBarrier()) {
+            var runs = new java.util.concurrent.atomic.AtomicInteger();
+            Runnable[] retry = new Runnable[1];
+            retry[0] = () -> { if (runs.incrementAndGet() < 3) { barrier.retryOrdinaryNextTick(retry[0]); } };
+            barrier.retryOrdinaryNextTick(retry[0]);
+            barrier.retryOrdinaryNextTick(retry[0]);
+            assertEquals(0, runs.get(), "A retry never runs on request");
+            barrier.tick(1);
+            assertEquals(1, runs.get(), "A retry requested twice runs once, and its re-request waits for the next tick");
+            barrier.tick(2);
+            barrier.tick(3);
+            barrier.tick(4);
+            assertEquals(3, runs.get(), "Each re-request ran on the following tick only");
+            barrier.retryOrdinaryNextTick(retry[0]);
+            barrier.quiesce();
+            barrier.tick(5);
+            assertEquals(3, runs.get(), "A stopped barrier drops its retries");
+        }
+    }
 }
