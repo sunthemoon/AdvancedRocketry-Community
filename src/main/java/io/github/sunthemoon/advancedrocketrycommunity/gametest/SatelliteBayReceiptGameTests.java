@@ -132,34 +132,37 @@ public final class SatelliteBayReceiptGameTests {
             level.getBlockState(dropperAt).tick(level, dropperAt, level.random);
             helper.assertTrue(ItemStack.matches(dropper.getItem(0), pkg) && bay.packageState().isEmpty(), "A dropper inserted");
             dropper.setItem(0, ItemStack.EMPTY);
-            // The refusal is written next; the acknowledged REJECTED receipt never blocks.
-            put(helper, intent.withPhase(BayReceipt.Phase.REJECTED, "INTERRUPTED", server.getTickCount()));
-            helper.assertTrue(!handler.isItemValid(0, pkg), "The unacknowledged refusal unblocked the package");
         } catch (RuntimeException failure) {
             cleanup(level, helper, joined, bayRelative, above, side);
             throw failure;
         }
         joined.forEach(player -> server.getPlayerList().remove(player));
         joined.clear();
+        // Each step waits for the store's exact acknowledgements, whatever other tests of the batch are writing.
         int[] step = {0};
         helper.onEachTick(() -> {
-            if (step[0] > 1 || !settled(server)) {
+            if (step[0] > 2 || !settled(server)) {
                 return;
             }
             try {
                 if (step[0] == 0) {
+                    helper.assertTrue(!handler.isItemValid(0, pkg), "The durable INTENT receipt stopped blocking");
+                    put(helper, intent.withPhase(BayReceipt.Phase.REJECTED, "INTERRUPTED", server.getTickCount()));
+                    helper.assertTrue(!handler.isItemValid(0, pkg), "The unacknowledged refusal unblocked the package");
+                    step[0] = 1;
+                } else if (step[0] == 1) {
                     helper.assertTrue(handler.isItemValid(0, pkg) && handler.insertItem(0, pkg, false).isEmpty()
                             && bay.packageState().isPresent(), "An acknowledged REJECTED receipt still blocked the package");
                     helper.assertTrue(BayReceiptTestHooks.remove(server, intent.op(), outcome -> { }).queued(), "Fixture cleanup refused");
-                    step[0] = 1;
+                    step[0] = 2;
                 } else {
                     helper.assertTrue(BayReceiptTestHooks.store(server).orElseThrow().find(satellite).isEmpty(), "The fixture receipt remained");
-                    step[0] = 2;
+                    step[0] = 3;
                     cleanup(level, helper, joined, bayRelative, above, side);
                     helper.succeed();
                 }
             } catch (RuntimeException failure) {
-                step[0] = 2;
+                step[0] = 3;
                 cleanup(level, helper, joined, bayRelative, above, side);
                 throw failure;
             }
