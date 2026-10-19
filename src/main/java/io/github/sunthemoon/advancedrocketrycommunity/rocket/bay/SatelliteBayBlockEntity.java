@@ -4,6 +4,7 @@ import com.mojang.logging.LogUtils;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlockEntities;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
+import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceipts;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketTransactionSavedData;
 import java.util.Optional;
@@ -173,14 +174,20 @@ public final class SatelliteBayBlockEntity extends BlockEntity implements MenuPr
         }
     }
 
-    /** The one-item package tag {@code offered} would be stored as, when it may enter this bay now. */
+    /**
+     * The one-item package tag {@code offered} would be stored as, when it may enter this bay now: owned by the bay's
+     * owner, unclaimed, and with no INTENT, REGISTERED or REPAIR receipt for its satellite (W27c1; fails closed while
+     * the receipt index is not loaded). Every surface, simulated or actual, goes through this one check.
+     */
     private Optional<CompoundTag> admissible(ItemStack offered) {
         if (contents == null || contents.pkg() != null || contents.consumedOp() != null || !live()) {
             return Optional.empty();
         }
         Optional<CompoundTag> pkg = SatelliteBayPackage.capture(offered);
-        if (pkg.isEmpty() || !SatelliteBayPackage.decode(pkg.get()).identity()
-                .filter(identity -> identity.ownerId().equals(contents.owner())).isPresent() || claimed()) {
+        var identity = pkg.flatMap(captured -> SatelliteBayPackage.decode(captured).identity())
+                .filter(candidate -> candidate.ownerId().equals(contents.owner()));
+        if (identity.isEmpty() || claimed()
+                || BayReceipts.blocksInsertion(((ServerLevel) level).getServer(), identity.get().satelliteId())) {
             return Optional.empty();
         }
         return pkg;
