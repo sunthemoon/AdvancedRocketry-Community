@@ -38,7 +38,7 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: d2f0d00c (W101 merged: the v1.3 native smokes run on v1.8, scripts and tests only; before it, c6aad5c6 merged W102, the etcher unload GameTest pumps ready vanilla unload callbacks, and 250029a5 merged W104, monotonic journal and ledger drain clocks)
+latest_code_commit: bd1c78b9 (W105 merged: the B3-S3 chain and reconciliation cut harness, gated test code only; before it, d2f0d00c merged W101, the v1.3 native smokes on v1.8, c6aad5c6 merged W102 and 250029a5 merged W104)
 latest_hosted_regression: run 39282521245 at 386366c3 passed all 1,227 required GameTests and the log checker in a 35.2-minute job, the first successful job since 39096930031 at 264c4e30; it includes W104 (250029a5) and W102 (c6aad5c6), and it passed the etcher unload test. Before it, 39266165628 at efdd7f23 passed every test but was cancelled at the old 45-minute job limit (75 since 9bad799b), and 39264984282 at 6d120bc8 failed EscrowProofRetryGameTests.supersededTerrainProofRetriesTheSameFrontierAfterBackoff once (its 40-tick proof IO budget; an open item in QUEUE). The runs at d2f0d00c and later are queued
 ledger_planned_units: 19
 asset_review_items: 154
@@ -108,7 +108,7 @@ What is still open:
   can still exhaust the existing 200-tick tests (residual).
 - **S2.** W11b2's crash cuts passed natively as development evidence (the W11b2 records). Of
   W11b3's loader cut families, B3-S1 and B3-S2 (all 21 cuts, two restarts each) have native
-  evidence (W97 and W97B, merged `fe25244b`); W105 runs B3-S3; B3-S4 to B3-S6 remain.
+  evidence (W97 and W97B, merged `fe25244b`); B3-S3 matched 21 of its 23 cuts (W105, merged `bd1c78b9`); W107 closes its two coverage gaps and runs B3-S4 and B3-S5; B3-S6 remains.
 - **V1 and V2.** No slice has real-GPU or two-client evidence.
 - **C19.** W58 audited it (`records/W58.md`). Merged since: the validator chain and the G4 fix
   (C19-A), the portable evidence links (W60), correction files in the Markdown check and the
