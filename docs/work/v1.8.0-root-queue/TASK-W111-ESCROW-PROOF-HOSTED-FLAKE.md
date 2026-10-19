@@ -20,6 +20,9 @@ Three hosted regression runs failed an escrow proof GameTest (batch `escrow_core
 | job 117631066897, `843ea4dc` | `supersededEntityProofRetriesTheSameFrontierAfterBackoff` and `ownTerrainAndEntityStoresConfirmTheExactFrozenFrontier`, both "Didn't succeed or fail within 200 ticks" | an entity `inject_save` at fixture tick 122, then `superseded` at 143 |
 | job 118106130673, `6d120bc8` | `supersededTerrainProofRetriesTheSameFrontierAfterBackoff`: "Retry fixture proof exceeded its explicit force/IO completion budget" | a terrain `capture` and `inject_save` at fixture tick 127, no result 40 paced ticks later |
 | job 118201165777, `d2f0d00c` | `ownTerrainAndEntityStoresConfirmTheExactFrozenFrontier`, "Didn't succeed or fail within 200 ticks" | a terrain `inject_save` at fixture tick 162 and `superseded` at 183; the retry's capture came at 283, after the test had failed |
+| job 118223033108, `bd1c78b9` | the same test, the same message | the same pattern: terrain `inject_save` at 163, `superseded` at 184, failure at 200, the retry's capture at 284 |
+
+Two of the last three hosted regression runs failed this way, so this task comes first in the queue.
 
 Root's lead, not a finding: the forced-supersession retry tests (W94B) run in the same batch as the core proof tests.
 Their injected saves, or the force batches they cause, may supersede or delay the concurrent core tests' proofs, and a

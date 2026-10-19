@@ -39,7 +39,7 @@ development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
 latest_code_commit: 9f6668aa (W107 merged in part: 16 more loader cuts in the gated harness, test code only; before it, 3075a240 merged W106 in part, cargo leaf C-P's tank host, pure mutation checks and complete v1.8 rocket_movable tag)
-latest_hosted_regression: run 39293852197 at d2f0d00c (W101, Python only) failed one required GameTest, EscrowCoreGameTests.ownTerrainAndEntityStoresConfirmTheExactFrozenFrontier after 200 ticks, the third hosted escrow proof failure (W111 queued). Before it, run 39282521245 at 386366c3 passed all 1,227 required GameTests and the log checker in a 35.2-minute job, including W104 (250029a5) and W102 (c6aad5c6). The run at bd1c78b9 is in progress
+latest_hosted_regression: run 39302851008 at 3075a240 (the W106 merge) passed all required GameTests and the log checker. The two runs before it, 39295247351 at bd1c78b9 and 39293852197 at d2f0d00c, each failed EscrowCoreGameTests.ownTerrainAndEntityStoresConfirmTheExactFrozenFrontier after 200 ticks, right after a concurrent retry test's injected terrain save (W111, first in the queue). The run at 9f6668aa is in progress
 ledger_planned_units: 19
 asset_review_items: 154
 required_gates_approved: none
