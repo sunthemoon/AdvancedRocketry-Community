@@ -6,9 +6,11 @@ import static org.junit.jupiter.api.Assertions.*;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
+import java.io.IOError;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -153,6 +155,35 @@ final class BayReceiptWriterTest {
         assertTrue(System.nanoTime() - started < 30_000_000_000L);
         assertTrue(completions.size() >= 3 && completions.stream().allMatch(c -> c.outcome() == BayReceiptWriter.Outcome.UNKNOWN));
         assertTrue(Files.notExists(file()));
+    }
+
+    /** W27C1-R6: an Error on the IO thread is an unknown outcome of the exact candidate, and a stop drain still ends. */
+    @Test void anErrorOnTheIoThreadIsAnUnknownOutcomeOfTheExactCandidateAndTheStopDrainStillEnds() throws Exception {
+        CheckedSavedDataFile.Committer error = (staged, target) -> { throw new IOError(new IOException("Injected IO error")); };
+        var mode = new AtomicReference<>(error); var io = new AwaitedLedgerIo(); var completions = new ArrayList<BayReceiptWriter.Completion>();
+        try (var writer = new BayReceiptWriter(file(), STORE, 0, switchable(mode), io)) {
+            assertTrue(writer.request(() -> generation(1, 2), completions::add));
+            long tick = io.tickUntil(writer::tick, 1, () -> !completions.isEmpty());
+            assertEquals(BayReceiptWriter.Outcome.UNKNOWN, completions.get(0).outcome());
+            assertEquals(BayReceiptCodec.digest(BayReceiptCodec.encode(generation(1, 2))), completions.get(0).digest(),
+                    "the candidate existed before the error, so it is the exact candidate");
+            assertTrue(writer.unknown() && !writer.idle());
+            mode.set(CheckedSavedDataFile::atomicMove);
+            io.tickUntil(writer::tick, tick, writer::idle);
+            var last = completions.get(completions.size() - 1);
+            assertEquals(BayReceiptWriter.Outcome.COMMITTED, last.outcome()); assertEquals(completions.get(0).digest(), last.digest());
+        }
+        byte[] durable = Files.readAllBytes(file());
+        // The production IO thread with an Error on every attempt: the drain gives up after three unknown outcomes.
+        var drained = assertTimeoutPreemptively(Duration.ofSeconds(60), () -> {
+            var outcomes = new ArrayList<BayReceiptWriter.Outcome>();
+            var writer = new BayReceiptWriter(file(), STORE, 1, error);
+            assertTrue(writer.request(() -> generation(2, 1), completion -> outcomes.add(completion.outcome())));
+            writer.close();
+            return outcomes;
+        });
+        assertTrue(drained.size() >= 3 && drained.stream().allMatch(BayReceiptWriter.Outcome.UNKNOWN::equals), drained::toString);
+        assertArrayEquals(durable, Files.readAllBytes(file()), "the target file stays authoritative");
     }
 
     @Test void theStartupBaselineMustReadBackAsTheLoadedRoot() throws Exception {

@@ -100,17 +100,31 @@ public final class BayReceiptWriter implements AutoCloseable {
         lastIoStart = tick; running = true;
         BayReceiptRoot root = captured; Candidate fixed = exact; BooleanSupplier beforeReplace = active.beforeReplace();
         boolean previouslyUncertain = uncertain; long durable = durableGeneration; String durableSignature = durableDigest;
-        io.execute(() -> completions.add(write(root, fixed, beforeReplace, previouslyUncertain, durable, durableSignature)));
+        io.execute(() -> {
+            Candidate[] known = {fixed}; Completion completion; Throwable unexpected = null;
+            try {
+                completion = write(root, known, beforeReplace, previouslyUncertain, durable, durableSignature);
+            } catch (Throwable error) {
+                // W27C1-R6: an Error (IOError, OutOfMemoryError) still posts a completion, or tick and a stop drain would
+                // wait for ever. Its outcome is unknown; once the candidate exists, a retry moves exactly its bytes.
+                unexpected = error;
+                completion = new Completion(root.writerGeneration(), known[0] == null ? null : known[0].digest(), Outcome.UNKNOWN, root, known[0]);
+            }
+            completions.add(completion);
+            if (unexpected != null) {
+                LOGGER.error("ARCE_BAY_RECEIPTS_WRITE_ERROR generation={}; the outcome is unknown", root.writerGeneration(), unexpected);
+            }
+        });
     }
-    /** IO thread only. */
-    private Completion write(BayReceiptRoot root, @Nullable Candidate fixed, BooleanSupplier beforeReplace,
+    /** IO thread only. {@code known} holds the exact candidate, fixed by the first attempt, as soon as it exists. */
+    private Completion write(BayReceiptRoot root, Candidate[] known, BooleanSupplier beforeReplace,
                              boolean previouslyUncertain, long durable, String durableSignature) {
-        Candidate candidate = fixed;
+        Candidate candidate = known[0];
         if (candidate == null) {
             try {
                 CompoundTag payload = BayReceiptCodec.encode(root);
                 EscrowTags.require(root.equals(BayReceiptCodec.decode(payload)), "Receipt candidate does not round-trip");
-                candidate = new Candidate(payload, BayReceiptCodec.digest(payload));
+                candidate = new Candidate(payload, BayReceiptCodec.digest(payload)); known[0] = candidate;
             } catch (RuntimeException invalid) {
                 // Refused before staging; an earlier unknown outcome of this generation stays unknown.
                 return new Completion(root.writerGeneration(), null,
