@@ -73,6 +73,13 @@ Run Gradle with `--offline` from your worktree, using `gradlew.bat` in PowerShel
 
   Never remove a lock that is not yours. If the lock is older than three hours, stop and
   say so in your record instead of breaking it.
+
+  Release the lock only in the `finally` of the same script that took it, as above, and run
+  that script as a detached process, not as a tool background job (the tool stops those after
+  two hours). Never take the lock in one command and remove it in a later one: the tool has
+  refused such separate removals (W98's and W109's locks, W106's and W109's GameTest worlds),
+  and a left lock stalled every worker until Root removed it (about 80 minutes on 2026-10-20). Delete your
+  `build/gametest/world` and export trees in the same script's `finally` for the same reason.
 - **runData:** run it once, under the lock, whenever you change data generation. Commit its
   output together with the generator change.
 - **Unit tests:** before your final record, run the whole unit suite once (`test`, with no
