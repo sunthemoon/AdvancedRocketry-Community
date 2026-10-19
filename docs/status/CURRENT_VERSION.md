@@ -39,7 +39,7 @@ development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
 latest_code_commit: 67dee026 (W98 with W98F merged, P1-N3 leaf N3-A1: an ordinary source return keeps its transfer record until the survivor is proved on disk, and the Space sleep fixtures moved out of every station cell; before it, 9f6668aa merged W107 in part)
-latest_hosted_regression: run 39302851008 at 3075a240 (the W106 merge) passed all required GameTests and the log checker. The two runs before it, 39295247351 at bd1c78b9 and 39293852197 at d2f0d00c, each failed EscrowCoreGameTests.ownTerrainAndEntityStoresConfirmTheExactFrozenFrontier after 200 ticks, right after a concurrent retry test's injected terrain save (W111, first in the queue). The run at 9f6668aa is in progress
+latest_hosted_regression: run 39302851008 at 3075a240 (the W106 merge) passed all required GameTests and the log checker. The two runs before it, 39295247351 at bd1c78b9 and 39293852197 at d2f0d00c, each failed EscrowCoreGameTests.ownTerrainAndEntityStoresConfirmTheExactFrozenFrontier after 200 ticks, right after a concurrent retry test's injected terrain save, and 39313671980 at 9f6668aa failed that test and supersededTerrainProofRetriesTheSameFrontierAfterBackoff (W111, active). The run at 67dee026 is in progress
 ledger_planned_units: 19
 asset_review_items: 154
 required_gates_approved: none
