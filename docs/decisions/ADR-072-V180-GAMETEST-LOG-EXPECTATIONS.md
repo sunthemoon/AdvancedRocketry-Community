@@ -91,7 +91,16 @@ order and the runner's speed, not a product change.
 
 This is the decision 5 category: a diagnostic count ceiling for host lag. It does not bound delay duration, tick time
 or reliability, and it does not change any performance budget, test assertion or timeout. A run above eight still
-fails and needs review. The ceiling expires with this ADR at the v1.8 release acceptance review.
+fails and needs review. Because QUEUE.md had recorded on 2026-10-18 that a higher ceiling needs an exception under
+AGENTS section 5, this note states one:
+
+- Responsible: Root (Claude), under the owner's 2026-10-11 delegation (AGENTS section 13).
+- Reason: the host-lag notice count follows the batch order and the runner's speed, as measured above; it was failing
+  runs whose native tests all passed.
+- Expiry: the v1.8 release acceptance review, together with this ADR.
+- Recovery: at that review, the ceiling returns to five unless the owner keeps eight with the hosted counts of the
+  runs since this note. A notice outside the run's first minutes, or a count above eight, is reviewed as a possible
+  product regression, not absorbed by a higher ceiling.
 
 ## Verification and operation
 
