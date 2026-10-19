@@ -3,6 +3,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.gametest;
 import static io.github.sunthemoon.advancedrocketrycommunity.gametest.SatelliteBayFixtures.TEMPLATE;
 
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceipt;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceiptStore;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceiptTestHooks;
@@ -11,8 +12,19 @@ import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowRunti
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.SatelliteBayBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.SatelliteBayMenu;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.SatelliteBayPackage;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightPlanner;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNativeResources;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketTransactionSavedData;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRegion;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionPhase;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionRecord;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionType;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteKind;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,8 +56,9 @@ import net.minecraftforge.items.IItemHandler;
 
 /**
  * W27c1 A1 on the real server: the receipt index loaded at ServerStartingEvent, the bay's insertion refusal through
- * every surface, and the N5 command through the dispatcher. Their own batch keeps journal and admission state free of
- * concurrently running tests; receipts come only from the gated test hooks and are retired before each test ends.
+ * every surface, and the N5 command through the dispatcher, including its real journal adapter. Their own batch keeps
+ * journal and admission state free of concurrently running tests; receipts come only from the gated test hooks and are
+ * retired before each test ends.
  */
 @GameTestHolder(ModIdentity.MOD_ID)
 @PrefixGameTestTemplate(false)
@@ -57,11 +70,15 @@ public final class SatelliteBayReceiptGameTests {
 
     private static BayReceipt receipt(MinecraftServer server, UUID owner, UUID rocket, int bay, UUID satellite, String signature,
                                       BayReceipt.Phase phase) {
+        return receipt(server, owner, rocket, bay, satellite, signature, phase, UUID.randomUUID());
+    }
+    private static BayReceipt receipt(MinecraftServer server, UUID owner, UUID rocket, int bay, UUID satellite, String signature,
+                                      BayReceipt.Phase phase, UUID transfer) {
         String hash = RocketNativeResources.hash("w27c1-gametest");
         long tick = server.getTickCount();
         return new BayReceipt(UUID.randomUUID(), BayReceiptTestHooks.nextSequence(server), rocket, new RocketPosition(0, bay, 0), satellite,
                 owner, ModIdentity.id("w27b_solar").toString(), SatelliteKind.SOLAR, ModIdentity.id("earth").toString(), signature,
-                UUID.randomUUID(), hash, null, hash, null, phase, phase == BayReceipt.Phase.REJECTED ? "INTERRUPTED" : "NONE",
+                transfer, hash, null, hash, null, phase, phase == BayReceipt.Phase.REJECTED ? "INTERRUPTED" : "NONE",
                 false, false, 0, tick, tick, 0);
     }
     private static void put(GameTestHelper helper, BayReceipt receipt) {
@@ -178,19 +195,24 @@ public final class SatelliteBayReceiptGameTests {
         }
     }
 
-    /** The N5 command through the dispatcher: permission, each in-game refusal, then two audited retirements. */
-    @GameTest(template = TEMPLATE, batch = BATCH, timeoutTicks = 600)
-    public static void theRetireCommandRefusesUntilItsRocketIsClearAndRetiresOnTheExactAcknowledgement(GameTestHelper helper) {
-        MinecraftServer server = helper.getLevel().getServer();
-        List<Component> messages = new ArrayList<>();
+    /** A permission-2 command source whose messages are collected. */
+    private static CommandSourceStack operator(GameTestHelper helper, List<Component> messages) {
         CommandSource sink = new CommandSource() {
             @Override public void sendSystemMessage(Component message) { messages.add(message); }
             @Override public boolean acceptsSuccess() { return true; }
             @Override public boolean acceptsFailure() { return true; }
             @Override public boolean shouldInformAdmins() { return false; }
         };
-        CommandSourceStack operator = new CommandSourceStack(sink, Vec3.atCenterOf(helper.absolutePos(BlockPos.ZERO)), Vec2.ZERO,
-                helper.getLevel(), 2, "w27c1Operator", Component.literal("w27c1Operator"), server, null);
+        return new CommandSourceStack(sink, Vec3.atCenterOf(helper.absolutePos(BlockPos.ZERO)), Vec2.ZERO,
+                helper.getLevel(), 2, "w27c1Operator", Component.literal("w27c1Operator"), helper.getLevel().getServer(), null);
+    }
+
+    /** The N5 command through the dispatcher: permission, each in-game refusal, then two audited retirements. */
+    @GameTest(template = TEMPLATE, batch = BATCH, timeoutTicks = 600)
+    public static void theRetireCommandRefusesUntilItsRocketIsClearAndRetiresOnTheExactAcknowledgement(GameTestHelper helper) {
+        MinecraftServer server = helper.getLevel().getServer();
+        List<Component> messages = new ArrayList<>();
+        CommandSourceStack operator = operator(helper, messages);
         UUID owner = UUID.randomUUID(), rocket = UUID.randomUUID(), orphanSatellite = UUID.randomUUID(), heldSatellite = UUID.randomUUID();
         String signature = RocketNativeResources.hash("w27c1-command-package");
         BayReceipt orphan = receipt(server, owner, rocket, 1, orphanSatellite, signature, BayReceipt.Phase.REJECTED);
@@ -232,6 +254,91 @@ public final class SatelliteBayReceiptGameTests {
                 }
             }
         });
+    }
+
+    /**
+     * W27C1-R9: the production journal adapter through the dispatcher. A real transfer record refuses by the receipt's
+     * transfer ID and by its rocket; an assembly record (whose transaction ID is the logical rocket) and any disassembly
+     * record refuse too. Each record is planted and removed within one tick callback, so no transfer or recovery tick
+     * ever sees it; afterwards every receipt retires.
+     */
+    @GameTest(template = TEMPLATE, batch = BATCH, timeoutTicks = 600)
+    public static void theRetireCommandRefusesWhileARealTransferAssemblyOrDisassemblyRecordExists(GameTestHelper helper) {
+        MinecraftServer server = helper.getLevel().getServer();
+        List<Component> messages = new ArrayList<>();
+        CommandSourceStack operator = operator(helper, messages);
+        // A real transfer record of a discarded fixture rocket, made first so that the receipts can name its IDs.
+        RocketEntity source = RocketLegacyFuelGameTests.decodedRocket(helper);
+        RocketStructureSnapshot snapshot = source.snapshot().orElseThrow();
+        UUID sourceOwner = source.ownerId().orElseThrow();
+        RocketTransferRecord record = transferRecord(helper, source, UUID.randomUUID());
+        source.discard();
+        UUID owner = UUID.randomUUID();
+        String signature = RocketNativeResources.hash("w27c1-journal-package");
+        BayReceipt byTransfer = receipt(server, owner, UUID.randomUUID(), 1, UUID.randomUUID(), signature, BayReceipt.Phase.REJECTED,
+                record.transferId());
+        BayReceipt byRocket = receipt(server, owner, record.logicalRocketId(), 2, UUID.randomUUID(), signature, BayReceipt.Phase.REJECTED);
+        BayReceipt byAssembly = receipt(server, owner, UUID.randomUUID(), 3, UUID.randomUUID(), signature, BayReceipt.Phase.REJECTED);
+        List<BayReceipt> receipts = List.of(byTransfer, byRocket, byAssembly);
+        receipts.forEach(receipt -> put(helper, receipt));
+        int[] step = {0};
+        helper.onEachTick(() -> {
+            if (step[0] > 1 || !settled(server)) {
+                return;
+            }
+            if (step[0] == 0) {
+                step[0] = 1;
+                var transfers = RocketTransferSavedData.get(server);
+                var transactions = RocketTransactionSavedData.get(server).journalFor(snapshot, sourceOwner);
+                RocketRegion region = RocketRegion.fromSnapshot(snapshot);
+                UUID disassembly = UUID.randomUUID();
+                try {
+                    transfers.put(record);
+                    expect(helper, server, operator, messages, byTransfer.satellite(), 0, "refused.transfer_record");
+                    expect(helper, server, operator, messages, byRocket.satellite(), 0, "refused.transfer_record");
+                    transfers.remove(record.transferId());
+                    transactions.write(new RocketTransactionRecord(byAssembly.rocket(), RocketTransactionType.ASSEMBLY,
+                            RocketTransactionPhase.SNAPSHOT_VALIDATED, snapshot.snapshotId(), snapshot.contentHash(), region, 0, null));
+                    expect(helper, server, operator, messages, byAssembly.satellite(), 0, "refused.transaction_record");
+                    transactions.remove(byAssembly.rocket());
+                    // A disassembly record names only a physical entity, so it refuses every retirement.
+                    transactions.write(new RocketTransactionRecord(disassembly, RocketTransactionType.DISASSEMBLY,
+                            RocketTransactionPhase.FAILED, snapshot.snapshotId(), snapshot.contentHash(), region, 0, UUID.randomUUID()));
+                    expect(helper, server, operator, messages, byAssembly.satellite(), 0, "refused.transaction_record");
+                    expect(helper, server, operator, messages, byTransfer.satellite(), 0, "refused.transaction_record");
+                } finally {
+                    transfers.remove(record.transferId());
+                    transactions.remove(byAssembly.rocket());
+                    transactions.remove(disassembly);
+                    RocketJournalGameTestSupport.acknowledgeFixture(helper);
+                }
+                for (BayReceipt receipt : receipts) {
+                    expect(helper, server, operator, messages, receipt.satellite(), 1, "requested");
+                }
+            } else {
+                step[0] = 2;
+                var store = BayReceiptTestHooks.store(server).orElseThrow();
+                helper.assertTrue(receipts.stream().allMatch(receipt -> store.find(receipt.satellite()).isEmpty()), "A receipt remained");
+                helper.assertTrue(messages.stream().filter(message -> key(message).equals(MESSAGE + "retired")).count() == receipts.size(),
+                        "Not every retirement was reported");
+                helper.succeed();
+            }
+        });
+    }
+
+    /** {@code RocketJournalInterlockGameTests}' recipe: a landed transfer of {@code source} to the Moon, not yet in the journal. */
+    private static RocketTransferRecord transferRecord(GameTestHelper helper, RocketEntity source, UUID transfer) {
+        long now = helper.getLevel().getGameTime();
+        var snapshot = source.snapshot().orElseThrow();
+        var fuel = source.flightData().orElseThrow().fuel().fill(10_000).state();
+        var plan = RocketFlightPlanner.plan(snapshot.stats(), fuel, RocketFlightPlanner.EARTH, RocketFlightPlanner.MOON, transfer, now).plan();
+        var transit = source.flightData().orElseThrow().withFuel(fuel, now).withPlan(plan).startCountdown(now).completeCountdown(now)
+                .beginTransit(transfer, now);
+        var destination = snapshot.relocated(UUID.randomUUID(), CelestialIds.MOON_LEVEL.location(), new RocketPosition(1_000, 90, 1_000), now);
+        var arrival = transit.arriveAtDestination(fuel.debit(plan).state(), plan.destinationBody(), plan.destinationDimension(),
+                destination.sourceOrigin(), now);
+        return RocketTransferRecord.create(transfer, transit.logicalRocketId(), source.ownerId().orElseThrow(), source.getUUID(), snapshot,
+                destination, transit, arrival, plan.requiredFuel(), now);
     }
 
     private static void expect(GameTestHelper helper, MinecraftServer server, CommandSourceStack operator, List<Component> messages,
