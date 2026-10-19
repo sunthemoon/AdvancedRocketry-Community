@@ -39,7 +39,7 @@ development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
 latest_code_commit: bd1c78b9 (W105 merged: the B3-S3 chain and reconciliation cut harness, gated test code only; before it, d2f0d00c merged W101, the v1.3 native smokes on v1.8, c6aad5c6 merged W102 and 250029a5 merged W104)
-latest_hosted_regression: run 39282521245 at 386366c3 passed all 1,227 required GameTests and the log checker in a 35.2-minute job, the first successful job since 39096930031 at 264c4e30; it includes W104 (250029a5) and W102 (c6aad5c6), and it passed the etcher unload test. Before it, 39266165628 at efdd7f23 passed every test but was cancelled at the old 45-minute job limit (75 since 9bad799b), and 39264984282 at 6d120bc8 failed EscrowProofRetryGameTests.supersededTerrainProofRetriesTheSameFrontierAfterBackoff once (its 40-tick proof IO budget; an open item in QUEUE). The runs at d2f0d00c and later are queued
+latest_hosted_regression: run 39293852197 at d2f0d00c (W101, Python only) failed one required GameTest, EscrowCoreGameTests.ownTerrainAndEntityStoresConfirmTheExactFrozenFrontier after 200 ticks, the third hosted escrow proof failure (W111 queued). Before it, run 39282521245 at 386366c3 passed all 1,227 required GameTests and the log checker in a 35.2-minute job, including W104 (250029a5) and W102 (c6aad5c6). The run at bd1c78b9 is in progress
 ledger_planned_units: 19
 asset_review_items: 154
 required_gates_approved: none
