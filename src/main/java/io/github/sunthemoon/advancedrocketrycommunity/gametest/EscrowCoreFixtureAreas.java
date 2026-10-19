@@ -40,8 +40,10 @@ public final class EscrowCoreFixtureAreas {
     public static final String BATCH = "escrow_core";
     /** The radius of the tests' START tickets: the fixture chunk is entity-ticking and its 5x5 area FULL. */
     static final int RADIUS = 2;
-    // Wall-clock bounds of the hooks; the GameTest timeouts count ticks and do not run while a hook blocks.
-    private static final long PREPARE_NANOS = TimeUnit.SECONDS.toNanos(300);
+    // Wall-clock bounds of the hooks; the GameTest timeouts count ticks and do not run while a hook blocks. They only
+    // stop a hang: hosted runners generate these areas in about 15 seconds, a deliberately starved local JVM in four
+    // minutes (W111). A prepare that runs out fails each of the batch's remote-fixture tests at its start.
+    private static final long PREPARE_NANOS = TimeUnit.SECONDS.toNanos(600);
     private static final long RELEASE_NANOS = TimeUnit.SECONDS.toNanos(60);
     private record Batch(ServerLevel level, List<ChunkPos> centres, boolean ready) { }
     // Batch hooks and test functions run serially on the server thread.
