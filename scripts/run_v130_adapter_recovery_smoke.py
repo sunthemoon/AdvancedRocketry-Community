@@ -66,6 +66,13 @@ PHASES = ("assemble", "entity-restart", "provider-skipped", "mod-uninstalled",
 JOURNAL = "advancedrocketrycommunity_rocket_transactions.dat"
 MISSING_MAPPING_ERROR = "There are unidentified mappings in this world - we are going to attempt to process anyway"
 MISSING_BLOCK_ERROR = "Unidentified mapping from registry minecraft:block"
+# W44 section 3.3: a v1.8 start may hold the first Moon landing event once while the transfer journal's startup
+# baseline is unconfirmed, then clear the hold with an INFO line (the GameTest manifest's
+# w44-first-moon-landing-startup-baseline). Only this WARN, at most once per process and cleared, is accepted.
+STARTUP_HOLD = re.compile(r"\[[^\]]+/WARN\] \[[^\]]*AdvancedRocketryCommunity/\]: "
+                          r"ARCE_FIRST_EVENT_HELD kind=first_moon_landing reason=SOURCE_UNCONFIRMED\s*$")
+STARTUP_HOLD_CLEARED = re.compile(r"\[[^\]]+/INFO\] \[[^\]]*AdvancedRocketryCommunity/\]: "
+                                  r"ARCE_FIRST_EVENT_HOLD_CLEARED kind=first_moon_landing reason=SOURCE_UNCONFIRMED\s*$")
 
 
 def write_json(path: Path, value: object) -> None:
@@ -179,13 +186,16 @@ def audit_log(lines: list[str], phase: str) -> list[str]:
                         or {match.group(1) for match in mappings} != {CARGO, BOUNDARY}):
                     raise SmokeError("Missing-block diagnostic contains unexpected registry entries")
                 known_mapping_lines.add(line.rstrip())
+    holds = [index for index, line in enumerate(lines) if STARTUP_HOLD.search(line)]
+    if len(holds) > 1 or holds and not any(STARTUP_HOLD_CLEARED.search(line) for line in lines[holds[0] + 1:]):
+        raise SmokeError("The first-event startup hold repeated or never cleared")
     accepted = []
     for finding in server_smoke.scan_log(lines):
         if (phase == "mod-uninstalled" and server_smoke.ERROR_LINE.search(finding)
                 and registry_logger.search(finding)
                 and (finding.rstrip().endswith(MISSING_MAPPING_ERROR) or finding in known_mapping_lines)):
             accepted.append(finding)
-        else:
+        elif not STARTUP_HOLD.search(finding):
             raise SmokeError(f"Blocking log finding: {finding}")
     return accepted
 

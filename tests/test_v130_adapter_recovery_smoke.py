@@ -241,6 +241,23 @@ class RecoveryParsingTests(unittest.TestCase):
             with self.subTest(lines=lines, phase=phase), self.assertRaises(runner.SmokeError):
                 runner.audit_log(lines, phase)
 
+    def test_only_one_cleared_first_event_startup_hold_is_accepted(self):
+        # The lines as the v1.8 host logged them in W101's first native run (flight, moon-landing, 20:33:32).
+        prefix = "[20:33:32] [Server thread/{}] [io.gi.su.ad.AdvancedRocketryCommunity/]: "
+        hold = prefix.format("WARN") + "ARCE_FIRST_EVENT_HELD kind=first_moon_landing reason=SOURCE_UNCONFIRMED"
+        cleared = prefix.format("INFO") + "ARCE_FIRST_EVENT_HOLD_CLEARED kind=first_moon_landing reason=SOURCE_UNCONFIRMED"
+        for phase in runner.PHASES:
+            self.assertEqual([], runner.audit_log([hold, cleared], phase))
+            self.assertEqual([], runner.audit_log([cleared], phase))
+        other = prefix.format("WARN") + "ARCE_LANDED_DISASSEMBLY_UNACKNOWLEDGED logical=x stage=removal"
+        for lines in ([hold], [cleared, hold], [hold, cleared, hold, cleared],
+                      [hold.replace("SOURCE_UNCONFIRMED", "ROOT_UNREADABLE"), cleared],
+                      [hold.replace("first_moon_landing", "first_station"), cleared],
+                      [hold.replace("/WARN]", "/ERROR]"), cleared], [hold + " extra", cleared],
+                      [hold, cleared.replace("/INFO]", "/WARN]")], [hold, cleared, other]):
+            with self.subTest(lines=lines), self.assertRaises(runner.SmokeError):
+                runner.audit_log(lines, "assemble")
+
 
 class RecoverySafetyTests(unittest.TestCase):
     def setUp(self):
