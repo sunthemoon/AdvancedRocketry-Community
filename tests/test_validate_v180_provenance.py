@@ -55,7 +55,9 @@ class Repository:
         self.root = base / "repository"
         self.root.mkdir()
         for command in (("init", "-q"), ("config", "user.name", "Fixture"), ("config", "user.email", "f@example.invalid"),
-                        ("config", "commit.gpgsign", "false"), ("config", "core.autocrlf", "false")):
+                        ("config", "commit.gpgsign", "false"), ("config", "core.autocrlf", "false"),
+                        # No detached auto-maintenance: it can still write .git/objects while the test removes the tree.
+                        ("config", "maintenance.auto", "false"), ("config", "gc.auto", "0")):
             self.git(*command)
         self.write("legacy-manifest/assets.csv", "source_path,kind,sha256\n"
                    f"src/main/resources/assets/advancedrocketry/textures/items/circuit.png,texture,{sha256(LEGACY_CIRCUIT)}\n"
