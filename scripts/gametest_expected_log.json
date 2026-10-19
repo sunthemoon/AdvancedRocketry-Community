@@ -1318,6 +1318,24 @@
       "counts": {"ordinary_source_retirement_followups": 1},
       "test": "RocketSourceRetirementFollowUpGameTests.aBusyCaptureBudgetReleasesTheFirstAttemptsReservation",
       "reason": "W98-R5: a recovered source whose first capture finds the tick's capture budget taken waits without its reservation, then reports RECOVERED once, after its survivor proof removes the record."
+    },
+    {
+      "id": "w98f-mid-attempt-save-off-hold",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RETIREMENT_SAVE_OFF level=advancedrocketrycommunity:space; ordinary returns there keep their records until saving resumes",
+      "counts": {"ordinary_source_retirement_followups": 1},
+      "test": "RocketSourceRetirementFollowUpGameTests.aSaveOffDuringAnAttemptHoldsItsNextCapture",
+      "reason": "W98-R9: a /save-off issued after the survivor's capture holds the discarded copy's capture, with one WARN per Level until saving resumes."
+    },
+    {
+      "id": "w98f-mid-attempt-save-off-recovery",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RECOVERY transfer=[0-9a-f-]{36} phase=PREPARED source_count=1 destination_count=1 action=REMOVE_DESTINATION_KEEP_SOURCE status=RECOVERED",
+      "counts": {"ordinary_source_retirement_followups": 1},
+      "test": "RocketSourceRetirementFollowUpGameTests.aSaveOffDuringAnAttemptHoldsItsNextCapture",
+      "reason": "W98-R9: the held recovery reports RECOVERED once, after saving resumes and both census slots are proved."
     }
   ]
 }

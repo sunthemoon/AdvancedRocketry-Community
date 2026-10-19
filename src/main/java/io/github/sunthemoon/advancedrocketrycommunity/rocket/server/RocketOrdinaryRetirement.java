@@ -309,6 +309,8 @@ final class RocketOrdinaryRetirement {
             var slot = entry.census.get(entry.cursor);
             var level = RocketTransferEntities.level(server, slot.dimension());
             if (level == null || !level.areEntitiesLoaded(slot.chunk().toLong())) { waiting(entry, "SLOT_UNLOADED", now); return; }
+            // W98-R9: a /save-off issued during the attempt holds the next capture too, not only the attempt's start.
+            if (level.noSave()) { saveOff(entry, level, now); return; }
             var runtime = EscrowRuntime.of(server);
             var barrier = runtime.barrier();
             String id = slot.dimension().toString();
