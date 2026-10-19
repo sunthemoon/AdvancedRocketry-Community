@@ -1074,6 +1074,32 @@ existing `GuardedChunkSaves` denial. Each load into a guarded state and each ref
 writes one audit WARN. The independent review is `D:/GitHub/ARCE-Task-Evidence/root-queue/W27B-review/REVIEW.md`
 (SHA-256 `8ea41a4c29a117f9095acbad62e3e743dbadf31b4b99341e645f6b9d43da1e53`).
 
+### W27c1 implementation note: bay deployment receipts and the shared admission authority (deployment disabled)
+
+This note documents mechanics, not a changed decision; the design is `records/W27A-DESIGN.md` sections 2
+and 5 and the W27c1 row of section 9, and the risk is R-039. Receipts live in their own schema-1 managed
+root, `BAY_RECEIPTS` (`data/advancedrocketrycommunity_bay_receipts.dat`, epoch `v1.8.0-bay-receipts`): a
+4 MiB section of at most 4,096 receipts, 128 per owner and 1 KiB each. An existing file is loaded with the
+load-only lookup and indexed at `ServerStartingEvent`, before the first tick; a future or invalid root
+refuses whole-world startup and keeps its bytes, as RESOURCE_ESCROW does. The checked writer keeps the
+W11b1 behaviour (one captured generation and one successor, exact acknowledgements, bounded readback,
+three unresolved failures make the store unavailable), with encoding, digest, staging, force, readback and
+replacement off the server thread, and its generation digest is the shared `CanonicalNbtDigest`.
+
+Root records the contract delta from W11B3-DESIGN section 2 (2026-10-20): the one
+`EscrowAdmissionAuthority` belongs to `EscrowRuntime`, not to a coordinator, and each store attaches to the
+delegate that the runtime registered (B3-U, W93). W27c1 registers the BAY consumer as NOT_LOADED at
+startup and loads it in the same handler; until both consumers are loaded, `tryReserve` answers
+UNAVAILABLE for both. The frozen `tryReserve` and `tryRetain` results and the no-release rule of W27A
+section 2 are unchanged: the pending union (64 per server, 8 per rocket) counts unique durable, queued,
+captured and unknown operations of both stores, including REPAIR and released receipts; the bay alone
+also holds the retained union (4,096, 128 per owner, 1 KiB each), which includes REJECTED receipts.
+
+A bay refuses a package while a receipt blocks it (moved from W27b). The audited operator command
+`/arce bay receipt retire-rejected <satellite>` is the only online receipt deletion (W27A section 5, N5).
+Nothing in production creates a receipt: the deployment, the registry sequence, the launch and
+decommission fences and the transfer hook are W27c2 to W27d, and admission stays disabled until W27e.
+
 ## 9. Solar generator and array (C17c)
 
 Single `solar_generator`: 10,000 FE buffer, FE output-only on six sides, no item or

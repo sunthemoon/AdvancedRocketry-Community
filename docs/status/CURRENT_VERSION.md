@@ -38,12 +38,12 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: c6aad5c6 (W102 merged: the etcher unload GameTest pumps ready vanilla unload callbacks; before it, 250029a5 merged W104, monotonic journal and ledger drain clocks, and c3f80822 merged cargo leaf C-K)
-latest_hosted_regression: run 39266165628 at efdd7f23 passed all 1,227 required GameTests and the log checker (6 host-lag notices, within 8), but GitHub marked it cancelled because the job reached its 45-minute limit; Root raised that hang guard to 75 minutes (9bad799b), since runs since 2026-10-18 took 39 to 44 minutes. The two runs before it each failed one required GameTest: 39257586033 at fdedf1eb the etcher unload test (W102, merged since as c6aad5c6) and 39264984282 at 6d120bc8 EscrowProofRetryGameTests.supersededTerrainProofRetriesTheSameFrontierAfterBackoff once (its 40-tick proof IO budget; an open item in QUEUE). The runs at 250029a5 and later are queued. The last run that passed with a successful job is 39096930031 at 264c4e30 (the W91 merge)
+latest_code_commit: d2f0d00c (W101 merged: the v1.3 native smokes run on v1.8, scripts and tests only; before it, c6aad5c6 merged W102, the etcher unload GameTest pumps ready vanilla unload callbacks, and 250029a5 merged W104, monotonic journal and ledger drain clocks)
+latest_hosted_regression: run 39282521245 at 386366c3 passed all 1,227 required GameTests and the log checker in a 35.2-minute job, the first successful job since 39096930031 at 264c4e30; it includes W104 (250029a5) and W102 (c6aad5c6), and it passed the etcher unload test. Before it, 39266165628 at efdd7f23 passed every test but was cancelled at the old 45-minute job limit (75 since 9bad799b), and 39264984282 at 6d120bc8 failed EscrowProofRetryGameTests.supersededTerrainProofRetriesTheSameFrontierAfterBackoff once (its 40-tick proof IO budget; an open item in QUEUE). The runs at d2f0d00c and later are queued
 ledger_planned_units: 19
 asset_review_items: 154
 required_gates_approved: none
-last_updated: 2026-10-19
+last_updated: 2026-10-20
 ```
 
 ## Current state
@@ -117,7 +117,7 @@ What is still open:
   and vanilla checks, the art screen and the strict validator). The ledger closure, the final
   `PORTING_MATRIX` and the release evidence remain.
 - **Owner decisions.** Eleven are pending; QUEUE.md lists them with what each one blocks.
-- **Risks.** R-021 and the risks the W slices added (R-028 to R-037) stay open.
+- **Risks.** R-021 and the risks the W slices added (R-028 to R-039) stay open. Root registered R-039 (the bay receipt store) before W27c1.
 - **Earlier intermittent GameTests.** W73 fixed the landing-pad cancellation test, W74 the
   six-host natural-beds test, W76 the first-Moon-landing and spawn-egg tests, and W78 the sealed
   sleep-room test. Hosted runs confirm each fix as they accumulate. The open one is the escrow
