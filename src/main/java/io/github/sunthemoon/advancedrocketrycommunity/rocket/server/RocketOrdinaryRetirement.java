@@ -283,6 +283,9 @@ final class RocketOrdinaryRetirement {
             if (slotLevel.noSave()) { saveOff(entry, slotLevel, now); return; }
             warnedLevels.remove("SAVE_OFF " + slot.dimension());
         }
+        boolean supported = supported(server, entry);
+        // W98-R5: an attempt starts only when its first capture can run now, so no reservation waits for capture budget.
+        if (supported && !firstCaptureAvailable(server, entry, now)) { fail(entry, "BUSY", now, 1, false); return; }
         if (!bays.allowed(server, entry.journal, record, RocketTransferBayRecoveryGate.Action.REMOVE_JOURNAL)) { abandon(entry, "BAY_HELD"); return; }
         if (!escrowAllowed(server, entry.journal, record, entry.token)) { fail(entry, "BUSY", now, 1, false); return; }
         var frozen = projection(survivor, record);
@@ -291,7 +294,7 @@ final class RocketOrdinaryRetirement {
             entry.token = entry.journal.reserve(entry.logical()).orElse(null);
             if (entry.token == null) { fail(entry, "BUSY", now, 1, false); return; }
         }
-        if (!supported(server, entry)) { removeUnproved(server, entry); return; }
+        if (!supported) { removeUnproved(server, entry); return; }
         // The ordinary origin ticket the flight held; never a governed or margin ticket (W90).
         RocketTransferEntities.keepLoaded(level, record.sourceSnapshot(), record.transferId());
         entry.state = State.PROVING; entry.attempt = ++attemptIds; entry.attempts++;
@@ -309,7 +312,11 @@ final class RocketOrdinaryRetirement {
             var runtime = EscrowRuntime.of(server);
             var barrier = runtime.barrier();
             String id = slot.dimension().toString();
-            if (!barrier.availableOrdinary(id, now)) { wake(entry); return; }
+            if (!barrier.availableOrdinary(id, now)) {
+                // W98-R5: before its first capture an attempt releases its reservation and waits; later slots keep it.
+                if (entry.cursor == 0) { fail(entry, "BUSY", now, 1, false); } else { wake(entry); }
+                return;
+            }
             int attempt = entry.attempt;
             var frozen = entry.frozen;
             UUID logical = entry.logical(), survivor = entry.survivor;
@@ -463,10 +470,16 @@ final class RocketOrdinaryRetirement {
         return true;
     }
 
+    /** W98-R5: attempts in progress, and entries that still carry a caller's reservation. */
     private int attempting() {
         int count = 0;
-        for (var entry : pending.values()) { if (entry.state == State.PROVING) { count++; } }
+        for (var entry : pending.values()) { if (entry.state == State.PROVING || entry.token != null) { count++; } }
         return count;
+    }
+
+    /** W98-R5: whether the survivor's slot, the census's first capture, has ordinary capture budget this tick. */
+    private static boolean firstCaptureAvailable(MinecraftServer server, Pending entry, long now) {
+        return EscrowRuntime.of(server).barrier().availableOrdinary(entry.census.get(0).dimension().toString(), now);
     }
 
     /**

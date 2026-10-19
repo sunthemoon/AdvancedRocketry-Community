@@ -253,8 +253,8 @@ public final class RocketSourceRetirementGameTests {
         }
     }
 
-    /** One detached ordinary flight driven by this service's coordinator; subclasses act and then wait. */
-    private abstract static class Case {
+    /** One detached ordinary flight driven by this service's coordinator; subclasses act and then wait (also W98F's). */
+    abstract static class Case {
         final GameTestHelper helper;
         final List<UUID> crew;
         final RocketTransferSavedData journal = new RocketTransferSavedData();

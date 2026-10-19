@@ -1309,6 +1309,15 @@
       "counts": {"ordinary_source_retirement": 1},
       "test": "RocketSourceRetirementGameTests.aSaveOffLevelHoldsTheReturnWithoutAReservationUntilSavingResumes",
       "reason": "W96-R5(d): a save-off Level holds an ordinary return with its record retained and no reservation, with one WARN per Level until saving resumes."
+    },
+    {
+      "id": "w98f-busy-budget-keep-source-recovery",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RECOVERY transfer=[0-9a-f-]{36} phase=PREPARED source_count=1 destination_count=0 action=KEEP_SOURCE status=RECOVERED",
+      "counts": {"ordinary_source_retirement_followups": 1},
+      "test": "RocketSourceRetirementFollowUpGameTests.aBusyCaptureBudgetReleasesTheFirstAttemptsReservation",
+      "reason": "W98-R5: a recovered source whose first capture finds the tick's capture budget taken waits without its reservation, then reports RECOVERED once, after its survivor proof removes the record."
     }
   ]
 }
