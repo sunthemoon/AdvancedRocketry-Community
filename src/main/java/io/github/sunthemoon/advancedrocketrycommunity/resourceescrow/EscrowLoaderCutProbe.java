@@ -339,15 +339,19 @@ final class EscrowLoaderCutProbe {
         var runtime = EscrowRuntime.of(server); var authority = runtime.propulsion(server).authority();
         var source = loader().saveWithFullMetadata(); var destination = EscrowNativeEnvelope.rocket(rocket);
         var pending = new ArrayList<EscrowAdmissionAuthority.Pending>();
-        EscrowAdmissionAuthority.Delegate bay = null;
+        // W27c1: the runtime registers BAY itself, so these cuts substitute a synthetic BAY index and restore it after.
+        boolean notLoaded = boundary.equals("N3_NOT_LOADED"), substituted = notLoaded || boundary.equals("N3_FULL");
         if (boundary.equals("N3_FULL")) {
             for (int i = 0; i < EscrowLimits.OPERATIONS; i++) {
                 pending.add(new EscrowAdmissionAuthority.Pending(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
                         EscrowAdmissionAuthority.Consumer.BAY));
             }
-            authority.registerIndex(EscrowAdmissionAuthority.Consumer.BAY, () -> new EscrowAdmissionAuthority.Index(true, pending));
-        } else if (boundary.equals("N3_NOT_LOADED")) {
-            bay = authority.register(EscrowAdmissionAuthority.Consumer.BAY);
+        }
+        if (substituted) {
+            EscrowTags.require(runtime.bayIndexForTests(server, new EscrowAdmissionAuthority.Store() {
+                @Override public EscrowAdmissionAuthority.Index index() { return new EscrowAdmissionAuthority.Index(!notLoaded, pending); }
+                @Override public boolean holdsWork() { return false; }
+            }), "Fixture BAY index substitution was refused");
         }
         runtime.loaderAdmissionForTests(server, device(loader()), true);
         FluidFuelLoaderStatus status;
@@ -360,7 +364,7 @@ final class EscrowLoaderCutProbe {
         } else {
             EscrowTags.require(loader().attempt() == FluidFuelLoaderStatus.READY, "Refusal did not visit the queue");
             runtime.fills(server).visit(); status = loader().lastAttempt();
-            EscrowTags.require(status == (bay == null ? FluidFuelLoaderStatus.ESCROW_FULL : FluidFuelLoaderStatus.LEDGER_UNAVAILABLE),
+            EscrowTags.require(status == (notLoaded ? FluidFuelLoaderStatus.LEDGER_UNAVAILABLE : FluidFuelLoaderStatus.ESCROW_FULL),
                     "Wrong shared-authority refusal");
         }
         runtime.loaderAdmissionForTests(server, device(loader()), false);
@@ -368,8 +372,9 @@ final class EscrowLoaderCutProbe {
                 && ResourceEscrowSavedData.existing(server) == null && runtime.fills(server).size() == 0
                 && !runtime.fills(server).preparing() && authority.pendingCount() == pending.size(), "Refusal changed resources or reservations");
         AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_MATRIX_REFUSED cut={} status={} bay={} pending={}",
-                cut, status, bay == null ? "TEST_INDEX" : bay.state(), authority.pendingCount());
-        pending.clear(); if (bay != null) { bay.noFile(); }
+                cut, status, notLoaded ? EscrowAdmissionAuthority.Delegate.State.NOT_LOADED : "TEST_INDEX", authority.pendingCount());
+        pending.clear();
+        if (substituted) { EscrowTags.require(runtime.bayIndexForTests(server, null), "Fixture BAY index restoration was refused"); }
         EscrowTags.require(authority.pendingCount() == 0, "Fixture bay left a reservation");
         observe("refused"); pause(boundary);
     }

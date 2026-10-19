@@ -18,13 +18,26 @@ import java.util.function.Supplier;
 public final class EscrowAdmissionAuthority {
     public enum Consumer { PROPULSION, BAY }
     public enum Result { RESERVED, ALREADY_HELD, IDENTITY_CONFLICT, SERVER_FULL, ROCKET_FULL, UNAVAILABLE }
+    /** The results of {@link #tryRetain} (W27A-DESIGN section 2's frozen admission contract). */
+    public enum Retention { RESERVED, ALREADY_HELD, IDENTITY_CONFLICT, SERVER_FULL, OWNER_FULL, UNAVAILABLE }
+    /** The bay's retained-receipt union: 4,096 per server, 128 per owner, each charged at its 1 KiB ceiling. */
+    public static final int RETAINED = BayReceiptRoot.RECEIPTS, RETAINED_PER_OWNER = 128;
+    public static final int RETAINED_BYTES = BayReceiptCodec.RECEIPT_BYTES, RETAINED_SECTION_BYTES = BayReceiptCodec.SECTION_BYTES;
     public record Pending(UUID op, UUID owner, UUID rocket, Consumer consumer) {
         public Pending { Objects.requireNonNull(op); Objects.requireNonNull(owner); Objects.requireNonNull(rocket); Objects.requireNonNull(consumer); }
         static Pending of(EscrowOperation op) { return new Pending(op.id(), op.owner(), op.guard().rocket(), Consumer.PROPULSION); }
     }
-    /** Includes every unresolved durable/queued/captured/unknown state, even REPAIR or released flight holds. */
-    public record Index(boolean loaded, Collection<Pending> pending) {
-        public Index { pending = java.util.List.copyOf(pending); }
+    /** One retained bay receipt, REJECTED included, in any durable, queued, captured or unknown state. */
+    public record Retained(UUID op, UUID owner) {
+        public Retained { Objects.requireNonNull(op); Objects.requireNonNull(owner); }
+    }
+    /**
+     * Includes every unresolved durable/queued/captured/unknown state, even REPAIR or released flight holds. Only the
+     * BAY index carries retained receipts.
+     */
+    public record Index(boolean loaded, Collection<Pending> pending, Collection<Retained> retained) {
+        public Index { pending = java.util.List.copyOf(pending); retained = java.util.List.copyOf(retained); }
+        public Index(boolean loaded, Collection<Pending> pending) { this(loaded, pending, java.util.List.of()); }
     }
     /** A store's coordinator as its delegate sees it: its complete RAM index, and whether it still holds work. */
     interface Store {
@@ -74,8 +87,10 @@ public final class EscrowAdmissionAuthority {
     private final Thread owner = Thread.currentThread();
     private final Map<Consumer, Supplier<Index>> indexes = new EnumMap<>(Consumer.class);
     private final Map<UUID, Pending> queuedReservations = new HashMap<>();
+    private final Map<UUID, UUID> queuedRetentions = new HashMap<>();
     private Map<UUID, Pending> union = Map.of();
     private Set<UUID> conflicts = Set.of();
+    private Collection<Retained> retainedIndex = java.util.List.of();
     private boolean available;
 
     /** Registers a NOT_LOADED delegate for the consumer. A second registration of one consumer still throws. */
@@ -94,24 +109,81 @@ public final class EscrowAdmissionAuthority {
     public Result tryReserve(UUID op, UUID owner, UUID rocket, Consumer consumer) {
         owner(); refresh();
         Pending request = new Pending(op, owner, rocket, consumer);
-        Pending existing = union.get(op);
-        if (conflicts.contains(op) || existing != null && !request.equals(existing)) { return Result.IDENTITY_CONFLICT; }
-        if (!available || !indexes.containsKey(consumer) || !conflicts.isEmpty()) { return Result.UNAVAILABLE; }
-        if (existing != null) { return Result.ALREADY_HELD; }
-        if (union.size() >= EscrowLimits.OPERATIONS) { return Result.SERVER_FULL; }
-        if (union.values().stream().filter(entry -> rocket.equals(entry.rocket())).count() >= EscrowLimits.PER_ROCKET) {
-            return Result.ROCKET_FULL;
-        }
+        Result result = reserveCheck(request);
+        if (result != Result.RESERVED) { return result; }
         queuedReservations.put(op, request);
         var next = new HashMap<>(union); next.put(op, request); union = Map.copyOf(next);
         return Result.RESERVED;
     }
+    /** The result {@link #tryReserve} would return now; it charges nothing. */
+    public Result checkReserve(UUID op, UUID owner, UUID rocket, Consumer consumer) {
+        owner(); refresh(); return reserveCheck(new Pending(op, owner, rocket, consumer));
+    }
+    private Result reserveCheck(Pending request) {
+        Pending existing = union.get(request.op());
+        if (conflicts.contains(request.op()) || existing != null && !request.equals(existing)) { return Result.IDENTITY_CONFLICT; }
+        if (!available || !indexes.containsKey(request.consumer()) || !conflicts.isEmpty()) { return Result.UNAVAILABLE; }
+        if (existing != null) { return Result.ALREADY_HELD; }
+        if (union.size() >= EscrowLimits.OPERATIONS) { return Result.SERVER_FULL; }
+        if (union.values().stream().filter(entry -> request.rocket().equals(entry.rocket())).count() >= EscrowLimits.PER_ROCKET) {
+            return Result.ROCKET_FULL;
+        }
+        return Result.RESERVED;
+    }
+    /**
+     * The bay's retained-receipt admission: 4,096 per server, 128 per owner, and every retained receipt charged at its
+     * 1 KiB ceiling against the 4 MiB section. The union is derived from the BAY index and the retentions queued here;
+     * a refusal changes nothing, and there is no release call.
+     */
+    public Retention tryRetain(UUID op, UUID owner) {
+        owner(); refresh();
+        Retention result = retainCheck(op, owner);
+        if (result == Retention.RESERVED) { queuedRetentions.put(op, owner); }
+        return result;
+    }
+    /** The result {@link #tryRetain} would return now; it charges nothing. */
+    public Retention checkRetain(UUID op, UUID owner) { owner(); refresh(); return retainCheck(op, owner); }
+    private Retention retainCheck(UUID op, UUID owner) {
+        Objects.requireNonNull(op); Objects.requireNonNull(owner);
+        var retained = new HashMap<UUID, UUID>(); var collision = new HashSet<UUID>();
+        retainedUnion(retained, collision);
+        UUID existing = retained.get(op);
+        if (collision.contains(op) || existing != null && !existing.equals(owner)) { return Retention.IDENTITY_CONFLICT; }
+        if (!available || !indexes.containsKey(Consumer.BAY) || !collision.isEmpty()) { return Retention.UNAVAILABLE; }
+        if (existing != null) { return Retention.ALREADY_HELD; }
+        if (retained.size() >= RETAINED || (retained.size() + 1L) * RETAINED_BYTES > RETAINED_SECTION_BYTES) {
+            return Retention.SERVER_FULL;
+        }
+        if (retained.values().stream().filter(owner::equals).count() >= RETAINED_PER_OWNER) { return Retention.OWNER_FULL; }
+        return Retention.RESERVED;
+    }
+    /** Like the pending union: once the BAY index holds a queued retention, that index owns its lifecycle. */
+    private void retainedUnion(Map<UUID, UUID> retained, Set<UUID> collision) {
+        for (Retained entry : retainedIndex) {
+            UUID previous = retained.putIfAbsent(entry.op(), entry.owner());
+            if (previous != null && !previous.equals(entry.owner())) { collision.add(entry.op()); }
+        }
+        queuedRetentions.entrySet().removeIf(entry -> entry.getValue().equals(retained.get(entry.getKey())));
+        for (var entry : queuedRetentions.entrySet()) {
+            UUID previous = retained.putIfAbsent(entry.getKey(), entry.getValue());
+            if (previous != null && !previous.equals(entry.getValue())) { collision.add(entry.getKey()); }
+        }
+    }
+    public int retainedCount() { owner(); refresh(); var retained = new HashMap<UUID, UUID>(); retainedUnion(retained, new HashSet<>()); return retained.size(); }
+    public long retainedFor(UUID owner) {
+        owner(); refresh(); var retained = new HashMap<UUID, UUID>(); retainedUnion(retained, new HashSet<>());
+        return retained.values().stream().filter(owner::equals).count();
+    }
     /** Recompute from the complete RAM indexes. There is no operation-ID release or timeout eviction. */
     public void refresh() {
         owner(); var next = new HashMap<UUID, Pending>(); var collision = new HashSet<UUID>();
-        boolean loaded = !indexes.isEmpty();
+        boolean loaded = !indexes.isEmpty(); Collection<Retained> retained = java.util.List.of();
         for (var entry : indexes.entrySet()) {
             Index index = Objects.requireNonNull(entry.getValue().get()); loaded &= index.loaded();
+            if (!index.retained().isEmpty()) {
+                if (entry.getKey() != Consumer.BAY) { throw new IllegalArgumentException("Only the bay retains receipts"); }
+                retained = index.retained();
+            }
             for (Pending pending : index.pending()) {
                 if (pending.consumer() != entry.getKey()) { throw new IllegalArgumentException("Foreign admission index identity"); }
                 Pending previous = next.putIfAbsent(pending.op(), pending);
@@ -125,7 +197,12 @@ public final class EscrowAdmissionAuthority {
             Pending previous = next.putIfAbsent(pending.op(), pending);
             if (previous != null && !previous.equals(pending)) { collision.add(pending.op()); }
         }
-        union = Map.copyOf(next); conflicts = Set.copyOf(collision); available = loaded;
+        union = Map.copyOf(next); conflicts = Set.copyOf(collision); retainedIndex = retained; available = loaded;
+        if (!queuedRetentions.isEmpty()) {
+            // As for reservations: once the BAY index holds a queued retention, a later cancellation there releases it.
+            var owners = new HashMap<UUID, UUID>(); retained.forEach(entry -> owners.putIfAbsent(entry.op(), entry.owner()));
+            queuedRetentions.entrySet().removeIf(entry -> entry.getValue().equals(owners.get(entry.getKey())));
+        }
     }
     public int pendingCount() { owner(); refresh(); return union.size(); }
     public long pendingFor(UUID rocket) { owner(); refresh(); return union.values().stream().filter(entry -> rocket.equals(entry.rocket())).count(); }
