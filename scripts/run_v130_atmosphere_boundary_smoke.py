@@ -57,8 +57,17 @@ def validate_disk(state: dict, phase: str, previous: dict | None) -> None:
         "lit": "true" if phase == "provider-skipped" else "false"}}, "Native vent state differs")
     data = state["vent_data"]
     require(set(data) == {"schema_version", "oxygen_canisters", "empty_canisters", "oxygen_units",
-                          "energy", "oxygen_phase"}, "Vent schema acquired unexpected fields")
-    require(data["schema_version"] == 1 and data["oxygen_canisters"] == data["empty_canisters"] == 0
+                          "energy", "oxygen_phase", "scrubbers"}, "Vent schema acquired unexpected fields")
+    # Vent schema 2 (v1.8) adds the vent's own scrubber bank. This room has no scrubber, so the bank holds no entry;
+    # its phase advances once per oxygen debit, and its generation is the vent's identity across restarts.
+    scrubbers = data["scrubbers"]
+    require(set(scrubbers) == {"generation", "phase", "banks"} and scrubbers["banks"] == []
+            and type(scrubbers["phase"]) is int and 0 <= scrubbers["phase"] <= 3
+            and re.fullmatch(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+                             str(scrubbers["generation"])) is not None, "Vent scrubber bank differs")
+    require(previous is None or scrubbers["generation"] == previous["vent_data"]["scrubbers"]["generation"],
+            "Vent scrubber bank identity changed")
+    require(data["schema_version"] == 2 and data["oxygen_canisters"] == data["empty_canisters"] == 0
             and 0 < data["oxygen_units"] <= 3000 and 0 < data["energy"] <= 40000
             and 0 <= data["oxygen_phase"] < 20, "Vent resources escaped their fixture bounds")
     if previous:
@@ -146,7 +155,8 @@ class AtmosphereRun(recovery.RecoveryRun):
                 process.command(PREFIX + "setblock 264 221 264 minecraft:air")
                 process.command(PREFIX + f"setblock 264 222 264 {BOUNDARY}[open=false]")
                 process.command(PREFIX + f"setblock 264 220 264 {VENT}")
-                process.command(PREFIX + "data merge block 264 220 264 {arce_oxygen_vent:{schema_version:1,"
+                # Schema 2 keeps the fresh vent's own scrubber bank; schema 1 admits no other field (v1.8).
+                process.command(PREFIX + "data merge block 264 220 264 {arce_oxygen_vent:{schema_version:2,"
                                 "oxygen_canisters:0,empty_canisters:0,oxygen_units:3000,energy:40000,oxygen_phase:0}}")
                 self.lit(process, True, "CLOSED_ACTIVE")
                 process.command(PREFIX + f"setblock 264 222 264 {BOUNDARY}[open=true]")
