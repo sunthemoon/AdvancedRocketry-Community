@@ -13,6 +13,8 @@ import run_v180_loader_cuts as runner
 
 
 def fixture(cut, restart):
+    if cut.removeprefix(oracle.PREFIX) in oracle.CHAINS:
+        return chain_fixture(cut, restart)
     exp = oracle.expected(cut, restart); bi = exp["bi"]
     seq = 2 if bi else 1
     root = dict(ledger_id="ledger", writer_generation=exp["generation"] or 4, issued_through=exp["issued"],
@@ -44,7 +46,67 @@ def fixture(cut, restart):
     return dict(ledger=root, loaders=loaders, rocket=rocket)
 
 
+def chain_fixture(cut, restart):
+    disk = fixture("LF_M_K6", 0)
+    root, rocket = disk["ledger"], disk["rocket"]["RocketEntityData"]
+    prefix = 1 if cut == "LF_M_C1" and not restart else 2
+    bi = cut.endswith("_BI")
+    root["issued_through"] = 2
+    first = disk["loaders"][0]
+    second = copy.deepcopy(first); second["x"] = 67
+    second["arce_fluid_fuel_loader"]["device"] = "device1"
+    disk["loaders"].append(second)
+    rocket["resource_escrow"]["resource_epoch"] = prefix
+    rocket["resource_escrow"]["markers"] = []
+    root["records"] = []
+    for index, device in enumerate(disk["loaders"]):
+        seq = index + 1; loader = device["arce_fluid_fuel_loader"]
+        fluid = (oracle.HYDROGEN if index == 0 else oracle.OXYGEN) if bi else oracle.FUEL
+        loader["tank"]["FluidName"] = fluid
+        marker = dict(op_id="op"+str(seq), seq=seq, role="SOURCE", epoch_after=1)
+        loader["resource_escrow"]["markers"] = [] if restart else [marker]
+        if seq <= prefix and not restart:
+            rocket["resource_escrow"]["markers"].append(dict(marker, role="DESTINATION", epoch_after=seq))
+        if not restart and ("PARTIAL" not in cut or seq == 2):
+            root["records"].append(dict(op_id=marker["op_id"], seq=seq,
+                source=dict(identity=loader["device"], type=oracle.LOADER), destination=dict(identity="physical"),
+                payload=dict(FluidName=fluid, Amount=1000), native_binding=dict(complete=1, kind="FUEL_VECTOR_V1")))
+    propulsion = rocket["flight_data"]["fuel"]["propulsion"]
+    propulsion["primary"]["amount"] = 1000 if bi else 1000 * prefix
+    propulsion["oxidizer"]["amount"] = 1000 * (prefix - 1) if bi else 0
+    return disk
+
+
 class LoaderCutsTest(unittest.TestCase):
+    def test_s3_covers_every_reconciliation_stage_and_both_chain_modes(self):
+        self.assertEqual(18, len(oracle.D2))
+        self.assertEqual(5, len(oracle.CHAINS))
+        self.assertEqual(23, len(oracle.S3))
+        for stage in range(9):
+            self.assertTrue(any(name.startswith(f"D2_C{stage}") for name in oracle.D2))
+
+    def test_chain_partial_retirement_rejects_holes_old_frontiers_and_wrong_totals(self):
+        for cut in ("LF_M_C1", "LF_M_C2", "LF_M_C2_PARTIAL_REPLACED", "LF_M_C2_PARTIAL_REPLACED_BI"):
+            good = fixture(cut, 0)
+            mutations = [lambda d: d["ledger"]["records"][0].update(seq=9),
+                         lambda d: d["loaders"][1]["arce_fluid_fuel_loader"]["tank"].update(Amount=5000),
+                         lambda d: d["rocket"]["RocketEntityData"]["resource_escrow"].update(resource_epoch=0),
+                         lambda d: d["rocket"]["RocketEntityData"]["resource_escrow"]["markers"][0].update(op_id="other"),
+                         lambda d: d["loaders"][1]["arce_fluid_fuel_loader"]["resource_escrow"].update(markers=[]),
+                         lambda d: d["rocket"]["RocketEntityData"]["flight_data"]["fuel"]["propulsion"]["primary"].update(amount=3000)]
+            for mutate in mutations:
+                bad = copy.deepcopy(good); mutate(bad)
+                with self.subTest(cut=cut), self.assertRaises(oracle.smoke.SmokeError): oracle.check(bad, cut, 0)
+
+    def test_chain_second_restart_cannot_replay_either_device(self):
+        for cut in oracle.CHAINS:
+            name = oracle.PREFIX + cut
+            good = fixture(name, 2)
+            for index in range(2):
+                bad = copy.deepcopy(good)
+                bad["loaders"][index]["arce_fluid_fuel_loader"]["tank"]["Amount"] = 3000
+                with self.assertRaises(oracle.smoke.SmokeError): oracle.check(bad, name, 2)
+
     def test_matrix_counts_include_r35_creation_cuts(self):
         self.assertEqual(7, len(oracle.CREATION))
         self.assertEqual(14, len(oracle.NORMAL))

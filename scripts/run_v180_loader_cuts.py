@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""W97 loader creation/normal cuts: committed source, real native stores, two restarts, per-cut lock/cleanup.
+"""Loader creation, normal, chain and reconciliation cuts on committed source, with two restarts and per-cut cleanup.
 
-N2 and candidate preflight remain NOT_RUN; eligibility coverage is supplemental. K4/K5 record the first store chosen by the
+K4/K5 record the first store chosen by the
 unmodified driver; an opposite order is NOT_COVERED, not a passed cut. A new invocation may observe the other order.
 """
 from __future__ import annotations
@@ -143,6 +143,8 @@ def run_cut(args, cut: str, evidence: Path, owner: str, pins: dict) -> dict:
                 if cut in ("LF_M_K4", "LF_M_K5"):
                     ordered = paused[3] == ("SOURCE" if cut.endswith("K4") else "DESTINATION")
                 actual_cut = ("LF_M_K4" if paused[3] == "SOURCE" else "LF_M_K5") if not ordered else cut
+                if cut == "LF_M_D2_C4_BEFORE":
+                    actual_cut = "LF_M_K4" if paused[3] == "SOURCE" else "LF_M_K5"
             else:
                 process.wait_for(re.compile(r"ARCE_LOADER_MATRIX_RESULT cut=" + re.escape(cut) + r"(?:\s|$)"), args.startup_timeout)
                 process.command("stop"); start["exit_code"] = process.finish()
@@ -152,6 +154,8 @@ def run_cut(args, cut: str, evidence: Path, owner: str, pins: dict) -> dict:
             start["first_tick"] = first_tick(lines, cut, restart, previous)
             oracle.require(not any("/ERROR]" in line or "/FATAL]" in line for line in lines), "Native start logged ERROR/FATAL")
             start["observations"] = [line for line in lines if "ARCE_LOADER_MATRIX_" in line]
+            if restart == 0 and cut.removeprefix(oracle.PREFIX) in oracle.CHAINS and cut != "LF_M_C1":
+                one_match(re.compile(r"ARCE_LOADER_MATRIX_CHAIN cut=" + re.escape(cut) + r" latest=2 reverse_refused=true records=2"), lines)
             if cut == "LF_M_K5" and restart == 0:
                 one_match(re.compile(r"ARCE_LOADER_MATRIX_PRIMED cut=LF_M_K5 tank=5000 epoch=0 stores=0"), lines)
             if creation and restart == 0:
@@ -206,7 +210,7 @@ def run(args) -> dict:
     report = dict(status="IN_PROGRESS", pins=pins, cases=[], not_run=oracle.NOT_RUN,
                   limits="Selected S2 process-stop cuts only; no power-loss guarantee. R35 extends existing fault generation selection.")
     for cut in args.case or oracle.CASES:
-        owner = f"W97B {cut} pid={os.getpid()} {datetime.now(timezone.utc).isoformat()}"
+        owner = f"{'W105' if cut in oracle.S3 else 'W97B'} {cut} pid={os.getpid()} {datetime.now(timezone.utc).isoformat()}"
         print(f"Waiting for heavy-JVM lock: {cut}", flush=True)
         with heavy_lock(owner):
             row = run_cut(args, cut, evidence / cut, owner, pins)
@@ -228,8 +232,11 @@ def main() -> int:
         parser.add_argument("--" + key, type=Path, required=True)
     parser.add_argument("--source-commit", required=True); parser.add_argument("--java", required=True)
     parser.add_argument("--case", action="append", choices=oracle.CASES)
+    parser.add_argument("--s3", action="store_true", help="Select the complete B3-S3 matrix (unless --case is supplied)")
     parser.add_argument("--startup-timeout", type=float, default=240)
     args = parser.parse_args()
+    if args.s3 and not args.case:
+        args.case = oracle.S3
     try:
         report = run(args)
         return 0 if report["status"] == "PASS_SELECTED" else 1

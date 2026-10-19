@@ -18,6 +18,19 @@ class EscrowLoaderCutProbeTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
     @TempDir Path temporary;
 
+    @Test void reconciliationNamesSelectExistingAcknowledgementAndNativeBarrierBoundaries() {
+        String[][] cases = {{"D2_C0", "K0"}, {"D2_C1_BEFORE", "K1"}, {"D2_C1_REPLACED", "K2"},
+                {"D2_C1_ACK", "K2_ACK"}, {"D2_C2", "K3"}, {"D2_C3", "C3_FROZEN"},
+                {"D2_C4_BEFORE", "C4_BEFORE"}, {"D2_C4_AFTER", "C4_AFTER"}, {"D2_C5_BEFORE", "K6"},
+                {"D2_C5_AFTER", "K6_FORCED"}, {"D2_C6_BEFORE", "C6_BEFORE"}, {"D2_C6_AFTER", "C6_AFTER"},
+                {"D2_C6_JOINT", "K7"}, {"D2_C7_BEFORE", "K8"}, {"D2_C7_REPLACED", "K9"},
+                {"D2_C7_ACK", "K10_ACK"}, {"D2_C8", "K10"}, {"D2_C7_REPLACED_BI", "K9"},
+                {"C1", "CHAIN_PREFIX"}, {"C2", "CHAIN_PROVED"}, {"C2_PARTIAL_REPLACED", "CHAIN_REPLACED"},
+                {"C2_PARTIAL_RELEASED", "CHAIN_RELEASED"}, {"C2_PARTIAL_REPLACED_BI", "CHAIN_REPLACED"}};
+        for (var value : cases) { assertEquals(value[1], EscrowLoaderCutProbe.boundary("LF_M_" + value[0])); }
+        assertEquals("K5", EscrowLoaderCutProbe.boundary("LF_M_K5"));
+    }
+
     @Test void matrixSelectionDoesNotSelectHistoricalLoaderOrOtherProbes() {
         assertTrue(EscrowLoaderCutProbe.selected("LF_M_N0"));
         assertTrue(EscrowLoaderCutProbe.selected("LF_M_K9_BI"));
