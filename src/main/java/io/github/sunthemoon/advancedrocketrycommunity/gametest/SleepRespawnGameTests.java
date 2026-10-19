@@ -20,6 +20,9 @@ import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.Celestia
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialEnvironmentService;
 import io.github.sunthemoon.advancedrocketrycommunity.config.CommonConfig;
 import io.github.sunthemoon.advancedrocketrycommunity.config.SwitchOverrides;
+import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationGridCell;
+import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationLimits;
+import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationRegistryModel;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationReservation;
 import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData;
 import io.netty.channel.embedded.EmbeddedChannel;
@@ -68,6 +71,8 @@ public final class SleepRespawnGameTests {
     /** Above the Tau Ceti f terrain. */
     private static final int SURFACE_Y = 200;
     private static final BlockPos FAR = new BlockPos(25_000_000, 80, 25_000_000);
+    /** Eight cells beyond the last cell the station allocator's spiral can hand out. */
+    private static final int STATION_FREE_CELL = lastAllocatableLayer() + 8;
     private static final ResourceKey<Level> MISSING_BODY =
             ResourceKey.create(Registries.DIMENSION, ModIdentity.id("w37_missing_body"));
     private static final String RESPAWN_TOKEN = "message." + ModIdentity.MOD_ID + ".planet_respawn.";
@@ -85,8 +90,8 @@ public final class SleepRespawnGameTests {
         try {
             for (ResourceKey<Level> key : List.of(CelestialIds.MOON_LEVEL, CelestialIds.SPACE_LEVEL)) {
                 ServerLevel level = NonPlayerAtmosphereGameTests.level(helper, key);
-                BlockPos head = new BlockPos(column.getX(), key == CelestialIds.MOON_LEVEL ? MOON_Y : SPACE_Y,
-                        column.getZ());
+                BlockPos head = key == CelestialIds.MOON_LEVEL ? new BlockPos(column.getX(), MOON_Y, column.getZ())
+                        : outsideEveryStation(helper, new BlockPos(column.getX(), SPACE_Y, column.getZ()), 3);
                 cleanup.add(placeBedOnPlatform(level, head));
                 helper.assertTrue(StationRegistrySavedData.get(server).findAt(head.getX(), head.getZ()).isEmpty(),
                         "The vacuum fixture lies inside a station");
@@ -151,7 +156,7 @@ public final class SleepRespawnGameTests {
         ServerLevel space = NonPlayerAtmosphereGameTests.level(helper, CelestialIds.SPACE_LEVEL);
         BlockPos column = helper.absolutePos(new BlockPos(3, 0, 3));
         BlockPos moonVent = new BlockPos(column.getX(), MOON_Y, column.getZ());
-        BlockPos spaceVent = new BlockPos(column.getX(), SPACE_Y, column.getZ());
+        BlockPos spaceVent = outsideEveryStation(helper, new BlockPos(column.getX(), SPACE_Y, column.getZ()), 3);
         BlockPos pendingVent = new BlockPos(column.getX() + 8, MOON_Y, column.getZ() + 4);
         List<String> tokens = new ArrayList<>();
         ServerPlayer player = join(helper, "ARCEW37Room", tokens);
@@ -542,6 +547,31 @@ public final class SleepRespawnGameTests {
 
     private static String actionBar(String key) {
         return ConnectedTestPlayers.ACTION_BAR + key;
+    }
+
+    /**
+     * The structure's Space column moved along x, keeping its offset inside the station cell, to a cell the station
+     * allocator can never hand out. Earlier tests leave committed stations behind, and vanilla places each structure
+     * after every earlier one, so the structure's own column can lie inside a station, or receive one from a test
+     * that runs alongside (W98: the sealed Space room fell inside a station and sleep was refused). Every column
+     * within {@code radius} is checked to be outside every station.
+     */
+    static BlockPos outsideEveryStation(GameTestHelper helper, BlockPos column, int radius) {
+        long cell = Math.floorDiv((long) column.getX() + StationLimits.GRID_SPACING / 2L, StationLimits.GRID_SPACING);
+        BlockPos moved = column.offset(Math.toIntExact((-STATION_FREE_CELL - cell) * StationLimits.GRID_SPACING), 0, 0);
+        StationRegistrySavedData stations = StationRegistrySavedData.get(helper.getLevel().getServer());
+        for (int dx = -radius; dx <= radius; dx++) {
+            for (int dz = -radius; dz <= radius; dz++) {
+                helper.assertTrue(stations.findAt(moved.getX() + dx, moved.getZ() + dz).isEmpty(),
+                        "The Space fixture at " + moved + " lies inside a station");
+            }
+        }
+        return moved;
+    }
+
+    private static int lastAllocatableLayer() {
+        StationGridCell last = StationRegistryModel.spiralCell(StationLimits.MAX_STATIONS + StationLimits.MAX_RESERVATIONS - 1);
+        return Math.max(Math.abs(last.x()), Math.abs(last.z()));
     }
 
     /** Reserves and commits a station owned by {@code owner}; returns a bed position at its landing pad. */
