@@ -1781,6 +1781,15 @@ scope (`93659768`). It changes no decision status and accepts no risk.
     whole-world copy, verify conservation and fresh proofs with two saves and restarts, then replace
     the world as a whole. Never restore a single store, substitute a cleaned root or treat a restart
     as repair.
+- **Item kinds (D-K, W110 with W110F, merged `0b11269f`).** The item load and unload kinds, the
+  `CONTAINER` unit, the bounded lossless stack codec (4,096 bytes, depth 16, 512 nodes, `ForgeCaps`
+  refused) and the signed four-slot buffer; item settlements record quantity 0. Under Root decision
+  R39, decoding a durable item record is structural only (ID syntax, count, bounds, `ForgeCaps`, the
+  exact field set and a string `SkullOwner` on a player head), so removing an item's mod does not
+  refuse the world; the registry, native maximum and round-trip checks run at admission, O2 and
+  readback, where a failure holds only that operation for REPAIR (C-E and D-E wire them). Item
+  operations require the loader as source and the rocket as destination, or the reverse for an
+  unload. An older jar refuses a ledger with item records as invalid data, keeping the bytes (R-035).
 - **Admission.** Cargo admission has its own per-kind switches and stays off until the cargo S2
   evidence, the part-1 closures and the benchmarks pass and the Root or owner decision is recorded
   with the source and the JAR. R-031, R-032 and the Required Gates are unchanged.

@@ -7,7 +7,7 @@ probes, not reviewed code: use them as a guide only. You are a new session.
 
 | Item | Value |
 |---|---|
-| Worktree | `D:/GitHub/arce-v180-w114`, branch `codex/v1.8.0-w114`, created by Root from the shared branch after W110 merges (the launch prompt names the SHA) |
+| Worktree | `D:/GitHub/arce-v180-w114`, branch `codex/v1.8.0-w114`, created by Root from the shared branch after `0b11269f` (W110 with W110F merged; the launch prompt names the SHA) |
 | Record | `docs/work/v1.8.0-root-queue/records/W114.md` |
 | Evidence | `D:/GitHub/ARCE-Task-Evidence/root-queue/W114/` |
 
@@ -62,7 +62,7 @@ or flight-table reservation changes.
 - **Re-pinned tests.** W113 found 10 existing tests that pin today's charge. Move each to its new exact boundary and
   list each in the record with the old value, the new value and the reason. Re-pin the two `EscrowLayoutBudgetTest`
   cases with worst-case native endpoints, so they keep proving the same property. `requireAdmission` still refuses a
-  sixth fuel marker; keep that assertion.
+  sixth fuel marker; keep that assertion. W110F's `EscrowItemDimensionCapacityTest` (merged after W113 measured) pins today's per-Level refusals: under R40 its refused cells fit, so re-pin it to the new verdict and keep its check that a candidate that does not fit is refused before any side effect, with a candidate that still does not fit (an oversized payload or an unencodable Level ID).
 - No test is deleted, no assertion weakened, no limit or timeout raised. Stop and report if one seems needed.
 
 ## Verification
