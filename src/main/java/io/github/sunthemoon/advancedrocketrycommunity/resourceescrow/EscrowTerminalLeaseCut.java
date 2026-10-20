@@ -114,7 +114,8 @@ final class EscrowTerminalLeaseCut implements AutoCloseable {
                     == io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightRequestCode.TRANSFER_JOURNAL_BLOCKED,
                     "Terminal successor allowed launch while preparing cargo");
             var flight = rocket.flightData().orElseThrow();
-            var fuel = flight.fuel().fill(1).state();
+            var fuel = flight.fuel().withFluidBank(false, io.github.sunthemoon.advancedrocketrycommunity.ModIdentity.id("rocket_fuel"),
+                    null, flight.fuel().totalAmount() + 1);
             helper.assertTrue(!fuel.equals(flight.fuel()), "Terminal refuel fixture needs room for one unit");
             boolean refused = false;
             try { rocket.updateFlightData(flight.withFuel(fuel, helper.getLevel().getGameTime())); }

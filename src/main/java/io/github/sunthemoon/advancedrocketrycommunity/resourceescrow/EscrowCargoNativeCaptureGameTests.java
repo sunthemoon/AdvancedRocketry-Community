@@ -60,20 +60,20 @@ public final class EscrowCargoNativeCaptureGameTests {
                     if (ticket == null) { return; }
                 }
                 if (phase == 0) {
-                if (!ticket.advance()) { return; }
-                if (capture == null) {
-                    capture = EscrowCargoPreparedCapture.nativeCapture(ticket, root.id(), operation,
-                            () -> deviceBefore.copy(), () -> deviceAfter.copy(), () -> deviceCurrent, 64_000);
-                }
-                if (!capture.advance(root, List.of())) { return; }
-                helper.assertTrue(capture.result().status() == Status.ELIGIBLE, "Native capture refused valid fixture");
-                var expected = EscrowCargoEligibility.check(root, List.of(), operation, EscrowNativeEnvelope.rocket(rocket),
-                        EscrowNativeEnvelope.rocket(rocket, ticket.cursor().after(), rocket.flightData().orElseThrow(),
-                                new RocketEscrowSection(root.id(), 1, List.of(new EscrowPrefix.Link(operation, operation.rocket(), "DESTINATION").marker()))),
-                        deviceBefore, deviceAfter, 64_000);
-                helper.assertTrue(capture.result().equals(expected), "Native factory differs from synchronous capture");
-                // Final admission needs a fresh whole-tick reservation. Mutate only after capture completed.
-                phase = 1; return;
+                    if (!ticket.advance()) { return; }
+                    if (capture == null) {
+                        capture = EscrowCargoPreparedCapture.nativeCapture(ticket, root.id(), operation,
+                                () -> deviceBefore.copy(), () -> deviceAfter.copy(), () -> deviceCurrent, 64_000);
+                    }
+                    if (!capture.advance(root, List.of())) { return; }
+                    helper.assertTrue(capture.result().status() == Status.ELIGIBLE, "Native capture refused valid fixture");
+                    var expected = EscrowCargoEligibility.check(root, List.of(), operation, EscrowNativeEnvelope.rocket(rocket),
+                            EscrowNativeEnvelope.rocket(rocket, ticket.cursor().after(), rocket.flightData().orElseThrow(),
+                                    new RocketEscrowSection(root.id(), 1, List.of(new EscrowPrefix.Link(operation, operation.rocket(), "DESTINATION").marker()))),
+                            deviceBefore, deviceAfter, 64_000);
+                    helper.assertTrue(capture.result().equals(expected), "Native factory differs from synchronous capture");
+                    // Final admission needs a fresh whole-tick reservation. Mutate only after capture completed.
+                    phase = 1; return;
                 }
                 float yaw = rocket.getYRot();
                 if (attempt == 0) { rocket.setYRot(yaw + 1); } // Frame changes do not invalidate Ticket.valid().
