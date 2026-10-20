@@ -20,7 +20,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 class EscrowRuntimeCargoStopTest {
-    @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
+    @BeforeAll static void bootstrap() throws Exception {
+        MinecraftBootstrap.initialize(); RocketEscrowAuditDirectionTest.bootstrap();
+    }
     @TempDir Path temp;
 
     @Test void offThreadCrashStopReachesSettlementCleanupWithCargoAllocated() throws Exception {
