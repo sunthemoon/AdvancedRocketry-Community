@@ -64,7 +64,7 @@ class EscrowItemCodecTest {
     @Test void localLimitsDoNotOverrideTheFramedDepthAndNodeLimits() {
         var bytes = EscrowItemStackCodecTest.bytes(4_096);
         assertDoesNotThrow(() -> new EscrowItemCargoPayload(cursor(), bytes, 0, 0));
-        // One outer compound adds one level to the local stack, and nine nodes to this frame.
+        // The outer compound adds one level; the cursor and slot fields add framing nodes.
         assertDoesNotThrow(() -> new EscrowItemCargoPayload(cursor(), EscrowItemStackCodecTest.depth(11), 0, 0));
         assertDoesNotThrow(() -> EscrowItemStackCodec.decode(EscrowItemStackCodecTest.depth(12)));
         EscrowItemStackCodecTest.refused(EscrowItemStackCodec.Status.CARGO_TOO_LARGE,
