@@ -21,6 +21,9 @@ final class EscrowCargoEligibility {
     static Result check(EscrowLedger root, Collection<EscrowOperation> pending, EscrowOperation operation,
                         CompoundTag rocketBefore, CompoundTag rocketAfter,
                         CompoundTag deviceBefore, CompoundTag deviceAfter, int tankCapacity) {
+        if (operation.kind().itemCargo()) {
+            return EscrowItemCargoEligibility.check(root, pending, operation, rocketBefore, rocketAfter, deviceBefore, deviceAfter);
+        }
         try {
             envelope(rocketBefore); envelope(rocketAfter);
             for (var value : java.util.List.of(deviceBefore, deviceAfter)) {
