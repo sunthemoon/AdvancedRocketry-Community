@@ -48,7 +48,7 @@ final class SatelliteRegistryEpochTest {
                 assertTrue(data.reconcile(id(90), id(11), DeliveryReconciliation.ReceiptView.PERSISTED,
                         Optional.empty(), 1001).changed());
                 assertTrue(data.resources(m -> m.startResource(start(id(2), id(12)), 1001)).success());
-                assertEquals(GroundSurveys.Code.SUCCESS, data.groundSurveys(g -> g.start(ground(1), 1001)).code());
+                assertEquals(GroundSurveys.Code.SUCCESS, data.groundSurveys(g -> g.start(ground(1, 1001), 1001)).code());
                 assertEquals(GroundSurveys.Code.SUCCESS,
                         data.groundSurveys(g -> g.claim(id(100), OWNER, device(300), 1001)).code());
                 assertEquals(epoch, data.saveEpoch());
@@ -99,7 +99,7 @@ final class SatelliteRegistryEpochTest {
                     new SatelliteKindState.Plain(SatelliteKind.GAS_HARVESTER)), 0).success());
         }
         assertTrue(data.resources(m -> m.startResource(start(id(1), id(11)), 0)).success());
-        assertEquals(GroundSurveys.Code.SUCCESS, data.groundSurveys(g -> g.start(ground(0), 0)).code());
+        assertEquals(GroundSurveys.Code.SUCCESS, data.groundSurveys(g -> g.start(ground(0, 0), 0)).code());
         data.flush(file);
         for (int tick = 1; tick <= 20; tick++) {
             final int now = tick;
@@ -109,9 +109,13 @@ final class SatelliteRegistryEpochTest {
         data.flush(file);
         return data;
     }
-    private static GroundSurveys.Start ground(long index) {
+    private static GroundSurveys.Start ground(long index, long time) {
+        var source = pending(index, OWNER, InstanceOrigin.ground(id(100 + index)));
+        var instance = new AsteroidInstance(source.schemaVersion(), source.instanceId(), source.ownerId(), source.system(),
+                source.asteroidType(), source.tableVersion(), source.candidateFingerprint(), source.seed(), source.yield(),
+                time, source.expiresAt(), source.state(), source.origin(), source.allocatedMission());
         return new GroundSurveys.Start(id(100 + index), OWNER, device(200 + index),
-                pending(index, OWNER, InstanceOrigin.ground(id(100 + index))), 20, 20, 2, 20, 120);
+                instance, 20, 20, 2, 20, 120);
     }
     private static ResourceMissions.ResourceStart start(UUID satellite, UUID mission) {
         return new ResourceMissions.ResourceStart(satellite, mission, OWNER, MissionKind.GAS, SYSTEM, Optional.empty(),
