@@ -149,7 +149,9 @@ final class SatelliteRegistryProofTest {
                     assertTrue(data.cancel(initial, owner, false, 1).success());
                 }
                 if (progress.equals("replace") || progress.equals("prune")) {
-                    data.startMission(satellite, UUID.randomUUID(), owner, definition(), ModIdentity.id("earth"), 300, false);
+                    UUID later = UUID.randomUUID();
+                    assertTrue(data.startMission(satellite, later, owner, definition(), ModIdentity.id("earth"), 300, false).success());
+                    if (progress.equals("prune")) { assertTrue(data.claim(later, owner, 500).success()); }
                 }
                 if (progress.equals("prune")) {
                     data.applyLimits(new RegistryLimits(1024, 64, 1, 3072, 4096, 256, 2048, 16, 10, 2));
@@ -187,6 +189,36 @@ final class SatelliteRegistryProofTest {
             writeEntry(data, entry);
             assertEquals(epoch, data.saveEpoch());
             assertTrue(data.acknowledgement().orElseThrow().proves(data.watch(satellite)));
+        }
+    }
+
+    @Test void everyOrdinaryEntryKeepsFailedOrUnknownWritesPendingAndRetriesFresh() {
+        for (String entry : List.of("barrier", "coalesced", "autosave", "stop")) {
+            for (boolean unknown : List.of(false, true)) {
+                var data = SatelliteMissionSavedData.create(0);
+                launch(data); data.flush(file());
+                long epoch = data.saveEpoch();
+                UUID satellite = launch(data);
+                var watch = data.watch(satellite);
+                data.writePolicy(new CheckedSavedDataPolicy(TYPE, (staged, target) -> {
+                    if (unknown) { CheckedSavedDataFile.atomicMove(staged, target); }
+                    throw new IOException("entry cut");
+                }, (path, type) -> {
+                    if (unknown) { throw new IllegalStateException("readback unavailable"); }
+                    return CheckedSavedDataFile.readPayload(path, type);
+                }));
+                if (entry.equals("autosave") || entry.equals("stop")) { writeEntry(data, entry); }
+                else { assertThrows(IllegalStateException.class, () -> writeEntry(data, entry)); }
+                assertEquals(epoch, data.saveEpoch());
+                assertTrue(data.isDirty()); assertTrue(data.flushPending());
+                if (unknown) { assertTrue(data.acknowledgement().isEmpty()); }
+                UUID later = launch(data);
+                data.writePolicy(NORMAL); writeEntry(data, entry);
+                assertEquals(epoch + (unknown ? 2 : 1), data.saveEpoch());
+                assertTrue(data.acknowledgement().orElseThrow().proves(watch));
+                assertTrue(reload().satellite(later).isPresent());
+                assertFalse(data.isDirty()); assertFalse(data.flushPending());
+            }
         }
     }
 

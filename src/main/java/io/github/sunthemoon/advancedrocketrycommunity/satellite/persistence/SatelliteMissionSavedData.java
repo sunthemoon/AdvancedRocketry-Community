@@ -287,6 +287,19 @@ public final class SatelliteMissionSavedData extends SavedData {
         return result;
     }
 
+    public SatelliteOperationResult previewLaunch(UUID satellite, UUID mission, UUID owner,
+            SatelliteDefinition definition, ResourceLocation target, boolean discoveryRequired) {
+        requireOperational();
+        if (deploymentPending(satellite)) { return deploymentPendingResult(); }
+        return registry.previewLaunch(satellite, mission, owner, definition, target, discoveryRequired);
+    }
+    public SatelliteOperationResult previewIdle(java.util.function.LongFunction<SatelliteState> factory) {
+        requireOperational();
+        SatelliteState candidate = factory.apply(registry.logicalGameTime());
+        if (deploymentPending(candidate.satelliteId())) { return deploymentPendingResult(); }
+        return registry.previewIdle(time -> candidate);
+    }
+
     public SatelliteOperationResult decommission(
             UUID satelliteId,
             UUID requesterId,
