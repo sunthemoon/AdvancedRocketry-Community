@@ -38,7 +38,7 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: 81c987f9 (W116 merged: P1-N3 leaf N3-A2, the ordinary retirement follow-ups; before it, 4153204e merged W114 with W114F, the R40 and R41 receipt charges)
+latest_code_commit: d6319f9f (W107B merged: the loader cut C1's gated fixture save; before it, 81c987f9 merged W116, P1-N3 leaf N3-A2)
 latest_hosted_regression: run 39396267820 at f1223c02 (the W115 merge f8ddfc25) failed only EscrowCoreGameTests.ownTerrainAndEntityStoresConfirmTheExactFrozenFrontier after 200 ticks, the escrow proof flake that W111 fixed (merged ead8d323). Runs 39381441858 at d6f97f3a and 39376267447 at 43ee0aa0 passed all required GameTests and the log checker; the same test failed on the runs at bd1c78b9, d2f0d00c, 9f6668aa, 67dee026, fb1ac454 and 20a82b88 (at 9f6668aa also supersededTerrainProofRetriesTheSameFrontierAfterBackoff)
 ledger_planned_units: 19
 asset_review_items: 154
@@ -111,7 +111,7 @@ What is still open:
   retry tests their own batch; open until hosted runs confirm it.
 - **S2.** W11b2's crash cuts passed natively as development evidence (the W11b2 records). Of
   W11b3's loader cut families, B3-S1 and B3-S2 (all 21 cuts, two restarts each) have native
-  evidence (W97 and W97B, merged `fe25244b`); B3-S3 matched 22 of its 23 cuts (W105, merged `bd1c78b9`, and W107's D2-C4-before, merged `9f6668aa`); W107 also passed 15 B3-S4 and B3-S5 cuts. C1, E1, part of E2 and E4, R1's floors and R3 remain (W107B, under Root decision R36); B3-S6 remains.
+  evidence (W97 and W97B, merged `fe25244b`); B3-S3 matched 22 of its 23 cuts (W105, merged `bd1c78b9`, and W107's D2-C4-before, merged `9f6668aa`); W107 also passed 15 B3-S4 and B3-S5 cuts. C1 then passed with R36's gated fixture save (W107B, merged `d6319f9f`). E1's own-store failure, E2, R1 and R3 remain (W107C, under Root decision R43), E4 is an in-process residual, and B3-S6 remains.
 - **V1 and V2.** No slice has real-GPU or two-client evidence.
 - **C19.** W58 audited it (`records/W58.md`). Merged since: the validator chain and the G4 fix
   (C19-A), the portable evidence links (W60), correction files in the Markdown check and the
