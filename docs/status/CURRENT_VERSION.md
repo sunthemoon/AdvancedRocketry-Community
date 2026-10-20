@@ -39,7 +39,7 @@ development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
 latest_code_commit: d6319f9f (W107B merged: the loader cut C1's gated fixture save; before it, 81c987f9 merged W116, P1-N3 leaf N3-A2)
-latest_hosted_regression: run 39396267820 at f1223c02 (the W115 merge f8ddfc25) failed only EscrowCoreGameTests.ownTerrainAndEntityStoresConfirmTheExactFrozenFrontier after 200 ticks, the escrow proof flake that W111 fixed (merged ead8d323). Runs 39381441858 at d6f97f3a and 39376267447 at 43ee0aa0 passed all required GameTests and the log checker; the same test failed on the runs at bd1c78b9, d2f0d00c, 9f6668aa, 67dee026, fb1ac454 and 20a82b88 (at 9f6668aa also supersededTerrainProofRetriesTheSameFrontierAfterBackoff)
+latest_hosted_regression: run 39421969414 at dcebe3a8 (W116 and W107B merged) passed all required GameTests and the log checker on its re-run; its first attempt failed only EscrowGovernedLiveReturnGameTests.rejectedDestinationSpawnReturnsToF6WithPassenger, once (QUEUE lists it). Runs 39415014258 at 2e44edcc (the W114 merge) and 39411638524 at d9f031d4 (the W111 merge) passed, so the escrow proof tests have passed on every hosted run since W111. Before W111, EscrowCoreGameTests.ownTerrainAndEntityStoresConfirmTheExactFrozenFrontier failed on the runs at bd1c78b9, d2f0d00c, 9f6668aa, 67dee026, fb1ac454, 20a82b88 and f1223c02
 ledger_planned_units: 19
 asset_review_items: 154
 required_gates_approved: none
@@ -108,7 +108,7 @@ What is still open:
   can still exhaust the existing 200-tick tests (residual). The hosted failures from `843ea4dc` to
   `f1223c02` came from delay, not supersession: fixture generation and queued chunk writes inside the
   200 ticks. W111 (merged `ead8d323`) prepares every remote fixture area before the batch and gives the two
-  retry tests their own batch; open until hosted runs confirm it.
+  retry tests their own batch; the hosted runs at `d9f031d4`, `2e44edcc` and `dcebe3a8` passed them.
 - **S2.** W11b2's crash cuts passed natively as development evidence (the W11b2 records). Of
   W11b3's loader cut families, B3-S1 and B3-S2 (all 21 cuts, two restarts each) have native
   evidence (W97 and W97B, merged `fe25244b`); B3-S3 matched 22 of its 23 cuts (W105, merged `bd1c78b9`, and W107's D2-C4-before, merged `9f6668aa`); W107 also passed 15 B3-S4 and B3-S5 cuts. C1 then passed with R36's gated fixture save (W107B, merged `d6319f9f`). E1's own-store failure, E2, R1 and R3 remain (W107C, under Root decision R43), E4 is an in-process residual, and B3-S6 remains.
