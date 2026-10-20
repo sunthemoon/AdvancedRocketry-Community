@@ -1798,6 +1798,13 @@ scope (`93659768`). It changes no decision status and accepts no risk.
   fill that fails is held alone as REPAIR with the existing `OTHER_STATE` reason and one
   `ARCE_ESCROW_FLUID_UNAVAILABLE` WARN. Cargo payload objects stay native; C-E calls the check before
   its C2, O2 and readback act. No saved format, hash or bound changed (R-035).
+- **Receipt charges (R40 and R41, W114 with W114F, merged `4153204e`).** A new settlement decision
+  takes an actor name of 1 to 16 characters in ASCII 33 to 126, the 1.20.1 login rule; a player whose
+  profile name does not conform settles from the server console, and stored decisions keep their
+  128-byte decode bound. Admission and the shared preview charge one rocket marker for the rocket a
+  cargo member names and five for any other rocket. Every guarded receipt then fits in 2,048 bytes
+  on every registered Level (worst at Tau Ceti g: 1,557 bytes for cargo, 1,833 for fuel). No saved
+  format, ceiling or decode bound changed (R-035).
 - **Preparation (C-P part 2, W112 with W112F, merged `16b368f6`).** A cargo change is reconstructed
   in RAM by one session-owned ticket at a time, within one reconstruction, 16 MiB and 16,384 visits
   per server tick, with byte-identical hashes. While a ticket exists, the rocket's refuel,

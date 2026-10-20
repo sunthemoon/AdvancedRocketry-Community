@@ -38,7 +38,7 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: ead8d323 (W111 merged: the escrow proof GameTests prepare their fixture areas before each batch; before it, f8ddfc25 merged W115, structural decoding for durable fluid payloads)
+latest_code_commit: 4153204e (W114 merged with W114F: the R40 and R41 receipt charges, so every guarded receipt fits on every registered Level; before it, ead8d323 merged W111, the escrow proof GameTest fix)
 latest_hosted_regression: run 39396267820 at f1223c02 (the W115 merge f8ddfc25) failed only EscrowCoreGameTests.ownTerrainAndEntityStoresConfirmTheExactFrozenFrontier after 200 ticks, the escrow proof flake that W111 fixed (merged ead8d323). Runs 39381441858 at d6f97f3a and 39376267447 at 43ee0aa0 passed all required GameTests and the log checker; the same test failed on the runs at bd1c78b9, d2f0d00c, 9f6668aa, 67dee026, fb1ac454 and 20a82b88 (at 9f6668aa also supersededTerrainProofRetriesTheSameFrontierAfterBackoff)
 ledger_planned_units: 19
 asset_review_items: 154
