@@ -35,6 +35,9 @@ public final class EscrowItemStackCodec {
             noCapabilities(saved);
             int count = saved.getByte("Count");
             EscrowTags.require(!name.equals("minecraft:air") && count >= 1 && count <= 64, "Invalid cargo item or count");
+            // PlayerHeadItem can rewrite a string owner asynchronously after ItemStack.of returns.
+            EscrowTags.require(!name.equals("minecraft:player_head")
+                    || !saved.getCompound("tag").contains("SkullOwner", Tag.TAG_STRING), "Deferred player-head owner rewrite");
         } catch (Refusal refused) { throw refused; }
         catch (RuntimeException invalid) { throw new Refusal(Status.INVALID_DATA, "Invalid cargo stack structure"); }
     }
