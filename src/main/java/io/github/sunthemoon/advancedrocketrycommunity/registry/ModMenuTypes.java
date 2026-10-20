@@ -137,6 +137,9 @@ public final class ModMenuTypes {
     public static final RegistryObject<MenuType<io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketFluidCargoMenu>>
             ROCKET_FLUID_CARGO = MENUS.register("rocket_fluid_cargo", () -> IForgeMenuType.create(
                     io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketFluidCargoMenu::new));
+    public static final RegistryObject<MenuType<io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketItemCargoMenu>>
+            ROCKET_ITEM_CARGO = MENUS.register("rocket_item_cargo", () -> IForgeMenuType.create(
+                    io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketItemCargoMenu::new));
 
     private ModMenuTypes() {
     }

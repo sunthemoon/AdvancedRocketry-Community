@@ -39,7 +39,11 @@ final class RocketCargoBindingChecks {
      * loaded; nothing is loaded here.
      */
     static Resolved resolve(ServerLevel level, BlockPos device, RocketFluidCargoRoot root) {
-        LoaderBinding binding = root.binding();
+        return resolve(level, device, root.owner(), root.binding());
+    }
+
+    /** The same lookup for either device kind, from the device's persisted owner and binding. */
+    static Resolved resolve(ServerLevel level, BlockPos device, UUID owner, LoaderBinding binding) {
         if (binding == null) {
             return Resolved.refused(RocketCargoStatus.UNBOUND);
         }
@@ -62,7 +66,7 @@ final class RocketCargoBindingChecks {
                 || !Objects.equals(station(flight), binding.station()) || duplicated(level, device, rocket)) {
             return Resolved.refused(RocketCargoStatus.STALE_BINDING);
         }
-        if (root.owner() == null || !rocket.ownerId().filter(root.owner()::equals).isPresent()) {
+        if (owner == null || !rocket.ownerId().filter(owner::equals).isPresent()) {
             return Resolved.refused(RocketCargoStatus.NOT_OWNER);
         }
         if (!withinRange(rocket, device)) {
@@ -73,7 +77,12 @@ final class RocketCargoBindingChecks {
 
     /** Admission remains unwired; checking an existing binding never prepares a snapshot or transfers cargo. */
     static RocketCargoStatus check(ServerLevel level, BlockPos device, RocketFluidCargoRoot root) {
-        Resolved resolved = resolve(level, device, root);
+        return check(level, device, root.owner(), root.binding());
+    }
+
+    /** The same check for either device kind. */
+    static RocketCargoStatus check(ServerLevel level, BlockPos device, UUID owner, LoaderBinding binding) {
+        Resolved resolved = resolve(level, device, owner, binding);
         if (resolved.refusal() != null) { return resolved.refusal(); }
         RocketEntity rocket = resolved.rocket();
         if (!stationary(rocket) || occupied(rocket)) { return RocketCargoStatus.ROCKET_BUSY; }
