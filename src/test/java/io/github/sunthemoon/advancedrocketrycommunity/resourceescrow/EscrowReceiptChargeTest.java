@@ -85,6 +85,11 @@ class EscrowReceiptChargeTest {
             var replies = new ArrayList<Boolean>();
             assertEquals(EscrowCoordinator.Transfer.QUEUED, coordinator.prepareTransfer(new EscrowNativeBinding.Admission(op,
                     RocketEscrowSection.neutral()), replies::add));
+            // Exercise the unrelated O1 against the admitted prospective root before the writer's own shared preflight.
+            var admitted = coordinator.ledger().append(List.of(op));
+            var decision = intent(admitted, unrelated, 0, 0, false, false);
+            var previewFrozen = assertDoesNotThrow(() -> decision.freeze(admitted));
+            assertEquals(op, previewFrozen.records().get(1));
             assertTrue(coordinator.commitPreparations()); io.tickUntil(coordinator::tick, 1, writer::idle);
             assertEquals(List.of(true), replies); assertEquals(List.of(unrelated, op), coordinator.ledger().records());
             var intent = intent(coordinator.ledger(), unrelated, 0, 0, false, false);
