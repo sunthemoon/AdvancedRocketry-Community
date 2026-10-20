@@ -10,7 +10,14 @@ final class EscrowTransferAdmission {
         return !op.kind().transfer() || op.phase() != EscrowOperation.Phase.PREPARED
                 || op.reason() != EscrowReason.NONE || !op.settlement().isEmpty() || !op.nativeBinding().complete()
                 || op.nativeBinding().kind() != (op.kind().cargo()
-                ? EscrowSignatureKind.ROCKET_COMPOSITE_V1 : EscrowSignatureKind.FUEL_VECTOR_V1);
+                ? EscrowSignatureKind.ROCKET_COMPOSITE_V1 : EscrowSignatureKind.FUEL_VECTOR_V1)
+                || !nativeFluid(op);
+    }
+    /** R39 for fluids: admission repeats the full native check that a durable record no longer carries. */
+    static boolean nativeFluid(EscrowOperation op) {
+        if (!op.kind().fluid()) { return true; }
+        try { op.nativeFluid(); return true; }
+        catch (IllegalArgumentException unavailable) { return false; }
     }
     static Optional<EscrowCoordinator.Transfer> refusal(EscrowLedger root, Collection<EscrowOperation> pending,
                                                        EscrowNativeBinding.Admission capture) {

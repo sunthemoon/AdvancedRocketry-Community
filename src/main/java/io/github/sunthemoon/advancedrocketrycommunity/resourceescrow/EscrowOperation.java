@@ -17,6 +17,7 @@ public record EscrowOperation(UUID id, long sequence, UUID owner, long createdTi
         public boolean cargo() { return this == FLUID_CARGO_LOAD || this == FLUID_CARGO_UNLOAD || itemCargo(); }
         public boolean cargoLoad() { return this == FLUID_CARGO_LOAD || this == ITEM_CARGO_LOAD; }
         public boolean transfer() { return this == FLUID_PROPULSION_FILL || cargo(); }
+        public boolean fluid() { return this == FLUID_PROPULSION_FILL || this == FLUID_CARGO_LOAD || this == FLUID_CARGO_UNLOAD; }
     }
     public enum Phase { PREPARED, STALLED, REPAIR, SETTLING_ACCEPT, SETTLING_ABANDON }
 
@@ -40,14 +41,9 @@ public record EscrowOperation(UUID id, long sequence, UUID owner, long createdTi
         Objects.requireNonNull(nativeBinding).requireOperation(owner, source, destination); nativeBinding.encode();
         EscrowTags.require(sequence > 0 && createdTick >= 0, "Invalid operation counters");
         EscrowTags.bound(payload, EscrowLimits.FLUID_BYTES, 12, 384);
+        // R39 for fluids: a durable record is structural; consumers that act call nativeFluid() first.
         if (kind == Kind.FLUID_PROPULSION_FILL) {
-            EscrowTags.fields(payload, "FluidName", "Amount", "Tag");
-            EscrowTags.id(EscrowTags.string(payload, "FluidName"));
-            int amount = EscrowTags.integer(payload, "Amount");
-            EscrowTags.require(amount >= 1 && amount <= 1_000, "Invalid admitted fluid amount");
-            if (payload.contains("Tag")) { EscrowTags.compound(payload, "Tag"); }
-            var fluid = net.minecraftforge.fluids.FluidStack.loadFluidStackFromNBT(payload.copy());
-            EscrowTags.require(!fluid.isEmpty() && fluid.writeToNBT(new CompoundTag()).equals(payload), "Noncanonical or unavailable native Fluid");
+            EscrowFluidCodec.validateStructure(payload);
             EscrowTags.require(source.kind() == EscrowEndpoint.Kind.BLOCK_ENTITY
                     && destination.kind() == EscrowEndpoint.Kind.ENTITY
                     && source.level().equals(destination.level())
@@ -56,7 +52,7 @@ public record EscrowOperation(UUID id, long sequence, UUID owner, long createdTi
             EscrowCargoPayload.Cursor cursor;
             if (kind.itemCargo()) {
                 var cargo = EscrowItemCargoPayload.decode(payload); cargo.requireDirection(kind.cargoLoad()); cursor = cargo.cursor();
-            } else { cursor = EscrowCargoPayload.decode(payload).cursor(); }
+            } else { cursor = EscrowCargoPayload.validateStructure(payload); }
             var rocket = rocket(source, destination);
             var device = source == rocket ? destination : source;
             var unit = kind.itemCargo() ? EscrowEndpoint.Unit.CONTAINER : EscrowEndpoint.Unit.TANK;
@@ -101,6 +97,11 @@ public record EscrowOperation(UUID id, long sequence, UUID owner, long createdTi
 
     @Override public CompoundTag payload() { return payload.copy(); }
     @Override public CompoundTag settlement() { return settlement.copy(); }
+    /** R39 for fluids: the one native check, run where a fill or fluid cargo operation acts on its Fluid. */
+    public net.minecraftforge.fluids.FluidStack nativeFluid() {
+        EscrowTags.require(kind.fluid(), "Not a fluid operation");
+        return EscrowFluidCodec.validateNative(kind == Kind.FLUID_PROPULSION_FILL ? payload : EscrowTags.compound(payload, "fluid"));
+    }
     private static void requireItemEndpoints(Kind kind, EscrowEndpoint source, EscrowEndpoint destination) {
         var rocket = kind.cargoLoad() ? destination : source;
         var device = kind.cargoLoad() ? source : destination;

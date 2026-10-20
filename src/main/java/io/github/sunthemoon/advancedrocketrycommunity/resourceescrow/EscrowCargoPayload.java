@@ -4,7 +4,10 @@ import java.util.UUID;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 
-/** Schema-1 fluid delta and immutable payload address; never a live capability or a selection request. */
+/**
+ * Schema-1 fluid delta and immutable payload address; never a live capability or a selection request. An instance is
+ * natively checked (R39 for fluids): durable records use {@link #validateStructure} and never construct one.
+ */
 public record EscrowCargoPayload(Cursor cursor, CompoundTag fluid) {
     public record Cursor(UUID snapshot, int x, int y, int z, String adapter) {
         public Cursor {
@@ -30,15 +33,7 @@ public record EscrowCargoPayload(Cursor cursor, CompoundTag fluid) {
     }
     public EscrowCargoPayload {
         java.util.Objects.requireNonNull(cursor).encode();
-        EscrowTags.bound(fluid, EscrowLimits.FLUID_BYTES, 12, 384);
-        EscrowTags.fields(fluid, "FluidName", "Amount", "Tag");
-        EscrowTags.id(EscrowTags.string(fluid, "FluidName"));
-        int amount = EscrowTags.integer(fluid, "Amount");
-        EscrowTags.require(amount >= 1 && amount <= 1_000, "Invalid cargo fluid amount");
-        if (fluid.contains("Tag")) { EscrowTags.compound(fluid, "Tag"); }
-        var nativeFluid = net.minecraftforge.fluids.FluidStack.loadFluidStackFromNBT(fluid.copy());
-        EscrowTags.require(!nativeFluid.isEmpty() && nativeFluid.writeToNBT(new CompoundTag()).equals(fluid),
-                "Noncanonical or unavailable cargo Fluid");
+        EscrowFluidCodec.validateNative(fluid);
         EscrowTags.bound(frame(cursor, fluid), EscrowLimits.FLUID_BYTES, 12, 384);
         fluid = fluid.copy();
     }
@@ -48,9 +43,16 @@ public record EscrowCargoPayload(Cursor cursor, CompoundTag fluid) {
         var tag = new CompoundTag(); tag.putInt("v", 1); tag.put("cursor", cursor.encode());
         tag.put("fluid", fluid.copy()); return tag;
     }
-    public static EscrowCargoPayload decode(CompoundTag tag) {
+    /** Durable decoding: the frame, cursor and fluid structure only, never a registry lookup or a FluidStack. */
+    public static Cursor validateStructure(CompoundTag tag) {
         EscrowTags.bound(tag, EscrowLimits.FLUID_BYTES, 12, 384); EscrowTags.fields(tag, "v", "cursor", "fluid");
         EscrowTags.require(EscrowTags.integer(tag, "v") == 1, "Unsupported cargo payload");
-        return new EscrowCargoPayload(Cursor.decode(EscrowTags.compound(tag, "cursor")), EscrowTags.compound(tag, "fluid"));
+        var cursor = Cursor.decode(EscrowTags.compound(tag, "cursor"));
+        EscrowFluidCodec.validateStructure(EscrowTags.compound(tag, "fluid"));
+        return cursor;
+    }
+    /** Native materialization for a consumer that acts on the delta; it runs the native check. */
+    public static EscrowCargoPayload decode(CompoundTag tag) {
+        return new EscrowCargoPayload(validateStructure(tag), EscrowTags.compound(tag, "fluid"));
     }
 }
