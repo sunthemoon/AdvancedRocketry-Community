@@ -1790,6 +1790,13 @@ scope (`93659768`). It changes no decision status and accepts no risk.
   readback, where a failure holds only that operation for REPAIR (C-E and D-E wire them). Item
   operations require the loader as source and the rocket as destination, or the reverse for an
   unload. An older jar refuses a ledger with item records as invalid data, keeping the bytes (R-035).
+- **Preparation (C-P part 2, W112 with W112F, merged `16b368f6`).** A cargo change is reconstructed
+  in RAM by one session-owned ticket at a time, within one reconstruction, 16 MiB and 16,384 visits
+  per server tick, with byte-identical hashes. While a ticket exists, the rocket's refuel,
+  disassembly and launch are refused; only an escrow-idle rocket can begin one. The ticket ends on
+  publication, on any change that invalidates it (unload, movement, a new snapshot), or after 40
+  server ticks without progress or unpublished once READY, with one INFO line
+  (`ARCE_CARGO_PREPARATION_CLOSED`). Nothing is saved; the prior snapshot stays authoritative.
 - **Admission.** Cargo admission has its own per-kind switches and stays off until the cargo S2
   evidence, the part-1 closures and the benchmarks pass and the Root or owner decision is recorded
   with the source and the JAR. R-031, R-032 and the Required Gates are unchanged.
