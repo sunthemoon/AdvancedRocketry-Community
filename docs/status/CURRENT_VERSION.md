@@ -39,7 +39,7 @@ development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
 latest_code_commit: 76c187ca (W27c1 merged with W27C1F: the bay receipt store, deployment disabled; before it, fb1ac454 merged W109, cargo C-A's fluid devices with C-D's resources)
-latest_hosted_regression: run 39302851008 at 3075a240 (the W106 merge) passed all required GameTests and the log checker. The two runs before it, 39295247351 at bd1c78b9 and 39293852197 at d2f0d00c, each failed EscrowCoreGameTests.ownTerrainAndEntityStoresConfirmTheExactFrozenFrontier after 200 ticks, right after a concurrent retry test's injected terrain save, and 39313671980 at 9f6668aa failed that test and supersededTerrainProofRetriesTheSameFrontierAfterBackoff (W111, active). The run at 67dee026 is in progress
+latest_hosted_regression: run 39302851008 at 3075a240 (the W106 merge) passed all required GameTests and the log checker. The two runs before it, 39295247351 at bd1c78b9 and 39293852197 at d2f0d00c, each failed EscrowCoreGameTests.ownTerrainAndEntityStoresConfirmTheExactFrozenFrontier after 200 ticks, right after a concurrent retry test's injected terrain save, and 39313671980 at 9f6668aa failed that test and supersededTerrainProofRetriesTheSameFrontierAfterBackoff (W111, active). Runs 39316689065 at 67dee026 and 39332547336 at fb1ac454 each failed only ownTerrainAndEntityStoresConfirmTheExactFrozenFrontier after 200 ticks (the sleep fixtures passed); the run at 20a82b88 is in progress
 ledger_planned_units: 19
 asset_review_items: 154
 required_gates_approved: none
