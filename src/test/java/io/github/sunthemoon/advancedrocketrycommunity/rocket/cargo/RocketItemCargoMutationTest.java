@@ -116,18 +116,27 @@ class RocketItemCargoMutationTest {
         assertEquals(stack(Items.DIRT, 3), RocketItemCargoMutation.buffer(buffer, delta(one, 0, stack(Items.DIRT, 3), 4, 2), false).slots().get(2));
     }
 
-    @Test void lootLargeChestsAndOtherSubclassesRefuseWithTheirOwnStatus() {
+    @Test void lootAndOtherSubclassesRefuseWithTheirOwnStatusWhileDoubleChestHalvesHoldCargo() {
         var lootData = new CompoundTag(); lootData.putString("LootTable", "minecraft:chests/simple_dungeon"); lootData.putLong("LootTableSeed", 5);
         var loot = snapshot(block(0, state(CHEST), new RocketBlockEntityPayload(
                 io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.VanillaContainerRocketAdapter.ID, lootData)));
         assertEquals(Status.UNRESOLVED_LOOT, refusal(loot, true));
+        // R44: each half of a vanilla double chest is its own 27-slot chest or trapped chest payload.
         for (var side : List.of("left", "right")) {
-            var half = snapshot(block(0, new RocketBlockState(CHEST, Map.of("facing", "north", "type", side, "waterlogged", "false")),
-                    container(null, null, entry(0, stack(Items.STONE, 1)))));
-            assertEquals(Status.NO_CARGO_STORAGE, refusal(half, true), side);
-            var trapped = snapshot(block(0, new RocketBlockState(TRAPPED, Map.of("facing", "north", "type", side, "waterlogged", "false")),
-                    container(null, null, entry(0, stack(Items.STONE, 1)))));
-            assertEquals(Status.NO_CARGO_STORAGE, refusal(trapped, false), side);
+            for (var id : List.of(CHEST, TRAPPED)) {
+                var halfState = new RocketBlockState(id, Map.of("facing", "north", "type", side, "waterlogged", "false"));
+                var half = snapshot(block(0, halfState, container(null, null, entry(0, stack(Items.STONE, 1)))));
+                assertTrue(RocketItemCargoMutation.storage(halfState), side + " " + id);
+                var loaded = RocketItemCargoMutation.apply(half, delta(half, 0, stack(Items.STONE, 1), 0, 1), true);
+                assertEquals(1, count(slots(loaded, 0).get(1)), side + " " + id);
+                var unloaded = RocketItemCargoMutation.apply(half, delta(half, 0, stack(Items.STONE, 1), 0, 0), false);
+                assertTrue(slots(unloaded, 0).isEmpty(), side + " " + id);
+                for (var after : List.of(loaded, unloaded)) {
+                    assertEquals(halfState, after.blocks().stream().filter(b -> b.position().equals(new RocketPosition(0, 0, 0)))
+                            .findFirst().orElseThrow().state());
+                    assertEquals(half.structureDigest(), after.structureDigest());
+                }
+            }
         }
         var large = snapshot(block(0, new RocketBlockState(ResourceLocation.tryParse("fixture:large_chest"), Map.of()),
                 container(null, null, entry(0, stack(Items.STONE, 1)), entry(53, stack(Items.STONE, 1)))));

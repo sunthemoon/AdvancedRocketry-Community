@@ -105,7 +105,7 @@ public final class RocketItemCargoMutation {
     /** A cargo container's occupied slots, keyed by unsigned slot; refuses non-cargo storage before reading Items. */
     public static SortedMap<Integer, CompoundTag> container(RocketBlockState state, RocketBlockEntityPayload payload) {
         if (!VanillaContainerRocketAdapter.ID.equals(payload.adapterId()) || !storage(state)) {
-            throw new Refusal(Status.NO_CARGO_STORAGE, "Only single chests, trapped chests and barrels hold item cargo");
+            throw new Refusal(Status.NO_CARGO_STORAGE, "Only chests, trapped chests and barrels hold item cargo");
         }
         var data = payload.data();
         if (data.contains("LootTable")) { throw new Refusal(Status.UNRESOLVED_LOOT, "Container loot is unresolved"); }
@@ -128,11 +128,9 @@ public final class RocketItemCargoMutation {
         return slots;
     }
 
-    /** A single chest or trapped chest, or a barrel; a large chest half ({@code type} left or right) is not. */
+    /** A chest, trapped chest or barrel; each half of a vanilla double chest is its own 27-slot payload (R44). */
     public static boolean storage(RocketBlockState state) {
-        if (!STORAGE.contains(state.blockId())) { return false; }
-        var type = state.properties().get("type");
-        return type == null || type.equals("single");
+        return STORAGE.contains(state.blockId());
     }
 
     /** Merge identity is D-K's: same item, equal tags and equal canonical digests; Count never decides. */

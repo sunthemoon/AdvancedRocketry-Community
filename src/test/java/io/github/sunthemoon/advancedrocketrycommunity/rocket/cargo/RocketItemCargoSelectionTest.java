@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.function.Function;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import org.junit.jupiter.api.BeforeAll;
@@ -88,18 +89,25 @@ class RocketItemCargoSelectionTest {
         assertEquals(Status.INVALID_DATA, RocketItemCargoSelection.select(snapshot(CHEST, entry(0, caps)), buffer(), false, ANY).status());
     }
 
-    @Test void lootLargeChestsAndUnreadableContainersAreSkippedWithTheirStatus() {
+    @Test void lootOtherSubclassesAndUnreadableContainersAreSkippedWithTheirStatus() {
         var lootData = new CompoundTag(); lootData.putString("LootTable", "minecraft:chests/simple_dungeon");
         var loot = block(0, state(CHEST), new RocketBlockEntityPayload(VanillaContainerRocketAdapter.ID, lootData));
-        var half = block(1, new RocketBlockState(CHEST, Map.of("facing", "north", "type", "left", "waterlogged", "false")),
-                container(null, null));
+        var other = block(1, new RocketBlockState(ResourceLocation.tryParse("fixture:copper_chest"), Map.of()),
+                container(null, null, entry(0, stack(Items.STONE, 5))));
         var badData = new CompoundTag(); badData.putInt("Items", 3);
         var bad = block(2, state(BARREL), new RocketBlockEntityPayload(VanillaContainerRocketAdapter.ID, badData));
-        var good = block(3, state(TRAPPED), container(null, null));
+        // R44: a double chest half is a 27-slot cargo target, so it is the first container offered here.
+        var half = block(3, new RocketBlockState(CHEST, Map.of("facing", "north", "type", "left", "waterlogged", "false")),
+                container(null, null, entry(0, stack(Items.STONE, 3))));
+        var good = block(4, state(TRAPPED), container(null, null));
         var buffer = buffer(stack(Items.STONE, 1));
-        assertEquals(3, select(snapshot(loot, half, bad, good), buffer, true, ANY).cursor().x());
+        assertEquals(3, select(snapshot(loot, other, bad, half, good), buffer, true, ANY).cursor().x());
+        assertEquals(4, select(snapshot(loot, other, bad, good), buffer, true, ANY).cursor().x());
         assertEquals(Status.UNRESOLVED_LOOT, RocketItemCargoSelection.select(snapshot(loot), buffer, true, ANY).status());
-        assertEquals(Status.NO_CARGO_STORAGE, RocketItemCargoSelection.select(snapshot(half), buffer, false, ANY).status());
+        assertEquals(Status.NO_CARGO_STORAGE, RocketItemCargoSelection.select(snapshot(other), buffer, false, ANY).status(),
+                "A nonempty subclass refuses as storage, not as an empty container");
+        var unload = select(snapshot(other, half), buffer, false, ANY);
+        assertEquals(3, unload.cursor().x()); assertEquals(0, unload.from()); assertEquals(3, count(unload.stack()));
         assertEquals(Status.UNSUPPORTED_DATA, RocketItemCargoSelection.select(snapshot(bad), buffer, true, ANY).status());
         assertEquals(Status.NO_CARGO_STORAGE, RocketItemCargoSelection.select(snapshot(), buffer, true, ANY).status());
         var called = new boolean[1];

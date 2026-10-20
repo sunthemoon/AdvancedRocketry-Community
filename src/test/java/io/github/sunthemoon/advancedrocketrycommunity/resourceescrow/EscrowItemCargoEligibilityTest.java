@@ -15,6 +15,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBoots
 import java.util.List;
 import java.util.Map;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import org.junit.jupiter.api.BeforeAll;
@@ -64,9 +65,21 @@ class EscrowItemCargoEligibilityTest {
         var loot = ItemCargoTestFixtures.snapshot(ItemCargoTestFixtures.block(0, ItemCargoTestFixtures.state(ItemCargoTestFixtures.CHEST),
                 new RocketBlockEntityPayload(VanillaContainerRocketAdapter.ID, lootData)));
         assertEquals(UNRESOLVED_LOOT, check(withBefore(c, loot)).status());
-        var half = ItemCargoTestFixtures.snapshot(ItemCargoTestFixtures.block(0, new RocketBlockState(ItemCargoTestFixtures.CHEST,
-                Map.of("facing", "north", "type", "right", "waterlogged", "false")), ItemCargoTestFixtures.container(null, null)));
-        assertEquals(NO_CARGO_STORAGE, check(withBefore(c, half)).status());
+        var other = ItemCargoTestFixtures.snapshot(ItemCargoTestFixtures.block(0, new RocketBlockState(
+                ResourceLocation.tryParse("fixture:copper_chest"), Map.of()), ItemCargoTestFixtures.container(null, null)));
+        assertEquals(NO_CARGO_STORAGE, check(withBefore(c, other)).status());
+    }
+
+    /** R44: each half of a vanilla double chest is a 27-slot chest payload and a complete eligible sample. */
+    @Test void aDoubleChestHalfIsACompleteEligibleSampleInBothDirections() {
+        for (boolean load : new boolean[] {true, false}) {
+            for (var side : List.of("left", "right")) {
+                var c = sample(load, 5, stone(-1), new RocketBlockState(ItemCargoTestFixtures.CHEST,
+                        Map.of("facing", "north", "type", side, "waterlogged", "false")));
+                var result = check(c);
+                assertEquals(ELIGIBLE, result.status(), side + " load=" + load); assertNotNull(result.capture());
+            }
+        }
     }
 
     @Test void theNativeStackCheckRunsAtAdmissionWithoutSideEffects() {
@@ -173,10 +186,13 @@ class EscrowItemCargoEligibilityTest {
 
     /** A chest at the snapshot's x = 0 and a device whose buffer slot 0 is the moving end. */
     static Candidate sample(boolean load, int count, CompoundTag contents) {
+        return sample(load, count, contents, ItemCargoTestFixtures.state(ItemCargoTestFixtures.CHEST));
+    }
+    static Candidate sample(boolean load, int count, CompoundTag contents, RocketBlockState state) {
         var full = contents.copy(); full.putByte("Count", (byte) 64);
         var moved = contents.copy(); moved.putByte("Count", (byte) count);
-        var before = load ? ItemCargoTestFixtures.snapshot(ItemCargoTestFixtures.CHEST)
-                : ItemCargoTestFixtures.snapshot(ItemCargoTestFixtures.CHEST, ItemCargoTestFixtures.entry(0, full));
+        var before = ItemCargoTestFixtures.snapshot(ItemCargoTestFixtures.block(0, state, load ? ItemCargoTestFixtures.container(null, null)
+                : ItemCargoTestFixtures.container(null, null, ItemCargoTestFixtures.entry(0, full))));
         var oldBuffer = load ? ItemCargoTestFixtures.buffer(full) : ItemCargoTestFixtures.buffer();
         var delta = ItemCargoTestFixtures.delta(before, 0, moved, 0, 0);
         var after = RocketItemCargoMutation.apply(before, delta, load);

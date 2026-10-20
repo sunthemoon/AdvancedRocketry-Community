@@ -88,10 +88,10 @@ class EscrowItemCargoPreparedCaptureTest {
         var lootData = new CompoundTag(); lootData.putString("LootTable", "minecraft:chests/simple_dungeon");
         var loot = ItemCargoTestFixtures.snapshot(ItemCargoTestFixtures.block(0, ItemCargoTestFixtures.state(ItemCargoTestFixtures.CHEST),
                 new RocketBlockEntityPayload(VanillaContainerRocketAdapter.ID, lootData)));
-        var half = ItemCargoTestFixtures.snapshot(ItemCargoTestFixtures.block(0, new RocketBlockState(ItemCargoTestFixtures.CHEST,
-                Map.of("facing", "north", "type", "left", "waterlogged", "false")), ItemCargoTestFixtures.container(null, null)));
+        var other = ItemCargoTestFixtures.snapshot(ItemCargoTestFixtures.block(0, new RocketBlockState(
+                net.minecraft.resources.ResourceLocation.tryParse("fixture:copper_chest"), Map.of()), ItemCargoTestFixtures.container(null, null)));
         assertEquals(Status.UNRESOLVED_LOOT, staged(c, loot, c.deviceAfter()));
-        assertEquals(Status.NO_CARGO_STORAGE, staged(c, half, c.deviceAfter()));
+        assertEquals(Status.NO_CARGO_STORAGE, staged(c, other, c.deviceAfter()));
         var oversized = c.deviceAfter().copy();
         oversized.getCompound(EscrowItemCargoEligibility.DEVICE_ROOT).putByteArray("extra", new byte[32_700]);
         var before = c.deviceBefore().copy();

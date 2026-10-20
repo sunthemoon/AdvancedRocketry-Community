@@ -15,6 +15,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.*;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.stats.RocketStats;
 import java.util.*;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
@@ -23,7 +24,10 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
+import net.minecraft.world.level.block.entity.ChestBlockEntity;
+import net.minecraft.world.level.block.state.properties.ChestType;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
@@ -75,6 +79,54 @@ public final class EscrowItemCargoGameTests {
             helper.assertTrue(adapters.restore(container, payload), "Before payload no longer restores");
         }
         helper.succeed();
+    }
+
+    /** R44: each half of a placed double chest is its own payload; mutated halves restore exactly and stay one chest. */
+    @GameTest(template = "rocket_test", batch = "item_cargo", timeoutTicks = 40)
+    public static void doubleChestHalvesMutateAndRestoreThroughTheUnchangedAdapter(GameTestHelper helper) {
+        var adapters = RocketBlockEntityAdapters.defaults();
+        var chest = Blocks.CHEST.defaultBlockState().setValue(ChestBlock.FACING, Direction.NORTH);
+        // Facing north, a left half joins the right half to its east.
+        var halves = List.of(new BlockPos(1, 2, 2), new BlockPos(2, 2, 2));
+        helper.setBlock(halves.get(0), chest.setValue(ChestBlock.TYPE, ChestType.LEFT));
+        helper.setBlock(halves.get(1), chest.setValue(ChestBlock.TYPE, ChestType.RIGHT));
+        var entities = halves.stream().map(pos -> (ChestBlockEntity) helper.getBlockEntity(pos)).toList();
+        entities.get(0).setItem(0, new ItemStack(Items.STONE, 10)); entities.get(1).setItem(3, new ItemStack(Items.DIRT, 4));
+        var payloads = entities.stream().map(entity -> adapters.capture(entity).payload()).toList();
+        var blocks = new ArrayList<RocketBlock>();
+        for (int i = 0; i < 2; i++) {
+            var state = RocketBlockStateAdapter.capture(entities.get(i).getBlockState());
+            helper.assertTrue(RocketItemCargoMutation.storage(state), "A double chest half must hold item cargo: " + state);
+            blocks.add(new RocketBlock(new RocketPosition(i, 0, 0), state, payloads.get(i)));
+        }
+        var before = RocketStructureSnapshot.create(UUID.randomUUID(), helper.getLevel().dimension().location(),
+                new RocketPosition(0, 64, 0), blocks, List.of(), new RocketStats(2, 2, 1, 2000, 1, 0, 1, 2), 10, propulsion());
+        var load = new EscrowItemCargoPayload(cursor(before, 0), new ItemStack(Items.STONE, 5).save(new CompoundTag()), 0, 0);
+        var unload = new EscrowItemCargoPayload(cursor(before, 1), new ItemStack(Items.DIRT, 4).save(new CompoundTag()), 3, 1);
+        var after = RocketItemCargoMutation.apply(RocketItemCargoMutation.apply(before, load, true), unload, false);
+        helper.assertTrue(before.structureDigest().equals(after.structureDigest()) && !before.contentHash().equals(after.contentHash()),
+                "Item cargo changed a half's state or kept the hash");
+        for (int i = 0; i < 2; i++) {
+            int x = i;
+            var restored = after.blocks().stream().filter(block -> block.position().x() == x).findFirst().orElseThrow()
+                    .blockEntityPayload().orElseThrow();
+            helper.assertTrue(adapters.restore(entities.get(i), restored) && restored.equals(adapters.capture(entities.get(i)).payload()),
+                    "Half " + i + " did not restore exactly");
+        }
+        helper.assertTrue(entities.get(0).getItem(0).is(Items.STONE) && entities.get(0).getItem(0).getCount() == 15
+                && entities.get(1).getItem(3).isEmpty(), "Wrong half contents after restore");
+        var level = helper.getLevel(); var left = helper.absolutePos(halves.get(0));
+        var joined = ChestBlock.getContainer((ChestBlock) Blocks.CHEST, level.getBlockState(left), level, left, true);
+        helper.assertTrue(joined != null && joined.getContainerSize() == 54 && joined.getItem(27).getCount() == 15,
+                "Restored halves are no longer one double chest");
+        for (int i = 0; i < 2; i++) {
+            helper.assertTrue(adapters.restore(entities.get(i), payloads.get(i)) && payloads.get(i).equals(adapters.capture(entities.get(i)).payload()),
+                    "Before payload of half " + i + " no longer restores");
+        }
+        helper.succeed();
+    }
+    private static EscrowCargoPayload.Cursor cursor(RocketStructureSnapshot snapshot, int x) {
+        return new EscrowCargoPayload.Cursor(snapshot.snapshotId(), x, 0, 0, VanillaContainerRocketAdapter.ID.toString());
     }
 
     /** W112's ticket, native capture and one-use permit carry an item delta; the device side is a fixture until D-A. */
