@@ -112,6 +112,19 @@ class LoaderCutsTest(unittest.TestCase):
         for cut in ("LF_M_E4L2_FAIL", "LF_M_E4L2_UNKNOWN", "LF_M_E4L2_RESAVE", "LF_M_E4L2_RESAVE_RESOLVED"):
             with self.assertRaises(oracle.smoke.SmokeError): oracle.check(fixture("LF_M_K9", 0), cut, 0)
 
+    def test_c1_fixture_save_must_write_exactly_the_required_live_prefix(self):
+        line = ("[Server thread/INFO] [advancedrocketrycommunity/]: ARCE_LOADER_MATRIX_FIXTURE_SAVE cut=LF_M_C1 terrain=4,4 "
+                "entities=4,4 tanks=[4000, 4000] epochs=[1, 1] source_markers=[1, 1] bank=1000 rocket_epoch=1 rocket_markers=1")
+        runner.one_match(runner.FIXTURE_SAVE, [line])
+        for old, new in (("tanks=[4000, 4000]", "tanks=[4000, 5000]"), ("bank=1000", "bank=0"),
+                         ("rocket_epoch=1", "rocket_epoch=2"), ("source_markers=[1, 1]", "source_markers=[1, 0]")):
+            with self.assertRaises(oracle.smoke.SmokeError): runner.one_match(runner.FIXTURE_SAVE, [line.replace(old, new)])
+        with self.assertRaises(oracle.smoke.SmokeError): runner.one_match(runner.FIXTURE_SAVE, [line, line])
+        # The unchanged oracle still demands the durable unequal prefix, not the stores W107 observed.
+        good = fixture("LF_M_C1", 0); oracle.check(good, "LF_M_C1", 0)
+        observed = copy.deepcopy(good); observed["loaders"][1]["arce_fluid_fuel_loader"]["tank"]["Amount"] = 5000
+        with self.assertRaises(oracle.smoke.SmokeError): oracle.check(observed, "LF_M_C1", 0)
+
     def test_c4_before_requires_destination_only_durable_state(self):
         self.assertEqual(oracle.expected("LF_M_K5", 0), oracle.expected("LF_M_D2_C4_BEFORE", 0))
         for wrong in ("LF_M_K4", "LF_M_K6"):

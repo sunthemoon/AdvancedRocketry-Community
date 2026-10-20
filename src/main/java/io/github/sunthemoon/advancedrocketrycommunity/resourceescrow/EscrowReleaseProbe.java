@@ -187,6 +187,17 @@ final class EscrowReleaseProbe {
         net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(new net.minecraftforge.event.level.ChunkDataEvent.Save(chunk, level, newer));
         level.getChunkSource().chunkMap.write(chunk.getPos(), newer);
     }
+    /** R36 item 1: the entity-chunk equivalent of {@link #newerSave}, vanilla's own section store of a loaded chunk. */
+    static void newerEntitySave(ServerLevel level, ChunkPos chunk) {
+        EscrowTestEndpoints.requireEnabled(level.getServer());
+        EscrowTags.require(level.entityManager.storeChunkSections(chunk.toLong(), entity -> { }), "Entity fixture save was refused");
+    }
+    /** Joins both existing workers of the Level, so a fixture's writes are on disk before a forced stop. */
+    static void flushFixtureSaves(ServerLevel level) {
+        EscrowTestEndpoints.requireEnabled(level.getServer());
+        level.getChunkSource().chunkMap.worker.synchronize(true).join();
+        level.entityManager.permanentStorage.flush(true);
+    }
     private void restoreFixture() {
         var source = level.getBlockEntity(POSITION);
         var entities = level.getEntitiesOfClass(ArmorStand.class, new net.minecraft.world.phys.AABB(POSITION).inflate(8), entity -> true);

@@ -27,11 +27,13 @@ from run_v180_rocket_settlement_completion import require_lock
 REPO = Path(__file__).resolve().parents[1]
 LOCK = Path("D:/GitHub/ARCE-Task-Evidence/locks/heavy-jvm")
 HOOK_FILES = tuple("src/main/java/io/github/sunthemoon/advancedrocketrycommunity/resourceescrow/" + name + ".java"
-                   for name in ("EscrowLoaderReleaseProbe", "EscrowLoaderCutProbe", "EscrowLoaderStorageProbe", "EscrowReleaseProbe", "EscrowLedgerWriter", "EscrowFillQueue",
+                   for name in ("EscrowLoaderReleaseProbe", "EscrowLoaderCutProbe", "EscrowLoaderStorageProbe", "EscrowLoaderRecoveryProbe", "EscrowReleaseProbe", "EscrowLedgerWriter", "EscrowFillQueue",
                                 "EscrowReconciliationAction", "EscrowReconciliationDriver", "EscrowRuntime", "EscrowBarrier"))
 FIRST = re.compile(r"ARCE_LOADER_MATRIX_FIRST cut=(\S+) recovery=(true|false) delegate=(\w+) issued=(\d+) records=(\d+) pending=(\d+)")
 PAUSED = re.compile(r"ARCE_LOADER_MATRIX_PAUSED cut=(\S+) hook=(\S+) first_store=(\w+) thread=(.+)")
 BASELINE_FAILURE = re.compile(r"ARCE_LOADER_MATRIX_BASELINE_FAILURE cut=(\S+) failure=(\d+) outcome=(\w+) pending=(\d+) unavailable=(true|false) status=(\w+)")
+FIXTURE_SAVE = re.compile(r"ARCE_LOADER_MATRIX_FIXTURE_SAVE cut=LF_M_C1 terrain=4,4 entities=4,4 tanks=\[4000, 4000\] "
+                          r"epochs=\[1, 1\] source_markers=\[1, 1\] bank=1000 rocket_epoch=1 rocket_markers=1(?:\s|$)")
 STORAGE_FAILURE = re.compile(r"ARCE_LOADER_MATRIX_FAILURE cut=(\S+) unknown=(true|false) records=(\d+) pending=(\d+) issued=(\d+)")
 
 
@@ -192,6 +194,9 @@ def run_cut(args, cut: str, evidence: Path, owner: str, pins: dict) -> dict:
                 oracle.require(not any("/ERROR]" in line or "/FATAL]" in line for line in lines), "Native start logged ERROR/FATAL")
                 if restart == 0 and cut.removeprefix(oracle.PREFIX) in oracle.CHAINS and cut != "LF_M_C1":
                     one_match(re.compile(r"ARCE_LOADER_MATRIX_CHAIN cut=" + re.escape(cut) + r" latest=2 reverse_refused=true records=2"), lines)
+                if restart == 0 and cut == "LF_M_C1":
+                    # R36 item 1: the gated autosave at the stop point writes exactly the required live prefix.
+                    one_match(FIXTURE_SAVE, lines)
                 if cut in ("LF_M_K5", "LF_M_D2_C4_BEFORE") and restart == 0:
                     one_match(re.compile(r"ARCE_LOADER_MATRIX_PRIMED cut=" + re.escape(cut) + r" tank=5000 epoch=0 stores=0"), lines)
                 if creation and restart == 0:
