@@ -97,7 +97,10 @@ def floors_fixture(cut, restart):
     """R1: the matrix fill after the seeded watermark, the seeded floors, the landed records and the refused key."""
     name = cut.removeprefix(oracle.PREFIX); coalesced = name.endswith("COALESCED"); saturated = name.endswith("256")
     seeded = 256 if saturated else 255; fills = 2 if coalesced else 1
-    disk = chain_fixture("LF_M_C2", restart) if coalesced else matrix_fixture("LF_M_K2_ACK", restart)
+    if coalesced and not restart:
+        disk = coalesced_stop_fixture()
+    else:
+        disk = chain_fixture("LF_M_C2", restart) if coalesced else matrix_fixture("LF_M_K2_ACK", restart)
     root = disk["ledger"]; rocket = disk["rocket"]
     root["issued_through"] += seeded
     guard = dict(rocket_id="logical") if saturated else dict(rocket_id="logical", transfer_id="t1")
@@ -122,6 +125,19 @@ def floors_fixture(cut, restart):
             owner="owner", device="device-extra", binding=dict(physical_rocket="physical2", logical_rocket="logical2"),
             tank=dict(FluidName=oracle.FUEL, Amount=5000), resource_escrow=dict(schema_version=1, resource_epoch=0, markers=[])))
     return dict(disk, transfers=transfers, extra_rocket=extra, extra_loader=extra_loader)
+
+
+def coalesced_stop_fixture():
+    """COALESCED's K2 stop: one L1 with both same-key fills, before either endpoint applies."""
+    disk = matrix_fixture("LF_M_K2_ACK", 0); root = disk["ledger"]
+    second = copy.deepcopy(disk["loaders"][0]); second["x"] = 67; second["arce_fluid_fuel_loader"]["device"] = "device1"
+    disk["loaders"].append(second); root["issued_through"] = 2
+    root["records"] = [dict(op_id="op" + str(index + 1), seq=index + 1,
+                            source=dict(identity="device" + str(index), type=oracle.LOADER, before_epoch=0, after_epoch=1),
+                            destination=dict(identity="physical", before_epoch=index, after_epoch=index + 1),
+                            payload=dict(FluidName=oracle.FUEL, Amount=1000), native_binding=dict(complete=1, kind="FUEL_VECTOR_V1"))
+                       for index in range(2)]
+    return disk
 
 
 def r3_fixture(cut, restart):
@@ -378,6 +394,10 @@ class LoaderCutsTest(unittest.TestCase):
                 if good["extra_rocket"] is not None:
                     mutations += [lambda d: d["extra_loader"]["arce_fluid_fuel_loader"]["tank"].update(Amount=4000),
                                   lambda d: d["extra_rocket"]["RocketEntityData"]["resource_escrow"].update(resource_epoch=1)]
+                if not restart and cut.endswith("COALESCED"):
+                    mutations += [lambda d: d["loaders"][1]["arce_fluid_fuel_loader"]["tank"].update(Amount=4000),
+                                  lambda d: d["ledger"]["records"].pop(),
+                                  lambda d: d["ledger"]["records"][1]["destination"].update(before_epoch=0, after_epoch=1)]
                 if restart and named:
                     mutations += [lambda d: d["ledger"]["floors"].pop(), lambda d: d["ledger"]["floors"][-1].update(highest_seq=1),
                                   lambda d: d["ledger"]["floors"][-1].update(entity_id="other")]

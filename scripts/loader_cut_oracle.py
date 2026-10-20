@@ -334,7 +334,8 @@ def check_floors(disk: dict, cut: str, restart: int) -> dict:
             device["arce_fluid_fuel_loader"]["resource_escrow"] for device in rebased["loaders"]]:
         for marker in section["markers"]:
             marker["seq"] -= seeded
-    identity = check(rebased, PREFIX + ("C2" if coalesced else "K2_ACK"), restart)
+    # Named cuts stop at K2 (L1 replaced, no endpoint applied): the raw state of K2_ACK, or COALESCED's shared L1.
+    identity = coalesced_stop(rebased) if coalesced and not restart else check(rebased, PREFIX + ("C2" if coalesced else "K2_ACK"), restart)
     if extra is not None:
         loader = disk["extra_loader"]
         require(loader is not None, "Missing distinct-key loader")
@@ -346,6 +347,34 @@ def check_floors(disk: dict, cut: str, restart: int) -> dict:
                 and other["binding"]["physical_rocket"] == extra["UUID"] and other["owner"] == data["owner_id"],
                 "The refused distinct key changed its rocket or loader")
         identity = dict(identity, extra=dict(physical=extra["UUID"], device=other["device"]))
+    return identity
+
+
+def coalesced_stop(disk: dict) -> dict:
+    """R1 COALESCED at K2, rebased: one durable L1 holds both same-key fills, and no endpoint has applied either."""
+    root, devices, rocket = disk["ledger"], disk["loaders"], disk["rocket"]
+    require(root["issued_through"] == 2 and [op["seq"] for op in root["records"]] == [1, 2] and len(devices) == 2
+            and root["writer_generation"] >= 2 and not any(root[key] for key in ("floors", "tombstones", "armed_flights", "rocket_authorities")),
+            "The coalesced L1 does not hold exactly both fills")
+    data = rocket["RocketEntityData"]; wrapper = data["resource_escrow"]; flight = data["flight_data"]
+    require(rocket["id"] == ROCKET and rocket["Pos"] == [64.5, 100.0, 64.5] and not rocket.get("Passengers")
+            and "active_transfer_id" not in flight and wrapper["resource_epoch"] == 0 and not wrapper["markers"] and "ledger_id" not in wrapper
+            and [flight["fuel"]["propulsion"][key]["amount"] for key in ("primary", "oxidizer")] == [0, 0],
+            "The coalesced stop applied or bound the rocket")
+    identity = dict(physical=rocket["UUID"], logical=data["assembly_transaction_id"], owner=data["owner_id"], loaders=[])
+    for index, device in enumerate(devices):
+        loader = device["arce_fluid_fuel_loader"]; section = loader["resource_escrow"]; op = root["records"][index]
+        require(device["id"] == LOADER and tuple(device[k] for k in ("x", "y", "z")) == (66 + index, 100, 64)
+                and loader["tank"] == {"FluidName": FUEL, "Amount": 5000} and section["resource_epoch"] == 0 and not section["markers"]
+                and "ledger_id" not in section and loader["owner"] == data["owner_id"] and loader["binding"]["physical_rocket"] == rocket["UUID"],
+                "The coalesced stop applied or rebound a loader")
+        require(op["source"]["identity"] == loader["device"] and op["source"]["type"] == LOADER and op["destination"]["identity"] == rocket["UUID"]
+                and (op["source"]["before_epoch"], op["source"]["after_epoch"]) == (0, 1)
+                and (op["destination"]["before_epoch"], op["destination"]["after_epoch"]) == (index, index + 1)
+                and op["payload"] == {"FluidName": FUEL, "Amount": 1000}
+                and op["native_binding"]["complete"] == 1 and op["native_binding"]["kind"] == "FUEL_VECTOR_V1",
+                "A coalesced record is not its loader's complete native fill")
+        identity["loaders"].append({key: loader[key] for key in ("owner", "device", "binding")})
     return identity
 
 

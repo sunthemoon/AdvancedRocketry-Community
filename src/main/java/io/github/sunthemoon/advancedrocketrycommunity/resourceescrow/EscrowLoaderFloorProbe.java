@@ -37,10 +37,11 @@ import net.minecraft.world.phys.AABB;
  * opens per-device gates, observes and pauses; it decides nothing, and recovery is production's alone.
  * <ul>
  * <li>{@code 255_DISTINCT}: rocket R1 (transfer T1) is admitted as the 256th key; R2's distinct key T2 is refused
- * ESCROW_FULL before mutation. Stop after R1's L1 acknowledgement; each restart refuses R2 again.</li>
- * <li>{@code 255_COALESCED}: two loaders fill R1 with the same key; both are admitted, one key is reserved. Stop at the
- * joint proof of the latest frontier; restarts install one floor for both records.</li>
- * <li>{@code 256}: saturated; R2's named key is refused while R1's NONE fill is admitted and retires without a floor.</li>
+ * ESCROW_FULL before mutation. Stop at K2, R1's L1 replaced before its callback; each restart refuses R2 again.</li>
+ * <li>{@code 255_COALESCED}: a second loader fills R1 with the same key while the first is queued; both are admitted
+ * with one reserved key and share one L1. Stop at its K2; restarts must install one floor for both records.</li>
+ * <li>{@code 256}: saturated; R2's named key is refused while R1's NONE fill is admitted; stop after its L1 callback,
+ * and the fill retires without a floor.</li>
  * </ul>
  */
 final class EscrowLoaderFloorProbe {
@@ -55,9 +56,11 @@ final class EscrowLoaderFloorProbe {
     private final List<FluidFuelLoaderBlockEntity> loaders = new ArrayList<>();
     private RocketEntity rocket, extra;
     private FluidFuelLoaderBlockEntity other;
-    private int step;
+    private volatile int step;
     private long began = -1;
-    private boolean firstTick, done, admitted, refused, secondQueued, pendingChecked;
+    private boolean firstTick, done, pendingChecked;
+    /** Read again by the K2 stop on the ledger writer's IO thread. */
+    private volatile boolean admitted, refused, secondQueued;
 
     static boolean selected(String cut) { return cut != null && cut.startsWith(PREFIX); }
 
@@ -102,7 +105,15 @@ final class EscrowLoaderFloorProbe {
     }
 
     void checkpoint(String name) {
-        if (recovery || done || paused.get() || step < 2 || !server.isSameThread()) { return; }
+        if (recovery || done || paused.get() || step < 2) { return; }
+        // A named fill stops at K2, its L1 replaced before the callback: smoke-native-02 showed that once it is pending,
+        // transfer recovery fences its own landed record (ESCROW_PENDING_OR_TOMBSTONE), so reconciliation never reaches
+        // C2. K2 needs no reconciliation and is the other side of the same L1 acknowledgement. Writer IO thread.
+        if (name.equals("K2") && !saturated) {
+            EscrowTags.require(admitted && (coalesced ? secondQueued : refused), "Floor admissions were not observed before the L1 write");
+            pause(name); return;
+        }
+        if (!server.isSameThread()) { return; }
         var data = ResourceEscrowSavedData.existing(server); var runtime = EscrowRuntime.of(server);
         if (name.equals("LOADER_PREPARATIONS_QUEUED")) {
             // Close only the fixture's per-device gates once queued, as the matrix does; no decision or lease changes.
@@ -111,26 +122,28 @@ final class EscrowLoaderFloorProbe {
             }
             if (!admitted && !data.bind(server).unresolvedNaming(device(loaders.get(0))).isEmpty()) {
                 admitted = true; usage("first", data);
-                // While R1's key is queued, before its L1 write starts: the 257th key must refuse before any mutation.
+                // While R1's key is queued, before its L1 write starts: the 257th key must refuse before any mutation,
+                // and the same key on a second loader must coalesce into the one reservation.
                 if (other != null) { refuseExtra("start"); refused = true; }
+                if (coalesced) { sameKey(data); }
             }
             return;
         }
-        if (coalesced && name.equals("C2_DESTINATION_AFTER") && !secondQueued && rocket.escrowSection().epoch() == 1) {
-            secondQueued = true;
-            var second = loaders.get(1); runtime.loaderAdmissionForTests(server, device(second), true);
-            EscrowTags.require(second.attempt() == FluidFuelLoaderStatus.READY, "Same-key request did not enter the fair queue");
-            runtime.fills(server).visit();
-            EscrowTags.require(second.lastAttempt() == FluidFuelLoaderStatus.PREPARING, "Same-key request did not coalesce: " + second.lastAttempt());
-            usage("same_key", data);
-        }
-        if (!coalesced && name.equals("C2_SOURCE_BEFORE")) {
-            EscrowTags.require(admitted && (other == null || refused) && data.ledger().records().size() == 1,
+        if (saturated && name.equals("C2_SOURCE_BEFORE")) {
+            EscrowTags.require(admitted && refused && data.ledger().records().size() == 1,
                     "Distinct-key refusal was not observed before the L1 acknowledgement");
             pause(name);
         }
-        if (coalesced && name.equals("C6_JOINT_READBACK") && secondQueued && data.ledger().records().size() == 2
-                && rocket.escrowSection().epoch() == 2 && rocket.escrowSection().markers().size() == 2) { pause(name); }
+    }
+
+    /** The second loader's real attempt for R1's queued key: admitted as the chain's next member, still one reservation. */
+    private void sameKey(ResourceEscrowSavedData data) {
+        var runtime = EscrowRuntime.of(server); var second = loaders.get(1);
+        runtime.loaderAdmissionForTests(server, device(second), true);
+        EscrowTags.require(second.attempt() == FluidFuelLoaderStatus.READY, "Same-key request did not enter the fair queue");
+        runtime.fills(server).visit();
+        EscrowTags.require(second.lastAttempt() == FluidFuelLoaderStatus.PREPARING, "Same-key request did not coalesce: " + second.lastAttempt());
+        secondQueued = true; usage("same_key", data);
     }
 
     void tick() {
