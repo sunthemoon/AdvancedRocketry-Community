@@ -6,11 +6,13 @@ import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowCargo
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.RocketLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.PressurizedTankRocketAdapter;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketBlock;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketBlockEntityPayload;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketSnapshotException;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketSnapshotNbtCodec;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.validation.RocketValidationCode;
 import java.util.ArrayList;
+import java.util.function.Function;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraftforge.fluids.FluidStack;
 
@@ -30,17 +32,25 @@ public final class RocketCargoMutation {
         if (before.propulsion().isEmpty() || !PressurizedTankRocketAdapter.ID.toString().equals(delta.cursor().adapter())) {
             throw new IllegalArgumentException("Cargo requires modern propulsion and the tank adapter");
         }
+        return replace(before, delta.cursor(), block -> {
+            if (!block.state().blockId().equals(PressurizedTankRocketAdapter.TYPE)) {
+                throw new IllegalArgumentException("Cargo cursor does not name a pressurized tank block");
+            }
+            var fluid = PressurizedTankRocketAdapter.fluid(block.blockEntityPayload().orElseThrow().data());
+            var moved = FluidStack.loadFluidStackFromNBT(delta.fluid());
+            return PressurizedTankRocketAdapter.payload(change(fluid, moved, load));
+        });
+    }
+
+    /** Replaces only the cursor's payload; every other block, the bounds and the structure digest must hold. */
+    static RocketStructureSnapshot replace(RocketStructureSnapshot before, EscrowCargoPayload.Cursor cursor,
+                                           Function<RocketBlock, RocketBlockEntityPayload> replacement) {
         var blocks = new ArrayList<RocketBlock>(before.blocks().size());
         long total = 0;
         for (var block : before.blocks()) {
             var payload = block.blockEntityPayload().orElse(null);
-            if (matches(block, delta.cursor())) {
-                if (!block.state().blockId().equals(PressurizedTankRocketAdapter.TYPE)) {
-                    throw new IllegalArgumentException("Cargo cursor does not name a pressurized tank block");
-                }
-                var fluid = PressurizedTankRocketAdapter.fluid(payload.data());
-                var moved = FluidStack.loadFluidStackFromNBT(delta.fluid());
-                payload = PressurizedTankRocketAdapter.payload(change(fluid, moved, load));
+            if (matches(block, cursor)) {
+                payload = replacement.apply(block);
                 block = new RocketBlock(block.position(), block.state(), payload);
             }
             if (payload != null) {
