@@ -85,9 +85,12 @@ public final class EscrowCoreFixtureAreas {
         boolean unloaded = await(level, () -> drainUnloads(level)
                 && batch.centres().stream().allMatch(centre -> VanillaChunkSave.holder(level, centre) == null), started + RELEASE_NANOS);
         var flush = chunks.chunkMap.worker.synchronize(true);
-        boolean flushed = await(level, flush::isDone, started + RELEASE_NANOS) && !flush.isCompletedExceptionally();
-        AdvancedRocketryCommunity.LOGGER.info("ARCE_GAMETEST_FIXTURE_AREAS batch={} stage=release areas={} unloaded={} flushed={} ms={}",
-                BATCH, batch.centres().size(), unloaded, flushed, (System.nanoTime() - started) / 1_000_000L);
+        boolean flushed = await(level, flush::isDone, System.nanoTime() + RELEASE_NANOS) && !flush.isCompletedExceptionally();
+        var loaded = batch.centres().stream().filter(centre -> VanillaChunkSave.holder(level, centre) != null).toList();
+        AdvancedRocketryCommunity.LOGGER.info("ARCE_GAMETEST_FIXTURE_AREAS batch={} stage=release areas={} unloaded={} flushed={} ms={} still_loaded={}",
+                BATCH, batch.centres().size(), unloaded, flushed, (System.nanoTime() - started) / 1_000_000L,
+                loaded.stream().map(centre -> centre + " level " + VanillaChunkSave.holder(level, centre).getTicketLevel()
+                        + " " + chunks.getChunkDebugData(centre)).toList());
     }
 
     /**
