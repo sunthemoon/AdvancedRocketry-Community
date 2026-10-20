@@ -31,6 +31,7 @@ public final class RocketEscrowInterlocks {
         }
         // Forge posts this on tracking loss as well as removal. A previously loaded proof is no longer current.
         if (!event.getLevel().isClientSide && event.getEntity() instanceof RocketEntity rocket) {
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime.cargoRemoved(rocket);
             EscrowRuntime.of(rocket.getServer()).invalidateFlight(rocket);
             RocketEscrowAudit.observe(rocket);
             io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime.onRocketJoined(rocket);

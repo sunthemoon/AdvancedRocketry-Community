@@ -38,7 +38,7 @@ public final class RocketCargoPreparations implements AutoCloseable {
     }
     public boolean locked(UUID logical) { owner(); discardFinished(); return active != null && active.cursor.logical().equals(logical); }
     private void discardFinished() {
-        if (active != null && active.cursor.state() == RocketCargoPreparation.State.DISCARDED) { active.close(); }
+        if (active != null && !active.valid()) { active.close(); }
     }
     public void removed(RocketEntity rocket) { owner(); if (active != null && active.rocket == rocket) { active.close(); } }
     public RocketCargoWorkBudget budget() { owner(); return budget; }

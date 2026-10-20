@@ -116,8 +116,20 @@ public final class EscrowCargoPreparationGameTests {
                     var other = RocketRuntime.cargoPreparations(rocket.getServer()).begin(small, smallDelta, true).orElseThrow();
                     other.close(); check(!RocketRuntime.cargoPreparing(small), "Cancellation retained lock");
                     other = RocketRuntime.cargoPreparations(rocket.getServer()).begin(small, smallDelta, true).orElseThrow();
-                    small.remove(net.minecraft.world.entity.Entity.RemovalReason.UNLOADED_TO_CHUNK);
+                    var saved = small.saveWithoutId(new CompoundTag());
+                    var logical = small.assemblyTransactionId().orElseThrow();
+                    small.setRemoved(net.minecraft.world.entity.Entity.RemovalReason.UNLOADED_TO_CHUNK);
                     check(other.cursor().state() == RocketCargoPreparation.State.DISCARDED && !RocketRuntime.cargoPreparing(small), "Unload retained cursor");
+                    small = Objects.requireNonNull(ModEntities.ROCKET.get().create(helper.getLevel()));
+                    small.load(saved);
+                    check(small.assemblyTransactionId().filter(logical::equals).isPresent(), "Reload lost logical identity");
+                    check(helper.getLevel().addFreshEntity(small), "Reloaded rocket fixture failed");
+                    check(!RocketRuntime.cargoPreparing(small), "Reloaded logical rocket retained old lock");
+                    other = RocketRuntime.cargoPreparations(rocket.getServer()).begin(small, smallDelta, true).orElseThrow();
+                    small.setPos(small.position().add(0, 0, 1));
+                    check(!RocketRuntime.cargoPreparing(small) && other.cursor().state() == RocketCargoPreparation.State.DISCARDED,
+                            "Position change retained invalid cursor");
+                    small.discard();
                     rocket.discard(); phase = 9; helper.succeed();
                 }
             } catch (Throwable failure) {
