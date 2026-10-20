@@ -121,9 +121,9 @@ public final class EscrowCargoPreparationGameTests {
                     phase = 1;
                 }
                 if (phase == 1 || phase == 4 || phase == 6) {
-                    var preparations = RocketRuntime.cargoPreparations(rocket.getServer());
+                    var session = RocketRuntime.cargoPreparations(rocket.getServer());
                     // Apply-time replay starts from the acknowledged member's BEFORE state; cargo chaining stays excluded.
-                    var started = phase == 6 ? preparations.beginReplay(rocket, delta, true) : preparations.begin(rocket, delta, true);
+                    var started = phase == 6 ? session.beginReplay(rocket, delta, true) : session.begin(rocket, delta, true);
                     if (started.isEmpty()) { return; }
                     ticket = started.orElseThrow(); publication = null; preparations++; phase++;
                 }
