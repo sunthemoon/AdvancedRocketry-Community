@@ -53,6 +53,14 @@ public final class RocketFluidCargoBlockEntity extends BlockEntity implements Me
     private final io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowFluidCargoAdmission admission =
             new io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowFluidCargoAdmission(this);
     private io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.RefillPacer pacer;
+    private final io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowDeviceTurns turns =
+            new io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowDeviceTurns();
+    public boolean refreshTurns() {
+        if (!live() || root == null || root.binding() == null) { turns.close(); return false; }
+        return turns.refresh(((ServerLevel) level).getServer(), root.device(), root.binding().logicalRocket());
+    }
+    public void transferBlocked() { if (refreshTurns()) { turns.blocked(); } }
+    public boolean transferTurn() { return refreshTurns() && turns.allows(); }
 
     public RocketFluidCargoBlockEntity(BlockPos position, BlockState state) {
         super(((RocketFluidCargoBlock) state.getBlock()).role() == RocketCargoRole.LOAD
@@ -160,7 +168,7 @@ public final class RocketFluidCargoBlockEntity extends BlockEntity implements Me
     }
     boolean bind(LoaderBinding binding) {
         if (!beginLocal()) { return false; }
-        try { admission.close(); write(root.withBinding(binding)); return true; }
+        try { admission.close(); turns.close(); write(root.withBinding(binding)); refreshTurns(); return true; }
         finally { endLocal(); }
     }
     boolean clearBinding() {
@@ -186,7 +194,7 @@ public final class RocketFluidCargoBlockEntity extends BlockEntity implements Me
             return;
         }
         super.load(outer);
-        admission.close(); pacer = null;
+        admission.close(); turns.close(); pacer = null;
         if (level instanceof ServerLevel server) { RocketFluidCargoIndex.release(server, this); }
         invalidatePort();
         held = null; root = null; retainedByReference = false; unkeepable = false;
@@ -216,14 +224,14 @@ public final class RocketFluidCargoBlockEntity extends BlockEntity implements Me
     private void claimDevice() {
         if (root != null && live()) { RocketFluidCargoIndex.claim((ServerLevel) level, root.device(), this); }
     }
-    @Override public void onLoad() { super.onLoad(); recordDenial(); claimDevice(); }
+    @Override public void onLoad() { super.onLoad(); recordDenial(); claimDevice(); refreshTurns(); }
     @Override public void setRemoved() {
-        admission.close(); pacer = null;
+        admission.close(); turns.close(); pacer = null;
         if (level instanceof ServerLevel server) { RocketFluidCargoIndex.release(server, this); }
         super.setRemoved();
     }
     @Override public void onChunkUnloaded() {
-        admission.close(); pacer = null;
+        admission.close(); turns.close(); pacer = null;
         if (level instanceof ServerLevel server) { RocketFluidCargoIndex.release(server, this); }
         invalidatePort();
         super.onChunkUnloaded();

@@ -79,6 +79,7 @@ public final class EscrowLoaderAdmission {
     /** Mirror C-K's exclusivity without loading or creating a ledger. */
     public static boolean cargoPending(RocketEntity rocket) {
         if (!(rocket.level() instanceof ServerLevel level) || !level.getServer().isSameThread()) { return false; }
+        if (EscrowRuntime.of(level.getServer()).cargoPreparing(rocket.assemblyTransactionId().orElseThrow())) { return true; }
         var data = ResourceEscrowSavedData.existing(level.getServer());
         return data != null && data.operational() && data.bind(level.getServer()).cargoPending(rocket.assemblyTransactionId().orElseThrow());
     }
