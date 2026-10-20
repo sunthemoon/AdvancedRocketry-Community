@@ -11,7 +11,8 @@ import net.minecraftforge.fluids.FluidStack;
 
 /** Canonical server-side selection. The supplied pure check must include the complete capture/O1 envelopes. */
 public final class RocketCargoSelection {
-    public enum Status { ELIGIBLE, NO_CARGO_STORAGE, UNSUPPORTED_DATA, CARGO_TOO_LARGE, INVALID_DATA }
+    /** {@code UNRESOLVED_LOOT} is item-only (W11CD section 5.3); fluid selection never reports it. */
+    public enum Status { ELIGIBLE, NO_CARGO_STORAGE, UNSUPPORTED_DATA, CARGO_TOO_LARGE, INVALID_DATA, UNRESOLVED_LOOT }
     public record Result(Status status, EscrowCargoPayload delta) { }
     private RocketCargoSelection() { }
 

@@ -81,9 +81,10 @@ public final class EscrowCargoPublication {
         private void validateStep() {
             var rocket = ticket.rocket(); var cursor = ticket.cursor(); var endpoint = operation.rocket();
             var after = cursor.after(); var binding = operation.nativeBinding();
-            boolean loading = operation.kind() == EscrowOperation.Kind.FLUID_CARGO_LOAD;
+            boolean loading = operation.kind().cargoLoad();
             if (phase == 0) {
-                EscrowTags.require(cursor.matches(EscrowCargoPayload.decode(operation.payload()), loading), "Publication delta changed");
+                EscrowTags.require(operation.kind().itemCargo() ? cursor.matches(EscrowItemCargoPayload.decode(operation.payload()), loading)
+                        : cursor.matches(EscrowCargoPayload.decode(operation.payload()), loading), "Publication delta changed");
                 EscrowTags.require(endpoint.identity().equals(rocket.getUUID()) && endpoint.logicalRocket().equals(cursor.logical())
                         && binding.snapshot().equals(after.snapshotId()) && binding.snapshotHash().equals(after.contentHash())
                         && binding.invariant().equals(EscrowInvariant.rocket(endpoint, operation.owner(), after)), "Frozen cargo digest changed");

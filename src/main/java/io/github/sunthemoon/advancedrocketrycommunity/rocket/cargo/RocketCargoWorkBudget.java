@@ -12,6 +12,11 @@ public final class RocketCargoWorkBudget {
     private long claimedTick = Long.MIN_VALUE;
     private Object claimed;
 
+    /** A step that did more work than it reserved; a caller with a typed status reports it rather than propagating it. */
+    public static final class Exceeded extends IllegalStateException {
+        Exceeded() { super("Cargo work exceeded its reserved step bound"); }
+    }
+
     /** A continuation also owns this tick's reconstruction slot; a different cursor must defer. */
     public boolean claim(long serverTick, Object cursor) {
         java.util.Objects.requireNonNull(cursor);
@@ -27,7 +32,7 @@ public final class RocketCargoWorkBudget {
         if (!charge(serverTick, byteBound, visitBound, reconstruction)) { return false; }
         var actual = work.get();
         if (actual.bytes() < 0 || actual.bytes() > byteBound || actual.visits() < 0 || actual.visits() > visitBound) {
-            throw new IllegalStateException("Cargo work exceeded its reserved step bound");
+            throw new Exceeded();
         }
         bytes -= byteBound - actual.bytes(); visits -= visitBound - actual.visits();
         return true;
