@@ -17,6 +17,7 @@ import shutil
 import time
 import uuid
 
+import loader_cut_nbt as nbt
 import loader_cut_oracle as oracle
 import run_dedicated_server_smoke as smoke
 from run_v060_flight_server_smoke import _server_command
@@ -28,17 +29,90 @@ REPO = Path(__file__).resolve().parents[1]
 LOCK = Path("D:/GitHub/ARCE-Task-Evidence/locks/heavy-jvm")
 HOOK_FILES = tuple("src/main/java/io/github/sunthemoon/advancedrocketrycommunity/resourceescrow/" + name + ".java"
                    for name in ("EscrowLoaderReleaseProbe", "EscrowLoaderCutProbe", "EscrowLoaderStorageProbe", "EscrowLoaderRecoveryProbe", "EscrowReleaseProbe", "EscrowLedgerWriter", "EscrowFillQueue",
-                                "EscrowReconciliationAction", "EscrowReconciliationDriver", "EscrowRuntime", "EscrowBarrier"))
+                                "EscrowReconciliationAction", "EscrowReconciliationDriver", "EscrowRuntime", "EscrowBarrier",
+                                "EscrowLoaderFloorProbe", "EscrowStoreFault", "EscrowChunkStore"))
+HARNESS_FILES = ("scripts/run_v180_loader_cuts.py", "scripts/loader_cut_oracle.py", "scripts/loader_cut_nbt.py")
 FIRST = re.compile(r"ARCE_LOADER_MATRIX_FIRST cut=(\S+) recovery=(true|false) delegate=(\w+) issued=(\d+) records=(\d+) pending=(\d+)")
 PAUSED = re.compile(r"ARCE_LOADER_MATRIX_PAUSED cut=(\S+) hook=(\S+) first_store=(\w+) thread=(.+)")
 BASELINE_FAILURE = re.compile(r"ARCE_LOADER_MATRIX_BASELINE_FAILURE cut=(\S+) failure=(\d+) outcome=(\w+) pending=(\d+) unavailable=(true|false) status=(\w+)")
 FIXTURE_SAVE = re.compile(r"ARCE_LOADER_MATRIX_FIXTURE_SAVE cut=LF_M_C1 terrain=4,4 entities=4,4 tanks=\[4000, 4000\] "
                           r"epochs=\[1, 1\] source_markers=\[1, 1\] bank=1000 rocket_epoch=1 rocket_markers=1(?:\s|$)")
 STORAGE_FAILURE = re.compile(r"ARCE_LOADER_MATRIX_FAILURE cut=(\S+) unknown=(true|false) records=(\d+) pending=(\d+) issued=(\d+)")
+PROOF_FAILED = re.compile(r"ARCE_LOADER_MATRIX_PROOF_FAILED cut=(\S+) reason=(\w+) io_failures=(\d+) refusals=(\d+) superseding=(\d+) "
+                          r"records=1 pending=1(?:\s|$)")
+# W107C: the expected first failed proof of each R43 storage cut, and whether it counts as an IO failure (otherwise as a
+# refusal); a different reason or counter is a finding.
+PROOF_EXPECTED = {"LF_M_E1_OWN_STORE": ("BARRIER_IO", True), "LF_M_E2_EXTERNAL": ("BARRIER_EXTERNAL", False)}
+R3_REPAIR = {"R3_ENDPOINT_FOREIGN": ("66", "4000", "1", "ESCROW_PENDING"), "R3_ENDPOINT_OTHER": ("66", "3000", "1", "ESCROW_PENDING"),
+             "R3_ENDPOINT_RELOCATED": ("68", "4000", "1", "ESCROW_PENDING"), "R3_ENDPOINT_MISSING": ("ABSENT", "-1", "-1", "NONE")}
+R3_ORPHAN = {"R3_LEDGER_MISSING": "NONE", "R3_LEDGER_REPLACED": "OTHER", "R3_LEDGER_BEHIND": "SAME"}
+W107C = ("LF_M_E1_OWN_STORE", "LF_M_E2_EXTERNAL") + oracle.S5_FLOORS + oracle.S5_R3
+
+
+def w107c_observations(cut: str, restart: int, lines: list[str]) -> None:
+    """R43's E1, E2, R1 and R3 outcomes at every start; R43 item 3's E2 and R3's reasons are compared, not assumed."""
+    name = cut.removeprefix(oracle.PREFIX); c = re.escape(cut)
+    oracle.require(not any("ARCE_LOADER_MATRIX_HOLD_TIMEOUT" in line or "ARCE_LOADER_MATRIX_FLOOR_UNSETTLED" in line
+                           or "ARCE_LOADER_MATRIX_LEDGER_CAPTURE_FAILED" in line for line in lines),
+                   "The held, repaired or settled state was not reached within the unchanged bound")
+    if name == "E1_OWN_STORE":
+        faults = [line for line in lines if "ARCE_LOADER_MATRIX_STORE_FAULT" in line]
+        oracle.require(len(faults) == (0 if restart else 1) and all("cut=LF_M_E1_OWN_STORE chunk=4,4" in line for line in faults),
+                       "E1's own-store fault fired other than once, at the start, for the fixture slot")
+    if name == "E2_EXTERNAL" and restart:
+        one_match(re.compile(r"ARCE_LOADER_MATRIX_HELD cut=" + c + r" reason=BARRIER_EXTERNAL phase=STALLED records=1 issued=1 pending=1 "
+                             r"refusals=[1-9]\d* io_failures=0 tank=4000 bank=1000(?:\s|$)"), lines)
+    if name in R3_REPAIR and restart:
+        loader, tank, markers, attempt = R3_REPAIR[name]
+        match = one_match(re.compile(r"ARCE_LOADER_MATRIX_REPAIR cut=" + c + r" reason=(\w+) phase=REPAIR records=1 issued=1 pending=1 "
+                                     r"loader=(\S+) tank=(-?\d+) loader_markers=(-?\d+) rocket_markers=1 bank=1000 attempt=(\w+)(?:\s|$)"), lines)
+        oracle.require(match[1] in oracle.MANUAL and match.groups()[1:] == (loader, tank, markers, attempt),
+                       "R3 endpoint restart is not a locked manual repair of the edited endpoint")
+    if name in R3_ORPHAN:
+        if restart:
+            ledger = name.removeprefix("R3_LEDGER_")
+            one_match(re.compile(r"ARCE_LOADER_MATRIX_ORPHAN cut=" + c + r" ledger=" + ledger + r" binding=" + R3_ORPHAN[name]
+                                 + r" issued=0 marker_seq=1 records=0 loader_markers=1 rocket_markers=1 tank=4000 bank=1000 attempt=ESCROW_PENDING(?:\s|$)"), lines)
+        elif name != "R3_LEDGER_MISSING":
+            one_match(re.compile(r"ARCE_LOADER_MATRIX_LEDGER_CAPTURED cut=" + c + r" generation=1 bytes=\d+ sha256=[0-9a-f]{64}(?:\s|$)"), lines)
+    if name in oracle.FLOORS:
+        floor_observations(cut, name, restart, lines)
+
+
+def floor_observations(cut: str, name: str, restart: int, lines: list[str]) -> None:
+    c = re.escape(cut); coalesced = name.endswith("COALESCED"); saturated = name.endswith("256")
+    seeded = 256 if saturated else 255; issued = seeded + (2 if coalesced else 1)
+    refused = re.compile(r"ARCE_LOADER_MATRIX_FLOOR_REFUSED cut=" + c + r" phase=(\w+) status=ESCROW_FULL used=(\d+) reserved=(\d+) total=(\d+) next=(\d+)(?:\s|$)")
+    refusals = [tuple(m.groups()) for line in lines if (m := refused.search(line))]
+    admitted = re.compile(r"ARCE_LOADER_MATRIX_FLOOR_ADMIT cut=" + c + r" phase=(\w+) named=(true|false) used=(\d+) reserved=(\d+) total=(\d+)(?:\s|$)")
+    admissions = [tuple(m.groups()) for line in lines if (m := admitted.search(line))]
+    named = str(not saturated).lower(); pending = ("255", "1", "256") if not saturated else ("256", "0", "256")
+    if not restart:
+        one_match(re.compile(r"ARCE_LOADER_MATRIX_FLOORS cut=" + c + r" seeded=" + str(seeded) + r" named=" + named
+                             + r" extra_named=" + str(not coalesced).lower() + r" ledger=\S+(?:\s|$)"), lines)
+        oracle.require(admissions == [("first", named) + pending] + ([("same_key", named) + pending] if coalesced else []),
+                       "Floor admission did not reserve exactly one new key")
+        oracle.require(refusals == ([] if coalesced else [("start",) + pending + (str(seeded + 2),)]),
+                       "The 257th key was not refused before mutation")
+        return
+    settled = one_match(re.compile(r"ARCE_LOADER_MATRIX_FLOOR_SETTLED cut=" + c + r" fills=(\d+) floors=256 named_floor=(\S+) used=256 reserved=0(?:\s|$)"), lines)
+    oracle.require(settled[1] == str(issued - seeded) and settled[2] == ("NONE" if saturated else f"epoch{issued - seeded}_seq{issued}"),
+                   "Retirement did not install exactly the named fill's one floor")
+    expected = [] if coalesced else ([("restart_pending",) + pending + (str(issued + 1),)] if restart == 1 else []) + [
+        ("restart_settled", "256", "0", "256", str(issued + 1))]
+    oracle.require(refusals == expected, "A restart admitted or failed to refuse the distinct key")
 
 
 def storage_observations(cut: str, lines: list[str]) -> None:
     name = cut.removeprefix(oracle.PREFIX)
+    if cut in PROOF_EXPECTED:
+        reason, io = PROOF_EXPECTED[cut]
+        failure = one_match(PROOF_FAILED, lines); failures, refusals = int(failure[3]), int(failure[4])
+        counted = failures >= 1 and refusals == 0 if io else failures == 0 and refusals >= 1
+        oracle.require(failure[1] == cut and failure[2] == reason and counted and failure[5] == "0",
+                       f"The first failed proof was not {reason}: {failure[0]}")
+        if name == "E2_EXTERNAL":
+            one_match(re.compile(r"ARCE_LOADER_MATRIX_NOISE cut=LF_M_E2_EXTERNAL pos=76,100,76 bytes=1572864(?:\s|$)"), lines)
     if name == "E2_CAPTURE":
         one_match(re.compile(r"ARCE_LOADER_MATRIX_SUPERSEDED cut=" + re.escape(cut)
                              + r" saves=1 io_failures=0 records=1 pending=1"), lines)
@@ -177,9 +251,10 @@ def run_cut(args, cut: str, evidence: Path, owner: str, pins: dict) -> dict:
                 if cut == "LF_M_D2_C4_BEFORE":
                     actual_cut = "LF_M_K5"
                     ordered = paused[3] == "DESTINATION"
-                if cut == "LF_M_E2_CAPTURE":
+                if cut in ("LF_M_E2_CAPTURE", "LF_M_E1_OWN_STORE", "LF_M_E2_EXTERNAL"):
                     # The source capture is superseded. A destination-first driver's earlier proof already stored
                     # its bank; a source-first driver has not stored the bank. Neither case permits retirement.
+                    # W107C: E1's vanilla store and E2's external store do write the source before their proofs fail.
                     actual_cut = "LF_M_K6" if paused[3] == "DESTINATION" else "LF_M_K4"
             else:
                 process.wait_for(re.compile(r"ARCE_LOADER_MATRIX_RESULT cut=" + re.escape(cut) + r"(?:\s|$)"), args.startup_timeout)
@@ -189,6 +264,8 @@ def run_cut(args, cut: str, evidence: Path, owner: str, pins: dict) -> dict:
             lines = list(process.lines); process = None
             start["observations"] = [line for line in lines if "ARCE_LOADER_MATRIX_" in line]
             disk = oracle.inspect(session / "world", cut); start["disk"] = disk
+            if restart and cut in oracle.S5_R3:
+                disk["edited"] = row["edited"]  # R3 restarts compare with the offline-edited stopped copy.
             try:
                 start["first_tick"] = first_tick(lines, cut, restart, previous)
                 oracle.require(not any("/ERROR]" in line or "/FATAL]" in line for line in lines), "Native start logged ERROR/FATAL")
@@ -207,6 +284,8 @@ def run_cut(args, cut: str, evidence: Path, owner: str, pins: dict) -> dict:
                     unload_observations(cut, lines)
                 if creation and restart:
                     oracle.require(any("phase=creation_restart " in line for line in lines), "Missing unchanged creation-restart observation")
+                if cut in W107C:
+                    w107c_observations(cut, restart, lines)
             except smoke.SmokeError as failure:
                 start["observation_error"] = str(failure)
                 row.setdefault("findings", []).append(dict(restart=restart, error=str(failure)))
@@ -222,6 +301,11 @@ def run_cut(args, cut: str, evidence: Path, owner: str, pins: dict) -> dict:
                 oracle.require(previous["ledger"]["ledger_id"] == disk["ledger"]["ledger_id"]
                                and disk["ledger"]["writer_generation"] >= previous["ledger"]["writer_generation"], "Ledger identity/generation regressed")
             previous = disk
+            if restart == 0 and cut in oracle.S5_R3:
+                # R36 item 2: the one offline edit of the stopped disposable copy, with the original bytes kept.
+                row["edit"] = nbt.r3_edit(session / "world", cut.removeprefix(oracle.PREFIX), evidence / "edit-original")
+                previous = row["edited"] = oracle.inspect(session / "world", cut)
+                identity = None  # Identities are compared between the restarts of the edited copy.
             (evidence / "result.json").write_text(json.dumps(row, indent=2), encoding="utf-8")
         row["status"] = "FAILED" if row.get("findings") else "PASS" if ordered else "NOT_COVERED"
         if row.get("findings"):
@@ -253,7 +337,7 @@ def run(args) -> dict:
     evidence.mkdir(parents=True)
     pins = dict(source_commit=args.source_commit, jar_sha256=digest(args.jar),
                 hooks={path: digest(REPO / path) for path in HOOK_FILES},
-                harness={path: digest(REPO / path) for path in ("scripts/run_v180_loader_cuts.py", "scripts/loader_cut_oracle.py")})
+                harness={path: digest(REPO / path) for path in HARNESS_FILES})
     report = dict(status="IN_PROGRESS", pins=pins, cases=[], not_run=oracle.NOT_RUN,
                   limits="Selected S2 process-stop cuts only; no power-loss guarantee. R35 extends existing fault generation selection.")
     for cut in args.case or oracle.CASES:
@@ -282,12 +366,15 @@ def main() -> int:
     parser.add_argument("--case", action="append", choices=oracle.CASES)
     parser.add_argument("--s3", action="store_true", help="Select the complete B3-S3 matrix (unless --case is supplied)")
     parser.add_argument("--s4", action="store_true", help="Select implemented B3-S4 cuts; this is not a claim of full family coverage")
+    parser.add_argument("--w107c", action="store_true", help="Select W107C's E1, E2, R1 and R3 cuts (unless --case is supplied)")
     parser.add_argument("--startup-timeout", type=float, default=240)
     args = parser.parse_args()
     if args.s3 and not args.case:
         args.case = oracle.S3
     if args.s4 and not args.case:
         args.case = oracle.S4
+    if args.w107c and not args.case:
+        args.case = W107C
     try:
         report = run(args)
         return 0 if report["status"] == "PASS_SELECTED" else 1

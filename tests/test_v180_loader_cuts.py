@@ -13,8 +13,22 @@ import run_v180_loader_cuts as runner
 
 
 def fixture(cut, restart):
-    if cut.removeprefix(oracle.PREFIX) in oracle.CHAINS:
+    name = cut.removeprefix(oracle.PREFIX)
+    if name in oracle.CHAINS:
         return chain_fixture(cut, restart)
+    if name in oracle.FLOORS:
+        return floors_fixture(cut, restart)
+    if name in oracle.R3:
+        return r3_fixture(cut, restart)
+    disk = matrix_fixture(cut, restart)
+    if name == "E2_EXTERNAL":
+        disk["terrain_record"] = dict(external=True, compressed=1_572_900, decoded=1_650_000, sectors=1, compression=2)
+        if restart:
+            disk["ledger"]["records"][0].update(phase="STALLED", reason="BARRIER_EXTERNAL")
+    return disk
+
+
+def matrix_fixture(cut, restart):
     exp = oracle.expected(cut, restart); bi = exp["bi"]
     seq = 2 if bi else 1
     root = dict(ledger_id="ledger", writer_generation=exp["generation"] or 4, issued_through=exp["issued"],
@@ -77,6 +91,68 @@ def chain_fixture(cut, restart):
     propulsion["primary"]["amount"] = 1000 if bi else 1000 * prefix
     propulsion["oxidizer"]["amount"] = 1000 * (prefix - 1) if bi else 0
     return disk
+
+
+def floors_fixture(cut, restart):
+    """R1: the matrix fill after the seeded watermark, the seeded floors, the landed records and the refused key."""
+    name = cut.removeprefix(oracle.PREFIX); coalesced = name.endswith("COALESCED"); saturated = name.endswith("256")
+    seeded = 256 if saturated else 255; fills = 2 if coalesced else 1
+    disk = chain_fixture("LF_M_C2", restart) if coalesced else matrix_fixture("LF_M_K2_ACK", restart)
+    root = disk["ledger"]; rocket = disk["rocket"]
+    root["issued_through"] += seeded
+    guard = dict(rocket_id="logical") if saturated else dict(rocket_id="logical", transfer_id="t1")
+    for index, op in enumerate(root["records"]):
+        op["seq"] = op.get("seq", index + 1) + seeded; op["transfer_guard"] = dict(guard)
+    for section in [rocket["RocketEntityData"]["resource_escrow"]] + [d["arce_fluid_fuel_loader"]["resource_escrow"] for d in disk["loaders"]]:
+        for marker in section["markers"]:
+            marker["seq"] += seeded
+    root["floors"] = [dict(schema_version=2, rocket_id=[0, 0, 1, index], highest_seq=index + 1, resource_epoch=1,
+                           signature_kind="FUEL_VECTOR_V1") for index in range(seeded)]
+    if restart and not saturated:
+        root["floors"].append(dict(schema_version=2, rocket_id="logical", transfer_id="t1", entity_id="physical",
+                                   resource_epoch=fills, highest_seq=seeded + fills, signature_kind="FUEL_VECTOR_V1"))
+    transfers = [] if saturated else [dict(transfer_id="t1", phase="COMMITTED", logical_rocket_id="logical", destination_entity_id="physical")]
+    extra = extra_loader = None
+    if not coalesced:
+        transfers.append(dict(transfer_id="t2", phase="COMMITTED", logical_rocket_id="logical2", destination_entity_id="physical2"))
+        extra = dict(id=oracle.ROCKET, UUID="physical2", Pos=list(oracle.EXTRA_ROCKET_POS), RocketEntityData=dict(
+            owner_id="owner", assembly_transaction_id="logical2", resource_escrow=dict(schema_version=1, resource_epoch=0, markers=[]),
+            flight_data=dict(fuel=dict(propulsion=dict(primary=dict(amount=0), oxidizer=dict(amount=0))))))
+        extra_loader = dict(id=oracle.LOADER, x=74, y=100, z=72, arce_fluid_fuel_loader=dict(
+            owner="owner", device="device-extra", binding=dict(physical_rocket="physical2", logical_rocket="logical2"),
+            tank=dict(FluidName=oracle.FUEL, Amount=5000), resource_escrow=dict(schema_version=1, resource_epoch=0, markers=[])))
+    return dict(disk, transfers=transfers, extra_rocket=extra, extra_loader=extra_loader)
+
+
+def r3_fixture(cut, restart):
+    """R3: the K6 stop; for restarts, the offline-edited copy as ``edited`` and the restarted copy around it."""
+    name = cut.removeprefix(oracle.PREFIX)
+    stopped = matrix_fixture("LF_M_K6", 0)
+    stopped["ledger"]["records"][0].update(seq=1, phase="PREPARED", reason="NONE", transfer_guard=dict(rocket_id="logical"))
+    if not restart:
+        return stopped
+    edited = copy.deepcopy(stopped); loader = edited["loaders"][0]["arce_fluid_fuel_loader"]
+    if name == "R3_LEDGER_MISSING":
+        edited["ledger"] = None
+    elif name in ("R3_LEDGER_REPLACED", "R3_LEDGER_BEHIND"):
+        edited["ledger"].update(issued_through=0, records=[], writer_generation=1)
+        if name == "R3_LEDGER_REPLACED":
+            edited["ledger"]["ledger_id"] = "other"
+    elif name == "R3_ENDPOINT_FOREIGN":
+        loader["resource_escrow"]["markers"][0]["op_id"] = "foreign"
+    elif name == "R3_ENDPOINT_OTHER":
+        loader["tank"]["Amount"] = 3000
+    elif name == "R3_ENDPOINT_MISSING":
+        edited["loaders"] = []
+    else:
+        edited["loaders"][0]["x"] = 68
+    restarted = copy.deepcopy(edited)
+    if name.startswith("R3_ENDPOINT_"):
+        restarted["ledger"]["records"][0].update(phase="REPAIR", reason="MISSING_ENDPOINT" if name.endswith(("MISSING", "RELOCATED"))
+                                                 else "FOREIGN_MARKER" if name.endswith("FOREIGN") else "OTHER_STATE")
+        restarted["ledger"]["writer_generation"] += 1
+    restarted["edited"] = edited
+    return restarted
 
 
 class LoaderCutsTest(unittest.TestCase):
@@ -206,7 +282,8 @@ class LoaderCutsTest(unittest.TestCase):
                 with self.subTest(cut=cut, restart=restart):
                     actual = oracle.check(fixture(cut, restart), cut, restart)
                     if identity is not None: self.assertEqual(identity, actual)
-                    identity = actual
+                    # As run_cut does, an R3 cut compares identities only between the restarts of its edited copy.
+                    identity = None if cut in oracle.S5_R3 and restart == 0 else actual
 
     def test_creation_second_restart_requires_successful_retry(self):
         for cut in oracle.CREATION:
@@ -252,6 +329,184 @@ class LoaderCutsTest(unittest.TestCase):
         self.assertEqual(1, runner.first_tick([line], "LF_M_K2", 1, disk)["pending"])
         for lines in ([], [line, line], [line.replace("pending=1", "pending=0")], [line.replace("issued=1", "issued=2")]):
             with self.assertRaises(oracle.smoke.SmokeError): runner.first_tick(lines, "LF_M_K2", 1, disk)
+
+    def test_w107c_storage_cuts_require_their_observed_failure_and_e2s_external_hold(self):
+        error = oracle.smoke.SmokeError
+        e1 = ["ARCE_LOADER_MATRIX_STORE_FAULT cut=LF_M_E1_OWN_STORE chunk=4,4",
+              "ARCE_LOADER_MATRIX_PROOF_FAILED cut=LF_M_E1_OWN_STORE reason=BARRIER_IO io_failures=1 refusals=0 superseding=0 records=1 pending=1"]
+        runner.storage_observations("LF_M_E1_OWN_STORE", e1); runner.w107c_observations("LF_M_E1_OWN_STORE", 0, e1)
+        runner.w107c_observations("LF_M_E1_OWN_STORE", 1, [])
+        for bad in ([e1[1].replace("BARRIER_IO", "SUPERSEDING_SAVE")], [e1[1].replace("refusals=0", "refusals=1")],
+                    [e1[1].replace("superseding=0", "superseding=1")], [e1[1].replace("io_failures=1", "io_failures=0")], [], e1 + e1[1:]):
+            with self.assertRaises(error): runner.storage_observations("LF_M_E1_OWN_STORE", bad)
+        with self.assertRaises(error): runner.w107c_observations("LF_M_E1_OWN_STORE", 1, e1)
+        with self.assertRaises(error): runner.w107c_observations("LF_M_E1_OWN_STORE", 0, e1[1:])
+        e2 = ["ARCE_LOADER_MATRIX_NOISE cut=LF_M_E2_EXTERNAL pos=76,100,76 bytes=1572864",
+              "ARCE_LOADER_MATRIX_PROOF_FAILED cut=LF_M_E2_EXTERNAL reason=BARRIER_EXTERNAL io_failures=0 refusals=1 superseding=0 records=1 pending=1"]
+        runner.storage_observations("LF_M_E2_EXTERNAL", e2)
+        for bad in ([e2[0], e2[1].replace("BARRIER_EXTERNAL", "BARRIER_BOUNDS")], e2[1:], [e2[0], e2[1].replace("io_failures=0", "io_failures=1")]):
+            with self.assertRaises(error): runner.storage_observations("LF_M_E2_EXTERNAL", bad)
+        held = ["ARCE_LOADER_MATRIX_HELD cut=LF_M_E2_EXTERNAL reason=BARRIER_EXTERNAL phase=STALLED records=1 issued=1 pending=1 "
+                "refusals=3 io_failures=0 tank=4000 bank=1000"]
+        runner.w107c_observations("LF_M_E2_EXTERNAL", 1, held)
+        for bad in ([], [held[0].replace("STALLED", "PREPARED")], [held[0].replace("refusals=3", "refusals=0")],
+                    held + ["ARCE_LOADER_MATRIX_HOLD_TIMEOUT cut=LF_M_E2_EXTERNAL ticks=2300 state=PREPARED/NONE"]):
+            with self.assertRaises(error): runner.w107c_observations("LF_M_E2_EXTERNAL", 2, bad)
+        self.assertEqual(oracle.expected("LF_M_K6", 0), {k: v for k, v in oracle.expected("LF_M_E2_EXTERNAL", 1).items() if k != "held"})
+        for restart in (1, 2):
+            good = fixture("LF_M_E2_EXTERNAL", restart); oracle.check(good, "LF_M_E2_EXTERNAL", restart)
+            for mutate in (lambda d: d["ledger"]["records"][0].update(phase="PREPARED"),
+                           lambda d: d["ledger"]["records"][0].update(reason="BARRIER_BOUNDS"),
+                           lambda d: d["ledger"].update(records=[]), lambda d: d["terrain_record"].update(external=False),
+                           lambda d: d["terrain_record"].update(decoded=4_194_305),
+                           lambda d: d["loaders"][0]["arce_fluid_fuel_loader"]["resource_escrow"].update(markers=[])):
+                bad = copy.deepcopy(good); mutate(bad)
+                with self.assertRaises(error): oracle.check(bad, "LF_M_E2_EXTERNAL", restart)
+
+    def test_floor_cuts_keep_seeded_floors_add_one_named_key_and_never_change_the_refused_key(self):
+        error = oracle.smoke.SmokeError
+        for cut in oracle.S5_FLOORS:
+            named = not cut.endswith("256")
+            for restart in range(3):
+                good = fixture(cut, restart); oracle.check(good, cut, restart)
+                mutations = [lambda d: d["ledger"]["floors"].pop(0), lambda d: d["ledger"]["floors"][3].update(resource_epoch=2),
+                             lambda d: d["ledger"]["floors"][3].update(highest_seq=999), lambda d: d["ledger"].update(issued_through=1),
+                             lambda d: d["transfers"][0].update(phase="PREPARED"), lambda d: d["transfers"].pop(),
+                             lambda d: d["ledger"]["floors"].append(dict(d["ledger"]["floors"][0], transfer_id="t9", rocket_id="other"))]
+                if good["ledger"]["records"]:
+                    mutations.append(lambda d: d["ledger"]["records"][0]["transfer_guard"].update(transfer_id="t9"))
+                if good["extra_rocket"] is not None:
+                    mutations += [lambda d: d["extra_loader"]["arce_fluid_fuel_loader"]["tank"].update(Amount=4000),
+                                  lambda d: d["extra_rocket"]["RocketEntityData"]["resource_escrow"].update(resource_epoch=1)]
+                if restart and named:
+                    mutations += [lambda d: d["ledger"]["floors"].pop(), lambda d: d["ledger"]["floors"][-1].update(highest_seq=1),
+                                  lambda d: d["ledger"]["floors"][-1].update(entity_id="other")]
+                for index, mutate in enumerate(mutations):
+                    bad = copy.deepcopy(good); mutate(bad)
+                    with self.subTest(cut=cut, restart=restart, mutation=index), self.assertRaises(error): oracle.check(bad, cut, restart)
+        # A held named fill after a restart is a raw finding, never a pass.
+        held = fixture("LF_M_R1_FLOORS_255_DISTINCT", 0)
+        with self.assertRaises(error): oracle.check(held, "LF_M_R1_FLOORS_255_DISTINCT", 1)
+
+    def test_floor_observations_pin_reservations_refusals_and_the_one_new_floor(self):
+        error = oracle.smoke.SmokeError
+        cut = "LF_M_R1_FLOORS_255_DISTINCT"
+
+        def refused(phase, used, reserved, next_):
+            return f"ARCE_LOADER_MATRIX_FLOOR_REFUSED cut={cut} phase={phase} status=ESCROW_FULL used={used} reserved={reserved} total=256 next={next_}"
+        start = [f"ARCE_LOADER_MATRIX_FLOORS cut={cut} seeded=255 named=true extra_named=true ledger=abc",
+                 f"ARCE_LOADER_MATRIX_FLOOR_ADMIT cut={cut} phase=first named=true used=255 reserved=1 total=256", refused("start", 255, 1, 257)]
+        settled = f"ARCE_LOADER_MATRIX_FLOOR_SETTLED cut={cut} fills=1 floors=256 named_floor=epoch1_seq256 used=256 reserved=0"
+        first = [refused("restart_pending", 255, 1, 257), settled, refused("restart_settled", 256, 0, 257)]
+        runner.w107c_observations(cut, 0, start); runner.w107c_observations(cut, 1, first); runner.w107c_observations(cut, 2, first[1:])
+        for restart, bad in ((0, start[:2]), (0, [start[0], start[1].replace("reserved=1", "reserved=2"), start[2]]), (0, start[1:]),
+                             (1, first[1:]), (1, [first[0], first[1].replace("epoch1", "epoch2"), first[2]]), (2, first),
+                             (1, first + [f"ARCE_LOADER_MATRIX_FLOOR_UNSETTLED cut={cut} ticks=2300 records=1"])):
+            with self.subTest(restart=restart, bad=bad), self.assertRaises(error): runner.w107c_observations(cut, restart, bad)
+        cut = "LF_M_R1_FLOORS_255_COALESCED"
+        runner.w107c_observations(cut, 0, [f"ARCE_LOADER_MATRIX_FLOORS cut={cut} seeded=255 named=true extra_named=false ledger=abc",
+                                           f"ARCE_LOADER_MATRIX_FLOOR_ADMIT cut={cut} phase=first named=true used=255 reserved=1 total=256",
+                                           f"ARCE_LOADER_MATRIX_FLOOR_ADMIT cut={cut} phase=same_key named=true used=255 reserved=1 total=256"])
+        with self.assertRaises(error):
+            runner.w107c_observations(cut, 0, [f"ARCE_LOADER_MATRIX_FLOORS cut={cut} seeded=255 named=true extra_named=false ledger=abc",
+                                               f"ARCE_LOADER_MATRIX_FLOOR_ADMIT cut={cut} phase=first named=true used=255 reserved=1 total=256",
+                                               f"ARCE_LOADER_MATRIX_FLOOR_ADMIT cut={cut} phase=same_key named=true used=255 reserved=2 total=257"])
+        runner.w107c_observations(cut, 2, [f"ARCE_LOADER_MATRIX_FLOOR_SETTLED cut={cut} fills=2 floors=256 named_floor=epoch2_seq257 used=256 reserved=0"])
+        cut = "LF_M_R1_FLOORS_256"
+        runner.w107c_observations(cut, 0, [f"ARCE_LOADER_MATRIX_FLOORS cut={cut} seeded=256 named=false extra_named=true ledger=abc",
+                                           f"ARCE_LOADER_MATRIX_FLOOR_ADMIT cut={cut} phase=first named=false used=256 reserved=0 total=256",
+                                           f"ARCE_LOADER_MATRIX_FLOOR_REFUSED cut={cut} phase=start status=ESCROW_FULL used=256 reserved=0 total=256 next=258"])
+        runner.w107c_observations(cut, 1, [f"ARCE_LOADER_MATRIX_FLOOR_REFUSED cut={cut} phase=restart_pending status=ESCROW_FULL used=256 reserved=0 total=256 next=258",
+                                           f"ARCE_LOADER_MATRIX_FLOOR_SETTLED cut={cut} fills=1 floors=256 named_floor=NONE used=256 reserved=0",
+                                           f"ARCE_LOADER_MATRIX_FLOOR_REFUSED cut={cut} phase=restart_settled status=ESCROW_FULL used=256 reserved=0 total=256 next=258"])
+
+    def test_r3_restarts_compare_with_the_edited_copy_and_require_a_lock_or_a_manual_repair(self):
+        error = oracle.smoke.SmokeError
+        for cut in oracle.S5_R3:
+            name = cut.removeprefix(oracle.PREFIX)
+            self.assertEqual(oracle.expected("LF_M_K6", 0), oracle.expected(cut, 0))
+            with self.assertRaises(error): oracle.expected(cut, 1)
+            for restart in (1, 2):
+                good = fixture(cut, restart); oracle.check(good, cut, restart)
+                mutations = [lambda d: d["rocket"]["RocketEntityData"]["resource_escrow"].update(markers=[]),
+                             lambda d: d["rocket"]["RocketEntityData"]["flight_data"]["fuel"]["propulsion"]["primary"].update(amount=2000)]
+                if good["loaders"]:
+                    mutations.append(lambda d: d["loaders"][0]["arce_fluid_fuel_loader"]["resource_escrow"].update(markers=[]))
+                if name.startswith("R3_ENDPOINT_"):
+                    mutations += [lambda d: d["ledger"]["records"][0].update(phase="PREPARED", reason="NONE"),
+                                  lambda d: d["ledger"]["records"][0].update(phase="STALLED", reason="BARRIER_IO"),
+                                  lambda d: d["ledger"].update(records=[]), lambda d: d["ledger"].update(issued_through=2),
+                                  lambda d: d["ledger"]["records"][0].update(op_id="other")]
+                elif name == "R3_LEDGER_MISSING":
+                    mutations.append(lambda d: d.update(ledger=copy.deepcopy(fixture("LF_M_K6", 0)["ledger"])))
+                else:
+                    mutations += [lambda d: d["ledger"].update(records=[{}]), lambda d: d["ledger"].update(ledger_id="third")]
+                for index, mutate in enumerate(mutations):
+                    bad = copy.deepcopy(good); mutate(bad)
+                    with self.subTest(cut=cut, restart=restart, mutation=index), self.assertRaises(error): oracle.check(bad, cut, restart)
+
+    def test_r3_observations_pin_the_repair_or_the_orphan_lock_and_the_captured_generation(self):
+        error = oracle.smoke.SmokeError
+        repair = ("ARCE_LOADER_MATRIX_REPAIR cut=LF_M_R3_ENDPOINT_OTHER reason=OTHER_STATE phase=REPAIR records=1 issued=1 pending=1 "
+                  "loader=66 tank=3000 loader_markers=1 rocket_markers=1 bank=1000 attempt=ESCROW_PENDING")
+        runner.w107c_observations("LF_M_R3_ENDPOINT_OTHER", 1, [repair])
+        for bad in ([], [repair.replace("OTHER_STATE", "BARRIER_IO")], [repair.replace("tank=3000", "tank=4000")],
+                    [repair.replace("attempt=ESCROW_PENDING", "attempt=READY")], [repair, repair]):
+            with self.assertRaises(error): runner.w107c_observations("LF_M_R3_ENDPOINT_OTHER", 1, bad)
+        missing = ("ARCE_LOADER_MATRIX_REPAIR cut=LF_M_R3_ENDPOINT_MISSING reason=MISSING_ENDPOINT phase=REPAIR records=1 issued=1 pending=1 "
+                   "loader=ABSENT tank=-1 loader_markers=-1 rocket_markers=1 bank=1000 attempt=NONE")
+        runner.w107c_observations("LF_M_R3_ENDPOINT_MISSING", 2, [missing])
+        orphan = ("ARCE_LOADER_MATRIX_ORPHAN cut=LF_M_R3_LEDGER_BEHIND ledger=BEHIND binding=SAME issued=0 marker_seq=1 records=0 "
+                  "loader_markers=1 rocket_markers=1 tank=4000 bank=1000 attempt=ESCROW_PENDING")
+        runner.w107c_observations("LF_M_R3_LEDGER_BEHIND", 1, [orphan])
+        for bad in ([orphan.replace("binding=SAME", "binding=OTHER")], [orphan.replace("issued=0", "issued=1")], []):
+            with self.assertRaises(error): runner.w107c_observations("LF_M_R3_LEDGER_BEHIND", 1, bad)
+        captured = "ARCE_LOADER_MATRIX_LEDGER_CAPTURED cut=LF_M_R3_LEDGER_BEHIND generation=1 bytes=321 sha256=" + "a" * 64
+        runner.w107c_observations("LF_M_R3_LEDGER_BEHIND", 0, [captured])
+        runner.w107c_observations("LF_M_R3_LEDGER_MISSING", 0, [])
+        for bad in ([], [captured, captured], [captured, "ARCE_LOADER_MATRIX_LEDGER_CAPTURE_FAILED cut=LF_M_R3_LEDGER_BEHIND failure=x"]):
+            with self.assertRaises(error): runner.w107c_observations("LF_M_R3_LEDGER_BEHIND", 0, bad)
+
+    def test_r3_cut_edits_the_stopped_copy_once_and_restarts_compare_with_it(self):
+        cut = "LF_M_R3_ENDPOINT_FOREIGN"
+        stopped, restarted = fixture(cut, 0), fixture(cut, 1)
+        edited = restarted.pop("edited"); second = copy.deepcopy(restarted)
+        snapshots = [stopped, edited, restarted, second]; processes = []
+        repair = ("ARCE_LOADER_MATRIX_REPAIR cut=LF_M_R3_ENDPOINT_FOREIGN reason=FOREIGN_MARKER phase=REPAIR records=1 issued=1 pending=1 "
+                  "loader=66 tank=4000 loader_markers=1 rocket_markers=1 bank=1000 attempt=ESCROW_PENDING")
+
+        class Process:
+            def __init__(self, command, session, log):
+                index = len(processes); processes.append(self); self.process = mock.Mock()
+                prior = (None, edited["ledger"], restarted["ledger"])[index]
+                self.lines = [f"ARCE_LOADER_MATRIX_FIRST cut={cut} recovery={str(bool(index)).lower()} "
+                              f"delegate={'LOADED' if prior else 'NO_FILE'} issued={prior['issued_through'] if prior else 0} "
+                              f"records={len(prior['records']) if prior else 0} pending={len(prior['records']) if prior else 0}"]
+                self.lines.append(f"ARCE_LOADER_MATRIX_PAUSED cut={cut} hook=BARRIER_FORCE_BEFORE first_store=SOURCE thread=fixture"
+                                  if index == 0 else repair)
+            def wait_for(self, pattern, timeout): pass
+            def abort(self): pass
+            def command(self, command): pass
+            def finish(self): return 0
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory); sessions = root / "sessions"; sessions.mkdir()
+            template = root / "template"; (template / "libraries").mkdir(parents=True)
+            jar = root / "fixture.jar"; jar.write_bytes(b"fixture")
+            args = SimpleNamespace(session_parent=sessions, source_server=template, jar=jar,
+                                   java="fixture-java", source_commit="fixture-commit", startup_timeout=240)
+            manifest = dict(cut="R3_ENDPOINT_FOREIGN", edits=[dict(file="region/r.0.0.mca")])
+            with mock.patch.object(runner, "assert_pin"), mock.patch.object(runner, "require_lock"), \
+                    mock.patch.object(runner, "disk_space", return_value={"C:/": 11*1024**3, "D:/": 11*1024**3}), \
+                    mock.patch.object(runner.smoke, "CapturedProcess", Process), \
+                    mock.patch.object(runner.oracle, "inspect", side_effect=snapshots), \
+                    mock.patch.object(runner.nbt, "r3_edit", return_value=manifest) as edit:
+                result = runner.run_cut(args, cut, root / "evidence", "fixture-owner", {"jar_sha256": runner.digest(jar)})
+            self.assertEqual("PASS", result["status"], result.get("findings"))
+            edit.assert_called_once()
+            self.assertEqual(("R3_ENDPOINT_FOREIGN", root / "evidence" / "edit-original"), edit.call_args.args[1:])
+            self.assertEqual(manifest, result["edit"]); self.assertEqual(edited, result["edited"])
+            self.assertEqual(3, len(processes)); self.assertTrue(result["cleanup"])
 
     def test_cleanup_requires_exact_owned_child(self):
         with tempfile.TemporaryDirectory() as directory:
