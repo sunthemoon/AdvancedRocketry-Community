@@ -50,6 +50,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 /** Calls the real audit entry points; no server, terrain, native proof or cargo mutation is simulated as passed. */
 class RocketEscrowAuditDirectionTest {
+    private static boolean runtimeInitialized;
     @TempDir Path directory;
 
     @BeforeAll static void bootstrap() throws Exception {
@@ -64,6 +65,7 @@ class RocketEscrowAuditDirectionTest {
 
     /** Plain JUnit lacks Forge's CapabilityToken transformer. Resolve only that token before defining the runtime. */
     private static void bootstrapRuntimeCapability() throws Exception {
+        if (runtimeInitialized) { return; }
         var type = new org.objectweb.asm.tree.ClassNode();
         try (var input = RocketEscrowAuditDirectionTest.class.getResourceAsStream("EscrowRuntime.class")) {
             assertNotNull(input); new org.objectweb.asm.ClassReader(input).accept(type, 0);
@@ -84,6 +86,7 @@ class RocketEscrowAuditDirectionTest {
         for (var node = token; node != end; ) { var next = node.getNext(); instructions.remove(node); node = next; }
         var output = new org.objectweb.asm.ClassWriter(0); type.accept(output);
         java.lang.invoke.MethodHandles.lookup().defineClass(output.toByteArray());
+        runtimeInitialized = true;
     }
 
     static Capability<?> runtimeCapability() throws Exception {

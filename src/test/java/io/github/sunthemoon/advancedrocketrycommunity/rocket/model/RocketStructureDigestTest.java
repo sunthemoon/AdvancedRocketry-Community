@@ -42,6 +42,19 @@ final class RocketStructureDigestTest {
     }
 
     @Test
+    void resumedHashesKeepTheSamePreDigestPins() {
+        for (var propulsion : java.util.Arrays.asList(propulsion(), null)) {
+            var cursor = new RocketSnapshotPreparation(before(propulsion), -1, null);
+            while (!cursor.done()) { cursor.step(); }
+            assertEquals(propulsion == null ? "6c43ed8d702af502ea29c7cdb617ff18b4ea64a1ee307709915ec498db66d3a7"
+                    : "fe6320add9700adfb4a23676d172fd9d5c22940b995cb802c1dded969850c053", cursor.result().contentHash());
+            if (propulsion != null) {
+                assertEquals("ef54582123c280168bf27b1d35a12198fccfb46ec52a9a52ebb6dbcfb3746dc5", cursor.result().structureDigest());
+            }
+        }
+    }
+
+    @Test
     void digestIsPinnedToItsPrefixAndExcludesPayloadData() throws Exception {
         for (var propulsion : java.util.Arrays.asList(propulsion(), null)) {
             var snapshot = before(propulsion);

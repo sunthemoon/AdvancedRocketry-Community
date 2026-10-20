@@ -24,8 +24,30 @@ public final class RocketStructureSnapshot {
     private final long createdAtGameTime;
     private final String contentHash;
     private final RocketPropulsion propulsion;
+    private final String propulsionSignature;
     private final String structureDigest;
     private final int structureDigestBytes;
+
+    /** Package-private completion of the payload-only cursor; no public digest injection path. */
+    RocketStructureSnapshot(RocketStructureSnapshot source, List<RocketBlock> blocks, RocketSnapshotHasher.Hashes hashes) {
+        schemaVersion = source.schemaVersion;
+        snapshotId = source.snapshotId;
+        sourceDimension = source.sourceDimension;
+        sourceOrigin = source.sourceOrigin;
+        bounds = source.bounds;
+        this.blocks = List.copyOf(blocks);
+        passengerAnchors = source.passengerAnchors;
+        stats = source.stats;
+        createdAtGameTime = source.createdAtGameTime;
+        propulsion = source.propulsion;
+        propulsionSignature = source.propulsionSignature;
+        contentHash = hashes.content();
+        structureDigest = hashes.structure();
+        structureDigestBytes = hashes.structureBytes();
+        if (!source.structureDigest.equals(structureDigest)) {
+            throw new IllegalArgumentException("Payload preparation changed the rocket structure");
+        }
+    }
 
     private RocketStructureSnapshot(
             UUID snapshotId,
@@ -39,6 +61,7 @@ public final class RocketStructureSnapshot {
     ) {
         schemaVersion = propulsion == null ? 1 : 2;
         this.propulsion = propulsion;
+        propulsionSignature = propulsion == null ? null : propulsion.signature();
         this.snapshotId = Objects.requireNonNull(snapshotId, "snapshotId");
         this.sourceDimension = Objects.requireNonNull(sourceDimension, "sourceDimension");
         this.sourceOrigin = Objects.requireNonNull(sourceOrigin, "sourceOrigin");
@@ -140,7 +163,7 @@ public final class RocketStructureSnapshot {
         if (propulsion != null && propulsion.primaryCapacity() != stats.fuelCapacity()) {
             throw new RocketSnapshotException(RocketValidationCode.STATS_MISMATCH, "Propulsion capacity differs from stats");
         }
-        contentHash = propulsion == null ? structureHash : RocketNativeResources.hash(structureHash + ":" + propulsion.signature());
+        contentHash = propulsion == null ? structureHash : RocketNativeResources.hash(structureHash + ":" + propulsionSignature);
         // C-I: one pass per constructed snapshot, so recognition never hashes; the codec never writes it.
         var structure = RocketSnapshotHasher.structure(schemaVersion, sourceDimension, sourceOrigin, bounds, this.blocks,
                 this.passengerAnchors, stats, propulsion);
@@ -177,6 +200,7 @@ public final class RocketStructureSnapshot {
     }
 
     public java.util.Optional<RocketPropulsion> propulsion() { return java.util.Optional.ofNullable(propulsion); }
+    String propulsionSignature() { return propulsionSignature; }
 
     public int schemaVersion() {
         return schemaVersion;

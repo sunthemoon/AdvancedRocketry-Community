@@ -111,6 +111,11 @@ public final class RocketSnapshotNbtCodec {
     }
 
     public static RocketSnapshotDecodeResult decode(CompoundTag source) {
+        return decode(source, null);
+    }
+
+    /** Package-only hook for the immutable-input witness; ordinary public decode always hashes. */
+    static RocketSnapshotDecodeResult decode(CompoundTag source, RocketStructureSnapshot expected) {
         if (source == null) {
             return RocketSnapshotDecodeResult.invalid(
                     new CompoundTag(),
@@ -157,7 +162,15 @@ public final class RocketSnapshotNbtCodec {
                 throw malformed("Rocket snapshot hash is not lowercase SHA-256");
             }
 
-            RocketStructureSnapshot snapshot = RocketStructureSnapshot.create(
+            var propulsion = schema == 2 ? RocketPropulsionCodec.decode(requirePropulsion(source)) : null;
+            if (expected != null && (schema != expected.schemaVersion() || !snapshotId.equals(expected.snapshotId())
+                    || !sourceDimension.equals(expected.sourceDimension()) || !sourceOrigin.equals(expected.sourceOrigin())
+                    || !blocks.equals(expected.blocks()) || !anchors.equals(expected.passengerAnchors())
+                    || !stats.equals(expected.stats()) || createdAt != expected.createdAtGameTime()
+                    || !java.util.Objects.equals(propulsion, expected.propulsion().orElse(null)))) {
+                throw malformed("Decoded snapshot differs from the immutable hash input");
+            }
+            RocketStructureSnapshot snapshot = expected != null ? expected : RocketStructureSnapshot.create(
                     snapshotId,
                     sourceDimension,
                     sourceOrigin,
@@ -165,7 +178,7 @@ public final class RocketSnapshotNbtCodec {
                     anchors,
                     stats,
                     createdAt,
-                    schema == 2 ? RocketPropulsionCodec.decode(requirePropulsion(source)) : null
+                    propulsion
             );
             if (!encodedBounds.equals(snapshot.bounds())) {
                 throw malformed("Rocket snapshot bounding box does not match its blocks");

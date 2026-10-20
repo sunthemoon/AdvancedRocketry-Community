@@ -179,6 +179,18 @@ public final class RocketEntity extends Entity implements MenuProvider {
         refreshSyncedData();
     }
 
+    /** The one-use cargo permit publishes the snapshot/hash and resource wrapper/revision together. */
+    public void applyEscrowCargo(io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowCargoPublication.Permit permit) {
+        var change = Objects.requireNonNull(permit).consume(this);
+        var oldSnapshot = snapshot; var oldFlight = flightData; var oldWrapper = escrowSection;
+        snapshot = change.snapshot(); flightData = change.flight(); escrowSection = change.wrapper();
+        try { validateBindings(); }
+        catch (RuntimeException failure) {
+            snapshot = oldSnapshot; flightData = oldFlight; escrowSection = oldWrapper; throw failure;
+        }
+        refreshSyncedData();
+    }
+
     /** Only F4's checked, one-use permit can initialize a new bound destination. */
     public void initializeGovernedDestination(io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGovernedDestinationAction.Permit permit) {
         var record = Objects.requireNonNull(permit).consume(this);
@@ -486,6 +498,7 @@ public final class RocketEntity extends Entity implements MenuProvider {
     @Override
     public void remove(RemovalReason reason) {
         if (!level().isClientSide) {
+            RocketRuntime.cargoRemoved(this);
             AdvancedRocketryCommunity.LOGGER.info(
                     "ARCE_ROCKET_ENTITY_REMOVED entity={} reason={} operational={}",
                     getUUID(),

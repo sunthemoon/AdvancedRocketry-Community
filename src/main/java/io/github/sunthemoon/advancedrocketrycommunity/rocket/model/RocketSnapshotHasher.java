@@ -4,6 +4,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.stats.RocketStats;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -87,13 +88,22 @@ final class RocketSnapshotHasher {
             RocketStats stats,
             boolean payloadData
     ) throws IOException {
+        writeHeader(output, schemaVersion, sourceDimension, sourceOrigin, bounds, blocks.size());
+        for (RocketBlock block : blocks) { writeBlock(output, block, payloadData); }
+        writeTrailer(output, passengerAnchors, stats);
+    }
+
+    private static void writeHeader(DataOutputStream output, int schemaVersion, ResourceLocation sourceDimension,
+            RocketPosition sourceOrigin, RocketBounds bounds, int blockCount) throws IOException {
         output.writeInt(schemaVersion);
         writeString(output, sourceDimension.toString());
         writePosition(output, sourceOrigin);
         writePosition(output, bounds.minimum());
         writePosition(output, bounds.maximum());
-        output.writeInt(blocks.size());
-        for (RocketBlock block : blocks) {
+        output.writeInt(blockCount);
+    }
+
+    private static void writeBlock(DataOutputStream output, RocketBlock block, boolean payloadData) throws IOException {
             writePosition(output, block.position());
             writeString(output, block.state().blockId().toString());
             output.writeInt(block.state().properties().size());
@@ -111,7 +121,10 @@ final class RocketSnapshotHasher {
             } else {
                 output.writeBoolean(false);
             }
-        }
+    }
+
+    private static void writeTrailer(DataOutputStream output, List<RocketPosition> passengerAnchors,
+            RocketStats stats) throws IOException {
         output.writeInt(passengerAnchors.size());
         for (RocketPosition anchor : passengerAnchors) {
             writePosition(output, anchor);
@@ -124,6 +137,50 @@ final class RocketSnapshotHasher {
         output.writeInt(stats.seatCount());
         output.writeInt(stats.guidanceCount());
         output.writeInt(stats.blockEntityCount());
+    }
+
+    /** No whole-input byte array: two digest states and at most one defensive payload copy. */
+    static final class Incremental {
+        private final DigestOutput content = new DigestOutput();
+        private final DigestOutput structure = new DigestOutput();
+        private final DataOutputStream a = new DataOutputStream(content), b = new DataOutputStream(structure);
+
+        void header(RocketStructureSnapshot source) throws IOException {
+            b.write(STRUCTURE_PREFIX.getBytes(StandardCharsets.UTF_8));
+            for (var out : List.of(a, b)) {
+                writeHeader(out, source.schemaVersion(), source.sourceDimension(), source.sourceOrigin(),
+                        source.bounds(), source.blocks().size());
+            }
+        }
+        void block(RocketBlock block) throws IOException {
+            writeBlock(a, block, true);
+            writeBlock(b, block, false);
+        }
+        Hashes finish(RocketStructureSnapshot source) throws IOException {
+            for (var out : List.of(a, b)) { writeTrailer(out, source.passengerAnchors(), source.stats()); }
+            var signature = source.propulsionSignature();
+            b.writeBoolean(signature != null);
+            if (signature != null) { writeString(b, signature); }
+            String hash = toHex(content.digest.digest());
+            if (signature != null) { hash = RocketNativeResources.hash(hash + ":" + signature); }
+            return new Hashes(hash, toHex(structure.digest.digest()), Math.toIntExact(structure.bytes));
+        }
+        long bytes() { return content.bytes + structure.bytes; }
+    }
+
+    record Hashes(String content, String structure, int structureBytes) { }
+
+    private static final class DigestOutput extends OutputStream {
+        private final MessageDigest digest;
+        private long bytes;
+        DigestOutput() {
+            try { digest = MessageDigest.getInstance("SHA-256"); }
+            catch (NoSuchAlgorithmException impossible) { throw new IllegalStateException(impossible); }
+        }
+        @Override public void write(int value) { digest.update((byte) value); bytes++; }
+        @Override public void write(byte[] value, int offset, int length) {
+            digest.update(value, offset, length); bytes += length;
+        }
     }
 
     private static void writeTag(DataOutputStream output, Tag tag) throws IOException {
