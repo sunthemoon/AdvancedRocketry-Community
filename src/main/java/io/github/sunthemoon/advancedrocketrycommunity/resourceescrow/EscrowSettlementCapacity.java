@@ -64,7 +64,6 @@ final class EscrowSettlementCapacity {
         private ReservationFull(String message) { super(message); }
     }
     private static void preview(EscrowLedger prospective, List<EscrowOperation> component, UUID selected, boolean admission) {
-        int markerLimit = markerLimit(component);
         var references = new LinkedHashMap<EscrowEndpoint.Key, EscrowEndpoint>();
         component.forEach(op -> { references.put(op.source().key(), op.source()); references.put(op.destination().key(), op.destination()); });
         var chains = EscrowPrefix.chains(component); var observations = new ArrayList<EscrowSettlementIntent.Observation>();
@@ -73,6 +72,7 @@ final class EscrowSettlementCapacity {
             var markers = new ArrayList<>(chain.stream().map(EscrowPrefix.Link::marker).toList());
             long epoch = last.endpoint().afterEpoch();
             if (EscrowAdapterIds.nativeRocket(endpoint)) {
+                int markerLimit = markerLimit(component, endpoint.logicalRocket());
                 // Charge the whole admission allowance, including retired markers not yet pruned.
                 // UUIDs/longs have fixed encoded widths; these are sizing observations, never proofs.
                 for (int i = markers.size(); i < markerLimit; i++) {
@@ -121,11 +121,13 @@ final class EscrowSettlementCapacity {
                     "Native admission marker section differs from the captured before wrapper");
             observed.markers().stream().map(EscrowPrefix.Marker::operation).forEach(markers::add);
         }
-        int markerLimit = markerLimit(EscrowSettlementIntent.component(prospective.records(), candidate.id()));
+        int markerLimit = markerLimit(EscrowSettlementIntent.component(prospective.records(), candidate.id()), candidate.guard().rocket());
         EscrowTags.require(markers.size() <= markerLimit, "Rocket settlement admission limit exceeded");
     }
-    private static int markerLimit(List<EscrowOperation> component) {
-        return component.stream().anyMatch(op -> op.kind().cargo()) ? CARGO_ADMISSION_PER_ROCKET : ADMISSION_PER_ROCKET;
+    private static int markerLimit(List<EscrowOperation> component, UUID logicalRocket) {
+        // Cross-kind endpoint UUID aliases can join records on different logical rockets.
+        return component.stream().anyMatch(op -> op.kind().cargo() && op.guard().rocket().equals(logicalRocket))
+                ? CARGO_ADMISSION_PER_ROCKET : ADMISSION_PER_ROCKET;
     }
     private record Reservation(long bytes, int receipts) { }
     static long reservedBytes(EscrowLedger root) { return reservation(root).bytes(); }
