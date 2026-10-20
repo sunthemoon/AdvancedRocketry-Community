@@ -210,6 +210,14 @@ public final class EscrowCargoPreparationGameTests {
         return create(helper, origin, large, List.of(contents));
     }
     static RocketEntity create(GameTestHelper helper, BlockPos origin, boolean large, List<FluidStack> tanks) {
+        var snapshot = snapshot(helper.getLevel().dimension().location(), origin, large, tanks);
+        var rocket = Objects.requireNonNull(ModEntities.ROCKET.get().create(helper.getLevel()));
+        rocket.initialize(snapshot, UUID.randomUUID(), UUID.randomUUID());
+        var flight = rocket.flightData().orElseThrow();
+        rocket.updateFlightData(flight.withFuel(flight.fuel().withFluidBank(false, ResourceLocation.tryParse("minecraft:water"), null, 1000), 25));
+        helper.assertTrue(helper.getLevel().addFreshEntity(rocket), "Rocket fixture failed"); return rocket;
+    }
+    static RocketStructureSnapshot snapshot(ResourceLocation dimension, BlockPos origin, boolean large, List<FluidStack> tanks) {
         var settings = RocketPropulsion.Settings.DEFAULTS;
         var fluids = new EnumMap<>(settings.allowedFluids()); fluids.put(RocketPropulsion.Role.MONO, List.of("minecraft:water"));
         var propulsion = new RocketPropulsion(RocketPropulsion.Mode.MONO, 2000, 0, 1, 1, settings.withAllowedFluids(fluids));
@@ -224,14 +232,9 @@ public final class EscrowCargoPreparationGameTests {
         for (int i = tanks.size(); i < (large ? 2048 : tanks.size() + 1); i++) {
             blocks.add(new RocketBlock(new RocketPosition(i % 16, i / 256, i / 16 % 16), state));
         }
-        var snapshot = RocketStructureSnapshot.create(UUID.randomUUID(), helper.getLevel().dimension().location(),
+        return RocketStructureSnapshot.create(UUID.randomUUID(), dimension,
                 new RocketPosition(origin.getX(), origin.getY(), origin.getZ()), blocks, List.of(),
-                new RocketStats(blocks.size(), 100, 1000, 2000, 1, 0, tanks.size(), 1), 25, propulsion);
-        var rocket = Objects.requireNonNull(ModEntities.ROCKET.get().create(helper.getLevel()));
-        rocket.initialize(snapshot, UUID.randomUUID(), UUID.randomUUID());
-        var flight = rocket.flightData().orElseThrow();
-        rocket.updateFlightData(flight.withFuel(flight.fuel().withFluidBank(false, ResourceLocation.tryParse("minecraft:water"), null, 1000), 25));
-        helper.assertTrue(helper.getLevel().addFreshEntity(rocket), "Rocket fixture failed"); return rocket;
+                new RocketStats(blocks.size(), 100, 1000, 2000, 1, 0, 1, tanks.size()), 25, propulsion);
     }
     static EscrowCargoPayload delta(RocketStructureSnapshot snapshot) {
         return new EscrowCargoPayload(new EscrowCargoPayload.Cursor(snapshot.snapshotId(), 0, 0, 0, PressurizedTankRocketAdapter.ID.toString()),
