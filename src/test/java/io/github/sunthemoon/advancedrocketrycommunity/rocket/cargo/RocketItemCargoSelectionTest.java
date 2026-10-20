@@ -132,6 +132,27 @@ class RocketItemCargoSelectionTest {
                 ? Status.CARGO_TOO_LARGE : Status.ELIGIBLE), "Selection is deterministic");
     }
 
+    /** R45: a load first looks across all containers for the same item and tags with room, then for the first empty slot. */
+    @Test void aLoadPrefersALaterContainerWithTheSameItemOverAnEarlierEmptySlot() {
+        var before = snapshot(block(0, state(CHEST), container(null, null, entry(0, stack(Items.DIRT, 5)))),
+                block(1, state(BARREL), container(null, null, entry(2, stack(Items.STONE, 64)), entry(7, stack(Items.STONE, 10)))));
+        var buffer = buffer(stack(Items.STONE, 5));
+        var delta = select(before, buffer, true, ANY);
+        assertEquals(1, delta.cursor().x()); assertEquals(7, delta.to()); assertEquals(5, count(delta.stack()));
+        assertEquals(15, count(slots(RocketItemCargoMutation.apply(before, delta, true), 1).get(7)));
+        var seen = new ArrayList<String>();
+        var empty = RocketItemCargoSelection.select(before, buffer, true, d -> {
+            seen.add(d.cursor().x() + ":" + d.to()); return d.to() == 7 ? Status.CARGO_TOO_LARGE : Status.ELIGIBLE;
+        });
+        assertEquals(List.of("1:7", "0:1"), seen, "A refused match falls back to the empty-slot pass in canonical order");
+        assertEquals(0, empty.delta().cursor().x()); assertEquals(1, empty.delta().to());
+        seen.clear();
+        assertEquals(Status.CARGO_TOO_LARGE, RocketItemCargoSelection.select(before, buffer, true, d -> {
+            seen.add(d.cursor().x() + ":" + d.to()); return Status.CARGO_TOO_LARGE;
+        }).status());
+        assertEquals(List.of("1:7", "0:1", "1:0"), seen, "At most one offer per container in each pass");
+    }
+
     /** R45: an unload slot the check refuses stays where it is, and the next nonempty slot of the same container is offered. */
     @Test void anUnloadRefusalOffersTheNextSlotOfTheSameContainer() {
         var before = snapshot(block(0, state(CHEST), container(null, null, entry(0, stack(Items.DIRT, 3)), entry(4, stack(Items.STONE, 3)))),

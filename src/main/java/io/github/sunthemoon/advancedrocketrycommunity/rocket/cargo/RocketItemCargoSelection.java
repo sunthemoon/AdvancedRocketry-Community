@@ -21,8 +21,8 @@ import net.minecraft.nbt.CompoundTag;
 
 /**
  * W11CD section 5.3's server-side selection, with no packet. Containers are walked in canonical block order, with one
- * call of the supplied pure check per offered move: at most one per container on a load, and at most one per occupied
- * slot on an unload (R45). That check must include the complete capture and O1 envelopes.
+ * call of the supplied pure check per offered move: at most one per container in each of a load's two passes, and at
+ * most one per occupied slot on an unload (R45). That check must include the complete capture and O1 envelopes.
  */
 public final class RocketItemCargoSelection {
     public record Result(Status status, EscrowItemCargoPayload delta) { }
@@ -38,17 +38,21 @@ public final class RocketItemCargoSelection {
             if (!slots.get(slot).isEmpty()) { source = slot; }
         }
         if (load && source < 0) { return new Result(walk.refusal, null); }
-        for (var block : snapshot.blocks()) {
-            var payload = block.blockEntityPayload().orElse(null);
-            if (payload == null || !VanillaContainerRocketAdapter.ID.equals(payload.adapterId())) { continue; }
-            SortedMap<Integer, CompoundTag> container;
-            try { container = RocketItemCargoMutation.container(block.state(), payload); }
-            catch (RocketItemCargoMutation.Refusal refused) { walk.refusal = refused.status(); continue; }
-            catch (IllegalArgumentException | ClassCastException unreadable) { walk.refusal = Status.UNSUPPORTED_DATA; continue; }
-            var p = block.position();
-            var cursor = new EscrowCargoPayload.Cursor(snapshot.snapshotId(), p.x(), p.y(), p.z(), payload.adapterId().toString());
-            if (load ? walk.offer(walk.load(cursor, container, slots.get(source), source)) : walk.unload(cursor, container, slots)) {
-                return new Result(Status.ELIGIBLE, walk.accepted);
+        // Loading prefers a container already holding the same item and tags over an earlier empty slot, as fluids do (R45).
+        for (int pass = 0; pass < (load ? 2 : 1); pass++) {
+            for (var block : snapshot.blocks()) {
+                var payload = block.blockEntityPayload().orElse(null);
+                if (payload == null || !VanillaContainerRocketAdapter.ID.equals(payload.adapterId())) { continue; }
+                SortedMap<Integer, CompoundTag> container;
+                try { container = RocketItemCargoMutation.container(block.state(), payload); }
+                catch (RocketItemCargoMutation.Refusal refused) { walk.refusal = refused.status(); continue; }
+                catch (IllegalArgumentException | ClassCastException unreadable) { walk.refusal = Status.UNSUPPORTED_DATA; continue; }
+                var p = block.position();
+                var cursor = new EscrowCargoPayload.Cursor(snapshot.snapshotId(), p.x(), p.y(), p.z(), payload.adapterId().toString());
+                if (load ? walk.offer(walk.load(cursor, container, slots.get(source), source, pass == 0))
+                        : walk.unload(cursor, container, slots)) {
+                    return new Result(Status.ELIGIBLE, walk.accepted);
+                }
             }
         }
         return new Result(walk.refusal, null);
@@ -68,18 +72,21 @@ public final class RocketItemCargoSelection {
             refusal = status; return false;
         }
 
-        /** The first container slot with the same item and tags and room, otherwise the first empty slot. */
+        /** The first container slot with the same item and tags and room when merging, otherwise the first empty slot. */
         EscrowItemCargoPayload load(EscrowCargoPayload.Cursor cursor, SortedMap<Integer, CompoundTag> container,
-                                    CompoundTag moving, int source) {
+                                    CompoundTag moving, int source, boolean merge) {
             try { RocketItemCargoMutation.nativeStack(moving); }
             catch (RocketItemCargoMutation.Refusal refused) { refusal = refused.status(); return null; }
             int target = -1;
-            for (var held : container.entrySet()) {
-                var entry = stack(held.getValue());
-                if (mergeable(entry, moving) && room(entry, moving) > 0) { target = held.getKey(); break; }
-            }
-            for (int slot = 0; target < 0 && slot < RocketItemCargoMutation.SLOTS; slot++) {
-                if (!container.containsKey(slot)) { target = slot; }
+            if (merge) {
+                for (var held : container.entrySet()) {
+                    var entry = stack(held.getValue());
+                    if (mergeable(entry, moving) && room(entry, moving) > 0) { target = held.getKey(); break; }
+                }
+            } else {
+                for (int slot = 0; target < 0 && slot < RocketItemCargoMutation.SLOTS; slot++) {
+                    if (!container.containsKey(slot)) { target = slot; }
+                }
             }
             if (target < 0) { return null; }
             var held = container.containsKey(target) ? stack(container.get(target)) : new CompoundTag();
