@@ -132,6 +132,28 @@ class RocketItemCargoSelectionTest {
                 ? Status.CARGO_TOO_LARGE : Status.ELIGIBLE), "Selection is deterministic");
     }
 
+    /** R45: an unload slot the check refuses stays where it is, and the next nonempty slot of the same container is offered. */
+    @Test void anUnloadRefusalOffersTheNextSlotOfTheSameContainer() {
+        var before = snapshot(block(0, state(CHEST), container(null, null, entry(0, stack(Items.DIRT, 3)), entry(4, stack(Items.STONE, 3)))),
+                block(1, state(BARREL), container(null, null, entry(0, stack(Items.GLASS, 2)))));
+        var encoded = RocketSnapshotNbtCodec.encode(before);
+        var seen = new ArrayList<String>();
+        var result = RocketItemCargoSelection.select(before, buffer(), false, delta -> {
+            seen.add(delta.cursor().x() + ":" + delta.from());
+            return delta.cursor().x() == 0 && delta.from() == 0 ? Status.CARGO_TOO_LARGE : Status.ELIGIBLE;
+        });
+        assertEquals(Status.ELIGIBLE, result.status());
+        assertEquals(0, result.delta().cursor().x()); assertEquals(4, result.delta().from()); assertEquals(3, count(result.delta().stack()));
+        assertEquals(List.of("0:0", "0:4"), seen, "The refused dirt stays and the stone behind it is offered");
+        seen.clear();
+        var next = RocketItemCargoSelection.select(before, buffer(), false, delta -> {
+            seen.add(delta.cursor().x() + ":" + delta.from()); return delta.cursor().x() == 0 ? Status.INVALID_DATA : Status.ELIGIBLE;
+        });
+        assertEquals(1, next.delta().cursor().x()); assertEquals(List.of("0:0", "0:4", "1:0"), seen);
+        assertEquals(Status.CARGO_TOO_LARGE, RocketItemCargoSelection.select(before, buffer(), false, d -> Status.CARGO_TOO_LARGE).status());
+        assertEquals(encoded, RocketSnapshotNbtCodec.encode(before));
+    }
+
     @Test void aLocallyValidStackThatFailsTheFramedPayloadNeverReachesEligibility() {
         for (String kind : new String[] {"depth", "nodes"}) {
             var saved = stack(Items.STONE, 2); var tag = new CompoundTag(); saved.put("tag", tag);

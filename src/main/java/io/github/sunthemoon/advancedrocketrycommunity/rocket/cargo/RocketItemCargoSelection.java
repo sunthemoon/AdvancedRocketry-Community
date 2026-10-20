@@ -21,7 +21,8 @@ import net.minecraft.nbt.CompoundTag;
 
 /**
  * W11CD section 5.3's server-side selection, with no packet. Containers are walked in canonical block order, with one
- * call of the supplied pure check per container; that check must include the complete capture and O1 envelopes.
+ * call of the supplied pure check per offered move: at most one per container on a load, and at most one per occupied
+ * slot on an unload (R45). That check must include the complete capture and O1 envelopes.
  */
 public final class RocketItemCargoSelection {
     public record Result(Status status, EscrowItemCargoPayload delta) { }
@@ -31,7 +32,7 @@ public final class RocketItemCargoSelection {
                                 Function<EscrowItemCargoPayload, Status> eligibility) {
         Objects.requireNonNull(eligibility);
         var slots = buffer.slots();
-        var walk = new Walk();
+        var walk = new Walk(eligibility);
         int source = -1;
         for (int slot = 0; load && source < 0 && slot < EscrowItemBuffer.SLOTS; slot++) {
             if (!slots.get(slot).isEmpty()) { source = slot; }
@@ -46,17 +47,26 @@ public final class RocketItemCargoSelection {
             catch (IllegalArgumentException | ClassCastException unreadable) { walk.refusal = Status.UNSUPPORTED_DATA; continue; }
             var p = block.position();
             var cursor = new EscrowCargoPayload.Cursor(snapshot.snapshotId(), p.x(), p.y(), p.z(), payload.adapterId().toString());
-            var delta = load ? walk.load(cursor, container, slots.get(source), source) : walk.unload(cursor, container, slots);
-            if (delta == null) { continue; }
-            Status status = Objects.requireNonNull(eligibility.apply(delta));
-            if (status == Status.ELIGIBLE) { return new Result(status, delta); }
-            walk.refusal = status;
+            if (load ? walk.offer(walk.load(cursor, container, slots.get(source), source)) : walk.unload(cursor, container, slots)) {
+                return new Result(Status.ELIGIBLE, walk.accepted);
+            }
         }
         return new Result(walk.refusal, null);
     }
 
     private static final class Walk {
+        private final Function<EscrowItemCargoPayload, Status> eligibility;
         private Status refusal = Status.NO_CARGO_STORAGE;
+        private EscrowItemCargoPayload accepted;
+        Walk(Function<EscrowItemCargoPayload, Status> eligibility) { this.eligibility = eligibility; }
+
+        /** The supplied check decides; its last refusal is the result when no later move is accepted. */
+        boolean offer(EscrowItemCargoPayload delta) {
+            if (delta == null) { return false; }
+            Status status = Objects.requireNonNull(eligibility.apply(delta));
+            if (status == Status.ELIGIBLE) { accepted = delta; return true; }
+            refusal = status; return false;
+        }
 
         /** The first container slot with the same item and tags and room, otherwise the first empty slot. */
         EscrowItemCargoPayload load(EscrowCargoPayload.Cursor cursor, SortedMap<Integer, CompoundTag> container,
@@ -76,9 +86,11 @@ public final class RocketItemCargoSelection {
             return payload(cursor, withCount(moving, Math.min(count(moving), room(held, moving))), source, target);
         }
 
-        /** The first container slot the buffer accepts: a buffer slot with the same item and tags and room, else an empty one. */
-        EscrowItemCargoPayload unload(EscrowCargoPayload.Cursor cursor, SortedMap<Integer, CompoundTag> container,
-                                      List<CompoundTag> buffer) {
+        /**
+         * Each nonempty container slot in order, into a buffer slot with the same item and tags and room, else an empty
+         * one. A slot that fails the stack checks or the supplied check stays where it is, and the next slot is offered.
+         */
+        boolean unload(EscrowCargoPayload.Cursor cursor, SortedMap<Integer, CompoundTag> container, List<CompoundTag> buffer) {
             for (var held : container.entrySet()) {
                 var entry = stack(held.getValue());
                 try { RocketItemCargoMutation.nativeStack(entry); }
@@ -92,10 +104,11 @@ public final class RocketItemCargoSelection {
                     if (buffer.get(slot).isEmpty()) { target = slot; }
                 }
                 if (target < 0) { continue; }
-                var delta = payload(cursor, withCount(entry, Math.min(count(entry), room(buffer.get(target), entry))), held.getKey(), target);
-                if (delta != null) { return delta; }
+                if (offer(payload(cursor, withCount(entry, Math.min(count(entry), room(buffer.get(target), entry))), held.getKey(), target))) {
+                    return true;
+                }
             }
-            return null;
+            return false;
         }
 
         /** A framed delta outside the payload bounds stays where it is, before any capture or reservation. */
