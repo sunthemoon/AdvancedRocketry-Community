@@ -8,11 +8,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowTestE
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightLimits;
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketPassengerSeat;
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferPhase;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -29,7 +26,6 @@ import java.util.function.Supplier;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.level.ChunkPos;
 
 /**
  * W98, P1-N3 leaf N3-A1 (Root decision R34; W96 sections 3 and 4 with amendments W96-R1 to W96-R5). An ordinary source
@@ -136,17 +132,8 @@ final class RocketOrdinaryRetirement {
      */
     boolean admits(RocketTransferRecord record, RocketEntity survivor, List<RocketEntity> sources, List<RocketEntity> destinations) {
         // An existing entry for L is nudged or replaced by begin; only a new one needs room.
-        String reason = !pending.containsKey(record.logicalRocketId()) && pending.size() >= MAX_PENDING ? "PENDING_LIMIT" : null;
-        if (reason == null) {
-            var candidates = new ArrayList<RocketEntity>(sources);
-            if (survivor != null) { candidates.add(survivor); }
-            for (var candidate : candidates) {
-                if (!onOriginColumn(candidate, record.sourceSnapshot())) { reason = "CANDIDATE_OFF_COLUMN entity=" + candidate.getUUID(); }
-            }
-            for (var candidate : destinations) {
-                if (!onOriginColumn(candidate, record.destinationSnapshot())) { reason = "CANDIDATE_OFF_COLUMN entity=" + candidate.getUUID(); }
-            }
-        }
+        String reason = !pending.containsKey(record.logicalRocketId()) && pending.size() >= MAX_PENDING ? "PENDING_LIMIT"
+                : RocketRetirementGuards.offColumn(record, survivor, sources, destinations);
         if (reason == null) { refusals.remove(record.logicalRocketId()); return true; }
         if (!reason.equals(refusals.get(record.logicalRocketId()))) {
             if (refusals.size() >= MAX_PENDING) { refusals.remove(refusals.keySet().iterator().next()); }
@@ -155,29 +142,6 @@ final class RocketOrdinaryRetirement {
                     record.transferId(), record.logicalRocketId(), reason);
         }
         return false;
-    }
-
-    static boolean onOriginColumn(RocketEntity candidate, RocketStructureSnapshot snapshot) {
-        var origin = snapshot.sourceOrigin();
-        return candidate.level().dimension().location().equals(snapshot.sourceDimension())
-                && candidate.chunkPosition().equals(new ChunkPos(origin.x() >> 4, origin.z() >> 4));
-    }
-
-    /** R3's crew rule against T's source manifest, without remembering any placement. */
-    static boolean crewReady(MinecraftServer server, RocketTransferRecord record, RocketEntity survivor, boolean offlineAllowed) {
-        return crewReady(server, record, survivor, offlineAllowed, new HashSet<>());
-    }
-
-    private static boolean crewReady(MinecraftServer server, RocketTransferRecord record, RocketEntity survivor,
-                                     boolean offlineAllowed, Set<UUID> delivered) {
-        var seats = record.sourceFlightData().passengers().assignments().stream().map(RocketPassengerSeat::passengerId).toList();
-        return RocketRetirementProof.crewReady(seats, id -> {
-            var player = server.getPlayerList().getPlayer(id);
-            return RocketRetirementProof.seat(player != null, player != null && player.getServer() == server && !player.isRemoved()
-                            && player.isAlive() && !player.isSpectator() && player.connection != null && player.connection.connection.isConnected(),
-                    player != null && player.level() == survivor.level(), player != null && player.getVehicle() == survivor,
-                    player != null && player.getVehicle() == null);
-        }, delivered, offlineAllowed);
     }
 
     /**
@@ -287,7 +251,7 @@ final class RocketOrdinaryRetirement {
             else { waiting(entry, "SURVIVOR_UNLOADED", now); }
             return;
         }
-        if (!crewReady(server, record, survivor, entry.offlineAllowed, entry.delivered)) { waiting(entry, "CREW_WAITING", now); return; }
+        if (!RocketRetirementGuards.crewReady(server, record, survivor, entry.offlineAllowed, entry.delivered)) { waiting(entry, "CREW_WAITING", now); return; }
         for (var slot : entry.census) {
             var slotLevel = RocketTransferEntities.level(server, slot.dimension());
             if (slotLevel == null || !slotLevel.areEntitiesLoaded(slot.chunk().toLong())) { waiting(entry, "SLOT_UNLOADED", now); return; }
@@ -299,7 +263,7 @@ final class RocketOrdinaryRetirement {
         if (supported && !firstCaptureAvailable(server, entry, now)) { fail(entry, "BUSY", now, 1, false); return; }
         if (!bays.allowed(server, entry.journal, record, RocketTransferBayRecoveryGate.Action.REMOVE_JOURNAL)) { abandon(entry, "BAY_HELD"); return; }
         if (!escrowAllowed(server, entry.journal, record, entry.token)) { fail(entry, "BUSY", now, 1, false); return; }
-        var frozen = projection(survivor, record);
+        var frozen = RocketRetirementGuards.projection(survivor, record);
         if (frozen == null) { fail(entry, "SURVIVOR_CONFLICT", now, RETRY_TICKS, true); return; }
         if (entry.token == null) {
             entry.token = entry.journal.reserve(entry.logical()).orElse(null);
@@ -373,9 +337,9 @@ final class RocketOrdinaryRetirement {
         var record = entry.record;
         var level = RocketTransferEntities.level(server, record.sourceSnapshot().sourceDimension());
         var survivor = level != null && level.getEntity(entry.survivor) instanceof RocketEntity rocket ? rocket : null;
-        var current = survivor == null ? null : projection(survivor, record);
+        var current = survivor == null ? null : RocketRetirementGuards.projection(survivor, record);
         if (current == null || !RocketRetirementProof.matches(current, entry.frozen)) { fail(entry, "SURVIVOR_CHANGED", now, 1, false); return; }
-        if (!crewReady(server, record, survivor, entry.offlineAllowed, entry.delivered)) { waiting(entry, "CREW_WAITING", now); return; }
+        if (!RocketRetirementGuards.crewReady(server, record, survivor, entry.offlineAllowed, entry.delivered)) { waiting(entry, "CREW_WAITING", now); return; }
         if (!bays.allowed(server, entry.journal, record, RocketTransferBayRecoveryGate.Action.SETTLE_SOURCE)
                 || !escrowAllowed(server, entry.journal, record, entry.token)) { fail(entry, "BUSY", now, 1, false); return; }
         if (!entry.proofs.values().stream().allMatch(EscrowBarrier.Proof::valid)) { fail(entry, "SUPERSEDING_SAVE", now, 1, false); return; }
@@ -503,26 +467,6 @@ final class RocketOrdinaryRetirement {
         return EscrowRuntime.of(server).barrier().availableOrdinary(entry.census.get(0).dimension().toString(), now);
     }
 
-    /**
-     * The survivor's frozen projection, or null unless it is T's loaded source identity, stationary at its snapshot
-     * origin with T's source fuel and debits, and saved as a world entity (not a passenger).
-     */
-    static CompoundTag projection(RocketEntity survivor, RocketTransferRecord record) {
-        if (!RocketTransferEntities.loadedEntity(survivor) || !survivor.operational() || survivor.isPassenger()) { return null; }
-        var snapshot = record.sourceSnapshot(); var origin = snapshot.sourceOrigin();
-        var flight = survivor.flightData().orElse(null);
-        if (!survivor.level().dimension().location().equals(snapshot.sourceDimension())
-                || survivor.assemblyTransactionId().filter(record.logicalRocketId()::equals).isEmpty()
-                || survivor.ownerId().filter(record.ownerId()::equals).isEmpty()
-                || survivor.snapshot().filter(value -> value.snapshotId().equals(snapshot.snapshotId())
-                        && value.contentHash().equals(snapshot.contentHash())).isEmpty()
-                || !RocketTransferRecoveryService.recoveredStationarySource(true, false, flight,
-                        survivor.getX() == origin.x() + 0.5D && survivor.getY() == origin.y() && survivor.getZ() == origin.z() + 0.5D)
-                || !flight.fuel().equals(record.sourceFlightData().fuel())) { return null; }
-        var tag = new CompoundTag();
-        return survivor.save(tag) ? tag : null;
-    }
-
     /** RocketTransferEscrowRules.flightAllowed, with the held reservation recognized as this return's own (W96 section 4). */
     private boolean escrowAllowed(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
                                   RocketTransferSavedData.Reservation token) {
@@ -576,13 +520,5 @@ final class RocketOrdinaryRetirement {
             if (entry.state != State.REMOVING) { entry.effects.discarded().run(); }
         }
         pending.clear(); refusals.clear(); warnedLevels.clear();
-    }
-
-    /** A publication refusal's DESTINATION_SPAWNED T may return only when no destination entity was admitted. */
-    static boolean destinationAdmitted(MinecraftServer server, RocketTransferRecord record) {
-        if (record.phase() == RocketTransferPhase.PREPARED) { return false; }
-        var level = RocketTransferEntities.level(server, record.destinationSnapshot().sourceDimension());
-        return level == null || record.destinationEntityId().map(level::getEntity).isPresent()
-                || !RocketTransferEntities.loadedMatches(server, record, true).isEmpty();
     }
 }

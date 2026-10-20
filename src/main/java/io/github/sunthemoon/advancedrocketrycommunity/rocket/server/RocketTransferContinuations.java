@@ -34,7 +34,7 @@ final class RocketTransferContinuations {
         // W98: the current T by ID, not the callback's object; a refused publication's T is already DESTINATION_SPAWNED.
         var current = journal.find(record.transferId()).orElse(null);
         if (current == null || current.phase() != RocketTransferPhase.PREPARED && current.phase() != RocketTransferPhase.DESTINATION_SPAWNED
-                || !current.sourceEntityId().equals(source.getUUID()) || RocketOrdinaryRetirement.destinationAdmitted(server, current)
+                || !current.sourceEntityId().equals(source.getUUID()) || RocketRetirementGuards.destinationAdmitted(server, current)
                 || !retirements.admits(current, source, List.of(), List.of())) { return false; }
         try (var held = RocketOrdinaryRetirement.hold(journal, current.logicalRocketId())) {
             if (held.token() == null) { return false; }

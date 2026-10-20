@@ -447,7 +447,7 @@ final class RocketTransferRecoveryService {
     ) {
         if (!bays.allowed(server, journal, record, RocketTransferBayRecoveryGate.Action.SETTLE_SOURCE)) { return Status.RETRY_LATER; }
         liveTransfers.remove(record.transferId());
-        boolean ready = RocketOrdinaryRetirement.crewReady(server, record, survivor, offlineAllowed);
+        boolean ready = RocketRetirementGuards.crewReady(server, record, survivor, offlineAllowed);
         if (ready && !bays.allowed(server, journal, record, RocketTransferBayRecoveryGate.Action.REMOVE_JOURNAL)) { return Status.RETRY_LATER; }
         settledTransfers.add(record.transferId());
         retirements.begin(server, journal, RocketOrdinaryRetirement.Site.RECOVERED_SOURCE, record, survivor, discarded, offlineAllowed, held,
