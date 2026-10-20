@@ -22,25 +22,29 @@ class EscrowItemDimensionCapacityTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
     @TempDir Path temp;
 
-    @Test void fiveMarkerLevelBoundariesIncludeTransferGuardsAndBothCargoKinds() {
+    @Test void oneMarkerLevelBoundariesIncludeTransferGuardsAndBothCargoKinds() {
         for (var kind : KINDS) {
             for (boolean guarded : List.of(false, true)) {
                 int longest = 0;
-                for (int length = 3; length <= 118; length++) {
-                    if (!fits(operation(kind, guarded, 4, false, "a:" + "b".repeat(length - 2)))) { break; }
+                for (int length = 3; length <= 128; length++) {
+                    try {
+                        if (!fits(operation(kind, guarded, 0, false, "a:" + "b".repeat(length - 2)))) { break; }
+                    } catch (IllegalArgumentException unencodable) { break; }
                     longest = length;
                 }
                 assertEquals(limit(kind, guarded), longest, kind + " guarded=" + guarded);
-                var edge = operation(kind, guarded, 4, kind.itemCargo(), "a:" + "b".repeat(longest - 2));
+                var edge = operation(kind, guarded, 0, kind.itemCargo(), "a:" + "b".repeat(longest - 2));
                 assertTrue(fits(edge));
-                assertFalse(fits(operation(kind, guarded, 4, kind.itemCargo(), "a:" + "b".repeat(longest - 1))));
+                final int firstRefused = longest + 1;
+                assertThrows(IllegalArgumentException.class,
+                        () -> operation(kind, guarded, 0, kind.itemCargo(), "a:" + "b".repeat(firstRefused - 2)));
                 System.out.println("CARGO_LEVEL_EDGE kind=" + kind + " guarded=" + guarded + " max_level_chars=" + longest);
                 measure(edge);
             }
         }
     }
 
-    @Test void realDimensionsKeepFiveMarkerRefusalsBeforeAnyAdmissionSideEffect() {
+    @Test void realDimensionsAdmitCargoButRetainedMarkersStillRefuseBeforeAnySideEffect() {
         int caseNumber = 0;
         for (var kind : KINDS) {
             for (boolean guarded : List.of(false, true)) {
@@ -48,8 +52,7 @@ class EscrowItemDimensionCapacityTest {
                     for (boolean maxStack : kind.itemCargo() ? List.of(false, true) : List.of(false)) {
                         for (int retained : List.of(0, 4)) {
                             var op = operation(kind, guarded, retained, maxStack, level);
-                            boolean expected = level.length() <= limit(kind, guarded);
-                            assertEquals(expected, fits(op), kind + " guarded=" + guarded + " level=" + level);
+                            assertTrue(fits(op), kind + " guarded=" + guarded + " level=" + level);
                             var empty = new EscrowLedger(id(500), 99, 0, List.of(), List.of(), List.of());
                             var data = ResourceEscrowSavedData.load(EscrowCodec.encode(empty));
                             try (var writer = new EscrowLedgerWriter(temp.resolve("case-" + caseNumber++), 0);
@@ -57,7 +60,7 @@ class EscrowItemDimensionCapacityTest {
                                 var admission = new EscrowNativeBinding.Admission(op, EscrowItemFixtures.wrapper(retained));
                                 var result = coordinator.prepareTransfer(admission, ignored -> fail("No write was submitted"));
                                 // Sizing with retained markers grants no authority to replay unknown retired work.
-                                var expectedResult = !expected ? EscrowCoordinator.Transfer.ESCROW_FULL : retained > 0
+                                var expectedResult = retained > 0
                                         ? EscrowCoordinator.Transfer.OTHER_TRANSFER_PENDING : EscrowCoordinator.Transfer.QUEUED;
                                 boolean queued = expectedResult == EscrowCoordinator.Transfer.QUEUED;
                                 assertEquals(expectedResult, result);
@@ -69,7 +72,7 @@ class EscrowItemDimensionCapacityTest {
                                         + " retained=" + retained + " max_stack=" + maxStack
                                         + " payload_bytes=" + RocketNbtSize.uncompressedBytes(op.payload()) + " admission=" + result);
                             }
-                            if (expected && retained == 4 && (maxStack || !kind.itemCargo())) { measure(op); }
+                            if (retained == 4 && (maxStack || !kind.itemCargo())) { measure(op); }
                         }
                     }
                 }
@@ -79,12 +82,27 @@ class EscrowItemDimensionCapacityTest {
 
     private static int limit(EscrowOperation.Kind kind, boolean guarded) {
         return switch (kind) {
-            case ITEM_CARGO_LOAD -> guarded ? 19 : 31;
-            case ITEM_CARGO_UNLOAD -> guarded ? 15 : 28;
-            case FLUID_CARGO_LOAD -> guarded ? 24 : 36;
-            case FLUID_CARGO_UNLOAD -> guarded ? 20 : 33;
+            case ITEM_CARGO_LOAD, ITEM_CARGO_UNLOAD -> 118;
+            case FLUID_CARGO_LOAD, FLUID_CARGO_UNLOAD -> 123;
             default -> throw new AssertionError(kind);
         };
+    }
+    @Test void unencodableLevelStillRefusesBeforeAnyAdmissionSideEffect() {
+        for (var kind : KINDS) {
+            for (boolean guarded : List.of(false, true)) {
+                var empty = new EscrowLedger(id(500), 99, 0, List.of(), List.of(), List.of());
+                var data = ResourceEscrowSavedData.load(EscrowCodec.encode(empty));
+                try (var writer = new EscrowLedgerWriter(temp.resolve("unencodable-" + kind + guarded), 0);
+                        var coordinator = new EscrowCoordinator(data, writer)) {
+                    assertThrows(IllegalArgumentException.class, () -> coordinator.prepareTransfer(new EscrowNativeBinding.Admission(
+                            operation(kind, guarded, 0, kind.itemCargo(), "a:" + "b".repeat(limit(kind, guarded) - 1)),
+                            RocketEscrowSection.neutral()), ignored -> fail()));
+                    assertEquals(100, coordinator.nextSequence()); assertEquals(0, coordinator.admissionAuthority().pendingCount());
+                    assertEquals(empty, coordinator.ledger()); assertFalse(data.isDirty()); assertFalse(coordinator.commitPreparations());
+                    assertTrue(writer.idle()); assertTrue(writer.capturedOperations().isEmpty());
+                }
+            }
+        }
     }
     private static EscrowOperation operation(EscrowOperation.Kind kind, boolean guarded, int retained, boolean maxStack, String level) {
         int blob = maxStack ? 4_096 - RocketNbtSize.uncompressedBytes(EscrowItemFixtures.stack(0)) : -1;

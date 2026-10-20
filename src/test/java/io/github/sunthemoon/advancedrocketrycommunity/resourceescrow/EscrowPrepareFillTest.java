@@ -253,7 +253,7 @@ class EscrowPrepareFillTest {
         var hypothetical = prospective.replace(prospective.records().stream().map(op -> op.id().equals(candidate.id())
                 ? op.withReason(EscrowReason.OTHER_STATE) : op).toList(), prospective.floors(), prospective.tombstones());
         var preview = EscrowSettlementIntent.preview(hypothetical, candidate.id(), EscrowSettlementIntent.Choice.ACCEPT_CURRENT,
-                new UUID(0, 1), "\0".repeat(128), 0, observations);
+                new UUID(0, 1), "~".repeat(16), 0, observations);
         var intent = preview.confirm(preview.actor(), preview.digest(), 0, observations);
         var member = hypothetical.records().stream().filter(op -> op.id().equals(candidate.id())).findFirst().orElseThrow();
         return listBytes(EscrowCodec.operation(member.settle(intent))) + listBytes(EscrowReceiptCodec.encode(EscrowSettlementTombstones.create(member, intent)));

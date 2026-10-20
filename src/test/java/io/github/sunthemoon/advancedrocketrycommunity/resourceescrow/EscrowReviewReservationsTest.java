@@ -37,7 +37,7 @@ class EscrowReviewReservationsTest {
                             chain.stream().map(EscrowPrefix.Link::marker).toList()), true, Long.MAX_VALUE));
         }
         var preview = EscrowSettlementIntent.preview(held, operations.get(0).id(), EscrowSettlementIntent.Choice.ACCEPT_CURRENT,
-                EscrowTestFixtures.id(700), "\0".repeat(128), 0, observed);
+                EscrowTestFixtures.id(700), "~".repeat(16), 0, observed);
         var unpadded = preview.confirm(preview.actor(), preview.digest(), 0, observed);
         assertDoesNotThrow(unpadded::encode);
         for (var op : held.records()) {

@@ -58,7 +58,7 @@ final class EscrowFlightBenchmarkCeiling {
                     new EscrowSettlementIntent.Observation(target,
                             new EscrowPrefix.State(ledger, 0, target.beforeSignature(), List.of()), true, 0));
             var preview = EscrowSettlementIntent.preview(root, op.id(), EscrowSettlementIntent.Choice.ACCEPT_CURRENT,
-                    id(999), "c".repeat(128), 0, observations);
+                    id(999), "c".repeat(EscrowSettlementIntent.NEW_ACTOR_NAME_LIMIT), 0, observations);
             var intent = preview.confirm(preview.actor(), preview.digest(), 1, observations);
             records.add(op.settle(intent));
             var receipt = EscrowSettlementTombstones.create(op, intent);

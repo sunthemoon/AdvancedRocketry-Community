@@ -21,11 +21,14 @@ record EscrowCommandActor(Kind kind, UUID id, String name) {
         // reject that ambiguous case instead of inferring provenance from output preferences.
         EscrowTags.require(stack.hasPermission(2) && stack.withSuppressedOutput() != stack, REFUSAL);
         if (stack.getEntity() instanceof ServerPlayer player && stack.source == player) {
-            return new EscrowCommandActor(Kind.PLAYER, player.getUUID(), player.getGameProfile().getName());
+            String name = player.getGameProfile().getName();
+            EscrowSettlementIntent.requireNewActorName(name);
+            return new EscrowCommandActor(Kind.PLAYER, player.getUUID(), name);
         }
         // DedicatedServer's console input uses server.createCommandSourceStack(). Tick/load
         // functions share its source/name/permissions but getGameLoopSender suppresses output.
         EscrowTags.require(stack.getEntity() == null && stack.getServer() != null && stack.source == stack.getServer(), REFUSAL);
+        EscrowSettlementIntent.requireNewActorName("Server");
         return new EscrowCommandActor(Kind.CONSOLE, CONSOLE_ID, "Server");
     }
 }

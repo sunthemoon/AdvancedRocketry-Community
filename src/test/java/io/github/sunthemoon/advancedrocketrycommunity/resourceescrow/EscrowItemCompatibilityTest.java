@@ -20,7 +20,9 @@ class EscrowItemCompatibilityTest {
         new EscrowCargoCompatibilityTest().fuelAndFloorReceiptBytesAndInspectorOutputStayPinned();
         for (var kind : EscrowCargoFixtures.KINDS) {
             var op = EscrowCargoFixtures.operation(kind, 1, 99).withReason(EscrowReason.OTHER_STATE);
-            var root = ledger(op); var intent = EscrowCargoFixtures.intent(root, op, 0, 0, false);
+            var root = ledger(op);
+            // Keep the historical bytes pinned, including the old 128-NUL audit name, via the unchanged decoder.
+            var intent = storedActor(EscrowCargoFixtures.intent(root, op, 0, 0, false), "\0".repeat(128));
             var released = EscrowSettlementTombstones.release(EscrowSettlementTombstones.install(intent.freeze(root), intent), intent);
             var output = new ByteArrayOutputStream();
             NbtIo.write(EscrowReceiptCodec.encode(released.tombstones().get(0)), new DataOutputStream(output));

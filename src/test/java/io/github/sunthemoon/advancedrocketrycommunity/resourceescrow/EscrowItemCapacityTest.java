@@ -22,7 +22,7 @@ class EscrowItemCapacityTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); EscrowItemStackCodecTest.bootstrap(); }
     @TempDir Path temp;
 
-    @Test void realEncodersMeasureBothDirectionsFiveMarkersWorstActorReasonAndNestedPayloadLimits() {
+    @Test void realEncodersMeasureBothDirectionsOneMarkerChargeAndLegacyRetainedPayloadLimits() {
         for (var kind : KINDS) {
             int longest = 0;
             for (int length = 3; length <= 128; length++) {
@@ -32,21 +32,21 @@ class EscrowItemCapacityTest {
             assertTrue(longest > 0 && longest < 128, "The reference envelope, not the individual ID limit, decides eligibility");
             assertThrows(IllegalArgumentException.class, () -> operation(kind, 100, 99, 4, -1, "a:" + "b".repeat(126)));
             final String longestReferenceLevel = "a:" + "b".repeat(longest - 2);
-            // A locally valid 512-byte reference is not an assertion that the five-marker receipt fits.
+            // R40 fits the longest locally encodable Level; retained wrappers still cannot admit cargo.
             var widest = operation(kind, 100, 99, 4, -1, longestReferenceLevel);
-            assertThrows(IllegalArgumentException.class, () -> EscrowSettlementCapacity.preflight(ledger(widest), widest.id()));
+            assertDoesNotThrow(() -> EscrowSettlementCapacity.preflight(ledger(widest), widest.id()));
             var empty = new EscrowLedger(id(500), 99, 0, List.of(), List.of(), List.of());
             var widestData = ResourceEscrowSavedData.load(EscrowCodec.encode(empty));
             try (var writer = new EscrowLedgerWriter(temp.resolve(kind + "-widest"), 0); var coordinator = new EscrowCoordinator(widestData, writer)) {
-                assertEquals(EscrowCoordinator.Transfer.ESCROW_FULL, coordinator.prepareTransfer(EscrowCargoAdmissionTest.capture(widest, 4), ignored -> fail()));
+                assertEquals(EscrowCoordinator.Transfer.OTHER_TRANSFER_PENDING, coordinator.prepareTransfer(EscrowCargoAdmissionTest.capture(widest, 4), ignored -> fail()));
                 assertEquals(100, coordinator.nextSequence()); assertEquals(0, coordinator.admissionAuthority().pendingCount());
                 assertEquals(empty, coordinator.ledger()); assertFalse(widestData.isDirty()); assertTrue(writer.capturedOperations().isEmpty());
             }
             int admittedLength = longest;
             while (admittedLength >= 3 && !fits(kind, 4, 0, "a:" + "b".repeat(admittedLength - 2))) { admittedLength--; }
-            assertTrue(admittedLength >= "minecraft:overworld".length());
-            System.out.println("ITEM_REFERENCE kind=" + kind + " local_max_level_chars=" + longest + " local_max_refused=true"
-                    + " five_marker_max_level_chars=" + admittedLength);
+            assertEquals(118, longest); assertEquals(longest, admittedLength);
+            System.out.println("ITEM_REFERENCE kind=" + kind + " local_max_level_chars=" + longest + " local_max_refused=false"
+                    + " one_marker_max_level_chars=" + admittedLength);
             final String level = "a:" + "b".repeat(admittedLength - 2);
             for (int retained = 0; retained <= 4; retained++) {
                 int low = 0, high = 8_192;
@@ -54,11 +54,11 @@ class EscrowItemCapacityTest {
                     int mid = (low + high + 1) / 2;
                     if (fits(kind, retained, mid, level)) { low = mid; } else { high = mid - 1; }
                 }
-                assertTrue(low > 0); assertFalse(fits(kind, retained, low + 1, level));
+                assertEquals(4_043, low); assertFalse(fits(kind, retained, low + 1, level));
                 var op = operation(kind, 100, 99, retained, low, level).withReason(EscrowReason.JOURNAL_GUARD_MISMATCH);
                 var root = ledger(op);
                 System.out.println("ITEM_SIZE kind=" + kind + " retained=" + retained + " total_markers=" + (retained + 1)
-                        + " level_chars=" + admittedLength + " max_blob=" + low + " five_marker_preview=true");
+                        + " level_chars=" + admittedLength + " max_blob=" + low + " one_marker_preview=true");
                 report("payload", op.payload()); report("rocket_reference", EscrowCodec.endpoint(op.rocket()));
                 report("device_reference", EscrowCodec.endpoint(op.device())); report("unsettled_operation", EscrowCodec.operation(op));
                 for (int missing = 0; missing <= 2; missing++) {
@@ -90,7 +90,7 @@ class EscrowItemCapacityTest {
         try {
             var op = operation(kind, 100, 99, retained, blob, level);
             EscrowSettlementCapacity.preflight(ledger(op), op.id());
-            // Preview checks the worst five-marker O1 even when the captured wrapper retains fewer markers.
+            // The shared preview charges one marker; actual legacy O1 observations retain all their markers.
             var repair = op.withReason(EscrowReason.JOURNAL_GUARD_MISMATCH); var root = ledger(repair);
             for (int missing = 0; missing <= 2; missing++) { intent(root, repair, retained, missing, false).freeze(root); }
             return true;
@@ -100,13 +100,21 @@ class EscrowItemCapacityTest {
     @Test void framedPayloadAndUnsettledOperationCanFitWhileEmbeddedO1ExceedsTheNodeBound() {
         for (var kind : KINDS) {
             var original = operation(kind, 1, 99); var stack = stack(-1); var tag = new CompoundTag();
-            for (int i = 0; i < 350; i++) { tag.putByte("n" + i, (byte) 1); }
+            for (int i = 0; i < 355; i++) { tag.putByte("n" + i, (byte) 1); }
             stack.put("tag", tag); var payload = new EscrowItemCargoPayload(cursor(), stack, 0, 0).encode();
             assertTrue(BoundedNbt.fits(payload, 8_192, 12, 384));
             var op = new EscrowOperation(original.id(), 1, original.owner(), 1, original.phase(), original.reason(), payload,
                     io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNativeResources.signature(payload),
                     original.source(), original.destination(), original.guard(), original.kind(), original.settlement(), original.nativeBinding());
             assertTrue(BoundedNbt.fits(EscrowCodec.operation(op), 12_288, 16, 512));
+            var previousPayload = payload.copy(); previousPayload.getCompound("stack").getCompound("tag").remove("n354");
+            var previous = new EscrowOperation(op.id(), op.sequence(), op.owner(), op.createdTick(), op.phase(), op.reason(),
+                    previousPayload, io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNativeResources.signature(previousPayload),
+                    op.source(), op.destination(), op.guard(), op.kind(), op.settlement(), op.nativeBinding());
+            assertDoesNotThrow(() -> EscrowSettlementCapacity.preflight(ledger(previous), previous.id()));
+            var repair = previous.withReason(EscrowReason.JOURNAL_GUARD_MISMATCH);
+            var lastO1 = EscrowCodec.operation(repair.settle(intent(ledger(repair), repair, 0, 0, false)));
+            assertEquals(512, BoundedNbt.measure(lastO1, 12_288, 16, 512).nodes());
             var root = ledger(); var data = ResourceEscrowSavedData.load(EscrowCodec.encode(root));
             try (var writer = new EscrowLedgerWriter(temp.resolve(kind + "-nodes"), 0); var coordinator = new EscrowCoordinator(data, writer)) {
                 assertEquals(EscrowCoordinator.Transfer.ESCROW_FULL, coordinator.prepareTransfer(EscrowCargoAdmissionTest.capture(op, 0), ignored -> fail()));
@@ -178,7 +186,7 @@ class EscrowItemCapacityTest {
                     EscrowSettlementCapacity.preflight(ledger(op), op.id()); max = nodes;
                 } catch (IllegalArgumentException refused) { break; }
             }
-            assertTrue(max > 5 && max < 375);
+            assertEquals(358, max);
             var last = withNodes(kind, max); var next = withNodes(kind, max + 1);
             assertTrue(BoundedNbt.fits(next.payload(), 8_192, 12, 384));
             assertTrue(BoundedNbt.fits(EscrowCodec.operation(next), 12_288, 16, 512));
@@ -187,7 +195,7 @@ class EscrowItemCapacityTest {
             var data = ResourceEscrowSavedData.load(EscrowCodec.encode(root));
             try (var writer = new EscrowLedgerWriter(temp.resolve(kind + "-node-edge"), 0); var coordinator = new EscrowCoordinator(data, writer)) {
                 assertEquals(EscrowCoordinator.Transfer.ESCROW_FULL,
-                        coordinator.prepareTransfer(EscrowItemAdmissionTest.capture(next, 4), ignored -> fail()));
+                        coordinator.prepareTransfer(EscrowItemAdmissionTest.capture(next, 0), ignored -> fail()));
                 assertEquals(root, coordinator.ledger()); assertEquals(100, coordinator.nextSequence());
                 assertEquals(0, coordinator.admissionAuthority().pendingCount()); assertFalse(data.isDirty());
                 assertTrue(writer.capturedOperations().isEmpty());
@@ -195,11 +203,11 @@ class EscrowItemCapacityTest {
             var repair = last.withReason(EscrowReason.JOURNAL_GUARD_MISMATCH);
             System.out.println("ITEM_NODE_EDGE kind=" + kind + " stack_nodes=" + max);
             report("node_edge_payload", last.payload());
-            report("node_edge_O1_operation", EscrowCodec.operation(repair.settle(intent(ledger(repair), repair, 4, 0, false))));
+            report("node_edge_O1_operation", EscrowCodec.operation(repair.settle(intent(ledger(repair), repair, 0, 0, false))));
         }
     }
     private static EscrowOperation withNodes(EscrowOperation.Kind kind, int nodes) {
-        var original = operation(kind, 100, 99, 4, -1, "minecraft:overworld");
+        var original = operation(kind, 100, 99, 0, -1, "minecraft:overworld");
         var payload = new EscrowItemCargoPayload(cursor(), EscrowItemStackCodecTest.nodes(nodes), 0, 0).encode();
         return new EscrowOperation(original.id(), original.sequence(), original.owner(), original.createdTick(), original.phase(), original.reason(),
                 payload, io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNativeResources.signature(payload),
@@ -226,10 +234,10 @@ class EscrowItemCapacityTest {
         }
     }
     private static long previewBytes(EscrowOperation candidate) {
-        // Five retained/candidate markers in the actual observation, with the same identities and payload.
-        var op = operation(candidate.kind(), candidate.sequence(), candidate.guard().rocket().getLeastSignificantBits(), 4, -1,
+        // A newly admitted cargo has exactly its own marker.
+        var op = operation(candidate.kind(), candidate.sequence(), candidate.guard().rocket().getLeastSignificantBits(), 0, -1,
                 candidate.rocket().level()).withReason(EscrowReason.JOURNAL_GUARD_MISMATCH);
-        var intent = intent(ledger(op), op, 4, 0, false);
+        var intent = intent(ledger(op), op, 0, 0, false);
         return RocketNbtSize.uncompressedBytes(EscrowCodec.operation(op.settle(intent))) - 3L
                 + RocketNbtSize.uncompressedBytes(EscrowReceiptCodec.encode(EscrowSettlementTombstones.create(op, intent))) - 3L;
     }

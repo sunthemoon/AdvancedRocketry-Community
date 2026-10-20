@@ -65,7 +65,8 @@ class EscrowItemAdmissionTest {
                 EscrowLoaderAdmission.status(EscrowCoordinator.Transfer.ROCKET_BUSY));
     }
 
-    @Test void sameCaptureCountsAllFiveMarkersAndRefusesTheSixthBeforeSideEffects() {
+    @Test void sameCaptureAllowsOnlyItsOwnMarkerAndRefusesRetainedMarkersBeforeSideEffects() {
+        assertEquals(1, EscrowSettlementCapacity.CARGO_ADMISSION_PER_ROCKET);
         for (var kind : KINDS) {
             for (int retained = 0; retained <= 5; retained++) {
                 var root = new EscrowLedger(id(500), 99, 0, List.of(), List.of(), List.of());
@@ -75,7 +76,7 @@ class EscrowItemAdmissionTest {
                 var wrong = new RocketEscrowSection(id(500), retained + 1, List.of());
                 assertThrows(IllegalArgumentException.class, () -> new EscrowNativeBinding.Admission(op, wrong));
                 assertThrows(IllegalArgumentException.class, () -> EscrowSettlementCapacity.requireAdmission(root.append(List.of(op)), op, wrong));
-                if (retained < 5) {
+                if (retained == 0) {
                     assertDoesNotThrow(() -> EscrowSettlementCapacity.requireAdmission(root.append(List.of(op)), op, before));
                     assertDoesNotThrow(() -> EscrowSettlementCapacity.preflight(root.append(List.of(op)), op.id()));
                 } else {
@@ -86,7 +87,7 @@ class EscrowItemAdmissionTest {
                     if (retained == 0) { assertEquals(EscrowCoordinator.Transfer.QUEUED, result); }
                     else {
                         // Codec fit is not retirement authority for unknown captured markers.
-                        assertEquals(retained == 5 ? EscrowCoordinator.Transfer.ROCKET_LIMIT : EscrowCoordinator.Transfer.OTHER_TRANSFER_PENDING, result);
+                        assertEquals(EscrowCoordinator.Transfer.OTHER_TRANSFER_PENDING, result);
                         assertEquals(100, coordinator.nextSequence());
                         assertEquals(0, coordinator.admissionAuthority().pendingCount()); assertFalse(data.isDirty());
                         assertFalse(coordinator.commitPreparations()); assertTrue(writer.capturedOperations().isEmpty());

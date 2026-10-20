@@ -23,6 +23,13 @@ final class EscrowTestFixtures {
         return new EscrowLedger(id(500), java.util.Arrays.stream(records).mapToLong(EscrowOperation::sequence).max().orElse(0),
                 0, List.of(records), List.of(), List.of());
     }
+    /** Reconstruct a historical encoded decision without submitting its actor name as a new preview. */
+    static EscrowSettlementIntent storedActor(EscrowSettlementIntent preview, String name) {
+        var encoded = preview.encode(); encoded.putString("actor_name", name);
+        var base = encoded.copy(); base.remove("confirmed_tick"); base.remove("digest");
+        encoded.putString("digest", RocketNativeResources.signature(base));
+        return EscrowSettlementIntent.decode(encoded);
+    }
     /** Explicit synthetic envelope hashes for codec/prefix tests, never a live native permit. */
     static EscrowOperation nativeModel(EscrowOperation op) {
         return nativeModel(op, null);
