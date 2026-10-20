@@ -67,7 +67,7 @@ final class SatelliteRegistryWriter {
         requireOwner();
         if (data.operational() && !data.isDirty() && acknowledged != null
                 && watches.stream().allMatch(acknowledged::proves)) {
-            return new Completion(Outcome.COMMITTED, Optional.of(acknowledged));
+            return new Completion(Outcome.COMMITTED, Optional.of(acknowledged), false);
         }
         return write(file, policy, force);
     }
@@ -92,7 +92,6 @@ final class SatelliteRegistryWriter {
             policy.withCommitter((staged, target) -> {
                 attempted[0] = true;
                 policy.committer().commit(staged, target);
-                force.force(target.toAbsolutePath().getParent());
             }).replace(file, () -> frozen);
             outcome = Outcome.COMMITTED;
         } catch (RuntimeException failure) {
@@ -104,6 +103,11 @@ final class SatelliteRegistryWriter {
                     outcome = Outcome.UNKNOWN;
                 }
             }
+        }
+        boolean directoryForceFailed = false;
+        if (outcome == Outcome.COMMITTED) {
+            try { force.force(file.toAbsolutePath().getParent()); }
+            catch (java.io.IOException | RuntimeException failure) { directoryForceFailed = true; }
         }
         if (outcome == Outcome.UNKNOWN) {
             highestUnknownEpoch = Math.max(highestUnknownEpoch, epoch);
@@ -124,7 +128,7 @@ final class SatelliteRegistryWriter {
             }
             saveFailureReported = false;
         }
-        return new Completion(outcome, outcome == Outcome.COMMITTED ? Optional.ofNullable(acknowledged) : Optional.empty());
+        return new Completion(outcome, outcome == Outcome.COMMITTED ? Optional.ofNullable(acknowledged) : Optional.empty(), directoryForceFailed);
     }
 
     void flush(Path file) {

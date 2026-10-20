@@ -49,7 +49,8 @@ public final class SatelliteRegistryProof {
         }
     }
 
-    public record Completion(Outcome outcome, Optional<Acknowledgement> acknowledgement) {
+    /** A directory-force failure is visible but cannot undo an S2-proven replacement. */
+    public record Completion(Outcome outcome, Optional<Acknowledgement> acknowledgement, boolean directoryForceFailed) {
         public boolean proves(Watch watch) {
             return outcome == Outcome.COMMITTED && acknowledgement.filter(ack -> ack.proves(watch)).isPresent();
         }

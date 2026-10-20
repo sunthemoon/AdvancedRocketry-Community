@@ -130,7 +130,7 @@ public final class SatelliteMissionSavedData extends SavedData {
 
     public SatelliteRegistryProof.Completion checkpoint(MinecraftServer server, List<SatelliteRegistryProof.Watch> watches) {
         if (!server.isSameThread()) { throw new IllegalStateException("Registry checkpoint requires the server thread"); }
-        return checkpoint(file(server), watches, writer.policy(), directory -> { });
+        return checkpoint(file(server), watches, writer.policy(), CheckedSavedDataPolicy.DirectoryForce.PLATFORM);
     }
 
     SatelliteRegistryProof.Completion checkpoint(java.nio.file.Path file, List<SatelliteRegistryProof.Watch> watches,
