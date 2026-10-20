@@ -1821,6 +1821,13 @@ scope (`93659768`). It changes no decision status and accepts no risk.
   publication, on any change that invalidates it (unload, movement, a new snapshot), or after 40
   server ticks without progress or unpublished once READY, with one INFO line
   (`ARCE_CARGO_PREPARATION_CLOSED`). Nothing is saved; the prior snapshot stays authoritative.
+- **Item cargo (D-P, W118 with W118F, merged `1e53314c`).** An item move changes exactly one slot of
+  a 27-slot chest, trapped chest or barrel payload (each half of a vanilla double chest counts as one)
+  and one slot of the device's four-slot buffer, keeps `CustomName` and `Lock`, and refuses a
+  `LootTable` (`UNRESOLVED_LOOT`) and other `ChestBlockEntity` subclasses (`NO_CARGO_STORAGE`). A load
+  merges into a container already holding the same item and tags before using an empty slot; an
+  unload skips a stack that fails the stack checks. Item preparation uses C-P part 2's tickets and
+  the unchanged 16 MiB budget, with a first-step reservation sized for the largest legal container.
 - **Admission.** Cargo admission has its own per-kind switches and stays off until the cargo S2
   evidence, the part-1 closures and the benchmarks pass and the Root or owner decision is recorded
   with the source and the JAR. R-031, R-032 and the Required Gates are unchanged.
