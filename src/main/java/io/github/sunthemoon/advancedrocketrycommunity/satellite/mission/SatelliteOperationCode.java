@@ -45,7 +45,9 @@ public enum SatelliteOperationCode {
     WRONG_TERMINAL,
     RECONCILING,
     INSTANCE_NOT_FOUND,
-    OFFLINE_REPAIR_REQUIRED;
+    OFFLINE_REPAIR_REQUIRED,
+    // W27 section 3: append only; older persisted ordinals keep their meaning.
+    DEPLOYMENT_PENDING;
 
     public String translationKey() {
         return "status.advancedrocketrycommunity.satellite."

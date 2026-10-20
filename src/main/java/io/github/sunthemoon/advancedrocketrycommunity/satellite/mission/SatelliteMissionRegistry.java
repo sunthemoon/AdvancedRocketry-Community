@@ -179,46 +179,8 @@ public final class SatelliteMissionRegistry {
             SatelliteDefinition definition, ResourceLocation targetBodyId, long observedGameTime,
             boolean discoveryRequired) {
         requireAll(satelliteId, missionId, ownerId, definition, targetBodyId);
-        long logicalTime = clock.advance(observedGameTime);
-
-        SatelliteState existing = satellites.get(satelliteId);
-        if (existing != null) {
-            MissionState existingMission = missions.get(missionId);
-            // ADR-049 section 6 (R2-L6): a replayed package is consumed whatever the satellite has done since.
-            if (existing.ownerId().equals(ownerId)
-                    && existing.definitionId().equals(definition.id())
-                    && existing.kind() == SatelliteKind.DATA) {
-                return result(SatelliteOperationCode.IDEMPOTENT, false, existing, existingMission);
-            }
-            return result(SatelliteOperationCode.IDENTITY_CONFLICT, false, existing, existingMission);
-        }
-        if (!definition.allows(targetBodyId)) {
-            return result(SatelliteOperationCode.TARGET_NOT_ALLOWED, false, null, null);
-        }
-        if (missions.containsKey(missionId)) {
-            return result(SatelliteOperationCode.IDENTITY_CONFLICT, false, null, missions.get(missionId));
-        }
-        SatelliteState satellite = SatelliteState.launch(satelliteId, definition.id(), ownerId, logicalTime);
-        MissionState mission;
-        try {
-            mission = MissionState.start(missionId, satelliteId, ownerId, SatelliteDefinitionSnapshot.from(definition),
-                    targetBodyId, logicalTime, discoveryRequired, saveEpoch);
-        } catch (ArithmeticException exception) {
-            return result(SatelliteOperationCode.CAPACITY_REACHED, false, null, null);
-        }
-        satellite = satellite.startMission(missionId);
-        SatelliteOperationCode refused = admission(ownerId, satellite, mission);
-        if (refused != null) {
-            return result(refused, false, null, null);
-        }
-        satellites.put(satelliteId, satellite);
-        satellitesByOwner.merge(ownerId, 1, Integer::sum);
-        budget.reserve(StorageBudget.Section.SATELLITES, satelliteId, sizer.satelliteBytes(satellite));
-        putMission(mission);
-        budget.reserve(StorageBudget.Section.MISSIONS, missionId, sizer.missionBytes(mission));
-        admitAccount(ownerId);
-        scheduler.schedule(mission);
-        return result(SatelliteOperationCode.SUCCESS, true, satellite, mission);
+        return SatelliteLaunchAdmission.data(this, satelliteId, missionId, ownerId, definition, targetBodyId,
+                clock.advance(observedGameTime), discoveryRequired, true);
     }
 
     /**
@@ -227,31 +189,36 @@ public final class SatelliteMissionRegistry {
      */
     public synchronized SatelliteOperationResult launchIdle(java.util.function.LongFunction<SatelliteState> factory,
                                                            long observedGameTime) {
+        return launchIdle(factory, observedGameTime, satellite -> false);
+    }
+
+    /** The SavedData adapter's receipt fence applies before insertion and before the existing-identity replay. */
+    public synchronized SatelliteOperationResult launchIdle(java.util.function.LongFunction<SatelliteState> factory,
+            long observedGameTime, java.util.function.Predicate<UUID> deploymentPending) {
         Objects.requireNonNull(factory, "factory");
-        long logicalTime = clock.advance(observedGameTime);
-        SatelliteState candidate = Objects.requireNonNull(factory.apply(logicalTime), "candidate");
-        if (candidate.kind() == SatelliteKind.DATA || candidate.currentMissionId().isPresent()
-                || candidate.status() != SatelliteStatus.OPERATIONAL) {
-            throw new IllegalArgumentException("An idle launch needs an operational non-data satellite");
+        SatelliteState candidate = Objects.requireNonNull(factory.apply(clock.advance(observedGameTime)), "candidate");
+        if (deploymentPending.test(candidate.satelliteId())) {
+            return result(SatelliteOperationCode.DEPLOYMENT_PENDING, false, null, null);
         }
-        SatelliteState existing = satellites.get(candidate.satelliteId());
-        if (existing != null) {
-            boolean same = existing.ownerId().equals(candidate.ownerId())
-                    && existing.definitionId().equals(candidate.definitionId())
-                    && existing.kind() == candidate.kind();
-            return result(same ? SatelliteOperationCode.IDEMPOTENT : SatelliteOperationCode.IDENTITY_CONFLICT,
-                    false, existing, null);
-        }
-        SatelliteOperationCode refused = admission(candidate.ownerId(), candidate, null);
-        if (refused != null) {
-            return result(refused, false, null, null);
-        }
-        satellites.put(candidate.satelliteId(), candidate);
-        satellitesByOwner.merge(candidate.ownerId(), 1, Integer::sum);
-        receiverLinks.update(null, candidate);
-        budget.reserve(StorageBudget.Section.SATELLITES, candidate.satelliteId(), sizer.satelliteBytes(candidate));
-        admitAccount(candidate.ownerId());
-        return result(SatelliteOperationCode.SUCCESS, true, candidate, null);
+        return SatelliteLaunchAdmission.idle(this, candidate, true);
+    }
+
+    /** Read-only admission checks; registration repeats these under the registry lock. */
+    public synchronized SatelliteOperationResult previewLaunch(UUID satellite, UUID mission, UUID owner,
+            SatelliteDefinition definition, ResourceLocation target, boolean discoveryRequired) {
+        return SatelliteLaunchAdmission.data(this, satellite, mission, owner, definition, target,
+                clock.logicalGameTime(), discoveryRequired, false);
+    }
+    public synchronized SatelliteOperationResult previewIdle(java.util.function.LongFunction<SatelliteState> factory) {
+        return SatelliteLaunchAdmission.idle(this, factory.apply(clock.logicalGameTime()), false);
+    }
+
+    /** A newly admitted satellite and account, after the complete satellite/mission budget check. */
+    void admitSatellite(SatelliteState satellite) {
+        satellitesByOwner.merge(satellite.ownerId(), 1, Integer::sum);
+        storeSatellite(satellite);
+        budget.reserve(StorageBudget.Section.SATELLITES, satellite.satelliteId(), sizer.satelliteBytes(satellite));
+        admitAccount(satellite.ownerId());
     }
 
     /**

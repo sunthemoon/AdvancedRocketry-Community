@@ -30,6 +30,9 @@ public final class SatelliteMissionSavedData extends SavedData {
 
     private final SatelliteMissionRegistry registry;
     private final SatelliteRegistryWriter writer;
+    // Detached codec/domain fixtures have no world. Every production get binds its server's live receipt index.
+    private java.util.function.BiPredicate<UUID, Boolean> deploymentFence = (satellite, removal) -> false;
+    private MinecraftServer ownerServer;
     private CompoundTag preservedBlockedData;
     /** ADR-050 section 2: a state change waits here for the next coalesced flush (at most one per 100 ticks). */
     private boolean flushPending;
@@ -55,11 +58,18 @@ public final class SatelliteMissionSavedData extends SavedData {
 
     public static SatelliteMissionSavedData get(MinecraftServer server) {
         Objects.requireNonNull(server, "server");
-        return server.overworld().getDataStorage().computeIfAbsent(
+        SatelliteMissionSavedData data = server.overworld().getDataStorage().computeIfAbsent(
                 SatelliteMissionSavedData::load,
                 () -> create(server.overworld().getGameTime()),
                 DATA_NAME
         );
+        if (data.ownerServer != server) {
+            if (data.ownerServer != null) { throw new IllegalStateException("Registry belongs to another server"); }
+            data.ownerServer = server;
+            data.deploymentFence = (satellite, removal) ->
+                    io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceipts.blocksRegistry(server, satellite, removal);
+        }
+        return data;
     }
 
     public static SatelliteMissionSavedData load(CompoundTag source) {
@@ -106,6 +116,13 @@ public final class SatelliteMissionSavedData extends SavedData {
     public SatelliteRegistryProof.Watch watch(UUID satellite) { requireOperational(); return writer.watch(satellite); }
     public Optional<SatelliteRegistryProof.Acknowledgement> acknowledgement() { return writer.acknowledgement(); }
     void writePolicy(CheckedSavedDataPolicy policy) { writer.policy(policy); }
+    void deploymentFence(java.util.function.BiPredicate<UUID, Boolean> fence) { deploymentFence = Objects.requireNonNull(fence); }
+    public boolean deploymentPending(UUID satellite) { return deploymentFence.test(satellite, false); }
+    private static SatelliteOperationResult deploymentPendingResult() {
+        return new SatelliteOperationResult(
+                io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteOperationCode.DEPLOYMENT_PENDING,
+                false, Optional.empty(), Optional.empty(), 0);
+    }
 
     public void flush(MinecraftServer server) { flush(file(server)); }
     public void flush(java.nio.file.Path file) { writer.flush(file); }
@@ -242,6 +259,7 @@ public final class SatelliteMissionSavedData extends SavedData {
             boolean discoveryRequired
     ) {
         requireOperational();
+        if (deploymentPending(satelliteId)) { return deploymentPendingResult(); }
         SatelliteOperationResult result = registry.launch(
                 satelliteId,
                 missionId,
@@ -262,7 +280,7 @@ public final class SatelliteMissionSavedData extends SavedData {
             long observedGameTime
     ) {
         requireOperational();
-        SatelliteOperationResult result = registry.launchIdle(factory, observedGameTime);
+        SatelliteOperationResult result = registry.launchIdle(factory, observedGameTime, this::deploymentPending);
         if (result.changed()) {
             changed();
         }
@@ -276,6 +294,7 @@ public final class SatelliteMissionSavedData extends SavedData {
             boolean receiverMissing
     ) {
         requireOperational();
+        if (deploymentFence.test(satelliteId, true)) { return deploymentPendingResult(); }
         SatelliteOperationResult result = registry.decommission(satelliteId, requesterId, operator, receiverMissing);
         if (result.changed()) {
             changed();

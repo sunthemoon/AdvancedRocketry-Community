@@ -31,7 +31,8 @@ public final class BayReceiptStore implements EscrowAdmissionAuthority.Store {
         UUID satellite() { return (after != null ? after : before).satellite(); }
     }
     /** Derived from the three states and cached until the next change. */
-    private record View(EscrowAdmissionAuthority.Index index, Set<UUID> blockingSatellites, Set<UUID> heldRockets) { }
+    private record View(EscrowAdmissionAuthority.Index index, Set<UUID> blockingSatellites,
+                        Set<UUID> decommissionBlocked, Set<UUID> heldRockets) { }
     private final Thread owner = Thread.currentThread();
     private final UUID storeId;
     private final BayReceiptWriter writer;
@@ -183,6 +184,8 @@ public final class BayReceiptStore implements EscrowAdmissionAuthority.Store {
     public boolean unavailable() { owner(); return closed || writer.unavailable(); }
     /** Whether a receipt blocks insertion of this satellite's package: INTENT, REGISTERED or REPAIR in any state. */
     public boolean blocks(UUID satellite) { owner(); return view().blockingSatellites().contains(satellite); }
+    /** INTENT/REPAIR and an unacknowledged REGISTERED hold removal; durable REGISTERED permits normal removal. */
+    public boolean blocksDecommission(UUID satellite) { owner(); return view().decommissionBlocked().contains(satellite); }
     /** Whether an INTENT, REGISTERED, REPAIR or released receipt names this rocket in any state. */
     public boolean holdsRocket(UUID rocket) { owner(); return view().heldRockets().contains(rocket); }
     public BayReceiptRoot durable() { owner(); return durable; }
@@ -221,7 +224,7 @@ public final class BayReceiptStore implements EscrowAdmissionAuthority.Store {
         if (view != null) { return view; }
         var pending = new LinkedHashMap<UUID, EscrowAdmissionAuthority.Pending>();
         var retained = new LinkedHashMap<UUID, EscrowAdmissionAuthority.Retained>();
-        Set<UUID> blocking = new HashSet<>(), rockets = new HashSet<>();
+        Set<UUID> blocking = new HashSet<>(), removal = new HashSet<>(), rockets = new HashSet<>();
         for (BayReceiptRoot root : states(false)) {
             for (BayReceipt receipt : root.receipts()) {
                 retained.put(receipt.op(), new EscrowAdmissionAuthority.Retained(receipt.op(), receipt.owner()));
@@ -232,9 +235,14 @@ public final class BayReceiptStore implements EscrowAdmissionAuthority.Store {
                     rockets.add(receipt.rocket());
                 }
                 if (receipt.blocking()) { blocking.add(receipt.satellite()); }
+                if (receipt.phase() == BayReceipt.Phase.INTENT || receipt.phase() == BayReceipt.Phase.REPAIR
+                        || receipt.phase() == BayReceipt.Phase.REGISTERED && !acknowledged(receipt.op())) {
+                    removal.add(receipt.satellite());
+                }
             }
         }
-        view = new View(new EscrowAdmissionAuthority.Index(true, pending.values(), retained.values()), Set.copyOf(blocking), Set.copyOf(rockets));
+        view = new View(new EscrowAdmissionAuthority.Index(true, pending.values(), retained.values()),
+                Set.copyOf(blocking), Set.copyOf(removal), Set.copyOf(rockets));
         return view;
     }
     private void changed() { view = null; }
