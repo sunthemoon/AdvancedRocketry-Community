@@ -23,8 +23,8 @@ final class SatelliteRegistryFenceTest {
         UUID satellite = UUID.randomUUID(), mission = UUID.randomUUID(), owner = UUID.randomUUID();
         CompoundTag before = data.save(new CompoundTag());
         assertEquals(SatelliteOperationCode.DEPLOYMENT_PENDING, data.launch(satellite, mission, owner,
-                SatelliteRegistryProofTest.definition(), ModIdentity.id("earth"), 0, false).code());
-        assertEquals(SatelliteOperationCode.DEPLOYMENT_PENDING, data.launchIdle(t -> idle(satellite, owner, t), 0).code());
+                SatelliteRegistryProofTest.definition(), ModIdentity.id("earth"), 100, false).code());
+        assertEquals(SatelliteOperationCode.DEPLOYMENT_PENDING, data.launchIdle(t -> idle(satellite, owner, t), 100).code());
         assertEquals(SatelliteOperationCode.DEPLOYMENT_PENDING, data.decommission(satellite, owner, false, false).code());
         assertEquals(before, data.save(new CompoundTag()));
         assertEquals(0, data.mutationSequence());

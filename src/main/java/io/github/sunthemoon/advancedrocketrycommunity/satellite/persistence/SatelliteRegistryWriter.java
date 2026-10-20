@@ -25,6 +25,7 @@ final class SatelliteRegistryWriter {
     private long mutationSequence, highestUnknownEpoch;
     private Acknowledgement acknowledged;
     private boolean saveFailureReported;
+    private RuntimeException writeFailure;
     private CheckedSavedDataPolicy policy = CheckedSavedDataPolicy.atomic(TYPE);
 
     SatelliteRegistryWriter(SatelliteMissionSavedData data, SatelliteMissionRegistry registry) {
@@ -76,6 +77,7 @@ final class SatelliteRegistryWriter {
         requireOwner();
         if (policy.type() != TYPE) { throw new IllegalArgumentException("Wrong registry write policy"); }
         data.pendingWrite(); // Eligibility is not a registry mutation.
+        writeFailure = null;
         long sequence = mutationSequence;
         boolean[] attempted = {false};
         CompoundTag candidate = null;
@@ -95,11 +97,13 @@ final class SatelliteRegistryWriter {
             }).replace(file, () -> frozen);
             outcome = Outcome.COMMITTED;
         } catch (RuntimeException failure) {
+            writeFailure = failure;
             outcome = Outcome.FAILED;
             if (attempted[0]) {
                 try {
                     outcome = policy.read(file).filter(candidate::equals).isPresent() ? Outcome.COMMITTED : Outcome.FAILED;
                 } catch (RuntimeException unreadable) {
+                    failure.addSuppressed(unreadable);
                     outcome = Outcome.UNKNOWN;
                 }
             }
@@ -127,6 +131,7 @@ final class SatelliteRegistryWriter {
                 data.persisted(); // Raw blocked roots retain their exact payload, never a registration proof.
             }
             saveFailureReported = false;
+            writeFailure = null;
         }
         return new Completion(outcome, outcome == Outcome.COMMITTED ? Optional.ofNullable(acknowledged) : Optional.empty(), directoryForceFailed);
     }
@@ -134,7 +139,7 @@ final class SatelliteRegistryWriter {
     void flush(Path file) {
         Completion completion = write(file, policy, directory -> { });
         if (completion.outcome() != Outcome.COMMITTED || data.isDirty()) {
-            throw new IllegalStateException("Satellite registry write was not acknowledged: " + completion.outcome());
+            throw new IllegalStateException("Satellite registry write was not acknowledged: " + completion.outcome(), writeFailure);
         }
     }
     void save(File file) {

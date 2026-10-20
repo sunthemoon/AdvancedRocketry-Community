@@ -196,10 +196,11 @@ public final class SatelliteMissionRegistry {
     public synchronized SatelliteOperationResult launchIdle(java.util.function.LongFunction<SatelliteState> factory,
             long observedGameTime, java.util.function.Predicate<UUID> deploymentPending) {
         Objects.requireNonNull(factory, "factory");
-        SatelliteState candidate = Objects.requireNonNull(factory.apply(clock.advance(observedGameTime)), "candidate");
+        SatelliteState candidate = Objects.requireNonNull(factory.apply(clock.preview(observedGameTime)), "candidate");
         if (deploymentPending.test(candidate.satelliteId())) {
             return result(SatelliteOperationCode.DEPLOYMENT_PENDING, false, null, null);
         }
+        clock.advance(observedGameTime);
         return SatelliteLaunchAdmission.idle(this, candidate, true);
     }
 

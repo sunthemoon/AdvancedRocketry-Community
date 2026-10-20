@@ -95,7 +95,7 @@ final class SatelliteRegistryEpochTest {
         var data = SatelliteMissionSavedData.create(0);
         for (long id : List.of(1L, 2L)) {
             assertTrue(data.launchIdle(time -> SatelliteState.launchIdle(id(id), ModIdentity.id("gas_harvester"), OWNER,
-                    time, SYSTEM, new SatelliteBlueprint(List.of(TYPE), false, new SatelliteStats(4, 10720, 1000, 1, 10)),
+                    time, SYSTEM, new SatelliteBlueprint(List.of(GroundSurveyFixtures.TYPE), false, new SatelliteStats(4, 10720, 1000, 1, 10)),
                     new SatelliteKindState.Plain(SatelliteKind.GAS_HARVESTER)), 0).success());
         }
         assertTrue(data.resources(m -> m.startResource(start(id(1), id(11)), 0)).success());

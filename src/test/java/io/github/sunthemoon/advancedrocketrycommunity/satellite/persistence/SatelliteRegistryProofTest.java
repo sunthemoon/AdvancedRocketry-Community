@@ -241,6 +241,44 @@ final class SatelliteRegistryProofTest {
         assertEquals(raw, CheckedSavedDataFile.readPayload(file(), TYPE).orElseThrow());
     }
 
+    @Test void restoreMutationIsSequencedAndNeedsAFreshAcknowledgement() {
+        var source = SatelliteMissionSavedData.create(0);
+        UUID satellite = launch(source);
+        CompoundTag root = source.save(new CompoundTag());
+        root.put("research_accounts", new net.minecraft.nbt.ListTag());
+        var restored = SatelliteMissionSavedData.load(root);
+        assertTrue(restored.operational()); assertTrue(restored.isDirty()); assertTrue(restored.flushPending());
+        assertTrue(restored.mutationSequence() > 0); assertTrue(restored.acknowledgement().isEmpty());
+        var watch = restored.watch(satellite);
+        assertTrue(checkpoint(restored, NORMAL, watch).proves(watch));
+        assertFalse(restored.isDirty()); assertFalse(restored.flushPending());
+        assertFalse(reload().isDirty(), "The repaired account must be in the committed capture");
+    }
+
+    @Test void blockedRootFailuresNeverCreateProofAndEveryEntryPreservesRawPayload() {
+        for (String entry : List.of("checkpoint", "barrier", "coalesced", "autosave", "stop")) {
+            for (boolean unknown : List.of(false, true)) {
+                CompoundTag raw = SatelliteMissionSavedData.create(0).save(new CompoundTag());
+                raw.putInt("schema_version", 999); raw.putString("unrecognized", entry + unknown);
+                var blocked = SatelliteMissionSavedData.load(raw); blocked.setDirty();
+                var policy = new CheckedSavedDataPolicy(TYPE, (staged, target) -> {
+                    if (unknown) { CheckedSavedDataFile.atomicMove(staged, target); }
+                    throw new IOException("blocked root cut");
+                }, (path, type) -> {
+                    if (unknown) { throw new IllegalStateException("readback unavailable"); }
+                    return java.util.Optional.empty();
+                });
+                assertEquals(unknown ? SatelliteRegistryProof.Outcome.UNKNOWN : SatelliteRegistryProof.Outcome.FAILED,
+                        checkpoint(blocked, policy).outcome());
+                assertEquals(raw, blocked.save(new CompoundTag())); assertTrue(blocked.isDirty());
+                if (entry.equals("checkpoint")) { checkpoint(blocked, NORMAL); }
+                else { writeEntry(blocked, entry); }
+                assertFalse(blocked.isDirty()); assertTrue(blocked.acknowledgement().isEmpty());
+                assertEquals(raw, CheckedSavedDataFile.readPayload(file(), TYPE).orElseThrow());
+            }
+        }
+    }
+
     private static void writeEntry(SatelliteMissionSavedData data, String entry, Path file) {
         if (entry.equals("autosave") || entry.equals("stop")) { data.save(file.toFile()); }
         else { data.flush(file); }

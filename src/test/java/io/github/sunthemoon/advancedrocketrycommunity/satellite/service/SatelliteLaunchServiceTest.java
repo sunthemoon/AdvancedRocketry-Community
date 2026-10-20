@@ -78,6 +78,91 @@ final class SatelliteLaunchServiceTest {
         }
     }
 
+    @Test void replayBypassesEachFullCountQuotaWithoutConsultingAdmission() throws Exception {
+        catalogs("normal");
+        for (SatelliteKind kind : SatelliteKind.values()) {
+            var data = SatelliteMissionSavedData.create(0);
+            var identity = identity(kind); seed(data, identity);
+            if (kind != SatelliteKind.DATA) {
+                seed(data, new SatelliteIdentity(UUID.randomUUID(), identity.ownerId(), ModIdentity.id("data_satellite"),
+                        SatelliteKind.DATA, List.of()));
+            }
+            int count = data.satellites().size();
+            var defaults = RegistryLimits.DEFAULTS;
+            for (int quota = 0; quota < 5; quota++) {
+                data.applyLimits(new RegistryLimits(quota == 0 ? 1 : defaults.unfinishedGlobal(),
+                        quota == 1 ? 1 : defaults.unfinishedPerOwner(), defaults.finishedPerOwner(),
+                        quota == 2 ? 1 : defaults.missionsTotal(), quota == 3 ? count : defaults.satellitesGlobal(),
+                        quota == 4 ? count : defaults.satellitesPerOwner(), defaults.instancesGlobal(),
+                        defaults.instancesPerOwner(), defaults.intentTicks(), defaults.selectionTicks()));
+                var fresh = new SatelliteIdentity(UUID.randomUUID(), identity.ownerId(), ModIdentity.id("data_satellite"),
+                        SatelliteKind.DATA, List.of());
+                assertEquals(quota == 1 || quota == 4 ? SatelliteOperationCode.OWNER_LIMIT : SatelliteOperationCode.CAPACITY_REACHED,
+                        service.validate(data, fresh.ownerId(), fresh, EARTH, b -> false).result().code(), "quota " + quota);
+                assertReplayUnchanged(data, identity);
+            }
+        }
+    }
+
+    @Test void replayBypassesFullAccountAndCodecByteBudgets() throws Exception {
+        catalogs("normal");
+        for (SatelliteKind kind : SatelliteKind.values()) {
+            var data = SatelliteMissionSavedData.create(0);
+            var identity = identity(kind); seed(data, identity);
+            CompoundTag root = data.save(new CompoundTag());
+            var accounts = root.getList("research_accounts", net.minecraft.nbt.Tag.TAG_COMPOUND);
+            CompoundTag account = accounts.getCompound(0).copy();
+            for (int i = accounts.size(); i < SatelliteLimits.MAX_RESEARCH_ACCOUNTS; i++) {
+                CompoundTag copy = account.copy(); copy.putUUID("owner_id", new UUID(99, i)); accounts.add(copy);
+            }
+            var full = SatelliteMissionSavedData.load(root);
+            assertTrue(full.operational());
+            var fresh = identity(SatelliteKind.DATA);
+            assertEquals(SatelliteOperationCode.CAPACITY_REACHED,
+                    service.validate(full, fresh.ownerId(), fresh, EARTH, b -> false).result().code());
+            assertReplayUnchanged(full, identity);
+
+            // A valid restored root may exceed admission budgets without exceeding its schema/load bounds.
+            var large = SatelliteMissionSavedData.create(0);
+            var components = java.util.stream.IntStream.range(0, 8)
+                    .mapToObj(i -> ModIdentity.id("x".repeat(96) + i)).toList();
+            var result = large.launchIdle(time -> SatelliteState.launchIdle(UUID.randomUUID(), ModIdentity.id("solar_satellite"),
+                    UUID.randomUUID(), time, EARTH, new SatelliteBlueprint(components, false,
+                    new SatelliteStats(4, 10720, 1000, 1, 10)), new SatelliteKindState.Solar(100, Optional.empty())), 0);
+            assertTrue(result.success());
+            int size = io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.CodecRecordSizer.INSTANCE
+                    .satelliteBytes(result.satellite().orElseThrow());
+            int copies = (4 * 1024 * 1024) / size + 1;
+            assertTrue(copies < SatelliteLimits.MAX_SATELLITES - 1);
+            root = data.save(new CompoundTag());
+            var records = root.getList("satellites", net.minecraft.nbt.Tag.TAG_COMPOUND);
+            accounts = root.getList("research_accounts", net.minecraft.nbt.Tag.TAG_COMPOUND);
+            CompoundTag template = large.save(new CompoundTag()).getList("satellites", net.minecraft.nbt.Tag.TAG_COMPOUND).getCompound(0);
+            for (int i = 0; i < 32; i++) {
+                CompoundTag copy = account.copy(); copy.putUUID("owner_id", new UUID(100, i)); accounts.add(copy);
+            }
+            for (int i = 0; i < copies; i++) {
+                CompoundTag copy = template.copy(); copy.putUUID("satellite_id", new UUID(101, i));
+                copy.putUUID("owner_id", new UUID(100, i % 32)); records.add(copy);
+            }
+            full = SatelliteMissionSavedData.load(root);
+            assertTrue(full.operational()); assertFalse(full.isDirty(), "Quota fixture must not need restore repair");
+            assertEquals(SatelliteOperationCode.STORAGE_BUDGET,
+                    service.validate(full, fresh.ownerId(), fresh, EARTH, b -> false).result().code());
+            assertReplayUnchanged(full, identity);
+        }
+    }
+
+    private void assertReplayUnchanged(SatelliteMissionSavedData data, SatelliteIdentity identity) {
+        CompoundTag before = data.save(new CompoundTag());
+        var validation = service.validate(data, identity.ownerId(), identity, null,
+                body -> { fail("Replay performed new-launch admission"); return false; });
+        assertEquals(SatelliteOperationCode.IDEMPOTENT, validation.result().code());
+        assertEquals(SatelliteOperationCode.IDEMPOTENT,
+                service.register(data, validation.request().orElseThrow(), 999, body -> false).code());
+        assertEquals(before, data.save(new CompoundTag()));
+    }
+
     @Test void freshDataStartsAtomicDeterministicDiscoveryMissionAndRegistrationRevalidates() throws Exception {
         catalogs("normal");
         var data = SatelliteMissionSavedData.create(0);

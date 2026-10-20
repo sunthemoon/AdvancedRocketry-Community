@@ -224,6 +224,7 @@ public final class BayReceiptStore implements EscrowAdmissionAuthority.Store {
         if (view != null) { return view; }
         var pending = new LinkedHashMap<UUID, EscrowAdmissionAuthority.Pending>();
         var retained = new LinkedHashMap<UUID, EscrowAdmissionAuthority.Retained>();
+        Set<UUID> acknowledged = acknowledgedOperations();
         Set<UUID> blocking = new HashSet<>(), removal = new HashSet<>(), rockets = new HashSet<>();
         for (BayReceiptRoot root : states(false)) {
             for (BayReceipt receipt : root.receipts()) {
@@ -236,7 +237,7 @@ public final class BayReceiptStore implements EscrowAdmissionAuthority.Store {
                 }
                 if (receipt.blocking()) { blocking.add(receipt.satellite()); }
                 if (receipt.phase() == BayReceipt.Phase.INTENT || receipt.phase() == BayReceipt.Phase.REPAIR
-                        || receipt.phase() == BayReceipt.Phase.REGISTERED && !acknowledged(receipt.op())) {
+                        || receipt.phase() == BayReceipt.Phase.REGISTERED && !acknowledged.contains(receipt.op())) {
                     removal.add(receipt.satellite());
                 }
             }
@@ -244,6 +245,24 @@ public final class BayReceiptStore implements EscrowAdmissionAuthority.Store {
         view = new View(new EscrowAdmissionAuthority.Index(true, pending.values(), retained.values()),
                 Set.copyOf(blocking), Set.copyOf(removal), Set.copyOf(rockets));
         return view;
+    }
+    /** Build the exact-acknowledgement set once, keeping a full-store index rebuild linear. */
+    private Set<UUID> acknowledgedOperations() {
+        Set<UUID> exact = new HashSet<>();
+        for (BayReceipt receipt : durable.receipts()) {
+            if (receipt.equals(current.get(receipt.op()))) { exact.add(receipt.op()); }
+        }
+        BayReceiptRoot captured = writer.captured();
+        if (captured != null) {
+            Set<UUID> capturedExact = new HashSet<>();
+            for (BayReceipt receipt : captured.receipts()) {
+                if (receipt.equals(current.get(receipt.op()))) { capturedExact.add(receipt.op()); }
+            }
+            exact.retainAll(capturedExact);
+        }
+        queued.forEach(mutation -> exact.remove(mutation.op()));
+        capturedMutations.forEach(mutation -> exact.remove(mutation.op()));
+        return exact;
     }
     private void changed() { view = null; }
     private void owner() { EscrowTags.require(Thread.currentThread() == owner, "Bay receipt store requires its owner thread"); }
