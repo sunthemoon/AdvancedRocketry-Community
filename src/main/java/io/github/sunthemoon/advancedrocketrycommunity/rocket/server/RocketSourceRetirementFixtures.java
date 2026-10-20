@@ -70,6 +70,20 @@ final class RocketSourceRetirementFixtures {
             return rocket;
         }
 
+        /**
+         * W116: a stationary rocket that names L but has another owner, so recovery never elects it, while any capture
+         * of its slot finds a second image of L and is refused.
+         */
+        RocketEntity spawnDecoy(GameTestHelper helper, ServerLevel level, BlockPos at) {
+            RocketEntity rocket = ModEntities.ROCKET.get().create(level);
+            helper.assertTrue(rocket != null, "No rocket entity type");
+            rocket.initializeTransferred(record.sourceSnapshot(), record.logicalRocketId(), UUID.randomUUID(),
+                    RocketTransferEntities.stationarySource(record, level.getGameTime()));
+            rocket.setPos(at.getX() + 0.5D, at.getY(), at.getZ() + 0.5D);
+            helper.assertTrue(level.addFreshEntity(rocket), "Decoy was not published");
+            return rocket;
+        }
+
         ChunkPos originSlot() { return slot(record.sourceSnapshot()); }
         ChunkPos destinationSlot() { return slot(record.destinationSnapshot()); }
     }
@@ -84,6 +98,11 @@ final class RocketSourceRetirementFixtures {
     }
 
     static Flight countdown(ServerLevel level, BlockPos origin, BlockPos target, List<UUID> crew, long countdownAge) {
+        return countdown(level, origin, level, target, crew, countdownAge);
+    }
+
+    /** W116: the same flight with its destination end in {@code arrivalLevel}, another Level. */
+    static Flight countdown(ServerLevel level, BlockPos origin, ServerLevel arrivalLevel, BlockPos target, List<UUID> crew, long countdownAge) {
         long now = level.getGameTime(), started = Math.max(0L, now - countdownAge);
         UUID logical = UUID.randomUUID(), transfer = UUID.randomUUID(), owner = UUID.randomUUID();
         int seats = Math.max(1, crew.size());
@@ -96,9 +115,9 @@ final class RocketSourceRetirementFixtures {
         }
         var snapshot = RocketStructureSnapshot.create(UUID.randomUUID(), level.dimension().location(), position(origin), blocks,
                 anchors, new RocketStats(seats, 100L * seats, FUEL, FUEL, 1, seats, 1, 0), started, propulsion);
-        var arrivalSnapshot = snapshot.relocated(UUID.randomUUID(), level.dimension().location(), position(target), started);
+        var arrivalSnapshot = snapshot.relocated(UUID.randomUUID(), arrivalLevel.dimension().location(), position(target), started);
         var plan = new RocketFlightPlan(3, transfer, RocketFlightPlanner.EARTH.bodyId(), RocketFlightPlanner.MOON.bodyId(),
-                level.dimension().location(), level.dimension().location(), REQUIRED, started);
+                level.dimension().location(), arrivalLevel.dimension().location(), REQUIRED, started);
         var fuel = RocketFuelState.empty(propulsion).fill(FUEL).state();
         var flight = RocketFlightData.initial(logical, FUEL, seats, plan.sourceBody(), plan.sourceDimension(), position(origin), started)
                 .withFuel(fuel, started);

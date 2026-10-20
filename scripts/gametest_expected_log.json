@@ -1381,6 +1381,51 @@
       "counts": {"ordinary_source_retirement_followups": 1},
       "test": "RocketSourceRetirementFollowUpGameTests.aHeldReturnIsNotRecoveredAgainAndASecondRequestIsDiscarded",
       "reason": "W98-R8: a fail-back waiting for its offline passenger is neither recovered again nor completed by a second request; it reports the return once, after the reconnect, the survivor proof and the removal acknowledgement."
+    },
+    {
+      "id": "w116-discarded-column-recovery-waits",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RECOVERY transfer=[0-9a-f-]{36} phase=PREPARED source_count=1 destination_count=1 action=REMOVE_DESTINATION_KEEP_SOURCE status=WAITING_FOR_PASSENGERS",
+      "counts": {"ordinary_source_retirement_column": 1},
+      "test": "RocketRetirementRecoveryGameTests.aDiscardedCopysColumnStaysLoadedAcrossFailedAttempts",
+      "reason": "W98-R3: recovery of an in-flight source discards the Moon destination copy and waits for its offline passenger, whose reconnect starts the first proof attempt."
+    },
+    {
+      "id": "w116-discarded-column-refused-attempts",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RETIREMENT_RETRY transfer=[0-9a-f-]{36} logical=[0-9a-f-]{36} site=RECOVERED_SOURCE reason=BARRIER_VETO retry_ticks=200",
+      "counts": {"ordinary_source_retirement_column": 1},
+      "test": "RocketRetirementRecoveryGameTests.aDiscardedCopysColumnStaysLoadedAcrossFailedAttempts",
+      "reason": "W98-R3: a decoy naming the same logical rocket in the survivor's slot refuses two capture attempts, logged once for the reason; the third attempt, after recovery's own ticket expired, proves both slots."
+    },
+    {
+      "id": "w116-unsupported-storage-fallback",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RETIREMENT_UNSUPPORTED_STORAGE level=minecraft:overworld; another entity storage replaced this Level's, so ordinary returns remove their records after the in-memory return \\(R-035 residual\\)",
+      "counts": {"ordinary_source_retirement_storage": 1},
+      "test": "RocketRetirementCoverageGameTests.anotherModsEntityStorageKeepsTodaysOrderingWithOneWarning",
+      "reason": "W98-R12, R5(c): with another mod's decorator in place of the Level's entity storage, a countdown cancellation keeps today's ordering, with one WARN for the Level."
+    },
+    {
+      "id": "w116-survivor-gone-abandoned",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RETIREMENT_ABANDONED transfer=[0-9a-f-]{36} logical=[0-9a-f-]{36} site=FAIL_BACK reason=SURVIVOR_GONE",
+      "counts": {"ordinary_source_retirement_coverage": 1},
+      "test": "RocketRetirementCoverageGameTests.aSurvivorRemovedDuringItsProofIsRebuiltFromTheRecord",
+      "reason": "W98-R12: a survivor removed from its loaded slot while its proof is pending ends the return with SURVIVOR_GONE; T stays and is unclassified for recovery."
+    },
+    {
+      "id": "w116-survivor-gone-rebuild",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RECOVERY transfer=[0-9a-f-]{36} phase=PREPARED source_count=0 destination_count=0 action=REBUILD_SOURCE status=RECOVERED",
+      "counts": {"ordinary_source_retirement_coverage": 1},
+      "test": "RocketRetirementCoverageGameTests.aSurvivorRemovedDuringItsProofIsRebuiltFromTheRecord",
+      "reason": "W98-R12: recovery rebuilds the removed survivor from T and reports RECOVERED once, after the rebuilt rocket's slot is proved."
     }
   ]
 }
