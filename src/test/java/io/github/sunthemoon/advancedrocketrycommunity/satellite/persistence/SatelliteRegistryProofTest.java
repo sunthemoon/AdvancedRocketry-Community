@@ -9,6 +9,11 @@ import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.Mana
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.RegistryLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteOperationCode;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteDefinition;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteBlueprint;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteKind;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteKindState;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteState;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteStats;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteManager;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
 import java.io.IOException;
@@ -253,6 +258,37 @@ final class SatelliteRegistryProofTest {
         assertTrue(checkpoint(restored, NORMAL, watch).proves(watch));
         assertFalse(restored.isDirty()); assertFalse(restored.flushPending());
         assertFalse(reload().isDirty(), "The repaired account must be in the committed capture");
+    }
+
+    @Test void refusedAndIdempotentOperationsAndClockRollbackAreSequencedWithoutPendingFlush() {
+        for (String operation : List.of("launch", "idle", "start", "claim", "cancel", "scan", "scheduler")) {
+            var data = SatelliteMissionSavedData.create(0);
+            UUID satellite = launch(data), owner = data.satellite(satellite).orElseThrow().ownerId();
+            var idle = SatelliteState.launchIdle(
+                    UUID.randomUUID(), ModIdentity.id("gas_harvester"), owner, 0, ModIdentity.id("earth"),
+                    new SatelliteBlueprint(List.of(ModIdentity.id("primary")), false, new SatelliteStats(4, 10720, 1000, 1, 10)),
+                    new SatelliteKindState.Plain(SatelliteKind.GAS_HARVESTER));
+            assertTrue(data.launchIdle(t -> idle, 0).success());
+            data.flush(file()); long sequence = data.mutationSequence(), epoch = data.saveEpoch();
+            switch (operation) {
+                case "launch" -> assertFalse(data.launch(satellite, SatelliteManager.initialMissionId(satellite), owner,
+                        definition(), ModIdentity.id("earth"), 20, false).changed());
+                case "idle" -> assertFalse(data.launchIdle(t -> idle, 20).changed());
+                case "start" -> assertFalse(data.startMission(UUID.randomUUID(), UUID.randomUUID(), owner,
+                        definition(), ModIdentity.id("earth"), 20, false).changed());
+                case "claim" -> assertFalse(data.claim(UUID.randomUUID(), owner, 20).changed());
+                case "cancel" -> assertFalse(data.cancel(UUID.randomUUID(), owner, false, 20).changed());
+                case "scan" -> assertFalse(data.payScan(satellite, owner, false, 20).changed());
+                default -> assertFalse(data.completeDue(20).changed());
+            }
+            assertTrue(data.mutationSequence() > sequence, operation);
+            assertTrue(data.isDirty()); assertFalse(data.flushPending());
+            data.flush(file()); assertEquals(epoch, data.saveEpoch());
+            sequence = data.mutationSequence();
+            assertFalse(data.completeDue(10).clockAdvanced());
+            assertTrue(data.mutationSequence() > sequence, "Backward observed time is also a persisted clock mutation");
+            assertTrue(data.isDirty()); assertFalse(data.flushPending());
+        }
     }
 
     @Test void blockedRootFailuresNeverCreateProofAndEveryEntryPreservesRawPayload() {

@@ -104,6 +104,16 @@ public final class SatelliteMissionSavedData extends SavedData {
         flushPending = true;
     }
 
+    /** Clock observations can change even when a domain operation refuses or throws. */
+    private <T> T observeClock(java.util.function.Supplier<T> operation) {
+        long before = registry.lastObservedGameTime();
+        try { return operation.get(); }
+        finally {
+            // Clock-only writes retain E and the existing ordinary-autosave cadence, not flushPending.
+            if (before != registry.lastObservedGameTime()) { setDirty(); }
+        }
+    }
+
     @Override
     public void setDirty(boolean dirty) {
         if (dirty) { writer.mutated(); }
@@ -144,7 +154,7 @@ public final class SatelliteMissionSavedData extends SavedData {
 
     public GroundSurveys.Result groundSurveys(java.util.function.Function<GroundSurveys, GroundSurveys.Result> operation) {
         requireOperational();
-        GroundSurveys.Result result = operation.apply(registry.groundSurveys());
+        GroundSurveys.Result result = observeClock(() -> operation.apply(registry.groundSurveys()));
         if (result.changed()) { changed(); }
         return result;
     }
@@ -192,7 +202,7 @@ public final class SatelliteMissionSavedData extends SavedData {
             java.util.function.Function<io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.ResourceMissions,
                     SatelliteOperationResult> operation) {
         requireOperational();
-        SatelliteOperationResult result = operation.apply(registry.resources());
+        SatelliteOperationResult result = observeClock(() -> operation.apply(registry.resources()));
         if (result.changed()) {
             changed();
         }
@@ -208,7 +218,7 @@ public final class SatelliteMissionSavedData extends SavedData {
         if (!operational()) {
             return io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.ResourceMissions.Reconciled.blocked();
         }
-        var reconciled = registry.resources().reconcile(terminal, missionId, receipt, display, observedGameTime);
+        var reconciled = observeClock(() -> registry.resources().reconcile(terminal, missionId, receipt, display, observedGameTime));
         if (reconciled.changed()) {
             changed();
         }
@@ -260,7 +270,7 @@ public final class SatelliteMissionSavedData extends SavedData {
     ) {
         requireOperational();
         if (deploymentPending(satelliteId)) { return deploymentPendingResult(); }
-        SatelliteOperationResult result = registry.launch(
+        SatelliteOperationResult result = observeClock(() -> registry.launch(
                 satelliteId,
                 missionId,
                 ownerId,
@@ -268,7 +278,7 @@ public final class SatelliteMissionSavedData extends SavedData {
                 targetBodyId,
                 observedGameTime,
                 discoveryRequired
-        );
+        ));
         if (result.changed()) {
             changed();
         }
@@ -280,7 +290,7 @@ public final class SatelliteMissionSavedData extends SavedData {
             long observedGameTime
     ) {
         requireOperational();
-        SatelliteOperationResult result = registry.launchIdle(factory, observedGameTime, this::deploymentPending);
+        SatelliteOperationResult result = observeClock(() -> registry.launchIdle(factory, observedGameTime, this::deploymentPending));
         if (result.changed()) {
             changed();
         }
@@ -332,7 +342,7 @@ public final class SatelliteMissionSavedData extends SavedData {
     /** ADR-049 section 8: a paid scan is a registry change; a refused one is not. */
     public SatelliteOperationResult payScan(UUID satelliteId, UUID requesterId, boolean operator, long observedGameTime) {
         requireOperational();
-        SatelliteOperationResult result = registry.payScan(satelliteId, requesterId, operator, observedGameTime);
+        SatelliteOperationResult result = observeClock(() -> registry.payScan(satelliteId, requesterId, operator, observedGameTime));
         if (result.changed()) {
             changed();
         }
@@ -354,7 +364,7 @@ public final class SatelliteMissionSavedData extends SavedData {
             boolean discoveryRequired
     ) {
         requireOperational();
-        SatelliteOperationResult result = registry.startMission(
+        SatelliteOperationResult result = observeClock(() -> registry.startMission(
                 satelliteId,
                 missionId,
                 ownerId,
@@ -362,7 +372,7 @@ public final class SatelliteMissionSavedData extends SavedData {
                 targetBodyId,
                 observedGameTime,
                 discoveryRequired
-        );
+        ));
         if (result.changed()) {
             changed();
         }
@@ -371,19 +381,16 @@ public final class SatelliteMissionSavedData extends SavedData {
 
     public io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SchedulerPass completeDue(long observedGameTime) {
         requireOperational();
-        io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SchedulerPass result = registry.completeDue(observedGameTime);
+        io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SchedulerPass result = observeClock(() -> registry.completeDue(observedGameTime));
         if (result.changed()) {
             changed();
-        } else if (result.clockAdvanced()) {
-            // ADR-050 section 2: clock-only changes set the ordinary dirty flag, never "flush pending".
-            setDirty();
         }
         return result;
     }
 
     public SatelliteOperationResult claim(UUID missionId, UUID ownerId, long observedGameTime) {
         requireOperational();
-        SatelliteOperationResult result = registry.claim(missionId, ownerId, observedGameTime);
+        SatelliteOperationResult result = observeClock(() -> registry.claim(missionId, ownerId, observedGameTime));
         if (result.changed()) {
             changed();
         }
@@ -406,9 +413,9 @@ public final class SatelliteMissionSavedData extends SavedData {
             long observedGameTime
     ) {
         requireOperational();
-        SatelliteOperationResult result = registry.cancel(
+        SatelliteOperationResult result = observeClock(() -> registry.cancel(
                 missionId, requesterId, operator, observedGameTime
-        );
+        ));
         if (result.changed()) {
             changed();
         }
