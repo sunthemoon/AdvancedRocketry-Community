@@ -1417,6 +1417,33 @@
       "counts": {"ordinary_source_retirement_recovery": 1},
       "test": "RocketRetirementRecoveryGameTests.aStationaryImageAwayFromItsOriginWaitsForItsOfflineSeat",
       "reason": "W98-R6, the other side: a stationary source image away from its origin may have flown, so recovery waits for its offline seat until the reconnect."
+    },
+    {
+      "id": "w116-unsupported-storage-fallback",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RETIREMENT_UNSUPPORTED_STORAGE level=minecraft:overworld; another entity storage replaced this Level's, so ordinary returns remove their records after the in-memory return \\(R-035 residual\\)",
+      "counts": {"ordinary_source_retirement_storage": 1},
+      "test": "RocketRetirementCoverageGameTests.anotherModsEntityStorageKeepsTodaysOrderingWithOneWarning",
+      "reason": "W98-R12, R5(c): with another mod's decorator in place of the Level's entity storage, a countdown cancellation keeps today's ordering, with one WARN for the Level."
+    },
+    {
+      "id": "w116-survivor-gone-abandoned",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RETIREMENT_ABANDONED transfer=[0-9a-f-]{36} logical=[0-9a-f-]{36} site=FAIL_BACK reason=SURVIVOR_GONE",
+      "counts": {"ordinary_source_retirement_coverage": 1},
+      "test": "RocketRetirementCoverageGameTests.aSurvivorRemovedDuringItsProofIsRebuiltFromTheRecord",
+      "reason": "W98-R12: a survivor removed from its loaded slot while its proof is pending ends the return with SURVIVOR_GONE; T stays and is unclassified for recovery."
+    },
+    {
+      "id": "w116-survivor-gone-rebuild",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RECOVERY transfer=[0-9a-f-]{36} phase=PREPARED source_count=0 destination_count=0 action=REBUILD_SOURCE status=RECOVERED",
+      "counts": {"ordinary_source_retirement_coverage": 1},
+      "test": "RocketRetirementCoverageGameTests.aSurvivorRemovedDuringItsProofIsRebuiltFromTheRecord",
+      "reason": "W98-R12: recovery rebuilds the removed survivor from T and reports RECOVERED once, after the rebuilt rocket's slot is proved."
     }
   ]
 }
