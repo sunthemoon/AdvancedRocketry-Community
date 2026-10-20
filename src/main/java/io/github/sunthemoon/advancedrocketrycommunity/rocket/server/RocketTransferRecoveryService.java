@@ -73,7 +73,7 @@ final class RocketTransferRecoveryService {
         this.settledTransfers = Objects.requireNonNull(settledTransfers, "settledTransfers");
         bays = new RocketTransferBayDispatch(liveTransfers, settledTransfers, fences);
         fences.bays(bays);
-        retirements = new RocketOrdinaryRetirement(liveTransfers, settledTransfers, bays, fences::ids);
+        retirements = new RocketOrdinaryRetirement(liveTransfers, settledTransfers, fences::ids, server -> new RocketRetirementWorld(server, bays));
     }
 
     Result recoverNext(MinecraftServer server, RocketTransferSavedData journal) {
@@ -208,7 +208,7 @@ final class RocketTransferRecoveryService {
     }
     RocketTransferBayDispatch bays() { return bays; }
     RocketOrdinaryRetirement retirements() { return retirements; }
-    void tickRetirements(MinecraftServer server) { retirements.tick(server); }
+    void tickRetirements(MinecraftServer server) { retirements.tick(); }
     Set<UUID> fencedIds() { return fences.ids(); }
     String fencedDiagnostics() { return fences.ids().stream().sorted().limit(4)
             .map(id -> " [fenced_transfer=" + id + " reason=" + fences.reason(id) + " repair=offline-whole-world]")
