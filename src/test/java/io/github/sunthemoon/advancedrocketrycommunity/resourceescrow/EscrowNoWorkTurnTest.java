@@ -14,7 +14,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 class EscrowNoWorkTurnTest {
-    @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
+    @BeforeAll static void bootstrap() throws Exception { MinecraftBootstrap.initialize(); EscrowTurnYieldBootstrap.initialize(); }
     @TempDir Path temp;
 
     @ParameterizedTest @ValueSource(strings = {"empty", "full", "disabled", "binding"})
