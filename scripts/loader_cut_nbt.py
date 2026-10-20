@@ -180,13 +180,14 @@ def _slot(chunk_x: int, chunk_z: int) -> tuple[str, int]:
 
 
 def _header(data: bytes, slot: int) -> tuple[int, int, int, int]:
-    if len(data) < 2 * SECTOR or len(data) % SECTOR:
-        raise NbtError("Region file is short or not sector aligned")
+    """AnvilRecordReader's checks: a running server pads its file only on close, so the record, not the file, must fit."""
+    if len(data) < 2 * SECTOR:
+        raise NbtError("Short Anvil header")
     location = struct.unpack_from(">I", data, slot * 4)[0]; sector, count = location >> 8, location & 255
-    if sector < 2 or count == 0 or (sector + count) * SECTOR > len(data):
+    if sector < 2 or count == 0 or sector * SECTOR + 5 > len(data):
         raise NbtError("Missing or invalid Anvil slot")
     length, compression = struct.unpack_from(">IB", data, sector * SECTOR)
-    if not 1 <= length or length + 4 > count * SECTOR:
+    if not 1 <= length or length + 4 > count * SECTOR or sector * SECTOR + length + 4 > len(data):
         raise NbtError("Invalid Anvil record length")
     return sector, count, length, compression
 
@@ -239,8 +240,9 @@ def write_chunk(directory: Path, chunk_x: int, chunk_z: int, root: Tag) -> None:
     if needed > 255:
         raise NbtError("A rewritten record would need an external file")
     if needed > count:
-        sector, count = len(data) // SECTOR, needed
-        data.extend(b"\x00" * needed * SECTOR)
+        # Append after the last whole sector, as vanilla would after padding; the old sectors are left unreferenced.
+        sector, count = -(-len(data) // SECTOR), needed
+        data.extend(b"\x00" * ((sector + needed) * SECTOR - len(data)))
         struct.pack_into(">I", data, slot * 4, sector << 8 | needed)
     data[sector * SECTOR:(sector + count) * SECTOR] = record + b"\x00" * (count * SECTOR - len(record))
     path.write_bytes(bytes(data))

@@ -105,6 +105,23 @@ class AnvilTest(unittest.TestCase):
             with self.assertRaises(nbt.NbtError): nbt.write_chunk(directory, 5, 4, outside)
             with self.assertRaises(nbt.NbtError): nbt.chunk(directory, 6, 4)
 
+    def test_a_running_servers_unpadded_file_reads_and_rewrites_like_anvil_record_reader(self):
+        # Vanilla pads its region file only on close: a killed server can leave an external stub as the last 5 bytes.
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            path = region(directory, {(4, 4): fixture_chunk()}, external={(5, 4): fixture_chunk(noise=Tag(BYTES, b"\x01" * 8))})
+            path.write_bytes(path.read_bytes()[:-(nbt.SECTOR - 5)])
+            self.assertNotEqual(0, path.stat().st_size % nbt.SECTOR)
+            self.assertTrue(nbt.chunk(directory, 5, 4)[1]["external"])
+            grown = fixture_chunk(padding=Tag(BYTES, random.Random(2).randbytes(3 * nbt.SECTOR)))
+            nbt.write_chunk(directory, 4, 4, grown)
+            self.assertEqual(grown, nbt.chunk(directory, 4, 4)[0])
+            self.assertTrue(nbt.chunk(directory, 5, 4)[1]["external"], "The appended record starts after the stub's sector")
+            self.assertEqual(0, path.stat().st_size % nbt.SECTOR)
+            sector = struct.unpack_from(">I", path.read_bytes(), 132 * 4)[0] >> 8
+            path.write_bytes(path.read_bytes()[:sector * nbt.SECTOR + 100])  # The file now ends inside the record.
+            with self.assertRaises(nbt.NbtError): nbt.chunk(directory, 4, 4)
+
     def test_a_grown_record_moves_to_new_sectors_without_touching_other_slots(self):
         with tempfile.TemporaryDirectory() as temporary:
             directory = Path(temporary)
