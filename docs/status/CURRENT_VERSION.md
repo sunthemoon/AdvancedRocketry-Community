@@ -38,8 +38,8 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: f8ddfc25 (W115 merged: durable fluid payloads decode structurally under R39; before it, 16b368f6 merged W112 with W112F, cargo C-P part 2, admission disabled)
-latest_hosted_regression: run 39381441858 at d6f97f3a (the W112 merge 16b368f6 and its records) passed all required GameTests and the log checker, and so did 39376267447 at 43ee0aa0 (the W110 merge 0b11269f). Before them, the escrow proof flake (W111, active) failed EscrowCoreGameTests.ownTerrainAndEntityStoresConfirmTheExactFrozenFrontier after 200 ticks on the runs at bd1c78b9, d2f0d00c, 9f6668aa, 67dee026, fb1ac454 and 20a82b88 (at 9f6668aa also supersededTerrainProofRetriesTheSameFrontierAfterBackoff)
+latest_code_commit: ead8d323 (W111 merged: the escrow proof GameTests prepare their fixture areas before each batch; before it, f8ddfc25 merged W115, structural decoding for durable fluid payloads)
+latest_hosted_regression: run 39396267820 at f1223c02 (the W115 merge f8ddfc25) failed only EscrowCoreGameTests.ownTerrainAndEntityStoresConfirmTheExactFrozenFrontier after 200 ticks, the escrow proof flake that W111 fixed (merged ead8d323). Runs 39381441858 at d6f97f3a and 39376267447 at 43ee0aa0 passed all required GameTests and the log checker; the same test failed on the runs at bd1c78b9, d2f0d00c, 9f6668aa, 67dee026, fb1ac454 and 20a82b88 (at 9f6668aa also supersededTerrainProofRetriesTheSameFrontierAfterBackoff)
 ledger_planned_units: 19
 asset_review_items: 154
 required_gates_approved: none
@@ -105,7 +105,10 @@ What is still open:
   forced-supersession GameTests then timed out on hosted run 39060903571 at `8c3f5717`, and one of them again
   on runs 39085135243 at `0a3964e7` and 39091589526 at `e80069c6`. W94B (merged `38b437a7`) sets their timeout
   from the retry arithmetic with per-phase budgets; 30 of 30 loaded runs passed. A second natural supersession
-  can still exhaust the existing 200-tick tests (residual).
+  can still exhaust the existing 200-tick tests (residual). The hosted failures from `843ea4dc` to
+  `f1223c02` came from delay, not supersession: fixture generation and queued chunk writes inside the
+  200 ticks. W111 (merged `ead8d323`) prepares every remote fixture area before the batch and gives the two
+  retry tests their own batch; open until hosted runs confirm it.
 - **S2.** W11b2's crash cuts passed natively as development evidence (the W11b2 records). Of
   W11b3's loader cut families, B3-S1 and B3-S2 (all 21 cuts, two restarts each) have native
   evidence (W97 and W97B, merged `fe25244b`); B3-S3 matched 22 of its 23 cuts (W105, merged `bd1c78b9`, and W107's D2-C4-before, merged `9f6668aa`); W107 also passed 15 B3-S4 and B3-S5 cuts. C1, E1, part of E2 and E4, R1's floors and R3 remain (W107B, under Root decision R36); B3-S6 remains.
