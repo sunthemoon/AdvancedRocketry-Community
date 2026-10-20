@@ -44,6 +44,7 @@ public final class EscrowRuntime {
     private final Map<ResourceKey<Level>, EscrowChunkStore> stores = new HashMap<>();
     private EscrowBarrier barrier;
     private boolean stopping;
+    final EscrowCargoSwitches cargoSwitches = new EscrowCargoSwitches();
     private io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.RocketCargoPreparations cargo;
     public io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.RocketCargoPreparations cargoPreparations() {
         if (cargo == null) {
@@ -419,6 +420,7 @@ public final class EscrowRuntime {
     @SubscribeEvent(priority = EventPriority.HIGHEST) public static void stopping(ServerStoppingEvent event) {
         EscrowRuntime runtime = of(event.getServer()); runtime.stopping = true;
         if (runtime.cargo != null) { runtime.cargo.close(); }
+        runtime.cargoSwitches.clear();
         if (runtime.fills != null) { runtime.fills.clear(); }
         runtime.settlement.close();
         if (runtime.barrier != null) { runtime.barrier.quiesce(); }
@@ -452,6 +454,7 @@ public final class EscrowRuntime {
         if (runtime == null || runtime.stopping) { return; }
         runtime.stopping = true;
         if (runtime.cargo != null && server.isSameThread()) { runtime.cargo.close(); }
+        runtime.cargoSwitches.clear();
         if (runtime.fills != null && server.isSameThread()) { runtime.fills.clear(); }
         runtime.settlement.close();
         if (runtime.barrier != null) { runtime.barrier.close(); } // Discards unfinished barriers; no new synchronization.
