@@ -160,6 +160,22 @@ public final class EscrowCargoPreparationGameTests {
                     check(rocket.escrowSection().epoch() == 1 && rocket.escrowSection().markers().size() == 1, "Publication lost revision/marker");
                     check(rocket.flightData().orElseThrow().fuel().totalAmount() == 1000, "Cargo changed propulsion");
                     check(preparations == 3 && deferrals > 3, "Large request did not span fair deferrals");
+                    before = rocket.snapshot().orElseThrow();
+                    operation = capture(rocket, delta, root); root = root.append(List.of(operation));
+                    check(RocketRuntime.cargoPreparations(rocket.getServer()).begin(rocket, delta, true).isEmpty(), "Marked rocket admitted fresh cargo");
+                    ticket = RocketRuntime.cargoPreparations(rocket.getServer()).beginReplay(rocket, delta, true).orElseThrow();
+                    publication = null; phase = 10; return;
+                }
+                if (phase == 10) {
+                    check(rocket.snapshot().orElseThrow() == before, "Replay changed BEFORE before publication");
+                    if (!ticket.advance()) { return; }
+                    if (publication == null) { publication = new EscrowCargoPublication.Preparation(root, operation, ticket, () -> true); }
+                    var replayPermit = publication.issue();
+                    if (replayPermit == null) { return; }
+                    rocket.applyEscrowCargo(replayPermit);
+                    check(rocket.snapshot().orElseThrow().contentHash().equals(operation.nativeBinding().snapshotHash()), "Replay publication hash differs");
+                    check(rocket.escrowSection().epoch() == 2 && rocket.escrowSection().markers().size() == 2, "Replay lost existing marker prefix");
+                    rejects(() -> rocket.applyEscrowCargo(replayPermit), "Replay permit could be reused");
                     phase = 8;
                 }
                 if (phase == 3) {
@@ -200,7 +216,7 @@ public final class EscrowCargoPreparationGameTests {
         }
     }
 
-    private static RocketEntity create(GameTestHelper helper, BlockPos origin, boolean large) {
+    static RocketEntity create(GameTestHelper helper, BlockPos origin, boolean large) {
         var settings = RocketPropulsion.Settings.DEFAULTS;
         var fluids = new EnumMap<>(settings.allowedFluids()); fluids.put(RocketPropulsion.Role.MONO, List.of("minecraft:water"));
         var propulsion = new RocketPropulsion(RocketPropulsion.Mode.MONO, 2000, 0, 1, 1, settings.withAllowedFluids(fluids));
@@ -222,11 +238,11 @@ public final class EscrowCargoPreparationGameTests {
         rocket.updateFlightData(flight.withFuel(flight.fuel().withFluidBank(false, ResourceLocation.tryParse("minecraft:water"), null, 1000), 25));
         helper.assertTrue(helper.getLevel().addFreshEntity(rocket), "Rocket fixture failed"); return rocket;
     }
-    private static EscrowCargoPayload delta(RocketStructureSnapshot snapshot) {
+    static EscrowCargoPayload delta(RocketStructureSnapshot snapshot) {
         return new EscrowCargoPayload(new EscrowCargoPayload.Cursor(snapshot.snapshotId(), 0, 0, 0, PressurizedTankRocketAdapter.ID.toString()),
                 new FluidStack(Fluids.WATER, 1).writeToNBT(new CompoundTag()));
     }
-    private static EscrowOperation capture(RocketEntity rocket, EscrowCargoPayload delta, EscrowLedger root) {
+    static EscrowOperation capture(RocketEntity rocket, EscrowCargoPayload delta, EscrowLedger root) {
         var before = rocket.snapshot().orElseThrow(); var after = RocketCargoMutation.apply(before, delta, true);
         var logical = rocket.assemblyTransactionId().orElseThrow(); var chunk = rocket.chunkPosition();
         var flight = rocket.flightData().orElseThrow(); var deviceId = UUID.randomUUID();
@@ -238,10 +254,12 @@ public final class EscrowCargoPreparationGameTests {
                 "advancedrocketrycommunity:rocket_fluid_loader", 0, 64, 0, EscrowEndpoint.Unit.TANK, 0,
                 LoaderTank.of(new FluidStack(Fluids.WATER, 1)).signature(deviceId), LoaderTank.EMPTY.signature(deviceId));
         var payload = delta.encode();
-        var op = new EscrowOperation(UUID.randomUUID(), 1, rocket.ownerId().orElseThrow(), 0, EscrowOperation.Phase.PREPARED,
+        var op = new EscrowOperation(UUID.randomUUID(), root.issuedThrough() + 1, rocket.ownerId().orElseThrow(), 0, EscrowOperation.Phase.PREPARED,
                 EscrowReason.NONE, payload, RocketNativeResources.signature(payload), source, endpoint,
                 new EscrowGuard(logical, null, 1, "0".repeat(64)), EscrowOperation.Kind.FLUID_CARGO_LOAD, new CompoundTag());
-        var next = new RocketEscrowSection(root.id(), endpoint.afterEpoch(), List.of(new EscrowPrefix.Link(op, endpoint, "DESTINATION").marker()));
+        var markers = new ArrayList<>(rocket.escrowSection().markers());
+        markers.add(new EscrowPrefix.Link(op, endpoint, "DESTINATION").marker());
+        var next = new RocketEscrowSection(root.id(), endpoint.afterEpoch(), markers);
         // Fixture-only capture. No device balance is exposed and no native proof is claimed.
         return EscrowCargoCapture.capture(root.id(), op, EscrowNativeEnvelope.rocket(rocket),
                 EscrowNativeEnvelope.rocket(rocket, after, flight, next), new CompoundTag(), new CompoundTag()).operation();
