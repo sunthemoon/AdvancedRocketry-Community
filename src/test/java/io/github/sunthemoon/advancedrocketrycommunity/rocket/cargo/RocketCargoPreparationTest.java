@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.*;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.PressurizedTankRocketAdapter;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketSnapshotNbtCodec;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketSnapshotWitness;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
 import java.util.*;
 import net.minecraft.resources.ResourceLocation;
@@ -136,7 +137,7 @@ class RocketCargoPreparationTest {
                 assertEquals(before.contentHash(), cursor.result().contentHash());
                 assertEquals(before.structureDigest(), cursor.result().structureDigest());
                 assertEquals(before.structureDigestBytes(), cursor.result().structureDigestBytes());
-                assertTrue(RocketSnapshotNbtCodec.verifies(RocketSnapshotNbtCodec.encode(cursor.result()), before));
+                assertTrue(RocketSnapshotWitness.verifies(RocketSnapshotNbtCodec.encode(cursor.result()), before));
             }
         }
     }
@@ -193,23 +194,23 @@ class RocketCargoPreparationTest {
     @Test void codecWitnessRejectsEveryChangedCanonicalInput() {
         var before = CargoTestFixtures.snapshot(FluidStack.EMPTY);
         var root = RocketSnapshotNbtCodec.encode(before);
-        assertTrue(RocketSnapshotNbtCodec.verifies(root, before));
+        assertTrue(RocketSnapshotWitness.verifies(root, before));
         for (String key : List.of("content_hash", "snapshot_id", "created_at_game_time", "schema_version")) {
             var changed = root.copy(); changed.remove(key);
-            assertFalse(RocketSnapshotNbtCodec.verifies(changed, before), key);
+            assertFalse(RocketSnapshotWitness.verifies(changed, before), key);
         }
         var after = RocketCargoMutation.apply(before, CargoTestFixtures.delta(before, 0, new FluidStack(Fluids.WATER, 1)), true);
-        assertFalse(RocketSnapshotNbtCodec.verifies(RocketSnapshotNbtCodec.encode(after), before));
+        assertFalse(RocketSnapshotWitness.verifies(RocketSnapshotNbtCodec.encode(after), before));
         var unknown = root.copy(); unknown.getCompound("mass_inputs").putInt("extra", 1);
-        assertFalse(RocketSnapshotNbtCodec.verifies(unknown, before));
+        assertFalse(RocketSnapshotWitness.verifies(unknown, before));
         unknown = root.copy(); unknown.getList("relative_blocks", net.minecraft.nbt.Tag.TAG_COMPOUND).getCompound(0).putInt("extra", 1);
-        assertFalse(RocketSnapshotNbtCodec.verifies(unknown, before));
+        assertFalse(RocketSnapshotWitness.verifies(unknown, before));
         unknown = root.copy(); unknown.getList("block_palette", net.minecraft.nbt.Tag.TAG_COMPOUND).getCompound(0).putInt("extra", 1);
-        assertFalse(RocketSnapshotNbtCodec.verifies(unknown, before));
+        assertFalse(RocketSnapshotWitness.verifies(unknown, before));
         unknown = root.copy(); var unused = new net.minecraft.nbt.CompoundTag(); unused.putString("id", "zzzz:unused");
         unused.put("properties", new net.minecraft.nbt.CompoundTag());
         unknown.getList("block_palette", net.minecraft.nbt.Tag.TAG_COMPOUND).add(unused);
-        assertFalse(RocketSnapshotNbtCodec.verifies(unknown, before));
+        assertFalse(RocketSnapshotWitness.verifies(unknown, before));
     }
 
     @Test void nearLimitArrayPayloadDoesNotEscapeThePerRecordReservation() {

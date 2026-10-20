@@ -8,6 +8,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructu
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNbtSize;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketSnapshotException;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketSnapshotNbtCodec;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketSnapshotWitness;
 import java.util.UUID;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraftforge.fluids.FluidStack;
@@ -121,7 +122,7 @@ public final class RocketCargoPreparation {
             stage++;
             return new Work(2L * encodedSize + snapshot.totalPayloadBytes(), 4 * before.blocks().size());
         }
-        if (!RocketSnapshotNbtCodec.verifies(encoded, snapshot.result())) {
+        if (!RocketSnapshotWitness.verifies(encoded, snapshot.result())) {
             throw new IllegalArgumentException("Prepared cargo snapshot cannot round-trip");
         }
         encoded = null; state = State.READY;

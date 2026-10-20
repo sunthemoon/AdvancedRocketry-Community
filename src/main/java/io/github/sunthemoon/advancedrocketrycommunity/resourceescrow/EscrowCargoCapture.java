@@ -3,6 +3,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.resourceescrow;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketFlightNbtCodec;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketSnapshotNbtCodec;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketSnapshotWitness;
 import java.util.ArrayList;
 import java.util.UUID;
 import net.minecraft.nbt.CompoundTag;
@@ -83,7 +84,7 @@ final class EscrowCargoCapture {
                 && chunk.length == 2 && endpoint.x() == chunk[0] && endpoint.z() == chunk[1], "Cargo capture identity or placement changed");
         var tag = EscrowTags.compound(envelope, "snapshot");
         var snapshot = expected == null ? RocketSnapshotNbtCodec.decode(tag).snapshot().orElseThrow() : expected;
-        EscrowTags.require((expected == null ? RocketSnapshotNbtCodec.encode(snapshot).equals(tag) : RocketSnapshotNbtCodec.verifies(tag, expected))
+        EscrowTags.require((expected == null ? RocketSnapshotNbtCodec.encode(snapshot).equals(tag) : RocketSnapshotWitness.verifies(tag, expected))
                 && snapshot.snapshotId().equals(EscrowTags.uuid(envelope, "assembly_snapshot"))
                 && snapshot.contentHash().equals(EscrowTags.string(envelope, "content_hash")), "Cargo snapshot envelope changed");
         return snapshot;
