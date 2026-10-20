@@ -6,6 +6,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketSnapsho
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketSnapshotPreparation.Work;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNbtSize;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketSnapshotException;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketSnapshotNbtCodec;
 import java.util.UUID;
 import net.minecraft.nbt.CompoundTag;
@@ -26,6 +27,7 @@ public final class RocketCargoPreparation implements AutoCloseable {
     private int stage;
     private long bytes;
     private long visits;
+    private RocketCargoSelection.Status failure;
 
     public RocketCargoPreparation(UUID logical, RocketStructureSnapshot before, EscrowCargoPayload delta, boolean load) {
         this.logical = java.util.Objects.requireNonNull(logical);
@@ -40,6 +42,7 @@ public final class RocketCargoPreparation implements AutoCloseable {
     public long chargedBytes() { return bytes; }
     public long chargedVisits() { return visits; }
     public State state() { return state; }
+    public java.util.Optional<RocketCargoSelection.Status> failure() { return java.util.Optional.ofNullable(failure); }
     /** Excludes the pre-existing immutable snapshot; never includes a whole canonical hash buffer. */
     public long retainedNativeBytes() {
         return (snapshot == null ? 0 : snapshot.additionalPayloadBytes())
@@ -56,6 +59,19 @@ public final class RocketCargoPreparation implements AutoCloseable {
     /** A caller cannot accumulate tick credit: every operation is performed inside its actual tick reservation. */
     public boolean advance(long tick, RocketCargoWorkBudget budget) {
         requireLive();
+        try { return advanceSteps(tick, budget); }
+        catch (RocketSnapshotException invalid) {
+            failure = switch (invalid.code()) {
+                case SNAPSHOT_DATA_TOO_LARGE, BLOCK_ENTITY_DATA_TOO_LARGE -> RocketCargoSelection.Status.CARGO_TOO_LARGE;
+                default -> RocketCargoSelection.Status.INVALID_DATA;
+            };
+        } catch (IllegalArgumentException | ArithmeticException | java.util.NoSuchElementException invalid) {
+            failure = RocketCargoSelection.Status.INVALID_DATA;
+        }
+        close(); return true;
+    }
+
+    private boolean advanceSteps(long tick, RocketCargoWorkBudget budget) {
         if (!budget.claim(tick, this)) { return false; }
         while (state == State.PREPARING) {
             long bound = stage == 0 ? 1_048_576 : stage == 1 ? snapshot.nextByteBound()

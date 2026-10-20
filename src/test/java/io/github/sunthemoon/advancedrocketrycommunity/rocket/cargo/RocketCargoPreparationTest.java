@@ -15,6 +15,72 @@ import org.junit.jupiter.api.Test;
 class RocketCargoPreparationTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
 
+    @Test void stagedFullSnapshotBoundaryMatchesSynchronousRefusalAndDiscardsRam() {
+        var seed = paddedSnapshot(40_000);
+        int padding = 40_000 + 1_048_572 - RocketNbtSize.uncompressedBytes(RocketSnapshotNbtCodec.encode(seed));
+        var before = paddedSnapshot(padding);
+        var encoded = RocketSnapshotNbtCodec.encode(before);
+        assertEquals(1_048_572, RocketNbtSize.uncompressedBytes(encoded));
+        assertTrue(RocketSnapshotNbtCodec.decode(encoded).snapshot().isPresent());
+        var delta = CargoTestFixtures.delta(before, 0, new FluidStack(Fluids.WATER, 1));
+        assertEquals(io.github.sunthemoon.advancedrocketrycommunity.rocket.validation.RocketValidationCode.SNAPSHOT_DATA_TOO_LARGE,
+                assertThrows(RocketSnapshotException.class, () -> RocketCargoMutation.apply(before, delta, true)).code());
+        var cursor = new RocketCargoPreparation(UUID.randomUUID(), before, delta, true);
+        var budget = new RocketCargoWorkBudget(); int tick = 0;
+        while (!cursor.advance(tick++, budget)) { assertTrue(tick < 50); }
+        assertEquals(RocketCargoSelection.Status.CARGO_TOO_LARGE, cursor.failure().orElseThrow());
+        assertEquals(RocketCargoPreparation.State.DISCARDED, cursor.state());
+        assertEquals(0, cursor.retainedNativeBytes());
+        assertEquals(encoded, RocketSnapshotNbtCodec.encode(before));
+
+        // The adjacent legal result retains the same 1 MiB ceiling, not a smaller admission limit.
+        var legalBefore = paddedSnapshot(padding - 100);
+        var legalDelta = CargoTestFixtures.delta(legalBefore, 0, new FluidStack(Fluids.WATER, 1));
+        var after = RocketCargoMutation.apply(legalBefore, legalDelta, true);
+        int afterSize = RocketNbtSize.uncompressedBytes(RocketSnapshotNbtCodec.encode(after));
+        legalBefore = paddedSnapshot(padding - 100 + 1_048_576 - afterSize);
+        legalDelta = CargoTestFixtures.delta(legalBefore, 0, new FluidStack(Fluids.WATER, 1));
+        cursor = new RocketCargoPreparation(UUID.randomUUID(), legalBefore, legalDelta, true);
+        budget = new RocketCargoWorkBudget(); tick = 0;
+        while (!cursor.advance(tick++, budget)) { assertTrue(tick < 50); }
+        assertTrue(cursor.failure().isEmpty());
+        assertEquals(1_048_576, RocketNbtSize.uncompressedBytes(RocketSnapshotNbtCodec.encode(cursor.after())));
+        cursor.close();
+    }
+
+    @Test void malformedStagedDeltaReturnsInvalidDataAndReleasesNativeState() {
+        var before = CargoTestFixtures.snapshot(FluidStack.EMPTY);
+        var delta = CargoTestFixtures.delta(before, 0, new FluidStack(Fluids.WATER, 1));
+        var cursor = new RocketCargoPreparation(UUID.randomUUID(), before, delta, false);
+        assertTrue(cursor.advance(0, new RocketCargoWorkBudget()));
+        assertEquals(RocketCargoSelection.Status.INVALID_DATA, cursor.failure().orElseThrow());
+        assertEquals(RocketCargoPreparation.State.DISCARDED, cursor.state());
+        assertEquals(0, cursor.retainedNativeBytes());
+    }
+
+    @Test void stagedPayloadAggregateUsesTheTypedPayloadBoundFailure() {
+        var before = paddedSnapshot(40_000);
+        var payload = new net.minecraft.nbt.CompoundTag(); payload.putByteArray("padding", new byte[262_000]);
+        var cursor = new RocketSnapshotPreparation(before, before.blocks().size() - 1,
+                new RocketBlockEntityPayload(ResourceLocation.tryParse("fixture:padding"), payload));
+        var failure = assertThrows(RocketSnapshotException.class, () -> {
+            while (!cursor.done()) { cursor.step(); }
+        });
+        assertEquals(io.github.sunthemoon.advancedrocketrycommunity.rocket.validation.RocketValidationCode.BLOCK_ENTITY_DATA_TOO_LARGE,
+                failure.code());
+    }
+
+    private static RocketStructureSnapshot paddedSnapshot(int tail) {
+        var blocks = new ArrayList<>(CargoTestFixtures.snapshot(FluidStack.EMPTY).blocks());
+        for (int i = 0; i < 5; i++) {
+            var data = new net.minecraft.nbt.CompoundTag(); data.putByteArray("padding", new byte[i < 4 ? 250_000 : tail]);
+            blocks.add(new RocketBlock(new RocketPosition(i + 2, 0, 0),
+                    new RocketBlockState(ResourceLocation.tryParse("minecraft:barrel"), Map.of()),
+                    new RocketBlockEntityPayload(ResourceLocation.tryParse("fixture:padding"), data)));
+        }
+        return CargoTestFixtures.snapshot(blocks);
+    }
+
     static RocketStructureSnapshot large(boolean tank) {
         var properties = new TreeMap<String, String>();
         for (int i = 0; i < 32; i++) { properties.put(String.format("%02d", i) + "k".repeat(62), "v".repeat(64)); }

@@ -92,7 +92,9 @@ public final class RocketCargoPreparations implements AutoCloseable {
             long bytes = cursor.chargedBytes(), visits = cursor.chargedVisits();
             try {
                 boolean ready = cursor.advance(rocket.getServer().getTickCount(), budget);
-                lifetime.progress(rocket.getServer().getTickCount(), cursor.chargedBytes() != bytes || cursor.chargedVisits() != visits, ready);
+                lifetime.progress(rocket.getServer().getTickCount(), cursor.chargedBytes() != bytes || cursor.chargedVisits() != visits,
+                        cursor.state() == RocketCargoPreparation.State.READY);
+                if (cursor.state() == RocketCargoPreparation.State.DISCARDED) { close(); }
                 return ready;
             }
             catch (RuntimeException failure) { close(); throw failure; }

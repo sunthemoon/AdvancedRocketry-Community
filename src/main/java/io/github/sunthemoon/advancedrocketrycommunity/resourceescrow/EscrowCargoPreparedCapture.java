@@ -67,6 +67,10 @@ final class EscrowCargoPreparedCapture {
     boolean advance(long tick, RocketCargoWorkBudget budget, EscrowLedger root, List<EscrowOperation> pending) {
         EscrowTags.require(!discarded, "Cargo capture was discarded");
         if (result != null) { return true; }
+        if (prepared.failure().isPresent()) {
+            result = new EscrowCargoEligibility.Result(prepared.failure().orElseThrow(), null);
+            discard(); return true;
+        }
         if (prepared.state() != RocketCargoPreparation.State.READY || !budget.claim(tick, prepared)) { return false; }
         while (result == null) {
             int visits = step == 4 || step == 5 || step < 4 && captures != null ? 8 * prepared.before().blocks().size()
@@ -76,6 +80,12 @@ final class EscrowCargoPreparedCapture {
                         () -> advanceStep(root, pending, visits))) { return false; }
             } catch (EscrowCargoEligibility.TooLarge exceeded) {
                 result = new EscrowCargoEligibility.Result(Status.CARGO_TOO_LARGE, null);
+                discard();
+            } catch (io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketSnapshotException invalid) {
+                result = new EscrowCargoEligibility.Result(switch (invalid.code()) {
+                    case SNAPSHOT_DATA_TOO_LARGE, BLOCK_ENTITY_DATA_TOO_LARGE -> Status.CARGO_TOO_LARGE;
+                    default -> Status.INVALID_DATA;
+                }, null);
                 discard();
             } catch (IllegalArgumentException | java.util.NoSuchElementException | ArithmeticException invalid) {
                 result = new EscrowCargoEligibility.Result(Status.INVALID_DATA, null);

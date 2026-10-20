@@ -75,7 +75,9 @@ public final class RocketSnapshotPreparation {
                     payloadBytes += payload.uncompressedBytes();
                     if (payloadBytes > RocketLimits.MAX_TOTAL_NBT_BYTES || !BoundedNbt.fits(payload.data(),
                             RocketLimits.MAX_BLOCK_ENTITY_NBT_BYTES, 32, 65_536)) {
-                        throw new IllegalArgumentException("Cargo payload envelope exceeded");
+                        throw new RocketSnapshotException(
+                                io.github.sunthemoon.advancedrocketrycommunity.rocket.validation.RocketValidationCode.BLOCK_ENTITY_DATA_TOO_LARGE,
+                                "Cargo payload envelope exceeded");
                     }
                     // Validation copy/walk and the hasher's defensive copy. Hash writes are counted below.
                     extra = 3L * payload.uncompressedBytes();
