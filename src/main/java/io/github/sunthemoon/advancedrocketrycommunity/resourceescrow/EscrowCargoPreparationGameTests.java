@@ -226,7 +226,7 @@ public final class EscrowCargoPreparationGameTests {
         }
         var snapshot = RocketStructureSnapshot.create(UUID.randomUUID(), helper.getLevel().dimension().location(),
                 new RocketPosition(origin.getX(), origin.getY(), origin.getZ()), blocks, List.of(),
-                new RocketStats(blocks.size(), 100, 1000, 2000, 1, 0, 1, 1), 25, propulsion);
+                new RocketStats(blocks.size(), 100, 1000, 2000, 1, 0, tanks.size(), 1), 25, propulsion);
         var rocket = Objects.requireNonNull(ModEntities.ROCKET.get().create(helper.getLevel()));
         rocket.initialize(snapshot, UUID.randomUUID(), UUID.randomUUID());
         var flight = rocket.flightData().orElseThrow();
