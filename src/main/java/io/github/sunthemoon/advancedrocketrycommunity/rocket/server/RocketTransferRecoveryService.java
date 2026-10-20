@@ -331,6 +331,8 @@ final class RocketTransferRecoveryService {
                     if (source == null) {
                         return result(Status.RETRY_LATER, record, action, sources, destinations);
                     }
+                    // W98-R6: read before the return below changes the image; a rebuilt source has none.
+                    boolean neverLeftPad = !sources.isEmpty() && RocketRetirementGuards.neverLeftPad(record, source);
                     var discarded = new java.util.ArrayList<>(destinations);
                     if (sources.size() > 1) { discarded.addAll(sources.subList(1, sources.size())); }
                     source.updateFlightData(RocketTransferEntities.stationarySource(
@@ -344,7 +346,7 @@ final class RocketTransferRecoveryService {
                             source,
                             record.sourceSnapshot().sourceOrigin()
                     );
-                    status = settleRecoveredSource(server, journal, record, held, source, discarded,
+                    status = settleRecoveredSource(server, journal, record, held, source, discarded, neverLeftPad,
                             () -> completedSource(result(Status.RECOVERED, record, action, sources, destinations), record));
                 }
                 case REBUILD_SOURCE -> {
@@ -358,7 +360,7 @@ final class RocketTransferRecoveryService {
                             source,
                             record.sourceSnapshot().sourceOrigin()
                     );
-                    status = settleRecoveredSource(server, journal, record, held, source, List.of(),
+                    status = settleRecoveredSource(server, journal, record, held, source, List.of(), false,
                             () -> completedSource(result(Status.RECOVERED, record, action, sources, destinations), record));
                 }
                 case KEEP_DESTINATION, REMOVE_SOURCE_KEEP_DESTINATION, REBUILD_DESTINATION -> {
@@ -431,6 +433,7 @@ final class RocketTransferRecoveryService {
     /**
      * W98 (I2): the record stays until the survivor's own slot, and every discarded copy's absence, are proved on disk.
      * A crew that is not yet placed (R3) waits as before, settled, and the last reconnect's effects follow the removal.
+     * W98-R6: an offline seat waits only when the source may have left its pad ({@code offlineAllowed} false).
      */
     private Status settleRecoveredSource(
             MinecraftServer server,
@@ -439,14 +442,15 @@ final class RocketTransferRecoveryService {
             RocketOrdinaryRetirement.Held held,
             RocketEntity survivor,
             List<RocketEntity> discarded,
+            boolean offlineAllowed,
             Runnable recovered
     ) {
         if (!bays.allowed(server, journal, record, RocketTransferBayRecoveryGate.Action.SETTLE_SOURCE)) { return Status.RETRY_LATER; }
         liveTransfers.remove(record.transferId());
-        boolean ready = RocketOrdinaryRetirement.crewReady(server, record, survivor, false);
+        boolean ready = RocketOrdinaryRetirement.crewReady(server, record, survivor, offlineAllowed);
         if (ready && !bays.allowed(server, journal, record, RocketTransferBayRecoveryGate.Action.REMOVE_JOURNAL)) { return Status.RETRY_LATER; }
         settledTransfers.add(record.transferId());
-        retirements.begin(server, journal, RocketOrdinaryRetirement.Site.RECOVERED_SOURCE, record, survivor, discarded, false, held,
+        retirements.begin(server, journal, RocketOrdinaryRetirement.Site.RECOVERED_SOURCE, record, survivor, discarded, offlineAllowed, held,
                 !ready ? settlementReleased(server, journal, record, survivor) : RocketOrdinaryRetirement.Effects.of(() -> {
                     if (!bays.allowed(server, journal, record, RocketTransferBayRecoveryGate.Action.REMOVE_JOURNAL)) { return false; }
                     settledTransfers.remove(record.transferId());

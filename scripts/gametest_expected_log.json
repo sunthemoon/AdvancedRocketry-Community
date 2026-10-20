@@ -1399,6 +1399,24 @@
       "counts": {"ordinary_source_retirement_column": 1},
       "test": "RocketRetirementRecoveryGameTests.aDiscardedCopysColumnStaysLoadedAcrossFailedAttempts",
       "reason": "W98-R3: a decoy naming the same logical rocket in the survivor's slot refuses two capture attempts, logged once for the reason; the third attempt, after recovery's own ticket expired, proves both slots."
+    },
+    {
+      "id": "w116-pad-image-recovers-without-offline-seat",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RECOVERY transfer=[0-9a-f-]{36} phase=PREPARED source_count=1 destination_count=0 action=KEEP_SOURCE status=RECOVERED",
+      "counts": {"ordinary_source_retirement_recovery": 2},
+      "test": "RocketRetirementRecoveryGameTests.aCountdownImageRecoversWithoutWaitingForItsOfflineSeat, RocketRetirementRecoveryGameTests.aStationaryImageAtItsOriginRecoversWithoutWaitingForItsOfflineSeat",
+      "reason": "W98-R6: a PREPARED record whose loaded source is a COUNTDOWN image, or stationary at its origin, never left its pad; each recovery reports RECOVERED once after its survivor proof without waiting for the offline seat."
+    },
+    {
+      "id": "w116-displaced-image-waits-for-offline-seat",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RECOVERY transfer=[0-9a-f-]{36} phase=PREPARED source_count=1 destination_count=0 action=KEEP_SOURCE status=WAITING_FOR_PASSENGERS",
+      "counts": {"ordinary_source_retirement_recovery": 1},
+      "test": "RocketRetirementRecoveryGameTests.aStationaryImageAwayFromItsOriginWaitsForItsOfflineSeat",
+      "reason": "W98-R6, the other side: a stationary source image away from its origin may have flown, so recovery waits for its offline seat until the reconnect."
     }
   ]
 }

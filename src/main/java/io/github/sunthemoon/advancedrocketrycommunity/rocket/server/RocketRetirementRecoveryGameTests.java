@@ -107,4 +107,91 @@ public final class RocketRetirementRecoveryGameTests {
             void restore() { if (decoy != null && !decoy.isRemoved()) { decoy.discard(); } }
         }.start();
     }
+
+    /** W98-R6: a countdown cancellation stopped before its proof leaves a COUNTDOWN image; its offline seat does not hold recovery. */
+    @GameTest(template = "rocket_test", batch = BATCH, timeoutTicks = 400)
+    public static void aCountdownImageRecoversWithoutWaitingForItsOfflineSeat(GameTestHelper helper) {
+        new PadRecovery(helper, Image.COUNTDOWN).start();
+    }
+
+    /** W98-R6: the cancellation's return was saved but T's removal was not, so the image is stationary at its origin. */
+    @GameTest(template = "rocket_test", batch = BATCH, timeoutTicks = 400)
+    public static void aStationaryImageAtItsOriginRecoversWithoutWaitingForItsOfflineSeat(GameTestHelper helper) {
+        new PadRecovery(helper, Image.AT_ORIGIN).start();
+    }
+
+    /** W98-R6, the other side: a stationary image away from its origin may have flown, so its offline seat holds recovery. */
+    @GameTest(template = "rocket_test", batch = BATCH, timeoutTicks = 400)
+    public static void aStationaryImageAwayFromItsOriginWaitsForItsOfflineSeat(GameTestHelper helper) {
+        new PadRecovery(helper, Image.DISPLACED).start();
+    }
+
+    private enum Image { COUNTDOWN, AT_ORIGIN, DISPLACED }
+
+    /** I2 recovery of a PREPARED record from a loaded source image that did or did not leave its pad, with one offline seat. */
+    private static final class PadRecovery extends RocketSourceRetirementGameTests.Case {
+        final Image image;
+        ServerPlayer player;
+        boolean waited;
+        int held;
+
+        PadRecovery(GameTestHelper helper, Image image) {
+            super(helper, List.of(UUID.randomUUID()));
+            this.image = image;
+        }
+
+        void act() {
+            source = image == Image.COUNTDOWN ? flight.spawnCountdown(helper)
+                    : flight.spawn(helper, level(), RocketTransferEntities.stationarySource(record, level().getGameTime()), false);
+            if (image == Image.DISPLACED) {
+                // One block along x, inside the origin's chunk column, so the candidate stays on its origin column (R4).
+                var at = record.sourceSnapshot().sourceOrigin();
+                source.setPos(at.x() + ((at.x() & 15) == 15 ? -0.5D : 1.5D), at.y(), at.z() + 0.5D);
+            }
+            prepare(false);
+            completion = false;
+        }
+
+        boolean before() {
+            var server = server(); UUID logical = record.logicalRocketId();
+            if (!waited) {
+                var result = recovery().recoverById(server, journal, record.transferId());
+                if (!recovery().retirements().pending(logical)) {
+                    helper.assertTrue(result.status() == RocketTransferRecoveryService.Status.RETRY_LATER, "Recovery status " + result.status());
+                    return false;
+                }
+                helper.assertTrue(image == Image.DISPLACED
+                        ? result.status() == RocketTransferRecoveryService.Status.WAITING_FOR_PASSENGERS && result.action() == RocketTransferRecoveryAction.KEEP_SOURCE
+                        : result.status() == RocketTransferRecoveryService.Status.RETRY_LATER, "Recovery reported " + result.status() + " (W98-R6)");
+                waited = true;
+                assertReturnedAndHeld(false);
+                return false;
+            }
+            if (image != Image.DISPLACED) { return true; }
+            if (held < 40) {
+                helper.assertTrue(journal.find(record.transferId()).orElse(null) == record
+                        && "CREW_WAITING".equals(recovery().retirements().reason(logical)),
+                        "A source that may have left its pad did not wait for its offline seat (W98-R6)");
+                if (++held == 40) {
+                    player = join(crew.get(0), origin.above(4));
+                    recovery().onPlayerLoggedIn(player, journal);
+                    helper.assertTrue(player.getVehicle() == source, "The reconnect did not place the passenger on the survivor");
+                }
+                return false;
+            }
+            return true;
+        }
+
+        void retired() {
+            if (image == Image.DISPLACED) {
+                helper.assertTrue(player.getVehicle() == source, "The reconnected passenger left the survivor");
+                return;
+            }
+            var report = recovery().recoverById(server(), journal, record.transferId());
+            helper.assertTrue(report.status() == RocketTransferRecoveryService.Status.RECOVERED && report.action() == RocketTransferRecoveryAction.KEEP_SOURCE,
+                    "The completed recovery was not reported: " + report.status());
+            helper.assertTrue(source.flightData().orElseThrow().passengers().assignment(crew.get(0)).isPresent(),
+                    "The offline passenger's seat was dropped");
+        }
+    }
 }
