@@ -207,6 +207,9 @@ public final class EscrowCargoPreparationGameTests {
         return create(helper, origin, large, FluidStack.EMPTY);
     }
     static RocketEntity create(GameTestHelper helper, BlockPos origin, boolean large, FluidStack contents) {
+        return create(helper, origin, large, List.of(contents));
+    }
+    static RocketEntity create(GameTestHelper helper, BlockPos origin, boolean large, List<FluidStack> tanks) {
         var settings = RocketPropulsion.Settings.DEFAULTS;
         var fluids = new EnumMap<>(settings.allowedFluids()); fluids.put(RocketPropulsion.Role.MONO, List.of("minecraft:water"));
         var propulsion = new RocketPropulsion(RocketPropulsion.Mode.MONO, 2000, 0, 1, 1, settings.withAllowedFluids(fluids));
@@ -214,9 +217,11 @@ public final class EscrowCargoPreparationGameTests {
         for (int i = 0; i < 32; i++) { properties.put(String.format("%02d", i) + "k".repeat(62), "v".repeat(64)); }
         var state = new RocketBlockState(ResourceLocation.tryParse("fixture:palette_shared"), properties);
         var blocks = new ArrayList<RocketBlock>();
-        blocks.add(new RocketBlock(new RocketPosition(0, 0, 0), new RocketBlockState(PressurizedTankRocketAdapter.TYPE, Map.of()),
-                PressurizedTankRocketAdapter.payload(contents)));
-        for (int i = 1; i < (large ? 2048 : 2); i++) {
+        for (int i = 0; i < tanks.size(); i++) {
+            blocks.add(new RocketBlock(new RocketPosition(i, 0, 0), new RocketBlockState(PressurizedTankRocketAdapter.TYPE, Map.of()),
+                    PressurizedTankRocketAdapter.payload(tanks.get(i))));
+        }
+        for (int i = tanks.size(); i < (large ? 2048 : tanks.size() + 1); i++) {
             blocks.add(new RocketBlock(new RocketPosition(i % 16, i / 256, i / 16 % 16), state));
         }
         var snapshot = RocketStructureSnapshot.create(UUID.randomUUID(), helper.getLevel().dimension().location(),

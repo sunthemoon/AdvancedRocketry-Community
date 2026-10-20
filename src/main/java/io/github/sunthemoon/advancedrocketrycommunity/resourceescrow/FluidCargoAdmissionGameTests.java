@@ -65,8 +65,10 @@ public final class FluidCargoAdmissionGameTests {
             }
             if (phase == 1) {
                 boolean load = direction == 0;
+                var oversized = new FluidStack(Fluids.WATER, 5000);
+                oversized.getOrCreateTag().putByteArray("blob", new byte[7900]);
                 var rocket = EscrowCargoPreparationGameTests.create(helper, helper.absolutePos(new BlockPos(4, 2, 4 + direction * 6)), false,
-                        load ? FluidStack.EMPTY : new FluidStack(Fluids.WATER, 5000));
+                        load ? List.of(FluidStack.EMPTY) : List.of(oversized, new FluidStack(Fluids.WATER, 5000)));
                 rockets.add(rocket);
                 var role = load ? RocketCargoRole.LOAD : RocketCargoRole.UNLOAD;
                 var at = new BlockPos(2, 2, 4 + direction * 6);
@@ -97,6 +99,8 @@ public final class FluidCargoAdmissionGameTests {
                 helper.assertTrue(baseline && isolated.ledger().writerGeneration() >= 2, "Cargo L1 skipped its empty creation baseline");
                 helper.assertTrue(op.phase() == EscrowOperation.Phase.PREPARED && op.reason() == EscrowReason.NONE,
                         "Cargo did not stop at acknowledged PREPARED");
+                helper.assertTrue(EscrowCargoPayload.decode(op.payload()).cursor().x() == direction,
+                        "Selection did not skip the inner-valid payload that exceeds complete O1 capacity");
                 helper.assertTrue(device.escrowLocked() && !RocketEscrowGate.idle(rocket), "L1 did not lock both endpoints");
                 helper.assertTrue(deviceBefore.equals(device.saveWithFullMetadata()) && rocketBefore.equals(EscrowNativeEnvelope.rocket(rocket)),
                         "C-E1 published native resources");
