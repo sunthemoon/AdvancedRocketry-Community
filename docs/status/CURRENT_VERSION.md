@@ -39,7 +39,7 @@ development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
 latest_code_commit: 16b368f6 (W112 merged with W112F: cargo C-P part 2, the resumable preparation, admission disabled; before it, 0b11269f merged W110 with W110F, cargo D-K's item kinds)
-latest_hosted_regression: run 39302851008 at 3075a240 (the W106 merge) passed all required GameTests and the log checker. The two runs before it, 39295247351 at bd1c78b9 and 39293852197 at d2f0d00c, each failed EscrowCoreGameTests.ownTerrainAndEntityStoresConfirmTheExactFrozenFrontier after 200 ticks, right after a concurrent retry test's injected terrain save, and 39313671980 at 9f6668aa failed that test and supersededTerrainProofRetriesTheSameFrontierAfterBackoff (W111, active). Runs 39316689065 at 67dee026 and 39332547336 at fb1ac454 each failed only ownTerrainAndEntityStoresConfirmTheExactFrozenFrontier after 200 ticks (the sleep fixtures passed), and so did 39356847968 at 20a82b88; the run at 43ee0aa0 (the W110 merge) is in progress
+latest_hosted_regression: run 39381441858 at d6f97f3a (the W112 merge 16b368f6 and its records) passed all required GameTests and the log checker, and so did 39376267447 at 43ee0aa0 (the W110 merge 0b11269f). Before them, the escrow proof flake (W111, active) failed EscrowCoreGameTests.ownTerrainAndEntityStoresConfirmTheExactFrozenFrontier after 200 ticks on the runs at bd1c78b9, d2f0d00c, 9f6668aa, 67dee026, fb1ac454 and 20a82b88 (at 9f6668aa also supersededTerrainProofRetriesTheSameFrontierAfterBackoff)
 ledger_planned_units: 19
 asset_review_items: 154
 required_gates_approved: none
