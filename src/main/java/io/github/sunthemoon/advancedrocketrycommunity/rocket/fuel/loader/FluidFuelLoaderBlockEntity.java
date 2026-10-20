@@ -242,23 +242,31 @@ public final class FluidFuelLoaderBlockEntity extends BlockEntity implements Men
     public FluidFuelLoaderStatus attempt() {
         FluidFuelLoaderStatus refusal = deviceRefusal();
         if (refusal != null) {
-            return refusal;
+            return yieldTurn(refusal);
         }
         if (!live()) {
-            return FluidFuelLoaderStatus.WAITING_UNLOADED;
+            return yieldTurn(FluidFuelLoaderStatus.WAITING_UNLOADED);
         }
         ServerLevel server = (ServerLevel) level;
-        if (!refreshTurns()) { return FluidFuelLoaderStatus.ESCROW_FULL; }
+        if (!refreshTurns()) { return yieldTurn(FluidFuelLoaderStatus.ESCROW_FULL); }
         FluidFuelLoaderStatus status = LoaderEligibility.evaluate(server, worldPosition, root).refusal();
         if (status != null) {
-            if (status == FluidFuelLoaderStatus.ROCKET_BUSY && EscrowLoaderAdmission.enabled(server.getServer(), root.device())) { turns.blocked(); }
-            return status;
+            if (status == FluidFuelLoaderStatus.ROCKET_BUSY && EscrowLoaderAdmission.enabled(server.getServer(), root.device())) {
+                turns.blocked(); return status;
+            }
+            return yieldTurn(status);
         }
         if (!EscrowLoaderAdmission.enabled(server.getServer(), root.device())) {
-            return FluidFuelLoaderStatus.ADMISSION_DISABLED;
+            return yieldTurn(FluidFuelLoaderStatus.ADMISSION_DISABLED);
         }
         if (!turns.allows()) { turns.blocked(); return FluidFuelLoaderStatus.ROCKET_BUSY; }
-        return EscrowLoaderAdmission.offer(this, this::admitFromQueue);
+        var offered = EscrowLoaderAdmission.offer(this, this::admitFromQueue);
+        return offered == FluidFuelLoaderStatus.READY ? offered : yieldTurn(offered);
+    }
+
+    /** No-work attempts surrender only this device's next hint, not active or durable work. */
+    private FluidFuelLoaderStatus yieldTurn(FluidFuelLoaderStatus refusal) {
+        turns.yieldNext(); return refusal;
     }
 
     /**
@@ -268,18 +276,20 @@ public final class FluidFuelLoaderBlockEntity extends BlockEntity implements Men
     public boolean admitFromQueue() {
         FluidFuelLoaderStatus refusal = deviceRefusal();
         if (refusal != null || !live()) {
-            attempted = refusal != null ? refusal : FluidFuelLoaderStatus.WAITING_UNLOADED;
+            attempted = yieldTurn(refusal != null ? refusal : FluidFuelLoaderStatus.WAITING_UNLOADED);
             return false;
         }
         LoaderEligibility.Resolved eligible = LoaderEligibility.evaluate((ServerLevel) level, worldPosition, root);
         if (eligible.refusal() != null) {
             if (eligible.refusal() == FluidFuelLoaderStatus.ROCKET_BUSY && refreshTurns()
-                    && EscrowLoaderAdmission.enabled(((ServerLevel) level).getServer(), root.device())) { turns.blocked(); }
-            attempted = eligible.refusal();
+                    && EscrowLoaderAdmission.enabled(((ServerLevel) level).getServer(), root.device())) {
+                turns.blocked(); attempted = eligible.refusal();
+            } else { attempted = yieldTurn(eligible.refusal()); }
             return false;
         }
         EscrowLoaderAdmission.Visit visit = EscrowLoaderAdmission.admit(this, eligible.rocket());
         attempted = visit.status();
+        if (attempted != FluidFuelLoaderStatus.ROCKET_BUSY) { turns.yieldNext(); }
         return visit.captured();
     }
 

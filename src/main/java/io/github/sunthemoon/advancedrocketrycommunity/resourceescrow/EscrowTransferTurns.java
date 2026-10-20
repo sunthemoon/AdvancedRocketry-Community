@@ -40,6 +40,8 @@ final class EscrowTransferTurns implements AutoCloseable {
         active.put(rocket, device); next.remove(rocket, device); return true;
     }
     void release(UUID device, UUID rocket) { owner(); active.remove(rocket, device); next.remove(rocket, device); }
+    /** A no-work attempt yields only its own hint, never a running preparation or another waiter. */
+    void yieldNext(UUID device, UUID rocket) { owner(); next.remove(rocket, device); }
     void admitted(UUID device, UUID rocket) { release(device, rocket); }
     int size() { owner(); return next.size(); }
     @Override public void close() { owner(); closed = true; next.clear(); active.clear(); loaded.clear(); }

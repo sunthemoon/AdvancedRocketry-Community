@@ -63,6 +63,7 @@ public final class RocketFluidCargoBlockEntity extends BlockEntity implements Me
     public boolean transferTurn() { return refreshTurns() && turns.allows(); }
     public boolean claimTransferTurn() { return refreshTurns() && turns.claim(); }
     public void releaseTransferTurn() { turns.release(); }
+    public void yieldTransferTurn() { turns.yieldNext(); }
 
     public RocketFluidCargoBlockEntity(BlockPos position, BlockState state) {
         super(((RocketFluidCargoBlock) state.getBlock()).role() == RocketCargoRole.LOAD

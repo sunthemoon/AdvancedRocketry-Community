@@ -42,6 +42,14 @@ public final class EscrowFluidCargoAdmission implements AutoCloseable {
                 new net.minecraft.core.BlockPos(delta.cursor().x(), delta.cursor().y(), delta.cursor().z()));
     }
     public RocketCargoStatus attempt() {
+        var outcome = attemptOnce();
+        if (outcome != RocketCargoStatus.READY && outcome != RocketCargoStatus.PREPARING
+                && outcome != RocketCargoStatus.OTHER_TRANSFER_PENDING && outcome != RocketCargoStatus.ROCKET_BUSY) {
+            device.yieldTransferTurn();
+        }
+        return outcome;
+    }
+    private RocketCargoStatus attemptOnce() {
         if (!device.live()) { return status = RocketCargoStatus.WAITING_UNLOADED; }
         var root = device.root().orElse(null); var server = ((ServerLevel) device.getLevel()).getServer();
         var refusal = device.deviceRefusal();
@@ -199,6 +207,7 @@ public final class EscrowFluidCargoAdmission implements AutoCloseable {
         discard();
     }
     private void discard() {
+        device.yieldTransferTurn();
         if (turnClaimed) { device.releaseTransferTurn(); turnClaimed = false; }
         if (capture != null) { capture.discard(); } else if (ticket != null) { ticket.close(); }
         queuedDevice = null;
