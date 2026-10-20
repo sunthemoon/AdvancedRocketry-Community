@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.resourceescrow;
 
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.RocketLimits;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.RocketCargoPreparation;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.RocketCargoSelection.Status;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.RocketItemCargoMutation;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketSnapshotException;
@@ -69,6 +70,25 @@ final class EscrowItemCargoEligibility {
         delta.requireDirection(load);
         EscrowItemStackCodec.validateNative(delta.stack());
         return delta;
+    }
+
+    /**
+     * The staged capture's final item step, after the resumable preparation verified both snapshots. Refusals keep
+     * the staged path's shared vocabulary: a size refusal is {@link EscrowCargoEligibility.TooLarge}, the rest invalid.
+     */
+    static void prepared(EscrowLedger root, EscrowOperation operation, RocketCargoPreparation prepared,
+                         CompoundTag deviceBefore, CompoundTag deviceAfter) {
+        try {
+            boolean load = operation.kind().cargoLoad();
+            var delta = delta(operation, load);
+            EscrowTags.require(prepared.matches(delta, load), "Prepared item cargo delta changed");
+            deviceRoot(deviceBefore); deviceRoot(deviceAfter);
+            device(root, operation, delta, deviceBefore, deviceAfter, load);
+        } catch (EscrowItemStackCodec.Refusal refused) {
+            throw refused.status() == EscrowItemStackCodec.Status.CARGO_TOO_LARGE ? new EscrowCargoEligibility.TooLarge() : refused;
+        } catch (RocketItemCargoMutation.Refusal refused) {
+            throw refused.status() == Status.CARGO_TOO_LARGE ? new EscrowCargoEligibility.TooLarge() : refused;
+        }
     }
 
     static void deviceRoot(CompoundTag envelope) {

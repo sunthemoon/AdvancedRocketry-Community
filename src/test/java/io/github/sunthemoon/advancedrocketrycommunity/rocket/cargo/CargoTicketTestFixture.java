@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo;
 
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowCargoPayload;
+import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowItemCargoPayload;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowSection;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightData;
@@ -22,6 +23,13 @@ public final class CargoTicketTestFixture implements AutoCloseable {
     public final RocketCargoPreparations.Ticket ticket;
 
     public CargoTicketTestFixture(UUID logical, RocketStructureSnapshot before, EscrowCargoPayload delta, boolean load) {
+        this(logical, before, EscrowCargoPayload.class, delta, load);
+    }
+    /** An item delta uses the same ticket constructor shape, lifetime and accounting. */
+    public CargoTicketTestFixture(UUID logical, RocketStructureSnapshot before, EscrowItemCargoPayload delta, boolean load) {
+        this(logical, before, EscrowItemCargoPayload.class, delta, load);
+    }
+    private CargoTicketTestFixture(UUID logical, RocketStructureSnapshot before, Class<?> type, Object delta, boolean load) {
         var level = UnstartedServer.allocate(FixtureLevel.class); level.server = server;
         var rocket = UnstartedServer.allocate(RocketEntity.class);
         UnstartedServer.set(Entity.class, rocket, "level", level);
@@ -37,7 +45,7 @@ public final class CargoTicketTestFixture implements AutoCloseable {
                 Level.OVERWORLD.location(), before.sourceOrigin(), 0));
         try {
             var constructor = RocketCargoPreparations.Ticket.class.getDeclaredConstructor(RocketCargoPreparations.class,
-                    RocketEntity.class, EscrowCargoPayload.class, boolean.class);
+                    RocketEntity.class, type, boolean.class);
             constructor.setAccessible(true);
             ticket = constructor.newInstance(session, rocket, delta, load);
             UnstartedServer.set(RocketCargoPreparations.class, session, "active", ticket);
