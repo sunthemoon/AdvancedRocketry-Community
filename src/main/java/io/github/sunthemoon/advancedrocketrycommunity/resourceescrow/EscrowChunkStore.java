@@ -32,6 +32,7 @@ public final class EscrowChunkStore {
                            Runnable releaseWatch) { }
     private final ServerLevel level;
     private final EscrowSaveMonitor monitor;
+    private final EscrowStoreFault fault = new EscrowStoreFault();
     private EscrowEntityStore entities;
 
     public EscrowChunkStore(ServerLevel level, EscrowSaveMonitor monitor) { this.level = level; this.monitor = monitor; }
@@ -66,7 +67,8 @@ public final class EscrowChunkStore {
             int bytes = validate(tag, validator);
             unchanged(generation, capturedGeneration);
             EscrowTags.require(level.getChunkSource().getChunkNow(pos.x, pos.z) == chunk, "Captured terrain chunk changed before store");
-            CompletableFuture<Void> stored = level.getChunkSource().chunkMap.worker.store(pos, tag);
+            // W107C: inert unless cut E1's gate is open; vanilla's store itself is always submitted unchanged.
+            CompletableFuture<Void> stored = fault.observed(level, endpoint.level(), pos, level.getChunkSource().chunkMap.worker.store(pos, tag));
             var map = level.getChunkSource().chunkMap;
             if (map.legacyStructureHandler != null) { map.legacyStructureHandler.removeIndex(pos.toLong()); }
             map.markPosition(pos, chunk.getStatus().getChunkType());
