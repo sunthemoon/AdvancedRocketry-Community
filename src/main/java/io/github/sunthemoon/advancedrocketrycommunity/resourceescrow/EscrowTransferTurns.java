@@ -37,7 +37,7 @@ final class EscrowTransferTurns implements AutoCloseable {
     boolean claim(UUID device, UUID rocket) {
         owner(); var registration = loaded.get(device);
         if (registration == null || !registration.rocket.equals(rocket) || !allows(device, rocket)) { return false; }
-        active.put(rocket, device); return true;
+        active.put(rocket, device); next.remove(rocket, device); return true;
     }
     void release(UUID device, UUID rocket) { owner(); active.remove(rocket, device); next.remove(rocket, device); }
     void admitted(UUID device, UUID rocket) { release(device, rocket); }

@@ -43,6 +43,26 @@ class EscrowCargoRefusalTest {
         assertEquals(saved, EscrowCodec.encode(root)); assertEquals(before, c.before()); assertEquals(device, c.deviceBefore());
     }
 
+    @Test void conflictingSequenceIsStaleBeforeAnyReservationOrWrite() {
+        for (var kind : EscrowCargoFixtures.KINDS) {
+            var root = ledger(EscrowCargoFixtures.operation(kind, 1, 99));
+            var other = EscrowCargoFixtures.operation(kind, 2, 100);
+            var op = new EscrowOperation(other.id(), 1, other.owner(), other.createdTick(), other.phase(), other.reason(),
+                    other.payload(), other.payloadHash(), other.source(), other.destination(), other.guard(), other.kind(),
+                    other.settlement(), other.nativeBinding());
+            var capture = new EscrowNativeBinding.Admission(op, RocketEscrowSection.neutral());
+            assertEquals(EscrowCoordinator.Transfer.STALE, EscrowCargoRefusals.capacity(root, List.of(), capture).orElseThrow());
+            var saved = EscrowCodec.encode(root); var data = ResourceEscrowSavedData.load(saved);
+            try (var writer = new EscrowLedgerWriter(temp.resolve("sequence-" + kind), 0);
+                    var coordinator = new EscrowCoordinator(data, writer)) {
+                assertEquals(EscrowCoordinator.Transfer.STALE, coordinator.prepareTransfer(capture, ignored -> fail()));
+                assertEquals(2, coordinator.nextSequence()); assertEquals(1, coordinator.admissionAuthority().pendingCount());
+                assertEquals(saved, EscrowCodec.encode(coordinator.ledger())); assertFalse(data.isDirty());
+                assertFalse(coordinator.commitPreparations()); assertTrue(writer.capturedOperations().isEmpty());
+            }
+        }
+    }
+
     @Test void markerWrapperAndRootLimitsAreDistinctAndDoNotMutateTheirInputs() {
         var root = ledger();
         for (var kind : EscrowCargoFixtures.KINDS) {

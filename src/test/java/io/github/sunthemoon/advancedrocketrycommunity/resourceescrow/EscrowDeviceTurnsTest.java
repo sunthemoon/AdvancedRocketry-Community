@@ -45,7 +45,7 @@ class EscrowDeviceTurnsTest {
             assertTrue(turns.allows(id(1), id(99))); assertFalse(turns.allows(id(2), id(99)));
             turns.admitted(id(1), id(99));
             assertTrue(turns.allows(id(2), id(99))); assertFalse(turns.allows(id(1), id(99)));
-            assertTrue(turns.claim(id(2), id(99))); turns.blocked(id(1), id(99));
+            assertTrue(turns.claim(id(2), id(99))); assertEquals(0, turns.size()); turns.blocked(id(1), id(99));
             turns.release(id(2), id(99));
             assertTrue(turns.allows(id(1), id(99))); assertFalse(turns.allows(id(2), id(99)));
         }
