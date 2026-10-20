@@ -13,6 +13,7 @@ final class EscrowReconciliationChange {
     private EscrowReconciliationChange() { }
 
     static CompoundTag rocket(UUID ledger, EscrowOperation op, CompoundTag before) {
+        op.nativeFluid(); // R39 for fluids: a durable record is only structural until the credit acts on its Fluid.
         var flight = RocketFlightNbtCodec.decode(before.getCompound("flight")).data().orElseThrow();
         var fuel = flight.fuel(); var propulsion = fuel.propulsion().orElseThrow();
         var unit = op.destination().unit();
@@ -37,6 +38,7 @@ final class EscrowReconciliationChange {
 
     /** The source's fixed debit: the registered loader adapter, or the gated chest fixture. */
     static CompoundTag source(UUID ledger, EscrowOperation op, CompoundTag before) {
+        op.nativeFluid(); // R39 for fluids: checked before either debit acts.
         return EscrowLoaderEndpoint.is(op.source()) ? EscrowLoaderEndpoint.change(ledger, op, before) : fixture(ledger, op, before);
     }
 

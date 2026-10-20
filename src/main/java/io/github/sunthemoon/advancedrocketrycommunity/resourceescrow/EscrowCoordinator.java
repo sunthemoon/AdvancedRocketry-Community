@@ -159,6 +159,7 @@ public final class EscrowCoordinator implements AutoCloseable {
     void prepareTest(EscrowOperation op, RocketEscrowSection observed, Consumer<Boolean> completion) {
         owner(); EscrowTags.require(!closed && !writer.unavailable(), "Ledger unavailable");
         EscrowTags.require(op.phase() == EscrowOperation.Phase.PREPARED && op.reason() == EscrowReason.NONE, "Admission must be a fresh preparation");
+        EscrowTags.require(EscrowTransferAdmission.nativeFluid(op), "Admission needs a native Fluid");
         EscrowTags.require(op.sequence() == nextSequence() && !queued.containsKey(op.id())
                 && !requests.containsKey(op.id()), "Duplicate or stale admission");
         EscrowTags.require(!frontiers.containsKey(op.source().key()) && !frontiers.containsKey(op.destination().key()), "Frozen endpoint frontier");
@@ -227,11 +228,12 @@ public final class EscrowCoordinator implements AutoCloseable {
         transferTurns.admitted(op.device().identity(), op.guard().rocket());
         return Transfer.QUEUED;
     }
-    /** Not a fresh FLUID_PROPULSION_FILL with a complete FUEL_VECTOR_V1 binding. */
+    /** Not a fresh FLUID_PROPULSION_FILL with a complete FUEL_VECTOR_V1 binding and a native Fluid. */
     static boolean invalid(EscrowOperation op) {
         return op.kind() != EscrowOperation.Kind.FLUID_PROPULSION_FILL || op.phase() != EscrowOperation.Phase.PREPARED
                 || op.reason() != EscrowReason.NONE || !op.settlement().isEmpty()
-                || op.nativeBinding().kind() != EscrowSignatureKind.FUEL_VECTOR_V1 || !op.nativeBinding().complete();
+                || op.nativeBinding().kind() != EscrowSignatureKind.FUEL_VECTOR_V1 || !op.nativeBinding().complete()
+                || !EscrowTransferAdmission.nativeFluid(op);
     }
     /** The authority's refusal as a typed fill result; ALREADY_HELD is STALE because every index was checked first. */
     static Fill fill(EscrowAdmissionAuthority.Result reservation) {

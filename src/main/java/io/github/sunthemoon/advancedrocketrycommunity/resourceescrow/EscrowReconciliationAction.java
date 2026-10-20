@@ -9,6 +9,7 @@ import net.minecraft.nbt.CompoundTag;
 
 /** C2 authority is private, one-use, owner-thread and bound to both complete current captures. */
 public final class EscrowReconciliationAction {
+    private static final org.slf4j.Logger LOGGER = com.mojang.logging.LogUtils.getLogger();
     private EscrowReconciliationAction() { }
     public record Change(RocketFlightData flight, RocketEscrowSection wrapper) { }
 
@@ -46,6 +47,15 @@ public final class EscrowReconciliationAction {
     static Permit issue(EscrowLedger root, EscrowOperation operation, CompoundTag before, boolean destination, BooleanSupplier authority) {
         EscrowTags.require(root.records().contains(operation) && !operation.reason().manual() && operation.settlement().isEmpty()
                 && authority.getAsBoolean(), "Fill needs an acknowledged ordinary member");
+        if (operation.kind().fluid()) {
+            try { operation.nativeFluid(); }
+            catch (IllegalArgumentException unavailable) {
+                // R39 for fluids: holds this operation only (sticky REPAIR through the scheduler), before any projection.
+                // The scheduler never revisits a manual record, so this logs at most once per operation and session.
+                LOGGER.warn("ARCE_ESCROW_FLUID_UNAVAILABLE op={} fluid={}", operation.id(), fluidName(operation));
+                throw new EscrowReconciliationView.Refusal(EscrowReason.OTHER_STATE);
+            }
+        }
         CompoundTag after;
         try { after = destination ? EscrowReconciliationChange.rocket(root.id(), operation, before)
                 : EscrowReconciliationChange.source(root.id(), operation, before); }
@@ -56,6 +66,12 @@ public final class EscrowReconciliationAction {
             throw new EscrowReconciliationView.Refusal(EscrowReason.OTHER_STATE);
         }
         return new Permit(operation, destination, before, after, authority);
+    }
+
+    /** The structurally checked ID: canonical, printable and at most 128 characters. */
+    private static String fluidName(EscrowOperation op) {
+        var payload = op.payload();
+        return (op.kind() == EscrowOperation.Kind.FLUID_PROPULSION_FILL ? payload : payload.getCompound("fluid")).getString("FluidName");
     }
 
     static void apply(EscrowReconciliationView view, EscrowOperation op, boolean destination, Permit permit) {

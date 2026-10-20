@@ -226,6 +226,8 @@ public final class EscrowLoaderAdmission {
         var guard = new EscrowGuard(key.logicalRocket(), journal.transfer(), Math.max(1, journal.sequence()),
                 journal.transfer() == null ? journal.rootDigest() : journal.recordDigest());
         var payload = moved.encode(); var owner = rocket.ownerId().orElseThrow();
+        // Admission-time encoding keeps the full native check (R39 for fluids); the operation itself is structural.
+        EscrowFluidCodec.validateNative(payload);
         var model = new EscrowOperation(UUID.randomUUID(), sequence, owner, level.getGameTime(), EscrowOperation.Phase.PREPARED,
                 EscrowReason.NONE, payload, RocketNativeResources.signature(payload), source, destination, guard);
         var markers = new ArrayList<>(beforeWrapper.markers()); markers.add(new EscrowPrefix.Link(model, destination, "DESTINATION").marker());
