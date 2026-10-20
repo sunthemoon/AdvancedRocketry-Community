@@ -54,7 +54,7 @@ public final class EscrowItemCargoGameTests {
             helper.assertTrue(RocketItemCargoMutation.storage(state), "A single chest or a barrel must hold item cargo");
             var before = RocketStructureSnapshot.create(UUID.randomUUID(), helper.getLevel().dimension().location(),
                     new RocketPosition(0, 64, 0), List.of(new RocketBlock(new RocketPosition(0, 0, 0), state, payload)),
-                    List.of(), new RocketStats(1, 1, 1, 5000, 1, 0, 1, 1), 10, propulsion());
+                    List.of(), new RocketStats(1, 1, 1, 2000, 1, 0, 1, 1), 10, propulsion());
             for (var move : moves) {
                 var stack = new ItemStack(move.item(), move.count()).save(new CompoundTag());
                 var delta = new EscrowItemCargoPayload(new EscrowCargoPayload.Cursor(before.snapshotId(), 0, 0, 0,
