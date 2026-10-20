@@ -429,7 +429,7 @@ public final class EscrowRuntime {
         EscrowRuntime runtime = overworld.getCapability(CAPABILITY).resolve().orElse(null);
         if (runtime == null || runtime.stopping) { return; }
         runtime.stopping = true;
-        if (runtime.cargo != null) { runtime.cargo.close(); }
+        if (runtime.cargo != null && server.isSameThread()) { runtime.cargo.close(); }
         if (runtime.fills != null && server.isSameThread()) { runtime.fills.clear(); }
         runtime.settlement.close();
         if (runtime.barrier != null) { runtime.barrier.close(); } // Discards unfinished barriers; no new synchronization.
@@ -444,9 +444,10 @@ public final class EscrowRuntime {
         if (runtime.reconciliation != null) { runtime.reconciliation.close(); }
     }
     private static final class Provider implements ICapabilityProvider {
+        private final Thread owner = Thread.currentThread();
         private final EscrowRuntime runtime = new EscrowRuntime();
         private final LazyOptional<EscrowRuntime> value = LazyOptional.of(() -> runtime);
-        private void invalidate() { runtime.stopping = true; if (runtime.cargo != null) { runtime.cargo.close(); } runtime.terminal.close(); runtime.governedFlights.close(); runtime.destinations.close(); runtime.executorHolds.clear(); runtime.sourceFlights.clear(); runtime.flightPhases.clear(); runtime.arrivals.clear(); runtime.monitor.clear(); runtime.stores.clear(); value.invalidate(); }
+        private void invalidate() { runtime.stopping = true; if (runtime.cargo != null && Thread.currentThread() == owner) { runtime.cargo.close(); } runtime.terminal.close(); runtime.governedFlights.close(); runtime.destinations.close(); runtime.executorHolds.clear(); runtime.sourceFlights.clear(); runtime.flightPhases.clear(); runtime.arrivals.clear(); runtime.monitor.clear(); runtime.stores.clear(); value.invalidate(); }
         @Override @NotNull public <T> LazyOptional<T> getCapability(@NotNull Capability<T> requested, @Nullable Direction side) {
             return CAPABILITY.orEmpty(requested, value);
         }
