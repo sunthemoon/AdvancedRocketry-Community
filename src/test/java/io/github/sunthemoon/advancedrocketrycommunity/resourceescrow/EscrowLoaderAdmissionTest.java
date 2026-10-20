@@ -125,8 +125,8 @@ class EscrowLoaderAdmissionTest {
         var refused = EscrowLoaderAdmission.queued(false);
         assertEquals(FluidFuelLoaderStatus.ESCROW_FULL, refused);
         assertTrue(refused.refusal());
-        var queue = new EscrowFillQueue();
-        for (int i = 0; i < EscrowFillQueue.CAPACITY; i++) { assertTrue(queue.offer(EscrowTestFixtures.id(i), () -> false)); }
+        var queue = new EscrowResourceQueue();
+        for (int i = 0; i < EscrowResourceQueue.CAPACITY; i++) { assertTrue(queue.offer(EscrowTestFixtures.id(i), () -> false)); }
         assertEquals(FluidFuelLoaderStatus.ESCROW_FULL, EscrowLoaderAdmission.queued(queue.offer(EscrowTestFixtures.id(10_000), () -> false)));
         assertFalse(queue.waiting(EscrowTestFixtures.id(10_000)));
         assertEquals(FluidFuelLoaderStatus.READY, EscrowLoaderAdmission.queued(queue.offer(EscrowTestFixtures.id(0), () -> false)),
@@ -134,7 +134,7 @@ class EscrowLoaderAdmissionTest {
     }
 
     @Test void theFairQueueVisitsInArrivalOrderOncePerDeviceWithOneCapturePerTick() {
-        var queue = new EscrowFillQueue(); var visited = new ArrayList<Integer>();
+        var queue = new EscrowResourceQueue(); var visited = new ArrayList<Integer>();
         for (int i = 0; i < 12; i++) {
             int device = i; boolean captures = i == 2 || i == 9;
             assertTrue(queue.offer(EscrowTestFixtures.id(i), () -> { visited.add(device); return captures; }));
@@ -153,11 +153,11 @@ class EscrowLoaderAdmissionTest {
     }
 
     @Test void theFairQueueIsBoundedAndTracksOnlyItsOwnPreparations() {
-        var queue = new EscrowFillQueue();
-        for (int i = 0; i < EscrowFillQueue.CAPACITY; i++) { assertTrue(queue.offer(EscrowTestFixtures.id(i), () -> false)); }
+        var queue = new EscrowResourceQueue();
+        for (int i = 0; i < EscrowResourceQueue.CAPACITY; i++) { assertTrue(queue.offer(EscrowTestFixtures.id(i), () -> false)); }
         assertFalse(queue.offer(EscrowTestFixtures.id(10_000), () -> false), "A full queue refuses; the device retries next interval");
         int visits = 0; while (queue.size() > 0) { visits += queue.visit(); }
-        assertEquals(EscrowFillQueue.CAPACITY, visits);
+        assertEquals(EscrowResourceQueue.CAPACITY, visits);
         assertFalse(queue.preparing());
         queue.preparing(EscrowTestFixtures.id(1)); queue.preparing(EscrowTestFixtures.id(2)); assertTrue(queue.preparing());
         queue.resolved(EscrowTestFixtures.id(1)); assertTrue(queue.preparing());
@@ -167,7 +167,7 @@ class EscrowLoaderAdmissionTest {
     }
 
     @Test void theFairQueueRequiresItsOwnerThread() throws Exception {
-        var queue = new EscrowFillQueue(); var failure = new java.util.concurrent.atomic.AtomicReference<Throwable>();
+        var queue = new EscrowResourceQueue(); var failure = new java.util.concurrent.atomic.AtomicReference<Throwable>();
         var thread = new Thread(() -> {
             try { queue.offer(EscrowTestFixtures.id(1), () -> false); } catch (Throwable refused) { failure.set(refused); }
         });

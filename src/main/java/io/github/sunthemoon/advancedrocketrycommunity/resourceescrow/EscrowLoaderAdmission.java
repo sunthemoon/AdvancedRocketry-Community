@@ -293,7 +293,7 @@ public final class EscrowLoaderAdmission {
      * Queues a paced device's attempt once in the fair queue (W95-R5): READY while it waits there, or ESCROW_FULL, with
      * nothing queued, when the bounded queue is full; the device retries at its next interval.
      */
-    public static FluidFuelLoaderStatus offer(FluidFuelLoaderBlockEntity loader, EscrowFillQueue.Attempt attempt) {
+    public static FluidFuelLoaderStatus offer(FluidFuelLoaderBlockEntity loader, EscrowResourceQueue.Attempt attempt) {
         var server = ((ServerLevel) loader.getLevel()).getServer();
         return queued(EscrowRuntime.of(server).fills(server).offer(loader.root().orElseThrow().device(), attempt));
     }

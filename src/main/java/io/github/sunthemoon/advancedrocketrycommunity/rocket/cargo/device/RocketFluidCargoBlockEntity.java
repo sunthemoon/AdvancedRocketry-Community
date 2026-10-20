@@ -116,8 +116,7 @@ public final class RocketFluidCargoBlockEntity extends BlockEntity implements Me
     public RocketCargoStatus attempt() { return admission.attempt(); }
     public static void serverTick(ServerLevel level, BlockPos pos, BlockState state, RocketFluidCargoBlockEntity device) {
         if (device.pacer == null) { device.pacer = io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.RefillPacer.loadedAt(level.getGameTime()); }
-        if (device.admission.active()) { device.admission.advance(); }
-        else if (device.pacer.tryStart(level.getGameTime())) { device.attempt(); }
+        if (device.pacer.tryStart(level.getGameTime())) { device.attempt(); }
     }
 
     /** There is no prepared cargo operation in C-A; the display cursor is absent, not a client-selected target. */

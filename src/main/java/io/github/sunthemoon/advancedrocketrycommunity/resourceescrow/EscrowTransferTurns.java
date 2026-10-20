@@ -21,7 +21,7 @@ final class EscrowTransferTurns implements AutoCloseable {
     }
     Registration register(UUID device, UUID rocket) {
         owner(); java.util.Objects.requireNonNull(device); java.util.Objects.requireNonNull(rocket);
-        EscrowTags.require(!closed && !loaded.containsKey(device) && loaded.size() < EscrowFillQueue.CAPACITY,
+        EscrowTags.require(!closed && !loaded.containsKey(device) && loaded.size() < EscrowResourceQueue.CAPACITY,
                 "Transfer turn registration unavailable");
         var registration = new Registration(device, rocket); loaded.put(device, registration); return registration;
     }

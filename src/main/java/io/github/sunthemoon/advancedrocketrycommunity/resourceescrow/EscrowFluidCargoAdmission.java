@@ -25,6 +25,7 @@ public final class EscrowFluidCargoAdmission implements AutoCloseable {
     private RocketTransferSavedData.JournalGuard journal;
     private int capacity;
     private RocketCargoStatus status = RocketCargoStatus.ADMISSION_DISABLED;
+    private java.util.UUID queuedDevice;
     public EscrowFluidCargoAdmission(RocketFluidCargoBlockEntity device) { this.device = device; }
     public EscrowOperation.Kind kind() {
         return device.role() == RocketCargoRole.LOAD ? EscrowOperation.Kind.FLUID_CARGO_LOAD : EscrowOperation.Kind.FLUID_CARGO_UNLOAD;
@@ -32,6 +33,22 @@ public final class EscrowFluidCargoAdmission implements AutoCloseable {
     public RocketCargoStatus status() { return status; }
     public boolean active() { return ticket != null; }
     public RocketCargoStatus attempt() {
+        if (!device.live()) { return status = RocketCargoStatus.WAITING_UNLOADED; }
+        var root = device.root().orElse(null); var server = ((ServerLevel) device.getLevel()).getServer();
+        var refusal = device.deviceRefusal();
+        if (refusal != null) { return status = refusal; }
+        if (!EscrowCargoSwitches.enabled(server, kind(), root.device())) { return status = RocketCargoStatus.ADMISSION_DISABLED; }
+        if (queuedDevice != null) { return status; }
+        if (!EscrowRuntime.of(server).fills(server).offerCargo(root.device(), this::step, this::discard)) {
+            return status = RocketCargoStatus.ESCROW_FULL;
+        }
+        queuedDevice = root.device(); return status = RocketCargoStatus.READY;
+    }
+    private boolean step() {
+        if (ticket == null) { begin(); } else { advance(); }
+        return ticket == null;
+    }
+    private RocketCargoStatus begin() {
         if (active()) { return status; }
         var refusal = device.deviceRefusal();
         if (refusal != null) { return status = refusal; }
@@ -136,7 +153,14 @@ public final class EscrowFluidCargoAdmission implements AutoCloseable {
     }
     private void refuse(RocketCargoStatus refusal) { close(); status = refusal; }
     @Override public void close() {
+        if (queuedDevice != null && device.getLevel() instanceof ServerLevel level && level.getServer().isSameThread()) {
+            var id = queuedDevice; queuedDevice = null; EscrowRuntime.of(level.getServer()).fills(level.getServer()).cancel(id);
+        }
+        discard();
+    }
+    private void discard() {
         if (capture != null) { capture.discard(); } else if (ticket != null) { ticket.close(); }
+        queuedDevice = null;
         ticket = null; capture = null; before = null; nativeBefore = null; delta = null; coordinator = null; virtual = null; journal = null;
     }
 }
