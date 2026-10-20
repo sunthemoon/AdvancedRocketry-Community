@@ -15,6 +15,30 @@ import org.junit.jupiter.api.Test;
 class RocketCargoPreparationTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
 
+    @Test void productionCursorApiRequiresATicketAndDoesNotAcceptCallerBudgets() throws Exception {
+        assertEquals(0, RocketCargoPreparation.class.getConstructors().length);
+        for (String method : List.of("advance", "close")) {
+            assertTrue(Arrays.stream(RocketCargoPreparation.class.getMethods()).noneMatch(value -> value.getName().equals(method)));
+        }
+        assertTrue(Arrays.stream(RocketCargoPreparations.Ticket.class.getMethods())
+                .flatMap(method -> Arrays.stream(method.getParameterTypes())).noneMatch(RocketCargoWorkBudget.class::equals));
+    }
+
+    @Test void ticketReservationsShareTheSessionBudgetAndExpireWithoutDriverPolling() {
+        var before = CargoTestFixtures.snapshot(FluidStack.EMPTY);
+        try (var session = new CargoTicketTestFixture(UUID.randomUUID(), before,
+                CargoTestFixtures.delta(before, 0, new FluidStack(Fluids.WATER, 1)), true)) {
+            session.at(1);
+            assertTrue(session.budget().charge(1, RocketCargoWorkBudget.MAX_BYTES, RocketCargoWorkBudget.MAX_VISITS, false));
+            assertFalse(session.ticket.advance());
+            assertFalse(session.ticket.performWork(1, 1, () -> { fail("Escaped session budget"); return null; }));
+            session.at(39); assertTrue(session.ticket.valid());
+            session.at(40); assertFalse(session.ticket.valid());
+            assertFalse(session.ticket.performWork(1, 1, () -> { fail("Expired ticket ran work"); return null; }));
+            assertEquals(RocketCargoPreparation.State.DISCARDED, session.cursor().state());
+        }
+    }
+
     @Test void stagedFullSnapshotBoundaryMatchesSynchronousRefusalAndDiscardsRam() {
         var seed = paddedSnapshot(40_000);
         int padding = 40_000 + 1_048_572 - RocketNbtSize.uncompressedBytes(RocketSnapshotNbtCodec.encode(seed));

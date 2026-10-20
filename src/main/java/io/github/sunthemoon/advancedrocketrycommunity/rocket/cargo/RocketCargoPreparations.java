@@ -74,6 +74,14 @@ public final class RocketCargoPreparations implements AutoCloseable {
         }
         public RocketEntity rocket() { owner(); return rocket; }
         public RocketCargoPreparation cursor() { owner(); return cursor; }
+        /** Capture/admission/publication share the same runtime reservation and actual server clock as reconstruction. */
+        public boolean performWork(long bytes, int visits,
+                java.util.function.Supplier<io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketSnapshotPreparation.Work> work) {
+            owner(); discardFinished();
+            if (!valid()) { close(); return false; }
+            long tick = rocket.getServer().getTickCount();
+            return budget.claim(tick, cursor) && budget.perform(tick, bytes, visits, false, work);
+        }
         public boolean valid() {
             owner();
             return !closed && !discarded && active == this && rocket.isAlive() && rocket.level() == level

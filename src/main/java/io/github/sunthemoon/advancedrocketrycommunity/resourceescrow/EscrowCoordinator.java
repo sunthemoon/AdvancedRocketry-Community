@@ -197,8 +197,7 @@ public final class EscrowCoordinator implements AutoCloseable {
         return prepareTransfer(capture, completion).fill();
     }
     /** C-P capture entry for C-E: all eligibility passes finish before issuing a sequence or reserving anything. */
-    Transfer prepareCargo(EscrowCargoPreparedCapture prepared, long serverTick,
-                          io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.RocketCargoWorkBudget budget,
+    Transfer prepareCargo(EscrowCargoPreparedCapture prepared,
                           java.util.function.BooleanSupplier unchanged,
                           Consumer<Boolean> completion) {
         owner();
@@ -209,8 +208,9 @@ public final class EscrowCoordinator implements AutoCloseable {
                     ? Transfer.ESCROW_FULL : Transfer.INVALID;
         }
         // Changed native inputs are discarded and must repeat the full eligibility capture, not merely its digests.
+        if (!prepared.valid()) { prepared.discard(); return Transfer.STALE; }
         var outcome = new Transfer[] {Transfer.UNAVAILABLE};
-        budget.perform(serverTick, 16L * 1_048_576, 16_384, false, () -> {
+        prepared.admission(() -> {
             try {
                 if (!unchanged.getAsBoolean() || !prepared.unchanged()) { outcome[0] = Transfer.STALE; }
                 else {

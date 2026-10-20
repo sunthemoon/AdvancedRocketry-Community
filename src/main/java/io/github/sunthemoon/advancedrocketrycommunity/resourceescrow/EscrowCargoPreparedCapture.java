@@ -2,7 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.resourceescrow;
 
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.RocketCargoPreparation;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.RocketCargoSelection.Status;
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.RocketCargoWorkBudget;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.RocketCargoPreparations.Ticket;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.PressurizedTankRocketAdapter;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNbtSize;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketSnapshotPreparation.Work;
@@ -12,6 +12,7 @@ import net.minecraft.nbt.CompoundTag;
 
 /** Bounded capture checks shared by selection/admission. No sequence, reservation, queue or endpoint changes. */
 final class EscrowCargoPreparedCapture {
+    private final Ticket ticket;
     private final RocketCargoPreparation prepared;
     private final EscrowOperation operation;
     private final CompoundTag[] inputs;
@@ -26,18 +27,18 @@ final class EscrowCargoPreparedCapture {
     private EscrowCargoEligibility.Result result;
 
     /** Input roots are borrowed only until each is copied under a reservation; final capture must recheck them. */
-    EscrowCargoPreparedCapture(RocketCargoPreparation prepared, EscrowOperation operation,
+    EscrowCargoPreparedCapture(Ticket ticket, EscrowOperation operation,
             CompoundTag rocketBefore, CompoundTag rocketAfter, CompoundTag deviceBefore, CompoundTag deviceAfter, int capacity) {
-        this.prepared = prepared; this.operation = operation;
+        this.ticket = ticket; this.prepared = ticket.cursor(); this.operation = operation;
         inputs = new CompoundTag[] {rocketBefore, rocketAfter, deviceBefore, deviceAfter}; this.capacity = capacity;
         captures = null; current = () -> true;
     }
 
     /** Native encoders run here, inside the reservation, rather than in the caller before preparation starts. */
-    EscrowCargoPreparedCapture(RocketCargoPreparation prepared, EscrowOperation operation,
+    EscrowCargoPreparedCapture(Ticket ticket, EscrowOperation operation,
             List<java.util.function.Supplier<CompoundTag>> captures, java.util.function.BooleanSupplier current, int capacity) {
         EscrowTags.require(captures.size() == 4, "Cargo needs four native captures");
-        this.prepared = prepared; this.operation = operation; this.captures = List.copyOf(captures);
+        this.ticket = ticket; this.prepared = ticket.cursor(); this.operation = operation; this.captures = List.copyOf(captures);
         this.current = current; this.capacity = capacity; inputs = new CompoundTag[4];
     }
 
@@ -59,24 +60,28 @@ final class EscrowCargoPreparedCapture {
             return EscrowNativeEnvelope.rocket(rocket, ticket.cursor().after(), rocket.flightData().orElseThrow(),
                     new RocketEscrowSection(ledger, endpoint.afterEpoch(), markers));
         };
-        return new EscrowCargoPreparedCapture(ticket.cursor(), operation, List.of(before, after, deviceBefore, deviceAfter),
+        return new EscrowCargoPreparedCapture(ticket, operation, List.of(before, after, deviceBefore, deviceAfter),
                 () -> ticket.valid() && deviceCurrent.getAsBoolean()
                         && (frame[0] == null || frame[0].equals(EscrowNativeEnvelope.frame(rocket))), capacity);
     }
 
-    boolean advance(long tick, RocketCargoWorkBudget budget, EscrowLedger root, List<EscrowOperation> pending) {
+    boolean advance(EscrowLedger root, List<EscrowOperation> pending) {
         EscrowTags.require(!discarded, "Cargo capture was discarded");
         if (result != null) { return true; }
         if (prepared.failure().isPresent()) {
             result = new EscrowCargoEligibility.Result(prepared.failure().orElseThrow(), null);
             discard(); return true;
         }
-        if (prepared.state() != RocketCargoPreparation.State.READY || !budget.claim(tick, prepared)) { return false; }
+        if (!ticket.valid()) {
+            result = new EscrowCargoEligibility.Result(Status.INVALID_DATA, null);
+            discard(); return true;
+        }
+        if (prepared.state() != RocketCargoPreparation.State.READY) { return false; }
         while (result == null) {
             int visits = step == 4 || step == 5 || step < 4 && captures != null ? 8 * prepared.before().blocks().size()
                     : 3 * prepared.before().blocks().size();
             try {
-                if (!budget.perform(tick, 8L * 1_048_576, visits, false,
+                if (!ticket.performWork(8L * 1_048_576, visits,
                         () -> advanceStep(root, pending, visits))) { return false; }
             } catch (EscrowCargoEligibility.TooLarge exceeded) {
                 result = new EscrowCargoEligibility.Result(Status.CARGO_TOO_LARGE, null);
@@ -147,9 +152,13 @@ final class EscrowCargoPreparedCapture {
         if (result == null) { throw new IllegalStateException("Cargo capture is incomplete"); }
         return result;
     }
+    boolean admission(java.util.function.Supplier<Work> work) {
+        return ticket.performWork(16L * 1_048_576, 16_384, work);
+    }
+    boolean valid() { return ticket.valid(); }
     /** Changed input requires a new full preparation; an old after snapshot never follows a changed before state. */
     boolean unchanged() {
-        if (discarded) { return false; }
+        if (discarded || !ticket.valid()) { return false; }
         if (captures != null) { return current.getAsBoolean(); }
         for (int i = 0; i < inputs.length; i++) {
             EscrowCargoEligibility.envelope(inputs[i]);
@@ -158,7 +167,7 @@ final class EscrowCargoPreparedCapture {
         return true;
     }
     void discard() {
-        discarded = true; prepared.close();
+        discarded = true; ticket.close();
         java.util.Arrays.fill(inputs, null); java.util.Arrays.fill(owned, null);
         captures = null; current = () -> false;
     }

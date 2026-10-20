@@ -5,7 +5,6 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketSnapshotPreparation.Work;
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime;
 import java.util.ArrayList;
 import java.util.function.BooleanSupplier;
 
@@ -67,13 +66,10 @@ public final class EscrowCargoPublication {
                     && operation.settlement().isEmpty() && operation.kind().cargo() && operation.nativeBinding().complete()
                     && authority.getAsBoolean(), "Cargo publication needs an acknowledged ordinary member");
             var rocket = ticket.rocket(); var cursor = ticket.cursor(); var after = cursor.after();
-            var budget = RocketRuntime.cargoPreparations(rocket.getServer()).budget();
-            long tick = rocket.getServer().getTickCount();
-            if (!budget.claim(tick, cursor)) { return null; }
             while (phase < 3) {
                 int visits = phase == 0 ? 0 : 8 * after.blocks().size();
                 long bytes = phase == 0 ? 1_048_576 : 16L * 1_048_576;
-                if (!budget.perform(tick, bytes, visits, false, () -> {
+                if (!ticket.performWork(bytes, visits, () -> {
                     validateStep(); return new Work(bytes, visits);
                 })) { return null; }
             }

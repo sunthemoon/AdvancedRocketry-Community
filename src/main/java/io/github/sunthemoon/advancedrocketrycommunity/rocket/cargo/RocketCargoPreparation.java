@@ -13,7 +13,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraftforge.fluids.FluidStack;
 
 /** One transient reconstruction, never a persisted operation or admission authority. */
-public final class RocketCargoPreparation implements AutoCloseable {
+public final class RocketCargoPreparation {
     public enum State { PREPARING, READY, DISCARDED }
     private final UUID logical;
     private final Thread owner = Thread.currentThread();
@@ -29,7 +29,7 @@ public final class RocketCargoPreparation implements AutoCloseable {
     private long visits;
     private RocketCargoSelection.Status failure;
 
-    public RocketCargoPreparation(UUID logical, RocketStructureSnapshot before, EscrowCargoPayload delta, boolean load) {
+    RocketCargoPreparation(UUID logical, RocketStructureSnapshot before, EscrowCargoPayload delta, boolean load) {
         this.logical = java.util.Objects.requireNonNull(logical);
         this.before = java.util.Objects.requireNonNull(before);
         this.delta = java.util.Objects.requireNonNull(delta); this.load = load;
@@ -57,7 +57,7 @@ public final class RocketCargoPreparation implements AutoCloseable {
     }
 
     /** A caller cannot accumulate tick credit: every operation is performed inside its actual tick reservation. */
-    public boolean advance(long tick, RocketCargoWorkBudget budget) {
+    boolean advance(long tick, RocketCargoWorkBudget budget) {
         requireLive();
         try { return advanceSteps(tick, budget); }
         catch (RocketSnapshotException invalid) {
@@ -135,7 +135,7 @@ public final class RocketCargoPreparation implements AutoCloseable {
     private void requireOwner() {
         if (Thread.currentThread() != owner) { throw new IllegalStateException("Cargo preparation requires its owner thread"); }
     }
-    @Override public void close() {
+    void close() {
         requireOwner();
         state = State.DISCARDED; before = null; delta = null; snapshot = null; encoded = null;
     }

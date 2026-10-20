@@ -65,7 +65,7 @@ public final class EscrowCargoNativeCaptureGameTests {
                     capture = EscrowCargoPreparedCapture.nativeCapture(ticket, root.id(), operation,
                             () -> deviceBefore.copy(), () -> deviceAfter.copy(), () -> deviceCurrent, 64_000);
                 }
-                if (!capture.advance(server.getTickCount(), preparations.budget(), root, List.of())) { return; }
+                if (!capture.advance(root, List.of())) { return; }
                 helper.assertTrue(capture.result().status() == Status.ELIGIBLE, "Native capture refused valid fixture");
                 var expected = EscrowCargoEligibility.check(root, List.of(), operation, EscrowNativeEnvelope.rocket(rocket),
                         EscrowNativeEnvelope.rocket(rocket, ticket.cursor().after(), rocket.flightData().orElseThrow(),
@@ -81,7 +81,7 @@ public final class EscrowCargoNativeCaptureGameTests {
                 var data = ResourceEscrowSavedData.load(EscrowCodec.encode(root));
                 try (var writer = new EscrowLedgerWriter(server.getWorldPath(LevelResource.ROOT).resolve("cargo-native-capture"), 0);
                      var coordinator = new EscrowCoordinator(data, writer)) {
-                    var result = coordinator.prepareCargo(capture, server.getTickCount(), preparations.budget(), () -> true,
+                    var result = coordinator.prepareCargo(capture, () -> true,
                             ignored -> { throw new AssertionError("Stale capture issued a completion"); });
                     helper.assertTrue(result == EscrowCoordinator.Transfer.STALE, "Native capture accepted changed final inputs");
                     helper.assertTrue(coordinator.nextSequence() == 1 && coordinator.admissionAuthority().pendingCount() == 0
