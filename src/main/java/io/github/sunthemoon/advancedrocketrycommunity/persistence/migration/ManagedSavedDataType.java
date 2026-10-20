@@ -77,6 +77,13 @@ public enum ManagedSavedDataType {
             "v1.8.0", "advancedrocketrycommunity_classic_progression", 256L * 1_024L,
             List.of(new RequiredTag("first_moon_landing", Tag.TAG_COMPOUND),
                     new RequiredTag("first_station_warp", Tag.TAG_COMPOUND))
+    ),
+    /** W27A-DESIGN section 2: bay deployment receipts, schema 1 from introduction, so there is no legacy migration. */
+    BAY_RECEIPTS(
+            "v1.8.0", "advancedrocketrycommunity_bay_receipts",
+            io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceiptCodec.ROOT_BYTES,
+            List.of(new RequiredTag("store_id", Tag.TAG_INT_ARRAY), new RequiredTag("issued_through", Tag.TAG_LONG),
+                    new RequiredTag("writer_generation", Tag.TAG_LONG), new RequiredTag("receipts", Tag.TAG_LIST))
     );
 
     private static final long FILE_OVERHEAD_BYTES = 64L * 1024L;
@@ -131,6 +138,7 @@ public enum ManagedSavedDataType {
             case ENDGAME -> EndgameLimits.ROOT_SCHEMA_VERSION;
             case RESOURCE_ESCROW -> 2;
             case CLASSIC_PROGRESSION -> 1;
+            case BAY_RECEIPTS -> io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceiptCodec.SCHEMA;
             case ROCKET_TRANSFERS -> FIRST_MOON_LANDING_JOURNAL_SCHEMA;
             default -> SavedDataSchemaMigrator.CURRENT_SCHEMA_VERSION;
         };
@@ -172,6 +180,9 @@ public enum ManagedSavedDataType {
         if (this == CLASSIC_PROGRESSION) {
             return "v1.8.0-classic-progression";
         }
+        if (this == BAY_RECEIPTS) {
+            return io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceiptCodec.EPOCH;
+        }
         return SavedDataSchemaMigrator.FORMAT_EPOCH;
     }
 
@@ -185,7 +196,7 @@ public enum ManagedSavedDataType {
 
     /** Whether older roots of this type exist; the endgame root was introduced at its current schema. */
     public boolean hasLegacySchema() {
-        return this != ENDGAME && this != RESOURCE_ESCROW && this != CLASSIC_PROGRESSION;
+        return this != ENDGAME && this != RESOURCE_ESCROW && this != CLASSIC_PROGRESSION && this != BAY_RECEIPTS;
     }
 
     /**

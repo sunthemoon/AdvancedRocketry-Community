@@ -68,6 +68,7 @@ final class ManagedSavedDataLoaderMigrationTest {
             case RESOURCE_ESCROW -> io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.ResourceEscrowSavedData.load(payload);
             case CLASSIC_PROGRESSION -> io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent
                     .ClassicProgressionSavedData.load(payload);
+            case BAY_RECEIPTS -> io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceiptSavedData.load(payload);
         };
     }
 
@@ -82,6 +83,7 @@ final class ManagedSavedDataLoaderMigrationTest {
             case RESOURCE_ESCROW -> ((io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.ResourceEscrowSavedData) data).operational();
             case CLASSIC_PROGRESSION -> ((io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent
                     .ClassicProgressionSavedData) data).operational();
+            case BAY_RECEIPTS -> ((io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceiptSavedData) data).operational();
         };
         assertTrue(operational, type + " must remain operational after migration");
     }
@@ -116,6 +118,7 @@ final class ManagedSavedDataLoaderMigrationTest {
                 assertEquals(0, canonical.getCompound("first_moon_landing").getByte("occurred"));
                 assertEquals(0, canonical.getCompound("first_station_warp").getByte("occurred"));
             }
+            case BAY_RECEIPTS -> assertEquals(0, canonical.getList("receipts", CompoundTag.TAG_COMPOUND).size());
         }
     }
 

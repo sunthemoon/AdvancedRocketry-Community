@@ -5,6 +5,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.Chec
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataPolicy;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
+import java.io.IOError;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -16,6 +17,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -358,6 +360,40 @@ class EscrowLedgerWriterTest {
         assertEquals(1, CheckedSavedDataFile.readPayload(file(), ManagedSavedDataType.RESOURCE_ESCROW).orElseThrow().getLong("writer_generation"));
         assertFalse(writer.request(() -> EscrowLedgerWriter.Snapshot.of(EscrowTestFixtures.ledger().generation(2), Set.of()), result -> { }));
         coordinator.autosave(); coordinator.close(); assertTrue(writer.idle());
+    }
+    /** W27C1-R6, the review's sibling 1: a refused generation leaves no request behind, so the shutdown drain ends. */
+    @Test @Timeout(60) void aRefusedGenerationLeavesNoActiveRequestSoTheShutdownDrainEnds() throws Exception {
+        var base = EscrowTestFixtures.ledger(); var writer = new EscrowLedgerWriter(file(), 2);
+        assertThrows(IllegalArgumentException.class, () -> writer.request(() -> EscrowLedgerWriter.Snapshot.of(base.generation(2), Set.of()),
+                result -> fail("A refused generation published a completion")), "a generation never repeats");
+        assertTrue(writer.idle(), "the refused generation left no active request");
+        writer.close();
+        assertFalse(writer.request(() -> EscrowLedgerWriter.Snapshot.of(base.generation(3), Set.of()), result -> { }));
+    }
+    /** W27C1-R6, sibling 2: an Error on the IO thread is an unknown outcome of the exact candidate, and shutdown still ends. */
+    @Test @Timeout(60) void anErrorOnTheIoThreadIsAnUnknownOutcomeAndTheShutdownDrainStillEnds() throws Exception {
+        var base = EscrowTestFixtures.ledger();
+        CheckedSavedDataFile.Committer error = (staged, target) -> { throw new IOError(new IOException("Injected IO error")); };
+        var mode = new AtomicReference<>(error); var outcomes = new ArrayList<EscrowLedgerWriter.Completion>();
+        var ledgerIo = new AwaitedLedgerIo();
+        try (var writer = ledgerIo.writer(file(), 0, (staged, target) -> mode.get().commit(staged, target))) {
+            assertTrue(writer.request(() -> EscrowLedgerWriter.Snapshot.of(base.generation(1), Set.of()), outcomes::add));
+            long tick = ledgerIo.tickUntil(writer::tick, 1, () -> !outcomes.isEmpty());
+            assertEquals(EscrowLedgerWriter.Outcome.UNKNOWN, outcomes.get(0).outcome()); assertTrue(writer.unknown());
+            mode.set(CheckedSavedDataFile::atomicMove);
+            ledgerIo.tickUntil(writer::tick, tick, writer::idle);
+            assertTrue(writer.idle(), "Bounded writer did not complete");
+            var last = outcomes.get(outcomes.size() - 1);
+            assertEquals(EscrowLedgerWriter.Outcome.COMMITTED, last.outcome()); assertEquals(outcomes.get(0).digest(), last.digest());
+        }
+        byte[] durable = Files.readAllBytes(file()); var drained = new ArrayList<EscrowLedgerWriter.Outcome>();
+        // The production IO thread with an Error on every attempt: the drain gives up after three unknown outcomes.
+        var writer = new EscrowLedgerWriter(file(), 1, error);
+        assertTrue(writer.request(() -> EscrowLedgerWriter.Snapshot.of(base.generation(2), Set.of()), result -> drained.add(result.outcome())));
+        writer.close();
+        assertTrue(drained.size() >= EscrowLedgerWriter.DRAIN_UNKNOWN_ATTEMPTS
+                && drained.stream().allMatch(EscrowLedgerWriter.Outcome.UNKNOWN::equals), drained::toString);
+        assertArrayEquals(durable, Files.readAllBytes(file()), "the target file stays authoritative");
     }
     private static void await(CountDownLatch latch) {
         try { if (!latch.await(5, TimeUnit.SECONDS)) { throw new AssertionError("Writer test gate timed out"); } }

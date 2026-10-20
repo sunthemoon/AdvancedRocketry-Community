@@ -129,8 +129,12 @@ public final class EscrowLedgerWriter implements AutoCloseable {
     private void captureAndStart() {
         Snapshot next;
         long started = System.nanoTime();
-        try { next = active.capture().get(); }
-        catch (RuntimeException refused) {
+        try {
+            next = active.capture().get();
+            EscrowTags.require(next.ledger().writerGeneration() > lastGeneration, "Nonincreasing writer generation");
+        } catch (RuntimeException refused) {
+            // A refused capture or generation leaves no request behind, so a drain never waits on a generation that
+            // cannot start (W27C1-R6).
             active = null; captured = null;
             throw refused;
         }
@@ -138,7 +142,6 @@ public final class EscrowLedgerWriter implements AutoCloseable {
         timings.sample("ledger_capture_main", captureNanos);
         timings.captured(next, captureNanos);
         timings.queued(next.ledger().writerGeneration(), started - active.requestedAt());
-        EscrowTags.require(next.ledger().writerGeneration() > lastGeneration, "Nonincreasing writer generation");
         lastGeneration = next.ledger().writerGeneration(); captured = next; uncertain = false; drainUnknown = 0; startIo();
     }
     private void startIo() {
@@ -149,45 +152,55 @@ public final class EscrowLedgerWriter implements AutoCloseable {
         boolean previouslyUncertain = uncertain; long durable = durableGeneration; String durableSignature = durableDigest;
         io.execute(() -> {
             long started = System.nanoTime();
-            boolean[] attempted = {false}, refused = {false}; Outcome outcome;
-            var policy = new CheckedSavedDataPolicy(ManagedSavedDataType.RESOURCE_ESCROW, (staged, target) -> {
-                if (snapshot.ledger().writerGeneration() > 1) {
-                    checkpoint.accept(snapshot.ledger().records().isEmpty() ? "K8" : "K1");
-                } else {
-                    checkpoint.accept("BASELINE_STAGED");
-                }
-                refused[0] = !beforeReplace.getAsBoolean();
-                EscrowTags.require(!refused[0], "Proof invalidated before ledger replacement");
-                attempted[0] = true; committer.commit(staged, target);
-                if (snapshot.ledger().writerGeneration() > 1) {
-                    checkpoint.accept(snapshot.ledger().records().isEmpty() ? "K9" : "K2");
-                } else {
-                    checkpoint.accept("BASELINE_REPLACED");
-                }
-            });
+            boolean[] attempted = {false}, refused = {false}; Outcome outcome = Outcome.UNKNOWN; Throwable unexpected = null;
             try {
-                policy.replace(file, snapshot::payload); CheckedSavedDataPolicy.forceDirectory(file.getParent());
-                outcome = Outcome.COMMITTED;
-            } catch (RuntimeException | IOException failure) {
-                outcome = attempted[0] || previouslyUncertain ? Outcome.UNKNOWN
-                        : refused[0] ? Outcome.GUARD_REFUSED : Outcome.FAILED_BEFORE_REPLACE;
-                if (attempted[0] || previouslyUncertain) {
-                    try {
-                        Optional<CompoundTag> disk = policy.read(file);
-                        if (disk.filter(snapshot.payload()::equals).isPresent()) {
-                            CheckedSavedDataPolicy.forceDirectory(file.getParent()); outcome = Outcome.COMMITTED;
-                        } else if (refused[0] && previous(disk, policy.read(file), durable, durableSignature, snapshot.ledger().id())) {
-                            // This writer never moves a candidate whose guard refused, and the earlier ambiguous move
-                            // cannot land later. A stable readback of the last durable generation resolves it.
-                            outcome = Outcome.FAILED_BEFORE_REPLACE;
-                        }
-                    } catch (RuntimeException | IOException unreadable) { /* Keep this exact candidate for retry. */ }
+                var policy = new CheckedSavedDataPolicy(ManagedSavedDataType.RESOURCE_ESCROW, (staged, target) -> {
+                    if (snapshot.ledger().writerGeneration() > 1) {
+                        checkpoint.accept(snapshot.ledger().records().isEmpty() ? "K8" : "K1");
+                    } else {
+                        checkpoint.accept("BASELINE_STAGED");
+                    }
+                    refused[0] = !beforeReplace.getAsBoolean();
+                    EscrowTags.require(!refused[0], "Proof invalidated before ledger replacement");
+                    attempted[0] = true; committer.commit(staged, target);
+                    if (snapshot.ledger().writerGeneration() > 1) {
+                        checkpoint.accept(snapshot.ledger().records().isEmpty() ? "K9" : "K2");
+                    } else {
+                        checkpoint.accept("BASELINE_REPLACED");
+                    }
+                });
+                try {
+                    policy.replace(file, snapshot::payload); CheckedSavedDataPolicy.forceDirectory(file.getParent());
+                    outcome = Outcome.COMMITTED;
+                } catch (RuntimeException | IOException failure) {
+                    outcome = attempted[0] || previouslyUncertain ? Outcome.UNKNOWN
+                            : refused[0] ? Outcome.GUARD_REFUSED : Outcome.FAILED_BEFORE_REPLACE;
+                    if (attempted[0] || previouslyUncertain) {
+                        try {
+                            Optional<CompoundTag> disk = policy.read(file);
+                            if (disk.filter(snapshot.payload()::equals).isPresent()) {
+                                CheckedSavedDataPolicy.forceDirectory(file.getParent()); outcome = Outcome.COMMITTED;
+                            } else if (refused[0] && previous(disk, policy.read(file), durable, durableSignature, snapshot.ledger().id())) {
+                                // This writer never moves a candidate whose guard refused, and the earlier ambiguous move
+                                // cannot land later. A stable readback of the last durable generation resolves it.
+                                outcome = Outcome.FAILED_BEFORE_REPLACE;
+                            }
+                        } catch (RuntimeException | IOException unreadable) { /* Keep this exact candidate for retry. */ }
+                    }
                 }
+                long ioNanos = System.nanoTime() - started;
+                timings.sample("ledger_io", ioNanos);
+                timings.written(snapshot.ledger().writerGeneration(), ioNanos);
+            } catch (Throwable error) {
+                // W27C1-R6: an Error (IOError, OutOfMemoryError) still posts a completion, or tick and the shutdown drain
+                // would wait for ever. Unless a definite outcome was already known, it is unknown for this exact candidate.
+                unexpected = error;
             }
-            long ioNanos = System.nanoTime() - started;
-            timings.sample("ledger_io", ioNanos);
-            timings.written(snapshot.ledger().writerGeneration(), ioNanos);
             completions.add(new Completion(snapshot.ledger().writerGeneration(), snapshot.digest(), outcome, snapshot));
+            if (unexpected != null) {
+                LOGGER.error("Escrow ledger generation {} write threw unexpectedly; its outcome is {}", snapshot.ledger().writerGeneration(),
+                        outcome, unexpected);
+            }
         });
     }
     public void tick(long tick) {

@@ -64,9 +64,14 @@ public final class BetaWorldMigrationEvents {
         return line.toString();
     }
 
-    /** A world with an escrow ledger must never roll back managed files alone, whichever type refused startup. */
+    /**
+     * A world with an escrow ledger or bay receipts (R-039) must never roll back managed files alone, whichever type
+     * refused startup.
+     */
     static String recoveryHint(Path worldRoot) {
         Path ledger = worldRoot.resolve("data").resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName());
-        return Files.exists(ledger, LinkOption.NOFOLLOW_LINKS) ? ESCROW_HINT : MIGRATION_HINT;
+        Path receipts = worldRoot.resolve("data").resolve(ManagedSavedDataType.BAY_RECEIPTS.fileName());
+        return Files.exists(ledger, LinkOption.NOFOLLOW_LINKS) || Files.exists(receipts, LinkOption.NOFOLLOW_LINKS)
+                ? ESCROW_HINT : MIGRATION_HINT;
     }
 }

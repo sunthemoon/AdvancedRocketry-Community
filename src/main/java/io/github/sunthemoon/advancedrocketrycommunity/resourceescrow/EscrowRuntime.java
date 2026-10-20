@@ -39,6 +39,7 @@ public final class EscrowRuntime {
     private static final org.slf4j.Logger LOGGER = LogUtils.getLogger();
     private EscrowAdmissionAuthority admission;
     private EscrowAdmissionAuthority.Delegate propulsion;
+    private BayReceipts bay;
     private final EscrowSaveMonitor monitor = new EscrowSaveMonitor();
     private final Map<ResourceKey<Level>, EscrowChunkStore> stores = new HashMap<>();
     private EscrowBarrier barrier;
@@ -197,15 +198,24 @@ public final class EscrowRuntime {
     }
     /**
      * The one PROPULSION delegate, registered on the server thread at ServerStartingEvent. A ledger bound earlier, while
-     * the Levels prepare, registers it at that bind instead; there is never a second registration.
+     * the Levels prepare, registers it at that bind instead; there is never a second registration. The BAY delegate
+     * registers with it, NOT_LOADED, so the authority never exists without BAY (W27c1).
      */
     EscrowAdmissionAuthority.Delegate propulsion(MinecraftServer server) {
         if (propulsion == null) {
             EscrowTags.require(server.isSameThread(), "Escrow admission registers on the server thread");
             admission = new EscrowAdmissionAuthority();
             propulsion = admission.register(EscrowAdmissionAuthority.Consumer.PROPULSION);
+            bay = new BayReceipts(admission.register(EscrowAdmissionAuthority.Consumer.BAY),
+                    io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile::atomicMove);
         }
         return propulsion;
+    }
+    /** The runtime-owned bay receipts: the BAY delegate, its startup index and the insertion gate. */
+    public BayReceipts bayReceipts(MinecraftServer server) { propulsion(server); return bay; }
+    /** W95's gated N3 seam: a synthetic BAY index, or with null the receipt store's own attachment again. */
+    boolean bayIndexForTests(MinecraftServer server, @Nullable EscrowAdmissionAuthority.Store synthetic) {
+        EscrowTestEndpoints.requireEnabled(server); return bayReceipts(server).substituteForTests(synthetic);
     }
     /**
      * The only path that replaces the ledger SavedData, for test hooks. It retargets the PROPULSION delegate on the
@@ -225,14 +235,23 @@ public final class EscrowRuntime {
      * Startup lookup, before the first tick: the load-only {@code existing} never creates a file. An existing ledger
      * binds at once, so its coordinator's index is LOADED before any admission; no file means NO_FILE. A file that did
      * not load (the pre-start check normally refuses startup first) keeps the delegate NOT_LOADED, so admission refuses.
+     * The bay receipts then load and index the same way (W27c1, N6); until both are loaded, admission is UNAVAILABLE.
      */
     @SubscribeEvent public static void starting(ServerStartingEvent event) {
-        var server = event.getServer(); var delegate = of(server).propulsion(server);
-        if (delegate.state() != EscrowAdmissionAuthority.Delegate.State.NOT_LOADED) { return; }
-        var data = ResourceEscrowSavedData.existing(server);
-        if (data != null) { data.bind(server); }
-        else if (!java.nio.file.Files.exists(ResourceEscrowSavedData.file(server))) { delegate.noFile(); }
-        else { LOGGER.warn("ARCE_ESCROW_LEDGER_NOT_LOADED; the ledger file did not load, so escrow admission stays refused"); }
+        var server = event.getServer(); var runtime = of(server); var delegate = runtime.propulsion(server);
+        if (delegate.state() == EscrowAdmissionAuthority.Delegate.State.NOT_LOADED) {
+            var data = ResourceEscrowSavedData.existing(server);
+            if (data != null) { data.bind(server); }
+            else if (!java.nio.file.Files.exists(ResourceEscrowSavedData.file(server))) { delegate.noFile(); }
+            else { LOGGER.warn("ARCE_ESCROW_LEDGER_NOT_LOADED; the ledger file did not load, so escrow admission stays refused"); }
+        }
+        runtime.bay.start(server);
+    }
+    /** N6 evidence: the BAY index state at the START of the first tick, before any level, login or command runs. */
+    @SubscribeEvent(priority = EventPriority.HIGHEST) public static void bayFirstTick(TickEvent.ServerTickEvent event) {
+        if (event.phase == TickEvent.Phase.START) {
+            var runtime = of(event.getServer()); if (runtime.bay != null) { runtime.bay.observeTickStart(); }
+        }
     }
     public EscrowSaveMonitor monitor() { return monitor; }
     public EscrowBarrier barrier() {
@@ -282,6 +301,8 @@ public final class EscrowRuntime {
             if (runtime.settlementProbe == null) { runtime.settlementProbe = new EscrowSettlementProbe(event.getServer()); }
             runtime.settlementProbe.tick();
         }
+        // The receipt writer's completions and retries, before the ledger section can return early.
+        if (runtime.bay != null) { runtime.bay.tick(event.getServer().getTickCount()); }
         // The loaders' fair queue first: at most one capture per tick, possibly a world's first fill and its ledger.
         runtime.fills(event.getServer()).tick(event.getServer());
         ResourceEscrowSavedData data = ResourceEscrowSavedData.existing(event.getServer());
@@ -389,6 +410,7 @@ public final class EscrowRuntime {
         if (runtime.barrier != null) { runtime.barrier.quiesce(); }
         ResourceEscrowSavedData data = ResourceEscrowSavedData.existing(event.getServer());
         if (data != null) { data.stop(); }
+        if (runtime.bay != null) { runtime.bay.stop(); }
         runtime.settlements.close();
         runtime.preF2Cancellation.close();
         runtime.flightCheckpoint.close();
@@ -420,6 +442,7 @@ public final class EscrowRuntime {
         if (runtime.barrier != null) { runtime.barrier.close(); } // Discards unfinished barriers; no new synchronization.
         ResourceEscrowSavedData data = ResourceEscrowSavedData.existing(server);
         if (data != null) { data.abort(); }
+        if (runtime.bay != null) { runtime.bay.abort(); }
         runtime.settlements.close();
         runtime.preF2Cancellation.close();
         runtime.flightCheckpoint.close();

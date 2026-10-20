@@ -43,7 +43,7 @@ final class StationWorldMigrationTest {
         byte[] oldBytes = {1, 3, 5, 7}; // Previous copies are backed up, not mistaken for authorities.
         Files.write(old, oldBytes);
         var report = new WorldDataMigrationService().migrate(world);
-        assertEquals(8, report.managedFileCount(), "five legacy authorities, endgame, escrow and classic progression");
+        assertEquals(9, report.managedFileCount(), "five legacy authorities, endgame, escrow, classic progression and bay receipts");
         assertEquals(1, report.migratedFileCount());
         Path backup = world.resolve(BACKUPS).resolve(report.backupDirectory().orElseThrow());
         for (var type : ManagedSavedDataType.values()) {
@@ -60,7 +60,7 @@ final class StationWorldMigrationTest {
         assertEquals(2, manifest.get("manifestSchema").getAsInt());
         assertFalse(manifest.has("sourceSchema"));
         assertFalse(manifest.has("targetSchema"));
-        assertEquals(9, manifest.getAsJsonArray("files").size(), "eight managed files and one previous copy");
+        assertEquals(10, manifest.getAsJsonArray("files").size(), "nine managed files and one previous copy");
         for (var entry : manifest.getAsJsonArray("files")) {
             var row = entry.getAsJsonObject();
             String name = row.get("file").getAsString();
@@ -76,9 +76,10 @@ final class StationWorldMigrationTest {
                 assertEquals("authority", row.get("role").getAsString());
                 // W21b: satellite roots are current schema 4; stations migrate 2 -> 5 (ADR-065).
                 boolean satellites = name.equals(ManagedSavedDataType.SATELLITE_MISSIONS.fileName());
-                // Endgame and classic progression use schema 1; W11b2 escrow uses schema 2.
+                // Endgame, classic progression and bay receipts use schema 1; W11b2 escrow uses schema 2.
                 boolean endgame = name.equals(ManagedSavedDataType.ENDGAME.fileName())
-                        || name.equals(ManagedSavedDataType.CLASSIC_PROGRESSION.fileName());
+                        || name.equals(ManagedSavedDataType.CLASSIC_PROGRESSION.fileName())
+                        || name.equals(ManagedSavedDataType.BAY_RECEIPTS.fileName());
                 // W44 section 2.2: the current journal is root 3.
                 boolean transfers = name.equals(ManagedSavedDataType.ROCKET_TRANSFERS.fileName());
                 assertEquals(endgame ? 1 : satellites ? 4 : transfers ? 3 : 2, row.get("sourceSchema").getAsInt());

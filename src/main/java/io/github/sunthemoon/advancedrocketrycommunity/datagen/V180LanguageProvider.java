@@ -66,6 +66,7 @@ public final class V180LanguageProvider extends LanguageProvider {
         V180StationNoticeLanguage.translations(chinese).forEach(this::add);
         V180BeaconData.language(chinese).forEach(this::add);
         V180SatelliteBayData.language(chinese).forEach(this::add);
+        V180BayReceiptLanguage.entries(chinese).forEach(this::add);
         V180FluidFuelLoaderData.language(chinese).forEach(this::add);
         V180RocketCargoData.language(chinese).forEach(this::add);
         V180ThermiteLanguage.translations(chinese).forEach(this::add);

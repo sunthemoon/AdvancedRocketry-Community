@@ -39,7 +39,7 @@ final class PopulatedWorldDataPreservationTest {
         for (int restart = 0; restart < 3; restart++) {
             WorldDataMigrationService.MigrationReport report = new WorldDataMigrationService().migrate(world);
             assertEquals(MigrationDiagnosticId.DATA_CURRENT, report.diagnosticId());
-            assertEquals(8, report.managedFileCount());
+            assertEquals(9, report.managedFileCount());
             assertEquals(0, report.migratedFileCount());
             assertTrue(report.backupDirectory().isEmpty());
             assertFilesEqual(world, originals);
@@ -80,7 +80,7 @@ final class PopulatedWorldDataPreservationTest {
     }
 
     @ParameterizedTest
-    @EnumSource(value = ManagedSavedDataType.class, names = {"ENDGAME", "RESOURCE_ESCROW", "CLASSIC_PROGRESSION"}, mode = EnumSource.Mode.EXCLUDE)
+    @EnumSource(value = ManagedSavedDataType.class, names = {"ENDGAME", "RESOURCE_ESCROW", "CLASSIC_PROGRESSION", "BAY_RECEIPTS"}, mode = EnumSource.Mode.EXCLUDE)
     void everyPartialCommitFailureRestoresAllPopulatedAuthorities(ManagedSavedDataType failedType) throws Exception {
         Path world = writeWorld(legacyPayloads());
         Map<ManagedSavedDataType, byte[]> originals = capture(world);
@@ -104,7 +104,7 @@ final class PopulatedWorldDataPreservationTest {
     }
 
     @ParameterizedTest
-    @EnumSource(value = ManagedSavedDataType.class, names = {"ENDGAME", "RESOURCE_ESCROW", "CLASSIC_PROGRESSION"}, mode = EnumSource.Mode.EXCLUDE)
+    @EnumSource(value = ManagedSavedDataType.class, names = {"ENDGAME", "RESOURCE_ESCROW", "CLASSIC_PROGRESSION", "BAY_RECEIPTS"}, mode = EnumSource.Mode.EXCLUDE)
     void oneFutureRootBlocksTheWholePopulatedUpgradeBeforeAnyWrite(ManagedSavedDataType futureType) throws Exception {
         Map<ManagedSavedDataType, CompoundTag> payloads = legacyPayloads();
         payloads.get(futureType).putInt("schema_version", futureType.currentSchemaVersion() + 1);
@@ -112,7 +112,7 @@ final class PopulatedWorldDataPreservationTest {
     }
 
     @ParameterizedTest
-    @EnumSource(value = ManagedSavedDataType.class, names = {"ENDGAME", "RESOURCE_ESCROW", "CLASSIC_PROGRESSION"}, mode = EnumSource.Mode.EXCLUDE)
+    @EnumSource(value = ManagedSavedDataType.class, names = {"ENDGAME", "RESOURCE_ESCROW", "CLASSIC_PROGRESSION", "BAY_RECEIPTS"}, mode = EnumSource.Mode.EXCLUDE)
     void malformedAuthorityElementCannotBeReplacedWithAnEmptyCollection(ManagedSavedDataType type) throws Exception {
         Map<ManagedSavedDataType, CompoundTag> payloads = legacyPayloads();
         String field = switch (type) {
@@ -121,7 +121,7 @@ final class PopulatedWorldDataPreservationTest {
             case ROCKET_TRANSFERS -> "transfers";
             case STATIONS -> "stations";
             case SATELLITE_MISSIONS -> "missions";
-            case ENDGAME, RESOURCE_ESCROW, CLASSIC_PROGRESSION -> throw new AssertionError("no legacy schema for this root");
+            case ENDGAME, RESOURCE_ESCROW, CLASSIC_PROGRESSION, BAY_RECEIPTS -> throw new AssertionError("no legacy schema for this root");
         };
         ListTag malformed = new ListTag();
         malformed.add(IntTag.valueOf(7));
@@ -209,12 +209,13 @@ final class PopulatedWorldDataPreservationTest {
         return representable;
     }
 
-    /** Legacy worlds predate v1.7, so they carry no endgame, escrow or classic progression root. */
+    /** Legacy worlds predate v1.7, so they carry no endgame, escrow, classic progression or bay receipt root. */
     private static Map<ManagedSavedDataType, CompoundTag> legacyPayloads() {
         Map<ManagedSavedDataType, CompoundTag> payloads = PopulatedManagedDataFixture.currentPayloads();
         payloads.remove(ManagedSavedDataType.ENDGAME);
         payloads.remove(ManagedSavedDataType.RESOURCE_ESCROW);
         payloads.remove(ManagedSavedDataType.CLASSIC_PROGRESSION);
+        payloads.remove(ManagedSavedDataType.BAY_RECEIPTS);
         payloads.values().forEach(payload -> {
             payload.putInt("schema_version", 1);
             payload.remove("format_epoch");

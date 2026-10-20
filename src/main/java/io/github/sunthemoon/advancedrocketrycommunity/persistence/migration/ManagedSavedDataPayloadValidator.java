@@ -36,6 +36,14 @@ final class ManagedSavedDataPayloadValidator {
                     }
                     yield true;
                 }
+                // W27A-DESIGN section 2: a future or invalid receipt root refuses startup and keeps its bytes, as escrow does.
+                case BAY_RECEIPTS -> {
+                    var loaded = io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceiptCodec.decode(payload);
+                    if (source != null) {
+                        io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceiptBaseline.require(source, loaded);
+                    }
+                    yield true;
+                }
             };
         } catch (RuntimeException exception) {
             throw new SavedDataMigrationException(

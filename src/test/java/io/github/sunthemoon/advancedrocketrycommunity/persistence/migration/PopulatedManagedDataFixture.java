@@ -109,7 +109,22 @@ final class PopulatedManagedDataFixture {
                 .StationWarp.create(id(50), id(51), OWNER, ModIdentity.id("earth"), ModIdentity.id("moon"), 100_000, 40L,
                         List.of(OWNER, id(52))));
         payloads.put(ManagedSavedDataType.CLASSIC_PROGRESSION, progression.save(new CompoundTag()));
+        // W27c1: one INTENT and one durably REJECTED bay receipt.
+        payloads.put(ManagedSavedDataType.BAY_RECEIPTS, io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceiptCodec
+                .encode(new io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceiptRoot(id(60), 2, 3,
+                        List.of(bayReceipt(1, io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceipt.Phase.INTENT),
+                                bayReceipt(2, io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceipt.Phase.REJECTED)))));
         return payloads;
+    }
+
+    private static io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceipt bayReceipt(int n,
+            io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceipt.Phase phase) {
+        String hash = io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNativeResources.hash("w27c1-fixture");
+        return new io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceipt(id(60 + n), n, id(70), new RocketPosition(n, 0, 0),
+                id(80 + n), OWNER, "advancedrocketrycommunity:w27c1_data",
+                io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteKind.DATA, "advancedrocketrycommunity:earth",
+                hash, id(90), hash, null, hash, null, phase, phase.name().equals("REJECTED") ? "INTERRUPTED" : "NONE", false, false,
+                0, 10, 20, 0);
     }
 
     static SavedData load(ManagedSavedDataType type, CompoundTag payload) {
@@ -123,6 +138,7 @@ final class PopulatedManagedDataFixture {
             case RESOURCE_ESCROW -> io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.ResourceEscrowSavedData.load(payload);
             case CLASSIC_PROGRESSION -> io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent
                     .ClassicProgressionSavedData.load(payload);
+            case BAY_RECEIPTS -> io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceiptSavedData.load(payload);
         };
     }
 
