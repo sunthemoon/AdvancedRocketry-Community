@@ -41,8 +41,9 @@ public record EscrowOperation(UUID id, long sequence, UUID owner, long createdTi
         Objects.requireNonNull(nativeBinding).requireOperation(owner, source, destination); nativeBinding.encode();
         EscrowTags.require(sequence > 0 && createdTick >= 0, "Invalid operation counters");
         EscrowTags.bound(payload, EscrowLimits.FLUID_BYTES, 12, 384);
+        // R39 for fluids: a durable record is structural; consumers that act call nativeFluid() first.
         if (kind == Kind.FLUID_PROPULSION_FILL) {
-            EscrowFluidCodec.validateNative(payload);
+            EscrowFluidCodec.validateStructure(payload);
             EscrowTags.require(source.kind() == EscrowEndpoint.Kind.BLOCK_ENTITY
                     && destination.kind() == EscrowEndpoint.Kind.ENTITY
                     && source.level().equals(destination.level())
@@ -51,7 +52,7 @@ public record EscrowOperation(UUID id, long sequence, UUID owner, long createdTi
             EscrowCargoPayload.Cursor cursor;
             if (kind.itemCargo()) {
                 var cargo = EscrowItemCargoPayload.decode(payload); cargo.requireDirection(kind.cargoLoad()); cursor = cargo.cursor();
-            } else { cursor = EscrowCargoPayload.decode(payload).cursor(); }
+            } else { cursor = EscrowCargoPayload.validateStructure(payload); }
             var rocket = rocket(source, destination);
             var device = source == rocket ? destination : source;
             var unit = kind.itemCargo() ? EscrowEndpoint.Unit.CONTAINER : EscrowEndpoint.Unit.TANK;
