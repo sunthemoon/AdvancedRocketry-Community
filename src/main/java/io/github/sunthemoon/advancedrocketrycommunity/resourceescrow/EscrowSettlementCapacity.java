@@ -86,7 +86,8 @@ final class EscrowSettlementCapacity {
                     .findFirst().orElseGet(() -> EscrowInvariant.reference(endpoint));
             observations.add(new EscrowSettlementIntent.Observation(endpoint,
                     new EscrowPrefix.State(prospective.id(), epoch, last.endpoint().afterSignature(), markers), true,
-                    Long.MAX_VALUE, EscrowSignatureKind.settlement(endpoint), invariant));
+                    EscrowSignatureKind.settlement(endpoint) == EscrowSignatureKind.ITEM_BUFFER_V1 ? 0 : Long.MAX_VALUE,
+                    EscrowSignatureKind.settlement(endpoint), invariant));
         }
         // NUL uses two modified-UTF bytes per one UTF-8 byte: the worst allowed actor-name encoding.
         var hypothetical = prospective.replace(prospective.records().stream().map(op -> component.contains(op)

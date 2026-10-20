@@ -5,16 +5,17 @@ import java.util.Objects;
 import java.util.UUID;
 import net.minecraft.nbt.CompoundTag;
 
-/** Fluid admissions and explicit operator floor intents; neither enables production admission. */
+/** Resource admissions and explicit operator floor intents; neither enables production admission. */
 public record EscrowOperation(UUID id, long sequence, UUID owner, long createdTick, Phase phase,
                               EscrowReason reason, CompoundTag payload, String payloadHash,
                               EscrowEndpoint source, EscrowEndpoint destination, EscrowGuard guard,
                               Kind kind, CompoundTag settlement, EscrowNativeBinding nativeBinding) {
     public enum Kind {
         FLUID_PROPULSION_FILL, TRANSFER_FLOOR_RETIRE, FLUID_CARGO_LOAD, FLUID_CARGO_UNLOAD,
-        /** Reserved names only; item operations are refused until D-K. */
         ITEM_CARGO_LOAD, ITEM_CARGO_UNLOAD;
-        public boolean cargo() { return this == FLUID_CARGO_LOAD || this == FLUID_CARGO_UNLOAD; }
+        public boolean itemCargo() { return this == ITEM_CARGO_LOAD || this == ITEM_CARGO_UNLOAD; }
+        public boolean cargo() { return this == FLUID_CARGO_LOAD || this == FLUID_CARGO_UNLOAD || itemCargo(); }
+        public boolean cargoLoad() { return this == FLUID_CARGO_LOAD || this == ITEM_CARGO_LOAD; }
         public boolean transfer() { return this == FLUID_PROPULSION_FILL || cargo(); }
     }
     public enum Phase { PREPARED, STALLED, REPAIR, SETTLING_ACCEPT, SETTLING_ABANDON }
@@ -35,6 +36,7 @@ public record EscrowOperation(UUID id, long sequence, UUID owner, long createdTi
         Objects.requireNonNull(id); Objects.requireNonNull(owner); Objects.requireNonNull(phase);
         Objects.requireNonNull(reason); Objects.requireNonNull(source); Objects.requireNonNull(destination);
         Objects.requireNonNull(guard); Objects.requireNonNull(kind); Objects.requireNonNull(settlement);
+        if (kind.itemCargo()) { requireItemEndpoints(kind, source, destination); }
         Objects.requireNonNull(nativeBinding).requireOperation(owner, source, destination); nativeBinding.encode();
         EscrowTags.require(sequence > 0 && createdTick >= 0, "Invalid operation counters");
         EscrowTags.bound(payload, EscrowLimits.FLUID_BYTES, 12, 384);
@@ -51,15 +53,20 @@ public record EscrowOperation(UUID id, long sequence, UUID owner, long createdTi
                     && source.level().equals(destination.level())
                     && guard.rocket().equals(destination.logicalRocket()), "Invalid propulsion endpoints");
         } else if (kind.cargo()) {
-            var cargo = EscrowCargoPayload.decode(payload);
+            EscrowCargoPayload.Cursor cursor;
+            if (kind.itemCargo()) {
+                var cargo = EscrowItemCargoPayload.decode(payload); cargo.requireDirection(kind.cargoLoad()); cursor = cargo.cursor();
+            } else { cursor = EscrowCargoPayload.decode(payload).cursor(); }
             var rocket = rocket(source, destination);
             var device = source == rocket ? destination : source;
+            var unit = kind.itemCargo() ? EscrowEndpoint.Unit.CONTAINER : EscrowEndpoint.Unit.TANK;
+            EscrowTags.require(!kind.itemCargo() || EscrowAdapterIds.itemCargoDevice(device), "Invalid item cargo device");
             EscrowTags.require(EscrowAdapterIds.nativeRocket(rocket) && device.kind() == EscrowEndpoint.Kind.BLOCK_ENTITY
-                    && rocket.unit() == EscrowEndpoint.Unit.TANK && device.unit() == EscrowEndpoint.Unit.TANK
+                    && rocket.unit() == unit && device.unit() == unit
                     && source.level().equals(destination.level()) && guard.rocket().equals(rocket.logicalRocket())
-                    && (kind == Kind.FLUID_CARGO_LOAD ? rocket == destination : rocket == source)
+                    && (kind.cargoLoad() ? rocket == destination : rocket == source)
                     && nativeBinding.kind() == EscrowSignatureKind.ROCKET_COMPOSITE_V1
-                    && (!nativeBinding.complete() || cargo.cursor().snapshot().equals(nativeBinding.snapshot())),
+                    && (!nativeBinding.complete() || cursor.snapshot().equals(nativeBinding.snapshot())),
                     "Invalid cargo endpoints or snapshot binding");
         } else {
             EscrowTags.require(kind == Kind.TRANSFER_FLOOR_RETIRE, "Reserved cargo kind is not implemented");
@@ -94,6 +101,14 @@ public record EscrowOperation(UUID id, long sequence, UUID owner, long createdTi
 
     @Override public CompoundTag payload() { return payload.copy(); }
     @Override public CompoundTag settlement() { return settlement.copy(); }
+    private static void requireItemEndpoints(Kind kind, EscrowEndpoint source, EscrowEndpoint destination) {
+        var rocket = kind.cargoLoad() ? destination : source;
+        var device = kind.cargoLoad() ? source : destination;
+        if (!EscrowAdapterIds.nativeRocket(rocket) || rocket.unit() != EscrowEndpoint.Unit.CONTAINER
+                || !EscrowAdapterIds.itemCargoDevice(device, kind.cargoLoad())) {
+            throw new EscrowItemStackCodec.Refusal(EscrowItemStackCodec.Status.INVALID_DATA, "Invalid item cargo direction or device");
+        }
+    }
     /** Whole-rocket authority is independent of transfer direction, including unload and floor intents. */
     public EscrowEndpoint rocket() { return rocket(source, destination); }
     public EscrowEndpoint device() { return source.kind() == EscrowEndpoint.Kind.BLOCK_ENTITY ? source : destination; }
