@@ -1082,21 +1082,34 @@ root, `BAY_RECEIPTS` (`data/advancedrocketrycommunity_bay_receipts.dat`, epoch `
 4 MiB section of at most 4,096 receipts, 128 per owner and 1 KiB each. An existing file is loaded with the
 load-only lookup and indexed at `ServerStartingEvent`, before the first tick; a future or invalid root
 refuses whole-world startup and keeps its bytes, as RESOURCE_ESCROW does. The checked writer keeps the
-W11b1 behaviour (one captured generation and one successor, exact acknowledgements, bounded readback,
-three unresolved failures make the store unavailable), with encoding, digest, staging, force, readback and
-replacement off the server thread, and its generation digest is the shared `CanonicalNbtDigest`.
+W11b1 behaviour (one captured generation and one successor, exact acknowledgements, bounded readback),
+with encoding, digest, staging, force, readback and replacement off the server thread, and its generation
+digest is the shared `CanonicalNbtDigest`. A definite failure before replacement cancels the attempt; only an
+unknown outcome is retried as the exact candidate every 200 ticks; definite and unknown failures both count
+towards the three that make the store unavailable. Root's R37 decisions on the independent review (W27C1F,
+2026-10-20) add: an unavailable store with no write in flight writes one generation with no new change at
+most every 200 ticks, and its exact commit makes the store available again; each op and each satellite has
+at most one change in flight, and a second one answers BUSY until the first is acknowledged, so a definite
+failure restores every change exactly; an `Error` on the IO thread of this writer or of the escrow ledger
+writer posts an unknown outcome, so neither a tick nor a stop drain waits for ever.
 
 Root records the contract delta from W11B3-DESIGN section 2 (2026-10-20): the one
 `EscrowAdmissionAuthority` belongs to `EscrowRuntime`, not to a coordinator, and each store attaches to the
-delegate that the runtime registered (B3-U, W93). W27c1 registers the BAY consumer as NOT_LOADED at
-startup and loads it in the same handler; until both consumers are loaded, `tryReserve` answers
-UNAVAILABLE for both. The frozen `tryReserve` and `tryRetain` results and the no-release rule of W27A
+delegate that the runtime registered (B3-U, W93). W27c1 registers the BAY consumer as NOT_LOADED together
+with PROPULSION when the runtime creates the authority (at `ServerStartingEvent`, or earlier when a ledger
+binds while the Levels prepare), so the authority never exists without BAY, and loads it in the
+`ServerStartingEvent` handler; until both consumers are loaded, `tryReserve` answers UNAVAILABLE for both and
+`tryRetain` answers UNAVAILABLE. W27c1 also adds the non-charging queries `checkReserve` and `checkRetain`,
+with the same results; they reserve nothing, no consumer may act on a check alone, and the bay store refuses
+a charge that answers differently from its check. The frozen `tryReserve` and `tryRetain` results and the no-release rule of W27A
 section 2 are unchanged: the pending union (64 per server, 8 per rocket) counts unique durable, queued,
 captured and unknown operations of both stores, including REPAIR and released receipts; the bay alone
 also holds the retained union (4,096, 128 per owner, 1 KiB each), which includes REJECTED receipts.
 
 A bay refuses a package while a receipt blocks it (moved from W27b). The audited operator command
 `/arce bay receipt retire-rejected <satellite>` is the only online receipt deletion (W27A section 5, N5).
+It writes an `outcome=REQUESTED` audit line when the removal is queued and a second line with the final
+outcome (R37), so an outcome that never resolves still leaves the operator's action audited.
 Nothing in production creates a receipt: the deployment, the registry sequence, the launch and
 decommission fences and the transfer hook are W27c2 to W27d, and admission stays disabled until W27e.
 
