@@ -19,6 +19,23 @@ class EscrowNoWorkTurnTest {
 
     @ParameterizedTest @ValueSource(strings = {"empty", "full", "disabled", "binding"})
     void waitingCargoNoLongerEligibleYieldsToEligibleDevice(String change) throws Exception {
+        Checks.waitingCargoNoLongerEligibleYieldsToEligibleDevice(temp, change);
+    }
+    @ParameterizedTest @ValueSource(booleans = {false, true})
+    void emptyFuelLoaderReceivesBusyTokenThenYieldsOnEmpty(boolean queueVisit) throws Exception {
+        Checks.emptyFuelLoaderReceivesBusyTokenThenYieldsOnEmpty(temp, queueVisit);
+    }
+    @ParameterizedTest @ValueSource(booleans = {false, true})
+    void closedFuelSwitchYieldsBusyTokenWithoutBypassingOccupancy(boolean queueVisit) throws Exception {
+        Checks.closedFuelSwitchYieldsBusyTokenWithoutBypassingOccupancy(temp, queueVisit);
+    }
+    @Test void cancellingQueuedCargoBeforeTicketHandsTurnToEligibleDevice() throws Exception {
+        Checks.cancellingQueuedCargoBeforeTicketHandsTurnToEligibleDevice(temp);
+    }
+
+    // Defer runtime type resolution until the capability bootstrap has defined it, as in the audit fixtures.
+    private static final class Checks {
+    static void waitingCargoNoLongerEligibleYieldsToEligibleDevice(Path temp, String change) throws Exception {
         try (var f = new EscrowTurnYieldFixture(temp)) {
             var role = change.equals("full") ? RocketCargoRole.UNLOAD : RocketCargoRole.LOAD;
             var first = f.cargo(role, 1000); var second = f.cargo(RocketCargoRole.LOAD, 1000);
@@ -53,8 +70,7 @@ class EscrowNoWorkTurnTest {
         }
     }
 
-    @ParameterizedTest @ValueSource(booleans = {false, true})
-    void emptyFuelLoaderReceivesBusyTokenThenYieldsOnEmpty(boolean queueVisit) throws Exception {
+    static void emptyFuelLoaderReceivesBusyTokenThenYieldsOnEmpty(Path temp, boolean queueVisit) throws Exception {
         try (var f = new EscrowTurnYieldFixture(temp)) {
             var first = f.fuel(0); var second = f.cargo(RocketCargoRole.LOAD, 1000);
             var root = first.root().orElseThrow();
@@ -72,8 +88,7 @@ class EscrowNoWorkTurnTest {
         }
     }
 
-    @ParameterizedTest @ValueSource(booleans = {false, true})
-    void closedFuelSwitchYieldsBusyTokenWithoutBypassingOccupancy(boolean queueVisit) throws Exception {
+    static void closedFuelSwitchYieldsBusyTokenWithoutBypassingOccupancy(Path temp, boolean queueVisit) throws Exception {
         try (var f = new EscrowTurnYieldFixture(temp)) {
             var first = f.fuel(0); var second = f.cargo(RocketCargoRole.LOAD, 1000);
             f.occupied(true);
@@ -89,7 +104,7 @@ class EscrowNoWorkTurnTest {
         }
     }
 
-    @Test void cancellingQueuedCargoBeforeTicketHandsTurnToEligibleDevice() throws Exception {
+    static void cancellingQueuedCargoBeforeTicketHandsTurnToEligibleDevice(Path temp) throws Exception {
         try (var f = new EscrowTurnYieldFixture(temp)) {
             var first = f.cargo(RocketCargoRole.LOAD, 1000); var second = f.cargo(RocketCargoRole.LOAD, 1000);
             assertTrue(f.active.claim()); assertEquals(RocketCargoStatus.OTHER_TRANSFER_PENDING, first.attempt());
@@ -99,5 +114,6 @@ class EscrowNoWorkTurnTest {
             assertEquals(0, f.runtime.fills(f.server).size()); f.unchanged();
             assertEquals(RocketCargoStatus.READY, second.attempt()); assertTrue(second.claimTransferTurn());
         }
+    }
     }
 }
