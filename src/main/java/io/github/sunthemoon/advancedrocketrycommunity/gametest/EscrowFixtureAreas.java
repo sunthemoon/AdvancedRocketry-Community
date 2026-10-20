@@ -24,8 +24,8 @@ import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
 /**
- * W111: every remote fixture area of the {@value #BATCH} batch is generated, saved and flushed before the batch's first
- * test tick, and stays loaded until the batch ends.
+ * W111: every remote fixture area of the {@value #CORE} and {@value #RETRY} batches is generated, saved and flushed
+ * before the batch's first test tick, and stays loaded until the batch ends.
  * <p>Each of these tests holds a START ticket of radius {@value #RADIUS} on a fixture chunk far from the others. On hosted
  * runners, generating that 5x5 FULL area and the generation pyramid around it took up to 165 paced ticks, inside the
  * tests' unchanged timeouts. Vanilla's eager save of the newly FULL chunks, and the unload save of a whole area when a
@@ -33,11 +33,14 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
  * the Level's single region IO worker. The batch hooks do that work while no test runs: a GameTest timeout counts the
  * ticks after its test starts, and the hooks run before the batch's first test tick and after its last one. Their own
  * ticket type keeps every area loaded when a test removes its START ticket.
+ * <p>The two forced-supersession retry tests run in their own batch. Their 40-tick proof windows must not share the
+ * region IO worker's serial {@code synchronize(true)} with the core tests' forces, which all start at tick 0 now.
  */
 @GameTestHolder(AdvancedRocketryCommunity.MOD_ID)
 @PrefixGameTestTemplate(false)
-public final class EscrowCoreFixtureAreas {
-    public static final String BATCH = "escrow_core";
+public final class EscrowFixtureAreas {
+    public static final String CORE = "escrow_core";
+    public static final String RETRY = "escrow_proof_retry";
     /** The radius of the tests' START tickets: the fixture chunk is entity-ticking and its 5x5 area FULL. */
     static final int RADIUS = 2;
     // Wall-clock bounds of the hooks; the GameTest timeouts count ticks and do not run while a hook blocks. They only
@@ -45,35 +48,52 @@ public final class EscrowCoreFixtureAreas {
     // minutes (W111). A prepare that runs out fails each of the batch's remote-fixture tests at its start.
     private static final long PREPARE_NANOS = TimeUnit.SECONDS.toNanos(600);
     private static final long RELEASE_NANOS = TimeUnit.SECONDS.toNanos(60);
-    private record Batch(ServerLevel level, List<ChunkPos> centres, boolean ready) { }
-    // Batch hooks and test functions run serially on the server thread.
+    private record Batch(String name, ServerLevel level, List<ChunkPos> centres, boolean ready) { }
+    // Batch hooks and test functions run serially on the server thread; batches never overlap.
     private static Batch active;
 
-    private EscrowCoreFixtureAreas() { }
+    private EscrowFixtureAreas() { }
 
     /** Every fixture chunk of the batch whose test holds a START ticket of {@link #RADIUS}. */
-    static List<ChunkPos> centres() {
+    static List<ChunkPos> centres(String batch) {
         var centres = new ArrayList<ChunkPos>();
-        centres.add(new ChunkPos(EscrowCoreGameTests.JOINT_FIXTURE));
-        centres.add(new ChunkPos(EscrowCoreGameTests.OWN_FIXTURE));
-        centres.add(new ChunkPos(EscrowProofRetryGameTests.fixture(false)));
-        centres.add(new ChunkPos(EscrowProofRetryGameTests.fixture(true)));
-        for (int missing = 0; missing < EscrowReconciliationGameTests.FIXTURES; missing++) {
-            centres.add(new ChunkPos(EscrowReconciliationGameTests.fixture(missing)));
+        if (batch.equals(CORE)) {
+            centres.add(new ChunkPos(EscrowCoreGameTests.JOINT_FIXTURE));
+            centres.add(new ChunkPos(EscrowCoreGameTests.OWN_FIXTURE));
+            for (int missing = 0; missing < EscrowReconciliationGameTests.FIXTURES; missing++) {
+                centres.add(new ChunkPos(EscrowReconciliationGameTests.fixture(missing)));
+            }
+        } else if (batch.equals(RETRY)) {
+            centres.add(new ChunkPos(EscrowProofRetryGameTests.fixture(false)));
+            centres.add(new ChunkPos(EscrowProofRetryGameTests.fixture(true)));
+        } else {
+            throw new IllegalArgumentException("No escrow fixture areas for batch " + batch);
         }
         return List.copyOf(centres);
     }
 
-    @BeforeBatch(batch = BATCH)
-    public static void prepareBatch(ServerLevel level) {
-        if (active != null) { throw new IllegalStateException("The previous escrow_core batch did not release its fixture areas"); }
-        active = prepare(level, centres(), true);
+    @BeforeBatch(batch = CORE)
+    public static void prepareCore(ServerLevel level) { open(level, CORE); }
+
+    @AfterBatch(batch = CORE)
+    public static void releaseCore(ServerLevel level) { close(level, CORE); }
+
+    @BeforeBatch(batch = RETRY)
+    public static void prepareRetry(ServerLevel level) { open(level, RETRY); }
+
+    @AfterBatch(batch = RETRY)
+    public static void releaseRetry(ServerLevel level) { close(level, RETRY); }
+
+    private static void open(ServerLevel level, String name) {
+        if (active != null) { throw new IllegalStateException("Batch " + active.name() + " did not release its escrow fixture areas"); }
+        active = prepare(level, name, centres(name), true);
     }
 
-    @AfterBatch(batch = BATCH)
-    public static void releaseBatch(ServerLevel level) {
+    private static void close(ServerLevel level, String name) {
         Batch batch = active; active = null;
-        if (batch == null || batch.level() != level) { throw new IllegalStateException("escrow_core fixture areas have a mismatched batch lifecycle"); }
+        if (batch == null || !batch.name().equals(name) || batch.level() != level) {
+            throw new IllegalStateException(name + " escrow fixture areas have a mismatched batch lifecycle");
+        }
         long started = System.nanoTime();
         var chunks = level.getChunkSource();
         for (ChunkPos centre : batch.centres()) {
@@ -91,7 +111,7 @@ public final class EscrowCoreFixtureAreas {
         boolean flushed = await(level, flush::isDone, System.nanoTime() + RELEASE_NANOS) && !flush.isCompletedExceptionally();
         var loaded = batch.centres().stream().filter(centre -> VanillaChunkSave.holder(level, centre) != null).toList();
         AdvancedRocketryCommunity.LOGGER.info("ARCE_GAMETEST_FIXTURE_AREAS batch={} stage=release areas={} unloaded={} flushed={} ms={} still_loaded={}",
-                BATCH, batch.centres().size(), unloaded, flushed, (System.nanoTime() - started) / 1_000_000L,
+                name, batch.centres().size(), unloaded, flushed, (System.nanoTime() - started) / 1_000_000L,
                 loaded.stream().map(centre -> centre + " level " + VanillaChunkSave.holder(level, centre).getTicketLevel()
                         + " " + chunks.getChunkDebugData(centre)).toList());
     }
@@ -102,11 +122,11 @@ public final class EscrowCoreFixtureAreas {
      */
     public static boolean prepared(ServerLevel level, ChunkPos centre) {
         Batch batch = active;
-        if (batch == null) { return prepare(level, List.of(centre), false).ready(); }
+        if (batch == null) { return prepare(level, "single test", List.of(centre), false).ready(); }
         return batch.ready() && batch.level() == level && batch.centres().contains(centre) && generated(level, centre);
     }
 
-    private static Batch prepare(ServerLevel level, List<ChunkPos> centres, boolean hold) {
+    private static Batch prepare(ServerLevel level, String name, List<ChunkPos> centres, boolean hold) {
         long started = System.nanoTime(), deadline = started + PREPARE_NANOS;
         var chunks = level.getChunkSource();
         if (hold) { centres.forEach(centre -> chunks.addRegionTicket(Native.HOLD, centre, RADIUS, centre)); }
@@ -124,8 +144,8 @@ public final class EscrowCoreFixtureAreas {
         var flush = chunks.chunkMap.worker.synchronize(true);
         boolean flushed = await(level, flush::isDone, deadline) && !flush.isCompletedExceptionally();
         AdvancedRocketryCommunity.LOGGER.info("ARCE_GAMETEST_FIXTURE_AREAS batch={} stage=prepare areas={} held={} generated={} saved={} drained={} flushed={} ms={}",
-                BATCH, centres.size(), hold, generated, saved, drained, flushed, (System.nanoTime() - started) / 1_000_000L);
-        return new Batch(level, centres, generated && flushed);
+                name, centres.size(), hold, generated, saved, drained, flushed, (System.nanoTime() - started) / 1_000_000L);
+        return new Batch(name, level, centres, generated && flushed);
     }
 
     /** The centre is entity-ticking, and every chunk of its FULL area may be saved: no generation step is pending. */
@@ -173,7 +193,7 @@ public final class EscrowCoreFixtureAreas {
 
     // Lazy native access keeps the area list's unit test independent of Minecraft bootstrap and SRG names.
     private static final class Native {
-        private static final TicketType<ChunkPos> HOLD = TicketType.create("arce_escrow_core_fixture", Comparator.comparingLong(ChunkPos::toLong));
+        private static final TicketType<ChunkPos> HOLD = TicketType.create("arce_escrow_fixture", Comparator.comparingLong(ChunkPos::toLong));
         // Development-only access to ChunkMap.processUnloads, like VanillaChunkSave; no AT or mixin.
         private static final Method PROCESS_UNLOADS = ObfuscationReflectionHelper.findMethod(ChunkMap.class, "m_140353_", BooleanSupplier.class);
     }

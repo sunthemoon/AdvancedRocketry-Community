@@ -27,7 +27,7 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 @GameTestHolder(ModIdentity.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class EscrowCoreGameTests {
-    // Remote fixture chunks; EscrowCoreFixtureAreas generates, saves and holds their areas for the whole batch (W111).
+    // Remote fixture chunks; EscrowFixtureAreas generates, saves and holds their areas for the whole batch (W111).
     static final BlockPos JOINT_FIXTURE = new BlockPos(530_001, 100, 530_001);
     static final BlockPos OWN_FIXTURE = new BlockPos(520_001, 100, 520_001);
     private EscrowCoreGameTests() { }
@@ -38,7 +38,7 @@ public final class EscrowCoreGameTests {
         level.getChunkSource().addRegionTicket(net.minecraft.server.level.TicketType.START, chunk, 2, net.minecraft.util.Unit.INSTANCE);
         level.getChunk(chunk.x, chunk.z);
         // W111: the batch hook generated, saved and flushed this area before the timed ticks started.
-        helper.assertTrue(EscrowCoreFixtureAreas.prepared(level, chunk), "Joint fixture area was not prepared before the batch");
+        helper.assertTrue(EscrowFixtureAreas.prepared(level, chunk), "Joint fixture area was not prepared before the batch");
         var first = EscrowTestEndpoints.create(level, position, UUID.randomUUID());
         var op1 = first.operation(1); first.apply(op1);
         var second = EscrowTestEndpoints.chainSource(first, position.offset(4, 0, 0));
@@ -90,7 +90,7 @@ public final class EscrowCoreGameTests {
         level.getChunkSource().addRegionTicket(net.minecraft.server.level.TicketType.START, chunk, 2, net.minecraft.util.Unit.INSTANCE);
         level.getChunk(chunk.x, chunk.z); // Explicit fixed test setup, never endpoint-request loading.
         // W111: the batch hook generated, saved and flushed this area before the timed ticks started.
-        helper.assertTrue(EscrowCoreFixtureAreas.prepared(level, chunk), "Own-store fixture area was not prepared before the batch");
+        helper.assertTrue(EscrowFixtureAreas.prepared(level, chunk), "Own-store fixture area was not prepared before the batch");
         var fixture = EscrowTestEndpoints.create(level, position, UUID.randomUUID());
         var op = fixture.operation(1); fixture.apply(op);
         level.entityManager.storeChunkSections(chunk.toLong(), value -> { });

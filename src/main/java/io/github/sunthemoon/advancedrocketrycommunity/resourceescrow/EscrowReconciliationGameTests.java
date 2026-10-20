@@ -23,7 +23,7 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 @GameTestHolder(ModIdentity.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class EscrowReconciliationGameTests {
-    /** The scenarios' remote fixtures, one per {@code missing} value; EscrowCoreFixtureAreas holds their areas (W111). */
+    /** The scenarios' remote fixtures, one per {@code missing} value; EscrowFixtureAreas holds their areas (W111). */
     public static final int FIXTURES = 6;
     private EscrowReconciliationGameTests() { }
 
@@ -87,7 +87,7 @@ public final class EscrowReconciliationGameTests {
             level.getChunkSource().addRegionTicket(TicketType.START, chunk, 2, Unit.INSTANCE);
             level.getChunk(chunk.x, chunk.z); // Fixed test setup, not reconciliation loading.
             // W111: the escrow_core batch hook generated, saved and flushed this area before the timed ticks started.
-            helper.assertTrue(io.github.sunthemoon.advancedrocketrycommunity.gametest.EscrowCoreFixtureAreas.prepared(level, chunk),
+            helper.assertTrue(io.github.sunthemoon.advancedrocketrycommunity.gametest.EscrowFixtureAreas.prepared(level, chunk),
                     "Reconciliation fixture area was not prepared before the batch");
             helper.onEachTick(this::tick);
         }

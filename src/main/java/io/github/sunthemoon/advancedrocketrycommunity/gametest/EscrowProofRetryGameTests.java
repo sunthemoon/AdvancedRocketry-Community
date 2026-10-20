@@ -29,7 +29,7 @@ public final class EscrowProofRetryGameTests {
     private static final int TIMEOUT_TICKS = PREPARATION_TICKS + 2 * PROOF_TICKS + 100;
     private EscrowProofRetryGameTests() { }
 
-    /** The remote fixture of each scenario; EscrowCoreFixtureAreas prepares and holds its area (W111). */
+    /** The remote fixture of each scenario; EscrowFixtureAreas prepares and holds its area (W111). */
     static BlockPos fixture(boolean entity) { return new BlockPos(entity ? 548_001 : 546_001, 100, 546_001); }
 
     static boolean entityCaptureWindow(long tick) {
@@ -39,12 +39,13 @@ public final class EscrowProofRetryGameTests {
         return phase > 0 && phase + PROOF_TICKS < 6_000;
     }
 
-    @GameTest(template = "empty", batch = "escrow_core", timeoutTicks = TIMEOUT_TICKS)
+    // W111: their own batch, so that no other test's force shares the region IO worker inside their 40-tick windows.
+    @GameTest(template = "empty", batch = EscrowFixtureAreas.RETRY, timeoutTicks = TIMEOUT_TICKS)
     public static void supersededTerrainProofRetriesTheSameFrontierAfterBackoff(GameTestHelper helper) {
         new Scenario(helper, false).start();
     }
 
-    @GameTest(template = "empty", batch = "escrow_core", timeoutTicks = TIMEOUT_TICKS)
+    @GameTest(template = "empty", batch = EscrowFixtureAreas.RETRY, timeoutTicks = TIMEOUT_TICKS)
     public static void supersededEntityProofRetriesTheSameFrontierAfterBackoff(GameTestHelper helper) {
         new Scenario(helper, true).start();
     }
@@ -74,7 +75,7 @@ public final class EscrowProofRetryGameTests {
             level.getChunkSource().addRegionTicket(TicketType.START, chunk, 2, Unit.INSTANCE);
             level.getChunk(chunk.x, chunk.z);
             // W111: the batch hook generated, saved and flushed this area before the timed ticks started.
-            helper.assertTrue(EscrowCoreFixtureAreas.prepared(level, chunk), "Retry fixture area was not prepared before the batch");
+            helper.assertTrue(EscrowFixtureAreas.prepared(level, chunk), "Retry fixture area was not prepared before the batch");
             fixture =EscrowTestEndpoints.create(level, position, UUID.randomUUID());
             var operation = fixture.operation(1); fixture.apply(operation);
             // Request this nonempty entity slot's disk load now, rather than waiting for the surrounding
