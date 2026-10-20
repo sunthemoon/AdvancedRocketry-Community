@@ -125,6 +125,10 @@ final class RocketOrdinaryRetirement {
 
     boolean pending(UUID logical) { return pending.containsKey(logical); }
     int size() { return pending.size(); }
+    /** Read-only, for tests: the attempts an entry for L has started so far, or -1 without one. */
+    int attempts(UUID logical) { var entry = pending.get(logical); return entry == null ? -1 : entry.attempts; }
+    /** Read-only, for tests: the last wait or failure reason of the entry for L, or null. */
+    String reason(UUID logical) { var entry = pending.get(logical); return entry == null ? null : entry.reason; }
 
     /**
      * Whether a return of T through {@code survivor} may begin. Nothing has changed yet, so a refusal changes nothing
@@ -205,8 +209,7 @@ final class RocketOrdinaryRetirement {
         }
         live.remove(record.transferId()); settled.add(record.transferId());
         var entry = new Pending(server, journal, record, survivor.getUUID(), site, offlineAllowed, effects);
-        var origin = record.sourceSnapshot().sourceOrigin();
-        entry.census.add(new RocketRetirementProof.Slot(record.sourceSnapshot().sourceDimension(), new ChunkPos(origin.x() >> 4, origin.z() >> 4)));
+        entry.census.add(RocketRetirementProof.Slot.origin(record.sourceSnapshot()));
         discarded.forEach(candidate -> addSlot(entry, candidate));
         entry.token = held.take();
         entry.created = now; entry.notBefore = now;
@@ -303,8 +306,14 @@ final class RocketOrdinaryRetirement {
             if (entry.token == null) { fail(entry, "BUSY", now, 1, false); return; }
         }
         if (!supported) { removeUnproved(server, entry); return; }
-        // The ordinary origin ticket the flight held; never a governed or margin ticket (W90).
+        // The ordinary origin tickets the flight held; never a governed or margin ticket (W90). W98-R3: each census column
+        // that is an end's origin is refreshed, so a discarded destination copy's column outlives failed attempts.
         RocketTransferEntities.keepLoaded(level, record.sourceSnapshot(), record.transferId());
+        var destination = record.destinationSnapshot();
+        var destinationLevel = RocketTransferEntities.level(server, destination.sourceDimension());
+        if (destinationLevel != null && entry.census.contains(RocketRetirementProof.Slot.origin(destination))) {
+            RocketTransferEntities.refreshOriginTicket(destinationLevel, destination, record.transferId());
+        }
         entry.state = State.PROVING; entry.attempt = ++attemptIds; entry.attempts++;
         entry.started = now; entry.frozen = frozen; entry.cursor = 0; entry.sink = sink(server);
         prove(server, entry, now);

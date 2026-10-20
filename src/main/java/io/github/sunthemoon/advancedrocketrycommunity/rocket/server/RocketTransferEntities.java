@@ -437,6 +437,11 @@ final class RocketTransferEntities {
         loadOrigin(level, snapshot);
     }
 
+    /** W116 (W98-R3): the ordinary flight ticket on an end's origin column, refreshed as {@link #keepLoaded} does, with no load. */
+    static void refreshOriginTicket(ServerLevel level, RocketStructureSnapshot snapshot, UUID transferId) {
+        refreshFlightTicket(level, snapshot, transferId);
+    }
+
     /** W83b (Root decision R32 item 2): the destination end's flight tickets over its ticket set, then today's origin load. */
     static void keepDestinationLoaded(ServerLevel level, RocketStructureSnapshot destination, UUID transferId) {
         addDestinationTickets(transferId, destination, levelTickets(level.getServer()));

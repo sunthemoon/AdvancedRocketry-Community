@@ -281,6 +281,8 @@ public final class RocketSourceRetirementGameTests {
         }
 
         abstract void act();
+        /** The fixture's bounded wait in ticks, inside the test's timeout (W116's longer cases raise both together). */
+        int bound() { return 380; }
         /** Work before the retirement wait; true once the record may be retired. */
         boolean before() { return true; }
         void retired() { }
@@ -301,7 +303,7 @@ public final class RocketSourceRetirementGameTests {
         void tick() {
             if (closed) { return; }
             try {
-                helper.assertTrue(++waits < 380, "Source retirement fixture exceeded its bounded wait");
+                helper.assertTrue(++waits < bound(), "Source retirement fixture exceeded its bounded wait");
                 if (!acted) {
                     if (!ready()) { pacer.pace(); return; }
                     directory = Files.createTempDirectory("arce-w98-retire-");

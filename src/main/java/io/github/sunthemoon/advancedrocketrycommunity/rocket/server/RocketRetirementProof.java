@@ -1,5 +1,6 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +28,12 @@ final class RocketRetirementProof {
     /** One census slot: an entity-section column of one Level. */
     record Slot(ResourceLocation dimension, ChunkPos chunk) {
         Slot { Objects.requireNonNull(dimension); Objects.requireNonNull(chunk); }
+
+        /** An end's origin column, where the ordinary flight holds its ticket. */
+        static Slot origin(RocketStructureSnapshot snapshot) {
+            var origin = snapshot.sourceOrigin();
+            return new Slot(snapshot.sourceDimension(), new ChunkPos(origin.x() >> 4, origin.z() >> 4));
+        }
     }
 
     /**
