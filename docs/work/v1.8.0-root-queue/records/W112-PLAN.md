@@ -1,7 +1,7 @@
 # W112: resumable cargo preparation plan
 
-Status: original local verification complete; independent review follow-ups are
-implemented with verification in progress (see W112F in the record). Base:
+Status: original implementation and W112F review follow-ups are locally verified;
+Root's review/merge of the follow-ups remains pending (see W112F in the record). Base:
 `9f6668aadd64015f669810a00b75f6254b6a02a8`. Results: [W112](W112.md).
 Authority: TASK-W112, the frozen [cargo design](W11CD-DESIGN.md), sections 2.3,
 2.4 and 3.2, and ADR-065 section 4.1.1. This is the pre-Java persistence plan.
@@ -58,8 +58,10 @@ ADR/risk/status/ledger or S2 changes. No upstream files are imported.
 Original checkpoint: the committed isolated tests, full unit suite and A1 run are
 recorded in W112.md. Independent review found that the unload test called `remove`
 rather than vanilla `setRemoved`, the terminal-successor gate missed the cursor,
-and native-factory suppliers had no direct test. W112F adds these checks; the
-original runs do not establish their outcomes. The Overworld's existing `EscrowRuntime`
+and native-factory suppliers had no direct test. W112F adds and passes these checks
+on `a8076dcf`; the original runs do not establish their outcomes. W112F also enforces
+the 40-server-tick lifetime and ticket-owned work admission, with no cargo-chain or
+replay-exclusion change. The Overworld's existing `EscrowRuntime`
 capability owns the single preparation slot, not the common-setup rocket manager;
 this avoids retaining world state or the setup thread across server sessions.
 Native-envelope publication checks run separately for BEFORE and AFTER so their
