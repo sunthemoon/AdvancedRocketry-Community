@@ -164,18 +164,7 @@ public final class EscrowLoaderAdmission {
      */
     private static EscrowCoordinator.Fill create(MinecraftServer server, EscrowRuntime runtime, UUID ledger,
                                                  EscrowNativeBinding.Admission admission, Consumer<Boolean> completion) {
-        var op = admission.operation();
-        if (EscrowCoordinator.invalid(op)) { return EscrowCoordinator.Fill.INVALID; }
-        if (op.sequence() != 1) { return EscrowCoordinator.Fill.STALE; }
-        var refusal = EscrowCoordinator.fillRefusal(EscrowLedger.empty(ledger), List.of(), admission);
-        if (refusal.isPresent()) { return refusal.get(); }
-        var reservation = runtime.propulsion(server).authority().tryReserve(op.id(), op.owner(), op.guard().rocket(),
-                EscrowAdmissionAuthority.Consumer.PROPULSION);
-        if (reservation != EscrowAdmissionAuthority.Result.RESERVED) { return EscrowCoordinator.fill(reservation); }
-        var coordinator = ResourceEscrowSavedData.createForFill(server, ledger);
-        coordinator.enqueueCreated(op, completion);
-        // A failed bind-time readback is definite: enqueueCreated has already removed the fill and its reservation.
-        return coordinator.operational() ? EscrowCoordinator.Fill.QUEUED : EscrowCoordinator.Fill.UNAVAILABLE;
+        return EscrowLedgerCreation.create(server, runtime, ledger, admission, completion).fill();
     }
 
     /**

@@ -43,7 +43,7 @@ public final class FluidCargoAdmissionGameTests {
         final List<RocketEntity> rockets = new ArrayList<>();
         ResourceEscrowSavedData original, isolated;
         Path file, backup;
-        boolean detached, aside, done;
+        boolean detached, aside, done, baseline;
         int phase, direction;
         CompoundTag deviceBefore, rocketBefore;
         Scenario(GameTestHelper helper) { this.helper = helper; pacer = new GameTestTickPacer(helper.getLevel().getServer()); }
@@ -59,15 +59,15 @@ public final class FluidCargoAdmissionGameTests {
                 file = ResourceEscrowSavedData.file(server); backup = file.resolveSibling(file.getFileName() + ".w117-backup");
                 try { if (Files.exists(file)) { Files.move(file, backup, StandardCopyOption.ATOMIC_MOVE); } aside = true; }
                 catch (java.io.IOException failure) { throw new IllegalStateException(failure); }
-                isolated = ResourceEscrowSavedData.forTests(server); phase = 1;
+                phase = 1;
             }
             if (phase == 1) {
                 boolean load = direction == 0;
-                var rocket = EscrowCargoPreparationGameTests.create(helper, helper.absolutePos(new BlockPos(4, 2, 4)), false,
+                var rocket = EscrowCargoPreparationGameTests.create(helper, helper.absolutePos(new BlockPos(4, 2, 4 + direction * 6)), false,
                         load ? FluidStack.EMPTY : new FluidStack(Fluids.WATER, 5000));
                 rockets.add(rocket);
                 var role = load ? RocketCargoRole.LOAD : RocketCargoRole.UNLOAD;
-                var at = new BlockPos(2, 2, 4);
+                var at = new BlockPos(2, 2, 4 + direction * 6);
                 helper.setBlock(at, load ? ModBlocks.ROCKET_FLUID_LOADER.get() : ModBlocks.ROCKET_FLUID_UNLOADER.get());
                 var device = (RocketFluidCargoBlockEntity) level.getBlockEntity(helper.absolutePos(at)); devices.add(device);
                 var root = RocketFluidCargoRoot.placed(rocket.ownerId().orElseThrow(), java.util.UUID.randomUUID(), role,
@@ -75,9 +75,10 @@ public final class FluidCargoAdmissionGameTests {
                         .withBinding(FluidFuelLoaderEscrowFixtures.binding(rocket));
                 var outer = new CompoundTag(); outer.put(RocketFluidCargoRoot.KEY, root.encode()); device.load(outer);
                 deviceBefore = device.saveWithFullMetadata(); rocketBefore = EscrowNativeEnvelope.rocket(rocket);
-                var saved = EscrowCodec.encode(isolated.ledger());
+                var saved = isolated == null ? null : EscrowCodec.encode(isolated.ledger());
                 helper.assertTrue(device.attempt() == RocketCargoStatus.ADMISSION_DISABLED, "Closed cargo switch changed result");
-                helper.assertTrue(saved.equals(EscrowCodec.encode(isolated.ledger())) && !runtime.cargoPreparing(root.binding().logicalRocket())
+                helper.assertTrue((saved == null ? ResourceEscrowSavedData.existing(server) == null && !Files.exists(file)
+                        : saved.equals(EscrowCodec.encode(isolated.ledger()))) && !runtime.cargoPreparing(root.binding().logicalRocket())
                         && deviceBefore.equals(device.saveWithFullMetadata()), "Closed switch had side effects");
                 EscrowCargoSwitches.forTests(server, load ? EscrowOperation.Kind.FLUID_CARGO_LOAD : EscrowOperation.Kind.FLUID_CARGO_UNLOAD,
                         root.device(), true);
@@ -85,9 +86,13 @@ public final class FluidCargoAdmissionGameTests {
             }
             if (phase == 2) {
                 var rocket = rockets.get(direction); var device = devices.get(direction);
+                isolated = ResourceEscrowSavedData.existing(server);
+                if (isolated == null) { return; }
+                if (direction == 0 && isolated.ledger().writerGeneration() == 1 && isolated.ledger().records().isEmpty()) { baseline = true; }
                 var op = isolated.ledger().records().stream().filter(member -> member.device().identity().equals(device.root().orElseThrow().device()))
                         .findFirst().orElse(null);
                 if (op == null) { return; }
+                helper.assertTrue(baseline && isolated.ledger().writerGeneration() >= 2, "Cargo L1 skipped its empty creation baseline");
                 helper.assertTrue(op.phase() == EscrowOperation.Phase.PREPARED && op.reason() == EscrowReason.NONE,
                         "Cargo did not stop at acknowledged PREPARED");
                 helper.assertTrue(device.escrowLocked() && !RocketEscrowGate.idle(rocket), "L1 did not lock both endpoints");

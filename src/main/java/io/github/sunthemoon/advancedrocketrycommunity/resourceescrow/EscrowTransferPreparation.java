@@ -13,6 +13,10 @@ final class EscrowTransferPreparation {
                           java.util.function.BooleanSupplier unchanged,
                           Consumer<Boolean> completion) {
         coordinator.owner();
+        return prepareCargo(prepared, unchanged, admission -> prepareTransfer(coordinator, admission, completion));
+    }
+    static Transfer prepareCargo(EscrowCargoPreparedCapture prepared, java.util.function.BooleanSupplier unchanged,
+            java.util.function.Function<EscrowNativeBinding.Admission, Transfer> admit) {
         var result = prepared.result();
         if (result.status() != io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.RocketCargoSelection.Status.ELIGIBLE) {
             prepared.discard();
@@ -26,7 +30,7 @@ final class EscrowTransferPreparation {
                 if (!unchanged.getAsBoolean() || !prepared.unchanged()) { outcome[0] = Transfer.STALE; }
                 else {
                     // Repeat sequence, root, O1 and combined reservation against the final acknowledged root.
-                    outcome[0] = prepareTransfer(coordinator, result.capture(), completion);
+                    outcome[0] = admit.apply(result.capture());
                 }
             } finally {
                 // Apply must reconstruct from BEFORE, even when final admission throws.

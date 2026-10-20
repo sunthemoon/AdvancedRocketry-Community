@@ -21,6 +21,7 @@ public final class EscrowFluidCargoAdmission implements AutoCloseable {
     private CompoundTag nativeBefore;
     private EscrowCargoPayload delta;
     private EscrowCoordinator coordinator;
+    private EscrowLedger virtual;
     private RocketTransferSavedData.JournalGuard journal;
     private int capacity;
     private RocketCargoStatus status = RocketCargoStatus.ADMISSION_DISABLED;
@@ -48,14 +49,16 @@ public final class EscrowFluidCargoAdmission implements AutoCloseable {
             return status = RocketCargoStatus.LEGACY_ROCKET;
         }
         var data = ResourceEscrowSavedData.existing(server);
-        if (data == null || !data.operational()) { return status = RocketCargoStatus.LEDGER_UNAVAILABLE; }
-        coordinator = data.bind(server);
+        coordinator = data == null ? null : data.bind(server);
+        if (coordinator == null ? runtime.propulsion(server).state() != EscrowAdmissionAuthority.Delegate.State.NO_FILE
+                : !coordinator.operational()) { return status = RocketCargoStatus.LEDGER_UNAVAILABLE; }
+        virtual = coordinator == null ? EscrowLedger.empty(java.util.UUID.randomUUID()) : null;
         var logical = rocket.assemblyTransactionId().orElseThrow();
-        if (EscrowSettlementTombstones.history(data.ledger(), logical)
-                || data.ledger().rocketAuthorities().stream().anyMatch(head -> logical.equals(head.logical()))) {
+        if (EscrowSettlementTombstones.history(ledger(), logical)
+                || ledger().rocketAuthorities().stream().anyMatch(head -> logical.equals(head.logical()))) {
             return status = RocketCargoStatus.RECEIPT_BACKED;
         }
-        if (coordinator.logicalLocked(logical) || runtime.cargoPreparing(logical) || !rocket.escrowSection().markers().isEmpty()) {
+        if (coordinator != null && coordinator.logicalLocked(logical) || runtime.cargoPreparing(logical) || !rocket.escrowSection().markers().isEmpty()) {
             return status = RocketCargoStatus.OTHER_TRANSFER_PENDING;
         }
         if (!RocketEscrowGate.idle(rocket) || !RocketRuntime.resourceMutationAllowed(rocket)) {
@@ -94,17 +97,20 @@ public final class EscrowFluidCargoAdmission implements AutoCloseable {
                     refuse(ticket.cursor().failure().orElseThrow() == RocketCargoSelection.Status.CARGO_TOO_LARGE
                             ? RocketCargoStatus.CARGO_TOO_LARGE : RocketCargoStatus.INVALID_DATA); return;
                 }
-                var op = EscrowFluidCargoProjection.operation(device, before, ticket, delta, kind(), coordinator.nextSequence(), journal);
-                capture = EscrowCargoPreparedCapture.nativeCapture(ticket, coordinator.ledger().id(), op,
+                var op = EscrowFluidCargoProjection.operation(device, before, ticket, delta, kind(), coordinator == null ? 1 : coordinator.nextSequence(), journal);
+                capture = EscrowCargoPreparedCapture.nativeCapture(ticket, ledger().id(), op,
                         () -> { nativeBefore = device.saveWithFullMetadata(); return nativeBefore; },
-                        () -> EscrowFluidCargoProjection.after(nativeBefore, coordinator.ledger().id(), op), this::unchanged, capacity);
+                        () -> EscrowFluidCargoProjection.after(nativeBefore, ledger().id(), op), this::unchanged, capacity);
             }
-            if (!capture.advance(coordinator.ledger(), coordinator.pendingAdmissions())) { return; }
+            if (!capture.advance(ledger(), coordinator == null ? List.of() : coordinator.pendingAdmissions())) { return; }
             var result = capture.result();
             if (result.refusal() != null) { refuse(EscrowCargoRefusals.status(result.refusal())); return; }
             var operation = result.capture().operation(); var queue = EscrowRuntime.of(server).fills(server);
             queue.preparing(operation.id());
-            var outcome = coordinator.prepareCargo(capture, this::unchanged, ignored -> queue.resolved(operation.id()));
+            var outcome = coordinator == null ? EscrowTransferPreparation.prepareCargo(capture, this::unchanged,
+                    admission -> EscrowLedgerCreation.create(server, EscrowRuntime.of(server), virtual.id(), admission,
+                            ignored -> queue.resolved(operation.id())))
+                    : coordinator.prepareCargo(capture, this::unchanged, ignored -> queue.resolved(operation.id()));
             if (outcome != EscrowCoordinator.Transfer.QUEUED) { queue.resolved(operation.id()); }
             if (outcome == EscrowCoordinator.Transfer.UNAVAILABLE && capture.valid()) { return; }
             refuse(EscrowCargoRefusals.status(outcome));
@@ -118,13 +124,19 @@ public final class EscrowFluidCargoAdmission implements AutoCloseable {
         var resolved = RocketCargoBindingChecks.resolve(level, device.getBlockPos(), before);
         return resolved.rocket() == rocket && RocketCargoBindingChecks.stationary(rocket) && !RocketCargoBindingChecks.occupied(rocket)
                 && RocketRuntime.escrowReconciliationBoundary(rocket)
-                && ResourceEscrowSavedData.existing(level.getServer()).bind(level.getServer()) == coordinator
+                && sameLedger(level)
                 && RocketTransferSavedData.get(level.getServer()).acknowledgedGuard(ticket.cursor().logical()).filter(journal::equals).isPresent()
                 && (nativeBefore == null || nativeBefore.equals(device.saveWithFullMetadata()));
+    }
+    private EscrowLedger ledger() { return coordinator == null ? virtual : coordinator.ledger(); }
+    private boolean sameLedger(ServerLevel level) {
+        var data = ResourceEscrowSavedData.existing(level.getServer());
+        return data == null ? coordinator == null && EscrowRuntime.of(level.getServer()).propulsion(level.getServer()).state()
+                == EscrowAdmissionAuthority.Delegate.State.NO_FILE : coordinator != null && data.bind(level.getServer()) == coordinator;
     }
     private void refuse(RocketCargoStatus refusal) { close(); status = refusal; }
     @Override public void close() {
         if (capture != null) { capture.discard(); } else if (ticket != null) { ticket.close(); }
-        ticket = null; capture = null; before = null; nativeBefore = null; delta = null; coordinator = null; journal = null;
+        ticket = null; capture = null; before = null; nativeBefore = null; delta = null; coordinator = null; virtual = null; journal = null;
     }
 }
