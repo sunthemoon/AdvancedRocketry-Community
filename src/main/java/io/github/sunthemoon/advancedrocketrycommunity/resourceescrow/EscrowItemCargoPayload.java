@@ -3,11 +3,11 @@ package io.github.sunthemoon.advancedrocketrycommunity.resourceescrow;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 
-/** Schema-1 frozen item delta; slot selection and container mutation belong to D-P. */
+/** Schema-1 structural item delta; admission/O2/readback must separately validate the native stack. */
 public record EscrowItemCargoPayload(EscrowCargoPayload.Cursor cursor, CompoundTag stack, int from, int to) {
     public EscrowItemCargoPayload {
         java.util.Objects.requireNonNull(cursor).encode();
-        EscrowItemStackCodec.decode(stack);
+        EscrowItemStackCodec.validateStructure(stack);
         EscrowTags.require(from >= 0 && from < 27 && to >= 0 && to < 27 && (from < 4 || to < 4), "Invalid cargo slots");
         EscrowItemStackCodec.bound(frame(cursor, stack, from, to), EscrowLimits.FLUID_BYTES, 12, 384);
         stack = stack.copy();

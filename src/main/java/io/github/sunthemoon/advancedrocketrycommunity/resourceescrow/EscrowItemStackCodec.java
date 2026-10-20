@@ -11,7 +11,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
-/** Lossless local cargo-stack codec. Passing this codec alone does not admit a transfer. */
+/** Bounded durable structure and separate native cargo validation. Neither alone admits a transfer. */
 public final class EscrowItemStackCodec {
     public static final int MAX_BYTES = 4_096, MAX_DEPTH = 16, MAX_NODES = 512;
     public enum Status { CARGO_TOO_LARGE, INVALID_DATA }
@@ -22,7 +22,8 @@ public final class EscrowItemStackCodec {
     }
     private EscrowItemStackCodec() { }
 
-    public static ItemStack decode(CompoundTag saved) {
+    /** Registry-independent durable validation; never constructs an ItemStack or invokes item hooks. */
+    public static void validateStructure(CompoundTag saved) {
         bound(saved, MAX_BYTES, MAX_DEPTH, MAX_NODES);
         try {
             EscrowTags.fields(saved, "id", "Count", "tag");
@@ -32,19 +33,37 @@ public final class EscrowItemStackCodec {
             EscrowTags.type(saved, "Count", Tag.TAG_BYTE);
             if (saved.contains("tag")) { EscrowTags.compound(saved, "tag"); }
             noCapabilities(saved);
+            int count = saved.getByte("Count");
+            EscrowTags.require(!name.equals("minecraft:air") && count >= 1 && count <= 64, "Invalid cargo item or count");
+        } catch (Refusal refused) { throw refused; }
+        catch (RuntimeException invalid) { throw new Refusal(Status.INVALID_DATA, "Invalid cargo stack structure"); }
+    }
+
+    /**
+     * Native check for admission, O2 and readback. A failure belongs to that operation's
+     * REPAIR handling, not durable ledger validity. The immediate round trip is not a
+     * guarantee against arbitrary modded hooks that defer mutation until a later tick.
+     */
+    public static ItemStack validateNative(CompoundTag saved) {
+        validateStructure(saved);
+        try {
+            String name = saved.getString("id");
             var item = BuiltInRegistries.ITEM.getOptional(new ResourceLocation(name)).orElseThrow();
             int count = saved.getByte("Count");
-            EscrowTags.require(item != Items.AIR && count >= 1 && count <= 64, "Invalid cargo item or count");
+            EscrowTags.require(item != Items.AIR, "Invalid native cargo item");
             var stack = ItemStack.of(saved.copy());
             EscrowTags.require(!stack.isEmpty() && stack.getItem() == item && stack.getCount() == count
                     && count <= stack.getMaxStackSize(), "Invalid native cargo stack");
             var roundTrip = stack.save(new CompoundTag());
-            bound(roundTrip, MAX_BYTES, MAX_DEPTH, MAX_NODES);
+            validateStructure(roundTrip);
             EscrowTags.require(roundTrip.equals(saved), "Cargo stack does not round trip losslessly");
             return stack;
         } catch (Refusal refused) { throw refused; }
         catch (RuntimeException invalid) { throw new Refusal(Status.INVALID_DATA, "Invalid or noncanonical cargo stack"); }
     }
+
+    /** Native materialization for existing callers; durable payloads use validateStructure instead. */
+    public static ItemStack decode(CompoundTag saved) { return validateNative(saved); }
 
     public static CompoundTag encode(ItemStack stack) {
         if (stack == null || stack.isEmpty()) { throw new Refusal(Status.INVALID_DATA, "Empty cargo stack"); }
@@ -52,7 +71,7 @@ public final class EscrowItemStackCodec {
         if (stack.getTag() != null) { bound(stack.getTag(), MAX_BYTES, MAX_DEPTH - 1, MAX_NODES - 3); }
         try {
             var saved = stack.save(new CompoundTag());
-            var decoded = decode(saved);
+            var decoded = validateNative(saved);
             EscrowTags.require(stack.getCount() == decoded.getCount() && ItemStack.isSameItemSameTags(stack, decoded),
                     "Cargo stack changed during native encoding");
             return saved;
@@ -62,7 +81,7 @@ public final class EscrowItemStackCodec {
 
     /** Count is not merge identity; it remains signed in the full stack, payload and buffer. */
     public static boolean sameItemAndTags(CompoundTag left, CompoundTag right) {
-        var a = decode(left); var b = decode(right);
+        var a = validateNative(left); var b = validateNative(right);
         var identityA = left.copy(); var identityB = right.copy();
         identityA.remove("Count"); identityB.remove("Count");
         return ItemStack.isSameItemSameTags(a, b)
