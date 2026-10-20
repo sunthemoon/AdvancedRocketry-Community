@@ -25,8 +25,8 @@ class EscrowItemDirectionTest {
                     var encoded = EscrowCodec.operation(op);
                     encoded.put("source", source.copy()); encoded.put("destination", destination.copy());
                     // Keep reference bindings coherent so this tests roles, not an unrelated digest mismatch.
-                    encoded.getCompound("native_binding").putString("src_ref", RocketNativeResources.signature(source));
-                    encoded.getCompound("native_binding").putString("dst_ref", RocketNativeResources.signature(destination));
+                    EscrowFlightTables.digest(encoded.getCompound("native_binding"), "src_ref", RocketNativeResources.signature(source));
+                    EscrowFlightTables.digest(encoded.getCompound("native_binding"), "dst_ref", RocketNativeResources.signature(destination));
                     boolean allowed = kind.cargoLoad() ? source == loader && destination == rocket
                             : source == rocket && destination == unloader;
                     cases.add(() -> {
