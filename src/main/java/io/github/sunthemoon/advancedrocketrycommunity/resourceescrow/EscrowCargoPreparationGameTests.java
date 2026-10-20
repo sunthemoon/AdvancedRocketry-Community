@@ -121,7 +121,9 @@ public final class EscrowCargoPreparationGameTests {
                     phase = 1;
                 }
                 if (phase == 1 || phase == 4 || phase == 6) {
-                    var started = RocketRuntime.cargoPreparations(rocket.getServer()).begin(rocket, delta, true);
+                    var preparations = RocketRuntime.cargoPreparations(rocket.getServer());
+                    // Apply-time replay starts from the acknowledged member's BEFORE state; cargo chaining stays excluded.
+                    var started = phase == 6 ? preparations.beginReplay(rocket, delta, true) : preparations.begin(rocket, delta, true);
                     if (started.isEmpty()) { return; }
                     ticket = started.orElseThrow(); publication = null; preparations++; phase++;
                 }
@@ -160,22 +162,7 @@ public final class EscrowCargoPreparationGameTests {
                     check(rocket.escrowSection().epoch() == 1 && rocket.escrowSection().markers().size() == 1, "Publication lost revision/marker");
                     check(rocket.flightData().orElseThrow().fuel().totalAmount() == 1000, "Cargo changed propulsion");
                     check(preparations == 3 && deferrals > 3, "Large request did not span fair deferrals");
-                    before = rocket.snapshot().orElseThrow();
-                    operation = capture(rocket, delta, root); root = root.append(List.of(operation));
                     check(RocketRuntime.cargoPreparations(rocket.getServer()).begin(rocket, delta, true).isEmpty(), "Marked rocket admitted fresh cargo");
-                    ticket = RocketRuntime.cargoPreparations(rocket.getServer()).beginReplay(rocket, delta, true).orElseThrow();
-                    publication = null; phase = 10; return;
-                }
-                if (phase == 10) {
-                    check(rocket.snapshot().orElseThrow() == before, "Replay changed BEFORE before publication");
-                    if (!ticket.advance()) { return; }
-                    if (publication == null) { publication = new EscrowCargoPublication.Preparation(root, operation, ticket, () -> true); }
-                    var replayPermit = publication.issue();
-                    if (replayPermit == null) { return; }
-                    rocket.applyEscrowCargo(replayPermit);
-                    check(rocket.snapshot().orElseThrow().contentHash().equals(operation.nativeBinding().snapshotHash()), "Replay publication hash differs");
-                    check(rocket.escrowSection().epoch() == 2 && rocket.escrowSection().markers().size() == 2, "Replay lost existing marker prefix");
-                    rejects(() -> rocket.applyEscrowCargo(replayPermit), "Replay permit could be reused");
                     phase = 8;
                 }
                 if (phase == 3) {
