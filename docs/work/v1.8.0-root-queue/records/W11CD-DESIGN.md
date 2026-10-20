@@ -363,6 +363,8 @@ remeasurement is **NOT_RUN in this no-JVM design task**; five-marker usability a
 are not yet established. If a candidate fails, eligibility refuses it without raising bounds; an allowance
 or format change returns to Root. Fuel-only measured capacities are not cargo evidence.
 
+**R40 amendment (Root, 2026-10-20).** W113 measured that, under these charges, a transfer-guarded receipt does not fit on any of the mod's own Levels: cargo of every kind (worst, an item unload at Tau Ceti g, 2,089 of 2,048 bytes) and also a guarded fuel fill (2,061 bytes on the Moon). Root decision R40 keeps the 2,048-byte receipt, the layout and every saved format, and changes two charges ([TASK-W114](../TASK-W114-RECEIPT-CHARGE-R40.md)): a new settlement intent's actor name must pass the 1.20.1 login rule (1 to 16 characters, code points 33 to 126), so admission charges 16 bytes instead of 128 NULs; and a component that contains cargo is charged one rocket marker, in `requireAdmission` and the shared preview alike, because admission already refuses cargo with a retained marker or another record on the rocket. Fuel keeps five markers. The worst guarded receipt at Tau Ceti g is then 1,557 bytes for cargo and 1,833 for fuel, and every encodable Level ID fits. A size refusal of the candidate's own component maps to `CARGO_TOO_LARGE` in C-E and D-E; `ESCROW_FULL` stays for a full root (W113 item 4).
+
 ## 4. Disassembly and launch: the latest cargo, exactly once
 
 There is one spendable authority; mixed durable prefixes are locked until reconciled. Raw native files can
