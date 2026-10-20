@@ -204,10 +204,15 @@ final class SatelliteLaunchServiceTest {
     @Test void freshNonDataKeepsDefinitionComponentResearchAndOrbitValidationAndFixedOrbit() throws Exception {
         catalogs("normal");
         for (var definition : satellites.current().orElseThrow().kindDefinitions()) {
-            var data = SatelliteMissionSavedData.create(0);
             var identity = new SatelliteIdentity(UUID.randomUUID(), UUID.randomUUID(), definition.id(), definition.kind(),
                     List.of(ModIdentity.id("satellite_chassis"), definition.primaryComponent(), ModIdentity.id("satellite_solar_module"),
                             ModIdentity.id("data_storage_unit"), ModIdentity.id("satellite_battery"), ModIdentity.id("satellite_cargo_hold")));
+            CompoundTag root = SatelliteMissionSavedData.create(0).save(new CompoundTag());
+            CompoundTag account = new CompoundTag();
+            account.putInt("schema_version", 1); account.putUUID("owner_id", identity.ownerId()); account.putInt("balance", 1000);
+            account.putLong("lifetime_earned", 1000); account.putLong("lifetime_spent", 0);
+            root.getList("research_accounts", net.minecraft.nbt.Tag.TAG_COMPOUND).add(account);
+            var data = SatelliteMissionSavedData.load(root); assertTrue(data.operational());
             ResourceLocation target = definition.launchTargets().get(0);
             assertEquals(SatelliteOperationCode.TARGET_NOT_ALLOWED,
                     service.validate(data, identity.ownerId(), identity, ModIdentity.id("removed"), b -> true).result().code());
@@ -222,7 +227,7 @@ final class SatelliteLaunchServiceTest {
             catalogs("research");
             assertEquals(SatelliteOperationCode.RESEARCH_LOCKED, service.validate(data, fresh.ownerId(), fresh, target, b -> true).result().code());
             catalogs("component");
-            assertEquals(SatelliteOperationCode.INVALID_COMPONENTS, service.validate(data, fresh.ownerId(), fresh, target, b -> true).result().code());
+            assertEquals(SatelliteOperationCode.COMPONENT_UNAVAILABLE, service.validate(data, fresh.ownerId(), fresh, target, b -> true).result().code());
             catalogs("primary");
             assertEquals(SatelliteOperationCode.DEFINITION_NOT_FOUND, service.validate(data, fresh.ownerId(), fresh, target, b -> true).result().code());
             catalogs("normal");
@@ -233,6 +238,7 @@ final class SatelliteLaunchServiceTest {
         satellites.clear(); celestial.clear();
         if (change.equals("catalog")) { return; }
         var bodies = new ArrayList<CelestialBodyDefinition>(PlanetaryContent.definitions());
+        bodies.addAll(io.github.sunthemoon.advancedrocketrycommunity.celestial.content.StarSystemContent.definitions());
         Path v03 = Path.of("src/generated/v0.3/resources/data/advancedrocketrycommunity/celestial_bodies");
         for (String name : List.of("earth", "moon", "space")) {
             bodies.add(CelestialBodyDefinition.CODEC.parse(JsonOps.INSTANCE, JsonParser.parseString(Files.readString(v03.resolve(name + ".json"))))
@@ -268,7 +274,7 @@ final class SatelliteLaunchServiceTest {
                 change.equals("definition") ? List.of(MOON) : List.of(EARTH, MOON));
         var componentCatalog = SatelliteComponentCatalog.create(components, id -> true).getOrThrow(false, message -> { throw new AssertionError(message); });
         assertTrue(satellites.applyCandidate(SatelliteCatalog.create(List.of(definition), kinds,
-                bodies.stream().map(CelestialBodyDefinition::id).toList(), componentCatalog)));
+                bodies.stream().map(CelestialBodyDefinition::id).toList(), componentCatalog)), () -> satellites.status().message());
         if (change.equals("body")) { celestial.clear(); }
     }
 
