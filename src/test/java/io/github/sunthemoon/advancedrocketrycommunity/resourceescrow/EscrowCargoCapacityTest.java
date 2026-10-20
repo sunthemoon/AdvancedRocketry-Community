@@ -83,7 +83,7 @@ class EscrowCargoCapacityTest {
                 assertTrue(BoundedNbt.fits(next.payload(), 8_192, 12, 384));
                 var data = ResourceEscrowSavedData.load(EscrowCodec.encode(empty));
                 try (var writer = new EscrowLedgerWriter(temp.resolve(kind + "-" + retained), 0); var coordinator = new EscrowCoordinator(data, writer)) {
-                    assertEquals(retained == 0 ? EscrowCoordinator.Transfer.ESCROW_FULL : EscrowCoordinator.Transfer.OTHER_TRANSFER_PENDING,
+                    assertEquals(retained == 0 ? EscrowCoordinator.Transfer.CARGO_TOO_LARGE : EscrowCoordinator.Transfer.OTHER_TRANSFER_PENDING,
                             coordinator.prepareTransfer(EscrowCargoAdmissionTest.capture(next, retained), ignored -> fail()));
                     assertEquals(100, coordinator.nextSequence()); assertFalse(data.isDirty()); assertEquals(empty, coordinator.ledger());
                     assertEquals(0, coordinator.admissionAuthority().pendingCount()); assertTrue(writer.capturedOperations().isEmpty());
@@ -122,7 +122,7 @@ class EscrowCargoCapacityTest {
             assertEquals(512, BoundedNbt.measure(lastO1, 12_288, 16, 512).nodes());
             var root = ledger(); var data = ResourceEscrowSavedData.load(EscrowCodec.encode(root));
             try (var writer = new EscrowLedgerWriter(temp.resolve(kind + "-nodes"), 0); var coordinator = new EscrowCoordinator(data, writer)) {
-                assertEquals(EscrowCoordinator.Transfer.ESCROW_FULL, coordinator.prepareTransfer(EscrowCargoAdmissionTest.capture(op, 0), ignored -> fail()));
+                assertEquals(EscrowCoordinator.Transfer.CARGO_TOO_LARGE, coordinator.prepareTransfer(EscrowCargoAdmissionTest.capture(op, 0), ignored -> fail()));
                 assertEquals(1, coordinator.nextSequence()); assertEquals(root, coordinator.ledger()); assertFalse(data.isDirty());
                 assertEquals(0, coordinator.admissionAuthority().pendingCount()); assertTrue(writer.capturedOperations().isEmpty());
             }

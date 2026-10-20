@@ -96,7 +96,7 @@ class EscrowMixedComponentCapacityTest {
         assertDoesNotThrow(() -> EscrowSettlementCapacity.requireAdmission(next, next.records().get(1), RocketEscrowSection.neutral()));
         assertThrows(IllegalArgumentException.class, () -> EscrowSettlementCapacity.preflight(next, next.records().get(1).id()));
         assertThrows(IllegalArgumentException.class, () -> EscrowSettlementCapacity.preflight(next));
-        assertPreparation(next, EscrowCoordinator.Transfer.ESCROW_FULL, "next-byte");
+        assertPreparation(next, EscrowCoordinator.Transfer.CARGO_TOO_LARGE, "next-byte");
         System.out.println("MIXED_COMPONENT admitted_blob=" + low + " fuel_markers=5 cargo_markers=1 actual_o1_encodes=true");
     }
 
@@ -108,7 +108,7 @@ class EscrowMixedComponentCapacityTest {
         assertEquals("Escrow NBT envelope exceeded", assertThrows(IllegalArgumentException.class,
                 () -> EscrowSettlementCapacity.preflight(root, cargo.id())).getMessage());
         assertThrows(IllegalArgumentException.class, () -> EscrowSettlementCapacity.preflight(root));
-        assertPreparation(root, EscrowCoordinator.Transfer.ESCROW_FULL, "review-case");
+        assertPreparation(root, EscrowCoordinator.Transfer.CARGO_TOO_LARGE, "review-case");
     }
 
     private void assertPreparation(EscrowLedger prospective, EscrowCoordinator.Transfer expected, String name) {
