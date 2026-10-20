@@ -36,6 +36,7 @@ public record EscrowOperation(UUID id, long sequence, UUID owner, long createdTi
         Objects.requireNonNull(id); Objects.requireNonNull(owner); Objects.requireNonNull(phase);
         Objects.requireNonNull(reason); Objects.requireNonNull(source); Objects.requireNonNull(destination);
         Objects.requireNonNull(guard); Objects.requireNonNull(kind); Objects.requireNonNull(settlement);
+        if (kind.itemCargo()) { requireItemEndpoints(kind, source, destination); }
         Objects.requireNonNull(nativeBinding).requireOperation(owner, source, destination); nativeBinding.encode();
         EscrowTags.require(sequence > 0 && createdTick >= 0, "Invalid operation counters");
         EscrowTags.bound(payload, EscrowLimits.FLUID_BYTES, 12, 384);
@@ -100,6 +101,14 @@ public record EscrowOperation(UUID id, long sequence, UUID owner, long createdTi
 
     @Override public CompoundTag payload() { return payload.copy(); }
     @Override public CompoundTag settlement() { return settlement.copy(); }
+    private static void requireItemEndpoints(Kind kind, EscrowEndpoint source, EscrowEndpoint destination) {
+        var rocket = kind.cargoLoad() ? destination : source;
+        var device = kind.cargoLoad() ? source : destination;
+        if (!EscrowAdapterIds.nativeRocket(rocket) || rocket.unit() != EscrowEndpoint.Unit.CONTAINER
+                || !EscrowAdapterIds.itemCargoDevice(device, kind.cargoLoad())) {
+            throw new EscrowItemStackCodec.Refusal(EscrowItemStackCodec.Status.INVALID_DATA, "Invalid item cargo direction or device");
+        }
+    }
     /** Whole-rocket authority is independent of transfer direction, including unload and floor intents. */
     public EscrowEndpoint rocket() { return rocket(source, destination); }
     public EscrowEndpoint device() { return source.kind() == EscrowEndpoint.Kind.BLOCK_ENTITY ? source : destination; }

@@ -17,7 +17,7 @@ public final class EscrowItemStackCodec {
     public enum Status { CARGO_TOO_LARGE, INVALID_DATA }
     public static final class Refusal extends IllegalArgumentException {
         private final Status status;
-        private Refusal(Status status, String message) { super(message); this.status = status; }
+        Refusal(Status status, String message) { super(message); this.status = status; }
         public Status status() { return status; }
     }
     private EscrowItemStackCodec() { }

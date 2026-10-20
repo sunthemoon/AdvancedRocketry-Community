@@ -28,4 +28,8 @@ final class EscrowAdapterIds {
                 && (endpoint.type().equals(ModIdentity.id("rocket_item_loader").toString())
                 || endpoint.type().equals(ModIdentity.id("rocket_item_unloader").toString()));
     }
+    static boolean itemCargoDevice(EscrowEndpoint endpoint, boolean load) {
+        return itemCargoDevice(endpoint) && endpoint.type().equals(
+                ModIdentity.id(load ? "rocket_item_loader" : "rocket_item_unloader").toString());
+    }
 }
