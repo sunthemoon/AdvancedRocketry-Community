@@ -33,6 +33,28 @@ final class EscrowLoaderRecoveryProbe {
     }
 
     /**
+     * W107C (R36 item 2): R3_LEDGER_BEHIND and R3_LEDGER_REPLACED keep the creation baseline's exact bytes, an older copy
+     * captured earlier in the same run. The writer's own IO thread copies its file right after the generation-1 move, so
+     * no other reader ever holds the ledger open across a replacement. A failed copy is logged, never thrown into the
+     * writer; the harness then refuses the cut for its missing capture.
+     */
+    static void captureLedger(MinecraftServer server, String cut, String name) {
+        if (!name.equals("BASELINE_REPLACED") || !cut.equals("LF_M_R3_LEDGER_BEHIND") && !cut.equals("LF_M_R3_LEDGER_REPLACED")
+                || !Boolean.getBoolean(EscrowTestEndpoints.HOOKS)) { return; }
+        var target = server.getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT).resolve("arce_w107c_fixture")
+                .resolve("ledger-generation-1.dat");
+        try {
+            java.nio.file.Files.createDirectories(target.getParent());
+            java.nio.file.Files.copy(ResourceEscrowSavedData.file(server), target);
+            var bytes = java.nio.file.Files.readAllBytes(target);
+            AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_MATRIX_LEDGER_CAPTURED cut={} generation=1 bytes={} sha256={}", cut, bytes.length,
+                    java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(bytes)));
+        } catch (java.io.IOException | java.security.NoSuchAlgorithmException failure) {
+            AdvancedRocketryCommunity.LOGGER.warn("ARCE_LOADER_MATRIX_LEDGER_CAPTURE_FAILED cut={} failure={}", cut, failure.toString());
+        }
+    }
+
+    /**
      * W107C (Root decision R43 items 3 and 5): the restart observation of a cut whose fill must stay held, separate from
      * the matrix's settlement-expecting recovery. E2_EXTERNAL keeps its durable L1, STALLED with the persisted refusal; an
      * R3 endpoint edit reaches a persisted manual REPAIR reason; an R3 ledger edit leaves both endpoints locked by orphan

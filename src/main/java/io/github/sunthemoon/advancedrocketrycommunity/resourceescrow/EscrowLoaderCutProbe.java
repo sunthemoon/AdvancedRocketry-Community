@@ -124,8 +124,7 @@ final class EscrowLoaderCutProbe {
             case "C2" -> "CHAIN_PROVED";
             case "C2_PARTIAL_REPLACED" -> "CHAIN_REPLACED";
             case "C2_PARTIAL_RELEASED" -> "CHAIN_RELEASED";
-            // W107C: every R3 cut stops at K6, both endpoints applied and stored, before its offline edit.
-            default -> name.startsWith("R3_") ? "K6" : name;
+            default -> name.startsWith("R3_") ? "K6" : name; // W107C: R3 stops at K6, both ends stored, before its edit.
         };
     }
 
@@ -151,6 +150,7 @@ final class EscrowLoaderCutProbe {
 
     void checkpoint(String name) {
         if (done || paused.get() || !recovery && step == 0) { return; }
+        if (!recovery) { EscrowLoaderRecoveryProbe.captureLedger(server, cut, name); }
         if (name.equals("LOADER_PREPARATIONS_QUEUED")) {
             // Close only the fixture's admission gate, not any transaction decision or lease.
             var data = ResourceEscrowSavedData.existing(server);
