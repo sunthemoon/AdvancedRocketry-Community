@@ -79,6 +79,8 @@ public final class RocketRetirementRecoveryGameTests {
                     recovered = now; stage = 1;
                     return false;
                 }
+                // Case calls this on every tick: once the decoy is gone, the retirement wait owns the record.
+                if (stage == 3) { return true; }
                 helper.assertTrue(journal.find(record.transferId()).orElse(null) == record, "The record left RAM before its proof");
                 if (stage == 1) {
                     helper.assertTrue(retirements.attempts(logical) == 0, "The return attempted a proof before its crew was placed");
@@ -93,9 +95,8 @@ public final class RocketRetirementRecoveryGameTests {
                     // Two attempts refused at the survivor's capture, each followed by the 200-tick backoff.
                     if (retirements.attempts(logical) < 2 || !"BARRIER_VETO".equals(retirements.reason(logical))) { return false; }
                     decoy.discard(); stage = 3;
-                    return false;
                 }
-                return true;
+                return false;
             }
             void retired() {
                 helper.assertTrue(server().getTickCount() - recovered > RocketFlightLimits.FLIGHT_TICKET_TIMEOUT_TICKS,

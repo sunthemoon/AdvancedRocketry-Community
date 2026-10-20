@@ -59,13 +59,14 @@ public final class RocketRetirementCoverageGameTests {
                 var flightData = source.flightData().orElseThrow();
                 helper.assertTrue(flightData.state() == RocketFlightState.FUELED || flightData.state() == RocketFlightState.ASSEMBLED,
                         "The source did not return to its pad");
-                helper.assertTrue(journal.find(record.transferId()).isEmpty() && !recovery().retirements().pending(record.logicalRocketId()),
-                        "Another mod's entity storage still waited for an own-store proof (R5(c))");
+                // The entry itself stays until the removal's acknowledgement runs the request's effect.
+                helper.assertTrue(journal.find(record.transferId()).isEmpty(), "Another mod's entity storage still waited for an own-store proof (R5(c))");
                 helper.assertTrue(accepted.get() == 0, "The request completed before the removal's acknowledgement");
             }
             boolean before() {
                 if (!journal.clean() || accepted.get() == 0) { return false; }
                 helper.assertTrue(accepted.get() == 1 && discarded.get() == 0, "The request did not complete exactly once");
+                helper.assertTrue(!recovery().retirements().pending(record.logicalRocketId()), "The acknowledged removal left its entry");
                 helper.assertTrue(!RocketSourceRetirementFixtures.live(service).contains(record.transferId())
                         && !RocketSourceRetirementFixtures.settled(service).contains(record.transferId()), "The removed record kept its membership");
                 close(); helper.succeed();
@@ -94,9 +95,11 @@ public final class RocketRetirementCoverageGameTests {
     @GameTest(template = "rocket_test", batch = COVERAGE, timeoutTicks = 400)
     public static void aVanillaStoreOfTheSurvivorsSlotSupersedesTheProof(GameTestHelper helper) {
         new RocketSourceRetirementGameTests.Case(helper) {
-            boolean cancelled;
+            boolean cancelled, superseded;
             void act() { source = flight.spawnCountdown(helper); prepare(true); }
             boolean before() {
+                // Case calls this on every tick: once the superseded attempt is seen, the retirement wait owns the record.
+                if (superseded) { return true; }
                 var retirements = recovery().retirements(); UUID logical = record.logicalRocketId();
                 if (!cancelled) {
                     if (!cancelOnAFreeCaptureTick(this)) { return false; }
@@ -106,8 +109,9 @@ public final class RocketRetirementCoverageGameTests {
                     cancelled = true;
                     return false;
                 }
-                helper.assertTrue(journal.find(record.transferId()).orElse(null) == record, "A superseded proof removed the record");
-                return "SUPERSEDING_SAVE".equals(retirements.reason(logical));
+                helper.assertTrue(journal.find(record.transferId()).orElse(null) == record, "The proof survived the vanilla store and removed the record");
+                superseded = "SUPERSEDING_SAVE".equals(retirements.reason(logical));
+                return superseded;
             }
         }.start();
     }
@@ -129,6 +133,8 @@ public final class RocketRetirementCoverageGameTests {
                     stage = 1;
                     return false;
                 }
+                // Case calls this on every tick: once the rebuilt return is pending, the retirement wait owns the record.
+                if (stage == 3) { return true; }
                 helper.assertTrue(journal.find(record.transferId()).orElse(null) == record, "T left RAM without a proved survivor");
                 if (stage == 1) {
                     if (retirements.pending(logical)) { return false; }
@@ -187,7 +193,7 @@ public final class RocketRetirementCoverageGameTests {
         EscrowBarrier.Result governed;
         long governedTick = -1;
         int[] counters;
-        boolean returned;
+        boolean returned, observed;
 
         Contention(GameTestHelper helper, boolean shared) { super(helper); this.shared = shared; }
 
@@ -217,6 +223,8 @@ public final class RocketRetirementCoverageGameTests {
         }
 
         boolean before() {
+            // Case calls this on every tick: the governed outcome is observed once, then the retirement wait goes on.
+            if (observed) { return true; }
             var server = server(); long now = server.getTickCount();
             var runtime = EscrowRuntime.of(server); var barrier = runtime.barrier();
             if (governedTick < 0) {
@@ -246,6 +254,7 @@ public final class RocketRetirementCoverageGameTests {
                 helper.assertTrue(governed.confirmed(), "The governed proof of another slot did not confirm: " + governed.reason());
                 assertCountersUnchanged(barrier);
             }
+            observed = true;
             return true;
         }
 
