@@ -5,7 +5,6 @@ import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowBarri
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowReason;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowTestEndpoints;
-import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord;
@@ -262,7 +261,7 @@ final class RocketOrdinaryRetirement {
         // W98-R5: an attempt starts only when its first capture can run now, so no reservation waits for capture budget.
         if (supported && !firstCaptureAvailable(server, entry, now)) { fail(entry, "BUSY", now, 1, false); return; }
         if (!bays.allowed(server, entry.journal, record, RocketTransferBayRecoveryGate.Action.REMOVE_JOURNAL)) { abandon(entry, "BAY_HELD"); return; }
-        if (!escrowAllowed(server, entry.journal, record, entry.token)) { fail(entry, "BUSY", now, 1, false); return; }
+        if (!escrowAllowed(server, entry, record)) { fail(entry, "BUSY", now, 1, false); return; }
         var frozen = RocketRetirementGuards.projection(survivor, record);
         if (frozen == null) { fail(entry, "SURVIVOR_CONFLICT", now, RETRY_TICKS, true); return; }
         if (entry.token == null) {
@@ -341,7 +340,7 @@ final class RocketOrdinaryRetirement {
         if (current == null || !RocketRetirementProof.matches(current, entry.frozen)) { fail(entry, "SURVIVOR_CHANGED", now, 1, false); return; }
         if (!RocketRetirementGuards.crewReady(server, record, survivor, entry.offlineAllowed, entry.delivered)) { waiting(entry, "CREW_WAITING", now); return; }
         if (!bays.allowed(server, entry.journal, record, RocketTransferBayRecoveryGate.Action.SETTLE_SOURCE)
-                || !escrowAllowed(server, entry.journal, record, entry.token)) { fail(entry, "BUSY", now, 1, false); return; }
+                || !escrowAllowed(server, entry, record)) { fail(entry, "BUSY", now, 1, false); return; }
         if (!entry.proofs.values().stream().allMatch(EscrowBarrier.Proof::valid)) { fail(entry, "SUPERSEDING_SAVE", now, 1, false); return; }
         entry.sink.accept(REMOVAL_BEFORE);
         AdvancedRocketryCommunity.LOGGER.info("ARCE_TRANSFER_RETIREMENT_PROVED transfer={} logical={} site={} survivor={} slots={} attempts={}",
@@ -467,32 +466,9 @@ final class RocketOrdinaryRetirement {
         return EscrowRuntime.of(server).barrier().availableOrdinary(entry.census.get(0).dimension().toString(), now);
     }
 
-    /** RocketTransferEscrowRules.flightAllowed, with the held reservation recognized as this return's own (W96 section 4). */
-    private boolean escrowAllowed(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
-                                  RocketTransferSavedData.Reservation token) {
-        UUID logical = record.logicalRocketId();
-        if (!(token == null ? journal.actionable(logical) : journal.actionable(logical, token)) || record.nativeTransfer().isPresent()) {
-            return false;
-        }
-        var boundary = bays.before(server, journal, record, RocketTransferBayRecoveryGate.Action.REMOVE_JOURNAL);
-        if (boundary == null) { return false; }
-        boolean permitted = boundary.kind() == RocketTransferBayRecoveryGate.BoundaryKind.PERMIT;
-        if (permitted ? RocketEscrowGate.escrowLogicalLocked(server, logical) : RocketEscrowGate.logicalLocked(server, logical)) {
-            if (permitted) { bays.conflict(server, journal, record); }
-            return false;
-        }
-        for (var dimension : List.of(record.sourceSnapshot().sourceDimension(), record.destinationSnapshot().sourceDimension())) {
-            ServerLevel level = RocketTransferEntities.level(server, dimension);
-            if (level == null) { continue; }
-            for (UUID identity : List.of(record.sourceEntityId(), record.destinationEntityId().orElse(record.sourceEntityId()))) {
-                if (level.getEntity(identity) instanceof RocketEntity rocket
-                        && !(permitted ? RocketEscrowGate.escrowIdle(rocket) : RocketEscrowGate.idle(rocket))) {
-                    if (permitted) { bays.conflict(server, journal, record); }
-                    return false;
-                }
-            }
-        }
-        return true;
+    /** The token-aware escrow rule (W96 section 4), with this attempt's reservation recognized as its own (W98-R10). */
+    private boolean escrowAllowed(MinecraftServer server, Pending entry, RocketTransferRecord record) {
+        return RocketTransferEscrowRules.flightAllowed(server, entry.journal, record, bays, RocketTransferBayRecoveryGate.Action.REMOVE_JOURNAL, entry.token);
     }
 
     /** Silent unless a gated release-test run selects one boundary to pause at, once. */
