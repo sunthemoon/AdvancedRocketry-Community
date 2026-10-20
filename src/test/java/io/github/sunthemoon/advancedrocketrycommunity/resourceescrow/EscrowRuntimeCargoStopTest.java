@@ -26,6 +26,16 @@ class EscrowRuntimeCargoStopTest {
     @TempDir Path temp;
 
     @Test void offThreadCrashStopReachesSettlementCleanupWithCargoAllocated() throws Exception {
+        Checks.crashStop(temp);
+    }
+
+    @Test void offThreadProviderInvalidationStillInvalidatesCapability() throws Exception {
+        Checks.invalidate();
+    }
+
+    // As in the audit fixture, defer runtime type resolution until the capability bootstrap has defined it.
+    private static final class Checks {
+    static void crashStop(Path temp) throws Exception {
         var server = UnstartedServer.owned();
         var runtime = new EscrowRuntime();
         var cargo = runtime.cargoPreparations();
@@ -43,7 +53,7 @@ class EscrowRuntimeCargoStopTest {
         cargo.close();
     }
 
-    @Test void offThreadProviderInvalidationStillInvalidatesCapability() throws Exception {
+    static void invalidate() throws Exception {
         var type = Class.forName(EscrowRuntime.class.getName() + "$Provider");
         var constructor = type.getDeclaredConstructor(); constructor.setAccessible(true);
         var provider = constructor.newInstance();
@@ -73,5 +83,6 @@ class EscrowRuntimeCargoStopTest {
         @Override public <T> LazyOptional<T> getCapability(Capability<T> capability, Direction side) {
             return capability == EscrowRuntime.CAPABILITY ? runtime.cast() : LazyOptional.empty();
         }
+    }
     }
 }
