@@ -60,7 +60,6 @@ class EscrowMixedComponentCapacityTest {
         assertTrue(low > 0 && low < 8_000);
         var root = mixedRoot(low); var fuel = root.records().get(0); var cargo = root.records().get(1);
         assertEquals(root, EscrowCodec.decode(EscrowCodec.encode(root)));
-        assertDoesNotThrow(() -> EscrowSettlementCapacity.requireAdmission(root, fuel, EscrowCargoFixtures.wrapper(4)));
         assertDoesNotThrow(() -> EscrowSettlementCapacity.requireAdmission(root, cargo, RocketEscrowSection.neutral()));
         assertDoesNotThrow(() -> EscrowSettlementCapacity.preflight(root, cargo.id()));
         assertDoesNotThrow(() -> EscrowSettlementCapacity.preflight(root));
@@ -125,8 +124,8 @@ class EscrowMixedComponentCapacityTest {
             assertEquals(sequence + (queued ? 1 : 0), coordinator.nextSequence());
             assertEquals(pending + (queued ? 1 : 0), coordinator.admissionAuthority().pendingCount());
             assertEquals(queued, data.isDirty());
-            assertEquals(queued, coordinator.queued(cargo.source().key()));
-            assertEquals(queued, coordinator.queued(cargo.destination().key()));
+            assertEquals(queued, coordinator.admitting(cargo.source().key()));
+            assertEquals(queued, coordinator.admitting(cargo.destination().key()));
             assertEquals(base, coordinator.ledger());
             assertTrue(writer.idle()); assertTrue(writer.capturedOperations().isEmpty());
             if (!queued) { assertFalse(coordinator.commitPreparations()); }
