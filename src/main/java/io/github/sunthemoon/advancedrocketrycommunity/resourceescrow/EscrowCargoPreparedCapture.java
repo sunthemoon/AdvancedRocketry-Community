@@ -86,6 +86,12 @@ final class EscrowCargoPreparedCapture {
             } catch (EscrowCargoEligibility.TooLarge exceeded) {
                 result = new EscrowCargoEligibility.Result(Status.CARGO_TOO_LARGE, null);
                 discard();
+            } catch (EscrowTags.TooLarge exceeded) {
+                result = EscrowCargoEligibility.Result.refused(EscrowCoordinator.Transfer.CARGO_TOO_LARGE);
+                discard();
+            } catch (EscrowSettlementCapacity.StaleCapture stale) {
+                result = EscrowCargoEligibility.Result.refused(EscrowCoordinator.Transfer.STALE);
+                discard();
             } catch (io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketSnapshotException invalid) {
                 result = new EscrowCargoEligibility.Result(switch (invalid.code()) {
                     case SNAPSHOT_DATA_TOO_LARGE, BLOCK_ENTITY_DATA_TOO_LARGE -> Status.CARGO_TOO_LARGE;
@@ -136,13 +142,9 @@ final class EscrowCargoPreparedCapture {
         EscrowCargoEligibility.device(root, operation, delta, owned[2], owned[3], loading);
         var capture = EscrowCargoCapture.bind(root.id(), operation, owned[0], owned[1], owned[2], owned[3],
                 prepared.before(), prepared.after(), digests[0], digests[1], digests[2], digests[3]);
-        try {
-            var candidates = new ArrayList<>(pending); candidates.add(capture.operation());
-            var prospective = root.append(candidates);
-            EscrowSettlementCapacity.requireAdmission(prospective, capture.operation(), capture.before());
-            EscrowSettlementCapacity.preflight(prospective, operation.id());
-        } catch (IllegalArgumentException full) {
-            result = new EscrowCargoEligibility.Result(Status.CARGO_TOO_LARGE, null);
+        var refusal = EscrowCargoRefusals.capacity(root, pending, capture);
+        if (refusal.isPresent()) {
+            result = EscrowCargoEligibility.Result.refused(refusal.get());
             return new Work(8L * 1_048_576, visits);
         }
         result = new EscrowCargoEligibility.Result(Status.ELIGIBLE, capture);

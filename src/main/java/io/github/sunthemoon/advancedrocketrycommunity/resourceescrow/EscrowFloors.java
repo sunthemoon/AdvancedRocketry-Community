@@ -34,15 +34,19 @@ public final class EscrowFloors {
     static void preflight(EscrowLedger candidate) {
         EscrowSettlementIntent.reserve(candidate);
         var usage = usage(candidate, List.of());
-        EscrowTags.require(usage.total() <= EscrowLimits.FLOORS, "Escrow floor capacity exhausted");
+        if (usage.total() > EscrowLimits.FLOORS) {
+            throw new EscrowSettlementCapacity.ReservationFull("Escrow floor capacity exhausted");
+        }
         Map<Key, CompoundTag> existing = new HashMap<>(); candidate.floors().forEach(floor -> existing.put(key(floor), floor));
         for (var op : candidate.records()) {
             Key key = key(op.guard()); if (key == null) { continue; }
             var floor = existing.get(key);
             EscrowTags.require(floor == null || floor.getUUID("entity_id").equals(op.rocket().identity()), "Floor identity cannot be rebound");
         }
-        EscrowTags.require(RocketNbtSize.uncompressedBytes(EscrowCodec.encode(candidate)) + reservedGrowth(candidate)
-                <= EscrowLimits.ROOT_BYTES, "Escrow floor byte reservation exhausted");
+        if (RocketNbtSize.uncompressedBytes(EscrowCodec.encode(candidate)) + reservedGrowth(candidate)
+                > EscrowLimits.ROOT_BYTES) {
+            throw new EscrowSettlementCapacity.ReservationFull("Escrow floor byte reservation exhausted");
+        }
     }
 
     static long reservedGrowth(EscrowLedger candidate) {

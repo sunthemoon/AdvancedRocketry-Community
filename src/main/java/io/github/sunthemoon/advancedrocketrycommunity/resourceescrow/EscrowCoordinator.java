@@ -178,11 +178,12 @@ public final class EscrowCoordinator implements AutoCloseable {
     /** The generalized transfer result does not expand W11b3's closed fill result contract. */
     enum Transfer {
         QUEUED, UNAVAILABLE, INVALID, STALE, ENDPOINT_BUSY, ROCKET_LIMIT, ESCROW_FULL, SERVER_FULL, ROCKET_FULL,
-        IDENTITY_CONFLICT, ROCKET_BUSY, OTHER_TRANSFER_PENDING, RECEIPT_BACKED;
+        IDENTITY_CONFLICT, ROCKET_BUSY, OTHER_TRANSFER_PENDING, RECEIPT_BACKED, CARGO_TOO_LARGE;
         static Transfer of(Fill fill) { return valueOf(fill.name()); }
         Fill fill() {
             return switch (this) {
                 case ROCKET_BUSY, OTHER_TRANSFER_PENDING, RECEIPT_BACKED -> Fill.ENDPOINT_BUSY;
+                case CARGO_TOO_LARGE -> Fill.ESCROW_FULL;
                 default -> Fill.valueOf(name());
             };
         }

@@ -16,7 +16,16 @@ final class EscrowCargoEligibility {
     static final String DEVICE_ROOT = "arce_rocket_fluid_cargo";
     private EscrowCargoEligibility() { }
 
-    record Result(Status status, EscrowNativeBinding.Admission capture) { }
+    record Result(Status status, EscrowNativeBinding.Admission capture, EscrowCoordinator.Transfer refusal) {
+        Result(Status status, EscrowNativeBinding.Admission capture) {
+            this(status, capture, status == Status.ELIGIBLE ? null : status == Status.CARGO_TOO_LARGE
+                    ? EscrowCoordinator.Transfer.CARGO_TOO_LARGE : EscrowCoordinator.Transfer.INVALID);
+        }
+        static Result refused(EscrowCoordinator.Transfer refusal) {
+            return new Result(refusal == EscrowCoordinator.Transfer.CARGO_TOO_LARGE ? Status.CARGO_TOO_LARGE
+                    : Status.INVALID_DATA, null, refusal);
+        }
+    }
 
     static Result check(EscrowLedger root, Collection<EscrowOperation> pending, EscrowOperation operation,
                         CompoundTag rocketBefore, CompoundTag rocketAfter,
@@ -46,14 +55,12 @@ final class EscrowCargoEligibility {
             EscrowTags.require(!load || afterFluid.getAmount() <= tankCapacity, "Cargo capture exceeds tank capacity");
             device(root, operation, delta, deviceBefore, deviceAfter, load);
             var capture = EscrowCargoCapture.capture(root.id(), operation, rocketBefore, rocketAfter, deviceBefore, deviceAfter);
-            try {
-                var candidates = new ArrayList<>(pending); candidates.add(capture.operation());
-                var prospective = root.append(candidates);
-                EscrowSettlementCapacity.requireAdmission(prospective, capture.operation(), capture.before());
-                EscrowSettlementCapacity.preflight(prospective, operation.id());
-            } catch (IllegalArgumentException full) { return new Result(Status.CARGO_TOO_LARGE, null); }
+            var refusal = EscrowCargoRefusals.capacity(root, pending, capture);
+            if (refusal.isPresent()) { return Result.refused(refusal.get()); }
             return new Result(Status.ELIGIBLE, capture);
         } catch (TooLarge exceeded) { return new Result(Status.CARGO_TOO_LARGE, null); }
+        catch (EscrowTags.TooLarge exceeded) { return new Result(Status.CARGO_TOO_LARGE, null); }
+        catch (EscrowSettlementCapacity.StaleCapture stale) { return Result.refused(EscrowCoordinator.Transfer.STALE); }
         catch (io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketSnapshotException invalid) {
             return new Result(switch (invalid.code()) {
                 case SNAPSHOT_DATA_TOO_LARGE, BLOCK_ENTITY_DATA_TOO_LARGE -> Status.CARGO_TOO_LARGE;

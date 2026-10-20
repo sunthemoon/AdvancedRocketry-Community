@@ -211,11 +211,12 @@ public record EscrowSettlementIntent(Choice choice, UUID ledger, UUID actor, Str
                 count += (int) intent.ids().stream().filter(id -> root.tombstones().stream().noneMatch(tag -> tag.getUUID("op_id").equals(id))).count();
             }
         }
-        EscrowTags.require(count <= EscrowLimits.TOMBSTONES, RECEIPTS_FULL);
+        if (count > EscrowLimits.TOMBSTONES) { throw new EscrowSettlementCapacity.ReservationFull(RECEIPTS_FULL); }
         if (digests.isEmpty()) { return; }
         long bytes = io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNbtSize.uncompressedBytes(EscrowCodec.encode(root));
-        EscrowTags.require(bytes + (count - root.tombstones().size()) * 2_048L <= EscrowLimits.ROOT_BYTES,
-                "Settlement retirement byte reservation exhausted");
+        if (bytes + (count - root.tombstones().size()) * 2_048L > EscrowLimits.ROOT_BYTES) {
+            throw new EscrowSettlementCapacity.ReservationFull("Settlement retirement byte reservation exhausted");
+        }
     }
     static final String RECEIPTS_FULL = "Permanent settlement receipt capacity exhausted (64 members across accept-current, abandon and floor settlement); stopped-server whole-world offline repair required. No receipt eviction.";
     static int reservedReceipts(EscrowLedger root) {
@@ -229,7 +230,7 @@ public record EscrowSettlementIntent(Choice choice, UUID ledger, UUID actor, Str
     }
     static void requireReceiptRoom(EscrowLedger root, java.util.Collection<UUID> members) {
         var ids = receiptIds(root); ids.addAll(members);
-        EscrowTags.require(ids.size() <= EscrowLimits.TOMBSTONES, RECEIPTS_FULL);
+        if (ids.size() > EscrowLimits.TOMBSTONES) { throw new EscrowSettlementCapacity.ReservationFull(RECEIPTS_FULL); }
     }
     private static void requireEndpoints(List<EscrowOperation> component, List<Observation> observations) {
         var keys = component.stream().flatMap(op -> java.util.stream.Stream.of(op.source().key(), op.destination().key()))
