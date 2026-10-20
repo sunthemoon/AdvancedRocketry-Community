@@ -180,6 +180,10 @@ public final class V180LanguageProvider extends LanguageProvider {
         return switch (code) {
             case OFFLINE_REPAIR_REQUIRED -> chinese ? "需要离线修复；请备份世界并联系管理员"
                     : "Offline repair required; back up the world and ask an administrator";
+            case DEPLOYMENT_PENDING -> chinese ? "卫星部署尚未完成或暂不可用"
+                    : "Satellite deployment is pending or temporarily unavailable";
+            case REGISTRY_BLOCKED -> chinese ? "卫星注册表不可用；请检查存档数据"
+                    : "Satellite registry is blocked; check its saved data";
             default -> throw new IllegalArgumentException("Translated before v1.8: " + code);
         };
     }
