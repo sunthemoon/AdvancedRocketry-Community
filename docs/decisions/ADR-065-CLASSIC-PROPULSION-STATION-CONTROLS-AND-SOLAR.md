@@ -1790,6 +1790,14 @@ scope (`93659768`). It changes no decision status and accepts no risk.
   readback, where a failure holds only that operation for REPAIR (C-E and D-E wire them). Item
   operations require the loader as source and the rocket as destination, or the reverse for an
   unload. An older jar refuses a ledger with item records as invalid data, keeping the bytes (R-035).
+- **Fluid payloads (R39 for fluids, W115, merged `f8ddfc25`).** A durable fuel fill or fluid cargo
+  record decodes by structure only (`EscrowFluidCodec.validateStructure`: the bounds, the exact
+  field set, the ID syntax, an `Amount` of 1 to 1,000 and a compound `Tag`), so removing or renaming
+  a Fluid does not refuse the world. The registry, non-empty and round-trip checks
+  (`EscrowOperation.nativeFluid()`) run at admission, the fill's C2 permit and both projections; a
+  fill that fails is held alone as REPAIR with the existing `OTHER_STATE` reason and one
+  `ARCE_ESCROW_FLUID_UNAVAILABLE` WARN. Cargo payload objects stay native; C-E calls the check before
+  its C2, O2 and readback act. No saved format, hash or bound changed (R-035).
 - **Preparation (C-P part 2, W112 with W112F, merged `16b368f6`).** A cargo change is reconstructed
   in RAM by one session-owned ticket at a time, within one reconstruction, 16 MiB and 16,384 visits
   per server tick, with byte-identical hashes. While a ticket exists, the rocket's refuel,

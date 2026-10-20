@@ -38,7 +38,7 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: 16b368f6 (W112 merged with W112F: cargo C-P part 2, the resumable preparation, admission disabled; before it, 0b11269f merged W110 with W110F, cargo D-K's item kinds)
+latest_code_commit: f8ddfc25 (W115 merged: durable fluid payloads decode structurally under R39; before it, 16b368f6 merged W112 with W112F, cargo C-P part 2, admission disabled)
 latest_hosted_regression: run 39381441858 at d6f97f3a (the W112 merge 16b368f6 and its records) passed all required GameTests and the log checker, and so did 39376267447 at 43ee0aa0 (the W110 merge 0b11269f). Before them, the escrow proof flake (W111, active) failed EscrowCoreGameTests.ownTerrainAndEntityStoresConfirmTheExactFrozenFrontier after 200 ticks on the runs at bd1c78b9, d2f0d00c, 9f6668aa, 67dee026, fb1ac454 and 20a82b88 (at 9f6668aa also supersededTerrainProofRetriesTheSameFrontierAfterBackoff)
 ledger_planned_units: 19
 asset_review_items: 154
