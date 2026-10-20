@@ -99,11 +99,11 @@ final class EscrowSettlementIntentTest {
     @Test void boundsCanonicalDigestAndOfflineOnlyConflictsAreEnforced() {
         var op = EscrowTestFixtures.operation(1).withReason(EscrowReason.OTHER_STATE); var root = EscrowTestFixtures.ledger(op);
         var observations = observations(root, false);
-        String actorAtLimit = "a".repeat(128);
+        String actorAtLimit = "a".repeat(16);
         var preview = EscrowSettlementIntent.preview(root, op.id(), EscrowSettlementIntent.Choice.ACCEPT_CURRENT, ACTOR, actorAtLimit, 10, observations);
         assertEquals(preview, EscrowSettlementIntent.decode(preview.encode()));
         assertThrows(IllegalArgumentException.class, () -> EscrowSettlementIntent.preview(root, op.id(), EscrowSettlementIntent.Choice.ACCEPT_CURRENT,
-                ACTOR, "a".repeat(129), 10, observations));
+                ACTOR, "a".repeat(17), 10, observations));
         var malformed = preview.encode(); malformed.putString("choice", "REFUND");
         assertThrows(IllegalArgumentException.class, () -> EscrowSettlementIntent.decode(malformed));
         var tampered = preview.encode(); tampered.putString("actor_name", "someone else");
@@ -115,6 +115,42 @@ final class EscrowSettlementIntentTest {
             assertThrows(IllegalArgumentException.class, () -> EscrowSettlementIntent.preview(EscrowTestFixtures.ledger(manual), manual.id(),
                     EscrowSettlementIntent.Choice.ACCEPT_CURRENT, ACTOR, "operator", 10, observations));
         }
+    }
+
+    @Test void newActorNamesUseTheLoginBoundButStored128ByteNamesStillDecode() {
+        var op = EscrowTestFixtures.operation(1).withReason(EscrowReason.OTHER_STATE);
+        var root = EscrowTestFixtures.ledger(op); var observed = observations(root, false);
+        for (String name : List.of("a".repeat(17), "\0", " ", "non ascii", "\u00e9", "", "\u007f")) {
+            assertEquals(EscrowSettlementIntent.ACTOR_NAME_REFUSAL, assertThrows(IllegalArgumentException.class,
+                    () -> EscrowSettlementIntent.preview(root, op.id(), EscrowSettlementIntent.Choice.ACCEPT_CURRENT,
+                            ACTOR, name, 10, observed)).getMessage());
+            // The explicit floor entry point must reject before inspecting any floor or allocating a decision.
+            assertEquals(EscrowSettlementIntent.ACTOR_NAME_REFUSAL, assertThrows(IllegalArgumentException.class,
+                    () -> EscrowSettlementIntent.floorPreview(root, op.id(), new CompoundTag(), ACTOR, name, 10, observed)).getMessage());
+        }
+        for (String name : List.of("!" + "~".repeat(15), "Server")) {
+            var preview = EscrowSettlementIntent.preview(root, op.id(), EscrowSettlementIntent.Choice.ACCEPT_CURRENT, ACTOR, name, 10, observed);
+            assertEquals(name, preview.actorName());
+        }
+        var preview = EscrowSettlementIntent.preview(root, op.id(), EscrowSettlementIntent.Choice.ACCEPT_CURRENT, ACTOR, "Server", 10, observed);
+        for (String legacyName : List.of("a".repeat(128), "\0".repeat(128), "\u00e9".repeat(64))) {
+            var encoded = preview.encode(); encoded.putString("actor_name", legacyName);
+            var base = encoded.copy(); base.remove("confirmed_tick"); base.remove("digest");
+            encoded.putString("digest", io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNativeResources.signature(base));
+            var legacy = EscrowSettlementIntent.decode(encoded);
+            assertEquals(legacyName, legacy.actorName()); assertEquals(encoded, legacy.encode());
+            var confirmed = legacy.confirm(ACTOR, legacy.digest(), 11, observed);
+            var o1 = confirmed.freeze(root); var o3 = EscrowSettlementTombstones.install(o1, confirmed);
+            var receipt = o3.tombstones().get(0);
+            assertEquals(legacyName, EscrowReceiptCodec.decode(EscrowReceiptCodec.encode(receipt)).getString("actor_name"));
+            assertEquals(o3, EscrowCodec.decode(EscrowCodec.encode(o3)));
+            var oversized = encoded.copy(); oversized.putString("actor_name", legacyName + "a");
+            var oversizedBase = oversized.copy(); oversizedBase.remove("confirmed_tick"); oversizedBase.remove("digest");
+            oversized.putString("digest", io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNativeResources.signature(oversizedBase));
+            assertEquals("Invalid audit actor name", assertThrows(IllegalArgumentException.class,
+                    () -> EscrowSettlementIntent.decode(oversized)).getMessage());
+        }
+        assertTrue(op.settlement().isEmpty());
     }
 
     @Test void allEightConnectedLinksAreTraversedAndTheNinthRefusesBeforeMutation() {

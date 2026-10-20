@@ -2,11 +2,16 @@ package io.github.sunthemoon.advancedrocketrycommunity.resourceescrow;
 
 import static org.junit.jupiter.api.Assertions.*;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
+import io.github.sunthemoon.advancedrocketrycommunity.testsupport.UnstartedServer;
+import com.mojang.authlib.GameProfile;
 import java.util.List;
 import java.util.UUID;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import org.junit.jupiter.api.BeforeAll;
@@ -41,5 +46,27 @@ class EscrowCommandActorTest {
         assertEquals(EscrowCommandActor.CONSOLE_ID, receipt.getUUID("actor"));
         assertEquals("Server", receipt.getString("actor_name"));
         assertTrue(EscrowOperatorDiagnostics.preview(preview).contains("actor_type=CONSOLE"));
+    }
+    @Test void commandProvenanceChecksTheProfileNameBeforeReturningAuthority() {
+        var player = UnstartedServer.allocate(ServerPlayer.class); var id = UUID.randomUUID();
+        UnstartedServer.set(Entity.class, player, "uuid", id);
+        // The display/source name is deliberately valid; it is not the persisted actor name.
+        var stack = new CommandSourceStack(player, Vec3.ZERO, Vec2.ZERO, null, 2, "ValidDisplay",
+                Component.literal("ValidDisplay"), null, player);
+        for (String name : List.of("a".repeat(17), "\0", " ", "non ascii", "\u00e9", "", "\u007f")) {
+            UnstartedServer.set(Player.class, player, "gameProfile", new GameProfile(id, name));
+            assertEquals(EscrowSettlementIntent.ACTOR_NAME_REFUSAL, assertThrows(IllegalArgumentException.class,
+                    () -> EscrowCommandActor.require(stack)).getMessage());
+        }
+        for (String name : List.of("!" + "~".repeat(15), "Server")) {
+            UnstartedServer.set(Player.class, player, "gameProfile", new GameProfile(id, name));
+            var actor = EscrowCommandActor.require(stack);
+            assertEquals(name, actor.name()); assertEquals(id, actor.id());
+        }
+        var server = UnstartedServer.owned();
+        var console = new CommandSourceStack(server, Vec3.ZERO, Vec2.ZERO, null, 4, "Server",
+                Component.literal("Server"), server, null);
+        assertEquals(new EscrowCommandActor(EscrowCommandActor.Kind.CONSOLE, EscrowCommandActor.CONSOLE_ID, "Server"),
+                EscrowCommandActor.require(console));
     }
 }

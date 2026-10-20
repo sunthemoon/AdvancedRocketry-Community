@@ -14,6 +14,8 @@ import net.minecraft.nbt.ListTag;
 public record EscrowSettlementIntent(Choice choice, UUID ledger, UUID actor, String actorName,
                                      long previewTick, long confirmedTick, List<Member> members,
                                      List<Observation> observations, CompoundTag floor, String digest) {
+    static final int NEW_ACTOR_NAME_LIMIT = 16;
+    static final String ACTOR_NAME_REFUSAL = "Settlement actor name must contain 1 to 16 ASCII characters (33-126, no spaces); use the server console for a nonconforming player profile.";
     public enum Choice { ACCEPT_CURRENT, ABANDON, TRANSFER_FLOOR_RETIRE }
     public record Member(UUID id, EscrowOperation.Phase phase, EscrowReason reason, String digest) {
         public Member {
@@ -95,6 +97,7 @@ public record EscrowSettlementIntent(Choice choice, UUID ledger, UUID actor, Str
 
     public static EscrowSettlementIntent preview(EscrowLedger root, UUID selected, Choice choice, UUID actor,
                                                  String actorName, long tick, List<Observation> observations) {
+        requireNewActorName(actorName);
         EscrowTags.require(choice != Choice.TRANSFER_FLOOR_RETIRE, "Use an explicit floor preview");
         var component = component(root.records(), selected);
         EscrowTags.require(component.stream().allMatch(op -> op.kind().transfer()
@@ -111,6 +114,7 @@ public record EscrowSettlementIntent(Choice choice, UUID ledger, UUID actor, Str
     }
     public static EscrowSettlementIntent floorPreview(EscrowLedger root, UUID operation, CompoundTag floor, UUID actor,
                                                       String actorName, long tick, List<Observation> observations) {
+        requireNewActorName(actorName);
         EscrowTags.require(root.records().stream().noneMatch(op -> op.guard().rocket().equals(floor.getUUID("rocket_id"))),
                 "Floor still has an unretired operation");
         EscrowTags.require(root.floors().stream().anyMatch(floor::equals), "Floor is not authoritative");
@@ -118,6 +122,11 @@ public record EscrowSettlementIntent(Choice choice, UUID ledger, UUID actor, Str
         return create(Choice.TRANSFER_FLOOR_RETIRE, root.id(), actor, actorName, tick, -1,
                 List.of(new Member(operation, EscrowOperation.Phase.SETTLING_ABANDON, EscrowReason.FLOOR_CONFLICT,
                         RocketNativeResources.signature(floor))), sorted(observations), floor);
+    }
+    /** New decisions use the login-name bound; persisted decisions retain their decode bound. */
+    static void requireNewActorName(String name) {
+        EscrowTags.require(name != null && !name.isEmpty() && name.length() <= NEW_ACTOR_NAME_LIMIT
+                && name.chars().allMatch(character -> character >= 33 && character <= 126), ACTOR_NAME_REFUSAL);
     }
     public EscrowSettlementIntent confirm(UUID confirmingActor, String suppliedDigest, long tick, List<Observation> current) {
         EscrowTags.require(actor.equals(confirmingActor) && suppliedDigest != null

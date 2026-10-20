@@ -15,6 +15,7 @@ class EscrowFlightBenchmarkCeilingTest {
         assertThrows(IllegalArgumentException.class, () -> EscrowSettlementCapacity.preflight(root));
         for (var op : root.records()) {
             assertTrue(RocketNbtSize.uncompressedBytes(EscrowCodec.operation(op)) <= EscrowLimits.OP_BYTES);
+            assertEquals("c".repeat(16), EscrowSettlementIntent.decode(op.settlement()).actorName());
         }
     }
 }

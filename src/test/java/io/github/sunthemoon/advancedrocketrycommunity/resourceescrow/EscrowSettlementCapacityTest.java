@@ -13,7 +13,7 @@ class EscrowSettlementCapacityTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
     @TempDir Path directory;
 
-    @Test void measuredFiveMarkerSettlementFitsButSixDoesNotWithUnchangedCodecs() {
+    @Test void measuredEightMarkerCodecBoundaryDoesNotRaiseTheFiveMarkerAdmissionLimit() {
         assertEquals(5, EscrowSettlementCapacity.ADMISSION_PER_ROCKET); assertEquals(8, EscrowLimits.PER_ROCKET);
         for (boolean nativeRocket : List.of(false, true)) {
             for (int n = 1; n <= 8; n++) {
@@ -22,10 +22,16 @@ class EscrowSettlementCapacityTest {
                 var root = EscrowTestFixtures.ledger(operations.toArray(EscrowOperation[]::new));
                 // Decode remains valid at eight; sizing uses real O1 and receipt encoders, not the admission constant.
                 assertEquals(root, EscrowCodec.decode(EscrowCodec.encode(root)));
-                if (n <= 5) { assertDoesNotThrow(() -> EscrowSettlementCapacity.preflight(root, operations.get(0).id())); }
-                else { assertThrows(IllegalArgumentException.class, () -> EscrowSettlementCapacity.preflight(root, operations.get(0).id())); }
-                System.out.println("settlement measurement native=" + nativeRocket + " markers=" + n + " fits=" + (n <= 5));
+                assertDoesNotThrow(() -> EscrowSettlementCapacity.preflight(root, operations.get(0).id()));
+                var observed = RocketEscrowSection.neutral();
+                var candidate = operations.get(operations.size() - 1);
+                if (n <= 5) { assertDoesNotThrow(() -> EscrowSettlementCapacity.requireAdmission(root, candidate, observed)); }
+                else { assertThrows(IllegalArgumentException.class, () -> EscrowSettlementCapacity.requireAdmission(root, candidate, observed)); }
+                System.out.println("settlement measurement native=" + nativeRocket + " markers=" + n + " fits=true admitted=" + (n <= 5));
             }
+            var tooMany = new ArrayList<EscrowOperation>();
+            for (int i = 1; i <= 9; i++) { tooMany.add(operation(i, 99, i - 1, nativeRocket)); }
+            assertThrows(IllegalArgumentException.class, () -> EscrowTestFixtures.ledger(tooMany.toArray(EscrowOperation[]::new)));
         }
     }
     @Test void admissionCountsRetiredAndLiveMarkersOnceAndRefusesBeforeQueueMutation() {
@@ -55,7 +61,7 @@ class EscrowSettlementCapacityTest {
                                     new EscrowPrefix.State(root.id(), observed.epoch() + 1, op.destination().afterSignature(), applied),
                                     true, Long.MAX_VALUE, EscrowSignatureKind.FUEL_VECTOR_V1, op.nativeBinding().invariant()));
                     var preview = EscrowSettlementIntent.preview(held, op.id(), EscrowSettlementIntent.Choice.ACCEPT_CURRENT,
-                            EscrowTestFixtures.id(700), "\0".repeat(128), 0, observations);
+                            EscrowTestFixtures.id(700), "~".repeat(16), 0, observations);
                     var intent = preview.confirm(preview.actor(), preview.digest(), 0, observations);
                     var frozen = assertDoesNotThrow(() -> intent.freeze(held));
                     var receipt = EscrowSettlementTombstones.create(frozen.records().get(0), intent);

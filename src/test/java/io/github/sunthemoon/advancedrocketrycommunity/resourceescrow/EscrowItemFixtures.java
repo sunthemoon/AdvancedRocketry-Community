@@ -62,7 +62,7 @@ final class EscrowItemFixtures {
     static EscrowSettlementIntent intent(EscrowLedger root, EscrowOperation op, int retained, int missing, boolean neutral) {
         var observations = observations(root, op, retained, missing, neutral);
         var preview = EscrowSettlementIntent.preview(root, op.id(), missing == 0 ? EscrowSettlementIntent.Choice.ACCEPT_CURRENT
-                : EscrowSettlementIntent.Choice.ABANDON, id(700), "\0".repeat(128), 10, observations);
+                : EscrowSettlementIntent.Choice.ABANDON, id(700), "~".repeat(16), 10, observations);
         return preview.confirm(preview.actor(), preview.digest(), missing == 0 ? 11 : 210, observations);
     }
     static EscrowSettlementIntent floorIntent(EscrowLedger root, int index) {

@@ -110,7 +110,8 @@ class EscrowCodecIntersectionTest {
         var op = new EscrowOperation(original.id(), original.sequence(), original.owner(), 0, EscrowOperation.Phase.REPAIR, EscrowReason.OTHER_STATE,
                 original.payload(), original.payloadHash(), padded(original.source(), 512), padded(original.destination(), 512), original.guard());
         var root = EscrowTestFixtures.ledger(op);
-        // Complete observations, maximum canonical references and modified-UTF actor bytes; no padding fields.
+        // Historical decisions retain complete observations, maximum references and modified-UTF actor bytes.
+        // Decode their original actor names; new previews no longer admit those names. No padding fields.
         for (int count = 0; count <= 8; count++) {
             var markers = new ArrayList<EscrowPrefix.Marker>();
             for (int i = 1; i <= count; i++) { markers.add(new EscrowPrefix.Marker(EscrowTestFixtures.id(i), i, "DESTINATION", i)); }
@@ -121,7 +122,9 @@ class EscrowCodecIntersectionTest {
                 for (int ascii = 0; ascii <= 1 && nuls + ascii <= 128; ascii++) {
                     if (nuls + ascii == 0) { continue; }
                     String actor = "\0".repeat(nuls) + "a".repeat(ascii);
-                    var preview = EscrowSettlementIntent.preview(root, op.id(), EscrowSettlementIntent.Choice.ACCEPT_CURRENT, EscrowTestFixtures.id(700), actor, 10, observed);
+                    var current = EscrowSettlementIntent.preview(root, op.id(), EscrowSettlementIntent.Choice.ACCEPT_CURRENT,
+                            EscrowTestFixtures.id(700), "Server", 10, observed);
+                    var preview = EscrowTestFixtures.storedActor(current, actor);
                     var intent = preview.confirm(preview.actor(), preview.digest(), 11, observed);
                     try {
                         var tag = EscrowSettlementTombstones.create(op, intent);

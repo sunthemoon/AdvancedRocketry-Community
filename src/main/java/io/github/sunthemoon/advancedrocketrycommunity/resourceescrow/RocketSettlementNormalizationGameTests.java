@@ -60,7 +60,7 @@ public final class RocketSettlementNormalizationGameTests {
                     if (data.ledger().records().stream().noneMatch(op -> op.id().equals(operation.id())
                             && op.reason() == EscrowReason.OTHER_STATE)) { return; }
                     var operator = EscrowRuntime.of(level.getServer()).settlement();
-                    var preview = operator.preview(level.getServer(), operation.id(), EscrowSettlementIntent.Choice.ACCEPT_CURRENT, owner, "NormalizationGameTest");
+                    var preview = operator.preview(level.getServer(), operation.id(), EscrowSettlementIntent.Choice.ACCEPT_CURRENT, owner, "NormalizeTest");
                     helper.assertTrue(preview.observations().stream().anyMatch(observation -> observation.endpoint().identity().equals(physical)
                             && !observation.bound() && observation.state().epoch() == 0), "O1 lost the neutral audit observation");
                     writing = operator.confirm(level.getServer(), operation.id(), EscrowSettlementIntent.Choice.ACCEPT_CURRENT, owner, preview.digest(),

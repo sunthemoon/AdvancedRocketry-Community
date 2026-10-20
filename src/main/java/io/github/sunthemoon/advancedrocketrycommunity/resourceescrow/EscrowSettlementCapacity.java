@@ -9,6 +9,8 @@ import java.util.UUID;
 final class EscrowSettlementCapacity {
     // Admission only. Persisted sections/chains retain the eight-marker decode bound.
     static final int ADMISSION_PER_ROCKET = 5;
+    // Cargo excludes retained markers and every other operation on its rocket at admission.
+    static final int CARGO_ADMISSION_PER_ROCKET = 1;
     // One new floor-retirement operation, its receipt and the named-floor top-up.
     static final long FLOOR_RETIREMENT_BYTES = EscrowLimits.OP_BYTES + 2_048L + 1_024L;
     static final String FLOOR_FULL = "Escrow is full; retry floor retirement after other settlements or pruning.";
@@ -70,9 +72,10 @@ final class EscrowSettlementCapacity {
             var markers = new ArrayList<>(chain.stream().map(EscrowPrefix.Link::marker).toList());
             long epoch = last.endpoint().afterEpoch();
             if (EscrowAdapterIds.nativeRocket(endpoint)) {
+                int markerLimit = markerLimit(component, endpoint.logicalRocket());
                 // Charge the whole admission allowance, including retired markers not yet pruned.
                 // UUIDs/longs have fixed encoded widths; these are sizing observations, never proofs.
-                for (int i = markers.size(); i < ADMISSION_PER_ROCKET; i++) {
+                for (int i = markers.size(); i < markerLimit; i++) {
                     UUID id = new UUID(-1, i);
                     while (contains(markers, id)) { id = new UUID(id.getMostSignificantBits() - 1, i); }
                     markers.add(new EscrowPrefix.Marker(id, i + 1, "DESTINATION", i + 1));
@@ -89,14 +92,14 @@ final class EscrowSettlementCapacity {
                     EscrowSignatureKind.settlement(endpoint) == EscrowSignatureKind.ITEM_BUFFER_V1 ? 0 : Long.MAX_VALUE,
                     EscrowSignatureKind.settlement(endpoint), invariant));
         }
-        // NUL uses two modified-UTF bytes per one UTF-8 byte: the worst allowed actor-name encoding.
+        // New actor names are printable ASCII: each character uses exactly one modified-UTF byte.
         var hypothetical = prospective.replace(prospective.records().stream().map(op -> component.contains(op)
                 && !op.reason().manual() ? op.withReason(op.kind().cargo() ? EscrowReason.JOURNAL_GUARD_MISMATCH : EscrowReason.OTHER_STATE) : op).toList(),
                 prospective.floors(), prospective.tombstones());
         EscrowSettlementIntent preview;
         try {
             preview = EscrowSettlementIntent.preview(hypothetical, selected, EscrowSettlementIntent.Choice.ACCEPT_CURRENT,
-                    new UUID(0, 1), "\0".repeat(128), 0, observations);
+                    new UUID(0, 1), "A".repeat(EscrowSettlementIntent.NEW_ACTOR_NAME_LIMIT), 0, observations);
         } catch (IllegalArgumentException ineligible) {
             if (admission) { throw ineligible; }
             return; // Existing ineligible components still receive the fixed charge, never a discount.
@@ -118,7 +121,13 @@ final class EscrowSettlementCapacity {
                     "Native admission marker section differs from the captured before wrapper");
             observed.markers().stream().map(EscrowPrefix.Marker::operation).forEach(markers::add);
         }
-        EscrowTags.require(markers.size() <= ADMISSION_PER_ROCKET, "Rocket settlement admission limit exceeded");
+        int markerLimit = markerLimit(EscrowSettlementIntent.component(prospective.records(), candidate.id()), candidate.guard().rocket());
+        EscrowTags.require(markers.size() <= markerLimit, "Rocket settlement admission limit exceeded");
+    }
+    private static int markerLimit(List<EscrowOperation> component, UUID logicalRocket) {
+        // Cross-kind endpoint UUID aliases can join records on different logical rockets.
+        return component.stream().anyMatch(op -> op.kind().cargo() && op.guard().rocket().equals(logicalRocket))
+                ? CARGO_ADMISSION_PER_ROCKET : ADMISSION_PER_ROCKET;
     }
     private record Reservation(long bytes, int receipts) { }
     static long reservedBytes(EscrowLedger root) { return reservation(root).bytes(); }

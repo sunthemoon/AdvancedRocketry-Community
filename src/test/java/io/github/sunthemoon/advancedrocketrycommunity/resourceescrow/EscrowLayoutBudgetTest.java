@@ -49,15 +49,19 @@ class EscrowLayoutBudgetTest {
         report("READY", heads.get(0).encode()); report("ARMED-terminal-with-anchor", arms.get(0).encode()); report("root-full-tables", EscrowCodec.encode(root));
     }
     @Test void maximumNativeFluidTagCannotReachL1WithoutItsCompleteEmbeddedSettlementReservation() {
-        var original = EscrowTestFixtures.operation(1); var payload = original.payload(); var nativeTag = new CompoundTag();
+        // The widest native fuel reference (120 Level characters) and a transfer guard remain encodable.
+        var original = EscrowReceiptChargeTest.fill(1, 99, 0, 0, "a:" + "b".repeat(118), true, -1);
+        var payload = original.payload(); var nativeTag = new CompoundTag();
         nativeTag.putByteArray("blob", new byte[0]); payload.put("Tag", nativeTag);
         nativeTag.putByteArray("blob", new byte[8_192 - RocketNbtSize.uncompressedBytes(payload)]);
         assertEquals(8_192, RocketNbtSize.uncompressedBytes(payload));
         var tooLarge = new EscrowOperation(original.id(), original.sequence(), original.owner(), original.createdTick(), original.phase(), original.reason(),
-                payload, RocketNativeResources.signature(payload), original.source(), original.destination(), original.guard());
+                payload, RocketNativeResources.signature(payload), original.source(), original.destination(), original.guard(),
+                original.kind(), original.settlement(), original.nativeBinding());
         var data = ResourceEscrowSavedData.create(); var before = data.ledger();
         try (var writer = new EscrowLedgerWriter(directory.resolve("escrow.dat"), 0); var coordinator = new EscrowCoordinator(data, writer)) {
-            assertThrows(IllegalArgumentException.class, () -> coordinator.prepareTest(tooLarge, ignored -> fail("Rejected admission must not issue a callback")));
+            assertThrows(IllegalArgumentException.class, () -> coordinator.prepareTest(tooLarge, RocketEscrowSection.neutral(),
+                    ignored -> fail("Rejected admission must not issue a callback")));
             assertEquals(before, coordinator.ledger()); assertEquals(1, coordinator.nextSequence()); assertFalse(coordinator.commitPreparations());
             assertTrue(writer.capturedOperations().isEmpty());
         }
@@ -67,7 +71,13 @@ class EscrowLayoutBudgetTest {
     }
     @Test void connectingAnotherBankReservesTheCompleteSharedComponentBeforeAnyMutation() {
         var operations = new ArrayList<EscrowOperation>();
-        for (int i = 1; i <= 8; i++) { operations.add(EscrowTestFixtures.operation(i, 99, i - 1)); }
+        for (int i = 1; i <= 8; i++) {
+            operations.add(EscrowReceiptChargeTest.fill(i, 99, i - 1, i - 1, "a:" + "b".repeat(118), true, -1));
+        }
+        var last = EscrowTestFixtures.ledger(operations.subList(0, 5).toArray(EscrowOperation[]::new));
+        assertDoesNotThrow(() -> EscrowSettlementCapacity.preflight(last));
+        var next = EscrowTestFixtures.ledger(operations.subList(0, 6).toArray(EscrowOperation[]::new));
+        assertThrows(IllegalArgumentException.class, () -> EscrowSettlementCapacity.preflight(next));
         var root = EscrowTestFixtures.ledger(operations.toArray(EscrowOperation[]::new));
         var before = EscrowCodec.encode(root);
         assertThrows(IllegalArgumentException.class, () -> EscrowSettlementCapacity.preflight(root));

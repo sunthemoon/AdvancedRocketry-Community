@@ -23,13 +23,13 @@ final class EscrowTransferAdmission {
                                                        EscrowNativeBinding.Admission capture) {
         var exclusive = exclusive(root, pending, capture);
         if (exclusive.isPresent()) { return exclusive; }
-        var capacity = EscrowCoordinator.fillRefusal(root, pending, capture);
-        if (capacity.isPresent()) { return capacity.map(EscrowCoordinator.Transfer::of); }
         // Settlement-backed retired markers already imply RECEIPT_BACKED. A remaining marker is not
         // retirement authority merely because its record is absent; wait for authoritative pruning.
         if (capture.operation().kind().cargo() && !capture.before().markers().isEmpty()) {
             return Optional.of(EscrowCoordinator.Transfer.OTHER_TRANSFER_PENDING);
         }
+        var capacity = EscrowCoordinator.fillRefusal(root, pending, capture);
+        if (capacity.isPresent()) { return capacity.map(EscrowCoordinator.Transfer::of); }
         return Optional.empty();
     }
     private static Optional<EscrowCoordinator.Transfer> exclusive(EscrowLedger root, Collection<EscrowOperation> pending,
