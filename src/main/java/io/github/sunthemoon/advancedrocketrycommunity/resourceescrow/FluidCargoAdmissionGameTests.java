@@ -40,7 +40,9 @@ public final class FluidCargoAdmissionGameTests {
         final GameTestHelper helper;
         final GameTestTickPacer pacer;
         final List<RocketFluidCargoBlockEntity> devices = new ArrayList<>();
+        final List<RocketFluidCargoBlockEntity> competitors = new ArrayList<>();
         final List<RocketEntity> rockets = new ArrayList<>();
+        final List<io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderBlockEntity> fuels = new ArrayList<>();
         ResourceEscrowSavedData original, isolated;
         Path file, backup;
         boolean detached, aside, done, baseline;
@@ -101,6 +103,7 @@ public final class FluidCargoAdmissionGameTests {
                 isolated.bind(server).reconcile(server, op, result -> helper.assertTrue(
                         result.reason() == EscrowReason.RECONCILIATION_UNIMPLEMENTED, "Cargo reconciliation advanced"));
                 if (!isolated.bind(server).writerIdle()) { return; }
+                if (direction == 0) { competitors(rocket); }
                 if (direction++ == 0) {
                     // The first rocket remains held; use another location and identity for the opposite direction.
                     rocket.discard(); phase = 1; return;
@@ -108,17 +111,58 @@ public final class FluidCargoAdmissionGameTests {
                 cleanup(); helper.succeed();
             }
         }
+        void competitors(RocketEntity rocket) {
+            var level = helper.getLevel(); var server = level.getServer(); var runtime = EscrowRuntime.of(server);
+            var coordinator = isolated.bind(server); var saved = EscrowCodec.encode(isolated.ledger());
+            long sequence = coordinator.nextSequence(); int count = coordinator.admissionAuthority().pendingCount();
+            int queued = runtime.fills(server).size();
+            for (var role : RocketCargoRole.values()) {
+                var at = new BlockPos(2, 2, role == RocketCargoRole.LOAD ? 2 : 6);
+                helper.setBlock(at, role == RocketCargoRole.LOAD ? ModBlocks.ROCKET_FLUID_LOADER.get() : ModBlocks.ROCKET_FLUID_UNLOADER.get());
+                var device = (RocketFluidCargoBlockEntity) level.getBlockEntity(helper.absolutePos(at));
+                competitors.add(device);
+                var root = RocketFluidCargoRoot.placed(rocket.ownerId().orElseThrow(), java.util.UUID.randomUUID(), role,
+                        role == RocketCargoRole.LOAD ? LoaderTank.of(new FluidStack(Fluids.WATER, 1000)) : LoaderTank.EMPTY)
+                        .withBinding(FluidFuelLoaderEscrowFixtures.binding(rocket));
+                var outer = new CompoundTag(); outer.put(RocketFluidCargoRoot.KEY, root.encode()); device.load(outer);
+                var kind = role == RocketCargoRole.LOAD ? EscrowOperation.Kind.FLUID_CARGO_LOAD : EscrowOperation.Kind.FLUID_CARGO_UNLOAD;
+                EscrowCargoSwitches.forTests(server, kind, root.device(), true);
+                var before = device.saveWithFullMetadata();
+                helper.assertTrue(device.attempt() == RocketCargoStatus.OTHER_TRANSFER_PENDING, "Second cargo direction was not refused");
+                helper.assertTrue(before.equals(device.saveWithFullMetadata()), "Refusal changed the competing device");
+                helper.assertTrue(coordinator.transferTurns().size() == 1, "Refusal did not retain one bounded next turn");
+                EscrowCargoSwitches.forTests(server, kind, root.device(), false); device.setRemoved();
+                helper.assertTrue(coordinator.transferTurns().size() == 0, "Unloaded cargo retained a turn");
+            }
+            var loader = FluidFuelLoaderEscrowFixtures.loader(level, helper.absolutePos(new BlockPos(6, 2, 4)),
+                    rocket.ownerId().orElseThrow(), FluidFuelLoaderEscrowFixtures.tank(FluidFuelLoaderEscrowFixtures.ROCKET_FUEL, 1000),
+                    FluidFuelLoaderEscrowFixtures.binding(rocket)); fuels.add(loader);
+            var deviceId = loader.root().orElseThrow().device(); runtime.loaderAdmissionForTests(server, deviceId, true);
+            var fuelBefore = loader.saveWithFullMetadata();
+            helper.assertTrue(loader.attempt() == io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderStatus.ROCKET_BUSY,
+                    "Fuel loader bypassed cargo exclusivity");
+            helper.assertTrue(coordinator.transferTurns().size() == 1 && fuelBefore.equals(loader.saveWithFullMetadata()), "Fuel refusal lost its turn or changed tank");
+            runtime.loaderAdmissionForTests(server, deviceId, false); loader.setRemoved();
+            helper.assertTrue(coordinator.transferTurns().size() == 0 && sequence == coordinator.nextSequence()
+                    && count == coordinator.admissionAuthority().pendingCount() && queued == runtime.fills(server).size()
+                    && !runtime.cargoPreparing(rocket.assemblyTransactionId().orElseThrow())
+                    && saved.equals(EscrowCodec.encode(isolated.ledger())), "Refusal changed ledger, reservation, queue or ticket");
+        }
         void cleanup() {
             if (done) { return; }
             done = true; var server = helper.getLevel().getServer(); var runtime = EscrowRuntime.of(server);
-            for (var device : devices) {
+            for (var device : java.util.stream.Stream.concat(devices.stream(), competitors.stream()).toList()) {
                 device.root().ifPresent(root -> EscrowCargoSwitches.forTests(server,
                         root.role() == RocketCargoRole.LOAD ? EscrowOperation.Kind.FLUID_CARGO_LOAD : EscrowOperation.Kind.FLUID_CARGO_UNLOAD,
                         root.device(), false));
                 device.setRemoved();
             }
             rockets.forEach(RocketEntity::discard);
-            if (isolated != null) { isolated.stop(); }
+            for (var fuel : fuels) {
+                runtime.loaderAdmissionForTests(server, fuel.root().orElseThrow().device(), false); fuel.setRemoved();
+            }
+            if (detached) { isolated = ResourceEscrowSavedData.existing(server); }
+            if (isolated != null && isolated != original) { isolated.stop(); }
             if (aside) {
                 try { Files.deleteIfExists(file); if (Files.exists(backup)) { Files.move(backup, file, StandardCopyOption.ATOMIC_MOVE); } }
                 catch (java.io.IOException failure) { throw new IllegalStateException(failure); }

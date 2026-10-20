@@ -6,7 +6,6 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.RocketCargoMu
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.RocketCargoSelection.Status;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.LoaderTank;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketSnapshotNbtCodec;
-import java.util.ArrayList;
 import java.util.Collection;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraftforge.fluids.FluidStack;

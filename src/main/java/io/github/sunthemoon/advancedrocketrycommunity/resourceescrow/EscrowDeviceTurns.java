@@ -23,6 +23,8 @@ public final class EscrowDeviceTurns implements AutoCloseable {
     }
     public void blocked() { if (registration != null) { coordinator.transferTurns().blocked(device, rocket); } }
     public boolean allows() { return registration == null || coordinator.transferTurns().allows(device, rocket); }
+    public boolean claim() { return registration == null || coordinator.transferTurns().claim(device, rocket); }
+    public void release() { if (registration != null) { coordinator.transferTurns().release(device, rocket); } }
     @Override public void close() {
         if (registration != null) { registration.close(); }
         registration = null; coordinator = null; device = null; rocket = null;

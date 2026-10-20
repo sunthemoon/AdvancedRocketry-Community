@@ -37,4 +37,18 @@ class EscrowDeviceTurnsTest {
             assertEquals(1, coordinator.transferTurns().size()); assertTrue(owner.allows());
         }
     }
+    @Test void nextTurnCannotPreemptAnAlreadyRunningPreparationAndIsServedAfterIt() {
+        var turns = new EscrowTransferTurns();
+        try (var first = turns.register(id(1), id(99)); var second = turns.register(id(2), id(99))) {
+            assertTrue(turns.claim(id(1), id(99)));
+            turns.blocked(id(2), id(99));
+            assertTrue(turns.allows(id(1), id(99))); assertFalse(turns.allows(id(2), id(99)));
+            turns.admitted(id(1), id(99));
+            assertTrue(turns.allows(id(2), id(99))); assertFalse(turns.allows(id(1), id(99)));
+            assertTrue(turns.claim(id(2), id(99))); turns.blocked(id(1), id(99));
+            turns.release(id(2), id(99));
+            assertTrue(turns.allows(id(1), id(99))); assertFalse(turns.allows(id(2), id(99)));
+        }
+        assertEquals(0, turns.size());
+    }
 }

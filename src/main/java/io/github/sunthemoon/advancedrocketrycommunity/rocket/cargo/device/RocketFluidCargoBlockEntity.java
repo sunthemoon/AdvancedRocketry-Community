@@ -35,7 +35,7 @@ import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import org.slf4j.Logger;
 
-/** Native lifecycle and authority bridge. C-A never starts a cargo operation or creates an escrow ledger. */
+/** Native lifecycle and authority bridge. Cargo admission is gated and stops at acknowledged PREPARED. */
 public final class RocketFluidCargoBlockEntity extends BlockEntity implements MenuProvider {
     public static final double MAX_ACTOR_DISTANCE = 8.0D;
     public static final String SAVE_REFUSAL =
@@ -61,6 +61,8 @@ public final class RocketFluidCargoBlockEntity extends BlockEntity implements Me
     }
     public void transferBlocked() { if (refreshTurns()) { turns.blocked(); } }
     public boolean transferTurn() { return refreshTurns() && turns.allows(); }
+    public boolean claimTransferTurn() { return refreshTurns() && turns.claim(); }
+    public void releaseTransferTurn() { turns.release(); }
 
     public RocketFluidCargoBlockEntity(BlockPos position, BlockState state) {
         super(((RocketFluidCargoBlock) state.getBlock()).role() == RocketCargoRole.LOAD
@@ -114,7 +116,7 @@ public final class RocketFluidCargoBlockEntity extends BlockEntity implements Me
         return root.binding() == null ? RocketCargoStatus.UNBOUND : null;
     }
 
-    /** Admission is deliberately unwired. No snapshot preparation, queue, sequence or resource mutation occurs. */
+    /** Scalar display only; admission and resource authority remain on the server. */
     public RocketCargoStatus displayStatus() {
         RocketCargoStatus refusal = deviceRefusal();
         if (refusal != null) { return refusal; }
@@ -127,8 +129,8 @@ public final class RocketFluidCargoBlockEntity extends BlockEntity implements Me
         if (device.pacer.tryStart(level.getGameTime())) { device.attempt(); }
     }
 
-    /** There is no prepared cargo operation in C-A; the display cursor is absent, not a client-selected target. */
-    public Optional<BlockPos> cursor() { return Optional.empty(); }
+    /** The server-selected cursor exists only while a transient preparation is active. */
+    public Optional<BlockPos> cursor() { return admission.cursor(); }
 
     public boolean admitted(Player player) {
         return actorNear(player) && !unsupportedRoot() && claimed() && !duplicate() && root.owner().equals(player.getUUID());

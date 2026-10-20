@@ -40,7 +40,7 @@ final class EscrowTransferPreparation {
         });
         return outcome[0];
     }
-    /** Shared owner-thread entry. Cargo has no production caller until C-E; no publication permit is issued here. */
+    /** Shared owner-thread entry behind the device switches; no publication permit is issued here. */
     static Transfer prepareTransfer(EscrowCoordinator coordinator, EscrowNativeBinding.Admission capture, Consumer<Boolean> completion) {
         coordinator.owner(); var op = capture.operation();
         if (coordinator.admissionUnavailable()) { return Transfer.UNAVAILABLE; }
