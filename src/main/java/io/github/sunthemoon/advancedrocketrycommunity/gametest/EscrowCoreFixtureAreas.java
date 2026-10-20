@@ -79,6 +79,9 @@ public final class EscrowCoreFixtureAreas {
         for (ChunkPos centre : batch.centres()) {
             chunks.removeRegionTicket(Native.HOLD, centre, RADIUS, centre);
             chunks.removeRegionTicket(TicketType.START, centre, RADIUS, Unit.INSTANCE); // A failed test keeps its own.
+            // A chunk access in the batch's last tick leaves vanilla's one-tick UNKNOWN ticket, which only the next
+            // tick's purge would remove; this hook runs inside that last tick.
+            area(centre).forEach(pos -> chunks.removeRegionTicket(TicketType.UNKNOWN, pos, 0, pos));
         }
         // Unload now, while no test runs, rather than in the next batch's first ticks: vanilla saves every chunk of
         // each area's generation pyramid when it unloads it.
