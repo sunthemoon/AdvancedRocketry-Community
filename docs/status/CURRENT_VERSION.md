@@ -38,7 +38,7 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: 4153204e (W114 merged with W114F: the R40 and R41 receipt charges, so every guarded receipt fits on every registered Level; before it, ead8d323 merged W111, the escrow proof GameTest fix)
+latest_code_commit: 81c987f9 (W116 merged: P1-N3 leaf N3-A2, the ordinary retirement follow-ups; before it, 4153204e merged W114 with W114F, the R40 and R41 receipt charges)
 latest_hosted_regression: run 39396267820 at f1223c02 (the W115 merge f8ddfc25) failed only EscrowCoreGameTests.ownTerrainAndEntityStoresConfirmTheExactFrozenFrontier after 200 ticks, the escrow proof flake that W111 fixed (merged ead8d323). Runs 39381441858 at d6f97f3a and 39376267447 at 43ee0aa0 passed all required GameTests and the log checker; the same test failed on the runs at bd1c78b9, d2f0d00c, 9f6668aa, 67dee026, fb1ac454 and 20a82b88 (at 9f6668aa also supersededTerrainProofRetriesTheSameFrontierAfterBackoff)
 ledger_planned_units: 19
 asset_review_items: 154
@@ -92,7 +92,7 @@ What is still open:
 - **Assets.** 154 legacy assets are still under REVIEW (ADR-066 section 7.3).
 - **S1.** W11b1 and W44 have native dedicated-server restart evidence as development evidence.
   No S1 campaign has run.
-- **P1-N3 (2026-10-18), first leaf merged.** N3-A1 (W98, `8f6dd016`) closes I1 to I3: the W91K cuts now keep the rocket FUELED at its origin on both restarts. Open: N3-A2 (W98-R1, R3, R6, R10, R12) and N3-B (I6, I7). The original finding: W91K's native cuts showed that a hard kill after an ordinary
+- **P1-N3 (2026-10-18), first leaf merged.** N3-A1 (W98, `8f6dd016`) closes I1 to I3: the W91K cuts now keep the rocket FUELED at its origin on both restarts. N3-A2 (W116, merged `81c987f9`) closes W98-R3, R10 and R12; W98-R6 stays a named residual (Root decision R42). Open: W98-R1 (before governed admission) and N3-B (I6, I7). The original finding: W91K's native cuts showed that a hard kill after an ordinary
   fail-back's journal removal is durable, and before the source rocket's chunk is saved, leaves the rocket in
   its saved in-flight image with no transfer record, which nothing recovers. It predates W91 and affects
   ordinary flights in every world. W96's design note is frozen with its independent review's amendments (Root

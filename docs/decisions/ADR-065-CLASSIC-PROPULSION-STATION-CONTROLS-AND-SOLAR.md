@@ -1731,8 +1731,17 @@ changes no decision status and accepts no risk. The risk is R-035.
 - **Root decision R35, corrected.** R35 item 1 chose that fallback for a world whose escrow ledger is present but not
   operational. W98F showed that such a world already fences every rocket (`EscrowCoordinator.logicalLocked`), as
   before W98, so no fallback is needed and none was built.
-- **Open (leaf N3-A2 and later):** W98-R1 (an ordinary capture invalidates a governed proof of the same entity slot,
-  before governed admission opens), W98-R3, R6, R10 and R12, N3-B (I6, I7) and the player checkpoint adapter.
+- **N3-A2 (W116, merged `81c987f9`; W116-review APPROVE-WITH-CHANGES, SHA-256 `d032498c…de9e`).** Each proof
+  attempt refreshes the existing flight ticket on every census column (W98-R3; an off-origin I3 discarded slot
+  still gets none, and the 400-tick expiry bounds a ticket after its last refresh). An ordinary store or force
+  failure in a mixed barrier batch no longer fails the governed attempts or counts in their `ioFailures`; a force
+  failure on a worker that also carries a governed capture still fails it (W98-R10). The coordinator's guards,
+  escrow rule and test pause moved out, with state-machine and contention coverage (W98-R10, R12). Root decision
+  R42 keeps recovery waiting for an offline crew after a countdown cancellation killed before its proof: a source
+  that recovery already returned, or a stale COUNTDOWN image, cannot be told from one that never left (W98-R6).
+- **Open:** W98-R1 (an ordinary capture invalidates a governed proof of the same entity slot, before governed
+  admission opens; W116 observed it on every run), W98-R6's offline-crew hold (R42; a durable cancellation intent
+  is reconsidered with N3-B), N3-B (I6, I7) and the player checkpoint adapter.
 
 No saved format changes. This is a development implementation note, not owner acceptance or a Gate result.
 
