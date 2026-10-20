@@ -83,6 +83,15 @@ public final class SatelliteRegistryProofGameTests {
                 server.overworld().getGameTime()).success(), "Could not seed solar registration");
         data.flush(server);
         insert(helper, terminal, identity);
+        var service = new SatelliteLaunchService(new SatelliteCatalogManager(), new CelestialCatalogManager());
+        helper.assertTrue(service.validate(server, player.getUUID(), identity, null).result().code()
+                == SatelliteOperationCode.IDEMPOTENT, "Non-data shared replay consulted removed components or a target");
+        press(helper, terminal, player, SatelliteTerminalMenu.BUTTON_LAUNCH, SatelliteOperationCode.IDEMPOTENT);
+        helper.assertTrue(terminal.menuInventory().getStackInSlot(SatelliteTerminalBlockEntity.SLOT_PACKAGE).isEmpty(),
+                "Removed-component non-data replay was not extracted");
+        var replayPackage = new ItemStack(ModItems.SATELLITE_PACKAGE.get()); SatelliteItemData.write(replayPackage, identity);
+        helper.assertTrue(terminal.menuInventory().insertItem(SatelliteTerminalBlockEntity.SLOT_PACKAGE, replayPackage, false).isEmpty(),
+                "Could not reinsert the package for the receipt-fence checks");
         String hash = RocketNativeResources.hash("w119-registry-ordering");
         long tick = server.getTickCount();
         var intent = new BayReceipt(UUID.randomUUID(), BayReceiptTestHooks.nextSequence(server), UUID.randomUUID(),
