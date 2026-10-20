@@ -2,6 +2,8 @@ package io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo;
 
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowCargoPayload;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowItemCargoPayload;
+import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowItemStackCodec;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.RocketLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.PressurizedTankRocketAdapter;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketSnapshotPreparation;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketSnapshotPreparation.Work;
@@ -17,6 +19,9 @@ import net.minecraftforge.fluids.FluidStack;
 /** One transient reconstruction, never a persisted operation or admission authority. */
 public final class RocketCargoPreparation {
     public enum State { PREPARING, READY, DISCARDED }
+    /** Item stage 0 at the largest legal container, replacement and moved stack: 8,458,240 bytes of the 16 MiB tick budget. */
+    static final long ITEM_STEP_BYTES = itemWork(RocketLimits.MAX_BLOCK_ENTITY_NBT_BYTES,
+            RocketLimits.MAX_BLOCK_ENTITY_NBT_BYTES, EscrowItemStackCodec.MAX_BYTES);
     private final UUID logical;
     private final Thread owner = Thread.currentThread();
     private RocketStructureSnapshot before;
@@ -73,6 +78,7 @@ public final class RocketCargoPreparation {
         requireLive();
         try { return advanceSteps(tick, budget); }
         catch (RocketItemCargoMutation.Refusal refused) { failure = refused.status(); }
+        catch (RocketCargoWorkBudget.Exceeded overrun) { failure = RocketCargoSelection.Status.CARGO_TOO_LARGE; }
         catch (RocketSnapshotException invalid) {
             failure = switch (invalid.code()) {
                 case SNAPSHOT_DATA_TOO_LARGE, BLOCK_ENTITY_DATA_TOO_LARGE -> RocketCargoSelection.Status.CARGO_TOO_LARGE;
@@ -87,7 +93,7 @@ public final class RocketCargoPreparation {
     private boolean advanceSteps(long tick, RocketCargoWorkBudget budget) {
         if (!budget.claim(tick, this)) { return false; }
         while (state == State.PREPARING) {
-            long bound = stage == 0 ? 1_048_576 : stage == 1 ? snapshot.nextByteBound()
+            long bound = stage == 0 ? (item == null ? 1_048_576 : ITEM_STEP_BYTES) : stage == 1 ? snapshot.nextByteBound()
                     : stage == 2 ? RocketCargoWorkBudget.MAX_BYTES : 8L * 1_048_576;
             int visitBound = stage == 0 ? 2 * before.blocks().size() : stage == 1 ? snapshot.nextVisits()
                     : 8 * before.blocks().size();
@@ -147,9 +153,12 @@ public final class RocketCargoPreparation {
         var replacement = RocketItemCargoMutation.payload(before.blocks().get(index), item, load);
         snapshot = new RocketSnapshotPreparation(before, index, replacement);
         stage++;
-        // Container parsing, native stack round trips, merge signatures and copies, as for the tank.
-        return new Work(32L * (old.uncompressedBytes() + replacement.uncompressedBytes()
-                + RocketNbtSize.uncompressedBytes(item.stack()) + 256), 2 * before.blocks().size());
+        return new Work(itemWork(old.uncompressedBytes(), replacement.uncompressedBytes(),
+                RocketNbtSize.uncompressedBytes(item.stack())), 2 * before.blocks().size());
+    }
+    /** Container parsing and copies, native stack round trips and merge signatures: a few passes over each input. */
+    private static long itemWork(long old, long replacement, long stack) {
+        return 16L * (old + replacement + stack + 256);
     }
     private int index(EscrowCargoPayload.Cursor cursor) {
         for (int i = 0; i < before.blocks().size(); i++) {
