@@ -144,7 +144,23 @@ public final class EscrowBarrier implements AutoCloseable {
     /** Read-only hint for {@link #beginOrdinary}; it still reserves atomically. */
     public boolean availableOrdinary(String level, long tick) { owner(); return working.get() && budget.availableOrdinary(level, tick); }
 
+    /** Unit tests: one already captured attempt, reserved and staged as {@link #begin} or {@link #beginOrdinary} would. */
+    boolean stageForTests(String level, boolean ordinary, EscrowChunkStore.Capture capture, Predicate<CompoundTag> validator,
+                          long tick, Consumer<String> sink, Consumer<Result> callback) {
+        owner();
+        if (!working.get() || !(ordinary ? budget.reserveOrdinary(level, tick) : budget.reserve(level, true, tick))) { return false; }
+        budget.captured(capture.bytes());
+        outstanding.add(capture);
+        staged.computeIfAbsent(level, key -> new ArrayList<>()).add(new Attempt(capture, null, validator, callback, sink, ordinary));
+        nextForce.putIfAbsent(level, tick + 20);
+        return true;
+    }
+
     private void forceBatch(List<Attempt> attempts) {
+        // W116 (W98-R10): only a batch with both kinds needs outcomes per kind; every other batch runs exactly as before.
+        if (attempts.stream().anyMatch(Attempt::ordinary) && attempts.stream().anyMatch(attempt -> !attempt.ordinary())) {
+            forceMixed(attempts); return;
+        }
         // Each batch label goes once to every distinct sink; an all-governed batch reaches only the governed checkpoint.
         var sinks = attempts.stream().map(Attempt::sink).distinct().toList();
         boolean governed = attempts.stream().anyMatch(attempt -> !attempt.ordinary());
@@ -180,6 +196,57 @@ public final class EscrowBarrier implements AutoCloseable {
                     });
         });
     }
+    /**
+     * W116 (W98-R10): a batch with governed and ordinary attempts keeps its one force per worker, but a governed attempt
+     * fails only on a governed own-store failure or on the failed force of a worker that a governed attempt uses. An
+     * ordinary failure therefore never fails a governed attempt or counts in {@link #ioFailures}; an ordinary attempt
+     * still fails on any failure in its batch, as in an all-ordinary batch.
+     */
+    private void forceMixed(List<Attempt> attempts) {
+        CompletableFuture.allOf(attempts.stream().map(attempt -> attempt.capture().stored())
+                .toArray(CompletableFuture[]::new)).whenComplete((stored, storeFailure) -> {
+            List<Attempt> forcing;
+            var forces = new java.util.LinkedHashMap<net.minecraft.world.level.chunk.storage.IOWorker, CompletableFuture<Void>>();
+            long forceStarted = System.nanoTime();
+            synchronized (lifecycle) {
+                if (!working.get()) { return; }
+                forcing = going(attempts, attempt -> attempt.capture().stored().isCompletedExceptionally(), EscrowReason.BARRIER_IO);
+                if (forcing.isEmpty()) { return; }
+                var sinks = forcing.stream().map(Attempt::sink).distinct().toList();
+                sinks.forEach(sink -> sink.accept("BARRIER_STORE_AFTER"));
+                sinks.forEach(sink -> sink.accept("BARRIER_FORCE_BEFORE"));
+                sinks.forEach(sink -> sink.accept("K6"));
+                // Quiesce cannot overtake a force submission; still at most one force per original worker in this batch.
+                forcing.stream().map(attempt -> attempt.capture().worker()).distinct()
+                        .forEach(worker -> forces.put(worker, worker.synchronize(true)));
+            }
+            CompletableFuture.allOf(forces.values().toArray(CompletableFuture[]::new)).whenComplete((ignored, forceFailure) -> {
+                timings.sample("force_io", System.nanoTime() - forceStarted);
+                if (!working.get()) { return; }
+                var reading = going(forcing, attempt -> forces.get(attempt.capture().worker()).isCompletedExceptionally(),
+                        EscrowReason.BARRIER_FORCE);
+                if (reading.isEmpty()) { return; }
+                reading.stream().map(Attempt::sink).distinct().forEach(sink -> sink.accept("BARRIER_FORCE_AFTER"));
+                try { reader.execute(() -> reading.forEach(this::readback)); }
+                catch (java.util.concurrent.RejectedExecutionException stopped) {
+                    if (working.get()) { throw stopped; }
+                }
+            });
+        });
+    }
+
+    /**
+     * The attempts of a mixed batch that go on after one stage; the others complete with {@code reason}. A governed
+     * attempt's failure ends the whole batch, as before; an ordinary one ends only the ordinary attempts.
+     */
+    private List<Attempt> going(List<Attempt> attempts, Predicate<Attempt> failed, EscrowReason reason) {
+        boolean governedFailed = attempts.stream().anyMatch(attempt -> !attempt.ordinary() && failed.test(attempt));
+        List<Attempt> going = governedFailed ? List.of() : attempts.stream().anyMatch(failed)
+                ? attempts.stream().filter(attempt -> !attempt.ordinary()).toList() : attempts;
+        attempts.stream().filter(attempt -> !going.contains(attempt)).forEach(attempt -> complete(attempt, reason));
+        return going;
+    }
+
     private void readback(Attempt attempt) {
         if (!working.get()) { return; }
         var capture = attempt.capture(); EscrowReason reason = EscrowReason.NONE;
