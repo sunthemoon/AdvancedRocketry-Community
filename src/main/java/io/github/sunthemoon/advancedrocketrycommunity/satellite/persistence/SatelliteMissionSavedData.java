@@ -1,7 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence;
 
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
-import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.AtomicSavedData;
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataPolicy;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.SavedDataSchemaMigrator;
 import io.github.sunthemoon.advancedrocketrycommunity.progression.ResearchAccount;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.AsteroidInstance;
@@ -21,19 +21,22 @@ import java.util.UUID;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.storage.LevelResource;
 
 /** Overworld-owned mission authority; malformed or future data is preserved fail-closed. */
-public final class SatelliteMissionSavedData extends AtomicSavedData {
+public final class SatelliteMissionSavedData extends SavedData {
     public static final String DATA_NAME = "advancedrocketrycommunity_satellite_missions";
 
     private final SatelliteMissionRegistry registry;
+    private final SatelliteRegistryWriter writer;
     private CompoundTag preservedBlockedData;
     /** ADR-050 section 2: a state change waits here for the next coalesced flush (at most one per 100 ticks). */
     private boolean flushPending;
 
     private SatelliteMissionSavedData(SatelliteMissionRegistry registry) {
-        super(ManagedSavedDataType.SATELLITE_MISSIONS);
         this.registry = Objects.requireNonNull(registry, "registry");
+        this.writer = new SatelliteRegistryWriter(this, registry);
         io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.RestoreReport report = registry.restoreReport();
         if (report.changed()) {
             // ADR-050 section 9: what the load invariants held is persisted with the next coalesced flush.
@@ -81,6 +84,7 @@ public final class SatelliteMissionSavedData extends AtomicSavedData {
         } catch (RuntimeException exception) {
             data.preservedBlockedData = preserved;
         }
+        data.writer.loaded();
         return data;
     }
 
@@ -88,6 +92,37 @@ public final class SatelliteMissionSavedData extends AtomicSavedData {
         setDirty();
         registry.markChanged();
         flushPending = true;
+    }
+
+    @Override
+    public void setDirty(boolean dirty) {
+        if (dirty) { writer.mutated(); }
+        super.setDirty(dirty);
+    }
+
+    void pendingWrite() { super.setDirty(true); }
+    void persisted() { super.setDirty(false); flushPending = false; }
+    public long mutationSequence() { return writer.sequence(); }
+    public SatelliteRegistryProof.Watch watch(UUID satellite) { requireOperational(); return writer.watch(satellite); }
+    public Optional<SatelliteRegistryProof.Acknowledgement> acknowledgement() { return writer.acknowledgement(); }
+    void writePolicy(CheckedSavedDataPolicy policy) { writer.policy(policy); }
+
+    public void flush(MinecraftServer server) { flush(file(server)); }
+    public void flush(java.nio.file.Path file) { writer.flush(file); }
+    @Override public void save(java.io.File file) { writer.save(file); }
+
+    public SatelliteRegistryProof.Completion checkpoint(MinecraftServer server, List<SatelliteRegistryProof.Watch> watches) {
+        if (!server.isSameThread()) { throw new IllegalStateException("Registry checkpoint requires the server thread"); }
+        return checkpoint(file(server), watches, writer.policy(), directory -> { });
+    }
+
+    SatelliteRegistryProof.Completion checkpoint(java.nio.file.Path file, List<SatelliteRegistryProof.Watch> watches,
+            CheckedSavedDataPolicy policy, CheckedSavedDataPolicy.DirectoryForce force) {
+        return writer.checkpoint(file, List.copyOf(watches), policy, force);
+    }
+
+    private static java.nio.file.Path file(MinecraftServer server) {
+        return server.getWorldPath(LevelResource.ROOT).resolve("data").resolve(ManagedSavedDataType.SATELLITE_MISSIONS.fileName());
     }
 
     public GroundSurveys.Result groundSurveys(java.util.function.Function<GroundSurveys, GroundSurveys.Result> operation) {
@@ -383,15 +418,9 @@ public final class SatelliteMissionSavedData extends AtomicSavedData {
         if (preservedBlockedData != null) {
             return preservedBlockedData.copy();
         }
-        return SatelliteRegistryPayload.encodeCurrent(registry, target);
-    }
-
-    @Override
-    protected void onPersisted() {
-        if (preservedBlockedData == null) {
-            registry.markPersisted();
-            flushPending = false;
-        }
+        SatelliteRegistryPayload.encodeCurrent(registry, target);
+        target.putLong("save_epoch", writer.epochToWrite());
+        return target;
     }
 
     public long saveEpoch() {

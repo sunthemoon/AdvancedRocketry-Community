@@ -589,8 +589,16 @@ public final class SatelliteMissionRegistry {
 
     /** Called once a write carrying {@link #epochToWrite()} has returned without error. */
     public synchronized void markPersisted() {
-        if (changedSinceEpoch) {
-            saveEpoch = Math.addExact(saveEpoch, 1L);
+        markPersisted(epochToWrite());
+    }
+
+    /** A synchronous current capture may skip epochs carried by unknown writes (W27 section 3). */
+    public synchronized void markPersisted(long carriedEpoch) {
+        if (carriedEpoch < epochToWrite()) {
+            throw new IllegalArgumentException("A registry acknowledgement cannot precede its current epoch");
+        }
+        if (carriedEpoch > saveEpoch) {
+            saveEpoch = carriedEpoch;
             changedSinceEpoch = false;
             resources.epochAdvanced();
         }
