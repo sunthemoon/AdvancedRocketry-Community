@@ -272,6 +272,7 @@ public final class EscrowRuntime {
     @SubscribeEvent public static void tick(TickEvent.ServerTickEvent event) {
         if (event.phase != TickEvent.Phase.END) { return; }
         var runtime = of(event.getServer()); if (runtime.stopping) { return; }
+        if (runtime.cargo != null) { runtime.cargo.tick(); }
         if (!runtime.consumerTimingSelected) {
             runtime.consumerTimings = EscrowConsumerTimingProbe.select(Boolean.getBoolean(EscrowTestEndpoints.HOOKS),
                     Boolean.getBoolean(EscrowConsumerTimingProbe.PROPERTY), () -> EscrowTestEndpoints.requireEnabled(event.getServer()));

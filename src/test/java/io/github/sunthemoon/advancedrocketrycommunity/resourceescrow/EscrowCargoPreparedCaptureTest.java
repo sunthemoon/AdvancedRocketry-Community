@@ -16,6 +16,29 @@ class EscrowCargoPreparedCaptureTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
     @TempDir Path temp;
 
+    @Test void finalAdmissionExceptionStillDiscardsPreparedRam() {
+        var c = EscrowCargoEligibilityTest.sample(true, 1, -1);
+        var budget = new RocketCargoWorkBudget();
+        var preparation = new RocketCargoPreparation(c.op().guard().rocket(),
+                RocketSnapshotNbtCodec.decode(c.before().getCompound("snapshot")).snapshot().orElseThrow(),
+                EscrowCargoPayload.decode(c.op().payload()), true);
+        long tick = 1;
+        while (!preparation.advance(tick++, budget)) { assertTrue(tick < 100); }
+        var root = EscrowTestFixtures.ledger();
+        var capture = new EscrowCargoPreparedCapture(preparation, c.op(), c.before(), c.after(), c.deviceBefore(), c.deviceAfter(), 64_000);
+        while (!capture.advance(tick++, budget, root, List.of())) { assertTrue(tick < 100); }
+        var data = ResourceEscrowSavedData.load(EscrowCodec.encode(root));
+        try (var writer = new EscrowLedgerWriter(temp.resolve("exception"), 0); var coordinator = new EscrowCoordinator(data, writer)) {
+            long now = tick;
+            assertThrows(IllegalStateException.class, () -> coordinator.prepareCargo(capture, now, budget,
+                    () -> { throw new IllegalStateException("final input check failed"); }, ignored -> fail()));
+            assertEquals(RocketCargoPreparation.State.DISCARDED, preparation.state());
+            assertEquals(1, coordinator.nextSequence());
+            assertEquals(0, coordinator.admissionAuthority().pendingCount());
+            assertFalse(data.isDirty());
+        }
+    }
+
     @Test void nativeCaptureSuppliersRunOnlyAfterTheirWorkIsReserved() {
         var c = EscrowCargoEligibilityTest.sample(true, 1, -1);
         var root = EscrowTestFixtures.ledger(); var budget = new RocketCargoWorkBudget();

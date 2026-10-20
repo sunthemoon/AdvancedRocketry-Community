@@ -211,13 +211,16 @@ public final class EscrowCoordinator implements AutoCloseable {
         // Changed native inputs are discarded and must repeat the full eligibility capture, not merely its digests.
         var outcome = new Transfer[] {Transfer.UNAVAILABLE};
         budget.perform(serverTick, 16L * 1_048_576, 16_384, false, () -> {
-            if (!unchanged.getAsBoolean() || !prepared.unchanged()) { outcome[0] = Transfer.STALE; }
-            else {
-                // Repeat sequence, root, O1 and combined reservation against the final acknowledged root.
-                outcome[0] = prepareTransfer(result.capture(), completion);
+            try {
+                if (!unchanged.getAsBoolean() || !prepared.unchanged()) { outcome[0] = Transfer.STALE; }
+                else {
+                    // Repeat sequence, root, O1 and combined reservation against the final acknowledged root.
+                    outcome[0] = prepareTransfer(result.capture(), completion);
+                }
+            } finally {
+                // Apply must reconstruct from BEFORE, even when final admission throws.
+                prepared.discard();
             }
-            // Capture retains only frozen digests; apply must construct again from the frozen before state.
-            prepared.discard();
             return new io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketSnapshotPreparation.Work(16L * 1_048_576, 16_384);
         });
         return outcome[0];

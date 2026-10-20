@@ -10,6 +10,7 @@ import java.util.UUID;
 
 /** Session-owned single reconstruction slot. C-E owns queue ordering; an admitted continuation cannot be displaced. */
 public final class RocketCargoPreparations implements AutoCloseable {
+    private static final org.slf4j.Logger LOGGER = com.mojang.logging.LogUtils.getLogger();
     private final Thread owner = Thread.currentThread();
     private final RocketCargoWorkBudget budget = new RocketCargoWorkBudget();
     private Ticket active;
@@ -38,8 +39,15 @@ public final class RocketCargoPreparations implements AutoCloseable {
         active = new Ticket(rocket, delta, load); return Optional.of(active);
     }
     public boolean locked(UUID logical) { owner(); discardFinished(); return active != null && active.cursor.logical().equals(logical); }
+    public void tick() { owner(); discardFinished(); }
     private void discardFinished() {
-        if (active != null && !active.valid()) { active.close(); }
+        if (active == null) { return; }
+        String expired = active.lifetime.expired(active.rocket.getServer().getTickCount());
+        if (expired != null) {
+            LOGGER.info("ARCE_CARGO_PREPARATION_CLOSED logical={} stage={} reason={}",
+                    active.cursor.logical(), active.cursor.state(), expired);
+            active.close();
+        } else if (!active.valid()) { active.close(); }
     }
     public void removed(RocketEntity rocket) { owner(); if (active != null && active.rocket == rocket) { active.close(); } }
     public RocketCargoWorkBudget budget() { owner(); return budget; }
@@ -56,17 +64,20 @@ public final class RocketCargoPreparations implements AutoCloseable {
         private final net.minecraft.world.level.Level level;
         private final net.minecraft.world.phys.Vec3 position;
         private final RocketCargoPreparation cursor;
+        private final RocketCargoTicketLifetime lifetime;
         private boolean discarded;
         private Ticket(RocketEntity rocket, EscrowCargoPayload delta, boolean load) {
             this.rocket = rocket; flight = rocket.flightData().orElseThrow(); wrapper = rocket.escrowSection();
             ownerId = rocket.ownerId().orElseThrow(); level = rocket.level(); position = rocket.position();
             cursor = new RocketCargoPreparation(rocket.assemblyTransactionId().orElseThrow(), rocket.snapshot().orElseThrow(), delta, load);
+            lifetime = new RocketCargoTicketLifetime(rocket.getServer().getTickCount());
         }
         public RocketEntity rocket() { owner(); return rocket; }
         public RocketCargoPreparation cursor() { owner(); return cursor; }
         public boolean valid() {
             owner();
             return !closed && !discarded && active == this && rocket.isAlive() && rocket.level() == level
+                    && lifetime.expired(rocket.getServer().getTickCount()) == null
                     && cursor.state() != RocketCargoPreparation.State.DISCARDED
                     && rocket.level().hasChunkAt(rocket.blockPosition()) && position.equals(rocket.position())
                     && rocket.getDeltaMovement().lengthSqr() == 0 && rocket.snapshot().orElse(null) == cursor.before()
@@ -76,8 +87,14 @@ public final class RocketCargoPreparations implements AutoCloseable {
         }
         public boolean advance() {
             owner();
+            discardFinished();
             if (!valid()) { close(); return false; }
-            try { return cursor.advance(rocket.getServer().getTickCount(), budget); }
+            long bytes = cursor.chargedBytes(), visits = cursor.chargedVisits();
+            try {
+                boolean ready = cursor.advance(rocket.getServer().getTickCount(), budget);
+                lifetime.progress(rocket.getServer().getTickCount(), cursor.chargedBytes() != bytes || cursor.chargedVisits() != visits, ready);
+                return ready;
+            }
             catch (RuntimeException failure) { close(); throw failure; }
         }
         @Override public void close() {

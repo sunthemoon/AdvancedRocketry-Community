@@ -33,6 +33,59 @@ public final class EscrowCargoPreparationGameTests {
         helper.onEachTick(scenario::tick);
     }
 
+    @GameTest(template = "rocket_test", batch = "cargo_preparation", timeoutTicks = 200)
+    public static void abandonedAndUnpublishedTicketsExpireAtFortyServerTicks(GameTestHelper helper) {
+        var scenario = new ExpiryScenario(helper);
+        helper.onEachTick(scenario::tick);
+    }
+
+    private static final class ExpiryScenario {
+        private final GameTestHelper helper;
+        private RocketEntity rocket;
+        private RocketCargoPreparations.Ticket ticket;
+        private RocketStructureSnapshot before;
+        private int phase, since;
+        ExpiryScenario(GameTestHelper helper) { this.helper = helper; }
+
+        void tick() {
+            if (phase == 4) { return; }
+            try {
+                var server = helper.getLevel().getServer();
+                if (rocket == null) {
+                    var origin = helper.absolutePos(new BlockPos(2, 2, 2));
+                    if (!helper.getLevel().areEntitiesLoaded(new net.minecraft.world.level.ChunkPos(origin).toLong())) { return; }
+                    var journal = io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData.get(server);
+                    if (!journal.retryChecked(server)) { return; }
+                    rocket = create(helper, origin, false); before = rocket.snapshot().orElseThrow();
+                }
+                var preparations = RocketRuntime.cargoPreparations(server);
+                if (ticket == null) {
+                    ticket = preparations.begin(rocket, delta(before), true).orElse(null);
+                    if (ticket == null) { return; }
+                    since = server.getTickCount();
+                }
+                if (phase == 2) {
+                    if (!ticket.advance()) { return; }
+                    since = server.getTickCount(); phase = 3;
+                }
+                int elapsed = server.getTickCount() - since;
+                if (elapsed < 40) {
+                    helper.assertTrue(ticket.valid() && RocketRuntime.cargoPreparing(rocket), "Ticket expired before forty ticks");
+                } else {
+                    helper.assertTrue(!RocketRuntime.cargoPreparing(rocket)
+                            && ticket.cursor().state() == RocketCargoPreparation.State.DISCARDED, "Abandoned ticket retained lock");
+                    helper.assertTrue(rocket.snapshot().orElseThrow() == before, "Expiry changed authoritative snapshot");
+                    if (phase == 3) { rocket.discard(); phase = 4; helper.succeed(); }
+                    else { ticket = null; phase = 2; }
+                }
+            } catch (Throwable failure) {
+                if (ticket != null) { ticket.close(); }
+                if (rocket != null && rocket.isAlive()) { rocket.discard(); }
+                throw failure;
+            }
+        }
+    }
+
     private static final class Scenario {
         private final GameTestHelper helper;
         private RocketEntity rocket, small;
