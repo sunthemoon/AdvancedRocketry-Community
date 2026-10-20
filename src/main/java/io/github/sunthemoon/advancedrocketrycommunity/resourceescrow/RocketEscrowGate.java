@@ -13,7 +13,8 @@ public final class RocketEscrowGate {
     }
 
     public static boolean resourcesIdle(RocketEntity rocket) {
-        return escrowIdle(rocket) || terminalSuccessor(rocket);
+        return !io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime.cargoPreparing(rocket)
+                && (escrowIdle(rocket) || terminalSuccessor(rocket));
     }
 
     public static boolean terminalSuccessor(RocketEntity rocket) { return EscrowTerminalSuccessor.released(rocket); }

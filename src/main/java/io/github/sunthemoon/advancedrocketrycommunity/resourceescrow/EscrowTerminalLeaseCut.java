@@ -87,9 +87,41 @@ final class EscrowTerminalLeaseCut implements AutoCloseable {
             helper.assertTrue(RocketEscrowGate.resourcesIdle(survivor) && !RocketEscrowGate.idle(survivor)
                     && io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime.resourceMutationAllowed(survivor),
                     "Exact F7 callback did not release only successor resources");
+            if (fault == Fault.NONE) { cargoInterlocks(helper, survivor); }
         }
         helper.assertTrue(data.ledger().equals(EscrowCodec.decode(CheckedSavedDataFile.readPayload(file,
                 ManagedSavedDataType.RESOURCE_ESCROW).orElseThrow())), "F7 memory and disk outcomes disagree");
+    }
+
+    private static void cargoInterlocks(GameTestHelper helper, RocketEntity rocket) {
+        var preparations = io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime.cargoPreparations(rocket.getServer());
+        var delta = new EscrowCargoPayload(new EscrowCargoPayload.Cursor(rocket.snapshot().orElseThrow().snapshotId(),
+                0, 0, 0, io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.PressurizedTankRocketAdapter.ID.toString()),
+                new net.minecraftforge.fluids.FluidStack(net.minecraft.world.level.material.Fluids.WATER, 1)
+                        .writeToNBT(new net.minecraft.nbt.CompoundTag()));
+        helper.assertTrue(preparations.begin(rocket, delta, true).isEmpty(), "Receipt-backed successor admitted fresh cargo");
+        // Force a reconstruction lock through the replay entry, without reconstructing or publishing this fixture delta.
+        try (var ticket = preparations.beginReplay(rocket, delta, true).orElseThrow()) {
+            helper.assertTrue(ticket.valid() && !RocketEscrowGate.resourcesIdle(rocket), "Terminal successor bypassed cargo lock");
+            helper.assertTrue(!io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime.resourceMutationAllowed(rocket),
+                    "Terminal successor allowed refuel while preparing cargo");
+            helper.assertTrue(io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketLandedDisassemblyGameTestSupport
+                    .create(helper).disassembleForReleaseTest(rocket, -1)
+                    == io.github.sunthemoon.advancedrocketrycommunity.rocket.validation.RocketValidationCode.REGION_BUSY,
+                    "Terminal successor allowed disassembly while preparing cargo");
+            helper.assertTrue(io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime.requestAdminFlight(rocket,
+                    io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketDestination.MOON, java.util.UUID.randomUUID()).code()
+                    == io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightRequestCode.TRANSFER_JOURNAL_BLOCKED,
+                    "Terminal successor allowed launch while preparing cargo");
+            var flight = rocket.flightData().orElseThrow();
+            var fuel = flight.fuel().fill(1).state();
+            helper.assertTrue(!fuel.equals(flight.fuel()), "Terminal refuel fixture needs room for one unit");
+            boolean refused = false;
+            try { rocket.updateFlightData(flight.withFuel(fuel, helper.getLevel().getGameTime())); }
+            catch (IllegalStateException expected) { refused = true; }
+            helper.assertTrue(refused && rocket.flightData().orElseThrow() == flight, "Terminal refuel changed authoritative state");
+        }
+        helper.assertTrue(RocketEscrowGate.resourcesIdle(rocket), "Closing replay ticket retained terminal resource lock");
     }
 
     @Override public void close() {

@@ -27,6 +27,7 @@ public final class RocketCargoPreparations implements AutoCloseable {
         discardFinished();
         if (closed || active != null || rocket.getServer() == null || !rocket.getServer().isSameThread()
                 || rocket.flightData().isEmpty() || rocket.getDeltaMovement().lengthSqr() != 0
+                || !replay && !io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate.idle(rocket)
                 || !java.util.Set.of(io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightState.ASSEMBLED,
                         io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightState.FUELED,
                         io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightState.LANDED)
