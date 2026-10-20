@@ -219,7 +219,7 @@ final class EscrowLoaderCutProbe {
             EscrowTags.require(rocket.escrowSection().epoch() == 1 && amount(loaders.get(0)) == 4_000
                     && amount(loaders.get(1)) == 4_000, "Unequal chain prefixes not reached");
             observe("chain_unequal");
-            if (boundary.equals("CHAIN_PREFIX")) { pause(name); }
+            if (boundary.equals("CHAIN_PREFIX")) { EscrowLoaderRecoveryProbe.prefixSave(server, cut, loaders, rocket); pause(name); }
         }
         if (name.equals("C6_JOINT_READBACK") && data.ledger().records().size() == 2) {
             EscrowTags.require(rocket.escrowSection().epoch() == 2 && rocket.escrowSection().markers().size() == 2,
