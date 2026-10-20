@@ -39,6 +39,8 @@ public record EscrowSettlementIntent(Choice choice, UUID ledger, UUID actor, Str
             java.util.Objects.requireNonNull(signatureKind); EscrowTags.digest(invariantDigest);
             EscrowTags.require(signatureKind == EscrowSignatureKind.settlement(endpoint), "Unexpected settlement signature projection");
             EscrowTags.require(quantity >= 0 && (state != null || quantity == 0 && !bound), "Invalid missing observation");
+            EscrowTags.require(signatureKind != EscrowSignatureKind.ITEM_BUFFER_V1 || quantity == 0,
+                    "Item buffer quantity is an unused zero diagnostic");
             EscrowTags.require(state == null || bound || state.epoch() == 0 && state.markers().isEmpty(), "Invalid neutral observation");
         }
         public boolean missing() { return state == null; }

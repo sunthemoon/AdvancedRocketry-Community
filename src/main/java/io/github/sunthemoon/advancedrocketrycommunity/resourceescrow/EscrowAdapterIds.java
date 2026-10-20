@@ -22,4 +22,10 @@ final class EscrowAdapterIds {
                 && (endpoint.type().equals(ModIdentity.id("rocket_fluid_loader").toString())
                 || endpoint.type().equals(ModIdentity.id("rocket_fluid_unloader").toString()));
     }
+    /** Reserved D-A identities; recognizing them grants no runtime admission. */
+    static boolean itemCargoDevice(EscrowEndpoint endpoint) {
+        return endpoint.kind() == EscrowEndpoint.Kind.BLOCK_ENTITY && endpoint.unit() == EscrowEndpoint.Unit.CONTAINER
+                && (endpoint.type().equals(ModIdentity.id("rocket_item_loader").toString())
+                || endpoint.type().equals(ModIdentity.id("rocket_item_unloader").toString()));
+    }
 }

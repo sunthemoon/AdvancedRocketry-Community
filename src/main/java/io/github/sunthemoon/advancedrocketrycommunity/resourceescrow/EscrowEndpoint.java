@@ -8,7 +8,7 @@ public record EscrowEndpoint(Kind kind, String level, UUID identity, UUID logica
                              String type, int x, int y, int z, Unit unit, long beforeEpoch,
                              String beforeSignature, String afterSignature) {
     public enum Kind { BLOCK_ENTITY, ENTITY }
-    public enum Unit { PRIMARY, OXIDIZER, TANK }
+    public enum Unit { PRIMARY, OXIDIZER, TANK, CONTAINER }
 
     public EscrowEndpoint {
         Objects.requireNonNull(kind); Objects.requireNonNull(identity); Objects.requireNonNull(unit);

@@ -12,12 +12,13 @@ final class EscrowCargoCapture {
     private EscrowCargoCapture() { }
     static EscrowNativeBinding.Admission capture(UUID ledger, EscrowOperation op, CompoundTag rocketBefore,
             CompoundTag rocketAfter, CompoundTag deviceBefore, CompoundTag deviceAfter) {
-        EscrowTags.require(op.kind().cargo(), "Not a fluid cargo transfer");
+        EscrowTags.require(op.kind().cargo(), "Not a cargo transfer");
         for (var envelope : java.util.List.of(rocketBefore, rocketAfter, deviceBefore, deviceAfter)) {
             EscrowTags.bound(envelope, EscrowNativeEnvelope.MAX_BYTES, 24, 131_072);
         }
         var before = snapshot(op, rocketBefore); var after = snapshot(op, rocketAfter);
-        var cursor = EscrowCargoPayload.decode(op.payload()).cursor();
+        var cursor = op.kind().itemCargo() ? EscrowItemCargoPayload.decode(op.payload()).cursor()
+                : EscrowCargoPayload.decode(op.payload()).cursor();
         cursor.requirePayload(before); cursor.requirePayload(after);
         EscrowTags.require(before.snapshotId().equals(after.snapshotId()) && before.snapshotId().equals(cursor.snapshot()),
                 "Cargo capture changed snapshot identity");
@@ -41,7 +42,7 @@ final class EscrowCargoCapture {
         var beforeFrame = rocketBefore.copy(); var afterFrame = rocketAfter.copy();
         for (String field : java.util.List.of("snapshot", "content_hash", "wrapper")) { beforeFrame.remove(field); afterFrame.remove(field); }
         EscrowTags.require(beforeFrame.equals(afterFrame), "Cargo changed the native non-cargo envelope");
-        boolean load = op.kind() == EscrowOperation.Kind.FLUID_CARGO_LOAD;
+        boolean load = op.kind().cargoLoad();
         var binding = new EscrowNativeBinding(EscrowSignatureKind.ROCKET_COMPOSITE_V1, endpoint.identity(), endpoint.logicalRocket(), op.owner(),
                 after.snapshotId(), after.contentHash(), EscrowInvariant.rocket(endpoint, op.owner(), after),
                 EscrowNativeBinding.reference(op.source()), EscrowNativeBinding.reference(op.destination()),
