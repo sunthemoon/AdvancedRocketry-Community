@@ -38,13 +38,15 @@ class DiscoveryClaimRecoveryTest {
         data.flush(missionsFile()); progress.flush(celestialFile());
         data.claim(mission, owner, 201);
         var count = new AtomicInteger();
-        Consumer<io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.AtomicSavedData> write = store -> {
+        Consumer<Runnable> write = flush -> {
             int barrier = count.incrementAndGet();
             if (cut == -barrier) { throw new Cut(); }
-            store.flush(store instanceof SatelliteMissionSavedData ? missionsFile() : celestialFile());
+            flush.run();
             if (cut == barrier) { throw new Cut(); }
         };
-        assertThrows(Cut.class, () -> recover(data, progress, true, write::accept, write::accept));
+        assertThrows(Cut.class, () -> recover(data, progress, true,
+                store -> write.accept(() -> store.flush(missionsFile())),
+                store -> write.accept(() -> store.flush(celestialFile()))));
         var restored = SatelliteMissionSavedData.load(payload(missionsFile()));
         var restoredProgress = CelestialSavedData.load(payload(celestialFile()));
         var saved = restored.mission(mission).orElseThrow();
@@ -63,11 +65,13 @@ class DiscoveryClaimRecoveryTest {
         var data = ready(true); var progress = CelestialSavedData.create();
         data.claim(mission, owner, 201);
         var count = new AtomicInteger();
-        Consumer<io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.AtomicSavedData> write = store -> {
+        Consumer<Runnable> write = flush -> {
             if (count.incrementAndGet() == failed) { throw new UncheckedIOException(new IOException("injected")); }
-            store.flush(store instanceof SatelliteMissionSavedData ? missionsFile() : celestialFile());
+            flush.run();
         };
-        assertThrows(UncheckedIOException.class, () -> recover(data, progress, true, write::accept, write::accept));
+        assertThrows(UncheckedIOException.class, () -> recover(data, progress, true,
+                store -> write.accept(() -> store.flush(missionsFile())),
+                store -> write.accept(() -> store.flush(celestialFile()))));
         assertPaidOnce(data);
         assertEquals(failed == 3, progress.get(TARGET).isPresent(), "Unacknowledged discovery leaked into navigation");
         data.claim(mission, owner, 202);
