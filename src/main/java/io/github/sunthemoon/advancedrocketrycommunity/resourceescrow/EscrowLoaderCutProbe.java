@@ -33,6 +33,7 @@ final class EscrowLoaderCutProbe {
     private final AtomicBoolean paused = new AtomicBoolean();
     private final List<FluidFuelLoaderBlockEntity> loaders = new ArrayList<>();
     private final EscrowLoaderStorageProbe storage;
+    private final EscrowLoaderRecoveryProbe.Hold hold;
     private final BlockPos origin, source;
     private final Area unloadArea;
     private EscrowOperation unknownCandidate;
@@ -64,6 +65,7 @@ final class EscrowLoaderCutProbe {
         creation = boundary.startsWith("N");
         storage = !recovery && EscrowLoaderStorageProbe.selected(boundary)
                 ? new EscrowLoaderStorageProbe(server, cut, boundary, this::pause, this::unloadUnknown) : null;
+        hold = recovery && EscrowLoaderRecoveryProbe.Hold.selected(cut) ? new EscrowLoaderRecoveryProbe.Hold(server, cut, origin, source) : null;
         EscrowTags.require((EscrowLoaderStorageProbe.selected(boundary) || boundary.matches("N[01]|N2_(DEFINITE|UNKNOWN)|N3_(FULL|ELIGIBILITY|NOT_LOADED|PREFLIGHT)|K([0-9]|10)|K2_ACK|K3_DEBIT|K6_FORCED|K10_ACK|C3_FROZEN|C4_BEFORE|C4_AFTER|C6_BEFORE|C6_AFTER|CHAIN_(PREFIX|PROVED|REPLACED|RELEASED)"))
                 && (!bi || boundary.matches("K[269]|CHAIN_REPLACED")), "Unknown loader cut");
         if (!recovery && (primeTerrain(boundary) || chain)) {
@@ -122,7 +124,8 @@ final class EscrowLoaderCutProbe {
             case "C2" -> "CHAIN_PROVED";
             case "C2_PARTIAL_REPLACED" -> "CHAIN_REPLACED";
             case "C2_PARTIAL_RELEASED" -> "CHAIN_RELEASED";
-            default -> name;
+            // W107C: every R3 cut stops at K6, both endpoints applied and stored, before its offline edit.
+            default -> name.startsWith("R3_") ? "K6" : name;
         };
     }
 
@@ -281,6 +284,7 @@ final class EscrowLoaderCutProbe {
             EscrowTags.require(level.addFreshEntity(rocket), "Native rocket publication failed");
             loaders.add(FluidFuelLoaderEscrowFixtures.loader(level, source, owner, tank(bi ? HYDROGEN : ROCKET_FUEL, 5_000), binding(rocket)));
             if (bi || chain) { loaders.add(FluidFuelLoaderEscrowFixtures.loader(level, B, owner, tank(bi ? OXYGEN : ROCKET_FUEL, 5_000), binding(rocket))); }
+            if (storage != null) { storage.place(level); }
             if (boundary.equals("N3_PREFLIGHT")) {
                 for (var pos : CAPACITY_LOADERS) {
                     loaders.add(FluidFuelLoaderEscrowFixtures.loader(level, pos, owner, tank(ROCKET_FUEL, 5_000), binding(rocket)));
@@ -430,6 +434,7 @@ final class EscrowLoaderCutProbe {
     }
 
     private void recover() {
+        if (hold != null) { if (hold.tick(server.getTickCount() - began)) { done = true; result(); } return; }
         if (rocket == null) {
             var found = server.overworld().getEntitiesOfClass(RocketEntity.class, new AABB(origin).inflate(8));
             if (found.isEmpty() || !(server.overworld().getBlockEntity(source) instanceof FluidFuelLoaderBlockEntity a)) { return; }
