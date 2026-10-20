@@ -60,6 +60,15 @@ public final class RocketFluidCargoBlock extends BaseEntityBlock {
         return new RocketFluidCargoBlockEntity(position, state);
     }
 
+    @Nullable @Override
+    public <T extends BlockEntity> net.minecraft.world.level.block.entity.BlockEntityTicker<T> getTicker(Level level,
+            BlockState state, net.minecraft.world.level.block.entity.BlockEntityType<T> type) {
+        return level.isClientSide ? null : createTickerHelper(type, role == RocketCargoRole.LOAD
+                ? io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlockEntities.ROCKET_FLUID_LOADER.get()
+                : io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlockEntities.ROCKET_FLUID_UNLOADER.get(),
+                (world, position, blockState, device) -> RocketFluidCargoBlockEntity.serverTick((ServerLevel) world, position, blockState, device));
+    }
+
 
     static boolean protectedAt(BlockGetter level, BlockPos position) {
         return level.getBlockEntity(position) instanceof RocketFluidCargoBlockEntity loader && loader.protectedFromRemoval();
