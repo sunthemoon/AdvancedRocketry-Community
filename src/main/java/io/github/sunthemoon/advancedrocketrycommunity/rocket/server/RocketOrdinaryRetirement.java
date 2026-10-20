@@ -4,7 +4,6 @@ import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowBarrier;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowReason;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowRuntime;
-import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowTestEndpoints;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord;
@@ -17,8 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -50,9 +47,6 @@ final class RocketOrdinaryRetirement {
     static final int POLL_TICKS = 20;
     /** The survivor's slot plus the discarded candidates' slots of both ends. */
     static final int MAX_SLOTS = 1 + 2 * RocketFlightLimits.MAX_TRANSFER_ENTITY_MATCHES;
-    /** Gated release-test pause at one boundary, for the W98 native cuts. Production never sets it. */
-    static final String CUT_PROPERTY = "advancedrocketrycommunity.ordinaryRetirementCut";
-    static final String REMOVAL_BEFORE = "ORDINARY_REMOVAL_BEFORE";
 
     enum Site { FAIL_BACK, RECOVERED_SOURCE, RECONNECT }
 
@@ -278,7 +272,7 @@ final class RocketOrdinaryRetirement {
             RocketTransferEntities.refreshOriginTicket(destinationLevel, destination, record.transferId());
         }
         entry.state = State.PROVING; entry.attempt = ++attemptIds; entry.attempts++;
-        entry.started = now; entry.frozen = frozen; entry.cursor = 0; entry.sink = sink(server);
+        entry.started = now; entry.frozen = frozen; entry.cursor = 0; entry.sink = RocketRetirementTestHook.sink(server);
         prove(server, entry, now);
     }
 
@@ -342,7 +336,7 @@ final class RocketOrdinaryRetirement {
         if (!bays.allowed(server, entry.journal, record, RocketTransferBayRecoveryGate.Action.SETTLE_SOURCE)
                 || !escrowAllowed(server, entry, record)) { fail(entry, "BUSY", now, 1, false); return; }
         if (!entry.proofs.values().stream().allMatch(EscrowBarrier.Proof::valid)) { fail(entry, "SUPERSEDING_SAVE", now, 1, false); return; }
-        entry.sink.accept(REMOVAL_BEFORE);
+        entry.sink.accept(RocketRetirementTestHook.REMOVAL_BEFORE);
         AdvancedRocketryCommunity.LOGGER.info("ARCE_TRANSFER_RETIREMENT_PROVED transfer={} logical={} site={} survivor={} slots={} attempts={}",
                 record.transferId(), entry.logical(), entry.site, entry.survivor, entry.census.size(), entry.attempts);
         remove(server, entry);
@@ -469,23 +463,6 @@ final class RocketOrdinaryRetirement {
     /** The token-aware escrow rule (W96 section 4), with this attempt's reservation recognized as its own (W98-R10). */
     private boolean escrowAllowed(MinecraftServer server, Pending entry, RocketTransferRecord record) {
         return RocketTransferEscrowRules.flightAllowed(server, entry.journal, record, bays, RocketTransferBayRecoveryGate.Action.REMOVE_JOURNAL, entry.token);
-    }
-
-    /** Silent unless a gated release-test run selects one boundary to pause at, once. */
-    private static Consumer<String> sink(MinecraftServer server) {
-        String cut = Boolean.getBoolean(EscrowTestEndpoints.HOOKS) ? System.getProperty(CUT_PROPERTY, "") : "";
-        if (cut.isEmpty()) { return label -> { }; }
-        EscrowTestEndpoints.requireEnabled(server);
-        var once = new AtomicBoolean();
-        return label -> {
-            if (!label.equals(cut) || !once.compareAndSet(false, true)) { return; }
-            AdvancedRocketryCommunity.LOGGER.info("ARCE_N3_RETIREMENT_PAUSED boundary={}", label);
-            long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(20);
-            for (long remaining; (remaining = deadline - System.nanoTime()) > 0; ) {
-                try { TimeUnit.NANOSECONDS.sleep(remaining); } catch (InterruptedException ignored) { }
-            }
-            AdvancedRocketryCommunity.LOGGER.info("ARCE_N3_RETIREMENT_PAUSE_EXPIRED boundary={}", label);
-        };
     }
 
     /** Stop: release this coordinator's tokens and watches; T stays wherever its removal was not submitted. */
