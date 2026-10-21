@@ -1,6 +1,5 @@
 package io.github.sunthemoon.advancedrocketrycommunity.gametest;
 
-import java.util.concurrent.locks.LockSupport;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
@@ -44,29 +43,29 @@ final class EntitySections {
 
     /**
      * W122: loads a held chunk's entities now, in a test's setup, so that no timed tick waits for them. Vanilla queues a
-     * chunk's entity storage load when the chunk becomes accessible, completes it on the IO and background threads, and
-     * marks the chunk loaded only in the Level's next entity-management step ({@code PersistentEntitySectionManager.tick},
-     * the last step of {@code ServerLevel.tick}). On a starved host that took longer than a test's whole tick budget. This
-     * runs the chunk source's main-thread tasks and that same step until the chunk's entities are loaded or the
-     * wall-clock deadline passes; a GameTest timeout counts ticks, not this time. Server thread only.
+     * chunk's entity storage load when the chunk becomes accessible (a chunk-source task), reads it on the IO worker,
+     * deserializes it on the server's own task queue (the {@code EntityStorage} executor), and marks the chunk loaded only
+     * in the Level's next entity-management step ({@code PersistentEntitySectionManager.tick}, the last step of
+     * {@code ServerLevel.tick}). A server that is behind runs its own tasks only once they are three ticks old, so on a
+     * starved host this took longer than a test's whole tick budget. This runs all three steps in a managed block of the
+     * server, which runs its tasks at once, until the chunk's entities are loaded or the wall-clock deadline passes; a
+     * GameTest timeout counts ticks, not this time. Server thread only.
      */
     static boolean loadNow(ServerLevel level, ChunkPos chunk, long deadlineNanos) {
         // ServerLevel.entityManager in the 1.20.1 SRG mappings.
         PersistentEntitySectionManager<Entity> entities =
                 ObfuscationReflectionHelper.getPrivateValue(ServerLevel.class, level, "f_143244_");
-        while (!level.areEntitiesLoaded(chunk.toLong())) {
-            if (System.nanoTime() - deadlineNanos > 0) {
-                return false;
+        level.getServer().managedBlock(() -> {
+            if (level.areEntitiesLoaded(chunk.toLong()) || System.nanoTime() - deadlineNanos > 0) {
+                return true;
             }
             int ran = 0;
             while (ran < 256 && level.getChunkSource().pollTask()) {
                 ran++;
             }
             entities.tick();
-            if (ran == 0) {
-                LockSupport.parkNanos(500_000L);
-            }
-        }
-        return true;
+            return level.areEntitiesLoaded(chunk.toLong());
+        });
+        return level.areEntitiesLoaded(chunk.toLong());
     }
 }
