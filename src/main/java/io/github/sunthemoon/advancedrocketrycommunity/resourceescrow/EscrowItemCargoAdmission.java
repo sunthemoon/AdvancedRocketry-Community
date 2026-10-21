@@ -73,8 +73,9 @@ public final class EscrowItemCargoAdmission implements AutoCloseable {
         if (!device.claimTransferTurn()) { status = RocketCargoStatus.OTHER_TRANSFER_PENDING; return; }
         turnClaimed = true;
         try {
-            var selected = selection.advance(eligible.getServer().getTickCount(),
-                    EscrowRuntime.of(eligible.getServer()).cargoPreparations().budget());
+            // An active replay or preparation ticket goes first; this walk resumes at the same position afterwards.
+            var selected = EscrowRuntime.of(eligible.getServer()).cargoPreparations().select(selection,
+                    eligible.getServer().getTickCount());
             if (selected == null) { retrying = true; status = RocketCargoStatus.PREPARING; return; }
             if (selected.status() != RocketCargoSelection.Status.ELIGIBLE) {
                 var empty = selection.noMove();

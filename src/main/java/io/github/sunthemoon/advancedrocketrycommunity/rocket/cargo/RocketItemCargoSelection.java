@@ -12,6 +12,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowItemC
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowItemStackCodec;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.RocketCargoSelection.Status;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.VanillaContainerRocketAdapter;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNbtSize;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
 import java.util.List;
 import java.util.Objects;
@@ -36,12 +37,14 @@ public final class RocketItemCargoSelection {
 
     /**
      * Admission's resumable walk. The callback is a cheap candidate filter; complete eligibility runs separately
-     * through the preparation ticket. One container (at most 27 offers) reserves the entire existing byte budget;
-     * blocks without container payloads charge one visit. No container is copied or decoded before reserving.
+     * through the preparation ticket. One container (at most 27 offers) reserves a bounded estimate of its own work
+     * (W132-R1); blocks without container payloads charge one visit. No container is copied or decoded before
+     * reserving. Admission steps it through {@link RocketCargoPreparations#select}, which yields to active tickets.
      */
     public static final class Cursor {
         private final RocketStructureSnapshot snapshot;
         private final List<CompoundTag> slots;
+        private final long bufferBytes;
         private final boolean load;
         private final Walk walk;
         private final int source;
@@ -51,6 +54,7 @@ public final class RocketItemCargoSelection {
         public Cursor(RocketStructureSnapshot snapshot, EscrowItemBuffer buffer, boolean load,
                       Function<EscrowItemCargoPayload, Status> eligibility) {
             this.snapshot = snapshot; this.slots = buffer.slots(); this.load = load;
+            bufferBytes = slots.stream().mapToLong(RocketNbtSize::uncompressedBytes).sum();
             walk = new Walk(Objects.requireNonNull(eligibility));
             int first = -1;
             for (int slot = 0; first < 0 && slot < slots.size(); slot++) { if (!slots.get(slot).isEmpty()) { first = slot; } }
@@ -63,13 +67,23 @@ public final class RocketItemCargoSelection {
             for (; pass < (load ? 2 : 1); pass++, index = 0) {
                 while (index < snapshot.blocks().size()) {
                     var block = snapshot.blocks().get(index);
-                    boolean containerBlock = block.blockEntityPayload().filter(p -> VanillaContainerRocketAdapter.ID.equals(p.adapterId())).isPresent();
-                    if (budget != null && !budget.charge(tick, containerBlock ? RocketCargoWorkBudget.MAX_BYTES : 0, 1, false)) { return null; }
+                    if (budget != null && !budget.charge(tick, containerBytes(block), 1, false)) { return null; }
                     if (visit(block)) { return result = new Result(Status.ELIGIBLE, walk.accepted); }
                     index++;
                 }
             }
             return result = new Result(walk.refusal, null);
+        }
+        /**
+         * One visit's byte reservation. A container's copies, native round trips and merge digests are a few passes over
+         * its payload and, for each of its 27 slots, over the buffer, so this is a fixed multiple of both, like the item
+         * preparation's stage 0. At the 256 KiB payload and four 4 KiB stacks it is 11,276,288 bytes, under the 16 MiB
+         * tick budget; the cap only keeps a visit that could never fit from stalling the walk.
+         */
+        long containerBytes(io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketBlock block) {
+            var payload = block.blockEntityPayload().filter(p -> VanillaContainerRocketAdapter.ID.equals(p.adapterId())).orElse(null);
+            return payload == null ? 0 : Math.min(RocketCargoWorkBudget.MAX_BYTES,
+                    16L * (payload.uncompressedBytes() + RocketItemCargoMutation.SLOTS * bufferBytes + 256));
         }
         /** Retry the same position with a filter that now rejects its previous candidate. */
         public void retry() {
