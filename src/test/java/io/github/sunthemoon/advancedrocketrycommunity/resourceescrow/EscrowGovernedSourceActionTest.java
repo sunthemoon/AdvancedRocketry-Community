@@ -88,6 +88,30 @@ class EscrowGovernedSourceActionTest {
         } finally { journal.stop(); }
     }
 
+    @Test void acknowledgedAssembledEscrowFillStartsWithoutRewritingItsF1Checkpoint() throws Exception {
+        var fixture = EscrowGovernedLaunchTest.assembled(); var initial = flight(fixture.source());
+        var baseline = EscrowLedger.empty(fixture.record().nativeTransfer().orElseThrow().armed().ledger());
+        var countdown = initial.withFuel(initial.fuel(), 2)
+                .withPlan(fixture.record().sourceFlightData().plan().orElseThrow()).startCountdown(2);
+        var prepared = EscrowGovernedLaunch.prepare(baseline, fixture.source(), fixture.record().sourceSnapshot(), countdown,
+                fixture.record().destinationSnapshot(), fixture.record().nativeTransfer().orElseThrow().armed().destination(),
+                fixture.record().nativeTransfer().orElseThrow().armed().journal());
+        var root = prepared.preflight(baseline, 1).generation(1); var record = prepared.record(root.armedFlights().get(0));
+        var journal = new RocketTransferSavedData(); journal.put(record);
+        try {
+            var authority = acknowledge(root, journal, record); var original = fixture.source().copy();
+            var after = EscrowGovernedSourceAction.issue(authority, START_COUNTDOWN, fixture.source(), 2, () -> true)
+                    .consume(fixture.source()::copy);
+            assertEquals(countdown, after); assertEquals(initial.fuel(), after.fuel());
+            assertEquals(RocketFlightState.ASSEMBLED, flight(fixture.source()).state());
+            assertEquals(original, fixture.source());
+            assertEquals(EscrowGovernedEnvelope.comparison(original), record.nativeTransfer().orElseThrow().sourceEnvelope(record));
+            fixture.source().put("flight", RocketFlightNbtCodec.encode(after));
+            assertTrue(EscrowGovernedSourceRecovery.sourceMatches(record, fixture.source(), 2),
+                    "Recovery must recognize the assembled source's countdown progression");
+        } finally { journal.stop(); }
+    }
+
     @Test void phaseTimersAndExactTopOfAscentAreRequired() throws Exception {
         var fixture = GovernedTransferFixture.create(); var record = fixture.record();
         var root = EscrowGovernedDispatchTest.root(record); var journal = new RocketTransferSavedData(); journal.put(record);

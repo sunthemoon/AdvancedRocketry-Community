@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightState;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFuelState;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketFlightNbtCodec;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.GovernedTransferFixture;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
@@ -50,6 +51,37 @@ class EscrowGovernedLaunchTest {
         assertEquals(initial.fuel(), record.sourceFlightData().fuel());
         assertEquals(7, record.nativeTransfer().orElseThrow().armed().epoch());
         assertEquals(RocketFlightState.COUNTDOWN, EscrowGovernedLaunch.planned(initial, record.sourceFlightData()).startCountdown(2).state());
+    }
+
+    @Test void assembledEscrowFilledSourceKeepsItsCheckpointStateUntilF2() {
+        var fixture = assembled(); var original = fixture.source().copy(); var initial = flight(original);
+        assertEquals(RocketFlightState.ASSEMBLED, initial.state());
+        // The ordinary launch gate promotes at the launch's own tick (2), not at the checkpoint's FUELED time.
+        var countdown = initial.withFuel(initial.fuel(), 2).withPlan(fixture.record().sourceFlightData().plan().orElseThrow())
+                .startCountdown(2);
+        var prepared = prepare(root(fixture), fixture, countdown);
+        var record = prepared.record(prepared.preflight(root(fixture), 1).armedFlights().get(0));
+        var source = record.nativeTransfer().orElseThrow().sourceEnvelope(record);
+        assertEquals(EscrowGovernedEnvelope.comparison(original), source);
+        assertEquals(RocketFlightState.ASSEMBLED, flight(source).state());
+        assertEquals(initial.fuel(), record.sourceFlightData().fuel());
+        assertEquals(RocketFlightNbtCodec.encode(countdown),
+                RocketFlightNbtCodec.encode(EscrowGovernedLaunch.planned(initial, record.sourceFlightData()).startCountdown(2)));
+        assertEquals(original, fixture.source());
+    }
+
+    @Test void emptyAssembledSourceIsStillRefused() {
+        var fixture = assembled(); var initial = flight(fixture.source());
+        var empty = RocketFuelState.empty(initial.fuel().propulsion().orElseThrow().descriptor());
+        var emptied = RocketFlightData.restore(2, initial.logicalRocketId(), RocketFlightState.ASSEMBLED, empty, null,
+                initial.passengers(), initial.currentBody(), initial.currentDimension(), initial.currentOrigin(), 1, null,
+                initial.currentTarget().orElseThrow());
+        assertFalse(emptied.launchReady());
+        var error = assertThrows(IllegalArgumentException.class,
+                () -> EscrowGovernedLaunch.planned(emptied, fixture.record().sourceFlightData()));
+        assertEquals("Launch requires stationary native fuel", error.getMessage());
+        assertThrows(IllegalStateException.class,
+                () -> emptied.withPlan(fixture.record().sourceFlightData().plan().orElseThrow()));
     }
 
     @Test void actualCaptureCanAssignANewerSerialWithoutChangingTheFrozenEnvelopes() {
@@ -143,6 +175,14 @@ class EscrowGovernedLaunchTest {
                 initial.passengers(), initial.currentBody(), initial.currentDimension(), initial.currentOrigin(), 1, null,
                 initial.currentTarget().orElseThrow());
         fixture.source().put("flight", RocketFlightNbtCodec.encode(landed)); return fixture;
+    }
+    /** W133: an escrow fill's after flight keeps an assembled rocket ASSEMBLED with only its new fuel (fuelOnly). */
+    static GovernedTransferFixture.Fixture assembled() {
+        var fixture = GovernedTransferFixture.create(); var initial = flight(fixture.source());
+        var empty = RocketFlightData.restore(2, initial.logicalRocketId(), RocketFlightState.ASSEMBLED,
+                RocketFuelState.empty(initial.fuel().propulsion().orElseThrow().descriptor()), null, initial.passengers(),
+                initial.currentBody(), initial.currentDimension(), initial.currentOrigin(), 1, null, initial.currentTarget().orElseThrow());
+        fixture.source().put("flight", RocketFlightNbtCodec.encode(EscrowNativeEnvelope.fuelOnly(empty, initial.fuel()))); return fixture;
     }
     private static RocketFlightData flight(CompoundTag envelope) { return RocketFlightNbtCodec.decode(envelope.getCompound("flight")).data().orElseThrow(); }
     private static EscrowLedger root(GovernedTransferFixture.Fixture fixture) { return EscrowLedger.empty(fixture.record().nativeTransfer().orElseThrow().armed().ledger()); }
