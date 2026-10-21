@@ -12,6 +12,7 @@ import shutil
 import uuid
 
 import run_dedicated_server_smoke as smoke
+from inspect_celestial_saved_data import NbtReader
 from run_v060_flight_server_smoke import _server_command
 from run_v180_escrow_forced_stop import digest, ledger, record, LEDGER
 from run_v180_escrow_pre_f2 import assert_pin, journal
@@ -23,7 +24,51 @@ CASES = tuple("FC_" + direction + "_" + cut for direction in ("LOAD", "UNLOAD") 
 ITEM_CASES = tuple("IC_" + direction + "_" + cut for direction in ("LOAD", "UNLOAD") for cut in CUTS)
 
 
+# NBT number and array types for the item oracle (W132-R3). They still compare equal to plain values.
+class Byte(int): pass
+class Short(int): pass
+class Int(int): pass
+class Long(int): pass
+class Float(float): pass
+class Double(float): pass
+class ByteArray(list): pass
+class IntArray(list): pass
+class LongArray(list): pass
+
+
+TAG_TYPES = {1: Byte, 2: Short, 3: Int, 4: Long, 5: Float, 6: Double, 7: ByteArray, 11: IntArray, 12: LongArray}
+
+
+class TypedNbtReader(NbtReader):
+    """The same bounded reader, keeping each number's and array's NBT tag type."""
+
+    def _payload(self, tag_type: int, depth: int) -> object:
+        value = super()._payload(tag_type, depth)
+        kind = TAG_TYPES.get(tag_type)
+        return kind(value) if kind else value
+
+
+def same_typed(left: object, right: object) -> bool:
+    if type(left) is not type(right):
+        return False
+    if isinstance(left, dict):
+        return left.keys() == right.keys() and all(same_typed(left[key], right[key]) for key in left)
+    if isinstance(left, list):
+        return len(left) == len(right) and all(same_typed(a, b) for a, b in zip(left, right))
+    return left == right
+
+
+def item_stack(count: int, slot: int | None = None) -> dict:
+    """ItemCargoReconciliationFixtures.stack with its exact tag types; a container entry adds its byte Slot."""
+    stack = dict(id="minecraft:stone", Count=Byte(count), tag=dict(
+        b=Byte(7), s=Short(7), i=Int(7), l=Long(7), ba=ByteArray([1, 2]), ia=IntArray([1, 2]), la=LongArray([1, 2])))
+    if slot is not None:
+        stack["Slot"] = Byte(slot)
+    return stack
+
+
 def item_amount(stacks: list, slots: bool) -> int:
+    """Stacks from a TypedNbtReader decode; each must equal the fixture in its values and its NBT tag types."""
     if slots and len(stacks) != 4:
         raise smoke.SmokeError("Item device lost its four-slot frame")
     occupied = set()
@@ -31,28 +76,31 @@ def item_amount(stacks: list, slots: bool) -> int:
     for stack in stacks:
         if not stack and slots:
             continue
-        expected = dict(id="minecraft:stone", Count=stack.get("Count"),
-                        tag=dict(b=7, s=7, i=7, l=7, ba=[1, 2], ia=[1, 2], la=[1, 2]))
+        count, index = stack.get("Count"), None
+        if type(count) is not Byte or not 1 <= count <= 64:
+            raise smoke.SmokeError("Item cargo changed its stack count or its type")
         if not slots:
             index = stack.get("Slot")
-            if index not in range(27) or index in occupied:
+            if type(index) is not Byte or index not in range(27) or index in occupied:
                 raise smoke.SmokeError("Invalid or duplicate item cargo slot")
-            occupied.add(index); expected["Slot"] = index
-        if stack != expected or not isinstance(stack.get("Count"), int) or not 1 <= stack["Count"] <= 64:
-            raise smoke.SmokeError("Item cargo changed its stack or NBT values")
-        total += stack["Count"]
+            occupied.add(index)
+        if not same_typed(stack, item_stack(count, index)):
+            raise smoke.SmokeError("Item cargo changed its stack, NBT values or NBT tag types")
+        total += count
     return total
 
 
 def inspect(world: Path, case: str, restarted: bool) -> dict:
     root = ledger(world / "data" / LEDGER)
-    entities = record(world / "entities/r.0.0.mca")["Entities"]
+    item = case.startswith("IC_")
+    # Item cases decode with tag types for the stack comparison; the fluid oracle reads exactly as before.
+    typed = dict(reader=TypedNbtReader) if item else {}
+    entities = record(world / "entities/r.0.0.mca", **typed)["Entities"]
     rockets = [entry for entry in entities if "RocketEntityData" in entry]
-    devices = [entry for entry in record(world / "region/r.0.0.mca")["block_entities"]
+    devices = [entry for entry in record(world / "region/r.0.0.mca", **typed)["block_entities"]
                if [entry.get(k) for k in ("x", "y", "z")] == [64, 100, 64]]
     if len(rockets) != 1 or len(devices) != 1 or journal(world)["transfers"]:
         raise smoke.SmokeError("Missing/duplicated native fixture or unexpected transfer record")
-    item = case.startswith("IC_")
     entity, device = rockets[0], devices[0]["arce_rocket_item_cargo" if item else "arce_rocket_fluid_cargo"]
     rocket = entity["RocketEntityData"]
     snapshot, section = rocket["snapshot"], rocket["resource_escrow"]
