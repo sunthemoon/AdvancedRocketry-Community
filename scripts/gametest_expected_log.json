@@ -30,6 +30,15 @@
       "reason": "A missing native item holds only its operation without changing either endpoint; a separate item operation completes."
     },
     {
+      "id": "w132f-item-cargo-r39-native-item",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowReconciliationAction/",
+      "message": "ARCE_ESCROW_ITEM_UNAVAILABLE op=[0-9a-f-]{36} item=w132:missing",
+      "counts": {"item_cargo_r39": 1},
+      "test": "ItemCargoReconciliationGameTests.unavailableSavedItemHoldsOnlyItsNativeComponent",
+      "reason": "W132-R5: one structurally valid saved item cargo payload names an unavailable native item; its R39 hold names the operation and the item once."
+    },
+    {
       "id": "w132f-item-cargo-replay-mismatch-repair",
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowReconciliationScheduler/",
