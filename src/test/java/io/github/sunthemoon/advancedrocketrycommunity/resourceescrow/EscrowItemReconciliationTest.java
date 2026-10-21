@@ -9,6 +9,17 @@ import org.junit.jupiter.api.Test;
 class EscrowItemReconciliationTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
 
+    @Test void liveAdmissionProjectsTheItemEndpointContract() {
+        for (boolean load : List.of(true, false)) {
+            var f = EscrowItemReconciliationFixture.create(load); var endpoint = f.op().rocket();
+            var fuel = io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketFlightNbtCodec
+                    .decode(f.before().getCompound("flight")).data().orElseThrow().fuel().resourceSignature();
+            assertEquals(endpoint, EscrowItemCargoProjection.rocketEndpoint(endpoint.level(), endpoint.identity(),
+                    endpoint.logicalRocket(), endpoint.x(), endpoint.z(), endpoint.beforeEpoch(),
+                    f.before().getString("content_hash"), f.after().getString("content_hash"), fuel));
+        }
+    }
+
     @Test void completeItemCapturesUseOrdinaryReconciliationInBothDirections() {
         for (boolean load : List.of(true, false)) {
             var c = EscrowItemCargoEligibilityTest.sample(load, 5, EscrowItemCargoEligibilityTest.stone(-1));

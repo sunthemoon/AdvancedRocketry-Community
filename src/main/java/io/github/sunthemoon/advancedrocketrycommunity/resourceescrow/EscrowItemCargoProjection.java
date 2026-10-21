@@ -23,16 +23,21 @@ final class EscrowItemCargoProjection {
         var source = new EscrowEndpoint(EscrowEndpoint.Kind.BLOCK_ENTITY, level, root.device(), null,
                 "advancedrocketrycommunity:" + io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketItemCargoBlock.id(root.role()), position.getX(), position.getY(), position.getZ(),
                 EscrowEndpoint.Unit.CONTAINER, root.escrow().epoch(), root.signature(), nextBuffer.signature(root.device()));
-        var target = new EscrowEndpoint(EscrowEndpoint.Kind.ENTITY, level, rocket.getUUID(), logical, EscrowAdapterIds.ROCKET,
-                chunk.x, 0, chunk.z, EscrowEndpoint.Unit.TANK, rocket.escrowSection().epoch(),
-                EscrowSignatureKind.composite(logical, snapshot.beforeHash(), fuel),
-                EscrowSignatureKind.composite(logical, snapshot.after().contentHash(), fuel));
+        var target = rocketEndpoint(level, rocket.getUUID(), logical, chunk.x, chunk.z, rocket.escrowSection().epoch(),
+                snapshot.beforeHash(), snapshot.after().contentHash(), fuel);
         var guard = new EscrowGuard(logical, journal.transfer(), Math.max(1, journal.sequence()),
                 journal.transfer() == null ? journal.rootDigest() : journal.recordDigest());
         var payload = delta.encode();
         return new EscrowOperation(UUID.randomUUID(), sequence, root.owner(), rocket.level().getGameTime(),
                 EscrowOperation.Phase.PREPARED, EscrowReason.NONE, payload, RocketNativeResources.signature(payload),
                 kind.cargoLoad() ? source : target, kind.cargoLoad() ? target : source, guard, kind, new CompoundTag());
+    }
+    /** Pure endpoint projection shared by live admission and its contract test. */
+    static EscrowEndpoint rocketEndpoint(String level, UUID physical, UUID logical, int chunkX, int chunkZ, long epoch,
+            String beforeHash, String afterHash, String fuel) {
+        return new EscrowEndpoint(EscrowEndpoint.Kind.ENTITY, level, physical, logical, EscrowAdapterIds.ROCKET,
+                chunkX, 0, chunkZ, EscrowEndpoint.Unit.CONTAINER, epoch,
+                EscrowSignatureKind.composite(logical, beforeHash, fuel), EscrowSignatureKind.composite(logical, afterHash, fuel));
     }
     static CompoundTag after(CompoundTag before, UUID ledger, EscrowOperation op) {
         // R39 native decoding is required even though a durable operation decodes structurally.
