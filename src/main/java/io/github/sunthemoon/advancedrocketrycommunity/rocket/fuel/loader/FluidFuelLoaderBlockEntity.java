@@ -63,6 +63,12 @@ public final class FluidFuelLoaderBlockEntity extends BlockEntity implements Men
     @Nullable private FluidFuelLoaderStatus progress;
     private long capEpoch;
     private LazyOptional<IFluidHandler> fluidCap;
+    private final io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowDeviceTurns turns =
+            new io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowDeviceTurns();
+    private boolean refreshTurns() {
+        if (!live() || root == null || root.binding() == null) { turns.close(); return false; }
+        return turns.refresh(((ServerLevel) level).getServer(), root.device(), root.binding().logicalRocket());
+    }
 
     public FluidFuelLoaderBlockEntity(BlockPos position, BlockState state) {
         super(ModBlockEntities.FLUID_FUEL_LOADER.get(), position, state);
@@ -236,20 +242,31 @@ public final class FluidFuelLoaderBlockEntity extends BlockEntity implements Men
     public FluidFuelLoaderStatus attempt() {
         FluidFuelLoaderStatus refusal = deviceRefusal();
         if (refusal != null) {
-            return refusal;
+            return yieldTurn(refusal);
         }
         if (!live()) {
-            return FluidFuelLoaderStatus.WAITING_UNLOADED;
+            return yieldTurn(FluidFuelLoaderStatus.WAITING_UNLOADED);
         }
         ServerLevel server = (ServerLevel) level;
+        if (!refreshTurns()) { return yieldTurn(FluidFuelLoaderStatus.ESCROW_FULL); }
         FluidFuelLoaderStatus status = LoaderEligibility.evaluate(server, worldPosition, root).refusal();
         if (status != null) {
-            return status;
+            if (status == FluidFuelLoaderStatus.ROCKET_BUSY && EscrowLoaderAdmission.enabled(server.getServer(), root.device())) {
+                turns.blocked(); return status;
+            }
+            return yieldTurn(status);
         }
         if (!EscrowLoaderAdmission.enabled(server.getServer(), root.device())) {
-            return FluidFuelLoaderStatus.ADMISSION_DISABLED;
+            return yieldTurn(FluidFuelLoaderStatus.ADMISSION_DISABLED);
         }
-        return EscrowLoaderAdmission.offer(this, this::admitFromQueue);
+        if (!turns.allows()) { turns.blocked(); return FluidFuelLoaderStatus.ROCKET_BUSY; }
+        var offered = EscrowLoaderAdmission.offer(this, this::admitFromQueue);
+        return offered == FluidFuelLoaderStatus.READY ? offered : yieldTurn(offered);
+    }
+
+    /** No-work attempts surrender only this device's next hint, not active or durable work. */
+    private FluidFuelLoaderStatus yieldTurn(FluidFuelLoaderStatus refusal) {
+        turns.yieldNext(); return refusal;
     }
 
     /**
@@ -259,16 +276,20 @@ public final class FluidFuelLoaderBlockEntity extends BlockEntity implements Men
     public boolean admitFromQueue() {
         FluidFuelLoaderStatus refusal = deviceRefusal();
         if (refusal != null || !live()) {
-            attempted = refusal != null ? refusal : FluidFuelLoaderStatus.WAITING_UNLOADED;
+            attempted = yieldTurn(refusal != null ? refusal : FluidFuelLoaderStatus.WAITING_UNLOADED);
             return false;
         }
         LoaderEligibility.Resolved eligible = LoaderEligibility.evaluate((ServerLevel) level, worldPosition, root);
         if (eligible.refusal() != null) {
-            attempted = eligible.refusal();
+            if (eligible.refusal() == FluidFuelLoaderStatus.ROCKET_BUSY && refreshTurns()
+                    && EscrowLoaderAdmission.enabled(((ServerLevel) level).getServer(), root.device())) {
+                turns.blocked(); attempted = eligible.refusal();
+            } else { attempted = yieldTurn(eligible.refusal()); }
             return false;
         }
         EscrowLoaderAdmission.Visit visit = EscrowLoaderAdmission.admit(this, eligible.rocket());
         attempted = visit.status();
+        if (attempted != FluidFuelLoaderStatus.ROCKET_BUSY) { turns.yieldNext(); }
         return visit.captured();
     }
 
@@ -336,7 +357,9 @@ public final class FluidFuelLoaderBlockEntity extends BlockEntity implements Men
         if (operationLock || !live() || !supportedClaimed() || duplicate() || escrowLocked()) {
             return false;
         }
+        turns.close();
         write(new LoaderRoot(root.owner(), root.device(), binding, root.tank(), root.escrow()));
+        refreshTurns();
         attempted = null;
         return true;
     }
@@ -346,6 +369,7 @@ public final class FluidFuelLoaderBlockEntity extends BlockEntity implements Men
         if (operationLock || !live() || !supportedClaimed() || duplicate() || escrowLocked() || root.binding() == null) {
             return false;
         }
+        turns.close();
         write(new LoaderRoot(root.owner(), root.device(), null, root.tank(), root.escrow()));
         attempted = null;
         return true;
@@ -535,6 +559,7 @@ public final class FluidFuelLoaderBlockEntity extends BlockEntity implements Men
             throw new IllegalStateException("Reentrant fluid fuel loader load");
         }
         super.load(outer);
+        turns.close();
         if (level != null && !isRemoved() && protectedFromRemoval()) {
             // A live /data or structure replacement keeps a protected root unchanged.
             LOGGER.warn("ARCE_FLUID_FUEL_LOADER_LIVE_REPLACEMENT_REFUSED pos={} unsupported={}",
@@ -568,6 +593,7 @@ public final class FluidFuelLoaderBlockEntity extends BlockEntity implements Men
     @Override
     public void onLoad() {
         super.onLoad();
+        refreshTurns();
         if (level instanceof ServerLevel server) {
             pacer = RefillPacer.loadedAt(server.getGameTime());
             attempted = null;
@@ -584,6 +610,7 @@ public final class FluidFuelLoaderBlockEntity extends BlockEntity implements Men
 
     @Override
     public void setRemoved() {
+        turns.close();
         if (level instanceof ServerLevel server) {
             FluidFuelLoaderIndex.release(server, this);
         }
@@ -592,6 +619,7 @@ public final class FluidFuelLoaderBlockEntity extends BlockEntity implements Men
 
     @Override
     public void onChunkUnloaded() {
+        turns.close();
         if (level instanceof ServerLevel server) {
             FluidFuelLoaderIndex.release(server, this);
         }

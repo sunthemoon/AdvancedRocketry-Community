@@ -60,8 +60,14 @@ final class EscrowSettlementCapacity {
         catch (ReservationFull full) { throw new ReservationFull(FLOOR_FULL); }
         return candidate;
     }
-    private static final class ReservationFull extends IllegalArgumentException {
-        private ReservationFull(String message) { super(message); }
+    static final class ReservationFull extends IllegalArgumentException {
+        ReservationFull(String message) { super(message); }
+    }
+    static final class StaleCapture extends IllegalArgumentException {
+        StaleCapture(String message) { super(message); }
+    }
+    static final class MarkerLimit extends IllegalArgumentException {
+        MarkerLimit() { super("Rocket settlement admission limit exceeded"); }
     }
     private static void preview(EscrowLedger prospective, List<EscrowOperation> component, UUID selected, boolean admission) {
         var references = new LinkedHashMap<EscrowEndpoint.Key, EscrowEndpoint>();
@@ -115,14 +121,16 @@ final class EscrowSettlementCapacity {
         prospective.records().stream().filter(op -> op.guard().rocket().equals(candidate.guard().rocket()))
                 .map(EscrowOperation::id).forEach(markers::add);
         if (EscrowAdapterIds.nativeRocket(candidate.rocket())) {
-            EscrowTags.require(observed != null && (observed.ledger() == null || prospective.id().equals(observed.ledger())),
-                    "Native admission needs the current endpoint marker section");
-            EscrowTags.require(EscrowNativeEnvelope.digest(observed.encode()).equals(candidate.nativeBinding().beforeWrapper()),
-                    "Native admission marker section differs from the captured before wrapper");
+            if (observed == null || observed.ledger() != null && !prospective.id().equals(observed.ledger())) {
+                throw new StaleCapture("Native admission needs the current endpoint marker section");
+            }
+            if (!EscrowNativeEnvelope.digest(observed.encode()).equals(candidate.nativeBinding().beforeWrapper())) {
+                throw new StaleCapture("Native admission marker section differs from the captured before wrapper");
+            }
             observed.markers().stream().map(EscrowPrefix.Marker::operation).forEach(markers::add);
         }
         int markerLimit = markerLimit(EscrowSettlementIntent.component(prospective.records(), candidate.id()), candidate.guard().rocket());
-        EscrowTags.require(markers.size() <= markerLimit, "Rocket settlement admission limit exceeded");
+        if (markers.size() > markerLimit) { throw new MarkerLimit(); }
     }
     private static int markerLimit(List<EscrowOperation> component, UUID logicalRocket) {
         // Cross-kind endpoint UUID aliases can join records on different logical rockets.

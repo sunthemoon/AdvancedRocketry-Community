@@ -137,12 +137,12 @@ public final class FluidFuelLoaderLedgerCreationGameTests {
                     var fills = runtime.fills(server);
                     helper.assertTrue(fills.size() == 0, "Another device waits in the fair queue");
                     fillers = true; fullUntil = level.getGameTime() + 3L * RefillPacer.INTERVAL_TICKS;
-                    for (int i = 0; i < EscrowFillQueue.CAPACITY; i++) {
+                    for (int i = 0; i < EscrowResourceQueue.CAPACITY; i++) {
                         var id = new UUID(0x5795FL, i);
                         helper.assertTrue(fills.offer(id, filler(fills, id)), "The fair queue refused filler " + i);
                     }
                     runtime.loaderAdmissionForTests(server, device(loader), true);
-                    helper.assertTrue(fills.size() == EscrowFillQueue.CAPACITY, "The fair queue is not full");
+                    helper.assertTrue(fills.size() == EscrowResourceQueue.CAPACITY, "The fair queue is not full");
                     step = 3;
                 }
                 case 3 -> {
@@ -153,7 +153,7 @@ public final class FluidFuelLoaderLedgerCreationGameTests {
                         helper.assertTrue(level.getGameTime() < fullUntil, "No paced attempt met the full fair queue: " + last);
                         return;
                     }
-                    helper.assertTrue(loader.displayStatus() == FluidFuelLoaderStatus.ESCROW_FULL && fills.size() == EscrowFillQueue.CAPACITY,
+                    helper.assertTrue(loader.displayStatus() == FluidFuelLoaderStatus.ESCROW_FULL && fills.size() == EscrowResourceQueue.CAPACITY,
                             "A full fair queue showed " + loader.displayStatus());
                     // The fillers leave at the queue's own pace; the device then joins and is admitted.
                     fillers = false; step = 4;
@@ -214,8 +214,8 @@ public final class FluidFuelLoaderLedgerCreationGameTests {
             helper.assertTrue(!EscrowRuntime.of(server).fills(server).waiting(device(loader)), "The device was queued");
         }
         /** An inert entry: it captures nothing and, while the full-queue phase lasts, joins the back of the queue again. */
-        EscrowFillQueue.Attempt filler(EscrowFillQueue fills, UUID id) {
-            return new EscrowFillQueue.Attempt() {
+        EscrowResourceQueue.Attempt filler(EscrowResourceQueue fills, UUID id) {
+            return new EscrowResourceQueue.Attempt() {
                 @Override public boolean visit() {
                     if (fillers && level.getGameTime() < fullUntil) { fills.offer(id, this); }
                     return false;

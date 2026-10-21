@@ -19,12 +19,12 @@ import net.minecraft.world.phys.Vec3;
  * Resolve a binding and check its identity, ownership, range, passengers and resource interlocks. C-A stops at
  * ADMISSION_DISABLED. Nothing here loads a chunk, chooses a payload, captures, reserves or moves resources.
  */
-final class RocketCargoBindingChecks {
+public final class RocketCargoBindingChecks {
     /** Design section 2: the rocket is within 6 blocks of the device. */
     static final double MAX_ROCKET_DISTANCE = 6.0D;
 
     /** A resolved rocket, or the refusal that stopped the lookup. */
-    record Resolved(RocketCargoStatus refusal, RocketEntity rocket) {
+    public record Resolved(RocketCargoStatus refusal, RocketEntity rocket) {
         static Resolved refused(RocketCargoStatus refusal) {
             return new Resolved(Objects.requireNonNull(refusal, "refusal"), null);
         }
@@ -38,7 +38,7 @@ final class RocketCargoBindingChecks {
      * context, a duplicate copy, the owner and the range. The locator's chunk and entity sections must already be
      * loaded; nothing is loaded here.
      */
-    static Resolved resolve(ServerLevel level, BlockPos device, RocketFluidCargoRoot root) {
+    public static Resolved resolve(ServerLevel level, BlockPos device, RocketFluidCargoRoot root) {
         LoaderBinding binding = root.binding();
         if (binding == null) {
             return Resolved.refused(RocketCargoStatus.UNBOUND);
@@ -90,7 +90,7 @@ final class RocketCargoBindingChecks {
     }
 
     /** ASSEMBLED, FUELED or LANDED, with no transfer in progress and not riding anything. */
-    static boolean stationary(RocketEntity rocket) {
+    public static boolean stationary(RocketEntity rocket) {
         RocketFlightData flight = rocket.flightData().orElseThrow();
         return flight.state().acceptsFuel() && flight.activeTransferId().isEmpty() && !rocket.isPassenger()
                 && rocket.getDeltaMovement().lengthSqr() == 0;
@@ -104,7 +104,7 @@ final class RocketCargoBindingChecks {
     }
 
     /** Design section 3, stricter than ADR-065: actual or assigned passengers, or anything riding the rocket. */
-    static boolean occupied(RocketEntity rocket) {
+    public static boolean occupied(RocketEntity rocket) {
         return !rocket.getPassengers().isEmpty() || !rocket.flightData().orElseThrow().passengers().assignments().isEmpty();
     }
 

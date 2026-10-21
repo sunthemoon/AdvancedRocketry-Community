@@ -109,10 +109,10 @@ class EscrowItemAdmissionTest {
             turns.blocked(id(2), id(99)); second.close(); assertTrue(turns.allows(id(1), id(99)));
             turns.blocked(id(1), id(99)); first.close(); assertEquals(0, turns.size());
         }
-        for (int i = 0; i < EscrowFillQueue.CAPACITY; i++) {
+        for (int i = 0; i < EscrowResourceQueue.CAPACITY; i++) {
             turns.register(id(i), id(1_000 + i)); turns.blocked(id(i), id(1_000 + i));
         }
-        assertEquals(EscrowFillQueue.CAPACITY, turns.size());
+        assertEquals(EscrowResourceQueue.CAPACITY, turns.size());
         assertThrows(IllegalArgumentException.class, () -> turns.register(id(999), id(999)));
         CompletableFuture.runAsync(() -> assertThrows(IllegalArgumentException.class, turns::size)).join();
         turns.close(); assertEquals(0, turns.size()); assertFalse(turns.allows(id(0), id(1_000)));

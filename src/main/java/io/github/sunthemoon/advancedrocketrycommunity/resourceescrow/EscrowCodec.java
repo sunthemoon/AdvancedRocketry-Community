@@ -23,7 +23,9 @@ public final class EscrowCodec {
         root.putLong("issued_launch_serial", ledger.issuedLaunchSerial());
         var heads = new ListTag(); ledger.rocketAuthorities().forEach(head -> heads.add(head.encode())); root.put("rocket_authorities", heads);
         var armed = new ListTag(); ledger.armedFlights().forEach(arm -> armed.add(arm.encode())); root.put("armed_flights", armed);
-        EscrowTags.bound(root, EscrowLimits.ROOT_BYTES, 24, 131_072); return root;
+        try { EscrowTags.bound(root, EscrowLimits.ROOT_BYTES, 24, 131_072); }
+        catch (EscrowTags.TooLarge full) { throw new EscrowSettlementCapacity.ReservationFull(full.getMessage()); }
+        return root;
     }
     public static EscrowLedger decode(CompoundTag root) {
         EscrowTags.bound(root, EscrowLimits.ROOT_BYTES, 24, 131_072);

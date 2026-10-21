@@ -44,6 +44,7 @@ public final class EscrowRuntime {
     private final Map<ResourceKey<Level>, EscrowChunkStore> stores = new HashMap<>();
     private EscrowBarrier barrier;
     private boolean stopping;
+    final EscrowCargoSwitches cargoSwitches = new EscrowCargoSwitches();
     private io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.RocketCargoPreparations cargo;
     public io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.RocketCargoPreparations cargoPreparations() {
         if (cargo == null) {
@@ -131,7 +132,7 @@ public final class EscrowRuntime {
     /** The coordinator the scheduler drives; a test hook's ledger replacement makes the tick rebuild it. */
     private EscrowCoordinator scheduled;
     private EscrowTestReconciliation reconciliation;
-    private EscrowFillQueue fills;
+    private EscrowResourceQueue fills;
     /** GameTest half of the gated switch: admission for exactly these devices, never a production enable. */
     private final java.util.Set<java.util.UUID> admissionDevices = new java.util.HashSet<>();
     boolean stopping() { return stopping; }
@@ -144,10 +145,10 @@ public final class EscrowRuntime {
         return reconciliation;
     }
     /** The loaders' fair queue, created on the server thread. */
-    EscrowFillQueue fills(MinecraftServer server) {
+    EscrowResourceQueue fills(MinecraftServer server) {
         if (fills == null) {
             EscrowTags.require(server.isSameThread(), "The fill queue lives on the server thread");
-            fills = new EscrowFillQueue();
+            fills = new EscrowResourceQueue();
         }
         return fills;
     }
@@ -419,6 +420,7 @@ public final class EscrowRuntime {
     @SubscribeEvent(priority = EventPriority.HIGHEST) public static void stopping(ServerStoppingEvent event) {
         EscrowRuntime runtime = of(event.getServer()); runtime.stopping = true;
         if (runtime.cargo != null) { runtime.cargo.close(); }
+        runtime.cargoSwitches.clear();
         if (runtime.fills != null) { runtime.fills.clear(); }
         runtime.settlement.close();
         if (runtime.barrier != null) { runtime.barrier.quiesce(); }
@@ -452,6 +454,7 @@ public final class EscrowRuntime {
         if (runtime == null || runtime.stopping) { return; }
         runtime.stopping = true;
         if (runtime.cargo != null && server.isSameThread()) { runtime.cargo.close(); }
+        runtime.cargoSwitches.clear();
         if (runtime.fills != null && server.isSameThread()) { runtime.fills.clear(); }
         runtime.settlement.close();
         if (runtime.barrier != null) { runtime.barrier.close(); } // Discards unfinished barriers; no new synchronization.

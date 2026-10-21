@@ -178,11 +178,12 @@ public final class EscrowCoordinator implements AutoCloseable {
     /** The generalized transfer result does not expand W11b3's closed fill result contract. */
     enum Transfer {
         QUEUED, UNAVAILABLE, INVALID, STALE, ENDPOINT_BUSY, ROCKET_LIMIT, ESCROW_FULL, SERVER_FULL, ROCKET_FULL,
-        IDENTITY_CONFLICT, ROCKET_BUSY, OTHER_TRANSFER_PENDING, RECEIPT_BACKED;
+        IDENTITY_CONFLICT, ROCKET_BUSY, OTHER_TRANSFER_PENDING, RECEIPT_BACKED, CARGO_TOO_LARGE;
         static Transfer of(Fill fill) { return valueOf(fill.name()); }
         Fill fill() {
             return switch (this) {
                 case ROCKET_BUSY, OTHER_TRANSFER_PENDING, RECEIPT_BACKED -> Fill.ENDPOINT_BUSY;
+                case CARGO_TOO_LARGE -> Fill.ESCROW_FULL;
                 default -> Fill.valueOf(name());
             };
         }
@@ -197,106 +198,35 @@ public final class EscrowCoordinator implements AutoCloseable {
     Fill prepareFill(EscrowNativeBinding.Admission capture, Consumer<Boolean> completion) {
         return prepareTransfer(capture, completion).fill();
     }
-    /** C-P capture entry for C-E: all eligibility passes finish before issuing a sequence or reserving anything. */
-    Transfer prepareCargo(EscrowCargoPreparedCapture prepared,
-                          java.util.function.BooleanSupplier unchanged,
+    Transfer prepareCargo(EscrowCargoPreparedCapture prepared, java.util.function.BooleanSupplier unchanged,
                           Consumer<Boolean> completion) {
-        owner();
-        var result = prepared.result();
-        if (result.status() != io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.RocketCargoSelection.Status.ELIGIBLE) {
-            prepared.discard();
-            return result.status() == io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.RocketCargoSelection.Status.CARGO_TOO_LARGE
-                    ? Transfer.ESCROW_FULL : Transfer.INVALID;
-        }
-        // Changed native inputs are discarded and must repeat the full eligibility capture, not merely its digests.
-        if (!prepared.valid()) { prepared.discard(); return Transfer.STALE; }
-        var outcome = new Transfer[] {Transfer.UNAVAILABLE};
-        prepared.admission(() -> {
-            try {
-                if (!unchanged.getAsBoolean() || !prepared.unchanged()) { outcome[0] = Transfer.STALE; }
-                else {
-                    // Repeat sequence, root, O1 and combined reservation against the final acknowledged root.
-                    outcome[0] = prepareTransfer(result.capture(), completion);
-                }
-            } finally {
-                // Apply must reconstruct from BEFORE, even when final admission throws.
-                prepared.discard();
-            }
-            return new io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketSnapshotPreparation.Work(16L * 1_048_576, 16_384);
-        });
-        return outcome[0];
+        return EscrowTransferPreparation.prepareCargo(this, prepared, unchanged, completion);
     }
-    /** Shared owner-thread entry. Cargo has no production caller until C-E; no publication permit is issued here. */
     Transfer prepareTransfer(EscrowNativeBinding.Admission capture, Consumer<Boolean> completion) {
-        owner(); var op = capture.operation();
-        if (closed || writer.unavailable()) { return Transfer.UNAVAILABLE; }
-        if (EscrowTransferAdmission.invalid(op)) { return Transfer.INVALID; }
-        if (op.sequence() != nextSequence() || requests.containsKey(op.id())
-                || unresolved().anyMatch(existing -> existing.id().equals(op.id()))) { return Transfer.STALE; }
-        if (frontiers.containsKey(op.source().key()) || frontiers.containsKey(op.destination().key())
-                || flightWrites.locked(op.guard().rocket())
-                || data.ledger().armedFlights().stream().anyMatch(arm -> arm.logical().equals(op.guard().rocket()))) {
-            return Transfer.ENDPOINT_BUSY;
-        }
-        var seen = new java.util.HashSet<UUID>();
-        var pending = unresolved().filter(member -> !durable(member.id()) && seen.add(member.id())).toList();
-        var refusal = EscrowTransferAdmission.refusal(data.ledger(), pending, capture);
-        if (refusal.isPresent()) {
-            if (refusal.get() == Transfer.OTHER_TRANSFER_PENDING || refusal.get() == Transfer.ROCKET_BUSY) {
-                transferTurns.blocked(op.device().identity(), op.guard().rocket());
-            }
-            return refusal.get();
-        }
-        if (!transferTurns.allows(op.device().identity(), op.guard().rocket())) {
-            return op.kind().cargo() ? Transfer.OTHER_TRANSFER_PENDING : Transfer.ROCKET_BUSY;
-        }
-        var reservation = admission.tryReserve(op.id(), op.owner(), op.guard().rocket(), EscrowAdmissionAuthority.Consumer.PROPULSION);
-        if (reservation != EscrowAdmissionAuthority.Result.RESERVED) { return Transfer.of(fill(reservation)); }
-        // Nothing that can fail runs between the reservation and its queue entry: a reservation has no release call.
-        enqueue(op, completion);
-        transferTurns.admitted(op.device().identity(), op.guard().rocket());
-        return Transfer.QUEUED;
+        return EscrowTransferPreparation.prepareTransfer(this, capture, completion);
     }
-    /** Not a fresh FLUID_PROPULSION_FILL with a complete FUEL_VECTOR_V1 binding and a native Fluid. */
-    static boolean invalid(EscrowOperation op) {
-        return op.kind() != EscrowOperation.Kind.FLUID_PROPULSION_FILL || op.phase() != EscrowOperation.Phase.PREPARED
-                || op.reason() != EscrowReason.NONE || !op.settlement().isEmpty()
-                || op.nativeBinding().kind() != EscrowSignatureKind.FUEL_VECTOR_V1 || !op.nativeBinding().complete()
-                || !EscrowTransferAdmission.nativeFluid(op);
-    }
-    /** The authority's refusal as a typed fill result; ALREADY_HELD is STALE because every index was checked first. */
-    static Fill fill(EscrowAdmissionAuthority.Result reservation) {
-        return switch (reservation) {
-            case SERVER_FULL -> Fill.SERVER_FULL;
-            case ROCKET_FULL -> Fill.ROCKET_FULL;
-            case IDENTITY_CONFLICT -> Fill.IDENTITY_CONFLICT;
-            case ALREADY_HELD -> Fill.STALE;
-            case UNAVAILABLE -> Fill.UNAVAILABLE;
-            case RESERVED -> Fill.QUEUED;
-        };
-    }
-    /**
-     * prepareFill's pure check against a given root and its queued admissions: the five-marker limit and settlement
-     * fit of {@code requireAdmission}, then the candidate preflight, which keeps Root-R6's floor-retirement headroom
-     * and charges every unsettled component, the candidate's included, at its ceiling (Root-R8). It adds no capacity
-     * rule of its own and mutates nothing; the first-fill path runs it against a virtual empty root.
-     */
+    static boolean invalid(EscrowOperation op) { return EscrowTransferPreparation.invalid(op); }
+    static Fill fill(EscrowAdmissionAuthority.Result reservation) { return EscrowTransferPreparation.fill(reservation); }
     static java.util.Optional<Fill> fillRefusal(EscrowLedger root, java.util.Collection<EscrowOperation> admissions,
-                                                EscrowNativeBinding.Admission capture) {
-        var op = capture.operation();
-        if (capture.before().ledger() != null && !capture.before().ledger().equals(root.id())) { return java.util.Optional.of(Fill.STALE); }
-        var candidate = new ArrayList<>(admissions); candidate.add(op);
-        EscrowLedger prospective;
-        try { prospective = root.append(candidate); }
-        catch (IllegalArgumentException invalid) { return java.util.Optional.of(Fill.STALE); }
-        try { EscrowSettlementCapacity.requireAdmission(prospective, op, capture.before()); }
-        catch (IllegalArgumentException limit) { return java.util.Optional.of(Fill.ROCKET_LIMIT); }
-        try { EscrowSettlementCapacity.preflight(prospective, op.id()); }
-        catch (IllegalArgumentException full) { return java.util.Optional.of(Fill.ESCROW_FULL); }
-        return java.util.Optional.empty();
+                                               EscrowNativeBinding.Admission capture) {
+        return EscrowTransferPreparation.fillRefusal(root, admissions, capture);
+    }
+    boolean admissionUnavailable() { return closed || writer.unavailable(); }
+    boolean staleAdmission(EscrowOperation op) {
+        return op.sequence() != nextSequence() || requests.containsKey(op.id())
+                || unresolved().anyMatch(existing -> existing.id().equals(op.id()));
+    }
+    boolean heldAdmission(EscrowOperation op) {
+        return frontiers.containsKey(op.source().key()) || frontiers.containsKey(op.destination().key())
+                || flightWrites.locked(op.guard().rocket())
+                || data.ledger().armedFlights().stream().anyMatch(arm -> arm.logical().equals(op.guard().rocket()));
+    }
+    List<EscrowOperation> pendingAdmissions() {
+        owner(); var seen = new java.util.HashSet<UUID>();
+        return unresolved().filter(member -> !durable(member.id()) && seen.add(member.id())).toList();
     }
     /** The shared queue core: the reserved operation joins the queue, which locks both endpoints until resolution. */
-    private void enqueue(EscrowOperation op, Consumer<Boolean> completion) {
+    void enqueue(EscrowOperation op, Consumer<Boolean> completion) {
         queued.put(op.id(), op); requests.put(op.id(), completion); issued = op.sequence(); data.setDirty();
         admission.refresh();
     }
@@ -643,5 +573,5 @@ public final class EscrowCoordinator implements AutoCloseable {
     @Override public void close() { owner(); if (!closed) { closed = true; transferTurns.close(); reconciliation.close(); flightWrites.close(); writer.close(); frontiers.clear(); } }
     /** Crash path, where ServerStoppingEvent never ran: no drain or callbacks, but the writer is joined. */
     public void abort() { owner(); if (!closed) { closed = true; transferTurns.close(); reconciliation.close(); flightWrites.close(); writer.abort(); frontiers.clear(); } }
-    private void owner() { EscrowTags.require(Thread.currentThread() == owner, "Escrow coordinator requires its owner thread"); }
+    void owner() { EscrowTags.require(Thread.currentThread() == owner, "Escrow coordinator requires its owner thread"); }
 }

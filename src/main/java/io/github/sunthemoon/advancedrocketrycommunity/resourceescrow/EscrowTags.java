@@ -15,7 +15,10 @@ final class EscrowTags {
         if (!valid) { throw new IllegalArgumentException(reason); }
     }
     static void bound(Tag tag, int bytes, int depth, int nodes) {
-        require(BoundedNbt.fits(tag, bytes, depth, nodes), "Escrow NBT envelope exceeded");
+        if (!BoundedNbt.fits(tag, bytes, depth, nodes)) { throw new TooLarge(); }
+    }
+    static final class TooLarge extends IllegalArgumentException {
+        TooLarge() { super("Escrow NBT envelope exceeded"); }
     }
     static void fields(CompoundTag tag, String... fields) {
         require(Set.of(fields).containsAll(tag.getAllKeys()), "Unknown escrow field");

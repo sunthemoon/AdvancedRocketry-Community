@@ -28,6 +28,7 @@ final class EscrowTransferAdmission {
         if (capture.operation().kind().cargo() && !capture.before().markers().isEmpty()) {
             return Optional.of(EscrowCoordinator.Transfer.OTHER_TRANSFER_PENDING);
         }
+        if (capture.operation().kind().cargo()) { return EscrowCargoRefusals.capacity(root, pending, capture); }
         var capacity = EscrowCoordinator.fillRefusal(root, pending, capture);
         if (capacity.isPresent()) { return capacity.map(EscrowCoordinator.Transfer::of); }
         return Optional.empty();

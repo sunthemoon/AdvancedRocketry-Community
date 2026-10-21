@@ -79,6 +79,7 @@ public final class EscrowLoaderAdmission {
     /** Mirror C-K's exclusivity without loading or creating a ledger. */
     public static boolean cargoPending(RocketEntity rocket) {
         if (!(rocket.level() instanceof ServerLevel level) || !level.getServer().isSameThread()) { return false; }
+        if (EscrowRuntime.of(level.getServer()).cargoPreparing(rocket.assemblyTransactionId().orElseThrow())) { return true; }
         var data = ResourceEscrowSavedData.existing(level.getServer());
         return data != null && data.operational() && data.bind(level.getServer()).cargoPending(rocket.assemblyTransactionId().orElseThrow());
     }
@@ -164,18 +165,7 @@ public final class EscrowLoaderAdmission {
      */
     private static EscrowCoordinator.Fill create(MinecraftServer server, EscrowRuntime runtime, UUID ledger,
                                                  EscrowNativeBinding.Admission admission, Consumer<Boolean> completion) {
-        var op = admission.operation();
-        if (EscrowCoordinator.invalid(op)) { return EscrowCoordinator.Fill.INVALID; }
-        if (op.sequence() != 1) { return EscrowCoordinator.Fill.STALE; }
-        var refusal = EscrowCoordinator.fillRefusal(EscrowLedger.empty(ledger), List.of(), admission);
-        if (refusal.isPresent()) { return refusal.get(); }
-        var reservation = runtime.propulsion(server).authority().tryReserve(op.id(), op.owner(), op.guard().rocket(),
-                EscrowAdmissionAuthority.Consumer.PROPULSION);
-        if (reservation != EscrowAdmissionAuthority.Result.RESERVED) { return EscrowCoordinator.fill(reservation); }
-        var coordinator = ResourceEscrowSavedData.createForFill(server, ledger);
-        coordinator.enqueueCreated(op, completion);
-        // A failed bind-time readback is definite: enqueueCreated has already removed the fill and its reservation.
-        return coordinator.operational() ? EscrowCoordinator.Fill.QUEUED : EscrowCoordinator.Fill.UNAVAILABLE;
+        return EscrowLedgerCreation.create(server, runtime, ledger, admission, completion).fill();
     }
 
     /**
@@ -304,7 +294,7 @@ public final class EscrowLoaderAdmission {
      * Queues a paced device's attempt once in the fair queue (W95-R5): READY while it waits there, or ESCROW_FULL, with
      * nothing queued, when the bounded queue is full; the device retries at its next interval.
      */
-    public static FluidFuelLoaderStatus offer(FluidFuelLoaderBlockEntity loader, EscrowFillQueue.Attempt attempt) {
+    public static FluidFuelLoaderStatus offer(FluidFuelLoaderBlockEntity loader, EscrowResourceQueue.Attempt attempt) {
         var server = ((ServerLevel) loader.getLevel()).getServer();
         return queued(EscrowRuntime.of(server).fills(server).offer(loader.root().orElseThrow().device(), attempt));
     }

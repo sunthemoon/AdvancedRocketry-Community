@@ -45,8 +45,10 @@ final class EscrowCargoCapture {
                 "Cargo composite frontier changed");
         var beforeWrapper = RocketEscrowSection.decode(EscrowTags.compound(rocketBefore, "wrapper"));
         var afterWrapper = RocketEscrowSection.decode(EscrowTags.compound(rocketAfter, "wrapper"));
-        EscrowTags.require((beforeWrapper.ledger() == null || ledger.equals(beforeWrapper.ledger()))
-                && beforeWrapper.epoch() == endpoint.beforeEpoch(), "Cargo wrapper changed");
+        if (beforeWrapper.ledger() != null && !ledger.equals(beforeWrapper.ledger())
+                || beforeWrapper.epoch() != endpoint.beforeEpoch()) {
+            throw new EscrowSettlementCapacity.StaleCapture("Cargo wrapper changed");
+        }
         var markers = new ArrayList<>(beforeWrapper.markers());
         markers.add(new EscrowPrefix.Link(op, endpoint, op.source().equals(endpoint) ? "SOURCE" : "DESTINATION").marker());
         EscrowTags.require(afterWrapper.equals(new RocketEscrowSection(ledger, endpoint.afterEpoch(), markers)), "Cargo after markers changed");

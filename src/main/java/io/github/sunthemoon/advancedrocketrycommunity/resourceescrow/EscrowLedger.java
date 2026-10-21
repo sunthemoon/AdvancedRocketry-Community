@@ -20,8 +20,10 @@ public record EscrowLedger(UUID id, long issuedThrough, long writerGeneration,
     public EscrowLedger {
         Objects.requireNonNull(id);
         EscrowTags.require(issuedThrough >= 0 && writerGeneration >= 0, "Invalid ledger counters");
-        EscrowTags.require(records.size() <= EscrowLimits.OPERATIONS && floors.size() <= EscrowLimits.FLOORS
-                && tombstones.size() <= EscrowLimits.TOMBSTONES, "Escrow capacity exceeded");
+        if (records.size() > EscrowLimits.OPERATIONS || floors.size() > EscrowLimits.FLOORS
+                || tombstones.size() > EscrowLimits.TOMBSTONES) {
+            throw new EscrowSettlementCapacity.ReservationFull("Escrow capacity exceeded");
+        }
         records = List.copyOf(records);
         var ids = new HashSet<UUID>(); var sequences = new HashSet<Long>();
         var devices = new HashSet<UUID>(); var rockets = new HashMap<UUID, Integer>();
