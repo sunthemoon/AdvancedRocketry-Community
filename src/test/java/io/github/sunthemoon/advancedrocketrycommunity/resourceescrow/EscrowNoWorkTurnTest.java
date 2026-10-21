@@ -15,7 +15,9 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 class EscrowNoWorkTurnTest {
     @BeforeAll static void bootstrap() throws Exception {
-        MinecraftBootstrap.initialize(); RocketEscrowAuditDirectionTest.bootstrap(); EscrowTurnYieldBootstrap.initialize();
+        MinecraftBootstrap.initialize(); RocketEscrowAuditDirectionTest.bootstrap();
+        Class.forName(EscrowNoWorkTurnTest.class.getPackageName() + ".EscrowTurnYieldBootstrap")
+                .getDeclaredMethod("initialize").invoke(null);
     }
     @TempDir Path temp;
 
