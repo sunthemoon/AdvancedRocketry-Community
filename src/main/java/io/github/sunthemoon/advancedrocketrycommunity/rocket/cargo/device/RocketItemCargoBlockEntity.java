@@ -141,10 +141,13 @@ public final class RocketItemCargoBlockEntity extends BlockEntity implements Men
     }
     void endLocal() { operationLock = false; }
     boolean localInProgress() { return operationLock; }
-    /** Whether the root with one slot replaced still fits its envelope; the lock must be held. */
+    /**
+     * Whether the root with one slot replaced still fits its envelope with room for the largest binding and one escrow
+     * marker (W120-R2), so a device filled through it can always be bound; the lock must be held.
+     */
     boolean slotFits(int slot, CompoundTag stack) {
         if (!operationLock) { throw new IllegalStateException("Local cargo storage requires its lock"); }
-        try { return RocketItemCargoRoot.bounded(root.withSlot(slot, stack).encodeUnchecked()); }
+        try { return root.withSlot(slot, stack).leavesRoomToBindAndMark(); }
         catch (IllegalArgumentException refused) { return false; }
     }
     void writeSlot(int slot, CompoundTag stack) {
@@ -171,13 +174,22 @@ public final class RocketItemCargoBlockEntity extends BlockEntity implements Men
         invalidatePort();
         return stacks;
     }
-    boolean bind(LoaderBinding binding) {
-        if (!beginLocal()) { return false; }
-        try { write(root.withBinding(binding)); return true; }
-        finally { endLocal(); }
+    /**
+     * Writes a binding, or clears it with null. Null when written; otherwise why nothing changed: the device's lock or
+     * escrow, or a bound root over its envelope (W120-R2). Every buffer the device accepts keeps room for the largest
+     * binding, so only a root loaded fuller than that is refused for its size.
+     */
+    @Nullable RocketCargoStatus bind(@Nullable LoaderBinding binding) {
+        if (!beginLocal()) { return RocketCargoStatus.ESCROW_PENDING; }
+        try {
+            RocketItemCargoRoot next = root.withBinding(binding);
+            if (!RocketItemCargoRoot.bounded(next.encodeUnchecked())) { return RocketCargoStatus.CARGO_TOO_LARGE; }
+            write(next);
+            return null;
+        } finally { endLocal(); }
     }
     boolean clearBinding() {
-        return root != null && root.binding() != null && bind(null);
+        return root != null && root.binding() != null && bind(null) == null;
     }
     private void write(RocketItemCargoRoot next) {
         CompoundTag encoded = next.encode();

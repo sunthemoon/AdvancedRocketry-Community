@@ -3,6 +3,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.BoundedNbt;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowItemBuffer;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowItemStackCodec;
+import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowPrefix;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowSection;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.LoaderBinding;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.LoaderDataException;
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -32,6 +34,10 @@ public record RocketItemCargoRoot(UUID owner, UUID device, RocketCargoRole role,
     public static final String ESCROW = "resource_escrow";
     public static final EscrowItemBuffer EMPTY = new EscrowItemBuffer(Collections.nCopies(EscrowItemBuffer.SLOTS, new CompoundTag()));
     private static final Set<String> FIELDS = Set.of("schema_version", "owner", "device", "role", "binding", BUFFER, ESCROW);
+    private static final UUID ANY = new UUID(0, 0);
+    /** The largest binding a linker can write: with a station and a 128-character level ID. */
+    private static final LoaderBinding LARGEST_BINDING = new LoaderBinding(ANY, ResourceLocation.tryParse("x:" + "a".repeat(126)),
+            ANY, new BlockPos(-30_000_000, -2_048, 29_999_999), ANY);
 
     public enum Status {
         ABSENT, VALID, FUTURE, INVALID, UNREGISTERED_ITEM;
@@ -91,6 +97,20 @@ public record RocketItemCargoRoot(UUID owner, UUID device, RocketCargoRole role,
         CompoundTag tag = encodeUnchecked();
         require(bounded(tag), "Cargo root exceeds its envelope");
         return tag;
+    }
+
+    /**
+     * W120-R2: whether this root still fits its envelope once claimed, bound with the largest binding and marked with
+     * one escrow marker (a ledger and the largest counters) in place of its own. The device accepts a buffer change only
+     * when the result does, so a device it filled can always be bound and then marked.
+     */
+    public boolean leavesRoomToBindAndMark() {
+        CompoundTag tag = encodeUnchecked();
+        if (owner == null) { tag.putUUID("owner", ANY); }
+        tag.put(LoaderBinding.KEY, LARGEST_BINDING.encode());
+        tag.put(ESCROW, new RocketEscrowSection(ANY, Long.MAX_VALUE,
+                List.of(new EscrowPrefix.Marker(ANY, Long.MAX_VALUE, role.markerRole(), Long.MAX_VALUE))).encode());
+        return bounded(tag);
     }
 
     public static RocketItemCargoRoot decode(Tag raw, RocketCargoRole expectedRole) {

@@ -153,6 +153,44 @@ class RocketItemCargoRootTest {
         }
     }
 
+    /**
+     * W120-R2, the review probe's case: an unbound root filled close to the node bound had no room for a binding. The
+     * device now accepts a buffer only when the root also fits with full()'s binding and marker, the largest a linker
+     * and an escrow mark write, so every accepted fill can be bound and marked; one node more cannot.
+     */
+    @Test void aFillTheDeviceAcceptsLeavesRoomForTheLargestBindingAndOneMarker() {
+        for (var role : RocketCargoRole.values()) {
+            var placed = RocketItemCargoRoot.placed(UUID.randomUUID(), UUID.randomUUID(), role);
+            int frame = size(placed.encode()).nodes() - 4;
+            var largest = new RocketItemCargoRoot(placed.owner(), placed.device(), role, full(role).binding(), placed.buffer(), full(role).escrow());
+            int reserve = size(largest.encode()).nodes() - size(placed.encode()).nodes();
+            // A binding with a station is 9 nodes; a ledger and one marker add 6 to the escrow section.
+            assertEquals(11, frame);
+            assertEquals(15, reserve);
+            int room = RocketItemCargoRoot.MAX_NODES - frame - reserve;
+            for (int stacks : new int[] {room - 1, room, room + 1, RocketItemCargoRoot.MAX_NODES - frame - 8, RocketItemCargoRoot.MAX_NODES - frame}) {
+                int[] each = {512, 512, 512, stacks - 3 * 512};
+                var claimed = placed;
+                var unclaimed = RocketItemCargoRoot.placed(null, UUID.randomUUID(), role);
+                for (int slot = 0; slot < 4; slot++) {
+                    claimed = claimed.withSlot(slot, stoneWithNodes(each[slot]));
+                    unclaimed = unclaimed.withSlot(slot, stoneWithNodes(each[slot]));
+                }
+                // The unbound root fits its envelope at every one of these sizes; only the room for a binding differs.
+                assertEquals(frame + stacks, size(claimed.encode()).nodes());
+                assertEquals(stacks <= room, claimed.leavesRoomToBindAndMark(), "stacks " + stacks);
+                assertEquals(stacks <= room, unclaimed.leavesRoomToBindAndMark(), "unclaimed stacks " + stacks);
+                var bound = new RocketItemCargoRoot(claimed.owner(), claimed.device(), role, full(role).binding(), claimed.buffer(), full(role).escrow());
+                assertEquals(stacks <= room, RocketItemCargoRoot.bounded(bound.encodeUnchecked()), "bound stacks " + stacks);
+                if (stacks <= room) {
+                    assertEquals(bound, RocketItemCargoRoot.decode(bound.encode(), role));
+                } else {
+                    assertThrows(IllegalArgumentException.class, bound::encode);
+                }
+            }
+        }
+    }
+
     @Test void stackBoundsSitExactlyAtSectionFiveThree() {
         for (var role : RocketCargoRole.values()) {
             var base = RocketItemCargoRoot.placed(UUID.randomUUID(), UUID.randomUUID(), role).encode();

@@ -162,7 +162,14 @@ public final class RocketItemCargoLinker {
         if (binding.equals(device.root().orElseThrow().binding())) {
             return refuse(player, ALREADY_BOUND);
         }
-        return device.bind(binding) ? changed(player, stack, BOUND)
-                : refuse(player, RocketCargoStatus.ESCROW_PENDING.translationKey());
+        RocketCargoStatus refused = device.bind(binding);
+        if (refused == null) {
+            return changed(player, stack, BOUND);
+        }
+        // A root too full for the binding (W120-R2): the cooldown keeps a held use from repeating the refusal.
+        if (refused == RocketCargoStatus.CARGO_TOO_LARGE) {
+            player.getCooldowns().addCooldown(stack.getItem(), CHANGE_TICKS);
+        }
+        return refuse(player, refused.translationKey());
     }
 }
