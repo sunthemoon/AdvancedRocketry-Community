@@ -76,6 +76,23 @@ class RocketItemSelectionBudgetTest {
                 buffer(stack(Items.STONE, 1), stack(Items.STONE, 1), stack(Items.STONE, 1), stack(Items.STONE, 1)), false,
                 RocketItemCargoSelection.NoMove.INCOMPATIBLE_CARGO);
     }
+    /** W132-R2: admission's up-front DEVICE_FULL agrees exactly with the walk's verdict, from the buffer alone. */
+    @Test void fullBufferIsFourSlotsEachAtItsStackLimitAndMatchesTheWalk() {
+        var rocket = snapshot(CHEST, entry(0, stack(Items.DIRT, 2)));
+        var cases = new java.util.LinkedHashMap<io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowItemBuffer, Boolean>();
+        cases.put(buffer(stack(Items.STONE, 64), stack(Items.STONE, 64), stack(Items.COBBLESTONE, 64), stack(Items.STONE, 64)), true);
+        cases.put(buffer(stack(Items.ENDER_PEARL, 16), stack(Items.EGG, 16), stack(Items.ENDER_PEARL, 16), stack(Items.DIAMOND_SWORD, 1)), true);
+        cases.put(buffer(stack(Items.STONE, 64), stack(Items.STONE, 64), stack(Items.STONE, 64), stack(Items.STONE, 63)), false);
+        cases.put(buffer(stack(Items.ENDER_PEARL, 15), stack(Items.ENDER_PEARL, 16), stack(Items.ENDER_PEARL, 16), stack(Items.ENDER_PEARL, 16)), false);
+        cases.put(buffer(stack(Items.STONE, 64), stack(Items.STONE, 64), stack(Items.STONE, 64)), false);
+        cases.put(buffer(), false);
+        cases.forEach((buffer, full) -> {
+            assertEquals(full, RocketItemCargoSelection.full(buffer.slots()), buffer.toString());
+            var cursor = new RocketItemCargoSelection.Cursor(rocket, buffer, false, delta -> RocketCargoSelection.Status.ELIGIBLE);
+            assertNotNull(cursor.advance(0, null));
+            assertEquals(full, cursor.noMove() == RocketItemCargoSelection.NoMove.DEVICE_FULL, buffer.toString());
+        });
+    }
     private static void assertNoMove(io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot before,
             io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowItemBuffer buffer, boolean load,
             RocketItemCargoSelection.NoMove expected) {

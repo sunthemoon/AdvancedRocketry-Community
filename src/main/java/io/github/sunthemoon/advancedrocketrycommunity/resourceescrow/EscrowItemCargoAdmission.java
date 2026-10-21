@@ -29,6 +29,10 @@ public final class EscrowItemCargoAdmission implements AutoCloseable {
     private RocketItemCargoSelection.Cursor selection;
     private final java.util.Set<EscrowItemCargoPayload> rejected = new java.util.HashSet<>();
     private io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot selectionSnapshot;
+    /** The last walk's no-move verdict, while the device root and rocket snapshot are those same instances (W132-R2). */
+    private RocketCargoStatus noMove;
+    private RocketItemCargoRoot noMoveRoot;
+    private io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot noMoveSnapshot;
     public EscrowItemCargoAdmission(RocketItemCargoBlockEntity device) { this.device = device; }
     public EscrowOperation.Kind kind() {
         return device.role() == RocketCargoRole.LOAD ? EscrowOperation.Kind.ITEM_CARGO_LOAD : EscrowOperation.Kind.ITEM_CARGO_UNLOAD;
@@ -80,6 +84,8 @@ public final class EscrowItemCargoAdmission implements AutoCloseable {
             if (selected.status() != RocketCargoSelection.Status.ELIGIBLE) {
                 var empty = selection.noMove();
                 status = empty == null ? status(selected.status()) : RocketCargoStatus.valueOf(empty.name());
+                // A no-move verdict depends only on this buffer and snapshot; keep it so an unchanged device is not queued.
+                if (empty != null) { noMove = status; noMoveRoot = before; noMoveSnapshot = selectionSnapshot; }
                 return;
             }
             delta = selected.delta();
@@ -98,7 +104,7 @@ public final class EscrowItemCargoAdmission implements AutoCloseable {
         var root = device.root().orElseThrow();
         if (!EscrowCargoSwitches.enabled(server, kind(), root.device())) { return status = RocketCargoStatus.ADMISSION_DISABLED; }
         var resolved = RocketCargoBindingChecks.resolve(level, device.getBlockPos(), root.owner(), root.binding());
-        if (resolved.refusal() != null) { return status = resolved.refusal(); }
+        if (resolved.refusal() != null) { forgetNoMove(); return status = resolved.refusal(); }
         var rocket = resolved.rocket(); var runtime = EscrowRuntime.of(server);
         if (selection != null && (before != root || eligible != rocket || selectionSnapshot != rocket.snapshot().orElseThrow())) {
             return status = RocketCargoStatus.STALE_BINDING;
@@ -132,6 +138,11 @@ public final class EscrowItemCargoAdmission implements AutoCloseable {
         if (journal == null) { return status = RocketCargoStatus.TRANSFER_JOURNAL_UNPROVED; }
         if (kind().cargoLoad() && root.buffer().slots().stream().allMatch(CompoundTag::isEmpty)) {
             return status = RocketCargoStatus.DEVICE_EMPTY;
+        }
+        if (!kind().cargoLoad() && RocketItemCargoSelection.full(root.buffer().slots())) { return status = RocketCargoStatus.DEVICE_FULL; }
+        if (noMove != null) {
+            if (noMoveRoot == root && noMoveSnapshot == rocket.snapshot().orElseThrow()) { return status = noMove; }
+            forgetNoMove();
         }
         if (selection == null) {
             selection = new RocketItemCargoSelection.Cursor(rocket.snapshot().orElseThrow(), root.buffer(), kind().cargoLoad(),
@@ -223,11 +234,12 @@ public final class EscrowItemCargoAdmission implements AutoCloseable {
                 == EscrowAdmissionAuthority.Delegate.State.NO_FILE : coordinator != null && data.bind(level.getServer()) == coordinator;
     }
     private void refuse(RocketCargoStatus refusal) { close(); status = refusal; }
+    private void forgetNoMove() { noMove = null; noMoveRoot = null; noMoveSnapshot = null; }
     @Override public void close() {
         if (queuedDevice != null && device.getLevel() instanceof ServerLevel level && level.getServer().isSameThread()) {
             var id = queuedDevice; queuedDevice = null; EscrowRuntime.of(level.getServer()).fills(level.getServer()).cancel(id);
         }
-        discard();
+        discard(); forgetNoMove();
     }
     private void discard() {
         device.yieldTransferTurn();

@@ -29,10 +29,14 @@ final class ItemCargoReconciliationFixtures {
         return new EscrowItemBuffer(List.of(stack(load ? 10 : 60), new CompoundTag(), new CompoundTag(), new CompoundTag()));
     }
     static RocketStructureSnapshot snapshot(ServerLevel level, BlockPos origin, boolean load) {
+        var entry = stack(load ? 60 : 10); entry.putByte("Slot", (byte) 0);
+        var entries = new ListTag(); entries.add(entry); return snapshot(level, origin, entries);
+    }
+    /** The same one-chest rocket with the given container entries. */
+    static RocketStructureSnapshot snapshot(ServerLevel level, BlockPos origin, ListTag entries) {
         EscrowTestEndpoints.requireEnabled(level.getServer());
         var base = EscrowCargoPreparationGameTests.snapshot(level.dimension().location(), origin, false, List.of());
-        var entry = stack(load ? 60 : 10); entry.putByte("Slot", (byte) 0);
-        var entries = new ListTag(); entries.add(entry); var data = new CompoundTag(); data.put("Items", entries);
+        var data = new CompoundTag(); data.put("Items", entries);
         var block = new RocketBlock(new RocketPosition(0, 0, 0),
                 new RocketBlockState(ResourceLocation.tryParse("minecraft:chest"),
                         Map.of("facing", "north", "type", "single", "waterlogged", "false")),
@@ -40,9 +44,10 @@ final class ItemCargoReconciliationFixtures {
         return RocketStructureSnapshot.create(UUID.randomUUID(), base.sourceDimension(), base.sourceOrigin(), List.of(block),
                 List.of(block.position()), new RocketStats(1, 100, 1000, 2000, 1, 1, 1, 1), 25, base.propulsion().orElseThrow());
     }
-    static RocketEntity create(ServerLevel level, BlockPos origin, boolean load) {
+    static RocketEntity create(ServerLevel level, BlockPos origin, boolean load) { return create(level, snapshot(level, origin, load)); }
+    static RocketEntity create(ServerLevel level, RocketStructureSnapshot snapshot) {
         var rocket = java.util.Objects.requireNonNull(ModEntities.ROCKET.get().create(level));
-        rocket.initialize(snapshot(level, origin, load), UUID.randomUUID(), UUID.randomUUID());
+        rocket.initialize(snapshot, UUID.randomUUID(), UUID.randomUUID());
         var flight = rocket.flightData().orElseThrow();
         rocket.updateFlightData(flight.withFuel(flight.fuel().withFluidBank(false,
                 ResourceLocation.tryParse("minecraft:water"), null, 1000), 25));

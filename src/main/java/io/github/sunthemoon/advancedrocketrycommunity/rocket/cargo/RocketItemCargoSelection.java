@@ -36,6 +36,19 @@ public final class RocketItemCargoSelection {
     }
 
     /**
+     * Whether an unload can place nothing, from the buffer alone: all four slots hold a stack at {@code min(64,
+     * maxStackSize)}. A slot whose stack fails the native check cannot receive either. Exact, so admission can say
+     * DEVICE_FULL before walking the rocket (W132-R2).
+     */
+    public static boolean full(List<CompoundTag> slots) {
+        return slots.size() == EscrowItemBuffer.SLOTS && slots.stream().allMatch(s -> !s.isEmpty() && !hasRoom(s));
+    }
+    private static boolean hasRoom(CompoundTag entry) {
+        try { return RocketItemCargoMutation.room(entry, entry) > 0; }
+        catch (IllegalArgumentException refused) { return false; }
+    }
+
+    /**
      * Admission's resumable walk. The callback is a cheap candidate filter; complete eligibility runs separately
      * through the preparation ticket. One container (at most 27 offers) reserves a bounded estimate of its own work
      * (W132-R1); blocks without container payloads charge one visit. No container is copied or decoded before
@@ -95,11 +108,7 @@ public final class RocketItemCargoSelection {
             if (!storage || walk.explicitRefusal) { return null; }
             if (load) { return room ? NoMove.INCOMPATIBLE_CARGO : NoMove.CARGO_FULL; }
             if (!contents) { return NoMove.NO_CARGO; }
-            return slots.stream().allMatch(s -> !s.isEmpty() && !hasRoom(s)) ? NoMove.DEVICE_FULL : NoMove.INCOMPATIBLE_CARGO;
-        }
-        private static boolean hasRoom(CompoundTag entry) {
-            try { return RocketItemCargoMutation.room(entry, entry) > 0; }
-            catch (IllegalArgumentException refused) { return false; }
+            return full(slots) ? NoMove.DEVICE_FULL : NoMove.INCOMPATIBLE_CARGO;
         }
         private boolean visit(io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketBlock block) {
                 var payload = block.blockEntityPayload().orElse(null);
