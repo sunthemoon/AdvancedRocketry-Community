@@ -65,7 +65,7 @@ public final class EscrowRetireBeforeFillGameTests {
         RocketTransferRecord record, next;
         UUID request;
         int step, fills;
-        boolean refused, sawCountdown, finished;
+        boolean refused, sawCountdown, finished, launchPending;
 
         Scenario(GameTestHelper helper, boolean cross, boolean stale, int chunk) {
             this.helper = helper; this.stale = stale; level = helper.getLevel();
@@ -140,12 +140,13 @@ public final class EscrowRetireBeforeFillGameTests {
                     sawCountdown = true; next = journal.findByLogicalRocket(record.logicalRocketId()).orElseThrow();
                     helper.assertTrue(next.nativeTransfer().isPresent(), "The launch was not governed"); step = 6; return;
                 }
-                if (request != null && journal.find(request).isPresent()) { return; }
-                request = UUID.randomUUID();
+                if (launchPending) { return; }
+                if (request == null) { request = UUID.randomUUID(); }
                 var launch = RocketRuntime.requestAdminFlight(rocket, RocketDestination.MOON, request);
                 helper.assertTrue(launch.code() == RocketFlightRequestCode.JOURNAL_PENDING || launch.code() == RocketFlightRequestCode.SUCCESS
                                 || launch.code() == RocketFlightRequestCode.DESTINATION_LOADING,
                         "Post-fill launch refused: " + launch.code());
+                launchPending = launch.code() == RocketFlightRequestCode.JOURNAL_PENDING || launch.code() == RocketFlightRequestCode.SUCCESS;
                 return;
             }
             if (step == 6) {
