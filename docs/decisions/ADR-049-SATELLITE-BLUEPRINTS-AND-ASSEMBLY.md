@@ -479,3 +479,19 @@ proceed with recommended solutions. The C7 round-1 review accepted C7 with
 required changes (1 High, 5 Medium, 12 Low), and round 2 found every required
 change resolved and accepted all eleven items, three with the wording above.
 This is not a runtime-completion claim, a Gate PASS or a publication decision.
+
+## Implementation note: W27, replay before new-launch validation (N8; W119, merged `078c7be0`, 2026-10-21)
+
+This note changes no decision and applies W27A-DESIGN section 7's replay rule (N8). The shared
+`SatelliteLaunchService` checks an existing satellite with the same identity before new-launch catalogs, targets,
+stats, research and quotas, for every kind. For a data package, players see two changes at the terminal:
+
+- A package whose definition or target has since been removed or disallowed now returns IDEMPOTENT, and the
+  terminal extracts it. Before W119 it was refused with DEFINITION_NOT_FOUND, TARGET_NOT_ALLOWED or
+  CATALOG_UNAVAILABLE and kept.
+- Launch and decommission can return the new code DEPLOYMENT_PENDING while a bay deployment of that satellite is
+  unresolved, or before the bay receipt index is loaded.
+
+The F4 matrix pins both. Open: with a blocked registry the terminal reports UNSUPPORTED_DATA where the service
+returns REGISTRY_BLOCKED (W119-review R1); W119F aligns the terminal with the service. This is a development
+implementation note, not owner acceptance or a Gate result.

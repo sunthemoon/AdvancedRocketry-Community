@@ -365,3 +365,22 @@ differ, these items prevail.
    decommission and unlink intents and its selection intents are delivered with
    the C8a limits, before any v1.6 Gate evidence; until then only the builder's
    assembly cooldown applies.
+
+## Implementation note: W27, the registry proof (W119, merged `078c7be0`, 2026-10-21)
+
+This note records mechanics from W27A-DESIGN section 3 and section 10; it changes no decision of this ADR and
+accepts no risk (R-039). The registry's checked replace records an exact acknowledgement (session mutation
+sequence and carried epoch). It resolves a committer throw by a bounded readback in the same call, compared by
+`equals`; no registry digest is computed. The bay checkpoint forces the directory where the platform supports it
+(POSIX; Windows has no portable directory force). Launch and decommission consult the bay receipt fence
+(`DEPLOYMENT_PENDING`), which fails closed until the receipt index is loaded. Every registry write entry is a fresh
+capture under one epoch rule: E advances once, to the carried epoch, only when a capture commits within its own
+call with no mutation since it was captured. A definite failure or an UNKNOWN outcome keeps E and the dirty and
+flush-pending state, and a later capture carries an epoch above every candidate whose outcome is unknown, so no
+carried value is reused. Frozen bytes are never rewritten, and no delayed readback advances E. Start,
+acknowledgement and ground-survey stamps therefore become durable only in a file that contains them. The session
+sequence, acknowledgement and uncertain-epoch mark are RAM only: no saved field, snapshot epoch or schema is added,
+and no mutation is refused while an outcome is unknown. Write policy, synchronous threading, the schema-4 literal
+epoch, tagged origins, ground surveys and limits are unchanged. The replay tuple contains satellite UUID, owner,
+definition and kind, never the current or retained initial mission; a fresh data launch still atomically creates
+its initial mission. This is a development implementation note, not owner acceptance or a Gate result.
