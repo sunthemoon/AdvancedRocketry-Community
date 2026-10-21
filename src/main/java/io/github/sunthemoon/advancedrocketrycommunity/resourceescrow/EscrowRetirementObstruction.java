@@ -10,7 +10,7 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.entity.ChunkEntities;
 import net.minecraft.world.level.entity.EntityPersistentStorage;
 
-/** Initial-process obstacles for R52's native cuts; restarts remove the injected storage decorator. */
+/** Native obstacles for R52's cuts; held cases reapply them on each restart without a saved test field. */
 final class EscrowRetirementObstruction {
     private boolean installed;
     boolean install(MinecraftServer server, String cut, RocketTransferRecord record) {

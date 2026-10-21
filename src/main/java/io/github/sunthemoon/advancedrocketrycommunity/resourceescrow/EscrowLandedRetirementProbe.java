@@ -45,7 +45,7 @@ final class EscrowLandedRetirementProbe {
     private FluidFuelLoaderBlockEntity loader;
     private RocketTransferRecord record;
     private UUID launch;
-    private boolean first, launchPending;
+    private boolean first, launchPending, noTransferAtStartup;
     private int step;
     private long began = -1;
     private long demand = -1, lastTicket = Long.MIN_VALUE;
@@ -66,6 +66,7 @@ final class EscrowLandedRetirementProbe {
     void startTick() {
         if (first) { return; } first = true;
         var records = RocketTransferSavedData.get(server).entries();
+        noTransferAtStartup = records.isEmpty();
         int tickets = records.stream().mapToInt(t -> RocketMarginGameTestSupport.flightTicketColumns(server, t.transferId()).size()).sum();
         int pending = RocketMarginGameTestSupport.ordinaryRetirementEntries(server);
         EscrowTags.require(tickets == 0 && pending == 0, "Flight tickets or pending retirement survived process restart");
@@ -84,6 +85,11 @@ final class EscrowLandedRetirementProbe {
 
     void tick() {
         if (paused.get()) { return; }
+        if (recovery && noTransferAtStartup) {
+            var oldLevel = server.getLevel(CelestialIds.MOON_LEVEL);
+            EscrowTags.require(oldLevel.getChunkSource().getChunkNow(OLD.x() >> 4, OLD.z() >> 4) == null,
+                    "A NONE-guard restart loaded the retired old launch site");
+        }
         var level = server.overworld();
         if (!level.isPositionEntityTicking(ORIGIN)) { return; }
         var journal = RocketTransferSavedData.get(server);
@@ -172,6 +178,8 @@ final class EscrowLandedRetirementProbe {
                 EscrowTags.require(server.saveEverything(false, true, true), "R52 checkpoint save failed");
                 AdvancedRocketryCommunity.LOGGER.info("ARCE_R52_CONSERVATION cut={} tank={} bank={} floors={} transfer=NONE",
                         cut, amount(loader), bank(rocket, false), data.ledger().floors().size());
+                AdvancedRocketryCommunity.LOGGER.info("ARCE_R52_OLD_SITE cut={} startup_none={} loaded={}", cut, noTransferAtStartup,
+                        server.getLevel(CelestialIds.MOON_LEVEL).getChunkSource().getChunkNow(OLD.x() >> 4, OLD.z() >> 4) != null);
                 pause("CHECKPOINT"); return;
             }
         }
