@@ -30,6 +30,15 @@
       "reason": "A missing native item holds only its operation without changing either endpoint; a separate item operation completes."
     },
     {
+      "id": "w132f-item-cargo-replay-mismatch-repair",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowReconciliationScheduler/",
+      "message": "Escrow record [0-9a-f-]{36} needs audited settlement or offline repair: OTHER_STATE",
+      "counts": {"item_cargo_replay_mismatch": 2},
+      "test": "ItemCargoReconciliationGameTests.mismatchedFrozenReplayDigestHoldsWithBothEndpointsUnchanged",
+      "reason": "W132-R4: in each direction one item operation's frozen digest is replaced, so the real replay verifier refuses it before either endpoint publishes."
+    },
+    {
       "id": "w124-cargo-named-cleanup-fence",
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",

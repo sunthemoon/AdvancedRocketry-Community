@@ -45,12 +45,20 @@ public final class ItemCargoReconciliationGameTests {
     }
     @AfterBatch(batch = "item_cargo_r39")
     public static void cleanupR39(ServerLevel level) { cleanup(level); }
+    /** W132-R4: the real replay verifier refuses a frozen digest it cannot reproduce, in both directions. */
+    @GameTest(template = "rocket_test", batch = "item_cargo_replay_mismatch", timeoutTicks = 1200)
+    public static void mismatchedFrozenReplayDigestHoldsWithBothEndpointsUnchanged(GameTestHelper helper) {
+        running = new Scenario(helper, false, false, true); helper.onEachTick(running::tick);
+    }
+    @AfterBatch(batch = "item_cargo_replay_mismatch")
+    public static void cleanupMismatch(ServerLevel level) { cleanup(level); }
 
     private static final class Scenario {
         final GameTestHelper helper;
         final GameTestTickPacer pacer;
         final boolean named;
         final boolean unavailable;
+        final boolean mismatch;
         final List<RocketItemCargoBlockEntity> devices = new ArrayList<>();
         final List<RocketEntity> rockets = new ArrayList<>();
         ResourceEscrowSavedData original, isolated;
@@ -68,8 +76,10 @@ public final class ItemCargoReconciliationGameTests {
         RocketEntity otherRocket;
         CompoundTag heldPayload;
         Scenario(GameTestHelper helper, boolean named) { this(helper, named, false); }
-        Scenario(GameTestHelper helper, boolean named, boolean unavailable) {
-            this.helper = helper; this.named = named; this.unavailable = unavailable; pacer = new GameTestTickPacer(helper.getLevel().getServer());
+        Scenario(GameTestHelper helper, boolean named, boolean unavailable) { this(helper, named, unavailable, false); }
+        Scenario(GameTestHelper helper, boolean named, boolean unavailable, boolean mismatch) {
+            this.helper = helper; this.named = named; this.unavailable = unavailable; this.mismatch = mismatch;
+            pacer = new GameTestTickPacer(helper.getLevel().getServer());
         }
         void tick() {
             if (done) { return; }
@@ -122,6 +132,22 @@ public final class ItemCargoReconciliationGameTests {
                 check(op.phase() == EscrowOperation.Phase.PREPARED && op.nativeBinding().complete(), "C1 lost complete PREPARED");
                 check(deviceBefore.equals(a.saveWithFullMetadata()) && rocketBefore.equals(EscrowNativeEnvelope.rocket(rocket)), "C1 published resources");
                 enable(a, false);
+                if (mismatch) {
+                    // Load: the AFTER snapshot hash, checked in the Preparation's phase 0. Unload: the rocket's frozen AFTER
+                    // envelope digest, checked in its phase 2. Replay itself reproduces the true values.
+                    var frozen = op.nativeBinding(); var wrong = io.github.sunthemoon.advancedrocketrycommunity.rocket.model
+                            .RocketNativeResources.hash("w132f-replay-mismatch-" + direction);
+                    var binding = new EscrowNativeBinding(frozen.kind(), frozen.physical(), frozen.logical(), frozen.owner(), frozen.snapshot(),
+                            direction == 0 ? wrong : frozen.snapshotHash(), frozen.invariant(), frozen.sourceReference(), frozen.destinationReference(),
+                            frozen.beforeWrapper(), frozen.afterWrapper(), frozen.beforeFrontier(), frozen.afterFrontier(), frozen.sourceBefore(),
+                            direction == 0 ? frozen.sourceAfter() : wrong, frozen.destinationBefore(), frozen.destinationAfter(), frozen.complete());
+                    var held = new EscrowOperation(op.id(), op.sequence(), op.owner(), op.createdTick(), op.phase(), op.reason(), op.payload(),
+                            op.payloadHash(), op.source(), op.destination(), op.guard(), op.kind(), op.settlement(), binding);
+                    isolated.acknowledged(isolated.ledger().replace(isolated.ledger().records().stream()
+                            .map(record -> record.id().equals(op.id()) ? held : record).toList(), isolated.ledger().floors(), isolated.ledger().tombstones()), true);
+                    EscrowCargoSwitches.pauseReconciliationForTests(server, a.root().orElseThrow().device(), false);
+                    phase = 14; return;
+                }
                 if (named) {
                     EscrowCargoSwitches.pauseReconciliationForTests(server, a.root().orElseThrow().device(), false);
                     heldSince = server.getTickCount(); phase = 11; return;
@@ -159,6 +185,19 @@ public final class ItemCargoReconciliationGameTests {
                         "The other native component did not complete C8 while R39 was held");
                 check(ItemCargoReconciliationFixtures.amount(otherRocket) == 64,
                         "R39 isolation did not conserve the other component\'s cargo");
+                cleanup(); helper.succeed(); return;
+            }
+            if (phase == 14) {
+                var held = member(a);
+                check(held != null && held.id().equals(first) && deviceBefore.equals(a.saveWithFullMetadata())
+                        && rocketBefore.equals(EscrowNativeEnvelope.rocket(rocket)), "A mismatched replay lost its operation or changed an endpoint");
+                if (!coordinator.writerIdle() || held.phase() != EscrowOperation.Phase.REPAIR) { return; }
+                var device = a.root().orElseThrow().escrow(); var wrapper = rocket.escrowSection();
+                check(held.reason() == EscrowReason.OTHER_STATE && isolated.ledger().records().size() == direction + 1 && coordinator.operational()
+                        && device.epoch() == 0 && device.markers().isEmpty() && wrapper.epoch() == 0 && wrapper.markers().isEmpty(),
+                        "A mismatched replay did not hold as REPAIR OTHER_STATE before either endpoint published");
+                // Keep the held endpoints loaded until cleanup, as R39 does; the next direction uses its own rocket.
+                if (direction++ == 0) { phase = 1; return; }
                 cleanup(); helper.succeed(); return;
             }
             if (phase == 11) {
