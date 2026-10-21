@@ -45,8 +45,8 @@ import net.minecraftforge.registries.RegistryObject;
 /** Real admission/eligibility code on unstarted native objects; only world lookup and capabilities are stubbed. */
 final class EscrowTurnYieldFixture {
     private EscrowTurnYieldFixture() { }
-    // Gradle discovers top-level test output classes before @BeforeAll. Keep native types behind this boundary.
-    static final class State implements AutoCloseable {
+    // JUnit scans non-private concrete helpers before @BeforeAll; an abstract fixture is not a test container.
+    abstract static class State implements AutoCloseable {
     static final BlockPos ORIGIN = new BlockPos(0, 64, 0);
     final MinecraftServer server = UnstartedServer.allocate(GameTestServer.class);
     final TestLevel level = UnstartedServer.allocate(TestLevel.class);

@@ -40,7 +40,7 @@ class EscrowNoWorkTurnTest {
     // Defer runtime type resolution until the capability bootstrap has defined it, as in the audit fixtures.
     private static final class Checks {
     static void waitingCargoNoLongerEligibleYieldsToEligibleDevice(Path temp, String change) throws Exception {
-        try (var f = new EscrowTurnYieldFixture.State(temp)) {
+        try (var f = new EscrowTurnYieldFixture.State(temp) { }) {
             var role = change.equals("full") ? RocketCargoRole.UNLOAD : RocketCargoRole.LOAD;
             var first = f.cargo(role, 1000); var second = f.cargo(RocketCargoRole.LOAD, 1000);
             var secondRoot = second.root().orElseThrow();
@@ -75,7 +75,7 @@ class EscrowNoWorkTurnTest {
     }
 
     static void emptyFuelLoaderReceivesBusyTokenThenYieldsOnEmpty(Path temp, boolean queueVisit) throws Exception {
-        try (var f = new EscrowTurnYieldFixture.State(temp)) {
+        try (var f = new EscrowTurnYieldFixture.State(temp) { }) {
             var first = f.fuel(0); var second = f.cargo(RocketCargoRole.LOAD, 1000);
             var root = first.root().orElseThrow();
             f.occupied(true);
@@ -93,7 +93,7 @@ class EscrowNoWorkTurnTest {
     }
 
     static void closedFuelSwitchYieldsBusyTokenWithoutBypassingOccupancy(Path temp, boolean queueVisit) throws Exception {
-        try (var f = new EscrowTurnYieldFixture.State(temp)) {
+        try (var f = new EscrowTurnYieldFixture.State(temp) { }) {
             var first = f.fuel(0); var second = f.cargo(RocketCargoRole.LOAD, 1000);
             f.occupied(true);
             assertEquals(FluidFuelLoaderStatus.ROCKET_BUSY, first.attempt()); assertFalse(second.transferTurn());
@@ -109,7 +109,7 @@ class EscrowNoWorkTurnTest {
     }
 
     static void cancellingQueuedCargoBeforeTicketHandsTurnToEligibleDevice(Path temp) throws Exception {
-        try (var f = new EscrowTurnYieldFixture.State(temp)) {
+        try (var f = new EscrowTurnYieldFixture.State(temp) { }) {
             var first = f.cargo(RocketCargoRole.LOAD, 1000); var second = f.cargo(RocketCargoRole.LOAD, 1000);
             assertTrue(f.active.claim()); assertEquals(RocketCargoStatus.OTHER_TRANSFER_PENDING, first.attempt());
             f.active.release(); assertEquals(RocketCargoStatus.READY, first.attempt());
