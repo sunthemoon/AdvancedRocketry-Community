@@ -43,7 +43,10 @@ import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.registries.RegistryObject;
 
 /** Real admission/eligibility code on unstarted native objects; only world lookup and capabilities are stubbed. */
-final class EscrowTurnYieldFixture implements AutoCloseable {
+final class EscrowTurnYieldFixture {
+    private EscrowTurnYieldFixture() { }
+    // Gradle discovers top-level test output classes before @BeforeAll. Keep native types behind this boundary.
+    static final class State implements AutoCloseable {
     static final BlockPos ORIGIN = new BlockPos(0, 64, 0);
     final MinecraftServer server = UnstartedServer.allocate(GameTestServer.class);
     final TestLevel level = UnstartedServer.allocate(TestLevel.class);
@@ -61,7 +64,7 @@ final class EscrowTurnYieldFixture implements AutoCloseable {
     final Object previousManager = UnstartedServer.get(RocketRuntime.class, null, "service");
     final Block previousFuelBlock = UnstartedServer.get(RegistryObject.class, ModBlocks.FLUID_FUEL_LOADER, "value");
 
-    EscrowTurnYieldFixture(Path directory) throws Exception {
+    State(Path directory) throws Exception {
         UnstartedServer.set(MinecraftServer.class, server, "serverThread", Thread.currentThread());
         UnstartedServer.set(MinecraftServer.class, server, "levels", Map.of(Level.OVERWORLD, level));
         level.server = server; level.storage = TestDataStorage.over(directory);
@@ -188,5 +191,6 @@ final class EscrowTurnYieldFixture implements AutoCloseable {
         TestChunk() { super(null, new ChunkPos(0, 0)); }
         @Override public Map<BlockPos, BlockEntity> getBlockEntities() { return entities; }
         @Override public BlockState getBlockState(BlockPos pos) { return states.getOrDefault(pos, Blocks.AIR.defaultBlockState()); }
+    }
     }
 }
