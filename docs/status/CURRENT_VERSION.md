@@ -120,6 +120,7 @@ What is still open:
   and vanilla checks, the art screen and the strict validator). The ledger closure, the final
   `PORTING_MATRIX` and the release evidence remain.
 - **Owner decisions.** Eleven are pending; QUEUE.md lists them with what each one blocks.
+- **Performance at the bounds (W128, 2026-10-21).** On the development host, the satellite registry's checkpoint, coalesced flush and autosave at a 16.7 MB root take about 450 to 900 ms at P95 and P99, and the rocket transaction journal's checkpoint at its 64 MiB bound about 4.1 s, against docs/17's 50 and 100 ms; the cost is server-thread encoding and exists today in ordinary autosave at those sizes. Root decision R51 pauses the bay chain at W27d1 until an off-thread writer design (W129) and its ADR.
 - **Risks.** R-021 and the risks the W slices added (R-028 to R-040) stay open. Root registered R-039 (the bay receipt store) before W27c1 and R-040 (the checked transaction journal and its unreadable-root hold) with W123.
 - **Earlier intermittent GameTests.** W73 fixed the landing-pad cancellation test, W74 the
   six-host natural-beds test, W76 the first-Moon-landing and spawn-egg tests, and W78 the sealed
