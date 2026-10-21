@@ -4,6 +4,7 @@ import com.mojang.authlib.GameProfile;
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalogManager;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.builder.SatelliteBuilderBlock;
@@ -24,6 +25,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.satellite.receiver.Microwa
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.scan.ScanSettings;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.scan.SurveyScanService;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteRuntime;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteCatalogManager;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteLaunchService;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SolarLinks;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.terminal.SatelliteTerminalBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.terminal.SatelliteTerminalBlockEntity;
@@ -131,9 +134,20 @@ public final class SatelliteReviewGameTests {
         insert(helper, slots, SatelliteTerminalBlockEntity.SLOT_CONTROL_CHIP, bound(ModItems.SATELLITE_CONTROL_CHIP.get(), survey));
         insert(helper, slots, SatelliteTerminalBlockEntity.SLOT_PACKAGE, bound(ModItems.SATELLITE_PACKAGE.get(), survey));
         power(terminal);
+        var service = new SatelliteLaunchService(new SatelliteCatalogManager(), new CelestialCatalogManager());
+        var validation = service.validate(server, owner.getUUID(), survey, CelestialIds.EARTH_ID);
+        helper.assertTrue(validation.result().code() == SatelliteOperationCode.REGISTRY_BLOCKED
+                        && validation.request().isEmpty(), "The service did not refuse the blocked registry");
+        ItemStack packageBefore = slots.getStackInSlot(SatelliteTerminalBlockEntity.SLOT_PACKAGE).copy();
         terminal.handleButton(owner, SatelliteTerminalMenu.BUTTON_LAUNCH);
         helper.assertTrue(!slots.getStackInSlot(SatelliteTerminalBlockEntity.SLOT_PACKAGE).isEmpty(),
                 "A launch on a blocked registry consumed the package");
+        helper.assertTrue(ItemStack.matches(packageBefore, slots.getStackInSlot(SatelliteTerminalBlockEntity.SLOT_PACKAGE)),
+                "A launch on a blocked registry changed the package");
+        int terminalResult = terminal.saveWithoutMetadata().getCompound("SatelliteTerminal").getInt("last_result");
+        helper.assertTrue(terminalResult == validation.result().code().ordinal(),
+                "Blocked-registry terminal/service mismatch: expected " + validation.result().code()
+                        + ", got " + SatelliteOperationCode.values()[terminalResult]);
 
         helper.runAfterDelay(22, () -> {
             helper.assertTrue(receiver.status(0) == SolarLinks.LinkStatus.UNAVAILABLE && receiver.output() == 0,
