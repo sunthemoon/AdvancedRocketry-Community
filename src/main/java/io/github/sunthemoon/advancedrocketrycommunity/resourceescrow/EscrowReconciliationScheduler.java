@@ -113,6 +113,7 @@ public final class EscrowReconciliationScheduler {
             retry.failures = 0; retry.next = tick + 1; transition.accept(id, EscrowReason.NONE);
         } else {
             retry.next = tick + (result.reason() == EscrowReason.WAITING_UNLOADED
+                    || result.reason() == EscrowReason.TRANSFER_JOURNAL_UNPROVED
                     || result.reason() == EscrowReason.RECONCILIATION_UNIMPLEMENTED ? 20 : 1);
         }
     }

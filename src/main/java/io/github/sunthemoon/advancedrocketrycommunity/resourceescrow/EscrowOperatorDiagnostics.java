@@ -17,10 +17,21 @@ final class EscrowOperatorDiagnostics {
         var data = ResourceEscrowSavedData.existing(server);
         if (data == null) { return List.of("escrow admission=disabled ledger=absent held=0 released=0 pruning_groups=0 receipts=0/64"); }
         var runtime = EscrowRuntime.of(server);
-        return status(data.ledger(), op -> runtimeReason(runtime, op), data.floorUsage());
+        var lines = new ArrayList<>(status(data.ledger(), op -> runtimeReason(runtime, op), data.floorUsage()));
+        var scheduler = runtime.reconciliationScheduler();
+        if (scheduler != null) { lines.add(reconciliationStatus(data.ledger(), scheduler::view)); }
+        return List.copyOf(lines);
     }
     static List<String> status(EscrowLedger root, Function<EscrowOperation, String> reason) {
         return status(root, reason, EscrowFloors.usage(root, List.of()));
+    }
+    static String reconciliationStatus(EscrowLedger root, Function<UUID, EscrowReconciliationScheduler.View> view) {
+        var ordinary = root.records().stream().filter(op -> op.settlement().isEmpty()).toList();
+        return "reconciliation=" + ordinary.stream().limit(DETAILS).map(op -> {
+            var state = view.apply(op.id());
+            return "operation=" + op.id() + " persisted_reason=" + op.reason()
+                    + " runtime_reason=" + bounded(state.reason()) + " next_retry=" + state.nextTick();
+        }).toList() + " omitted=" + Math.max(0, ordinary.size() - DETAILS);
     }
     static List<String> status(EscrowLedger root, Function<EscrowOperation, String> reason, EscrowFloors.Usage usage) {
         var receipts = root.tombstones(); var groups = EscrowSettlementPruning.groups(root);

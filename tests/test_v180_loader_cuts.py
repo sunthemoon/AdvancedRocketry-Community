@@ -13,6 +13,8 @@ import run_v180_loader_cuts as runner
 
 
 def fixture(cut, restart):
+    if cut in oracle.NAMED:
+        return named_fixture(cut, restart)
     name = cut.removeprefix(oracle.PREFIX)
     if name in oracle.CHAINS:
         return chain_fixture(cut, restart)
@@ -95,7 +97,7 @@ def chain_fixture(cut, restart):
 
 def floors_fixture(cut, restart):
     """R1: the matrix fill after the seeded watermark, the seeded floors, the landed records and the refused key."""
-    name = cut.removeprefix(oracle.PREFIX); coalesced = name.endswith("COALESCED"); saturated = name.endswith("256")
+    name = cut.removeprefix(oracle.PREFIX).removesuffix("_ACK"); coalesced = name.endswith("COALESCED"); saturated = name.endswith("256")
     seeded = 256 if saturated else 255; fills = 2 if coalesced else 1
     if coalesced and not restart:
         disk = coalesced_stop_fixture()
@@ -125,6 +127,28 @@ def floors_fixture(cut, restart):
             owner="owner", device="device-extra", binding=dict(physical_rocket="physical2", logical_rocket="logical2"),
             tank=dict(FluidName=oracle.FUEL, Amount=5000), resource_escrow=dict(schema_version=1, resource_epoch=0, markers=[])))
     return dict(disk, transfers=transfers, extra_rocket=extra, extra_loader=extra_loader)
+
+
+def named_fixture(cut, restart):
+    e5 = cut.endswith("E5"); retired = bool(restart or cut.endswith("K9"))
+    disk = matrix_fixture("LF_M_" + ("K6" if e5 else "K9" if cut.endswith("K9") else "K2_ACK"), restart)
+    root = disk["ledger"]; root["issued_through"] = 2 if e5 else 1
+    disk["transfers"] = [dict(transfer_id="t1", phase="COMMITTED", logical_rocket_id="logical", destination_entity_id="physical")]
+    if retired:
+        root["floors"] = [dict(schema_version=2, rocket_id="logical", transfer_id="t1", entity_id="physical",
+                               resource_epoch=1, highest_seq=1, signature_kind="FUEL_VECTOR_V1")]
+    else:
+        root["records"][0].update(seq=1, transfer_guard=dict(rocket_id="logical", transfer_id="t1"),
+                                  phase="STALLED" if e5 else "PREPARED", reason="BARRIER_IO" if e5 else "NONE")
+    disk["healthy"] = None
+    if e5:
+        healthy = matrix_fixture("LF_M_K2_ACK", 1); target = healthy["rocket"]
+        target.update(UUID="healthy", Pos=[88.5, 100., 88.5]); target["RocketEntityData"]["assembly_transaction_id"] = "healthy-logical"
+        target["RocketEntityData"]["flight_data"]["logical_rocket_id"] = "healthy-logical"
+        source = healthy["loaders"][0]; source.update(x=90, z=88)
+        source["arce_fluid_fuel_loader"].update(device="healthy-device", binding=dict(physical_rocket="healthy", logical_rocket="healthy-logical"))
+        disk["healthy"] = healthy
+    return disk
 
 
 def coalesced_stop_fixture():
@@ -172,6 +196,41 @@ def r3_fixture(cut, restart):
 
 
 class LoaderCutsTest(unittest.TestCase):
+    def test_native_pin_paths_exist_in_this_source_tree(self):
+        for path in runner.HOOK_FILES + runner.HARNESS_FILES:
+            with self.subTest(path=path): self.assertTrue((runner.REPO / path).is_file())
+
+    def test_named_oracle_rejects_lost_guards_stalls_floors_or_control_progress(self):
+        for cut in oracle.NAMED:
+            for restart in range(3):
+                good = fixture(cut, restart); oracle.check(good, cut, restart)
+                mutations = [lambda d: d["ledger"].update(issued_through=0), lambda d: d["transfers"][0].update(phase="PREPARED")]
+                if good["ledger"]["records"]:
+                    mutations += [lambda d: d["ledger"]["records"][0].update(reason="OTHER_STATE"),
+                                  lambda d: d["ledger"]["records"][0]["transfer_guard"].update(transfer_id="other")]
+                if good["ledger"]["floors"]:
+                    mutations += [lambda d: d["ledger"]["floors"][0].update(highest_seq=2)]
+                if good["healthy"]:
+                    mutations += [lambda d: d["healthy"]["loaders"][0]["arce_fluid_fuel_loader"]["tank"].update(Amount=5000)]
+                for mutate in mutations:
+                    bad = copy.deepcopy(good); mutate(bad)
+                    with self.subTest(cut=cut, restart=restart), self.assertRaises(oracle.smoke.SmokeError): oracle.check(bad, cut, restart)
+
+    def test_named_observations_keep_f1b_distinct_from_conservation_and_require_three_failures(self):
+        import loader_named_cut_oracle as named
+        for restart in (1, 2):
+            cut = "LF_M_NAMED_CROSS_K2"
+            line = f"ARCE_LOADER_MATRIX_NAMED_STATE cut={cut} state=F1B_HELD records=0 tank=4000 bank=1000 healthy_tank=-1 healthy_bank=-1 mutation_allowed=false source_ever_loaded=false"
+            result = named.observations(cut, restart, [line])
+            self.assertTrue(result["fill_retired"]); self.assertEqual("F1B_HELD", result["mutation_boundary"])
+            for bad in (line.replace("source_ever_loaded=false", "source_ever_loaded=true"), line.replace("mutation_allowed=false", "mutation_allowed=true")):
+                with self.assertRaises(oracle.smoke.SmokeError): named.observations(cut, restart, [bad])
+        cut = "LF_M_NAMED_E5"
+        lines = [f"ARCE_LOADER_MATRIX_STORE_FAULT cut={cut} chunk=4,4 failure={i}" for i in range(1, 4)]
+        lines += [f"ARCE_LOADER_MATRIX_NAMED_STATE cut={cut} state=STALLED records=1 tank=4000 bank=1000 healthy_tank=4000 healthy_bank=1000 mutation_allowed=false source_ever_loaded=false"]
+        named.observations(cut, 0, lines)
+        with self.assertRaises(oracle.smoke.SmokeError): named.observations(cut, 0, lines[1:])
+
     def test_unknown_unload_requires_retained_candidate_and_native_unload(self):
         cut = "LF_M_R1_UNKNOWN_UNLOAD"
         lines = [f"ARCE_LOADER_MATRIX_FAILURE cut={cut} unknown=true records=0 pending=1 issued=0",
@@ -394,7 +453,7 @@ class LoaderCutsTest(unittest.TestCase):
                 if good["extra_rocket"] is not None:
                     mutations += [lambda d: d["extra_loader"]["arce_fluid_fuel_loader"]["tank"].update(Amount=4000),
                                   lambda d: d["extra_rocket"]["RocketEntityData"]["resource_escrow"].update(resource_epoch=1)]
-                if not restart and cut.endswith("COALESCED"):
+                if not restart and cut.removesuffix("_ACK").endswith("COALESCED"):
                     mutations += [lambda d: d["loaders"][1]["arce_fluid_fuel_loader"]["tank"].update(Amount=4000),
                                   lambda d: d["ledger"]["records"].pop(),
                                   lambda d: d["ledger"]["records"][1]["destination"].update(before_epoch=0, after_epoch=1)]
@@ -518,6 +577,7 @@ class LoaderCutsTest(unittest.TestCase):
             manifest = dict(cut="R3_ENDPOINT_FOREIGN", edits=[dict(file="region/r.0.0.mca")])
             with mock.patch.object(runner, "assert_pin"), mock.patch.object(runner, "require_lock"), \
                     mock.patch.object(runner, "disk_space", return_value={"C:/": 11*1024**3, "D:/": 11*1024**3}), \
+                    mock.patch.object(runner, "physical_memory", return_value=7*1024**3), \
                     mock.patch.object(runner.smoke, "CapturedProcess", Process), \
                     mock.patch.object(runner.oracle, "inspect", side_effect=snapshots), \
                     mock.patch.object(runner.nbt, "r3_edit", return_value=manifest) as edit:
@@ -580,6 +640,7 @@ class LoaderCutsTest(unittest.TestCase):
                                    java="fixture-java", source_commit="fixture-commit", startup_timeout=240)
             with mock.patch.object(runner, "assert_pin"), mock.patch.object(runner, "require_lock"), \
                     mock.patch.object(runner, "disk_space", return_value={"C:/": 11*1024**3, "D:/": 11*1024**3}), \
+                    mock.patch.object(runner, "physical_memory", return_value=7*1024**3), \
                     mock.patch.object(runner.smoke, "CapturedProcess", Process), \
                     mock.patch.object(runner.oracle, "inspect", side_effect=snapshots):
                 result = runner.run_cut(args, cut, root / "evidence", "fixture-owner", {"jar_sha256": runner.digest(jar)})

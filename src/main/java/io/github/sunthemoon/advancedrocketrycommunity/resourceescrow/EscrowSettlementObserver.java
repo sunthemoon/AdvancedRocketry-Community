@@ -71,7 +71,7 @@ final class EscrowSettlementObserver {
                     "WAITING_UNLOADED: endpoint slot must be FULL, entity-loaded and ticking");
             if (endpoint.kind() == EscrowEndpoint.Kind.BLOCK_ENTITY && EscrowLoaderEndpoint.is(endpoint)) {
                 // The registered production source adapter; it needs no release-test hooks.
-                result.add(EscrowLoaderEndpoint.observe(level.getChunkSource().getChunkNow(chunk.x, chunk.z)
+                result.add(EscrowLoaderEndpoint.observe(server, level.getChunkSource().getChunkNow(chunk.x, chunk.z)
                         .getBlockEntity(EscrowLoaderEndpoint.position(endpoint)), endpoint, ledger));
             } else if (EscrowFluidCargoEndpoint.is(endpoint)) {
                 result.add(EscrowFluidCargoEndpoint.observe(level.getChunkSource().getChunkNow(chunk.x, chunk.z)

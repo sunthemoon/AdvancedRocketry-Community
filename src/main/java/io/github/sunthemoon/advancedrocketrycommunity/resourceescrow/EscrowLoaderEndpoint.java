@@ -48,7 +48,17 @@ final class EscrowLoaderEndpoint {
     }
 
     /** Loaded-only live observation; the caller has already proved the slot FULL, entity-loaded and ticking. */
-    static EscrowSettlementIntent.Observation observe(BlockEntity source, EscrowEndpoint endpoint, UUID ledger) {
+    static EscrowSettlementIntent.Observation observe(net.minecraft.server.MinecraftServer server,
+                                                      BlockEntity source, EscrowEndpoint endpoint, UUID ledger) {
+        return observe(source, endpoint, ledger, () -> EscrowLoaderRelocation.missingReason(server, endpoint));
+    }
+
+    static EscrowSettlementIntent.Observation observe(BlockEntity source, EscrowEndpoint endpoint, UUID ledger,
+                                                      java.util.function.Supplier<EscrowReason> missingReason) {
+        if (!(source instanceof FluidFuelLoaderBlockEntity)) {
+            var reason = missingReason.get();
+            if (reason != EscrowReason.MISSING_ENDPOINT) { throw new EscrowReconciliationView.Refusal(reason); }
+        }
         if (source == null) { return new EscrowSettlementIntent.Observation(endpoint, null, false, 0); }
         EscrowTags.require(source instanceof FluidFuelLoaderBlockEntity, "Source identity/type changed");
         var loader = (FluidFuelLoaderBlockEntity) source;

@@ -3,6 +3,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.resourceescrow;
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
 
@@ -19,6 +20,7 @@ final class EscrowStoreFault {
     /** The loader matrix's source chunk (loader A at 66,100,64); no other slot is ever selected. */
     static final ChunkPos SLOT = new ChunkPos(4, 4);
     private final AtomicBoolean spent = new AtomicBoolean();
+    private final AtomicInteger namedFailures = new AtomicInteger();
 
     /** The pure gate, so that a unit test pins every property and the exact slot. */
     static boolean selected(boolean hooks, String testCase, String scenario, String level, ChunkPos chunk) {
@@ -27,9 +29,27 @@ final class EscrowStoreFault {
 
     /** The terrain own store's future as the barrier must retain it; the same instance whenever the gate is closed. */
     CompletableFuture<Void> observed(ServerLevel level, String levelId, ChunkPos chunk, CompletableFuture<Void> stored) {
+        if (namedSelected(Boolean.getBoolean(EscrowTestEndpoints.HOOKS), System.getProperty("advancedrocketrycommunity.escrowCase"),
+                System.getProperty("advancedrocketrycommunity.escrowScenario"), levelId, chunk)
+                && EscrowTestEndpoints.enabled(level.getServer())) { return observedNamed(true, chunk, stored); }
         return observed(selected(Boolean.getBoolean(EscrowTestEndpoints.HOOKS), System.getProperty("advancedrocketrycommunity.escrowCase"),
                 System.getProperty("advancedrocketrycommunity.escrowScenario"), levelId, chunk)
                 && EscrowTestEndpoints.enabled(level.getServer()), chunk, stored);
+    }
+
+    /** W125 uses the same seam for exactly three E5 source proofs; recovery uses repaired storage. */
+    static boolean namedSelected(boolean hooks, String testCase, String scenario, String level, ChunkPos chunk) {
+        return hooks && EscrowLoaderNamedProbe.E5.equals(testCase) && "start".equals(scenario)
+                && "minecraft:overworld".equals(level) && SLOT.equals(chunk);
+    }
+
+    CompletableFuture<Void> observedNamed(boolean gate, ChunkPos chunk, CompletableFuture<Void> stored) {
+        if (!gate) { return stored; }
+        int failure = namedFailures.getAndUpdate(value -> Math.min(3, value + 1));
+        if (failure == 3) { return stored; }
+        AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_MATRIX_STORE_FAULT cut={} chunk={},{} failure={}",
+                EscrowLoaderNamedProbe.E5, chunk.x, chunk.z, failure + 1);
+        return stored.thenCompose(ignored -> CompletableFuture.failedFuture(new java.io.IOException("Release-test named own-store IO failure")));
     }
 
     /** At most one fault per store; the real store has always completed before the retained future fails. */

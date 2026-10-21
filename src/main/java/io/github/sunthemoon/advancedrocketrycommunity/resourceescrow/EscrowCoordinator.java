@@ -107,6 +107,12 @@ public final class EscrowCoordinator implements AutoCloseable {
                         && currentReason(op) == EscrowReason.NONE && op.phase() == EscrowOperation.Phase.PREPARED
                         && EscrowLoaderEndpoint.is(op.source()) && op.destination().key().equals(destination));
     }
+    /** Separate from admission: pending and persisted retryable stalls still need their original proof/L2. */
+    boolean fillSelfGuard(EscrowGuard guard, EscrowEndpoint.Key destination, RocketEscrowSection wrapper) {
+        owner();
+        return EscrowFillSelfGuard.matches(operational(), flightWrites.locked(guard.rocket()), data.ledger(), guard,
+                destination, wrapper, unresolved().toList(), this::currentReason, frontiers);
+    }
     /** Every unresolved operation whose source or destination identity is this physical UUID, each once. */
     List<EscrowOperation> unresolvedNaming(UUID identity) {
         owner(); var seen = new java.util.HashSet<UUID>();
