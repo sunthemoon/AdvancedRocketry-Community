@@ -282,6 +282,8 @@ class RocketEscrowAuditDirectionTest {
 
         Fixture(EscrowOperation op, Path directory) throws Exception {
             this.op = op;
+            // This fixture tests audit lookup/invalidation only; it intentionally has no terrain or native C2 executor.
+            if (op.kind().cargo()) { runtime.cargoSwitches.pause(op.device().identity(), true); }
             level.server = server; level.storage = TestDataStorage.over(directory); level.key = Level.OVERWORLD;
             level.runtime = LazyOptional.of(() -> runtime); level.lookups = new ArrayList<>(); level.entities = new HashMap<>();
             UnstartedServer.set(MinecraftServer.class, server, "levels", Map.of(Level.OVERWORLD, level));

@@ -45,9 +45,11 @@ public final class EscrowCargoSwitches {
     static void pauseReconciliationForTests(MinecraftServer server, UUID device, boolean pause) {
         EscrowTestEndpoints.requireEnabled(server);
         EscrowTags.require(server.isSameThread(), "Cargo fixture pause requires owner thread");
-        var named = EscrowRuntime.of(server).cargoSwitches.paused;
-        EscrowTags.require(!pause || named.contains(device) || named.size() < EscrowLimits.OPERATIONS, "Too many cargo fixture pauses");
-        if (pause) { named.add(device); } else { named.remove(device); }
+        EscrowRuntime.of(server).cargoSwitches.pause(device, pause);
+    }
+    void pause(UUID device, boolean pause) {
+        EscrowTags.require(!pause || paused.contains(device) || paused.size() < EscrowLimits.OPERATIONS, "Too many cargo fixture pauses");
+        if (pause) { paused.add(device); } else { paused.remove(device); }
     }
     boolean paused(UUID device) { return paused.contains(device); }
     void clear() { devices.clear(); paused.clear(); }
