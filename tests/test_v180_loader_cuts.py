@@ -196,6 +196,10 @@ def r3_fixture(cut, restart):
 
 
 class LoaderCutsTest(unittest.TestCase):
+    def test_native_pin_paths_exist_in_this_source_tree(self):
+        for path in runner.HOOK_FILES + runner.HARNESS_FILES:
+            with self.subTest(path=path): self.assertTrue((runner.REPO / path).is_file())
+
     def test_named_oracle_rejects_lost_guards_stalls_floors_or_control_progress(self):
         for cut in oracle.NAMED:
             for restart in range(3):

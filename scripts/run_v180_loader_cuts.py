@@ -29,7 +29,7 @@ from run_v180_rocket_settlement_completion import require_lock
 REPO = Path(__file__).resolve().parents[1]
 LOCK = Path("D:/GitHub/ARCE-Task-Evidence/locks/heavy-jvm")
 HOOK_FILES = tuple("src/main/java/io/github/sunthemoon/advancedrocketrycommunity/resourceescrow/" + name + ".java"
-                   for name in ("EscrowLoaderReleaseProbe", "EscrowLoaderCutProbe", "EscrowLoaderStorageProbe", "EscrowLoaderRecoveryProbe", "EscrowReleaseProbe", "EscrowLedgerWriter", "EscrowFillQueue",
+                   for name in ("EscrowLoaderReleaseProbe", "EscrowLoaderCutProbe", "EscrowLoaderStorageProbe", "EscrowLoaderRecoveryProbe", "EscrowReleaseProbe", "EscrowLedgerWriter", "EscrowResourceQueue",
                                 "EscrowReconciliationAction", "EscrowReconciliationDriver", "EscrowRuntime", "EscrowBarrier",
                                 "EscrowLoaderFloorProbe", "EscrowLoaderNamedProbe", "EscrowStoreFault", "EscrowChunkStore"))
 HARNESS_FILES = ("scripts/run_v180_loader_cuts.py", "scripts/loader_cut_oracle.py", "scripts/loader_cut_nbt.py", "scripts/loader_named_cut_oracle.py")
