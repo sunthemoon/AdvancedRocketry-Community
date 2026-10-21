@@ -22,6 +22,10 @@ final class EscrowSettlementDisk {
         return ordinary(root, endpoint, ledger).settlement();
     }
     static EscrowReconciliationObservation ordinary(CompoundTag root, EscrowEndpoint endpoint, UUID ledger) {
+        return ordinary(root, endpoint, ledger, null);
+    }
+    static EscrowReconciliationObservation ordinary(CompoundTag root, EscrowEndpoint endpoint, UUID ledger,
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot captureWitness) {
         boolean entity = endpoint.kind() == EscrowEndpoint.Kind.ENTITY;
         if (entity) {
             int[] position = root.getIntArray("Position");
@@ -68,7 +72,11 @@ final class EscrowSettlementDisk {
         EscrowTags.fields(wrapper, "schema_version", "assembly_transaction_id", "owner_id", "snapshot", "flight_data", "resource_escrow");
         EscrowTags.require(EscrowTags.integer(wrapper, "schema_version") == 3 && endpoint.logicalRocket().equals(EscrowTags.uuid(wrapper, "assembly_transaction_id")),
                 "Invalid disk rocket identity/schema");
-        var snapshot = RocketSnapshotNbtCodec.decode(wrapper.getCompound("snapshot")).snapshot().orElseThrow();
+        var snapshot = captureWitness == null ? RocketSnapshotNbtCodec.decode(wrapper.getCompound("snapshot")).snapshot().orElseThrow() : captureWitness;
+        if (captureWitness != null) {
+            EscrowTags.require(io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketSnapshotWitness
+                    .verifies(wrapper.getCompound("snapshot"), captureWitness), "Captured cargo snapshot changed");
+        }
         var flight = RocketFlightNbtCodec.decode(wrapper.getCompound("flight_data")).data().orElseThrow();
         var section = RocketEscrowSection.decode(wrapper.getCompound("resource_escrow"));
         var position = found.getList("Pos", net.minecraft.nbt.Tag.TAG_DOUBLE); var origin = flight.currentOrigin();

@@ -11,10 +11,13 @@ import net.minecraft.nbt.CompoundTag;
 
 /** C3-C6: one frozen retirement request, with joint tokens for complete current endpoint frontiers. */
 final class EscrowReconciliationCheckpoint implements AutoCloseable {
+    private final Thread owner = Thread.currentThread();
     final EscrowLedger root;
     final Set<UUID> members;
     final Map<EscrowEndpoint.Key, EscrowSettlementIntent.Observation> ends;
     final Map<EscrowEndpoint.Key, EscrowPrefix.State> frontiers;
+    private final Map<EscrowEndpoint.Key, io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot> witnesses;
+    private final Map<EscrowEndpoint.Key, EscrowCargoReadback> cargoReadbacks = new HashMap<>();
     final BooleanSupplier journalLease;
     final Map<EscrowEndpoint.Key, EscrowBarrier.Proof> proofs = new HashMap<>();
     boolean busy;
@@ -29,7 +32,15 @@ final class EscrowReconciliationCheckpoint implements AutoCloseable {
     EscrowReconciliationCheckpoint(EscrowLedger root, Set<UUID> members,
             List<EscrowSettlementIntent.Observation> observations, BooleanSupplier journalLease,
             Map<EscrowEndpoint.Key, EscrowPrefix.State> frontiers) {
+        this(root, members, observations, journalLease, frontiers, Map.of());
+    }
+
+    EscrowReconciliationCheckpoint(EscrowLedger root, Set<UUID> members,
+            List<EscrowSettlementIntent.Observation> observations, BooleanSupplier journalLease,
+            Map<EscrowEndpoint.Key, EscrowPrefix.State> frontiers,
+            Map<EscrowEndpoint.Key, io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot> witnesses) {
         this.root = root; this.members = Set.copyOf(members); this.journalLease = journalLease;
+        this.witnesses = Map.copyOf(witnesses);
         EscrowTags.require(!members.isEmpty() && journalLease.getAsBoolean(), "Checkpoint needs members and a checked journal lease");
         var affected = root.records().stream().filter(op -> members.contains(op.id()))
                 .flatMap(op -> java.util.stream.Stream.of(op.source().key(), op.destination().key()))
@@ -73,6 +84,10 @@ final class EscrowReconciliationCheckpoint implements AutoCloseable {
         var expected = ends.get(key);
         EscrowTags.require(expected != null, "Unknown checkpoint endpoint");
         var chain = List.copyOf(EscrowPrefix.chains(root.records()).get(key));
+        if (chain.stream().anyMatch(link -> link.operation().kind().cargo())) {
+            return cargoReadbacks.computeIfAbsent(key, ignored -> new EscrowCargoReadback(root.id(),
+                    new EscrowReconciliationObservation(expected, frontiers.get(key)), witnesses.get(key)));
+        }
         return slot -> {
             try {
                 var observed = EscrowSettlementDisk.ordinary(slot, expected.endpoint(), root.id());
@@ -90,12 +105,20 @@ final class EscrowReconciliationCheckpoint implements AutoCloseable {
     }
 
     void accept(List<EscrowBarrier.Target> targets, EscrowBarrier.JointResult result) {
+        EscrowTags.require(Thread.currentThread() == owner, "Checkpoint confirmation requires owner thread");
         var keys = targets.stream().map(target -> target.endpoint().key()).collect(java.util.stream.Collectors.toSet());
         if (closed || !journalLease.getAsBoolean() || !result.confirmed() || !keys.equals(result.proofs().keySet())
+                || keys.stream().anyMatch(key -> cargoReadbacks.containsKey(key) && !cargoReadbacks.get(key).confirmed())
                 || result.proofs().entrySet().stream().anyMatch(entry -> !frontiers.get(entry.getKey()).equals(entry.getValue().frontier()))) {
             result.proofs().values().forEach(EscrowBarrier.Proof::release); return;
         }
         result.proofs().forEach((key, proof) -> { var old = proofs.put(key, proof); if (old != null) { old.release(); } });
+    }
+
+    EscrowReason readbackReason(List<EscrowBarrier.Target> targets, EscrowBarrier.JointResult result) {
+        EscrowTags.require(Thread.currentThread() == owner, "Checkpoint confirmation requires owner thread");
+        return result.confirmed() && targets.stream().anyMatch(target -> cargoReadbacks.containsKey(target.endpoint().key())
+                && !cargoReadbacks.get(target.endpoint().key()).confirmed()) ? EscrowReason.BARRIER_UNSTABLE : result.reason();
     }
 
     void discardInvalid() {
@@ -107,7 +130,8 @@ final class EscrowReconciliationCheckpoint implements AutoCloseable {
 
     boolean proved() {
         return !closed && journalLease.getAsBoolean() && proofs.keySet().equals(ends.keySet())
-                && proofs.values().stream().allMatch(EscrowBarrier.Proof::valid);
+                && proofs.values().stream().allMatch(EscrowBarrier.Proof::valid)
+                && cargoReadbacks.values().stream().allMatch(EscrowCargoReadback::confirmed);
     }
 
     @Override public void close() { closed = true; proofs.values().forEach(EscrowBarrier.Proof::release); proofs.clear(); }

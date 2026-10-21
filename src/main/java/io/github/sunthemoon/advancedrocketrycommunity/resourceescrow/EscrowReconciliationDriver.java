@@ -176,7 +176,9 @@ final class EscrowReconciliationDriver {
                 completion.accept(EscrowReconciliationScheduler.Result.deferred()); return;
             }
             var observations = EscrowSettlementObserver.observe(server, view.root.id(), references);
-            work = new EscrowReconciliationCheckpoint(view.root, ids, observations, view.journalLease, states);
+            var witnesses = view.ends.entrySet().stream().filter(entry -> entry.getValue().rocket() != null)
+                    .collect(java.util.stream.Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().rocket().snapshot().orElseThrow()));
+            work = new EscrowReconciliationCheckpoint(view.root, ids, observations, view.journalLease, states, witnesses);
             // Validate the whole affected set before publishing any freeze. No owner-thread interleaving.
             EscrowTags.require(view.unchanged(coordinator), "C3 observation changed before freezing");
             for (var end : observations) { coordinator.freeze(end.endpoint().key(), states.get(end.endpoint().key())); }
@@ -199,10 +201,11 @@ final class EscrowReconciliationDriver {
                             result.proofs().values().forEach(EscrowBarrier.Proof::release);
                             completion.accept(EscrowReconciliationScheduler.Result.deferred()); return;
                         }
+                        var reason = frozen.readbackReason(targets, result);
                         frozen.accept(targets, result);
                         if (frozen.proved()) { runtime.checkpoint("C6_JOINT_READBACK"); }
                         // C6 is internal proof, never scheduler success or release authority.
-                        completion.accept(new EscrowReconciliationScheduler.Result(result.reason(), false));
+                        completion.accept(new EscrowReconciliationScheduler.Result(reason, false));
                     }));
             if (!accepted) { completion.accept(EscrowReconciliationScheduler.Result.deferred()); }
             return;
