@@ -1847,6 +1847,22 @@ scope (`93659768`). It changes no decision status and accepts no risk.
   merges into a container already holding the same item and tags before using an empty slot; an
   unload skips a stack that fails the stack checks. Item preparation uses C-P part 2's tickets and
   the unchanged 16 MiB budget, with a first-step reservation sized for the largest legal container.
+- **Item devices (D-A, W120 with W120F, merged `42887305`).** The rocket item loader and unloader
+  have a closed `arce_rocket_item_cargo` root (four slots under section 5.3's bounds, a 15-node
+  reserve so a filled device can always be bound), an insert-only or extract-only item handler, an
+  owner-only menu whose device-slot clicks the server decides and writes through the device first,
+  a buffer that spills once and C-A's protection; admission is unwired.
+- **Admission path (C-E1, W117 with W117F, merged `cd5cd60d`).** A fluid cargo operation is admitted
+  up to an acknowledged PREPARED record behind one switch per cargo kind (all off in production):
+  refusals are typed (STALE, ROCKET_LIMIT, ESCROW_FULL, CARGO_TOO_LARGE); the first cargo ledger is
+  created through the checked baseline; one fair resource queue serves the fuel loader and the cargo
+  devices; RAM-only turn tokens follow loaded devices, and a device yields its own unused token.
+- **Reconciliation (C-E2, W124 with W124F, merged `c1b5eab0`).** A cargo device endpoint adapter and a
+  one-use device permit; classification by the composite signature, so an AFTER rocket is never
+  classified BEFORE; a BEFORE rocket rolled forward through the budgeted replay, verified against its
+  frozen digests before either endpoint publishes; off-thread typed readback; R39's native check
+  before either side acts. Named (transfer-guarded) cargo stays PREPARED until the F1 fix is extended
+  to cargo.
 - **Admission.** Cargo admission has its own per-kind switches and stays off until the cargo S2
   evidence, the part-1 closures and the benchmarks pass and the Root or owner decision is recorded
   with the source and the JAR. R-031, R-032 and the Required Gates are unchanged.

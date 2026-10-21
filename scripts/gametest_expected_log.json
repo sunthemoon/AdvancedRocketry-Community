@@ -3,6 +3,60 @@
   "description": "Every ERROR and WARN entry that a complete runGameTestServer log is expected to contain. Each expectation records a deliberate refusal or failure path that a named GameTest drives, or a bounded environment warning. scripts/check_gametest_log.py fails on any FATAL entry, any entry not listed here and any count that differs.",
   "expectations": [
     {
+      "id": "w124-cargo-named-cleanup-fence",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_FENCED transfer=[0-9a-f-]{36} reason=ENDPOINT_JOIN_PROOF_REQUIRED repair=offline-whole-world",
+      "counts": {"fluid_cargo_named_hold": 1},
+      "test": "FluidCargoReconciliationGameTests.namedTransferRemainsPreparedBehindTheExistingF1Fence",
+      "reason": "Removing the held fixture endpoint during cleanup invalidates its named transfer's loaded endpoint proof before removing the test journal record."
+    },
+    {
+      "id": "w124-cargo-stale-prepared-fence",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_FENCED transfer=[0-9a-f-]{36} reason=ENDPOINT_PROOF_REQUIRED repair=offline-whole-world",
+      "counts": {"fluid_cargo_reconciliation": 4},
+      "test": "FluidCargoReconciliationGameTests.realLoadAndUnloadRetireAndServeTheQueuedCompetitor",
+      "reason": "After each actual cargo direction, a detached stale PREPARED journal observes the changed native source's nonzero epoch and fences it."
+    },
+    {
+      "id": "w124-cargo-stale-prepared-conflict",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_FENCED transfer=[0-9a-f-]{36} reason=FLOOR_CONFLICT repair=offline-whole-world",
+      "counts": {"fluid_cargo_reconciliation": 4},
+      "test": "FluidCargoReconciliationGameTests.realLoadAndUnloadRetireAndServeTheQueuedCompetitor",
+      "reason": "Independent source-only and both-entity recovery lifecycles in each direction refuse replacing the cargo-protected source; the assigned reconnect stays fenced."
+    },
+    {
+      "id": "w124-cargo-named-f1-hold",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_FENCED transfer=[0-9a-f-]{36} reason=ESCROW_PENDING_OR_TOMBSTONE repair=offline-whole-world",
+      "counts": {"fluid_cargo_named_hold": 1},
+      "test": "FluidCargoReconciliationGameTests.namedTransferRemainsPreparedBehindTheExistingF1Fence",
+      "reason": "The named cargo PREPARED record intentionally pins the existing F1 self-fence without changing resources."
+    },
+    {
+      "id": "w124-cargo-r39-native-fluid",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowReconciliationAction/",
+      "message": "ARCE_ESCROW_FLUID_UNAVAILABLE op=[0-9a-f-]{36} fluid=w124:missing",
+      "counts": {"fluid_cargo_r39": 1},
+      "test": "FluidCargoReconciliationGameTests.unavailableSavedFluidHoldsOnlyItsNativeComponent",
+      "reason": "One structurally valid saved cargo payload names an unavailable native Fluid and is refused before any C2 resource work."
+    },
+    {
+      "id": "w124-cargo-r39-repair",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowReconciliationScheduler/",
+      "message": "Escrow record [0-9a-f-]{36} needs audited settlement or offline repair: OTHER_STATE",
+      "counts": {"fluid_cargo_r39": 1},
+      "test": "FluidCargoReconciliationGameTests.unavailableSavedFluidHoldsOnlyItsNativeComponent",
+      "reason": "Only the unavailable-Fluid operation enters sticky repair; a distinct native component still retires."
+    },
+    {
       "id": "w109-cargo-unsupported-keepable",
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketFluidCargoBlockEntity/",
@@ -37,6 +91,42 @@
       "counts": {"rocket_fluid_cargo": 4},
       "test": "RocketFluidCargoProtectionGameTests.protectedRootsRefuseBreakExplosionExtractionAndLiveReplacement",
       "reason": "The future and held root of each role is replaced by /setblock. This is a logged residual with no carrier drop, not prevented salvage."
+    },
+    {
+      "id": "w120-item-cargo-unsupported-keepable",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketItemCargoBlockEntity/",
+      "message": "ARCE_ITEM_CARGO_UNSUPPORTED pos=-?\\d+, -?\\d+, -?\\d+ status=(?:FUTURE|INVALID|UNREGISTERED_ITEM) keepable=true",
+      "counts": {"rocket_item_cargo": 14},
+      "test": "RocketItemCargoProtectionGameTests.protectedRootsRefuseBreakExplosionExtractionSpillAndLiveReplacement, nativeWorkBudgetExcessPreservesRawWithoutDenyingTerrain",
+      "reason": "Each role loads six unsupported but natively keepable roots (future, unknown field, oversized root, unregistered item, mismatched role and an oversized stack in the buffer) and one root beyond the native work budget. All are retained raw; work-budget excess alone does not veto a save."
+    },
+    {
+      "id": "w120-item-cargo-observed-native-incompatibility",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketItemCargoBlockEntity/",
+      "message": "ARCE_ITEM_CARGO_UNSUPPORTED pos=-?\\d+, -?\\d+, -?\\d+ status=FUTURE keepable=false",
+      "counts": {"rocket_item_cargo": 2},
+      "test": "RocketItemCargoProtectionGameTests.observedNativeVetoSurvivesUnloadedAndReplacedChunkObjects",
+      "reason": "One noncanonical NaN root per role is retained unchanged and records a native terrain-save denial. The test catches the exact denial and restores only the disposable GameTest fixture."
+    },
+    {
+      "id": "w120-item-cargo-live-replacement-refused",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketItemCargoBlockEntity/",
+      "message": "ARCE_ITEM_CARGO_LIVE_REPLACEMENT_REFUSED pos=-?\\d+, -?\\d+, -?\\d+",
+      "counts": {"rocket_item_cargo": 14},
+      "test": "RocketItemCargoProtectionGameTests.protectedRootsRefuseBreakExplosionExtractionSpillAndLiveReplacement",
+      "reason": "One live load is refused for each of six unsupported roots and one held root, for both roles."
+    },
+    {
+      "id": "w120-item-cargo-command-replacement-residual",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketItemCargoBlockEntity/",
+      "message": "ARCE_ITEM_CARGO_PROTECTED_ROOT_REMOVED pos=-?\\d+, -?\\d+, -?\\d+ unsupported=(?:true|false)",
+      "counts": {"rocket_item_cargo": 4},
+      "test": "RocketItemCargoProtectionGameTests.protectedRootsRefuseBreakExplosionExtractionSpillAndLiveReplacement",
+      "reason": "The future and held root of each role is replaced by /setblock. This is a logged residual that spills and drops nothing, not prevented salvage."
     },
     {
       "id": "w91f-blocked-arrival-return",

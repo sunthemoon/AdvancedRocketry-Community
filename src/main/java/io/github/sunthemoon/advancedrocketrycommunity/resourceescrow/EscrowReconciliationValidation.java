@@ -14,9 +14,15 @@ final class EscrowReconciliationValidation {
 
     /** C0/C3/C6 use the acknowledged chain, not historical complete-envelope commitments. */
     static EscrowPrefix.Classification rocket(UUID ledger, List<EscrowPrefix.Link> chain, CompoundTag envelope) {
+        return rocket(ledger, chain, envelope, null);
+    }
+
+    /** Live C0 already owns an immutable snapshot; do not reconstruct or rehash it on the server thread. */
+    static EscrowPrefix.Classification rocket(UUID ledger, List<EscrowPrefix.Link> chain, CompoundTag envelope,
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot captured) {
         if (chain == null || chain.isEmpty()) { return EscrowPrefix.Classification.OTHER; }
         try {
-            var snapshot = RocketSnapshotNbtCodec.decode(EscrowTags.compound(envelope, "snapshot")).snapshot().orElseThrow();
+            var snapshot = captured == null ? RocketSnapshotNbtCodec.decode(EscrowTags.compound(envelope, "snapshot")).snapshot().orElseThrow() : captured;
             var flight = RocketFlightNbtCodec.decode(EscrowTags.compound(envelope, "flight")).data().orElseThrow();
             var wrapper = RocketEscrowSection.decode(EscrowTags.compound(envelope, "wrapper"));
             // The first acknowledged fill may still find the pristine, not-yet-bound native wrapper.
@@ -28,20 +34,36 @@ final class EscrowReconciliationValidation {
                 var op = link.operation(); var endpoint = link.endpoint(); var binding = op.nativeBinding();
                 binding.requireOperation(op.owner(), op.source(), op.destination());
                 var chunk = envelope.getIntArray("chunk");
-                if (!link.role().equals("DESTINATION") || !binding.complete() || binding.kind() != EscrowSignatureKind.FUEL_VECTOR_V1
+                boolean cargo = binding.kind() == EscrowSignatureKind.ROCKET_COMPOSITE_V1;
+                if (cargo) { EscrowCargoPayload.validateStructure(op.payload()).requirePayload(snapshot); }
+                if (!link.role().equals(op.source().key().equals(endpoint.key()) ? "SOURCE" : "DESTINATION")
+                        || !endpoint.key().equals(op.rocket().key()) || !binding.complete()
+                        || !(cargo ? op.kind() == EscrowOperation.Kind.FLUID_CARGO_LOAD || op.kind() == EscrowOperation.Kind.FLUID_CARGO_UNLOAD
+                                : op.kind() == EscrowOperation.Kind.FLUID_PROPULSION_FILL && binding.kind() == EscrowSignatureKind.FUEL_VECTOR_V1)
                         || !endpoint.type().equals(envelope.getString("type")) || !endpoint.level().equals(envelope.getString("level"))
                         || chunk.length != 2 || endpoint.x() != chunk[0] || endpoint.z() != chunk[1]
                         || !binding.physical().equals(EscrowTags.uuid(envelope, "physical"))
                         || !binding.logical().equals(EscrowTags.uuid(envelope, "logical"))
                         || !binding.logical().equals(flight.logicalRocketId())
                         || !binding.owner().equals(EscrowTags.uuid(envelope, "owner"))
-                        || !binding.snapshot().equals(snapshot.snapshotId()) || !binding.snapshotHash().equals(snapshot.contentHash())
-                        || !binding.invariant().equals(EscrowInvariant.rocket(endpoint, binding.owner(), snapshot))) {
+                        || !binding.snapshot().equals(snapshot.snapshotId())
+                        || !cargo && (!binding.snapshotHash().equals(snapshot.contentHash())
+                        || !binding.invariant().equals(EscrowInvariant.rocket(endpoint, binding.owner(), snapshot)))) {
                     return EscrowPrefix.Classification.OTHER;
                 }
             }
-            return EscrowPrefix.classify(ledger, chain, new EscrowPrefix.State(ledger, wrapper.epoch(),
-                    flight.fuel().resourceSignature(), wrapper.markers()));
+            boolean cargo = chain.get(0).operation().kind().cargo();
+            String signature = cargo ? EscrowSignatureKind.composite(flight.logicalRocketId(), snapshot.contentHash(), flight.fuel().resourceSignature())
+                    : flight.fuel().resourceSignature();
+            var classified = EscrowPrefix.classify(ledger, chain, new EscrowPrefix.State(ledger, wrapper.epoch(), signature, wrapper.markers()));
+            if (cargo && classified == EscrowPrefix.Classification.AFTER) {
+                var op = chain.get(chain.size() - 1).operation(); var binding = op.nativeBinding();
+                if (!binding.snapshotHash().equals(snapshot.contentHash())
+                        || !binding.invariant().equals(EscrowInvariant.rocket(op.rocket(), binding.owner(), snapshot))) {
+                    return EscrowPrefix.Classification.OTHER;
+                }
+            }
+            return classified;
         } catch (IllegalArgumentException | IllegalStateException | java.util.NoSuchElementException invalid) {
             return EscrowPrefix.Classification.OTHER;
         }

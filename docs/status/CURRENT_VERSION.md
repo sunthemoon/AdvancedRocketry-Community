@@ -38,7 +38,7 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: b9e4e755 (W123 merged: W27c3, the rocket transaction journal's checked policy; before it, cd5cd60d merged W117 with W117F, cargo leaf C-E1)
+latest_code_commit: c1b5eab0 (W124 merged with W124F: cargo leaf C-E2, fluid cargo reconciliation, admission disabled; before it, 42887305 merged W120 with W120F, cargo leaf D-A)
 latest_hosted_regression: run 39464852370 at 53e9fa1a (the W118 merge) passed all required GameTests and the log checker on its re-run; its first attempt failed four governed-flight and warm-up GameTests once (QUEUE lists them). Run 39421969414 at dcebe3a8 (W116 and W107B merged) also passed on its re-run after one live-return failure, and runs 39415014258 at 2e44edcc and 39411638524 at d9f031d4 passed, so the escrow proof tests have passed on every hosted run since W111. Before W111, EscrowCoreGameTests.ownTerrainAndEntityStoresConfirmTheExactFrozenFrontier failed on the runs at bd1c78b9, d2f0d00c, 9f6668aa, 67dee026, fb1ac454, 20a82b88 and f1223c02
 ledger_planned_units: 19
 asset_review_items: 154
@@ -120,6 +120,7 @@ What is still open:
   and vanilla checks, the art screen and the strict validator). The ledger closure, the final
   `PORTING_MATRIX` and the release evidence remain.
 - **Owner decisions.** Eleven are pending; QUEUE.md lists them with what each one blocks.
+- **Performance at the bounds (W128, 2026-10-21).** On the development host, the satellite registry's checkpoint, coalesced flush and autosave at a 16.7 MB root take about 450 to 900 ms at P95 and P99, and the rocket transaction journal's checkpoint at its 64 MiB bound about 4.1 s, against docs/17's 50 and 100 ms; the cost is server-thread encoding and exists today in ordinary autosave at those sizes. Root decision R51 pauses the bay chain at W27d1 until an off-thread writer design (W129) and its ADR.
 - **Risks.** R-021 and the risks the W slices added (R-028 to R-040) stay open. Root registered R-039 (the bay receipt store) before W27c1 and R-040 (the checked transaction journal and its unreadable-root hold) with W123.
 - **Earlier intermittent GameTests.** W73 fixed the landing-pad cancellation test, W74 the
   six-host natural-beds test, W76 the first-Moon-landing and spawn-egg tests, and W78 the sealed

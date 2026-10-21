@@ -37,8 +37,8 @@ final class EscrowReconciliationView {
                     && envelope.equals(source.saveWithFullMetadata());
         }
         boolean unchanged() {
-            return current() && (rocket == null || state.equals(EscrowSettlementObserver
-                    .observe(level.getServer(), state.ledger(), List.of(reference)).get(0).state()));
+            return current() && (rocket == null || state.equals(EscrowReconciliationObservation
+                    .observe(level.getServer(), state.ledger(), reference).state()));
         }
     }
     final EscrowLedger root;
@@ -64,8 +64,7 @@ final class EscrowReconciliationView {
         }
         var references = new LinkedHashMap<EscrowEndpoint.Key, EscrowEndpoint>();
         for (var op : members) {
-            if (op.kind() != EscrowOperation.Kind.FLUID_PROPULSION_FILL || !op.nativeBinding().complete()
-                    || op.nativeBinding().kind() != EscrowSignatureKind.FUEL_VECTOR_V1) { throw new Refusal(EscrowReason.INVALID_ENDPOINT); }
+            if (!EscrowCargoReconciliation.supported(op)) { throw new Refusal(EscrowReason.INVALID_ENDPOINT); }
             var reason = RocketEscrowAudit.journal(op.guard(), journal.logicalGuard(op.guard().rocket()).orElse(null));
             if (reason != EscrowReason.NONE) { throw new Refusal(reason); }
             if (EscrowRuntime.of(server).flightCheckpoint().locked(op.guard().rocket())
@@ -97,7 +96,7 @@ final class EscrowReconciliationView {
                 }
             } else {
                 // The registered loader adapter needs no hooks; every other source is a gated chest fixture.
-                boolean loader = EscrowLoaderEndpoint.is(endpoint);
+                boolean loader = EscrowLoaderEndpoint.is(endpoint) || EscrowFluidCargoEndpoint.is(endpoint);
                 if (!loader) { EscrowTestEndpoints.requireEnabled(server); }
                 source = level.getChunkSource().getChunkNow(endpoint.x() >> 4, endpoint.z() >> 4)
                         .getBlockEntity(new BlockPos(endpoint.x(), endpoint.y(), endpoint.z()));
@@ -108,16 +107,17 @@ final class EscrowReconciliationView {
                 if (!loader && !endpoint.type().equals("minecraft:chest")) { throw new Refusal(EscrowReason.INVALID_ENDPOINT); }
             }
             // Reuse the fixed registered adapters' identity, duplicate, occupancy and stationary checks.
-            var observation = EscrowSettlementObserver.observe(server, root.id(), List.of(endpoint)).get(0);
-            if (observation.missing()) { throw new Refusal(EscrowReason.MISSING_ENDPOINT); }
+            var observation = EscrowReconciliationObservation.observe(server, root.id(), endpoint);
+            if (observation.settlement().missing()) { throw new Refusal(EscrowReason.MISSING_ENDPOINT); }
             var envelope = rocket != null ? EscrowNativeEnvelope.rocket(rocket) : source.saveWithFullMetadata();
             EscrowTags.bound(envelope, EscrowNativeEnvelope.MAX_BYTES, 24, 131_072);
             bytes = Math.addExact(bytes, io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNbtSize.uncompressedBytes(envelope));
             if (bytes > EscrowLimits.CAPTURE_BYTES) { throw new Refusal(EscrowReason.BARRIER_BOUNDS); }
-            requirePrefix(root, endpoint, chains.get(endpoint.key()), observation.state(), envelope);
+            requirePrefix(root, endpoint, chains.get(endpoint.key()), observation.state(), envelope,
+                    rocket == null ? null : rocket.snapshot().orElseThrow());
             if (EscrowSettlementTombstones.endpointLocked(root, endpoint.key()) || rocket != null
                     && EscrowSettlementTombstones.stateLocked(root, endpoint.logicalRocket(), endpoint.identity(), rocket.escrowSection(),
-                    observation.state().signature(), observation.quantity())) { throw new Refusal(EscrowReason.FLOOR_CONFLICT); }
+                    observation.settlement().state().signature(), observation.settlement().quantity())) { throw new Refusal(EscrowReason.FLOOR_CONFLICT); }
             if (rocket != null) {
                 var head = root.rocketAuthorities().stream().filter(value -> value.logical().equals(endpoint.logicalRocket())).findFirst().orElse(null);
                 if (head != null && (head.kind() != EscrowSignatureKind.FUEL_VECTOR_V1 || !head.owner().equals(rocket.ownerId().orElseThrow())
@@ -150,8 +150,14 @@ final class EscrowReconciliationView {
     /** A removable stale prefix is a cleanup wait, never authority to apply or a manual diagnosis. */
     static void requirePrefix(EscrowLedger root, EscrowEndpoint endpoint, List<EscrowPrefix.Link> chain,
                               EscrowPrefix.State state, CompoundTag envelope) {
+        requirePrefix(root, endpoint, chain, state, envelope, null);
+    }
+
+    private static void requirePrefix(EscrowLedger root, EscrowEndpoint endpoint, List<EscrowPrefix.Link> chain,
+            EscrowPrefix.State state, CompoundTag envelope,
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot snapshot) {
         boolean rocket = endpoint.kind() == EscrowEndpoint.Kind.ENTITY;
-        var classified = rocket ? EscrowReconciliationValidation.rocket(root.id(), chain, envelope)
+        var classified = rocket ? EscrowReconciliationValidation.rocket(root.id(), chain, envelope, snapshot)
                 : EscrowPrefix.classify(root.id(), chain, state);
         if (classified != EscrowPrefix.Classification.OTHER) { return; }
         var retired = EscrowReconciliationPruning.retired(root, endpoint, state, java.util.Set.of());
@@ -160,7 +166,7 @@ final class EscrowReconciliationView {
             var pruned = new EscrowPrefix.State(state.ledger(), state.epoch(), state.signature(), markers);
             var projected = envelope.copy();
             if (rocket) { projected.put("wrapper", new RocketEscrowSection(state.ledger(), state.epoch(), markers).encode()); }
-            var after = rocket ? EscrowReconciliationValidation.rocket(root.id(), chain, projected)
+            var after = rocket ? EscrowReconciliationValidation.rocket(root.id(), chain, projected, snapshot)
                     : EscrowPrefix.classify(root.id(), chain, pruned);
             if (after != EscrowPrefix.Classification.OTHER) { throw new Refusal(EscrowReason.NONE); }
         }

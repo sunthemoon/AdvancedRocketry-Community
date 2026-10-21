@@ -86,6 +86,7 @@ public final class FluidCargoAdmissionGameTests {
                         && deviceBefore.equals(device.saveWithFullMetadata()), "Closed switch had side effects");
                 EscrowCargoSwitches.forTests(server, load ? EscrowOperation.Kind.FLUID_CARGO_LOAD : EscrowOperation.Kind.FLUID_CARGO_UNLOAD,
                         root.device(), true);
+                EscrowCargoSwitches.pauseReconciliationForTests(server, root.device(), true);
                 phase = 2;
             }
             if (phase == 2) {
@@ -156,6 +157,7 @@ public final class FluidCargoAdmissionGameTests {
             if (done) { return; }
             done = true; var server = helper.getLevel().getServer(); var runtime = EscrowRuntime.of(server);
             for (var device : java.util.stream.Stream.concat(devices.stream(), competitors.stream()).toList()) {
+                device.root().ifPresent(root -> EscrowCargoSwitches.pauseReconciliationForTests(server, root.device(), false));
                 device.root().ifPresent(root -> EscrowCargoSwitches.forTests(server,
                         root.role() == RocketCargoRole.LOAD ? EscrowOperation.Kind.FLUID_CARGO_LOAD : EscrowOperation.Kind.FLUID_CARGO_UNLOAD,
                         root.device(), false));
