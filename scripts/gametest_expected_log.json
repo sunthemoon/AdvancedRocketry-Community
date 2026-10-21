@@ -39,6 +39,42 @@
       "reason": "The future and held root of each role is replaced by /setblock. This is a logged residual with no carrier drop, not prevented salvage."
     },
     {
+      "id": "w120-item-cargo-unsupported-keepable",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketItemCargoBlockEntity/",
+      "message": "ARCE_ITEM_CARGO_UNSUPPORTED pos=-?\\d+, -?\\d+, -?\\d+ status=(?:FUTURE|INVALID|UNREGISTERED_ITEM) keepable=true",
+      "counts": {"rocket_item_cargo": 14},
+      "test": "RocketItemCargoProtectionGameTests.protectedRootsRefuseBreakExplosionExtractionSpillAndLiveReplacement, nativeWorkBudgetExcessPreservesRawWithoutDenyingTerrain",
+      "reason": "Each role loads six unsupported but natively keepable roots (future, unknown field, oversized root, unregistered item, mismatched role and an oversized stack in the buffer) and one root beyond the native work budget. All are retained raw; work-budget excess alone does not veto a save."
+    },
+    {
+      "id": "w120-item-cargo-observed-native-incompatibility",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketItemCargoBlockEntity/",
+      "message": "ARCE_ITEM_CARGO_UNSUPPORTED pos=-?\\d+, -?\\d+, -?\\d+ status=FUTURE keepable=false",
+      "counts": {"rocket_item_cargo": 2},
+      "test": "RocketItemCargoProtectionGameTests.observedNativeVetoSurvivesUnloadedAndReplacedChunkObjects",
+      "reason": "One noncanonical NaN root per role is retained unchanged and records a native terrain-save denial. The test catches the exact denial and restores only the disposable GameTest fixture."
+    },
+    {
+      "id": "w120-item-cargo-live-replacement-refused",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketItemCargoBlockEntity/",
+      "message": "ARCE_ITEM_CARGO_LIVE_REPLACEMENT_REFUSED pos=-?\\d+, -?\\d+, -?\\d+",
+      "counts": {"rocket_item_cargo": 14},
+      "test": "RocketItemCargoProtectionGameTests.protectedRootsRefuseBreakExplosionExtractionSpillAndLiveReplacement",
+      "reason": "One live load is refused for each of six unsupported roots and one held root, for both roles."
+    },
+    {
+      "id": "w120-item-cargo-command-replacement-residual",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketItemCargoBlockEntity/",
+      "message": "ARCE_ITEM_CARGO_PROTECTED_ROOT_REMOVED pos=-?\\d+, -?\\d+, -?\\d+ unsupported=(?:true|false)",
+      "counts": {"rocket_item_cargo": 4},
+      "test": "RocketItemCargoProtectionGameTests.protectedRootsRefuseBreakExplosionExtractionSpillAndLiveReplacement",
+      "reason": "The future and held root of each role is replaced by /setblock. This is a logged residual that spills and drops nothing, not prevented salvage."
+    },
+    {
       "id": "w91f-blocked-arrival-return",
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",

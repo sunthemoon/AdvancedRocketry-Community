@@ -311,6 +311,14 @@ public final class ModBlockEntities {
             ROCKET_FLUID_UNLOADER = BLOCK_ENTITIES.register("rocket_fluid_unloader", () -> BlockEntityType.Builder.of(
             io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketFluidCargoBlockEntity::new,
             ModBlocks.ROCKET_FLUID_UNLOADER.get()).build(null));
+    public static final RegistryObject<BlockEntityType<io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketItemCargoBlockEntity>>
+            ROCKET_ITEM_LOADER = BLOCK_ENTITIES.register("rocket_item_loader", () -> BlockEntityType.Builder.of(
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketItemCargoBlockEntity::new,
+            ModBlocks.ROCKET_ITEM_LOADER.get()).build(null));
+    public static final RegistryObject<BlockEntityType<io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketItemCargoBlockEntity>>
+            ROCKET_ITEM_UNLOADER = BLOCK_ENTITIES.register("rocket_item_unloader", () -> BlockEntityType.Builder.of(
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketItemCargoBlockEntity::new,
+            ModBlocks.ROCKET_ITEM_UNLOADER.get()).build(null));
 
     private ModBlockEntities() {
     }
