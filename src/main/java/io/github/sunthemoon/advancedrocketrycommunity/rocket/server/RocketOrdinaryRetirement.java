@@ -320,6 +320,11 @@ final class RocketOrdinaryRetirement {
         if (supported && !port.captureAvailable(entry.census.get(0), now)) { fail(entry, "BUSY", now, 1, false); return; }
         if (!port.bayAllows(entry.journal, record, RocketTransferBayRecoveryGate.Action.REMOVE_JOURNAL)) { abandon(entry, "BAY_HELD"); return; }
         if (!port.escrowAllows(entry.journal, record, entry.token)) { fail(entry, "BUSY", now, 1, false); return; }
+        // The destination scan may discard obsolete entities: reserve before that mutation, including on retries.
+        if (entry.site == Site.BEFORE_FILL && entry.token == null) {
+            entry.token = entry.journal.reserve(entry.logical()).orElse(null);
+            if (entry.token == null) { fail(entry, "BUSY", now, 1, false); return; }
+        }
         String preparation = port.prepare(record, entry.survivor, entry.census);
         if (preparation != null) { waiting(entry, preparation, now); return; }
         var frozen = port.projection(record, entry.survivor);

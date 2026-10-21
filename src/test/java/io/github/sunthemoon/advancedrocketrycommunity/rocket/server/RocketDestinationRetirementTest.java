@@ -117,7 +117,7 @@ class RocketDestinationRetirementTest {
         final Port port = new Port();
         final RocketOrdinaryRetirement retirements = new RocketOrdinaryRetirement(new HashSet<>(), new HashSet<>(), Set::of, server -> port);
         long writes;
-        Fixture() { journal.put(record); acknowledge(); }
+        Fixture() { port.scanGuard = () -> assertFalse(journal.actionable(logical()), "Discard scan ran without its reservation"); journal.put(record); acknowledge(); }
         UUID logical() { return record.logicalRocketId(); }
         void acknowledge() {
             var type = ManagedSavedDataType.ROCKET_TRANSFERS;
@@ -137,6 +137,7 @@ class RocketDestinationRetirementTest {
         int tickets, scans, released;
         boolean loaded = true, supported = true;
         String scanReason;
+        Runnable scanGuard = () -> { };
         final List<String> order = new ArrayList<>();
         final List<RocketRetirementProof.Slot> captures = new ArrayList<>();
         final List<Consumer<EscrowBarrier.Result>> callbacks = new ArrayList<>();
@@ -162,7 +163,7 @@ class RocketDestinationRetirementTest {
         public CompoundTag projection(RocketTransferRecord r, UUID survivor) { var tag = new CompoundTag(); tag.putUUID("UUID", survivor); return tag; }
         public void keepLoaded(RocketTransferRecord r, List<RocketRetirementProof.Slot> slots) { tickets++; order.add("ticket"); }
         public String prepare(RocketTransferRecord r, UUID survivor, List<RocketRetirementProof.Slot> slots) {
-            scans++; census = List.copyOf(slots); return scanReason;
+            scanGuard.run(); scans++; census = List.copyOf(slots); return scanReason;
         }
         public void releaseTickets(RocketTransferRecord r) { released++; }
         public Consumer<String> sink() { return label -> { }; }
