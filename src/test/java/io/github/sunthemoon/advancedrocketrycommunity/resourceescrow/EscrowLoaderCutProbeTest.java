@@ -71,6 +71,24 @@ class EscrowLoaderCutProbeTest {
         assertFalse(EscrowLoaderStorageProbe.selected("E4L1_RESAVE"));
     }
 
+    @Test void w107cStorageCutsSelectOnlyTheirGatedMechanismsAndR3StopsAtK6() {
+        // R43 items 2 and 3: E1's one own-store fault and E2's external record; neither selects a writer fault alias.
+        for (String boundary : List.of("E1_OWN_STORE", "E2_EXTERNAL")) {
+            assertEquals(boundary, EscrowLoaderCutProbe.boundary("LF_M_" + boundary));
+            assertTrue(EscrowLoaderStorageProbe.selected(boundary));
+            assertEquals("LF_M_" + boundary, EscrowLoaderStorageProbe.writerCase("LF_M_" + boundary));
+        }
+        assertEquals(EscrowStoreFault.CASE, "LF_M_E1_OWN_STORE");
+        // R43 item 5: every R3 cut stops on the K6 boundary before its offline edit.
+        for (String name : List.of("R3_LEDGER_MISSING", "R3_LEDGER_REPLACED", "R3_LEDGER_BEHIND", "R3_ENDPOINT_FOREIGN",
+                "R3_ENDPOINT_MISSING", "R3_ENDPOINT_OTHER", "R3_ENDPOINT_RELOCATED")) {
+            assertEquals("K6", EscrowLoaderCutProbe.boundary("LF_M_" + name));
+            assertFalse(EscrowLoaderStorageProbe.selected(name));
+        }
+        assertFalse(EscrowLoaderStorageProbe.selected("E2"));
+        assertEquals("R1_UNKNOWN_UNLOAD", EscrowLoaderCutProbe.boundary("LF_M_R1_UNKNOWN_UNLOAD"));
+    }
+
     @Test void baselineObservationsBracketTheSameNativeReplacementWithoutChangingAcknowledgement() throws Exception {
         Path file = temporary.resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName());
         var root = EscrowLedger.empty(UUID.randomUUID()).generation(1);
