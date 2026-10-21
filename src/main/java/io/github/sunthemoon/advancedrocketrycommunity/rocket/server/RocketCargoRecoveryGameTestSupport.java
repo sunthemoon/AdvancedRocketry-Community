@@ -27,7 +27,8 @@ public final class RocketCargoRecoveryGameTestSupport {
         helper.assertTrue(RocketTransferEntities.isCommittedAuthority(rocket, committed)
                 && RocketTransferEntities.isReplaceableLandedAuthority(rocket, committed)
                 && RocketTransferEntities.loadedMatches(server, committed, true).equals(List.of(rocket)), "Changed native arrival was not recognized");
-        var stale = EscrowCargoTransferFixtures.record(rocket, before, true);
+        var passenger = UUID.randomUUID();
+        var stale = EscrowCargoTransferFixtures.record(rocket, before, true, passenger);
         var journal = new RocketTransferSavedData(); var recovery = new RocketTransferRecoveryService(new HashSet<>(), new HashSet<>());
         var after = EscrowNativeEnvelope.rocket(rocket);
         RocketEntity duplicate = null; net.minecraft.server.level.ServerPlayer player = null;
@@ -38,7 +39,8 @@ public final class RocketCargoRecoveryGameTestSupport {
                     io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType.ROCKET_TRANSFERS.fileName()));
             var result = recovery.recoverById(server, journal, stale.transferId());
             helper.assertTrue(result.status() == RocketTransferRecoveryService.Status.RETRY_LATER
-                    && recovery.fencedIds().contains(stale.transferId()) && journal.find(stale.transferId()).orElseThrow() == stale,
+                    && recovery.fencedIds().contains(stale.transferId()) && recovery.fencedDiagnostics().contains("reason=FLOOR_CONFLICT")
+                    && journal.find(stale.transferId()).orElseThrow() == stale,
                     "Stale PREPARED replaced or retired the changed source");
             duplicate = ModEntities.ROCKET.get().create(helper.getLevel());
             helper.assertTrue(duplicate != null, "No destination fixture entity");
@@ -47,10 +49,15 @@ public final class RocketCargoRecoveryGameTestSupport {
             helper.assertTrue(helper.getLevel().addFreshEntity(duplicate), "Both-entity fixture publication failed");
             helper.assertTrue(RocketTransferEntities.loadedMatches(server, stale, false).equals(List.of(rocket))
                     && RocketTransferEntities.loadedMatches(server, stale, true).equals(List.of(duplicate)), "Native recovery election lost either end");
+            // A fresh recovery lifecycle must inspect both ends, rather than returning through the prior retry backoff.
+            recovery.clear();
             result = recovery.recoverById(server, journal, stale.transferId());
-            helper.assertTrue(result.status() == RocketTransferRecoveryService.Status.RETRY_LATER && duplicate.isAlive() && rocket.isAlive(),
+            helper.assertTrue(result.status() == RocketTransferRecoveryService.Status.RETRY_LATER
+                    && recovery.fencedDiagnostics().contains("reason=FLOOR_CONFLICT") && duplicate.isAlive() && rocket.isAlive(),
                     "Both-entity recovery discarded a protected cargo authority");
-            player = FirstEventGameTestPlayers.join(server, UUID.randomUUID(), "CargoReconnect", helper.getLevel(), rocket.blockPosition().above());
+            player = FirstEventGameTestPlayers.join(server, passenger, "CargoReconnect", helper.getLevel(), rocket.blockPosition().above());
+            helper.assertTrue(stale.sourceFlightData().passengers().assignment(player.getUUID()).isPresent(),
+                    "Reconnect fixture must have a durable passenger assignment");
             var location = player.position(); recovery.onPlayerLoggedIn(player, journal); recovery.tickReconnects(server, journal);
             helper.assertTrue(player.getVehicle() == null && player.position().equals(location) && after.equals(EscrowNativeEnvelope.rocket(rocket))
                     && duplicate.isAlive() && journal.find(stale.transferId()).orElseThrow() == stale,

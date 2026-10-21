@@ -7,7 +7,7 @@
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
       "message": "ARCE_TRANSFER_FENCED transfer=[0-9a-f-]{36} reason=ENDPOINT_PROOF_REQUIRED repair=offline-whole-world",
-      "counts": {"fluid_cargo_reconciliation": 2},
+      "counts": {"fluid_cargo_reconciliation": 4},
       "test": "FluidCargoReconciliationGameTests.realLoadAndUnloadRetireAndServeTheQueuedCompetitor",
       "reason": "After each actual cargo direction, a detached stale PREPARED journal observes the changed native source's nonzero epoch and fences it."
     },
@@ -16,9 +16,9 @@
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
       "message": "ARCE_TRANSFER_FENCED transfer=[0-9a-f-]{36} reason=FLOOR_CONFLICT repair=offline-whole-world",
-      "counts": {"fluid_cargo_reconciliation": 2},
+      "counts": {"fluid_cargo_reconciliation": 4},
       "test": "FluidCargoReconciliationGameTests.realLoadAndUnloadRetireAndServeTheQueuedCompetitor",
-      "reason": "One loaded-only re-evaluation per direction refuses replacing the cargo-protected source; repeated both-entity and reconnect attempts stay fenced."
+      "reason": "Independent source-only and both-entity recovery lifecycles in each direction refuse replacing the cargo-protected source; the assigned reconnect stays fenced."
     },
     {
       "id": "w124-cargo-named-f1-hold",
