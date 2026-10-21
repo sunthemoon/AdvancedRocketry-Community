@@ -33,12 +33,23 @@ public final class EscrowCargoTransferFixtures {
     }
     public static RocketTransferRecord record(RocketEntity rocket, RocketStructureSnapshot recorded, boolean source, UUID passenger) {
         EscrowTestEndpoints.requireEnabled(rocket.getServer());
+        var fuel = RocketFuelState.empty(recorded.propulsion().orElseThrow())
+                .withFluidBank(false, ResourceLocation.tryParse("minecraft:water"), null, 1_000);
+        return record(rocket, recorded, source, passenger, fuel);
+    }
+
+    /** A legacy arrival with this fixture rocket's legal native fuel, retaining its pre-cargo snapshot. */
+    static RocketTransferRecord landedRecord(RocketEntity rocket, RocketStructureSnapshot recorded) {
+        return record(rocket, recorded, false, null, rocket.flightData().orElseThrow().fuel());
+    }
+
+    private static RocketTransferRecord record(RocketEntity rocket, RocketStructureSnapshot recorded, boolean source,
+                                               UUID passenger, RocketFuelState fuel) {
+        EscrowTestEndpoints.requireEnabled(rocket.getServer());
         var at = recorded.sourceOrigin(); var dimension = recorded.sourceDimension();
         var other = recorded.relocated(UUID.randomUUID(), dimension, new RocketPosition(at.x() + 8, at.y(), at.z()), 0);
         var from = source ? recorded : other; var to = source ? other : recorded;
         var transfer = UUID.randomUUID(); var logical = rocket.assemblyTransactionId().orElseThrow();
-        var fuel = RocketFuelState.empty(recorded.propulsion().orElseThrow())
-                .withFluidBank(false, ResourceLocation.tryParse("minecraft:water"), null, 1_000);
         var plan = new RocketFlightPlan(3, transfer, RocketFlightPlanner.EARTH.bodyId(), RocketFlightPlanner.MOON.bodyId(),
                 dimension, dimension, 500, 0).withPropulsionDebit(new RocketPropulsionDebit(500, 0,
                 fuel.propulsion().orElseThrow().revision(), fuel.resourceSignature(), RocketNativeResources.hash("W124 native cargo journal fixture")));

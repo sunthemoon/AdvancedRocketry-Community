@@ -116,7 +116,7 @@ public final class FluidCargoLandedDisassemblyGameTests {
         private void retainedRecordDisassembly() {
             var journal = RocketTransferSavedData.get(world.server);
             // Gated setup only, after the real unguarded mutation. No named-cargo operation is advanced or released here.
-            retained = EscrowCargoTransferFixtures.record(rocket, before, false);
+            retained = EscrowCargoTransferFixtures.landedRecord(rocket, before);
             world.transfers.add(retained.transferId());
             check(retained.phase() == RocketTransferPhase.COMMITTED && retained.nativeTransfer().isEmpty()
                     && retained.destinationSnapshot().contentHash().equals(before.contentHash())
