@@ -106,7 +106,9 @@ final class EscrowLoaderNamedProbe {
         if (e5) { EscrowLoaderFloorProbe.landed(level, journal, rocket); }
         else { EscrowLoaderFloorProbe.landed(level, journal, rocket, CelestialIds.MOON_LEVEL.location(), OLD_SOURCE); }
         journal.flushChecked(server);
-        ResourceEscrowSavedData.forTests(server).bind(server).autosave();
+        var data = ResourceEscrowSavedData.forTests(server);
+        data.setDirty(); // The empty test root has no admission yet; explicitly request its baseline write.
+        data.bind(server).autosave();
         EscrowTags.require(server.saveEverything(false, true, true), "Named fixture baseline save failed");
     }
 
