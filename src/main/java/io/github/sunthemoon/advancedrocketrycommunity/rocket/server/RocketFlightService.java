@@ -652,6 +652,10 @@ final class RocketFlightService {
     }
 
     boolean escrowReconciliationBoundary(RocketEntity rocket) { return transfers.escrowReconciliationBoundary(rocket); }
+    boolean escrowReconciliationBoundary(RocketEntity rocket,
+            io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGuard guard) {
+        return transfers.escrowReconciliationBoundary(rocket, guard);
+    }
 
     private record Access(RocketEntity rocket, RocketFlightRequestCode code) {
         private Access {

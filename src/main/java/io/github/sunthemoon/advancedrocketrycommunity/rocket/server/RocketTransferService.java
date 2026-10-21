@@ -465,18 +465,13 @@ final class RocketTransferService {
 
     /** Reconciliation still requires the checked landed authority and an unclaimed bay boundary. */
     boolean escrowReconciliationBoundary(RocketEntity rocket) {
-        if (!(rocket.level() instanceof ServerLevel level) || !level.getServer().isSameThread() || !rocket.operational()
-                || rocket.flightData().orElseThrow().activeTransferId().isPresent()
-                || landed.pending(rocket.assemblyTransactionId().orElse(null))) { return false; }
-        var journal = RocketTransferSavedData.get(level.getServer());
-        if (!journal.actionAuthorityAvailable()) { return false; }
-        var record = journal.findByLogicalRocket(rocket.assemblyTransactionId().orElseThrow()).orElse(null);
-        if (record == null) { return true; }
-        var bay = recovery.bays().before(level.getServer(), journal, record, RocketTransferBayRecoveryGate.Action.TICK_SOURCE);
-        return bay != null && bay.kind() == RocketTransferBayRecoveryGate.BoundaryKind.UNCLAIMED
-                && reconciliationRecordAllowed(record, settledTransfers.contains(record.transferId()), liveTransfers.contains(record.transferId()),
-                RocketTransferEntities.isReplaceableLandedAuthority(rocket, record),
-                record.nativeTransfer().isPresent() && io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate.terminalSuccessor(rocket));
+        return escrowReconciliationBoundary(rocket, null);
+    }
+
+    boolean escrowReconciliationBoundary(RocketEntity rocket,
+            io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGuard guard) {
+        return RocketFillReconciliation.boundary(rocket, guard, recovery.bays(), liveTransfers, settledTransfers,
+                landed::pending, recovery::fenceReason);
     }
 
     static boolean reconciliationRecordAllowed(RocketTransferRecord record, boolean settled, boolean live,
