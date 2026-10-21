@@ -5,6 +5,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecoveryAction;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.RocketDiscoveryColumns;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -62,6 +63,8 @@ final class RocketDestinationRetirement extends RocketRetirementWorld {
     }
 
     @Override public String prepare(RocketTransferRecord record, UUID survivor, List<RocketRetirementProof.Slot> census) {
+        if (!RocketDiscoveryColumns.of(record.sourceSnapshot()).admissible()
+                || !RocketDiscoveryColumns.of(record.destinationSnapshot()).admissible()) { return "DISCOVERY_BOUNDS"; }
         var sources = RocketTransferEntities.loadedMatches(server, record, false);
         var destinations = RocketTransferEntities.loadedMatches(server, record, true);
         String offColumn = RocketRetirementGuards.offColumn(record, null, sources, destinations);

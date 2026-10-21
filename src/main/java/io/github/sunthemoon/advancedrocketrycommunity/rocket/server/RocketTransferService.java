@@ -483,7 +483,7 @@ final class RocketTransferService {
     /** No endpoint may mutate a balance that restart recovery can replace from its journal. */
     boolean resourceMutationAllowed(RocketEntity rocket) {
         if (!io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate.resourcesIdle(rocket)) { return false; }
-        if (landed.pending(rocket.assemblyTransactionId().orElse(null)) || recovery.retirements().pending(rocket.assemblyTransactionId().orElse(null))) { return false; }
+        if (landed.pending(rocket.assemblyTransactionId().orElse(null))) { return false; }
         if (!(rocket.level() instanceof ServerLevel level) || !level.getServer().isSameThread()
                 || !rocket.operational() || rocket.flightData().orElseThrow().activeTransferId().isPresent()) {
             return false;
