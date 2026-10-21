@@ -37,7 +37,7 @@ import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.IItemHandler;
 import org.slf4j.Logger;
 
-/** Native lifecycle and authority bridge. D-A never starts a cargo operation or creates an escrow ledger. */
+/** Native lifecycle and authority bridge. Item cargo admission remains independently gated. */
 public final class RocketItemCargoBlockEntity extends BlockEntity implements MenuProvider {
     public static final double MAX_ACTOR_DISTANCE = 8.0D;
     public static final String SAVE_REFUSAL =
@@ -54,6 +54,20 @@ public final class RocketItemCargoBlockEntity extends BlockEntity implements Men
     private boolean spilled;
     private long capEpoch;
     private LazyOptional<IItemHandler> itemCap;
+    private final io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowItemCargoAdmission admission =
+            new io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowItemCargoAdmission(this);
+    private io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.RefillPacer pacer;
+    private final io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowDeviceTurns turns =
+            new io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowDeviceTurns();
+    public boolean refreshTurns() {
+        if (!live() || root == null || root.binding() == null) { turns.close(); return false; }
+        return turns.refresh(((ServerLevel) level).getServer(), root.device(), root.binding().logicalRocket());
+    }
+    public void transferBlocked() { if (refreshTurns()) { turns.blocked(); } }
+    public boolean transferTurn() { return refreshTurns() && turns.allows(); }
+    public boolean claimTransferTurn() { return refreshTurns() && turns.claim(); }
+    public void releaseTransferTurn() { turns.release(); }
+    public void yieldTransferTurn() { turns.yieldNext(); }
 
     public RocketItemCargoBlockEntity(BlockPos position, BlockState state) {
         super(((RocketItemCargoBlock) state.getBlock()).role() == RocketCargoRole.LOAD
@@ -109,17 +123,22 @@ public final class RocketItemCargoBlockEntity extends BlockEntity implements Men
         return root.binding() == null ? RocketCargoStatus.UNBOUND : null;
     }
 
-    /** Admission is deliberately unwired. No snapshot preparation, queue, sequence or resource mutation occurs. */
+    /** Scalar display only; the server selects and admits every move. */
     public RocketCargoStatus displayStatus() {
         RocketCargoStatus refusal = deviceRefusal();
         if (refusal != null) { return refusal; }
-        return RocketCargoBindingChecks.check((ServerLevel) level, worldPosition, root.owner(), root.binding());
+        return admission.status() == RocketCargoStatus.ADMISSION_DISABLED
+                ? RocketCargoBindingChecks.check((ServerLevel) level, worldPosition, root.owner(), root.binding()) : admission.status();
     }
 
-    /** There is no prepared cargo operation in D-A; the display cursor is absent, not a client-selected target. */
-    public Optional<BlockPos> cursor() { return Optional.empty(); }
-    /** The container slot of the absent cursor; -1 while no operation is prepared. */
-    public int cursorSlot() { return -1; }
+    public RocketCargoStatus attempt() { return admission.attempt(); }
+    public static void serverTick(ServerLevel level, BlockPos pos, BlockState state, RocketItemCargoBlockEntity device) {
+        if (device.pacer == null) { device.pacer = io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.RefillPacer.loadedAt(level.getGameTime()); }
+        if (device.pacer.tryStart(level.getGameTime())) { device.attempt(); }
+    }
+    /** Server-selected position and container slot, absent outside an active preparation. */
+    public Optional<BlockPos> cursor() { return admission.cursor(); }
+    public int cursorSlot() { return admission.cursorSlot(); }
 
     public boolean admitted(Player player) {
         return actorNear(player) && !unsupportedRoot() && claimed() && !duplicate() && root.owner().equals(player.getUUID());
@@ -184,7 +203,9 @@ public final class RocketItemCargoBlockEntity extends BlockEntity implements Men
         try {
             RocketItemCargoRoot next = root.withBinding(binding);
             if (!RocketItemCargoRoot.bounded(next.encodeUnchecked())) { return RocketCargoStatus.CARGO_TOO_LARGE; }
+            admission.close(); turns.close();
             write(next);
+            refreshTurns();
             return null;
         } finally { endLocal(); }
     }
@@ -211,6 +232,7 @@ public final class RocketItemCargoBlockEntity extends BlockEntity implements Men
             return;
         }
         super.load(outer);
+        admission.close(); turns.close(); pacer = null;
         if (level instanceof ServerLevel server) { RocketFluidCargoIndex.release(server, this); }
         invalidatePort();
         held = null; root = null; retainedByReference = false; unkeepable = false;
@@ -240,12 +262,14 @@ public final class RocketItemCargoBlockEntity extends BlockEntity implements Men
     private void claimDevice() {
         if (root != null && live()) { RocketFluidCargoIndex.claim((ServerLevel) level, root.device(), this); }
     }
-    @Override public void onLoad() { super.onLoad(); recordDenial(); claimDevice(); }
+    @Override public void onLoad() { super.onLoad(); recordDenial(); claimDevice(); refreshTurns(); }
     @Override public void setRemoved() {
+        admission.close(); turns.close(); pacer = null;
         if (level instanceof ServerLevel server) { RocketFluidCargoIndex.release(server, this); }
         super.setRemoved();
     }
     @Override public void onChunkUnloaded() {
+        admission.close(); turns.close(); pacer = null;
         if (level instanceof ServerLevel server) { RocketFluidCargoIndex.release(server, this); }
         invalidatePort();
         super.onChunkUnloaded();

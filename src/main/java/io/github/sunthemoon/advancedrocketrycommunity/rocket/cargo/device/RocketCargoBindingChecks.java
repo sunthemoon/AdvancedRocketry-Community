@@ -43,7 +43,7 @@ public final class RocketCargoBindingChecks {
     }
 
     /** The same lookup for either device kind, from the device's persisted owner and binding. */
-    static Resolved resolve(ServerLevel level, BlockPos device, UUID owner, LoaderBinding binding) {
+    public static Resolved resolve(ServerLevel level, BlockPos device, UUID owner, LoaderBinding binding) {
         if (binding == null) {
             return Resolved.refused(RocketCargoStatus.UNBOUND);
         }

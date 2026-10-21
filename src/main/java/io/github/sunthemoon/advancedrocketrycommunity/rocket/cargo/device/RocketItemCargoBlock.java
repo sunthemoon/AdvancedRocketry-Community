@@ -61,6 +61,16 @@ public final class RocketItemCargoBlock extends BaseEntityBlock {
         return new RocketItemCargoBlockEntity(position, state);
     }
 
+    @Nullable @Override
+    public <T extends BlockEntity> net.minecraft.world.level.block.entity.BlockEntityTicker<T> getTicker(Level level,
+            BlockState state, net.minecraft.world.level.block.entity.BlockEntityType<T> type) {
+        return level.isClientSide ? null : createTickerHelper(type, role == RocketCargoRole.LOAD
+                ? io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlockEntities.ROCKET_ITEM_LOADER.get()
+                : io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlockEntities.ROCKET_ITEM_UNLOADER.get(),
+                (world, position, blockState, device) -> RocketItemCargoBlockEntity.serverTick(
+                        (net.minecraft.server.level.ServerLevel) world, position, blockState, device));
+    }
+
     static boolean protectedAt(BlockGetter level, BlockPos position) {
         return level.getBlockEntity(position) instanceof RocketItemCargoBlockEntity device && device.protectedFromRemoval();
     }
