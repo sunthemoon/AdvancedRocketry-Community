@@ -11,6 +11,7 @@ import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.inventory.Slot;
@@ -19,8 +20,10 @@ import net.minecraft.world.item.ItemStack;
 /**
  * W11CD section 5.1's item menu: the device's four slots and the player inventory, usable both ways by the owner
  * within 8 blocks, whatever the device's role. On the server every slot change goes through the device's lock and
- * section 5.3's bounds; a refused stack stays where it is. Eight scalar values (status, binding, role and the cursor's
- * x, y, z and slot) synchronize as 16-bit shorts. There are no buttons and the open data is a format number only.
+ * section 5.3's bounds; a refused stack stays where it is. A click on a device slot is the menu's own and writes the
+ * device before the cursor or the inventory changes (W120-R1). Eight scalar values (status, binding, role and the
+ * cursor's x, y, z and slot) synchronize as 16-bit shorts. There are no buttons and the open data is a format number
+ * only.
  */
 public final class RocketItemCargoMenu extends AbstractContainerMenu {
     public static final int DATA_COUNT = 8;
@@ -141,6 +144,53 @@ public final class RocketItemCargoMenu extends AbstractContainerMenu {
         return false;
     }
 
+    /**
+     * W120-R1: on the server, pickup (either button), number-key swap and throw on a device slot are decided and
+     * written through the device first. Vanilla's handling would pass a copy of the device's stack to an item's own
+     * click override (a bundle's right-click) and to Forge's stacked-on event, so their change to it would be lost
+     * while their change to the cursor stayed. Shift-click is the menu's own already; drag and double-click never use
+     * a device slot. The client still predicts vanilla's outcome, and the server's state replaces it.
+     */
+    @Override
+    public void clicked(int slotId, int button, ClickType type, Player player) {
+        if (buffer instanceof Storage storage && slotId >= 0 && slotId < DEVICE_SLOTS
+                && (type == ClickType.PICKUP || type == ClickType.SWAP || type == ClickType.THROW)) {
+            // Vanilla ends a drag on any other click; this click then applies rather than being ignored.
+            resetQuickCraft();
+            if (player == viewer) {
+                deviceClick(storage, slotId, button, type);
+            }
+            return;
+        }
+        super.clicked(slotId, button, type, player);
+    }
+
+    private void deviceClick(Storage storage, int slot, int button, ClickType type) {
+        if (type == ClickType.PICKUP && (button == 0 || button == 1)) {
+            setCarried(storage.pickup(slot, getCarried(), button == 0));
+        } else if (type == ClickType.SWAP) {
+            storage.swap(slot, button);
+        } else if (type == ClickType.THROW && getCarried().isEmpty()) {
+            // Button 0 throws one item and any other button the whole stack, as vanilla does.
+            ItemStack thrown = storage.removeItem(slot, button == 0 ? 1 : Integer.MAX_VALUE);
+            if (!thrown.isEmpty()) {
+                viewer.drop(thrown, true);
+            }
+        }
+    }
+
+    /** A drag never places into a device slot, so it cannot reach vanilla's unguarded single-slot click. */
+    @Override
+    public boolean canDragTo(Slot slot) {
+        return !(slot instanceof DeviceSlot);
+    }
+
+    /** Double-click gathers from the player inventory only; the device gives up items by click or shift-click. */
+    @Override
+    public boolean canTakeItemForPickAll(ItemStack carried, Slot slot) {
+        return !(slot instanceof DeviceSlot) && super.canTakeItemForPickAll(carried, slot);
+    }
+
     @Override
     public ItemStack quickMoveStack(Player player, int index) {
         if (index < 0 || index >= slots.size() || player != viewer) {
@@ -222,7 +272,7 @@ public final class RocketItemCargoMenu extends AbstractContainerMenu {
         return before;
     }
 
-    /** A device slot; on the server it asks the guarded storage before vanilla moves anything. */
+    /** A device slot; on the server its clicks are the menu's own, and vanilla's checks ask the guarded storage. */
     private static final class DeviceSlot extends Slot {
         DeviceSlot(Container container, int slot, int x, int y) {
             super(container, slot, x, y);
@@ -284,6 +334,51 @@ public final class RocketItemCargoMenu extends AbstractContainerMenu {
             } finally { device.endLocal(); }
         }
 
+        /**
+         * PICKUP on one device slot; returns the new cursor. An empty cursor takes the stack (half of it, rounded up,
+         * with the secondary button); a carried stack goes in whole (or one item) when the slot is empty or holds the
+         * same item and tags, and otherwise swaps only when the whole carried stack fits the slot. The device writes
+         * its part first; whatever it refuses leaves the slot and the cursor as they were.
+         */
+        ItemStack pickup(int slot, ItemStack carried, boolean primary) {
+            if (!begin()) { return carried; }
+            try {
+                ItemStack present = device.stack(slot);
+                if (carried.isEmpty()) {
+                    return present.isEmpty() ? carried : RocketItemCargoLocal.extract(device, slot,
+                            primary ? present.getCount() : (present.getCount() + 1) / 2, false);
+                }
+                if (present.isEmpty() || ItemStack.isSameItemSameTags(present, carried)) {
+                    int offered = primary ? carried.getCount() : 1;
+                    int moved = offered - RocketItemCargoLocal.insert(device, slot, carried.copyWithCount(offered), false).getCount();
+                    if (moved == 0) { return carried; }
+                    return moved == carried.getCount() ? ItemStack.EMPTY : carried.copyWithCount(carried.getCount() - moved);
+                }
+                return RocketItemCargoLocal.replace(device, slot, carried) ? present : carried;
+            } finally { device.endLocal(); }
+        }
+
+        /**
+         * SWAP between one device slot and a hotbar slot (button 0 to 8) or the offhand (40); any other button changes
+         * nothing. The device writes its part before the player's slot changes.
+         */
+        void swap(int slot, int button) {
+            if (!(Inventory.isHotbarSlot(button) || button == Inventory.SLOT_OFFHAND) || !begin()) { return; }
+            try {
+                Inventory inventory = viewer.getInventory();
+                ItemStack hand = inventory.getItem(button);
+                ItemStack present = device.stack(slot);
+                if (hand.isEmpty()) {
+                    if (!present.isEmpty()) { inventory.setItem(button, RocketItemCargoLocal.extract(device, slot, present.getCount(), false)); }
+                } else if (present.isEmpty()) {
+                    // The remainder, or the same stack when the device takes nothing.
+                    inventory.setItem(button, RocketItemCargoLocal.insert(device, slot, hand, false));
+                } else if (RocketItemCargoLocal.replace(device, slot, hand)) {
+                    inventory.setItem(button, present);
+                }
+            } finally { device.endLocal(); }
+        }
+
         @Override public int getContainerSize() { return DEVICE_SLOTS; }
         @Override public boolean isEmpty() { return device.buffer().slots().stream().allMatch(net.minecraft.nbt.CompoundTag::isEmpty); }
         @Override public ItemStack getItem(int slot) { return device.stack(slot); }
@@ -299,7 +394,7 @@ public final class RocketItemCargoMenu extends AbstractContainerMenu {
 
         @Override
         public void setItem(int slot, ItemStack stack) {
-            // Vanilla calls this only after mayPlace or mayPickup accepted, under the same state on the same tick.
+            // No click path of this menu calls this (W120-R1); it stays a guarded write for any other caller.
             if (!begin()) { return; }
             try { RocketItemCargoLocal.replace(device, slot, stack); }
             finally { device.endLocal(); }
