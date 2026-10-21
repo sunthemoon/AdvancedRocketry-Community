@@ -1113,6 +1113,25 @@ outcome (R37), so an outcome that never resolves still leaves the operator's act
 Nothing in production creates a receipt: the deployment, the registry sequence, the launch and
 decommission fences and the transfer hook are W27c2 to W27d, and admission stays disabled until W27e.
 
+### W27c3 implementation note: the rocket transaction journal's checked policy (W123, merged `b9e4e755`)
+
+This note records mechanics; it changes no decision and accepts no risk. The risk is R-040. W123-review
+(APPROVE-WITH-CHANGES, SHA-256 `93e025ae…daef`) asked Root to record the protection below before merge.
+
+- **Checked writes.** `ROCKET_TRANSACTIONS` adopts W11b2's checked policy and exact acknowledgement (mutation
+  sequence, NC1 root digest, transaction-to-record digests) on a checked-write core now shared with the transfer
+  journal, whose per-attempt results are unchanged. Writes stay synchronous at the journal's existing save cadence.
+  A definite failure keeps the old disk proof and dirty RAM; an ambiguous replacement, readback or directory force
+  is UNKNOWN until a successful checked write. The acknowledgement is session-local; loading never acknowledges.
+- **B14 for W27d's D0.** A bounded absence query (at most 256 records) refuses a remaining assembly or disassembly
+  record for the rocket as `ASSEMBLY_JOURNAL_PENDING`, even after a successful write of it; with no record, a stale
+  acknowledgement asks for one checked write and a failed or unknown one answers `ASSEMBLY_JOURNAL_UNPROVED`.
+- **An unreadable file.** An existing journal file that cannot be read no longer becomes vanilla's empty fallback
+  root: the journal is not operational for the session, assembly and disassembly are refused, every position counts
+  as claimed, and the file is never overwritten. Recovery is offline whole-world repair, then a restart.
+- No saved format changed; maximum-size synchronous write cost is not yet measured. This is a development
+  implementation note, not owner acceptance or a Gate result.
+
 ## 9. Solar generator and array (C17c)
 
 Single `solar_generator`: 10,000 FE buffer, FE output-only on six sides, no item or
