@@ -41,7 +41,7 @@ class RetirementCutOracleTest(unittest.TestCase):
         for case in cuts.CUTS:
             for restart in (1, 2):
                 with self.subTest(case=case, restart=restart):
-                    cuts.check(fixture(True), case, restart)
+                    cuts.check(fixture(not case.startswith("HELD_")), case, restart)
 
     def test_rejects_floor_and_resource_drift(self):
         for mutate in (lambda d: d["ledger"]["floors"].append({}),

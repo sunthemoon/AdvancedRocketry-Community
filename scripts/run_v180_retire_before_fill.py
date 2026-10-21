@@ -48,8 +48,9 @@ def inspect(world: Path) -> dict:
 def check(disk: dict, cut: str, restart: int) -> dict:
     data = disk["rocket"]["RocketEntityData"]; device = disk["loader"]["arce_fluid_fuel_loader"]
     root = disk["ledger"]; flight = data["flight_data"]
-    completed = bool(restart) or cut == "K9"
-    after_removal = bool(restart) or cut in ("MOVED", "UNKNOWN", "ACK", "K2", "K9")
+    held = cut.startswith("HELD_")
+    completed = bool(restart) and not held or cut == "K9"
+    after_removal = bool(restart) and not held or cut in ("MOVED", "UNKNOWN", "ACK", "K2", "K9")
     base.require(len(disk["transfers"]) == int(not after_removal), "Unexpected transfer authority")
     if after_removal:
         base.require(not any(e.get("id") == base.ROCKET for e in disk["source"]), "Source origin still contains a rocket after removal")
@@ -60,7 +61,7 @@ def check(disk: dict, cut: str, restart: int) -> dict:
                  and device["tank"] == {"FluidName": base.FUEL, "Amount": 5000 - 1000 * completed}, "Fuel not conserved")
     base.require(device["owner"] == data["owner_id"] and device["binding"]["physical_rocket"] == disk["rocket"]["UUID"]
                  and device["binding"]["logical_rocket"] == data["assembly_transaction_id"], "Owner/binding changed")
-    base.require(bool(root) == (bool(restart) or cut in ("K2", "K9")), "Unexpected ledger creation")
+    base.require(bool(root) == (bool(restart) and not held or cut in ("K2", "K9")), "Unexpected ledger creation")
     if root:
         base.require(root["issued_through"] == 1 and len(root["records"]) == int(not restart and cut == "K2")
                      and not any(root[k] for k in ("floors", "tombstones", "armed_flights", "rocket_authorities", "issued_launch_serial")),
@@ -93,7 +94,13 @@ def start(args, session: Path, evidence: Path, owner: str, cut: str, restart: in
                      or (not injected and not row["errors"]), "Native process logged an unexpected ERROR/FATAL")
         text = "\n".join(row["observations"])
         base.require("tickets=0" in text, "Missing first-tick RAM-ticket observation")
-        if restart and action == "CHECKPOINT":
+        if cut.startswith("HELD_"):
+            base.require("tickets=3 ordinary_mutation=true" in text, "Missing bounded held retirement observation")
+            if action == "REFILL":
+                base.require("code=TRANSFER_JOURNAL_UNPROVED conserved=true" in text, "Held retirement admitted fuel")
+            if action == "LAUNCH":
+                base.require("code=INVALID_STATE" in text, "Missing actual empty-rocket launch refusal")
+        elif restart and action == "CHECKPOINT":
             base.require("tank=4000 bank=1000 floors=0 transfer=NONE" in text, "Missing conservation result")
         elif action == "REFILL":
             base.require("code=PREPARING conserved=true" in text, "Refuelling was not restored")

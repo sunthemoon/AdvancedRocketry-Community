@@ -97,7 +97,9 @@ final class EscrowLandedRetirementProbe {
             var found = level.getEntitiesOfClass(RocketEntity.class, new AABB(ORIGIN).inflate(4));
             if (found.isEmpty() || !(level.getBlockEntity(DEVICE) instanceof FluidFuelLoaderBlockEntity source)) { return; }
             EscrowTags.require(found.size() == 1, "R52 destination missing or duplicated");
-            rocket = found.get(0); loader = source; step = 3;
+            rocket = found.get(0); loader = source;
+            record = journal.findByLogicalRocket(rocket.assemblyTransactionId().orElseThrow()).orElse(null);
+            step = boundary.equals("HELD") ? 1 : 3;
         }
         if (step == 0) {
             rocket = rocket(level, ORIGIN, UUID.randomUUID(), mono(4_000));
@@ -120,14 +122,25 @@ final class EscrowLandedRetirementProbe {
         if (step == 3) {
             if (journal.findByLogicalRocket(logical).isPresent()) {
                 if (demand < 0) { demand = server.getTickCount(); }
-                if (!recovery && tickets > 0 && (boundary.equals("HELD") || boundary.equals("R52_DISCARDED"))) {
+                if (cut.endsWith("HELD_STORAGE")) { obstruction.install(server, cut, record); }
+                if (tickets > 0 && (boundary.equals("HELD") || !recovery && boundary.equals("R52_DISCARDED"))) {
                     if (!obstruction.install(server, cut, record)) { return; }
                     if (boundary.equals("HELD") && server.getTickCount() - demand > 450) {
                         EscrowTags.require(tickets == 3 && RocketRuntime.resourceMutationAllowed(rocket)
                                 && amount(loader) == 5_000 && bank(rocket, false) == 0, "Held retirement changed ordinary authority or ticket rate");
                         AdvancedRocketryCommunity.LOGGER.info("ARCE_R52_HELD cut={} elapsed={} tickets={} ordinary_mutation=true",
                                 cut, server.getTickCount() - demand, tickets);
-                        pause("HELD"); return;
+                        if (action.equals("REFILL")) {
+                            var result = attempt();
+                            AdvancedRocketryCommunity.LOGGER.info("ARCE_R52_REFILL cut={} code={} conserved=true", cut, result);
+                            EscrowTags.require(result == FluidFuelLoaderStatus.TRANSFER_JOURNAL_UNPROVED, "Held retirement admitted escrow fuel");
+                        } else if (action.equals("LAUNCH")) {
+                            var result = RocketRuntime.requestAdminFlight(rocket, RocketDestination.MOON, UUID.randomUUID());
+                            AdvancedRocketryCommunity.LOGGER.info("ARCE_R52_LAUNCH_REQUEST cut={} code={}", cut, result.code());
+                            EscrowTags.require(result.code() == RocketFlightRequestCode.INVALID_STATE, "Empty ordinary rocket had an unexpected launch outcome");
+                        }
+                        EscrowTags.require(server.saveEverything(false, true, true), "Held checkpoint save failed");
+                        pause(action.equals("CHECKPOINT") ? "HELD" : action); return;
                     }
                 }
                 var result = attempt();

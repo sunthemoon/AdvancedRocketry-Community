@@ -19,10 +19,12 @@ final class EscrowRetirementObstruction {
         var level = server.getLevel(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.DIMENSION,
                 record.sourceSnapshot().sourceDimension()));
         var origin = record.sourceSnapshot().sourceOrigin(); var column = new ChunkPos(origin.x() >> 4, origin.z() >> 4);
-        if (!level.areEntitiesLoaded(column.toLong())) { return false; }
         if (cut.endsWith("HELD_STORAGE")) {
-            level.entityManager.permanentStorage = new ForeignStorage(level.entityManager.permanentStorage);
+            var destination = server.getLevel(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.DIMENSION,
+                    record.destinationSnapshot().sourceDimension()));
+            destination.entityManager.permanentStorage = new ForeignStorage(destination.entityManager.permanentStorage);
         } else {
+            if (!level.areEntitiesLoaded(column.toLong())) { return false; }
             boolean offColumn = cut.endsWith("HELD_COLUMN");
             if (offColumn) {
                 var margin = new ChunkPos(column.x - 1, column.z);
@@ -30,6 +32,7 @@ final class EscrowRetirementObstruction {
                 level.getChunk(margin.x, margin.z);
                 if (!level.areEntitiesLoaded(margin.toLong())) { return false; }
             }
+            if (level.getEntity(record.sourceEntityId()) != null) { installed = true; return true; }
             var copy = ModEntities.ROCKET.get().create(level);
             EscrowTags.require(copy != null, "R52 old copy creation failed");
             copy.initializeTransferred(record.sourceSnapshot(), record.logicalRocketId(), record.ownerId(), record.sourceFlightData());
