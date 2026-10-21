@@ -42,13 +42,15 @@ final class EscrowSettlementDisk {
                     && endpoint.identity().equals(object.getCompound("ForgeData").getCompound("arce_escrow_fixture").getUUID("identity"))) {
                 EscrowTags.require(exact, "Relocated source identity");
             }
-            if (!entity && endpoint.identity().equals(EscrowLoaderEndpoint.device(object))) {
+            if (!entity && (endpoint.identity().equals(EscrowLoaderEndpoint.device(object))
+                    || endpoint.identity().equals(EscrowFluidCargoEndpoint.device(object)))) {
                 EscrowTags.require(exact, "Relocated source identity");
             }
             if (exact) { EscrowTags.require(found == null && endpoint.type().equals(object.getString("id")), "Duplicate/wrong disk endpoint"); found = object; }
         }
         if (found == null) { return new EscrowSettlementIntent.Observation(endpoint, null, false, 0); }
         if (!entity && EscrowLoaderEndpoint.is(endpoint)) { return EscrowLoaderEndpoint.observation(endpoint, EscrowLoaderEndpoint.root(found), ledger); }
+        if (!entity && EscrowFluidCargoEndpoint.is(endpoint)) { return EscrowFluidCargoEndpoint.observation(endpoint, EscrowFluidCargoEndpoint.root(found), ledger); }
         if (!entity) {
             var persistent = EscrowTags.compound(found, "ForgeData");
             EscrowTags.require(endpoint.identity().equals(persistent.getCompound("arce_escrow_fixture").getUUID("identity")), "Source disk identity changed");
