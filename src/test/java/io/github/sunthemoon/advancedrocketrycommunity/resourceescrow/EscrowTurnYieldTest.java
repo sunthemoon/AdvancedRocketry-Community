@@ -20,6 +20,17 @@ class EscrowTurnYieldTest {
     @TempDir Path temp;
 
     @Test void unloadedCargoAttemptYieldsItsWaitingToken() {
+        Checks.unloadedCargoAttemptYieldsItsWaitingToken(temp);
+    }
+    @Test void refusedFuelAttemptAndQueueVisitYieldTheirWaitingToken() {
+        Checks.refusedFuelAttemptAndQueueVisitYieldTheirWaitingToken(temp);
+    }
+    @Test void noWorkRefusalCannotReleaseAnActiveClaimOrAnotherDevicesNextToken() {
+        Checks.noWorkRefusalCannotReleaseAnActiveClaimOrAnotherDevicesNextToken(temp);
+    }
+
+    private static final class Checks {
+    static void unloadedCargoAttemptYieldsItsWaitingToken(Path temp) {
         try (var fixture = new Turns(temp)) {
             fixture.first.blocked();
             var device = UnstartedServer.allocate(RocketFluidCargoBlockEntity.class);
@@ -31,7 +42,7 @@ class EscrowTurnYieldTest {
         }
     }
 
-    @Test void refusedFuelAttemptAndQueueVisitYieldTheirWaitingToken() {
+    static void refusedFuelAttemptAndQueueVisitYieldTheirWaitingToken(Path temp) {
         try (var fixture = new Turns(temp)) {
             var device = UnstartedServer.allocate(FluidFuelLoaderBlockEntity.class);
             UnstartedServer.set(FluidFuelLoaderBlockEntity.class, device, "turns", fixture.first);
@@ -47,7 +58,7 @@ class EscrowTurnYieldTest {
         }
     }
 
-    @Test void noWorkRefusalCannotReleaseAnActiveClaimOrAnotherDevicesNextToken() {
+    static void noWorkRefusalCannotReleaseAnActiveClaimOrAnotherDevicesNextToken(Path temp) {
         try (var fixture = new Turns(temp)) {
             var device = UnstartedServer.allocate(RocketFluidCargoBlockEntity.class);
             UnstartedServer.set(RocketFluidCargoBlockEntity.class, device, "turns", fixture.first);
@@ -59,6 +70,8 @@ class EscrowTurnYieldTest {
             assertTrue(fixture.second.allows()); assertFalse(fixture.first.allows());
             fixture.unchanged();
         }
+    }
+
     }
 
     private static final class Turns implements AutoCloseable {

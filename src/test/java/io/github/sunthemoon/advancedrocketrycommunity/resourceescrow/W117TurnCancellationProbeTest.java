@@ -17,6 +17,14 @@ class W117TurnCancellationProbeTest {
     @TempDir Path temp;
 
     @Test void cancellingCargoBeforeItClaimsItsTurnDoesNotStrandTheOtherLoadedDevice() {
+        Checks.cancellingCargoBeforeItClaimsItsTurnDoesNotStrandTheOtherLoadedDevice(temp);
+    }
+    @Test void cancellingAnActiveCargoClaimDoesHandTheTurnToTheOtherLoadedDevice() {
+        Checks.cancellingAnActiveCargoClaimDoesHandTheTurnToTheOtherLoadedDevice(temp);
+    }
+
+    private static final class Checks {
+    static void cancellingCargoBeforeItClaimsItsTurnDoesNotStrandTheOtherLoadedDevice(Path temp) {
         var data = ResourceEscrowSavedData.load(EscrowCodec.encode(EscrowLedger.empty(UUID.randomUUID())));
         var rocket = UUID.randomUUID(); var firstId = UUID.randomUUID(); var secondId = UUID.randomUUID();
         try (var writer = new EscrowLedgerWriter(temp.resolve("idle"), 0);
@@ -36,7 +44,7 @@ class W117TurnCancellationProbeTest {
         }
     }
 
-    @Test void cancellingAnActiveCargoClaimDoesHandTheTurnToTheOtherLoadedDevice() {
+    static void cancellingAnActiveCargoClaimDoesHandTheTurnToTheOtherLoadedDevice(Path temp) {
         var data = ResourceEscrowSavedData.load(EscrowCodec.encode(EscrowLedger.empty(UUID.randomUUID())));
         var rocket = UUID.randomUUID(); var firstId = UUID.randomUUID(); var secondId = UUID.randomUUID();
         try (var writer = new EscrowLedgerWriter(temp.resolve("active"), 0);
@@ -53,5 +61,6 @@ class W117TurnCancellationProbeTest {
             admission.close();
             assertTrue(second.allows()); assertFalse(first.allows());
         }
+    }
     }
 }
