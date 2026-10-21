@@ -492,6 +492,6 @@ stats, research and quotas, for every kind. For a data package, players see two 
 - Launch and decommission can return the new code DEPLOYMENT_PENDING while a bay deployment of that satellite is
   unresolved, or before the bay receipt index is loaded.
 
-The F4 matrix pins both. Open: with a blocked registry the terminal reports UNSUPPORTED_DATA where the service
-returns REGISTRY_BLOCKED (W119-review R1); W119F aligns the terminal with the service. This is a development
-implementation note, not owner acceptance or a Gate result.
+The F4 matrix pins both. With a blocked registry the terminal and the service both return REGISTRY_BLOCKED
+(W119-review R1, fixed by W119F, merged `1e08b2fe`). This is a development implementation note, not owner
+acceptance or a Gate result.

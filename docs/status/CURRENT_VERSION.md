@@ -38,7 +38,7 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: f2df941c (W107C merged: the loader cuts E1, E2, R1 and R3 with their gated fixtures; before it, 078c7be0 merged W119, W27c2 the satellite registry proof)
+latest_code_commit: 1e08b2fe (W119F merged: the satellite terminal's blocked-registry parity; before it, f2df941c merged W107C, the loader cuts E1, E2, R1 and R3)
 latest_hosted_regression: run 39464852370 at 53e9fa1a (the W118 merge) passed all required GameTests and the log checker on its re-run; its first attempt failed four governed-flight and warm-up GameTests once (QUEUE lists them). Run 39421969414 at dcebe3a8 (W116 and W107B merged) also passed on its re-run after one live-return failure, and runs 39415014258 at 2e44edcc and 39411638524 at d9f031d4 passed, so the escrow proof tests have passed on every hosted run since W111. Before W111, EscrowCoreGameTests.ownTerrainAndEntityStoresConfirmTheExactFrozenFrontier failed on the runs at bd1c78b9, d2f0d00c, 9f6668aa, 67dee026, fb1ac454, 20a82b88 and f1223c02
 ledger_planned_units: 19
 asset_review_items: 154
