@@ -289,10 +289,6 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
             return;
         }
         ResourceLocation target = selectedTarget();
-        if (target == null) {
-            updateResult(player, SatelliteOperationCode.TARGET_NOT_ALLOWED);
-            return;
-        }
 
         ItemStack packageStack = inventory.getStackInSlot(SLOT_PACKAGE);
         SatelliteOperationResult result;
@@ -315,6 +311,10 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
                 inventory.extractItem(SLOT_PACKAGE, 1, false);
             }
         } else {
+            if (target == null) {
+                updateResult(player, SatelliteOperationCode.TARGET_NOT_ALLOWED);
+                return;
+            }
             result = SatelliteRuntime.startMission(player, chip, target);
         }
         updateResult(player, result.code());

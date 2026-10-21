@@ -1,136 +1,24 @@
 package io.github.sunthemoon.advancedrocketrycommunity.satellite.service;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
-import io.github.sunthemoon.advancedrocketrycommunity.celestial.model.CelestialBodyDefinition;
-import io.github.sunthemoon.advancedrocketrycommunity.celestial.persistence.CelestialSavedData;
-import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalogManager;
-import io.github.sunthemoon.advancedrocketrycommunity.satellite.component.SatelliteBlueprints;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.content.SatelliteIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteOperationCode;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteOperationResult;
-import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteBlueprint;
-import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteKindDefinition;
-import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteState;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteMissionSavedData;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 
 /**
- * Launch and removal of the non-data kinds (ADR-049 sections 6–7), kept beside {@link SatelliteManager} so
- * the data-mission authority does not absorb them. Both write paths end in the registry barrier flush.
+ * Removal of the non-data kinds (ADR-049 section 7), with the terminal's registry barrier.
  */
 final class SatelliteKindLifecycle {
-    private final SatelliteCatalogManager satelliteCatalogs;
-    private final CelestialCatalogManager celestialCatalogs;
     private final SolarLinks links;
 
-    SatelliteKindLifecycle(SatelliteCatalogManager satelliteCatalogs, CelestialCatalogManager celestialCatalogs,
-                           SolarLinks links) {
-        this.satelliteCatalogs = Objects.requireNonNull(satelliteCatalogs, "satelliteCatalogs");
-        this.celestialCatalogs = Objects.requireNonNull(celestialCatalogs, "celestialCatalogs");
+    SatelliteKindLifecycle(SolarLinks links) {
         this.links = Objects.requireNonNull(links, "links");
-    }
-
-    /**
-     * ADR-049 section 6: a non-data satellite launches idle into a chosen orbit body. A replay of an already
-     * registered identity is idempotent before any validation, so a returned package is always consumed.
-     * The registry barrier flush happens here, before the terminal extracts the package.
-     */
-    SatelliteOperationResult launchIdle(
-            ServerPlayer player,
-            SatelliteIdentity identity,
-            ResourceLocation orbitBody
-    ) {
-        MinecraftServer server = player.getServer();
-        if (server == null) {
-            return SatelliteManager.failure(SatelliteOperationCode.SERVER_ERROR);
-        }
-        try {
-            SatelliteMissionSavedData data = SatelliteMissionSavedData.get(server);
-            SatelliteState existing = data.satellite(identity.satelliteId()).orElse(null);
-            if (existing != null) {
-                boolean same = existing.ownerId().equals(identity.ownerId())
-                        && existing.definitionId().equals(identity.definitionId())
-                        && existing.kind() == identity.kind();
-                // C7-H1: a replay after a failed barrier flush must not consume the package before the
-                // registry is durable; a flush failure throws and keeps the package in the terminal.
-                if (same && data.isDirty()) {
-                    data.flush(server);
-                }
-                return new SatelliteOperationResult(
-                        same ? SatelliteOperationCode.IDEMPOTENT : SatelliteOperationCode.IDENTITY_CONFLICT,
-                        false, Optional.of(existing), Optional.empty(), 0);
-            }
-            SatelliteCatalog catalog = satelliteCatalogs.current().orElse(null);
-            if (catalog == null) {
-                return SatelliteManager.failure(SatelliteOperationCode.CATALOG_UNAVAILABLE);
-            }
-            SatelliteKindDefinition definition = catalog.kindDefinition(identity.definitionId())
-                    .filter(candidate -> candidate.kind() == identity.kind())
-                    .orElse(null);
-            // C7-L4: the primary component must still select this definition after a data-pack change.
-            boolean primarySelects = definition != null && identity.components().size() > 1
-                    && catalog.kindDefinitionForPrimary(identity.components().get(1))
-                            .filter(candidate -> candidate.id().equals(definition.id())).isPresent();
-            if (!primarySelects) {
-                return SatelliteManager.failure(SatelliteOperationCode.DEFINITION_NOT_FOUND);
-            }
-            SatelliteOperationCode orbit = validateOrbitBody(server, definition, orbitBody);
-            if (orbit != null) {
-                return SatelliteManager.failure(orbit);
-            }
-            SatelliteBlueprints.Evaluation evaluation = SatelliteBlueprints.evaluateIdentity(
-                    identity.components(), identity.kind(), definition.scanEnergy(), catalog.components());
-            if (!evaluation.accepted()) {
-                return SatelliteManager.failure(evaluation.code());
-            }
-            if (data.account(identity.ownerId()).lifetimeEarned() < definition.requiredLifetimeResearch()) {
-                return SatelliteManager.failure(SatelliteOperationCode.RESEARCH_LOCKED);
-            }
-            SatelliteBlueprint blueprint = new SatelliteBlueprint(identity.components(), false,
-                    evaluation.stats().orElseThrow());
-            SatelliteOperationResult result = data.launchIdle(logicalTime -> SatelliteState.launchIdle(
-                    identity.satelliteId(),
-                    definition.id(),
-                    identity.ownerId(),
-                    logicalTime,
-                    orbitBody,
-                    blueprint,
-                    definition.initialState(logicalTime)
-            ), server.overworld().getGameTime());
-            if (result.changed() || data.isDirty()) {
-                data.flush(server);
-            }
-            return result;
-        } catch (RuntimeException exception) {
-            SatelliteManager.logOperationFailure("idle launch", exception);
-            return SatelliteManager.failure(SatelliteOperationCode.UNSUPPORTED_DATA);
-        }
-    }
-
-    /** A launch target of the definition, known, orbitable and discovered when it requires discovery. */
-    private SatelliteOperationCode validateOrbitBody(
-            MinecraftServer server,
-            SatelliteKindDefinition definition,
-            ResourceLocation orbitBody
-    ) {
-        if (orbitBody == null || !definition.launchTargets().contains(orbitBody)) {
-            return SatelliteOperationCode.TARGET_NOT_ALLOWED;
-        }
-        CelestialBodyDefinition body = celestialCatalogs.current()
-                .flatMap(celestial -> celestial.get(orbitBody))
-                .orElse(null);
-        if (body == null || !body.capabilities().orbitable()) {
-            return SatelliteOperationCode.TARGET_NOT_ALLOWED;
-        }
-        if (body.discoveryRequired() && CelestialSavedData.get(server).get(orbitBody).isEmpty()) {
-            return SatelliteOperationCode.TARGET_NOT_ALLOWED;
-        }
-        return null;
     }
 
     /**

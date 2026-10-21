@@ -100,6 +100,23 @@ public final class BayReceipts {
             case LOADED -> store == null || store.blocks(satellite);
         };
     }
+    /** Registry removal fence; unlike launch/insertion, an exactly acknowledged REGISTERED does not block. */
+    public boolean blocksDecommission(UUID satellite) {
+        return switch (bay.state()) {
+            case NOT_LOADED -> true;
+            case NO_FILE -> false;
+            case LOADED -> store == null || store.blocksDecommission(satellite);
+        };
+    }
+    /** Shared registry fence, including startup and a missing/stopping server-lifetime runtime. */
+    public static boolean blocksRegistry(MinecraftServer server, UUID satellite, boolean decommission) {
+        if (!server.isSameThread() || server.overworld() == null) { return true; }
+        return server.overworld().getCapability(EscrowRuntime.CAPABILITY).resolve().map(runtime -> {
+            if (runtime.stopping()) { return true; }
+            BayReceipts receipts = runtime.bayReceipts(server);
+            return decommission ? receipts.blocksDecommission(satellite) : receipts.blocksInsertion(satellite);
+        }).orElse(true);
+    }
     public EscrowAdmissionAuthority.Delegate.State state() { return bay.state(); }
     @Nullable public BayReceiptStore store() { return store; }
     EscrowAdmissionAuthority.Delegate delegate() { return bay; }

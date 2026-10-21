@@ -47,6 +47,7 @@ public final class SatelliteManager {
     private final ReceiverDirectory receivers = new ReceiverDirectory();
     private final SolarLinks links;
     private final SatelliteKindLifecycle kinds;
+    private final SatelliteLaunchService launches;
     private final SurveyScanService scans;
     private final IntentRateLimiter intents = new IntentRateLimiter();
     private static final int COALESCED_FLUSH_TICKS = 100;
@@ -79,7 +80,8 @@ public final class SatelliteManager {
         this.celestialCatalogs = Objects.requireNonNull(celestialCatalogs, "celestialCatalogs");
         this.snapshots = Objects.requireNonNull(snapshots, "snapshots");
         this.links = new SolarLinks(celestialCatalogs, receivers);
-        this.kinds = new SatelliteKindLifecycle(satelliteCatalogs, celestialCatalogs, links);
+        this.kinds = new SatelliteKindLifecycle(links);
+        this.launches = new SatelliteLaunchService(satelliteCatalogs, celestialCatalogs);
         this.scans = SurveyScanService.create(celestialCatalogs, CommonConfig::surveyScanSettings);
     }
 
@@ -201,35 +203,26 @@ public final class SatelliteManager {
         if (rejected != null) {
             return rejected;
         }
-        if (identity.kind() != SatelliteKind.DATA) {
-            return kinds.launchIdle(player, identity, targetBodyId);
-        }
-        SatelliteDefinition definition = definition(identity.definitionId()).orElse(null);
-        SatelliteOperationResult definitionFailure = validateDefinitionAndTarget(definition, targetBodyId);
-        if (definitionFailure != null) {
-            return definitionFailure;
-        }
         MinecraftServer server = player.getServer();
         if (server == null) {
             return failure(SatelliteOperationCode.SERVER_ERROR);
         }
         try {
             SatelliteMissionSavedData data = SatelliteMissionSavedData.get(server);
-            SatelliteOperationResult result = data.launch(
-                    identity.satelliteId(),
-                    initialMissionId(identity.satelliteId()),
-                    identity.ownerId(),
-                    definition,
-                    targetBodyId,
-                    server.overworld().getGameTime(),
-                    discoveryRequired(server, targetBodyId)
-            );
-            if (result.changed() || data.isDirty()) {
+            var validation = launches.validate(server, player.getUUID(), identity, targetBodyId);
+            if (validation.result().code() == SatelliteOperationCode.REGISTRY_BLOCKED) {
+                // Keep the terminal's existing fail-closed result and diagnostic; the shared service names the cause.
+                throw new IllegalStateException("Satellite registry is blocked by invalid or future data");
+            }
+            if (validation.request().isEmpty()) { return validation.result(); }
+            SatelliteOperationResult result = launches.register(server, validation.request().orElseThrow(),
+                    server.overworld().getGameTime());
+            if (result.success() && (result.changed() || data.isDirty())) {
                 data.flush(server);
             }
             return result;
         } catch (RuntimeException exception) {
-            logOperationFailure("launch", exception);
+            logOperationFailure(identity.kind() == SatelliteKind.DATA ? "launch" : "idle launch", exception);
             return failure(SatelliteOperationCode.UNSUPPORTED_DATA);
         }
     }
