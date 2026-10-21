@@ -35,6 +35,7 @@ import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.storage.DimensionDataStorage;
+import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.capabilities.Capability;
@@ -67,6 +68,10 @@ final class EscrowTurnYieldFixture {
     State(Path directory) throws Exception {
         UnstartedServer.set(MinecraftServer.class, server, "serverThread", Thread.currentThread());
         UnstartedServer.set(MinecraftServer.class, server, "levels", Map.of(Level.OVERWORLD, level));
+        var storage = UnstartedServer.allocate(LevelStorageSource.LevelStorageAccess.class);
+        UnstartedServer.set(LevelStorageSource.LevelStorageAccess.class, storage, "resources", new HashMap<>());
+        UnstartedServer.set(LevelStorageSource.LevelStorageAccess.class, storage, "levelDirectory", new LevelStorageSource.LevelDirectory(directory));
+        UnstartedServer.set(MinecraftServer.class, server, "storageSource", storage);
         level.server = server; level.storage = TestDataStorage.over(directory);
         level.capabilities = new IdentityHashMap<>();
         level.capabilities.put(EscrowRuntime.CAPABILITY, LazyOptional.of(() -> runtime));
