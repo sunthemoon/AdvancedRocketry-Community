@@ -5,6 +5,14 @@ Assignment: [TASK-W121](../TASK-W121-F1-NAMED-FILL-DEADLOCK-DESIGN.md). Base: sh
 W107C (merged at `f2df941c`); all line numbers are at that commit. Sources: [W107C](W107C.md), [W11A](W11A-DESIGN.md)
 sections 4, 5 and 7, and [W11B3](W11B3-DESIGN.md) sections 2, 4 and 5.
 
+**Amended by Root decision R48 (2026-10-21), after W121-review blocked this note as an implementation contract**
+(`D:/GitHub/ARCE-Task-Evidence/root-queue/W121-review/REVIEW.md`, SHA-256 `b5958f4e…c1650`). Read
+[TASK-W125](../TASK-W125-F1-NAMED-FILL-FIX.md) first; where this note and R48 differ, R48 wins. In short: the self-guard
+S is a separate reconciliation predicate that also admits STALLED fills with a retryable proof-failure reason (W121-R1);
+R-3's hand-back at C8 is dropped, and a retired fill's record follows today's loaded-only recovery until D2 (W121-R2);
+first and second restarts are stated separately (W121-R3); R-4's reason gets the scheduler's 20-tick delay; D2 is a
+separate design; D3 accepts the transient reason; D4 is a separate cargo extension.
+
 **Terms.**
 - T is the rocket's checked transfer-journal record, L its logical rocket, and D the landed rocket entity
   (T's destination). X is a fill whose frozen guard names (L, T).
