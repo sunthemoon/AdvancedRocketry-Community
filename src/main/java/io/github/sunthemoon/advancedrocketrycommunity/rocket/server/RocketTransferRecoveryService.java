@@ -210,6 +210,7 @@ final class RocketTransferRecoveryService {
     RocketOrdinaryRetirement retirements() { return retirements; }
     void tickRetirements(MinecraftServer server) { retirements.tick(); }
     Set<UUID> fencedIds() { return fences.ids(); }
+    String fenceReason(UUID id) { return fences.reason(id); }
     String fencedDiagnostics() { return fences.ids().stream().sorted().limit(4)
             .map(id -> " [fenced_transfer=" + id + " reason=" + fences.reason(id) + " repair=offline-whole-world]")
             .collect(java.util.stream.Collectors.joining()); }

@@ -62,17 +62,24 @@ Run Gradle with `--offline` from your worktree, using `gradlew.bat` in PowerShel
 
   ```powershell
   $lock = 'D:\GitHub\ARCE-Task-Evidence\locks\heavy-jvm'
-  while (-not (New-Item -ItemType Directory -Path $lock -ErrorAction SilentlyContinue)) { Start-Sleep -Seconds 60 }
+  $token = "<your TASK id> pid=$PID $([guid]::NewGuid())"
+  # cmd's mkdir is atomic: exactly one caller creates the directory, every other gets a non-zero exit code.
+  while ($true) { cmd /c mkdir "$lock" 2>$null; if ($LASTEXITCODE -eq 0) { break }; Start-Sleep -Seconds 60 }
   try {
-    Set-Content "$lock\owner.txt" "<your TASK id> $(Get-Date -Format o)"
+    Set-Content "$lock\owner.txt" "$token $(Get-Date -Format o)"
     .\gradlew.bat --offline runGameTestServer --console=plain
   } finally {
-    Remove-Item $lock -Recurse -Force
+    # Release only the lock this script took: its owner.txt must still start with this script's token.
+    $owner = Get-Content "$lock\owner.txt" -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($owner -and $owner.StartsWith($token)) { Remove-Item $lock -Recurse -Force }
   }
   ```
 
   Never remove a lock that is not yours. If the lock is older than three hours, stop and
-  say so in your record instead of breaking it.
+  say so in your record instead of breaking it. (Changed by Root on 2026-10-22: W122 saw
+  `New-Item -ItemType Directory` let two scripts take the lock in the same millisecond, and an
+  unchecked `finally` remove another script's lock, so three heavy JVMs overlapped for about four
+  minutes. Use the atomic `mkdir` and the owner check above.)
 
   Release the lock only in the `finally` of the same script that took it, as above, and run
   that script as a detached process, not as a tool background job (the tool stops those after

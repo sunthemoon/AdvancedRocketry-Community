@@ -99,7 +99,12 @@ public final class RocketManager implements RocketOperationService {
     }
 
     boolean escrowReconciliationBoundary(RocketEntity rocket) {
-        if (!flights.escrowReconciliationBoundary(rocket)) { return false; }
+        return escrowReconciliationBoundary(rocket, null);
+    }
+
+    boolean escrowReconciliationBoundary(RocketEntity rocket,
+            io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGuard guard) {
+        if (!flights.escrowReconciliationBoundary(rocket, guard)) { return false; }
         var journal = io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketTransactionSavedData
                 .get(((ServerLevel) rocket.level()).getServer());
         return journal.operational() && !transactions.hasPendingRecovery(journal, rocket.snapshot().orElseThrow());

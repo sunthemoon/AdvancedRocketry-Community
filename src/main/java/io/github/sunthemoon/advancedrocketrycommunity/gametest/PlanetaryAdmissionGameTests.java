@@ -19,6 +19,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlight
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketManager;
+import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState;
 import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationCreationCode;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationManager;
@@ -50,6 +51,13 @@ public final class PlanetaryAdmissionGameTests {
     private static final TravelTarget MOON = new TravelTarget.BodySurface(CelestialIds.MOON_ID);
     private static final TicketType<UUID> FIXTURE_TICKET = TicketType.create(
             "arce_gametest_planetary", Comparator.comparing(UUID::toString), 100);
+    /**
+     * W122: the closed-orbit departure's own batch. Its launch-and-cancel check compares the whole shared transfer
+     * journal across ticks, so another test's launch or cancellation in the same window changes it.
+     */
+    static final String STATION_DEPARTURE_BATCH = "planetary_admission_station_departure";
+    /** W122: the wall-clock bound for loading a station pad chunk's entities in setup, as W111's fixture areas use. */
+    private static final long PAD_LOAD_NANOS = 600_000_000_000L;
 
     private PlanetaryAdmissionGameTests() {
     }
@@ -134,7 +142,7 @@ public final class PlanetaryAdmissionGameTests {
         });
     }
 
-    @GameTest(template = "rocket_test", batch = "planetary_admission", timeoutTicks = 100)
+    @GameTest(template = "rocket_test", batch = STATION_DEPARTURE_BATCH, timeoutTicks = 100)
     public static void closedOrbitStationCanDepartButStillRequiresLiveMembership(GameTestHelper helper) {
         var driver = new GameTestTickDriver(helper);
         driver.at(1, () -> {
@@ -161,6 +169,7 @@ public final class PlanetaryAdmissionGameTests {
                 stations.reserve(stationId, ownerId, "Closed orbit fixture", CelestialIds.EARTH_ID,
                         helper.getLevel().getGameTime());
                 var station = stations.commit(stationId);
+                holdPadChunk(helper, space, station, stationId, ticketChunk);
                 RocketFlightGameTestFixtures.assembleFueledRocket(helper, driver, new BlockPos(3, 2, 3), ownerId, cleanup, original -> {
                     try {
                         try {
@@ -177,9 +186,8 @@ public final class PlanetaryAdmissionGameTests {
                         } finally {
                             original.discard();
                         }
-                        ticketChunk.set(new ChunkPos(rocket.blockPosition()));
-                        space.getChunkSource().addRegionTicket(FIXTURE_TICKET, ticketChunk.get(), 2, stationId);
-                        space.getChunkAt(rocket.blockPosition());
+                        helper.assertTrue(new ChunkPos(rocket.blockPosition()).equals(ticketChunk.get()),
+                                "Station rocket is outside its held pad chunk");
                         helper.assertTrue(space.addFreshEntity(rocket), "Station rocket was not installed");
                         awaitVisible(helper, driver, space, rocket, finish -> {
                             var owner = player(space, ownerId);
@@ -250,6 +258,7 @@ public final class PlanetaryAdmissionGameTests {
                         helper.getLevel().getGameTime());
                 var station = stations.commit(stationId);
                 stations.foldWarpCredits(java.util.Map.of(stationId, 100_000));
+                holdPadChunk(helper, space, station, stationId, ticketChunk);
                 RocketFlightGameTestFixtures.assembleFueledRocket(helper, driver, new BlockPos(3, 2, 3), ownerId, cleanup, original -> {
                     try {
                         try {
@@ -266,9 +275,8 @@ public final class PlanetaryAdmissionGameTests {
                         } finally {
                             original.discard();
                         }
-                        ticketChunk.set(new ChunkPos(rocket.blockPosition()));
-                        space.getChunkSource().addRegionTicket(FIXTURE_TICKET, ticketChunk.get(), 2, stationId);
-                        space.getChunkAt(rocket.blockPosition());
+                        helper.assertTrue(new ChunkPos(rocket.blockPosition()).equals(ticketChunk.get()),
+                                "Station rocket is outside its held pad chunk");
                         helper.assertTrue(space.addFreshEntity(rocket), "Station rocket was not installed");
                         awaitVisible(helper, driver, space, rocket, finish -> {
                             var owner = player(space, ownerId);
@@ -339,8 +347,9 @@ public final class PlanetaryAdmissionGameTests {
     }
 
     /**
-     * Runs {@code assertions} once the rocket is visible. They receive the finish step (succeed, then clean up), which
-     * W98's deferred cancellation check calls later; a synchronous failure still cleans up here.
+     * Runs {@code assertions} once the rocket is visible and its chunk's entities are loaded. They receive the finish step
+     * (succeed, then clean up), which W98's deferred cancellation check calls later; a synchronous failure still cleans
+     * up here.
      */
     private static void awaitVisible(GameTestHelper helper, GameTestTickDriver driver, ServerLevel level, RocketEntity rocket,
             java.util.function.Consumer<Runnable> assertions, Runnable cleanup) {
@@ -352,13 +361,17 @@ public final class PlanetaryAdmissionGameTests {
         driver.after(1, () -> {
             boolean scheduled = false;
             try {
-                if (level.getEntity(rocket.getId()) != rocket) {
+                if (!loaded(level, rocket)) {
+                    if (helper.getTick() >= 80) {
+                        trace(helper, rocket, "expired", null);
+                    }
                     // Fail and release our external resources before the enclosing 100-tick timeout.
                     helper.assertTrue(helper.getTick() < 80, "Station fixture entity never became visible");
                     pacer.pace();
                     awaitVisible(helper, driver, level, rocket, assertions, cleanup, pacer);
                     scheduled = true;
                 } else {
+                    trace(helper, rocket, "visible", null);
                     assertions.accept(() -> {
                         try { helper.succeed(); } finally { cleanup.run(); }
                     });
@@ -370,6 +383,36 @@ public final class PlanetaryAdmissionGameTests {
                 }
             }
         });
+    }
+
+    /**
+     * W122: holds the station's pad chunk, where the fixture later installs its rocket (the pad origin plus half a block),
+     * and loads its entities in setup, outside the timed ticks ({@link EntitySections#loadNow}). The cleanup removes the
+     * ticket.
+     */
+    private static void holdPadChunk(GameTestHelper helper, ServerLevel space, StationState station, UUID stationId,
+            AtomicReference<ChunkPos> held) {
+        var pad = new BlockPos(station.landingPad().x(), station.landingPad().y(), station.landingPad().z());
+        held.set(new ChunkPos(pad));
+        space.getChunkSource().addRegionTicket(FIXTURE_TICKET, held.get(), 2, stationId);
+        space.getChunkAt(pad);
+        long started = System.nanoTime();
+        boolean loaded = EntitySections.loadNow(space, held.get(), started + PAD_LOAD_NANOS);
+        AdvancedRocketryCommunity.LOGGER.info("ARCE_GAMETEST_STATION_DEPARTURE stage=pad_loaded level={} test_tick={} chunk={}"
+                + " loaded={} ms={}", space.dimension().location(), helper.getTick(), held.get(), loaded,
+                (System.nanoTime() - started) / 1_000_000L);
+        helper.assertTrue(loaded, "Station pad chunk entities did not load in setup");
+    }
+
+    /**
+     * W122: the state the launch's acknowledged continuation requires of its entity (the transfer service's loaded-entity
+     * check): visible, and in a chunk whose entities are loaded. Vanilla makes a new chunk's sections visible as soon as
+     * the chunk is accessible and only then queues its entity storage load on the IO and background threads, so a busy
+     * host can show the rocket a tick or more before {@code areEntitiesLoaded} turns true, and the continuation then
+     * refuses the departure.
+     */
+    private static boolean loaded(ServerLevel level, RocketEntity rocket) {
+        return level.getEntity(rocket.getId()) == rocket && level.areEntitiesLoaded(rocket.chunkPosition().toLong());
     }
 
     /**
@@ -390,6 +433,7 @@ public final class PlanetaryAdmissionGameTests {
             helper.assertTrue(rocket.flightData().orElseThrow().state() == RocketFlightState.FUELED
                     && !journal.acknowledgedCurrent(), "Departure changed authority before acknowledgement");
             io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport.acknowledgeFixture(helper);
+            trace(helper, rocket, "acknowledged", transfer);
             helper.assertTrue(rocket.flightData().orElseThrow().state() == RocketFlightState.COUNTDOWN,
                     "Authorized closed-source departure did not enter countdown");
             helper.assertTrue(journal.find(transfer).isPresent(), "Accepted departure did not persist its journal");
@@ -422,6 +466,25 @@ public final class PlanetaryAdmissionGameTests {
             failed.run();
             throw failure;
         }
+    }
+
+    /**
+     * W122 trace: what the launch's acknowledged continuation reads (its entity check and the journal's per-rocket
+     * state) at the fixture's readiness and right after the acknowledgement. Information only; it decides nothing.
+     */
+    private static void trace(GameTestHelper helper, RocketEntity rocket, String stage, UUID transfer) {
+        var level = (ServerLevel) rocket.level();
+        var journal = RocketTransferSavedData.get(level.getServer());
+        UUID logical = rocket.assemblyTransactionId().orElse(null);
+        AdvancedRocketryCommunity.LOGGER.info("ARCE_GAMETEST_STATION_DEPARTURE stage={} level={} test_tick={} server_tick={}"
+                        + " rocket={} state={} added={} visible={} entities_loaded={} entity_ticking={} record={} actionable={}"
+                        + " acknowledged={} outstanding={} entries={}",
+                stage, level.dimension().location(), helper.getTick(), level.getServer().getTickCount(), rocket.getUUID(),
+                rocket.flightData().map(flight -> flight.state().name()).orElse("none"), rocket.isAddedToWorld(),
+                level.getEntity(rocket.getUUID()) == rocket, level.areEntitiesLoaded(rocket.chunkPosition().toLong()),
+                level.isPositionEntityTicking(rocket.blockPosition()), transfer != null && journal.find(transfer).isPresent(),
+                logical != null && journal.actionable(logical), journal.acknowledgedCurrent(), journal.outstandingEffectCount(),
+                journal.entries().size());
     }
 
     /** Only this test's request may be removed if an assertion fails. */

@@ -13,6 +13,13 @@ Root: Claude. Date: 2026-10-21. Read [WORKER-RULES](WORKER-RULES.md), [records/W
 | Record | `docs/work/v1.8.0-root-queue/records/W130.md` (new; the plan at its top) |
 | Evidence | `D:/GitHub/ARCE-Task-Evidence/root-queue/W130/` |
 
+**Root note (2026-10-22).** W125 merged with W125F as `88bcebfc`. W125F found F3: an assembled rocket filled through
+escrow keeps `ASSEMBLED` and every launch returns `INVALID_STATE` before the governed guard (Root decision R55 in
+[TASK-W133](TASK-W133-F3-ESCROW-FILL-LAUNCH-STATE.md), which fixes it in parallel at the launch boundary). Do not fix F3
+here. Before your final full GameTest and native runs, merge the shared branch head if it contains W133's merge; if it
+does not yet, report the launch codes you observe as they are, keep D2-3's launch outcome separate from F3, and Root
+reruns the launch outcomes after both merge.
+
 ## Root decision R52 (2026-10-21), on W126's note and its review
 
 - **D2-1, (b2) adopted** as this persistence slice: before the first escrow fill on a landed rocket that still has its

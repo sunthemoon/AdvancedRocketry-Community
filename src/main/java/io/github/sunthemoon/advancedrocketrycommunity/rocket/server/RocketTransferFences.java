@@ -57,6 +57,8 @@ final class RocketTransferFences {
                         : EscrowRuntime.of(server).governedFlights().classify(server, journal, record);
                 classifyGoverned(record, route, live, settled); continue;
             }
+            if (keepSettlement(record.transferId(), live, settled,
+                    () -> RocketFillReconciliation.selfGuard(server, journal, record))) { continue; }
             var ledger = ledgerReader.apply(server);
             String reason = null;
             if (RocketEscrowGate.logicalLocked(server, record.logicalRocketId())) { reason = "ESCROW_PENDING_OR_TOMBSTONE"; }
@@ -66,6 +68,11 @@ final class RocketTransferFences {
             // An existing detailed conflict is retained during re-evaluation, not reset every tick.
             if (reason != null && !reasons.containsKey(record.transferId())) { fence(record, reason, live, settled); }
         }
+    }
+
+    /** Preserves RAM settlement only. Existing fences, join invalidation and final action guards never use this. */
+    boolean keepSettlement(UUID id, Set<UUID> live, Set<UUID> settled, java.util.function.BooleanSupplier selfGuard) {
+        return settled.contains(id) && !live.contains(id) && !reasons.containsKey(id) && selfGuard.getAsBoolean();
     }
 
     /** Classification is not permission: both implemented executors repeat their final action checks. */

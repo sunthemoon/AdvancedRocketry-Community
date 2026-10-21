@@ -23,13 +23,13 @@ final class EscrowReconciliationView {
         Refusal(EscrowReason reason) { super(reason.name()); this.reason = reason; }
     }
     record End(EscrowEndpoint reference, EscrowPrefix.State state, CompoundTag envelope,
-               ServerLevel level, RocketEntity rocket, BlockEntity source, BooleanSupplier sameCapture) {
+               ServerLevel level, RocketEntity rocket, BlockEntity source, EscrowGuard guard, BooleanSupplier sameCapture) {
         boolean current() {
             if (!loaded(level, reference)) { return false; }
             if (rocket != null) {
                 return !rocket.isRemoved() && level.getEntity(reference.identity()) == rocket
                         && RocketEscrowAudit.placement(reference, rocket) == EscrowReason.NONE
-                        && io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime.escrowReconciliationBoundary(rocket)
+                        && io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime.escrowReconciliationBoundary(rocket, guard)
                         && sameCapture.getAsBoolean();
             }
             return !source.isRemoved() && level.getChunkSource().getChunkNow(reference.x() >> 4, reference.z() >> 4)
@@ -74,6 +74,8 @@ final class EscrowReconciliationView {
         var chains = EscrowPrefix.chains(members); var ends = new LinkedHashMap<EscrowEndpoint.Key, End>();
         long bytes = 0;
         for (var endpoint : references.values()) {
+            var guard = endpoint.kind() == EscrowEndpoint.Kind.ENTITY
+                    ? members.stream().filter(op -> op.rocket().key().equals(endpoint.key())).findFirst().orElseThrow().guard() : null;
             var level = server.getLevel(ResourceKey.create(Registries.DIMENSION, ResourceLocation.tryParse(endpoint.level())));
             if (level == null || !loaded(level, endpoint)) { throw new Refusal(EscrowReason.WAITING_UNLOADED); }
             RocketEntity rocket = null; BlockEntity source = null;
@@ -89,8 +91,8 @@ final class EscrowReconciliationView {
                 rocket = nativeRocket;
                 var reason = RocketEscrowAudit.placement(endpoint, rocket);
                 if (reason != EscrowReason.NONE) { throw new Refusal(reason); }
-                if (!io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime.escrowReconciliationBoundary(rocket)) {
-                    throw new Refusal(EscrowReason.NONE);
+                if (!io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime.escrowReconciliationBoundary(rocket, guard)) {
+                    throw new Refusal(EscrowReason.TRANSFER_JOURNAL_UNPROVED);
                 }
             } else {
                 // The registered loader adapter needs no hooks; every other source is a gated chest fixture.
@@ -98,7 +100,7 @@ final class EscrowReconciliationView {
                 if (!loader) { EscrowTestEndpoints.requireEnabled(server); }
                 source = level.getChunkSource().getChunkNow(endpoint.x() >> 4, endpoint.z() >> 4)
                         .getBlockEntity(new BlockPos(endpoint.x(), endpoint.y(), endpoint.z()));
-                if (source == null) { throw new Refusal(EscrowReason.MISSING_ENDPOINT); }
+                requireSource(server, endpoint, source);
                 if (!loader && !endpoint.type().equals("minecraft:chest")) { throw new Refusal(EscrowReason.INVALID_ENDPOINT); }
             }
             // Reuse the fixed registered adapters' identity, duplicate, occupancy and stationary checks.
@@ -126,10 +128,23 @@ final class EscrowReconciliationView {
                     }
                 }
             }
-            ends.put(endpoint.key(), new End(endpoint, observation.state(), envelope, level, rocket, source,
+            ends.put(endpoint.key(), new End(endpoint, observation.state(), envelope, level, rocket, source, guard,
                     rocket == null ? () -> true : sameNativeCapture(rocket)));
         }
         return new EscrowReconciliationView(server, root, members, ends, EscrowFlightJournal.members(journal, members), bytes);
+    }
+
+    /** Fuel relocation diagnostics cannot interpret the separate cargo-device identity index. */
+    static void requireSource(MinecraftServer server, EscrowEndpoint endpoint, BlockEntity source) {
+        requireSource(endpoint, source, () -> EscrowLoaderRelocation.requireMissing(server, endpoint));
+    }
+
+    static void requireSource(EscrowEndpoint endpoint, BlockEntity source, Runnable requireMissingFuel) {
+        if (EscrowLoaderEndpoint.is(endpoint)
+                && !(source instanceof io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderBlockEntity)) {
+            requireMissingFuel.run();
+        }
+        if (source == null) { throw new Refusal(EscrowReason.MISSING_ENDPOINT); }
     }
 
     static void requireCaptureBounds(boolean ownerThread, int members) {

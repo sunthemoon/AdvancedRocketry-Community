@@ -31,14 +31,16 @@ S4 = tuple(PREFIX + name for name in STORAGE)
 S5 = (PREFIX + "R1_UNKNOWN_UNLOAD",)
 # W107C: E2's restarts keep the held K6 state, STALLED with the refusal; R1's floor and R3's edited-state families.
 HELD = {"E2_EXTERNAL": "K6"}
-FLOORS = ("R1_FLOORS_255_DISTINCT", "R1_FLOORS_255_COALESCED", "R1_FLOORS_256")
+FLOORS = ("R1_FLOORS_255_DISTINCT", "R1_FLOORS_255_COALESCED", "R1_FLOORS_256",
+          "R1_FLOORS_255_DISTINCT_ACK", "R1_FLOORS_255_COALESCED_ACK")
+NAMED = tuple(PREFIX + name for name in ("NAMED_E5", "NAMED_CROSS_K2", "NAMED_CROSS_K9"))
 R3 = nbt.R3_EDITS
 S5_FLOORS = tuple(PREFIX + name for name in FLOORS)
 S5_R3 = tuple(PREFIX + name for name in R3)
 MANUAL = ("MISSING_ENDPOINT", "OTHER_STATE", "FOREIGN_MARKER", "LEDGER_REPLACED", "LEDGER_BEHIND",
           "INVALID_ENDPOINT", "RELOCATED_ENDPOINT", "FLOOR_CONFLICT", "JOURNAL_GUARD_MISMATCH")
 CASES = (tuple(PREFIX + name for name in CREATION + NORMAL + SUPPLEMENTAL + CREATION_SUPPLEMENTAL) + S3 + S4 + S5
-         + S5_FLOORS + S5_R3)
+         + S5_FLOORS + S5_R3 + NAMED)
 NOISE_AT = (76, 100, 76)
 NOISE_BYTES = 1_572_864
 EXTRA_ROCKET_POS = [72.5, 100.0, 72.5]
@@ -62,6 +64,9 @@ def origin(cut: str) -> int:
 
 
 def inspect(world: Path, cut: str = "") -> dict:
+    if cut in NAMED:
+        import loader_named_cut_oracle
+        return loader_named_cut_oracle.inspect(world, cut)
     name = cut.removeprefix(PREFIX)
     if name in FLOORS:
         return inspect_floors(world, cut)
@@ -107,7 +112,7 @@ def inspect_floors(world: Path, cut: str) -> dict:
     rockets = [entry for entry in entities if "RocketEntityData" in entry or entry.get("id") == ROCKET]
     main = [entry for entry in rockets if entry.get("Pos") == [64.5, 100.0, 64.5]]
     extra = [entry for entry in rockets if entry.get("Pos") == EXTRA_ROCKET_POS]
-    coalesced = cut.endswith("COALESCED")
+    coalesced = cut.removesuffix("_ACK").endswith("COALESCED")
     require(len(main) == 1 and len(extra) == int(not coalesced) and len(rockets) == len(main) + len(extra),
             "Missing, duplicate or moved floor-cut rocket")
     devices = sorted((entry for entry in terrain["block_entities"] if entry.get("id") == LOADER), key=lambda e: (e["x"], e["y"], e["z"]))
@@ -165,6 +170,9 @@ def check_section(section: dict, epoch: int, markers: int, root: dict | None, ro
 
 
 def check(disk: dict, cut: str, restart: int) -> dict:
+    if cut in NAMED:
+        import loader_named_cut_oracle
+        return loader_named_cut_oracle.check(disk, cut, restart)
     name = cut.removeprefix(PREFIX)
     if name in FLOORS:
         return check_floors(disk, cut, restart)
@@ -292,7 +300,7 @@ def check_chain(disk: dict, cut: str, restart: int) -> dict:
 
 def check_floors(disk: dict, cut: str, restart: int) -> dict:
     """R1: the seeded floors survive unchanged, a named fill adds exactly its one key, and the fill is the matrix's."""
-    name = cut.removeprefix(PREFIX); coalesced = name.endswith("COALESCED"); saturated = name.endswith("256")
+    name = cut.removeprefix(PREFIX).removesuffix("_ACK"); coalesced = name.endswith("COALESCED"); saturated = name.endswith("256")
     seeded = 256 if saturated else 255; fills = 2 if coalesced else 1
     root = disk["ledger"]; rocket = disk["rocket"]; extra = disk["extra_rocket"]
     require(root is not None, "Floor cut lost its ledger")
