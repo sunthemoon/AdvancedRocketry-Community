@@ -19,6 +19,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlight
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketManager;
+import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState;
 import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationCreationCode;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationManager;
@@ -161,6 +162,7 @@ public final class PlanetaryAdmissionGameTests {
                 stations.reserve(stationId, ownerId, "Closed orbit fixture", CelestialIds.EARTH_ID,
                         helper.getLevel().getGameTime());
                 var station = stations.commit(stationId);
+                holdPadChunk(space, station, stationId, ticketChunk);
                 RocketFlightGameTestFixtures.assembleFueledRocket(helper, driver, new BlockPos(3, 2, 3), ownerId, cleanup, original -> {
                     try {
                         try {
@@ -177,9 +179,8 @@ public final class PlanetaryAdmissionGameTests {
                         } finally {
                             original.discard();
                         }
-                        ticketChunk.set(new ChunkPos(rocket.blockPosition()));
-                        space.getChunkSource().addRegionTicket(FIXTURE_TICKET, ticketChunk.get(), 2, stationId);
-                        space.getChunkAt(rocket.blockPosition());
+                        helper.assertTrue(new ChunkPos(rocket.blockPosition()).equals(ticketChunk.get()),
+                                "Station rocket is outside its held pad chunk");
                         helper.assertTrue(space.addFreshEntity(rocket), "Station rocket was not installed");
                         awaitVisible(helper, driver, space, rocket, finish -> {
                             var owner = player(space, ownerId);
@@ -250,6 +251,7 @@ public final class PlanetaryAdmissionGameTests {
                         helper.getLevel().getGameTime());
                 var station = stations.commit(stationId);
                 stations.foldWarpCredits(java.util.Map.of(stationId, 100_000));
+                holdPadChunk(space, station, stationId, ticketChunk);
                 RocketFlightGameTestFixtures.assembleFueledRocket(helper, driver, new BlockPos(3, 2, 3), ownerId, cleanup, original -> {
                     try {
                         try {
@@ -266,9 +268,8 @@ public final class PlanetaryAdmissionGameTests {
                         } finally {
                             original.discard();
                         }
-                        ticketChunk.set(new ChunkPos(rocket.blockPosition()));
-                        space.getChunkSource().addRegionTicket(FIXTURE_TICKET, ticketChunk.get(), 2, stationId);
-                        space.getChunkAt(rocket.blockPosition());
+                        helper.assertTrue(new ChunkPos(rocket.blockPosition()).equals(ticketChunk.get()),
+                                "Station rocket is outside its held pad chunk");
                         helper.assertTrue(space.addFreshEntity(rocket), "Station rocket was not installed");
                         awaitVisible(helper, driver, space, rocket, finish -> {
                             var owner = player(space, ownerId);
@@ -339,8 +340,9 @@ public final class PlanetaryAdmissionGameTests {
     }
 
     /**
-     * Runs {@code assertions} once the rocket is visible. They receive the finish step (succeed, then clean up), which
-     * W98's deferred cancellation check calls later; a synchronous failure still cleans up here.
+     * Runs {@code assertions} once the rocket is visible and its chunk's entities are loaded. They receive the finish step
+     * (succeed, then clean up), which W98's deferred cancellation check calls later; a synchronous failure still cleans
+     * up here.
      */
     private static void awaitVisible(GameTestHelper helper, GameTestTickDriver driver, ServerLevel level, RocketEntity rocket,
             java.util.function.Consumer<Runnable> assertions, Runnable cleanup) {
@@ -352,7 +354,7 @@ public final class PlanetaryAdmissionGameTests {
         driver.after(1, () -> {
             boolean scheduled = false;
             try {
-                if (level.getEntity(rocket.getId()) != rocket) {
+                if (!loaded(level, rocket)) {
                     // Fail and release our external resources before the enclosing 100-tick timeout.
                     helper.assertTrue(helper.getTick() < 80, "Station fixture entity never became visible");
                     pacer.pace();
@@ -371,6 +373,29 @@ public final class PlanetaryAdmissionGameTests {
                 }
             }
         });
+    }
+
+    /**
+     * W122: holds and loads the station's pad chunk at setup, where the fixture later installs its rocket (the pad origin
+     * plus half a block). Its entity storage load then runs while the source rocket is assembled, instead of starting
+     * only when the station rocket is installed. The cleanup removes the ticket.
+     */
+    private static void holdPadChunk(ServerLevel space, StationState station, UUID stationId, AtomicReference<ChunkPos> held) {
+        var pad = new BlockPos(station.landingPad().x(), station.landingPad().y(), station.landingPad().z());
+        held.set(new ChunkPos(pad));
+        space.getChunkSource().addRegionTicket(FIXTURE_TICKET, held.get(), 2, stationId);
+        space.getChunkAt(pad);
+    }
+
+    /**
+     * W122: the state the launch's acknowledged continuation requires of its entity (the transfer service's loaded-entity
+     * check): visible, and in a chunk whose entities are loaded. Vanilla makes a new chunk's sections visible as soon as
+     * the chunk is accessible and only then queues its entity storage load on the IO and background threads, so a busy
+     * host can show the rocket a tick or more before {@code areEntitiesLoaded} turns true, and the continuation then
+     * refuses the departure.
+     */
+    private static boolean loaded(ServerLevel level, RocketEntity rocket) {
+        return level.getEntity(rocket.getId()) == rocket && level.areEntitiesLoaded(rocket.chunkPosition().toLong());
     }
 
     /**
