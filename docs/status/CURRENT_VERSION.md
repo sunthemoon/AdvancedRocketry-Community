@@ -39,7 +39,7 @@ development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
 latest_code_commit: 1e53314c (W118 merged with W118F: cargo leaf D-P, the item container mutation, admission disabled; before it, d6319f9f merged W107B, the loader cut C1)
-latest_hosted_regression: run 39421969414 at dcebe3a8 (W116 and W107B merged) passed all required GameTests and the log checker on its re-run; its first attempt failed only EscrowGovernedLiveReturnGameTests.rejectedDestinationSpawnReturnsToF6WithPassenger, once (QUEUE lists it). Runs 39415014258 at 2e44edcc (the W114 merge) and 39411638524 at d9f031d4 (the W111 merge) passed, so the escrow proof tests have passed on every hosted run since W111. Before W111, EscrowCoreGameTests.ownTerrainAndEntityStoresConfirmTheExactFrozenFrontier failed on the runs at bd1c78b9, d2f0d00c, 9f6668aa, 67dee026, fb1ac454, 20a82b88 and f1223c02
+latest_hosted_regression: run 39464852370 at 53e9fa1a (the W118 merge) passed all required GameTests and the log checker on its re-run; its first attempt failed four governed-flight and warm-up GameTests once (QUEUE lists them). Run 39421969414 at dcebe3a8 (W116 and W107B merged) also passed on its re-run after one live-return failure, and runs 39415014258 at 2e44edcc and 39411638524 at d9f031d4 passed, so the escrow proof tests have passed on every hosted run since W111. Before W111, EscrowCoreGameTests.ownTerrainAndEntityStoresConfirmTheExactFrozenFrontier failed on the runs at bd1c78b9, d2f0d00c, 9f6668aa, 67dee026, fb1ac454, 20a82b88 and f1223c02
 ledger_planned_units: 19
 asset_review_items: 154
 required_gates_approved: none
