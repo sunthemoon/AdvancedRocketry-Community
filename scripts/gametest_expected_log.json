@@ -12,6 +12,15 @@
       "reason": "Removing the held fixture endpoint during cleanup invalidates its named transfer's loaded endpoint proof before removing the test journal record."
     },
     {
+      "id": "w131f-cargo-retained-disassembly-proof",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_FENCED transfer=[0-9a-f-]{36} reason=ENDPOINT_PROOF_REQUIRED repair=offline-whole-world",
+      "counts": {"fluid_cargo_landed_disassembly": 1},
+      "test": "FluidCargoLandedDisassemblyGameTests.retainedLegacyRecordDisassemblesExactlyTheLatestCargoOnce",
+      "reason": "The gated checked legacy COMMITTED record observes a real cargo-mutated destination's nonzero epoch; loaded endpoint proof then settles that survivor before P1-F8 disassembly."
+    },
+    {
       "id": "w124-cargo-stale-prepared-fence",
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
