@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "advancedrocketrycommunity:control_board"
+    },
+    "H": {
+      "item": "minecraft:hopper"
+    },
+    "I": {
+      "item": "advancedrocketrycommunity:item_io_board"
+    },
+    "M": {
+      "item": "advancedrocketrycommunity:machine_casing"
+    }
+  },
+  "pattern": [
+    " H ",
+    "IMC"
+  ],
+  "result": {
+    "item": "advancedrocketrycommunity:rocket_item_loader"
+  }
+}
