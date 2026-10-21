@@ -2,7 +2,8 @@
 
 Root: Claude. Date: 2026-10-21. Read [WORKER-RULES](WORKER-RULES.md) first. You are a new session and a reviewer: do
 not commit, and change nothing outside your own review worktree and output folder. Do not start other agents. A Claude
-session wrote the note, so this is a fresh Codex session with no context from the author.
+session wrote the note; both Codex slots stayed busy, so this is a fresh Claude session with no context from the author
+(as for W118-review and W120-review).
 
 | Item | Value |
 |---|---|
