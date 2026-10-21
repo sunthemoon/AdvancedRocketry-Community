@@ -160,7 +160,7 @@ public final class EscrowRetireBeforeFillGameTests {
                     helper.assertTrue(next.nativeTransfer().isPresent(), "The launch was not governed"); step = 6; return;
                 }
                 if (launchPending) { return; }
-                if (request == null) { request = UUID.randomUUID(); }
+                request = UUID.randomUUID();
                 var launch = RocketRuntime.requestAdminFlight(rocket, RocketDestination.MOON, request);
                 helper.assertTrue(launch.code() == RocketFlightRequestCode.JOURNAL_PENDING || launch.code() == RocketFlightRequestCode.SUCCESS
                                 || launch.code() == RocketFlightRequestCode.DESTINATION_LOADING,

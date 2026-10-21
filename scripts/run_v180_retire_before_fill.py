@@ -104,6 +104,10 @@ def start(args, session: Path, evidence: Path, owner: str, cut: str, restart: in
         base.require((injected and len(row["errors"]) == 1 and row["errors"][0].rstrip().endswith(expected))
                      or (not injected and not row["errors"]), "Native process logged an unexpected ERROR/FATAL")
         text = "\n".join(row["observations"])
+        if action == "REFILL": row["refuelling_restored"] = "code=PREPARING conserved=true" in text
+        if action == "LAUNCH":
+            row["launch_allowed"] = "state=COUNTDOWN governed=true" in text
+            row["launch_codes"] = re.findall(r"ARCE_R52_LAUNCH_REQUEST cut=\S+ code=(\w+)", text)
         base.require("tickets=0 pending=0" in text, "Missing first-tick RAM-ticket/pending observation")
         if cut.startswith("HELD_"):
             base.require("tickets=3 ordinary_mutation=true" in text, "Missing bounded held retirement observation")

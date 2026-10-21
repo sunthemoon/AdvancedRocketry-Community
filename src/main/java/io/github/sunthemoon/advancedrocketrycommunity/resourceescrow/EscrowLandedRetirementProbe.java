@@ -190,7 +190,7 @@ final class EscrowLandedRetirementProbe {
                 pause("LAUNCH"); return;
             }
             if (launchPending) { return; }
-            if (launch == null) { launch = UUID.randomUUID(); }
+            launch = UUID.randomUUID();
             var result = RocketRuntime.requestAdminFlight(rocket, RocketDestination.MOON, launch);
             AdvancedRocketryCommunity.LOGGER.info("ARCE_R52_LAUNCH_REQUEST cut={} code={}", cut, result.code());
             EscrowTags.require(result.code() == RocketFlightRequestCode.JOURNAL_PENDING || result.code() == RocketFlightRequestCode.SUCCESS
