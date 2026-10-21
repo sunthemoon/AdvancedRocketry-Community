@@ -17,6 +17,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFu
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketMarginGameTestSupport;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRetiredPadGameTestProbe;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.RocketLandingPadSelector;
 import java.util.ArrayList;
 import java.util.List;
@@ -64,6 +65,7 @@ public final class EscrowRetireBeforeFillGameTests {
         FluidFuelLoaderBlockEntity loader;
         RocketTransferRecord record, next;
         UUID request;
+        RocketRetiredPadGameTestProbe occupiedPad;
         int step, fills;
         boolean refused, sawCountdown, finished, launchPending;
 
@@ -80,7 +82,7 @@ public final class EscrowRetireBeforeFillGameTests {
             pacer.pace();
             var server = level.getServer(); var journal = RocketTransferSavedData.get(server);
             boolean checked = journal.retryChecked(server);
-            if (!destination.ticking() || step == 0 && !checked) { return; }
+            if (!destination.ticking() && step != 8 || step == 0 && !checked) { return; }
             if (step == 0) {
                 rocket = rocket(level, destination.at(8, 100, 8), UUID.randomUUID(), mono(4_000));
                 helper.assertTrue(level.addFreshEntity(rocket), "Landed fixture publication failed");
@@ -117,7 +119,24 @@ public final class EscrowRetireBeforeFillGameTests {
                 helper.assertTrue(RocketMarginGameTestSupport.flightTicketColumns(server, record.transferId()).isEmpty(), "Retirement kept old flight tickets");
                 helper.assertTrue(!new RocketLandingPadSelector().availableLoaded(level, rocket.snapshot().orElseThrow()),
                         "The retired rocket's occupied pad became available");
-                step = 4;
+                if (stale) { occupiedPad = new RocketRetiredPadGameTestProbe(helper, rocket); step = 7; }
+                else { step = 4; }
+            }
+            if (step == 7) {
+                if (!occupiedPad.prepare()) { return; }
+                destination.release(); step = 8; return;
+            }
+            if (step == 8) {
+                if (level.areEntitiesLoaded(destination.chunk.toLong())) { return; }
+                occupiedPad.cold(); destination.hold(); step = 9; return;
+            }
+            if (step == 9) {
+                if (!destination.ticking()) { return; }
+                rocket = (RocketEntity) level.getEntity(record.destinationEntityId().orElseThrow());
+                loader = (FluidFuelLoaderBlockEntity) level.getBlockEntity(destination.at(10, 100, 8));
+                helper.assertTrue(rocket != null && loader != null, "Retired pad lost its saved occupant or loader");
+                if (!occupiedPad.blocked()) { return; }
+                occupiedPad.close(); occupiedPad = null; step = 4;
             }
             if (step == 4) {
                 if (fills == 0 || idle()) {
@@ -176,6 +195,7 @@ public final class EscrowRetireBeforeFillGameTests {
                     && !section(loader).locked() && rocket.escrowSection().markers().isEmpty();
         }
         void cleanup() {
+            if (occupiedPad != null) { occupiedPad.close(); occupiedPad = null; }
             if (loader != null) {
                 EscrowRuntime.of(level.getServer()).loaderAdmissionForTests(level.getServer(), device(loader), false);
                 clear(level, loader.getBlockPos()); loader = null;
