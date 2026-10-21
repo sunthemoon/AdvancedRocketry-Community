@@ -145,6 +145,7 @@ final class EscrowLoaderNamedProbe {
                     && data.bind(server).admissionAuthority().pendingCount() == 0, "Retired fill changed resources or reservations");
             if (!e5) { EscrowTags.require(!RocketRuntime.resourceMutationAllowed(rocket), "F1b gained unreviewed destination authority"); }
             state(e5 ? "RETIRED" : "F1B_HELD"); done = true;
+            EscrowLoaderFollowUpProbe.observe(server, cut, rocket, loader);
             AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_MATRIX_RESULT cut={}", cut);
         }
     }

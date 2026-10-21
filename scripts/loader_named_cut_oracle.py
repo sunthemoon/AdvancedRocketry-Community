@@ -1,4 +1,4 @@
-"""W125 named E5 and unloaded-source cuts: independently decoded stores, with separate usability observations."""
+"""Named cuts: decoded conservation, mutation boundary, actual fill admission and launch result are separate."""
 from __future__ import annotations
 
 import copy
@@ -75,15 +75,41 @@ def observations(cut: str, restart: int, lines: list[str]) -> dict:
     base.require(len(faults) == expected and all(f"cut={cut} chunk=4,4 failure={index}" in line
                                                for index, line in enumerate(faults, 1)), "Wrong named IO fault sequence")
     if not e5 and not restart:
-        return dict(fill_retired=cut.endswith("K9"), usability="NOT_OBSERVED")
+        return dict(fill_retired=cut.endswith("K9"), mutation_boundary="NOT_OBSERVED")
     state = "STALLED" if not restart else "RETIRED" if e5 else "F1B_HELD"
     pattern = re.compile(r"ARCE_LOADER_MATRIX_NAMED_STATE cut=" + re.escape(cut) + r" state=" + state
                          + r" records=" + str(int(not restart)) + r" tank=4000 bank=1000 healthy_tank=" + ("4000" if e5 else "-1")
                          + r" healthy_bank=" + ("1000" if e5 else "-1")
                          + r" mutation_allowed=(true|false) source_ever_loaded=false(?:\s|$)")
     matches = [m for line in lines if (m := pattern.search(line))]
-    base.require(len(matches) == 1, "Missing or repeated named resource/usability observation")
+    base.require(len(matches) == 1, "Missing or repeated named resource/mutation-boundary observation")
     allowed = matches[0][1] == "true"
-    base.require(allowed == bool(e5 and restart), "Unexpected next-launch authority")
+    base.require(allowed == bool(e5 and restart), "Unexpected resource-mutation boundary")
     return dict(fill_retired=bool(restart), resources_conserved=True, mutation_allowed=allowed,
-                usability="USABLE" if allowed else "HELD_STALLED" if e5 else "F1B_HELD", old_source_loaded=False if not e5 else None)
+                mutation_boundary="ALLOWED" if allowed else "HELD_STALLED" if e5 else "F1B_HELD",
+                old_source_loaded=False if not e5 else None)
+
+
+def follow_up_observations(cut: str, lines: list[str]) -> dict:
+    """A real request is not a boundary query; PREPARING proves queued admission, not durable L1 or transfer."""
+    def one(pattern):
+        matches = [match for line in lines if (match := re.search(pattern, line))]
+        base.require(len(matches) == 1, "Missing/repeated follow-up observation: " + pattern)
+        return matches[0]
+
+    prefix = " cut=" + re.escape(cut)
+    launch = one(r"ARCE_LOADER_MATRIX_LAUNCH" + prefix
+                 + r" code=(\w+) required_fuel=(\d+) retained_transfer=true mutation_allowed=(true|false)(?:\s|$)")
+    fill = one(r"ARCE_LOADER_MATRIX_SECOND_FILL" + prefix
+               + r" attempt=(\w+) result=(\w+) admitted=(true|false) next_before=(\d+) next_after=(\d+)"
+               + r" pending_before=0 pending_after=(\d+) durable_records=0 resources_unchanged=true(?:\s|$)")
+    one(r"ARCE_LOADER_MATRIX_FOLLOWUP_PAUSED" + prefix + r" hook=AFTER_REQUESTS_BEFORE_L1(?:\s|$)")
+    admitted = fill[3] == "true"; delta = int(admitted)
+    base.require(admitted == (fill[2] == "PREPARING") and (not admitted or fill[1] == "READY")
+                 and int(fill[5]) == int(fill[4]) + delta and int(fill[6]) == delta
+                 and fill[2] != "READY", "Second-fill result and actual reservation disagree")
+    base.require(launch[1] == "TRANSFER_JOURNAL_BLOCKED", "Unexpected launch request result: " + launch[1])
+    return dict(second_fill=dict(attempt=fill[1], result=fill[2], admitted=admitted,
+                                 durable=False, completed=False, resources_unchanged=True),
+                launch=dict(code=launch[1], required_fuel=int(launch[2]), outcome="KNOWN_LIMITATION",
+                            retained_transfer=True), mutation_allowed=launch[3] == "true")

@@ -31,7 +31,7 @@ LOCK = Path("D:/GitHub/ARCE-Task-Evidence/locks/heavy-jvm")
 HOOK_FILES = tuple("src/main/java/io/github/sunthemoon/advancedrocketrycommunity/resourceescrow/" + name + ".java"
                    for name in ("EscrowLoaderReleaseProbe", "EscrowLoaderCutProbe", "EscrowLoaderStorageProbe", "EscrowLoaderRecoveryProbe", "EscrowReleaseProbe", "EscrowLedgerWriter", "EscrowResourceQueue",
                                 "EscrowReconciliationAction", "EscrowReconciliationDriver", "EscrowRuntime", "EscrowBarrier",
-                                "EscrowLoaderFloorProbe", "EscrowLoaderNamedProbe", "EscrowStoreFault", "EscrowChunkStore"))
+                                "EscrowLoaderFloorProbe", "EscrowLoaderNamedProbe", "EscrowLoaderFollowUpProbe", "EscrowStoreFault", "EscrowChunkStore"))
 HARNESS_FILES = ("scripts/run_v180_loader_cuts.py", "scripts/loader_cut_oracle.py", "scripts/loader_cut_nbt.py", "scripts/loader_named_cut_oracle.py")
 FIRST = re.compile(r"ARCE_LOADER_MATRIX_FIRST cut=(\S+) recovery=(true|false) delegate=(\w+) issued=(\d+) records=(\d+) pending=(\d+)")
 PAUSED = re.compile(r"ARCE_LOADER_MATRIX_PAUSED cut=(\S+) hook=(\S+) first_store=(\w+) thread=(.+)")
@@ -48,6 +48,7 @@ R3_REPAIR = {"R3_ENDPOINT_FOREIGN": ("66", "4000", "1", "ESCROW_PENDING"), "R3_E
              "R3_ENDPOINT_RELOCATED": ("68", "4000", "1", "ESCROW_PENDING"), "R3_ENDPOINT_MISSING": ("ABSENT", "-1", "-1", "NONE")}
 R3_ORPHAN = {"R3_LEDGER_MISSING": "NONE", "R3_LEDGER_REPLACED": "OTHER", "R3_LEDGER_BEHIND": "SAME"}
 W107C = ("LF_M_E1_OWN_STORE", "LF_M_E2_EXTERNAL") + oracle.S5_FLOORS + oracle.S5_R3
+FOLLOW_UPS = oracle.NAMED + tuple(cut for cut in oracle.S5_FLOORS if not cut.endswith("256"))
 
 
 def w107c_observations(cut: str, restart: int, lines: list[str]) -> None:
@@ -246,6 +247,9 @@ def run_cut(args, cut: str, evidence: Path, owner: str, pins: dict) -> dict:
             command = _server_command(args.java); command[2] = "-Xmx4G"
             command[1:1] = ["-Dadvancedrocketrycommunity.escrowScenario=" + ("recover" if restart else "start"),
                             "-Dadvancedrocketrycommunity.escrowCase=" + cut]
+            follow_up = bool(getattr(args, "follow_ups", False) and cut in FOLLOW_UPS and restart)
+            if follow_up:
+                command.insert(1, "-Dadvancedrocketrycommunity.escrowLoaderFollowUps=true")
             creation = cut.removeprefix(oracle.PREFIX) in oracle.CREATION + oracle.CREATION_SUPPLEMENTAL
             if creation and restart == 2:
                 command.insert(1, "-Dadvancedrocketrycommunity.escrowLoaderRetry=true")
@@ -268,6 +272,13 @@ def run_cut(args, cut: str, evidence: Path, owner: str, pins: dict) -> dict:
                     # its bank; a source-first driver has not stored the bank. Neither case permits retirement.
                     # W107C: E1's vanilla store and E2's external store do write the source before their proofs fail.
                     actual_cut = "LF_M_K6" if paused[3] == "DESTINATION" else "LF_M_K4"
+            elif follow_up:
+                process.wait_for(re.compile(r"ARCE_LOADER_MATRIX_FOLLOWUP_PAUSED cut=" + re.escape(cut)
+                                            + r" hook=AFTER_REQUESTS_BEFORE_L1(?:\s|$)"), args.startup_timeout)
+                # The first-fill checkpoint was saved before requests. Kill before the admitted queue can write L1;
+                # this preserves the original, unchanged raw oracle and second-restart first-fill replay check.
+                process.process.kill(); process.abort()
+                start["stop"] = "FORCED_AFTER_REQUESTS_BEFORE_SECOND_FILL_L1"
             else:
                 process.wait_for(re.compile(r"ARCE_LOADER_MATRIX_RESULT cut=" + re.escape(cut) + r"(?:\s|$)"), args.startup_timeout)
                 process.command("stop"); start["exit_code"] = process.finish()
@@ -299,12 +310,15 @@ def run_cut(args, cut: str, evidence: Path, owner: str, pins: dict) -> dict:
                 if cut in W107C:
                     w107c_observations(cut, restart, lines)
                 if cut in oracle.S5_FLOORS and restart:
-                    usability = one_match(re.compile(r"ARCE_LOADER_MATRIX_USABILITY cut=" + re.escape(cut)
+                    boundary = one_match(re.compile(r"ARCE_LOADER_MATRIX_MUTATION_BOUNDARY cut=" + re.escape(cut)
                                                      + r" retired=true conserved=true mutation_allowed=(true|false)(?:\s|$)"), lines)
-                    start["floor_outcome"] = dict(fill_retired=True, resources_conserved=True, mutation_allowed=usability[1] == "true")
+                    start["floor_outcome"] = dict(fill_retired=True, resources_conserved=True, mutation_allowed=boundary[1] == "true")
                 if cut in oracle.NAMED:
                     import loader_named_cut_oracle
                     start["named_outcome"] = loader_named_cut_oracle.observations(cut, restart, lines)
+                if follow_up:
+                    import loader_named_cut_oracle
+                    start["request_outcomes"] = loader_named_cut_oracle.follow_up_observations(cut, lines)
             except smoke.SmokeError as failure:
                 start["observation_error"] = str(failure)
                 row.setdefault("findings", []).append(dict(restart=restart, error=str(failure)))
@@ -327,8 +341,11 @@ def run_cut(args, cut: str, evidence: Path, owner: str, pins: dict) -> dict:
                 identity = None  # Identities are compared between the restarts of the edited copy.
             (evidence / "result.json").write_text(json.dumps(row, indent=2), encoding="utf-8")
         row["status"] = "FAILED" if row.get("findings") else "PASS" if ordered else "NOT_COVERED"
-        if row["status"] == "PASS" and "NAMED_CROSS_" in cut:
-            row.update(status="KNOWN_LIMITATION", reason="Fill retired and resources conserved on both restarts; F1b still blocks the next launch.")
+        if row["status"] == "PASS" and getattr(args, "follow_ups", False) and cut in FOLLOW_UPS:
+            row.update(status="KNOWN_LIMITATION", conservation="PASS",
+                       reason="First fill retired/conserved on both restarts; launch requests refused. See separate second-fill outcomes.")
+        elif row["status"] == "PASS" and "NAMED_CROSS_" in cut:
+            row.update(status="KNOWN_LIMITATION", reason="Fill retired/conserved on both restarts; F1b blocks resource mutation. Launch not observed.")
         if row.get("findings"):
             row["error"] = "Validation failed; see findings and both restart observations."
         if not ordered:
@@ -384,6 +401,7 @@ def main() -> int:
         parser.add_argument("--" + key, type=Path, required=True)
     parser.add_argument("--source-commit", required=True); parser.add_argument("--java", required=True)
     parser.add_argument("--task-id", default="W107", help="Owner of this invocation's heavy-JVM lock")
+    parser.add_argument("--follow-ups", action="store_true", help="R54: observe real requests on each named restart and stop before second-fill L1")
     parser.add_argument("--case", action="append", choices=oracle.CASES)
     parser.add_argument("--s3", action="store_true", help="Select the complete B3-S3 matrix (unless --case is supplied)")
     parser.add_argument("--s4", action="store_true", help="Select implemented B3-S4 cuts; this is not a claim of full family coverage")

@@ -267,8 +267,9 @@ final class EscrowLoaderFloorProbe {
             var usage = data.bind(server).floorUsage();
             AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_MATRIX_FLOOR_SETTLED cut={} fills={} floors={} named_floor={} used={} reserved={}",
                     cut, fills, data.ledger().floors().size(), floor, usage.used(), usage.reserved());
-            AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_MATRIX_USABILITY cut={} retired=true conserved=true mutation_allowed={}",
+            AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_MATRIX_MUTATION_BOUNDARY cut={} retired=true conserved=true mutation_allowed={}",
                     cut, RocketRuntime.resourceMutationAllowed(rocket));
+            EscrowLoaderFollowUpProbe.observe(server, cut, rocket, loaders.get(0));
             done = true; result(); return;
         }
         if (elapsed >= 2_300) {

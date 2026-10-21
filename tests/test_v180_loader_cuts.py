@@ -222,7 +222,7 @@ class LoaderCutsTest(unittest.TestCase):
             cut = "LF_M_NAMED_CROSS_K2"
             line = f"ARCE_LOADER_MATRIX_NAMED_STATE cut={cut} state=F1B_HELD records=0 tank=4000 bank=1000 healthy_tank=-1 healthy_bank=-1 mutation_allowed=false source_ever_loaded=false"
             result = named.observations(cut, restart, [line])
-            self.assertTrue(result["fill_retired"]); self.assertEqual("F1B_HELD", result["usability"])
+            self.assertTrue(result["fill_retired"]); self.assertEqual("F1B_HELD", result["mutation_boundary"])
             for bad in (line.replace("source_ever_loaded=false", "source_ever_loaded=true"), line.replace("mutation_allowed=false", "mutation_allowed=true")):
                 with self.assertRaises(oracle.smoke.SmokeError): named.observations(cut, restart, [bad])
         cut = "LF_M_NAMED_E5"
