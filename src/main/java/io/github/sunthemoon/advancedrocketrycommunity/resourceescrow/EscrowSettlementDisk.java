@@ -19,6 +19,13 @@ final class EscrowSettlementDisk {
         };
     }
     static EscrowSettlementIntent.Observation observe(CompoundTag root, EscrowEndpoint endpoint, UUID ledger) {
+        return ordinary(root, endpoint, ledger).settlement();
+    }
+    static EscrowReconciliationObservation ordinary(CompoundTag root, EscrowEndpoint endpoint, UUID ledger) {
+        return ordinary(root, endpoint, ledger, null);
+    }
+    static EscrowReconciliationObservation ordinary(CompoundTag root, EscrowEndpoint endpoint, UUID ledger,
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot captureWitness) {
         boolean entity = endpoint.kind() == EscrowEndpoint.Kind.ENTITY;
         if (entity) {
             int[] position = root.getIntArray("Position");
@@ -42,23 +49,34 @@ final class EscrowSettlementDisk {
                     && endpoint.identity().equals(object.getCompound("ForgeData").getCompound("arce_escrow_fixture").getUUID("identity"))) {
                 EscrowTags.require(exact, "Relocated source identity");
             }
-            if (!entity && endpoint.identity().equals(EscrowLoaderEndpoint.device(object))) {
+            if (!entity && (endpoint.identity().equals(EscrowLoaderEndpoint.device(object))
+                    || endpoint.identity().equals(EscrowFluidCargoEndpoint.device(object)))) {
                 EscrowTags.require(exact, "Relocated source identity");
             }
             if (exact) { EscrowTags.require(found == null && endpoint.type().equals(object.getString("id")), "Duplicate/wrong disk endpoint"); found = object; }
         }
-        if (found == null) { return new EscrowSettlementIntent.Observation(endpoint, null, false, 0); }
-        if (!entity && EscrowLoaderEndpoint.is(endpoint)) { return EscrowLoaderEndpoint.observation(endpoint, EscrowLoaderEndpoint.root(found), ledger); }
+        if (found == null) { return EscrowReconciliationObservation.of(new EscrowSettlementIntent.Observation(endpoint, null, false, 0), null); }
+        if (!entity && EscrowLoaderEndpoint.is(endpoint)) {
+            return EscrowReconciliationObservation.of(EscrowLoaderEndpoint.observation(endpoint, EscrowLoaderEndpoint.root(found), ledger), null);
+        }
+        if (!entity && EscrowFluidCargoEndpoint.is(endpoint)) {
+            return EscrowReconciliationObservation.of(EscrowFluidCargoEndpoint.observation(endpoint, EscrowFluidCargoEndpoint.root(found), ledger), null);
+        }
         if (!entity) {
             var persistent = EscrowTags.compound(found, "ForgeData");
             EscrowTags.require(endpoint.identity().equals(persistent.getCompound("arce_escrow_fixture").getUUID("identity")), "Source disk identity changed");
-            return new EscrowSettlementIntent.Observation(endpoint, EscrowTestEndpoints.state(persistent, ledger, false), true, EscrowTestEndpoints.amount(persistent));
+            return EscrowReconciliationObservation.of(new EscrowSettlementIntent.Observation(endpoint,
+                    EscrowTestEndpoints.state(persistent, ledger, false), true, EscrowTestEndpoints.amount(persistent)), null);
         }
         var wrapper = EscrowTags.compound(found, "RocketEntityData");
         EscrowTags.fields(wrapper, "schema_version", "assembly_transaction_id", "owner_id", "snapshot", "flight_data", "resource_escrow");
         EscrowTags.require(EscrowTags.integer(wrapper, "schema_version") == 3 && endpoint.logicalRocket().equals(EscrowTags.uuid(wrapper, "assembly_transaction_id")),
                 "Invalid disk rocket identity/schema");
-        var snapshot = RocketSnapshotNbtCodec.decode(wrapper.getCompound("snapshot")).snapshot().orElseThrow();
+        var snapshot = captureWitness == null ? RocketSnapshotNbtCodec.decode(wrapper.getCompound("snapshot")).snapshot().orElseThrow() : captureWitness;
+        if (captureWitness != null) {
+            EscrowTags.require(io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketSnapshotWitness
+                    .verifies(wrapper.getCompound("snapshot"), captureWitness), "Captured cargo snapshot changed");
+        }
         var flight = RocketFlightNbtCodec.decode(wrapper.getCompound("flight_data")).data().orElseThrow();
         var section = RocketEscrowSection.decode(wrapper.getCompound("resource_escrow"));
         var position = found.getList("Pos", net.minecraft.nbt.Tag.TAG_DOUBLE); var origin = flight.currentOrigin();
@@ -69,9 +87,9 @@ final class EscrowSettlementDisk {
                 && (!found.contains("Passengers") || found.getList("Passengers", 10).isEmpty())
                 && (section.ledger() == null || ledger.equals(section.ledger())), "Disk rocket placement/occupancy changed");
         String signature = flight.fuel().resourceSignature();
-        return new EscrowSettlementIntent.Observation(endpoint, new EscrowPrefix.State(ledger, section.epoch(), signature, section.markers()),
+        return EscrowReconciliationObservation.of(new EscrowSettlementIntent.Observation(endpoint, new EscrowPrefix.State(ledger, section.epoch(), signature, section.markers()),
                 section.ledger() != null, flight.fuel().totalAmount(), EscrowSignatureKind.FUEL_VECTOR_V1,
-                EscrowInvariant.rocket(endpoint, EscrowTags.uuid(wrapper, "owner_id"), snapshot));
+                EscrowInvariant.rocket(endpoint, EscrowTags.uuid(wrapper, "owner_id"), snapshot)), snapshot.contentHash());
     }
     private static void collect(List<net.minecraft.nbt.Tag> entries, List<CompoundTag> result, int depth, boolean entities) {
         EscrowTags.require(depth <= 16, "Passenger observation depth exceeded");

@@ -9,9 +9,10 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import net.minecraft.server.MinecraftServer;
 
-/** Ordinary native fills only. Model fixtures and settlement decisions have separate executors. */
+/** Ordinary native fills and fluid cargo. Model fixtures and settlement decisions have separate executors. */
 final class EscrowReconciliationDriver {
     private final EscrowCoordinator coordinator;
+    private final EscrowCargoReconciliation cargo = new EscrowCargoReconciliation();
     private EscrowLedger cached;
     private Map<EscrowEndpoint.Key, List<EscrowPrefix.Link>> chains = Map.of();
     private final Map<UUID, List<EscrowOperation>> components = new HashMap<>();
@@ -47,15 +48,19 @@ final class EscrowReconciliationDriver {
             completion.accept(EscrowReconciliationScheduler.Result.deferred()); return;
         }
         // Legacy model-only fixtures do not identify the native resource adapter.
-        if (op.nativeBinding().kind() != EscrowSignatureKind.FUEL_VECTOR_V1) {
+        if (op.nativeBinding().kind() != EscrowSignatureKind.FUEL_VECTOR_V1 && !EscrowCargoReconciliation.supported(op)) {
+            completion.accept(new EscrowReconciliationScheduler.Result(EscrowReason.RECONCILIATION_UNIMPLEMENTED, false)); return;
+        }
+        if (op.kind().cargo() && EscrowRuntime.of(server).cargoSwitches.paused(op.device().identity())) {
             completion.accept(new EscrowReconciliationScheduler.Result(EscrowReason.RECONCILIATION_UNIMPLEMENTED, false)); return;
         }
         // Historical settlement/relocation harnesses own their endpoint actions. The production loader adapter is always
         // registered; a fixture source enters only when explicitly registered. Registration itself grants no authority.
-        if (!adapter(op.source())) {
+        if (!(op.kind().cargo() ? EscrowFluidCargoEndpoint.is(op.device()) : adapter(op.source()))) {
             completion.accept(new EscrowReconciliationScheduler.Result(EscrowReason.RECONCILIATION_UNIMPLEMENTED, false)); return;
         }
         if (cached != root) {
+            cargo.close();
             cached = root; chains = EscrowPrefix.chains(root.records()); components.clear(); views.clear();
             checkpoints.values().forEach(EscrowReconciliationCheckpoint::close); checkpoints.clear();
         }
@@ -65,7 +70,8 @@ final class EscrowReconciliationDriver {
             component = EscrowSettlementIntent.component(root.records(), op.id());
             for (var member : component) { components.put(member.id(), component); }
         }
-        if (component.stream().anyMatch(member -> !adapter(member.source()))) {
+        if (component.stream().anyMatch(member -> !(member.kind().cargo()
+                ? EscrowCargoReconciliation.supported(member) : adapter(member.source())))) {
             completion.accept(new EscrowReconciliationScheduler.Result(EscrowReason.RECONCILIATION_UNIMPLEMENTED, false)); return;
         }
         var key = component.get(0).id();
@@ -74,6 +80,8 @@ final class EscrowReconciliationDriver {
             completion.accept(EscrowReconciliationScheduler.Result.deferred()); return;
         }
         try {
+            // A missing/renamed native Fluid holds this member before observing or decoding either resource.
+            if (op.kind().cargo()) { EscrowReconciliationAction.requireNativeFluid(op); }
             var pending = checkpoints.get(op.id());
             if (pending != null && pending.journalLease.getAsBoolean()) {
                 if (pending.busy) { completion.accept(EscrowReconciliationScheduler.Result.deferred()); return; }
@@ -90,11 +98,11 @@ final class EscrowReconciliationDriver {
                 // captured per tick, and retained complete captures stay under the existing cap.
                 if (captured) { completion.accept(EscrowReconciliationScheduler.Result.deferred()); return; }
                 captured = true;
-                for (var member : component) { EscrowReconciliationPruning.source(server, coordinator, member.source()); }
+                for (var member : component) { EscrowReconciliationPruning.source(server, coordinator, member.device()); }
                 var destinations = new HashSet<EscrowEndpoint.Key>();
                 for (var member : component) {
-                    if (destinations.add(member.destination().key())) {
-                        EscrowReconciliationPruning.destination(server, coordinator, member.destination());
+                    if (destinations.add(member.rocket().key())) {
+                        EscrowReconciliationPruning.destination(server, coordinator, member.rocket());
                     }
                 }
                 view = EscrowReconciliationView.capture(server, root, component);
@@ -103,6 +111,14 @@ final class EscrowReconciliationDriver {
                 views.put(key, view);
             }
             var capturedView = view;
+            if (op.kind().cargo()) {
+                var step = cargo.applyNext(coordinator, op, view, chains);
+                if (step != EscrowCargoReconciliation.Step.DONE) {
+                    if (step == EscrowCargoReconciliation.Step.PUBLISHED) { actionApplied = true; changed.add(key); views.remove(key); }
+                    completion.accept(EscrowReconciliationScheduler.Result.deferred()); return;
+                }
+                checkpoint(server, op, view, completion); return;
+            }
             var action = applyNext(coordinator, root, op, chains, endpoint -> capturedView.ends.get(endpoint.key()).state(),
                     endpoint -> capturedView.ends.get(endpoint.key()).envelope(), () -> capturedView.unchanged(coordinator),
                     (destination, permit) -> EscrowReconciliationAction.apply(capturedView, op, destination, permit));
@@ -165,10 +181,12 @@ final class EscrowReconciliationDriver {
                 completion.accept(EscrowReconciliationScheduler.Result.deferred()); return;
             }
             var observations = EscrowSettlementObserver.observe(server, view.root.id(), references);
-            work = new EscrowReconciliationCheckpoint(view.root, ids, observations, view.journalLease);
+            var witnesses = view.ends.entrySet().stream().filter(entry -> entry.getValue().rocket() != null)
+                    .collect(java.util.stream.Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().rocket().snapshot().orElseThrow()));
+            work = new EscrowReconciliationCheckpoint(view.root, ids, observations, view.journalLease, states, witnesses);
             // Validate the whole affected set before publishing any freeze. No owner-thread interleaving.
             EscrowTags.require(view.unchanged(coordinator), "C3 observation changed before freezing");
-            for (var end : observations) { coordinator.freeze(end.endpoint().key(), end.state()); }
+            for (var end : observations) { coordinator.freeze(end.endpoint().key(), states.get(end.endpoint().key())); }
             checkpoints.put(op.id(), work); EscrowRuntime.of(server).checkpoint("C3_FROZEN");
         }
         work.discardInvalid();
@@ -179,7 +197,11 @@ final class EscrowReconciliationDriver {
         for (var end : work.ends.values()) {
             if (work.proofs.containsKey(end.endpoint().key())) { continue; }
             var frozen = work; var targets = work.targets(end.endpoint()); var runtime = EscrowRuntime.of(server);
+            if (!runtime.cargoStoreAllowed(op, end.endpoint())) { continue; }
             runtime.checkpoint(end.endpoint().kind() == EscrowEndpoint.Kind.ENTITY ? "C4_DESTINATION_SELECTED" : "C4_SOURCE_SELECTED");
+            if (op.kind().cargo()) {
+                runtime.checkpoint(end.endpoint().key().equals(op.source().key()) ? "CARGO_STORE_SOURCE_SELECTED" : "CARGO_STORE_DESTINATION_SELECTED");
+            }
             var level = view.ends.get(end.endpoint().key()).level();
             boolean accepted = capture(busy -> frozen.busy = busy, () -> runtime.store(level), store -> runtime.barrier().beginJoint(store, targets,
                     server.getTickCount(), result -> {
@@ -188,10 +210,11 @@ final class EscrowReconciliationDriver {
                             result.proofs().values().forEach(EscrowBarrier.Proof::release);
                             completion.accept(EscrowReconciliationScheduler.Result.deferred()); return;
                         }
+                        var reason = frozen.readbackReason(targets, result);
                         frozen.accept(targets, result);
                         if (frozen.proved()) { runtime.checkpoint("C6_JOINT_READBACK"); }
                         // C6 is internal proof, never scheduler success or release authority.
-                        completion.accept(new EscrowReconciliationScheduler.Result(result.reason(), false));
+                        completion.accept(new EscrowReconciliationScheduler.Result(reason, false));
                     }));
             if (!accepted) { completion.accept(EscrowReconciliationScheduler.Result.deferred()); }
             return;
@@ -240,6 +263,7 @@ final class EscrowReconciliationDriver {
     }
 
     void close() {
+        cargo.close();
         checkpoints.values().forEach(EscrowReconciliationCheckpoint::close); checkpoints.clear();
         views.clear(); components.clear(); changed.clear(); registeredSources.clear(); cached = null; chains = Map.of();
     }

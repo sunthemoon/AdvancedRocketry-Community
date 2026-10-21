@@ -47,15 +47,7 @@ public final class EscrowReconciliationAction {
     static Permit issue(EscrowLedger root, EscrowOperation operation, CompoundTag before, boolean destination, BooleanSupplier authority) {
         EscrowTags.require(root.records().contains(operation) && !operation.reason().manual() && operation.settlement().isEmpty()
                 && authority.getAsBoolean(), "Fill needs an acknowledged ordinary member");
-        if (operation.kind().fluid()) {
-            try { operation.nativeFluid(); }
-            catch (IllegalArgumentException unavailable) {
-                // R39 for fluids: holds this operation only (sticky REPAIR through the scheduler), before any projection.
-                // The scheduler never revisits a manual record, so this logs at most once per operation and session.
-                LOGGER.warn("ARCE_ESCROW_FLUID_UNAVAILABLE op={} fluid={}", operation.id(), fluidName(operation));
-                throw new EscrowReconciliationView.Refusal(EscrowReason.OTHER_STATE);
-            }
-        }
+        requireNativeFluid(operation);
         CompoundTag after;
         try { after = destination ? EscrowReconciliationChange.rocket(root.id(), operation, before)
                 : EscrowReconciliationChange.source(root.id(), operation, before); }
@@ -66,6 +58,19 @@ public final class EscrowReconciliationAction {
             throw new EscrowReconciliationView.Refusal(EscrowReason.OTHER_STATE);
         }
         return new Permit(operation, destination, before, after, authority);
+    }
+
+    /** Shared R39 boundary; callers must run this before any native projection or publication. */
+    static void requireNativeFluid(EscrowOperation operation) {
+        if (operation.kind().fluid()) {
+            try { operation.nativeFluid(); }
+            catch (IllegalArgumentException unavailable) {
+                // R39 for fluids: holds this operation only (sticky REPAIR through the scheduler), before any projection.
+                // The scheduler never revisits a manual record, so this logs at most once per operation and session.
+                LOGGER.warn("ARCE_ESCROW_FLUID_UNAVAILABLE op={} fluid={}", operation.id(), fluidName(operation));
+                throw new EscrowReconciliationView.Refusal(EscrowReason.OTHER_STATE);
+            }
+        }
     }
 
     /** The structurally checked ID: canonical, printable and at most 128 characters. */

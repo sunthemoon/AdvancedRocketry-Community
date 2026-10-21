@@ -62,6 +62,12 @@ public final class EscrowCargoPublication {
         }
         /** Null means defer; a completed verifier never issues a second permit. */
         Permit issue() {
+            if (!verify()) { return null; }
+            issued = true;
+            return new Permit(ticket, authority, change);
+        }
+        /** Budgeted verification alone grants no tick-bound publication permit. */
+        boolean verify() {
             EscrowTags.require(!issued && ticket.valid() && root.records().contains(operation) && !operation.reason().manual()
                     && operation.settlement().isEmpty() && operation.kind().cargo() && operation.nativeBinding().complete()
                     && authority.getAsBoolean(), "Cargo publication needs an acknowledged ordinary member");
@@ -71,12 +77,11 @@ public final class EscrowCargoPublication {
                 long bytes = phase == 0 ? 1_048_576 : 16L * 1_048_576;
                 if (!ticket.performWork(bytes, visits, () -> {
                     validateStep(); return new Work(bytes, visits);
-                })) { return null; }
+                })) { return false; }
             }
             EscrowTags.require(ticket.valid() && frame.equals(EscrowNativeEnvelope.frame(rocket)) && authority.getAsBoolean(),
                     "Publication before state changed during envelope verification");
-            issued = true;
-            return new Permit(ticket, authority, change);
+            return true;
         }
         private void validateStep() {
             var rocket = ticket.rocket(); var cursor = ticket.cursor(); var endpoint = operation.rocket();

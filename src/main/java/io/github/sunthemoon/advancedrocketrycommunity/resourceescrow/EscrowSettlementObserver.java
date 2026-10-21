@@ -73,6 +73,9 @@ final class EscrowSettlementObserver {
                 // The registered production source adapter; it needs no release-test hooks.
                 result.add(EscrowLoaderEndpoint.observe(level.getChunkSource().getChunkNow(chunk.x, chunk.z)
                         .getBlockEntity(EscrowLoaderEndpoint.position(endpoint)), endpoint, ledger));
+            } else if (EscrowFluidCargoEndpoint.is(endpoint)) {
+                result.add(EscrowFluidCargoEndpoint.observe(level.getChunkSource().getChunkNow(chunk.x, chunk.z)
+                        .getBlockEntity(EscrowFluidCargoEndpoint.position(endpoint)), endpoint, ledger));
             } else if (endpoint.kind() == EscrowEndpoint.Kind.BLOCK_ENTITY) {
                 // Every other source is an already-gated fixture.
                 EscrowTestEndpoints.requireEnabled(server);
