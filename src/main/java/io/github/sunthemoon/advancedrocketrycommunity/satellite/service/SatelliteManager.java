@@ -211,8 +211,9 @@ public final class SatelliteManager {
             SatelliteMissionSavedData data = SatelliteMissionSavedData.get(server);
             var validation = launches.validate(server, player.getUUID(), identity, targetBodyId);
             if (validation.result().code() == SatelliteOperationCode.REGISTRY_BLOCKED) {
-                // Keep the terminal's existing fail-closed result and diagnostic; the shared service names the cause.
-                throw new IllegalStateException("Satellite registry is blocked by invalid or future data");
+                // Keep the diagnostic without remapping the shared service's refusal through the catch below.
+                logOperationFailure(identity.kind() == SatelliteKind.DATA ? "launch" : "idle launch",
+                        new IllegalStateException("Satellite registry is blocked by invalid or future data"));
             }
             if (validation.request().isEmpty()) { return validation.result(); }
             SatelliteOperationResult result = launches.register(server, validation.request().orElseThrow(),
