@@ -265,10 +265,14 @@ public final class EscrowLoaderAdmission {
         var op = named.get(0);
         boolean applied = root.escrow().markers().stream().anyMatch(marker -> marker.operation().equals(op.id()));
         var scheduler = EscrowRuntime.of(server).reconciliationScheduler();
-        boolean held = coordinator.currentReason(op) != EscrowReason.NONE || op.phase() != EscrowOperation.Phase.PREPARED
-                || !op.settlement().isEmpty() || scheduler != null && !scheduler.view(op.id()).reason().equals(EscrowReason.NONE.name());
+        boolean held = held(op, coordinator.currentReason(op), scheduler == null ? null : scheduler.view(op.id()));
         return progress(coordinator.durable(op.id()), applied, coordinator.operational(), coordinator.writerUnavailable(), held,
                 coordinator.writerUnknown());
+    }
+
+    static boolean held(EscrowOperation op, EscrowReason current, EscrowReconciliationScheduler.View view) {
+        return current != EscrowReason.NONE || op.phase() != EscrowOperation.Phase.PREPARED
+                || !op.settlement().isEmpty() || view != null && !view.reason().equals(EscrowReason.NONE.name());
     }
 
     /**

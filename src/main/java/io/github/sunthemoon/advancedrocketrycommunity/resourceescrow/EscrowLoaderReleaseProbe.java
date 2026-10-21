@@ -29,6 +29,7 @@ final class EscrowLoaderReleaseProbe {
     private final boolean recovery;
     private final EscrowLoaderCutProbe matrix;
     private final EscrowLoaderFloorProbe floors;
+    private final EscrowLoaderNamedProbe named;
     private final AtomicBoolean paused = new AtomicBoolean();
     private boolean firstTick, done;
     private int step;
@@ -39,9 +40,10 @@ final class EscrowLoaderReleaseProbe {
         cut = System.getProperty("advancedrocketrycommunity.escrowCase");
         recovery = "recover".equals(System.getProperty("advancedrocketrycommunity.escrowScenario"));
         // W107C: cut R1's floor fixture runs beside, never inside, the W97 matrix.
+        named = EscrowLoaderNamedProbe.selected(cut) ? new EscrowLoaderNamedProbe(server, cut, recovery) : null;
         floors = EscrowLoaderFloorProbe.selected(cut) ? new EscrowLoaderFloorProbe(server, cut, recovery) : null;
-        matrix = floors == null && EscrowLoaderCutProbe.selected(cut) ? new EscrowLoaderCutProbe(server, cut, recovery) : null;
-        if (matrix != null || floors != null) { return; }
+        matrix = named == null && floors == null && EscrowLoaderCutProbe.selected(cut) ? new EscrowLoaderCutProbe(server, cut, recovery) : null;
+        if (matrix != null || floors != null || named != null) { return; }
         EscrowTags.require(cut.startsWith(PREFIX) && (recovery || Boolean.getBoolean(EscrowLoaderAdmission.SWITCH)),
                 "The loader restart fixture starts only through the gated switch");
     }
@@ -51,6 +53,7 @@ final class EscrowLoaderReleaseProbe {
      * restarted world's ledger was already bound at ServerStartingEvent, with its reservations indexed.
      */
     void startTick() {
+        if (named != null) { named.startTick(); return; }
         if (floors != null) { floors.startTick(); return; }
         if (matrix != null) { matrix.startTick(); return; }
         if (firstTick) { return; }
@@ -72,6 +75,7 @@ final class EscrowLoaderReleaseProbe {
     }
 
     void checkpoint(String name) {
+        if (named != null) { named.checkpoint(name); return; }
         if (floors != null) { floors.checkpoint(name); return; }
         if (matrix != null) { matrix.checkpoint(name); return; }
         if (recovery || done || step < 1 || !cut.equals(PREFIX + name)) { return; }
@@ -82,6 +86,7 @@ final class EscrowLoaderReleaseProbe {
     }
 
     void tick() {
+        if (named != null) { named.tick(); return; }
         if (floors != null) { floors.tick(); return; }
         if (matrix != null) { matrix.tick(); return; }
         var level = server.overworld();
