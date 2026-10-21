@@ -27,22 +27,28 @@ CUTS = ("CAPTURE", "STORE", "REMOVE", "MOVED", "UNKNOWN", "ACK", "STALE", "TICKE
 PREFIX = "LF_M_R52_"
 
 
+def source_entities(directory: Path) -> list:
+    path = directory / "r.128.128.mca"
+    # Vanilla can open a new, still zero-length region while querying an empty entity slot.
+    if not path.exists() or path.stat().st_size == 0:
+        return []
+    base.require(path.stat().st_size >= 8192, "Truncated nonempty source entity region")
+    with path.open("rb") as stream:
+        location = stream.read(4)
+    if location == b"\0\0\0\0":
+        return []
+    raw, _ = nbt.chunk(directory, 4096, 4096)
+    return nbt.plain(raw).get("Entities", [])
+
+
 def inspect(world: Path) -> dict:
     devices = [e for e in record(world / "region/r.0.0.mca")["block_entities"] if e.get("id") == base.LOADER]
     rockets = [e for e in record(world / "entities/r.0.0.mca")["Entities"] if e.get("id") == base.ROCKET]
     base.require(len(devices) == len(rockets) == 1, "Missing or duplicated destination endpoint")
     source_dir = world / "dimensions/advancedrocketrycommunity/moon/entities"
-    source_file = source_dir / "r.128.128.mca"
-    source = []
-    if source_file.exists():
-        with source_file.open("rb") as stream:
-            location = stream.read(4)
-        if location != b"\0\0\0\0":
-            raw, _ = nbt.chunk(source_dir, 4096, 4096)
-            source = nbt.plain(raw).get("Entities", [])
     path = world / "data" / LEDGER
     return dict(rocket=rockets[0], loader=devices[0], ledger=ledger(path) if path.exists() else None,
-                transfers=journal(world)["transfers"], source=source)
+                transfers=journal(world)["transfers"], source=source_entities(source_dir))
 
 
 def check(disk: dict, cut: str, restart: int) -> dict:
@@ -52,6 +58,11 @@ def check(disk: dict, cut: str, restart: int) -> dict:
     completed = bool(restart) and not held or cut == "K9"
     after_removal = bool(restart) and not held or cut in ("MOVED", "UNKNOWN", "ACK", "K2", "K9")
     base.require(len(disk["transfers"]) == int(not after_removal), "Unexpected transfer authority")
+    if disk["transfers"]:
+        transfer = disk["transfers"][0]
+        base.require(transfer["phase"] == "COMMITTED" and not transfer.get("native_transfer")
+                     and transfer["logical_rocket_id"] == data["assembly_transaction_id"]
+                     and transfer["destination_entity_id"] == disk["rocket"]["UUID"], "Retained T does not name the ordinary destination")
     if after_removal:
         base.require(not any(e.get("id") == base.ROCKET for e in disk["source"]), "Source origin still contains a rocket after removal")
     base.require(disk["rocket"]["Pos"] == [64.5, 100., 64.5] and flight["state"] == "LANDED"
@@ -90,10 +101,10 @@ def start(args, session: Path, evidence: Path, owner: str, cut: str, restart: in
         row["errors"] = [line for line in process.lines if "/ERROR]" in line or "/FATAL]" in line]
         expected = "ARCE_TRANSFER_JOURNAL_UNACKNOWLEDGED retained dirty authority; dependent effects are blocked"
         injected = cut == "UNKNOWN" and restart == 0
-        base.require((injected and len(row["errors"]) == 1 and row["errors"][0].endswith(expected))
+        base.require((injected and len(row["errors"]) == 1 and row["errors"][0].rstrip().endswith(expected))
                      or (not injected and not row["errors"]), "Native process logged an unexpected ERROR/FATAL")
         text = "\n".join(row["observations"])
-        base.require("tickets=0" in text, "Missing first-tick RAM-ticket observation")
+        base.require("tickets=0 pending=0" in text, "Missing first-tick RAM-ticket/pending observation")
         if cut.startswith("HELD_"):
             base.require("tickets=3 ordinary_mutation=true" in text, "Missing bounded held retirement observation")
             if action == "REFILL":

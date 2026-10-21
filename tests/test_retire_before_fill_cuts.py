@@ -2,6 +2,7 @@
 import copy
 from pathlib import Path
 import sys
+import tempfile
 import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
@@ -20,10 +21,20 @@ def fixture(completed=False):
                   resource_escrow=copy.deepcopy(section), owner_id="owner", assembly_transaction_id="logical"))
     loader = dict(arce_fluid_fuel_loader=dict(owner="owner", device="device", binding=dict(physical_rocket="entity", logical_rocket="logical"),
                   tank={"FluidName": cuts.base.FUEL, "Amount": 5000 - int(completed) * 1000}, resource_escrow=copy.deepcopy(section)))
-    return dict(rocket=rocket, loader=loader, ledger=root, source=[], transfers=[] if completed else [{}])
+    transfer = dict(phase="COMMITTED", logical_rocket_id="logical", destination_entity_id="entity")
+    return dict(rocket=rocket, loader=loader, ledger=root, source=[], transfers=[] if completed else [transfer])
 
 
 class RetirementCutOracleTest(unittest.TestCase):
+    def test_missing_empty_and_deleted_source_slots_are_absent_but_truncation_is_not(self):
+        with tempfile.TemporaryDirectory() as directory:
+            folder = Path(directory); path = folder / "r.128.128.mca"
+            self.assertEqual([], cuts.source_entities(folder))
+            path.write_bytes(b""); self.assertEqual([], cuts.source_entities(folder))
+            path.write_bytes(bytes(8192)); self.assertEqual([], cuts.source_entities(folder))
+            path.write_bytes(bytes(4))
+            with self.assertRaises(cuts.smoke.SmokeError): cuts.source_entities(folder)
+
     def test_pre_removal_has_no_ledger(self):
         for case in ("CAPTURE", "STORE", "REMOVE", "STALE", "TICKET", "HELD_COLUMN", "HELD_STORAGE"):
             with self.subTest(case=case):

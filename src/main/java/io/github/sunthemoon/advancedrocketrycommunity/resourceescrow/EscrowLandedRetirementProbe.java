@@ -67,8 +67,9 @@ final class EscrowLandedRetirementProbe {
         if (first) { return; } first = true;
         var records = RocketTransferSavedData.get(server).entries();
         int tickets = records.stream().mapToInt(t -> RocketMarginGameTestSupport.flightTicketColumns(server, t.transferId()).size()).sum();
-        EscrowTags.require(tickets == 0, "Flight tickets survived process restart");
-        AdvancedRocketryCommunity.LOGGER.info("ARCE_R52_FIRST cut={} recovery={} transfers={} tickets={}", cut, recovery, records.size(), tickets);
+        int pending = RocketMarginGameTestSupport.ordinaryRetirementEntries(server);
+        EscrowTags.require(tickets == 0 && pending == 0, "Flight tickets or pending retirement survived process restart");
+        AdvancedRocketryCommunity.LOGGER.info("ARCE_R52_FIRST cut={} recovery={} transfers={} tickets={} pending={}", cut, recovery, records.size(), tickets, pending);
     }
 
     void checkpoint(String name) {

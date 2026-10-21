@@ -22,6 +22,13 @@ import net.minecraft.world.level.ChunkPos;
 public final class RocketMarginGameTestSupport {
     private RocketMarginGameTestSupport() { }
 
+    /** R52 native first-tick observation; pending retirement work is runtime-owned, never saved. */
+    public static int ordinaryRetirementEntries(MinecraftServer server) {
+        io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowTestEndpoints.requireEnabled(server);
+        var installed = RocketRuntime.installedTransfers();
+        return installed == null ? 0 : RocketSourceRetirementFixtures.recovery(installed).retirements().size();
+    }
+
     /** The origin flight tickets that this process's F2 callback adds for the recorded ends. */
     public static void addOriginTickets(MinecraftServer server, RocketTransferRecord record) {
         for (var snapshot : List.of(record.sourceSnapshot(), record.destinationSnapshot())) {
