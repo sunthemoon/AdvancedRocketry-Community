@@ -89,8 +89,8 @@ public final class FluidCargoReconciliationGameTests {
                 phase = 1;
             }
             if (phase == 1) {
-                rocket = EscrowCargoPreparationGameTests.create(helper, helper.absolutePos(new BlockPos(4, 2, 4 + direction * 6)),
-                        false, List.of(direction == 0 ? FluidStack.EMPTY : new FluidStack(Fluids.WATER, 5_000)));
+                rocket = EscrowCargoTransferFixtures.create(helper, helper.absolutePos(new BlockPos(4, 2, 4 + direction * 6)),
+                        List.of(direction == 0 ? FluidStack.EMPTY : new FluidStack(Fluids.WATER, 5_000)));
                 rockets.add(rocket); snapshot = rocket.snapshot().orElseThrow().snapshotId(); beforeHash = rocket.snapshot().orElseThrow().contentHash();
                 beforeSnapshot = rocket.snapshot().orElseThrow();
                 fuel = rocket.flightData().orElseThrow().fuel().resourceSignature();

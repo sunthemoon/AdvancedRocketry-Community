@@ -3,6 +3,15 @@
   "description": "Every ERROR and WARN entry that a complete runGameTestServer log is expected to contain. Each expectation records a deliberate refusal or failure path that a named GameTest drives, or a bounded environment warning. scripts/check_gametest_log.py fails on any FATAL entry, any entry not listed here and any count that differs.",
   "expectations": [
     {
+      "id": "w124-cargo-named-cleanup-fence",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_FENCED transfer=[0-9a-f-]{36} reason=ENDPOINT_JOIN_PROOF_REQUIRED repair=offline-whole-world",
+      "counts": {"fluid_cargo_named_hold": 1},
+      "test": "FluidCargoReconciliationGameTests.namedTransferRemainsPreparedBehindTheExistingF1Fence",
+      "reason": "Removing the held fixture endpoint during cleanup invalidates its named transfer's loaded endpoint proof before removing the test journal record."
+    },
+    {
       "id": "w124-cargo-stale-prepared-fence",
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
