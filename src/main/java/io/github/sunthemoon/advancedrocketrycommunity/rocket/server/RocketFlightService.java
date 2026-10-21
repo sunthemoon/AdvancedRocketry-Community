@@ -244,11 +244,8 @@ final class RocketFlightService {
     private RocketFlightRequestResult launch(RocketEntity rocket, TravelTarget destination, UUID actorId,
             boolean operator, UUID requestId,
             io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadReference pad, UUID requester) {
-        RocketFlightData flight = rocket.flightData().orElseThrow();
-        if (flight.state() == RocketFlightState.LANDED && flight.fuel().availableForLaunch()) {
-            flight = flight.withFuel(flight.fuel(), rocket.level().getGameTime());
-        }
-        if (flight.state() != RocketFlightState.FUELED) {
+        RocketFlightData flight = launchSource(rocket.flightData().orElseThrow(), rocket.level().getGameTime()).orElse(null);
+        if (flight == null) {
             return RocketFlightRequestResult.failure(RocketFlightRequestCode.INVALID_STATE);
         }
         TravelTarget source = flight.currentTarget().orElse(null);
@@ -517,6 +514,15 @@ final class RocketFlightService {
     private static boolean authorized(ServerPlayer player, RocketEntity rocket) {
         UUID owner = rocket.ownerId().orElseThrow();
         return owner.equals(player.getUUID()) || player.isCreative() || player.hasPermissions(2);
+    }
+
+    /** R55: the FUELED source of a launch, or empty (INVALID_STATE) when the stationary rocket is not launch-ready. */
+    static Optional<RocketFlightData> launchSource(RocketFlightData flight, long gameTime) {
+        if (!flight.launchReady()) {
+            return Optional.empty();
+        }
+        // An escrow fill keeps ASSEMBLED with fuel; the launch applies the ordinary fuel change's promotion here.
+        return Optional.of(flight.state() == RocketFlightState.FUELED ? flight : flight.withFuel(flight.fuel(), gameTime));
     }
 
     private static boolean stationary(RocketFlightState state) {
