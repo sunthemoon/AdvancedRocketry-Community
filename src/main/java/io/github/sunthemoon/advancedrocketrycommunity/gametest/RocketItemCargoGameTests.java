@@ -45,15 +45,22 @@ public final class RocketItemCargoGameTests {
     private static final Class<AttachCapabilitiesEvent<ItemStack>> ATTACH =
             (Class<AttachCapabilitiesEvent<ItemStack>>) (Class<?>) AttachCapabilitiesEvent.class;
 
-    @GameTest(template = TEMPLATE, batch = BATCH, timeoutTicks = 40)
+    /** Waits for entity sections because the owner is a connected player, as C-A's player tests do. */
+    @GameTest(template = TEMPLATE, batch = BATCH, timeoutTicks = 80)
     public static void allSidesSimulationReentryThreadAndLifecycleAreBounded(GameTestHelper helper) {
         var pos = new BlockPos(4, 2, 4);
         var spare = new BlockPos(8, 2, 4);
-        var level = helper.getLevel();
+        EntitySections.whenLoaded(helper, () -> bounded(helper, pos, spare), pos, spare);
+    }
+
+    private static void bounded(GameTestHelper helper, BlockPos pos, BlockPos spare) {
+        var level = helper.getLevel(); var server = level.getServer();
+        var owner = ConnectedTestPlayers.join(server, UUID.randomUUID(), "w120Port", level, helper.absolutePos(pos).east(2),
+                new ArrayList<>(), false, new ArrayList<>(), false);
         try {
             for (var role : RocketCargoRole.values()) {
                 boolean load = role == RocketCargoRole.LOAD;
-                var device = place(helper, pos, role, owned(UUID.randomUUID(), role, stone(20)));
+                var device = place(helper, pos, role, owned(owner.getUUID(), role, stone(20)));
                 var handler = port(device);
                 for (Direction side : Direction.values()) {
                     helper.assertTrue(device.getCapability(ForgeCapabilities.ITEM_HANDLER, side).resolve().orElseThrow() == handler,
@@ -81,20 +88,29 @@ public final class RocketItemCargoGameTests {
                         && CompletableFuture.supplyAsync(() -> handler.extractItem(0, 1, false)).join().isEmpty()
                         && CompletableFuture.supplyAsync(() -> handler.getStackInSlot(0)).join().isEmpty()
                         && raw.equals(device.heldRoot().orElseThrow()), "Off-thread access moved or showed items");
-                // A stack created inside the lock (by the item's own capability gathering) re-enters the port.
+                // Forge gathers item capabilities lazily, when a stack is first compared. Section 5.3's encoding compares
+                // under the device lock, so a capability listener re-enters the port from inside that lock: for LOAD
+                // during the port's own insert, for UNLOAD during the owner's menu insert, which takes the same lock.
                 int[] inner = {-1};
                 var probe = new ItemStack(Items.STONE, 1);
+                var menu = load ? null : (RocketItemCargoMenu) device.createMenu(5, owner.getInventory(), owner);
+                if (!load) { owner.getInventory().setItem(0, ten.copy()); }
                 Consumer<AttachCapabilitiesEvent<ItemStack>> reenter = event -> {
-                    if (inner[0] < 0) {
+                    // Only a call on the server thread, which is inside the outer call, is the reentrant one.
+                    if (inner[0] < 0 && server.isSameThread()) {
                         inner[0] = load ? handler.insertItem(2, probe, false).getCount() : handler.extractItem(0, 1, false).getCount();
                     }
                 };
                 MinecraftForge.EVENT_BUS.addGenericListener(ItemStack.class, EventPriority.NORMAL, false, ATTACH, reenter);
                 ItemStack outer;
-                try { outer = load ? handler.insertItem(1, ten, false) : handler.extractItem(0, 5, false); }
+                // The player's hotbar slot 0 is the menu slot after the device's four and the 27 inventory slots.
+                try { outer = load ? handler.insertItem(1, ten, false) : menu.quickMoveStack(owner, RocketItemCargoMenu.DEVICE_SLOTS + 27); }
                 finally { MinecraftForge.EVENT_BUS.unregister(reenter); }
-                helper.assertTrue(load ? outer.isEmpty() && inner[0] == 1 && device.stack(1).getCount() == 10 && device.stack(2).isEmpty()
-                        : outer.getCount() == 5 && inner[0] == 0 && device.stack(0).getCount() == 15, role + " reentrant call moved items");
+                int[] counts = {device.stack(0).getCount(), device.stack(1).getCount(), device.stack(2).getCount()};
+                helper.assertTrue(load ? outer.isEmpty() && inner[0] == 1 && counts[1] == 10 && counts[2] == 0
+                        : outer.getCount() == 10 && inner[0] == 0 && counts[0] == 30 && owner.getInventory().getItem(0).isEmpty(),
+                        role + " reentrant call moved items: outer=" + outer.getCount() + " inner=" + inner[0]
+                                + " slots=" + java.util.Arrays.toString(counts));
                 device.invalidateCaps(); device.reviveCaps();
                 helper.assertTrue(handler.insertItem(1, single, false) == single && handler.extractItem(0, 1, false).isEmpty()
                         && handler.getStackInSlot(0).isEmpty() && port(device) != handler, "Stale handle survived invalidation");
@@ -115,8 +131,10 @@ public final class RocketItemCargoGameTests {
                     clear(level, helper.absolutePos(spare));
                 }
             }
-        } finally { clear(level, helper.absolutePos(pos)); clear(level, helper.absolutePos(spare)); }
-        helper.succeed();
+        } finally {
+            clear(level, helper.absolutePos(pos)); clear(level, helper.absolutePos(spare));
+            owner.getInventory().clearContent(); server.getPlayerList().remove(owner);
+        }
     }
 
     @GameTest(template = TEMPLATE, batch = BATCH, timeoutTicks = 80)
