@@ -122,7 +122,8 @@ public record RocketItemCargoRoot(UUID owner, UUID device, RocketCargoRole role,
             CompoundTag slot = slots.getCompound(index);
             if (slot.isEmpty()) { continue; }
             EscrowItemStackCodec.validateStructure(slot);
-            if (!BuiltInRegistries.ITEM.containsKey(new ResourceLocation(slot.getString("id")))) { throw new UnregisteredItem(); }
+            // validateStructure has already checked the canonical ID syntax, so the parse cannot fail.
+            if (!BuiltInRegistries.ITEM.containsKey(ResourceLocation.tryParse(slot.getString("id")))) { throw new UnregisteredItem(); }
         }
         return EscrowItemBuffer.decode(tag);
     }
