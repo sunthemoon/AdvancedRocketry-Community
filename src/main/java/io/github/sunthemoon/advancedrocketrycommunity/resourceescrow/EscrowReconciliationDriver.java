@@ -9,9 +9,10 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import net.minecraft.server.MinecraftServer;
 
-/** Ordinary native fills only. Model fixtures and settlement decisions have separate executors. */
+/** Ordinary native fills and fluid cargo. Model fixtures and settlement decisions have separate executors. */
 final class EscrowReconciliationDriver {
     private final EscrowCoordinator coordinator;
+    private final EscrowCargoReconciliation cargo = new EscrowCargoReconciliation();
     private EscrowLedger cached;
     private Map<EscrowEndpoint.Key, List<EscrowPrefix.Link>> chains = Map.of();
     private final Map<UUID, List<EscrowOperation>> components = new HashMap<>();
@@ -47,15 +48,16 @@ final class EscrowReconciliationDriver {
             completion.accept(EscrowReconciliationScheduler.Result.deferred()); return;
         }
         // Legacy model-only fixtures do not identify the native resource adapter.
-        if (op.nativeBinding().kind() != EscrowSignatureKind.FUEL_VECTOR_V1) {
+        if (op.nativeBinding().kind() != EscrowSignatureKind.FUEL_VECTOR_V1 && !EscrowCargoReconciliation.supported(op)) {
             completion.accept(new EscrowReconciliationScheduler.Result(EscrowReason.RECONCILIATION_UNIMPLEMENTED, false)); return;
         }
         // Historical settlement/relocation harnesses own their endpoint actions. The production loader adapter is always
         // registered; a fixture source enters only when explicitly registered. Registration itself grants no authority.
-        if (!adapter(op.source())) {
+        if (!(op.kind().cargo() ? EscrowFluidCargoEndpoint.is(op.device()) : adapter(op.source()))) {
             completion.accept(new EscrowReconciliationScheduler.Result(EscrowReason.RECONCILIATION_UNIMPLEMENTED, false)); return;
         }
         if (cached != root) {
+            cargo.close();
             cached = root; chains = EscrowPrefix.chains(root.records()); components.clear(); views.clear();
             checkpoints.values().forEach(EscrowReconciliationCheckpoint::close); checkpoints.clear();
         }
@@ -65,7 +67,8 @@ final class EscrowReconciliationDriver {
             component = EscrowSettlementIntent.component(root.records(), op.id());
             for (var member : component) { components.put(member.id(), component); }
         }
-        if (component.stream().anyMatch(member -> !adapter(member.source()))) {
+        if (component.stream().anyMatch(member -> !(member.kind().cargo()
+                ? EscrowCargoReconciliation.supported(member) : adapter(member.source())))) {
             completion.accept(new EscrowReconciliationScheduler.Result(EscrowReason.RECONCILIATION_UNIMPLEMENTED, false)); return;
         }
         var key = component.get(0).id();
@@ -90,11 +93,11 @@ final class EscrowReconciliationDriver {
                 // captured per tick, and retained complete captures stay under the existing cap.
                 if (captured) { completion.accept(EscrowReconciliationScheduler.Result.deferred()); return; }
                 captured = true;
-                for (var member : component) { EscrowReconciliationPruning.source(server, coordinator, member.source()); }
+                for (var member : component) { EscrowReconciliationPruning.source(server, coordinator, member.device()); }
                 var destinations = new HashSet<EscrowEndpoint.Key>();
                 for (var member : component) {
-                    if (destinations.add(member.destination().key())) {
-                        EscrowReconciliationPruning.destination(server, coordinator, member.destination());
+                    if (destinations.add(member.rocket().key())) {
+                        EscrowReconciliationPruning.destination(server, coordinator, member.rocket());
                     }
                 }
                 view = EscrowReconciliationView.capture(server, root, component);
@@ -103,6 +106,14 @@ final class EscrowReconciliationDriver {
                 views.put(key, view);
             }
             var capturedView = view;
+            if (op.kind().cargo()) {
+                var step = cargo.applyNext(coordinator, op, view, chains);
+                if (step != EscrowCargoReconciliation.Step.DONE) {
+                    if (step == EscrowCargoReconciliation.Step.PUBLISHED) { actionApplied = true; changed.add(key); views.remove(key); }
+                    completion.accept(EscrowReconciliationScheduler.Result.deferred()); return;
+                }
+                checkpoint(server, op, view, completion); return;
+            }
             var action = applyNext(coordinator, root, op, chains, endpoint -> capturedView.ends.get(endpoint.key()).state(),
                     endpoint -> capturedView.ends.get(endpoint.key()).envelope(), () -> capturedView.unchanged(coordinator),
                     (destination, permit) -> EscrowReconciliationAction.apply(capturedView, op, destination, permit));
@@ -165,10 +176,10 @@ final class EscrowReconciliationDriver {
                 completion.accept(EscrowReconciliationScheduler.Result.deferred()); return;
             }
             var observations = EscrowSettlementObserver.observe(server, view.root.id(), references);
-            work = new EscrowReconciliationCheckpoint(view.root, ids, observations, view.journalLease);
+            work = new EscrowReconciliationCheckpoint(view.root, ids, observations, view.journalLease, states);
             // Validate the whole affected set before publishing any freeze. No owner-thread interleaving.
             EscrowTags.require(view.unchanged(coordinator), "C3 observation changed before freezing");
-            for (var end : observations) { coordinator.freeze(end.endpoint().key(), end.state()); }
+            for (var end : observations) { coordinator.freeze(end.endpoint().key(), states.get(end.endpoint().key())); }
             checkpoints.put(op.id(), work); EscrowRuntime.of(server).checkpoint("C3_FROZEN");
         }
         work.discardInvalid();
@@ -240,6 +251,7 @@ final class EscrowReconciliationDriver {
     }
 
     void close() {
+        cargo.close();
         checkpoints.values().forEach(EscrowReconciliationCheckpoint::close); checkpoints.clear();
         views.clear(); components.clear(); changed.clear(); registeredSources.clear(); cached = null; chains = Map.of();
     }

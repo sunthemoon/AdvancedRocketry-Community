@@ -84,8 +84,10 @@ public final class EscrowReconciliationPruning {
         var receiptIds = EscrowSettlementTombstones.retiredIds(root.tombstones());
         var retired = new HashSet<UUID>(); var seen = new HashSet<UUID>(); boolean retained = false;
         long sequence = 0, epoch = state.epoch() - state.markers().size();
-        var role = endpoint.kind() == EscrowEndpoint.Kind.ENTITY ? "DESTINATION" : "SOURCE";
         for (var marker : state.markers()) {
+            String role = EscrowAdapterIds.nativeRocket(endpoint) && EscrowSignatureKind.endpoint(endpoint) == EscrowSignatureKind.ROCKET_COMPOSITE_V1
+                    ? marker.role() : EscrowFluidCargoEndpoint.is(endpoint) && endpoint.type().endsWith(":rocket_fluid_unloader")
+                    ? "DESTINATION" : endpoint.kind() == EscrowEndpoint.Kind.ENTITY ? "DESTINATION" : "SOURCE";
             if (!seen.add(marker.operation()) || !role.equals(marker.role()) || marker.sequence() <= sequence || marker.epochAfter() != epoch + 1) {
                 throw new EscrowReconciliationView.Refusal(EscrowReason.FOREIGN_MARKER);
             }
@@ -139,9 +141,13 @@ public final class EscrowReconciliationPruning {
     private static void observeCandidate(RocketEntity rocket, ServerLevel level, EscrowCoordinator coordinator) {
         try {
             var fuel = rocket.flightData().orElseThrow().fuel();
+            boolean composite = rocket.escrowSection().markers().stream().anyMatch(marker -> marker.role().equals("SOURCE"))
+                    || coordinator.ledger().floors().stream().anyMatch(floor -> rocket.assemblyTransactionId().orElseThrow().equals(floor.getUUID("rocket_id"))
+                    && EscrowSignatureKind.ROCKET_COMPOSITE_V1.name().equals(floor.getString("signature_kind")));
             var reference = new EscrowEndpoint(EscrowEndpoint.Kind.ENTITY, level.dimension().location().toString(), rocket.getUUID(),
                     rocket.assemblyTransactionId().orElseThrow(), EscrowAdapterIds.ROCKET, rocket.chunkPosition().x, 0, rocket.chunkPosition().z,
-                    EscrowEndpoint.Unit.PRIMARY, rocket.escrowSection().epoch(), fuel.resourceSignature(), fuel.resourceSignature());
+                    composite ? EscrowEndpoint.Unit.TANK : EscrowEndpoint.Unit.PRIMARY,
+                    rocket.escrowSection().epoch(), fuel.resourceSignature(), fuel.resourceSignature());
             apply(level.getServer(), coordinator, reference, null, null);
         } catch (IllegalArgumentException | IllegalStateException | java.util.NoSuchElementException invalid) {
             // The existing marked-wrapper/resource gates remain closed. Live records are diagnosed by reconciliation.
@@ -168,6 +174,22 @@ public final class EscrowReconciliationPruning {
         }
     }
 
+    /** Restart cleanup for either cargo device role, under its existing paced attempt. */
+    public static void observe(io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketFluidCargoBlockEntity device) {
+        var root = device.root().orElse(null);
+        if (root == null || !root.marked() || !device.live() || device.unsupportedRoot()) { return; }
+        var server = device.getLevel().getServer(); var data = ResourceEscrowSavedData.existing(server);
+        if (data == null || !data.operational()) { return; }
+        var pos = device.getBlockPos();
+        var reference = new EscrowEndpoint(EscrowEndpoint.Kind.BLOCK_ENTITY, device.getLevel().dimension().location().toString(), root.device(), null,
+                "advancedrocketrycommunity:" + root.role().id(), pos.getX(), pos.getY(), pos.getZ(), EscrowEndpoint.Unit.TANK,
+                root.escrow().epoch(), root.signature(), root.signature());
+        try { apply(server, data.bind(server), reference, null, null); }
+        catch (IllegalArgumentException | IllegalStateException | java.util.NoSuchElementException invalid) {
+            // A live member is diagnosed by reconciliation; unsupported or unproved markers remain held.
+        }
+    }
+
     /** The scheduler can see a just-added rocket before its first tick observation. */
     static void destination(MinecraftServer server, EscrowCoordinator coordinator, EscrowEndpoint endpoint) {
         var level = server.getLevel(ResourceKey.create(Registries.DIMENSION, ResourceLocation.tryParse(endpoint.level())));
@@ -182,7 +204,7 @@ public final class EscrowReconciliationPruning {
      * prunes from its own paced attempt ({@link #observe(FluidFuelLoaderBlockEntity)}).
      */
     static void source(MinecraftServer server, EscrowCoordinator coordinator, EscrowEndpoint endpoint) {
-        if (!EscrowLoaderEndpoint.is(endpoint)) { EscrowTestEndpoints.requireEnabled(server); }
+        if (!EscrowLoaderEndpoint.is(endpoint) && !EscrowFluidCargoEndpoint.is(endpoint)) { EscrowTestEndpoints.requireEnabled(server); }
         try { apply(server, coordinator, endpoint, null, null); }
         catch (EscrowReconciliationView.Refusal invalid) { throw invalid; }
         catch (IllegalArgumentException | IllegalStateException | java.util.NoSuchElementException unavailable) {
@@ -195,14 +217,15 @@ public final class EscrowReconciliationPruning {
         var root = coordinator.ledger();
         if (!server.isSameThread() || EscrowRuntime.of(server).stopping() || !coordinator.operational()
                 || expected == null && !coordinator.writerIdle() || coordinator.pruningBusy(endpoint.key())) { return; }
-        var observed = EscrowSettlementObserver.observe(server, root.id(), List.of(endpoint)).get(0);
+        var ordinary = EscrowReconciliationObservation.observe(server, root.id(), endpoint);
+        var observed = ordinary.settlement();
         if (observed.missing() || !observed.bound() || observed.state().markers().isEmpty()
                 || expected != null && !expected.equals(observed) || EscrowSettlementTombstones.endpointLocked(root, endpoint.key())) { return; }
-        var ids = retired(root, endpoint, observed.state(), coordinator.unresolvedIds());
+        var ids = retired(root, endpoint, ordinary.state(), coordinator.unresolvedIds());
         if (exact != null) { ids = ids.stream().filter(exact::contains).collect(java.util.stream.Collectors.toUnmodifiableSet()); }
         if (ids.isEmpty()) { return; }
         var markers = EscrowSettlementPruning.prune(observed.state().markers(), ids, coordinator.unresolvedIds());
-        var state = new EscrowPrefix.State(root.id(), observed.state().epoch(), observed.state().signature(), markers);
+        var state = new EscrowPrefix.State(root.id(), ordinary.state().epoch(), ordinary.state().signature(), markers);
         var chain = EscrowPrefix.chains(root.records()).get(endpoint.key());
         if (chain != null && chain.stream().anyMatch(link -> coordinator.currentReason(link.operation()).manual())) { return; }
         if (chain != null && EscrowPrefix.classify(root.id(), chain, state) == EscrowPrefix.Classification.OTHER) { return; }
@@ -217,7 +240,7 @@ public final class EscrowReconciliationPruning {
                     || root.records().stream().anyMatch(op -> op.guard().rocket().equals(endpoint.logicalRocket())
                     && rocketConflict(op, endpoint.identity(), coordinator.currentReason(op)))
                     || EscrowSettlementTombstones.stateLocked(root, endpoint.logicalRocket(), endpoint.identity(),
-                    rocket.escrowSection(), state.signature(), observed.quantity())) { return; }
+                    rocket.escrowSection(), observed.state().signature(), observed.quantity())) { return; }
             for (var floor : root.floors()) {
                 if (endpoint.logicalRocket().equals(floor.getUUID("rocket_id"))
                         && !EscrowReconciliationValidation.floorMatches(floor, endpoint, state, observed.invariantDigest())) { return; }
@@ -227,7 +250,7 @@ public final class EscrowReconciliationPruning {
                     || head.kind() != observed.signatureKind() || !head.invariant().equals(observed.invariantDigest()))) { return; }
             if (chain != null) {
                 var envelope = EscrowNativeEnvelope.rocket(rocket); envelope.put("wrapper", new RocketEscrowSection(root.id(), state.epoch(), markers).encode());
-                if (EscrowReconciliationValidation.rocket(root.id(), chain, envelope) == EscrowPrefix.Classification.OTHER) { return; }
+                if (EscrowReconciliationValidation.rocket(root.id(), chain, envelope, rocket.snapshot().orElseThrow()) == EscrowPrefix.Classification.OTHER) { return; }
             }
             rocket.pruneReconciledEscrow(new Permit(rocket, new RocketEscrowSection(root.id(), state.epoch(), markers),
                     () -> coordinator.ledger() == root && coordinator.operational() && (expected != null || coordinator.writerIdle())
@@ -236,6 +259,13 @@ public final class EscrowReconciliationPruning {
             if (!(level.getChunkSource().getChunkNow(endpoint.x() >> 4, endpoint.z() >> 4)
                     .getBlockEntity(EscrowLoaderEndpoint.position(endpoint)) instanceof FluidFuelLoaderBlockEntity loader)) { return; }
             loader.pruneReconciledEscrow(new SourcePermit(loader, state, () -> coordinator.ledger() == root && coordinator.operational()
+                    && (expected != null || coordinator.writerIdle()) && !coordinator.pruningBusy(endpoint.key())));
+        } else if (EscrowFluidCargoEndpoint.is(endpoint)) {
+            if (!(level.getChunkSource().getChunkNow(endpoint.x() >> 4, endpoint.z() >> 4)
+                    .getBlockEntity(EscrowFluidCargoEndpoint.position(endpoint)) instanceof
+                    io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketFluidCargoBlockEntity device)) { return; }
+            device.pruneReconciledEscrow(new EscrowFluidCargoPublication.PruningPermit(device, state,
+                    () -> coordinator.ledger() == root && coordinator.operational()
                     && (expected != null || coordinator.writerIdle()) && !coordinator.pruningBusy(endpoint.key())));
         } else {
             EscrowTestEndpoints.requireEnabled(server);

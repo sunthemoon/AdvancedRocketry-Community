@@ -442,8 +442,7 @@ public final class EscrowCoordinator implements AutoCloseable {
         var members = request.members;
         var proofs = Map.copyOf(request.proofs);
         var lease = request.journalLease;
-        var states = request.ends.entrySet().stream().collect(java.util.stream.Collectors.toMap(
-                Map.Entry::getKey, entry -> entry.getValue().state()));
+        var states = request.frontiers;
         EscrowTags.require(EscrowReconciliationValidation.retirementReady(request.root, members, states),
                 "C7 waits for every later acknowledged member on the affected endpoints");
         requireCoveringProofs(request.root.records(), members, proofs, frontiers);

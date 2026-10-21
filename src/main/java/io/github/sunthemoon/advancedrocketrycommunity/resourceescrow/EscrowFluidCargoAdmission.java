@@ -51,6 +51,7 @@ public final class EscrowFluidCargoAdmission implements AutoCloseable {
     }
     private RocketCargoStatus attemptOnce() {
         if (!device.live()) { return status = RocketCargoStatus.WAITING_UNLOADED; }
+        EscrowReconciliationPruning.observe(device);
         var root = device.root().orElse(null); var server = ((ServerLevel) device.getLevel()).getServer();
         var refusal = device.deviceRefusal();
         if (refusal != null) { return status = refusal; }
