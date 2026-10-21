@@ -26,6 +26,7 @@ public final class EscrowItemCargoAdmission implements AutoCloseable {
     private java.util.UUID queuedDevice;
     private boolean turnClaimed;
     private boolean retrying;
+    private RocketItemCargoSelection.Cursor selection;
     private final java.util.Set<EscrowItemCargoPayload> rejected = new java.util.HashSet<>();
     private io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot selectionSnapshot;
     public EscrowItemCargoAdmission(RocketItemCargoBlockEntity device) { this.device = device; }
@@ -69,6 +70,19 @@ public final class EscrowItemCargoAdmission implements AutoCloseable {
         if (inspect() != null) { return; }
         if (!device.claimTransferTurn()) { status = RocketCargoStatus.OTHER_TRANSFER_PENDING; return; }
         turnClaimed = true;
+        try {
+            var selected = selection.advance(eligible.getServer().getTickCount(),
+                    EscrowRuntime.of(eligible.getServer()).cargoPreparations().budget());
+            if (selected == null) { retrying = true; status = RocketCargoStatus.PREPARING; return; }
+            if (selected.status() != RocketCargoSelection.Status.ELIGIBLE) {
+                var empty = selection.noMove();
+                status = empty == null ? status(selected.status()) : RocketCargoStatus.valueOf(empty.name());
+                return;
+            }
+            delta = selected.delta();
+        } catch (io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.RocketCargoWorkBudget.Exceeded exceeded) {
+            status = RocketCargoStatus.CARGO_TOO_LARGE; return;
+        }
         ticket = EscrowRuntime.of(eligible.getServer()).cargoPreparations().begin(eligible, delta, kind().cargoLoad()).orElse(null);
         status = ticket == null ? RocketCargoStatus.OTHER_TRANSFER_PENDING : RocketCargoStatus.PREPARING;
     }
@@ -83,7 +97,7 @@ public final class EscrowItemCargoAdmission implements AutoCloseable {
         var resolved = RocketCargoBindingChecks.resolve(level, device.getBlockPos(), root.owner(), root.binding());
         if (resolved.refusal() != null) { return status = resolved.refusal(); }
         var rocket = resolved.rocket(); var runtime = EscrowRuntime.of(server);
-        if (!rejected.isEmpty() && (before != root || eligible != rocket || selectionSnapshot != rocket.snapshot().orElseThrow())) {
+        if (selection != null && (before != root || eligible != rocket || selectionSnapshot != rocket.snapshot().orElseThrow())) {
             return status = RocketCargoStatus.STALE_BINDING;
         }
         if (runtime.stopping()) { return status = RocketCargoStatus.LEDGER_UNAVAILABLE; }
@@ -97,7 +111,7 @@ public final class EscrowItemCargoAdmission implements AutoCloseable {
         coordinator = data == null ? null : data.bind(server);
         if (coordinator == null ? runtime.propulsion(server).state() != EscrowAdmissionAuthority.Delegate.State.NO_FILE
                 : !coordinator.operational()) { return status = RocketCargoStatus.LEDGER_UNAVAILABLE; }
-        virtual = coordinator == null ? EscrowLedger.empty(java.util.UUID.randomUUID()) : null;
+        if (coordinator == null && virtual == null) { virtual = EscrowLedger.empty(java.util.UUID.randomUUID()); }
         var logical = rocket.assemblyTransactionId().orElseThrow();
         if (EscrowSettlementTombstones.history(ledger(), logical)
                 || ledger().rocketAuthorities().stream().anyMatch(head -> logical.equals(head.logical()))) {
@@ -116,18 +130,22 @@ public final class EscrowItemCargoAdmission implements AutoCloseable {
         if (kind().cargoLoad() && root.buffer().slots().stream().allMatch(CompoundTag::isEmpty)) {
             return status = RocketCargoStatus.DEVICE_EMPTY;
         }
-        var selected = RocketItemCargoSelection.select(rocket.snapshot().orElseThrow(), root.buffer(), kind().cargoLoad(),
-                candidate -> rejected.contains(candidate) ? RocketCargoSelection.Status.CARGO_TOO_LARGE : RocketCargoSelection.Status.ELIGIBLE);
-        if (selected.status() != RocketCargoSelection.Status.ELIGIBLE) {
-            return status = switch (selected.status()) {
-                case CARGO_TOO_LARGE -> RocketCargoStatus.CARGO_TOO_LARGE;
-                case UNSUPPORTED_DATA -> RocketCargoStatus.UNSUPPORTED_DATA;
-                case NO_CARGO_STORAGE -> RocketCargoStatus.NO_CARGO_STORAGE;
-                default -> RocketCargoStatus.INVALID_DATA;
-            };
+        if (selection == null) {
+            selection = new RocketItemCargoSelection.Cursor(rocket.snapshot().orElseThrow(), root.buffer(), kind().cargoLoad(),
+                    candidate -> rejected.contains(candidate) ? RocketCargoSelection.Status.CARGO_TOO_LARGE : RocketCargoSelection.Status.ELIGIBLE);
         }
-        delta = selected.delta(); before = root; eligible = rocket; selectionSnapshot = rocket.snapshot().orElseThrow();
+        before = root; eligible = rocket; selectionSnapshot = rocket.snapshot().orElseThrow();
         return null;
+    }
+    static RocketCargoStatus status(RocketCargoSelection.Status result) {
+        return switch (result) {
+            case ELIGIBLE -> RocketCargoStatus.READY;
+            case CARGO_TOO_LARGE -> RocketCargoStatus.CARGO_TOO_LARGE;
+            case UNSUPPORTED_DATA -> RocketCargoStatus.UNSUPPORTED_DATA;
+            case NO_CARGO_STORAGE -> RocketCargoStatus.NO_CARGO_STORAGE;
+            case UNRESOLVED_LOOT -> RocketCargoStatus.UNRESOLVED_LOOT;
+            case INVALID_DATA -> RocketCargoStatus.INVALID_DATA;
+        };
     }
     /** Run only on the owner thread; each stage reserves the shared session budget before native work. */
     public void advance() {
@@ -137,10 +155,14 @@ public final class EscrowItemCargoAdmission implements AutoCloseable {
         if (!unchanged()) { refuse(RocketCargoStatus.STALE_BINDING); return; }
         try {
             if (capture == null) {
-                if (!ticket.advance()) { return; }
+                boolean ready = ticket.advance();
                 if (ticket.cursor().failure().isPresent()) {
                     if (ticket.cursor().failure().orElseThrow() == RocketCargoSelection.Status.CARGO_TOO_LARGE) { retryCandidate(); }
-                    else { refuse(RocketCargoStatus.INVALID_DATA); }
+                    else { refuse(status(ticket.cursor().failure().orElseThrow())); }
+                    return;
+                }
+                if (!ready) {
+                    if (!ticket.valid()) { refuse(RocketCargoStatus.STALE_BINDING); }
                     return;
                 }
                 var op = EscrowItemCargoProjection.operation(device, before, ticket, delta, kind(), coordinator == null ? 1 : coordinator.nextSequence(), journal);
@@ -152,7 +174,8 @@ public final class EscrowItemCargoAdmission implements AutoCloseable {
             var result = capture.result();
             if (result.refusal() != null) {
                 if (result.refusal() == EscrowCoordinator.Transfer.CARGO_TOO_LARGE) { retryCandidate(); }
-                else { refuse(EscrowCargoRefusals.status(result.refusal())); }
+                else { refuse(result.refusal() == EscrowCoordinator.Transfer.INVALID
+                        ? status(result.status()) : EscrowCargoRefusals.status(result.refusal())); }
                 return;
             }
             var operation = result.capture().operation(); var queue = EscrowRuntime.of(server).fills(server);
@@ -165,7 +188,8 @@ public final class EscrowItemCargoAdmission implements AutoCloseable {
             if (outcome == EscrowCoordinator.Transfer.UNAVAILABLE && capture.valid()) { return; }
             if (outcome == EscrowCoordinator.Transfer.CARGO_TOO_LARGE) { retryCandidate(); }
             else { refuse(EscrowCargoRefusals.status(outcome)); }
-        } catch (EscrowTags.TooLarge large) { retryCandidate(); }
+        } catch (EscrowTags.TooLarge | io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.RocketCargoWorkBudget.Exceeded large) { retryCandidate(); }
+        catch (io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.RocketItemCargoMutation.Refusal refused) { refuse(status(refused.status())); }
         catch (IllegalArgumentException | ArithmeticException | java.util.NoSuchElementException changed) { refuse(RocketCargoStatus.STALE_BINDING); }
     }
     /** Effective eligibility can reject an inner-valid payload; continue canonical selection without losing the FIFO turn. */
@@ -173,6 +197,7 @@ public final class EscrowItemCargoAdmission implements AutoCloseable {
         EscrowTags.require(rejected.size() < 27 * io.github.sunthemoon.advancedrocketrycommunity.rocket.RocketLimits.MAX_BLOCK_ENTITIES
                 && rejected.add(delta), "Cargo selection repeated a refused payload");
         if (capture != null) { capture.discard(); } else { ticket.close(); }
+        selection.retry();
         capture = null; ticket = null; nativeBefore = null; retrying = true; status = RocketCargoStatus.PREPARING;
     }
     private boolean unchanged() {
@@ -206,7 +231,7 @@ public final class EscrowItemCargoAdmission implements AutoCloseable {
         if (turnClaimed) { device.releaseTransferTurn(); turnClaimed = false; }
         if (capture != null) { capture.discard(); } else if (ticket != null) { ticket.close(); }
         queuedDevice = null;
-        retrying = false; rejected.clear(); selectionSnapshot = null;
+        retrying = false; rejected.clear(); selectionSnapshot = null; selection = null;
         ticket = null; capture = null; before = null; nativeBefore = null; delta = null; eligible = null;
         coordinator = null; virtual = null; journal = null;
     }

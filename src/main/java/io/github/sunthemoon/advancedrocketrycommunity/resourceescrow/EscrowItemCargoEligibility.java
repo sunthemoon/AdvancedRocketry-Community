@@ -6,7 +6,6 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.RocketCargoSe
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.RocketItemCargoMutation;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketSnapshotException;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketSnapshotNbtCodec;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import net.minecraft.nbt.CompoundTag;
@@ -40,14 +39,12 @@ final class EscrowItemCargoEligibility {
             EscrowTags.require(RocketSnapshotNbtCodec.encode(computed).equals(afterTag), "Item cargo changed more than its frozen payload");
             device(root, operation, delta, deviceBefore, deviceAfter, load);
             var capture = EscrowCargoCapture.capture(root.id(), operation, rocketBefore, rocketAfter, deviceBefore, deviceAfter);
-            try {
-                var candidates = new ArrayList<>(pending); candidates.add(capture.operation());
-                var prospective = root.append(candidates);
-                EscrowSettlementCapacity.requireAdmission(prospective, capture.operation(), capture.before());
-                EscrowSettlementCapacity.preflight(prospective, operation.id());
-            } catch (IllegalArgumentException full) { return new EscrowCargoEligibility.Result(Status.CARGO_TOO_LARGE, null); }
+            var refusal = EscrowCargoRefusals.capacity(root, pending, capture);
+            if (refusal.isPresent()) { return EscrowCargoEligibility.Result.refused(refusal.get()); }
             return new EscrowCargoEligibility.Result(Status.ELIGIBLE, capture);
         } catch (EscrowCargoEligibility.TooLarge exceeded) { return new EscrowCargoEligibility.Result(Status.CARGO_TOO_LARGE, null); }
+        catch (EscrowTags.TooLarge exceeded) { return EscrowCargoEligibility.Result.refused(EscrowCoordinator.Transfer.CARGO_TOO_LARGE); }
+        catch (EscrowSettlementCapacity.StaleCapture stale) { return EscrowCargoEligibility.Result.refused(EscrowCoordinator.Transfer.STALE); }
         catch (RocketItemCargoMutation.Refusal refused) { return new EscrowCargoEligibility.Result(refused.status(), null); }
         catch (EscrowItemStackCodec.Refusal refused) {
             return new EscrowCargoEligibility.Result(refused.status() == EscrowItemStackCodec.Status.CARGO_TOO_LARGE
