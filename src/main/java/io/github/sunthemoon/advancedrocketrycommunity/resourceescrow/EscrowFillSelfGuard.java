@@ -29,7 +29,7 @@ public final class EscrowFillSelfGuard {
                            Function<EscrowOperation, EscrowReason> reason,
                            Map<EscrowEndpoint.Key, EscrowPrefix.State> frontiers) {
         if (!operational || flightLocked || guard.transfer() == null || !guard.rocket().equals(destination.logicalRocket())
-                || EscrowSettlementTombstones.logicalLocked(root, guard.rocket())
+                || EscrowSettlementTombstones.history(root, guard.rocket())
                 || root.armedFlights().stream().anyMatch(arm -> arm.logical().equals(guard.rocket()))
                 || wrapper.ledger() != null && !root.id().equals(wrapper.ledger())) { return false; }
         var members = unresolved.stream().filter(op -> guard.rocket().equals(op.guard().rocket())

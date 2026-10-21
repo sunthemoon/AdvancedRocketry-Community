@@ -123,6 +123,11 @@ class EscrowFillSelfGuardTest {
         var guards = new net.minecraft.nbt.ListTag(); guards.add(EscrowCodec.guard(op.guard())); receipt.put("guards", guards);
         var tombstoned = root.replace(root.records(), root.floors(), List.of(receipt));
         assertFalse(matches(tombstoned, op, root.records(), Map.of(), RocketEscrowSection.neutral()));
+        receipt.putBoolean("released", true); receipt.putLong("release_generation", 1);
+        var released = root.replace(root.records(), root.floors(), List.of(receipt));
+        assertFalse(EscrowSettlementTombstones.logicalLocked(released, op.guard().rocket()));
+        assertFalse(matches(released, op, root.records(), Map.of(), RocketEscrowSection.neutral()),
+                "The self-guard excludes settlement history, even an already released receipt");
         var arm = new EscrowFlightTables.Armed(root.id(), op.guard().rocket(), op.owner(), op.destination().identity(), 0,
                 EscrowTestFixtures.id(8000), 1, 1, EscrowTestFixtures.hash(1), EscrowTestFixtures.hash(2),
                 EscrowTestFixtures.hash(3), EscrowTestFixtures.hash(4), EscrowTestFixtures.id(8001), op.guard(), null, 0,
