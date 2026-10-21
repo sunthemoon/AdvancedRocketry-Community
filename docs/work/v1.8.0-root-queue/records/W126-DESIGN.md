@@ -6,6 +6,8 @@ are at that commit. Sources: [W121-DESIGN](W121-DESIGN.md) with Root decision R4
 (`D:/GitHub/ARCE-Task-Evidence/root-queue/W121-review/REVIEW.md`), [TASK-W125](../TASK-W125-F1-NAMED-FILL-FIX.md) and
 [W11A-DESIGN](W11A-DESIGN.md) sections 4, 5 and 7. "By reading" marks a claim that no test or run exercised.
 
+**Amended by Root decision R52 (2026-10-21), after W126-review** (`D:/GitHub/ARCE-Task-Evidence/root-queue/W126-review/REVIEW.md`, SHA-256 `af34236c…0d06`, APPROVE-WITH-CHANGES). Read [TASK-W130](../TASK-W130-D2-B2-RETIRE-BEFORE-FILL.md) first; where this note and R52 differ, R52 wins. In short: (b2) is adopted as its own slice with an on-demand, rate-limited ticket step for the old launch site (W126-R1), a discard scan of both ends at each attempt (W126-R2), a gated test-only seam keeping W125's named-fill coverage (W126-R3), the pad after retirement (W126-R6) and fence reasons beyond FLOOR_PROOF_REQUIRED (W126-R9); (d) applies behind the production switch if fuel admission opens first; W125 reports conservation, refuelling and launch separately.
+
 **Terms.** T, L, D and X are as in W121. S′ is a stale source copy: the pre-launch source rocket as last saved in its
 chunk before the in-memory discard at SOURCE_REMOVED (`RocketTransferService.java:740-744`), reloaded after a crash.
 "Bound" means that the rocket's escrow section names the ledger.
