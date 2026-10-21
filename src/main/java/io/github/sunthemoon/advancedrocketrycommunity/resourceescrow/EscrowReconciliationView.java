@@ -100,10 +100,7 @@ final class EscrowReconciliationView {
                 if (!loader) { EscrowTestEndpoints.requireEnabled(server); }
                 source = level.getChunkSource().getChunkNow(endpoint.x() >> 4, endpoint.z() >> 4)
                         .getBlockEntity(new BlockPos(endpoint.x(), endpoint.y(), endpoint.z()));
-                if (loader && !(source instanceof io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderBlockEntity)) {
-                    EscrowLoaderRelocation.requireMissing(server, endpoint);
-                }
-                if (source == null) { throw new Refusal(EscrowReason.MISSING_ENDPOINT); }
+                requireSource(server, endpoint, source);
                 if (!loader && !endpoint.type().equals("minecraft:chest")) { throw new Refusal(EscrowReason.INVALID_ENDPOINT); }
             }
             // Reuse the fixed registered adapters' identity, duplicate, occupancy and stationary checks.
@@ -135,6 +132,19 @@ final class EscrowReconciliationView {
                     rocket == null ? () -> true : sameNativeCapture(rocket)));
         }
         return new EscrowReconciliationView(server, root, members, ends, EscrowFlightJournal.members(journal, members), bytes);
+    }
+
+    /** Fuel relocation diagnostics cannot interpret the separate cargo-device identity index. */
+    static void requireSource(MinecraftServer server, EscrowEndpoint endpoint, BlockEntity source) {
+        requireSource(endpoint, source, () -> EscrowLoaderRelocation.requireMissing(server, endpoint));
+    }
+
+    static void requireSource(EscrowEndpoint endpoint, BlockEntity source, Runnable requireMissingFuel) {
+        if (EscrowLoaderEndpoint.is(endpoint)
+                && !(source instanceof io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderBlockEntity)) {
+            requireMissingFuel.run();
+        }
+        if (source == null) { throw new Refusal(EscrowReason.MISSING_ENDPOINT); }
     }
 
     static void requireCaptureBounds(boolean ownerThread, int members) {
