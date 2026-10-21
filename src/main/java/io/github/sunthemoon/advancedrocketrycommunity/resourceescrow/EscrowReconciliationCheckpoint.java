@@ -86,7 +86,8 @@ final class EscrowReconciliationCheckpoint implements AutoCloseable {
         var chain = List.copyOf(EscrowPrefix.chains(root.records()).get(key));
         if (chain.stream().anyMatch(link -> link.operation().kind().cargo())) {
             return cargoReadbacks.computeIfAbsent(key, ignored -> new EscrowCargoReadback(root.id(),
-                    new EscrowReconciliationObservation(expected, frontiers.get(key)), witnesses.get(key)));
+                    new EscrowReconciliationObservation(expected, frontiers.get(key)), witnesses.get(key),
+                    chain.stream().map(EscrowPrefix.Link::operation).toList()));
         }
         return slot -> {
             try {
@@ -117,6 +118,10 @@ final class EscrowReconciliationCheckpoint implements AutoCloseable {
 
     EscrowReason readbackReason(List<EscrowBarrier.Target> targets, EscrowBarrier.JointResult result) {
         EscrowTags.require(Thread.currentThread() == owner, "Checkpoint confirmation requires owner thread");
+        for (var target : targets) {
+            var readback = cargoReadbacks.get(target.endpoint().key());
+            if (readback != null && readback.reason() != EscrowReason.NONE) { return readback.reason(); }
+        }
         return result.confirmed() && targets.stream().anyMatch(target -> cargoReadbacks.containsKey(target.endpoint().key())
                 && !cargoReadbacks.get(target.endpoint().key()).confirmed()) ? EscrowReason.BARRIER_UNSTABLE : result.reason();
     }

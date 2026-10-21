@@ -22,6 +22,7 @@ final class EscrowCargoReconciliation implements AutoCloseable {
 
     Step applyNext(EscrowCoordinator coordinator, EscrowOperation op, EscrowReconciliationView view,
             Map<EscrowEndpoint.Key, List<EscrowPrefix.Link>> chains) {
+        EscrowReconciliationAction.requireNativeFluid(op);
         if (ticket != null && (!ticket.valid() || active == op && captured != view)) { close(); }
         for (var endpoint : List.of(op.source(), op.destination())) {
             var end = view.ends.get(endpoint.key()); var chain = chains.get(endpoint.key());

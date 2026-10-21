@@ -33,6 +33,7 @@ public final class EscrowFluidCargoPublication {
                 && op.nativeBinding().complete() && op.nativeBinding().kind() == EscrowSignatureKind.ROCKET_COMPOSITE_V1
                 && authority.getAsBoolean(), "Cargo publication needs an acknowledged ordinary member");
         op.nativeBinding().requireOperation(op.owner(), op.source(), op.destination());
+        EscrowReconciliationAction.requireNativeFluid(op);
         var after = EscrowFluidCargoEndpoint.change(ledger.id(), op, before); var binding = op.nativeBinding();
         boolean load = op.kind().cargoLoad();
         EscrowTags.require(EscrowNativeEnvelope.digest(before).equals(load ? binding.sourceBefore() : binding.destinationBefore())

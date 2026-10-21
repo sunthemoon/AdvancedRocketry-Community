@@ -77,6 +77,8 @@ final class EscrowReconciliationDriver {
             completion.accept(EscrowReconciliationScheduler.Result.deferred()); return;
         }
         try {
+            // A missing/renamed native Fluid holds this member before observing or decoding either resource.
+            if (op.kind().cargo()) { EscrowReconciliationAction.requireNativeFluid(op); }
             var pending = checkpoints.get(op.id());
             if (pending != null && pending.journalLease.getAsBoolean()) {
                 if (pending.busy) { completion.accept(EscrowReconciliationScheduler.Result.deferred()); return; }
