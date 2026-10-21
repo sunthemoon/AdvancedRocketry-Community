@@ -359,6 +359,7 @@ public final class PlanetaryAdmissionGameTests {
                     awaitVisible(helper, driver, level, rocket, assertions, cleanup, pacer);
                     scheduled = true;
                 } else {
+                    trace(helper, rocket, "visible", null);
                     assertions.accept(() -> {
                         try { helper.succeed(); } finally { cleanup.run(); }
                     });
@@ -390,6 +391,7 @@ public final class PlanetaryAdmissionGameTests {
             helper.assertTrue(rocket.flightData().orElseThrow().state() == RocketFlightState.FUELED
                     && !journal.acknowledgedCurrent(), "Departure changed authority before acknowledgement");
             io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport.acknowledgeFixture(helper);
+            trace(helper, rocket, "acknowledged", transfer);
             helper.assertTrue(rocket.flightData().orElseThrow().state() == RocketFlightState.COUNTDOWN,
                     "Authorized closed-source departure did not enter countdown");
             helper.assertTrue(journal.find(transfer).isPresent(), "Accepted departure did not persist its journal");
@@ -422,6 +424,25 @@ public final class PlanetaryAdmissionGameTests {
             failed.run();
             throw failure;
         }
+    }
+
+    /**
+     * W122 trace: what the launch's acknowledged continuation reads (its entity check and the journal's per-rocket
+     * state) at the fixture's readiness and right after the acknowledgement. Information only; it decides nothing.
+     */
+    private static void trace(GameTestHelper helper, RocketEntity rocket, String stage, UUID transfer) {
+        var level = (ServerLevel) rocket.level();
+        var journal = RocketTransferSavedData.get(level.getServer());
+        UUID logical = rocket.assemblyTransactionId().orElse(null);
+        AdvancedRocketryCommunity.LOGGER.info("ARCE_GAMETEST_STATION_DEPARTURE stage={} level={} test_tick={} server_tick={}"
+                        + " rocket={} state={} added={} visible={} entities_loaded={} entity_ticking={} record={} actionable={}"
+                        + " acknowledged={} outstanding={} entries={}",
+                stage, level.dimension().location(), helper.getTick(), level.getServer().getTickCount(), rocket.getUUID(),
+                rocket.flightData().map(flight -> flight.state().name()).orElse("none"), rocket.isAddedToWorld(),
+                level.getEntity(rocket.getUUID()) == rocket, level.areEntitiesLoaded(rocket.chunkPosition().toLong()),
+                level.isPositionEntityTicking(rocket.blockPosition()), transfer != null && journal.find(transfer).isPresent(),
+                logical != null && journal.actionable(logical), journal.acknowledgedCurrent(), journal.outstandingEffectCount(),
+                journal.entries().size());
     }
 
     /** Only this test's request may be removed if an assertion fails. */
