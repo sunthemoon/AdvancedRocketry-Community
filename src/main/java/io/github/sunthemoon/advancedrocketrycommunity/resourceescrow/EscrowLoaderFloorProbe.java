@@ -51,7 +51,7 @@ final class EscrowLoaderFloorProbe {
     private static final BlockPos EXTRA = new BlockPos(72, 100, 72), C = new BlockPos(74, 100, 72);
     private final MinecraftServer server;
     private final String cut, variant;
-    private final boolean recovery, coalesced, saturated;
+    private final boolean recovery, coalesced, saturated, afterL1;
     private final AtomicBoolean paused = new AtomicBoolean();
     private final List<FluidFuelLoaderBlockEntity> loaders = new ArrayList<>();
     private RocketEntity rocket, extra;
@@ -68,7 +68,8 @@ final class EscrowLoaderFloorProbe {
         EscrowTestEndpoints.requireEnabled(server);
         EscrowTags.require(Boolean.getBoolean(EscrowTestEndpoints.HOOKS) && !Boolean.getBoolean(EscrowLoaderAdmission.SWITCH),
                 "Floor cuts use only per-device gated admission");
-        this.server = server; this.cut = cut; this.recovery = recovery; variant = cut.substring(PREFIX.length());
+        this.server = server; this.cut = cut; this.recovery = recovery; afterL1 = cut.endsWith("_ACK");
+        variant = cut.substring(PREFIX.length()).replace("_ACK", "");
         EscrowTags.require(variant.equals("255_DISTINCT") || variant.equals("255_COALESCED") || variant.equals("256"), "Unknown floor cut");
         coalesced = variant.equals("255_COALESCED"); saturated = variant.equals("256");
     }
@@ -106,10 +107,9 @@ final class EscrowLoaderFloorProbe {
 
     void checkpoint(String name) {
         if (recovery || done || paused.get() || step < 2) { return; }
-        // A named fill stops at K2, its L1 replaced before the callback: smoke-native-02 showed that once it is pending,
-        // transfer recovery fences its own landed record (ESCROW_PENDING_OR_TOMBSTONE), so reconciliation never reaches
-        // C2. K2 needs no reconciliation and is the other side of the same L1 acknowledgement. Writer IO thread.
-        if (name.equals("K2") && !saturated) {
+        // Keep W107C's K2 on the writer thread. W125's separate _ACK variants stop at the original
+        // after-L1-callback C2 boundary, before the first endpoint application.
+        if (name.equals("K2") && !saturated && !afterL1) {
             EscrowTags.require(admitted && (coalesced ? secondQueued : refused), "Floor admissions were not observed before the L1 write");
             pause(name); return;
         }
@@ -129,8 +129,8 @@ final class EscrowLoaderFloorProbe {
             }
             return;
         }
-        if (saturated && name.equals("C2_SOURCE_BEFORE")) {
-            EscrowTags.require(admitted && refused && data.ledger().records().size() == 1,
+        if ((saturated || afterL1) && name.equals("C2_SOURCE_BEFORE")) {
+            EscrowTags.require(admitted && (coalesced ? secondQueued : refused) && data.ledger().records().size() == (coalesced ? 2 : 1),
                     "Distinct-key refusal was not observed before the L1 acknowledgement");
             pause(name);
         }
@@ -189,13 +189,19 @@ final class EscrowLoaderFloorProbe {
     }
 
     /** A COMMITTED landed reservation for {@code target}: its arrival is the live rocket's own snapshot and identity. */
-    private static void landed(ServerLevel level, RocketTransferSavedData journal, RocketEntity target) {
+    static void landed(ServerLevel level, RocketTransferSavedData journal, RocketEntity target) {
+        landed(level, journal, target, level.dimension().location(), null);
+    }
+
+    static void landed(ServerLevel level, RocketTransferSavedData journal, RocketEntity target,
+                       net.minecraft.resources.ResourceLocation sourceLevel, RocketPosition sourceOrigin) {
         UUID transfer = UUID.randomUUID(), logical = target.assemblyTransactionId().orElseThrow();
         var to = target.snapshot().orElseThrow(); var origin = to.sourceOrigin();
-        var from = to.relocated(UUID.randomUUID(), level.dimension().location(), new RocketPosition(origin.x() + 16, origin.y(), origin.z()), 0);
+        var from = to.relocated(UUID.randomUUID(), sourceLevel,
+                sourceOrigin == null ? new RocketPosition(origin.x() + 16, origin.y(), origin.z()) : sourceOrigin, 0);
         var fuel = target.flightData().orElseThrow().fuel().withFluidBank(false, ROCKET_FUEL, null, 500);
         var plan = new RocketFlightPlan(3, transfer, RocketFlightPlanner.EARTH.bodyId(), RocketFlightPlanner.MOON.bodyId(),
-                level.dimension().location(), level.dimension().location(), 500, 0)
+                sourceLevel, level.dimension().location(), 500, 0)
                 .withPropulsionDebit(new RocketPropulsionDebit(500, 0, fuel.propulsion().orElseThrow().revision(),
                         fuel.resourceSignature(), RocketNativeResources.hash("W107C named floor journal fixture")));
         var flight = RocketFlightData.initial(logical, from.stats().fuelCapacity(), 1, plan.sourceBody(), plan.sourceDimension(), from.sourceOrigin(), 0)
@@ -261,6 +267,8 @@ final class EscrowLoaderFloorProbe {
             var usage = data.bind(server).floorUsage();
             AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_MATRIX_FLOOR_SETTLED cut={} fills={} floors={} named_floor={} used={} reserved={}",
                     cut, fills, data.ledger().floors().size(), floor, usage.used(), usage.reserved());
+            AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_MATRIX_USABILITY cut={} retired=true conserved=true mutation_allowed={}",
+                    cut, RocketRuntime.resourceMutationAllowed(rocket));
             done = true; result(); return;
         }
         if (elapsed >= 2_300) {

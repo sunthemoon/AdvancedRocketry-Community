@@ -7,6 +7,7 @@ unmodified driver; an opposite order is NOT_COVERED, not a passed cut. A new inv
 from __future__ import annotations
 
 import argparse
+import ctypes
 from contextlib import contextmanager
 from datetime import datetime, timezone
 import json
@@ -30,8 +31,8 @@ LOCK = Path("D:/GitHub/ARCE-Task-Evidence/locks/heavy-jvm")
 HOOK_FILES = tuple("src/main/java/io/github/sunthemoon/advancedrocketrycommunity/resourceescrow/" + name + ".java"
                    for name in ("EscrowLoaderReleaseProbe", "EscrowLoaderCutProbe", "EscrowLoaderStorageProbe", "EscrowLoaderRecoveryProbe", "EscrowReleaseProbe", "EscrowLedgerWriter", "EscrowFillQueue",
                                 "EscrowReconciliationAction", "EscrowReconciliationDriver", "EscrowRuntime", "EscrowBarrier",
-                                "EscrowLoaderFloorProbe", "EscrowStoreFault", "EscrowChunkStore"))
-HARNESS_FILES = ("scripts/run_v180_loader_cuts.py", "scripts/loader_cut_oracle.py", "scripts/loader_cut_nbt.py")
+                                "EscrowLoaderFloorProbe", "EscrowLoaderNamedProbe", "EscrowStoreFault", "EscrowChunkStore"))
+HARNESS_FILES = ("scripts/run_v180_loader_cuts.py", "scripts/loader_cut_oracle.py", "scripts/loader_cut_nbt.py", "scripts/loader_named_cut_oracle.py")
 FIRST = re.compile(r"ARCE_LOADER_MATRIX_FIRST cut=(\S+) recovery=(true|false) delegate=(\w+) issued=(\d+) records=(\d+) pending=(\d+)")
 PAUSED = re.compile(r"ARCE_LOADER_MATRIX_PAUSED cut=(\S+) hook=(\S+) first_store=(\w+) thread=(.+)")
 BASELINE_FAILURE = re.compile(r"ARCE_LOADER_MATRIX_BASELINE_FAILURE cut=(\S+) failure=(\d+) outcome=(\w+) pending=(\d+) unavailable=(true|false) status=(\w+)")
@@ -80,6 +81,7 @@ def w107c_observations(cut: str, restart: int, lines: list[str]) -> None:
 
 
 def floor_observations(cut: str, name: str, restart: int, lines: list[str]) -> None:
+    name = name.removesuffix("_ACK")
     c = re.escape(cut); coalesced = name.endswith("COALESCED"); saturated = name.endswith("256")
     seeded = 256 if saturated else 255; issued = seeded + (2 if coalesced else 1)
     refused = re.compile(r"ARCE_LOADER_MATRIX_FLOOR_REFUSED cut=" + c + r" phase=(\w+) status=ESCROW_FULL used=(\d+) reserved=(\d+) total=(\d+) next=(\d+)(?:\s|$)")
@@ -162,6 +164,16 @@ def disk_space() -> dict:
     return free
 
 
+def physical_memory() -> int:
+    class Status(ctypes.Structure):
+        _fields_ = [("length", ctypes.c_ulong), ("load", ctypes.c_ulong)] + [
+            (key, ctypes.c_ulonglong) for key in ("total", "available", "page_total", "page_available", "virtual_total", "virtual_available", "extended")]
+    status = Status(); status.length = ctypes.sizeof(status)
+    oracle.require(bool(ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(status))), "Cannot check physical memory")
+    oracle.require(status.available > 6 * 1024**3, "Heavy start refused: physical memory needs more than 6 GiB free")
+    return status.available
+
+
 @contextmanager
 def heavy_lock(owner: str):
     deadline = time.monotonic() + 3 * 3600
@@ -237,7 +249,7 @@ def run_cut(args, cut: str, evidence: Path, owner: str, pins: dict) -> dict:
             creation = cut.removeprefix(oracle.PREFIX) in oracle.CREATION + oracle.CREATION_SUPPLEMENTAL
             if creation and restart == 2:
                 command.insert(1, "-Dadvancedrocketrycommunity.escrowLoaderRetry=true")
-            start = dict(restart=restart, command=command, free_bytes=free, lock_owner=owner)
+            start = dict(restart=restart, command=command, free_bytes=free, free_physical_memory=physical_memory(), lock_owner=owner)
             row["starts"].append(start)
             process = smoke.CapturedProcess(command, session, evidence / f"start-{restart}.log")
             if restart == 0:
@@ -286,6 +298,13 @@ def run_cut(args, cut: str, evidence: Path, owner: str, pins: dict) -> dict:
                     oracle.require(any("phase=creation_restart " in line for line in lines), "Missing unchanged creation-restart observation")
                 if cut in W107C:
                     w107c_observations(cut, restart, lines)
+                if cut in oracle.S5_FLOORS and restart:
+                    usability = one_match(re.compile(r"ARCE_LOADER_MATRIX_USABILITY cut=" + re.escape(cut)
+                                                     + r" retired=true conserved=true mutation_allowed=(true|false)(?:\s|$)"), lines)
+                    start["floor_outcome"] = dict(fill_retired=True, resources_conserved=True, mutation_allowed=usability[1] == "true")
+                if cut in oracle.NAMED:
+                    import loader_named_cut_oracle
+                    start["named_outcome"] = loader_named_cut_oracle.observations(cut, restart, lines)
             except smoke.SmokeError as failure:
                 start["observation_error"] = str(failure)
                 row.setdefault("findings", []).append(dict(restart=restart, error=str(failure)))
@@ -308,6 +327,8 @@ def run_cut(args, cut: str, evidence: Path, owner: str, pins: dict) -> dict:
                 identity = None  # Identities are compared between the restarts of the edited copy.
             (evidence / "result.json").write_text(json.dumps(row, indent=2), encoding="utf-8")
         row["status"] = "FAILED" if row.get("findings") else "PASS" if ordered else "NOT_COVERED"
+        if row["status"] == "PASS" and "NAMED_CROSS_" in cut:
+            row.update(status="KNOWN_LIMITATION", reason="Fill retired and resources conserved on both restarts; F1b still blocks the next launch.")
         if row.get("findings"):
             row["error"] = "Validation failed; see findings and both restart observations."
         if not ordered:
