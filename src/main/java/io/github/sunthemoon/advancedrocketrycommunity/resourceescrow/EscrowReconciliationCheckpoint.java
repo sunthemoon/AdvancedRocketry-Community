@@ -53,9 +53,9 @@ final class EscrowReconciliationCheckpoint implements AutoCloseable {
         ends = Map.copyOf(collected);
         EscrowTags.require(affected.equals(ends.keySet()) && ends.values().stream().allMatch(end -> !end.missing() && end.bound()),
                 "Checkpoint must cover every affected native endpoint");
-        this.frontiers = Map.copyOf(frontiers);
-        EscrowTags.require(ends.keySet().equals(frontiers.keySet())
-                && EscrowReconciliationValidation.retirementReady(root, members, frontiers), "Later acknowledged member is not applied");
+        EscrowTags.require(frontiers.keySet().containsAll(ends.keySet()), "Checkpoint lacks an affected frontier");
+        this.frontiers = ends.keySet().stream().collect(java.util.stream.Collectors.toUnmodifiableMap(key -> key, frontiers::get));
+        EscrowTags.require(EscrowReconciliationValidation.retirementReady(root, members, this.frontiers), "Later acknowledged member is not applied");
         var chains = EscrowPrefix.chains(root.records());
         ends.values().forEach(end -> requireBinding(chains.get(end.endpoint().key()), end));
     }
