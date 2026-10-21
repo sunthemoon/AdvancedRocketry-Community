@@ -651,6 +651,8 @@ final class RocketFlightService {
         return transfers.resourceMutationAllowed(rocket);
     }
 
+    void retireBeforeFill(RocketEntity rocket) { transfers.retireBeforeFill(rocket); }
+
     boolean escrowReconciliationBoundary(RocketEntity rocket) { return transfers.escrowReconciliationBoundary(rocket); }
     boolean escrowReconciliationBoundary(RocketEntity rocket,
             io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGuard guard) {

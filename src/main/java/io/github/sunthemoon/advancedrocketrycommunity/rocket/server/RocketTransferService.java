@@ -483,7 +483,7 @@ final class RocketTransferService {
     /** No endpoint may mutate a balance that restart recovery can replace from its journal. */
     boolean resourceMutationAllowed(RocketEntity rocket) {
         if (!io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate.resourcesIdle(rocket)) { return false; }
-        if (landed.pending(rocket.assemblyTransactionId().orElse(null))) { return false; }
+        if (landed.pending(rocket.assemblyTransactionId().orElse(null)) || recovery.retirements().pending(rocket.assemblyTransactionId().orElse(null))) { return false; }
         if (!(rocket.level() instanceof ServerLevel level) || !level.getServer().isSameThread()
                 || !rocket.operational() || rocket.flightData().orElseThrow().activeTransferId().isPresent()) {
             return false;
@@ -503,6 +503,8 @@ final class RocketTransferService {
             boolean settled, boolean stationaryArrival) {
         return operational && (phase == null || phase == RocketTransferPhase.COMMITTED && settled && stationaryArrival);
     }
+
+    void retireBeforeFill(RocketEntity rocket) { if (resourceMutationAllowed(rocket)) { recovery.retireBeforeFill(rocket); } }
 
     /** The production discard callback; package-private solely to test it without starting a world. */
     static Runnable governedLaunchDiscard(RocketTransferSavedData journal, UUID logical, UUID request,
