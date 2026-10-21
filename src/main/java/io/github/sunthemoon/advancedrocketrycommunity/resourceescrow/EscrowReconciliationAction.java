@@ -67,10 +67,15 @@ public final class EscrowReconciliationAction {
             catch (IllegalArgumentException unavailable) {
                 // R39 for fluids: holds this operation only (sticky REPAIR through the scheduler), before any projection.
                 // The scheduler never revisits a manual record, so this logs at most once per operation and session.
-                LOGGER.warn("ARCE_ESCROW_FLUID_UNAVAILABLE op={} fluid={}", operation.id(), fluidName(operation));
+                reportFluidUnavailable(operation);
                 throw new EscrowReconciliationView.Refusal(EscrowReason.OTHER_STATE);
             }
         }
+    }
+
+    /** The one R39 WARN; each caller logs it at most once per operation and session. */
+    static void reportFluidUnavailable(EscrowOperation operation) {
+        LOGGER.warn("ARCE_ESCROW_FLUID_UNAVAILABLE op={} fluid={}", operation.id(), fluidName(operation));
     }
 
     /** The structurally checked ID: canonical, printable and at most 128 characters. */
