@@ -101,6 +101,9 @@ final class EscrowReconciliationView {
                 if (!loader) { EscrowTestEndpoints.requireEnabled(server); }
                 source = level.getChunkSource().getChunkNow(endpoint.x() >> 4, endpoint.z() >> 4)
                         .getBlockEntity(new BlockPos(endpoint.x(), endpoint.y(), endpoint.z()));
+                if (loader && !(source instanceof io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderBlockEntity)) {
+                    EscrowLoaderRelocation.requireMissing(server, endpoint);
+                }
                 if (source == null) { throw new Refusal(EscrowReason.MISSING_ENDPOINT); }
                 if (!loader && !endpoint.type().equals("minecraft:chest")) { throw new Refusal(EscrowReason.INVALID_ENDPOINT); }
             }
