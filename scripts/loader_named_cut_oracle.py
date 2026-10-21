@@ -90,7 +90,7 @@ def observations(cut: str, restart: int, lines: list[str]) -> dict:
                 old_source_loaded=False if not e5 else None)
 
 
-def follow_up_observations(cut: str, lines: list[str]) -> dict:
+def request_observations(cut: str, lines: list[str]) -> dict:
     """A real request is not a boundary query; PREPARING proves queued admission, not durable L1 or transfer."""
     def one(pattern):
         matches = [match for line in lines if (match := re.search(pattern, line))]
@@ -108,8 +108,15 @@ def follow_up_observations(cut: str, lines: list[str]) -> dict:
     base.require(admitted == (fill[2] == "PREPARING") and (not admitted or fill[1] == "READY")
                  and int(fill[5]) == int(fill[4]) + delta and int(fill[6]) == delta
                  and fill[2] != "READY", "Second-fill result and actual reservation disagree")
-    base.require(launch[1] == "TRANSFER_JOURNAL_BLOCKED", "Unexpected launch request result: " + launch[1])
     return dict(second_fill=dict(attempt=fill[1], result=fill[2], admitted=admitted,
                                  durable=False, completed=False, resources_unchanged=True),
-                launch=dict(code=launch[1], required_fuel=int(launch[2]), outcome="KNOWN_LIMITATION",
+                launch=dict(code=launch[1], required_fuel=int(launch[2]),
+                            outcome="KNOWN_LIMITATION" if launch[1] == "TRANSFER_JOURNAL_BLOCKED" else "UNEXPECTED_RESULT",
                             retained_transfer=True), mutation_allowed=launch[3] == "true")
+
+
+def follow_up_observations(cut: str, lines: list[str]) -> dict:
+    observed = request_observations(cut, lines)
+    code = observed["launch"]["code"]
+    base.require(code == "TRANSFER_JOURNAL_BLOCKED", "Unexpected launch request result: " + code)
+    return observed

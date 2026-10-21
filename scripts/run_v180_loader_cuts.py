@@ -318,7 +318,9 @@ def run_cut(args, cut: str, evidence: Path, owner: str, pins: dict) -> dict:
                     start["named_outcome"] = loader_named_cut_oracle.observations(cut, restart, lines)
                 if follow_up:
                     import loader_named_cut_oracle
-                    start["request_outcomes"] = loader_named_cut_oracle.follow_up_observations(cut, lines)
+                    # Keep the observed requests even when the stricter expected-refusal check fails.
+                    start["request_outcomes"] = loader_named_cut_oracle.request_observations(cut, lines)
+                    loader_named_cut_oracle.follow_up_observations(cut, lines)
             except smoke.SmokeError as failure:
                 start["observation_error"] = str(failure)
                 row.setdefault("findings", []).append(dict(restart=restart, error=str(failure)))

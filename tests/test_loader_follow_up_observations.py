@@ -37,6 +37,17 @@ class FollowUpObservationsTest(unittest.TestCase):
                 self.assertEqual("TRANSFER_JOURNAL_BLOCKED", result["launch"]["code"])
                 self.assertNotIn("usability", result)
 
+    def test_unexpected_launch_code_is_recorded_without_becoming_a_pass(self):
+        cut = "LF_M_NAMED_E5"
+        actual = [line.replace("code=TRANSFER_JOURNAL_BLOCKED", "code=INVALID_STATE")
+                  for line in lines(cut, True, True)]
+        result = named.request_observations(cut, actual)
+        self.assertEqual("INVALID_STATE", result["launch"]["code"])
+        self.assertEqual("UNEXPECTED_RESULT", result["launch"]["outcome"])
+        self.assertTrue(result["second_fill"]["admitted"])
+        with self.assertRaises(named.base.smoke.SmokeError):
+            named.follow_up_observations(cut, actual)
+
     def test_missing_repeated_or_inconsistent_observations_are_findings(self):
         cut = "LF_M_NAMED_E5"; good = lines(cut, True, True)
         bad_sets = [good[:2], good[1:], good + [good[0]]]
