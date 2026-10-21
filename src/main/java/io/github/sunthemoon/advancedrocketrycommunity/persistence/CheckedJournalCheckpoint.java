@@ -32,9 +32,9 @@ public final class CheckedJournalCheckpoint {
     public boolean current(long sequence) { return acknowledged != null && acknowledged.sequence() == sequence; }
     public Outcome unknown() { acknowledged = null; outcome = Outcome.UNKNOWN; return outcome; }
 
-    /** Encoding failures before replacement cannot resolve a previously ambiguous disk generation. */
+    /** This attempt did not replace authority; a missing acknowledgement remains missing. */
     public Outcome refused() {
-        if (outcome != Outcome.UNKNOWN) { outcome = Outcome.NOT_COMMITTED; }
+        outcome = Outcome.NOT_COMMITTED;
         return outcome;
     }
 
@@ -63,7 +63,7 @@ public final class CheckedJournalCheckpoint {
                         directoryForce.force(file.toAbsolutePath().normalize().getParent());
                         acknowledged = candidate;
                         outcome = Outcome.COMMITTED;
-                    } else if (disk.isEmpty() && acknowledged == null && outcome != Outcome.UNKNOWN
+                    } else if (disk.isEmpty() && acknowledged == null
                             || acknowledged != null && disk.isPresent()
                             && CanonicalNbtDigest.of(disk.orElseThrow(), maxBytes, maxDepth)
                                     .equals(acknowledged.digest())) {

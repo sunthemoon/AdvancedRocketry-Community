@@ -130,6 +130,7 @@ public final class RocketTransactionSavedData extends SavedData {
         }
         writerFile = normalized;
         long sequence = mutationSequence;
+        boolean wasUnknown = checkpoint.outcome() == CheckedJournalCheckpoint.Outcome.UNKNOWN;
         try {
             if (!operational()) { return checkpoint.refused(); }
             CompoundTag payload = save(new CompoundTag());
@@ -139,15 +140,20 @@ public final class RocketTransactionSavedData extends SavedData {
                 digests.put(record.getUUID("transaction_id"), CanonicalNbtDigest.of(record,
                         Math.toIntExact(TYPE.maxUncompressedBytes()), DIGEST_DEPTH));
             }
-            return checkpoint.write(normalized, policy, sequence, payload, digests);
+            checkpoint.write(normalized, policy, sequence, payload, digests);
         } catch (RuntimeException beforeReplacement) {
-            return checkpoint.refused();
+            checkpoint.refused();
         } catch (Error ambiguous) {
             checkpoint.unknown();
             throw ambiguous;
         } finally {
+            // Unlike the transfer scheduler's per-attempt result, this D0 view retains unresolved authority.
+            if (wasUnknown && checkpoint.outcome() != CheckedJournalCheckpoint.Outcome.COMMITTED) {
+                checkpoint.unknown();
+            }
             super.setDirty(!acknowledgedCurrent());
         }
+        return checkpoint.outcome();
     }
 
     private void requireOwner() {
@@ -232,6 +238,7 @@ public final class RocketTransactionSavedData extends SavedData {
             RocketStructureSnapshot snapshot,
             UUID ownerId
     ) {
+        requireOwner();
         if (!operational()) {
             throw new IllegalStateException("Rocket transaction journal contains unsupported or invalid data");
         }
@@ -257,6 +264,7 @@ public final class RocketTransactionSavedData extends SavedData {
             RocketStructureSnapshot snapshot,
             UUID ownerId
     ) {
+        requireOwner();
         if (!record.snapshotId().equals(snapshot.snapshotId())
                 || !record.contentHash().equals(snapshot.contentHash())) {
             throw new IllegalArgumentException("Journal record does not match bound snapshot");
@@ -276,6 +284,7 @@ public final class RocketTransactionSavedData extends SavedData {
     }
 
     private void remove(UUID transactionId) {
+        requireOwner();
         if (entries.remove(transactionId) != null) {
             setDirty();
         }
