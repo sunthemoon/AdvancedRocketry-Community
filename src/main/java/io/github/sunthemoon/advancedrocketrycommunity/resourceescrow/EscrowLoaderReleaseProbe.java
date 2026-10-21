@@ -30,6 +30,7 @@ final class EscrowLoaderReleaseProbe {
     private final EscrowLoaderCutProbe matrix;
     private final EscrowLoaderFloorProbe floors;
     private final EscrowLoaderNamedProbe named;
+    private final EscrowLandedRetirementProbe retirement;
     private final AtomicBoolean paused = new AtomicBoolean();
     private boolean firstTick, done;
     private int step;
@@ -39,11 +40,12 @@ final class EscrowLoaderReleaseProbe {
         EscrowTestEndpoints.requireEnabled(server); this.server = server;
         cut = System.getProperty("advancedrocketrycommunity.escrowCase");
         recovery = "recover".equals(System.getProperty("advancedrocketrycommunity.escrowScenario"));
+        retirement = EscrowLandedRetirementProbe.selected(cut) ? new EscrowLandedRetirementProbe(server, cut, recovery) : null;
         // W107C: cut R1's floor fixture runs beside, never inside, the W97 matrix.
         named = EscrowLoaderNamedProbe.selected(cut) ? new EscrowLoaderNamedProbe(server, cut, recovery) : null;
         floors = EscrowLoaderFloorProbe.selected(cut) ? new EscrowLoaderFloorProbe(server, cut, recovery) : null;
-        matrix = named == null && floors == null && EscrowLoaderCutProbe.selected(cut) ? new EscrowLoaderCutProbe(server, cut, recovery) : null;
-        if (matrix != null || floors != null || named != null) { return; }
+        matrix = retirement == null && named == null && floors == null && EscrowLoaderCutProbe.selected(cut) ? new EscrowLoaderCutProbe(server, cut, recovery) : null;
+        if (matrix != null || floors != null || named != null || retirement != null) { return; }
         EscrowTags.require(cut.startsWith(PREFIX) && (recovery || Boolean.getBoolean(EscrowLoaderAdmission.SWITCH)),
                 "The loader restart fixture starts only through the gated switch");
     }
@@ -53,6 +55,7 @@ final class EscrowLoaderReleaseProbe {
      * restarted world's ledger was already bound at ServerStartingEvent, with its reservations indexed.
      */
     void startTick() {
+        if (retirement != null) { retirement.startTick(); return; }
         if (named != null) { named.startTick(); return; }
         if (floors != null) { floors.startTick(); return; }
         if (matrix != null) { matrix.startTick(); return; }
@@ -75,6 +78,7 @@ final class EscrowLoaderReleaseProbe {
     }
 
     void checkpoint(String name) {
+        if (retirement != null) { retirement.checkpoint(name); return; }
         if (named != null) { named.checkpoint(name); return; }
         if (floors != null) { floors.checkpoint(name); return; }
         if (matrix != null) { matrix.checkpoint(name); return; }
@@ -86,6 +90,7 @@ final class EscrowLoaderReleaseProbe {
     }
 
     void tick() {
+        if (retirement != null) { retirement.tick(); return; }
         if (named != null) { named.tick(); return; }
         if (floors != null) { floors.tick(); return; }
         if (matrix != null) { matrix.tick(); return; }

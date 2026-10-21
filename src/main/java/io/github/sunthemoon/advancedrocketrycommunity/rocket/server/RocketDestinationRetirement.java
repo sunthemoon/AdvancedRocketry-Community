@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate;
+import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecoveryAction;
@@ -81,6 +82,7 @@ final class RocketDestinationRetirement extends RocketRetirementWorld {
                     candidate.chunkPosition()), RocketOrdinaryRetirement.MAX_SLOTS)) { return "CENSUS_LIMIT"; }
         }
         discarded.stream().filter(candidate -> !candidate.getUUID().equals(survivor)).forEach(RocketEntity::discard);
+        if (!discarded.isEmpty()) { EscrowRuntime.of(server).checkpoint("R52_DISCARDED"); }
         return null;
     }
 
@@ -89,6 +91,12 @@ final class RocketDestinationRetirement extends RocketRetirementWorld {
         if (source != null) { RocketTransferEntities.keepLoaded(source, record.sourceSnapshot(), record.transferId()); }
         var destination = RocketTransferEntities.level(server, record.destinationSnapshot().sourceDimension());
         if (destination != null) { RocketTransferEntities.refreshOriginTicket(destination, record.destinationSnapshot(), record.transferId()); }
+        EscrowRuntime.of(server).checkpoint("R52_TICKETED");
+    }
+
+    @Override public java.util.function.Consumer<String> sink() {
+        var ordinary = super.sink();
+        return label -> { ordinary.accept(label); EscrowRuntime.of(server).checkpoint("R52_" + label); };
     }
 
     @Override public void releaseTickets(RocketTransferRecord record) { RocketTransferEntities.releaseFlightTickets(server, record); }
