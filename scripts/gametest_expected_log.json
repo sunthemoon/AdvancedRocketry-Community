@@ -3,6 +3,33 @@
   "description": "Every ERROR and WARN entry that a complete runGameTestServer log is expected to contain. Each expectation records a deliberate refusal or failure path that a named GameTest drives, or a bounded environment warning. scripts/check_gametest_log.py fails on any FATAL entry, any entry not listed here and any count that differs.",
   "expectations": [
     {
+      "id": "w132-item-cargo-named-cleanup",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_FENCED transfer=[0-9a-f-]{36} reason=ENDPOINT_JOIN_PROOF_REQUIRED repair=offline-whole-world",
+      "counts": {"item_cargo_named_hold": 1},
+      "test": "ItemCargoReconciliationGameTests.namedTransferRemainsPreparedBehindTheExistingF1Fence",
+      "reason": "Removing the held item fixture during cleanup invalidates its named endpoint proof before the test journal is removed."
+    },
+    {
+      "id": "w132-item-cargo-named-hold",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_FENCED transfer=[0-9a-f-]{36} reason=ESCROW_PENDING_OR_TOMBSTONE repair=offline-whole-world",
+      "counts": {"item_cargo_named_hold": 1},
+      "test": "ItemCargoReconciliationGameTests.namedTransferRemainsPreparedBehindTheExistingF1Fence",
+      "reason": "The named item PREPARED record holds its resources until the separately scoped cargo F1 extension."
+    },
+    {
+      "id": "w132-item-cargo-r39-repair",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowReconciliationScheduler/",
+      "message": "Escrow record [0-9a-f-]{36} needs audited settlement or offline repair: OTHER_STATE",
+      "counts": {"item_cargo_r39": 1},
+      "test": "ItemCargoReconciliationGameTests.unavailableSavedItemHoldsOnlyItsNativeComponent",
+      "reason": "A missing native item holds only its operation without changing either endpoint; a separate item operation completes."
+    },
+    {
       "id": "w124-cargo-named-cleanup-fence",
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",

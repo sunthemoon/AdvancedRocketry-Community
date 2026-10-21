@@ -61,6 +61,16 @@ public final class EscrowReconciliationAction {
     }
 
     /** Shared R39 boundary; callers must run this before any native projection or publication. */
+    static void requireNativeResource(EscrowOperation operation) {
+        if (!operation.kind().itemCargo()) { requireNativeFluid(operation); return; }
+        try { EscrowItemStackCodec.validateNative(EscrowItemCargoPayload.decode(operation.payload()).stack()); }
+        catch (IllegalArgumentException unavailable) {
+            // Structural saved data stays intact. The scheduler marks only this member REPAIR.
+            throw new EscrowReconciliationView.Refusal(EscrowReason.OTHER_STATE);
+        }
+    }
+
+    /** Fluid logging and the existing fill boundary remain unchanged. */
     static void requireNativeFluid(EscrowOperation operation) {
         if (operation.kind().fluid()) {
             try { operation.nativeFluid(); }

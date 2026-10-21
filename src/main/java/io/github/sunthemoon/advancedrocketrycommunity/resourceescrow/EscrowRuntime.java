@@ -346,7 +346,7 @@ public final class EscrowRuntime {
             runtime.reconciliationProbe.beforeReconciliation();
         }
         if (Boolean.getBoolean(EscrowTestEndpoints.HOOKS)
-                && System.getProperty("advancedrocketrycommunity.escrowCase", "").startsWith("FC_")) {
+                && EscrowCargoReconciliationProbe.accepts(System.getProperty("advancedrocketrycommunity.escrowCase", ""))) {
             if (runtime.cargoReconciliationProbe == null) { runtime.cargoReconciliationProbe = new EscrowCargoReconciliationProbe(event.getServer()); }
             runtime.cargoReconciliationProbe.beforeReconciliation();
         }
@@ -360,7 +360,7 @@ public final class EscrowRuntime {
             String testCase = System.getProperty("advancedrocketrycommunity.escrowCase", "");
             if (testCase.equals(EscrowFlightBenchmarkProbe.CASE)) {
                 runtime.flightBenchmark.tick();
-            } else if (testCase.startsWith("FC_")) {
+            } else if (EscrowCargoReconciliationProbe.accepts(testCase)) {
                 runtime.cargoReconciliationProbe.tick();
             } else if (testCase.startsWith("CR_")) {
                 if (runtime.reconciliationProbe == null) { runtime.reconciliationProbe = new EscrowReconciliationProbe(event.getServer()); }

@@ -50,6 +50,7 @@ public final class EscrowItemCargoAdmission implements AutoCloseable {
     }
     private RocketCargoStatus attemptOnce() {
         if (!device.live()) { return status = RocketCargoStatus.WAITING_UNLOADED; }
+        EscrowReconciliationPruning.observe(device);
         var root = device.root().orElse(null); var server = ((ServerLevel) device.getLevel()).getServer();
         var refusal = device.deviceRefusal();
         if (refusal != null) { return status = refusal; }
@@ -58,6 +59,7 @@ public final class EscrowItemCargoAdmission implements AutoCloseable {
         if (queuedDevice != null) { return status; }
         if (inspect() != null) { return status; }
         if (!EscrowRuntime.of(server).fills(server).offerCargo(root.device(), this::step, this::discard)) {
+            discard();
             return status = RocketCargoStatus.ESCROW_FULL;
         }
         queuedDevice = root.device(); return status = RocketCargoStatus.READY;

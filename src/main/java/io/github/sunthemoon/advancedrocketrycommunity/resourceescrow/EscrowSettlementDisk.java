@@ -50,7 +50,8 @@ final class EscrowSettlementDisk {
                 EscrowTags.require(exact, "Relocated source identity");
             }
             if (!entity && (endpoint.identity().equals(EscrowLoaderEndpoint.device(object))
-                    || endpoint.identity().equals(EscrowFluidCargoEndpoint.device(object)))) {
+                    || endpoint.identity().equals(EscrowFluidCargoEndpoint.device(object))
+                    || endpoint.identity().equals(EscrowItemCargoEndpoint.device(object)))) {
                 EscrowTags.require(exact, "Relocated source identity");
             }
             if (exact) { EscrowTags.require(found == null && endpoint.type().equals(object.getString("id")), "Duplicate/wrong disk endpoint"); found = object; }
@@ -61,6 +62,9 @@ final class EscrowSettlementDisk {
         }
         if (!entity && EscrowFluidCargoEndpoint.is(endpoint)) {
             return EscrowReconciliationObservation.of(EscrowFluidCargoEndpoint.observation(endpoint, EscrowFluidCargoEndpoint.root(found), ledger), null);
+        }
+        if (!entity && EscrowItemCargoEndpoint.is(endpoint)) {
+            return EscrowReconciliationObservation.of(EscrowItemCargoEndpoint.observation(endpoint, EscrowItemCargoEndpoint.root(found), ledger), null);
         }
         if (!entity) {
             var persistent = EscrowTags.compound(found, "ForgeData");

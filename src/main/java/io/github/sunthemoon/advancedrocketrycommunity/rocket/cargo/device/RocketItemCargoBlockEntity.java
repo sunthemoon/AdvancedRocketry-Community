@@ -219,6 +219,15 @@ public final class RocketItemCargoBlockEntity extends BlockEntity implements Men
         setChanged();
     }
 
+    /** The four slots and the direction-matched marker publish together under a one-use server permit. */
+    public void applyEscrowCargo(io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowItemCargoPublication.Permit permit) {
+        write(java.util.Objects.requireNonNull(permit).consume(this));
+    }
+    public void pruneReconciledEscrow(io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowItemCargoPublication.PruningPermit permit) {
+        var section = java.util.Objects.requireNonNull(permit).consume(this);
+        write(new RocketItemCargoRoot(root.owner(), root.device(), root.role(), root.binding(), root.buffer(), section));
+    }
+
     @Override protected void saveAdditional(CompoundTag outer) {
         super.saveAdditional(outer);
         if (held != null) { outer.put(RocketItemCargoRoot.KEY, retainedByReference ? held : held.copy()); }

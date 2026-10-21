@@ -94,7 +94,7 @@ final class EscrowReconciliationView {
                 }
             } else {
                 // The registered loader adapter needs no hooks; every other source is a gated chest fixture.
-                boolean loader = EscrowLoaderEndpoint.is(endpoint) || EscrowFluidCargoEndpoint.is(endpoint);
+                boolean loader = EscrowLoaderEndpoint.is(endpoint) || EscrowFluidCargoEndpoint.is(endpoint) || EscrowItemCargoEndpoint.is(endpoint);
                 if (!loader) { EscrowTestEndpoints.requireEnabled(server); }
                 source = level.getChunkSource().getChunkNow(endpoint.x() >> 4, endpoint.z() >> 4)
                         .getBlockEntity(new BlockPos(endpoint.x(), endpoint.y(), endpoint.z()));

@@ -35,10 +35,13 @@ final class EscrowReconciliationValidation {
                 binding.requireOperation(op.owner(), op.source(), op.destination());
                 var chunk = envelope.getIntArray("chunk");
                 boolean cargo = binding.kind() == EscrowSignatureKind.ROCKET_COMPOSITE_V1;
-                if (cargo) { EscrowCargoPayload.validateStructure(op.payload()).requirePayload(snapshot); }
+                if (cargo) {
+                    if (op.kind().itemCargo()) { EscrowItemCargoPayload.decode(op.payload()).cursor().requirePayload(snapshot); }
+                    else { EscrowCargoPayload.validateStructure(op.payload()).requirePayload(snapshot); }
+                }
                 if (!link.role().equals(op.source().key().equals(endpoint.key()) ? "SOURCE" : "DESTINATION")
                         || !endpoint.key().equals(op.rocket().key()) || !binding.complete()
-                        || !(cargo ? op.kind() == EscrowOperation.Kind.FLUID_CARGO_LOAD || op.kind() == EscrowOperation.Kind.FLUID_CARGO_UNLOAD
+                        || !(cargo ? op.kind().cargo()
                                 : op.kind() == EscrowOperation.Kind.FLUID_PROPULSION_FILL && binding.kind() == EscrowSignatureKind.FUEL_VECTOR_V1)
                         || !endpoint.type().equals(envelope.getString("type")) || !endpoint.level().equals(envelope.getString("level"))
                         || chunk.length != 2 || endpoint.x() != chunk[0] || endpoint.z() != chunk[1]

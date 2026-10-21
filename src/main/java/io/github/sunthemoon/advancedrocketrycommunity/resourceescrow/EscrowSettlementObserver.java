@@ -76,6 +76,9 @@ final class EscrowSettlementObserver {
             } else if (EscrowFluidCargoEndpoint.is(endpoint)) {
                 result.add(EscrowFluidCargoEndpoint.observe(level.getChunkSource().getChunkNow(chunk.x, chunk.z)
                         .getBlockEntity(EscrowFluidCargoEndpoint.position(endpoint)), endpoint, ledger));
+            } else if (EscrowItemCargoEndpoint.is(endpoint)) {
+                result.add(EscrowItemCargoEndpoint.observe(level.getChunkSource().getChunkNow(chunk.x, chunk.z)
+                        .getBlockEntity(EscrowItemCargoEndpoint.position(endpoint)), endpoint, ledger));
             } else if (endpoint.kind() == EscrowEndpoint.Kind.BLOCK_ENTITY) {
                 // Every other source is an already-gated fixture.
                 EscrowTestEndpoints.requireEnabled(server);

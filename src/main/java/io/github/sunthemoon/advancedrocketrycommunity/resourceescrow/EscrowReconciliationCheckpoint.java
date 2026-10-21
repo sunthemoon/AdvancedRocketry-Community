@@ -65,7 +65,7 @@ final class EscrowReconciliationCheckpoint implements AutoCloseable {
             var op = link.operation(); var binding = op.nativeBinding();
             binding.requireOperation(op.owner(), op.source(), op.destination());
             EscrowTags.require(binding.complete() && (binding.kind() == EscrowSignatureKind.FUEL_VECTOR_V1
-                    || binding.kind() == EscrowSignatureKind.ROCKET_COMPOSITE_V1 && op.kind().fluid()),
+                    || binding.kind() == EscrowSignatureKind.ROCKET_COMPOSITE_V1 && op.kind().cargo()),
                     "Checkpoint lacks the native mutation binding");
             if (end.endpoint().kind() == EscrowEndpoint.Kind.ENTITY) {
                 // The versioned invariant commits physical/logical/type/owner/snapshot identity.
@@ -74,6 +74,7 @@ final class EscrowReconciliationCheckpoint implements AutoCloseable {
             } else {
                 // The registered loader tank, or the gated chest fixture; the observation already pins kind to endpoint.
                 EscrowTags.require(end.signatureKind() == EscrowSignatureKind.FLUID_TANK_V1
+                        || end.signatureKind() == EscrowSignatureKind.ITEM_BUFFER_V1
                         || end.signatureKind() == EscrowSignatureKind.FIXTURE_RESOURCE_V1, "Unsupported source projection");
             }
         }

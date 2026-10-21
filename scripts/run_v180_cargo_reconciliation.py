@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fluid cargo stop-table cuts: native force-kill, two restarts and independent raw Anvil checks."""
+"""Cargo stop-table cuts: native force-kill, two restarts and independent raw Anvil checks."""
 from __future__ import annotations
 
 import argparse
@@ -20,6 +20,28 @@ from run_v180_rocket_settlement_completion import require_lock
 CUTS = ("PREPARING", "L1_BEFORE", "L1_REPLACED", "L1_ACK", "C2_SOURCE_AFTER", "C2_DESTINATION_AFTER",
         "FIRST_STORE", "C6_JOINT_READBACK", "L2_REPLACED", "C8_RELEASED", "SOURCE_ONLY_STORE", "DESTINATION_ONLY_STORE")
 CASES = tuple("FC_" + direction + "_" + cut for direction in ("LOAD", "UNLOAD") for cut in CUTS)
+ITEM_CASES = tuple("IC_" + direction + "_" + cut for direction in ("LOAD", "UNLOAD") for cut in CUTS)
+
+
+def item_amount(stacks: list, slots: bool) -> int:
+    if slots and len(stacks) != 4:
+        raise smoke.SmokeError("Item device lost its four-slot frame")
+    occupied = set()
+    total = 0
+    for stack in stacks:
+        if not stack and slots:
+            continue
+        expected = dict(id="minecraft:stone", Count=stack.get("Count"),
+                        tag=dict(b=7, s=7, i=7, l=7, ba=[1, 2], ia=[1, 2], la=[1, 2]))
+        if not slots:
+            index = stack.get("Slot")
+            if index not in range(27) or index in occupied:
+                raise smoke.SmokeError("Invalid or duplicate item cargo slot")
+            occupied.add(index); expected["Slot"] = index
+        if stack != expected or not isinstance(stack.get("Count"), int) or not 1 <= stack["Count"] <= 64:
+            raise smoke.SmokeError("Item cargo changed its stack or NBT values")
+        total += stack["Count"]
+    return total
 
 
 def inspect(world: Path, case: str, restarted: bool) -> dict:
@@ -30,15 +52,19 @@ def inspect(world: Path, case: str, restarted: bool) -> dict:
                if [entry.get(k) for k in ("x", "y", "z")] == [64, 100, 64]]
     if len(rockets) != 1 or len(devices) != 1 or journal(world)["transfers"]:
         raise smoke.SmokeError("Missing/duplicated native fixture or unexpected transfer record")
-    entity, device = rockets[0], devices[0]["arce_rocket_fluid_cargo"]
+    item = case.startswith("IC_")
+    entity, device = rockets[0], devices[0]["arce_rocket_item_cargo" if item else "arce_rocket_fluid_cargo"]
     rocket = entity["RocketEntityData"]
     snapshot, section = rocket["snapshot"], rocket["resource_escrow"]
     blocks = [entry["block_entity"] for entry in snapshot["relative_blocks"] if "block_entity" in entry]
-    if len(blocks) != 1 or blocks[0]["adapter"] != "advancedrocketrycommunity:pressurized_tank_v1":
+    adapter = "vanilla_container_v1" if item else "pressurized_tank_v1"
+    if len(blocks) != 1 or blocks[0]["adapter"] != "advancedrocketrycommunity:" + adapter:
         raise smoke.SmokeError("Native cargo fixture changed its adapter or payload count")
-    cargo = blocks[0]["data"]["tank"]["fluid"].get("Amount", 0)
-    amount = device["tank"].get("Amount", 0)
-    load = case.startswith("FC_LOAD_")
+    cargo = item_amount(blocks[0]["data"]["Items"], False) if item else blocks[0]["data"]["tank"]["fluid"].get("Amount", 0)
+    amount = item_amount(device["buffer"]["slots"], True) if item else device["tank"].get("Amount", 0)
+    load = case.startswith("IC_LOAD_" if item else "FC_LOAD_")
+    total, delta = (70, 4) if item else (5000, 1000)
+    rocket_before, device_before = ((60, 10) if load else (10, 60)) if item else ((0, 5000) if load else (5000, 0))
     cut = case[len("FC_LOAD_") if load else len("FC_UNLOAD_"):]
     before = cut in ("PREPARING", "L1_BEFORE")
     if (device["owner"] != rocket["owner_id"] or device["binding"]["logical_rocket"] != rocket["assembly_transaction_id"]
@@ -48,11 +74,12 @@ def inspect(world: Path, case: str, restarted: bool) -> dict:
     epochs = [section["resource_epoch"], device["resource_escrow"]["resource_epoch"]]
     if any(epoch not in (0, 1) for epoch in epochs):
         raise smoke.SmokeError("Resource epoch repeated")
-    if cargo != (epochs[0] * 1000 if load else 5000 - epochs[0] * 1000) or amount != (5000 - epochs[1] * 1000 if load else epochs[1] * 1000):
+    sign = 1 if load else -1
+    if cargo != rocket_before + sign * epochs[0] * delta or amount != device_before - sign * epochs[1] * delta:
         raise smoke.SmokeError("Native balance does not match its independently saved epoch")
     if restarted:
         epoch = 0 if before else 1
-        if (root["records"] or root["issued_through"] != epoch or epochs != [epoch, epoch] or cargo + amount != 5000
+        if (root["records"] or root["issued_through"] != epoch or epochs != [epoch, epoch] or cargo + amount != total
                 or section["markers"] or device["resource_escrow"]["markers"]):
             raise smoke.SmokeError("Restart did not conserve and retire exactly once")
     elif before:
@@ -70,7 +97,7 @@ def inspect(world: Path, case: str, restarted: bool) -> dict:
             raise smoke.SmokeError("Joint readback cut did not store both AFTER states")
         if cut in ("SOURCE_ONLY_STORE", "DESTINATION_ONLY_STORE"):
             source = cut == "SOURCE_ONLY_STORE"
-            if epochs != ([0, 1] if load == source else [1, 0]) or cargo + amount != (4000 if source else 6000):
+            if epochs != ([0, 1] if load == source else [1, 0]) or cargo + amount != (total - delta if source else total + delta):
                 raise smoke.SmokeError("Selected one-sided store has the wrong epochs or raw balance")
             op = root["records"][0]
             if root["issued_through"] != 1 or op["seq"] != 1:
@@ -176,7 +203,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__); parser.add_argument("source_server", type=Path)
     for key in ("jar", "session-dir", "evidence-dir"): parser.add_argument("--" + key, type=Path, required=True)
     for key in ("source-commit", "java", "lock-owner"): parser.add_argument("--" + key, required=True)
-    parser.add_argument("--case", action="append", choices=CASES); parser.add_argument("--startup-timeout", type=float, default=240)
+    parser.add_argument("--case", action="append", choices=CASES + ITEM_CASES); parser.add_argument("--startup-timeout", type=float, default=240)
     try: run(parser.parse_args()); return 0
     except (OSError, smoke.SmokeError) as failure: print(f"FAIL: {failure}"); return 1
 
