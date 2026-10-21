@@ -10,6 +10,7 @@ import net.minecraft.server.MinecraftServer;
 /** Session-local, independently gated cargo kinds. No switch enables the fuel loader. */
 public final class EscrowCargoSwitches {
     private final EnumMap<EscrowOperation.Kind, Set<UUID>> devices = new EnumMap<>(EscrowOperation.Kind.class);
+    private final Set<UUID> paused = new HashSet<>();
     static boolean production(EscrowOperation.Kind kind) {
         return switch (kind) {
             case FLUID_CARGO_LOAD -> false;
@@ -40,5 +41,14 @@ public final class EscrowCargoSwitches {
         EscrowTags.require(server.isSameThread(), "Cargo switches require the server thread");
         EscrowRuntime.of(server).cargoSwitches.set(kind, device, enabled);
     }
-    void clear() { devices.clear(); }
+    /** Preserve admission-only fixtures' exact L1 boundary independently of the ordinary executor. */
+    static void pauseReconciliationForTests(MinecraftServer server, UUID device, boolean pause) {
+        EscrowTestEndpoints.requireEnabled(server);
+        EscrowTags.require(server.isSameThread(), "Cargo fixture pause requires owner thread");
+        var named = EscrowRuntime.of(server).cargoSwitches.paused;
+        EscrowTags.require(!pause || named.contains(device) || named.size() < EscrowLimits.OPERATIONS, "Too many cargo fixture pauses");
+        if (pause) { named.add(device); } else { named.remove(device); }
+    }
+    boolean paused(UUID device) { return paused.contains(device); }
+    void clear() { devices.clear(); paused.clear(); }
 }

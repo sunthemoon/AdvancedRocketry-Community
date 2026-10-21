@@ -51,6 +51,9 @@ final class EscrowReconciliationDriver {
         if (op.nativeBinding().kind() != EscrowSignatureKind.FUEL_VECTOR_V1 && !EscrowCargoReconciliation.supported(op)) {
             completion.accept(new EscrowReconciliationScheduler.Result(EscrowReason.RECONCILIATION_UNIMPLEMENTED, false)); return;
         }
+        if (op.kind().cargo() && EscrowRuntime.of(server).cargoSwitches.paused(op.device().identity())) {
+            completion.accept(new EscrowReconciliationScheduler.Result(EscrowReason.RECONCILIATION_UNIMPLEMENTED, false)); return;
+        }
         // Historical settlement/relocation harnesses own their endpoint actions. The production loader adapter is always
         // registered; a fixture source enters only when explicitly registered. Registration itself grants no authority.
         if (!(op.kind().cargo() ? EscrowFluidCargoEndpoint.is(op.device()) : adapter(op.source()))) {

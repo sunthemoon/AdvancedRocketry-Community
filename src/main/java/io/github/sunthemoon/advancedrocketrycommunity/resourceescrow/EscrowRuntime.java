@@ -69,6 +69,7 @@ public final class EscrowRuntime {
     private EscrowSettlementCompletionProbe settlementCompletionProbe;
     private EscrowPreF2Probe preF2Probe;
     private volatile EscrowReconciliationProbe reconciliationProbe;
+    private volatile EscrowCargoReconciliationProbe cargoReconciliationProbe;
     private EscrowSourceClockProbe sourceClockProbe;
     private EscrowDestinationProbe destinationProbe;
     private EscrowPhaseProbe phaseProbe;
@@ -167,6 +168,7 @@ public final class EscrowRuntime {
     public void checkpoint(String cut) {
         var measured = flightBenchmark; if (measured != null) { measured.metrics.checkpoint(cut); }
         var ordinary = reconciliationProbe; if (ordinary != null) { ordinary.checkpoint(cut); }
+        var cargoProbe = cargoReconciliationProbe; if (cargoProbe != null) { cargoProbe.checkpoint(cut); }
         var terminalCut = terminalTestCut; if (terminalCut != null) { terminalCut.accept(cut); }
         var nativeTerminal = terminalProbe; if (nativeTerminal != null) { nativeTerminal.checkpoint(cut); }
         var loader = loaderProbe; if (loader != null) { loader.checkpoint(cut); }
@@ -340,6 +342,11 @@ public final class EscrowRuntime {
             if (runtime.reconciliationProbe == null) { runtime.reconciliationProbe = new EscrowReconciliationProbe(event.getServer()); }
             runtime.reconciliationProbe.beforeReconciliation();
         }
+        if (Boolean.getBoolean(EscrowTestEndpoints.HOOKS)
+                && System.getProperty("advancedrocketrycommunity.escrowCase", "").startsWith("FC_")) {
+            if (runtime.cargoReconciliationProbe == null) { runtime.cargoReconciliationProbe = new EscrowCargoReconciliationProbe(event.getServer()); }
+            runtime.cargoReconciliationProbe.beforeReconciliation();
+        }
         if (runtime.scheduler != null && data != null) {
             runtime.scheduler.tick(event.getServer().getTickCount()); data.bind(event.getServer()).persistTransitions();
         }
@@ -350,6 +357,8 @@ public final class EscrowRuntime {
             String testCase = System.getProperty("advancedrocketrycommunity.escrowCase", "");
             if (testCase.equals(EscrowFlightBenchmarkProbe.CASE)) {
                 runtime.flightBenchmark.tick();
+            } else if (testCase.startsWith("FC_")) {
+                runtime.cargoReconciliationProbe.tick();
             } else if (testCase.startsWith("CR_")) {
                 if (runtime.reconciliationProbe == null) { runtime.reconciliationProbe = new EscrowReconciliationProbe(event.getServer()); }
                 runtime.reconciliationProbe.tick();
