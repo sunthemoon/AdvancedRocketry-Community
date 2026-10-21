@@ -348,21 +348,30 @@ public final class EscrowSettlementPruning {
             if (chunk == null) { return null; }
             var source = chunk.getBlockEntity(new BlockPos(endpoint.x(), endpoint.y(), endpoint.z()));
             if (source == null) { return null; }
-            if (!endpoint.identity().equals(source.getPersistentData().getCompound("arce_escrow_fixture").getUUID("identity"))
-                    || !endpoint.type().equals(net.minecraft.core.registries.BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(source.getType()).toString())) {
-                return State.refused("source identity or type changed");
-            }
-            var state = EscrowTestEndpoints.state(source.getPersistentData(), root.id(), false);
-            if (state.markers().isEmpty()) { return State.DONE; }
-            if (!frontier(root, groups, endpoint, state, EscrowTestEndpoints.amount(source.getPersistentData()), state.signature(), unresolved)) {
-                return retains(state.markers(), members) ? State.refused("frontier: live state is neither the released survivor nor a proved later prefix") : State.DONE;
-            }
-            var markers = prune(state.markers(), members, unresolved);
-            if (markers.equals(state.markers())) { return retains(markers, members) ? State.WAITING_EARLIER_GROUP : State.DONE; }
-            EscrowTestEndpoints.putState(source.getPersistentData(), new EscrowPrefix.State(root.id(), state.epoch(), state.signature(), markers), false);
-            source.setChanged();
-            return State.DONE;
+            return fixture(source, root, visit, unresolved, groups);
         }
         return null;
+    }
+
+    /** The already-gated fallback; an ordinary or malformed replacement is skipped without changing its data. */
+    static State fixture(net.minecraft.world.level.block.entity.BlockEntity source, EscrowLedger root, Visit visit,
+                         Set<UUID> unresolved, List<Group> groups) {
+        var endpoint = visit.endpoint().reference(); var members = visit.group().members();
+        var fixture = source.getPersistentData().getCompound("arce_escrow_fixture");
+        if (!fixture.hasUUID("identity")) { return null; }
+        if (!endpoint.identity().equals(fixture.getUUID("identity"))
+                || !endpoint.type().equals(net.minecraft.core.registries.BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(source.getType()).toString())) {
+            return State.refused("source identity or type changed");
+        }
+        var state = EscrowTestEndpoints.state(source.getPersistentData(), root.id(), false);
+        if (state.markers().isEmpty()) { return State.DONE; }
+        if (!frontier(root, groups, endpoint, state, EscrowTestEndpoints.amount(source.getPersistentData()), state.signature(), unresolved)) {
+            return retains(state.markers(), members) ? State.refused("frontier: live state is neither the released survivor nor a proved later prefix") : State.DONE;
+        }
+        var markers = prune(state.markers(), members, unresolved);
+        if (markers.equals(state.markers())) { return retains(markers, members) ? State.WAITING_EARLIER_GROUP : State.DONE; }
+        EscrowTestEndpoints.putState(source.getPersistentData(), new EscrowPrefix.State(root.id(), state.epoch(), state.signature(), markers), false);
+        source.setChanged();
+        return State.DONE;
     }
 }
