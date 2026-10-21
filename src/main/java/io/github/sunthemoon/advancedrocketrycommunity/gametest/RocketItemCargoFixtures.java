@@ -62,6 +62,7 @@ final class RocketItemCargoFixtures {
         for (int index = 0; index < nodes - base; index++) { list.add(ByteTag.valueOf((byte) index)); }
         return stack;
     }
+    static int nodes(Tag tag) { return BoundedNbt.measure(tag, Integer.MAX_VALUE, 1_024, 1 << 20).nodes(); }
     static int size(ItemStack stack, boolean bytes) {
         var measured = BoundedNbt.measure(stack.save(new CompoundTag()), Integer.MAX_VALUE, 1_024, 1 << 20);
         return bytes ? (int) measured.bytes() : measured.nodes();

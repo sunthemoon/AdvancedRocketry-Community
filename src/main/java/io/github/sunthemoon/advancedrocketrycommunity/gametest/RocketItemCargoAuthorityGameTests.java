@@ -209,6 +209,83 @@ public final class RocketItemCargoAuthorityGameTests {
                 type, menu.getCarried().copy(), new Int2ObjectOpenHashMap<>()));
     }
 
+    /**
+     * W120-R2: an unbound device filled as far as it accepts can still be bound through the real interaction, with
+     * room left for an escrow marker. A root loaded fuller than that refuses the binding cleanly, with the size
+     * message and the linker's cooldown, and changes nothing.
+     */
+    @GameTest(template = TEMPLATE, batch = BATCH, timeoutTicks = 80)
+    public static void aFilledUnboundDeviceStaysBindableAndAFullerRootRefusesCleanly(GameTestHelper helper) {
+        var pos = new BlockPos(3, 2, 7); var origin = new BlockPos(3, 2, 3);
+        EntitySections.whenLoaded(helper, () -> {
+            var level = helper.getLevel(); var server = level.getServer(); var at = helper.absolutePos(pos);
+            List<String> tokens = new ArrayList<>();
+            var owner = ConnectedTestPlayers.join(server, UUID.randomUUID(), "w120fFull", level, at.east(2),
+                    new ArrayList<>(), false, tokens, false);
+            List<RocketEntity> rockets = new ArrayList<>();
+            try {
+                var rocket = FluidFuelLoaderFixtures.rocket(helper, origin, owner.getUUID()); rockets.add(rocket);
+                var large = stoneOfNodes(1, 512);
+                for (var role : RocketCargoRole.values()) {
+                    owner.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+                    var device = place(helper, pos, role, owned(owner.getUUID(), role));
+                    // What the four stacks may take of the bound: everything but the frame, where each empty slot is {}.
+                    int stacks = RocketItemCargoRoot.MAX_NODES - (nodes(device.heldRoot().orElseThrow()) - RocketItemCargoMenu.DEVICE_SLOTS);
+                    var menu = (RocketItemCargoMenu) device.createMenu(6, owner.getInventory(), owner);
+                    for (int slot = 0; slot < 3; slot++) {
+                        menu.setCarried(large.copy()); menu.clicked(slot, 0, ClickType.PICKUP, owner);
+                        helper.assertTrue(menu.getCarried().isEmpty() && device.stack(slot).getCount() == 1, role + " refused a 512-node stack");
+                    }
+                    // The stack that brings the unbound root to exactly 2,048 nodes leaves no room to bind it.
+                    var last = stoneOfNodes(1, stacks - 3 * 512);
+                    var before = device.heldRoot().orElseThrow();
+                    menu.setCarried(last.copy()); menu.clicked(3, 0, ClickType.PICKUP, owner);
+                    helper.assertTrue(menu.getCarried().getCount() == 1 && device.stack(3).isEmpty() && before.equals(device.heldRoot().orElseThrow()),
+                            role + " accepted a stack that leaves no room to bind the device");
+                    if (role == RocketCargoRole.LOAD) {
+                        helper.assertTrue(port(device).insertItem(3, last, false) == last && before.equals(device.heldRoot().orElseThrow()),
+                                "The port accepted a stack that leaves no room to bind the device");
+                    }
+                    // The largest fourth stack the device accepts, searched below that within 64 nodes.
+                    int accepted = 0;
+                    for (int size = stacks - 3 * 512 - 1; size > stacks - 3 * 512 - 64 && accepted == 0; size--) {
+                        menu.setCarried(stoneOfNodes(1, size)); menu.clicked(3, 0, ClickType.PICKUP, owner);
+                        if (menu.getCarried().isEmpty()) { accepted = size; }
+                    }
+                    helper.assertTrue(accepted > 0 && device.stack(3).getCount() == 1, role + " accepted no fourth stack");
+                    menu.setCarried(ItemStack.EMPTY);
+                    owner.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(ModItems.LINKER.get())); cooldown(owner);
+                    helper.assertTrue(select(owner, at) == InteractionResult.CONSUME, role + " could not select the filled device");
+                    cooldown(owner);
+                    helper.assertTrue(owner.interactOn(rocket, InteractionHand.MAIN_HAND).consumesAction()
+                            && binding(helper, rocket, origin).equals(device.root().orElseThrow().binding()), role + " could not bind the filled device");
+                    var bound = device.root().orElseThrow();
+                    var marked = new RocketItemCargoRoot(bound.owner(), bound.device(), role, bound.binding(), bound.buffer(),
+                            new RocketEscrowSection(UUID.randomUUID(), Long.MAX_VALUE,
+                                    List.of(new EscrowPrefix.Marker(UUID.randomUUID(), Long.MAX_VALUE, role.markerRole(), Long.MAX_VALUE))));
+                    helper.assertTrue(RocketItemCargoRoot.bounded(marked.encodeUnchecked()), role + " left no room for an escrow marker");
+                    // A root loaded fuller than the device accepts: the binding is refused cleanly and changes nothing.
+                    var full = RocketItemCargoRoot.placed(owner.getUUID(), UUID.randomUUID(), role);
+                    for (int slot = 0; slot < 3; slot++) { full = full.withSlot(slot, large.save(new CompoundTag())); }
+                    device.load(outer(full.withSlot(3, last.save(new CompoundTag())).encode()));
+                    var raw = device.heldRoot().orElseThrow();
+                    cooldown(owner);
+                    helper.assertTrue(select(owner, at) == InteractionResult.CONSUME, role + " could not select the full device");
+                    cooldown(owner); tokens.clear();
+                    helper.assertTrue(LinkerItem.bindRocket(owner, InteractionHand.MAIN_HAND, rocket) == InteractionResult.FAIL
+                            && raw.equals(device.heldRoot().orElseThrow()) && device.root().orElseThrow().binding() == null
+                            && owner.getCooldowns().isOnCooldown(ModItems.LINKER.get())
+                            && tokens.contains(ConnectedTestPlayers.ACTION_BAR + RocketCargoStatus.CARGO_TOO_LARGE.translationKey()),
+                            role + " did not refuse a binding that does not fit cleanly: " + tokens);
+                    owner.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY); clear(level, at);
+                }
+            } finally {
+                rockets.forEach(RocketEntity::discard); owner.getInventory().clearContent(); clear(level, at);
+                server.getPlayerList().remove(owner);
+            }
+        }, pos, origin);
+    }
+
     @GameTest(template = TEMPLATE, batch = BATCH, timeoutTicks = 80)
     public static void cutG2OccupancyReconnectRideTeleportTravelAndBypassKeepCargoIdle(GameTestHelper helper) {
         var pos = new BlockPos(3, 2, 7); var origin = new BlockPos(3, 2, 3);
