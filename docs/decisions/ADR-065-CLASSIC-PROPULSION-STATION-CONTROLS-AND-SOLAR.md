@@ -1847,6 +1847,11 @@ scope (`93659768`). It changes no decision status and accepts no risk.
   merges into a container already holding the same item and tags before using an empty slot; an
   unload skips a stack that fails the stack checks. Item preparation uses C-P part 2's tickets and
   the unchanged 16 MiB budget, with a first-step reservation sized for the largest legal container.
+- **Item devices (D-A, W120 with W120F, merged `42887305`).** The rocket item loader and unloader
+  have a closed `arce_rocket_item_cargo` root (four slots under section 5.3's bounds, a 15-node
+  reserve so a filled device can always be bound), an insert-only or extract-only item handler, an
+  owner-only menu whose device-slot clicks the server decides and writes through the device first,
+  a buffer that spills once and C-A's protection; admission is unwired.
 - **Admission.** Cargo admission has its own per-kind switches and stays off until the cargo S2
   evidence, the part-1 closures and the benchmarks pass and the Root or owner decision is recorded
   with the source and the JAR. R-031, R-032 and the Required Gates are unchanged.
