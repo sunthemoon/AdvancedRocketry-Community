@@ -152,6 +152,8 @@ final class RocketOrdinaryRetirement {
     private int attemptIds;
     private long destinationTick = Long.MIN_VALUE;
     private int destinationStarts;
+    /** Keep the demand spacing through an abandoned/recreated entry, within the existing pending bound. */
+    private final Map<UUID, Long> destinationAttempts = new LinkedHashMap<>();
 
     RocketOrdinaryRetirement(Set<UUID> live, Set<UUID> settled, Supplier<Set<UUID>> fenced, Function<MinecraftServer, Port> ports) {
         this.live = live; this.settled = settled; this.fenced = fenced; this.ports = ports;
@@ -298,9 +300,15 @@ final class RocketOrdinaryRetirement {
             return;
         }
         if (entry.site == Site.BEFORE_FILL) {
+            destinationAttempts.entrySet().removeIf(attempt -> now - attempt.getValue() >= RETRY_TICKS);
+            var last = destinationAttempts.get(entry.logical());
+            if (last != null) { entry.notBefore = last + RETRY_TICKS; entry.releaseToken(); return; }
             if (destinationTick != now) { destinationTick = now; destinationStarts = 0; }
-            if (destinationStarts >= MAX_ATTEMPTS || attempting() > MAX_ATTEMPTS) { entry.releaseToken(); return; }
+            if (destinationStarts >= MAX_ATTEMPTS || attempting() > MAX_ATTEMPTS || destinationAttempts.size() >= MAX_PENDING) {
+                entry.releaseToken(); return;
+            }
             destinationStarts++;
+            destinationAttempts.put(entry.logical(), now);
             entry.notBefore = now + RETRY_TICKS;
             if (!port.escrowAllows(entry.journal, record, entry.token)) { waiting(entry, "BUSY", now); return; }
             if (port.projection(record, entry.survivor) == null) { waiting(entry, "SURVIVOR_CONFLICT", now); return; }
@@ -527,6 +535,6 @@ final class RocketOrdinaryRetirement {
             try { entry.releaseToken(); } catch (RuntimeException stopped) { entry.token = null; }
             if (entry.state != State.REMOVING) { entry.effects.discarded().run(); }
         }
-        pending.clear(); refusals.clear(); warnedLevels.clear(); destinationTick = Long.MIN_VALUE; destinationStarts = 0;
+        pending.clear(); refusals.clear(); warnedLevels.clear(); destinationAttempts.clear(); destinationTick = Long.MIN_VALUE; destinationStarts = 0;
     }
 }

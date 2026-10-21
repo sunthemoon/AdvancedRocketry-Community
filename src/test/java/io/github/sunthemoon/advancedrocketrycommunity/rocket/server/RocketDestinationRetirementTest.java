@@ -104,6 +104,18 @@ class RocketDestinationRetirementTest {
         assertEquals(6, f.journal.entries().size());
     }
 
+    @Test void abandoningAndRecreatingAnEntryCannotResetTheLogicalRocketRate() {
+        var f = new Fixture(); f.port.loaded = false; f.begin();
+        f.port.now++; f.fenced.add(f.record.transferId()); f.retirements.tick();
+        assertFalse(f.retirements.pending(f.logical()));
+        assertEquals(1, f.port.released);
+        f.fenced.clear(); f.begin();
+        assertEquals(1, f.port.tickets);
+        for (int tick = 102; tick < 300; tick++) { f.port.now = tick; f.begin(); f.retirements.tick(); }
+        assertEquals(1, f.port.tickets);
+        f.port.now = 300; f.retirements.tick(); assertEquals(2, f.port.tickets);
+    }
+
     private static RocketTransferRecord record() { return record(72); }
     private static RocketTransferRecord record(int x) {
         return RocketStationMotionRuleTest.record(new RocketPosition(x, 80, 8)).destinationSpawned(UUID.randomUUID())
@@ -115,7 +127,8 @@ class RocketDestinationRetirementTest {
         final RocketTransferSavedData journal = new RocketTransferSavedData();
         final RocketTransferRecord record = record();
         final Port port = new Port();
-        final RocketOrdinaryRetirement retirements = new RocketOrdinaryRetirement(new HashSet<>(), new HashSet<>(), Set::of, server -> port);
+        final Set<UUID> fenced = new HashSet<>();
+        final RocketOrdinaryRetirement retirements = new RocketOrdinaryRetirement(new HashSet<>(), new HashSet<>(), () -> fenced, server -> port);
         long writes;
         Fixture() { port.scanGuard = () -> assertFalse(journal.actionable(logical()), "Discard scan ran without its reservation"); journal.put(record); acknowledge(); }
         UUID logical() { return record.logicalRocketId(); }
