@@ -93,7 +93,7 @@ final class EscrowReconciliationView {
                 var reason = RocketEscrowAudit.placement(endpoint, rocket);
                 if (reason != EscrowReason.NONE) { throw new Refusal(reason); }
                 if (!io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime.escrowReconciliationBoundary(rocket, guard)) {
-                    throw new Refusal(EscrowReason.NONE);
+                    throw new Refusal(EscrowReason.TRANSFER_JOURNAL_UNPROVED);
                 }
             } else {
                 // The registered loader adapter needs no hooks; every other source is a gated chest fixture.
