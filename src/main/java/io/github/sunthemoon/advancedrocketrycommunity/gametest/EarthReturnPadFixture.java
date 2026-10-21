@@ -62,6 +62,12 @@ public final class EarthReturnPadFixture {
     @AfterBatch(batch = "planetary_admission")
     public static void afterAdmission(ServerLevel level) { restore(level); }
 
+    @BeforeBatch(batch = PlanetaryAdmissionGameTests.STATION_DEPARTURE_BATCH)
+    public static void beforeStationDeparture(ServerLevel level) { install(level); }
+
+    @AfterBatch(batch = PlanetaryAdmissionGameTests.STATION_DEPARTURE_BATCH)
+    public static void afterStationDeparture(ServerLevel level) { restore(level); }
+
     @GameTest(template = "rocket_test", batch = "flight", timeoutTicks = 40)
     public static void provisionedEarthPadStillRejectsSnowAndGrass(GameTestHelper helper) {
         var driver = new GameTestTickDriver(helper);

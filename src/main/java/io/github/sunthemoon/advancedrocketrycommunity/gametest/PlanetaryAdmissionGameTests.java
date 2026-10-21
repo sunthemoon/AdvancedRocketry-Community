@@ -51,6 +51,13 @@ public final class PlanetaryAdmissionGameTests {
     private static final TravelTarget MOON = new TravelTarget.BodySurface(CelestialIds.MOON_ID);
     private static final TicketType<UUID> FIXTURE_TICKET = TicketType.create(
             "arce_gametest_planetary", Comparator.comparing(UUID::toString), 100);
+    /**
+     * W122: the closed-orbit departure's own batch. Its launch-and-cancel check compares the whole shared transfer
+     * journal across ticks, so another test's launch or cancellation in the same window changes it.
+     */
+    static final String STATION_DEPARTURE_BATCH = "planetary_admission_station_departure";
+    /** W122: the wall-clock bound for loading a station pad chunk's entities in setup, as W111's fixture areas use. */
+    private static final long PAD_LOAD_NANOS = 600_000_000_000L;
 
     private PlanetaryAdmissionGameTests() {
     }
@@ -135,7 +142,7 @@ public final class PlanetaryAdmissionGameTests {
         });
     }
 
-    @GameTest(template = "rocket_test", batch = "planetary_admission", timeoutTicks = 100)
+    @GameTest(template = "rocket_test", batch = STATION_DEPARTURE_BATCH, timeoutTicks = 100)
     public static void closedOrbitStationCanDepartButStillRequiresLiveMembership(GameTestHelper helper) {
         var driver = new GameTestTickDriver(helper);
         driver.at(1, () -> {
@@ -162,7 +169,7 @@ public final class PlanetaryAdmissionGameTests {
                 stations.reserve(stationId, ownerId, "Closed orbit fixture", CelestialIds.EARTH_ID,
                         helper.getLevel().getGameTime());
                 var station = stations.commit(stationId);
-                holdPadChunk(space, station, stationId, ticketChunk);
+                holdPadChunk(helper, space, station, stationId, ticketChunk);
                 RocketFlightGameTestFixtures.assembleFueledRocket(helper, driver, new BlockPos(3, 2, 3), ownerId, cleanup, original -> {
                     try {
                         try {
@@ -251,7 +258,7 @@ public final class PlanetaryAdmissionGameTests {
                         helper.getLevel().getGameTime());
                 var station = stations.commit(stationId);
                 stations.foldWarpCredits(java.util.Map.of(stationId, 100_000));
-                holdPadChunk(space, station, stationId, ticketChunk);
+                holdPadChunk(helper, space, station, stationId, ticketChunk);
                 RocketFlightGameTestFixtures.assembleFueledRocket(helper, driver, new BlockPos(3, 2, 3), ownerId, cleanup, original -> {
                     try {
                         try {
@@ -355,6 +362,9 @@ public final class PlanetaryAdmissionGameTests {
             boolean scheduled = false;
             try {
                 if (!loaded(level, rocket)) {
+                    if (helper.getTick() >= 80) {
+                        trace(helper, rocket, "expired", null);
+                    }
                     // Fail and release our external resources before the enclosing 100-tick timeout.
                     helper.assertTrue(helper.getTick() < 80, "Station fixture entity never became visible");
                     pacer.pace();
@@ -376,15 +386,22 @@ public final class PlanetaryAdmissionGameTests {
     }
 
     /**
-     * W122: holds and loads the station's pad chunk at setup, where the fixture later installs its rocket (the pad origin
-     * plus half a block). Its entity storage load then runs while the source rocket is assembled, instead of starting
-     * only when the station rocket is installed. The cleanup removes the ticket.
+     * W122: holds the station's pad chunk, where the fixture later installs its rocket (the pad origin plus half a block),
+     * and loads its entities in setup, outside the timed ticks ({@link EntitySections#loadNow}). The cleanup removes the
+     * ticket.
      */
-    private static void holdPadChunk(ServerLevel space, StationState station, UUID stationId, AtomicReference<ChunkPos> held) {
+    private static void holdPadChunk(GameTestHelper helper, ServerLevel space, StationState station, UUID stationId,
+            AtomicReference<ChunkPos> held) {
         var pad = new BlockPos(station.landingPad().x(), station.landingPad().y(), station.landingPad().z());
         held.set(new ChunkPos(pad));
         space.getChunkSource().addRegionTicket(FIXTURE_TICKET, held.get(), 2, stationId);
         space.getChunkAt(pad);
+        long started = System.nanoTime();
+        boolean loaded = EntitySections.loadNow(space, held.get(), started + PAD_LOAD_NANOS);
+        AdvancedRocketryCommunity.LOGGER.info("ARCE_GAMETEST_STATION_DEPARTURE stage=pad_loaded level={} test_tick={} chunk={}"
+                + " loaded={} ms={}", space.dimension().location(), helper.getTick(), held.get(), loaded,
+                (System.nanoTime() - started) / 1_000_000L);
+        helper.assertTrue(loaded, "Station pad chunk entities did not load in setup");
     }
 
     /**
