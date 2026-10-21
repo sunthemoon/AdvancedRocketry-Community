@@ -35,7 +35,7 @@ import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import org.slf4j.Logger;
 
-/** Native lifecycle and authority bridge. Cargo admission is gated and stops at acknowledged PREPARED. */
+/** Native lifecycle and authority bridge. Cargo admission remains gated. */
 public final class RocketFluidCargoBlockEntity extends BlockEntity implements MenuProvider {
     public static final double MAX_ACTOR_DISTANCE = 8.0D;
     public static final String SAVE_REFUSAL =
@@ -182,6 +182,17 @@ public final class RocketFluidCargoBlockEntity extends BlockEntity implements Me
         held = encoded; root = next; status = RocketFluidCargoRoot.Status.VALID;
         retainedByReference = false; unkeepable = false;
         setChanged();
+    }
+
+    /** C2 publishes the fixed tank delta and its role-matched marker in one root replacement. */
+    public void applyEscrowCargo(io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowFluidCargoPublication.Permit permit) {
+        write(java.util.Objects.requireNonNull(permit).consume(this));
+    }
+
+    /** C8 can remove only independently validated retired markers, never resources or epochs. */
+    public void pruneReconciledEscrow(io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowFluidCargoPublication.PruningPermit permit) {
+        var section = java.util.Objects.requireNonNull(permit).consume(this);
+        write(new RocketFluidCargoRoot(root.owner(), root.device(), root.role(), root.binding(), root.tank(), section));
     }
 
     @Override protected void saveAdditional(CompoundTag outer) {
