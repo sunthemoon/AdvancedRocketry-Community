@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import argparse
+import ctypes
 import json
+import os
 from pathlib import Path
 import re
 import shutil
@@ -16,7 +18,7 @@ from run_v180_escrow_pre_f2 import assert_pin, journal
 from run_v180_rocket_settlement_completion import require_lock
 
 CUTS = ("PREPARING", "L1_BEFORE", "L1_REPLACED", "L1_ACK", "C2_SOURCE_AFTER", "C2_DESTINATION_AFTER",
-        "FIRST_STORE", "C6_JOINT_READBACK", "L2_REPLACED", "C8_RELEASED")
+        "FIRST_STORE", "C6_JOINT_READBACK", "L2_REPLACED", "C8_RELEASED", "SOURCE_ONLY_STORE", "DESTINATION_ONLY_STORE")
 CASES = tuple("FC_" + direction + "_" + cut for direction in ("LOAD", "UNLOAD") for cut in CUTS)
 
 
@@ -66,12 +68,48 @@ def inspect(world: Path, case: str, restarted: bool) -> dict:
             raise smoke.SmokeError("First-store cut did not produce a genuinely mixed native state")
         if cut == "C6_JOINT_READBACK" and epochs != [1, 1]:
             raise smoke.SmokeError("Joint readback cut did not store both AFTER states")
-        if cut not in ("FIRST_STORE", "C6_JOINT_READBACK") and epochs != [0, 0]:
+        if cut in ("SOURCE_ONLY_STORE", "DESTINATION_ONLY_STORE"):
+            source = cut == "SOURCE_ONLY_STORE"
+            if epochs != ([0, 1] if load == source else [1, 0]) or cargo + amount != (4000 if source else 6000):
+                raise smoke.SmokeError("Selected one-sided store has the wrong epochs or raw balance")
+            op = root["records"][0]
+            if root["issued_through"] != 1 or op["seq"] != 1:
+                raise smoke.SmokeError("Selected store did not retain exactly one issued transfer")
+            for state, role in ((section, "DESTINATION" if load else "SOURCE"),
+                                (device["resource_escrow"], "SOURCE" if load else "DESTINATION")):
+                markers = state["markers"]
+                if state["resource_epoch"] == 0:
+                    if markers: raise smoke.SmokeError("Unstored endpoint retained an applied marker")
+                elif (len(markers) != 1 or markers[0]["op_id"] != op["op_id"] or markers[0]["seq"] != 1
+                      or markers[0]["role"] != role or markers[0]["epoch_after"] != 1):
+                    raise smoke.SmokeError("Stored endpoint lost its exact operation marker")
+        if cut not in ("FIRST_STORE", "C6_JOINT_READBACK", "SOURCE_ONLY_STORE", "DESTINATION_ONLY_STORE") and epochs != [0, 0]:
             raise smoke.SmokeError("An unsaved apply cut unexpectedly changed native stores")
+    persisted_side = ("SOURCE" if (epochs == [0, 1]) == load else "DESTINATION") if sorted(epochs) == [0, 1] else "BOTH" if epochs == [1, 1] else "NEITHER"
     return dict(ledger=root, device=device, rocket=rocket, raw_total=cargo + amount, epochs=epochs,
+                persisted_side=persisted_side, amounts=dict(rocket=cargo, device=amount),
                 identity=dict(physical=entity["UUID"], logical=rocket["assembly_transaction_id"], owner=rocket["owner_id"],
                               snapshot=snapshot["snapshot_id"], device=device["device"]),
                 files={name: digest(world / name) for name in ("data/" + LEDGER, "region/r.0.0.mca", "entities/r.0.0.mca")})
+
+
+def preflight() -> dict:
+    if os.name == "nt":
+        class MemoryStatus(ctypes.Structure):
+            _fields_ = [("length", ctypes.c_ulong), ("load", ctypes.c_ulong),
+                        *( (name, ctypes.c_ulonglong) for name in ("total", "available", "total_page", "available_page",
+                                                                  "total_virtual", "available_virtual", "extended") )]
+        status = MemoryStatus(); status.length = ctypes.sizeof(status)
+        if not ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(status)):
+            raise smoke.SmokeError("Cannot read free physical memory")
+        memory = status.available
+        disks = {drive: shutil.disk_usage(drive).free for drive in ("C:/", "D:/")}
+    else:
+        memory = int(re.search(r"^MemAvailable:\s+(\d+)", Path("/proc/meminfo").read_text(), re.M)[1]) * 1024
+        disks = {"/": shutil.disk_usage("/").free}
+    if min(disks.values()) < 10 * 1024**3 or memory < 6 * 1024**3:
+        raise smoke.SmokeError("Native start refused: less than 10 GiB disk or 6 GiB free memory")
+    return dict(free_memory_bytes=memory, free_disk_bytes=disks)
 
 
 def run(args) -> None:
@@ -99,8 +137,9 @@ def run(args) -> None:
             row = dict(case=case, restarts=[]); report["in_progress"] = row
             for restart in range(3):
                 assert_pin(args.source_commit); require_lock(args.lock_owner)
-                if min(shutil.disk_usage(drive).free for drive in ("C:/", "D:/")) < 10 * 1024**3 or digest(args.jar) != report["jar_sha256"]:
-                    raise smoke.SmokeError("Native start refused: low disk space or changed jar")
+                row.setdefault("preflights", []).append(preflight())
+                if digest(args.jar) != report["jar_sha256"]:
+                    raise smoke.SmokeError("Native start refused: changed jar")
                 command = _server_command(args.java); command[2] = "-Xmx4G"
                 command[1:1] = ["-Dadvancedrocketrycommunity.escrowScenario=" + ("recover" if restart else "start"),
                                 "-Dadvancedrocketrycommunity.escrowCase=" + case]

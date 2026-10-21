@@ -197,7 +197,11 @@ final class EscrowReconciliationDriver {
         for (var end : work.ends.values()) {
             if (work.proofs.containsKey(end.endpoint().key())) { continue; }
             var frozen = work; var targets = work.targets(end.endpoint()); var runtime = EscrowRuntime.of(server);
+            if (!runtime.cargoStoreAllowed(op, end.endpoint())) { continue; }
             runtime.checkpoint(end.endpoint().kind() == EscrowEndpoint.Kind.ENTITY ? "C4_DESTINATION_SELECTED" : "C4_SOURCE_SELECTED");
+            if (op.kind().cargo()) {
+                runtime.checkpoint(end.endpoint().key().equals(op.source().key()) ? "CARGO_STORE_SOURCE_SELECTED" : "CARGO_STORE_DESTINATION_SELECTED");
+            }
             var level = view.ends.get(end.endpoint().key()).level();
             boolean accepted = capture(busy -> frozen.busy = busy, () -> runtime.store(level), store -> runtime.barrier().beginJoint(store, targets,
                     server.getTickCount(), result -> {

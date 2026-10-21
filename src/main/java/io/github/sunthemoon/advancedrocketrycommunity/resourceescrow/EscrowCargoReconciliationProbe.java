@@ -31,6 +31,7 @@ final class EscrowCargoReconciliationProbe {
     private RocketEntity rocket;
     private long began;
     private int step;
+    private volatile String selected = "";
 
     EscrowCargoReconciliationProbe(MinecraftServer server) {
         EscrowTestEndpoints.requireEnabled(server); this.server = server;
@@ -42,14 +43,35 @@ final class EscrowCargoReconciliationProbe {
     }
     void checkpoint(String label) {
         if (recovery || !initialized || done || paused.get()) { return; }
+        if (label.equals("CARGO_STORE_SOURCE_SELECTED")) { selected = "SOURCE"; }
+        if (label.equals("CARGO_STORE_DESTINATION_SELECTED")) { selected = "DESTINATION"; }
+        if ((cut.equals("SOURCE_ONLY_STORE") || cut.equals("DESTINATION_ONLY_STORE")) && label.equals("BARRIER_FORCE_AFTER")) {
+            EscrowTags.require(cut.equals(selected + "_ONLY_STORE"), "Cargo forced the wrong selected endpoint");
+            pause(label); return;
+        }
         if (cut.equals(label) || cut.equals("L1_BEFORE") && label.equals("K1")
                 || cut.equals("L1_REPLACED") && label.equals("K2")
                 || cut.equals("L2_REPLACED") && label.equals("K9")
                 || cut.equals("FIRST_STORE") && label.equals("BARRIER_FORCE_AFTER")) { pause(label); }
     }
+    /** Select only a probe-owned endpoint; normal runs and recovery retain the production ordering. */
+    boolean permitsStore(EscrowOperation op, EscrowEndpoint endpoint) {
+        if (!initialized || done || device == null || rocket == null || !op.kind().equals(kind())
+                || !op.device().identity().equals(device.root().orElseThrow().device())
+                || !op.rocket().identity().equals(rocket.getUUID())) { return true; }
+        return permitsStore(Boolean.getBoolean(EscrowTestEndpoints.HOOKS), recovery, cut, op, endpoint);
+    }
+    static boolean permitsStore(boolean hooks, boolean recovery, String cut, EscrowOperation op, EscrowEndpoint endpoint) {
+        if (!hooks || recovery) { return true; }
+        return switch (cut) {
+            case "SOURCE_ONLY_STORE" -> endpoint.key().equals(op.source().key());
+            case "DESTINATION_ONLY_STORE" -> endpoint.key().equals(op.destination().key());
+            default -> true;
+        };
+    }
     private void pause(String label) {
         if (!paused.compareAndSet(false, true)) { return; }
-        AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_CARGO_PAUSED cut={} checkpoint={}", name, label);
+        AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_CARGO_PAUSED cut={} checkpoint={} selected={}", name, label, selected);
         try { java.util.concurrent.TimeUnit.SECONDS.sleep(30); }
         catch (InterruptedException failure) { Thread.currentThread().interrupt(); throw new IllegalStateException(failure); }
         throw new IllegalStateException("Cargo forced stop did not arrive within 30 seconds");

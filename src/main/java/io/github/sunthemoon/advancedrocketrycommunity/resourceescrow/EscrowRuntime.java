@@ -165,6 +165,9 @@ public final class EscrowRuntime {
         admissionDevices.add(device);
     }
     boolean loaderAdmissionAllowed(java.util.UUID device) { return admissionDevices.contains(device); }
+    boolean cargoStoreAllowed(EscrowOperation op, EscrowEndpoint endpoint) {
+        return cargoReconciliationProbe == null || cargoReconciliationProbe.permitsStore(op, endpoint);
+    }
     public void checkpoint(String cut) {
         var measured = flightBenchmark; if (measured != null) { measured.metrics.checkpoint(cut); }
         var ordinary = reconciliationProbe; if (ordinary != null) { ordinary.checkpoint(cut); }
