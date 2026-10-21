@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.rocket.menu;
 
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketDestination;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightPlanner;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightState;
@@ -121,7 +122,7 @@ public final class RocketFlightQuotes {
                 PREVIEW_ID,
                 0L
         );
-        boolean launchableState = state == RocketFlightState.FUELED || state == RocketFlightState.LANDED;
+        boolean launchableState = RocketFlightData.launchReady(state, fuel);
         return new Quote(Math.toIntExact(result.requiredFuel()),
                 RocketNavigationStatus.resolve(result.code(), launchableState, true));
     }

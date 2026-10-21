@@ -70,6 +70,29 @@ class RocketFlightQuotesTest {
     }
 
     @Test
+    void assembledRocketWithFuelIsQuotedLikeALandedOne() {
+        // W133 (R55): an escrow fill keeps ASSEMBLED with fuel; the launch promotes it, so the console offers it.
+        var assembled = quotes(1000, RocketDestination.EARTH, RocketFlightState.ASSEMBLED);
+        assertEquals(quotes(1000, RocketDestination.EARTH, RocketFlightState.LANDED), assembled);
+        assertTrue(assembled.moon().canLaunch());
+        assertTrue(assembled.station().canLaunch());
+        assertEquals(RocketNavigationStatus.READY, assembled.moon().status());
+        assertEquals(RocketNavigationStatus.INSUFFICIENT_FUEL,
+                quotes(329, RocketDestination.EARTH, RocketFlightState.ASSEMBLED).station().status());
+        var empty = RocketFlightQuotes.compute(STATS, RocketFuelState.empty(1000), RocketDestination.EARTH,
+                RocketFlightState.ASSEMBLED);
+        assertFalse(empty.moon().canLaunch());
+        assertFalse(empty.station().canLaunch());
+        assertEquals(RocketNavigationStatus.INVALID_STATE, empty.moon().status());
+        assertEquals(330, empty.station().requiredFuel());
+        // The same predicate as the catalog navigation: an empty LANDED rocket is not launch-ready either.
+        var landedEmpty = RocketFlightQuotes.compute(STATS, RocketFuelState.empty(1000), RocketDestination.EARTH,
+                RocketFlightState.LANDED);
+        assertFalse(landedEmpty.moon().canLaunch());
+        assertEquals(RocketNavigationStatus.INVALID_STATE, landedEmpty.moon().status());
+    }
+
+    @Test
     void missingRouteOrComponentsCannotCreateAnAvailableQuote() {
         assertEquals(RocketFlightQuotes.empty(), quotes(1000, null, RocketFlightState.FUELED));
         assertEquals(new RocketFlightQuotes.Quote(0, false), RocketFlightQuotes.empty().forDestination(null));

@@ -37,9 +37,7 @@ final class RocketFlightMenuData implements ContainerData {
             case 3 -> boundedInt(data.plan().map(plan -> plan.requiredFuel()).orElse(quote.requiredFuel()));
             case 4 -> current == null ? -1 : current.networkId();
             case 5 -> destination == null ? -1 : destination.networkId();
-            case 6 -> (data.state() == RocketFlightState.FUELED
-                    || (data.state() == RocketFlightState.LANDED && data.fuel().availableForLaunch()))
-                    && quote.success() ? 1 : 0;
+            case 6 -> data.launchReady() && quote.success() ? 1 : 0;
             case 7 -> countdownRemaining(data);
             case 8 -> data.passengers().assignments().size();
             default -> throw new IndexOutOfBoundsException("Unknown rocket flight menu field " + index);
