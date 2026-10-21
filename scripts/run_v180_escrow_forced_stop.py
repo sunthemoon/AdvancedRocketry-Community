@@ -58,8 +58,8 @@ def ledger(path: Path) -> dict:
     return data
 
 
-def record(path: Path, slot: int = 132) -> dict:
-    # Fixture chunks [4,4] and (chains only) [5,4]. Inline records only.
+def record(path: Path, slot: int = 132, reader: type = NbtReader) -> dict:
+    # Fixture chunks [4,4] and (chains only) [5,4]. Inline records only. A reader subclass may keep tag types.
     with path.open("rb") as stream:
         stream.seek(slot * 4)
         location = struct.unpack(">I", stream.read(4))[0]
@@ -74,7 +74,7 @@ def record(path: Path, slot: int = 132) -> dict:
     raw = decoder.decompress(compressed, 4_194_305)
     if len(raw) > 4_194_304 or not decoder.eof or decoder.unused_data:
         raise smoke.SmokeError("Invalid native fixture record envelope")
-    return NbtReader(raw).read_root()
+    return reader(raw).read_root()
 
 
 def inspect(world: Path, chain: bool = False, shared: bool = False) -> dict:

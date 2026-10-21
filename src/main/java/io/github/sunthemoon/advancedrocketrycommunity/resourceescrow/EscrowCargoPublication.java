@@ -70,6 +70,7 @@ public final class EscrowCargoPublication {
         boolean verify() {
             EscrowTags.require(!issued && ticket.valid() && root.records().contains(operation) && !operation.reason().manual()
                     && operation.settlement().isEmpty() && operation.kind().cargo() && operation.nativeBinding().complete()
+                    && (!operation.kind().itemCargo() || operation.guard().transfer() == null)
                     && authority.getAsBoolean(), "Cargo publication needs an acknowledged ordinary member");
             var rocket = ticket.rocket(); var cursor = ticket.cursor(); var after = cursor.after();
             while (phase < 3) {

@@ -61,6 +61,21 @@ public final class EscrowReconciliationAction {
     }
 
     /** Shared R39 boundary; callers must run this before any native projection or publication. */
+    static void requireNativeResource(EscrowOperation operation) {
+        if (!operation.kind().itemCargo()) { requireNativeFluid(operation); return; }
+        CompoundTag stack;
+        try { stack = EscrowItemCargoPayload.decode(operation.payload()).stack(); }
+        catch (IllegalArgumentException invalid) { throw new EscrowReconciliationView.Refusal(EscrowReason.OTHER_STATE); }
+        try { EscrowItemStackCodec.validateNative(stack); }
+        catch (IllegalArgumentException unavailable) {
+            // Structural saved data stays intact. The scheduler marks only this member REPAIR and never revisits it,
+            // so, as for fluids, this logs at most once per operation and session. The ID passed the structural check.
+            LOGGER.warn("ARCE_ESCROW_ITEM_UNAVAILABLE op={} item={}", operation.id(), stack.getString("id"));
+            throw new EscrowReconciliationView.Refusal(EscrowReason.OTHER_STATE);
+        }
+    }
+
+    /** Fluid logging and the existing fill boundary remain unchanged. */
     static void requireNativeFluid(EscrowOperation operation) {
         if (operation.kind().fluid()) {
             try { operation.nativeFluid(); }

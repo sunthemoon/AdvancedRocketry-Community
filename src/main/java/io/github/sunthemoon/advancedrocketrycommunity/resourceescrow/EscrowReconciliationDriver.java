@@ -9,7 +9,7 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import net.minecraft.server.MinecraftServer;
 
-/** Ordinary native fills and fluid cargo. Model fixtures and settlement decisions have separate executors. */
+/** Ordinary native fills and cargo. Model fixtures and settlement decisions have separate executors. */
 final class EscrowReconciliationDriver {
     private final EscrowCoordinator coordinator;
     private final EscrowCargoReconciliation cargo = new EscrowCargoReconciliation();
@@ -56,7 +56,7 @@ final class EscrowReconciliationDriver {
         }
         // Historical settlement/relocation harnesses own their endpoint actions. The production loader adapter is always
         // registered; a fixture source enters only when explicitly registered. Registration itself grants no authority.
-        if (!(op.kind().cargo() ? EscrowFluidCargoEndpoint.is(op.device()) : adapter(op.source()))) {
+        if (!(op.kind().cargo() ? EscrowFluidCargoEndpoint.is(op.device()) || EscrowItemCargoEndpoint.is(op.device()) : adapter(op.source()))) {
             completion.accept(new EscrowReconciliationScheduler.Result(EscrowReason.RECONCILIATION_UNIMPLEMENTED, false)); return;
         }
         if (cached != root) {
@@ -80,8 +80,8 @@ final class EscrowReconciliationDriver {
             completion.accept(EscrowReconciliationScheduler.Result.deferred()); return;
         }
         try {
-            // A missing/renamed native Fluid holds this member before observing or decoding either resource.
-            if (op.kind().cargo()) { EscrowReconciliationAction.requireNativeFluid(op); }
+            // A missing/renamed native resource holds this member before observing either endpoint.
+            if (op.kind().cargo()) { EscrowReconciliationAction.requireNativeResource(op); }
             var pending = checkpoints.get(op.id());
             if (pending != null && pending.journalLease.getAsBoolean()) {
                 if (pending.busy) { completion.accept(EscrowReconciliationScheduler.Result.deferred()); return; }

@@ -92,6 +92,9 @@ final class EscrowCargoPreparedCapture {
             } catch (EscrowSettlementCapacity.StaleCapture stale) {
                 result = EscrowCargoEligibility.Result.refused(EscrowCoordinator.Transfer.STALE);
                 discard();
+            } catch (io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.RocketItemCargoMutation.Refusal refused) {
+                result = new EscrowCargoEligibility.Result(refused.status(), null);
+                discard();
             } catch (io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketSnapshotException invalid) {
                 result = new EscrowCargoEligibility.Result(switch (invalid.code()) {
                     case SNAPSHOT_DATA_TOO_LARGE, BLOCK_ENTITY_DATA_TOO_LARGE -> Status.CARGO_TOO_LARGE;

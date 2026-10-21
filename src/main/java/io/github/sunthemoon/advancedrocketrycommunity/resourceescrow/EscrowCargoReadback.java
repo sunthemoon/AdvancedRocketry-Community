@@ -31,7 +31,10 @@ final class EscrowCargoReadback implements Predicate<CompoundTag> {
         readback = null;
         unavailable = null;
         for (var operation : operations) {
-            try { operation.nativeFluid(); }
+            try {
+                if (operation.kind().itemCargo()) { EscrowItemStackCodec.validateNative(EscrowItemCargoPayload.decode(operation.payload()).stack()); }
+                else { operation.nativeFluid(); }
+            }
             catch (IllegalArgumentException refused) { unavailable = operation; return false; }
         }
         try {
@@ -55,7 +58,7 @@ final class EscrowCargoReadback implements Predicate<CompoundTag> {
         if (refused == null) { return EscrowReason.NONE; }
         if (!reported) {
             reported = true;
-            try { EscrowReconciliationAction.requireNativeFluid(refused); }
+            try { EscrowReconciliationAction.requireNativeResource(refused); }
             catch (EscrowReconciliationView.Refusal expected) { return expected.reason; }
         }
         return EscrowReason.OTHER_STATE;

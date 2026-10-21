@@ -5,7 +5,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.Rocket
 import java.util.List;
 import java.util.Map;
 
-/** C2 for one fluid cargo member. Replay owns the runtime's existing bounded reconstruction ticket. */
+/** C2 for one cargo member. Replay owns the runtime's existing bounded reconstruction ticket. */
 final class EscrowCargoReconciliation implements AutoCloseable {
     enum Step { WAITING, PUBLISHED, DONE }
     private RocketCargoPreparations.Ticket ticket;
@@ -17,12 +17,14 @@ final class EscrowCargoReconciliation implements AutoCloseable {
         return op.nativeBinding().complete() && (op.kind() == EscrowOperation.Kind.FLUID_PROPULSION_FILL
                 && op.nativeBinding().kind() == EscrowSignatureKind.FUEL_VECTOR_V1
                 || (op.kind() == EscrowOperation.Kind.FLUID_CARGO_LOAD || op.kind() == EscrowOperation.Kind.FLUID_CARGO_UNLOAD)
-                && op.nativeBinding().kind() == EscrowSignatureKind.ROCKET_COMPOSITE_V1 && EscrowFluidCargoEndpoint.is(op.device()));
+                && op.nativeBinding().kind() == EscrowSignatureKind.ROCKET_COMPOSITE_V1 && EscrowFluidCargoEndpoint.is(op.device())
+                || op.kind().itemCargo() && op.guard().transfer() == null
+                && op.nativeBinding().kind() == EscrowSignatureKind.ROCKET_COMPOSITE_V1 && EscrowItemCargoEndpoint.is(op.device()));
     }
 
     Step applyNext(EscrowCoordinator coordinator, EscrowOperation op, EscrowReconciliationView view,
             Map<EscrowEndpoint.Key, List<EscrowPrefix.Link>> chains) {
-        EscrowReconciliationAction.requireNativeFluid(op);
+        EscrowReconciliationAction.requireNativeResource(op);
         if (ticket != null && (!ticket.valid() || active == op && captured != null && captured != view)) { close(); }
         // Only our own device publication permits a fresh component capture without another reconstruction.
         if (ticket != null && active == op && captured == null) { captured = view; }
@@ -56,12 +58,15 @@ final class EscrowCargoReconciliation implements AutoCloseable {
         var end = view.ends.get(op.rocket().key()); var runtime = EscrowRuntime.of(end.level().getServer());
         if (ticket != null && active != op) { return false; }
         if (ticket == null) {
-            ticket = runtime.cargoPreparations().beginReplay(end.rocket(), EscrowCargoPayload.decode(op.payload()), op.kind().cargoLoad()).orElse(null);
+            ticket = (op.kind().itemCargo()
+                    ? runtime.cargoPreparations().beginReplay(end.rocket(), EscrowItemCargoPayload.decode(op.payload()), op.kind().cargoLoad())
+                    : runtime.cargoPreparations().beginReplay(end.rocket(), EscrowCargoPayload.decode(op.payload()), op.kind().cargoLoad())).orElse(null);
             if (ticket == null) { return false; }
             active = op; captured = view;
         }
-        if (!ticket.advance()) { return false; }
+        boolean ready = ticket.advance();
         if (ticket.cursor().failure().isPresent()) { throw new EscrowReconciliationView.Refusal(EscrowReason.OTHER_STATE); }
+        if (!ready) { return false; }
         if (publication == null) {
             publication = new EscrowCargoPublication.Preparation(view.root, op, ticket,
                     () -> captured != null && captured.unchanged(coordinator)
@@ -76,9 +81,15 @@ final class EscrowCargoReconciliation implements AutoCloseable {
                 && !coordinator.frozen(endpoint.key()) && !coordinator.currentReason(op).manual();
         String label = endpoint.key().equals(op.destination().key()) ? "C2_DESTINATION_" : "C2_SOURCE_";
         if (end.rocket() == null) {
-            var permit = EscrowFluidCargoPublication.issue(view.root, op, end.envelope(), server.getTickCount(), authority);
-            runtime.checkpoint(label + "BEFORE");
-            ((RocketFluidCargoBlockEntity) end.source()).applyEscrowCargo(permit);
+            if (op.kind().itemCargo()) {
+                var permit = EscrowItemCargoPublication.issue(view.root, op, end.envelope(), server.getTickCount(), authority);
+                runtime.checkpoint(label + "BEFORE");
+                ((io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketItemCargoBlockEntity) end.source()).applyEscrowCargo(permit);
+            } else {
+                var permit = EscrowFluidCargoPublication.issue(view.root, op, end.envelope(), server.getTickCount(), authority);
+                runtime.checkpoint(label + "BEFORE");
+                ((RocketFluidCargoBlockEntity) end.source()).applyEscrowCargo(permit);
+            }
             if (active == op) { captured = null; }
         } else {
             var permit = publication.issue();

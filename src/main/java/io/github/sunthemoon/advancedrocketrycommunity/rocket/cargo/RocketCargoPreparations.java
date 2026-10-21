@@ -59,6 +59,15 @@ public final class RocketCargoPreparations implements AutoCloseable {
     }
     public void removed(RocketEntity rocket) { owner(); if (active != null && active.rocket == rocket) { active.close(); } }
     public RocketCargoWorkBudget budget() { owner(); return budget; }
+    /**
+     * One step of an admission's item selection walk. It reserves from the tickets' budget but never while a ticket
+     * is active, so a replay or another preparation keeps its progress (W132-R1). Null means deferred or out of
+     * budget, not a refusal.
+     */
+    public RocketItemCargoSelection.Result select(RocketItemCargoSelection.Cursor selection, long tick) {
+        owner(); discardFinished();
+        return active != null ? null : selection.advance(tick, budget);
+    }
     private void owner() {
         if (Thread.currentThread() != owner) { throw new IllegalStateException("Cargo preparation requires server owner thread"); }
     }

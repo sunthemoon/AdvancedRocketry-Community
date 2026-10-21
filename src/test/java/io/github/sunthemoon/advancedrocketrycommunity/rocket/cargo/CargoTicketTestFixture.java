@@ -20,7 +20,11 @@ import net.minecraft.world.phys.Vec3;
 public final class CargoTicketTestFixture implements AutoCloseable {
     private final MinecraftServer server = UnstartedServer.owned();
     private final RocketCargoPreparations session = new RocketCargoPreparations();
-    public final RocketCargoPreparations.Ticket ticket;
+    private final RocketEntity rocket;
+    private final Class<?> type;
+    private final Object delta;
+    private final boolean load;
+    public RocketCargoPreparations.Ticket ticket;
 
     public CargoTicketTestFixture(UUID logical, RocketStructureSnapshot before, EscrowCargoPayload delta, boolean load) {
         this(logical, before, EscrowCargoPayload.class, delta, load);
@@ -31,7 +35,8 @@ public final class CargoTicketTestFixture implements AutoCloseable {
     }
     private CargoTicketTestFixture(UUID logical, RocketStructureSnapshot before, Class<?> type, Object delta, boolean load) {
         var level = UnstartedServer.allocate(FixtureLevel.class); level.server = server;
-        var rocket = UnstartedServer.allocate(RocketEntity.class);
+        rocket = UnstartedServer.allocate(RocketEntity.class);
+        this.type = type; this.delta = delta; this.load = load;
         UnstartedServer.set(Entity.class, rocket, "level", level);
         UnstartedServer.set(Entity.class, rocket, "position", Vec3.ZERO);
         UnstartedServer.set(Entity.class, rocket, "blockPosition", BlockPos.ZERO);
@@ -43,14 +48,21 @@ public final class CargoTicketTestFixture implements AutoCloseable {
         UnstartedServer.set(RocketEntity.class, rocket, "flightData", RocketFlightData.initial(logical, 20_000, 0,
                 net.minecraft.resources.ResourceLocation.tryParse("advancedrocketrycommunity:earth"),
                 Level.OVERWORLD.location(), before.sourceOrigin(), 0));
+        ticket = open();
+    }
+    private RocketCargoPreparations.Ticket open() {
         try {
             var constructor = RocketCargoPreparations.Ticket.class.getDeclaredConstructor(RocketCargoPreparations.class,
                     RocketEntity.class, type, boolean.class);
             constructor.setAccessible(true);
-            ticket = constructor.newInstance(session, rocket, delta, load);
-            UnstartedServer.set(RocketCargoPreparations.class, session, "active", ticket);
+            var opened = constructor.newInstance(session, rocket, delta, load);
+            UnstartedServer.set(RocketCargoPreparations.class, session, "active", opened);
+            return opened;
         } catch (ReflectiveOperationException failure) { throw new IllegalStateException(failure); }
     }
+    /** A new ticket for the same rocket and delta from {@code tick}, as a later replay would begin; close the old one first. */
+    public RocketCargoPreparations.Ticket reopen(long tick) { at(tick); ticket = open(); return ticket; }
+    public RocketCargoPreparations session() { return session; }
     public RocketCargoPreparation cursor() { return ticket.cursor(); }
     public RocketCargoWorkBudget budget() { return session.budget(); }
     public void at(long tick) { UnstartedServer.set(MinecraftServer.class, server, "tickCount", Math.toIntExact(tick)); }
