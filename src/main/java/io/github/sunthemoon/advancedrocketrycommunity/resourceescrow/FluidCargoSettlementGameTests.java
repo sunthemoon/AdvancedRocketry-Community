@@ -23,12 +23,13 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 /**
  * C-E3 A1: operator settlement O1 to O4 of real fluid cargo with real devices: a load held after its device published
  * (neutral rocket normalization behind a placement veto), an unload held after both published (both survivor proofs,
- * then a governed launch on READY), and an ABANDON with the rocket missing. Receipts and inspector output are pinned.
+ * then a governed launch on READY), a neutral unload source with a normalization veto, and an ABANDON with the rocket
+ * missing. Receipts and inspector output are pinned.
  */
 @GameTestHolder(ModIdentity.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class FluidCargoSettlementGameTests {
-    enum Mode { LOAD, UNLOAD, ABANDON }
+    enum Mode { LOAD, UNLOAD, ABANDON, UNLOAD_NEUTRAL }
     private static Scenario running;
     private FluidCargoSettlementGameTests() { }
 
@@ -41,6 +42,11 @@ public final class FluidCargoSettlementGameTests {
     public static void heldUnloadProvesBothSurvivorsPrunesThemAndLaunchesFromReady(GameTestHelper helper) { start(helper, Mode.UNLOAD); }
     @AfterBatch(batch = "fluid_cargo_settlement_unload")
     public static void cleanupUnload(ServerLevel level) { cleanup(); }
+
+    @GameTest(template = "empty", batch = "fluid_cargo_settlement_unload_neutral", timeoutTicks = 1_600)
+    public static void heldUnloadNormalizesItsNeutralSourceOnlyAfterTheVetoClears(GameTestHelper helper) { start(helper, Mode.UNLOAD_NEUTRAL); }
+    @AfterBatch(batch = "fluid_cargo_settlement_unload_neutral")
+    public static void cleanupNeutralUnload(ServerLevel level) { cleanup(); }
 
     @GameTest(template = "empty", batch = "fluid_cargo_settlement_abandon", timeoutTicks = 1_600)
     public static void abandonProvesTheMissingRocketAndTheSurvivingDevice(GameTestHelper helper) { start(helper, Mode.ABANDON); }
@@ -64,6 +70,9 @@ public final class FluidCargoSettlementGameTests {
         RocketFluidCargoBlockEntity device;
         EscrowOperation op;
         EscrowSettlementIntent preview;
+        EscrowSettlementIntent frozen;
+        final java.util.Set<String> proofs = new java.util.HashSet<>();
+        boolean normalized, jointlyProved;
         String beforeHash, heldHash;
         int step, since, vetoes;
         volatile boolean cut;
@@ -71,7 +80,7 @@ public final class FluidCargoSettlementGameTests {
 
         Scenario(GameTestHelper helper, Mode mode) {
             this.helper = helper; this.mode = mode; pacer = new GameTestTickPacer(helper.getLevel().getServer());
-            origin = new BlockPos(636_008 + 512 * mode.ordinal(), 100, 636_008);
+            origin = new BlockPos(636_008 + 512 * (mode == Mode.UNLOAD_NEUTRAL ? 4 : mode.ordinal()), 100, 636_008);
             world = new EscrowCargoGameTestWorld(helper, List.of(origin, origin.offset(32, 0, 0)));
         }
 
@@ -87,7 +96,7 @@ public final class FluidCargoSettlementGameTests {
                     rocket = world.rocket(origin, load ? FluidStack.EMPTY : new FluidStack(Fluids.WATER, 5_000));
                     device = world.device(origin.offset(2, 0, 0), rocket, load ? RocketCargoRole.LOAD : RocketCargoRole.UNLOAD, load ? 5_000 : 0);
                     beforeHash = rocket.snapshot().orElseThrow().contentHash();
-                    if (mode == Mode.ABANDON) { world.pause(device, true); }
+                    if (mode == Mode.ABANDON || mode == Mode.UNLOAD_NEUTRAL) { world.pause(device, true); }
                     else {
                         // Hold the ordinary executor right after one endpoint (load) or both (unload) published.
                         String label = load ? "C2_SOURCE_AFTER" : "C2_DESTINATION_AFTER"; UUID id = EscrowCargoGameTestWorld.id(device);
@@ -106,7 +115,7 @@ public final class FluidCargoSettlementGameTests {
                         check(op.phase() == EscrowOperation.Phase.PREPARED && op.nativeBinding().complete() && op.guard().transfer() == null,
                                 "Cargo admission did not reach a complete unguarded PREPARED");
                     }
-                    if (mode != Mode.ABANDON && !cut) { return; }
+                    if (mode != Mode.ABANDON && mode != Mode.UNLOAD_NEUTRAL && !cut) { return; }
                     if (cutInstalled) { runtime.terminalCutForTests(server, null); cutInstalled = false; }
                     var coordinator = data.bind(server);
                     coordinator.transition(op.id(), EscrowReason.OTHER_STATE); coordinator.persistTransitions(); step = 2;
@@ -126,7 +135,7 @@ public final class FluidCargoSettlementGameTests {
             var record = data.ledger().records().stream().filter(value -> value.id().equals(op.id())).findFirst().orElse(null);
             if (record == null || record.phase() != EscrowOperation.Phase.REPAIR || !coordinator.writerIdle()) { return; }
             var deviceSection = EscrowCargoGameTestWorld.section(device);
-            boolean deviceAfter = mode != Mode.ABANDON;
+            boolean deviceAfter = mode == Mode.LOAD || mode == Mode.UNLOAD;
             boolean rocketAfter = mode == Mode.UNLOAD;
             check(deviceSection.epoch() == (deviceAfter ? 1 : 0) && deviceSection.markers().size() == (deviceAfter ? 1 : 0)
                     && rocket.escrowSection().epoch() == (rocketAfter ? 1 : 0) && rocket.escrowSection().markers().size() == (rocketAfter ? 1 : 0)
@@ -161,14 +170,22 @@ public final class FluidCargoSettlementGameTests {
             if (queued || mode == Mode.ABANDON && server.getTickCount() - preview.previewTick() < 200) { return; }
             queued = EscrowRuntime.of(server).settlement().confirm(server, op.id(), preview.choice(), actor, preview.digest(), committed -> {
                 check(committed, "O1 was not acknowledged");
-                if (mode == Mode.LOAD) {
+                if (mode == Mode.UNLOAD_NEUTRAL) {
+                    frozen = EscrowSettlementIntent.decode(world.member(device).settlement());
+                    check(frozen.observations().equals(preview.observations()) && frozen.observations().stream()
+                            .filter(value -> value.endpoint().key().equals(op.source().key())).allMatch(value -> !value.bound()),
+                            "O1 did not freeze the neutral unload source");
+                    EscrowRuntime.of(server).terminalCutForTests(server, this::observeNeutralUnload);
+                    cutInstalled = true;
+                }
+                if (mode == Mode.LOAD || mode == Mode.UNLOAD_NEUTRAL) {
                     // The veto: the chosen neutral survivor no longer stands at its frozen placement.
                     rocket.setPos(rocket.getX() + 0.25D, rocket.getY(), rocket.getZ()); since = server.getTickCount(); step = 4;
                 } else { step = 5; }
             });
         }
 
-        /** Load only: the moved survivor holds normalization and every proof; restoring it releases the hold. */
+        /** The moved neutral survivor holds normalization and every proof; restoring it releases the hold. */
         private void veto(net.minecraft.server.MinecraftServer server) {
             var data = world.data(); var runtime = EscrowRuntime.of(server);
             var record = data.ledger().records().stream().filter(value -> value.id().equals(op.id())).findFirst().orElseThrow();
@@ -177,12 +194,40 @@ public final class FluidCargoSettlementGameTests {
             check(rocket.escrowSection().equals(RocketEscrowSection.neutral()) && !EscrowSettlementTombstones.installed(data.ledger(), intent)
                     && record.phase() == EscrowOperation.Phase.SETTLING_ACCEPT && view.provedSlots() == 0,
                     "The vetoed survivor was normalized, proved or released");
+            if (mode == Mode.UNLOAD_NEUTRAL) {
+                check(proofs.isEmpty() && !normalized && !jointlyProved && data.ledger().tombstones().isEmpty()
+                        && data.ledger().rocketAuthorities().isEmpty(), "The unload veto allowed settlement progress");
+                unchangedNeutralUnload();
+            }
             if (!view.reason().startsWith("Rocket placement")) {
                 check(server.getTickCount() - since < 400, "The placement veto did not hold the settlement: " + view.reason()); return;
             }
             vetoes++;
             var origin = rocket.flightData().orElseThrow().currentOrigin();
             rocket.setPos(origin.x() + 0.5D, origin.y(), origin.z() + 0.5D); step = 5;
+        }
+
+        private void unchangedNeutralUnload() {
+            check(rocket.snapshot().orElseThrow().contentHash().equals(heldHash)
+                    && EscrowCargoGameTestWorld.cargo(rocket) == 5_000 && EscrowCargoGameTestWorld.tank(device) == 0
+                    && EscrowCargoGameTestWorld.section(device).equals(RocketEscrowSection.neutral()),
+                    "Neutral unload normalization or veto changed cargo or the device");
+        }
+
+        /** Observe the real normalization and both native O2 callbacks, without manufacturing proofs. */
+        private void observeNeutralUnload(String boundary) {
+            if (boundary.equals("O_BIND_AFTER")) {
+                check(vetoes == 1 && rocket.escrowSection().equals(new RocketEscrowSection(frozen.ledger(), 0, List.of())),
+                        "Unload source did not bind to its exact prescribed wrapper after the veto");
+                unchangedNeutralUnload(); normalized = true;
+            }
+            if (boundary.startsWith("O2_AFTER_")) { check(normalized, "Unload O2 preceded normalization"); proofs.add(boundary); }
+            if (boundary.equals("O3_CAPTURE")) {
+                var view = EscrowRuntime.of(helper.getLevel().getServer()).settlementRecovery().view(frozen);
+                check(proofs.equals(java.util.Set.of("O2_AFTER_0", "O2_AFTER_1")) && view.provedSlots() == 2
+                        && view.waitingSlots() == 0, "Unload did not jointly prove its rocket source and device destination");
+                jointlyProved = true;
+            }
         }
 
         /** O4, then pruning of every survivor; the receipt, head and inspector output are pinned. */
@@ -203,7 +248,7 @@ public final class FluidCargoSettlementGameTests {
                 var survivor = (CompoundTag) raw; var reference = EscrowCodec.endpoint(survivor.getCompound("endpoint"));
                 boolean isRocket = reference.key().equals(op.rocket().key());
                 check(survivor.getString("signature_kind").equals((isRocket ? EscrowSignatureKind.FUEL_VECTOR_V1 : EscrowSignatureKind.FLUID_TANK_V1).name())
-                        && survivor.getBoolean("bound") == (isRocket || mode != Mode.ABANDON) && survivor.getLong("quantity")
+                        && survivor.getBoolean("bound") == (isRocket || mode == Mode.LOAD || mode == Mode.UNLOAD) && survivor.getLong("quantity")
                         == (isRocket ? rocket.flightData().orElseThrow().fuel().totalAmount() : EscrowCargoGameTestWorld.tank(device)),
                         "Receipt survivor projection changed: " + survivor);
             }
@@ -213,6 +258,20 @@ public final class FluidCargoSettlementGameTests {
                     + (head ? "READY" : "NONE") + " accounting=UNKNOWN"), "Inspector output changed: " + lines);
             var logical = op.rocket().logicalRocket();
             var ready = root.rocketAuthorities().stream().filter(value -> value.logical().equals(logical)).findFirst().orElse(null);
+            if (mode == Mode.UNLOAD_NEUTRAL) {
+                var chosen = frozen.checkpointed().stream().filter(value -> value.endpoint().key().equals(op.source().key())).findFirst().orElseThrow();
+                check(normalized && jointlyProved && ready != null && ready.logical().equals(logical)
+                        && ready.physical().equals(chosen.endpoint().identity()) && ready.owner().equals(op.owner())
+                        && ready.epoch() == chosen.state().epoch() && ready.kind() == chosen.signatureKind()
+                        && ready.signature().equals(chosen.state().signature()) && ready.invariant().equals(chosen.invariantDigest())
+                        && ready.anchor().equals(op.id()) && ready.releaseGeneration() == receipt.getLong("release_generation")
+                        && ready.outcome() == EscrowFlightTables.Outcome.READY
+                        && rocket.escrowSection().equals(new RocketEscrowSection(root.id(), 0, List.of())),
+                        "O4 did not preserve the frozen normalized unload source");
+                unchangedNeutralUnload();
+                check(RocketEscrowGate.idle(rocket) && !device.escrowLocked(), "Released neutral unload stayed locked");
+                finish(); return;
+            }
             if (!head) {
                 check(ready == null && EscrowSettlementTombstones.logicalLocked(root, logical) && rocket.isRemoved()
                         && EscrowCargoGameTestWorld.tank(device) == 0 && EscrowCargoGameTestWorld.section(device).equals(RocketEscrowSection.neutral())
