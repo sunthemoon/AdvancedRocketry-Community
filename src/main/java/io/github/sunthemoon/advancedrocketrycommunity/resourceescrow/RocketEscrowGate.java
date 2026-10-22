@@ -17,6 +17,19 @@ public final class RocketEscrowGate {
                 && (escrowIdle(rocket) || terminalSuccessor(rocket));
     }
 
+    /** R52: an ordinary landed record may retire before a fill only without any protected escrow history. */
+    public static boolean retirementUnprotected(RocketEntity rocket) {
+        if (rocket.escrowSection().ledger() != null || rocket.escrowSection().epoch() != 0 || !idle(rocket)) { return false; }
+        var data = ResourceEscrowSavedData.existing(((ServerLevel) rocket.level()).getServer());
+        if (data == null) { return true; }
+        var logical = rocket.assemblyTransactionId().orElseThrow(); var ledger = data.ledger();
+        return data.operational() && ledger.records().stream().noneMatch(op -> op.guard().rocket().equals(logical))
+                && ledger.floors().stream().noneMatch(floor -> logical.equals(floor.getUUID("rocket_id")))
+                && ledger.armedFlights().stream().noneMatch(arm -> arm.logical().equals(logical))
+                && ledger.rocketAuthorities().stream().noneMatch(head -> head.logical().equals(logical))
+                && !EscrowSettlementTombstones.history(ledger, logical);
+    }
+
     public static boolean terminalSuccessor(RocketEntity rocket) { return EscrowTerminalSuccessor.released(rocket); }
 
     public static boolean terminalFuelUpdate(RocketEntity rocket,

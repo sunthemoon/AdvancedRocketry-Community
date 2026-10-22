@@ -504,6 +504,8 @@ final class RocketTransferService {
         return operational && (phase == null || phase == RocketTransferPhase.COMMITTED && settled && stationaryArrival);
     }
 
+    void retireBeforeFill(RocketEntity rocket) { if (resourceMutationAllowed(rocket)) { recovery.retireBeforeFill(rocket); } }
+
     /** The production discard callback; package-private solely to test it without starting a world. */
     static Runnable governedLaunchDiscard(RocketTransferSavedData journal, UUID logical, UUID request,
             java.util.function.BooleanSupplier resourcesAllowed, Runnable releasePad, Runnable discarded) {

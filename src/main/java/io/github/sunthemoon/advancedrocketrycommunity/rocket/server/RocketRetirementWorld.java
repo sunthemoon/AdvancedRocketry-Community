@@ -19,9 +19,9 @@ import net.minecraft.server.MinecraftServer;
  * shared escrow barrier, the bay and escrow rules, the flight tickets and the journal's continuation. Owned by one
  * transfer service's recovery; the bay dispatch is that service's, passed by reference.
  */
-final class RocketRetirementWorld implements RocketOrdinaryRetirement.Port {
-    private final MinecraftServer server;
-    private final RocketTransferBayDispatch bays;
+class RocketRetirementWorld implements RocketOrdinaryRetirement.Port {
+    protected final MinecraftServer server;
+    protected final RocketTransferBayDispatch bays;
 
     RocketRetirementWorld(MinecraftServer server, RocketTransferBayDispatch bays) { this.server = server; this.bays = bays; }
 
@@ -29,7 +29,7 @@ final class RocketRetirementWorld implements RocketOrdinaryRetirement.Port {
 
     @Override
     public RocketOrdinaryRetirement.Presence survivor(RocketTransferRecord record, UUID survivor, RocketRetirementProof.Slot slot) {
-        var level = RocketTransferEntities.level(server, record.sourceSnapshot().sourceDimension());
+        var level = RocketTransferEntities.level(server, slot.dimension());
         if (level != null && level.getEntity(survivor) instanceof RocketEntity) { return RocketOrdinaryRetirement.Presence.LOADED; }
         return level != null && level.areEntitiesLoaded(slot.chunk().toLong())
                 ? RocketOrdinaryRetirement.Presence.GONE : RocketOrdinaryRetirement.Presence.UNLOADED;
@@ -108,7 +108,7 @@ final class RocketRetirementWorld implements RocketOrdinaryRetirement.Port {
         return journal.afterAcknowledged(server, token, effect, discarded);
     }
 
-    private RocketEntity rocket(RocketTransferRecord record, UUID survivor) {
+    protected RocketEntity rocket(RocketTransferRecord record, UUID survivor) {
         var level = RocketTransferEntities.level(server, record.sourceSnapshot().sourceDimension());
         return level != null && level.getEntity(survivor) instanceof RocketEntity rocket ? rocket : null;
     }

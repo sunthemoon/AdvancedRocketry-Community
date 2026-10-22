@@ -98,6 +98,8 @@ public final class RocketManager implements RocketOperationService {
         return journal.operational() && !transactions.hasPendingRecovery(journal, rocket.snapshot().orElseThrow());
     }
 
+    void retireBeforeFill(RocketEntity rocket) { if (resourceMutationAllowed(rocket)) { flights.retireBeforeFill(rocket); } }
+
     boolean escrowReconciliationBoundary(RocketEntity rocket) {
         return escrowReconciliationBoundary(rocket, null);
     }

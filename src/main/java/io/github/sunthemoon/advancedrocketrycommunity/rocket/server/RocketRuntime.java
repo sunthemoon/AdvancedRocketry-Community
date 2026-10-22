@@ -84,6 +84,11 @@ public final class RocketRuntime {
         return !cargoPreparing(rocket) && service instanceof RocketManager manager && manager.resourceMutationAllowed(rocket);
     }
 
+    /** Fuel admission demand only; no startup scan and no authority to bypass the ordinary resource boundary. */
+    public static void retireBeforeFill(RocketEntity rocket) {
+        if (!cargoPreparing(rocket) && service instanceof RocketManager manager) { manager.retireBeforeFill(rocket); }
+    }
+
     /** Other interlocks only; this read-only boundary never grants an escrow publication permit. */
     public static boolean escrowReconciliationBoundary(RocketEntity rocket) {
         return service instanceof RocketManager manager && manager.escrowReconciliationBoundary(rocket);
