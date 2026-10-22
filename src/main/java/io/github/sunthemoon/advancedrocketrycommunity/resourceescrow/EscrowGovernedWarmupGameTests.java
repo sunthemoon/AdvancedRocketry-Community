@@ -124,6 +124,7 @@ public final class EscrowGovernedWarmupGameTests {
             if (!journal.retryChecked(server) || !RocketWarmupGameTestSupport.live(server).isEmpty()) { return; }
             pads = predict(server, moon, rocket, 3);
             helper.assertTrue(pads != null, "Fewer than three admissible Moon pads");
+            requireReleasable(helper, server, pads);
             if (pads.stream().anyMatch(pad -> !cold(server, pad))) { return; }
             long now = server.getTickCount();
             departure = rocket.flightData().orElseThrow();
@@ -338,6 +339,8 @@ public final class EscrowGovernedWarmupGameTests {
             var stationPad = new RocketLandingPadSelector().selectStation(space, admin.get(6).snapshot().orElseThrow(), UUID.randomUUID(),
                     station, List.of(), space.getGameTime(), true);
             helper.assertTrue(stationPad.success(), "The station pad is not admissible: " + stationPad.detail());
+            var predicted = new ArrayList<>(pads); predicted.add(stationPad.snapshot().orElseThrow());
+            requireReleasable(helper, server, predicted);
             if (pads.stream().anyMatch(pad -> !cold(server, pad)) || !cold(server, stationPad.snapshot().orElseThrow())) { return; }
 
             for (int i = 0; i < 2; i++) {
