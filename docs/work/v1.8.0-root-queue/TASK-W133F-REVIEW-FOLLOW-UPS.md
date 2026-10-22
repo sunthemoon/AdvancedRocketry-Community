@@ -2,8 +2,9 @@
 
 Root: Claude. Date: 2026-10-22. Read [WORKER-RULES](WORKER-RULES.md), [TASK-W133](TASK-W133-F3-ESCROW-FILL-LAUNCH-STATE.md),
 [records/W133.md](records/W133.md), W130's record (`records/W130.md` once W130 merges) and the review
-`D:/GitHub/ARCE-Task-Evidence/root-queue/W133-review/REVIEW.md` (SHA-256 `7080e9c3…c5de496`) with its probes first.
-You are a new session. This task starts after W130 (D2, retire the transfer record before the first fill) merges.
+`D:/GitHub/ARCE-Task-Evidence/root-queue/W133-review/REVIEW.md` (SHA-256 `7080e9c3…c5de496`) with its probes, and
+W130-R2 in `D:/GitHub/ARCE-Task-Evidence/root-queue/W130-review/REVIEW.md` first. You are a new session. W130 (D2,
+retire the transfer record before the first fill) merged as `3bce8373`.
 
 | Item | Value |
 |---|---|
@@ -21,13 +22,19 @@ an empty `LANDED` source with another exception type (unreachable). The review f
 reached the governed promotion: the six refusals carrying fuel stop in `begin`'s preconditions, before
 `EscrowGovernedLaunch.prepare`, and `begin` returns the same `TRANSFER_JOURNAL_BLOCKED` when `prepare` throws. So:
 
-1. **W133-R1, the native launch after D2.** Rerun W125F's seven follow-up cases (`EscrowLoaderFollowUpProbe`, two
-   restarts each) on the shared head with W130 merged, so the transfer record is retired before the first fill and the
-   governed launch can run `prepare`. For every launch request, record which check answered: a precondition in `begin`,
-   an exception from `prepare` (with its message), or success (COUNTDOWN). Do this in the probe or through a release-test
-   hook that production never enables; production refusal codes and behaviour stay unchanged, and a new WARN or ERROR
-   that a GameTest drives needs its own exact manifest entry. Report the actual codes; do not change the oracle's
-   expectations to match. If a case still refuses, say which check refused and why.
+1. **W133-R1, the native launch after D2** (corrected by W130-review's W130-R2, Root decision R59). W125F's seven
+   follow-up cases are W130's named-fill seam cases: they keep their transfer record on purpose, so with W130 and W133
+   merged they still refuse with `TRANSFER_JOURNAL_BLOCKED` and never reach `prepare`. So:
+   - rerun the seven (`EscrowLoaderFollowUpProbe`, two restarts each) as **controls** that expect that refusal;
+   - add native cases that do reach `prepare`: an `ASSEMBLED` rocket with no transfer record filled through escrow with
+     a NONE guard, and a landed rocket whose record W130's retirement removes before its first fill, each then launched
+     through the governed path to COUNTDOWN, two restarts each;
+   - rerun W130's twelve native retirement cases on the combined tree and expect W130's results.
+   For every launch request, record which check answered: a precondition in `begin`, an exception from `prepare` (with
+   its message), or success (COUNTDOWN). Do this in the probe or through a release-test hook that production never
+   enables; production refusal codes and behaviour stay unchanged, and a new WARN or ERROR that a GameTest drives needs
+   its own exact manifest entry. Report the actual codes; do not change the oracle's expectations to match. If a case
+   refuses unexpectedly, say which check refused and why.
 2. **W133-R2:** split `rocketThatRequiresNoFuelBehavesAsBefore` into a test of what is unchanged and a test named for
    R58's accepted change (the waived `ASSEMBLED` rocket is launch-ready), keeping every assertion.
 3. **W133-R5:** a test that saves and reloads during a governed countdown that started from an `ASSEMBLED` rocket (the
