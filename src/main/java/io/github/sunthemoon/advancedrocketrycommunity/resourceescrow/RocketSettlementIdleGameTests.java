@@ -56,6 +56,11 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 public final class RocketSettlementIdleGameTests {
     private enum Release { SETTLEMENT, L2, NORMALIZED }
     private static final TicketType<UUID> FLIGHT_FIXTURE = TicketType.create("arce_n1_fixture", UUID::compareTo);
+    /**
+     * W137's reproduction, off unless a release-test run names one {@link Release} here: that scenario's first launch
+     * loses its source at F1's acknowledged ARMED checkpoint, so production discards it after the ARMED write.
+     */
+    static final String DISCARD_PROPERTY = "advancedrocketrycommunity.settlementIdleDiscard";
     private RocketSettlementIdleGameTests() { }
 
     @GameTest(template = "empty", batch = "rocket_settlement_idle", timeoutTicks = 1_200)
@@ -101,7 +106,7 @@ public final class RocketSettlementIdleGameTests {
         private boolean sawDescent, sawF6, sawF7;
         private List<CompoundTag> receipts;
         private final Map<EscrowEndpoint.Key, EscrowBarrier.Proof> l2Proofs = new java.util.LinkedHashMap<>();
-        private boolean proving, retiring;
+        private boolean proving, retiring, discardHook;
         private final Map<ServerLevel, java.util.Set<ChunkPos>> flightChunks = new java.util.LinkedHashMap<>();
 
         Scenario(GameTestHelper helper, Release release) {
@@ -157,6 +162,7 @@ public final class RocketSettlementIdleGameTests {
                     predecessor = rocket; successor = null;
                     departure = rocket.flightData().orElseThrow(); departureWrapper = rocket.escrowSection();
                     sourceStates.clear(); phases.clear(); sawDescent = false; sawF6 = false; sawF7 = false;
+                    if (completed.isEmpty()) { discardAfterArmed(); }
                     var result = RocketRuntime.requestAdminFlight(rocket, completed.isEmpty() ? RocketDestination.MOON : RocketDestination.EARTH, launch);
                     RocketJournalGameTestSupport.assertPendingLaunch(helper, result, rocket); step = 6;
                 }
@@ -205,6 +211,18 @@ public final class RocketSettlementIdleGameTests {
                 }
             }
             return ready;
+        }
+
+        /** W137 reproduction ({@link #DISCARD_PROPERTY}): the boundary after ARMED then fails on the removed source. */
+        private void discardAfterArmed() {
+            if (!Boolean.getBoolean(EscrowTestEndpoints.HOOKS) || !release.name().equals(System.getProperty(DISCARD_PROPERTY))) { return; }
+            var server = level.getServer(); var armed = rocket;
+            discardHook = true;
+            EscrowRuntime.of(server).terminalCutForTests(server, cut -> {
+                if (!"F1_ARM_ACK".equals(cut) || !discardHook) { return; }
+                discardHook = false; EscrowRuntime.of(server).terminalCutForTests(server, null);
+                armed.discard();
+            });
         }
 
         private void released() {
