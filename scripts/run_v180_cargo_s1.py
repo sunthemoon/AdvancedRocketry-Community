@@ -101,7 +101,14 @@ def run(args) -> dict:
             row["commands"] += ["save-all flush", "stop"]
             code = old_smoke._save_and_stop(process); row["exit_code"] = code
             oracle.require(code == 0, "Native process exited unsuccessfully")
-            row["log_check"] = check_log(process.lines, args.leaf, stage); process = None
+            # The file logger retains full project names; the console may abbreviate them.
+            # Keep both records, and reject console ERROR/FATAL/client-linkage lines as well.
+            oracle.require(not any(smoke.ERROR_LINE.search(line) or smoke.FATAL_LINE.search(line)
+                    or any(marker in line for marker in smoke.CLIENT_LINKAGE_MARKERS) for line in process.lines),
+                    "Native console reported an error or client linkage")
+            latest = evidence / f"{index}-{stage}-latest.log"
+            shutil.copy2(session / "logs/latest.log", latest)
+            row["log_check"] = check_log(latest.read_text(encoding="utf-8").splitlines(), args.leaf, stage); process = None
             disk = oracle.inspect(session / name, evidence / f"{index}-native", args.leaf == "item", stage.startswith("old-"),
                                   stage == "old-restore", old_before if stage.startswith("old-") else new_before)
             if index == 0:
