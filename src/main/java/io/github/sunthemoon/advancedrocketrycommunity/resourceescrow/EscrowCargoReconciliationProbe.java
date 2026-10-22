@@ -32,6 +32,7 @@ final class EscrowCargoReconciliationProbe {
     private long began;
     private int step;
     private volatile String selected = "";
+    private volatile int stores;
 
     static boolean accepts(String name) { return name.startsWith("FC_") || name.startsWith("IC_"); }
 
@@ -46,8 +47,11 @@ final class EscrowCargoReconciliationProbe {
     }
     void checkpoint(String label) {
         if (recovery || !initialized || done || paused.get()) { return; }
-        if (label.equals("CARGO_STORE_SOURCE_SELECTED")) { selected = "SOURCE"; }
-        if (label.equals("CARGO_STORE_DESTINATION_SELECTED")) { selected = "DESTINATION"; }
+        if (label.equals("CARGO_STORE_SOURCE_SELECTED")) { selected = "SOURCE"; stores++; }
+        if (label.equals("CARGO_STORE_DESTINATION_SELECTED")) { selected = "DESTINATION"; stores++; }
+        if (secondForceCut(Boolean.getBoolean(EscrowTestEndpoints.HOOKS), name, recovery, stores, label)) {
+            pause(label); return;
+        }
         if ((cut.equals("SOURCE_ONLY_STORE") || cut.equals("DESTINATION_ONLY_STORE")) && label.equals("BARRIER_FORCE_AFTER")) {
             EscrowTags.require(cut.equals(selected + "_ONLY_STORE"), "Cargo forced the wrong selected endpoint");
             pause(label); return;
@@ -56,6 +60,12 @@ final class EscrowCargoReconciliationProbe {
                 || cut.equals("L1_REPLACED") && label.equals("K2")
                 || cut.equals("L2_REPLACED") && label.equals("K9")
                 || cut.equals("FIRST_STORE") && label.equals("BARRIER_FORCE_AFTER")) { pause(label); }
+    }
+    /** Observation only: the existing second own-store has completed, but its force has not started. */
+    static boolean secondForceCut(boolean hooks, String name, boolean recovery, int stores, String label) {
+        return hooks && !recovery && ("FC_LOAD_SECOND_FORCE_BEFORE".equals(name)
+                || "FC_UNLOAD_SECOND_FORCE_BEFORE".equals(name))
+                && stores == 2 && "BARRIER_FORCE_BEFORE".equals(label);
     }
     /** Select only a probe-owned endpoint; normal runs and recovery retain the production ordering. */
     boolean permitsStore(EscrowOperation op, EscrowEndpoint endpoint) {
