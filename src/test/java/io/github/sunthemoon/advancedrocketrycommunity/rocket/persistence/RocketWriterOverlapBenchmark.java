@@ -3,6 +3,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataPolicy;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
+import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowWriterBenchmarkAccess;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.RocketLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferPhase;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
@@ -33,13 +34,18 @@ import net.minecraft.server.dedicated.DedicatedServer;
 /**
  * W129a B3a (ADR-074 item 13, design sections 5.4 and 6.1): at least 50 rounds in which the new transaction journal
  * writer and the existing transfer writer both write their whole roots at their bounds, overlapping on their two IO
- * threads, while W128's 16 MiB registry stays resident. The owner thread runs a monotonic 50 ms surrogate tick: every
- * tick records its intended deadline, start, end, duration and lateness, and a deadline that passes during work is
- * counted as missed instead of being diluted by an immediate catch-up tick. Some rounds take the readback path (the
- * committer replaces, then throws) and some definitely fail before replacement. Standalone, Xmx4G, heavy-JVM lock.
+ * threads, while W128's 16 MiB registry stays resident. Since W129aF (review finding W129a-R1) the other live roots
+ * and their existing writers' traffic run beside them: a resident escrow ledger and bay receipt store on one admission
+ * authority, each mutated, written and published every 20 ticks through its unchanged checked writer. The owner thread
+ * runs a monotonic 50 ms surrogate tick: every tick records its intended deadline, start, end, duration and lateness,
+ * and a deadline that passes during work is counted as missed instead of being diluted by an immediate catch-up tick.
+ * Some rounds take the readback path (the committer replaces, then throws) and some definitely fail before replacement.
+ * Standalone, Xmx4G, heavy-JVM lock.
  */
 public final class RocketWriterOverlapBenchmark {
     static final int ROUNDS = 50, SMOKE_ROUNDS = 13;
+    /** The escrow ledger mutates every 20 ticks and the receipt store 10 ticks later, each through its own writer. */
+    static final int ESCROW_PERIOD_TICKS = 20;
     /** {@code smoke}: small fixtures and 13 rounds, only to exercise every path; never budget evidence. */
     private static boolean smoke;
     /** {@code transfer-only}: the same resident roots, but only the existing transfer writer writes (comparison). */
@@ -67,15 +73,23 @@ public final class RocketWriterOverlapBenchmark {
                 + "the transaction journal with W128's 256 records at its 64 MiB bound, and the transfer journal with "
                 + "W11B2's maximum fixture. Each round writes both whole roots; they overlap on their own IO threads. "
                 + "Transaction rounds 4, 14, ... take the readback path and rounds 9, 19, ... fail before replacement; "
-                + "transfer rounds 7, 17, ... take the readback path and rounds 12 and 32 fail once, then retry. Mode "
-                + "transfer-only keeps the same resident roots but writes only the transfer journal, as the existing "
-                + "traffic alone, for comparison.");
+                + "transfer rounds 7, 17, ... take the readback path and rounds 12 and 32 fail once, then retry. Also "
+                + "resident, on one admission authority as EscrowRuntime holds them: the escrow ledger (128 retained "
+                + "floors, then fluid fills until admission refuses) and the bay receipt store (4,096 REJECTED receipts "
+                + "at the retained bound, every field at its maximum encoding). Every 20 ticks, independent of the "
+                + "rounds, the owner mutates the ledger (a persisted retry reason through the coordinator's autosave "
+                + "request) and, 10 ticks later, one receipt (a re-put with a new reason and tick); each is written by "
+                + "its existing checked writer on its own IO thread and published on a later owner tick, and every "
+                + "tenth write of each takes the readback path. Mode transfer-only keeps the same resident roots and "
+                + "the escrow and receipt traffic but writes only the transfer journal, as the existing traffic "
+                + "alone, for comparison.");
         report.put("budgets", Map.of("mean_ms", RocketWriterOverlapVerdict.MEAN_MS, "p95_ms", WriterBenchmarkEnvironment.P95_MS,
                 "p99_ms", WriterBenchmarkEnvironment.P99_MS, "spike_ms", RocketWriterOverlapVerdict.SPIKE_MS,
                 "rss_bytes", RocketWriterOverlapVerdict.RSS_BUDGET_BYTES, "heap", "Xmx4G, no OutOfMemoryError"));
         report.put("environment", WriterBenchmarkEnvironment.describe());
         report.put("mode", smoke ? "SMOKE_NOT_EVIDENCE" : transferOnly ? "TRANSFER_ONLY_COMPARISON" : "MEASUREMENT");
         report.put("transfer_only", transferOnly);
+        EscrowWriterBenchmarkAccess escrow = null;
         try (var environment = new WriterBenchmarkEnvironment()) {
             MinecraftBootstrap.initialize();
             long baseline = WriterBenchmarkEnvironment.retainedAfterGc();
@@ -102,6 +116,11 @@ public final class RocketWriterOverlapBenchmark {
                     "bound_bytes", TRANSACTIONS.maxUncompressedBytes()));
             fixtures.put("transfers", Map.of("records", transfers.entries().size(),
                     "root_bytes", TransferWriterBenchmarkAccess.rootBytes(transfers), "bound_bytes", TRANSFERS.maxUncompressedBytes()));
+            // Both escrow roots are written once and acknowledged here, so every measured write replaces a file.
+            escrow = smoke ? EscrowWriterBenchmarkAccess.create(directory, 2, 4, 16, 0)
+                    : EscrowWriterBenchmarkAccess.create(directory, EscrowWriterBenchmarkAccess.FLOORS,
+                            EscrowWriterBenchmarkAccess.OPERATIONS, EscrowWriterBenchmarkAccess.RECEIPTS, 0);
+            fixtures.putAll(escrow.composition());
             report.put("fixtures", fixtures);
             long resident = WriterBenchmarkEnvironment.retainedAfterGc();
             report.put("retained_heap", new LinkedHashMap<>(Map.of("baseline_after_gc_bytes", baseline,
@@ -110,7 +129,7 @@ public final class RocketWriterOverlapBenchmark {
             SatelliteRegistryBenchmark.persist(output, report);
 
             // Baseline files for both roots, so that every measured round replaces an existing file.
-            int tick = 0;
+            int tick = (int) escrow.now();
             RocketTransactionWriterBenchmark.at(server, tick);
             if (!transactions.requestWrite(transactionFile, CheckedSavedDataPolicy.atomic(TRANSACTIONS))
                     || !TransferWriterBenchmarkAccess.request(transfers, transferFile, CheckedSavedDataPolicy.atomic(TRANSFERS))) {
@@ -120,7 +139,7 @@ public final class RocketWriterOverlapBenchmark {
             while (!transactions.acknowledgedCurrent() || !transfers.acknowledgedCurrent()) {
                 if (System.nanoTime() > deadline) { throw new IllegalStateException("Baseline writes did not complete"); }
                 Thread.sleep(5); RocketTransactionWriterBenchmark.at(server, ++tick);
-                transactions.pollWriter(); transfers.pollWriter(tick);
+                transactions.pollWriter(); transfers.pollWriter(tick); escrow.tick(tick);
             }
 
             var threads = (com.sun.management.ThreadMXBean) ManagementFactory.getThreadMXBean();
@@ -128,9 +147,11 @@ public final class RocketWriterOverlapBenchmark {
             long ownerAllocated = threads.getThreadAllocatedBytes(ownerId), ownerCpu = threads.getCurrentThreadCpuTime();
             var transactionsThreadBefore = WriterBenchmarkEnvironment.thread(RocketTransactionWriter.THREAD);
             var transfersThreadBefore = WriterBenchmarkEnvironment.thread("ARCE-rocket-journal");
+            var ledgerThreadBefore = WriterBenchmarkEnvironment.thread(EscrowWriterBenchmarkAccess.LEDGER_THREAD);
+            var receiptThreadBefore = WriterBenchmarkEnvironment.thread(EscrowWriterBenchmarkAccess.RECEIPT_THREAD);
             environment.resetPoolPeaks();
             int pauseStart = environment.pauseCount(); long gcStart = environment.gcMillis();
-            var run = run(server, tick + 20, transactions, records, journals, transactionFile, transfers, transferFile);
+            var run = run(server, tick + 20, transactions, records, journals, transactionFile, transfers, transferFile, escrow);
             report.put("rounds", run.get("rounds")); report.put("ticks", run.get("ticks"));
             var results = new LinkedHashMap<String, Object>();
             results.put("tick_duration", run.get("duration")); results.put("tick_lateness", run.get("lateness"));
@@ -147,6 +168,14 @@ public final class RocketWriterOverlapBenchmark {
                     WriterBenchmarkEnvironment.thread(RocketTransactionWriter.THREAD)));
             results.put("transfer_io_thread_before_and_after", List.of(transfersThreadBefore,
                     WriterBenchmarkEnvironment.thread("ARCE-rocket-journal")));
+            var escrowTraffic = new LinkedHashMap<String, Object>(escrow.results());
+            escrowTraffic.put("escrow_ledger_request_to_publication_ticks", RocketTransactionWriterBenchmark.plain(escrow.ledgerPublicationTicks()));
+            escrowTraffic.put("bay_receipt_request_to_publication_ticks", RocketTransactionWriterBenchmark.plain(escrow.receiptPublicationTicks()));
+            escrowTraffic.put("escrow_ledger_io_thread_before_and_after", List.of(ledgerThreadBefore,
+                    WriterBenchmarkEnvironment.thread(EscrowWriterBenchmarkAccess.LEDGER_THREAD)));
+            escrowTraffic.put("bay_receipt_io_thread_before_and_after", List.of(receiptThreadBefore,
+                    WriterBenchmarkEnvironment.thread(EscrowWriterBenchmarkAccess.RECEIPT_THREAD)));
+            results.put("escrow_and_receipt_traffic", escrowTraffic);
             var workingSet = WriterBenchmarkEnvironment.workingSet();
             results.put("working_set_after_rounds", workingSet);
             results.put("retained_heap_after_rounds_bytes", WriterBenchmarkEnvironment.retainedAfterGc());
@@ -156,28 +185,33 @@ public final class RocketWriterOverlapBenchmark {
             report.put("rss_measured", "MEASURED".equals(workingSet.get("status")));
             report.put("status", verdict.status()); report.put("verdict_reasons", verdict.reasons());
             if (registry != null) { report.put("registry_still_operational", registry.operational()); }
+            report.put("escrow_roots_still_operational", escrow.operational());
             transfers.stop();
         } catch (Throwable failure) {
             report.put("status", "FAILED"); report.put("error", failure.toString());
             SatelliteRegistryBenchmark.persist(output, report); throw failure;
         } finally {
-            SatelliteRegistryBenchmark.persist(output, report);
-            for (Path file : List.of(transactionFile, transferFile)) {
-                Files.deleteIfExists(file); Files.deleteIfExists(Path.of(file + ".arce-pending"));
+            try {
+                if (escrow != null) { escrow.close(); } // Drains and joins both escrow writers before their files go.
+            } finally {
+                SatelliteRegistryBenchmark.persist(output, report);
+                for (Path file : List.of(transactionFile, transferFile)) {
+                    Files.deleteIfExists(file); Files.deleteIfExists(Path.of(file + ".arce-pending"));
+                }
+                try (var left = Files.list(directory)) { for (Path path : left.toList()) { Files.deleteIfExists(path); } }
+                Files.delete(directory);
             }
-            try (var left = Files.list(directory)) { for (Path path : left.toList()) { Files.deleteIfExists(path); } }
-            Files.delete(directory);
         }
     }
 
     private static Map<String, Object> run(DedicatedServer server, int firstTick, RocketTransactionSavedData transactions,
             List<RocketTransactionRecord> records, List<RocketTransactionJournal> journals, Path transactionFile,
-            RocketTransferSavedData transfers, Path transferFile) throws IOException {
+            RocketTransferSavedData transfers, Path transferFile, EscrowWriterBenchmarkAccess escrow) throws IOException {
         var ticks = new ArrayList<long[]>(); var rounds = new ArrayList<Map<String, Object>>();
         var transactionWall = new ArrayList<Double>(); var transactionCpu = new ArrayList<Double>();
         var transactionLatencyTicks = new ArrayList<Double>(); var transferWall = new ArrayList<Double>();
         var transferLatencyTicks = new ArrayList<Double>();
-        long origin = System.nanoTime(), k = 0, missed = 0;
+        long origin = System.nanoTime(), k = 0, missed = 0, ledgerDue = 0, receiptDue = ESCROW_PERIOD_TICKS / 2;
         int round = -1, transferAdvances = 0;
         boolean transactionWaiting = false, transferWaiting = false;
         long transactionCount = 0, transferCount = TransferWriterBenchmarkAccess.completedWriteCount(transfers);
@@ -191,6 +225,10 @@ public final class RocketWriterOverlapBenchmark {
             RocketTransactionWriterBenchmark.at(server, tick);
             transactions.pollWriter();
             transfers.pollWriter(tick);
+            escrow.tick(tick);
+            // Paced on the schedule, not on the rounds; a slot skipped by a missed deadline fires on the next tick.
+            if (k >= ledgerDue) { escrow.mutateLedger(); ledgerDue = k + ESCROW_PERIOD_TICKS; }
+            if (k >= receiptDue) { escrow.mutateReceipt(); receiptDue = k + ESCROW_PERIOD_TICKS; }
             if (transactionWaiting && transactions.completedWriteCount() > transactionCount) {
                 transactionWaiting = false;
                 current.put("transaction_published_tick", tick); current.put("transaction_outcome", transactions.writeOutcome().name());
