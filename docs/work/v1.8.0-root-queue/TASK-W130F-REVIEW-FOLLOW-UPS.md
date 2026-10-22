@@ -2,7 +2,7 @@
 
 Root: Claude. Date: 2026-10-22. Read [WORKER-RULES](WORKER-RULES.md), [TASK-W130](TASK-W130-D2-B2-RETIRE-BEFORE-FILL.md),
 [records/W130.md](records/W130.md) and the review `D:/GitHub/ARCE-Task-Evidence/root-queue/W130-review/REVIEW.md`
-(SHA-256 `78ae2a47…5c7c32`) with its probe `probes/W130ReviewTicketProbeTest` first. You are a new session.
+(SHA-256 `78ae2a47…ab7c32`) with its probe `probes/W130ReviewTicketProbeTest` first. You are a new session.
 
 | Item | Value |
 |---|---|

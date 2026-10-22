@@ -1359,10 +1359,11 @@ or accept a risk. The risks are R-031, R-032 and R-035.
     still has its COMMITTED transfer record T, the retirement places the existing ordinary flight ticket on the old
     launch site's origin column and refreshes the destination's, so W98's on-disk proof can remove T before the fill.
     It starts on demand only: at most four starts per tick and one attempt per rocket per 200 ticks, never at startup
-    by itself, released on success or by the 400-tick expiry, without resetting W98's backoff. Open before admission
-    (W130-R1, TASK-W130F under R59): during a wait that never ends by itself (a search area over the limit, a Level
-    with saving off, unsupported entity storage) one demand keeps re-ticketing both ends every 200 ticks and keeps
-    the landed rocket's column loaded. Unreachable while production admission is off.
+    by itself, released on success or by the 400-tick expiry, without resetting W98's backoff. W130F (merged
+    `6d1230f0`, R59, closing W130-R1) checks the three holds that no ticket can end (a discovery region over its limit,
+    a Level with saving off, unsupported entity storage) before any ticket; one demand allows at most three ticket
+    steps, after which the entry ends with T kept (`DEMAND_SPENT`) until a new demand; a loader only queues its
+    demand, and the coordinator's tick starts the attempt. Unreachable while production admission is off.
 - **Checked column set (R21 item 2).**
   - One server-free, overflow-checked helper defines the columns for readiness, governed pad admission, F1's source,
     refresh and release.
