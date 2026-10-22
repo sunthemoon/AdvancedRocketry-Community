@@ -1,24 +1,33 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
+import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.RocketDiscoveryColumns;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 /**
- * W130F (Root decision R59; W130-R3): the BEFORE_FILL site's demand pacing, kept apart from W98's proof state machine in
- * {@link RocketOrdinaryRetirement}. RAM only and cleared with the coordinator, so nothing starts at startup.
+ * W130F (Root decision R59; W130-R1 and R3): the BEFORE_FILL site's demand pacing, kept apart from W98's proof state
+ * machine in {@link RocketOrdinaryRetirement}. RAM only and cleared with the coordinator, so nothing starts at startup.
  *
  * <ul>
  *   <li>R52: at most one attempt per rocket per {@link RocketOrdinaryRetirement#RETRY_TICKS}, kept through an abandoned or
  *       recreated entry, and at most {@link RocketOrdinaryRetirement#MAX_ATTEMPTS} starts per tick.</li>
+ *   <li>R59: an attempt checks the holds that no ticket can end before its ticket step, and one demand allows at most
+ *       {@link #DEMAND_TICKETS} ticket steps; the coordinator then ends the entry with T kept (W130-R1).</li>
  * </ul>
  */
 final class RocketFillRetirementPacing {
+    /** Ticket steps one demand allows: a cold old site needs two (load, then prove), and the third absorbs one failed proof. */
+    static final int DEMAND_TICKETS = 3;
     /** The tick of each rocket's last attempt, within the existing pending bound. */
     private final Map<UUID, Long> attempts = new LinkedHashMap<>();
+    private final Set<String> warned = new HashSet<>();
     private long tick = Long.MIN_VALUE;
     private int starts;
 
@@ -41,10 +50,29 @@ final class RocketFillRetirementPacing {
 
     /**
      * An admitted attempt's checks, then its ticket step: the existing ordinary ticket on the old launch site's origin
-     * column, and D's refreshed. Returns the hold reason, or null once the tickets are placed.
+     * column, and D's refreshed. Returns the hold reason, or null once the tickets are placed. The first three holds never
+     * end by themselves and are read without loading anything (R59): either end's discovery region over its limit, a
+     * census Level with saving off, and entity storage that gives no own-store proof (D2-4). Each WARNs once per Level.
      */
     String ticket(RocketOrdinaryRetirement.Port port, RocketTransferSavedData journal, RocketTransferRecord record, UUID survivor,
                   List<RocketRetirementProof.Slot> census, RocketTransferSavedData.Reservation token) {
+        if (!RocketDiscoveryColumns.of(record.sourceSnapshot()).admissible()
+                || !RocketDiscoveryColumns.of(record.destinationSnapshot()).admissible()) { return "DISCOVERY_BOUNDS"; }
+        for (var slot : census) {
+            if (!port.saveOff(slot)) { warned.remove("SAVE_OFF " + slot.dimension()); continue; }
+            if (warned.add("SAVE_OFF " + slot.dimension())) {
+                AdvancedRocketryCommunity.LOGGER.warn("ARCE_TRANSFER_FILL_RETIREMENT_SAVE_OFF level={}; escrow fills retain the transfer until saving resumes",
+                        slot.dimension());
+            }
+            return "SAVE_OFF";
+        }
+        for (var slot : census) {
+            if (port.captureSupported(slot)) { continue; }
+            if (warned.add("STORAGE " + slot.dimension())) {
+                AdvancedRocketryCommunity.LOGGER.warn("ARCE_TRANSFER_FILL_RETIREMENT_UNSUPPORTED_STORAGE level={}; escrow fills retain the transfer until entity storage supports a checked proof", slot.dimension());
+            }
+            return "UNSUPPORTED_ENTITY_STORAGE";
+        }
         if (!port.escrowAllows(journal, record, token)) { return "BUSY"; }
         if (port.projection(record, survivor) == null) { return "SURVIVOR_CONFLICT"; }
         port.keepLoaded(record, census);
@@ -52,7 +80,7 @@ final class RocketFillRetirementPacing {
     }
 
     void clear() {
-        attempts.clear();
+        attempts.clear(); warned.clear();
         tick = Long.MIN_VALUE; starts = 0;
     }
 }

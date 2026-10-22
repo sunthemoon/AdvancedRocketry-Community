@@ -12,8 +12,8 @@ import java.util.UUID;
 /**
  * W130F (W130-R3): the ordinary retirement's holds that are reported once, kept apart from its state machine in
  * {@link RocketOrdinaryRetirement}: a refused admission (R4), a census Level with saving off (R5(d)) and another mod's
- * entity storage (R5(c), and D2-4 for the destination site). Moved unchanged from the coordinator; RAM only and cleared
- * with it.
+ * entity storage (R5(c)). Moved unchanged from the coordinator, except that the destination site's checks before its
+ * tickets now report its own storage hold ({@link RocketFillRetirementPacing}). RAM only and cleared with the coordinator.
  */
 final class RocketRetirementHolds {
     private final Map<UUID, String> refusals = new LinkedHashMap<>();
@@ -50,17 +50,11 @@ final class RocketRetirementHolds {
         }
     }
 
-    /** R5(c) and D2-4: whether every census slot gives an own-store proof, with one WARN per Level for each site kind. */
-    boolean supported(RocketOrdinaryRetirement.Port port, List<RocketRetirementProof.Slot> census, boolean fill) {
+    /** R5(c): whether every census slot gives an own-store proof; one WARN per Level when {@code warn}. */
+    boolean supported(RocketOrdinaryRetirement.Port port, List<RocketRetirementProof.Slot> census, boolean warn) {
         for (var slot : census) {
             if (!port.captureSupported(slot)) {
-                if (fill) {
-                    if (warnedLevels.add("FILL_STORAGE " + slot.dimension())) {
-                        AdvancedRocketryCommunity.LOGGER.warn("ARCE_TRANSFER_FILL_RETIREMENT_UNSUPPORTED_STORAGE level={}; escrow fills retain the transfer until entity storage supports a checked proof", slot.dimension());
-                    }
-                    return false;
-                }
-                if (warnedLevels.add("STORAGE " + slot.dimension())) {
+                if (warn && warnedLevels.add("STORAGE " + slot.dimension())) {
                     AdvancedRocketryCommunity.LOGGER.warn("ARCE_TRANSFER_RETIREMENT_UNSUPPORTED_STORAGE level={}; another entity storage replaced "
                             + "this Level's, so ordinary returns remove their records after the in-memory return (R-035 residual)", slot.dimension());
                 }

@@ -129,11 +129,13 @@ final class EscrowLandedRetirementProbe {
         if (step == 3) {
             if (journal.findByLogicalRocket(logical).isPresent()) {
                 if (demand < 0) { demand = server.getTickCount(); }
-                if (cut.endsWith("HELD_STORAGE")) { obstruction.install(server, cut, record); }
-                if (tickets > 0 && (boundary.equals("HELD") || !recovery && boundary.equals("R52_DISCARDED"))) {
+                boolean storage = cut.endsWith("HELD_STORAGE");
+                if (storage) { obstruction.install(server, cut, record); }
+                // W130F (R59): unsupported storage holds before any ticket; an off-column copy holds after three.
+                if ((tickets > 0 || storage) && (boundary.equals("HELD") || !recovery && boundary.equals("R52_DISCARDED"))) {
                     if (!obstruction.install(server, cut, record)) { return; }
                     if (boundary.equals("HELD") && server.getTickCount() - demand > 450) {
-                        EscrowTags.require(tickets == 3 && RocketRuntime.resourceMutationAllowed(rocket)
+                        EscrowTags.require(tickets == (storage ? 0 : 3) && RocketRuntime.resourceMutationAllowed(rocket)
                                 && amount(loader) == 5_000 && bank(rocket, false) == 0, "Held retirement changed ordinary authority or ticket rate");
                         AdvancedRocketryCommunity.LOGGER.info("ARCE_R52_HELD cut={} elapsed={} tickets={} ordinary_mutation=true",
                                 cut, server.getTickCount() - demand, tickets);
