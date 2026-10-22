@@ -145,6 +145,41 @@ public final class RocketTransactionSavedData extends SavedData {
     /** A capture is in flight, published or not, or a request is pending. */
     public boolean writerBusy() { requireOwner(); return writer != null && writer.busy(); }
 
+    /**
+     * ADR-074 item 10, {@code ServerStoppingEvent} at HIGHEST: refuse gameplay requests and starts from now on. The
+     * shutdown predicate latches the same state where the event is missing (a thrown tick exception).
+     */
+    public void latchShutdown() {
+        requireOwner();
+        if (writer != null) { writer.latchShutdown(); }
+    }
+
+    /**
+     * Overworld {@code LevelEvent.Unload}, before storage closes: resume the same drain under the same budget, or start
+     * it if the shutdown save was skipped, then join the IO thread even when the drain gave up.
+     */
+    public void close() {
+        requireOwner();
+        if (writer == null) {
+            if (!operational() || !isDirty() || ownerServer == null && writerFile == null) { return; }
+            writer(bind(writerFile != null ? writerFile : ManagedRootSupplier.dataFile(ownerServer, TYPE), ATOMIC));
+        }
+        writer.close(ATOMIC, System::nanoTime, TimeUnit.NANOSECONDS::sleep);
+    }
+
+    /** {@code ServerStoppedEvent} and exceptional cleanup: join without publishing; it never reports success. */
+    public void abort() {
+        requireOwner();
+        if (writer != null) { writer.abort(); }
+    }
+
+    /** The last stop-path report (drain, close or abort), for diagnostics and tests. */
+    Optional<CheckedRootWriter.DrainReport> drainReport() {
+        requireOwner();
+        return writer == null ? Optional.empty() : Optional.ofNullable(writer.lastReport());
+    }
+
+
     /** ADR-074 item 9: a running server's autosave and {@code /save-all} only request; they never wait. */
     @Override
     public void save(java.io.File file) {

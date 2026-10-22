@@ -40,6 +40,38 @@ public final class RocketTransactionProofGameTests {
         });
     }
 
+    /** ADR-074 item 9: on a running server autosave and {@code /save-all} request; publication follows on later ticks. */
+    @GameTest(template = "empty", batch = "rocket_transaction_proof", timeoutTicks = 200)
+    public static void autosaveAndSaveAllRequestAndPublishOnLaterTicks(GameTestHelper helper) {
+        var server = helper.getLevel().getServer();
+        var data = RocketTransactionSavedData.get(server);
+        int[] step = {0}; int[] requestedAt = {0};
+        // One callback for the whole test; each step only reads state (no scheduling from inside a callback).
+        helper.onEachTick(() -> {
+            switch (step[0]) {
+                case 0, 2 -> {
+                    if (data.writerBusy()) { return; }
+                    data.setDirty();
+                    if (step[0] == 0) {
+                        server.saveEverything(true, false, false);
+                    } else {
+                        helper.assertTrue(server.getCommands().performPrefixedCommand(
+                                server.createCommandSourceStack().withSuppressedOutput(), "save-all") > 0, "/save-all failed");
+                    }
+                    helper.assertTrue(data.writerBusy() && data.isDirty() && !data.acknowledgedCurrent(),
+                            (step[0] == 0 ? "Autosave" : "/save-all") + " made no request or waited for the write");
+                    requestedAt[0] = server.getTickCount(); step[0]++;
+                }
+                case 1, 3 -> {
+                    if (!data.acknowledgedCurrent()) { return; }
+                    helper.assertTrue(server.getTickCount() > requestedAt[0], "Publication happened in the requesting tick");
+                    if (step[0]++ == 3) { helper.succeed(); }
+                }
+                default -> { }
+            }
+        });
+    }
+
     @GameTest(template = "empty", batch = "rocket_transaction_proof", timeoutTicks = 100)
     public static void replacementExceptionReadbackAcknowledgesButRestartRequiresNewProof(GameTestHelper helper) throws IOException {
         Path directory = Files.createTempDirectory("arce-w123-readback-");

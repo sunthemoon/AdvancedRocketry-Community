@@ -120,6 +120,7 @@ public final class CheckedRootWriter<C, A, P> {
     public boolean shuttingDown() { owner(); return shutdown; }
     public boolean closed() { owner(); return closed; }
     public long lastCommittedSequence() { owner(); return lastCommitted; }
+    public DrainReport lastReport() { owner(); return last; }
 
     /** Idempotent. An attempt in flight at shutdown entry, even one completed but unpublished, is attempt 1. */
     public void latchShutdown() {
@@ -201,7 +202,14 @@ public final class CheckedRootWriter<C, A, P> {
         latchShutdown(); closed = true; pending = null;
         boolean unresolved = active != null || root.needsWrite();
         join(); completions.clear(); active = null;
+        if (unresolved) { raiseTarget(); }
         last = new DrainReport(false, target, lastCommitted, shutdownAttempts, unresolved ? "ABORTED_UNRESOLVED" : "ABORTED_IDLE");
+        if (unresolved && !warned) {
+            // The backstop gave up without a drain: the same once-per-shutdown WARN as an incomplete drain.
+            warned = true;
+            LOGGER.warn("ARCE_CHECKED_WRITER_DRAIN_INCOMPLETE root={} target={} committed={} attempts={} reason={}",
+                    label, target, lastCommitted, shutdownAttempts, last.reason());
+        }
         return last;
     }
 
