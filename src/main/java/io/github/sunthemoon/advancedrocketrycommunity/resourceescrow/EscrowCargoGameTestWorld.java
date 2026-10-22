@@ -153,10 +153,15 @@ final class EscrowCargoGameTestWorld implements AutoCloseable {
         clear(at); clear(at.above());
         var entries = new net.minecraft.nbt.ListTag();
         if (count > 0) { var stack = ItemCargoReconciliationFixtures.stack(count); stack.putByte("Slot", (byte) 0); entries.add(stack); }
-        var snapshot = ItemCargoReconciliationFixtures.snapshot(level, at, entries);
-        var rocket = ItemCargoReconciliationFixtures.create(level, snapshot);
+        var base = ItemCargoReconciliationFixtures.snapshot(level, at, entries);
+        var snapshot = RocketStructureSnapshot.create(base.snapshotId(), base.sourceDimension(), base.sourceOrigin(),
+                base.blocks(), base.passengerAnchors(), base.stats(), level.getGameTime(),
+                new RocketPropulsion(RocketPropulsion.Mode.MONO, 2_000, 0, 1, 1, RocketPropulsion.Settings.DEFAULTS));
+        var rocket = Objects.requireNonNull(ModEntities.ROCKET.get().create(level));
+        rocket.initialize(snapshot, UUID.randomUUID(), UUID.randomUUID());
         var flight = rocket.flightData().orElseThrow();
         rocket.updateFlightData(flight.withFuel(flight.fuel().withFluidBank(false, ModIdentity.id("rocket_fuel"), null, 1_000), level.getGameTime()));
+        helper.assertTrue(level.addFreshEntity(rocket), "Item cargo rocket fixture was not published");
         rockets.add(rocket); return rocket;
     }
 
