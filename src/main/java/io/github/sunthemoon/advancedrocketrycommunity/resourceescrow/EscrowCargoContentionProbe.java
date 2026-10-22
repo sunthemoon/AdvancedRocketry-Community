@@ -46,10 +46,8 @@ final class EscrowCargoContentionProbe {
         EscrowTags.require(level.addFreshEntity(healthy), "Healthy cargo fixture publication failed");
         device = EscrowCargoProbeDevice.create(level, HEALTHY_DEVICE, healthy, true, false);
     }
-    void start() {
-        if (name.equals(E5)) { return; }
+    static void seedCache(IOWorker worker) {
         // Fixed disposable storage fixtures; no Level chunks or production endpoints are loaded for these writes.
-        var worker = server.overworld().getChunkSource().chunkMap.worker;
         var writes = new ArrayList<CompletableFuture<Void>>();
         for (int i = 0; i < 256; i++) {
             var pos = new ChunkPos((8 + i) * 32, 256);
@@ -59,7 +57,6 @@ final class EscrowCargoContentionProbe {
             writes.add(worker.store(pos, root));
         }
         CompletableFuture.allOf(writes.toArray(CompletableFuture[]::new)).join(); worker.synchronize(true).join();
-        AdvancedRocketryCommunity.LOGGER.info("ARCE_CARGO_CACHE_SEEDED cut={} regions=256", name);
     }
     void beforeReconciliation(ResourceEscrowSavedData data) {
         if (recovery || device == null || data == null) { return; }
@@ -70,8 +67,15 @@ final class EscrowCargoContentionProbe {
     void checkpoint(String label) {
         if (recovery || injected || !name.equals(E3) || !label.equals("C4_SOURCE_SELECTED")) { return; }
         injected = true;
-        int size = closeOldest(Boolean.getBoolean(EscrowTestEndpoints.HOOKS), server.overworld().getChunkSource().chunkMap.worker);
+        int size = injectCacheClose(Boolean.getBoolean(EscrowTestEndpoints.HOOKS), server.overworld().getChunkSource().chunkMap.worker);
         AdvancedRocketryCommunity.LOGGER.info("ARCE_CARGO_CACHE_CLOSED cut={} regions={} own_region_cached=false", name, size);
+    }
+    /** Seed at C4, not at admission: intervening normal reads can reopen the endpoint's region. */
+    static int injectCacheClose(boolean gate, IOWorker worker) {
+        if (!gate) { return 0; }
+        seedCache(worker);
+        AdvancedRocketryCommunity.LOGGER.info("ARCE_CARGO_CACHE_SEEDED cut={} regions=256", E3);
+        return closeOldest(true, worker);
     }
     /** Closes only the oldest seeded fixture channel; the unchanged vanilla eviction and store report its failure. */
     static int closeOldest(boolean gate, IOWorker worker) {

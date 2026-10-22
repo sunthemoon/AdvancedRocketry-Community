@@ -146,7 +146,6 @@ final class EscrowCargoReconciliationProbe {
             if (recoveryProbe != null) { recoveryProbe.place(data, rocket, device); }
             EscrowTags.require(server.saveEverything(false, true, true), "Cargo BEFORE native baseline refused");
             initialized = true;
-            if (contention != null) { contention.start(); }
             if (recoveryProbe == null || recoveryProbe.admit()) { EscrowCargoSwitches.forTests(server, kind(), device.id(), true); }
             step = 1;
         }
