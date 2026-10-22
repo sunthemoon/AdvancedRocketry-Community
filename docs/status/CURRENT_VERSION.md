@@ -38,7 +38,7 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: 49d9629c (W133F merged: F3's native launch on the combined tree, with gated launch traces; before it, ab14bc2e merged W134, cargo leaf D-E2, item cargo settlement and the end-to-end cases, admission disabled)
+latest_code_commit: a330dddb (W136 merged: the native S1 checks of cargo leaves C-D and D-D and item status wording; before it, 49d9629c merged W133F, F3's native launch on the combined tree)
 latest_hosted_regression: run 39700132027 at eeb1fb80 (the W131 merge) passed all required GameTests and the log checker, as did run 39697134585 at 2c1c32f7 (W132 and W133 merged); run 39693516643 at 339dd2a1 (the W132 merge) passed every GameTest but failed the log check because its GameTests crossed midnight UTC and Forge rolled latest.log (QUEUE, W135)
 ledger_planned_units: 19
 asset_review_items: 154
