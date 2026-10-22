@@ -19,7 +19,7 @@ final class EscrowSettlementRecovery implements AutoCloseable {
         final Map<EscrowEndpoint.Key, EscrowBarrier.Proof> proofs = new HashMap<>();
         final Set<EscrowEndpoint.Key> busy = new HashSet<>();
         /** R39's WARN once per held member while this decision is live, never once per retry. */
-        final Set<java.util.UUID> reportedFluids = new HashSet<>();
+        final Set<java.util.UUID> reportedResources = new HashSet<>();
         boolean writing;
         long retryAt;
         String phase = "O2";
@@ -106,10 +106,14 @@ final class EscrowSettlementRecovery implements AutoCloseable {
             }
             boolean installed = EscrowSettlementTombstones.installed(coordinator.ledger(), intent);
             requireJournal(coordinator.ledger(), intent, journal, installed);
-            // R39: a fluid cargo member's saved Fluid is checked before normalization, O2 or a readback acts.
+            // R39: cargo's saved native resource is checked before normalization, O2 or a readback acts.
             var unavailable = EscrowSettlementProofs.unavailableFluid(members);
+            if (unavailable == null) { unavailable = EscrowSettlementProofs.unavailableItem(members); }
             if (unavailable != null) {
-                if (state.reportedFluids.add(unavailable.id())) { EscrowReconciliationAction.reportFluidUnavailable(unavailable); }
+                if (state.reportedResources.add(unavailable.id())) {
+                    try { EscrowReconciliationAction.requireNativeResource(unavailable); }
+                    catch (EscrowReconciliationView.Refusal held) { /* The operation-local diagnostic is emitted once. */ }
+                }
                 stalled(runtime, intent, state, EscrowReason.OTHER_STATE.name(), tick); return;
             }
             var next = intent.checkpointed().stream().filter(end -> !state.proofs.containsKey(end.endpoint().key())).findFirst();

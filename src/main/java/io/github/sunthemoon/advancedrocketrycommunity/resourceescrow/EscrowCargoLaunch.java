@@ -35,6 +35,7 @@ final class EscrowCargoLaunch implements AutoCloseable {
     private final UUID transfer = UUID.randomUUID();
     private final String sourceHash;
     private final int cargo;
+    private final java.util.function.ToIntFunction<RocketEntity> cargoAmount;
     private EscrowGameTestLaunch launch;
     private EscrowTerminalLeaseCut leaseCut;
     private ServerPlayer passenger;
@@ -44,8 +45,14 @@ final class EscrowCargoLaunch implements AutoCloseable {
     private boolean accepted, requested, sawF6, sawF7;
 
     EscrowCargoLaunch(GameTestHelper helper, EscrowCargoGameTestWorld world, RocketEntity source, BlockPos destination, boolean cancel) {
+        this(helper, world, source, destination, cancel, EscrowCargoGameTestWorld::cargo);
+    }
+
+    EscrowCargoLaunch(GameTestHelper helper, EscrowCargoGameTestWorld world, RocketEntity source, BlockPos destination, boolean cancel,
+                      java.util.function.ToIntFunction<RocketEntity> cargoAmount) {
         this.helper = helper; this.world = world; this.source = source; this.destination = destination; this.cancel = cancel;
-        sourceHash = source.snapshot().orElseThrow().contentHash(); cargo = EscrowCargoGameTestWorld.cargo(source);
+        this.cargoAmount = cargoAmount;
+        sourceHash = source.snapshot().orElseThrow().contentHash(); cargo = cargoAmount.applyAsInt(source);
         world.clear(destination); world.clear(destination.above()); world.transfers.add(transfer);
     }
 
@@ -96,7 +103,7 @@ final class EscrowCargoLaunch implements AutoCloseable {
         if (data.ledger().armedFlights().stream().anyMatch(value -> value.transfer().equals(transfer))) { return false; }
         check(sawF6 && sawF7 && journal.find(transfer).isEmpty() && journal.actionAuthorityAvailable()
                 && RocketEscrowGate.idle(survivor) && RocketRuntime.resourceMutationAllowed(survivor)
-                && EscrowCargoGameTestWorld.cargo(survivor) == cargo, "F8 did not leave one idle survivor with the latest cargo");
+                && cargoAmount.applyAsInt(survivor) == cargo, "F8 did not leave one idle survivor with the latest cargo");
         if (cancel) {
             check(survivor == source && source.isAlive() && source.snapshot().orElseThrow().contentHash().equals(sourceHash)
                     && world.level.getEntity(record.nativeTransfer().orElseThrow().armed().destination()) == null

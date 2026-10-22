@@ -70,4 +70,15 @@ final class ItemCargoReconciliationFixtures {
             return total;
         }).orElse(0)).sum();
     }
+
+    /** Real restored container contents, including every native tag type, not just a count or display name. */
+    static int amount(net.minecraft.world.Container container) {
+        int total = 0;
+        for (int slot = 0; slot < container.getContainerSize(); slot++) {
+            var item = container.getItem(slot); if (item.isEmpty()) { continue; }
+            EscrowTags.require(item.save(new CompoundTag()).equals(stack(item.getCount())), "Restored item changed typed NBT");
+            total += item.getCount();
+        }
+        return total;
+    }
 }
