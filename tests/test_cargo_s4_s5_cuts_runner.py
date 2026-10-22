@@ -46,7 +46,72 @@ def stale_disk():
                 blocks=["minecraft:air", "minecraft:air"], files={})
 
 
+def retired_disk():
+    disk = released_disk()
+    disk["rocket"]["markers"] = rocket(markers=1)["markers"]
+    disk["device"]["markers"] = device(markers=1)["markers"]
+    disk["ledger"]["tombstones"][0]["before_choice"] = [
+        dict(missing=False, endpoint=dict(kind=kind, identity=disk[key][identity]),
+             state=dict(epoch=1, markers=copy.deepcopy(disk[key]["markers"])))
+        for key, kind, identity in (("rocket", "ENTITY", "uuid"), ("device", "BLOCK_ENTITY", "id"))]
+    return disk
+
+
 class CargoSettlementFlightRunnerTest(unittest.TestCase):
+    def test_retired_markers_match_the_frozen_audit_not_the_survivor_projection(self):
+        disk = retired_disk()
+        self.assertTrue(all("markers" not in survivor for survivor in disk["ledger"]["tombstones"][0]["survivors"]))
+        for case in ("FS_O4_AFTER", "FS_PRUNE_BEFORE"):
+            runner.check(case, disk, False)
+        disk["rocket"]["markers"] = []; disk["device"]["markers"] = []
+        runner.check("FS_O4_AFTER", disk, True)  # Pruning removes native markers, not the historical audit.
+
+    def test_retired_markers_reject_a_missing_native_or_audit_marker(self):
+        for key, index in (("rocket", 0), ("device", 1)):
+            for location in ("native", "audit"):
+                with self.subTest(endpoint=key, location=location):
+                    disk = retired_disk()
+                    markers = disk[key]["markers"] if location == "native" else disk["ledger"]["tombstones"][0]["before_choice"][index]["state"]["markers"]
+                    markers.clear()
+                    with self.assertRaises(runner.smoke.SmokeError):
+                        runner.check("FS_O4_AFTER", disk, False)
+
+    def test_retired_markers_reject_an_extra_or_duplicate_native_or_audit_marker(self):
+        for key, index in (("rocket", 0), ("device", 1)):
+            for location in ("native", "audit"):
+                for operation in ("op", "extra"):
+                    with self.subTest(endpoint=key, location=location, operation=operation):
+                        disk = retired_disk()
+                        markers = disk[key]["markers"] if location == "native" else disk["ledger"]["tombstones"][0]["before_choice"][index]["state"]["markers"]
+                        markers.append(markers[0] | dict(op_id=operation))
+                        with self.assertRaises(runner.smoke.SmokeError):
+                            runner.check("FS_O4_AFTER", disk, False)
+
+    def test_retired_markers_reject_each_wrong_native_or_audit_field(self):
+        for key, index in (("rocket", 0), ("device", 1)):
+            for location in ("native", "audit"):
+                for field, value in (("op_id", "wrong"), ("seq", 2), ("role", "WRONG"), ("epoch_after", 2)):
+                    with self.subTest(endpoint=key, location=location, field=field):
+                        disk = retired_disk()
+                        markers = disk[key]["markers"] if location == "native" else disk["ledger"]["tombstones"][0]["before_choice"][index]["state"]["markers"]
+                        markers[0][field] = value
+                        with self.assertRaises(runner.smoke.SmokeError):
+                            runner.check("FS_O4_AFTER", disk, False)
+
+    def test_retired_markers_require_the_same_physical_endpoint_and_epoch(self):
+        for index in (0, 1):
+            for field in ("identity", "kind", "epoch", "missing"):
+                with self.subTest(endpoint=index, field=field):
+                    disk = retired_disk(); observation = disk["ledger"]["tombstones"][0]["before_choice"][index]
+                    if field == "epoch":
+                        observation["state"][field] = 2
+                    elif field == "missing":
+                        observation[field] = True
+                    else:
+                        observation["endpoint"][field] = "wrong"
+                    with self.assertRaises(runner.smoke.SmokeError):
+                        runner.check("FS_O4_AFTER", disk, False)
+
     def test_post_launch_terminal_head_and_named_checks(self):
         disk = released_disk()
         disk["ledger"]["issued_launch_serial"] = 1

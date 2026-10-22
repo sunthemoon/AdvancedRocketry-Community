@@ -237,9 +237,22 @@ def check_settlement(case: str, disk: dict, restarted: bool) -> None:
         require((device["epoch"], len(device["markers"])) == expected_device[1:],
                 f"Markers: device section differs: {device['epoch']}/{len(device['markers'])}")
     for endpoint, role in ((rocket, "SOURCE"), (device, "DESTINATION")):
-        for marker in endpoint["markers"] if endpoint else []:
+        if endpoint is None or not endpoint["markers"]:
+            continue
+        kind, identity = ("ENTITY", "uuid") if role == "SOURCE" else ("BLOCK_ENTITY", "id")
+        audit = [observation for receipt in root["tombstones"] for observation in receipt["before_choice"]
+                 if not observation["missing"] and observation["endpoint"]["kind"] == kind
+                 and observation["endpoint"]["identity"] == endpoint[identity]]
+        # O4 retires the live record, but its frozen audit retains the pre-pruning marker multiset.
+        # Compare both ways; membership alone would miss an extra or duplicate audit marker.
+        if not root["records"]:
+            require(len(audit) == 1 and sorted(json.dumps(m, sort_keys=True) for m in endpoint["markers"])
+                    == sorted(json.dumps(m, sort_keys=True) for m in audit[0]["state"]["markers"]),
+                    "Retired markers differ from the physical endpoint's receipt audit")
+        for marker in endpoint["markers"]:
             live = any(op["op_id"] == marker["op_id"] and op["seq"] == marker["seq"] for op in root["records"])
-            retired = any(marker in survivor.get("markers", []) for receipt in root["tombstones"] for survivor in receipt["survivors"])
+            retired = any(marker in observation["state"]["markers"] and observation["state"]["epoch"] == endpoint["epoch"]
+                          for observation in audit)
             require((live or retired)
                     and marker["role"] == role and marker["epoch_after"] == endpoint["epoch"],
                     "A marker differs from its operation, sequence, role or epoch")
