@@ -38,6 +38,8 @@ final class RocketTransferContinuations {
                 || !retirements.admits(current, source, List.of(), List.of())) { return false; }
         try (var held = RocketOrdinaryRetirement.hold(journal, current.logicalRocketId())) {
             if (held.token() == null) { return false; }
+            io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowLaunchDiscard.note("FAIL_BACK",
+                    () -> "logical=" + current.logicalRocketId() + " transfer=" + current.transferId() + " reason=" + reason.name());
             var safe = RocketTransferEntities.stationarySource(current, source.level().getGameTime());
             source.updateFlightData(safe);
             RocketTransferEntities.positionAtOrigin(source, current.sourceSnapshot().sourceOrigin());
