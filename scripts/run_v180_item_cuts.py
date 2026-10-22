@@ -36,7 +36,8 @@ CASES.update(IR_DISASSEMBLY=dict(family="D-S2", probe="IR_DISASSEMBLY", boundary
 HOOKS = fluid.HOOKS + tuple(fluid.HOOK_DIR + name + ".java" for name in (
     "EscrowItemCutProbe", "EscrowItemSettlementCuts", "EscrowItemRecoveryCuts", "EscrowItemCutLaunch", "EscrowItemDisassemblyRequest")) + (
     "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/persistence/RocketTransferSavedData.java",)
-HARNESS = fluid.HARNESS + ("scripts/run_v180_item_cuts.py", "scripts/item_cuts_oracle.py", "scripts/item_cut_fixture.py")
+HARNESS = fluid.HARNESS + ("scripts/run_v180_item_cuts.py", "scripts/item_cuts_oracle.py", "scripts/item_cut_fixture.py",
+                          "scripts/run_v180_rocket_settlement_completion.py", "scripts/run_v180_landed_disassembly_cuts.py")
 require = oracle.require
 
 def marker(case, restart):

@@ -337,4 +337,3 @@ final class EscrowItemSettlementCuts extends EscrowItemCutProbe {
     }
     private static boolean released(EscrowLedger root) { return !root.tombstones().isEmpty() && root.tombstones().get(0).getBoolean("released"); }
 }
-

@@ -51,4 +51,3 @@ final class EscrowItemCutLaunch {
         return false;
     }
 }
-
