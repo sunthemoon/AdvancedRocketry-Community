@@ -76,10 +76,17 @@ public final class EscrowGovernedPreparation {
         }
         EscrowLaunchTrace.note(rocket, countdown, "PREPARE_OK", "");
         boolean queued = EscrowRuntime.of(server).flightCheckpoint().begin(rocket, prepared, boundary, record -> {
-            if (record == null || !boundary.test(record)) { discarded.run(); return; }
+            if (record == null || !boundary.test(record)) {
+                EscrowLaunchDiscard.note(countdown.logicalRocketId(), countdown.plan().orElseThrow().requestId(),
+                        "F1_CALLBACK", record == null ? "NO_ACKNOWLEDGED_RECORD" : "ACTION_BOUNDARY");
+                discarded.run(); return;
+            }
             // This callback receives only the acknowledged ARMED tuple and exact still-present E.
             prepare(journal, server, record, () -> {
-                if (!rocket.isAlive() || !rocket.isAddedToWorld() || !rocket.operational() || !boundary.test(record)) { return false; }
+                if (!rocket.isAlive() || !rocket.isAddedToWorld() || !rocket.operational() || !boundary.test(record)) {
+                    EscrowLaunchDiscard.note(record.logicalRocketId(), record.transferId(), "F2_CALLBACK", "SOURCE_OR_ACTION_BOUNDARY");
+                    return false;
+                }
                 var authority = EscrowRuntime.of(server).governedFlights().authority(data::ledger,
                         () -> data.bind(server).governedAvailable(record.logicalRocketId()), journal, record);
                 var permit = countdownPermit(authority, EscrowGovernedEnvelope.capture(rocket), level.getGameTime(),
@@ -110,10 +117,17 @@ public final class EscrowGovernedPreparation {
 
     static EscrowGovernedSourceAction.Permit countdownPermit(EscrowGovernedDispatch.Authority authority,
             CompoundTag observed, long gameTime, BooleanSupplier boundary) {
-        if (authority == null) { return null; }
+        if (authority == null) {
+            EscrowLaunchDiscard.note(null, null, "F2_PERMIT", "NO_AUTHORITY");
+            return null;
+        }
         try {
             return EscrowGovernedSourceAction.issue(authority, EscrowGovernedSourceAction.Action.START_COUNTDOWN,
                     observed, gameTime, boundary);
-        } catch (IllegalArgumentException | ArithmeticException refused) { return null; }
+        } catch (IllegalArgumentException | ArithmeticException refused) {
+            EscrowLaunchDiscard.note(authority.record().logicalRocketId(), authority.record().transferId(),
+                    "F2_PERMIT", refused.getClass().getSimpleName() + ": " + refused.getMessage());
+            return null;
+        }
     }
 }

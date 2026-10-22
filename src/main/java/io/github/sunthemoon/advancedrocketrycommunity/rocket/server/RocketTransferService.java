@@ -199,6 +199,8 @@ final class RocketTransferService {
             if (!journal.afterAcknowledged(server, reservation, () -> {
                 if (!RocketTransferEntities.currentEntity(rocket, record, false)
                         || !flightAllowed(server, journal, record, TICK_SOURCE)) {
+                    io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowLaunchDiscard.note(
+                            record.logicalRocketId(), record.transferId(), "PREPARED_CALLBACK", "SOURCE_OR_ACTION_BOUNDARY");
                     liveTransfers.remove(record.transferId()); return false;
                 }
                 if (previous != null) { liveTransfers.remove(previous.transferId()); settledTransfers.remove(previous.transferId()); }

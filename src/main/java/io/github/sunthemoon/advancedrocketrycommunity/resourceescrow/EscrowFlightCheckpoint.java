@@ -71,9 +71,13 @@ final class EscrowFlightCheckpoint implements AutoCloseable {
                     if (data != null && data.bind(level.getServer()).governedAvailable(arm.logical())
                             && boundary.test(captured.get())) {
                         record = prepared.afterArm(data.ledger(), arm, EscrowGovernedEnvelope.capture(rocket), journal);
+                    } else {
+                        EscrowLaunchDiscard.note(arm.logical(), arm.transfer(), "F1_AFTER_ARM", "LEDGER_OR_ACTION_BOUNDARY");
                     }
                 } catch (IllegalArgumentException refused) {
                     // ARMED remains durable and locked; only its checked cancellation/recovery may retire it.
+                    EscrowLaunchDiscard.note(arm.logical(), arm.transfer(), "F1_AFTER_ARM",
+                            refused.getClass().getSimpleName() + ": " + refused.getMessage());
                 }
             }
             completion.accept(record);
@@ -121,7 +125,11 @@ final class EscrowFlightCheckpoint implements AutoCloseable {
                     "F1 source or journal binding changed");
             EscrowSettlementCapacity.preflight(preparation.capture(coordinator.ledger(), launch,
                     Math.addExact(coordinator.ledger().writerGeneration(), 1)));
-        } catch (IllegalArgumentException | ArithmeticException refused) { observation.sample("f1.refused.BINDING_OR_PREFLIGHT", 0); return false; }
+        } catch (IllegalArgumentException | ArithmeticException refused) {
+            EscrowLaunchDiscard.note(launch.logical(), launch.transfer(), "F1_PREFLIGHT",
+                    refused.getClass().getSimpleName() + ": " + refused.getMessage());
+            observation.sample("f1.refused.BINDING_OR_PREFLIGHT", 0); return false;
+        }
         var noTransfer = EscrowFlightJournal.noTransfer(journal, launch.logical(), launch.transfer(),
                 Math.addExact(coordinator.ledger().issuedLaunchSerial(), 1));
         if (!noTransfer.getAsBoolean() || !frozen.observe()) { observation.sample("f1.refused.SOURCE_OR_JOURNAL_CHANGED", 0); return false; }
