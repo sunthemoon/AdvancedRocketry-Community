@@ -85,8 +85,14 @@ class RocketLaunchReadinessTest {
         // A waived LANDED rocket is promoted as before.
         var landed = restore(RocketFlightState.LANDED, fuel);
         assertEquals(landed.withFuel(fuel, 50L), RocketFlightService.launchSource(landed, 50L).orElseThrow());
-        // R55 treats ASSEMBLED exactly as LANDED; this shape is not reachable through assembly.
+    }
+
+    @Test void restoredWaivedAssembledRocketIsLaunchReadyLikeALandedOne() {
+        var waiver = RocketPropulsion.Settings.capture(1, 1, 1, true, false, true);
+        var fuel = RocketFuelState.empty(new RocketPropulsion(RocketPropulsion.Mode.BIPROPELLANT, 1_000, 1_000, 1, 1, waiver));
+        // R58 accepts R55's change for this shape, which is not reachable through assembly.
         var restoredAssembled = restore(RocketFlightState.ASSEMBLED, fuel);
+        assertTrue(restoredAssembled.launchReady());
         assertEquals(restoredAssembled.withFuel(fuel, 50L), RocketFlightService.launchSource(restoredAssembled, 50L).orElseThrow());
     }
 
