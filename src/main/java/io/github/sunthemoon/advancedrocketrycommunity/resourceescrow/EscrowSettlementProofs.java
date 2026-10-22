@@ -10,7 +10,7 @@ import java.util.function.Predicate;
 import net.minecraft.nbt.CompoundTag;
 
 /**
- * O2 targets of one Anvil slot. A native rocket that a fluid cargo member names is proved from one bounded decode that
+ * O2 targets of one Anvil slot. A native rocket that a cargo member names is proved from one bounded decode that
  * yields both projections: the fuel vector and invariant, compared with the frozen O1 choice, and the composite,
  * compared with the composite of that same choice. The decode runs on the IO worker; only the owner thread confirms.
  * Every other endpoint, and every absence, keeps the unchanged generic validator.
@@ -39,7 +39,7 @@ final class EscrowSettlementProofs {
             if (!EscrowBarrier.sameSlot(first, candidate.endpoint())) { continue; }
             var frontier = candidate.missing() ? new EscrowPrefix.State(intent.ledger(), 0,
                     EscrowSettlementTombstones.observationDigest(candidate), List.of()) : candidate.state();
-            var cargo = candidate.missing() ? List.<EscrowOperation>of() : fluidCargo(members, candidate.endpoint());
+            var cargo = candidate.missing() ? List.<EscrowOperation>of() : nativeCargo(members, candidate.endpoint());
             Predicate<CompoundTag> validator;
             if (cargo.isEmpty()) { validator = EscrowSettlementDisk.validator(candidate, intent.ledger()); }
             else {
@@ -54,11 +54,16 @@ final class EscrowSettlementProofs {
         return new Slot(List.copyOf(targets), Map.copyOf(readbacks));
     }
 
-    /** The fluid cargo members whose rocket side is this endpoint. Item cargo and fills keep their own paths. */
-    static List<EscrowOperation> fluidCargo(List<EscrowOperation> members, EscrowEndpoint rocket) {
-        return members.stream().filter(op -> op.kind().cargo() && op.kind().fluid()
+    /** The native cargo members whose rocket side is this endpoint; fills keep their original validator. */
+    static List<EscrowOperation> nativeCargo(List<EscrowOperation> members, EscrowEndpoint rocket) {
+        return members.stream().filter(op -> op.kind().cargo()
                 && op.nativeBinding().kind() == EscrowSignatureKind.ROCKET_COMPOSITE_V1
                 && op.rocket().key().equals(rocket.key())).toList();
+    }
+
+    /** Fluid-only selection retained for the existing fluid compatibility tests. */
+    static List<EscrowOperation> fluidCargo(List<EscrowOperation> members, EscrowEndpoint rocket) {
+        return nativeCargo(members, rocket).stream().filter(op -> op.kind().fluid()).toList();
     }
 
     /** R39 before any native settlement action: the first fluid cargo member whose saved Fluid is unavailable, or null. */
@@ -66,6 +71,16 @@ final class EscrowSettlementProofs {
         for (var op : members) {
             if (!op.kind().cargo() || !op.kind().fluid()) { continue; }
             try { op.nativeFluid(); }
+            catch (IllegalArgumentException unavailable) { return op; }
+        }
+        return null;
+    }
+
+    /** Structural ledger decoding is registry-independent; O2 must separately require native item materialization. */
+    static EscrowOperation unavailableItem(List<EscrowOperation> members) {
+        for (var op : members) {
+            if (!op.kind().itemCargo()) { continue; }
+            try { EscrowItemStackCodec.validateNative(EscrowItemCargoPayload.decode(op.payload()).stack()); }
             catch (IllegalArgumentException unavailable) { return op; }
         }
         return null;
