@@ -5,10 +5,20 @@ import static org.junit.jupiter.api.Assertions.*;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataPolicy;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFuelState;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferPhase;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.PressurizedTankRocketAdapter;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.*;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.stats.RocketStats;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.material.Fluids;
+import net.minecraftforge.fluids.FluidStack;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -155,5 +165,34 @@ class EscrowCargoCutProbeTest {
             assertThrows(IllegalArgumentException.class, () -> EscrowCargoDisassemblyRequest.confirm(invalid,
                     offered -> { fail("Invalid offer dispatched"); return 1; }, code -> fail("Unexecuted command reported")));
         }
+    }
+
+    @Test void sourceRebuildReplayKeepsTheActualPreUnloadSnapshotAndPhysicalIdentity() {
+        var physical = UUID.randomUUID(); var logical = UUID.randomUUID(); var owner = UUID.randomUUID();
+        var propulsion = new RocketPropulsion(RocketPropulsion.Mode.MONO, 2_000, 0, 1, 1, RocketPropulsion.Settings.DEFAULTS);
+        var before = RocketStructureSnapshot.create(UUID.randomUUID(), ResourceLocation.tryParse("minecraft:overworld"),
+                new RocketPosition(68, 100, 64), List.of(new RocketBlock(new RocketPosition(0, 0, 0),
+                        new RocketBlockState(PressurizedTankRocketAdapter.TYPE, Map.of()),
+                        PressurizedTankRocketAdapter.payload(new FluidStack(Fluids.WATER, 5_000))),
+                        new RocketBlock(new RocketPosition(0, 1, 0),
+                                new RocketBlockState(ResourceLocation.tryParse("minecraft:iron_block"), Map.of()))),
+                List.of(new RocketPosition(0, 1, 0)), new RocketStats(2, 100, 1_000, 2_000, 1, 1, 1, 1), 0, propulsion);
+        var fuel = RocketFuelState.empty(propulsion).withFluidBank(false,
+                ResourceLocation.tryParse("advancedrocketrycommunity:rocket_fuel"), null, 1_000);
+        var record = EscrowCargoRecoveryCuts.legacyRecord("REBUILD_SOURCE", before, physical, logical, owner, fuel);
+        assertSame(before, record.sourceSnapshot());
+        assertEquals(physical, record.sourceEntityId());
+        assertEquals(logical, record.logicalRocketId());
+        assertEquals(owner, record.ownerId());
+        assertEquals(RocketTransferPhase.PREPARED, record.phase());
+        assertEquals(before.sourceOrigin(), record.sourceFlightData().currentOrigin());
+        assertEquals(before.snapshotId(), record.sourceSnapshot().snapshotId());
+        assertEquals(before.contentHash(), record.sourceSnapshot().contentHash());
+        assertEquals(5_000, PressurizedTankRocketAdapter.fluid(record.sourceSnapshot().blocks().get(0)
+                .blockEntityPayload().orElseThrow().data()).getAmount());
+        assertNotEquals(before.snapshotId(), record.destinationSnapshot().snapshotId());
+        assertEquals(new RocketPosition(88, 100, 64), record.destinationSnapshot().sourceOrigin());
+        assertEquals(fuel, record.sourceFlightData().fuel());
+        assertTrue(record.destinationEntityId().isEmpty());
     }
 }

@@ -89,6 +89,12 @@ final class EscrowCargoRecoveryCuts extends EscrowCargoCutProbe {
     private void create() {
         if (data.ledger().writerGeneration() == 0 || !data.bind(server).writerIdle()) { data.bind(server).autosave(); return; }
         rocket = cargoRocket(5_000); before = rocket.snapshot().orElseThrow();
+        if (boundary.equals("REBUILD_SOURCE")) {
+            // Capture the real source before the unload; replay never invents another source snapshot identity.
+            record = stale();
+            AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_CARGO_SOURCE_CAPTURE physical={} snapshot={} hash={}",
+                    record.sourceEntityId(), record.sourceSnapshot().snapshotId(), record.sourceSnapshot().contentHash());
+        }
         device = device(DEVICE, rocket, RocketCargoRole.UNLOAD, 0);
         save(); EscrowCargoSwitches.forTests(server, EscrowOperation.Kind.FLUID_CARGO_UNLOAD, id(device), true); step = 1;
     }
@@ -108,7 +114,7 @@ final class EscrowCargoRecoveryCuts extends EscrowCargoCutProbe {
         EscrowTags.require(cargo(rocket) == 4_000 && tank(device) == 1_000 && rocket.escrowSection().epoch() == 1
                 && !before.contentHash().equals(rocket.snapshot().orElseThrow().contentHash()), "The real unload did not retire with its latest cargo");
         save(); // The recovery fixture starts from the fully retired, pruned native cargo state.
-        record = stale();
+        if (record == null) { record = stale(); }
         if (boundary.equals("BOTH_ENTITIES")) {
             var copy = Objects.requireNonNull(ModEntities.ROCKET.get().create(level));
             copy.initializeTransferred(record.destinationSnapshot(), record.logicalRocketId(), record.ownerId(), record.destinationFlightData().land(200));
@@ -131,30 +137,36 @@ final class EscrowCargoRecoveryCuts extends EscrowCargoCutProbe {
         pause(boundary);
     }
 
-    /** The stale legacy record over the pre-unload snapshot, shaped so the production decision is this case's action. */
+    /** Replay the pre-unload source identity; production recognition and fences decide whether a rebuild is possible. */
     private RocketTransferRecord stale() {
+        if (disassembly(boundary)) { return EscrowCargoTransferFixtures.landedRecord(rocket, before); }
+        return legacyRecord(boundary, before, rocket.getUUID(), rocket.assemblyTransactionId().orElseThrow(),
+                rocket.ownerId().orElseThrow(), rocket.flightData().orElseThrow().fuel());
+    }
+
+    static RocketTransferRecord legacyRecord(String boundary, RocketStructureSnapshot before, UUID physical,
+                                             UUID logical, UUID owner, RocketFuelState fuel) {
         var dimension = before.sourceDimension(); var at = before.sourceOrigin();
         RocketStructureSnapshot from, to; UUID sourceEntity; UUID destinationEntity = null;
         switch (boundary) {
-            case "K1", "K2", "K5" -> { return EscrowCargoTransferFixtures.landedRecord(rocket, before); }
             case "REBUILD_DESTINATION" -> {
                 // Neither recorded end is the loaded rocket's snapshot; the record's arrival identity is the rocket's UUID.
                 from = before.relocated(UUID.randomUUID(), dimension, position(ELSEWHERE), 0);
                 to = before.relocated(UUID.randomUUID(), dimension, position(PAD), 0);
-                sourceEntity = UUID.randomUUID(); destinationEntity = rocket.getUUID();
+                sourceEntity = UUID.randomUUID(); destinationEntity = physical;
             }
             case "REBUILD_SOURCE" -> {
-                from = before.relocated(UUID.randomUUID(), dimension, position(PAD), 0);
+                from = before;
                 to = before.relocated(UUID.randomUUID(), dimension, position(ELSEWHERE), 0);
-                sourceEntity = rocket.getUUID();
+                sourceEntity = physical;
             }
             default -> {
                 // KEEP_SOURCE, both entities and reconnect: the source end is the rocket's own pre-unload snapshot.
                 from = before; to = before.relocated(UUID.randomUUID(), dimension, new RocketPosition(at.x() + 8, at.y(), at.z()), 0);
-                sourceEntity = rocket.getUUID();
+                sourceEntity = physical;
             }
         }
-        var fuel = rocket.flightData().orElseThrow().fuel(); var transfer = UUID.randomUUID(); var logical = rocket.assemblyTransactionId().orElseThrow();
+        var transfer = UUID.randomUUID();
         var plan = new RocketFlightPlan(3, transfer, RocketFlightPlanner.EARTH.bodyId(), RocketFlightPlanner.MOON.bodyId(), dimension, dimension, 500, 0)
                 .withPropulsionDebit(new RocketPropulsionDebit(500, 0, fuel.propulsion().orElseThrow().revision(), fuel.resourceSignature(),
                         RocketNativeResources.hash("W142 stale cargo journal fixture")));
@@ -163,7 +175,7 @@ final class EscrowCargoRecoveryCuts extends EscrowCargoCutProbe {
         if (boundary.equals("RECONNECT")) { flight = flight.withPassengers(flight.passengers().assign(PASSENGER).orElseThrow()); }
         flight = flight.startCountdown(0).completeCountdown(60).beginTransit(transfer, 140);
         var arrival = flight.arriveAtDestination(fuel.debit(plan).state(), plan.destinationBody(), dimension, to.sourceOrigin(), 160);
-        var prepared = RocketTransferRecord.create(transfer, logical, rocket.ownerId().orElseThrow(), sourceEntity, from, to, flight, arrival, 500, 0);
+        var prepared = RocketTransferRecord.create(transfer, logical, owner, sourceEntity, from, to, flight, arrival, 500, 0);
         return destinationEntity == null ? prepared : prepared.destinationSpawned(destinationEntity)
                 .advance(RocketTransferPhase.PASSENGERS_TRANSFERRED).advance(RocketTransferPhase.SOURCE_REMOVED).advance(RocketTransferPhase.COMMITTED);
     }
