@@ -161,12 +161,16 @@ final class EscrowCargoRecoveryProbe {
         EscrowTags.require(journal.entries().size() == 1 && journal.clean(), "R2 changed its retained journal");
         var record = journal.entries().iterator().next();
         var report = RocketRuntime.recoverTransfer(server, record.transferId());
-        String diagnostic = RocketRuntime.transferFailureDiagnostics(record.transferId());
+        String diagnostic = String.join(" ", io.github.sunthemoon.advancedrocketrycommunity.station.warp.StationWarpRuntime
+                .service().orElseThrow().diagnostics(server, java.util.Optional.empty()));
         EscrowTags.require(report.status() == io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecoveryReport.Status.RETRY_LATER
-                && diagnostic.contains("FLOOR_CONFLICT") && device.amount() == 4_000 && rocket.escrowSection().epoch() == 1
+                && floorConflict(diagnostic, record.transferId()) && device.amount() == 4_000 && rocket.escrowSection().epoch() == 1
                 && data.ledger().records().isEmpty() && data.ledger().issuedThrough() == 1
                 && server.overworld().getEntitiesOfClass(RocketEntity.class, new net.minecraft.world.phys.AABB(new BlockPos(68, 100, 64)).inflate(12)).size() == 2,
                 "R2 overwrote, retired or discarded a cargo-mutated authority/duplicate");
         AdvancedRocketryCommunity.LOGGER.info("ARCE_CARGO_DUPLICATE_HELD cut={} status={} diagnostic={}", name, report.status(), diagnostic);
+    }
+    static boolean floorConflict(String diagnostic, java.util.UUID transfer) {
+        return diagnostic.contains("fenced_transfer=" + transfer + " reason=FLOOR_CONFLICT ");
     }
 }

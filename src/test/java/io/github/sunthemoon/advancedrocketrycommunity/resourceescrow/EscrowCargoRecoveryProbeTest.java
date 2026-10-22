@@ -24,4 +24,12 @@ class EscrowCargoRecoveryProbeTest {
         assertEquals(new BlockPos(64, 100, 64), EscrowCargoRecoveryProbe.devicePosition("FC_LOAD_R3_RELOCATED", false));
         assertEquals(new BlockPos(64, 100, 64), EscrowCargoRecoveryProbe.devicePosition("FC_LOAD_R3_OTHER", true));
     }
+    @Test void recoveryReasonComesFromTheExactTransferFenceNotFlightFailureHistory() {
+        var transfer = java.util.UUID.randomUUID();
+        String diagnostic = "journal=acknowledged [fenced_transfer=" + transfer + " reason=FLOOR_CONFLICT repair=offline-whole-world]";
+        assertTrue(EscrowCargoRecoveryProbe.floorConflict(diagnostic, transfer));
+        assertFalse(EscrowCargoRecoveryProbe.floorConflict(diagnostic, java.util.UUID.randomUUID()));
+        assertFalse(EscrowCargoRecoveryProbe.floorConflict(diagnostic.replace("FLOOR_CONFLICT", "OTHER_STATE"), transfer));
+        assertFalse(EscrowCargoRecoveryProbe.floorConflict("last_failure=FLOOR_CONFLICT", transfer));
+    }
 }

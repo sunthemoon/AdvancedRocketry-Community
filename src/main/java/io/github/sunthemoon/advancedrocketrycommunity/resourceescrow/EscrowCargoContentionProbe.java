@@ -29,7 +29,7 @@ final class EscrowCargoContentionProbe {
     private final Consumer<String> pause;
     private RocketEntity healthy;
     private EscrowCargoProbeDevice device;
-    private boolean injected;
+    private boolean injected, healthyQueued;
 
     static boolean selected(boolean hooks, String name) { return hooks && (E3.equals(name) || E5.equals(name)); }
     EscrowCargoContentionProbe(MinecraftServer server, String name, boolean recovery, Consumer<String> pause) {
@@ -47,7 +47,7 @@ final class EscrowCargoContentionProbe {
         device = EscrowCargoProbeDevice.create(level, HEALTHY_DEVICE, healthy, true, false);
     }
     void start() {
-        if (name.equals(E5)) { EscrowCargoSwitches.forTests(server, EscrowOperation.Kind.FLUID_CARGO_LOAD, device.id(), true); return; }
+        if (name.equals(E5)) { return; }
         // Fixed disposable storage fixtures; no Level chunks or production endpoints are loaded for these writes.
         var worker = server.overworld().getChunkSource().chunkMap.worker;
         var writes = new ArrayList<CompletableFuture<Void>>();
@@ -98,6 +98,14 @@ final class EscrowCargoContentionProbe {
         if (!name.equals(E5) || recovery || data.ledger().records().size() != 1 || !data.bind(server).writerIdle()) { return; }
         var op = data.ledger().records().get(0);
         if (op.phase() != EscrowOperation.Phase.STALLED || op.reason() != EscrowReason.BARRIER_IO) { return; }
+        if (!healthyQueued) {
+            // Queue healthy work behind an already STALLED component, not into its failing ordinary force batch.
+            healthyQueued = true;
+            EscrowCargoSwitches.forTests(server, EscrowOperation.Kind.FLUID_CARGO_LOAD, device.id(), true);
+            AdvancedRocketryCommunity.LOGGER.info("ARCE_CARGO_HEALTHY_QUEUED cut={} after_stalled=true", name);
+            return;
+        }
+        if (data.ledger().issuedThrough() != 2) { return; }
         verifyHealthy();
         EscrowTags.require(EscrowRuntime.of(server).barrier().ioFailures() == 3 && data.ledger().issuedThrough() == 2,
                 "E5 did not observe exactly three own-store failures and two admissions");
