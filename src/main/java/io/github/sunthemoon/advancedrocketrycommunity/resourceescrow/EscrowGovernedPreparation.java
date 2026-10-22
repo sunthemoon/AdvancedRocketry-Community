@@ -77,14 +77,16 @@ public final class EscrowGovernedPreparation {
         EscrowLaunchTrace.note(rocket, countdown, "PREPARE_OK", "");
         boolean queued = EscrowRuntime.of(server).flightCheckpoint().begin(rocket, prepared, boundary, record -> {
             if (record == null || !boundary.test(record)) {
-                EscrowLaunchDiscard.note(countdown.logicalRocketId(), countdown.plan().orElseThrow().requestId(),
-                        "F1_CALLBACK", record == null ? "NO_ACKNOWLEDGED_RECORD" : "ACTION_BOUNDARY");
+                EscrowLaunchDiscard.note("F1_CALLBACK", () -> "logical=" + countdown.logicalRocketId()
+                        + " transfer=" + countdown.plan().orElseThrow().requestId()
+                        + " reason=" + (record == null ? "NO_ACKNOWLEDGED_RECORD" : "ACTION_BOUNDARY"));
                 discarded.run(); return;
             }
             // This callback receives only the acknowledged ARMED tuple and exact still-present E.
             prepare(journal, server, record, () -> {
                 if (!rocket.isAlive() || !rocket.isAddedToWorld() || !rocket.operational() || !boundary.test(record)) {
-                    EscrowLaunchDiscard.note(record.logicalRocketId(), record.transferId(), "F2_CALLBACK", "SOURCE_OR_ACTION_BOUNDARY");
+                    EscrowLaunchDiscard.note("F2_CALLBACK", () -> "logical=" + record.logicalRocketId()
+                            + " transfer=" + record.transferId() + " reason=SOURCE_OR_ACTION_BOUNDARY");
                     return false;
                 }
                 var authority = EscrowRuntime.of(server).governedFlights().authority(data::ledger,
@@ -92,7 +94,8 @@ public final class EscrowGovernedPreparation {
                 var permit = countdownPermit(authority, EscrowGovernedEnvelope.capture(rocket), level.getGameTime(),
                         () -> rocket.isAlive() && rocket.isAddedToWorld() && boundary.test(record));
                 if (permit == null) {
-                    EscrowLaunchDiscard.note(record.logicalRocketId(), record.transferId(), "F2_CALLBACK", "NO_COUNTDOWN_PERMIT");
+                    EscrowLaunchDiscard.note("F2_CALLBACK", () -> "logical=" + record.logicalRocketId()
+                            + " transfer=" + record.transferId() + " reason=NO_COUNTDOWN_PERMIT");
                     return false;
                 }
                 EscrowRuntime.of(server).checkpoint("F2_PREPARED_ACK");
@@ -121,17 +124,18 @@ public final class EscrowGovernedPreparation {
     static EscrowGovernedSourceAction.Permit countdownPermit(EscrowGovernedDispatch.Authority authority,
             CompoundTag observed, long gameTime, BooleanSupplier boundary) {
         if (authority == null) {
-            EscrowLaunchDiscard.note(null, null, "F2_PERMIT", "NO_AUTHORITY");
+            EscrowLaunchDiscard.note("F2_PERMIT", () -> "logical=null transfer=null reason=NO_AUTHORITY");
             return null;
         }
         try {
             return EscrowGovernedSourceAction.issue(authority, EscrowGovernedSourceAction.Action.START_COUNTDOWN,
                     observed, gameTime, boundary);
         } catch (IllegalArgumentException | ArithmeticException refused) {
-            EscrowLaunchDiscard.note(authority.record().logicalRocketId(), authority.record().transferId(),
-                    "F2_PERMIT", refused.getClass().getSimpleName() + ": " + refused.getMessage()
-                            + " fields=" + EscrowLaunchDiscard.differences(
-                                    authority.record().nativeTransfer().orElseThrow().sourceEnvelope(authority.record()), observed));
+            EscrowLaunchDiscard.note("F2_PERMIT", () -> "logical=" + authority.record().logicalRocketId()
+                    + " transfer=" + authority.record().transferId()
+                    + " reason=" + refused.getClass().getSimpleName() + ": " + refused.getMessage()
+                    + " fields=" + EscrowLaunchDiscard.detail(() -> EscrowLaunchDiscard.differences(
+                            authority.record().nativeTransfer().orElseThrow().sourceEnvelope(authority.record()), observed)));
             return null;
         }
     }

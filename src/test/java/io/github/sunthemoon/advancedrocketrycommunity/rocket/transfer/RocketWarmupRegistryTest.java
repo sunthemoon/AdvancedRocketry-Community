@@ -98,6 +98,33 @@ class RocketWarmupRegistryTest {
     /** A border-crossing pad: origin at x and z = 15 + 64n gives 2 x 2 columns. */
     static RocketStructureSnapshot pad(ResourceLocation level, int index) { return snapshot(level, 15 + 64 * index, 15); }
 
+    @Test void aFailingReplacementDiagnosticDoesNotInterruptTicketReplacement() {
+        var guarded = new RocketWarmupRegistry(tickets, message -> {
+            if (message.startsWith("ARCE_GOVERNED_WARMUP_REPLACED ")) {
+                throw new IllegalStateException("diagnostic sink unavailable");
+            }
+            log.add(message);
+        });
+        var rocket = new Rocket(null);
+        assertEquals(Outcome.LOADING, guarded.decide(rocket.request(UUID.randomUUID(), pad(MOON, 0)),
+                true, () -> false, 1, DEFAULTS).outcome());
+        tickets.calls.clear();
+        var replacement = pad(MARS, 1);
+        var decision = assertDoesNotThrow(() -> guarded.decide(rocket.request(UUID.randomUUID(), replacement),
+                true, () -> false, 2, DEFAULTS));
+        assertEquals(Outcome.LOADING, decision.outcome());
+        assertEquals(8, tickets.calls.size());
+        for (int i = 0; i < 4; i++) { assertTrue(tickets.calls.get(i).startsWith("remove " + MOON)); }
+        for (int i = 4; i < 8; i++) { assertTrue(tickets.calls.get(i).startsWith("add " + MARS)); }
+        assertTrue(tickets.columns(MOON, rocket.logical).isEmpty());
+        assertEquals(Set.copyOf(RocketDiscoveryColumns.of(replacement).columns()), tickets.columns(MARS, rocket.logical));
+        assertEquals(MARS, guarded.warmup(rocket.logical).orElseThrow().level());
+        assertEquals(2, guarded.warmup(rocket.logical).orElseThrow().started());
+        assertEquals(3, log.size());
+        assertTrue(log.get(1).endsWith("reason=REPLACED"));
+        assertTrue(log.get(2).contains("event=STARTED"));
+    }
+
     @Test void aColdStartAddsExactlyTheCheckedSetOnceInItsOwnLevel() {
         var rocket = new Rocket(null); var destination = pad(MOON, 0);
         var decision = rocket.decide(destination, false, 100);

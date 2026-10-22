@@ -141,8 +141,8 @@ final class RocketJournalSchedule {
                           boolean duringFailure, BooleanSupplier action, Runnable discarded) {
         void noteDiscard(String reason) {
             if (expected != null && expected.phase() == io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferPhase.PREPARED) {
-                io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowLaunchDiscard.note(
-                        logical, expected.transferId(), "PREPARED_SCHEDULE", reason);
+                io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowLaunchDiscard.note("PREPARED_SCHEDULE",
+                        () -> "logical=" + logical + " transfer=" + expected.transferId() + " reason=" + reason);
             }
         }
         void run() {

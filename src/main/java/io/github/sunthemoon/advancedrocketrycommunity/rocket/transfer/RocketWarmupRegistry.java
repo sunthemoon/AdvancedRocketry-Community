@@ -133,9 +133,11 @@ public final class RocketWarmupRegistry {
         if (!available || current != null && current.state() == State.BOUND) { return proceed(request, false); }
         if (current != null && !current.sameDestination(request)) {
             release(current, Release.REPLACED, now);
-            log.accept("ARCE_GOVERNED_WARMUP_REPLACED logical=" + request.logical() + " request=" + request.requestId()
-                    + " previous=" + current.request() + " from=" + current.region()
-                    + " to=" + RocketRegion.fromSnapshot(request.destination()) + " same_source=" + current.sameSource(request.source()));
+            var replaced = current;
+            io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowLaunchDiscard.log(log, "ARCE_GOVERNED_WARMUP_REPLACED",
+                    () -> "logical=" + request.logical() + " request=" + request.requestId()
+                            + " previous=" + replaced.request() + " from=" + replaced.region()
+                            + " to=" + RocketRegion.fromSnapshot(request.destination()) + " same_source=" + replaced.sameSource(request.source()));
             current = null;
         }
         boolean destinationReady = ready.getAsBoolean();

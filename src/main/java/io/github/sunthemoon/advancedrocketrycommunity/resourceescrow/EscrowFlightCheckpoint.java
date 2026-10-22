@@ -74,15 +74,16 @@ final class EscrowFlightCheckpoint implements AutoCloseable {
                         observed = EscrowGovernedEnvelope.capture(rocket);
                         record = prepared.afterArm(data.ledger(), arm, observed, journal);
                     } else {
-                        EscrowLaunchDiscard.note(arm.logical(), arm.transfer(), "F1_AFTER_ARM",
-                                data == null ? "NO_LEDGER" : !available ? "LEDGER_UNAVAILABLE" : "ACTION_BOUNDARY");
+                        EscrowLaunchDiscard.note("F1_AFTER_ARM", () -> "logical=" + arm.logical() + " transfer=" + arm.transfer()
+                                + " reason=" + (data == null ? "NO_LEDGER" : !available ? "LEDGER_UNAVAILABLE" : "ACTION_BOUNDARY"));
                     }
                 } catch (IllegalArgumentException refused) {
                     // ARMED remains durable and locked; only its checked cancellation/recovery may retire it.
-                    EscrowLaunchDiscard.note(arm.logical(), arm.transfer(), "F1_AFTER_ARM",
-                            refused.getClass().getSimpleName() + ": " + refused.getMessage() + " fields="
-                                    + EscrowLaunchDiscard.differences(captured.get().nativeTransfer().orElseThrow()
-                                            .sourceEnvelope(captured.get()), observed));
+                    var lastObserved = observed;
+                    EscrowLaunchDiscard.note("F1_AFTER_ARM", () -> "logical=" + arm.logical() + " transfer=" + arm.transfer()
+                            + " reason=" + refused.getClass().getSimpleName() + ": " + refused.getMessage() + " fields="
+                            + EscrowLaunchDiscard.detail(() -> EscrowLaunchDiscard.differences(
+                                    captured.get().nativeTransfer().orElseThrow().sourceEnvelope(captured.get()), lastObserved)));
                 }
             }
             completion.accept(record);
@@ -131,8 +132,8 @@ final class EscrowFlightCheckpoint implements AutoCloseable {
             EscrowSettlementCapacity.preflight(preparation.capture(coordinator.ledger(), launch,
                     Math.addExact(coordinator.ledger().writerGeneration(), 1)));
         } catch (IllegalArgumentException | ArithmeticException refused) {
-            EscrowLaunchDiscard.note(launch.logical(), launch.transfer(), "F1_PREFLIGHT",
-                    refused.getClass().getSimpleName() + ": " + refused.getMessage());
+            EscrowLaunchDiscard.note("F1_PREFLIGHT", () -> "logical=" + launch.logical() + " transfer=" + launch.transfer()
+                    + " reason=" + refused.getClass().getSimpleName() + ": " + refused.getMessage());
             observation.sample("f1.refused.BINDING_OR_PREFLIGHT", 0); return false;
         }
         var noTransfer = EscrowFlightJournal.noTransfer(journal, launch.logical(), launch.transfer(),
