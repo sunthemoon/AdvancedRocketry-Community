@@ -1,5 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.resourceescrow;
 
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketFluidCargoBlockEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketFluidCargoRoot;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNativeResources;
 import java.util.ArrayDeque;
@@ -90,7 +92,7 @@ public final class EscrowSettlementPruning {
             var visit = next(root, unresolved, coordinator::pruningBusy);
             if (visit != null) {
                 State state;
-                try { state = apply(server, root, visit, unresolved, groups); }
+                try { state = apply(server, root, visit, unresolved, groups, () -> coordinator.ledger() == root && coordinator.operational()); }
                 catch (IllegalArgumentException | java.util.NoSuchElementException unavailable) {
                     // A malformed/unloaded survivor cannot starve another released group.
                     state = State.refused(unavailable.getMessage());
@@ -276,8 +278,30 @@ public final class EscrowSettlementPruning {
         }).toList();
     }
 
+    /** A released cargo device's decision; {@code pruned} is null when nothing may change. Never touches a world. */
+    record DeviceDecision(EscrowPrefix.State pruned, State state) { }
+    static DeviceDecision device(EscrowLedger root, List<Group> groups, EscrowEndpoint endpoint, RocketFluidCargoRoot held,
+                                 boolean valid, Set<UUID> members, Set<UUID> unresolved) {
+        if (held == null || !valid || !endpoint.identity().equals(held.device())
+                || !endpoint.type().equals(io.github.sunthemoon.advancedrocketrycommunity.ModIdentity.id(held.role().id()).toString())) {
+            return new DeviceDecision(null, State.refused("cargo device identity, role or root changed"));
+        }
+        if (held.escrow().markers().isEmpty()) { return new DeviceDecision(null, State.DONE); }
+        if (!root.id().equals(held.escrow().ledger())) { return new DeviceDecision(null, State.refused("cargo device belongs to another ledger")); }
+        // The device's own tank signature and quantity, as frozen in its released survivor; epoch and tank never change.
+        var state = new EscrowPrefix.State(root.id(), held.escrow().epoch(), held.signature(), held.escrow().markers());
+        if (!frontier(root, groups, endpoint, state, held.tank().amount(), state.signature(), unresolved)) {
+            return new DeviceDecision(null, retains(state.markers(), members)
+                    ? State.refused("frontier: live state is neither the released survivor nor a proved later prefix") : State.DONE);
+        }
+        var markers = prune(state.markers(), members, unresolved);
+        if (markers.equals(state.markers())) { return new DeviceDecision(null, retains(markers, members) ? State.WAITING_EARLIER_GROUP : State.DONE); }
+        return new DeviceDecision(new EscrowPrefix.State(root.id(), state.epoch(), state.signature(), markers), State.DONE);
+    }
+
     /** Returns the visited state, or null when the endpoint was not visited (unloaded, absent or not a fixture world). */
-    private static State apply(MinecraftServer server, EscrowLedger root, Visit visit, Set<UUID> unresolved, List<Group> groups) {
+    private static State apply(MinecraftServer server, EscrowLedger root, Visit visit, Set<UUID> unresolved, List<Group> groups,
+                               java.util.function.BooleanSupplier authority) {
         var endpoint = visit.endpoint().reference(); var members = visit.group().members();
         var level = server.getLevel(ResourceKey.create(Registries.DIMENSION, ResourceLocation.tryParse(endpoint.level())));
         if (level == null) { return null; }
@@ -307,27 +331,47 @@ public final class EscrowSettlementPruning {
             loader.pruneReconciledEscrow(new EscrowReconciliationPruning.SourcePermit(loader,
                     new EscrowPrefix.State(root.id(), state.epoch(), state.signature(), markers), () -> true));
             return State.DONE;
+        } else if (EscrowFluidCargoEndpoint.is(endpoint)) {
+            // The registered cargo device, through C-E2's one-use pruning permit; never the fixture branch.
+            var chunk = level.getChunkSource().getChunkNow(endpoint.x() >> 4, endpoint.z() >> 4);
+            if (chunk == null || !(chunk.getBlockEntity(EscrowFluidCargoEndpoint.position(endpoint)) instanceof RocketFluidCargoBlockEntity device)
+                    || !device.live()) { return null; }
+            var decision = device(root, groups, endpoint, device.root().orElse(null),
+                    device.dataStatus() == RocketFluidCargoRoot.Status.VALID && !device.duplicate(), members, unresolved);
+            if (decision.pruned() != null) {
+                device.pruneReconciledEscrow(new EscrowFluidCargoPublication.PruningPermit(device, decision.pruned(), authority));
+            }
+            return decision.state();
         } else if (server instanceof net.minecraft.gametest.framework.GameTestServer || Boolean.getBoolean(EscrowTestEndpoints.HOOKS)) {
             EscrowTestEndpoints.requireEnabled(server);
             var chunk = level.getChunkSource().getChunkNow(endpoint.x() >> 4, endpoint.z() >> 4);
             if (chunk == null) { return null; }
             var source = chunk.getBlockEntity(new BlockPos(endpoint.x(), endpoint.y(), endpoint.z()));
             if (source == null) { return null; }
-            if (!endpoint.identity().equals(source.getPersistentData().getCompound("arce_escrow_fixture").getUUID("identity"))
-                    || !endpoint.type().equals(net.minecraft.core.registries.BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(source.getType()).toString())) {
-                return State.refused("source identity or type changed");
-            }
-            var state = EscrowTestEndpoints.state(source.getPersistentData(), root.id(), false);
-            if (state.markers().isEmpty()) { return State.DONE; }
-            if (!frontier(root, groups, endpoint, state, EscrowTestEndpoints.amount(source.getPersistentData()), state.signature(), unresolved)) {
-                return retains(state.markers(), members) ? State.refused("frontier: live state is neither the released survivor nor a proved later prefix") : State.DONE;
-            }
-            var markers = prune(state.markers(), members, unresolved);
-            if (markers.equals(state.markers())) { return retains(markers, members) ? State.WAITING_EARLIER_GROUP : State.DONE; }
-            EscrowTestEndpoints.putState(source.getPersistentData(), new EscrowPrefix.State(root.id(), state.epoch(), state.signature(), markers), false);
-            source.setChanged();
-            return State.DONE;
+            return fixture(source, root, visit, unresolved, groups);
         }
         return null;
+    }
+
+    /** The already-gated fallback; an ordinary or malformed replacement is skipped without changing its data. */
+    static State fixture(net.minecraft.world.level.block.entity.BlockEntity source, EscrowLedger root, Visit visit,
+                         Set<UUID> unresolved, List<Group> groups) {
+        var endpoint = visit.endpoint().reference(); var members = visit.group().members();
+        var fixture = source.getPersistentData().getCompound("arce_escrow_fixture");
+        if (!fixture.hasUUID("identity")) { return null; }
+        if (!endpoint.identity().equals(fixture.getUUID("identity"))
+                || !endpoint.type().equals(net.minecraft.core.registries.BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(source.getType()).toString())) {
+            return State.refused("source identity or type changed");
+        }
+        var state = EscrowTestEndpoints.state(source.getPersistentData(), root.id(), false);
+        if (state.markers().isEmpty()) { return State.DONE; }
+        if (!frontier(root, groups, endpoint, state, EscrowTestEndpoints.amount(source.getPersistentData()), state.signature(), unresolved)) {
+            return retains(state.markers(), members) ? State.refused("frontier: live state is neither the released survivor nor a proved later prefix") : State.DONE;
+        }
+        var markers = prune(state.markers(), members, unresolved);
+        if (markers.equals(state.markers())) { return retains(markers, members) ? State.WAITING_EARLIER_GROUP : State.DONE; }
+        EscrowTestEndpoints.putState(source.getPersistentData(), new EscrowPrefix.State(root.id(), state.epoch(), state.signature(), markers), false);
+        source.setChanged();
+        return State.DONE;
     }
 }
