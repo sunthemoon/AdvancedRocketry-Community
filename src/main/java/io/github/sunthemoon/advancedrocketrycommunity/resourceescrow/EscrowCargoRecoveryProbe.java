@@ -26,6 +26,9 @@ final class EscrowCargoRecoveryProbe {
     private final Consumer<String> pause;
     private RocketStructureSnapshot before;
     private boolean injected, retired, opened;
+    private FloorBaseline floorBaseline;
+    private boolean floorReady;
+    private String floorWriteFailure;
     private long created;
 
     static boolean selected(boolean hooks, String name) {
@@ -48,6 +51,7 @@ final class EscrowCargoRecoveryProbe {
             var floors = EscrowLoaderFloorProbe.floors(count);
             floors.forEach(floor -> floor.putString("signature_kind", EscrowSignatureKind.ROCKET_COMPOSITE_V1.name()));
             data.acknowledged(new EscrowLedger(data.ledger().id(), count, data.ledger().writerGeneration(), List.of(), floors, List.of()), true);
+            if (count == 256) { floorBaseline = new FloorBaseline(data.ledger()); }
             data.bind(server).autosave();
             var record = EscrowCargoTransferFixtures.record(rocket, before, false);
             rocket.updateFlightData(record.destinationFlightData().land(200));
@@ -65,6 +69,9 @@ final class EscrowCargoRecoveryProbe {
     }
     void checkpoint(String label) {
         if (recovery) { return; }
+        if (floorBaseline != null && !floorReady && (label.equals("WRITE_FAILED_BEFORE_REPLACE") || label.equals("WRITE_UNKNOWN"))) {
+            floorWriteFailure = label;
+        }
         if (cut.equals("R1_255") && label.equals("K2")) { pause.accept("R1_L1_REPLACED"); }
         if (duplicate() && label.equals("C8_RELEASED")) { retired = true; }
         if (cut.equals("R3_RELOCATED") && label.equals("C6_JOINT_READBACK")) { pause.accept("R3_BEFORE_OFFLINE_MOVE"); }
@@ -93,8 +100,16 @@ final class EscrowCargoRecoveryProbe {
     void tick(ResourceEscrowSavedData data, RocketEntity rocket, EscrowCargoProbeDevice device) {
         if (recovery) { return; }
         if (cut.startsWith("G1_")) { roots(data, rocket, device); pause.accept("G1_PRESERVED"); }
+        if (cut.equals("R1_256") && !floorReady) {
+            EscrowTags.require(floorWriteFailure == null, "R1 floor baseline writer outcome: " + floorWriteFailure);
+            if (!floorBaseline.advance(Boolean.getBoolean(EscrowTestEndpoints.HOOKS), data, data.bind(server), ResourceEscrowSavedData.file(server))) { return; }
+            floorReady = true;
+            AdvancedRocketryCommunity.LOGGER.info("ARCE_CARGO_FLOOR_BASELINE outcome=COMMITTED generation={} readback_floors=256",
+                    data.ledger().writerGeneration());
+        }
         if (cut.equals("R1_256") && data.bind(server).writerIdle() && RocketTransferSavedData.get(server).clean()
                 && device.fluidEntity().displayStatus() == RocketCargoStatus.ESCROW_FULL) {
+            floorBaseline.confirm(data, ResourceEscrowSavedData.file(server));
             floors(data, rocket, device, 256); pause.accept("R1_REFUSED");
         }
         if (duplicate() && retired) {
@@ -172,5 +187,35 @@ final class EscrowCargoRecoveryProbe {
     }
     static boolean floorConflict(String diagnostic, java.util.UUID transfer) {
         return diagnostic.contains("fenced_transfer=" + transfer + " reason=FLOOR_CONFLICT ");
+    }
+    /** Fixture prerequisite: an idle writer can still have a dirty, never-requested root after autosave throttling. */
+    static final class FloorBaseline {
+        private final EscrowLedger seeded;
+        FloorBaseline(EscrowLedger seeded) {
+            EscrowTags.require(seeded.floors().size() == 256 && seeded.records().isEmpty(), "Invalid R1 saturated fixture seed");
+            this.seeded = seeded;
+        }
+        boolean advance(boolean hooks, ResourceEscrowSavedData data, EscrowCoordinator coordinator, java.nio.file.Path file) {
+            if (!hooks) { return false; }
+            EscrowTags.require(coordinator.operational() && !coordinator.writerUnknown(), "R1 floor baseline writer unavailable");
+            if (!coordinator.writerIdle()) { return false; }
+            if (data.ledger().writerGeneration() == seeded.writerGeneration()) {
+                coordinator.autosave();
+                if (!coordinator.writerIdle()) {
+                    AdvancedRocketryCommunity.LOGGER.info("ARCE_CARGO_FLOOR_BASELINE requested=true previous_generation={} floors=256",
+                            seeded.writerGeneration());
+                }
+                return false;
+            }
+            // Only the coordinator's COMMITTED callback advances this ledger generation. Disk replacement alone is insufficient.
+            confirm(data, file);
+            return true;
+        }
+        void confirm(ResourceEscrowSavedData data, java.nio.file.Path file) {
+            var acknowledged = data.ledger();
+            EscrowTags.require(!data.isDirty() && acknowledged.writerGeneration() == seeded.writerGeneration() + 1
+                    && acknowledged.equals(seeded.generation(acknowledged.writerGeneration())), "R1 floor seed lacks its exact COMMITTED acknowledgement");
+            EscrowLedgerBaseline.require(file, acknowledged); // Two checked saved-file reads, including all 256 exact composite floors.
+        }
     }
 }
