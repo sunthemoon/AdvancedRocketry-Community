@@ -60,9 +60,34 @@ final class EscrowCargoContentionProbe {
     }
     void beforeReconciliation(ResourceEscrowSavedData data) {
         if (recovery || device == null || data == null) { return; }
+        if (diagnosticTick(Boolean.getBoolean(EscrowTestEndpoints.HOOKS), name, recovery, server.getTickCount())) {
+            observeAdmission(data);
+        }
         if (data.ledger().records().stream().anyMatch(op -> op.device().identity().equals(device.id()))) {
             EscrowCargoSwitches.forTests(server, EscrowOperation.Kind.FLUID_CARGO_LOAD, device.id(), false);
         }
+    }
+    static boolean diagnosticTick(boolean hooks, String name, boolean recovery, int tick) {
+        return hooks && E5.equals(name) && !recovery && tick % 100 == 0;
+    }
+    /** Bounded, read-only evidence of the native admission continuation; no attempt or queue mutation. */
+    private void observeAdmission(ResourceEscrowSavedData data) {
+        var runtime = EscrowRuntime.of(server); var coordinator = data.bind(server);
+        var queue = runtime.fills(server); var turns = coordinator.transferTurns();
+        var entity = device.fluidEntity(); var logical = healthy.assemblyTransactionId().orElseThrow();
+        var admission = (EscrowFluidCargoAdmission) field(entity, "admission");
+        AdvancedRocketryCommunity.LOGGER.info("ARCE_CARGO_ADMISSION_STATE tick={} device={} logical={} physical={} live={} root={} status={} enabled={} queued={} active_ticket={} queue_active={} queue_waiting={} preparing={} turns_next={} turns_active={} logical_locked={} cargo_preparing={} records={} pending={} issued={} writer_idle={} operational={}",
+                server.getTickCount(), device.id(), logical, healthy.getUUID(), entity.live(), entity.dataStatus(), admission.status(),
+                EscrowCargoSwitches.enabled(server, EscrowOperation.Kind.FLUID_CARGO_LOAD, device.id()), field(admission, "queuedDevice"),
+                admission.active(), field(queue, "active"), ((java.util.Map<?, ?>) field(queue, "waiting")).keySet(), queue.preparing(),
+                field(turns, "next"), field(turns, "active"), coordinator.logicalLocked(logical), runtime.cargoPreparing(logical),
+                data.ledger().records().stream().map(op -> op.id() + ":" + op.phase() + ":" + op.reason() + ":" + op.rocket().logicalRocket() + ":" + op.device().identity()).toList(),
+                coordinator.admissionAuthority().pendingCount(), data.ledger().issuedThrough(), coordinator.writerIdle(), coordinator.operational());
+    }
+    private static Object field(Object owner, String name) {
+        try {
+            var field = owner.getClass().getDeclaredField(name); field.setAccessible(true); return field.get(owner);
+        } catch (ReflectiveOperationException failure) { throw new IllegalStateException("Cargo diagnostic field unavailable", failure); }
     }
     void checkpoint(String label) {
         if (recovery || injected || !name.equals(E3) || !label.equals("C4_SOURCE_SELECTED")) { return; }

@@ -15,6 +15,14 @@ import org.junit.jupiter.api.io.TempDir;
 
 class EscrowCargoContentionProbeTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
+    @Test void admissionDiagnosticsAreBoundedAndInertOutsideTheStartCase() {
+        assertTrue(EscrowCargoContentionProbe.diagnosticTick(true, EscrowCargoContentionProbe.E5, false, 100));
+        assertFalse(EscrowCargoContentionProbe.diagnosticTick(false, EscrowCargoContentionProbe.E5, false, 100));
+        assertFalse(EscrowCargoContentionProbe.diagnosticTick(true, EscrowCargoContentionProbe.E5, true, 100));
+        assertFalse(EscrowCargoContentionProbe.diagnosticTick(true, EscrowCargoContentionProbe.E3, false, 100));
+        assertFalse(EscrowCargoContentionProbe.diagnosticTick(true, null, false, 100));
+        assertFalse(EscrowCargoContentionProbe.diagnosticTick(true, EscrowCargoContentionProbe.E5, false, 101));
+    }
     @Test void fixtureSelectionAndClosedCacheGateAreInert() {
         for (String name : new String[] {EscrowCargoContentionProbe.E3, EscrowCargoContentionProbe.E5}) {
             assertTrue(EscrowCargoContentionProbe.selected(true, name));
