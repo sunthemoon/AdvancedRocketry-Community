@@ -39,11 +39,11 @@ development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
 latest_code_commit: 3bce8373 (W130 merged: R52's D2, a landed rocket's transfer record retired before its first escrow fill, admission disabled; before it, 3bc9f998 merged W131 with W131F, cargo leaf C-E3, fluid cargo settlement)
-latest_hosted_regression: run 39464852370 at 53e9fa1a (the W118 merge) passed all required GameTests and the log checker on its re-run; its first attempt failed four governed-flight and warm-up GameTests once (QUEUE lists them). Run 39421969414 at dcebe3a8 (W116 and W107B merged) also passed on its re-run after one live-return failure, and runs 39415014258 at 2e44edcc and 39411638524 at d9f031d4 passed, so the escrow proof tests have passed on every hosted run since W111. Before W111, EscrowCoreGameTests.ownTerrainAndEntityStoresConfirmTheExactFrozenFrontier failed on the runs at bd1c78b9, d2f0d00c, 9f6668aa, 67dee026, fb1ac454, 20a82b88 and f1223c02
+latest_hosted_regression: run 39700132027 at eeb1fb80 (the W131 merge) passed all required GameTests and the log checker, as did run 39697134585 at 2c1c32f7 (W132 and W133 merged); run 39693516643 at 339dd2a1 (the W132 merge) passed every GameTest but failed the log check because its GameTests crossed midnight UTC and Forge rolled latest.log (QUEUE, W135)
 ledger_planned_units: 19
 asset_review_items: 154
 required_gates_approved: none
-last_updated: 2026-10-20
+last_updated: 2026-10-22
 ```
 
 ## Current state
