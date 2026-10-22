@@ -35,7 +35,10 @@ final class EscrowLoaderFollowUpProbe {
         var journal = RocketTransferSavedData.get(server);
         var guard = journal.acknowledgedGuard(logical).orElseThrow();
         // Ask before a second fill can lock the rocket; otherwise that new lock would mask launch authority.
-        var launch = RocketRuntime.requestAdminFlight(rocket, RocketDestination.MOON, UUID.randomUUID());
+        var request = UUID.randomUUID();
+        EscrowLaunchTrace.note(rocket, request, "REQUEST", "MOON");
+        var launch = RocketRuntime.requestAdminFlight(rocket, RocketDestination.MOON, request);
+        EscrowLaunchTrace.note(rocket, request, "RESULT", launch.code().name());
         AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_MATRIX_LAUNCH cut={} code={} required_fuel={} retained_transfer={} mutation_allowed={}",
                 cut, launch.code(), launch.requiredFuel(), guard.transfer() != null, allowed);
         EscrowTags.require(!launch.success() && source.equals(loader.saveWithFullMetadata())
