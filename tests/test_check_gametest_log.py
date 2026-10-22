@@ -371,8 +371,9 @@ class ManifestValidationTests(unittest.TestCase):
         # W91F adds four deliberate detached journal failures for G2, G3, Moon election and N2 removal.
         # W92 adds four injected failures of isolated landed-disassembly journals (w92-isolated-landed-journal-unacknowledged).
         # W90b adds one failed F2 countdown effect after publication (w90b-post-publication-discard-effect-failed).
+        # W129a adds one injected detached transaction-journal failure streak (w129a-transaction-journal-unacknowledged).
         self.assertEqual(
-            107, sum(sum(item.counts.values()) for item in expectations if item.level == "ERROR")
+            108, sum(sum(item.counts.values()) for item in expectations if item.level == "ERROR")
         )
 
     def test_legacy_scalar_recovery_warning_has_one_separate_batch_count(self) -> None:

@@ -38,6 +38,7 @@ public final class RocketTransactionSavedData extends SavedData {
     private static final CheckedJournalCheckpoint.Outcome COMMITTED = CheckedJournalCheckpoint.Outcome.COMMITTED;
     private static final CheckedJournalCheckpoint.Outcome NOT_COMMITTED = CheckedJournalCheckpoint.Outcome.NOT_COMMITTED;
     private static final CheckedJournalCheckpoint.Outcome UNKNOWN = CheckedJournalCheckpoint.Outcome.UNKNOWN;
+    private static final org.slf4j.Logger LOGGER = com.mojang.logging.LogUtils.getLogger();
 
     private final Map<UUID, RocketPersistedTransaction> entries = new LinkedHashMap<>();
     private CompoundTag preservedBlockedData;
@@ -53,6 +54,7 @@ public final class RocketTransactionSavedData extends SavedData {
     private MinecraftServer ownerServer;
     private boolean unreadable;
     private long completedWriteCount, lastWriterNanos, lastWriterCpuNanos;
+    private boolean failureReported;
 
     public RocketTransactionSavedData() { this(CheckedSavedDataPolicy.DirectoryForce.PLATFORM); }
 
@@ -179,7 +181,6 @@ public final class RocketTransactionSavedData extends SavedData {
         return writer == null ? Optional.empty() : Optional.ofNullable(writer.lastReport());
     }
 
-
     /** ADR-074 item 9: a running server's autosave and {@code /save-all} only request; they never wait. */
     @Override
     public void save(java.io.File file) {
@@ -260,6 +261,17 @@ public final class RocketTransactionSavedData extends SavedData {
             case UNKNOWN -> { acknowledged = null; outcome = UNKNOWN; }
         }
         super.setDirty(!acknowledgedCurrent());
+        // R-040: one ERROR at the first failed or unknown write of a streak and one INFO at the commit that ends it.
+        if (completion.status() == CheckedRootWriter.Status.COMMITTED) {
+            if (failureReported) {
+                failureReported = false;
+                LOGGER.info("ARCE_TRANSACTION_JOURNAL_ACKNOWLEDGED sequence={} after an unacknowledged write", completion.sequence());
+            }
+        } else if (!failureReported) {
+            failureReported = true;
+            LOGGER.error("ARCE_TRANSACTION_JOURNAL_UNACKNOWLEDGED outcome={} sequence={} acknowledged={}", outcome,
+                    completion.sequence(), acknowledged == null ? "none" : String.valueOf(acknowledged.sequence()));
+        }
     }
 
     /** A refused request on the owner thread: NOT_COMMITTED with W123's sticky UNKNOWN, nothing staged. */
