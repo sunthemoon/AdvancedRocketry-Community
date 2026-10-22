@@ -138,4 +138,22 @@ class EscrowCargoCutProbeTest {
         assertFalse(EscrowCargoFlightCuts.jointF6Ready("F6_JOINT_PROVED", false, false, unselected));
         assertFalse(EscrowCargoFlightCuts.jointF6Ready("F6_JOINT_PROVED", true, true, unselected));
     }
+
+    @Test void disassemblyDispatchesTheProductionOfferAndReportsActualRefusalBeforeFailing() {
+        String command = "/arce rocket-disassembly confirm " + java.util.UUID.randomUUID();
+        var events = new java.util.ArrayList<String>();
+        EscrowCargoDisassemblyRequest.confirm(command, offered -> { events.add(offered); return 1; }, code -> events.add("code=" + code));
+        assertEquals(List.of(command, "code=1"), events);
+        for (int refused : new int[] {0, -1, 2}) {
+            events.clear();
+            var failure = assertThrows(IllegalArgumentException.class, () -> EscrowCargoDisassemblyRequest.confirm(command,
+                    offered -> { events.add(offered); return refused; }, code -> events.add("code=" + code)));
+            assertEquals(List.of(command, "code=" + refused), events);
+            assertTrue(failure.getMessage().endsWith(" " + refused));
+        }
+        for (String invalid : new String[] {null, "", "arce rocket release-test disassemble rocket discard-fuel 1000", command + " extra"}) {
+            assertThrows(IllegalArgumentException.class, () -> EscrowCargoDisassemblyRequest.confirm(invalid,
+                    offered -> { fail("Invalid offer dispatched"); return 1; }, code -> fail("Unexecuted command reported")));
+        }
+    }
 }

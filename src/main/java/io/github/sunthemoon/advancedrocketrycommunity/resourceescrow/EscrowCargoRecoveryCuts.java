@@ -168,7 +168,7 @@ final class EscrowCargoRecoveryCuts extends EscrowCargoCutProbe {
                 .advance(RocketTransferPhase.PASSENGERS_TRANSFERRED).advance(RocketTransferPhase.SOURCE_REMOVED).advance(RocketTransferPhase.COMMITTED);
     }
 
-    /** P1-F8 starts from the checked legacy authority, then the release-test disassembly command. */
+    /** P1-F8 starts from the checked legacy authority, then the production player request/consent path. */
     private void disassemble(RocketTransferSavedData journal) {
         if (commanded) { return; }
         if (journal.find(record.transferId()).isPresent() && !RocketRuntime.resourceMutationAllowed(rocket)) {
@@ -179,9 +179,7 @@ final class EscrowCargoRecoveryCuts extends EscrowCargoCutProbe {
     }
 
     private void command() {
-        int code = server.getCommands().performPrefixedCommand(server.createCommandSourceStack().withSuppressedOutput(),
-                "arce rocket release-test disassemble " + rocket.getStringUUID() + " discard-fuel 1000");
-        EscrowTags.require(code == 1, "W142 release-test disassembly was refused");
+        EscrowCargoDisassemblyRequest.run(rocket, name);
     }
 
     private void recover(RocketTransferSavedData journal) {

@@ -267,7 +267,8 @@ class CargoSettlementFlightRunnerTest(unittest.TestCase):
         for lines in ([result], [fence], [result, result, fence], [result, fence, "[worker/ERROR] failure"]):
             with self.assertRaises(runner.smoke.SmokeError):
                 runner.observations(lines, "FF_KEEP_SOURCE", 1)
-        runner.observations(["ARCE_LANDED_DISASSEMBLY_PAUSED boundary=K2 transfer=t logical=l"], "FF_DISASSEMBLY_RESTORATION", 0)
+        runner.observations(["ARCE_LANDED_DISASSEMBLY_PAUSED boundary=K2 transfer=t logical=l",
+                             "ARCE_RELEASE_CARGO_DISASSEMBLY_RETURN cut=FF_DISASSEMBLY_RESTORATION code=1"], "FF_DISASSEMBLY_RESTORATION", 0)
         with self.assertRaises(runner.smoke.SmokeError):
             runner.observations(["ARCE_RELEASE_CARGO_CUT_PAUSED cut=FF_DISASSEMBLY_RESTORATION boundary=K2"], "FF_DISASSEMBLY_RESTORATION", 0)
 
@@ -306,19 +307,40 @@ class CargoSettlementFlightRunnerTest(unittest.TestCase):
     def test_first_failed_cut_retains_three_starts_and_stops_before_the_next_cut(self):
         self.run_failed_cut(False)
 
+    def test_disassembly_observations_require_the_actual_success_code(self):
+        case = "FF_DISASSEMBLY_REMOVAL"
+        prefix = "ARCE_RELEASE_CARGO_DISASSEMBLY_RETURN cut=" + case + " code="
+        marker = "ARCE_LANDED_DISASSEMBLY_PAUSED boundary=K1 transfer=t logical=l"
+        runner.observations([marker, prefix + "1\r\n"], case, 0)
+        for suffixes in ([], ["0"], ["-1"], ["2"], ["1", "1"], ["1", "0"], ["1bad"]):
+            with self.assertRaises(runner.smoke.SmokeError):
+                runner.observations([marker] + [prefix + suffix for suffix in suffixes], case, 0)
+        self.assertEqual([0], runner.disassembly_returns([prefix + "0"], case))
+        self.assertEqual([], runner.disassembly_returns([prefix + "1"], "FF_DISASSEMBLY_RELEASE"))
+        result = "ARCE_RELEASE_CARGO_CUT_RESULT cut=" + case + " state=RESTORED"
+        runner.observations([result], case, 2)  # A previously restored world needs no new request.
+        with self.assertRaises(runner.smoke.SmokeError):
+            runner.observations([result, prefix + "0"], case, 1)
+
+    def test_refused_disassembly_return_is_retained_when_no_cut_marker_arrives(self):
+        self.run_failed_cut(True, "FF_DISASSEMBLY_REMOVAL")
+
     def test_failed_restart_without_result_marker_is_captured_before_cleanup(self):
         self.run_failed_cut(True)
 
-    def run_failed_cut(self, wait_failure):
+    def run_failed_cut(self, wait_failure, case="FS_O1_BEFORE"):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp); (root / "template/libraries").mkdir(parents=True)
             jar = root / "test.jar"; jar.write_bytes(b"fixture")
             args = SimpleNamespace(source_commit="sha", lock_owner="owner", source_server=root / "template", jar=jar,
                                    session_dir=root / "session", evidence_dir=root / "evidence", java="java", startup_timeout=240,
-                                   case=["FS_O1_BEFORE", "FS_O1_AFTER"], dev=False, keep_going=False)
+                                   case=[case, "FS_O1_AFTER"], dev=False, keep_going=False)
             process = Mock(); process.finish.return_value = 0; process.lines = []
             process.process.poll.return_value = 0
-            if wait_failure:
+            if case.startswith("FF_DISASSEMBLY_"):
+                process.lines = ["ARCE_RELEASE_CARGO_DISASSEMBLY_RETURN cut=" + case + " code=0"]
+                process.wait_for.side_effect = runner.smoke.SmokeError("exited before cut marker")
+            elif wait_failure:
                 process.wait_for.side_effect = [None, runner.smoke.SmokeError("exited without result marker"), None]
             disk = released_disk()
             with patch.object(runner, "assert_pin"), patch.object(runner, "require_lock"), \
@@ -339,6 +361,8 @@ class CargoSettlementFlightRunnerTest(unittest.TestCase):
             self.assertEqual(3, len(list(args.evidence_dir.glob("*-raw.json"))))
             failed = report["cases"][0]["starts"][1 if wait_failure else 0]
             self.assertEqual("FAILED", failed["status"])
+            if case.startswith("FF_DISASSEMBLY_"):
+                self.assertTrue(all(start["disassembly_returns"] == [0] for start in report["cases"][0]["starts"]))
             self.assertTrue((args.evidence_dir / failed["native_files"]["directory"] / "manifest.json").is_file())
             self.assertEqual("sha", report["pins"]["source_commit"])
             self.assertTrue(report["cleanup"])

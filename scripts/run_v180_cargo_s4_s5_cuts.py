@@ -113,6 +113,7 @@ HOOK_DIR = "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/"
 HOOKS = tuple(HOOK_DIR + path + ".java" for path in (
     "resourceescrow/EscrowCargoCutProbe", "resourceescrow/EscrowCargoSettlementCuts", "resourceescrow/EscrowRuntime",
     "resourceescrow/EscrowCargoCutLaunch", "resourceescrow/EscrowCargoFlightCuts", "resourceescrow/EscrowCargoRecoveryCuts",
+    "resourceescrow/EscrowCargoDisassemblyRequest", "rocket/server/RocketDisassemblyService", "rocket/command/RocketDisassemblyCommands",
     "resourceescrow/EscrowGovernedTerminal", "resourceescrow/EscrowGovernedTerminalDisk", "resourceescrow/EscrowBarrier",
     "resourceescrow/EscrowCargoTransferFixtures", "resourceescrow/EscrowCargoSwitches", "resourceescrow/EscrowSettlementRecovery",
     "resourceescrow/EscrowSettlementNormalization", "resourceescrow/EscrowSettlementPruning", "resourceescrow/EscrowLedgerWriter",
@@ -367,11 +368,22 @@ def marker(case: str, restart: int) -> str:
     return CASES[case].get("marker", "ARCE_RELEASE_CARGO_CUT_PAUSED cut=" + case + " ")
 
 
+def disassembly_return_pattern(case: str) -> re.Pattern:
+    return re.compile(r"ARCE_RELEASE_CARGO_DISASSEMBLY_RETURN cut=" + re.escape(case) + r" code=(-?\d+)(?=\s|$)")
+
+
+def disassembly_returns(lines: list[str], case: str) -> list[int]:
+    return [int(match[1]) for line in lines for match in [disassembly_return_pattern(case).search(line)] if match]
+
+
 def observations(lines: list[str], case: str, restart: int) -> None:
     require(len([line for line in lines if marker(case, restart) in line]) == 1, "Missing or repeated cut observation")
     if not restart and case in BOUNDARIES:
         require(any(marker(case, restart) + "boundary=" + BOUNDARIES[case] in line for line in lines), "Wrong stop boundary")
     require(not any("/ERROR]" in line or "/FATAL]" in line for line in lines), "Native run logged ERROR or FATAL")
+    if case.startswith("FF_DISASSEMBLY_"):
+        codes = disassembly_returns(lines, case)
+        require(codes == [1] or restart and not codes, "Production disassembly confirmation missing, repeated or refused: " + str(codes))
     wanted = CASES[case].get("fence")
     require(wanted is None or wanted in fences(lines), "The stale record was not fenced " + str(wanted) + ": " + str(fences(lines)))
 
@@ -431,12 +443,16 @@ def run(args) -> None:
                     if restart:
                         process.command("stop"); start["exit_code"] = process.finish()
                     else:
+                        if case.startswith("FF_DISASSEMBLY_"):
+                            # K1 pauses the writer; retain the owner's actual command result before killing it.
+                            process.wait_for(disassembly_return_pattern(case), 5)
                         process.process.kill(); process.abort(); start["forced_stop"] = True
                 except (OSError, smoke.SmokeError) as failure:
                     execution_error = str(failure)
                     process.abort()
                     start["exit_code"] = process.process.poll()
                 lines = process.lines; process = None
+                start["disassembly_returns"] = disassembly_returns(lines, case)
                 world = session / ("world-" + case)
                 try:
                     raw = evidence / f"{case}-{restart}-raw.json"
