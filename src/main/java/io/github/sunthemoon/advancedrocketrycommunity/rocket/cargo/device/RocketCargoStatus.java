@@ -13,4 +13,13 @@ public enum RocketCargoStatus {
     public String translationKey() {
         return "message.advancedrocketrycommunity.rocket_cargo." + name().toLowerCase(Locale.ROOT);
     }
+
+    /** Item displays share neutral statuses, but never describe their buffer as a fluid tank. */
+    public String itemTranslationKey() {
+        return switch (this) {
+            case DEVICE_EMPTY, DEVICE_FULL, INCOMPATIBLE_CARGO ->
+                    "message.advancedrocketrycommunity.rocket_item_cargo." + name().toLowerCase(Locale.ROOT);
+            default -> translationKey();
+        };
+    }
 }

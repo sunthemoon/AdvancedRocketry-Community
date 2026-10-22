@@ -69,7 +69,7 @@ public final class RocketItemCargoScreen extends AbstractContainerScreen<RocketI
         int width = imageWidth - 30;
         drawLine(graphics, Component.translatable(PREFIX + (view.bound() ? "bound" : "unbound")), 20, 51, width, 0xFFACC5D7);
         Component status = view.status() == null ? Component.translatable(PREFIX + "status_unknown")
-                : Component.translatable(view.status().translationKey());
+                : Component.translatable(view.status().itemTranslationKey());
         // Status text wraps onto at most two lines inside the panel.
         var lines = font.split(status, imageWidth - 20);
         for (int index = 0; index < Math.min(2, lines.size()); index++) {
