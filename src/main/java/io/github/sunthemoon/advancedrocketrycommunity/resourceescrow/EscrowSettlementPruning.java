@@ -2,6 +2,8 @@ package io.github.sunthemoon.advancedrocketrycommunity.resourceescrow;
 
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketFluidCargoBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketFluidCargoRoot;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketItemCargoBlockEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketItemCargoRoot;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNativeResources;
 import java.util.ArrayDeque;
@@ -286,11 +288,26 @@ public final class EscrowSettlementPruning {
                 || !endpoint.type().equals(io.github.sunthemoon.advancedrocketrycommunity.ModIdentity.id(held.role().id()).toString())) {
             return new DeviceDecision(null, State.refused("cargo device identity, role or root changed"));
         }
-        if (held.escrow().markers().isEmpty()) { return new DeviceDecision(null, State.DONE); }
-        if (!root.id().equals(held.escrow().ledger())) { return new DeviceDecision(null, State.refused("cargo device belongs to another ledger")); }
-        // The device's own tank signature and quantity, as frozen in its released survivor; epoch and tank never change.
-        var state = new EscrowPrefix.State(root.id(), held.escrow().epoch(), held.signature(), held.escrow().markers());
-        if (!frontier(root, groups, endpoint, state, held.tank().amount(), state.signature(), unresolved)) {
+        return device(root, groups, endpoint, held.escrow(), held.signature(), held.tank().amount(), members, unresolved);
+    }
+
+    static DeviceDecision itemDevice(EscrowLedger root, List<Group> groups, EscrowEndpoint endpoint, RocketItemCargoRoot held,
+                                     boolean valid, Set<UUID> members, Set<UUID> unresolved) {
+        if (held == null || !valid || !endpoint.identity().equals(held.device())
+                || !endpoint.type().equals(io.github.sunthemoon.advancedrocketrycommunity.ModIdentity.id(
+                io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketItemCargoBlock.id(held.role())).toString())) {
+            return new DeviceDecision(null, State.refused("cargo device identity, role or root changed"));
+        }
+        // The complete typed buffer signature is authoritative; quantity zero is diagnostic only.
+        return device(root, groups, endpoint, held.escrow(), held.signature(), 0, members, unresolved);
+    }
+
+    private static DeviceDecision device(EscrowLedger root, List<Group> groups, EscrowEndpoint endpoint, RocketEscrowSection section,
+                                         String signature, long quantity, Set<UUID> members, Set<UUID> unresolved) {
+        if (section.markers().isEmpty()) { return new DeviceDecision(null, State.DONE); }
+        if (!root.id().equals(section.ledger())) { return new DeviceDecision(null, State.refused("cargo device belongs to another ledger")); }
+        var state = new EscrowPrefix.State(root.id(), section.epoch(), signature, section.markers());
+        if (!frontier(root, groups, endpoint, state, quantity, state.signature(), unresolved)) {
             return new DeviceDecision(null, retains(state.markers(), members)
                     ? State.refused("frontier: live state is neither the released survivor nor a proved later prefix") : State.DONE);
         }
@@ -340,6 +357,16 @@ public final class EscrowSettlementPruning {
                     device.dataStatus() == RocketFluidCargoRoot.Status.VALID && !device.duplicate(), members, unresolved);
             if (decision.pruned() != null) {
                 device.pruneReconciledEscrow(new EscrowFluidCargoPublication.PruningPermit(device, decision.pruned(), authority));
+            }
+            return decision.state();
+        } else if (EscrowItemCargoEndpoint.is(endpoint)) {
+            var chunk = level.getChunkSource().getChunkNow(endpoint.x() >> 4, endpoint.z() >> 4);
+            if (chunk == null || !(chunk.getBlockEntity(EscrowItemCargoEndpoint.position(endpoint)) instanceof RocketItemCargoBlockEntity device)
+                    || !device.live()) { return null; }
+            var decision = itemDevice(root, groups, endpoint, device.root().orElse(null),
+                    device.dataStatus() == RocketItemCargoRoot.Status.VALID && !device.duplicate(), members, unresolved);
+            if (decision.pruned() != null) {
+                device.pruneReconciledEscrow(new EscrowItemCargoPublication.PruningPermit(device, decision.pruned(), authority));
             }
             return decision.state();
         } else if (server instanceof net.minecraft.gametest.framework.GameTestServer || Boolean.getBoolean(EscrowTestEndpoints.HOOKS)) {
