@@ -9,6 +9,25 @@ import org.junit.jupiter.api.io.TempDir;
 
 class EscrowCargoRecoveryProbeTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
+    @Test void cursorCandidateIsCoherentButDoesNotMutateTheOriginalAndRequiresHooks() {
+        assertNull(EscrowCargoRecoveryProbe.cursorCandidate(false, null, null));
+        var before = EscrowCargoPreparationGameTests.snapshot(net.minecraft.resources.ResourceLocation.tryParse("minecraft:overworld"),
+                BlockPos.ZERO, false, java.util.List.of(net.minecraftforge.fluids.FluidStack.EMPTY));
+        var encoded = io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketSnapshotNbtCodec.encode(before);
+        var physical = java.util.UUID.randomUUID();
+        var candidate = EscrowCargoRecoveryProbe.cursorCandidate(true, before, physical);
+        assertEquals(physical, candidate.getUUID("physical")); assertEquals(encoded, candidate.getCompound("before"));
+        var changed = io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketSnapshotNbtCodec
+                .decode(candidate.getCompound("after")).snapshot().orElseThrow();
+        assertEquals(before.snapshotId(), changed.snapshotId()); assertEquals(before.stats(), changed.stats());
+        assertEquals(before.propulsion(), changed.propulsion()); assertNotEquals(before.contentHash(), changed.contentHash());
+        var oldCargo = before.blocks().stream().filter(block -> block.blockEntityPayload().isPresent()).findFirst().orElseThrow();
+        var newCargo = changed.blocks().stream().filter(block -> block.blockEntityPayload().isPresent()).findFirst().orElseThrow();
+        assertEquals(new io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition(0, 0, 0), oldCargo.position());
+        assertEquals(new io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition(0, 1, 0), newCargo.position());
+        assertEquals(oldCargo.blockEntityPayload(), newCargo.blockEntityPayload());
+        assertEquals(encoded, io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketSnapshotNbtCodec.encode(before));
+    }
     @Test void saturatedSeedRetriesThrottledAutosaveAndRequiresCommittedAcknowledgementAndReadback(@TempDir java.nio.file.Path directory) throws Exception {
         var file = directory.resolve(io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType.RESOURCE_ESCROW.fileName());
         var data = ResourceEscrowSavedData.create(); var ledgerIo = new AwaitedLedgerIo();

@@ -13,6 +13,7 @@ import run_v180_cargo_reconciliation as native
 import cargo_storage_oracle as storage
 import cargo_contention_oracle as contention
 import cargo_recovery_oracle as recovery
+import cargo_recovery_fixture as recovery_fixture
 from run_v060_flight_server_smoke import _server_command
 
 REPO = Path(__file__).resolve().parents[1]
@@ -53,7 +54,7 @@ for cut, checkpoint, oracle, reason in (
 CASES["FC_LOAD_E3_CACHE_CLOSE"] = dict(family="C-S2", cut="E3", direction="LOAD", checkpoint="E3_CACHE_CLOSE", oracle="storage", reason="BARRIER_IO")
 CASES["FC_LOAD_E5_STALLED"] = dict(family="C-S2", cut="E5", direction="LOAD", checkpoint="STALLED_RESTART", oracle="contention")
 for cut, checkpoint in (("R1_255", "R1_L1_REPLACED"), ("R1_256", "R1_REFUSED"), ("R2_DUPLICATE", "R2_FENCED"),
-                        ("R3_CURSOR", "R3_ALTERED_BEFORE"), ("R3_OTHER", "R3_ALTERED_BEFORE"), ("R3_RELOCATED", "R3_BEFORE_OFFLINE_MOVE"),
+                        ("R3_CURSOR", "R3_BEFORE_OFFLINE_EDIT"), ("R3_OTHER", "R3_BEFORE_OFFLINE_EDIT"), ("R3_RELOCATED", "R3_BEFORE_OFFLINE_MOVE"),
                         ("G1_FUTURE", "G1_PRESERVED"), ("G1_INVALID", "G1_PRESERVED")):
     CASES["FC_LOAD_" + cut] = dict(family="C-S3", cut=cut, direction="LOAD", checkpoint=checkpoint, oracle="recovery")
 for cut, oracle in (("G3_L1_INFLIGHT", "L1_BEFORE"), ("G3_L2_UNKNOWN", "C6_JOINT_READBACK")):
@@ -66,7 +67,8 @@ HOOKS = tuple(HOOK_DIR + name + ".java" for name in (
     "EscrowCargoRecoveryProbe", "EscrowCargoShutdownProbe", "EscrowCargoTransferFixtures", "EscrowLoaderFloorProbe", "EscrowReleaseProbe"))
 HARNESS = ("scripts/run_v180_cargo_cuts.py", "scripts/run_v180_cargo_reconciliation.py",
            "scripts/run_v180_escrow_forced_stop.py", "scripts/run_v060_flight_server_smoke.py",
-           "scripts/cargo_storage_oracle.py", "scripts/loader_cut_nbt.py", "scripts/cargo_contention_oracle.py", "scripts/cargo_recovery_oracle.py")
+           "scripts/cargo_storage_oracle.py", "scripts/loader_cut_nbt.py", "scripts/cargo_contention_oracle.py", "scripts/cargo_recovery_oracle.py",
+           "scripts/cargo_recovery_fixture.py")
 
 
 def require(condition: bool, message: str) -> None:
@@ -149,6 +151,16 @@ def raw_snapshot(world: Path) -> dict:
     return storage.read(world)
 
 
+def offline_damage(world: Path, case: str, evidence: Path, start: dict, sentinel: Path, token: str) -> dict:
+    require(start.get("forced_stop") and "process_error" not in start, "Offline edit requires a completed forced stop")
+    require(sentinel.read_text(encoding="ascii") == token, "Offline edit lost ownership of its stopped copy")
+    before = evidence / (case + "-before-edit-raw.json")
+    before.write_text(json.dumps(raw_snapshot(world), indent=2), encoding="utf-8")
+    edit = recovery_fixture.edit(world, case, evidence / (case + "-edit"))
+    edit["raw_before"] = dict(file=before.name, sha256=native.digest(before))
+    return edit
+
+
 def run(args) -> None:
     native.assert_pin(args.source_commit); native.require_lock(args.lock_owner); native.preflight()
     session, evidence = args.session_dir.resolve(), args.evidence_dir.resolve()
@@ -198,6 +210,8 @@ def run(args) -> None:
                 # Retain independently decoded raw data even when the oracle rejects it.
                 raw = evidence / f"{case}-{restart}-raw.json"
                 try:
+                    if not restart and case in recovery_fixture.CASES:
+                        row["offline_fixture"] = offline_damage(world, case, evidence, start, sentinel, token)
                     raw.write_text(json.dumps(raw_snapshot(world), indent=2), encoding="utf-8")
                     start["raw"] = dict(file=raw.name, sha256=native.digest(raw))
                     if case == "FC_LOAD_E5_STALLED":
@@ -223,7 +237,9 @@ def run(args) -> None:
                 if not restart and case == "FC_LOAD_R3_RELOCATED" and not row["findings"]:
                     require(sentinel.read_text(encoding="ascii") == token, "Relocation lost ownership of its stopped copy")
                     row["offline_fixture"] = recovery.relocate(world, evidence / (case + "-edit"))
-                    (evidence / (case + "-edited-raw.json")).write_text(json.dumps(raw_snapshot(world), indent=2), encoding="utf-8")
+                    edited = evidence / (case + "-edited-raw.json")
+                    edited.write_text(json.dumps(raw_snapshot(world), indent=2), encoding="utf-8")
+                    row["offline_fixture"]["raw_after"] = dict(file=edited.name, sha256=native.digest(edited))
             row["status"] = "FAILED" if row["findings"] else "PASS"
             require(not row["findings"], "First contradictory cut: " + case + ": " + "; ".join(row["findings"]))
             print(case + ": PASS (force-kill and two restarts)", flush=True)

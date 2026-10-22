@@ -82,20 +82,31 @@ final class EscrowCargoRecoveryProbe {
         injected = true;
         EscrowCargoSwitches.forTests(server, EscrowOperation.Kind.FLUID_CARGO_LOAD, device.id(), false);
         if (cut.equals("R3_CURSOR")) {
-            var snapshot = rocket.snapshot().orElseThrow();
-            var blocks = snapshot.blocks().stream().map(block -> block.blockEntityPayload().isPresent()
-                    ? new RocketBlock(new RocketPosition(0, 1, 0), block.state(), block.blockEntityPayload().orElseThrow()) : block).toList();
-            var changed = RocketStructureSnapshot.create(snapshot.snapshotId(), snapshot.sourceDimension(), snapshot.sourceOrigin(), blocks,
-                    snapshot.passengerAnchors(), snapshot.stats(), snapshot.createdAtGameTime(), snapshot.propulsion().orElseThrow());
-            var outer = rocket.saveWithoutId(new CompoundTag());
-            outer.getCompound("RocketEntityData").put("snapshot", RocketSnapshotNbtCodec.encode(changed)); rocket.load(outer);
-        } else {
-            var outer = device.fluidEntity().saveWithFullMetadata();
-            outer.getCompound(RocketFluidCargoRoot.KEY).getCompound("tank").putString("FluidName", "minecraft:lava");
-            device.fluidEntity().load(outer); device.fluidEntity().setChanged();
+            var candidate = cursorCandidate(Boolean.getBoolean(EscrowTestEndpoints.HOOKS), rocket.snapshot().orElseThrow(), rocket.getUUID());
+            var file = server.getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT)
+                    .resolve("arce_w138_fixture/r3-cursor.dat");
+            try {
+                java.nio.file.Files.createDirectories(file.getParent());
+                try (var output = java.nio.file.Files.newOutputStream(file, java.nio.file.StandardOpenOption.CREATE_NEW)) {
+                    net.minecraft.nbt.NbtIo.writeCompressed(candidate, output);
+                }
+            } catch (java.io.IOException failure) { throw new IllegalStateException("R3 cursor candidate export failed", failure); }
         }
-        EscrowTags.require(server.saveEverything(false, true, true), "R3 altered fixture save refused");
-        pause.accept("R3_ALTERED_BEFORE");
+        // A live held endpoint correctly rejects mutation. The harness damages only the stopped world copy.
+        EscrowTags.require(server.saveEverything(false, true, true), "R3 baseline save refused");
+        pause.accept("R3_BEFORE_OFFLINE_EDIT");
+    }
+    static CompoundTag cursorCandidate(boolean hooks, RocketStructureSnapshot snapshot, java.util.UUID physical) {
+        if (!hooks) { return null; }
+        var cargo = snapshot.blocks().stream().filter(block -> block.blockEntityPayload().isPresent()).toList();
+        EscrowTags.require(cargo.size() == 1 && cargo.get(0).position().equals(new RocketPosition(0, 0, 0)), "R3 cursor fixture differs");
+        var blocks = snapshot.blocks().stream().map(block -> block.blockEntityPayload().isPresent()
+                ? new RocketBlock(new RocketPosition(0, 1, 0), block.state(), block.blockEntityPayload().orElseThrow()) : block).toList();
+        var changed = RocketStructureSnapshot.create(snapshot.snapshotId(), snapshot.sourceDimension(), snapshot.sourceOrigin(), blocks,
+                snapshot.passengerAnchors(), snapshot.stats(), snapshot.createdAtGameTime(), snapshot.propulsion().orElseThrow());
+        var root = new CompoundTag(); root.putUUID("physical", physical);
+        root.put("before", RocketSnapshotNbtCodec.encode(snapshot)); root.put("after", RocketSnapshotNbtCodec.encode(changed));
+        return root;
     }
     void tick(ResourceEscrowSavedData data, RocketEntity rocket, EscrowCargoProbeDevice device) {
         if (recovery) { return; }
