@@ -169,6 +169,7 @@ public final class RocketTransactionWriterBenchmark {
         var sorted = raw.stream().sorted().toList();
         var result = new LinkedHashMap<String, Object>();
         result.put("samples", sorted.size()); result.put("ms", raw);
+        if (sorted.isEmpty()) { return result; }
         result.put("mean_ms", raw.stream().mapToDouble(Double::doubleValue).average().orElse(0));
         result.put("p50_ms", SatelliteRegistryBenchmark.percentile(sorted, .50));
         result.put("p95_ms", SatelliteRegistryBenchmark.percentile(sorted, .95));

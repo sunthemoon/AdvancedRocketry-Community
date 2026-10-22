@@ -42,6 +42,8 @@ public final class RocketWriterOverlapBenchmark {
     static final int ROUNDS = 50, SMOKE_ROUNDS = 13;
     /** {@code smoke}: small fixtures and 13 rounds, only to exercise every path; never budget evidence. */
     private static boolean smoke;
+    /** {@code transfer-only}: the same resident roots, but only the existing transfer writer writes (comparison). */
+    private static boolean transferOnly;
     static final long PERIOD_NANOS = TimeUnit.MILLISECONDS.toNanos(50);
     static final double MEAN_MS = 25, SPIKE_MS = 500;
     static final long RSS_BUDGET_BYTES = (long) (5.5 * 1024 * 1024 * 1024);
@@ -56,7 +58,8 @@ public final class RocketWriterOverlapBenchmark {
         Path output = Path.of(args[0]), directory = Path.of(args[1]);
         if (Files.exists(directory)) { throw new IllegalArgumentException("Benchmark directory must be new"); }
         if (Runtime.getRuntime().maxMemory() > 4L * 1024 * 1024 * 1024) { throw new IllegalStateException("Heap exceeds Xmx4G"); }
-        smoke = args.length > 3 && "smoke".equals(args[3]);
+        smoke = args.length > 3 && args[3].contains("smoke");
+        transferOnly = args.length > 3 && args[3].contains("transfer-only");
         Files.createDirectory(directory);
         Path transactionFile = directory.resolve(TRANSACTIONS.fileName()), transferFile = directory.resolve(TRANSFERS.fileName());
         var report = new LinkedHashMap<String, Object>();
@@ -66,12 +69,15 @@ public final class RocketWriterOverlapBenchmark {
                 + "the transaction journal with W128's 256 records at its 64 MiB bound, and the transfer journal with "
                 + "W11B2's maximum fixture. Each round writes both whole roots; they overlap on their own IO threads. "
                 + "Transaction rounds 4, 14, ... take the readback path and rounds 9, 19, ... fail before replacement; "
-                + "transfer rounds 7, 17, ... take the readback path and rounds 12 and 37 fail once, then retry.");
+                + "transfer rounds 7, 17, ... take the readback path and rounds 12 and 32 fail once, then retry. Mode "
+                + "transfer-only keeps the same resident roots but writes only the transfer journal, as the existing "
+                + "traffic alone, for comparison.");
         report.put("budgets", Map.of("mean_ms", MEAN_MS, "p95_ms", WriterBenchmarkEnvironment.P95_MS,
                 "p99_ms", WriterBenchmarkEnvironment.P99_MS, "spike_ms", SPIKE_MS, "rss_bytes", RSS_BUDGET_BYTES,
                 "heap", "Xmx4G, no OutOfMemoryError"));
         report.put("environment", WriterBenchmarkEnvironment.describe());
-        report.put("mode", smoke ? "SMOKE_NOT_EVIDENCE" : "MEASUREMENT");
+        report.put("mode", smoke ? "SMOKE_NOT_EVIDENCE" : transferOnly ? "TRANSFER_ONLY_COMPARISON" : "MEASUREMENT");
+        report.put("transfer_only", transferOnly);
         try (var environment = new WriterBenchmarkEnvironment()) {
             MinecraftBootstrap.initialize();
             long baseline = WriterBenchmarkEnvironment.retainedAfterGc();
@@ -145,7 +151,7 @@ public final class RocketWriterOverlapBenchmark {
                     WriterBenchmarkEnvironment.thread("ARCE-rocket-journal")));
             var workingSet = WriterBenchmarkEnvironment.workingSet();
             results.put("working_set_after_rounds", workingSet);
-            results.put("retained_heap_after_plannedbytes", WriterBenchmarkEnvironment.retainedAfterGc());
+            results.put("retained_heap_after_rounds_bytes", WriterBenchmarkEnvironment.retainedAfterGc());
             report.put("results", results);
             @SuppressWarnings("unchecked") var duration = (Map<String, Object>) run.get("duration");
             boolean rss = !"MEASURED".equals(workingSet.get("status"))
@@ -155,7 +161,8 @@ public final class RocketWriterOverlapBenchmark {
                     && (double) duration.get("p99_ms") <= WriterBenchmarkEnvironment.P99_MS
                     && (double) duration.get("maximum_ms") <= SPIKE_MS && rss;
             report.put("rss_measured", "MEASURED".equals(workingSet.get("status")));
-            report.put("status", smoke ? "SMOKE_COMPLETED" : within ? "WITHIN_BUDGET" : "STOP_RULE");
+            report.put("status", smoke ? "SMOKE_COMPLETED" : transferOnly ? (within ? "COMPARISON_WITHIN_BUDGET"
+                    : "COMPARISON_OUTSIDE_BUDGET") : within ? "WITHIN_BUDGET" : "STOP_RULE");
             if (registry != null) { report.put("registry_still_operational", registry.operational()); }
             transfers.stop();
         } catch (Throwable failure) {
@@ -211,14 +218,14 @@ public final class RocketWriterOverlapBenchmark {
                 round++;
                 if (round < planned) {
                     Kind transactionKind = round % 10 == 4 ? Kind.READBACK : round % 10 == 9 ? Kind.FAIL : Kind.ATOMIC;
-                    Kind transferKind = round % 10 == 7 ? Kind.READBACK : round == 12 || round == 37 ? Kind.FAIL : Kind.ATOMIC;
+                    Kind transferKind = round % 10 == 7 ? Kind.READBACK : round == 12 || round == 32 ? Kind.FAIL : Kind.ATOMIC;
                     int index = round % records.size();
                     var next = records.get(index);
                     next = new RocketTransactionRecord(next.transactionId(), next.type(), next.phase(), next.snapshotId(),
                             next.contentHash(), next.region(), next.progress() + 1, next.rocketEntityId());
                     journals.get(index).write(next); records.set(index, next);
                     transactionCount = transactions.completedWriteCount();
-                    if (!transactions.requestWrite(transactionFile, policy(TRANSACTIONS, transactionKind))) {
+                    if (!transferOnly && !transactions.requestWrite(transactionFile, policy(TRANSACTIONS, transactionKind))) {
                         throw new IllegalStateException("Transaction request refused");
                     }
                     if (transferKind == Kind.FAIL) {
@@ -232,7 +239,7 @@ public final class RocketWriterOverlapBenchmark {
                     if (!TransferWriterBenchmarkAccess.request(transfers, transferFile, policy(TRANSFERS, transferKind))) {
                         throw new IllegalStateException("Transfer request refused");
                     }
-                    transactionWaiting = transferWaiting = true;
+                    transactionWaiting = !transferOnly; transferWaiting = true;
                     current = new LinkedHashMap<>();
                     current.put("round", round); current.put("request_tick", tick);
                     current.put("transaction_kind", transactionKind.name()); current.put("transfer_kind", transferKind.name());
