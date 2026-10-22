@@ -91,7 +91,10 @@ public final class EscrowGovernedPreparation {
                         () -> data.bind(server).governedAvailable(record.logicalRocketId()), journal, record);
                 var permit = countdownPermit(authority, EscrowGovernedEnvelope.capture(rocket), level.getGameTime(),
                         () -> rocket.isAlive() && rocket.isAddedToWorld() && boundary.test(record));
-                if (permit == null) { return false; }
+                if (permit == null) {
+                    EscrowLaunchDiscard.note(record.logicalRocketId(), record.transferId(), "F2_CALLBACK", "NO_COUNTDOWN_PERMIT");
+                    return false;
+                }
                 EscrowRuntime.of(server).checkpoint("F2_PREPARED_ACK");
                 rocket.advanceGovernedSource(permit);
                 EscrowLaunchTrace.note(rocket, countdown, "COUNTDOWN", "governed=true");
@@ -126,7 +129,9 @@ public final class EscrowGovernedPreparation {
                     observed, gameTime, boundary);
         } catch (IllegalArgumentException | ArithmeticException refused) {
             EscrowLaunchDiscard.note(authority.record().logicalRocketId(), authority.record().transferId(),
-                    "F2_PERMIT", refused.getClass().getSimpleName() + ": " + refused.getMessage());
+                    "F2_PERMIT", refused.getClass().getSimpleName() + ": " + refused.getMessage()
+                            + " fields=" + EscrowLaunchDiscard.differences(
+                                    authority.record().nativeTransfer().orElseThrow().sourceEnvelope(authority.record()), observed));
             return null;
         }
     }

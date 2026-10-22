@@ -131,7 +131,12 @@ public final class RocketWarmupRegistry {
         pending = null;
         var current = live.get(request.logical());
         if (!available || current != null && current.state() == State.BOUND) { return proceed(request, false); }
-        if (current != null && !current.sameDestination(request)) { release(current, Release.REPLACED, now); current = null; }
+        if (current != null && !current.sameDestination(request)) {
+            log.accept("ARCE_GOVERNED_WARMUP_REPLACED logical=" + request.logical() + " request=" + request.requestId()
+                    + " previous=" + current.request() + " from=" + current.region()
+                    + " to=" + RocketRegion.fromSnapshot(request.destination()) + " same_source=" + current.sameSource(request.source()));
+            release(current, Release.REPLACED, now); current = null;
+        }
         boolean destinationReady = ready.getAsBoolean();
         if (current == null) {
             if (!slot(request.player(), settings)) { return destinationReady ? proceed(request, false) : new Decision(Outcome.LIMIT,
