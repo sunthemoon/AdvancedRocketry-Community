@@ -45,8 +45,6 @@ public final class RocketWriterOverlapBenchmark {
     /** {@code transfer-only}: the same resident roots, but only the existing transfer writer writes (comparison). */
     private static boolean transferOnly;
     static final long PERIOD_NANOS = TimeUnit.MILLISECONDS.toNanos(50);
-    static final double MEAN_MS = 25, SPIKE_MS = 500;
-    static final long RSS_BUDGET_BYTES = (long) (5.5 * 1024 * 1024 * 1024);
     private static final ManagedSavedDataType TRANSACTIONS = ManagedSavedDataType.ROCKET_TRANSACTIONS;
     private static final ManagedSavedDataType TRANSFERS = ManagedSavedDataType.ROCKET_TRANSFERS;
 
@@ -72,9 +70,9 @@ public final class RocketWriterOverlapBenchmark {
                 + "transfer rounds 7, 17, ... take the readback path and rounds 12 and 32 fail once, then retry. Mode "
                 + "transfer-only keeps the same resident roots but writes only the transfer journal, as the existing "
                 + "traffic alone, for comparison.");
-        report.put("budgets", Map.of("mean_ms", MEAN_MS, "p95_ms", WriterBenchmarkEnvironment.P95_MS,
-                "p99_ms", WriterBenchmarkEnvironment.P99_MS, "spike_ms", SPIKE_MS, "rss_bytes", RSS_BUDGET_BYTES,
-                "heap", "Xmx4G, no OutOfMemoryError"));
+        report.put("budgets", Map.of("mean_ms", RocketWriterOverlapVerdict.MEAN_MS, "p95_ms", WriterBenchmarkEnvironment.P95_MS,
+                "p99_ms", WriterBenchmarkEnvironment.P99_MS, "spike_ms", RocketWriterOverlapVerdict.SPIKE_MS,
+                "rss_bytes", RocketWriterOverlapVerdict.RSS_BUDGET_BYTES, "heap", "Xmx4G, no OutOfMemoryError"));
         report.put("environment", WriterBenchmarkEnvironment.describe());
         report.put("mode", smoke ? "SMOKE_NOT_EVIDENCE" : transferOnly ? "TRANSFER_ONLY_COMPARISON" : "MEASUREMENT");
         report.put("transfer_only", transferOnly);
@@ -154,15 +152,9 @@ public final class RocketWriterOverlapBenchmark {
             results.put("retained_heap_after_rounds_bytes", WriterBenchmarkEnvironment.retainedAfterGc());
             report.put("results", results);
             @SuppressWarnings("unchecked") var duration = (Map<String, Object>) run.get("duration");
-            boolean rss = !"MEASURED".equals(workingSet.get("status"))
-                    || ((Number) workingSet.get("peak_working_set_bytes")).longValue() <= RSS_BUDGET_BYTES;
-            boolean within = (double) duration.get("mean_ms") <= MEAN_MS
-                    && (double) duration.get("p95_ms") <= WriterBenchmarkEnvironment.P95_MS
-                    && (double) duration.get("p99_ms") <= WriterBenchmarkEnvironment.P99_MS
-                    && (double) duration.get("maximum_ms") <= SPIKE_MS && rss;
+            var verdict = RocketWriterOverlapVerdict.of(smoke, transferOnly, duration, workingSet);
             report.put("rss_measured", "MEASURED".equals(workingSet.get("status")));
-            report.put("status", smoke ? "SMOKE_COMPLETED" : transferOnly ? (within ? "COMPARISON_WITHIN_BUDGET"
-                    : "COMPARISON_OUTSIDE_BUDGET") : within ? "WITHIN_BUDGET" : "STOP_RULE");
+            report.put("status", verdict.status()); report.put("verdict_reasons", verdict.reasons());
             if (registry != null) { report.put("registry_still_operational", registry.operational()); }
             transfers.stop();
         } catch (Throwable failure) {
