@@ -132,10 +132,11 @@ public final class RocketWarmupRegistry {
         var current = live.get(request.logical());
         if (!available || current != null && current.state() == State.BOUND) { return proceed(request, false); }
         if (current != null && !current.sameDestination(request)) {
+            release(current, Release.REPLACED, now);
             log.accept("ARCE_GOVERNED_WARMUP_REPLACED logical=" + request.logical() + " request=" + request.requestId()
                     + " previous=" + current.request() + " from=" + current.region()
                     + " to=" + RocketRegion.fromSnapshot(request.destination()) + " same_source=" + current.sameSource(request.source()));
-            release(current, Release.REPLACED, now); current = null;
+            current = null;
         }
         boolean destinationReady = ready.getAsBoolean();
         if (current == null) {
