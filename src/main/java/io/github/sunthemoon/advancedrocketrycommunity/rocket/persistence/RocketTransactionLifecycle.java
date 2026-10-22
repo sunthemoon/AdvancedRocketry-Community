@@ -25,6 +25,7 @@ public final class RocketTransactionLifecycle {
         if (event.phase == TickEvent.Phase.START) {
             var journal = RocketTransactionSavedData.existing(event.getServer());
             if (journal != null) { journal.pollWriter(); }
+            if (journal != null && journal.releaseTestCuts() != null) { journal.releaseTestCuts().onTickStart(journal); }
         }
     }
 
@@ -32,6 +33,7 @@ public final class RocketTransactionLifecycle {
     public static void stopping(ServerStoppingEvent event) {
         var journal = RocketTransactionSavedData.existing(event.getServer());
         if (journal != null) { journal.latchShutdown(); }
+        if (journal != null && journal.releaseTestCuts() != null) { journal.releaseTestCuts().onStopping(journal); }
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)

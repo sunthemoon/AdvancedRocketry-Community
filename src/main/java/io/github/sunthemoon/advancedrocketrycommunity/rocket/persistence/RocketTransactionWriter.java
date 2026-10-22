@@ -29,10 +29,17 @@ final class RocketTransactionWriter {
 
     /**
      * The owner-thread capture: references to at most 256 immutable entries, unsorted, and the acknowledgement and
-     * outcome that the IO thread classifies a readback against. It builds no NBT (design section 2.2).
+     * outcome that the IO thread classifies a readback against. It builds no NBT (design section 2.2). {@code cut} is
+     * the release-test CAPTURE seam, null in production.
      */
     record Capture(long sequence, List<RocketPersistedTransaction> entries,
-                   CheckedJournalCheckpoint.Acknowledgement previous, CheckedJournalCheckpoint.Outcome previousOutcome) {
+                   CheckedJournalCheckpoint.Acknowledgement previous, CheckedJournalCheckpoint.Outcome previousOutcome,
+                   Runnable cut) {
+        Capture(long sequence, List<RocketPersistedTransaction> entries, CheckedJournalCheckpoint.Acknowledgement previous,
+                CheckedJournalCheckpoint.Outcome previousOutcome) {
+            this(sequence, entries, previous, previousOutcome, null);
+        }
+
         Capture {
             if (sequence < 1 || entries.size() > RocketLimits.MAX_ACTIVE_TRANSACTIONS) {
                 throw new IllegalArgumentException("Transaction capture exceeds its fixed bound");
@@ -59,6 +66,7 @@ final class RocketTransactionWriter {
     /** IO thread: encode, digest, stage, read back, replace and force; touches nothing but the capture. */
     static CheckedRootWriter.Attempt<Result> write(Capture capture, CheckedSavedDataPolicy policy, Path file,
                                                    CheckedSavedDataPolicy.DirectoryForce force) {
+        if (capture.cut() != null) { capture.cut().run(); }
         CompoundTag payload = encode(capture.entries(), new CompoundTag());
         Map<UUID, String> digests = new LinkedHashMap<>();
         for (Tag raw : payload.getList("transactions", Tag.TAG_COMPOUND)) {

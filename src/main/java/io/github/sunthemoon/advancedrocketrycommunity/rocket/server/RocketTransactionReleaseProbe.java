@@ -47,6 +47,8 @@ final class RocketTransactionReleaseProbe {
         if (!server.saveEverything(false, true, true)) {
             throw new IllegalStateException("Could not flush the actual transaction checkpoint");
         }
+        // ADR-074: the save only requests the journal's off-thread write; await its acknowledgement before the kill.
+        io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketTransactionWriterCuts.awaitAcknowledged(server);
         var origin = snapshot.sourceOrigin();
         AdvancedRocketryCommunity.LOGGER.info(
                 "ARCE_RELEASE_TRANSACTION_PAUSED type={} phase={} progress={} transaction={} entity={} "

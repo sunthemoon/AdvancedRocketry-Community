@@ -55,6 +55,7 @@ public final class RocketTransactionSavedData extends SavedData {
     private boolean unreadable;
     private long completedWriteCount, lastWriterNanos, lastWriterCpuNanos;
     private boolean failureReported;
+    private RocketTransactionWriterCuts cuts; // the release-test native cut seam; null in production
 
     public RocketTransactionSavedData() { this(CheckedSavedDataPolicy.DirectoryForce.PLATFORM); }
 
@@ -147,26 +148,20 @@ public final class RocketTransactionSavedData extends SavedData {
     /** A capture is in flight, published or not, or a request is pending. */
     public boolean writerBusy() { requireOwner(); return writer != null && writer.busy(); }
 
-    /**
-     * ADR-074 item 10, {@code ServerStoppingEvent} at HIGHEST: refuse gameplay requests and starts from now on. The
-     * shutdown predicate latches the same state where the event is missing (a thrown tick exception).
-     */
+    /** ADR-074 item 10, {@code ServerStoppingEvent}: refuse requests and starts; the predicate covers a tick exception. */
     public void latchShutdown() {
         requireOwner();
         if (writer != null) { writer.latchShutdown(); }
     }
 
-    /**
-     * Overworld {@code LevelEvent.Unload}, before storage closes: resume the same drain under the same budget, or start
-     * it if the shutdown save was skipped, then join the IO thread even when the drain gave up.
-     */
+    /** Overworld unload, before storage closes: resume the same drain (or start a skipped one), then always join. */
     public void close() {
         requireOwner();
         if (writer == null) {
             if (!operational() || !isDirty() || ownerServer == null && writerFile == null) { return; }
             writer(bind(writerFile != null ? writerFile : ManagedRootSupplier.dataFile(ownerServer, TYPE), ATOMIC));
         }
-        writer.close(ATOMIC, System::nanoTime, TimeUnit.NANOSECONDS::sleep);
+        writer.close(drainPolicy(), System::nanoTime, TimeUnit.NANOSECONDS::sleep);
     }
 
     /** {@code ServerStoppedEvent} and exceptional cleanup: join without publishing; it never reports success. */
@@ -200,7 +195,9 @@ public final class RocketTransactionSavedData extends SavedData {
     /** Detached journals only: pump publication until the writer is idle. */
     void awaitWriter() {
         requireOwner();
-        if (ownerServer != null) { throw new IllegalStateException("A live transaction journal never awaits IO"); }
+        if (ownerServer != null && !RocketTransactionWriterCuts.enabled(ownerServer)) {
+            throw new IllegalStateException("A live transaction journal never awaits IO");
+        }
         if (writer != null) { writer.await(System::nanoTime, TimeUnit.NANOSECONDS::sleep); }
     }
 
@@ -215,7 +212,7 @@ public final class RocketTransactionSavedData extends SavedData {
             if (writer != null) { writer.latchShutdown(); }
             return false;
         }
-        return writer(normalized).request(policy, tick());
+        return writer(normalized).request(cuts == null ? policy : cuts.policy(policy), tick());
     }
 
     /** ADR-074 item 10, at the shutdown save: drain until the current RAM is covered, within the one budget. */
@@ -226,8 +223,14 @@ public final class RocketTransactionSavedData extends SavedData {
             return;
         }
         if (writer == null && !isDirty()) { return; }
-        writer(normalized).drain(ATOMIC, System::nanoTime, TimeUnit.NANOSECONDS::sleep);
+        writer(normalized).drain(drainPolicy(), System::nanoTime, TimeUnit.NANOSECONDS::sleep);
     }
+
+    private CheckedSavedDataPolicy drainPolicy() { return cuts == null ? ATOMIC : cuts.policy(ATOMIC); }
+
+    /** Release-test commands only (RocketTransactionWriterCuts#enabled): this journal's native cut seam. */
+    RocketTransactionWriterCuts cuts() { if (cuts == null) { cuts = new RocketTransactionWriterCuts(); } return cuts; }
+    RocketTransactionWriterCuts releaseTestCuts() { return cuts; }
 
     private Path bind(Path file, CheckedSavedDataPolicy policy) {
         if (policy.type() != TYPE) { throw new IllegalArgumentException("Wrong transaction journal policy"); }
@@ -296,10 +299,7 @@ public final class RocketTransactionSavedData extends SavedData {
     long lastWriterCpuNanos() { return lastWriterCpuNanos; }
     boolean writerInFlight() { requireOwner(); return writer != null && writer.inFlight(); }
 
-    RocketTransactionWriter.Capture captureForTests() {
-        requireOwner();
-        return new RocketTransactionWriter.Capture(mutationSequence, List.copyOf(entries.values()), acknowledged, outcome);
-    }
+    RocketTransactionWriter.Capture captureForTests() { requireOwner(); return new Journal(null, directoryForce).capture(mutationSequence); }
 
     private void requireOwner() {
         if (Thread.currentThread() != owner) {
@@ -317,7 +317,8 @@ public final class RocketTransactionSavedData extends SavedData {
 
         @Override public long mutationSequence() { return mutationSequence; }
         @Override public RocketTransactionWriter.Capture capture(long sequence) {
-            return new RocketTransactionWriter.Capture(sequence, List.copyOf(entries.values()), acknowledged, outcome);
+            return new RocketTransactionWriter.Capture(sequence, List.copyOf(entries.values()), acknowledged, outcome,
+                    cuts == null ? null : cuts.beforeEncode(sequence));
         }
         @Override public CheckedRootWriter.Attempt<RocketTransactionWriter.Result> write(
                 RocketTransactionWriter.Capture capture, CheckedSavedDataPolicy policy) {
