@@ -43,10 +43,10 @@ review follows before merge.
 Named (transfer-guarded) cargo stays held until the F1 fix is extended to cargo (R48's D4); do not add your own variant
 of that fix, and pin today's behaviour where a test meets it.
 
-**F3 (Root decision R55, W133).** An assembled rocket that reaches its first fuel through escrow stays `ASSEMBLED`, and
-its launch returns `INVALID_STATE` until W133 merges. If your prompt's commit has W133, the governed launches must
-succeed; if it does not, use a rocket state the launch accepts today for the launch step, say so in the record, and
-report the codes you observe. Do not fix F3 here.
+**F3 and F1b.** W133 (merged as `695f76b0`, Root decision R55) promotes an assembled rocket with launchable fuel at
+launch, so no launch step here may return `INVALID_STATE` for such a rocket. A rocket that still has a retained transfer
+record meets the governed no-transfer guard (`TRANSFER_JOURNAL_BLOCKED`, F1b) until W130 (D2) merges; if a case meets
+it, say which check refused, report the code and do not work around it. Do not change either fix here.
 
 ## Tests
 
