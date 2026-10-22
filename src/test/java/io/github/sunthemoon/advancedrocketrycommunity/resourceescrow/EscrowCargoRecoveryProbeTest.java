@@ -10,7 +10,7 @@ import org.junit.jupiter.api.io.TempDir;
 class EscrowCargoRecoveryProbeTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
     @Test void saturatedSeedRetriesThrottledAutosaveAndRequiresCommittedAcknowledgementAndReadback(@TempDir java.nio.file.Path directory) throws Exception {
-        var file = directory.resolve("escrow.dat");
+        var file = directory.resolve(io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType.RESOURCE_ESCROW.fileName());
         var data = ResourceEscrowSavedData.create(); var ledgerIo = new AwaitedLedgerIo();
         var writes = new java.util.concurrent.atomic.AtomicInteger();
         try (var writer = ledgerIo.writer(file, 0, (staged, target) -> {
