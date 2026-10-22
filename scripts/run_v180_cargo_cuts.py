@@ -10,6 +10,7 @@ import shutil
 import uuid
 
 import run_v180_cargo_reconciliation as native
+import cargo_storage_oracle as storage
 from run_v060_flight_server_smoke import _server_command
 
 REPO = Path(__file__).resolve().parents[1]
@@ -33,13 +34,28 @@ NORMAL = (
 CASES = {f"FC_{direction}_{suffix}": dict(family="C-S1", cut=cut, direction=direction,
           checkpoint=checkpoint, oracle=f"FC_{direction}_{oracle}")
          for direction in ("LOAD", "UNLOAD") for cut, suffix, checkpoint, oracle in NORMAL}
+D2 = (("C2", "C2_DESTINATION_AFTER", "C2_DESTINATION_AFTER"),
+      ("C5", "BARRIER_FORCE_AFTER", "C6_JOINT_READBACK"), ("C6", "C6_JOINT_READBACK", "C6_JOINT_READBACK"),
+      ("C7", "K9", "L2_REPLACED"))
+CASES.update({f"FC_{direction}_D2_{cut}": dict(family="C-S2", cut="D2-" + cut, direction=direction,
+              checkpoint=checkpoint, oracle=f"FC_{direction}_{oracle}")
+              for direction in ("LOAD", "UNLOAD") for cut, checkpoint, oracle in D2})
+for cut, checkpoint, oracle, reason in (
+        ("E1_OWN_STORE", "E1_OWN_STORE", "storage", "BARRIER_IO"),
+        ("E2_CAPTURE", "E2_CAPTURE", "storage", "SUPERSEDING_SAVE"),
+        ("E2_ROCKET_EXTERNAL", "E2_ROCKET_EXTERNAL", "storage", "BARRIER_EXTERNAL"),
+        ("E4L1_FAIL", "WRITE_FAILED_BEFORE_REPLACE", "FC_LOAD_L1_BEFORE", None),
+        ("E4L1_UNKNOWN", "WRITE_UNKNOWN", "FC_LOAD_L1_BEFORE", None),
+        ("E4L2_UNKNOWN", "WRITE_UNKNOWN", "FC_LOAD_C6_JOINT_READBACK", None)):
+    CASES["FC_LOAD_" + cut] = dict(family="C-S2", cut=cut, direction="LOAD", checkpoint=checkpoint, oracle=oracle, reason=reason)
 HOOK_DIR = "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/resourceescrow/"
 HOOKS = tuple(HOOK_DIR + name + ".java" for name in (
     "EscrowCargoReconciliationProbe", "EscrowCargoProbeDevice", "EscrowRuntime", "EscrowTestEndpoints",
     "EscrowLedgerWriter", "EscrowResourceQueue", "EscrowReconciliationDriver", "EscrowReconciliationAction",
-    "EscrowReconciliationPruning", "EscrowBarrier"))
+    "EscrowReconciliationPruning", "EscrowBarrier", "EscrowCargoStorageProbe", "EscrowStoreFault"))
 HARNESS = ("scripts/run_v180_cargo_cuts.py", "scripts/run_v180_cargo_reconciliation.py",
-           "scripts/run_v180_escrow_forced_stop.py", "scripts/run_v060_flight_server_smoke.py")
+           "scripts/run_v180_escrow_forced_stop.py", "scripts/run_v060_flight_server_smoke.py",
+           "scripts/cargo_storage_oracle.py", "scripts/loader_cut_nbt.py")
 
 
 def require(condition: bool, message: str) -> None:
@@ -80,8 +96,8 @@ def validate_markers(disk: dict, case: str, restarted: bool) -> None:
 
 
 def inspect(world: Path, case: str, restarted: bool) -> dict:
-    result = native.inspect(world, CASES[case]["oracle"], restarted)
-    validate_markers(result, case, restarted)
+    result = storage.inspect(world, case, restarted) if CASES[case]["oracle"] == "storage" else native.inspect(world, CASES[case]["oracle"], restarted)
+    validate_markers(result, case, restarted and case != "FC_LOAD_E2_ROCKET_EXTERNAL")
     return result
 
 
@@ -94,13 +110,15 @@ def observations(lines: list[str], case: str, restart: int) -> None:
         if CASES[case]["cut"] in ("K4", "K5"):
             require("selected=" + ("SOURCE" if CASES[case]["cut"] == "K4" else "DESTINATION") in matches[0],
                     "Wrong selected native store")
+    reason = CASES[case].get("reason")
+    if reason and (not restart or case == "FC_LOAD_E2_ROCKET_EXTERNAL"):
+        proof = matches if restart else [line for line in lines if "ARCE_CARGO_STORAGE_PROOF cut=" + case + " " in line]
+        require(len(proof) == 1 and "reason=" + reason + " " in proof[0], "Storage proof reported a different refusal")
     require(not any("/ERROR]" in line or "/FATAL]" in line for line in lines), "Native run logged ERROR/FATAL")
 
 
 def raw_snapshot(world: Path) -> dict:
-    return dict(ledger=native.ledger(world / "data" / native.LEDGER),
-                terrain=native.record(world / "region/r.0.0.mca"),
-                entities=native.record(world / "entities/r.0.0.mca"), journal=native.journal(world))
+    return storage.read(world)
 
 
 def run(args) -> None:

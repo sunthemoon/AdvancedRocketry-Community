@@ -24,7 +24,8 @@ final class EscrowStoreFault {
 
     /** The pure gate, so that a unit test pins every property and the exact slot. */
     static boolean selected(boolean hooks, String testCase, String scenario, String level, ChunkPos chunk) {
-        return hooks && CASE.equals(testCase) && "start".equals(scenario) && "minecraft:overworld".equals(level) && SLOT.equals(chunk);
+        return hooks && (CASE.equals(testCase) || EscrowCargoStorageProbe.E1.equals(testCase))
+                && "start".equals(scenario) && "minecraft:overworld".equals(level) && SLOT.equals(chunk);
     }
 
     /** The terrain own store's future as the barrier must retain it; the same instance whenever the gate is closed. */
@@ -55,7 +56,8 @@ final class EscrowStoreFault {
     /** At most one fault per store; the real store has always completed before the retained future fails. */
     CompletableFuture<Void> observed(boolean gate, ChunkPos chunk, CompletableFuture<Void> stored) {
         if (!gate || !spent.compareAndSet(false, true)) { return stored; }
-        AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_MATRIX_STORE_FAULT cut={} chunk={},{}", CASE, chunk.x, chunk.z);
+        AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_MATRIX_STORE_FAULT cut={} chunk={},{}",
+                System.getProperty("advancedrocketrycommunity.escrowCase", CASE), chunk.x, chunk.z);
         return stored.thenCompose(ignored -> CompletableFuture.failedFuture(new java.io.IOException("Release-test own-store IO failure")));
     }
 }

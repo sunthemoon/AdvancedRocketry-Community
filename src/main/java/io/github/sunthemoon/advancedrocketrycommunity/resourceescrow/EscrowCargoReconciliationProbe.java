@@ -33,6 +33,7 @@ final class EscrowCargoReconciliationProbe {
     private int step;
     private volatile String selected = "";
     private volatile int stores;
+    private final EscrowCargoStorageProbe storage;
 
     static boolean accepts(String name) { return name.startsWith("FC_") || name.startsWith("IC_"); }
 
@@ -44,11 +45,17 @@ final class EscrowCargoReconciliationProbe {
         EscrowTags.require(load || name.startsWith(item ? "IC_UNLOAD_" : "FC_UNLOAD_"), "Unknown cargo case");
         cut = name.substring(load ? 8 : 10);
         recovery = "recover".equals(System.getProperty("advancedrocketrycommunity.escrowScenario"));
+        storage = EscrowCargoStorageProbe.selected(Boolean.getBoolean(EscrowTestEndpoints.HOOKS), name, recovery)
+                ? new EscrowCargoStorageProbe(server, name, this::pause) : null;
     }
     void checkpoint(String label) {
         if (recovery || !initialized || done || paused.get()) { return; }
         if (label.equals("CARGO_STORE_SOURCE_SELECTED")) { selected = "SOURCE"; stores++; }
         if (label.equals("CARGO_STORE_DESTINATION_SELECTED")) { selected = "DESTINATION"; stores++; }
+        if (storage != null) { storage.checkpoint(label, rocket, device); }
+        if (EscrowCargoStorageProbe.d2Cut(Boolean.getBoolean(EscrowTestEndpoints.HOOKS), name, recovery, stores, label)) {
+            pause(label); return;
+        }
         if (secondForceCut(Boolean.getBoolean(EscrowTestEndpoints.HOOKS), name, recovery, stores, label)) {
             pause(label); return;
         }
@@ -123,6 +130,7 @@ final class EscrowCargoReconciliationProbe {
             EscrowCargoSwitches.forTests(server, kind(), device.id(), true); step = 1;
         }
         if (cut.equals("PREPARING") && EscrowRuntime.of(server).cargoPreparing(rocket.assemblyTransactionId().orElseThrow())) { pause("PREPARING"); }
+        if (storage != null) { storage.tick(data); }
         EscrowTags.require(data.ledger().records().stream().noneMatch(op -> op.reason().manual()), "Native cargo entered repair");
     }
     private EscrowOperation.Kind kind() {
@@ -138,8 +146,14 @@ final class EscrowCargoReconciliationProbe {
             device = EscrowCargoProbeDevice.existing(level, POSITION, item);
         }
         EscrowTags.require(data.ledger().records().stream().noneMatch(op -> op.reason().manual()), "Restart cargo entered repair");
+        if (name.equals(EscrowCargoStorageProbe.EXTERNAL)) {
+            if (server.getTickCount() - began >= 100 && EscrowRuntime.of(server).barrier().refusals() > 0) {
+                EscrowCargoStorageProbe.heldRestart(server, data, rocket, device, name); done = true;
+            }
+            return;
+        }
         if (server.getTickCount() - began < 100 || !data.ledger().records().isEmpty() || !coordinator.writerIdle()) { return; }
-        boolean before = cut.equals("PREPARING") || cut.equals("L1_BEFORE"); int epoch = before ? 0 : 1;
+        boolean before = cut.equals("PREPARING") || cut.equals("L1_BEFORE") || cut.startsWith("E4L1_"); int epoch = before ? 0 : 1;
         var section = rocket.escrowSection();
         var payload = rocket.snapshot().orElseThrow().blocks().stream().map(block -> block.blockEntityPayload().orElse(null))
                 .filter(java.util.Objects::nonNull).findFirst().orElseThrow();
@@ -154,4 +168,5 @@ final class EscrowCargoReconciliationProbe {
         AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_CARGO_RESULT cut={} cargo={} device={} epoch={} records=0", name, amount, device.amount(), epoch);
         done = true;
     }
+    void close() { if (storage != null) { storage.close(); } }
 }

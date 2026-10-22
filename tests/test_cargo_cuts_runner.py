@@ -23,9 +23,9 @@ class CargoCutsRunnerTest(unittest.TestCase):
                                 resource_escrow=section("SOURCE" if load else "DESTINATION")))
 
     def test_matrix_has_all_fourteen_boundaries_in_both_directions(self):
-        self.assertEqual(28, len(runner.CASES))
+        self.assertEqual(28, sum(row["family"] == "C-S1" for row in runner.CASES.values()))
         for direction in ("LOAD", "UNLOAD"):
-            rows = [row for row in runner.CASES.values() if row["direction"] == direction]
+            rows = [row for row in runner.CASES.values() if row["direction"] == direction and row["family"] == "C-S1"]
             self.assertEqual(14, len(rows))
             self.assertEqual({f"K{i}" for i in range(11)} | {"K2_ACK", "K3_DEBIT", "K10_ACK"}, {row["cut"] for row in rows})
         self.assertEqual("PREPARING", runner.CASES["FC_LOAD_PREPARING"]["checkpoint"])
@@ -34,9 +34,26 @@ class CargoCutsRunnerTest(unittest.TestCase):
     def test_every_new_boundary_uses_the_appropriate_existing_raw_oracle(self):
         with patch.object(runner.native, "inspect", return_value={}) as inspect, patch.object(runner, "validate_markers"):
             for case, expected in runner.CASES.items():
+                if expected["oracle"] == "storage":
+                    continue
                 for restarted in (False, True):
                     runner.inspect(Path("world"), case, restarted)
                     inspect.assert_called_with(Path("world"), expected["oracle"], restarted)
+
+    def test_storage_refusal_is_exact_and_external_stays_held_on_both_restarts(self):
+        case = "FC_LOAD_E2_ROCKET_EXTERNAL"
+        with patch.object(runner.storage, "inspect", return_value={}) as inspect, patch.object(runner, "validate_markers") as markers:
+            for restarted in (False, True):
+                runner.inspect(Path("world"), case, restarted)
+                inspect.assert_called_with(Path("world"), case, restarted)
+                markers.assert_called_with({}, case, False)
+        for restart in (0, 1, 2):
+            lines = ([f"ARCE_RELEASE_CARGO_RESULT cut={case} reason=BARRIER_EXTERNAL records=1 locked=true"] if restart else
+                     [f"ARCE_RELEASE_CARGO_PAUSED cut={case} checkpoint=E2_ROCKET_EXTERNAL selected=DESTINATION",
+                      f"ARCE_CARGO_STORAGE_PROOF cut={case} reason=BARRIER_EXTERNAL io=0 refusals=1 superseding=0 records=1 pending=1"])
+            runner.observations(lines, case, restart)
+            with self.assertRaises(runner.native.smoke.SmokeError):
+                runner.observations([line.replace("BARRIER_EXTERNAL", "BARRIER_IO") for line in lines], case, restart)
 
     def test_exact_markers_fluid_identity_and_bindings_in_both_roles(self):
         for load in (True, False):

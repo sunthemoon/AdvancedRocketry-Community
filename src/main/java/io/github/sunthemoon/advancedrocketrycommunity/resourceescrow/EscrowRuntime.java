@@ -186,7 +186,7 @@ public final class EscrowRuntime {
         if (sourceClockProbe != null) { sourceClockProbe.checkpoint(cut); }
     }
     io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile.Committer ledgerCommitter(MinecraftServer server) {
-        String testCase = EscrowLoaderStorageProbe.writerCase(System.getProperty("advancedrocketrycommunity.escrowCase", ""));
+        String testCase = EscrowCargoStorageProbe.writerCase(EscrowLoaderStorageProbe.writerCase(System.getProperty("advancedrocketrycommunity.escrowCase", "")));
         if (Boolean.getBoolean(EscrowTestEndpoints.HOOKS)
                 && "start".equals(System.getProperty("advancedrocketrycommunity.escrowScenario"))
                 && (testCase.equals("E4L1_UNKNOWN") || testCase.equals("E4L2_UNKNOWN") || testCase.equals("E4L2_RESAVE")
@@ -431,6 +431,7 @@ public final class EscrowRuntime {
     }
     @SubscribeEvent(priority = EventPriority.HIGHEST) public static void stopping(ServerStoppingEvent event) {
         EscrowRuntime runtime = of(event.getServer()); runtime.stopping = true;
+        if (runtime.cargoProbe != null) { runtime.cargoProbe.close(); }
         if (runtime.cargo != null) { runtime.cargo.close(); }
         runtime.cargoSwitches.clear();
         if (runtime.fills != null) { runtime.fills.clear(); }
@@ -465,6 +466,7 @@ public final class EscrowRuntime {
         EscrowRuntime runtime = overworld.getCapability(CAPABILITY).resolve().orElse(null);
         if (runtime == null || runtime.stopping) { return; }
         runtime.stopping = true;
+        if (runtime.cargoProbe != null) { runtime.cargoProbe.close(); }
         if (runtime.cargo != null && server.isSameThread()) { runtime.cargo.close(); }
         runtime.cargoSwitches.clear();
         if (runtime.fills != null && server.isSameThread()) { runtime.fills.clear(); }
