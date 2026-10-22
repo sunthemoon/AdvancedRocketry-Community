@@ -1,0 +1,93 @@
+package io.github.sunthemoon.advancedrocketrycommunity.resourceescrow;
+
+import static org.junit.jupiter.api.Assertions.*;
+import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.*;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketSnapshotNbtCodec;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.VanillaContainerRocketAdapter;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.resources.ResourceLocation;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
+class EscrowItemCutProbeTest {
+    @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
+    @Test void probeNeedsHooksExactCaseAndScenario() {
+        var cases = new java.util.ArrayList<>(EscrowItemSettlementCuts.CASES.keySet()); cases.addAll(EscrowItemRecoveryCuts.CASES);
+        assertEquals(18, cases.size());
+        for (var name : cases) {
+            for (var scenario : List.of("start", "recover")) {
+                assertTrue(EscrowItemCutProbe.selected(true, scenario, name));
+                assertFalse(EscrowItemCutProbe.selected(false, scenario, name));
+            }
+            assertFalse(EscrowItemCutProbe.selected(true, null, name));
+            assertFalse(EscrowItemCutProbe.selected(true, "ordinary", name));
+        }
+        for (String name : new String[] {null, "", "IS_UNKNOWN", "FS_O1_AFTER", "IC_LOAD_K2"}) {
+            assertFalse(EscrowItemCutProbe.selected(true, "start", name));
+        }
+    }
+    @Test void journalReplacementRequiresExactStartGate() {
+        assertTrue(EscrowItemCutProbe.journalCut(true, "start", "IS_O3J_AFTER"));
+        assertFalse(EscrowItemCutProbe.journalCut(false, "start", "IS_O3J_AFTER"));
+        assertFalse(EscrowItemCutProbe.journalCut(true, "recover", "IS_O3J_AFTER"));
+        assertFalse(EscrowItemCutProbe.journalCut(true, "start", "IS_O3_AFTER"));
+        assertNull(EscrowItemCutProbe.journalPolicy(null, null));
+    }
+    @Test void afterWriteCutsSelectReplacementNotAcknowledgement() {
+        assertTrue(EscrowItemSettlementCuts.pauses("O1_AFTER", "K2", "", true, -1, -1));
+        assertFalse(EscrowItemSettlementCuts.pauses("O1_AFTER", "K1", "", true, -1, -1));
+        assertFalse(EscrowItemSettlementCuts.pauses("O1_AFTER", "K2", "", false, -1, -1));
+        assertTrue(EscrowItemSettlementCuts.pauses("O3_AFTER", "K2", "O3", false, -1, -1));
+        assertFalse(EscrowItemSettlementCuts.pauses("O3_AFTER", "K2", "O4", false, -1, -1));
+        assertTrue(EscrowItemSettlementCuts.pauses("O4_AFTER", "K9", "O4", false, -1, -1));
+        for (var side : List.of("ROCKET", "DEVICE")) {
+            for (var when : List.of("BEFORE", "AFTER")) {
+                int index = side.equals("ROCKET") ? 1 : 0;
+                assertTrue(EscrowItemSettlementCuts.pauses("O2_" + side + "_" + when, "O2_" + when + "_" + index, "", false, 1, 0));
+                assertFalse(EscrowItemSettlementCuts.pauses("O2_" + side + "_" + when, "O2_" + when + "_" + (1 - index), "", false, 1, 0));
+            }
+        }
+    }
+    @Test void candidatesAreCodecValidTypedAndNeverMutateTheLiveSnapshot() {
+        assertNull(EscrowItemRecoveryCuts.candidate(false, "IR_LOOT", null, null));
+        assertNull(EscrowItemRecoveryCuts.candidate(true, "OTHER", null, null));
+        var base = EscrowCargoPreparationGameTests.snapshot(ResourceLocation.tryParse("minecraft:overworld"), BlockPos.ZERO, false, List.of());
+        var stack = ItemCargoReconciliationFixtures.stack(10); stack.putByte("Slot", (byte) 0); var entries = new ListTag(); entries.add(stack);
+        var payload = new CompoundTag(); payload.put("Items", entries);
+        var block = new RocketBlock(new RocketPosition(0, 0, 0), new RocketBlockState(ResourceLocation.tryParse("minecraft:chest"),
+                Map.of("facing", "north", "type", "single", "waterlogged", "false")), new RocketBlockEntityPayload(VanillaContainerRocketAdapter.ID, payload));
+        var snapshot = RocketStructureSnapshot.create(UUID.randomUUID(), base.sourceDimension(), base.sourceOrigin(), List.of(block),
+                List.of(block.position()), new io.github.sunthemoon.advancedrocketrycommunity.rocket.stats.RocketStats(1, 100, 1000, 2000, 1, 1, 1, 1),
+                25, base.propulsion().orElseThrow());
+        var before = RocketSnapshotNbtCodec.encode(snapshot); var physical = UUID.randomUUID();
+        for (var name : List.of("IR_CONTAINER", "IR_LOOT")) {
+            var candidate = EscrowItemRecoveryCuts.candidate(true, name, snapshot, physical);
+            assertEquals(before, candidate.getCompound("before")); assertEquals(physical, candidate.getUUID("physical"));
+            var decoded = RocketSnapshotNbtCodec.decode(candidate.getCompound("after")).snapshot().orElseThrow();
+            assertEquals(snapshot.snapshotId(), decoded.snapshotId()); assertEquals(snapshot.stats(), decoded.stats());
+            assertEquals(snapshot.propulsion(), decoded.propulsion()); assertNotEquals(snapshot.contentHash(), decoded.contentHash());
+            var changed = decoded.blocks().get(0);
+            if (name.equals("IR_CONTAINER")) {
+                assertEquals("minecraft:barrel", changed.state().blockId().toString()); assertEquals(block.blockEntityPayload(), changed.blockEntityPayload());
+            } else {
+                assertEquals(block.state(), changed.state()); var loot = changed.blockEntityPayload().orElseThrow().data();
+                assertFalse(loot.contains("Items")); assertTrue(loot.contains("LootTableSeed", 4)); assertEquals(143, loot.getLong("LootTableSeed"));
+            }
+            assertEquals(before, RocketSnapshotNbtCodec.encode(snapshot));
+        }
+    }
+    @Test void disassemblyReportsRefusalWithoutChangingItsMeaning() {
+        String command = "/arce rocket-disassembly confirm " + UUID.randomUUID();
+        var returned = new java.util.ArrayList<Integer>();
+        EscrowItemDisassemblyRequest.confirm(command, value -> 1, returned::add); assertEquals(List.of(1), returned);
+        assertThrows(IllegalArgumentException.class, () -> EscrowItemDisassemblyRequest.confirm(command, value -> 0, returned::add));
+        assertEquals(List.of(1, 0), returned);
+        assertThrows(IllegalArgumentException.class, () -> EscrowItemDisassemblyRequest.confirm(null, value -> fail("Missing offer dispatched"), returned::add));
+    }
+}

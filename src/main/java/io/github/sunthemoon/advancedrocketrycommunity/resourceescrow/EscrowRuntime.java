@@ -70,6 +70,7 @@ public final class EscrowRuntime {
     private EscrowPreF2Probe preF2Probe;
     private volatile EscrowReconciliationProbe reconciliationProbe;
     private volatile EscrowCargoReconciliationProbe cargoReconciliationProbe;
+    private volatile EscrowItemCutProbe itemCutProbe;
     private EscrowSourceClockProbe sourceClockProbe;
     private EscrowDestinationProbe destinationProbe;
     private EscrowPhaseProbe phaseProbe;
@@ -172,6 +173,7 @@ public final class EscrowRuntime {
         var measured = flightBenchmark; if (measured != null) { measured.metrics.checkpoint(cut); }
         var ordinary = reconciliationProbe; if (ordinary != null) { ordinary.checkpoint(cut); }
         var cargoProbe = cargoReconciliationProbe; if (cargoProbe != null) { cargoProbe.checkpoint(cut); }
+        var itemProbe = itemCutProbe; if (itemProbe != null) { itemProbe.checkpoint(cut); }
         var terminalCut = terminalTestCut; if (terminalCut != null) { terminalCut.accept(cut); }
         var nativeTerminal = terminalProbe; if (nativeTerminal != null) { nativeTerminal.checkpoint(cut); }
         var loader = loaderProbe; if (loader != null) { loader.checkpoint(cut); }
@@ -340,6 +342,8 @@ public final class EscrowRuntime {
             }
         }
         if (runtime.barrier != null) { runtime.barrier.tick(event.getServer().getTickCount()); }
+        runtime.itemCutProbe = EscrowItemCutProbe.attach(event.getServer(), runtime.itemCutProbe);
+        if (runtime.itemCutProbe != null) { runtime.itemCutProbe.beforeReconciliation(); }
         if (Boolean.getBoolean(EscrowTestEndpoints.HOOKS)
                 && System.getProperty("advancedrocketrycommunity.escrowCase", "").startsWith("CR_")) {
             if (runtime.reconciliationProbe == null) { runtime.reconciliationProbe = new EscrowReconciliationProbe(event.getServer()); }
@@ -355,6 +359,7 @@ public final class EscrowRuntime {
         }
         if (data != null) { runtime.settlements.tick(event.getServer(), data.bind(event.getServer()), runtime); }
         if (data != null) { runtime.preF2Cancellation.tick(event.getServer(), data.bind(event.getServer()), runtime); }
+        if (runtime.itemCutProbe != null) { runtime.itemCutProbe.tick(); }
         if (Boolean.getBoolean(EscrowTestEndpoints.HOOKS)
                 && System.getProperty("advancedrocketrycommunity.escrowScenario") != null) {
             String testCase = System.getProperty("advancedrocketrycommunity.escrowCase", "");

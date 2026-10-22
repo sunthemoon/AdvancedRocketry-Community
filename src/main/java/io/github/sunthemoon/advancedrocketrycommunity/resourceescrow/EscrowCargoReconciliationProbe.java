@@ -134,6 +134,10 @@ final class EscrowCargoReconciliationProbe {
         if (recovery) { recover(); return; }
         if (step == 0) {
             if (data.ledger().writerGeneration() == 0 || !coordinator.writerIdle()) { coordinator.autosave(); return; }
+            if (item) {
+                EscrowTags.require(!data.isDirty(), "Item baseline has no COMMITTED acknowledgement");
+                EscrowLedgerBaseline.require(ResourceEscrowSavedData.file(server), data.ledger());
+            }
             var snapshot = item ? ItemCargoReconciliationFixtures.snapshot(level, POSITION.offset(4, 0, 0), load)
                     : EscrowCargoPreparationGameTests.snapshot(level.dimension().location(), POSITION.offset(4, 0, 0), false,
                     List.of(load ? FluidStack.EMPTY : new FluidStack(Fluids.WATER, 5_000)));
