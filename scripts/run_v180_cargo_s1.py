@@ -21,10 +21,16 @@ from run_v060_flight_server_smoke import _server_command
 from run_v180_cargo_reconciliation import preflight
 from run_v180_escrow_pre_f2 import assert_pin
 from run_v180_rocket_settlement_completion import require_lock
+from run_v130_adapter_recovery_smoke import STARTUP_HOLD, STARTUP_HOLD_CLEARED
 
 
 def check_log(lines: list[str], leaf: str, stage: str) -> dict:
     findings = smoke.scan_log(lines)
+    # Existing W44 startup baseline: a single transient hold must clear in order.
+    holds = [index for index, line in enumerate(lines) if STARTUP_HOLD.search(line)]
+    oracle.require(len(holds) <= 1 and (not holds or any(STARTUP_HOLD_CLEARED.search(line)
+                   for line in lines[holds[0] + 1:])), "First-event startup hold repeated or did not clear")
+    findings = [line for line in findings if not STARTUP_HOLD.search(line)]
     expected = []
     if stage in ("seed", "check"):
         for role in range(2):
@@ -36,7 +42,7 @@ def check_log(lines: list[str], leaf: str, stage: str) -> dict:
         oracle.require(len(hits) == 1, "Missing/repeated native protected-root warning: " + message)
         findings.remove(hits[0])
     oracle.require(not findings, "Unexpected native project/client/error log: " + "\n".join(findings))
-    return dict(expected_protected_warnings=len(expected), unexpected_findings=[])
+    return dict(expected_protected_warnings=len(expected), cleared_startup_holds=len(holds), unexpected_findings=[])
 
 
 def run(args) -> dict:
@@ -88,6 +94,8 @@ def run(args) -> dict:
                 match = old_smoke.ASSEMBLY_LOG.search(process.lines[found])
                 row.update(snapshot_hash=match[1], physical_uuid=match[2])
                 row["commands"] = ["run_v050_rocket_server_smoke._configure_rocket", f"arce rocket assemble {old_smoke.ASSEMBLER}"]
+                old_smoke._wait_for_active_entity(process, match[2], start_at=start)
+                old_smoke._entity_data(process, match[2])
                 old_smoke._verify_assembled(process, match[2], "W136_OLD_ASSEMBLED")
             else:
                 process.wait_for(re.compile(r"ARCE_W136_(RESULT|FAILURE)"), args.startup_timeout)
@@ -125,6 +133,9 @@ def run(args) -> dict:
     finally:
         if process is not None:
             process.abort()
+            latest = session / "logs/latest.log"
+            if latest.is_file():
+                shutil.copy2(latest, evidence / "failed-latest.log")
         (evidence / "results.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     return report
 

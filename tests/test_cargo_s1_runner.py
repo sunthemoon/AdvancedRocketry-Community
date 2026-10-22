@@ -156,6 +156,14 @@ class CargoS1OracleTest(unittest.TestCase):
             write(True, old)
             with self.assertRaises(SmokeError): oracle.check_jar(jar, False)
 
+    def test_startup_hold_requires_one_ordered_clear(self):
+        hold = "[Server thread/WARN] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: " \
+               "ARCE_FIRST_EVENT_HELD kind=first_moon_landing reason=SOURCE_UNCONFIRMED"
+        clear = hold.replace("/WARN]", "/INFO]").replace("ARCE_FIRST_EVENT_HELD", "ARCE_FIRST_EVENT_HOLD_CLEARED")
+        self.assertEqual(1, runner.check_log([hold, clear], "fluid", "old-seed")["cleared_startup_holds"])
+        for lines in ([hold], [clear, hold], [hold, hold, clear], [hold.replace("SOURCE_UNCONFIRMED", "OTHER"), clear]):
+            with self.assertRaises(SmokeError): runner.check_log(lines, "fluid", "old-seed")
+
 
 if __name__ == "__main__":
     unittest.main()
