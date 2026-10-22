@@ -48,4 +48,5 @@ final class EscrowCargoProbeDevice {
     UUID id() { return item ? itemRoot().device() : fluidRoot().device(); }
     RocketEscrowSection section() { return item ? itemRoot().escrow() : fluidRoot().escrow(); }
     int amount() { return item ? ItemCargoReconciliationFixtures.amount(itemRoot().buffer()) : fluidRoot().tank().amount(); }
+    RocketFluidCargoBlockEntity fluidEntity() { return (RocketFluidCargoBlockEntity) entity; }
 }
