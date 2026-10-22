@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
+import net.minecraft.gametest.framework.AfterBatch;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
@@ -61,21 +62,39 @@ public final class RocketSettlementIdleGameTests {
      * loses its source at F1's acknowledged ARMED checkpoint, so production discards it after the ARMED write.
      */
     static final String DISCARD_PROPERTY = "advancedrocketrycommunity.settlementIdleDiscard";
+    private static final String SETTLEMENT_BATCH = "rocket_settlement_idle", L2_BATCH = "rocket_l2_complete_flights",
+            NORMALIZED_BATCH = "rocket_normalized_complete_flights";
+    /** W137: each batch's scenario, closed at the batch's end whether its test passed, failed or timed out. */
+    private static final Map<Release, Scenario> ACTIVE = new java.util.EnumMap<>(Release.class);
     private RocketSettlementIdleGameTests() { }
 
-    @GameTest(template = "empty", batch = "rocket_settlement_idle", timeoutTicks = 1_200)
+    @GameTest(template = "empty", batch = SETTLEMENT_BATCH, timeoutTicks = 1_200)
     public static void acknowledgedSettlementRestoresMountRefuelAndLaunch(GameTestHelper helper) {
         new Scenario(helper, Release.SETTLEMENT).start();
     }
 
-    @GameTest(template = "empty", batch = "rocket_l2_complete_flights", timeoutTicks = 1_200)
+    @GameTest(template = "empty", batch = L2_BATCH, timeoutTicks = 1_200)
     public static void ordinaryL2WithoutReceiptCompletesTwoPassengerFlights(GameTestHelper helper) {
         new Scenario(helper, Release.L2).start();
     }
 
-    @GameTest(template = "empty", batch = "rocket_normalized_complete_flights", timeoutTicks = 1_200)
+    @GameTest(template = "empty", batch = NORMALIZED_BATCH, timeoutTicks = 1_200)
     public static void normalizedSettlementSurvivorCompletesTwoPassengerFlights(GameTestHelper helper) {
         new Scenario(helper, Release.NORMALIZED).start();
+    }
+
+    @AfterBatch(batch = SETTLEMENT_BATCH)
+    public static void closeSettlement(ServerLevel level) { close(Release.SETTLEMENT); }
+
+    @AfterBatch(batch = L2_BATCH)
+    public static void closeL2(ServerLevel level) { close(Release.L2); }
+
+    @AfterBatch(batch = NORMALIZED_BATCH)
+    public static void closeNormalized(ServerLevel level) { close(Release.NORMALIZED); }
+
+    private static void close(Release release) {
+        var scenario = ACTIVE.remove(release);
+        if (scenario != null) { scenario.close(); }
     }
 
     private static final class Scenario {
@@ -107,7 +126,7 @@ public final class RocketSettlementIdleGameTests {
         private boolean sawDescent, sawF6, sawF7;
         private List<CompoundTag> receipts;
         private final Map<EscrowEndpoint.Key, EscrowBarrier.Proof> l2Proofs = new java.util.LinkedHashMap<>();
-        private boolean proving, retiring, discardHook;
+        private boolean proving, retiring, discardHook, closed;
         private final Map<ServerLevel, java.util.Set<ChunkPos>> flightChunks = new java.util.LinkedHashMap<>();
 
         Scenario(GameTestHelper helper, Release release) {
@@ -115,6 +134,8 @@ public final class RocketSettlementIdleGameTests {
             position = new BlockPos(550_001 + 256 * release.ordinal(), 100, 550_001); chunk = new ChunkPos(position);
         }
         void start() {
+            var previous = ACTIVE.put(release, this);
+            if (previous != null) { previous.close(); }
             level.getChunkSource().addRegionTicket(TicketType.START, chunk, 2, Unit.INSTANCE);
             level.getChunk(chunk.x, chunk.z);
             var moon = level.getServer().getLevel(CelestialIds.MOON_LEVEL);
@@ -415,12 +436,33 @@ public final class RocketSettlementIdleGameTests {
                 launch = null; step = 5; return;
             }
             helper.assertTrue(completed.size() == 2, "Required two-flight case did not complete");
-            passenger.stopRiding(); server.getPlayerList().remove(passenger); rocket.discard(); source.bank().discard();
-            level.setBlockAndUpdate(position, Blocks.AIR.defaultBlockState());
+            close();
+            step = 8; helper.succeed();
+        }
+
+        /**
+         * W137: releases what the scenario holds, on success and from its batch's end after a failure; runs once. Without
+         * it a failed flight kept its FLIGHT_FIXTURE tickets on a Moon pad, which the warm-up tests then waited on.
+         */
+        void close() {
+            if (closed) { return; }
+            closed = true;
+            var server = level.getServer();
+            if (discardHook) { discardHook = false; EscrowRuntime.of(server).terminalCutForTests(server, null); }
+            if (leaseCut != null) { leaseCut.close(); leaseCut = null; }
+            l2Proofs.values().forEach(EscrowBarrier.Proof::release); l2Proofs.clear();
+            if (passenger != null) {
+                passenger.stopRiding();
+                if (server.getPlayerList().getPlayer(passenger.getUUID()) == passenger) { server.getPlayerList().remove(passenger); }
+            }
+            for (var each : java.util.Arrays.asList(rocket, predecessor, successor)) {
+                if (each != null && !each.isRemoved()) { each.discard(); }
+            }
+            if (source != null) { source.bank().discard(); level.setBlockAndUpdate(position, Blocks.AIR.defaultBlockState()); }
             level.getChunkSource().removeRegionTicket(TicketType.START, chunk, 2, Unit.INSTANCE);
             flightChunks.forEach((end, slots) -> slots.forEach(slot ->
                     end.getChunkSource().removeRegionTicket(FLIGHT_FIXTURE, slot, 2, actor)));
-            step = 8; helper.succeed();
+            flightChunks.clear();
         }
 
         private void prepare() {
