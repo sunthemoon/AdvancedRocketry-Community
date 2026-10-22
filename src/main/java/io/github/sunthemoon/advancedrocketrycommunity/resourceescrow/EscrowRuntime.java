@@ -70,6 +70,7 @@ public final class EscrowRuntime {
     private EscrowPreF2Probe preF2Probe;
     private volatile EscrowReconciliationProbe reconciliationProbe;
     private volatile EscrowCargoReconciliationProbe cargoReconciliationProbe;
+    private volatile EscrowCargoCutProbe cargoCuts;
     private EscrowSourceClockProbe sourceClockProbe;
     private EscrowDestinationProbe destinationProbe;
     private EscrowPhaseProbe phaseProbe;
@@ -166,12 +167,14 @@ public final class EscrowRuntime {
     }
     boolean loaderAdmissionAllowed(java.util.UUID device) { return admissionDevices.contains(device); }
     boolean cargoStoreAllowed(EscrowOperation op, EscrowEndpoint endpoint) {
-        return cargoReconciliationProbe == null || cargoReconciliationProbe.permitsStore(op, endpoint);
+        var cuts = cargoCuts;
+        return (cargoReconciliationProbe == null || cargoReconciliationProbe.permitsStore(op, endpoint)) && (cuts == null || cuts.permitsStore(op, endpoint));
     }
     public void checkpoint(String cut) {
         var measured = flightBenchmark; if (measured != null) { measured.metrics.checkpoint(cut); }
         var ordinary = reconciliationProbe; if (ordinary != null) { ordinary.checkpoint(cut); }
         var cargoProbe = cargoReconciliationProbe; if (cargoProbe != null) { cargoProbe.checkpoint(cut); }
+        var cuts = cargoCuts; if (cuts != null) { cuts.checkpoint(cut); }
         var terminalCut = terminalTestCut; if (terminalCut != null) { terminalCut.accept(cut); }
         var nativeTerminal = terminalProbe; if (nativeTerminal != null) { nativeTerminal.checkpoint(cut); }
         var loader = loaderProbe; if (loader != null) { loader.checkpoint(cut); }
@@ -350,6 +353,7 @@ public final class EscrowRuntime {
             if (runtime.cargoReconciliationProbe == null) { runtime.cargoReconciliationProbe = new EscrowCargoReconciliationProbe(event.getServer()); }
             runtime.cargoReconciliationProbe.beforeReconciliation();
         }
+        if ((runtime.cargoCuts = EscrowCargoCutProbe.attach(event.getServer(), runtime.cargoCuts)) != null) { runtime.cargoCuts.beforeReconciliation(); }
         if (runtime.scheduler != null && data != null) {
             runtime.scheduler.tick(event.getServer().getTickCount()); data.bind(event.getServer()).persistTransitions();
         }
@@ -362,6 +366,8 @@ public final class EscrowRuntime {
                 runtime.flightBenchmark.tick();
             } else if (EscrowCargoReconciliationProbe.accepts(testCase)) {
                 runtime.cargoReconciliationProbe.tick();
+            } else if (runtime.cargoCuts != null && EscrowCargoCutProbe.accepts(testCase)) {
+                runtime.cargoCuts.tick();
             } else if (testCase.startsWith("CR_")) {
                 if (runtime.reconciliationProbe == null) { runtime.reconciliationProbe = new EscrowReconciliationProbe(event.getServer()); }
                 runtime.reconciliationProbe.tick();

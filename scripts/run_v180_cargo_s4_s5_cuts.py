@@ -1,0 +1,425 @@
+#!/usr/bin/env python3
+"""W142 fluid cargo S2 cuts C-S4 (FS_) and C-S5 (FF_): one forced stop and two restarts per cut, pinned source, JAR and
+hooks, and an oracle that decodes the raw ledger, journal, region and entity files independently of the server."""
+from __future__ import annotations
+
+import argparse
+import json
+from pathlib import Path
+import re
+import shutil
+import uuid
+
+import run_dedicated_server_smoke as smoke
+from run_v060_flight_server_smoke import _server_command
+from run_v180_cargo_reconciliation import preflight
+from run_v180_escrow_forced_stop import LEDGER, digest, ledger, record
+from run_v180_escrow_pre_f2 import assert_pin, journal
+from run_v180_landed_disassembly_cuts import block_at
+from run_v180_rocket_settlement_completion import require_lock, slot_present
+
+REPO = Path(__file__).resolve().parents[1]
+DEVICE_POS = [64, 100, 64]
+ROCKET_X, PAD_X = 68.5, 80.5
+TOTAL = 5000
+# Endpoint states: (rocket cargo mB, epoch, markers, bound to the ledger) and (device mB, epoch, markers).
+APPLIED = dict(rocket=(4000, 1, 1, True), device=(1000, 1, 1))
+PRUNED = dict(rocket=(4000, 1, 0, True), device=(1000, 1, 0))
+NEUTRAL = dict(rocket=(5000, 0, 0, False), device=(0, 0, 0))
+NORMALIZED = dict(rocket=(5000, 0, 0, True), device=(0, 0, 0))
+VETOED = dict(rocket=(5000, 0, 0, False), device=(1000, 1, 1))
+# Ledger states: record phases, whether they carry the frozen intent, receipts (released flags) and READY heads.
+REPAIR = dict(records=["REPAIR"], intent=False, receipts=[], heads=0)
+ACCEPT = dict(records=["SETTLING_ACCEPT"], intent=True, receipts=[], heads=0)
+ABANDON = dict(records=["SETTLING_ABANDON"], intent=True, receipts=[], heads=0)
+RECEIPT = dict(records=["SETTLING_ACCEPT"], intent=True, receipts=[False], heads=0)
+RELEASED = dict(records=[], intent=False, receipts=[True], heads=1)
+ORPHANED = dict(records=[], intent=False, receipts=[True], heads=0)
+
+
+def settlement(cut_ledger, cut_ends, final_ledger, final_ends, **extra) -> dict:
+    return dict(family="C-S4", cut=(cut_ledger, cut_ends), final=(final_ledger, final_ends), **extra)
+
+
+# The C-S4 row in the order TASK-W142 lists it.
+CASES = {
+    "FS_O1_BEFORE": settlement(REPAIR, APPLIED, REPAIR, APPLIED),
+    "FS_O1_AFTER": settlement(ACCEPT, APPLIED, RELEASED, PRUNED),
+    "FS_BIND_BEFORE": settlement(ACCEPT, NEUTRAL, RELEASED, NORMALIZED),
+    "FS_BIND_AFTER": settlement(ACCEPT, NEUTRAL, RELEASED, NORMALIZED),
+    "FS_O2_ROCKET_BEFORE": settlement(ACCEPT, APPLIED, RELEASED, PRUNED),
+    "FS_O2_ROCKET_AFTER": settlement(ACCEPT, APPLIED, RELEASED, PRUNED),
+    "FS_O2_DEVICE_BEFORE": settlement(ACCEPT, APPLIED, RELEASED, PRUNED),
+    "FS_O2_DEVICE_AFTER": settlement(ACCEPT, APPLIED, RELEASED, PRUNED),
+    "FS_O3_BEFORE": settlement(ACCEPT, APPLIED, RELEASED, PRUNED),
+    "FS_O3_AFTER": settlement(RECEIPT, APPLIED, RELEASED, dict(rocket=(4000, 0, 0, True), device=(1000, 1, 0)), landed=True),
+    "FS_O3J_BEFORE": settlement(RECEIPT, NORMALIZED, RELEASED, NORMALIZED, cut_journal=1),
+    "FS_O3J_AFTER": settlement(RECEIPT, NORMALIZED, RELEASED, NORMALIZED),
+    "FS_O4_BEFORE": settlement(RECEIPT, APPLIED, RELEASED, PRUNED),
+    "FS_O4_AFTER": settlement(RELEASED, APPLIED, RELEASED, PRUNED),
+    "FS_PRUNE_BEFORE": settlement(RELEASED, APPLIED, RELEASED, PRUNED),
+    "FS_PRUNE_AFTER": settlement(RELEASED, PRUNED, RELEASED, PRUNED),
+    "FS_ABANDON_ROCKET": settlement(ABANDON, dict(rocket=None, device=(0, 0, 0)), ORPHANED, dict(rocket=None, device=(0, 0, 0)), choice="ABANDON"),
+    "FS_ABANDON_DEVICE": settlement(ABANDON, dict(rocket=NEUTRAL["rocket"], device=None), RELEASED, dict(rocket=NORMALIZED["rocket"], device=None),
+                                    choice="ABANDON"),
+    "FS_VETO_DESTINATION_SAVED": settlement(ACCEPT, VETOED, ACCEPT, VETOED),
+    "FS_BIND_VETO": settlement(ACCEPT, NEUTRAL, RELEASED, NORMALIZED, cut_x=68.75),
+}
+LANDED = "advancedrocketrycommunity.landedDisassemblyProbe"
+SECOND_POS = [76, 100, 64]
+PAD = 80.5
+
+
+def flight(final: dict, cut: dict | None = None, **extra) -> dict:
+    """A C-S5 expectation: rockets as (x, cargo, epoch, bound), devices as (mB, epoch, markers), journal and ARMED counts."""
+    return dict(family="C-S5", cut=cut, final=final, **extra)
+
+
+def ends(rockets, device, second=None, journal=0, armed=0, serial=0, blocks=None) -> dict:
+    return dict(rockets=rockets, device=device, second=second, journal=journal, armed=armed, serial=serial, blocks=blocks)
+
+
+LOADED = (ROCKET_X, 1000, 1, True)
+UNLOADED = (ROCKET_X, 4000, 1, True)
+RESTORED = ends([], (1000, 1, 0), blocks=4000)
+STALE = ends([UNLOADED], (1000, 1, 0), journal=1)
+FLIGHTS = {
+    "FF_N1": flight(ends([LOADED], (4000, 1, 0)), ends([(ROCKET_X, 0, 0, False)], (5000, 0, 0))),
+    "FF_F1_AFTER_CARGO": flight(ends([LOADED], (4000, 1, 0), serial=1), ends([LOADED], (4000, 1, 0), armed=1, serial=1)),
+    "FF_F6_AFTER_CARGO": flight(ends([(PAD, 1000, 0, True)], (4000, 1, 0), serial=1)),
+    "FF_F8_AFTER_CARGO": flight(ends([(PAD, 1000, 0, True)], (4000, 1, 0), serial=1)),
+    "FF_DISASSEMBLY_REMOVAL": flight(RESTORED, properties={LANDED: "LANDED_DISASSEMBLY:K1"}, marker="ARCE_LANDED_DISASSEMBLY_PAUSED boundary=K1 "),
+    "FF_DISASSEMBLY_RESTORATION": flight(RESTORED, properties={LANDED: "LANDED_DISASSEMBLY:K2"}, marker="ARCE_LANDED_DISASSEMBLY_PAUSED boundary=K2 "),
+    "FF_DISASSEMBLY_RELEASE": flight(RESTORED, properties={LANDED: "LANDED_DISASSEMBLY:K5"}, marker="ARCE_LANDED_DISASSEMBLY_PAUSED boundary=K5 "),
+    "FF_REBUILD_DESTINATION": flight(STALE, STALE),
+    "FF_KEEP_SOURCE": flight(STALE, STALE, fence="FLOOR_CONFLICT"),
+    "FF_REBUILD_SOURCE": flight(STALE, STALE),
+    "FF_STALE_PREPARED": flight(ends([UNLOADED, (76.5, 5000, 0, False)], (1000, 1, 0), journal=1),
+                                ends([UNLOADED, (76.5, 5000, 0, False)], (1000, 1, 0), journal=1), fence="FLOOR_CONFLICT"),
+    "FF_RECONNECT": flight(STALE, STALE, fence="FLOOR_CONFLICT"),
+    "FF_GOVERNED_MISSING": flight(ends([LOADED], (4000, 1, 0), journal=1), ends([LOADED], (4000, 1, 0), journal=1)),
+    "FF_GOVERNED_TERMINAL": flight(None, ends([LOADED], (4000, 1, 0), journal=1, armed=1, serial=1)),
+    "FF_TWO_FLIGHTS": flight(ends([(ROCKET_X, 2000, 0, True)], (4000, 1, 0), (4000, 1, 0), serial=2),
+                             ends([(PAD, 2000, 1, True)], (4000, 1, 0), (4000, 1, 0), serial=1)),
+    "FF_CANCEL_AFTER_CARGO": flight(ends([LOADED], (4000, 1, 0), serial=1), ends([LOADED], (4000, 1, 0), journal=1, armed=1, serial=1)),
+}
+CASES.update(FLIGHTS)
+BOUNDARIES = dict(zip(tuple(CASES)[:20], (
+    "O1_BEFORE", "O1_AFTER", "O_BIND_BEFORE", "O_BIND_AFTER", "O2_ROCKET_BEFORE", "O2_ROCKET_AFTER",
+    "O2_DEVICE_BEFORE", "O2_DEVICE_AFTER", "O3_BEFORE", "O3_AFTER", "O3J_BEFORE", "O3J_REPLACED",
+    "O4_BEFORE", "O4_AFTER", "PRUNE_BEFORE", "PRUNE_AFTER", "O1_AFTER", "O1_AFTER", "O_VETO", "NORMALIZATION_VETO")))
+HOOK_DIR = "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/"
+HOOKS = tuple(HOOK_DIR + path + ".java" for path in (
+    "resourceescrow/EscrowCargoCutProbe", "resourceescrow/EscrowCargoSettlementCuts", "resourceescrow/EscrowRuntime",
+    "resourceescrow/EscrowCargoCutLaunch", "resourceescrow/EscrowCargoFlightCuts", "resourceescrow/EscrowCargoRecoveryCuts",
+    "resourceescrow/EscrowCargoTransferFixtures", "resourceescrow/EscrowCargoSwitches", "resourceescrow/EscrowSettlementRecovery",
+    "resourceescrow/EscrowSettlementNormalization", "resourceescrow/EscrowSettlementPruning", "resourceescrow/EscrowLedgerWriter",
+    "resourceescrow/EscrowReconciliationDriver", "rocket/flight/persistence/RocketTransferSavedData"))
+HARNESS = ("scripts/run_v180_cargo_s4_s5_cuts.py", "scripts/run_v180_cargo_reconciliation.py", "scripts/run_v180_escrow_forced_stop.py",
+           "scripts/run_v180_escrow_pre_f2.py", "scripts/run_v180_rocket_settlement_completion.py", "scripts/run_v060_flight_server_smoke.py",
+           "scripts/run_dedicated_server_smoke.py", "scripts/run_v180_landed_disassembly_cuts.py", "scripts/inspect_celestial_saved_data.py")
+
+
+def require(condition: bool, message: str) -> None:
+    if not condition:
+        raise smoke.SmokeError(message)
+
+
+def entities(world: Path) -> list:
+    """Rocket entities in the fixture chunk [4,4] and, once a flight landed, the pad chunk [5,4]."""
+    path = world / "entities/r.0.0.mca"
+    found = []
+    for slot in (132, 133):
+        if slot_present(path, slot):
+            found += [entry for entry in record(path, slot)["Entities"] if "RocketEntityData" in entry]
+    return found
+
+
+def rocket_state(entry: dict, ledger_id) -> dict:
+    data = entry["RocketEntityData"]
+    blocks = [block["block_entity"] for block in data["snapshot"]["relative_blocks"] if "block_entity" in block]
+    require(len(blocks) == 1 and blocks[0]["adapter"] == "advancedrocketrycommunity:pressurized_tank_v1", "Cargo rocket lost its one tank payload")
+    fluid = blocks[0]["data"]["tank"]["fluid"]
+    require(not fluid or fluid.get("FluidName") == "minecraft:water" and not fluid.get("Tag"), "Cargo changed its fluid identity or metadata")
+    section = data["resource_escrow"]
+    require("ledger_id" not in section or section["ledger_id"] == ledger_id, "Rocket names another ledger")
+    return dict(uuid=entry["UUID"], logical=data["assembly_transaction_id"], owner=data["owner_id"], x=entry["Pos"][0],
+                pos=entry["Pos"], cargo=fluid.get("Amount", 0), epoch=section["resource_epoch"], markers=section["markers"],
+                bound="ledger_id" in section, passengers=data["flight_data"]["passengers"]["assignments"])
+
+
+def device_state(terrain: dict, position: list, ledger_id) -> dict | None:
+    blocks = [entry for entry in terrain["block_entities"] if [entry.get(k) for k in ("x", "y", "z")] == position]
+    if not blocks or "arce_rocket_fluid_cargo" not in blocks[0]:
+        return None
+    root = blocks[0]["arce_rocket_fluid_cargo"]
+    require(root["role"] in ("LOAD", "UNLOAD") and (not root["tank"] or root["tank"].get("FluidName") == "minecraft:water"), "Device changed fluid")
+    section = root["resource_escrow"]
+    require("ledger_id" not in section or section["ledger_id"] == ledger_id, "Device names another ledger")
+    return dict(id=root["device"], owner=root["owner"], role=root["role"], logical=root["binding"]["logical_rocket"],
+                amount=root["tank"].get("Amount", 0), epoch=section["resource_epoch"], markers=section["markers"])
+
+
+def fluid_amount(value) -> int:
+    """The water held by a restored tank's root, found by shape so the oracle does not depend on its key names."""
+    if isinstance(value, dict):
+        if value.get("FluidName") == "minecraft:water" and isinstance(value.get("Amount"), int):
+            return value["Amount"]
+        return sum(fluid_amount(item) for item in value.values())
+    if isinstance(value, list):
+        return sum(fluid_amount(item) for item in value)
+    return 0
+
+
+def inspect(world: Path) -> dict:
+    root = ledger(world / "data" / LEDGER) if (world / "data" / LEDGER).is_file() else None
+    require(root is not None, "The world has no checked escrow ledger")
+    rockets = [rocket_state(entry, root["ledger_id"]) for entry in entities(world)]
+    terrain = record(world / "region/r.0.0.mca")
+    tank = [entry for entry in terrain["block_entities"] if [entry.get(k) for k in ("x", "y", "z")] == [68, 100, 64]]
+    return dict(ledger=root, journal=len(journal(world)["transfers"]), rockets=rockets, rocket=rockets[0] if len(rockets) == 1 else None,
+                device=device_state(terrain, DEVICE_POS, root["ledger_id"]), second=device_state(terrain, SECOND_POS, root["ledger_id"]),
+                tank=fluid_amount(tank), blocks=[block_at(terrain, 68, 100, 64), block_at(terrain, 68, 101, 64)],
+                files={name: digest(world / name) for name in ("data/" + LEDGER, "region/r.0.0.mca", "entities/r.0.0.mca")})
+
+
+def check_settlement(case: str, disk: dict, restarted: bool) -> None:
+    spec = CASES[case]; state, ends = spec["final" if restarted else "cut"]
+    require(len(disk["rockets"]) <= 1 and (disk["device"] is None or disk["device"]["role"] == "UNLOAD"), "Settlement duplicated the rocket or changed the device")
+    root, rocket, device = disk["ledger"], disk["rocket"], disk["device"]
+    require([op["phase"] for op in root["records"]] == state["records"], "Ledger records differ from the boundary")
+    require(all(("settlement" in op) == state["intent"] for op in root["records"]), "Frozen intent presence differs from the boundary")
+    require(all(op["reason"] == "OTHER_STATE" for op in root["records"] if op["phase"] == "REPAIR"), "Manual conflict lost its reason")
+    require([receipt["released"] for receipt in root["tombstones"]] == state["receipts"], "Receipt boundary differs")
+    require(len(root["rocket_authorities"]) == state["heads"] and not root["floors"], "READY head or floor differs")
+    for receipt in root["tombstones"]:
+        require(receipt["accounting_status"] == "UNKNOWN" and receipt["payload_amount"] == 0
+                and receipt["choice"] == spec.get("choice", "ACCEPT_CURRENT"), "Receipt accounting or choice changed")
+        require(len(receipt["missing"]) == (1 if spec.get("choice") == "ABANDON" else 0), "Receipt survivors or absences changed")
+        for survivor in receipt["survivors"]:
+            kind = "FUEL_VECTOR_V1" if survivor["endpoint"]["kind"] == "ENTITY" else "FLUID_TANK_V1"
+            require(survivor["signature_kind"] == kind, "Settlement authority is not fuel-vector plus invariant for the rocket")
+    for head in root["rocket_authorities"]:
+        require(head["k"] == "FUEL_VECTOR_V1" and head["outcome"] == "READY", "READY head lost its fuel-vector authority")
+    landed = restarted and spec.get("landed")
+    require(not root["armed_flights"] and root["issued_launch_serial"] == (1 if landed else 0), "Flight authority differs")
+    require(disk["journal"] == (spec.get("cut_journal", 0) if not restarted else 0), "Journal record count differs")
+    expected_rocket, expected_device = ends["rocket"], ends["device"]
+    if expected_rocket is None:
+        require(rocket is None, "An abandoned rocket reappeared")
+    else:
+        require(rocket is not None, "The surviving rocket is missing")
+        cargo, epoch, markers, bound = expected_rocket
+        require((rocket["cargo"], rocket["epoch"], len(rocket["markers"]), rocket["bound"]) == (cargo, epoch, markers, bound),
+                f"Raw rocket state differs: {rocket['cargo']}/{rocket['epoch']}/{len(rocket['markers'])}/{rocket['bound']}")
+        x = PAD_X if landed else spec.get("cut_x", ROCKET_X) if not restarted else ROCKET_X
+        require(rocket["x"] == x and rocket["pos"][1:] == [100.0, 64.5] and not rocket["passengers"], "Rocket placement or occupancy differs")
+        if root["rocket_authorities"]:
+            require(root["rocket_authorities"][0]["p"] == rocket["uuid"] and root["rocket_authorities"][0]["e"] == epoch,
+                    "READY head names another physical rocket or epoch")
+    if expected_device is None:
+        require(device is None, "An abandoned device reappeared")
+    else:
+        require(device is not None, "The surviving device is missing")
+        require((device["amount"], device["epoch"], len(device["markers"])) == expected_device,
+                f"Raw device state differs: {device['amount']}/{device['epoch']}/{len(device['markers'])}")
+    for endpoint, role in ((rocket, "SOURCE"), (device, "DESTINATION")):
+        for marker in endpoint["markers"] if endpoint else []:
+            live = any(op["op_id"] == marker["op_id"] and op["seq"] == marker["seq"] for op in root["records"])
+            retired = any(marker in survivor.get("markers", []) for receipt in root["tombstones"] for survivor in receipt["survivors"])
+            require((live or retired)
+                    and marker["role"] == role and marker["epoch_after"] == endpoint["epoch"],
+                    "A marker differs from its operation, sequence, role or epoch")
+    raw = (rocket["cargo"] if rocket else 0) + (device["amount"] if device else 0)
+    # 6,000 mB can exist only as raw mixed stores while a record still locks both endpoints.
+    require(raw <= TOTAL or root["records"], "More than 5,000 mB became spendable")
+    if rocket and device:
+        require(device["logical"] == rocket["logical"] and device["owner"] == rocket["owner"], "Device binding or owner changed")
+
+
+def check_flight(case: str, disk: dict, restarted: bool) -> None:
+    spec = CASES[case]; expected = spec["final" if restarted else "cut"]
+    root, rockets = disk["ledger"], disk["rockets"]
+    require(not root["records"] and not root["tombstones"] and not root["rocket_authorities"] and not root["floors"],
+            "An ordinary cargo flight or recovery invented a record, receipt, head or floor")
+    for state in rockets:
+        require(not state["markers"] and not state["passengers"], "A rocket kept a marker or a passenger assignment")
+    # Several raw rocket copies or more than 5,000 mB may exist only while a journal record or ARMED entry locks them.
+    raw = sum(state["cargo"] for state in rockets) + sum(d["amount"] for d in (disk["device"], disk["second"]) if d) + disk["tank"]
+    total = 5000 + (5000 if disk["second"] else 0)
+    if case == "FF_STALE_PREPARED":
+        total += 5000  # The fixture itself publishes the stale 5,000 mB destination copy; it must survive unchanged.
+    require(raw <= total or disk["journal"] or root["armed_flights"], "More cargo became available than the fixture holds")
+    require(len(rockets) <= 1 or disk["journal"] or root["armed_flights"] or case == "FF_STALE_PREPARED", "A stale copy won outside a locked record")
+    if expected is None:
+        return
+    observed = sorted((state["x"], state["cargo"], state["epoch"], state["bound"]) for state in rockets)
+    require(observed == sorted(expected["rockets"]), f"Raw rockets differ: {observed}")
+    for key, name in (("device", "device"), ("second", "second")):
+        value, want = disk[name], expected[key]
+        require((want is None) == (value is None) and (want is None or (value["amount"], value["epoch"], len(value["markers"])) == want),
+                f"Raw {name} differs: {value and (value['amount'], value['epoch'], len(value['markers']))}")
+    require(disk["journal"] == expected["journal"] and len(root["armed_flights"]) == expected["armed"]
+            and root["issued_launch_serial"] == expected["serial"], "Journal, ARMED or launch serial differs")
+    if expected["blocks"] is not None:
+        require(disk["tank"] == expected["blocks"] and disk["blocks"] == ["advancedrocketrycommunity:pressurized_tank", "minecraft:iron_block"],
+                f"Restored blocks differ: {disk['blocks']} tank={disk['tank']}")
+    else:
+        require(disk["blocks"][0] != "advancedrocketrycommunity:pressurized_tank" and disk["tank"] == 0, "Blocks were restored beside a rocket")
+
+
+def fences(lines: list[str]) -> list[str]:
+    return sorted({match[1] for line in lines for match in [re.search(r"ARCE_TRANSFER_FENCED transfer=\S+ reason=(\S+)", line)] if match})
+
+
+def check(case: str, disk: dict, restarted: bool) -> None:
+    if CASES[case]["family"] == "C-S4":
+        check_settlement(case, disk, restarted)
+    else:
+        check_flight(case, disk, restarted)
+
+
+def same_identity(cut: dict, disk: dict) -> bool:
+    """Restarts keep the device identity and never show a rocket of another logical identity or owner."""
+    def ids(value: dict) -> set:
+        return {(json.dumps(rocket["logical"]), json.dumps(rocket["owner"])) for rocket in value["rockets"]}
+    devices = (cut["device"], disk["device"])
+    return (None in devices or devices[0]["id"] == devices[1]["id"]) and (not ids(cut) or ids(disk) <= ids(cut))
+
+
+def raw_snapshot(world: Path) -> dict:
+    """The independently decoded files of this start, kept even when the oracle rejects them."""
+    terrain = record(world / "region/r.0.0.mca")
+    return dict(ledger=ledger(world / "data" / LEDGER) if (world / "data" / LEDGER).is_file() else None, journal=journal(world),
+                block_entities=terrain["block_entities"], entities=entities(world))
+
+
+def marker(case: str, restart: int) -> str:
+    if restart:
+        return "ARCE_RELEASE_CARGO_CUT_RESULT cut=" + case + " "
+    return CASES[case].get("marker", "ARCE_RELEASE_CARGO_CUT_PAUSED cut=" + case + " ")
+
+
+def observations(lines: list[str], case: str, restart: int) -> None:
+    require(len([line for line in lines if marker(case, restart) in line]) == 1, "Missing or repeated cut observation")
+    if not restart and case in BOUNDARIES:
+        require(any(marker(case, restart) + "boundary=" + BOUNDARIES[case] in line for line in lines), "Wrong settlement stop boundary")
+    require(not any("/ERROR]" in line or "/FATAL]" in line for line in lines), "Native run logged ERROR or FATAL")
+    wanted = CASES[case].get("fence")
+    require(wanted is None or wanted in fences(lines), "The stale record was not fenced " + str(wanted) + ": " + str(fences(lines)))
+
+
+def recovered_proofs(lines: list[str], frozen_digest: str) -> None:
+    """O3-after must reacquire both proofs and the checked journal lease before O4 on restart 1."""
+    prefix = "ARCE_RELEASE_CARGO_CUT_PROOF cut=FS_O3_AFTER checkpoint="
+    checkpoints = [line.split(prefix, 1)[1] for line in lines if prefix in line]
+    for checkpoint in ("O2_AFTER_0", "O2_AFTER_1", "O3J_AFTER", "O4_CAPTURE"):
+        require(any(line.startswith(checkpoint + " digest=" + frozen_digest + " ") for line in checkpoints),
+                "O3-after did not reacquire the frozen proof/lease at " + checkpoint)
+    require(any(line == "O4_CAPTURE digest=" + frozen_digest + " proved=2 waiting=0" for line in checkpoints),
+            "O4 did not retain both valid exact proofs")
+
+
+def run(args) -> None:
+    pin = not args.dev
+    if pin:
+        assert_pin(args.source_commit)
+    require_lock(args.lock_owner); preflight()
+    session, evidence = args.session_dir.resolve(), args.evidence_dir.resolve()
+    require(not session.exists() and not evidence.exists() and session != evidence and session not in evidence.parents
+            and evidence not in session.parents, "Existing or overlapping output")
+    libraries = args.source_server.resolve() / "libraries"
+    require(libraries.is_dir() and not any(path.is_symlink() for path in libraries.rglob("*")), "Unsafe or missing template libraries")
+    session.mkdir(parents=True); evidence.mkdir(parents=True)
+    token = uuid.uuid4().hex; sentinel = session / ".w142-owned"; sentinel.write_text(token, encoding="ascii")
+    pins = dict(source_commit=args.source_commit if pin else "DEV-UNPINNED", jar_sha256=digest(args.jar),
+                hooks={path: digest(REPO / path) for path in HOOKS + HARNESS})
+    report = dict(status="IN_PROGRESS", development=not pin, cases=[], pins=pins, cleanup=False)
+    process = None
+    try:
+        shutil.copytree(libraries, session / "libraries")
+        (session / "mods").mkdir(); shutil.copy2(args.jar, session / "mods" / args.jar.name)
+        port = smoke.allocate_port(); smoke.write_server_configuration(session, port, True)
+        for case in args.case:
+            row = dict(case=case, family=CASES[case]["family"], pins=pins, starts=[], findings=[]); report["cases"].append(row)
+            properties = smoke.expected_server_properties(port, True)
+            properties.update({"level-name": "world-" + case, "level-type": "minecraft:flat", "max-tick-time": "60000",
+                               "generator-settings": json.dumps({"layers": [{"block": "minecraft:bedrock", "height": 1}], "biome": "minecraft:plains"})})
+            (session / "server.properties").write_text("".join(f"{key}={value}\n" for key, value in sorted(properties.items())), encoding="ascii")
+            for restart in range(3):
+                if pin:
+                    assert_pin(args.source_commit)
+                require_lock(args.lock_owner)
+                require(digest(args.jar) == pins["jar_sha256"], "JAR changed")
+                command = _server_command(args.java); command[2] = "-Xmx4G"
+                command[1:1] = ["-Dadvancedrocketrycommunity.escrowScenario=" + ("recover" if restart else "start"),
+                                "-Dadvancedrocketrycommunity.escrowCase=" + case]
+                if not restart:
+                    command[1:1] = [f"-D{key}={value}" for key, value in sorted(CASES[case].get("properties", {}).items())]
+                start = dict(restart=restart, preflight=preflight(), command=command); row["starts"].append(start)
+                process = smoke.CapturedProcess(command, session, evidence / f"{case}-{restart}.log")
+                process.wait_for(re.compile(re.escape(marker(case, restart))), args.startup_timeout)
+                if restart:
+                    process.command("stop"); start["exit_code"] = process.finish()
+                else:
+                    process.process.kill(); process.abort(); start["forced_stop"] = True
+                lines = process.lines; process = None
+                world = session / ("world-" + case)
+                try:
+                    raw = evidence / f"{case}-{restart}-raw.json"
+                    raw.write_text(json.dumps(raw_snapshot(world), indent=1), encoding="utf-8")
+                    start["raw"] = dict(file=raw.name, sha256=digest(raw))
+                except (OSError, ValueError, KeyError, smoke.SmokeError) as failure:
+                    start["raw"] = dict(error=str(failure))
+                try:
+                    observations(lines, case, restart)
+                    if case == "FS_O3_AFTER" and restart == 1:
+                        first_raw = json.loads((evidence / f"{case}-0-raw.json").read_text(encoding="utf-8"))
+                        recovered_proofs(lines, first_raw["ledger"]["records"][0]["settlement"]["digest"])
+                    require(not restart or start["exit_code"] == 0, "Restart exited unsuccessfully")
+                    disk = inspect(world); check(case, disk, bool(restart))
+                    start["disk"] = dict(ledger=dict(records=[(op["phase"], op["reason"], "settlement" in op) for op in disk["ledger"]["records"]],
+                                                     receipts=[(r["choice"], r["released"], len(r["survivors"]), len(r["missing"])) for r in disk["ledger"]["tombstones"]],
+                                                     heads=[(h["e"], h["outcome"]) for h in disk["ledger"]["rocket_authorities"]],
+                                                     serial=disk["ledger"]["issued_launch_serial"]),
+                                         journal=disk["journal"], rockets=disk["rockets"], device=disk["device"], second=disk["second"],
+                                         tank=disk["tank"], blocks=disk["blocks"], fences=fences(lines), files=disk["files"])
+                    if restart and "disk" in row["starts"][0]:
+                        require(same_identity(row["starts"][0]["disk"], disk), "Restart changed the logical rocket, owner or device")
+                    start["status"] = "PASS"
+                except smoke.SmokeError as failure:
+                    start.update(status="FAILED", error=str(failure)); row["findings"].append(f"start {restart}: {failure}")
+                (evidence / "results.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
+            row["status"] = "FAILED" if row["findings"] else "PASS"
+            require(not row["findings"], "First contradictory cut: " + case + ": " + "; ".join(row["findings"]))
+            print(case + ": PASS (forced stop and two restarts)", flush=True)
+        require(all(row["status"] == "PASS" for row in report["cases"]), "Development run had failing cuts")
+        report["status"] = "PASS"
+    except Exception as failure:
+        report.update(status="FAILED", error=str(failure)); raise
+    finally:
+        if process is not None:
+            process.abort()
+        if session.resolve() == session and not session.is_symlink() and sentinel.is_file() and sentinel.read_text(encoding="ascii") == token:
+            shutil.rmtree(session); report["cleanup"] = not session.exists()
+        (evidence / "results.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__); parser.add_argument("source_server", type=Path)
+    for key in ("jar", "session-dir", "evidence-dir"):
+        parser.add_argument("--" + key, type=Path, required=True)
+    for key in ("source-commit", "java", "lock-owner"):
+        parser.add_argument("--" + key, required=True)
+    parser.add_argument("--case", action="append", choices=CASES, required=True)
+    parser.add_argument("--startup-timeout", type=float, default=420)
+    parser.add_argument("--dev", action="store_true", help="Development run on an uncommitted tree; never evidence")
+    args = parser.parse_args()
+    try:
+        run(args); return 0
+    except (OSError, smoke.SmokeError) as failure:
+        print("FAIL: " + str(failure)); return 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
