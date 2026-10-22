@@ -108,10 +108,12 @@ BOUNDARIES = dict(zip(tuple(CASES)[:20], (
     "O1_BEFORE", "O1_AFTER", "O_BIND_BEFORE", "O_BIND_AFTER", "O2_ROCKET_BEFORE", "O2_ROCKET_AFTER",
     "O2_DEVICE_BEFORE", "O2_DEVICE_AFTER", "O3_BEFORE", "O3_AFTER", "O3J_BEFORE", "O3J_REPLACED",
     "O4_BEFORE", "O4_AFTER", "PRUNE_BEFORE", "PRUNE_AFTER", "O1_AFTER", "O1_AFTER", "O_VETO", "NORMALIZATION_VETO")))
+BOUNDARIES["FF_F6_AFTER_CARGO"] = "F6_JOINT_PROVED"
 HOOK_DIR = "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/"
 HOOKS = tuple(HOOK_DIR + path + ".java" for path in (
     "resourceescrow/EscrowCargoCutProbe", "resourceescrow/EscrowCargoSettlementCuts", "resourceescrow/EscrowRuntime",
     "resourceescrow/EscrowCargoCutLaunch", "resourceescrow/EscrowCargoFlightCuts", "resourceescrow/EscrowCargoRecoveryCuts",
+    "resourceescrow/EscrowGovernedTerminal", "resourceescrow/EscrowGovernedTerminalDisk", "resourceescrow/EscrowBarrier",
     "resourceescrow/EscrowCargoTransferFixtures", "resourceescrow/EscrowCargoSwitches", "resourceescrow/EscrowSettlementRecovery",
     "resourceescrow/EscrowSettlementNormalization", "resourceescrow/EscrowSettlementPruning", "resourceescrow/EscrowLedgerWriter",
     "resourceescrow/EscrowReconciliationDriver", "rocket/flight/persistence/RocketTransferSavedData"))
@@ -278,8 +280,8 @@ def check_flight(case: str, disk: dict, restarted: bool) -> None:
     require(raw <= total or disk["journal"] or root["armed_flights"], "More cargo became available than the fixture holds")
     require(len(rockets) <= 1 or disk["journal"] or root["armed_flights"] or case == "FF_STALE_PREPARED", "A stale copy won outside a locked record")
     if expected is None:
-        # F6's first readback can precede the other entity slot's store. Both raw copies, when present,
-        # must still carry the latest cargo under the retained journal/ARMED authority.
+        # F6 is the joint destination-frontier/source-absence proof, not an individual slot readback.
+        # Keep the minimum-entity check: journal snapshots cannot substitute for a stored rocket here.
         require(case in ("FF_F6_AFTER_CARGO", "FF_GOVERNED_TERMINAL"), "Missing exact boundary oracle")
         require(1 <= len(rockets) <= (2 if case == "FF_F6_AFTER_CARGO" else 1)
                 and all(r["cargo"] == 1000 and r["bound"] and r["epoch"] in (0, 1) for r in rockets),
@@ -288,6 +290,9 @@ def check_flight(case: str, disk: dict, restarted: bool) -> None:
                 and disk["second"] is None and disk["tank"] == 0 and root["issued_launch_serial"] == 1,
                 "The governed boundary changed its native device, blocks or serial")
         if case == "FF_F6_AFTER_CARGO":
+            require(len(rockets) == 1 and rockets[0]["x"] == PAD and rockets[0]["pos"][1:] == [100.0, 64.5]
+                    and rockets[0]["epoch"] == 0 and rockets[0]["fuel"] == 700 and rockets[0]["flight_state"] == "LANDED",
+                    "Joint F6 did not store the landed destination and retire the source")
             require(disk["journal"] == 1 and len(root["armed_flights"]) == 1
                     and root["armed_flights"][0]["outcome"] == "ARMED", "F6 lost its pending governed authority")
         else:
@@ -365,7 +370,7 @@ def marker(case: str, restart: int) -> str:
 def observations(lines: list[str], case: str, restart: int) -> None:
     require(len([line for line in lines if marker(case, restart) in line]) == 1, "Missing or repeated cut observation")
     if not restart and case in BOUNDARIES:
-        require(any(marker(case, restart) + "boundary=" + BOUNDARIES[case] in line for line in lines), "Wrong settlement stop boundary")
+        require(any(marker(case, restart) + "boundary=" + BOUNDARIES[case] in line for line in lines), "Wrong stop boundary")
     require(not any("/ERROR]" in line or "/FATAL]" in line for line in lines), "Native run logged ERROR or FATAL")
     wanted = CASES[case].get("fence")
     require(wanted is None or wanted in fences(lines), "The stale record was not fenced " + str(wanted) + ": " + str(fences(lines)))

@@ -15,6 +15,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.BooleanSupplier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.storage.LevelResource;
@@ -29,7 +30,7 @@ final class EscrowCargoFlightCuts extends EscrowCargoCutProbe {
     static final Map<String, String> CASES = Map.of(
             "FF_N1", "BASELINE_REPLACED",
             "FF_F1_AFTER_CARGO", "ARMED_REPLACED",
-            "FF_F6_AFTER_CARGO", "F6_READBACK_AFTER",
+            "FF_F6_AFTER_CARGO", "F6_JOINT_PROVED",
             "FF_F8_AFTER_CARGO", "TERMINAL_PRUNE_REPLACED",
             "FF_TWO_FLIGHTS", "SUCCESSOR_CHECKPOINT",
             "FF_CANCEL_AFTER_CARGO", "CANCELLED_REPLACED",
@@ -57,14 +58,27 @@ final class EscrowCargoFlightCuts extends EscrowCargoCutProbe {
         ledgerFile = server.getWorldPath(LevelResource.ROOT).resolve("data").resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName());
     }
 
-    /** The ledger-writer boundaries; F6 and the terminal ones also need their earlier flight checkpoint. */
+    /** Ledger-writer boundaries only; individual barrier callbacks are not the joint F6 checkpoint. */
     static boolean pauses(String boundary, String label, boolean armWriting, boolean landed, boolean terminalAcknowledged) {
         return switch (boundary) {
             case "BASELINE_REPLACED" -> label.equals("BASELINE_REPLACED");
             case "ARMED_REPLACED" -> armWriting && (label.equals("K9") || label.equals("K2"));
-            case "F6_READBACK_AFTER" -> landed && label.equals("BARRIER_READBACK_AFTER");
             default -> false;
         };
+    }
+
+    static boolean jointF6Ready(String boundary, boolean landed, boolean terminalAcknowledged, BooleanSupplier jointProof) {
+        return boundary.equals("F6_JOINT_PROVED") && landed && !terminalAcknowledged && jointProof.getAsBoolean();
+    }
+
+    /** After barrier.tick delivers every completed proof, before flight execution can queue F7. */
+    @Override void beforeReconciliation() {
+        if (recovery || done || stopped()) { return; }
+        if (jointF6Ready(boundary, landed, terminalAcknowledged, () -> {
+            var journal = RocketTransferSavedData.get(server);
+            var records = journal.entries();
+            return records.size() == 1 && EscrowRuntime.of(server).terminal().checkpoint(server, records.get(0));
+        })) { pause(boundary); }
     }
 
     @Override void checkpoint(String label) {
@@ -206,7 +220,7 @@ final class EscrowCargoFlightCuts extends EscrowCargoCutProbe {
                         "The exact source did not survive unchanged with the latest cargo");
                 result("SOURCE_KEPT", "rocket=1000 device=4000 fuel=1000 epoch=1 serial=1 armed=0 journal=idle");
             }
-            case "F6_READBACK_AFTER", "TERMINAL_PRUNE_REPLACED" -> {
+            case "F6_JOINT_PROVED", "TERMINAL_PRUNE_REPLACED" -> {
                 if (!idle(journal, root) || rocket.getX() != PAD.getX() + 0.5D) { return; }
                 requireLanded(root, 1_000, 1);
                 result("HANDED_OFF", "rocket=1000 device=4000 fuel=700 epoch=0 serial=1 armed=0 journal=idle");

@@ -117,7 +117,25 @@ class EscrowCargoCutProbeTest {
         assertTrue(EscrowCargoFlightCuts.pauses("BASELINE_REPLACED", "BASELINE_REPLACED", false, false, false));
         assertTrue(EscrowCargoFlightCuts.pauses("ARMED_REPLACED", "K9", true, false, false));
         assertFalse(EscrowCargoFlightCuts.pauses("ARMED_REPLACED", "K9", false, false, false));
-        assertTrue(EscrowCargoFlightCuts.pauses("F6_READBACK_AFTER", "BARRIER_READBACK_AFTER", false, true, false));
-        assertFalse(EscrowCargoFlightCuts.pauses("F6_READBACK_AFTER", "BARRIER_READBACK_AFTER", false, false, false));
+        assertEquals("F6_JOINT_PROVED", EscrowCargoFlightCuts.CASES.get("FF_F6_AFTER_CARGO"));
+        for (String label : List.of("BARRIER_READBACK_AFTER", "F6_LANDED", "F7_ACK", "K2", "K9")) {
+            assertFalse(EscrowCargoFlightCuts.pauses("F6_JOINT_PROVED", label, false, true, false));
+        }
+    }
+
+    @Test void f6StopsOnlyAfterTheJointProofAndBeforeTerminalAcknowledgement() {
+        var completedSlots = new java.util.concurrent.atomic.AtomicInteger();
+        java.util.function.BooleanSupplier joint = () -> completedSlots.get() == 2;
+        assertFalse(EscrowCargoFlightCuts.jointF6Ready("F6_JOINT_PROVED", true, false, joint));
+        completedSlots.incrementAndGet(); // Source absence alone is not F6.
+        assertFalse(EscrowCargoFlightCuts.jointF6Ready("F6_JOINT_PROVED", true, false, joint));
+        completedSlots.incrementAndGet(); // Destination frontier plus source absence, jointly valid.
+        assertTrue(EscrowCargoFlightCuts.jointF6Ready("F6_JOINT_PROVED", true, false, joint));
+        completedSlots.set(0); // Invalidated proofs cannot authorize a cached stop.
+        assertFalse(EscrowCargoFlightCuts.jointF6Ready("F6_JOINT_PROVED", true, false, joint));
+        java.util.function.BooleanSupplier unselected = () -> { fail("Unselected F6 hook inspected terminal state"); return true; };
+        assertFalse(EscrowCargoFlightCuts.jointF6Ready("ARMED_REPLACED", true, false, unselected));
+        assertFalse(EscrowCargoFlightCuts.jointF6Ready("F6_JOINT_PROVED", false, false, unselected));
+        assertFalse(EscrowCargoFlightCuts.jointF6Ready("F6_JOINT_PROVED", true, true, unselected));
     }
 }

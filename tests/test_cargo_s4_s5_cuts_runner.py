@@ -58,6 +58,30 @@ def retired_disk():
 
 
 class CargoSettlementFlightRunnerTest(unittest.TestCase):
+    def test_f6_requires_the_joint_boundary_and_a_stored_landed_destination(self):
+        case = "FF_F6_AFTER_CARGO"
+        prefix = "ARCE_RELEASE_CARGO_CUT_PAUSED cut=" + case + " boundary="
+        runner.observations([prefix + "F6_JOINT_PROVED"], case, 0)
+        for boundary in ("F6_READBACK_AFTER", "BARRIER_READBACK_AFTER", "F6_LANDED"):
+            with self.assertRaises(runner.smoke.SmokeError):
+                runner.observations([prefix + boundary], case, 0)
+        disk = stale_disk()
+        value = rocket(x=80.5, cargo=1000, epoch=0) | dict(fuel=700, flight_state="LANDED")
+        disk.update(rocket=value, rockets=[value], device=device(amount=4000, role="LOAD"))
+        disk["ledger"].update(issued_launch_serial=1, armed_flights=[dict(outcome="ARMED")])
+        runner.check(case, disk, False)
+        for mutate in (lambda d: d.update(rockets=[]),
+                       lambda d: d["rockets"].append(rocket(cargo=1000)),
+                       lambda d: d["rocket"].update(x=68.5),
+                       lambda d: d["rocket"].update(cargo=0),
+                       lambda d: d["rocket"].update(epoch=1),
+                       lambda d: d["rocket"].update(fuel=1000),
+                       lambda d: d["rocket"].update(flight_state="DESCENT"),
+                       lambda d: d.update(journal=0)):
+            changed = copy.deepcopy(disk); mutate(changed)
+            with self.assertRaises(runner.smoke.SmokeError):
+                runner.check(case, changed, False)
+
     def test_retired_markers_match_the_frozen_audit_not_the_survivor_projection(self):
         disk = retired_disk()
         self.assertTrue(all("markers" not in survivor for survivor in disk["ledger"]["tombstones"][0]["survivors"]))
