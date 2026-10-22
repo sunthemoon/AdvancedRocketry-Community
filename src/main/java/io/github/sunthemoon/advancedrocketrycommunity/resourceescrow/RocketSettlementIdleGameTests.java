@@ -98,6 +98,7 @@ public final class RocketSettlementIdleGameTests {
         private ServerPlayer passenger;
         private RocketEntity predecessor, successor;
         private RocketFlightData departure;
+        private RocketStructureSnapshot predicted;
         private RocketEscrowSection departureWrapper;
         private RocketTransferRecord terminalRecord;
         private EscrowTerminalLeaseCut leaseCut;
@@ -185,6 +186,7 @@ public final class RocketSettlementIdleGameTests {
                             .map(io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRegion::fromSnapshot).toList(),
                     target.getGameTime());
             helper.assertTrue(selected.success(), "N1 fixture has no available server-owned landing pad");
+            predicted = selected.snapshot().orElseThrow();
             // The shared test world may select a noncentral pad. Load its exact election margin,
             // not just the fixed pad's center; production F1 still performs its unchanged checks.
             boolean sourceReady = readyRegion((ServerLevel) rocket.level(), rocket.snapshot().orElseThrow());
@@ -300,7 +302,11 @@ public final class RocketSettlementIdleGameTests {
             helper.assertTrue(sourceFlight.fuel().equals(departure.fuel()) && predecessor.escrowSection().equals(departureWrapper),
                     "Flight rewrote its credited source fuel or retained epoch");
             var record = journal.find(launch).orElse(null);
-            if (record == null) { return; }
+            if (record == null) {
+                var ended = ended(journal);
+                if (ended != null) { helper.fail(ended); }
+                return;
+            }
             // A phase's exact acknowledgement can immediately queue the next phase in the same
             // owner tick. Observe every staged phase; COMMITTED below requires checked authority.
             phases.add(record.phase());
@@ -333,6 +339,36 @@ public final class RocketSettlementIdleGameTests {
                     && flight.plan().isEmpty() && flight.activeTransferId().isEmpty() && !RocketEscrowGate.resourcesIdle(successor),
                     "Flight skipped a checked phase or released its landed successor before F7");
             terminalRecord = record; leaseCut = new EscrowTerminalLeaseCut(server, data, record); step = 7;
+        }
+
+        /**
+         * W137: why the launch ended without its transfer record, or null while it can still publish one. F1 holds its
+         * lock from the request to the acknowledged ARMED write, whose completion publishes PREPARED in the same callback,
+         * so an unlocked F1 without a record is a discarded launch. Production logs no reason for a discard after ARMED;
+         * this names the stage and the checks that can still be observed.
+         */
+        private String ended(RocketTransferSavedData journal) {
+            if (!phases.isEmpty()) {
+                return phases.contains(RocketTransferPhase.COMMITTED) ? null
+                        : "Launch " + launch + " lost its transfer record after " + phases + ", before COMMITTED";
+            }
+            var server = level.getServer(); var checkpoint = EscrowRuntime.of(server).flightCheckpoint();
+            var logical = source.logical();
+            if (checkpoint.locked(logical)) { return null; }
+            var arm = data.ledger().armedFlights().stream().filter(value -> value.transfer().equals(launch)).findFirst().orElse(null);
+            return "Launch " + launch + " was discarded " + (arm == null
+                    ? "before any ARMED write (an F1 stall logs ARCE_ESCROW_SUCCESSOR_HOLD)"
+                    : "after its acknowledged ARMED write (serial " + arm.serial() + ", outcome " + arm.outcome() + ")")
+                    + " without a PREPARED record; observed now: source alive=" + predecessor.isAlive()
+                    + " added=" + predecessor.isAddedToWorld() + " operational=" + predecessor.operational()
+                    + ", governed=" + coordinator.governedAvailable(logical)
+                    + ", actionAuthority=" + journal.actionAuthorityAvailable(logical)
+                    + ", resourceMutation=" + RocketRuntime.resourceMutationAllowed(predecessor)
+                    + ", retryReady=" + checkpoint.retryReady(logical, server.getTickCount())
+                    + ", sourceReady=" + io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketMarginGameTestSupport
+                            .endReady(server, predecessor.snapshot().orElseThrow())
+                    + ", predictedPadReady=" + (predicted == null ? "unknown"
+                            : io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketMarginGameTestSupport.endReady(server, predicted));
         }
 
         private void terminal() {
