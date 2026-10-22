@@ -325,6 +325,7 @@ public final class ItemCargoSettlementGameTests {
             check(device.attempt() == RocketCargoStatus.RECEIPT_BACKED && world.member(device) == null, "A receipt-backed rocket admitted new cargo");
             world.enable(device, false);
             if (load) { finish(); return; }
+            EscrowRuntime.of(server).terminalCutForTests(server, null); cutInstalled = false;
             launch = new EscrowCargoLaunch(helper, world, rocket, origin.offset(32, 0, 0), true, ItemCargoReconciliationFixtures::amount);
             step = 6;
         }
