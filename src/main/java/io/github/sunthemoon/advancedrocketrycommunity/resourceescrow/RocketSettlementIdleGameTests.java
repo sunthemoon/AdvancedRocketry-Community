@@ -376,7 +376,8 @@ public final class RocketSettlementIdleGameTests {
             var server = level.getServer(); var checkpoint = EscrowRuntime.of(server).flightCheckpoint();
             var logical = source.logical();
             if (checkpoint.locked(logical)) { return null; }
-            var arm = data.ledger().armedFlights().stream().filter(value -> value.transfer().equals(launch)).findFirst().orElse(null);
+            var transactions = io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketTransactionSavedData.get(server);
+            var arm =data.ledger().armedFlights().stream().filter(value -> value.transfer().equals(launch)).findFirst().orElse(null);
             return "Launch " + launch + " was discarded " + (arm == null
                     ? "before any ARMED write (an F1 stall logs ARCE_ESCROW_SUCCESSOR_HOLD)"
                     : "after its acknowledged ARMED write (serial " + arm.serial() + ", outcome " + arm.outcome() + ")")
@@ -386,6 +387,7 @@ public final class RocketSettlementIdleGameTests {
                     + ", actionAuthority=" + journal.actionAuthorityAvailable(logical)
                     + ", resourceMutation=" + RocketRuntime.resourceMutationAllowed(predecessor)
                     + ", retryReady=" + checkpoint.retryReady(logical, server.getTickCount())
+                    + ", assemblyTransactions=" + (transactions.operational() ? String.valueOf(transactions.entries().size()) : "inoperational")
                     + ", sourceReady=" + io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketMarginGameTestSupport
                             .endReady(server, predecessor.snapshot().orElseThrow())
                     + ", predictedPadReady=" + (predicted == null ? "unknown"
