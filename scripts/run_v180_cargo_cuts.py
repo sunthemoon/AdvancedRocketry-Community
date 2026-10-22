@@ -11,6 +11,8 @@ import uuid
 
 import run_v180_cargo_reconciliation as native
 import cargo_storage_oracle as storage
+import cargo_contention_oracle as contention
+import cargo_recovery_oracle as recovery
 from run_v060_flight_server_smoke import _server_command
 
 REPO = Path(__file__).resolve().parents[1]
@@ -48,14 +50,23 @@ for cut, checkpoint, oracle, reason in (
         ("E4L1_UNKNOWN", "WRITE_UNKNOWN", "FC_LOAD_L1_BEFORE", None),
         ("E4L2_UNKNOWN", "WRITE_UNKNOWN", "FC_LOAD_C6_JOINT_READBACK", None)):
     CASES["FC_LOAD_" + cut] = dict(family="C-S2", cut=cut, direction="LOAD", checkpoint=checkpoint, oracle=oracle, reason=reason)
+CASES["FC_LOAD_E3_CACHE_CLOSE"] = dict(family="C-S2", cut="E3", direction="LOAD", checkpoint="E3_CACHE_CLOSE", oracle="storage", reason="BARRIER_IO")
+CASES["FC_LOAD_E5_STALLED"] = dict(family="C-S2", cut="E5", direction="LOAD", checkpoint="STALLED_RESTART", oracle="contention")
+for cut, checkpoint in (("R1_255", "R1_L1_REPLACED"), ("R1_256", "R1_REFUSED"), ("R2_DUPLICATE", "R2_FENCED"),
+                        ("R3_CURSOR", "R3_ALTERED_BEFORE"), ("R3_OTHER", "R3_ALTERED_BEFORE"), ("R3_RELOCATED", "R3_BEFORE_OFFLINE_MOVE"),
+                        ("G1_FUTURE", "G1_PRESERVED"), ("G1_INVALID", "G1_PRESERVED")):
+    CASES["FC_LOAD_" + cut] = dict(family="C-S3", cut=cut, direction="LOAD", checkpoint=checkpoint, oracle="recovery")
+for cut, oracle in (("G3_L1_INFLIGHT", "L1_BEFORE"), ("G3_L2_UNKNOWN", "C6_JOINT_READBACK")):
+    CASES["FC_LOAD_" + cut] = dict(family="C-S3", cut=cut, direction="LOAD", checkpoint="G3_STOPPING", oracle="FC_LOAD_" + oracle)
 HOOK_DIR = "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/resourceescrow/"
 HOOKS = tuple(HOOK_DIR + name + ".java" for name in (
     "EscrowCargoReconciliationProbe", "EscrowCargoProbeDevice", "EscrowRuntime", "EscrowTestEndpoints",
     "EscrowLedgerWriter", "EscrowResourceQueue", "EscrowReconciliationDriver", "EscrowReconciliationAction",
-    "EscrowReconciliationPruning", "EscrowBarrier", "EscrowCargoStorageProbe", "EscrowStoreFault"))
+    "EscrowReconciliationPruning", "EscrowBarrier", "EscrowCargoStorageProbe", "EscrowStoreFault", "EscrowCargoContentionProbe",
+    "EscrowCargoRecoveryProbe", "EscrowCargoShutdownProbe", "EscrowCargoTransferFixtures", "EscrowLoaderFloorProbe", "EscrowReleaseProbe"))
 HARNESS = ("scripts/run_v180_cargo_cuts.py", "scripts/run_v180_cargo_reconciliation.py",
            "scripts/run_v180_escrow_forced_stop.py", "scripts/run_v060_flight_server_smoke.py",
-           "scripts/cargo_storage_oracle.py", "scripts/loader_cut_nbt.py")
+           "scripts/cargo_storage_oracle.py", "scripts/loader_cut_nbt.py", "scripts/cargo_contention_oracle.py", "scripts/cargo_recovery_oracle.py")
 
 
 def require(condition: bool, message: str) -> None:
@@ -96,6 +107,10 @@ def validate_markers(disk: dict, case: str, restarted: bool) -> None:
 
 
 def inspect(world: Path, case: str, restarted: bool) -> dict:
+    if CASES[case]["oracle"] == "recovery":
+        return recovery.inspect(world, case, restarted)
+    if CASES[case]["oracle"] == "contention":
+        return contention.inspect(world, restarted)
     result = storage.inspect(world, case, restarted) if CASES[case]["oracle"] == "storage" else native.inspect(world, CASES[case]["oracle"], restarted)
     validate_markers(result, case, restarted and case != "FC_LOAD_E2_ROCKET_EXTERNAL")
     return result
@@ -114,7 +129,20 @@ def observations(lines: list[str], case: str, restart: int) -> None:
     if reason and (not restart or case == "FC_LOAD_E2_ROCKET_EXTERNAL"):
         proof = matches if restart else [line for line in lines if "ARCE_CARGO_STORAGE_PROOF cut=" + case + " " in line]
         require(len(proof) == 1 and "reason=" + reason + " " in proof[0], "Storage proof reported a different refusal")
-    require(not any("/ERROR]" in line or "/FATAL]" in line for line in lines), "Native run logged ERROR/FATAL")
+    errors = [line for line in lines if "/ERROR]" in line or "/FATAL]" in line]
+    if case == "FC_LOAD_E3_CACHE_CLOSE" and not restart:
+        require(len(errors) == 1 and "Failed to store chunk [4, 4]" in errors[0], "Cache fixture did not propagate exactly one own-store failure")
+        require(any("ClosedChannelException" in line for line in lines) and any("RegionFileStorage." in line for line in lines)
+                and any("ARCE_CARGO_CACHE_CLOSED" in line and "regions=256 own_region_cached=false" in line for line in lines),
+                "E3 did not observe its native eviction-close failure")
+    else:
+        require(not errors, "Native run logged ERROR/FATAL")
+    if case == "FC_LOAD_E5_STALLED" and not restart:
+        require(sum("ARCE_CARGO_FAIR_PROGRESS" in line and "stalled=1 healthy_retired=1 io=3 issued=2" in line for line in lines) == 1,
+                "E5 lost fair progress past its stalled component")
+    if case == "FC_LOAD_R2_DUPLICATE":
+        require(sum("ARCE_CARGO_DUPLICATE_HELD" in line and "status=RETRY_LATER" in line and "FLOOR_CONFLICT" in line for line in lines) == 1,
+                "R2 lost its floor-conflict fence")
 
 
 def raw_snapshot(world: Path) -> dict:
@@ -153,28 +181,49 @@ def run(args) -> None:
                                 "-Dadvancedrocketrycommunity.escrowCase=" + case]
                 start = dict(restart=restart, preflight=native.preflight(), command=command); row["starts"].append(start)
                 process = native.smoke.CapturedProcess(command, session, evidence / f"{case}-{restart}.log")
-                prefix = "ARCE_RELEASE_CARGO_RESULT" if restart else "ARCE_RELEASE_CARGO_PAUSED"
-                process.wait_for(re.compile(prefix + " cut=" + case + " "), args.startup_timeout)
-                if restart:
-                    process.command("stop"); start["exit_code"] = process.finish()
-                else:
-                    process.process.kill(); process.abort(); start["forced_stop"] = True
+                try:
+                    if not restart and CASES[case]["cut"].startswith("G3_"):
+                        process.wait_for(re.compile("ARCE_CARGO_DRAIN_READY cut=" + case + " "), args.startup_timeout)
+                        process.command("stop"); start["stop_command_before_kill"] = True
+                    prefix = "ARCE_RELEASE_CARGO_RESULT" if restart else "ARCE_RELEASE_CARGO_PAUSED"
+                    process.wait_for(re.compile(prefix + " cut=" + case + " "), args.startup_timeout)
+                    if restart:
+                        process.command("stop"); start["exit_code"] = process.finish()
+                    else:
+                        process.process.kill(); process.abort(); start["forced_stop"] = True
+                except native.smoke.SmokeError as failure:
+                    start["process_error"] = str(failure); process.abort()
                 lines = process.lines; process = None
                 world = session / ("world-" + case)
                 # Retain independently decoded raw data even when the oracle rejects it.
                 raw = evidence / f"{case}-{restart}-raw.json"
-                raw.write_text(json.dumps(raw_snapshot(world), indent=2), encoding="utf-8")
-                start["raw"] = dict(file=raw.name, sha256=native.digest(raw))
                 try:
+                    raw.write_text(json.dumps(raw_snapshot(world), indent=2), encoding="utf-8")
+                    start["raw"] = dict(file=raw.name, sha256=native.digest(raw))
+                    if case == "FC_LOAD_E5_STALLED":
+                        healthy = evidence / f"{case}-{restart}-healthy.json"
+                        healthy.write_text(json.dumps(contention.healthy(world), indent=2), encoding="utf-8")
+                        start["healthy_raw"] = dict(file=healthy.name, sha256=native.digest(healthy))
+                except (OSError, ValueError, KeyError, native.smoke.SmokeError) as failure:
+                    start["raw_error"] = str(failure)
+                try:
+                    require("process_error" not in start and "raw_error" not in start,
+                            start.get("process_error", start.get("raw_error", "Native observation failed")))
                     observations(lines, case, restart)
                     require(not restart or start["exit_code"] == 0, "Restart exited unsuccessfully")
                     start["disk"] = inspect(world, case, bool(restart))
                     if restart and "disk" in row["starts"][0]:
                         require(start["disk"]["identity"] == row["starts"][0]["disk"]["identity"], "Restart changed identities")
+                        if "preserved" in start["disk"]:
+                            require(start["disk"]["preserved"] == row["starts"][0]["disk"]["preserved"], "Restart rewrote held roots or fell back to history")
                     start["status"] = "PASS"
-                except native.smoke.SmokeError as failure:
+                except (ValueError, KeyError, native.smoke.SmokeError) as failure:
                     start.update(status="FAILED", error=str(failure)); row["findings"].append(str(failure))
                 (evidence / "results.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
+                if not restart and case == "FC_LOAD_R3_RELOCATED" and not row["findings"]:
+                    require(sentinel.read_text(encoding="ascii") == token, "Relocation lost ownership of its stopped copy")
+                    row["offline_fixture"] = recovery.relocate(world, evidence / (case + "-edit"))
+                    (evidence / (case + "-edited-raw.json")).write_text(json.dumps(raw_snapshot(world), indent=2), encoding="utf-8")
             row["status"] = "FAILED" if row["findings"] else "PASS"
             require(not row["findings"], "First contradictory cut: " + case + ": " + "; ".join(row["findings"]))
             print(case + ": PASS (force-kill and two restarts)", flush=True)

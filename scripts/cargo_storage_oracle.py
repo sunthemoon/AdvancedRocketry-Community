@@ -56,6 +56,8 @@ def inspect(world: Path, case: str, restarted: bool) -> dict:
             require(epochs[0] == 1 and raw["records"]["entities"]["external"], "Rocket near-limit fixture did not cross to external AFTER storage")
             noise = entity.get("ForgeData", {}).get("arce_w138_noise", {})
             require(noise.get("bytes") == 1_048_576 and len(noise.get("sha256", "")) == 64, "External rocket noise was lost")
+        elif case == "FC_LOAD_E3_CACHE_CLOSE":
+            require(epochs[1] == 0, "Cache eviction failure unexpectedly stored its device")
         else:
             require(epochs[1] == 1, "Failed terrain store/newer save did not persist the device AFTER state")
     return dict(ledger=root, device=device, rocket=rocket, raw_total=cargo + amount, epochs=epochs,

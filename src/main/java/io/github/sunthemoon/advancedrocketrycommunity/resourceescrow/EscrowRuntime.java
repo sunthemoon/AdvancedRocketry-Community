@@ -431,6 +431,7 @@ public final class EscrowRuntime {
     }
     @SubscribeEvent(priority = EventPriority.HIGHEST) public static void stopping(ServerStoppingEvent event) {
         EscrowRuntime runtime = of(event.getServer()); runtime.stopping = true;
+        if (runtime.cargoReconciliationProbe != null) { runtime.cargoReconciliationProbe.checkpoint("G3_STOPPING"); }
         if (runtime.cargoReconciliationProbe != null) { runtime.cargoReconciliationProbe.close(); }
         if (runtime.cargo != null) { runtime.cargo.close(); }
         runtime.cargoSwitches.clear();

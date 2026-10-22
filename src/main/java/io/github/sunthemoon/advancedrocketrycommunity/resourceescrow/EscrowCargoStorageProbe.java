@@ -14,7 +14,7 @@ final class EscrowCargoStorageProbe {
     static final String E2 = "FC_LOAD_E2_CAPTURE";
     static final String EXTERNAL = "FC_LOAD_E2_ROCKET_EXTERNAL";
     static final int NOISE_BYTES = 1_048_576;
-    private static final Set<String> CASES = Set.of(E1, E2, EXTERNAL,
+    private static final Set<String> CASES = Set.of(E1, E2, EXTERNAL, EscrowCargoContentionProbe.E3,
             "FC_LOAD_E4L1_FAIL", "FC_LOAD_E4L1_UNKNOWN", "FC_LOAD_E4L2_UNKNOWN");
     private final MinecraftServer server;
     private final String name;
@@ -28,7 +28,7 @@ final class EscrowCargoStorageProbe {
     static String writerCase(String name) {
         return switch (name) {
             case "FC_LOAD_E4L1_UNKNOWN" -> "E4L1_UNKNOWN";
-            case "FC_LOAD_E4L2_UNKNOWN" -> "E4L2_UNKNOWN";
+            case "FC_LOAD_E4L2_UNKNOWN", EscrowCargoShutdownProbe.L2 -> "E4L2_UNKNOWN";
             default -> name;
         };
     }
@@ -83,7 +83,7 @@ final class EscrowCargoStorageProbe {
         if (name.equals(E2) && injected && barrier.supersedingSaves() > 0) {
             close();
             server.overworld().getChunkSource().chunkMap.worker.synchronize(true).join();
-        } else if (!(name.equals(E1) || name.equals(EXTERNAL))
+        } else if (!(name.equals(E1) || name.equals(EXTERNAL) || name.equals(EscrowCargoContentionProbe.E3))
                 || barrier.ioFailures() + barrier.refusals() + barrier.supersedingSaves() == 0) { return; }
         var coordinator = data.bind(server);
         EscrowTags.require(data.ledger().records().size() == 1, "Cargo proof failure lost L1");

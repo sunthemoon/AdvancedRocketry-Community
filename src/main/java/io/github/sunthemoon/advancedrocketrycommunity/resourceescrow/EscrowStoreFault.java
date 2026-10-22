@@ -40,7 +40,7 @@ final class EscrowStoreFault {
 
     /** W125 uses the same seam for exactly three E5 source proofs; recovery uses repaired storage. */
     static boolean namedSelected(boolean hooks, String testCase, String scenario, String level, ChunkPos chunk) {
-        return hooks && EscrowLoaderNamedProbe.E5.equals(testCase) && "start".equals(scenario)
+        return hooks && (EscrowLoaderNamedProbe.E5.equals(testCase) || EscrowCargoContentionProbe.E5.equals(testCase)) && "start".equals(scenario)
                 && "minecraft:overworld".equals(level) && SLOT.equals(chunk);
     }
 
@@ -49,7 +49,7 @@ final class EscrowStoreFault {
         int failure = namedFailures.getAndUpdate(value -> Math.min(3, value + 1));
         if (failure == 3) { return stored; }
         AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_MATRIX_STORE_FAULT cut={} chunk={},{} failure={}",
-                EscrowLoaderNamedProbe.E5, chunk.x, chunk.z, failure + 1);
+                System.getProperty("advancedrocketrycommunity.escrowCase", EscrowLoaderNamedProbe.E5), chunk.x, chunk.z, failure + 1);
         return stored.thenCompose(ignored -> CompletableFuture.failedFuture(new java.io.IOException("Release-test named own-store IO failure")));
     }
 

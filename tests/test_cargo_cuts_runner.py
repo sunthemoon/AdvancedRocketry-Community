@@ -23,6 +23,9 @@ class CargoCutsRunnerTest(unittest.TestCase):
                                 resource_escrow=section("SOURCE" if load else "DESTINATION")))
 
     def test_matrix_has_all_fourteen_boundaries_in_both_directions(self):
+        self.assertEqual(54, len(runner.CASES))
+        self.assertEqual(16, sum(row["family"] == "C-S2" for row in runner.CASES.values()))
+        self.assertEqual(10, sum(row["family"] == "C-S3" for row in runner.CASES.values()))
         self.assertEqual(28, sum(row["family"] == "C-S1" for row in runner.CASES.values()))
         for direction in ("LOAD", "UNLOAD"):
             rows = [row for row in runner.CASES.values() if row["direction"] == direction and row["family"] == "C-S1"]
@@ -34,7 +37,7 @@ class CargoCutsRunnerTest(unittest.TestCase):
     def test_every_new_boundary_uses_the_appropriate_existing_raw_oracle(self):
         with patch.object(runner.native, "inspect", return_value={}) as inspect, patch.object(runner, "validate_markers"):
             for case, expected in runner.CASES.items():
-                if expected["oracle"] == "storage":
+                if expected["oracle"] in ("storage", "contention", "recovery"):
                     continue
                 for restarted in (False, True):
                     runner.inspect(Path("world"), case, restarted)
@@ -54,6 +57,18 @@ class CargoCutsRunnerTest(unittest.TestCase):
             runner.observations(lines, case, restart)
             with self.assertRaises(runner.native.smoke.SmokeError):
                 runner.observations([line.replace("BARRIER_EXTERNAL", "BARRIER_IO") for line in lines], case, restart)
+
+    def test_cache_failure_allowlist_requires_the_exact_propagated_native_failure(self):
+        case = "FC_LOAD_E3_CACHE_CLOSE"
+        lines = [f"ARCE_RELEASE_CARGO_PAUSED cut={case} checkpoint=E3_CACHE_CLOSE selected=SOURCE",
+                 f"ARCE_CARGO_STORAGE_PROOF cut={case} reason=BARRIER_IO io=1 refusals=0 superseding=0 records=1 pending=1",
+                 f"ARCE_CARGO_CACHE_CLOSED cut={case} regions=256 own_region_cached=false",
+                 "[IO/ERROR] Failed to store chunk [4, 4]", "java.nio.channels.ClosedChannelException",
+                 "at net.minecraft.world.level.chunk.storage.RegionFileStorage.getRegionFile(RegionFileStorage.java:1)"]
+        runner.observations(lines, case, 0)
+        for changed in (lines[:-1], lines + ["[IO/ERROR] another failure"], [s.replace("[4, 4]", "[5, 5]") for s in lines]):
+            with self.assertRaises(runner.native.smoke.SmokeError):
+                runner.observations(changed, case, 0)
 
     def test_exact_markers_fluid_identity_and_bindings_in_both_roles(self):
         for load in (True, False):
