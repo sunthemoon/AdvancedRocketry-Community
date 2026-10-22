@@ -10,8 +10,9 @@ import struct
 import zipfile
 
 import run_dedicated_server_smoke as smoke
+import loader_cut_nbt as native_nbt
 from run_v180_cargo_reconciliation import (Byte, Short, Int, Long, ByteArray, IntArray, LongArray,
-                                          TypedNbtReader, same_typed)
+                                          TAG_TYPES, same_typed)
 from run_v180_escrow_forced_stop import record, LEDGER
 from run_v180_resource_restarts import entity_slots, read_nbt, JOURNAL
 
@@ -19,6 +20,24 @@ NS = "advancedrocketrycommunity"
 VARIANTS = ("future", "invalid", "oversized", "marked", "missing")
 RESULT = re.compile(r"ARCE_W136_RESULT leaf=(fluid|item) stage=(seed|check|old-check|old-restore) "
                     r"snapshot=([0-9a-f]{64}) blocks=(\d+) protected=(\d+) g2=(true|false) tags=true restore=true$")
+
+
+class NativeS1Reader:
+    """Reuse the existing native-loader reader's bounds, not celestial definitions' 4 KiB strings."""
+
+    def __init__(self, payload: bytes):
+        self.payload = payload
+
+    def read_root(self):
+        def convert(tag):
+            if tag.type == native_nbt.COMPOUND:
+                return {key: convert(value) for key, value in tag.value.items()}
+            if tag.type == native_nbt.LIST:
+                return [convert(value) for value in tag.value[1]]
+            if tag.type == native_nbt.STRING:
+                return tag.value.decode("utf-8", errors="strict")
+            return TAG_TYPES[tag.type](tag.value)
+        return convert(native_nbt.read(self.payload)[1])
 
 
 def require(condition: bool, message: str) -> None:
@@ -185,14 +204,15 @@ def check_old(rockets: list[dict], terrain: dict, restored: bool, before: dict |
 
 
 def capture_record(path: Path, slot: int, target: Path) -> dict:
-    result = record(path, slot, reader=TypedNbtReader)
     with path.open("rb") as stream:
         stream.seek(slot * 4); location = struct.unpack(">I", stream.read(4))[0]
+        require(location >> 8 >= 2 and location & 255, "Missing native fixture record")
         stream.seek((location >> 8) * 4096); length, compression = struct.unpack(">IB", stream.read(5))
-        require(compression == 2, "Unsupported compression")
+        require(1 < length <= 1_048_577 and length + 4 <= (location & 255) * 4096 and compression == 2,
+                "Unsupported native fixture record")
         raw = stream.read(length - 1)
     target.parent.mkdir(parents=True, exist_ok=True); target.write_bytes(raw)
-    return result
+    return record(path, slot, reader=NativeS1Reader)
 
 
 def inspect(world: Path, target: Path, items: bool, old: bool, restored: bool = False, before: dict | None = None) -> dict:
@@ -200,7 +220,7 @@ def inspect(world: Path, target: Path, items: bool, old: bool, restored: bool = 
     rockets = []
     for path in sorted(world.rglob("entities/*.mca")):
         for slot in entity_slots(path):
-            entry = record(path, slot, reader=TypedNbtReader)
+            entry = record(path, slot, reader=NativeS1Reader)
             found = [entity for entity in entry.get("Entities", []) if "RocketEntityData" in entity]
             if found:
                 capture_record(path, slot, target / path.relative_to(world).with_suffix(f".{slot}.nbt.zlib"))

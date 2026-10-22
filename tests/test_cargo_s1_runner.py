@@ -51,6 +51,17 @@ def sample(items):
 
 
 class CargoS1OracleTest(unittest.TestCase):
+    def test_native_reader_retains_oversized_root_and_typed_tags_without_changing_shared_bounds(self):
+        nbt = oracle.native_nbt
+        root = nbt.Tag(nbt.COMPOUND, dict(extension=nbt.Tag(nbt.STRING, b"x" * 33000),
+            b=nbt.Tag(nbt.BYTE, 7), s=nbt.Tag(nbt.SHORT, 7), i=nbt.Tag(nbt.INT, 7), l=nbt.Tag(nbt.LONG, 7),
+            ba=nbt.Tag(nbt.BYTES, bytes([1, 2])), ia=nbt.Tag(nbt.INTS, [1, 2]), la=nbt.Tag(nbt.LONGS, [1, 2])))
+        payload = nbt.write(b"", root)
+        self.assertTrue(oracle.same_typed(dict(extension="x" * 33000, **oracle.typed_tag()),
+                                        oracle.NativeS1Reader(payload).read_root()))
+        for invalid in (payload[:-1], payload + b"\0", b"\0" * (nbt.MAX_DECODED + 1)):
+            with self.assertRaises(nbt.NbtError): oracle.NativeS1Reader(invalid).read_root()
+
     def test_both_leaf_fixtures_and_two_exact_restarts(self):
         for items in (False, True):
             rocket, terrain = sample(items)
