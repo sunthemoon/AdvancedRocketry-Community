@@ -345,13 +345,29 @@ final class EscrowCargoSettlementCuts extends EscrowCargoCutProbe {
 
     private void landed(RocketTransferSavedData journal, EscrowLedger root) {
         var flight = rocket.flightData().orElseThrow();
-        var head = root.rocketAuthorities().stream().filter(value -> value.logical().equals(flight.logicalRocketId())).findFirst().orElseThrow();
-        EscrowTags.require(flight.state() == RocketFlightState.LANDED && cargo(rocket) == 4_000 && flight.fuel().totalAmount() == 700
-                && rocket.escrowSection().equals(new RocketEscrowSection(root.id(), 0, List.of())) && RocketEscrowGate.idle(rocket)
-                && root.armedFlights().isEmpty() && root.issuedLaunchSerial() == 1 && journal.entries().isEmpty() && root.tombstones().size() == 1
-                && head.physical().equals(rocket.getUUID()) && head.epoch() == 0 && head.outcome() == EscrowFlightTables.Outcome.READY,
-                "The governed launch after O3 did not hand the latest cargo to a fresh READY successor");
-        requireDevice(device, 1_000, 1, 0);
+        EscrowTags.require(root.rocketAuthorities().size() == 1, "O3 launch head identity: expected one successor head");
+        var head = root.rocketAuthorities().get(0);
+        EscrowTags.require(head.outcome() == EscrowFlightTables.Outcome.HANDED_OFF,
+                "O3 launch head outcome: expected HANDED_OFF, got " + head.outcome());
+        EscrowTags.require(head.logical().equals(flight.logicalRocketId()) && head.physical().equals(rocket.getUUID())
+                && head.owner().equals(rocket.ownerId().orElseThrow())
+                && head.epoch() == 0 && head.kind() == EscrowSignatureKind.FUEL_VECTOR_V1
+                && head.signature().equals(flight.fuel().resourceSignature()) && head.invariant().equals(EscrowInvariant.rocket(rocket))
+                && head.issued() == 1 && head.completed() == 1, "O3 launch head identity: latest successor identity differs");
+        EscrowTags.require(cargo(rocket) == 4_000 && tank(device) == 1_000 && flight.fuel().totalAmount() == 700,
+                "O3 launch native quantities: rocket=" + cargo(rocket) + " device=" + tank(device) + " fuel=" + flight.fuel().totalAmount());
+        EscrowTags.require(root.tombstones().size() == 1, "O3 launch receipt: expected one retained receipt");
+        var receipt = root.tombstones().get(0);
+        EscrowTags.require(receipt.getBoolean("released") && receipt.getString("accounting_status").equals("UNKNOWN")
+                && receipt.getInt("payload_amount") == 0 && receipt.getString("choice").equals("ACCEPT_CURRENT")
+                && receipt.getList("survivors", 10).size() == 2 && receipt.getList("missing", 10).isEmpty()
+                && head.anchor().equals(receipt.getUUID("anchor_op")) && head.releaseGeneration() == receipt.getLong("release_generation"),
+                "O3 launch receipt: audit or successor anchor changed");
+        EscrowTags.require(rocket.escrowSection().equals(new RocketEscrowSection(root.id(), 0, List.of()))
+                && section(device).epoch() == 1 && section(device).markers().isEmpty(), "O3 launch markers: successor or device section differs");
+        EscrowTags.require(flight.state() == RocketFlightState.LANDED && RocketEscrowGate.idle(rocket) && !device.escrowLocked()
+                && root.records().isEmpty() && root.floors().isEmpty() && root.armedFlights().isEmpty()
+                && root.issuedLaunchSerial() == 1 && journal.entries().isEmpty(), "O3 launch lifecycle: landed successor is not idle");
         result("LANDED", "rocket=4000 device=1000 fuel=700 serial=1 armed=0 journal=idle");
     }
 

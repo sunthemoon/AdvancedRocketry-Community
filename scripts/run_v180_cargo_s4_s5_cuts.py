@@ -146,7 +146,8 @@ def rocket_state(entry: dict, ledger_id) -> dict:
     require("ledger_id" not in section or section["ledger_id"] == ledger_id, "Rocket names another ledger")
     return dict(uuid=entry["UUID"], logical=data["assembly_transaction_id"], owner=data["owner_id"], x=entry["Pos"][0],
                 pos=entry["Pos"], cargo=fluid.get("Amount", 0), epoch=section["resource_epoch"], markers=section["markers"],
-                bound="ledger_id" in section, passengers=data["flight_data"]["passengers"]["assignments"])
+                bound="ledger_id" in section, passengers=data["flight_data"]["passengers"]["assignments"],
+                fuel=data["flight_data"]["fuel"]["amount"], flight_state=data["flight_data"]["state"])
 
 
 def device_state(terrain: dict, position: list, ledger_id) -> dict | None:
@@ -186,13 +187,14 @@ def inspect(world: Path) -> dict:
 
 def check_settlement(case: str, disk: dict, restarted: bool) -> None:
     spec = CASES[case]; state, ends = spec["final" if restarted else "cut"]
+    landed = restarted and spec.get("landed")
     require(len(disk["rockets"]) <= 1 and (disk["device"] is None or disk["device"]["role"] == "UNLOAD"), "Settlement duplicated the rocket or changed the device")
     root, rocket, device = disk["ledger"], disk["rocket"], disk["device"]
     require([op["phase"] for op in root["records"]] == state["records"], "Ledger records differ from the boundary")
     require(all(("settlement" in op) == state["intent"] for op in root["records"]), "Frozen intent presence differs from the boundary")
     require(all(op["reason"] == "OTHER_STATE" for op in root["records"] if op["phase"] == "REPAIR"), "Manual conflict lost its reason")
     require([receipt["released"] for receipt in root["tombstones"]] == state["receipts"], "Receipt boundary differs")
-    require(len(root["rocket_authorities"]) == state["heads"] and not root["floors"], "READY head or floor differs")
+    require(len(root["rocket_authorities"]) == state["heads"] and not root["floors"], "Head count or floor differs")
     for receipt in root["tombstones"]:
         require(receipt["accounting_status"] == "UNKNOWN" and receipt["payload_amount"] == 0
                 and receipt["choice"] == spec.get("choice", "ACCEPT_CURRENT"), "Receipt accounting or choice changed")
@@ -201,8 +203,9 @@ def check_settlement(case: str, disk: dict, restarted: bool) -> None:
             kind = "FUEL_VECTOR_V1" if survivor["endpoint"]["kind"] == "ENTITY" else "FLUID_TANK_V1"
             require(survivor["signature_kind"] == kind, "Settlement authority is not fuel-vector plus invariant for the rocket")
     for head in root["rocket_authorities"]:
-        require(head["k"] == "FUEL_VECTOR_V1" and head["outcome"] == "READY", "READY head lost its fuel-vector authority")
-    landed = restarted and spec.get("landed")
+        outcome = "HANDED_OFF" if landed else "READY"
+        require(head["outcome"] == outcome, f"Head outcome: expected {outcome}, got {head['outcome']}")
+        require(head["k"] == "FUEL_VECTOR_V1", "Head identity: fuel-vector authority changed")
     require(not root["armed_flights"] and root["issued_launch_serial"] == (1 if landed else 0), "Flight authority differs")
     require(disk["journal"] == (spec.get("cut_journal", 0) if not restarted else 0), "Journal record count differs")
     expected_rocket, expected_device = ends["rocket"], ends["device"]
@@ -211,19 +214,28 @@ def check_settlement(case: str, disk: dict, restarted: bool) -> None:
     else:
         require(rocket is not None, "The surviving rocket is missing")
         cargo, epoch, markers, bound = expected_rocket
-        require((rocket["cargo"], rocket["epoch"], len(rocket["markers"]), rocket["bound"]) == (cargo, epoch, markers, bound),
-                f"Raw rocket state differs: {rocket['cargo']}/{rocket['epoch']}/{len(rocket['markers'])}/{rocket['bound']}")
+        require(rocket["cargo"] == cargo, f"Native cargo quantities: rocket expected {cargo}, got {rocket['cargo']}")
+        require((rocket["epoch"], len(rocket["markers"]), rocket["bound"]) == (epoch, markers, bound),
+                f"Markers: rocket section differs: {rocket['epoch']}/{len(rocket['markers'])}/{rocket['bound']}")
         x = PAD_X if landed else spec.get("cut_x", ROCKET_X) if not restarted else ROCKET_X
         require(rocket["x"] == x and rocket["pos"][1:] == [100.0, 64.5] and not rocket["passengers"], "Rocket placement or occupancy differs")
         if root["rocket_authorities"]:
-            require(root["rocket_authorities"][0]["p"] == rocket["uuid"] and root["rocket_authorities"][0]["e"] == epoch,
-                    "READY head names another physical rocket or epoch")
+            head = root["rocket_authorities"][0]
+            require(head["p"] == rocket["uuid"] and head["e"] == epoch and head["l"] == rocket["logical"] and head["o"] == rocket["owner"],
+                    "Head identity: physical rocket, logical rocket, owner or epoch differs")
+            if landed:
+                require(head["issued"] == head["completed"] == 1, "Head identity: completed launch serial differs")
+                require(rocket["fuel"] == 700, f"Native fuel quantity: expected 700, got {rocket['fuel']}")
+                require(rocket["flight_state"] == "LANDED", "Flight lifecycle: successor is not LANDED")
+                receipt = root["tombstones"][0]
+                require(head["a"] == receipt["anchor_op"] and head["g"] == receipt["release_generation"], "Receipt: head anchor differs")
     if expected_device is None:
         require(device is None, "An abandoned device reappeared")
     else:
         require(device is not None, "The surviving device is missing")
-        require((device["amount"], device["epoch"], len(device["markers"])) == expected_device,
-                f"Raw device state differs: {device['amount']}/{device['epoch']}/{len(device['markers'])}")
+        require(device["amount"] == expected_device[0], f"Native cargo quantities: device expected {expected_device[0]}, got {device['amount']}")
+        require((device["epoch"], len(device["markers"])) == expected_device[1:],
+                f"Markers: device section differs: {device['epoch']}/{len(device['markers'])}")
     for endpoint, role in ((rocket, "SOURCE"), (device, "DESTINATION")):
         for marker in endpoint["markers"] if endpoint else []:
             live = any(op["op_id"] == marker["op_id"] and op["seq"] == marker["seq"] for op in root["records"])
@@ -312,6 +324,25 @@ def raw_snapshot(world: Path) -> dict:
                 block_entities=terrain["block_entities"], entities=entities(world))
 
 
+def retain_failed_files(session: Path, world: Path, destination: Path) -> dict:
+    """Keep original native bytes before owned-server cleanup, including failed/absent decodes."""
+    files = [world / name for name in ("level.dat", "level.dat_old", "region/r.0.0.mca", "entities/r.0.0.mca")]
+    files += list((world / "data").glob("*.dat*")) + list((session / "crash-reports").glob("*.txt"))
+    manifest = {}
+    for source in sorted(set(files)):
+        if not source.is_file():
+            continue
+        require(not source.is_symlink() and session.resolve() in source.resolve().parents, "Unsafe failure snapshot input")
+        relative = source.relative_to(session)
+        target = destination / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, target)
+        manifest[relative.as_posix()] = dict(bytes=target.stat().st_size, sha256=digest(target))
+    destination.mkdir(parents=True, exist_ok=True)
+    (destination / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+    return dict(directory=destination.name, files=manifest)
+
+
 def marker(case: str, restart: int) -> str:
     if restart:
         return "ARCE_RELEASE_CARGO_CUT_RESULT cut=" + case + " "
@@ -376,11 +407,17 @@ def run(args) -> None:
                     command[1:1] = [f"-D{key}={value}" for key, value in sorted(CASES[case].get("properties", {}).items())]
                 start = dict(restart=restart, preflight=preflight(), command=command); row["starts"].append(start)
                 process = smoke.CapturedProcess(command, session, evidence / f"{case}-{restart}.log")
-                process.wait_for(re.compile(re.escape(marker(case, restart))), args.startup_timeout)
-                if restart:
-                    process.command("stop"); start["exit_code"] = process.finish()
-                else:
-                    process.process.kill(); process.abort(); start["forced_stop"] = True
+                execution_error = None
+                try:
+                    process.wait_for(re.compile(re.escape(marker(case, restart))), args.startup_timeout)
+                    if restart:
+                        process.command("stop"); start["exit_code"] = process.finish()
+                    else:
+                        process.process.kill(); process.abort(); start["forced_stop"] = True
+                except (OSError, smoke.SmokeError) as failure:
+                    execution_error = str(failure)
+                    process.abort()
+                    start["exit_code"] = process.process.poll()
                 lines = process.lines; process = None
                 world = session / ("world-" + case)
                 try:
@@ -390,6 +427,8 @@ def run(args) -> None:
                 except (OSError, ValueError, KeyError, smoke.SmokeError) as failure:
                     start["raw"] = dict(error=str(failure))
                 try:
+                    require(execution_error is None, "Start execution: " + str(execution_error))
+                    require("error" not in start["raw"], "Raw decoding: " + str(start["raw"].get("error")))
                     observations(lines, case, restart)
                     if case == "FS_O3_AFTER" and restart == 1:
                         first_raw = json.loads((evidence / f"{case}-0-raw.json").read_text(encoding="utf-8"))
@@ -404,9 +443,15 @@ def run(args) -> None:
                                          tank=disk["tank"], blocks=disk["blocks"], fences=fences(lines), files=disk["files"])
                     if restart and "disk" in row["starts"][0]:
                         require(same_identity(row["starts"][0]["disk"], disk), "Restart changed the logical rocket, owner or device")
+                    if case == "FS_O3_AFTER" and restart:
+                        first = json.loads((evidence / f"{case}-0-raw.json").read_text(encoding="utf-8"))["ledger"]["tombstones"][0]
+                        receipt = disk["ledger"]["tombstones"][0]
+                        require(all(receipt[key] == first[key] for key in ("op_id", "before_choice", "decision_digest", "payload_hash")),
+                                "Receipt: governed launch changed the frozen audit")
                     start["status"] = "PASS"
-                except smoke.SmokeError as failure:
+                except (OSError, ValueError, KeyError, smoke.SmokeError) as failure:
                     start.update(status="FAILED", error=str(failure)); row["findings"].append(f"start {restart}: {failure}")
+                    start["native_files"] = retain_failed_files(session, world, evidence / f"{case}-{restart}-native")
                 (evidence / "results.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
             row["status"] = "FAILED" if row["findings"] else "PASS"
             require(not row["findings"], "First contradictory cut: " + case + ": " + "; ".join(row["findings"]))

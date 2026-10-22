@@ -19,6 +19,7 @@ SETTLEMENT_ORDER = [
 
 def rocket(x=68.5, cargo=4000, epoch=1, markers=0, bound=True, logical=(1, 2, 3, 4)):
     return dict(uuid=[9, 9, 9, 9], logical=list(logical), owner=[5, 5, 5, 5], x=x, pos=[x, 100.0, 64.5], cargo=cargo, epoch=epoch,
+                fuel=1000, flight_state="FUELED",
                 markers=[dict(op_id="op", seq=1, role="SOURCE", epoch_after=epoch)] * markers, bound=bound, passengers=[])
 
 
@@ -32,7 +33,7 @@ def released_disk():
                    survivors=[dict(endpoint=dict(kind="ENTITY"), signature_kind="FUEL_VECTOR_V1"),
                               dict(endpoint=dict(kind="BLOCK_ENTITY"), signature_kind="FLUID_TANK_V1")])
     root = dict(ledger_id="ledger", records=[], tombstones=[receipt], floors=[], armed_flights=[], issued_launch_serial=0,
-                rocket_authorities=[dict(k="FUEL_VECTOR_V1", outcome="READY", p=[9, 9, 9, 9], e=1)])
+                rocket_authorities=[dict(k="FUEL_VECTOR_V1", outcome="READY", p=[9, 9, 9, 9], l=[1, 2, 3, 4], o=[5, 5, 5, 5], e=1)])
     value = rocket()
     return dict(ledger=root, journal=0, rockets=[value], rocket=value, device=device(), second=None, tank=0,
                 blocks=["minecraft:air", "minecraft:air"], files={})
@@ -46,6 +47,49 @@ def stale_disk():
 
 
 class CargoSettlementFlightRunnerTest(unittest.TestCase):
+    def test_post_launch_terminal_head_and_named_checks(self):
+        disk = released_disk()
+        disk["ledger"]["issued_launch_serial"] = 1
+        disk["ledger"]["rocket_authorities"][0].update(outcome="HANDED_OFF", e=0, issued=1, completed=1, a="op", g=4)
+        disk["ledger"]["tombstones"][0].update(anchor_op="op", release_generation=4)
+        disk["rocket"].update(x=80.5, pos=[80.5, 100.0, 64.5], epoch=0, fuel=700, flight_state="LANDED")
+        runner.check("FS_O3_AFTER", disk, True)
+        mutations = (
+            ("Head outcome", lambda d: d["ledger"]["rocket_authorities"][0].update(outcome="READY")),
+            ("Head identity", lambda d: d["ledger"]["rocket_authorities"][0].update(l=[8, 8, 8, 8])),
+            ("Head identity", lambda d: d["ledger"]["rocket_authorities"][0].update(o=[8, 8, 8, 8])),
+            ("Head identity", lambda d: d["ledger"]["rocket_authorities"][0].update(completed=0)),
+            ("Native cargo quantities", lambda d: d["rocket"].update(cargo=5000)),
+            ("Native cargo quantities", lambda d: d["device"].update(amount=2000)),
+            ("Native fuel quantity", lambda d: d["rocket"].update(fuel=1000)),
+            ("Receipt", lambda d: d["ledger"]["tombstones"][0].update(released=False)),
+            ("Receipt", lambda d: d["ledger"]["rocket_authorities"][0].update(a="other")),
+            ("Markers", lambda d: d["rocket"].update(markers=[{}])),
+            ("Markers", lambda d: d["device"].update(markers=[{}])))
+        for name, mutate in mutations:
+            with self.subTest(name=name):
+                changed = copy.deepcopy(disk); mutate(changed)
+                with self.assertRaisesRegex(runner.smoke.SmokeError, name):
+                    runner.check("FS_O3_AFTER", changed, True)
+        before_launch = released_disk()
+        runner.check("FS_O1_AFTER", before_launch, True)
+        before_launch["ledger"]["rocket_authorities"][0]["outcome"] = "HANDED_OFF"
+        with self.assertRaisesRegex(runner.smoke.SmokeError, "expected READY"):
+            runner.check("FS_O1_AFTER", before_launch, True)
+
+    def test_failed_native_files_are_retained_byte_for_byte(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp); session = root / "session"; world = session / "world-case"
+            files = {"world-case/data/ledger.dat": b"not-decodable", "world-case/region/r.0.0.mca": b"terrain",
+                     "world-case/entities/r.0.0.mca": b"entities", "crash-reports/crash.txt": b"failure"}
+            for name, content in files.items():
+                path = session / name; path.parent.mkdir(parents=True, exist_ok=True); path.write_bytes(content)
+            result = runner.retain_failed_files(session, world, root / "evidence")
+            self.assertEqual(set(files), set(result["files"]))
+            for name, content in files.items():
+                self.assertEqual(content, (root / "evidence" / name).read_bytes())
+                self.assertEqual(runner.digest(session / name), result["files"][name]["sha256"])
+
     def test_the_case_table_is_the_task_rows_in_order(self):
         settlement = [case for case, spec in runner.CASES.items() if spec["family"] == "C-S4"]
         flight = [case for case, spec in runner.CASES.items() if spec["family"] == "C-S5"]
@@ -166,6 +210,12 @@ class CargoSettlementFlightRunnerTest(unittest.TestCase):
             runner.main()
 
     def test_first_failed_cut_retains_three_starts_and_stops_before_the_next_cut(self):
+        self.run_failed_cut(False)
+
+    def test_failed_restart_without_result_marker_is_captured_before_cleanup(self):
+        self.run_failed_cut(True)
+
+    def run_failed_cut(self, wait_failure):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp); (root / "template/libraries").mkdir(parents=True)
             jar = root / "test.jar"; jar.write_bytes(b"fixture")
@@ -173,6 +223,9 @@ class CargoSettlementFlightRunnerTest(unittest.TestCase):
                                    session_dir=root / "session", evidence_dir=root / "evidence", java="java", startup_timeout=240,
                                    case=["FS_O1_BEFORE", "FS_O1_AFTER"], dev=False, keep_going=False)
             process = Mock(); process.finish.return_value = 0; process.lines = []
+            process.process.poll.return_value = 0
+            if wait_failure:
+                process.wait_for.side_effect = [None, runner.smoke.SmokeError("exited without result marker"), None]
             disk = released_disk()
             with patch.object(runner, "assert_pin"), patch.object(runner, "require_lock"), \
                     patch.object(runner, "preflight", return_value={}), patch.object(runner, "digest", return_value="hash"), \
@@ -181,7 +234,7 @@ class CargoSettlementFlightRunnerTest(unittest.TestCase):
                     patch.object(runner.smoke, "write_server_configuration"), \
                     patch.object(runner, "raw_snapshot", return_value={}), patch.object(runner, "observations"), \
                     patch.object(runner, "inspect", return_value=disk), \
-                    patch.object(runner, "check", side_effect=[runner.smoke.SmokeError("held-state finding"), None, None]):
+                    patch.object(runner, "check", side_effect=[None, None] if wait_failure else [runner.smoke.SmokeError("held-state finding"), None, None]):
                 with self.assertRaisesRegex(runner.smoke.SmokeError, "First contradictory cut"):
                     runner.run(args)
                 self.assertEqual(3, starts.call_count)
@@ -190,6 +243,9 @@ class CargoSettlementFlightRunnerTest(unittest.TestCase):
             self.assertEqual(1, len(report["cases"]))
             self.assertEqual(3, len(report["cases"][0]["starts"]))
             self.assertEqual(3, len(list(args.evidence_dir.glob("*-raw.json"))))
+            failed = report["cases"][0]["starts"][1 if wait_failure else 0]
+            self.assertEqual("FAILED", failed["status"])
+            self.assertTrue((args.evidence_dir / failed["native_files"]["directory"] / "manifest.json").is_file())
             self.assertEqual("sha", report["pins"]["source_commit"])
             self.assertTrue(report["cleanup"])
             self.assertFalse(args.session_dir.exists())
