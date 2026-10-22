@@ -32,8 +32,10 @@ class EscrowItemSettlementNormalizationTest {
             var marker = normalized.copy(); marker.put("wrapper", new RocketEscrowSection(f.ledger().id(), 1,
                     List.of(new EscrowPrefix.Link(f.op(), f.op().rocket(), load ? "DESTINATION" : "SOURCE").marker())).encode());
             var owner = normalized.copy(); owner.putUUID("owner", EscrowTestFixtures.id(992));
+            var physical = normalized.copy(); physical.putUUID("physical", EscrowTestFixtures.id(993));
+            var logical = normalized.copy(); logical.putUUID("logical", EscrowTestFixtures.id(994));
             var content = f.after().copy(); content.put("wrapper", old.normalizedWrapper().encode());
-            for (var changed : List.of(foreign, epoch, marker, owner, content)) {
+            for (var changed : List.of(foreign, epoch, marker, owner, physical, logical, content)) {
                 assertFalse(validator.test(EscrowReconciliationCheckpointTest.rocketSlot(f.op().rocket(), changed)),
                         "A changed identity, wrapper or cargo is not the prescribed normalization");
             }

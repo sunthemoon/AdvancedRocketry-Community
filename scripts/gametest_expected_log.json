@@ -1579,6 +1579,15 @@
       "counts": {"item_cargo_settlement_r39": 1},
       "test": "ItemCargoSettlementNativeGameTests.unavailableNativeItemHoldsOnlyItsSettlementBeforeO2",
       "reason": "The structurally valid item becomes unavailable before O1; R39 retains only its frozen settlement before normalization/O2 and logs once across retries."
+    },
+    {
+      "id": "w134-item-cargo-retained-disassembly-fence",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_FENCED transfer=[0-9a-f-]{36} reason=ENDPOINT_PROOF_REQUIRED repair=offline-whole-world",
+      "counts": {"item_cargo_landed_disassembly": 1},
+      "test": "ItemCargoLandedDisassemblyGameTests.retainedLegacyRecordDisassemblesExactlyTheLatestCargoOnce",
+      "reason": "The checked legacy COMMITTED record observes the item-mutated destination's nonzero epoch before loaded endpoint proof and P1-F8 disassembly."
     }
   ]
 }
