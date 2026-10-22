@@ -51,6 +51,8 @@ public final class ItemCargoFlightGameTests {
         RocketLandedDisassemblyGameTestSupport.Requester requester;
         UUID quote;
         long firstSerial, quoteTick, since;
+        net.minecraft.nbt.CompoundTag savedRocket, savedDevice, savedLedger, reloadEnvelope;
+        int reloadPhase;
         int step;
         boolean done;
 
@@ -74,7 +76,7 @@ public final class ItemCargoFlightGameTests {
                     if (!retired()) { return; }
                     check(ItemCargoReconciliationFixtures.amount(rocket) == 64 && ItemCargoReconciliationFixtures.amount(device.root().orElseThrow().buffer()) == 6
                             && rocket.escrowSection().epoch() == 1, "The first ordinary load did not conserve the four-item partial move");
-                    reloadPartialMove(); governed();
+                    if (!reloadPartialMove()) { return; } governed();
                     flight = new EscrowCargoLaunch(helper, world, rocket, origin.offset(32, 0, 0), false, ItemCargoReconciliationFixtures::amount); step = 2;
                 }
                 case 2 -> {
@@ -148,21 +150,26 @@ public final class ItemCargoFlightGameTests {
         }
 
         /** A1 native serialization/rebind; process-crash cuts remain D-S, not this in-process reload. */
-        private void reloadPartialMove() {
-            var savedRocket = rocket.saveWithoutId(new net.minecraft.nbt.CompoundTag());
-            var savedDevice = device.saveWithFullMetadata(); var envelope = EscrowNativeEnvelope.rocket(rocket);
-            var previous = world.data(); var savedLedger = previous.save(new net.minecraft.nbt.CompoundTag());
-            check(previous.bind(world.server).writerIdle(), "Partial-move reload crossed a pending writer");
-            previous.stop();
-            check(EscrowRuntime.of(world.server).replaceLedgerForTests(world.server, ResourceEscrowSavedData.load(savedLedger)),
-                    "Partial-move ledger rebind failed");
+        private boolean reloadPartialMove() {
+            if (reloadPhase == 0) {
+                var previous = world.data();
+                if (!previous.bind(world.server).writerIdle()) { return false; }
+                savedRocket = rocket.saveWithoutId(new net.minecraft.nbt.CompoundTag()); savedDevice = device.saveWithFullMetadata();
+                reloadEnvelope = EscrowNativeEnvelope.rocket(rocket); savedLedger = previous.save(new net.minecraft.nbt.CompoundTag());
+                previous.stop();
+                check(EscrowRuntime.of(world.server).replaceLedgerForTests(world.server, ResourceEscrowSavedData.load(savedLedger)),
+                        "Partial-move ledger rebind failed");
+                reloadPhase = 1; return false;
+            }
+            if (!world.data().operational() || !world.data().bind(world.server).writerIdle()) { return false; }
             rocket.load(savedRocket); device.load(savedDevice);
-            check(envelope.equals(EscrowNativeEnvelope.rocket(rocket)) && savedDevice.equals(device.saveWithFullMetadata())
+            check(reloadEnvelope.equals(EscrowNativeEnvelope.rocket(rocket)) && savedDevice.equals(device.saveWithFullMetadata())
                     && savedLedger.equals(world.data().save(new net.minecraft.nbt.CompoundTag()))
                     && ItemCargoReconciliationFixtures.amount(rocket) == 64
                     && ItemCargoReconciliationFixtures.amount(device.root().orElseThrow().buffer()) == 6
                     && rocket.escrowSection().epoch() == 1 && RocketEscrowGate.idle(rocket),
                     "Partial move reloaded a different resource, typed tag, wrapper or ledger");
+            return true;
         }
 
         /** C-I over the real cargo result: recognized, yet held when its ARMED authority is missing or terminal. */
