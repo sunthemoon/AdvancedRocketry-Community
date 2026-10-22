@@ -15,6 +15,21 @@ import org.junit.jupiter.api.io.TempDir;
 
 class EscrowCargoContentionProbeTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
+    @Test void healthyControlIsExplicitlyAdmittedAfterEnablingWithoutDependingOnBlockTicks() {
+        var calls = new java.util.ArrayList<String>();
+        Runnable enable = () -> calls.add("enable");
+        java.util.function.Supplier<io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketCargoStatus> attempt = () -> {
+            assertEquals(java.util.List.of("enable"), calls);
+            calls.add("attempt");
+            return io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketCargoStatus.READY;
+        };
+        EscrowCargoContentionProbe.queueHealthy(false, enable, attempt);
+        assertTrue(calls.isEmpty());
+        EscrowCargoContentionProbe.queueHealthy(true, enable, attempt);
+        assertEquals(java.util.List.of("enable", "attempt"), calls);
+        assertThrows(IllegalArgumentException.class, () -> EscrowCargoContentionProbe.queueHealthy(true, () -> { },
+                () -> io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketCargoStatus.OTHER_TRANSFER_PENDING));
+    }
     @Test void admissionDiagnosticsAreBoundedAndInertOutsideTheStartCase() {
         assertTrue(EscrowCargoContentionProbe.diagnosticTick(true, EscrowCargoContentionProbe.E5, false, 100));
         assertFalse(EscrowCargoContentionProbe.diagnosticTick(false, EscrowCargoContentionProbe.E5, false, 100));

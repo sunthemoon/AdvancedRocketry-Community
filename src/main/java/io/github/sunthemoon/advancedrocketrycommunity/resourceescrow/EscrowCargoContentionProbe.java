@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.resourceescrow;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModEntities;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketCargoStatus;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import java.util.ArrayList;
 import java.util.List;
@@ -89,6 +90,12 @@ final class EscrowCargoContentionProbe {
             var field = owner.getClass().getDeclaredField(name); field.setAccessible(true); return field.get(owner);
         } catch (ReflectiveOperationException failure) { throw new IllegalStateException("Cargo diagnostic field unavailable", failure); }
     }
+    /** An empty native server stops block-entity ticking after 300 ticks, before E5's third retry. */
+    static void queueHealthy(boolean gate, Runnable enable, java.util.function.Supplier<RocketCargoStatus> attempt) {
+        if (!gate) { return; }
+        enable.run();
+        EscrowTags.require(attempt.get() == RocketCargoStatus.READY, "Healthy cargo fixture did not enter the fair queue");
+    }
     void checkpoint(String label) {
         if (recovery || injected || !name.equals(E3) || !label.equals("C4_SOURCE_SELECTED")) { return; }
         injected = true;
@@ -138,7 +145,13 @@ final class EscrowCargoContentionProbe {
         if (!healthyQueued) {
             // Queue healthy work behind an already STALLED component, not into its failing ordinary force batch.
             healthyQueued = true;
-            EscrowCargoSwitches.forTests(server, EscrowOperation.Kind.FLUID_CARGO_LOAD, device.id(), true);
+            var pacer = field(device.fluidEntity(), "pacer");
+            AdvancedRocketryCommunity.LOGGER.info("ARCE_CARGO_HEALTHY_START tick={} game_time={} pacer_anchor={} players={} forced_chunks={}",
+                    server.getTickCount(), server.overworld().getGameTime(), pacer == null ? null : field(pacer, "anchor"),
+                    server.overworld().players().size(), net.minecraftforge.common.world.ForgeChunkManager.hasForcedChunks(server.overworld()));
+            queueHealthy(Boolean.getBoolean(EscrowTestEndpoints.HOOKS),
+                    () -> EscrowCargoSwitches.forTests(server, EscrowOperation.Kind.FLUID_CARGO_LOAD, device.id(), true),
+                    device.fluidEntity()::attempt);
             AdvancedRocketryCommunity.LOGGER.info("ARCE_CARGO_HEALTHY_QUEUED cut={} after_stalled=true", name);
             return;
         }
