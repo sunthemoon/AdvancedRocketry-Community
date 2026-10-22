@@ -87,10 +87,10 @@ FLIGHTS = {
     "FF_N1": flight(ends([LOADED], (4000, 1, 0)), ends([(ROCKET_X, 0, 0, False)], (5000, 0, 0))),
     "FF_F1_AFTER_CARGO": flight(ends([LOADED], (4000, 1, 0), serial=1), ends([LOADED], (4000, 1, 0), armed=1, serial=1)),
     "FF_F6_AFTER_CARGO": flight(ends([(PAD, 1000, 0, True)], (4000, 1, 0), serial=1)),
-    "FF_F8_AFTER_CARGO": flight(ends([(PAD, 1000, 0, True)], (4000, 1, 0), serial=1)),
-    "FF_DISASSEMBLY_REMOVAL": flight(RESTORED, properties={LANDED: "LANDED_DISASSEMBLY:K1"}, marker="ARCE_LANDED_DISASSEMBLY_PAUSED boundary=K1 "),
-    "FF_DISASSEMBLY_RESTORATION": flight(RESTORED, properties={LANDED: "LANDED_DISASSEMBLY:K2"}, marker="ARCE_LANDED_DISASSEMBLY_PAUSED boundary=K2 "),
-    "FF_DISASSEMBLY_RELEASE": flight(RESTORED, properties={LANDED: "LANDED_DISASSEMBLY:K5"}, marker="ARCE_LANDED_DISASSEMBLY_PAUSED boundary=K5 "),
+    "FF_F8_AFTER_CARGO": flight(ends([(PAD, 1000, 0, True)], (4000, 1, 0), serial=1), ends([(PAD, 1000, 0, True)], (4000, 1, 0), serial=1)),
+    "FF_DISASSEMBLY_REMOVAL": flight(RESTORED, STALE, properties={LANDED: "LANDED_DISASSEMBLY:K1"}, marker="ARCE_LANDED_DISASSEMBLY_PAUSED boundary=K1 "),
+    "FF_DISASSEMBLY_RESTORATION": flight(RESTORED, ends([UNLOADED], (1000, 1, 0)), properties={LANDED: "LANDED_DISASSEMBLY:K2"}, marker="ARCE_LANDED_DISASSEMBLY_PAUSED boundary=K2 "),
+    "FF_DISASSEMBLY_RELEASE": flight(RESTORED, ends([UNLOADED], (1000, 1, 0)), properties={LANDED: "LANDED_DISASSEMBLY:K5"}, marker="ARCE_LANDED_DISASSEMBLY_PAUSED boundary=K5 "),
     "FF_REBUILD_DESTINATION": flight(STALE, STALE),
     "FF_KEEP_SOURCE": flight(STALE, STALE, fence="FLOOR_CONFLICT"),
     "FF_REBUILD_SOURCE": flight(STALE, STALE),
@@ -117,7 +117,8 @@ HOOKS = tuple(HOOK_DIR + path + ".java" for path in (
     "resourceescrow/EscrowReconciliationDriver", "rocket/flight/persistence/RocketTransferSavedData"))
 HARNESS = ("scripts/run_v180_cargo_s4_s5_cuts.py", "scripts/run_v180_cargo_reconciliation.py", "scripts/run_v180_escrow_forced_stop.py",
            "scripts/run_v180_escrow_pre_f2.py", "scripts/run_v180_rocket_settlement_completion.py", "scripts/run_v060_flight_server_smoke.py",
-           "scripts/run_dedicated_server_smoke.py", "scripts/run_v180_landed_disassembly_cuts.py", "scripts/inspect_celestial_saved_data.py")
+           "scripts/run_dedicated_server_smoke.py", "scripts/run_v180_landed_disassembly_cuts.py", "scripts/inspect_celestial_saved_data.py",
+           "scripts/inspect_escrow_receipt.py")
 
 
 def require(condition: bool, message: str) -> None:
@@ -252,6 +253,23 @@ def check_flight(case: str, disk: dict, restarted: bool) -> None:
     require(raw <= total or disk["journal"] or root["armed_flights"], "More cargo became available than the fixture holds")
     require(len(rockets) <= 1 or disk["journal"] or root["armed_flights"] or case == "FF_STALE_PREPARED", "A stale copy won outside a locked record")
     if expected is None:
+        # F6's first readback can precede the other entity slot's store. Both raw copies, when present,
+        # must still carry the latest cargo under the retained journal/ARMED authority.
+        require(case in ("FF_F6_AFTER_CARGO", "FF_GOVERNED_TERMINAL"), "Missing exact boundary oracle")
+        require(1 <= len(rockets) <= (2 if case == "FF_F6_AFTER_CARGO" else 1)
+                and all(r["cargo"] == 1000 and r["bound"] and r["epoch"] in (0, 1) for r in rockets),
+                "The governed boundary lost or changed the latest cargo")
+        require(disk["device"] is not None and (disk["device"]["amount"], disk["device"]["epoch"], disk["device"]["markers"]) == (4000, 1, [])
+                and disk["second"] is None and disk["tank"] == 0 and root["issued_launch_serial"] == 1,
+                "The governed boundary changed its native device, blocks or serial")
+        if case == "FF_F6_AFTER_CARGO":
+            require(disk["journal"] == 1 and len(root["armed_flights"]) == 1
+                    and root["armed_flights"][0]["outcome"] == "ARMED", "F6 lost its pending governed authority")
+        else:
+            require(rockets[0]["x"] == ROCKET_X and rockets[0]["epoch"] == 1
+                    and (disk["journal"], len(root["armed_flights"])) in ((1, 1), (0, 1), (0, 0))
+                    and all(a["outcome"] == "HANDED_OFF" for a in root["armed_flights"]),
+                    "Terminal authority entered a legacy recovery or changed its source")
         return
     observed = sorted((state["x"], state["cargo"], state["epoch"], state["bound"]) for state in rockets)
     require(observed == sorted(expected["rockets"]), f"Raw rockets differ: {observed}")

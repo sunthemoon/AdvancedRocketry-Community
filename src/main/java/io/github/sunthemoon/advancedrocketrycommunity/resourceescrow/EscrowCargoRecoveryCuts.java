@@ -107,6 +107,7 @@ final class EscrowCargoRecoveryCuts extends EscrowCargoCutProbe {
                 || !data.bind(server).writerIdle()) { return; }
         EscrowTags.require(cargo(rocket) == 4_000 && tank(device) == 1_000 && rocket.escrowSection().epoch() == 1
                 && !before.contentHash().equals(rocket.snapshot().orElseThrow().contentHash()), "The real unload did not retire with its latest cargo");
+        save(); // The recovery fixture starts from the fully retired, pruned native cargo state.
         record = stale();
         if (boundary.equals("BOTH_ENTITIES")) {
             var copy = Objects.requireNonNull(ModEntities.ROCKET.get().create(level));

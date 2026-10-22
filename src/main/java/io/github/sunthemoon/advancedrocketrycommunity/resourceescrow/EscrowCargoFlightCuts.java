@@ -134,6 +134,7 @@ final class EscrowCargoFlightCuts extends EscrowCargoCutProbe {
     private void afterLoad(RocketTransferSavedData journal) {
         EscrowTags.require(cargo(rocket) == 1_000 && tank(device) == 4_000 && rocket.escrowSection().epoch() == 1
                 && data.ledger().tombstones().isEmpty(), "The ordinary load did not conserve 1,000 mB");
+        save(); // Complete the cargo fixture baseline, including both pruned wrappers, before testing a flight cut.
         if (boundary.startsWith("GOVERNED")) {
             var record = EscrowCargoTransferFixtures.governed(rocket, before, data.ledger().id()); transfer = record.transferId();
             if (boundary.equals("GOVERNED_DURABLE")) {
@@ -174,6 +175,7 @@ final class EscrowCargoFlightCuts extends EscrowCargoCutProbe {
         if (!retired(second, rocket)) { return; }
         EscrowTags.require(cargo(rocket) == 2_000 && tank(second) == 4_000 && rocket.escrowSection().epoch() == 1,
                 "The successor's load did not advance its own epoch with 1,000 mB more");
+        save(); // Checkpoint the successor's completed cargo mutation before the next launch.
         refuel(rocket);
         EscrowTags.require(rocket.escrowSection().epoch() == 2, "The successor's refuel did not advance its epoch");
         pause(boundary);

@@ -114,6 +114,16 @@ class CargoSettlementFlightRunnerTest(unittest.TestCase):
             with self.assertRaises(runner.smoke.SmokeError):
                 runner.check("FF_DISASSEMBLY_RELEASE", changed, True)
 
+    def test_terminal_authority_never_makes_missing_cargo_a_pass(self):
+        disk = stale_disk(); disk["rocket"].update(cargo=1000); disk["device"].update(amount=4000)
+        disk["ledger"].update(issued_launch_serial=1, armed_flights=[dict(outcome="HANDED_OFF")])
+        runner.check("FF_GOVERNED_TERMINAL", disk, True)
+        for mutate in (lambda d: d.update(rockets=[]), lambda d: d["rocket"].update(cargo=0),
+                       lambda d: d["ledger"]["armed_flights"][0].update(outcome="ARMED")):
+            changed = copy.deepcopy(disk); mutate(changed)
+            with self.assertRaises(runner.smoke.SmokeError):
+                runner.check("FF_GOVERNED_TERMINAL", changed, True)
+
     def test_observations_need_the_exact_marker_no_errors_and_the_required_fence(self):
         runner.observations(["ARCE_RELEASE_CARGO_CUT_PAUSED cut=FS_O1_AFTER boundary=O1_AFTER"], "FS_O1_AFTER", 0)
         with self.assertRaises(runner.smoke.SmokeError):
