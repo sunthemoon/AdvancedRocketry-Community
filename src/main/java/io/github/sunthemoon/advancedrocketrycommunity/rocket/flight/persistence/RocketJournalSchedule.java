@@ -98,7 +98,7 @@ final class RocketJournalSchedule {
                 queue.removeFirst();
                 effects.remove(effect.logical, effect); publish(); runs++;
                 if (journal.nativeProbe() != null) { journal.nativeProbe().event(effect.logical, changed ? "continuation_discard" : "continuation_run", effect.sequence, "QUEUED", size()); }
-                if (changed) { effect.discarded.run(); continue; }
+                if (changed) { effect.noteDiscard("JOURNAL_CHANGED"); effect.discarded.run(); continue; }
                 try { effect.run(); }
                 catch (RuntimeException failure) {
                     com.mojang.logging.LogUtils.getLogger().error(
@@ -117,7 +117,7 @@ final class RocketJournalSchedule {
 
     void discard() {
         checkOwner(); var pending = List.copyOf(effects.values()); effects.clear(); queue.clear(); reservations.clear(); publish();
-        pending.forEach(effect -> effect.discarded.run());
+        pending.forEach(effect -> { effect.noteDiscard("SCHEDULE_CLOSED"); effect.discarded.run(); });
     }
 
     private boolean unchanged(Effect effect) {
@@ -139,10 +139,16 @@ final class RocketJournalSchedule {
 
     private record Effect(UUID logical, RocketTransferRecord expected, long sequence, FirstEventOutbox outbox,
                           boolean duringFailure, BooleanSupplier action, Runnable discarded) {
+        void noteDiscard(String reason) {
+            if (expected != null && expected.phase() == io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferPhase.PREPARED) {
+                io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowLaunchDiscard.note("PREPARED_SCHEDULE",
+                        () -> "logical=" + logical + " transfer=" + expected.transferId() + " reason=" + reason);
+            }
+        }
         void run() {
             boolean accepted = false;
             try { accepted = action.getAsBoolean(); }
-            finally { if (!accepted) { discarded.run(); } }
+            finally { if (!accepted) { noteDiscard("ACTION_NOT_ACCEPTED"); discarded.run(); } }
         }
     }
 }
