@@ -67,17 +67,22 @@ final class EscrowFlightCheckpoint implements AutoCloseable {
             io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord record = null;
             if (arm != null) {
                 var data = ResourceEscrowSavedData.existing(level.getServer());
+                net.minecraft.nbt.CompoundTag observed = null;
                 try {
-                    if (data != null && data.bind(level.getServer()).governedAvailable(arm.logical())
-                            && boundary.test(captured.get())) {
-                        record = prepared.afterArm(data.ledger(), arm, EscrowGovernedEnvelope.capture(rocket), journal);
+                    boolean available = data != null && data.bind(level.getServer()).governedAvailable(arm.logical());
+                    if (available && boundary.test(captured.get())) {
+                        observed = EscrowGovernedEnvelope.capture(rocket);
+                        record = prepared.afterArm(data.ledger(), arm, observed, journal);
                     } else {
-                        EscrowLaunchDiscard.note(arm.logical(), arm.transfer(), "F1_AFTER_ARM", "LEDGER_OR_ACTION_BOUNDARY");
+                        EscrowLaunchDiscard.note(arm.logical(), arm.transfer(), "F1_AFTER_ARM",
+                                data == null ? "NO_LEDGER" : !available ? "LEDGER_UNAVAILABLE" : "ACTION_BOUNDARY");
                     }
                 } catch (IllegalArgumentException refused) {
                     // ARMED remains durable and locked; only its checked cancellation/recovery may retire it.
                     EscrowLaunchDiscard.note(arm.logical(), arm.transfer(), "F1_AFTER_ARM",
-                            refused.getClass().getSimpleName() + ": " + refused.getMessage());
+                            refused.getClass().getSimpleName() + ": " + refused.getMessage() + " fields="
+                                    + EscrowLaunchDiscard.differences(captured.get().nativeTransfer().orElseThrow()
+                                            .sourceEnvelope(captured.get()), observed));
                 }
             }
             completion.accept(record);
