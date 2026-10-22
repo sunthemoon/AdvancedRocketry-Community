@@ -84,6 +84,8 @@ final class EscrowCargoContentionProbe {
                     .filter(f -> f.getType() == it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap.class).findFirst().orElseThrow();
             cacheField.setAccessible(true);
             var cache = (it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap<?>) cacheField.get(storage);
+            AdvancedRocketryCommunity.LOGGER.info("ARCE_CARGO_CACHE_CANDIDATE regions={} own_region_cached={} oldest={}",
+                    cache.size(), cache.containsKey(ChunkPos.asLong(0, 0)), cache.isEmpty() ? "none" : new ChunkPos(cache.lastLongKey()));
             EscrowTags.require(cache.size() == 256 && !cache.containsKey(ChunkPos.asLong(0, 0)), "E3 cache fixture changed before its own store");
             long key = cache.lastLongKey();
             EscrowTags.require(ChunkPos.getX(key) >= 8 && ChunkPos.getX(key) < 264 && ChunkPos.getZ(key) == 8,
@@ -92,7 +94,13 @@ final class EscrowCargoContentionProbe {
                     .filter(f -> f.getType() == java.nio.channels.FileChannel.class).findFirst().orElseThrow();
             channel.setAccessible(true); ((java.nio.channels.FileChannel) channel.get(cache.get(key))).close();
             return cache.size();
-        } catch (ReflectiveOperationException | java.io.IOException failure) { throw new IllegalStateException(failure); }
+        } catch (ReflectiveOperationException | java.io.IOException failure) {
+            AdvancedRocketryCommunity.LOGGER.info("ARCE_CARGO_CACHE_FIXTURE_FAILURE", failure);
+            throw new IllegalStateException(failure);
+        } catch (RuntimeException failure) {
+            AdvancedRocketryCommunity.LOGGER.info("ARCE_CARGO_CACHE_FIXTURE_FAILURE", failure);
+            throw failure;
+        }
     }
     void tick(ResourceEscrowSavedData data) {
         if (!name.equals(E5) || recovery || data.ledger().records().size() != 1 || !data.bind(server).writerIdle()) { return; }
