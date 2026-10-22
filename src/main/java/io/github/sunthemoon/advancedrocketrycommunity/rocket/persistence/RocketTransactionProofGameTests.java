@@ -27,13 +27,17 @@ public final class RocketTransactionProofGameTests {
     public static void serverCheckpointAcknowledgesTheOverworldTransactionFile(GameTestHelper helper) {
         var server = helper.getLevel().getServer();
         var data = RocketTransactionSavedData.get(server);
-        helper.assertTrue(data.checkpoint(server) == CheckedJournalCheckpoint.Outcome.COMMITTED,
-                "Server checkpoint did not commit");
+        helper.assertTrue(data.requestCheckpoint(server) == RocketTransactionSavedData.CheckpointRequest.REQUESTED,
+                "Server checkpoint request was refused");
         var file = server.getWorldPath(LevelResource.ROOT).resolve("data").resolve(TYPE.fileName());
-        helper.assertTrue(CheckedSavedDataFile.readPayload(file, TYPE).orElseThrow().equals(data.save(new CompoundTag())),
-                "Overworld transaction file differs from the captured root");
-        helper.assertTrue(data.acknowledgedCurrent(), "Server checkpoint is not current");
-        helper.succeed();
+        // ADR-074: the IO thread writes; the completion is published at a later tick START.
+        helper.succeedWhen(() -> {
+            helper.assertTrue(data.writeOutcome() == CheckedJournalCheckpoint.Outcome.COMMITTED,
+                    "Server checkpoint did not commit");
+            helper.assertTrue(CheckedSavedDataFile.readPayload(file, TYPE).orElseThrow().equals(data.save(new CompoundTag())),
+                    "Overworld transaction file differs from the captured root");
+            helper.assertTrue(data.acknowledgedCurrent(), "Server checkpoint is not current");
+        });
     }
 
     @GameTest(template = "empty", batch = "rocket_transaction_proof", timeoutTicks = 100)

@@ -1,11 +1,11 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence;
 
-import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.CheckedJournalCheckpoint;
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.CheckedRootWriter;
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataPolicy;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedRootPresence;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedRootSupplier;
-import io.github.sunthemoon.advancedrocketrycommunity.persistence.CanonicalNbtDigest;
-import io.github.sunthemoon.advancedrocketrycommunity.persistence.CheckedJournalCheckpoint;
-import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataPolicy;
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.SavedDataSchemaMigrator;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.RocketLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition;
@@ -13,7 +13,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructu
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRegion;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionJournal;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionRecord;
-import java.util.ArrayList;
+import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import java.nio.file.Path;
+import java.util.concurrent.TimeUnit;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -34,13 +34,19 @@ public final class RocketTransactionSavedData extends SavedData {
     public static final String DATA_NAME = "advancedrocketrycommunity_rocket_transactions";
     public static final int SCHEMA_VERSION = 2;
     private static final ManagedSavedDataType TYPE = ManagedSavedDataType.ROCKET_TRANSACTIONS;
-    // Snapshot depth 32 plus transaction/list/root framing, as in the transfer journal.
-    private static final int DIGEST_DEPTH = 35;
+    private static final CheckedSavedDataPolicy ATOMIC = CheckedSavedDataPolicy.atomic(TYPE);
+    private static final CheckedJournalCheckpoint.Outcome COMMITTED = CheckedJournalCheckpoint.Outcome.COMMITTED;
+    private static final CheckedJournalCheckpoint.Outcome NOT_COMMITTED = CheckedJournalCheckpoint.Outcome.NOT_COMMITTED;
+    private static final CheckedJournalCheckpoint.Outcome UNKNOWN = CheckedJournalCheckpoint.Outcome.UNKNOWN;
 
     private final Map<UUID, RocketPersistedTransaction> entries = new LinkedHashMap<>();
     private CompoundTag preservedBlockedData;
     private final Thread owner = Thread.currentThread();
-    private final CheckedJournalCheckpoint checkpoint;
+    private final CheckedSavedDataPolicy.DirectoryForce directoryForce;
+    // ADR-074 item 8: W123's session-local acknowledgement and outcome, changed only by owner-thread publication.
+    private CheckedJournalCheckpoint.Acknowledgement acknowledged;
+    private CheckedJournalCheckpoint.Outcome outcome = CheckedJournalCheckpoint.Outcome.UNACKNOWLEDGED;
+    private CheckedRootWriter<RocketTransactionWriter.Capture, CheckedSavedDataPolicy, RocketTransactionWriter.Result> writer;
     private long mutationSequence = 1;
     private Path writerFile;
     private MinecraftServer ownerServer;
@@ -49,13 +55,21 @@ public final class RocketTransactionSavedData extends SavedData {
     public RocketTransactionSavedData() { this(CheckedSavedDataPolicy.DirectoryForce.PLATFORM); }
 
     RocketTransactionSavedData(CheckedSavedDataPolicy.DirectoryForce force) {
-        checkpoint = new CheckedJournalCheckpoint(force, DIGEST_DEPTH);
+        directoryForce = Objects.requireNonNull(force, "force");
     }
 
     public static RocketTransactionSavedData get(MinecraftServer server) {
         RocketTransactionSavedData data = ManagedRootSupplier.obtain(server, TYPE,
                 RocketTransactionSavedData::load, RocketTransactionSavedData::created);
         data.ownerServer = server;
+        return data;
+    }
+
+    /** The lifecycle hooks' view: the cached root, or the one vanilla reads from its file, never a new empty root. */
+    public static RocketTransactionSavedData existing(MinecraftServer server) {
+        if (server.overworld() == null) { return null; }
+        var data = server.overworld().getDataStorage().get(RocketTransactionSavedData::load, DATA_NAME);
+        if (data != null) { data.ownerServer = server; }
         return data;
     }
 
@@ -74,11 +88,10 @@ public final class RocketTransactionSavedData extends SavedData {
     }
 
     public long mutationSequence() { return mutationSequence; }
-    public CheckedJournalCheckpoint.Outcome writeOutcome() { return checkpoint.outcome(); }
-    public Optional<CheckedJournalCheckpoint.Acknowledgement> acknowledgement() { return checkpoint.acknowledged(); }
+    public CheckedJournalCheckpoint.Outcome writeOutcome() { return outcome; }
+    public Optional<CheckedJournalCheckpoint.Acknowledgement> acknowledgement() { return Optional.ofNullable(acknowledged); }
     public boolean acknowledgedCurrent() {
-        return operational() && checkpoint.outcome() == CheckedJournalCheckpoint.Outcome.COMMITTED
-                && checkpoint.current(mutationSequence);
+        return operational() && outcome == COMMITTED && acknowledged != null && acknowledged.sequence() == mutationSequence;
     }
 
     /** W27d owns waiting and all-bay rejection; this read-only query never writes or removes a record. */
@@ -99,64 +112,161 @@ public final class RocketTransactionSavedData extends SavedData {
             }
         }
         if (acknowledgedCurrent()) { return AbsenceStatus.PROVED; }
-        return checkpoint.outcome() == CheckedJournalCheckpoint.Outcome.NOT_COMMITTED
-                || checkpoint.outcome() == CheckedJournalCheckpoint.Outcome.UNKNOWN
+        return outcome == NOT_COMMITTED || outcome == UNKNOWN
                 ? AbsenceStatus.ASSEMBLY_JOURNAL_UNPROVED : AbsenceStatus.WRITE_REQUIRED;
     }
 
-    /** One synchronous checked capture. The deployment caller must wait and re-query, not infer absence from success. */
-    public CheckedJournalCheckpoint.Outcome checkpoint(MinecraftServer server) {
+    /** ADR-074 item 8: D0's checkpoint is a request; its answer is published on a later tick and B14 is asked again. */
+    public enum CheckpointRequest { REQUESTED, REFUSED }
+
+    public CheckpointRequest requestCheckpoint(MinecraftServer server) {
         if (ownerServer != server || !server.isSameThread()) {
             throw new IllegalStateException("Transaction checkpoint requires its owning server thread");
         }
-        return saveChecked(server.getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT)
-                .resolve("data").resolve(TYPE.fileName()), CheckedSavedDataPolicy.atomic(TYPE));
+        return requestWrite(ManagedRootSupplier.dataFile(server, TYPE), ATOMIC)
+                ? CheckpointRequest.REQUESTED : CheckpointRequest.REFUSED;
     }
 
+    /** Tick START: publish at most one completion, then start a pending request when the cadence allows. */
+    public void pollWriter() {
+        requireOwner();
+        if (writer == null) { return; }
+        if (shuttingDown()) { writer.latchShutdown(); return; }
+        writer.poll(tick());
+    }
+
+    /** A capture is in flight, published or not, or a request is pending. */
+    public boolean writerBusy() { requireOwner(); return writer != null && writer.busy(); }
+
+    /** ADR-074 item 9: a running server's autosave and {@code /save-all} only request; they never wait. */
     @Override
     public void save(java.io.File file) {
         requireOwner();
-        if (isDirty()) { saveChecked(file.toPath(), CheckedSavedDataPolicy.atomic(TYPE)); }
+        if (shuttingDown()) { stopSave(file.toPath()); }
+        else if (isDirty()) { requestWrite(file.toPath(), ATOMIC); }
     }
 
+    /** Detached journals only (unit tests and diagnostics): request one write and await its publication. */
     CheckedJournalCheckpoint.Outcome saveChecked(Path file, CheckedSavedDataPolicy policy) {
         requireOwner();
+        if (ownerServer != null) { throw new IllegalStateException("A live transaction journal never awaits IO"); }
+        if (requestWrite(file, policy)) { awaitWriter(); }
+        return outcome;
+    }
+
+    /** Detached journals only: pump publication until the writer is idle. */
+    void awaitWriter() {
+        requireOwner();
+        if (ownerServer != null) { throw new IllegalStateException("A live transaction journal never awaits IO"); }
+        if (writer != null) { writer.await(System::nanoTime, TimeUnit.NANOSECONDS::sleep); }
+    }
+
+    boolean writerCompletionReady() { requireOwner(); return writer != null && writer.completionReady(); }
+
+    /** The first request binds the target; a blocked or unreadable journal refuses without staging anything. */
+    boolean requestWrite(Path file, CheckedSavedDataPolicy policy) {
+        requireOwner();
+        Path normalized = bind(file, policy);
+        if (!operational()) { refuse(); return false; }
+        if (shuttingDown()) {
+            if (writer != null) { writer.latchShutdown(); }
+            return false;
+        }
+        return writer(normalized).request(policy, tick());
+    }
+
+    /** ADR-074 item 10, at the shutdown save: drain until the current RAM is covered, within the one budget. */
+    private void stopSave(Path file) {
+        Path normalized = bind(file, ATOMIC);
+        if (!operational()) {
+            if (isDirty()) { refuse(); }
+            return;
+        }
+        if (writer == null && !isDirty()) { return; }
+        writer(normalized).drain(ATOMIC, System::nanoTime, TimeUnit.NANOSECONDS::sleep);
+    }
+
+    private Path bind(Path file, CheckedSavedDataPolicy policy) {
         if (policy.type() != TYPE) { throw new IllegalArgumentException("Wrong transaction journal policy"); }
         Path normalized = file.toAbsolutePath().normalize();
         if (writerFile != null && !writerFile.equals(normalized)) {
             throw new IllegalArgumentException("Transaction writer cannot rebind its target");
         }
         writerFile = normalized;
-        long sequence = mutationSequence;
-        boolean wasUnknown = checkpoint.outcome() == CheckedJournalCheckpoint.Outcome.UNKNOWN;
-        try {
-            if (!operational()) { return checkpoint.refused(); }
-            CompoundTag payload = save(new CompoundTag());
-            Map<UUID, String> digests = new LinkedHashMap<>();
-            for (Tag raw : payload.getList("transactions", Tag.TAG_COMPOUND)) {
-                CompoundTag record = (CompoundTag) raw;
-                digests.put(record.getUUID("transaction_id"), CanonicalNbtDigest.of(record,
-                        Math.toIntExact(TYPE.maxUncompressedBytes()), DIGEST_DEPTH));
-            }
-            checkpoint.write(normalized, policy, sequence, payload, digests);
-        } catch (RuntimeException beforeReplacement) {
-            checkpoint.refused();
-        } catch (Error ambiguous) {
-            checkpoint.unknown();
-            throw ambiguous;
-        } finally {
-            // Unlike the transfer scheduler's per-attempt result, this D0 view retains unresolved authority.
-            if (wasUnknown && checkpoint.outcome() != CheckedJournalCheckpoint.Outcome.COMMITTED) {
-                checkpoint.unknown();
-            }
-            super.setDirty(!acknowledgedCurrent());
+        return normalized;
+    }
+
+    private CheckedRootWriter<RocketTransactionWriter.Capture, CheckedSavedDataPolicy, RocketTransactionWriter.Result>
+            writer(Path file) {
+        if (writer == null) {
+            writer = new CheckedRootWriter<>(RocketTransactionWriter.LABEL, RocketTransactionWriter.THREAD,
+                    new Journal(file, directoryForce));
         }
-        return checkpoint.outcome();
+        return writer;
+    }
+
+    /** W123's outcome rules at publication; dirty is recomputed against the current sequence. */
+    private void publish(CheckedRootWriter.Completion<RocketTransactionWriter.Result> completion) {
+        switch (completion.status()) {
+            case COMMITTED -> {
+                acknowledged = Objects.requireNonNull(completion.payload(), "payload").acknowledgement();
+                outcome = COMMITTED;
+            }
+            // The old disk proof stays, without authority; unresolved authority stays UNKNOWN until a commit.
+            case FAILED -> outcome = outcome == UNKNOWN ? UNKNOWN : NOT_COMMITTED;
+            case UNKNOWN -> { acknowledged = null; outcome = UNKNOWN; }
+        }
+        super.setDirty(!acknowledgedCurrent());
+    }
+
+    /** A refused request on the owner thread: NOT_COMMITTED with W123's sticky UNKNOWN, nothing staged. */
+    private void refuse() {
+        outcome = outcome == UNKNOWN ? UNKNOWN : NOT_COMMITTED;
+        super.setDirty(!acknowledgedCurrent());
+    }
+
+    private boolean shuttingDown() {
+        return ownerServer != null && (ownerServer.isStopped() || !ownerServer.isRunning());
+    }
+
+    private long tick() { return ownerServer == null ? 0 : ownerServer.getTickCount(); }
+
+    RocketTransactionWriter.Capture captureForTests() {
+        requireOwner();
+        return new RocketTransactionWriter.Capture(mutationSequence, List.copyOf(entries.values()), acknowledged, outcome);
     }
 
     private void requireOwner() {
         if (Thread.currentThread() != owner) {
             throw new IllegalStateException("Transaction journal requires its owner thread");
+        }
+    }
+
+    /** The writer's view of this root. Only {@code write} runs on IO, and it reads the capture and its own fields. */
+    private final class Journal implements CheckedRootWriter.Root<RocketTransactionWriter.Capture, CheckedSavedDataPolicy,
+            RocketTransactionWriter.Result> {
+        private final Path file;
+        private final CheckedSavedDataPolicy.DirectoryForce force;
+
+        private Journal(Path file, CheckedSavedDataPolicy.DirectoryForce force) { this.file = file; this.force = force; }
+
+        @Override public long mutationSequence() { return mutationSequence; }
+        @Override public RocketTransactionWriter.Capture capture(long sequence) {
+            return new RocketTransactionWriter.Capture(sequence, List.copyOf(entries.values()), acknowledged, outcome);
+        }
+        @Override public CheckedRootWriter.Attempt<RocketTransactionWriter.Result> write(
+                RocketTransactionWriter.Capture capture, CheckedSavedDataPolicy policy) {
+            return RocketTransactionWriter.write(capture, policy, file, force);
+        }
+        @Override public void publish(CheckedRootWriter.Completion<RocketTransactionWriter.Result> completion) {
+            RocketTransactionSavedData.this.publish(completion);
+        }
+        @Override public boolean needsWrite() { return isDirty(); }
+        @Override public CheckedSavedDataPolicy merge(CheckedSavedDataPolicy pending, CheckedSavedDataPolicy later) {
+            return later;
+        }
+        @Override public boolean serviced(CheckedSavedDataPolicy attempted, CheckedSavedDataPolicy requested) {
+            return attempted.equals(requested);
         }
     }
 

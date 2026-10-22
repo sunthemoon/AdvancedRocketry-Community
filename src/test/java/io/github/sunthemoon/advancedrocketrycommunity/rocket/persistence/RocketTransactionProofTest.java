@@ -19,6 +19,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -176,12 +178,17 @@ class RocketTransactionProofTest {
         assertTrue(forceFailed.isDirty());
     }
 
-    @Test void mutationDuringReplacementCannotAcknowledgeNewerRamOrClearDirty() {
+    @Test void mutationDuringReplacementCannotAcknowledgeNewerRamOrClearDirty() throws Exception {
         var data = new RocketTransactionSavedData();
         long captured = data.mutationSequence();
-        assertEquals(COMMITTED, data.saveChecked(target(), ATOMIC.withCommitter((staged, file) -> {
-            data.setDirty(); CheckedSavedDataFile.atomicMove(staged, file);
+        // ADR-074: IO never touches live RAM, so the owner mutates while the replacement is paused.
+        var entered = new CountDownLatch(1); var release = new CountDownLatch(1);
+        assertTrue(data.requestWrite(target(), ATOMIC.withCommitter((staged, file) -> {
+            entered.countDown(); await(release); CheckedSavedDataFile.atomicMove(staged, file);
         })));
+        assertTrue(entered.await(10, TimeUnit.SECONDS));
+        data.setDirty(); release.countDown(); data.awaitWriter();
+        assertEquals(COMMITTED, data.writeOutcome());
         assertEquals(captured, data.acknowledgement().orElseThrow().sequence());
         assertEquals(captured + 1, data.mutationSequence());
         assertTrue(data.isDirty()); assertEquals(WRITE_REQUIRED, status(data));
@@ -205,6 +212,7 @@ class RocketTransactionProofTest {
         var data = new RocketTransactionSavedData(); data.save(target().toFile());
         assertFalse(Files.exists(target())); assertEquals(WRITE_REQUIRED, status(data));
         data.setDirty(); data.save(target().toFile());
+        data.awaitWriter(); // ADR-074 item 9: autosave only requests; publication follows on the owner thread.
         assertEquals(PROVED, status(data));
         data.setDirty(); data.setDirty(false);
         assertEquals(WRITE_REQUIRED, status(data));
@@ -239,6 +247,10 @@ class RocketTransactionProofTest {
     }
 
     private Path target() { return directory.resolve(TYPE.fileName()); }
+    static void await(CountDownLatch latch) throws IOException {
+        try { if (!latch.await(10, TimeUnit.SECONDS)) { throw new IOException("Test release timed out"); } }
+        catch (InterruptedException interrupted) { Thread.currentThread().interrupt(); throw new IOException(interrupted); }
+    }
     private CompoundTag read() { return CheckedSavedDataFile.readPayload(target(), TYPE).orElseThrow(); }
     private static String digest(CompoundTag tag) {
         return CanonicalNbtDigest.of(tag, Math.toIntExact(TYPE.maxUncompressedBytes()), 35);
