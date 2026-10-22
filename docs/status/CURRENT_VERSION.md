@@ -38,7 +38,7 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: 2756f3c9 (W135 merged: the GameTest log checker rebuilds a run that crossed midnight; before it, f943279c merged W137, the settlement-idle GameTest cleanup cascade)
+latest_code_commit: 25e59fad (W139's exception-safe launch discard diagnostics merged; before it, 2756f3c9 merged W135, the GameTest log checker rebuilds a run that crossed midnight)
 latest_hosted_regression: the last green run is 39711262800 at 34dc9751 (the W130 merge); run 39736717569 at 367a84ff (the W134 merge) failed two Moon-flight GameTests and run 39737594848 at 2426f00d (the W133F merge) failed one other launch test, each passing elsewhere: an intermittent family of discarded launches that W139 investigates (QUEUE)
 ledger_planned_units: 19
 asset_review_items: 154
