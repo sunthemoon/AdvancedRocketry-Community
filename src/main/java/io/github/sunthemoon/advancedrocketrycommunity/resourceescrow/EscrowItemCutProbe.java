@@ -4,8 +4,10 @@ import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.*;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
+import io.github.sunthemoon.advancedrocketrycommunity.registry.ModEntities;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.*;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFuelState;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.*;
 import java.util.List;
 import java.util.UUID;
@@ -26,6 +28,8 @@ public abstract class EscrowItemCutProbe {
     static final String CASE = "advancedrocketrycommunity.escrowCase", SCENARIO = "advancedrocketrycommunity.escrowScenario";
     static final BlockPos DEVICE = new BlockPos(64, 100, 64), ROCKET = new BlockPos(68, 100, 64), PAD = new BlockPos(80, 100, 64);
     static final UUID ACTOR = UUID.nameUUIDFromBytes("arce:escrow:server-console".getBytes(java.nio.charset.StandardCharsets.US_ASCII));
+    static final RocketPropulsion PROPULSION = new RocketPropulsion(
+            RocketPropulsion.Mode.MONO, 2_000, 0, 1, 1, RocketPropulsion.Settings.DEFAULTS);
     private static final AtomicBoolean STOPPED = new AtomicBoolean();
     final MinecraftServer server;
     final ServerLevel level;
@@ -78,16 +82,24 @@ public abstract class EscrowItemCutProbe {
         if (data.ledger().writerGeneration() == 0 || data.isDirty() || !coordinator.writerIdle()) { coordinator.autosave(); return false; }
         EscrowLedgerBaseline.require(ResourceEscrowSavedData.file(server), data.ledger()); return true;
     }
-    RocketEntity cargoRocket(int count) {
+    RocketEntity cargoRocket(int count) { return cargoRocket(level, ROCKET, count); }
+    static RocketEntity cargoRocket(ServerLevel level, BlockPos origin, int count) {
+        EscrowTestEndpoints.requireEnabled(level.getServer());
         var entries = new ListTag(); var stack = ItemCargoReconciliationFixtures.stack(count); stack.putByte("Slot", (byte) 0); entries.add(stack);
-        var snapshot = ItemCargoReconciliationFixtures.snapshot(level, ROCKET, entries);
+        var snapshot = ItemCargoReconciliationFixtures.snapshot(level, origin, entries);
         // Native flights use legal production propulsion, unlike the small admission-only fixtures' water bank.
         snapshot = RocketStructureSnapshot.create(snapshot.snapshotId(), snapshot.sourceDimension(), snapshot.sourceOrigin(), snapshot.blocks(),
                 snapshot.passengerAnchors(), snapshot.stats(), snapshot.createdAtGameTime(),
-                new RocketPropulsion(RocketPropulsion.Mode.MONO, 2_000, 0, 1, 1, RocketPropulsion.Settings.DEFAULTS));
-        var rocket = ItemCargoReconciliationFixtures.create(level, snapshot); var flight = rocket.flightData().orElseThrow();
-        rocket.updateFlightData(flight.withFuel(flight.fuel().withFluidBank(false, ModIdentity.id("rocket_fuel"), null, 1_000), level.getGameTime()));
+                PROPULSION);
+        var rocket = java.util.Objects.requireNonNull(ModEntities.ROCKET.get().create(level));
+        rocket.initialize(snapshot, UUID.randomUUID(), UUID.randomUUID());
+        var flight = rocket.flightData().orElseThrow();
+        rocket.updateFlightData(flight.withFuel(cargoFuel(flight.fuel()), level.getGameTime()));
+        EscrowTags.require(level.addFreshEntity(rocket), "Item cut fixture publication failed");
         return rocket;
+    }
+    static RocketFuelState cargoFuel(RocketFuelState fuel) {
+        return fuel.withFluidBank(false, ModIdentity.id("rocket_fuel"), null, 1_000);
     }
     RocketItemCargoBlockEntity device(BlockPos at, RocketEntity rocket, RocketCargoRole role, int count) {
         level.setBlockAndUpdate(at, (role == RocketCargoRole.LOAD ? ModBlocks.ROCKET_ITEM_LOADER : ModBlocks.ROCKET_ITEM_UNLOADER).get().defaultBlockState());

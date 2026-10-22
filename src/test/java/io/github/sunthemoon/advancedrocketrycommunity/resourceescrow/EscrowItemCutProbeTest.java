@@ -17,6 +17,20 @@ import org.junit.jupiter.api.Test;
 
 class EscrowItemCutProbeTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
+    @Test void fixtureFuelPassesItsSelectedPropulsionBankRoleCheck() {
+        var empty = io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFuelState.empty(EscrowItemCutProbe.PROPULSION);
+        var fuel = assertDoesNotThrow(() -> EscrowItemCutProbe.cargoFuel(empty));
+        var vector = fuel.propulsion().orElseThrow();
+        assertEquals(RocketPropulsion.Mode.MONO, vector.descriptor().mode());
+        assertEquals(RocketPropulsion.Settings.DEFAULTS, vector.descriptor().settings());
+        assertEquals(ResourceLocation.tryParse("advancedrocketrycommunity:rocket_fuel"), vector.primary().fluidId());
+        assertEquals(1_000, vector.primary().amount());
+        assertEquals(RocketFuelBank.Branch.FLUID, vector.primary().branch());
+        assertEquals(RocketFuelBank.EMPTY, vector.oxidizer());
+        assertEquals(1, vector.revision());
+        assertThrows(IllegalArgumentException.class, () -> empty.withFluidBank(false,
+                ResourceLocation.tryParse("minecraft:water"), null, 1_000));
+    }
     @Test void probeNeedsHooksExactCaseAndScenario() {
         var cases = new java.util.ArrayList<>(EscrowItemSettlementCuts.CASES.keySet()); cases.addAll(EscrowItemRecoveryCuts.CASES);
         assertEquals(18, cases.size());
