@@ -42,6 +42,7 @@ public final class RocketTransactionSavedData extends SavedData {
     private final Map<UUID, RocketPersistedTransaction> entries = new LinkedHashMap<>();
     private CompoundTag preservedBlockedData;
     private final Thread owner = Thread.currentThread();
+    private final long createdNanos = System.nanoTime();
     private final CheckedSavedDataPolicy.DirectoryForce directoryForce;
     // ADR-074 item 8: W123's session-local acknowledgement and outcome, changed only by owner-thread publication.
     private CheckedJournalCheckpoint.Acknowledgement acknowledged;
@@ -95,9 +96,12 @@ public final class RocketTransactionSavedData extends SavedData {
         return operational() && outcome == COMMITTED && acknowledged != null && acknowledged.sequence() == mutationSequence;
     }
 
-    /** W27d owns waiting and all-bay rejection; this read-only query never writes or removes a record. */
+    /**
+     * W27d owns waiting and all-bay rejection; this read-only query never writes or removes a record. ADR-074 item 8
+     * appends WRITE_PENDING: a request is pending or a capture is in flight, so a stale outcome is not the answer.
+     */
     public enum AbsenceStatus {
-        PROVED, WRITE_REQUIRED, ASSEMBLY_JOURNAL_PENDING, ASSEMBLY_JOURNAL_UNPROVED
+        PROVED, WRITE_REQUIRED, ASSEMBLY_JOURNAL_PENDING, ASSEMBLY_JOURNAL_UNPROVED, WRITE_PENDING
     }
 
     /** Logical ID names the assembly; snapshot/entity IDs also match independent disassembly transactions. */
@@ -113,6 +117,8 @@ public final class RocketTransactionSavedData extends SavedData {
             }
         }
         if (acknowledgedCurrent()) { return AbsenceStatus.PROVED; }
+        // The writer is sequential: after a request, the first other answer reflects a capture taken at or after it.
+        if (writer != null && writer.busy()) { return AbsenceStatus.WRITE_PENDING; }
         return outcome == NOT_COMMITTED || outcome == UNKNOWN
                 ? AbsenceStatus.ASSEMBLY_JOURNAL_UNPROVED : AbsenceStatus.WRITE_REQUIRED;
     }
@@ -231,7 +237,10 @@ public final class RocketTransactionSavedData extends SavedData {
         return ownerServer != null && (ownerServer.isStopped() || !ownerServer.isRunning());
     }
 
-    private long tick() { return ownerServer == null ? 0 : ownerServer.getTickCount(); }
+    /** The server tick; a detached journal counts one tick per monotonic millisecond, as the drain clock does. */
+    private long tick() {
+        return ownerServer == null ? TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - createdNanos) : ownerServer.getTickCount();
+    }
 
     /** Unit tests and benchmarks: a real but unstarted server supplies the tick and both shutdown flags. */
     void bindServerForTests(MinecraftServer server) { requireOwner(); ownerServer = server; }
