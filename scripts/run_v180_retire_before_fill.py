@@ -25,6 +25,9 @@ from run_v180_rocket_settlement_completion import require_lock
 
 CUTS = ("CAPTURE", "STORE", "REMOVE", "MOVED", "UNKNOWN", "ACK", "STALE", "TICKET", "HELD_COLUMN", "HELD_STORAGE", "K2", "K9")
 PREFIX = "LF_M_R52_"
+# W130F (R59): unsupported storage holds before any ticket step; an off-column copy is found after the ticket step,
+# so each of the held fixture's continuous demands allows three steps, 200 ticks apart, in the observed 451 ticks.
+HELD_TICKETS = {"HELD_COLUMN": 3, "HELD_STORAGE": 0}
 
 
 def source_entities(directory: Path) -> list:
@@ -110,7 +113,7 @@ def start(args, session: Path, evidence: Path, owner: str, cut: str, restart: in
             row["launch_codes"] = re.findall(r"ARCE_R52_LAUNCH_REQUEST cut=\S+ code=(\w+)", text)
         base.require("tickets=0 pending=0" in text, "Missing first-tick RAM-ticket/pending observation")
         if cut.startswith("HELD_"):
-            base.require("tickets=3 ordinary_mutation=true" in text, "Missing bounded held retirement observation")
+            base.require(f"tickets={HELD_TICKETS[cut]} ordinary_mutation=true" in text, "Missing bounded held retirement observation")
             if action == "REFILL":
                 base.require("code=TRANSFER_JOURNAL_UNPROVED conserved=true" in text, "Held retirement admitted fuel")
             if action == "LAUNCH":
