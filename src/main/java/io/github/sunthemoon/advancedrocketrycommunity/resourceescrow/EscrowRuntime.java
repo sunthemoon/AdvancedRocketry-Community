@@ -431,7 +431,7 @@ public final class EscrowRuntime {
     }
     @SubscribeEvent(priority = EventPriority.HIGHEST) public static void stopping(ServerStoppingEvent event) {
         EscrowRuntime runtime = of(event.getServer()); runtime.stopping = true;
-        if (runtime.cargoProbe != null) { runtime.cargoProbe.close(); }
+        if (runtime.cargoReconciliationProbe != null) { runtime.cargoReconciliationProbe.close(); }
         if (runtime.cargo != null) { runtime.cargo.close(); }
         runtime.cargoSwitches.clear();
         if (runtime.fills != null) { runtime.fills.clear(); }
@@ -466,7 +466,7 @@ public final class EscrowRuntime {
         EscrowRuntime runtime = overworld.getCapability(CAPABILITY).resolve().orElse(null);
         if (runtime == null || runtime.stopping) { return; }
         runtime.stopping = true;
-        if (runtime.cargoProbe != null) { runtime.cargoProbe.close(); }
+        if (runtime.cargoReconciliationProbe != null) { runtime.cargoReconciliationProbe.close(); }
         if (runtime.cargo != null && server.isSameThread()) { runtime.cargo.close(); }
         runtime.cargoSwitches.clear();
         if (runtime.fills != null && server.isSameThread()) { runtime.fills.clear(); }
