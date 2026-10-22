@@ -38,7 +38,7 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: 3bce8373 (W130 merged: R52's D2, a landed rocket's transfer record retired before its first escrow fill, admission disabled; before it, 3bc9f998 merged W131 with W131F, cargo leaf C-E3, fluid cargo settlement)
+latest_code_commit: ab14bc2e (W134 merged: cargo leaf D-E2, item cargo settlement and the end-to-end cases, admission disabled; before it, 3bce8373 merged W130, R52's D2, a landed rocket's transfer record retired before its first escrow fill)
 latest_hosted_regression: run 39700132027 at eeb1fb80 (the W131 merge) passed all required GameTests and the log checker, as did run 39697134585 at 2c1c32f7 (W132 and W133 merged); run 39693516643 at 339dd2a1 (the W132 merge) passed every GameTest but failed the log check because its GameTests crossed midnight UTC and Forge rolled latest.log (QUEUE, W135)
 ledger_planned_units: 19
 asset_review_items: 154
