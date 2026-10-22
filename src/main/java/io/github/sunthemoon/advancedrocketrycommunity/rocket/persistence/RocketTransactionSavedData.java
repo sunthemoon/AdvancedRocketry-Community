@@ -51,6 +51,7 @@ public final class RocketTransactionSavedData extends SavedData {
     private Path writerFile;
     private MinecraftServer ownerServer;
     private boolean unreadable;
+    private long completedWriteCount, lastWriterNanos, lastWriterCpuNanos;
 
     public RocketTransactionSavedData() { this(CheckedSavedDataPolicy.DirectoryForce.PLATFORM); }
 
@@ -207,6 +208,7 @@ public final class RocketTransactionSavedData extends SavedData {
 
     /** W123's outcome rules at publication; dirty is recomputed against the current sequence. */
     private void publish(CheckedRootWriter.Completion<RocketTransactionWriter.Result> completion) {
+        completedWriteCount++; lastWriterNanos = completion.writerNanos(); lastWriterCpuNanos = completion.writerCpuNanos();
         switch (completion.status()) {
             case COMMITTED -> {
                 acknowledged = Objects.requireNonNull(completion.payload(), "payload").acknowledgement();
@@ -230,6 +232,13 @@ public final class RocketTransactionSavedData extends SavedData {
     }
 
     private long tick() { return ownerServer == null ? 0 : ownerServer.getTickCount(); }
+
+    /** Unit tests and benchmarks: a real but unstarted server supplies the tick and both shutdown flags. */
+    void bindServerForTests(MinecraftServer server) { requireOwner(); ownerServer = server; }
+    long completedWriteCount() { return completedWriteCount; }
+    long lastWriterNanos() { return lastWriterNanos; }
+    long lastWriterCpuNanos() { return lastWriterCpuNanos; }
+    boolean writerInFlight() { requireOwner(); return writer != null && writer.inFlight(); }
 
     RocketTransactionWriter.Capture captureForTests() {
         requireOwner();
