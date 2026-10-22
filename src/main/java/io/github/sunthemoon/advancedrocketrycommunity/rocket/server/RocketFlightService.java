@@ -246,6 +246,7 @@ final class RocketFlightService {
             io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadReference pad, UUID requester) {
         RocketFlightData flight = launchSource(rocket.flightData().orElseThrow(), rocket.level().getGameTime()).orElse(null);
         if (flight == null) {
+            io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowLaunchTrace.note(rocket, requestId, "FLIGHT_PRECONDITION", "LAUNCH_READY");
             return RocketFlightRequestResult.failure(RocketFlightRequestCode.INVALID_STATE);
         }
         TravelTarget source = flight.currentTarget().orElse(null);
@@ -256,6 +257,7 @@ final class RocketFlightService {
                 ((ServerLevel) rocket.level()).getServer()
         );
         if (!stationData.operational()) {
+            io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowLaunchTrace.note(rocket, requestId, "FLIGHT_PRECONDITION", "STATION_OPERATIONAL");
             return RocketFlightRequestResult.failure(RocketFlightRequestCode.TRANSFER_JOURNAL_BLOCKED);
         }
         if (source instanceof TravelTarget.Station sourceTarget) {

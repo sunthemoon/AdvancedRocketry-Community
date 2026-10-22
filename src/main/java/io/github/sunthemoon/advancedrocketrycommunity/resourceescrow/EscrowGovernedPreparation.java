@@ -34,19 +34,27 @@ public final class EscrowGovernedPreparation {
     /** begin's own preconditions, in begin's order; {@code retry} lets L's lease check push a pending journal write. */
     private static boolean preconditions(RocketEntity rocket, RocketFlightData countdown, boolean retry) {
         if (!(rocket.level() instanceof ServerLevel level) || !level.getServer().isSameThread()
-                || !rocket.operational() || !RocketEscrowGate.idle(rocket)) { return false; }
+                || !rocket.operational() || !RocketEscrowGate.idle(rocket)) { return refused(rocket, countdown, retry, "SOURCE_OR_IDLE"); }
         var server = level.getServer(); var data = ResourceEscrowSavedData.existing(server);
-        if (!EscrowRuntime.of(server).flightCheckpoint().retryReady(countdown.logicalRocketId(), server.getTickCount())) { return false; }
+        if (!EscrowRuntime.of(server).flightCheckpoint().retryReady(countdown.logicalRocketId(), server.getTickCount())) { return refused(rocket, countdown, retry, "RETRY_READY"); }
         var journal = RocketTransferSavedData.get(server);
-        if (data == null || !data.bind(server).governedAvailable(countdown.logicalRocketId())) { return false; }
+        if (data == null || !data.bind(server).governedAvailable(countdown.logicalRocketId())) { return refused(rocket, countdown, retry, "GOVERNED_AVAILABLE"); }
         // R17 item 3: F1 acquires L's checked lease; another rocket's pending journal change does not refuse the launch.
-        if (!(retry && journal.retryChecked(server)) && !journal.actionAuthorityAvailable(countdown.logicalRocketId())) { return false; }
+        if (!(retry && journal.retryChecked(server)) && !journal.actionAuthorityAvailable(countdown.logicalRocketId())) { return refused(rocket, countdown, retry, "ACTION_AUTHORITY"); }
         if (!EscrowRuntime.of(server).barrier().available(level.dimension().location().toString(), true, server.getTickCount())) {
-            return false;
+            return refused(rocket, countdown, retry, "BARRIER_AVAILABLE");
         }
         var guard = journal.logicalGuard(countdown.logicalRocketId()).orElse(null);
         // COMMITTED-predecessor replacement has its own F7/F8 prerequisite; never treat it as no-T.
-        return guard != null && guard.transfer() == null && EscrowRuntime.of(server).flightCheckpoint().admits(countdown.logicalRocketId());
+        if (guard == null) { return refused(rocket, countdown, retry, "GUARD_ABSENT"); }
+        if (guard.transfer() != null) { return refused(rocket, countdown, retry, "GUARD_HAS_TRANSFER"); }
+        if (!EscrowRuntime.of(server).flightCheckpoint().admits(countdown.logicalRocketId())) { return refused(rocket, countdown, retry, "CHECKPOINT_ADMITS"); }
+        return true;
+    }
+
+    private static boolean refused(RocketEntity rocket, RocketFlightData countdown, boolean retry, String check) {
+        if (retry) { EscrowLaunchTrace.note(rocket, countdown, "BEGIN_PRECONDITION", check); }
+        return false;
     }
 
     public static boolean begin(RocketEntity rocket, RocketFlightData countdown, RocketStructureSnapshot destination,
@@ -57,11 +65,17 @@ public final class EscrowGovernedPreparation {
         var guard = journal.logicalGuard(countdown.logicalRocketId()).orElseThrow();
         EscrowGovernedLaunch prepared;
         try {
+            EscrowLaunchTrace.note(rocket, countdown, "PREPARE_ENTER", "");
             prepared = EscrowGovernedLaunch.prepare(data.ledger(), EscrowGovernedEnvelope.capture(rocket),
                     rocket.snapshot().orElseThrow(), countdown, destination, UUID.randomUUID(),
                     new EscrowGuard(guard.logical(), null, Math.max(1, guard.sequence()), guard.rootDigest()));
-        } catch (IllegalArgumentException | ArithmeticException refused) { return false; }
-        return EscrowRuntime.of(server).flightCheckpoint().begin(rocket, prepared, boundary, record -> {
+        } catch (IllegalArgumentException | ArithmeticException refused) {
+            EscrowLaunchTrace.note(rocket, countdown, "PREPARE_EXCEPTION",
+                    refused.getClass().getSimpleName() + ": " + refused.getMessage());
+            return false;
+        }
+        EscrowLaunchTrace.note(rocket, countdown, "PREPARE_OK", "");
+        boolean queued = EscrowRuntime.of(server).flightCheckpoint().begin(rocket, prepared, boundary, record -> {
             if (record == null || !boundary.test(record)) { discarded.run(); return; }
             // This callback receives only the acknowledged ARMED tuple and exact still-present E.
             prepare(journal, server, record, () -> {
@@ -73,10 +87,13 @@ public final class EscrowGovernedPreparation {
                 if (permit == null) { return false; }
                 EscrowRuntime.of(server).checkpoint("F2_PREPARED_ACK");
                 rocket.advanceGovernedSource(permit);
+                EscrowLaunchTrace.note(rocket, countdown, "COUNTDOWN", "governed=true");
                 EscrowRuntime.of(server).checkpoint("F2_COUNTDOWN");
                 accepted.accept(record); return true;
             }, discarded);
         });
+        EscrowLaunchTrace.note(rocket, countdown, queued ? "CHECKPOINT_QUEUED" : "CHECKPOINT_REFUSED", "");
+        return queued;
     }
 
     /**

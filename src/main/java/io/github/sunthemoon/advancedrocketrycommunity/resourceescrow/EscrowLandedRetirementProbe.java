@@ -142,7 +142,10 @@ final class EscrowLandedRetirementProbe {
                             AdvancedRocketryCommunity.LOGGER.info("ARCE_R52_REFILL cut={} code={} conserved=true", cut, result);
                             EscrowTags.require(result == FluidFuelLoaderStatus.TRANSFER_JOURNAL_UNPROVED, "Held retirement admitted escrow fuel");
                         } else if (action.equals("LAUNCH")) {
-                            var result = RocketRuntime.requestAdminFlight(rocket, RocketDestination.MOON, UUID.randomUUID());
+                            var request = UUID.randomUUID();
+                            EscrowLaunchTrace.note(rocket, request, "REQUEST", "MOON");
+                            var result = RocketRuntime.requestAdminFlight(rocket, RocketDestination.MOON, request);
+                            EscrowLaunchTrace.note(rocket, request, "RESULT", result.code().name());
                             AdvancedRocketryCommunity.LOGGER.info("ARCE_R52_LAUNCH_REQUEST cut={} code={}", cut, result.code());
                             EscrowTags.require(result.code() == RocketFlightRequestCode.INVALID_STATE, "Empty ordinary rocket had an unexpected launch outcome");
                         }
@@ -191,7 +194,9 @@ final class EscrowLandedRetirementProbe {
             }
             if (launchPending) { return; }
             launch = UUID.randomUUID();
+            EscrowLaunchTrace.note(rocket, launch, "REQUEST", "MOON");
             var result = RocketRuntime.requestAdminFlight(rocket, RocketDestination.MOON, launch);
+            EscrowLaunchTrace.note(rocket, launch, "RESULT", result.code().name());
             AdvancedRocketryCommunity.LOGGER.info("ARCE_R52_LAUNCH_REQUEST cut={} code={}", cut, result.code());
             EscrowTags.require(result.code() == RocketFlightRequestCode.JOURNAL_PENDING || result.code() == RocketFlightRequestCode.SUCCESS
                     || result.code() == RocketFlightRequestCode.DESTINATION_LOADING, "R52 governed launch refused: " + result.code());
