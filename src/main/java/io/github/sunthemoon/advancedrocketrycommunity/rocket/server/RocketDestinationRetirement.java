@@ -87,6 +87,8 @@ final class RocketDestinationRetirement extends RocketRetirementWorld {
     }
 
     @Override public void keepLoaded(RocketTransferRecord record, List<RocketRetirementProof.Slot> census) {
+        // W130-R4: gated release tests time the synchronous load of the old site between these two checkpoints.
+        EscrowRuntime.of(server).checkpoint("R52_TICKETING");
         var source = RocketTransferEntities.level(server, record.sourceSnapshot().sourceDimension());
         if (source != null) { RocketTransferEntities.keepLoaded(source, record.sourceSnapshot(), record.transferId()); }
         var destination = RocketTransferEntities.level(server, record.destinationSnapshot().sourceDimension());

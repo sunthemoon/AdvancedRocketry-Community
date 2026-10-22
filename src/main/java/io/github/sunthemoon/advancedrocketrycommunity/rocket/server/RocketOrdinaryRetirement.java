@@ -158,6 +158,8 @@ final class RocketOrdinaryRetirement {
         this.live = live; this.settled = settled; this.fenced = fenced; this.ports = ports;
     }
 
+    /** The BEFORE_FILL site's demand queue and pacing (W130F). */
+    RocketFillRetirementPacing fills() { return fills; }
     boolean pending(UUID logical) { return pending.containsKey(logical); }
     int size() { return pending.size(); }
     /** Read-only, for tests: the attempts an entry for L has started so far, or -1 without one. */

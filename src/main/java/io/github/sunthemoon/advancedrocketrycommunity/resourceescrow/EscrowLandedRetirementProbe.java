@@ -48,7 +48,8 @@ final class EscrowLandedRetirementProbe {
     private boolean first, launchPending, noTransferAtStartup;
     private int step;
     private long began = -1;
-    private long demand = -1, lastTicket = Long.MIN_VALUE;
+    private long demand = -1, lastTicket = Long.MIN_VALUE, ticketing;
+    private boolean cold;
     private int tickets;
 
     static boolean selected(String cut) { return cut.startsWith(PREFIX) && CUTS.containsKey(cut.substring(PREFIX.length())); }
@@ -74,11 +75,16 @@ final class EscrowLandedRetirementProbe {
     }
 
     void checkpoint(String name) {
+        if (name.equals("R52_TICKETING")) {
+            // W130-R4: whether the old site's chunk was loaded, and the time of the ticket step's synchronous load.
+            cold = server.getLevel(CelestialIds.MOON_LEVEL).getChunkSource().getChunkNow(OLD.x() >> 4, OLD.z() >> 4) == null;
+            ticketing = System.nanoTime();
+        }
         if (name.equals("R52_TICKETED")) {
-            long now = server.getTickCount();
+            long now = server.getTickCount(), micros = (System.nanoTime() - ticketing) / 1_000;
             EscrowTags.require(lastTicket == Long.MIN_VALUE || now - lastTicket >= 200, "Loader retry reset the retirement backoff");
             lastTicket = now; tickets++;
-            AdvancedRocketryCommunity.LOGGER.info("ARCE_R52_TICKET cut={} tick={} count={}", cut, now, tickets);
+            AdvancedRocketryCommunity.LOGGER.info("ARCE_R52_TICKET cut={} tick={} count={} cold={} ticket_us={}", cut, now, tickets, cold, micros);
         }
         if (!recovery && step >= 3 && name.equals(boundary)) { pause(name); }
     }

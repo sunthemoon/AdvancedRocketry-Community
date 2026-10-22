@@ -208,26 +208,30 @@ final class RocketTransferRecoveryService {
     }
     RocketTransferBayDispatch bays() { return bays; }
     RocketOrdinaryRetirement retirements() { return retirements; }
-    void retireBeforeFill(RocketEntity rocket) {
-        var server = ((net.minecraft.server.level.ServerLevel) rocket.level()).getServer();
+    /** R52 (b2): a loader's fill attempt only queues its demand; the first attempt starts from the coordinator's tick (W130-R4). */
+    void retireBeforeFill(RocketEntity rocket) { retirements.fills().demand(rocket.assemblyTransactionId().orElseThrow(), rocket.getUUID()); }
+    private void beginBeforeFill(MinecraftServer server, UUID logical, UUID survivor) {
         var journal = RocketTransferSavedData.get(server);
-        var logical = rocket.assemblyTransactionId().orElseThrow();
         if (retirements.pending(logical) || retirements.size() >= RocketOrdinaryRetirement.MAX_PENDING) { return; }
         var record = journal.findByLogicalRocket(logical).orElse(null);
         if (record == null || record.nativeTransfer().isPresent() || !journal.actionable(logical)
                 || !settledTransfers.contains(record.transferId()) || liveTransfers.contains(record.transferId())) { return; }
         var port = new RocketDestinationRetirement(server, journal, bays, fences, liveTransfers, settledTransfers);
-        if (port.projection(record, rocket.getUUID()) == null || !port.escrowAllows(journal, record, null)) { return; }
+        // A rocket that is no longer loaded, for example after the entry's own tickets were released, is no demand.
+        if (port.projection(record, survivor) == null || !port.escrowAllows(journal, record, null)) { return; }
         try (var held = RocketOrdinaryRetirement.hold(journal, logical)) {
             if (held.token() == null) { return; }
-            retirements.begin(port, journal, RocketOrdinaryRetirement.Site.BEFORE_FILL, record, rocket.getUUID(), List.of(), false, held,
+            retirements.begin(port, journal, RocketOrdinaryRetirement.Site.BEFORE_FILL, record, survivor, List.of(), false, held,
                     RocketOrdinaryRetirement.Effects.of(() -> {
                         io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadService.release(server, record);
                         return true;
                     }));
         }
     }
-    void tickRetirements(MinecraftServer server) { retirements.tick(); }
+    void tickRetirements(MinecraftServer server) {
+        retirements.fills().drain(RocketOrdinaryRetirement.MAX_ATTEMPTS, (logical, survivor) -> beginBeforeFill(server, logical, survivor));
+        retirements.tick();
+    }
     Set<UUID> fencedIds() { return fences.ids(); }
     String fenceReason(UUID id) { return fences.reason(id); }
     String fencedDiagnostics() { return fences.ids().stream().sorted().limit(4)

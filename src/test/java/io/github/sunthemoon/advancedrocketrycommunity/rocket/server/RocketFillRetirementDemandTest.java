@@ -119,6 +119,24 @@ class RocketFillRetirementDemandTest {
         f.assertKept();
     }
 
+    @Test void demandsAreQueuedOncePerRocketBoundedAndBegunOldestFirst() {
+        var pacing = new RocketFillRetirementPacing();
+        UUID first = UUID.randomUUID(), survivor = UUID.randomUUID(), second = UUID.randomUUID();
+        pacing.demand(first, survivor); pacing.demand(second, second); pacing.demand(first, UUID.randomUUID());
+        var begun = new ArrayList<List<UUID>>();
+        pacing.drain(4, (logical, entity) -> begun.add(List.of(logical, entity)));
+        assertEquals(List.of(List.of(first, survivor), List.of(second, second)), begun, "A repeated demand moved or replaced the first");
+        var ids = new ArrayList<UUID>();
+        for (int i = 0; i < RocketOrdinaryRetirement.MAX_PENDING + 6; i++) { var id = UUID.randomUUID(); ids.add(id); pacing.demand(id, id); }
+        var drained = new ArrayList<UUID>();
+        pacing.drain(RocketOrdinaryRetirement.MAX_ATTEMPTS, (logical, entity) -> drained.add(logical));
+        assertEquals(ids.subList(0, RocketOrdinaryRetirement.MAX_ATTEMPTS), drained, "A tick began more than its demand budget");
+        for (int i = 0; i < 40; i++) { pacing.drain(RocketOrdinaryRetirement.MAX_ATTEMPTS, (logical, entity) -> drained.add(logical)); }
+        assertEquals(ids.subList(0, RocketOrdinaryRetirement.MAX_PENDING), drained, "The queue held more than the pending bound");
+        pacing.demand(first, survivor); pacing.clear();
+        pacing.drain(4, (logical, entity) -> fail("clear kept a demand"));
+    }
+
     private static RocketTransferRecord record() { return committed(RocketStationMotionRuleTest.record(new RocketPosition(72, 80, 8))); }
 
     /** A landed ordinary transfer record T, as the probe's. */
@@ -165,7 +183,7 @@ class RocketFillRetirementDemandTest {
             RocketJournalTestAccess.write(journal, directory.resolve(type.fileName()), CheckedSavedDataPolicy.atomic(type), 1000);
         }
         UUID logical() { return record.logicalRocketId(); }
-        /** One loader demand, as the recovery service begins it. */
+        /** One loader demand, as the recovery service's tick begins it. */
         void begin() {
             try (var held = RocketOrdinaryRetirement.hold(journal, record.logicalRocketId())) {
                 retirements.begin(port, journal, RocketOrdinaryRetirement.Site.BEFORE_FILL, record,
