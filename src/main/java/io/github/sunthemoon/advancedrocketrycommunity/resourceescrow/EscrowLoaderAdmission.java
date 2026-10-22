@@ -125,6 +125,10 @@ public final class EscrowLoaderAdmission {
         var coordinator = data == null ? null : data.bind(server);
         if (coordinator == null ? runtime.propulsion(server).state() != EscrowAdmissionAuthority.Delegate.State.NO_FILE
                 : !coordinator.operational()) { return new Visit(FluidFuelLoaderStatus.LEDGER_UNAVAILABLE, false); }
+        if (journal.transfer() != null && !EscrowNamedFillTestHook.allowed(server)) {
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime.retireBeforeFill(rocket);
+            return new Visit(FluidFuelLoaderStatus.TRANSFER_JOURNAL_UNPROVED, false);
+        }
         // A first fill checks against a virtual empty root carrying the ID that the new ledger will carry.
         UUID ledger = coordinator == null ? UUID.randomUUID() : coordinator.ledger().id();
         Capture capture;
@@ -176,6 +180,10 @@ public final class EscrowLoaderAdmission {
      */
     private static Capture capture(ServerLevel level, FluidFuelLoaderBlockEntity loader, LoaderRoot root, RocketEntity rocket,
                                    EscrowCoordinator coordinator, UUID ledger, long sequence, RocketTransferSavedData.JournalGuard journal) {
+        // Also guards detached capture and first-ledger creation: RAM removal alone is never sufficient.
+        if (journal.transfer() != null && !EscrowNamedFillTestHook.allowed(level.getServer())) {
+            return Capture.refused(FluidFuelLoaderStatus.TRANSFER_JOURNAL_UNPROVED);
+        }
         String levelId = level.dimension().location().toString();
         var section = root.escrow(); var wrapper = rocket.escrowSection();
         if (section.locked() || section.ledger() != null && !section.ledger().equals(ledger)

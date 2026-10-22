@@ -1354,6 +1354,15 @@ or accept a risk. The risks are R-031, R-032 and R-035.
   - F8 removes the origin ticket and the same set in each end's Level. Without a refresh, the tickets expire at the
     first purge with age greater than 400 ticks. Tickets are not persisted.
   - Ordinary reconciliation, pruning, held repair, the HOLD and CLEANUP routes and the legacy fences add none.
+  - **Exception: retirement before the first escrow fill** (W130, Root decision R52's D2 (b2), W126-R1; merged
+    `3bce8373` on 2026-10-22, recorded by Root under W130-R5). When a loader attempts a fill on a landed rocket that
+    still has its COMMITTED transfer record T, the retirement places the existing ordinary flight ticket on the old
+    launch site's origin column and refreshes the destination's, so W98's on-disk proof can remove T before the fill.
+    It starts on demand only: at most four starts per tick and one attempt per rocket per 200 ticks, never at startup
+    by itself, released on success or by the 400-tick expiry, without resetting W98's backoff. Open before admission
+    (W130-R1, TASK-W130F under R59): during a wait that never ends by itself (a search area over the limit, a Level
+    with saving off, unsupported entity storage) one demand keeps re-ticketing both ends every 200 ticks and keeps
+    the landed rocket's column loaded. Unreachable while production admission is off.
 - **Checked column set (R21 item 2).**
   - One server-free, overflow-checked helper defines the columns for readiness, governed pad admission, F1's source,
     refresh and release.

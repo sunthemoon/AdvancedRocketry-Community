@@ -8,7 +8,6 @@ import io.github.sunthemoon.advancedrocketrycommunity.celestial.network.Celestia
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightPlanResult;
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightState;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightQuotes;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketNavigation;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketNavigationStatus;
@@ -72,8 +71,7 @@ final class RocketNavigationService {
         boolean authorized = controlsRocket && (!(source instanceof TravelTarget.Station station)
                 || stations.find(station.instanceId()).filter(value -> access.allowed(value, player.getUUID(),
                 player.hasPermissions(2), StationAccessAction.VISIT)).isPresent());
-        boolean launchableState = flight.state() == RocketFlightState.FUELED
-                || flight.state() == RocketFlightState.LANDED && flight.fuel().availableForLaunch();
+        boolean launchableState = flight.launchReady();
         var entries = new ArrayList<RocketFlightQuotes.TargetQuote>(targets.size());
         for (var target : targets) {
             var result = planner.plan(rocket, flight, source, target, stations, PREVIEW_ID, pair);

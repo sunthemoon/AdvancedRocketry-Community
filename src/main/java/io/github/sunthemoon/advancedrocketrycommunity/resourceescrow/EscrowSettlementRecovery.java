@@ -18,6 +18,8 @@ final class EscrowSettlementRecovery implements AutoCloseable {
     static final class Work {
         final Map<EscrowEndpoint.Key, EscrowBarrier.Proof> proofs = new HashMap<>();
         final Set<EscrowEndpoint.Key> busy = new HashSet<>();
+        /** R39's WARN once per held member while this decision is live, never once per retry. */
+        final Set<java.util.UUID> reportedResources = new HashSet<>();
         boolean writing;
         long retryAt;
         String phase = "O2";
@@ -104,6 +106,16 @@ final class EscrowSettlementRecovery implements AutoCloseable {
             }
             boolean installed = EscrowSettlementTombstones.installed(coordinator.ledger(), intent);
             requireJournal(coordinator.ledger(), intent, journal, installed);
+            // R39: cargo's saved native resource is checked before normalization, O2 or a readback acts.
+            var unavailable = EscrowSettlementProofs.unavailableFluid(members);
+            if (unavailable == null) { unavailable = EscrowSettlementProofs.unavailableItem(members); }
+            if (unavailable != null) {
+                if (state.reportedResources.add(unavailable.id())) {
+                    try { EscrowReconciliationAction.requireNativeResource(unavailable); }
+                    catch (EscrowReconciliationView.Refusal held) { /* The operation-local diagnostic is emitted once. */ }
+                }
+                stalled(runtime, intent, state, EscrowReason.OTHER_STATE.name(), tick); return;
+            }
             var next = intent.checkpointed().stream().filter(end -> !state.proofs.containsKey(end.endpoint().key())).findFirst();
             if (next.isPresent() ? !runtime.barrier().available(next.orElseThrow().endpoint(), tick)
                     : !coordinator.checkedWriteReady()) { observation.sample("settlement.wait.BARRIER_OR_WRITER_BUDGET", 0); return; }
@@ -112,14 +124,8 @@ final class EscrowSettlementRecovery implements AutoCloseable {
             EscrowTags.require(current.equals(intent.checkpointed()), "Frozen settlement endpoint changed");
             for (var endpointObservation : intent.checkpointed()) {
                 if (state.proofs.containsKey(endpointObservation.endpoint().key())) { continue; }
-                var targets = new ArrayList<EscrowBarrier.Target>();
-                for (var candidate : intent.checkpointed()) {
-                    if (!EscrowBarrier.sameSlot(endpointObservation.endpoint(), candidate.endpoint())) { continue; }
-                    // One physical save must prove all references in that slot together.
-                    var frontier = candidate.missing() ? new EscrowPrefix.State(intent.ledger(), 0,
-                            EscrowSettlementTombstones.observationDigest(candidate), List.of()) : candidate.state();
-                    targets.add(new EscrowBarrier.Target(candidate.endpoint(), frontier, EscrowSettlementDisk.validator(candidate, intent.ledger())));
-                }
+                var slot = EscrowSettlementProofs.slot(intent, members, endpointObservation.endpoint(), rocket -> liveSnapshot(server, rocket));
+                var targets = slot.targets();
                 var keys = targets.stream().map(target -> target.endpoint().key()).toList();
                 var endpoint = endpointObservation.endpoint();
                 var level = server.getLevel(ResourceKey.create(Registries.DIMENSION, ResourceLocation.tryParse(endpoint.level())));
@@ -128,7 +134,10 @@ final class EscrowSettlementRecovery implements AutoCloseable {
                     if (observation != EscrowTimingSink.NONE) { observation.sample("settlement.barrier", System.nanoTime() - barrierBegan); }
                     state.busy.removeAll(keys);
                     if (closed) { result.proofs().values().forEach(EscrowBarrier.Proof::release); return; }
-                    if (!result.confirmed()) { stalled(runtime, intent, state, result.reason().name(), server.getTickCount()); return; }
+                    if (!result.confirmed() || !slot.confirmed()) {
+                        result.proofs().values().forEach(EscrowBarrier.Proof::release);
+                        stalled(runtime, intent, state, slot.reason(result).name(), server.getTickCount()); return;
+                    }
                     result.proofs().forEach((key, proof) -> {
                         runtime.checkpoint("O2_BEFORE_" + index(intent, key));
                         var old = state.proofs.put(key, proof); if (old != null) { old.release(); }
@@ -202,6 +211,13 @@ final class EscrowSettlementRecovery implements AutoCloseable {
         boolean accepted = joint.test(selected);
         if (!accepted) { busy.removeAll(keys); }
         return accepted;
+    }
+    /** The loaded rocket the live O2 observation just matched to the frozen choice; never loads or reconstructs. */
+    private static io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot liveSnapshot(MinecraftServer server, EscrowEndpoint endpoint) {
+        var level = server.getLevel(ResourceKey.create(Registries.DIMENSION, ResourceLocation.tryParse(endpoint.level())));
+        EscrowTags.require(level != null && level.getEntity(endpoint.identity())
+                instanceof io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity, "Cargo survivor unavailable");
+        return ((io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity) level.getEntity(endpoint.identity())).snapshot().orElseThrow();
     }
     private static int index(EscrowSettlementIntent intent, EscrowEndpoint.Key key) {
         for (int i = 0; i < intent.observations().size(); i++) { if (intent.observations().get(i).endpoint().key().equals(key)) { return i; } }

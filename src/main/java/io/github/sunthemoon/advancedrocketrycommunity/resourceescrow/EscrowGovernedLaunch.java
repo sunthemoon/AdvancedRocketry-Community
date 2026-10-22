@@ -78,12 +78,14 @@ final class EscrowGovernedLaunch {
         return prepared;
     }
 
-    /** A landed successor can plan without mutating its durable E before F2. */
+    /**
+     * A landed successor, or an assembled rocket refuelled through escrow (R55), can plan without mutating its durable
+     * E before F2: the same promotion as the ordinary launch gate, whose FUELED time the countdown then replaces.
+     */
     static RocketFlightData planned(RocketFlightData initial, RocketFlightData plannedFlight) {
         EscrowTags.require(initial.activeTransferId().isEmpty() && initial.fuel().propulsion().isPresent()
-                && (initial.state() == RocketFlightState.FUELED || initial.state() == RocketFlightState.LANDED),
-                "Launch requires stationary native fuel");
-        var fueled = initial.state() == RocketFlightState.LANDED
+                && initial.launchReady(), "Launch requires stationary native fuel");
+        var fueled = initial.state() != RocketFlightState.FUELED
                 ? initial.withFuel(initial.fuel(), initial.stateStartedGameTime()) : initial;
         return fueled.withPlan(plannedFlight.plan().orElseThrow());
     }

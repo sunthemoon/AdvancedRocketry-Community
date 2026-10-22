@@ -200,6 +200,22 @@ public final class RocketFlightData {
         return Optional.ofNullable(currentTarget);
     }
 
+    /** R55: whether this stationary rocket may be offered or sent on a flight; see {@link #launchReady(RocketFlightState, RocketFuelState)}. */
+    public boolean launchReady() {
+        return launchReady(state, fuel);
+    }
+
+    /**
+     * R55: FUELED, or ASSEMBLED or LANDED with fuel available for launch; a launch first promotes the latter two with
+     * {@link #withFuel}. Readiness only; the planner still checks the complete debit and every flight authority.
+     */
+    public static boolean launchReady(RocketFlightState state, RocketFuelState fuel) {
+        Objects.requireNonNull(state, "state");
+        Objects.requireNonNull(fuel, "fuel");
+        return state == RocketFlightState.FUELED
+                || (state == RocketFlightState.ASSEMBLED || state == RocketFlightState.LANDED) && fuel.availableForLaunch();
+    }
+
     /**
      * ADR-044 §5: a rocket docked at a station records the station's current orbit body. Only a
      * station target may change its body this way; nothing else about the flight changes.

@@ -38,12 +38,12 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: 83d5386b (W132 merged with W132F: cargo leaf D-E1, item cargo admission and reconciliation, admission disabled; before it, 88bcebfc merged W125 with W125F, the F1 named-fill fix)
-latest_hosted_regression: run 39464852370 at 53e9fa1a (the W118 merge) passed all required GameTests and the log checker on its re-run; its first attempt failed four governed-flight and warm-up GameTests once (QUEUE lists them). Run 39421969414 at dcebe3a8 (W116 and W107B merged) also passed on its re-run after one live-return failure, and runs 39415014258 at 2e44edcc and 39411638524 at d9f031d4 passed, so the escrow proof tests have passed on every hosted run since W111. Before W111, EscrowCoreGameTests.ownTerrainAndEntityStoresConfirmTheExactFrozenFrontier failed on the runs at bd1c78b9, d2f0d00c, 9f6668aa, 67dee026, fb1ac454, 20a82b88 and f1223c02
+latest_code_commit: 49d9629c (W133F merged: F3's native launch on the combined tree, with gated launch traces; before it, ab14bc2e merged W134, cargo leaf D-E2, item cargo settlement and the end-to-end cases, admission disabled)
+latest_hosted_regression: run 39700132027 at eeb1fb80 (the W131 merge) passed all required GameTests and the log checker, as did run 39697134585 at 2c1c32f7 (W132 and W133 merged); run 39693516643 at 339dd2a1 (the W132 merge) passed every GameTest but failed the log check because its GameTests crossed midnight UTC and Forge rolled latest.log (QUEUE, W135)
 ledger_planned_units: 19
 asset_review_items: 154
 required_gates_approved: none
-last_updated: 2026-10-20
+last_updated: 2026-10-22
 ```
 
 ## Current state
@@ -111,7 +111,7 @@ What is still open:
   retry tests their own batch; the hosted runs at `d9f031d4`, `2e44edcc` and `dcebe3a8` passed them.
 - **S2.** W11b2's crash cuts passed natively as development evidence (the W11b2 records). Of
   W11b3's loader cut families, B3-S1 and B3-S2 (all 21 cuts, two restarts each) have native
-  evidence (W97 and W97B, merged `fe25244b`); B3-S3 matched 22 of its 23 cuts (W105, merged `bd1c78b9`, and W107's D2-C4-before, merged `9f6668aa`); W107 also passed 15 B3-S4 and B3-S5 cuts. C1 then passed with R36's gated fixture save (W107B, merged `d6319f9f`), and W107C (merged `f2df941c`) passed E1, E2, R1's saturated floors and all seven R3 cases natively; E4 is an in-process residual. W107C found **F1**, a production defect that blocks fuel admission: a named fill is held at L1 forever because the transfer fence locks the rocket's own landed record while loader reconciliation waits for it to settle, with no persisted reason; W121's design, amended by Root decision R48 after its review, is implemented by W125 (merged with W125F as `88bcebfc`), and a rocket refuelled away from its launch site still needs that site loaded to launch (F1b) until D2 (W130) retires its transfer record before the first fill. W125F found **F3**: an assembled rocket filled through escrow keeps `ASSEMBLED`, so its launch returns `INVALID_STATE`; W133 fixes it at the launch boundary (R55). B3-S6 remains.
+  evidence (W97 and W97B, merged `fe25244b`); B3-S3 matched 22 of its 23 cuts (W105, merged `bd1c78b9`, and W107's D2-C4-before, merged `9f6668aa`); W107 also passed 15 B3-S4 and B3-S5 cuts. C1 then passed with R36's gated fixture save (W107B, merged `d6319f9f`), and W107C (merged `f2df941c`) passed E1, E2, R1's saturated floors and all seven R3 cases natively; E4 is an in-process residual. W107C found **F1**, a production defect that blocks fuel admission: a named fill is held at L1 forever because the transfer fence locks the rocket's own landed record while loader reconciliation waits for it to settle, with no persisted reason; W121's design, amended by Root decision R48 after its review, is implemented by W125 (merged with W125F as `88bcebfc`), and D2 (W130, merged as `3bce8373`) retires a landed rocket's transfer record before its first fill, so a rocket refuelled away from its launch site no longer needs that site loaded to launch (F1b); W130F bounds the retirement's tickets before admission (R59). W125F found **F3**: an assembled rocket filled through escrow keeps `ASSEMBLED`, so its launch returned `INVALID_STATE`; W133 fixed it at the launch boundary (R55; merged as `695f76b0`), and W133F (merged as `49d9629c`) showed natively that an escrow-filled assembled rocket and a landed rocket whose record W130 retired both pass `prepare` and reach a governed COUNTDOWN that survives two restarts. B3-S6 remains.
 - **V1 and V2.** No slice has real-GPU or two-client evidence.
 - **C19.** W58 audited it (`records/W58.md`). Merged since: the validator chain and the G4 fix
   (C19-A), the portable evidence links (W60), correction files in the Markdown check and the

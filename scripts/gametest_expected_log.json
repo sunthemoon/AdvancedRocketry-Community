@@ -66,6 +66,15 @@
       "reason": "Removing the held fixture endpoint during cleanup invalidates its named transfer's loaded endpoint proof before removing the test journal record."
     },
     {
+      "id": "w131f-cargo-retained-disassembly-proof",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_FENCED transfer=[0-9a-f-]{36} reason=ENDPOINT_PROOF_REQUIRED repair=offline-whole-world",
+      "counts": {"fluid_cargo_landed_disassembly": 1},
+      "test": "FluidCargoLandedDisassemblyGameTests.retainedLegacyRecordDisassemblesExactlyTheLatestCargoOnce",
+      "reason": "The gated checked legacy COMMITTED record observes a real cargo-mutated destination's nonzero epoch; loaded endpoint proof then settles that survivor before P1-F8 disassembly."
+    },
+    {
       "id": "w124-cargo-stale-prepared-fence",
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
@@ -1570,6 +1579,24 @@
       "counts": {"ordinary_source_retirement_coverage": 1},
       "test": "RocketRetirementCoverageGameTests.aSurvivorRemovedDuringItsProofIsRebuiltFromTheRecord",
       "reason": "W98-R12: recovery rebuilds the removed survivor from T and reports RECOVERED once, after the rebuilt rocket's slot is proved."
+    },
+    {
+      "id": "w134-settlement-native-item-unavailable",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowReconciliationAction/",
+      "message": "ARCE_ESCROW_ITEM_UNAVAILABLE op=[0-9a-f-]{36} item=w134:missing",
+      "counts": {"item_cargo_settlement_r39": 1},
+      "test": "ItemCargoSettlementNativeGameTests.unavailableNativeItemHoldsOnlyItsSettlementBeforeO2",
+      "reason": "The structurally valid item becomes unavailable before O1; R39 retains only its frozen settlement before normalization/O2 and logs once across retries."
+    },
+    {
+      "id": "w134-item-cargo-retained-disassembly-fence",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_FENCED transfer=[0-9a-f-]{36} reason=ENDPOINT_PROOF_REQUIRED repair=offline-whole-world",
+      "counts": {"item_cargo_landed_disassembly": 1},
+      "test": "ItemCargoLandedDisassemblyGameTests.retainedLegacyRecordDisassemblesExactlyTheLatestCargoOnce",
+      "reason": "The checked legacy COMMITTED record observes the item-mutated destination's nonzero epoch before loaded endpoint proof and P1-F8 disassembly."
     }
   ]
 }

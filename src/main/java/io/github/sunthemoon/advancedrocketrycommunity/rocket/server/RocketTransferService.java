@@ -80,9 +80,11 @@ final class RocketTransferService {
         MinecraftServer server = sourceLevel.getServer();
         RocketTransferSavedData journal = RocketTransferSavedData.get(server);
         if (!journal.operational()) {
+            io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowLaunchTrace.note(rocket, plan.requestId(), "TRANSFER_PRECONDITION", "JOURNAL_OPERATIONAL");
             return RocketFlightRequestResult.failure(RocketFlightRequestCode.TRANSFER_JOURNAL_BLOCKED);
         }
         if (!resourceMutationAllowed(rocket)) {
+            io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowLaunchTrace.note(rocket, plan.requestId(), "TRANSFER_PRECONDITION", "RESOURCE_MUTATION_F1B");
             return RocketFlightRequestResult.failure(RocketFlightRequestCode.TRANSFER_JOURNAL_BLOCKED);
         }
         RocketTransferRecord previous = journal.findByLogicalRocket(countdown.logicalRocketId()).orElse(null);
@@ -125,7 +127,10 @@ final class RocketTransferService {
 
         if (admission.governed()) {
             var warming = warmups.decide(server, rocket, countdown, selected.snapshot().orElseThrow(), completion); // W90b
-            if (warming != null) { return warming; }
+            if (warming != null) {
+                io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowLaunchTrace.note(rocket, plan.requestId(), "WARMUP", warming.code().name());
+                return warming;
+            }
             boolean started = io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGovernedPreparation.begin(
                     rocket, countdown, selected.snapshot().orElseThrow(),
                     candidate -> RocketGovernedLaunchBoundary.allows(server, journal, candidate, rocket, recovery.bays()),
@@ -503,6 +508,8 @@ final class RocketTransferService {
             boolean settled, boolean stationaryArrival) {
         return operational && (phase == null || phase == RocketTransferPhase.COMMITTED && settled && stationaryArrival);
     }
+
+    void retireBeforeFill(RocketEntity rocket) { if (resourceMutationAllowed(rocket)) { recovery.retireBeforeFill(rocket); } }
 
     /** The production discard callback; package-private solely to test it without starting a world. */
     static Runnable governedLaunchDiscard(RocketTransferSavedData journal, UUID logical, UUID request,
