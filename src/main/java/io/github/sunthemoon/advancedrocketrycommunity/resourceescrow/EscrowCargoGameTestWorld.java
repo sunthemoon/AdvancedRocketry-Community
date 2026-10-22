@@ -53,6 +53,7 @@ final class EscrowCargoGameTestWorld implements AutoCloseable {
     final ServerLevel level;
     final MinecraftServer server;
     final List<RocketFluidCargoBlockEntity> devices = new ArrayList<>();
+    final List<io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketItemCargoBlockEntity> itemDevices = new ArrayList<>();
     final List<RocketEntity> rockets = new ArrayList<>();
     final List<UUID> transfers = new ArrayList<>();
     final List<ServerPlayer> players = new ArrayList<>();
@@ -147,10 +148,53 @@ final class EscrowCargoGameTestWorld implements AutoCloseable {
         return data.ledger().records().stream().filter(op -> op.device().identity().equals(id(device))).findFirst().orElse(null);
     }
 
+    /** Item counterpart, sharing the same isolated ledger, tickets and teardown. */
+    RocketEntity itemRocket(BlockPos at, int count) {
+        clear(at); clear(at.above());
+        var entries = new net.minecraft.nbt.ListTag();
+        if (count > 0) { var stack = ItemCargoReconciliationFixtures.stack(count); stack.putByte("Slot", (byte) 0); entries.add(stack); }
+        var snapshot = ItemCargoReconciliationFixtures.snapshot(level, at, entries);
+        var rocket = ItemCargoReconciliationFixtures.create(level, snapshot);
+        var flight = rocket.flightData().orElseThrow();
+        rocket.updateFlightData(flight.withFuel(flight.fuel().withFluidBank(false, ModIdentity.id("rocket_fuel"), null, 1_000), level.getGameTime()));
+        rockets.add(rocket); return rocket;
+    }
+
+    io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketItemCargoBlockEntity itemDevice(
+            BlockPos at, RocketEntity rocket, RocketCargoRole role, int count) {
+        clear(at);
+        level.setBlockAndUpdate(at, (role == RocketCargoRole.LOAD ? ModBlocks.ROCKET_ITEM_LOADER : ModBlocks.ROCKET_ITEM_UNLOADER).get().defaultBlockState());
+        var device = (io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketItemCargoBlockEntity) Objects.requireNonNull(level.getBlockEntity(at));
+        var root = io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketItemCargoRoot.placed(
+                rocket.ownerId().orElseThrow(), UUID.randomUUID(), role).withBuffer(new EscrowItemBuffer(List.of(
+                        count == 0 ? new CompoundTag() : ItemCargoReconciliationFixtures.stack(count),
+                        new CompoundTag(), new CompoundTag(), new CompoundTag()))).withBinding(FluidFuelLoaderEscrowFixtures.binding(rocket));
+        var tag = new CompoundTag(); tag.put(io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketItemCargoRoot.KEY, root.encode());
+        device.load(tag); itemDevices.add(device); return device;
+    }
+    static UUID id(io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketItemCargoBlockEntity device) { return device.root().orElseThrow().device(); }
+    static RocketEscrowSection section(io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketItemCargoBlockEntity device) { return device.root().orElseThrow().escrow(); }
+    void enable(io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketItemCargoBlockEntity device, boolean enabled) {
+        var root = device.root().orElseThrow();
+        EscrowCargoSwitches.forTests(server, root.role() == RocketCargoRole.LOAD ? EscrowOperation.Kind.ITEM_CARGO_LOAD
+                : EscrowOperation.Kind.ITEM_CARGO_UNLOAD, root.device(), enabled);
+    }
+    void pause(io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketItemCargoBlockEntity device, boolean paused) {
+        EscrowCargoSwitches.pauseReconciliationForTests(server, id(device), paused);
+    }
+    EscrowOperation member(io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketItemCargoBlockEntity device) {
+        var data = data(); if (data == null) { return null; }
+        return data.ledger().records().stream().filter(op -> op.device().identity().equals(id(device))).findFirst().orElse(null);
+    }
+
     @Override public void close() {
         if (closed) { return; }
         closed = true;
         var runtime = EscrowRuntime.of(server);
+        for (var device : itemDevices) {
+            if (device.root().isPresent()) { enable(device, false); pause(device, false); }
+            level.removeBlockEntity(device.getBlockPos()); level.setBlock(device.getBlockPos(), Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+        }
         for (var device : devices) {
             if (device.root().isPresent()) { enable(device, false); pause(device, false); }
             // No removal callbacks, so cleanup of a protected fixture root logs nothing.
