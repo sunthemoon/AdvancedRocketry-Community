@@ -361,7 +361,7 @@ def observations(lines: list[str], case: str, restart: int) -> None:
 def recovered_proofs(lines: list[str], frozen_digest: str) -> None:
     """O3-after must reacquire both proofs and the checked journal lease before O4 on restart 1."""
     prefix = "ARCE_RELEASE_CARGO_CUT_PROOF cut=FS_O3_AFTER checkpoint="
-    checkpoints = [line.split(prefix, 1)[1] for line in lines if prefix in line]
+    checkpoints = [line.split(prefix, 1)[1].rstrip("\r\n") for line in lines if prefix in line]
     for checkpoint in ("O2_AFTER_0", "O2_AFTER_1", "O3J_AFTER", "O4_CAPTURE"):
         require(any(line.startswith(checkpoint + " digest=" + frozen_digest + " ") for line in checkpoints),
                 "O3-after did not reacquire the frozen proof/lease at " + checkpoint)

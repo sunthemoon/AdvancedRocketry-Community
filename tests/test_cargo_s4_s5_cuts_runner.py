@@ -197,6 +197,11 @@ class CargoSettlementFlightRunnerTest(unittest.TestCase):
         lines = [prefix + name + " digest=frozen proved=2 waiting=0" for name in
                  ("O2_AFTER_0", "O2_AFTER_1", "O3J_AFTER", "O4_CAPTURE")]
         runner.recovered_proofs(lines, "frozen")
+        for ending in ("\n", "\r\n"):
+            runner.recovered_proofs([line + ending for line in lines], "frozen")
+        for suffix in (" extra", " proved=1", " waiting=1", " "):
+            with self.assertRaises(runner.smoke.SmokeError):
+                runner.recovered_proofs([line + suffix + "\n" for line in lines], "frozen")
         for index in range(len(lines)):
             with self.assertRaises(runner.smoke.SmokeError):
                 runner.recovered_proofs(lines[:index] + lines[index + 1:], "frozen")
