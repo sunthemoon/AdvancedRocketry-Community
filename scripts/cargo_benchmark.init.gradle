@@ -1,0 +1,15 @@
+// W144 test-only classpath export. Does not alter production artifacts or enable admission.
+allprojects {
+    afterEvaluate { project ->
+        if (project.plugins.hasPlugin('java')) {
+            tasks.register('w144BenchmarkClasspath') {
+                dependsOn tasks.named('testClasses')
+                doLast {
+                    def output = project.findProperty('w144Classpath')
+                    if (!output) { throw new GradleException('Supply -Pw144Classpath=<external output file>') }
+                    new File(output.toString()).text = sourceSets.test.runtimeClasspath.asPath
+                }
+            }
+        }
+    }
+}
