@@ -86,6 +86,34 @@ class RocketRetirementTerminalTest {
         assertTrue(f.journal.clean());
     }
 
+    @Test void fiveColdReplacementsShareTheFourStartsPerTickBudget() {
+        var shared = new RocketOrdinaryRetirement(new HashSet<>(), new HashSet<>(), Set::of, server -> null);
+        var entries = new ArrayList<Fixture>();
+        for (int i = 0; i < 5; i++) {
+            var f = new Fixture(); entries.add(f); f.port.coldSurvivor = true;
+            try (var held = RocketOrdinaryRetirement.hold(f.journal, f.logical())) {
+                shared.begin(f.port, f.journal, RocketOrdinaryRetirement.Site.BEFORE_REPLACE, f.old,
+                        f.old.destinationEntityId().orElseThrow(), List.of(), false, held,
+                        new RocketOrdinaryRetirement.Effects(() -> { f.accepted++; return true; }, () -> f.discarded++));
+            }
+        }
+        shared.tick();
+        assertEquals(4, entries.stream().mapToInt(f -> f.port.tickets).sum());
+        entries.forEach(f -> f.port.now = 101); shared.tick();
+        assertEquals(5, entries.stream().mapToInt(f -> f.port.tickets).sum());
+        for (int tick = 102; tick < 300; tick++) { for (var f : entries) { f.port.now = tick; } shared.tick(); }
+        assertEquals(5, entries.stream().mapToInt(f -> f.port.tickets).sum());
+        shared.clear(); assertTrue(entries.stream().allMatch(f -> f.discarded == 1 && f.accepted == 0 && f.journal.clean()));
+    }
+
+    @Test void saveOffRefusesABoundedDemandWithoutTicketingOrChangingAuthority() {
+        var f = new Fixture(); f.port.saveOff = true; f.begin();
+        for (int tick = 101; tick <= 1000; tick++) { f.port.now = tick; f.retirements.tick(); }
+        assertEquals(0, f.port.tickets); assertTrue(f.port.callbacks.isEmpty());
+        assertFalse(f.retirements.pending(f.logical())); assertEquals(1, f.discarded); assertEquals(0, f.accepted);
+        assertSame(f.old, f.journal.findByLogicalRocket(f.logical()).orElseThrow()); assertTrue(f.journal.clean());
+    }
+
     @Test void aRefusedTerminalKeepsTheOldAuthorityAndDiscardsOnce() {
         var f = new Fixture(); f.port.allowed = false; f.begin(); f.complete(0); f.complete(1);
         assertSame(f.old, f.journal.findByLogicalRocket(f.logical()).orElseThrow());

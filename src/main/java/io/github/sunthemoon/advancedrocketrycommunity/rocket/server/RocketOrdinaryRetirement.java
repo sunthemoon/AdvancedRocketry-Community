@@ -453,6 +453,7 @@ final class RocketOrdinaryRetirement {
         var record = entry.record;
         boolean submitted = entry.port.afterAcknowledged(entry.journal, token, () -> {
             if (entry.site == Site.BEFORE_REPLACE && pending.get(entry.logical()) != entry) { return false; }
+            if (entry.site == Site.BEFORE_REPLACE) { entry.sink.accept("I7_ACK_BEFORE_EFFECTS"); }
             drop(entry);
             if (!entry.effects.acknowledged().getAsBoolean()) { return false; }
             live.remove(record.transferId()); settled.remove(record.transferId());
