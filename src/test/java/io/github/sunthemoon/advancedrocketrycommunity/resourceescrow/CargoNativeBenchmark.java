@@ -109,7 +109,9 @@ public final class CargoNativeBenchmark {
         if (event.getServer() != server || event.phase != TickEvent.Phase.END || finished) { return; }
         try { work(); }
         catch (RuntimeException failure) {
-            report.put("error", failure.toString()); finish("STOP_MEASUREMENT_ERROR");
+            report.put("error", failure.toString());
+            report.put("error_stack", Arrays.stream(failure.getStackTrace()).limit(30).map(Object::toString).toList());
+            finish("STOP_MEASUREMENT_ERROR");
         }
     }
     @SubscribeEvent public void untracking(net.minecraftforge.event.entity.player.PlayerEvent.StopTracking event) {
@@ -121,7 +123,9 @@ public final class CargoNativeBenchmark {
     private void work() {
         var runtime = EscrowRuntime.of(server);
         var reference = (EscrowFlightBenchmarkProbe) field(runtime, "flightBenchmark");
-        if (reference == null || !(boolean) field(reference, "initialized")) { return; }
+        // The reference probe creates its first ledger after Runtime's scheduler lookup on that tick.
+        // Attach only after the next ordinary Runtime tick has created the production scheduler.
+        if (reference == null || !(boolean) field(reference, "initialized") || runtime.reconciliationScheduler() == null) { return; }
         if (!placed) { place(); placed = true; }
         observeRefusals();
         if (!(boolean) field(reference, "measuring")) { return; }

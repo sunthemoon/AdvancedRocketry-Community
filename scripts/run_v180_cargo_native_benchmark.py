@@ -234,6 +234,13 @@ def run(args) -> dict:
                     report["synthetic_requests"] = 64
                 else:
                     raw = json.loads((evidence / "cargo-native.json").read_text(encoding="utf-8"))
+                    report["native"] = raw
+                    missing = [name for name in ("governed-benchmark.csv", "governed-benchmark.json") if not (evidence / name).is_file()]
+                    if missing:
+                        report["coverage_gaps"] = native_coverage(raw) + ["missing " + name for name in missing]
+                        report["error"] = raw.get("error", "Reference measurement did not complete")
+                        report["status"] = "STOP_MISSING_MEASUREMENT"
+                        return report
                     phases, generations = governed.read_samples(evidence / "governed-benchmark.csv")
                     load = json.loads((evidence / "governed-benchmark.json").read_text(encoding="utf-8"))
                     gaps = native_coverage(raw) + governed.coverage(load, phases, generations, True)
