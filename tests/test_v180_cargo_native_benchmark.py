@@ -13,7 +13,7 @@ class CargoNativeVerdictTest(unittest.TestCase):
         self.assertEqual(["start"], [stage for stage, _ in stages])
         self.assertIsNone(stages[0][1].search("ARCE_CARGO_BENCH_DONE status=NATIVE_MEASURED"))
         self.assertIsNotNone(stages[0][1].search("ARCE_CARGO_SAVE_TRACE_DONE status=OBSERVED"))
-        self.assertEqual(["start", "recover"], [stage for stage, _ in runner.native_stages("reference")])
+        self.assertEqual(["start", "recover-1", "recover-2"], [stage for stage, _ in runner.native_stages("reference")])
         self.assertIn("-Dadvancedrocketrycommunity.cargoSaveTrace=true", runner.probe_flags("reference", "start", "abc", True))
         self.assertFalse(any("cargoSaveTrace" in flag for flag in runner.probe_flags("reference", "start", "abc")))
         with self.assertRaises(ValueError):
@@ -89,10 +89,25 @@ class CargoNativeVerdictTest(unittest.TestCase):
         flags = runner.probe_flags("pressure", "start", "abc")
         self.assertIn("-Dadvancedrocketrycommunity.cargoPressureBenchmark=true", flags)
         self.assertFalse(any("escrowCase" in f or "escrowScenario" in f for f in flags))
-        for stage in ("start", "recover"):
+        for stage in ("start", "recover-1", "recover-2"):
             flags = runner.probe_flags("reference", stage, "abc")
-            self.assertIn("-Dadvancedrocketrycommunity.escrowScenario=" + stage, flags)
+            self.assertIn("-Dadvancedrocketrycommunity.escrowScenario=" + ("start" if stage == "start" else "recover"), flags)
             self.assertIn("-Dadvancedrocketrycommunity.escrowCase=GOVERNED_BENCH", flags)
+
+    def test_recovery_requires_both_exact_state_and_measured_recovery_time(self):
+        state = dict(ledger="root", **{f"{kind}_{i}": "hash" for kind in ("device", "rocket") for i in range(12)})
+        baseline = dict(schema_version=1, source_commit="abc", state=state)
+        good = dict(status="MATCHED", restart=1, source_commit="abc", state=state,
+                    governed_flights_verified=True, recovery_ticks=40, recovery_ns=100)
+        self.assertEqual([], runner.recovery_coverage(good, 1, baseline, "abc"))
+        for key in good:
+            bad = copy.deepcopy(good); bad.pop(key)
+            self.assertTrue(runner.recovery_coverage(bad, 1, baseline, "abc"), key)
+        for key in state:
+            bad = copy.deepcopy(good); bad['state'][key] = 'changed'
+            self.assertTrue(runner.recovery_coverage(bad, 1, baseline, "abc"), key)
+        self.assertTrue(runner.recovery_coverage(good, 2, baseline, "abc"))
+        self.assertTrue(runner.recovery_coverage(good, 1, baseline, "different"))
 
 
 if __name__ == "__main__":

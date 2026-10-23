@@ -97,9 +97,14 @@ public final class CargoNativeBenchmark {
             moon.getChunk(chunk.x, chunk.z); // Fixed test setup only; all later endpoint access is loaded-only.
         }
     }
-    // Keep every origin within the stationary Moon player's two-chunk view distance. Snapshot size is unchanged;
-    // these are stationary, explicitly bound entities, so overlapping visual extents do not select a different device.
-    private static BlockPos at(int i) { return new BlockPos(248 + (i % 4) * 8, 100, 144 + (i / 4) * 8); }
+    // One fixture pair per Anvil slot, within the stationary player's two-chunk view.
+    // Do not share the reference oxygen rooms' chunks (x=15/16, z=7/8).
+    static BlockPos at(int i) {
+        if (i < 0 || i >= 12) { throw new IllegalArgumentException("Unknown cargo fixture"); }
+        int x = i < 10 ? 14 + i % 5 : i == 10 ? 14 : 18;
+        int z = i < 10 ? 9 + i / 5 : 8;
+        return new BlockPos(x * 16 + 4, 100, z * 16 + 4);
+    }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST) public void start(TickEvent.ServerTickEvent event) {
         if (event.getServer() != server || event.phase != TickEvent.Phase.START || !started || finished) { return; }
@@ -273,6 +278,7 @@ public final class CargoNativeBenchmark {
     }
     private void finish(String status) {
         finished = true; report.put("status", status); write();
+        if ("NATIVE_MEASURED".equals(status)) { CargoNativeRecovery.prepareBaseline(server); return; }
         AdvancedRocketryCommunity.LOGGER.info("ARCE_CARGO_BENCH_DONE status={}", status);
     }
     private void write() {

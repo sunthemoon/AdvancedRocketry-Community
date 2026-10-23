@@ -22,6 +22,7 @@ import run_v180_escrow_forced_stop as escrow
 smoke = escrow.smoke
 DONE = re.compile(r"ARCE_CARGO_BENCH_DONE status=(\S+)")
 SAVE_TRACE_DONE = re.compile(r"ARCE_CARGO_SAVE_TRACE_DONE status=(\S+)")
+RECOVERY_DONE = re.compile(r"ARCE_CARGO_RECOVERY_DONE restart=([12]) status=(\S+)")
 ROOT = Path("D:/GitHub/ARCE-Task-Evidence/root-queue/W144")
 TEMP = Path("D:/GitHub/ARCE-Task-Evidence/Temp")
 
@@ -33,8 +34,12 @@ def probe_flags(case: str, stage: str, commit: str, diagnose_saves: bool = False
         flags.append("-Dadvancedrocketrycommunity.cargoPressureBenchmark=true")
     else:
         flags += ["-Dadvancedrocketrycommunity.escrowCase=GOVERNED_BENCH",
-                  "-Dadvancedrocketrycommunity.escrowScenario=" + stage,
+                  "-Dadvancedrocketrycommunity.escrowScenario=" + ("recover" if stage.startswith("recover") else stage),
                   "-Dadvancedrocketrycommunity.cargoBenchmark=true"]
+        if stage.startswith("recover"):
+            if stage not in ("recover-1", "recover-2"):
+                raise ValueError("Cargo recovery index must be 1 or 2")
+            flags.append("-Dadvancedrocketrycommunity.cargoRecoveryIndex=" + stage.removeprefix("recover-"))
     if diagnose_saves:
         if case != "reference" or stage != "start":
             raise ValueError("Save diagnosis is an observation-only reference start")
@@ -47,7 +52,18 @@ def native_stages(case: str, diagnose_saves: bool = False) -> list:
         if case != "reference":
             raise ValueError("Save diagnosis requires reference load")
         return [("start", SAVE_TRACE_DONE)]
-    return [("start", pressure.DONE)] if case == "pressure" else [("start", DONE), ("recover", governed.RESTART)]
+    return [("start", pressure.DONE)] if case == "pressure" else [("start", DONE), ("recover-1", RECOVERY_DONE), ("recover-2", RECOVERY_DONE)]
+
+
+def recovery_coverage(report: dict, index: int, baseline: dict, commit: str) -> list[str]:
+    expected = {"ledger"} | {f"{kind}_{i}" for kind in ("device", "rocket") for i in range(12)}
+    state = report.get("state", {})
+    return [] if (report.get("status") == "MATCHED" and report.get("restart") == index
+                  and report.get("source_commit") == baseline.get("source_commit") == commit
+                  and baseline.get("schema_version") == 1 and set(state) == expected
+                  and state == baseline.get("state") and report.get("governed_flights_verified") is True
+                  and type(report.get("recovery_ns")) is int and report["recovery_ns"] > 0
+                  and type(report.get("recovery_ticks")) is int and report["recovery_ticks"] >= 40) else [f"restart {index}: incomplete or changed state"]
 
 
 def pressure_coverage(raw: dict) -> list[str]:
@@ -184,6 +200,8 @@ def run(args) -> dict:
             command = escrow._server_command(args.java); command[2] = "-Xmx4G"
             command[1:1] = ["-XX:ActiveProcessorCount=4", "-XX:+UseG1GC"] + probe_flags(args.case, stage, args.source_commit, diagnose_saves)
             process = smoke.CapturedProcess(command, session, evidence / (stage + ".log"))
+            launched = time.monotonic()
+            ready_seconds = None
             stop = threading.Event(); rss = []; audits = []; errors = []
 
             def monitor():
@@ -216,6 +234,7 @@ def run(args) -> dict:
                     if errors or process.process.poll() is not None or time.monotonic() >= deadline:
                         raise RuntimeError("Native measurement failed: " + str(errors or ["process exit/deadline"]))
                     time.sleep(.25)
+                ready_seconds = time.monotonic() - launched
                 process.command("stop"); code = process.finish()
                 if code != 0 or any("/ERROR]" in line or "/FATAL]" in line for line in process.lines):
                     raise RuntimeError("Native benchmark exit/ERROR/FATAL failure")
@@ -225,12 +244,15 @@ def run(args) -> dict:
                 stop.set(); sampler.join(40)
                 if process.process.poll() is None:
                     process.abort()
-                report["sessions"].append(dict(stage=stage, command=command, rss_bytes=rss, audits=audits, monitor_errors=errors))
-                for name in ("cargo-native.json", "cargo-save-trace.json", "cargo-pressure.json", "governed-benchmark.json", "governed-benchmark.csv", "escrow-benchmark.csv"):
+                report["sessions"].append(dict(stage=stage, command=command, rss_bytes=rss, audits=audits, monitor_errors=errors,
+                                               launch_to_ready_seconds=ready_seconds))
+                for name in ("cargo-native.json", "cargo-save-trace.json", "cargo-pressure.json", "governed-benchmark.json", "governed-benchmark.csv", "escrow-benchmark.csv",
+                             "cargo-recovery-baseline.json", "cargo-recovery-1.json", "cargo-recovery-2.json"):
                     if (session / "world" / name).is_file():
                         shutil.copy2(session / "world" / name, evidence / name)
             if errors or sampler.is_alive() or not rss:
                 raise RuntimeError("Native resource monitoring failed: " + str(errors))
+            process_lines = list(process.lines)
             process = None
             if diagnose_saves:
                 trace = json.loads((evidence / "cargo-save-trace.json").read_text(encoding="utf-8"))
@@ -274,7 +296,16 @@ def run(args) -> dict:
                 if gaps:
                     report["status"] = "STOP_MISSING_MEASUREMENT"; return report
             else:
-                report["restart_verified"] = True
+                index = int(stage.removeprefix("recover-"))
+                recovery = json.loads((evidence / f"cargo-recovery-{index}.json").read_text(encoding="utf-8"))
+                baseline = json.loads((evidence / "cargo-recovery-baseline.json").read_text(encoding="utf-8"))
+                gaps = recovery_coverage(recovery, index, baseline, args.source_commit)
+                if not any(governed.RESTART.search(line) for line in process_lines):
+                    gaps.append("governed restart measurement missing")
+                report.setdefault("recoveries", []).append(recovery)
+                if gaps:
+                    report["coverage_gaps"] = gaps; report["status"] = "STOP_RECOVERY_MISMATCH"; return report
+                report["restart_verified"] = index == 2
         report["status"] = "NATIVE_STAGE_MEASURED"
         return report
     except Exception as failure:
