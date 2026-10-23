@@ -12,7 +12,7 @@ if (-not $evidence.StartsWith($allowed, [StringComparison]::OrdinalIgnoreCase) -
 }
 New-Item -ItemType Directory -Path $evidence | Out-Null
 Start-Transcript -Path (Join-Path $evidence 'driver.log') | Out-Null
-$lock = 'D:/GitHub/ARCE-Task-Evidence/locks/heavy-jvm'
+$lock = 'D:\GitHub\ARCE-Task-Evidence\locks\heavy-jvm'
 $token = "W144 pid=$PID $([guid]::NewGuid())"
 $acquired = $false
 $exitCode = 1
