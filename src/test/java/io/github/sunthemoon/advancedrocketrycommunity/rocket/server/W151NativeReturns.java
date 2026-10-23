@@ -32,10 +32,15 @@ public final class W151NativeReturns {
         Map<UUID, Object> entries = RocketSourceRetirementFixtures.field(retirement, "pending");
         Object entry = entries.get(logical);
         if (entry == null) { return Map.of("pending", false); }
-        return Map.of("pending", true, "attempts", retirement.attempts(logical), "reason", retirement.reason(logical),
-                "cursor", RocketSourceRetirementFixtures.<Integer>field(entry, "cursor"),
-                "not_before", RocketSourceRetirementFixtures.<Long>field(entry, "notBefore"),
-                "state", RocketSourceRetirementFixtures.field(entry, "state").toString());
+        return pendingObservation(retirement.attempts(logical), retirement.reason(logical),
+                RocketSourceRetirementFixtures.<Integer>field(entry, "cursor"),
+                RocketSourceRetirementFixtures.<Long>field(entry, "notBefore"),
+                RocketSourceRetirementFixtures.field(entry, "state").toString());
+    }
+
+    static Map<String, Object> pendingObservation(int attempts, String reason, int cursor, long notBefore, String state) {
+        return Map.of("pending", true, "attempts", attempts, "reason", reason == null ? "none" : reason,
+                "cursor", cursor, "not_before", notBefore, "state", state);
     }
 
     public static void request(ServerPlayer player, RocketEntity rocket, RocketFlightAction action, UUID request) {
