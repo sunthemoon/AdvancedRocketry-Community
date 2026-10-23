@@ -2,6 +2,7 @@
 import copy
 import sys
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 from uuid import UUID
 
@@ -93,6 +94,19 @@ class MatrixOracleTest(unittest.TestCase):
         self.entity["RocketEntityData"]["flight_data"]["passengers"]["assignments"] = []
         self.entity["RocketEntityData"]["flight_data"]["active_transfer_id"] = [0, 0, 0, 2]
         with self.assertRaises(probe.smoke.SmokeError): self.check()
+
+
+class RestartObservationTest(unittest.TestCase):
+    def test_waits_for_actual_landing_without_mutating_the_entity(self):
+        reports = [dict(state="DESCENT", transfer="pending"), dict(state="LANDED", transfer="none")]
+        with patch.object(probe.FlightHarness, "report", side_effect=reports), patch.object(probe.time, "sleep"):
+            self.assertEqual(reports[-1], probe.observe_stationary(object(), "test:moon", "entity"))
+
+    def test_unexpected_progression_and_expired_observation_fail(self):
+        with patch.object(probe.FlightHarness, "report", return_value=dict(state="COUNTDOWN", transfer="new")):
+            with self.assertRaises(probe.smoke.SmokeError): probe.observe_stationary(object(), "test:moon", "entity")
+        with patch.object(probe.time, "monotonic", side_effect=[0, 121]):
+            with self.assertRaises(probe.smoke.SmokeError): probe.observe_stationary(object(), "test:moon", "entity")
 
 
 if __name__ == "__main__": unittest.main()

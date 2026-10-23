@@ -40,6 +40,18 @@ def identity(entity):
     return str(nbt_uuid(entity["UUID"]))
 
 
+def observe_stationary(process, dimension, survivor):
+    # Use the existing 120-second restart observation window, not an assumed three-second flight duration.
+    deadline = time.monotonic() + 120
+    while time.monotonic() < deadline:
+        report = FlightHarness.report(process, dimension, survivor)
+        if report["state"] in ("LANDED", "FUELED", "ASSEMBLED") and report["transfer"] == "none":
+            return report
+        require(report["state"] == "DESCENT", "Unexpected restart flight progression")
+        time.sleep(0.25)
+    raise smoke.SmokeError("Recovered descent did not reach its stationary authority")
+
+
 def inspect(disk, old, expected_fuel, restart, boundary, survivor):
     """Validate the bounded physical census and complete resources, not just state/fuel scalars."""
     logical = str(nbt_uuid(old["logical_rocket_id"]))
@@ -216,12 +228,19 @@ def run_case(args, name, evidence):
                 process.process.kill(); entry["exit_code"] = process.finish(timeout=30)
             else:
                 survivor = row["survivor"]
+                if restart == 2 and not journal(world)["transfers"]:
+                    # A standalone saved rocket has no transfer ticket after a fresh boot. Observe only its known
+                    # origin column; this does not edit an entity or journal, nor save at the original cut.
+                    snapshot = old["source_snapshot" if survivor == row["source_entity"] else "destination_snapshot"]
+                    x, _, z = snapshot["source_origin"]
+                    entry["observation_load"] = f"execute in {snapshot['source_dimension']} run forceload add {x} {z}"
+                    process.command(entry["observation_load"])
                 process.wait_for(re.compile("ARCE_ROCKET_ENTITY_ACTIVE entity=" + survivor), 120)
                 if survivor == row["source_entity"] or cut in ("MOVED", "UNKNOWN", "ACK"):
                     if restart == 1:
                         process.wait_for(re.compile(r"ARCE_TRANSFER_RETIREMENT_PROVED .*site=RECOVERED_SOURCE"), 120)
                 time.sleep(3)
-                report = FlightHarness.report(process, EARTH if survivor == row["source_entity"] else row["dimension"], survivor)
+                report = observe_stationary(process, EARTH if survivor == row["source_entity"] else row["dimension"], survivor)
                 entry["live_report"] = report
                 process.command("stop"); entry["exit_code"] = process.finish()
                 require(entry["exit_code"] == 0, "Restart did not stop normally")

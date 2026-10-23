@@ -173,7 +173,9 @@ public final class RocketPredecessorNativeFixture {
     }
 
     static RocketPosition destinationOrigin(boolean sameSlot, RocketPosition source) {
-        return sameSlot ? source : new RocketPosition(8, 100, 8);
+        // Same entity column, not an identical snapshot origin: a real relocation must change its content hash.
+        return sameSlot ? new RocketPosition(source.x() + ((source.x() & 15) == 15 ? -1 : 1), source.y(), source.z())
+                : new RocketPosition(8, 100, 8);
     }
 
     @SubscribeEvent public void stopping(ServerStoppingEvent event) { if (event.getServer() == server) { close(); } }
