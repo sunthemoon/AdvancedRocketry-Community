@@ -56,9 +56,13 @@ class CargoPressureWorkloadTest {
             var before = EscrowCodec.encode(coordinator.ledger()); boolean dirty = data.isDirty();
             assertEquals(63, coordinator.nextSequence());
             assertEquals(62, coordinator.admissionAuthority().pendingCount());
-            var op = CargoNativePressureWorkload.operation(EscrowTestFixtures.operation(63, 63, 0), 62);
-            assertThrows(EscrowSettlementCapacity.ReservationFull.class,
-                    () -> coordinator.prepareTest(op, ignored -> fail("Refused admission callback")));
+            for (int request = 62; request < 64; request++) {
+                var witness = CargoNativeAdmissionWitness.capture(data, coordinator);
+                var op = CargoNativePressureWorkload.operation(EscrowTestFixtures.operation(63, request + 1, 0), request);
+                assertThrows(EscrowSettlementCapacity.ReservationFull.class,
+                        () -> coordinator.prepareTest(op, ignored -> fail("Refused admission callback")));
+                assertEquals(witness, CargoNativeAdmissionWitness.capture(data, coordinator));
+            }
             assertEquals(63, coordinator.nextSequence());
             assertEquals(62, coordinator.admissionAuthority().pendingCount());
             assertEquals(before, EscrowCodec.encode(coordinator.ledger()));

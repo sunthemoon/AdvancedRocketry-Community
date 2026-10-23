@@ -31,7 +31,7 @@ import net.minecraft.world.level.chunk.storage.IOWorker;
 import net.minecraft.world.level.chunk.storage.RegionFileStorage;
 import net.minecraft.world.level.storage.LevelResource;
 
-/** Test-artifact-only R82 pressure, derived from the unchanged historical native BENCH pattern. */
+/** Test-artifact-only R83 competing requests, derived from the unchanged historical native BENCH pattern. */
 @Mod.EventBusSubscriber(modid = ModIdentity.MOD_ID)
 public final class CargoNativePressureProbe implements EscrowTimingSink {
     private record Sample(String phase, long nanos) { }
@@ -51,7 +51,9 @@ public final class CargoNativePressureProbe implements EscrowTimingSink {
     private IOWorker terrain, entities;
     private CompletableFuture<Void> initialForce;
     private CompletableFuture<?> terrainLoad, entityLoad;
-    private int seed, warmup, elapsed, prepared, acknowledged;
+    private int seed, warmup, elapsed, attempted, prepared, acknowledged;
+    private boolean reconciling;
+    private final List<java.util.Map<String, Object>> refusals = new ArrayList<>();
     private long tickStart, allocationStart;
     private long savedTick = -1, gcStartCount, gcStartMillis;
     private volatile boolean measuring;
@@ -86,17 +88,6 @@ public final class CargoNativePressureProbe implements EscrowTimingSink {
         try { tick(); }
         catch (RuntimeException failure) {
             report.put("error", failure.getClass().getName() + ": " + failure.getMessage());
-            try { if (coordinator != null && operations.size() > prepared) {
-                var proposed = new EscrowLedger(data.ledger().id(), operations.get(operations.size() - 1).sequence(),
-                        data.ledger().writerGeneration(), List.copyOf(operations), List.of(), List.of());
-                report.put("attempted_records", operations.size());
-                report.put("candidate_reserved_bytes", EscrowSettlementCapacity.reservedBytes(proposed));
-                report.put("floor_retirement_headroom_bytes", EscrowSettlementCapacity.FLOOR_RETIREMENT_BYTES);
-                report.put("root_limit_bytes", EscrowLimits.ROOT_BYTES);
-                report.put("pending_at_failure", coordinator.admissionAuthority().pendingCount());
-                report.put("retained_at_failure", data.ledger().records().size());
-                report.put("next_sequence_at_failure", coordinator.nextSequence());
-            } } catch (RuntimeException diagnostic) { report.put("diagnostic_error", diagnostic.toString()); }
             report.put("status", "STOP_MEASUREMENT_ERROR"); writeReport(); throw failure;
         }
     }
@@ -120,7 +111,8 @@ public final class CargoNativePressureProbe implements EscrowTimingSink {
         report.put("schema_version", 1); report.put("status", "IN_PROGRESS");
         report.put("source_commit", System.getProperty("advancedrocketrycommunity.benchmarkCommit"));
         report.put("component_sizes", java.util.stream.IntStream.range(0, 58).map(i -> i < 2 ? 4 : 1).boxed().toList());
-        report.put("requested_records", 64); report.put("payload_millibuckets", 64000);
+        report.put("requested_records", 64); report.put("requested_interpretation", "competing_requests");
+        report.put("payload_millibuckets", 64000);
         report.put("historical_probe_unchanged", true);
         for (int i = 0; i < 16; i++) {
             var chunk = new ChunkPos(4 + i, 4); level.getChunkSource().addRegionTicket(TicketType.START, chunk, 2, Unit.INSTANCE);
@@ -204,23 +196,20 @@ public final class CargoNativePressureProbe implements EscrowTimingSink {
             gcStartCount = gcCount(); gcStartMillis = gcMillis(); pressure = true; measuring = true;
         }
         elapsed++;
-        if (prepared < 64) {
-            var fixture = fixtures.get(prepared); var op = fixture.operation(coordinator.nextSequence());
-            op = CargoNativePressureWorkload.operation(op, prepared);
-            operations.add(op); admittedAt.add(System.nanoTime());
-            fixture.prepare(coordinator, op, result -> { EscrowTags.require(result, "Benchmark L1 failed"); acknowledged++; }); prepared++;
-        } else if (acknowledged < 64) { coordinator.commitPreparations(); }
-        else if (acknowledged == 64) {
+        if (attempted < 64) { request(); }
+        else if (acknowledged < prepared) { coordinator.commitPreparations(); }
+        else if (!reconciling) {
+            EscrowTags.require(prepared > 11 && !refusals.isEmpty(), "Pressure capacity/overflow was not measured");
             fixtures.get(8).source().getPersistentData().getCompound("arce_escrow_fixture").putInt("amount", 4999); fixtures.get(8).source().setChanged();
             var adapter = runtime.reconcileTests(coordinator, fixtures, endpoint -> endpoint.key().equals(operations.get(9).source().key()));
-            adapter.unregister(operations.get(10).source().key()); acknowledged++;
+            adapter.unregister(operations.get(10).source().key()); reconciling = true;
         }
         if (elapsed % 200 == 0) {
             savedTick = server.getTickCount();
             long start = System.nanoTime(); server.saveEverything(false, true, true); sample("autosave_main", System.nanoTime() - start);
         }
         loadProbe(false); loadProbe(true);
-        if (acknowledged > 64) {
+        if (reconciling) {
             for (int i = 0; i < operations.size(); i++) {
                 var id = operations.get(i).id();
                 if (!aged.contains(id) && data.ledger().records().stream().noneMatch(op -> op.id().equals(id))) {
@@ -234,6 +223,43 @@ public final class CargoNativePressureProbe implements EscrowTimingSink {
             terrain.loadAsync(pos); entities.loadAsync(pos);
         }
         if (elapsed >= 1400) { finish(); }
+    }
+    private void request() {
+        var fixture = fixtures.get(attempted);
+        var op = CargoNativePressureWorkload.operation(fixture.operation(coordinator.nextSequence()), attempted);
+        var before = CargoNativeAdmissionWitness.capture(data, coordinator); var endpoints = endpointState();
+        long start = System.nanoTime();
+        try {
+            fixture.prepare(coordinator, op, result -> { EscrowTags.require(result, "Benchmark L1 failed"); acknowledged++; });
+            sample("admission_main", System.nanoTime() - start);
+            EscrowTags.require(refusals.isEmpty(), "Admission resumed without freeing any capacity");
+            operations.add(op); admittedAt.add(start); prepared++;
+        } catch (EscrowSettlementCapacity.ReservationFull full) {
+            long nanos = System.nanoTime() - start; sample("admission_refusal_main", nanos);
+            boolean unchanged = before.equals(CargoNativeAdmissionWitness.capture(data, coordinator)) && endpoints.equals(endpointState());
+            EscrowTags.require(unchanged, "ReservationFull mutated admission, writer, ledger or endpoints");
+            var candidate = new ArrayList<>(operations); candidate.add(op);
+            var root = data.ledger().append(candidate);
+            long bytes = EscrowSettlementCapacity.reservedBytes(root);
+            refusals.add(java.util.Map.of("request", attempted + 1, "sequence", op.sequence(), "status", "ReservationFull",
+                    "unmutated", true, "wall_ns", nanos, "candidate_reserved_bytes", bytes,
+                    "retirement_headroom_bytes", EscrowSettlementCapacity.FLOOR_RETIREMENT_BYTES));
+        }
+        attempted++;
+        if (attempted == 64) {
+            report.put("effective_capacity", prepared);
+            report.put("admitted_reserved_bytes", EscrowSettlementCapacity.reservedBytes(data.ledger().append(operations)));
+            report.put("root_limit_bytes", EscrowLimits.ROOT_BYTES);
+            report.put("floor_retirement_headroom_bytes", EscrowSettlementCapacity.FLOOR_RETIREMENT_BYTES);
+            writeReport();
+        }
+    }
+    private List<CompoundTag> endpointState() {
+        var result = new ArrayList<CompoundTag>();
+        for (var fixture : fixtures) {
+            result.add(fixture.source().getPersistentData().copy()); result.add(fixture.bank().getPersistentData().copy());
+        }
+        return result;
     }
     private void loadProbe(boolean entity) {
         var old = entity ? entityLoad : terrainLoad; if (old != null && !old.isDone()) { return; }
@@ -256,6 +282,8 @@ public final class CargoNativePressureProbe implements EscrowTimingSink {
         } catch (ReflectiveOperationException failure) { throw new IllegalStateException(failure); }
     }
     private void finish() {
+        EscrowTags.require(attempted == 64 && prepared + refusals.size() == 64 && acknowledged == prepared
+                && aged.size() == prepared - 3, "Incomplete competing-request outcomes");
         EscrowTags.require(data.ledger().records().size() == 3, "Healthy benchmark records did not retire within the fixed window");
         measuring = false; done = true;
         report.put("status", "NATIVE_MEASURED"); writeReport();
@@ -267,7 +295,8 @@ public final class CargoNativePressureProbe implements EscrowTimingSink {
                 elapsed, server.forceSynchronousWrites(), sampleCount.get(), gcCount() - gcStartCount, gcMillis() - gcStartMillis);
     }
     private void writeReport() {
-        report.put("admitted_records", prepared); report.put("acknowledged_records", Math.min(acknowledged, 64));
+        report.put("attempted_requests", attempted); report.put("refusals", refusals);
+        report.put("admitted_records", prepared); report.put("acknowledged_records", acknowledged);
         report.put("elapsed_ticks", elapsed); report.put("retired_records", aged.size());
         report.put("retained_records", data == null ? 0 : data.ledger().records().size());
         report.put("pending_records", coordinator == null ? 0 : coordinator.admissionAuthority().pendingCount());

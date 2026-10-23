@@ -39,8 +39,8 @@ def probe_flags(case: str, stage: str, commit: str) -> list[str]:
 
 def pressure_coverage(raw: dict) -> list[str]:
     gaps = []
-    expected = dict(schema_version=1, status="NATIVE_MEASURED", requested_records=64,
-                    admitted_records=64, acknowledged_records=64, retired_records=61, retained_records=3,
+    expected = dict(schema_version=1, status="NATIVE_MEASURED", requested_records=64, attempted_requests=64,
+                    requested_interpretation="competing_requests", retained_records=3,
                     payload_millibuckets=64000, component_sizes=[4, 4] + [1] * 56)
     for key, value in expected.items():
         if raw.get(key) != value:
@@ -50,7 +50,34 @@ def pressure_coverage(raw: dict) -> list[str]:
         gaps.append("pressure:unchanged operation byte load")
     if raw.get("elapsed_ticks", 0) < 1400 or raw.get("heap_max_bytes", 2**63) > 4 * 1024**3:
         gaps.append("pressure:tick window or heap")
+    capacity = raw.get("effective_capacity")
+    if type(capacity) is not int or not 11 < capacity < 64:
+        return gaps + ["pressure:effective capacity"]
+    for key, value in (("admitted_records", capacity), ("acknowledged_records", capacity), ("retired_records", capacity - 3)):
+        if raw.get(key) != value:
+            gaps.append("pressure:" + key)
+    refusals = raw.get("refusals", [])
+    if len(refusals) != 64 - capacity or {r.get("request") for r in refusals} != set(range(capacity + 1, 65)):
+        gaps.append("pressure:all overflow requests accounted for")
+    limit, headroom = raw.get("root_limit_bytes", 0), raw.get("floor_retirement_headroom_bytes", 0)
+    if limit != micro.MIB or headroom != 15360 or not 0 < raw.get("admitted_reserved_bytes", 0) <= limit - headroom:
+        gaps.append("pressure:admitted reservation and unchanged root budget")
+    for row in refusals:
+        if (row.get("status") != "ReservationFull" or row.get("unmutated") is not True
+                or row.get("sequence") != capacity + 1 or type(row.get("wall_ns")) is not int or row["wall_ns"] <= 0
+                or row.get("retirement_headroom_bytes") != headroom
+                or row.get("candidate_reserved_bytes", 0) + headroom <= limit):
+            gaps.append("pressure:refusal classification, bytes, mutation or cost")
     return gaps
+
+
+def pressure_costs(phases: dict) -> dict:
+    checks = {}
+    for phase in ("admission_main", "admission_refusal_main"):
+        row = phases.get(phase, {})
+        for metric, limit in (("mean", 25), ("p95", 50), ("p99", 100), ("maximum", 500)):
+            checks[phase + ":" + metric] = row.get(metric, float("inf")) <= limit
+    return checks
 
 
 def native_coverage(raw: dict) -> list[str]:
@@ -199,9 +226,12 @@ def run(args) -> dict:
                     report["pressure_workload"] = raw
                     gaps = pressure_coverage(raw) + [name for name in ("capture_main", "ledger_capture_main", "ledger_io", "force_io", "readback_io",
                         "terrain_load_queue_io", "entity_load_queue_io", "record_queue_age", "tick_main") if name not in phases]
-                    if phases.get("record_queue_age", {}).get("count") != 61:
-                        gaps.append("61 retired of 64 competing records (3 deliberate held records)")
-                    report["synthetic_records"] = 64
+                    if phases.get("record_queue_age", {}).get("count") != raw.get("admitted_records", 0) - 3:
+                        gaps.append("all admitted healthy requests retired (3 deliberate held records)")
+                    if (phases.get("admission_main", {}).get("count") != raw.get("admitted_records")
+                            or phases.get("admission_refusal_main", {}).get("count") != len(raw.get("refusals", []))):
+                        gaps.append("all admission/refusal costs present")
+                    report["synthetic_requests"] = 64
                 else:
                     raw = json.loads((evidence / "cargo-native.json").read_text(encoding="utf-8"))
                     phases, generations = governed.read_samples(evidence / "governed-benchmark.csv")
@@ -209,6 +239,8 @@ def run(args) -> dict:
                     gaps = native_coverage(raw) + governed.coverage(load, phases, generations, True)
                     report.update(native=raw, reference_load=load, work_budget_failures=native_budgets(raw))
                 comparisons = governed.compare(phases, rss)
+                if args.case == "pressure":
+                    comparisons.update(pressure_costs(phases))
                 report.update(samples=phases, comparisons=comparisons, coverage_gaps=gaps)
                 if not all(comparisons.values()) or report.get("work_budget_failures"):
                     report["status"] = "STOP_BUDGET"; return report

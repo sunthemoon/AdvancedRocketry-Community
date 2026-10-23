@@ -42,18 +42,35 @@ class CargoNativeVerdictTest(unittest.TestCase):
             self.assertTrue(runner.native_coverage(raw))
 
     def test_pressure_preserves_count_components_bytes_and_full_completion(self):
-        good = dict(schema_version=1, status="NATIVE_MEASURED", requested_records=64, admitted_records=64,
-                    acknowledged_records=64, retired_records=61, retained_records=3, payload_millibuckets=64000,
+        good = dict(schema_version=1, status="NATIVE_MEASURED", requested_records=64, attempted_requests=64,
+                    requested_interpretation="competing_requests", effective_capacity=62, admitted_records=62,
+                    acknowledged_records=62, retired_records=59, retained_records=3, payload_millibuckets=64000,
                     component_sizes=[4, 4] + [1] * 56, operation_bytes=[1234] * 64,
-                    historical_operation_bytes=[1234] * 64, elapsed_ticks=1400, heap_max_bytes=4 * 1024**3)
+                    historical_operation_bytes=[1234] * 64, elapsed_ticks=1400, heap_max_bytes=4 * 1024**3,
+                    root_limit_bytes=runner.micro.MIB, floor_retirement_headroom_bytes=15360, admitted_reserved_bytes=1020178,
+                    refusals=[dict(request=i, sequence=63, status="ReservationFull", unmutated=True, wall_ns=1000000,
+                                   candidate_reserved_bytes=1034514, retirement_headroom_bytes=15360) for i in (63, 64)])
         self.assertEqual([], runner.pressure_coverage(good))
         for key in good:
             bad = copy.deepcopy(good); bad.pop(key)
+            self.assertTrue(runner.pressure_coverage(bad), key)
+        for key, value in (("unmutated", False), ("wall_ns", 0), ("status", "OTHER"), ("request", 63),
+                           ("candidate_reserved_bytes", 1000000)):
+            bad = copy.deepcopy(good); bad["refusals"][1][key] = value
             self.assertTrue(runner.pressure_coverage(bad), key)
         for key, value in (("component_sizes", [8] + [1] * 56), ("admitted_records", 63),
                            ("historical_operation_bytes", [1235] * 64)):
             bad = copy.deepcopy(good); bad[key] = value
             self.assertTrue(runner.pressure_coverage(bad), key)
+
+    def test_refusal_cost_is_not_exempt_from_owner_thread_budgets(self):
+        good = {p: dict(mean=25, p95=50, p99=100, maximum=500) for p in ("admission_main", "admission_refusal_main")}
+        self.assertTrue(all(runner.pressure_costs(good).values()))
+        for phase in good:
+            for metric in good[phase]:
+                bad = copy.deepcopy(good); bad[phase][metric] += .001
+                self.assertFalse(all(runner.pressure_costs(bad).values()))
+        self.assertFalse(all(runner.pressure_costs({}).values()))
 
     def test_pressure_does_not_select_historical_or_generic_release_probe(self):
         flags = runner.probe_flags("pressure", "start", "abc")
