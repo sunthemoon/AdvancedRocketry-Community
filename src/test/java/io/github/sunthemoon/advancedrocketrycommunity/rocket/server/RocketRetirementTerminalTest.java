@@ -81,6 +81,48 @@ class RocketRetirementTerminalTest {
         f.retirements.clear(); assertEquals(1, f.discarded);
     }
 
+    @Test void changedStorageBeforeTheNextCaptureRetainsThePredecessor() {
+        var f = new Fixture(); f.begin(); f.port.supported = false; f.complete(0);
+        assertEquals(1, f.port.callbacks.size(), "Unsupported storage must not capture another slot");
+        assertSame(f.old, f.journal.findByLogicalRocket(f.logical()).orElseThrow());
+        assertEquals(0, f.port.terminals);
+        assertTrue(f.journal.clean());
+    }
+
+    @Test void savingDisabledAfterReadbackRefusesTheTerminal() {
+        var f = new Fixture(); f.begin(); f.complete(0); f.port.saveOff = true; f.complete(1);
+        assertSame(f.old, f.journal.findByLogicalRocket(f.logical()).orElseThrow());
+        assertEquals(0, f.port.terminals);
+        assertTrue(f.journal.clean());
+    }
+
+    @Test void replacementDemandWaitsForTheCoordinatorTickAndKeepsTheSharedTicketCap() {
+        var f = new Fixture(); f.port.loaded = false; f.begin(RocketOrdinaryRetirement.Site.BEFORE_REPLACE);
+        assertEquals(0, f.port.tickets);
+        assertTrue(f.retirements.replacing(f.logical()));
+        assertTrue(f.journal.clean());
+        for (int tick = 100; tick <= 1000; tick++) { f.port.now = tick; f.retirements.tick(); }
+        assertEquals(3, f.port.tickets);
+        assertEquals(1, f.discarded);
+        assertFalse(f.retirements.pending(f.logical()));
+        assertSame(f.old, f.journal.findByLogicalRocket(f.logical()).orElseThrow());
+    }
+
+    @Test void aCandidateLoadedAfterCapturePreventsTheTerminal() {
+        var f = new Fixture(); f.begin(); f.complete(0); f.port.changed = "CENSUS_CHANGED"; f.complete(1);
+        assertSame(f.old, f.journal.findByLogicalRocket(f.logical()).orElseThrow());
+        assertEquals(0, f.port.terminals);
+        assertTrue(f.journal.clean());
+    }
+
+    @Test void stoppingAfterReplacementKeepsTheCandidateButNeverStartsCountdown() {
+        var f = new Fixture(); f.begin(RocketOrdinaryRetirement.Site.BEFORE_REPLACE); f.retirements.tick();
+        f.complete(0); f.complete(1); f.retirements.clear(); f.acknowledge();
+        assertSame(f.next, f.journal.findByLogicalRocket(f.logical()).orElseThrow());
+        assertEquals(0, f.accepted);
+        assertEquals(1, f.discarded);
+    }
+
     private final class Fixture {
         final RocketTransferSavedData journal = new RocketTransferSavedData();
         final RocketTransferRecord old = RocketStationMotionRuleTest.record(new RocketPosition(72, 80, 8))
@@ -96,9 +138,10 @@ class RocketRetirementTerminalTest {
             var type = ManagedSavedDataType.ROCKET_TRANSFERS;
             RocketJournalTestAccess.write(journal, directory.resolve(type.fileName()), CheckedSavedDataPolicy.atomic(type), ++writes * 1000);
         }
-        void begin() {
+        void begin() { begin(RocketOrdinaryRetirement.Site.BEFORE_FILL); }
+        void begin(RocketOrdinaryRetirement.Site site) {
             try (var held = RocketOrdinaryRetirement.hold(journal, logical())) {
-                retirements.begin(port, journal, RocketOrdinaryRetirement.Site.BEFORE_FILL, old, old.destinationEntityId().orElseThrow(),
+                retirements.begin(port, journal, site, old, old.destinationEntityId().orElseThrow(),
                         List.of(), false, held, new RocketOrdinaryRetirement.Effects(() -> { accepted++; return true; }, () -> discarded++));
             }
         }
@@ -128,15 +171,21 @@ class RocketRetirementTerminalTest {
         final RocketTransferRecord replacement;
         final List<RocketRetirementProof.Slot> slots = new ArrayList<>();
         final List<Consumer<EscrowBarrier.Result>> callbacks = new ArrayList<>();
-        int terminals; boolean allowed = true;
+        int terminals, tickets; long now = 100;
+        boolean allowed = true, supported = true, loaded = true, saveOff;
+        String changed;
         Port(RocketTransferRecord replacement) { this.replacement = replacement; }
-        public long now() { return 100; }
+        public long now() { return now; }
         public RocketOrdinaryRetirement.Presence survivor(RocketTransferRecord r, UUID id, RocketRetirementProof.Slot slot) {
             return RocketOrdinaryRetirement.Presence.LOADED;
         }
         public boolean crewReady(RocketTransferRecord r, UUID id, boolean offline, Set<UUID> delivered) { return true; }
-        public RocketOrdinaryRetirement.SlotState slot(RocketRetirementProof.Slot slot) { return RocketOrdinaryRetirement.SlotState.LOADED; }
-        public boolean captureSupported(RocketRetirementProof.Slot slot) { return true; }
+        public RocketOrdinaryRetirement.SlotState slot(RocketRetirementProof.Slot slot) {
+            return saveOff ? RocketOrdinaryRetirement.SlotState.SAVE_OFF : loaded ? RocketOrdinaryRetirement.SlotState.LOADED
+                    : RocketOrdinaryRetirement.SlotState.UNLOADED;
+        }
+        public boolean saveOff(RocketRetirementProof.Slot slot) { return saveOff; }
+        public boolean captureSupported(RocketRetirementProof.Slot slot) { return supported; }
         public boolean captureAvailable(RocketRetirementProof.Slot slot, long now) { return true; }
         public boolean capture(RocketRetirementProof.Slot slot, Predicate<CompoundTag> validator, long now, Consumer<String> sink,
                 Consumer<EscrowBarrier.Result> callback) { slots.add(slot); callbacks.add(callback); return true; }
@@ -149,7 +198,8 @@ class RocketRetirementTerminalTest {
         public CompoundTag projection(RocketTransferRecord r, UUID survivor) {
             var tag = new CompoundTag(); tag.putUUID("UUID", survivor); tag.put(RocketRetirementProof.DATA, new CompoundTag()); return tag;
         }
-        public void keepLoaded(RocketTransferRecord r, List<RocketRetirementProof.Slot> slots) { }
+        public void keepLoaded(RocketTransferRecord r, List<RocketRetirementProof.Slot> slots) { tickets++; }
+        public String recheck(RocketTransferRecord r, UUID survivor) { return changed; }
         public Consumer<String> sink() { return label -> { }; }
         // Deliberately compiles before the port is introduced: the old coordinator ignores this terminal.
         public boolean terminal(RocketTransferSavedData j, RocketTransferRecord old, CompoundTag frozen,
