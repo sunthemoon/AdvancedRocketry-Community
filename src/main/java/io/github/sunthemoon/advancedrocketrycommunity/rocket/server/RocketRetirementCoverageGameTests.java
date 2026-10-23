@@ -301,7 +301,15 @@ public final class RocketRetirementCoverageGameTests {
                 assertReturnedAndHeld(true); returned = true;
             } else {
                 assertReturnedAndHeld(false);
-                helper.assertTrue(journal.clean(), "A pin wait retained the ordinary journal reservation");
+                Map<UUID, Object> entries = RocketSourceRetirementFixtures.field(recovery().retirements(), "pending");
+                Object entry = entries.get(record.logicalRocketId());
+                helper.assertTrue(journal.clean(), "A pin wait retained the ordinary journal reservation: now=" + now
+                        + " created=" + RocketSourceRetirementFixtures.field(entry, "created")
+                        + " state=" + RocketSourceRetirementFixtures.field(entry, "state")
+                        + " reason=" + recovery().retirements().reason(record.logicalRocketId())
+                        + " effects=" + journal.outstandingEffectCount() + " dirty=" + journal.isDirty()
+                        + " acknowledged=" + journal.acknowledgedCurrent()
+                        + " governed=" + (governed == null ? "pending" : governed.confirmed()));
             }
             helper.assertTrue(recovery().retirements().attempts(record.logicalRocketId()) == 0,
                     "The protected slot admitted an ordinary capture");
