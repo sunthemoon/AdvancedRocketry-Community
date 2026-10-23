@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -14,6 +15,58 @@ import java.util.concurrent.atomic.AtomicInteger;
 /** Bounded, server-lifetime release-test observations. Values are never authority or permits. */
 final class EscrowFlightBenchmarkMetrics implements EscrowTimingSink {
     static final int MAX_SAMPLES = 131_072;
+    // Release-test vocabulary, inventoried from the emitters below. No wildcard phase acceptance.
+    static final Set<String> PHASES = phases();
+    private static Set<String> phases() {
+        var phases = new java.util.HashSet<String>(List.of(
+                // EscrowBarrier, EscrowLedgerWriter and EscrowFlightWrites.
+                "capture_main", "own_store_io", "force_io", "readback_io", "ledger_capture_main", "ledger_io",
+                "flight_writer_queue_age",
+                // This collector, EscrowFlightBenchmarkProbe and EscrowFlightBenchmarkWork.
+                "generation_capture_main", "generation_root_bytes", "generation_encode_main", "generation_request_queue_age",
+                "generation_queue_age", "generation_writer_io", "generation_handoff", "generation_total_latency",
+                "tick_main", "tick_main_nonsave", "tick_main_world_first_defer", "allocation_bytes",
+                "root_1mib_encode_main", "root_1mib_allocation_bytes", "autosave_main", "flight_handoff_latency", "ordinary_start_to_c8",
+                // EscrowFlightCheckpoint.
+                "f1.refused.NO_LEDGER", "f1.refused.RETRY_WAIT_OR_CAPACITY", "f1.refused.COORDINATOR_JOURNAL_OR_RESOURCE_AUTHORITY",
+                "f1.refused.BARRIER_BUDGET", "f1.refused.BINDING_OR_PREFLIGHT", "f1.refused.SOURCE_OR_JOURNAL_CHANGED",
+                "f1.refused.BARRIER_BEGIN", "f1.barrier", "f1.stall.SOURCE_OR_JOURNAL_CHANGED", "f1.stall.LEDGER_WRITE_FAILED",
+                "f1.stall.LEDGER_QUEUE_WAIT",
+                // EscrowPreF2Cancellation.
+                "cancel.wait.PENDING_OR_RETRY", "cancel.wait.JOURNAL", "cancel.wait.NOT_ARMED_OR_NO_TRANSFER",
+                "cancel.wait.COORDINATOR", "cancel.wait.SOURCE_UNLOADED", "cancel.wait.BARRIER_BUDGET",
+                "cancel.wait.BARRIER_BEGIN", "cancel.wait.LEDGER_QUEUE_OR_SYNC_COMPLETION", "cancel.barrier",
+                "cancel.stall.SOURCE_OR_AUTHORITY_CHANGED", "cancel.stall.SOURCE_OR_JOURNAL_CHANGED", "cancel.stall.LEDGER_WRITE_FAILED",
+                // EscrowSettlementRecovery and EscrowSettlementCompletionProbe.
+                "settlement_pruning_main", "settlement.attempt", "settlement.barrier", "settlement.confirm_attempt",
+                "settlement.refused.O1_QUEUE", "settlement.wait.COORDINATOR_OR_WRITER", "settlement.wait.WRITING_PROOF_OR_RETRY",
+                "settlement.wait.JOURNAL", "settlement.wait.BARRIER_OR_WRITER_BUDGET", "settlement.wait.NORMALIZATION",
+                "settlement.wait.BARRIER_BEGIN", "settlement.wait.INVALID_PROOF", "settlement.wait.O3_QUEUE",
+                "settlement.wait.JOURNAL_REMOVAL", "settlement.wait.MEMBER_AUTHORITY", "settlement.wait.O4_QUEUE"));
+        // Barrier results have these seven refusal reasons; NONE is mapped to SUPERSEDING_SAVE by F1/cancel.
+        for (var reason : EscrowReason.values()) {
+            if (reason.retryableProofFailure()) {
+                for (var prefix : List.of("f1.stall.", "cancel.stall.", "settlement.stall.")) { phases.add(prefix + reason.name()); }
+            }
+        }
+        // Settlement also reports typed readback/relocation refusals and caught live-observation diagnostics.
+        for (var reason : List.of("NONE", "OTHER_STATE", "RELOCATED_ENDPOINT", "INVALID_ENDPOINT", "WAITING_UNLOADED",
+                "O3_WRITE_UNACKNOWLEDGED", "O4_WRITE_UNACKNOWLEDGED",
+                // EscrowSettlementRecovery, Observer and Normalization.
+                "Unacknowledged journal", "Frozen matching journal changed", "Frozen settlement endpoint changed",
+                "Cargo survivor unavailable", "Unknown proof endpoint", "Invalid observation scope", "Endpoint Level is unavailable",
+                "WAITING_UNLOADED: endpoint slot must be FULL, entity-loaded and ticking", "Source identity/type changed",
+                "Settlement Level observation bound exceeded", "Endpoint identity relocated to another Level",
+                "Unsupported settlement entity adapter", "Rocket placement, occupancy or stationary state changed",
+                "Foreign rocket ledger", "Duplicate logical identity or observation bound exceeded",
+                "Expired settlement normalization permit", "Changed neutral chosen survivor", "Normalization requires acknowledged O1",
+                "Chosen survivor changed before normalization", "Chosen survivor unavailable",
+                // Native endpoint observation adapters; Optional.orElseThrow() in their live reads.
+                "Loader device identity changed", "Foreign loader ledger", "Unsupported or duplicated loader root",
+                "Cargo device identity/role changed", "Foreign cargo device ledger", "Cargo device type changed",
+                "Unsupported or duplicated cargo device root", "No value present")) { phases.add("settlement.stall." + reason); }
+        return Set.copyOf(phases);
+    }
     record Sample(String phase, long generation, long value) { }
     private final ConcurrentLinkedQueue<Sample> samples = new ConcurrentLinkedQueue<>();
     private final AtomicInteger count = new AtomicInteger();
@@ -31,8 +84,8 @@ final class EscrowFlightBenchmarkMetrics implements EscrowTimingSink {
     @Override public void sample(String phase, long value) { add(phase, -1, value); }
     private void add(String phase, long generation, long value) {
         if (!active) { return; }
-        if (!phase.matches("[a-zA-Z0-9_]+") || value < 0) {
-            throw new IllegalArgumentException("Invalid governed benchmark sample");
+        if (phase == null || !PHASES.contains(phase) || value < 0) {
+            throw new IllegalArgumentException("Invalid governed benchmark sample: " + phase);
         }
         if (count.incrementAndGet() > MAX_SAMPLES) {
             throw new IllegalStateException("Governed benchmark sample bound exceeded");
@@ -111,7 +164,11 @@ final class EscrowFlightBenchmarkMetrics implements EscrowTimingSink {
     void write(Path target) throws IOException {
         if (active) { throw new IllegalStateException("Stop sampling before export"); }
         var lines = new ArrayList<String>(); lines.add("phase,generation,value");
-        for (var value : samples) { lines.add(value.phase() + "," + value.generation() + "," + value.value()); }
+        for (var value : samples) {
+            String phase = value.phase();
+            if (phase.contains(",") || phase.contains("\"")) { phase = "\"" + phase.replace("\"", "\"\"") + "\""; }
+            lines.add(phase + "," + value.generation() + "," + value.value());
+        }
         Files.write(target, lines);
     }
 }
