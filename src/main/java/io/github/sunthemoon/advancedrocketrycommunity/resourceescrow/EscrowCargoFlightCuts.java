@@ -4,6 +4,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketCargoRole;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketCargoStatus;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketFluidCargoBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightAction;
@@ -219,7 +220,22 @@ final class EscrowCargoFlightCuts extends EscrowCargoCutProbe {
         var arrived = arrival(journal, PAD); if (arrived == null) { return; }
         EscrowTags.require(cargo(arrived) == 1_000 && arrived.escrowSection().epoch() == 0, "The first flight lost the latest cargo");
         rocket = arrived; second = device(SECOND, rocket, RocketCargoRole.LOAD, 5_000);
-        EscrowCargoSwitches.forTests(server, EscrowOperation.Kind.FLUID_CARGO_LOAD, id(second), true); step = 4;
+        queueSuccessor(Boolean.getBoolean(EscrowTestEndpoints.HOOKS), name, recovery, () -> {
+            EscrowCargoSwitches.forTests(server, EscrowOperation.Kind.FLUID_CARGO_LOAD, id(second), true);
+            observeAdmission(journal);
+        }, second::attempt);
+        io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity.LOGGER.info(
+                "ARCE_SECOND_CARGO_QUEUED tick={} device={} status=READY queue_size={}", server.getTickCount(), id(second),
+                EscrowRuntime.of(server).fills(server).size());
+        step = 4;
+    }
+
+    /** The empty fixture Level stops block ticks after 300 ticks; use ordinary admission, not a queue bypass. */
+    static void queueSuccessor(boolean hooks, String name, boolean recovery, Runnable enable,
+                               java.util.function.Supplier<RocketCargoStatus> attempt) {
+        if (!hooks || !"FF_TWO_FLIGHTS".equals(name) || recovery) { return; }
+        enable.run();
+        EscrowTags.require(attempt.get() == RocketCargoStatus.READY, "Successor cargo fixture admission was refused");
     }
 
     /** The successor's own ordinary load retired; its refuel is a native mutation and the cut follows it. */

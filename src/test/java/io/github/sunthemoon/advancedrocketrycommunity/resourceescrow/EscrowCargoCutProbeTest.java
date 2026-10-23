@@ -7,6 +7,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.Chec
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.GovernedTransferFixture;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketCargoStatus;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFuelState;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferPhase;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
@@ -35,6 +36,30 @@ class EscrowCargoCutProbeTest {
         assertFalse(EscrowCargoFlightCuts.observesAdmission(true, "FF_TWO_FLIGHTS", true, 500));
         assertFalse(EscrowCargoFlightCuts.observesAdmission(true, "FF_CANCEL_AFTER_CARGO", false, 500));
         assertFalse(EscrowCargoFlightCuts.observesAdmission(true, "FF_TWO_FLIGHTS", false, 501));
+    }
+
+    @Test void successorFixtureQueuesOnceAfterEnablingAndIsInertOutsideItsGate() {
+        var calls = new java.util.ArrayList<String>();
+        Runnable enable = () -> calls.add("enable");
+        java.util.function.Supplier<RocketCargoStatus> attempt = () -> {
+            assertEquals(List.of("enable"), calls);
+            calls.add("attempt");
+            return RocketCargoStatus.READY;
+        };
+        EscrowCargoFlightCuts.queueSuccessor(false, "FF_TWO_FLIGHTS", false, enable, attempt);
+        EscrowCargoFlightCuts.queueSuccessor(true, "FF_TWO_FLIGHTS", true, enable, attempt);
+        EscrowCargoFlightCuts.queueSuccessor(true, "FF_CANCEL_AFTER_CARGO", false, enable, attempt);
+        assertTrue(calls.isEmpty());
+        EscrowCargoFlightCuts.queueSuccessor(true, "FF_TWO_FLIGHTS", false, enable, attempt);
+        assertEquals(List.of("enable", "attempt"), calls);
+    }
+
+    @Test void successorFixtureDoesNotAcceptAnAdmissionRefusal() {
+        for (var status : RocketCargoStatus.values()) {
+            if (status == RocketCargoStatus.READY) { continue; }
+            assertThrows(IllegalArgumentException.class, () -> EscrowCargoFlightCuts.queueSuccessor(
+                    true, "FF_TWO_FLIGHTS", false, () -> { }, () -> status), status.name());
+        }
     }
 
     @Test void governedFixtureRequiresCommittedCurrentJournalBeforeRequestOrReadback() {
