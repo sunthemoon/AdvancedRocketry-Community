@@ -1,7 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.resourceescrow;
 
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
-import io.github.sunthemoon.advancedrocketrycommunity.endgame.command.ReleaseTestPlayers;
+import com.mojang.authlib.GameProfile;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.RocketLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.*;
@@ -11,6 +11,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketVisua
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
+import io.netty.channel.embedded.EmbeddedChannel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -19,10 +20,14 @@ import net.minecraft.gametest.framework.AfterBatch;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.network.protocol.game.ClientboundCustomPayloadPacket;
+import net.minecraft.network.protocol.game.ClientboundKeepAlivePacket;
+import net.minecraft.network.protocol.game.ServerboundKeepAlivePacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.GameType;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
@@ -71,7 +76,7 @@ public final class CargoVisualRepublicationGameTests {
 
         void tick() {
             if (done) { return; }
-            pacer.pace(); ReleaseTestPlayers.pump(world.server);
+            pacer.pace(); observers.forEach(Observer::pump);
             observers.forEach(observer -> check(observer.failure == null, "Transport observer failed: " + observer.failure));
             if (phase == 0) {
                 if (!world.ready()) { return; }
@@ -147,8 +152,12 @@ public final class CargoVisualRepublicationGameTests {
         }
         void observe(BlockPos position, String name) {
             // Install the passive observer before entering tracking range, including the late-join case.
-            var player = ReleaseTestPlayers.place(world.server, UUID.randomUUID(), name, world.level, Vec3.atCenterOf(at.offset(512, 2, 0)));
-            world.players.add(player); observers.add(new Observer(player));
+            var player = new ServerPlayer(world.server, world.level, new GameProfile(UUID.randomUUID(), name));
+            var connection = new Connection(PacketFlow.SERVERBOUND);
+            var channel = new EmbeddedChannel(connection);
+            world.server.getPlayerList().placeNewPlayer(connection, player);
+            world.players.add(player); observers.add(new Observer(player, channel));
+            player.setGameMode(GameType.CREATIVE);
             player.teleportTo(world.level, position.getX() + 0.5, position.getY(), position.getZ() + 0.5, 0, 0);
         }
         void expect(Observer observer, List<String> hashes) {
@@ -165,17 +174,18 @@ public final class CargoVisualRepublicationGameTests {
         void check(boolean condition, String message) { helper.assertTrue(condition, message); }
         @Override public void close() {
             if (done) { return; } done = true;
-            observers.forEach(Observer::close); world.close(); ReleaseTestPlayers.pump(world.server);
+            try { world.close(); } finally { observers.forEach(Observer::close); }
         }
     }
 
     private static final class Observer implements AutoCloseable {
         final ServerPlayer player;
+        final EmbeddedChannel channel;
         final List<RocketVisualChunkPacket> packets = new ArrayList<>();
         String failure;
-        Observer(ServerPlayer player) {
-            this.player = player;
-            player.connection.connection.channel().pipeline().addFirst("cargo-visual-observer", new ChannelOutboundHandlerAdapter() {
+        Observer(ServerPlayer player, EmbeddedChannel channel) {
+            this.player = player; this.channel = channel;
+            channel.pipeline().addFirst("cargo-visual-observer", new ChannelOutboundHandlerAdapter() {
                 @Override public void write(ChannelHandlerContext context, Object message, ChannelPromise promise) throws Exception {
                     try {
                         if (message instanceof ClientboundCustomPayloadPacket packet
@@ -189,6 +199,18 @@ public final class CargoVisualRepublicationGameTests {
                 }
             });
         }
-        @Override public void close() { player.connection.connection.channel().pipeline().remove("cargo-visual-observer"); }
+        void pump() {
+            player.connection.tick();
+            Object message;
+            while ((message = channel.readOutbound()) != null) {
+                if (message instanceof ClientboundKeepAlivePacket keepAlive) {
+                    player.connection.handleKeepAlive(new ServerboundKeepAlivePacket(keepAlive.getId()));
+                }
+                io.netty.util.ReferenceCountUtil.release(message);
+            }
+        }
+        @Override public void close() {
+            channel.pipeline().remove("cargo-visual-observer"); channel.finishAndReleaseAll();
+        }
     }
 }
