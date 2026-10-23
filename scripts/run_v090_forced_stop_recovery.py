@@ -99,7 +99,7 @@ def validate_recovery_receipt(match: re.Match[str], transfer: str) -> dict[str, 
 
 def _record_forced_process(process, harness: FlightHarness, exit_code: int) -> dict[str, object]:  # type: ignore[no-untyped-def]
     log_path = getattr(process, "_arce_log_path")
-    findings = scan_log(process.lines)
+    findings = scan_log(process.lines, expected_mod_version=harness.expected_version)
     if findings:
         raise SmokeError(f"Forced-stop staging logged a blocking finding: {findings[0]}")
     document = {

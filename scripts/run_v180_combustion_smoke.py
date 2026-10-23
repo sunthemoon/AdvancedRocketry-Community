@@ -188,7 +188,8 @@ def main() -> None:
             commands.append("stop")
             process.command("stop")
             require(process.finish(300) == 0, "Packaged server did not stop cleanly")
-            findings = server.scan_log(process.lines)
+            findings = server.scan_log(process.lines, expected_mod_version=(
+                server.V180_STARTUP_VERSION if jar == current else None))
             if expected_save_refusal:
                 require(findings and "Refusing chunk save with oversized combustion input" in "".join(process.lines),
                         "Chunk save did not explicitly refuse oversized input")

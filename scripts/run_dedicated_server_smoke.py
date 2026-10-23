@@ -104,6 +104,40 @@ class SmokeError(RuntimeError):
     """A deterministic smoke-test failure."""
 
 
+@dataclass(frozen=True)
+class StartupLogExpectation:
+    loggers: tuple[str, ...]
+    level: str
+    message: str
+    maximum: int
+    introduced_by: str
+    reason: str
+
+
+# Opt-in, per-process manifest. Do not apply GameTest's intentional failures to
+# native servers, or silently grant this allowance to historical/future builds.
+V180_STARTUP_VERSION = "1.20.1-1.8.0-dev"
+V180_STARTUP_LINES = (
+    StartupLogExpectation(
+        loggers=(
+            "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+            "io.gi.su.ad.AdvancedRocketryCommunity/",  # Forge console abbreviation.
+        ),
+        level="WARN",
+        message="ARCE_FIRST_EVENT_HELD kind=first_moon_landing reason=SOURCE_UNCONFIRMED",
+        maximum=1,
+        introduced_by="6edef9dab0d3f0333f739bcfee93a21e1c5451a9",
+        reason=("The first-event service can run before the transfer journal's startup "
+                "baseline is confirmed; it logs this temporary hold at most once per start. "
+                "See gametest_expected_log.json: w44-first-moon-landing-startup-baseline."),
+    ),
+)
+STARTUP_LOG_HEADER = re.compile(
+    r"^(?:\[[^\]\r\n]+\] )?\[Server thread/(?P<level>WARN)\] "
+    r"\[(?P<logger>[^\]\r\n]+)\]: (?P<message>[^\r\n]*)$"
+)
+
+
 def digest_file(path: Path, algorithm: str = "sha256") -> str:
     digest = hashlib.new(algorithm)
     with path.open("rb") as stream:
@@ -396,7 +430,14 @@ def validate_status_identity(
         )
 
 
-def scan_log(lines: Iterable[str]) -> list[str]:
+def scan_log(lines: Iterable[str], *, expected_mod_version: str | None = None) -> list[str]:
+    """Block all errors and project warnings except the version's exact startup manifest.
+
+    Counts are local to this complete process log; raw audit counts remain unchanged.
+    A missing optional startup line is valid, but its second occurrence is blocking.
+    """
+    expectations = V180_STARTUP_LINES if expected_mod_version == V180_STARTUP_VERSION else ()
+    observed = [0] * len(expectations)
     findings: list[str] = []
     for line in lines:
         stripped = line.rstrip()
@@ -405,7 +446,16 @@ def scan_log(lines: Iterable[str]) -> list[str]:
         elif ERROR_LINE.search(stripped):
             findings.append(stripped)
         elif WARNING_LINE.search(stripped) and PROJECT_LOGGER.search(stripped):
-            findings.append(stripped)
+            header = STARTUP_LOG_HEADER.fullmatch(stripped)
+            for index, expectation in enumerate(expectations):
+                if (header is not None and header["level"] == expectation.level
+                        and header["logger"] in expectation.loggers
+                        and header["message"] == expectation.message):
+                    observed[index] += 1
+                    if observed[index] <= expectation.maximum:
+                        break
+            else:
+                findings.append(stripped)
         elif any(marker in stripped for marker in CLIENT_LINKAGE_MARKERS):
             findings.append(stripped)
     return findings
@@ -782,7 +832,7 @@ def run_cycle(
 
     if code != 0:
         raise SmokeError(f"Server {name} exited with code {code}")
-    findings = scan_log(captured.lines)
+    findings = scan_log(captured.lines, expected_mod_version=expected_mod_version)
     if findings:
         raise SmokeError(f"Server {name} log contains blocking findings: {findings[0]}")
     if not any("Advanced Rocketry: Community Edition" in line for line in captured.lines):

@@ -156,7 +156,8 @@ def main() -> None:
             commands.append("stop")
             process.command("stop")
             require(process.finish(300) == 0, "Packaged server did not stop cleanly")
-            require(not server.scan_log(process.lines), "Unexpected packaged-server log findings")
+            require(not server.scan_log(process.lines, expected_mod_version=(
+                server.V180_STARTUP_VERSION if host == current else None)), "Unexpected packaged-server log findings")
             items = capture(runtime, directory, host == current)
             receipt.update(result="PASS", exit_code=0, log_counts=server.log_audit_counts(process.lines))
         except BaseException as error:

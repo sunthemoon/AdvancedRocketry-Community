@@ -403,7 +403,8 @@ def main() -> None:
                 commands.append("stop"); process.command("stop")
             require(process.finish(300) == 0, "Pump packaged server did not clean-stop")
             receipt["clean_stop"] = check_clean_stop(process.lines)
-            require(not server.scan_log(process.lines), "Unexpected native-server log findings")
+            require(not server.scan_log(process.lines, expected_mod_version=(
+                server.V180_STARTUP_VERSION if host == current else None)), "Unexpected native-server log findings")
             result = capture(runtime, evidence, stage)
             require(server.digest_file(marker) == marker_hash, "Same-world identity marker changed")
             require(server.digest_file(runtime / server.SERVER_PROPERTIES_IDENTITY_FILE) == properties, "Startup properties identity changed")

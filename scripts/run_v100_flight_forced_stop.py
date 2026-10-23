@@ -99,8 +99,9 @@ class RecoveryHarness(flight.FlightHarness):
             raise
 
 
-def audit_recovery_log(lines: list[str], case: str, staged: dict) -> None:
-    for finding in server_smoke.scan_log(lines):
+def audit_recovery_log(lines: list[str], case: str, staged: dict,
+                       expected_version: str | None = None) -> None:
+    for finding in server_smoke.scan_log(lines, expected_mod_version=expected_version):
         match = flight.RECOVERY_LOG.search(finding)
         # Only the exact verified recovery WARN is expected. ERROR/FATAL still fail.
         if (case in RECOVERY_CONTRACT and match is not None
@@ -172,7 +173,7 @@ def run_case(harness: RecoveryHarness, case: str) -> dict[str, object]:
         harness.disassemble_and_verify(process, report, f"V100_{case}_DISASSEMBLED")
         process.command(f"forceload remove {flight.X} {flight.Z}")
         harness.stop(process)
-        audit_recovery_log(process.lines, case, staged)
+        audit_recovery_log(process.lines, case, staged, harness.expected_version)
         process = None
         return {
             "case": case, "staged": staged, "recovered": report, "recovery": receipt,

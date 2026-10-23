@@ -131,7 +131,7 @@ def _record_forced_stop(harness: FlightHarness, process: CapturedProcess, region
     exit_code = process.finish()
     if exit_code == 0:
         raise SmokeError("Forced-stop server exited successfully instead of recording termination")
-    findings = scan_log(process.lines)
+    findings = scan_log(process.lines, expected_mod_version=harness.expected_version)
     if findings:
         raise SmokeError(f"Forced-stop server has a blocking log finding: {findings[0]}")
     log_path: Path = getattr(process, "_arce_log_path")
