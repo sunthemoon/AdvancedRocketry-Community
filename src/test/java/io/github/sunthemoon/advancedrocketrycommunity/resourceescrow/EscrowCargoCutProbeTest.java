@@ -29,6 +29,14 @@ import org.junit.jupiter.api.io.TempDir;
 class EscrowCargoCutProbeTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
 
+    @Test void secondAdmissionObservationIsGatedAndBounded() {
+        assertTrue(EscrowCargoFlightCuts.observesAdmission(true, "FF_TWO_FLIGHTS", false, 500));
+        assertFalse(EscrowCargoFlightCuts.observesAdmission(false, "FF_TWO_FLIGHTS", false, 500));
+        assertFalse(EscrowCargoFlightCuts.observesAdmission(true, "FF_TWO_FLIGHTS", true, 500));
+        assertFalse(EscrowCargoFlightCuts.observesAdmission(true, "FF_CANCEL_AFTER_CARGO", false, 500));
+        assertFalse(EscrowCargoFlightCuts.observesAdmission(true, "FF_TWO_FLIGHTS", false, 501));
+    }
+
     @Test void governedFixtureRequiresCommittedCurrentJournalBeforeRequestOrReadback() {
         var step = new EscrowCargoFlightCuts.GovernedBaseline();
         for (var outcome : RocketTransferSavedData.WriteOutcome.values()) {

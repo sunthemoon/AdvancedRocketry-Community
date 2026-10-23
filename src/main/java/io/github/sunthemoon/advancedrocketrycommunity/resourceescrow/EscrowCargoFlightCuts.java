@@ -40,7 +40,7 @@ final class EscrowCargoFlightCuts extends EscrowCargoCutProbe {
             "FF_CANCEL_AFTER_CARGO", "CANCELLED_REPLACED",
             "FF_GOVERNED_MISSING", "GOVERNED_HELD",
             "FF_GOVERNED_TERMINAL", "GOVERNED_DURABLE");
-    /** The successor's second loader stands four blocks from the pad, inside the same chunk. */
+    /** The successor's second loader stands four blocks from the pad, inside the ticketed source chunk. */
     static final BlockPos SECOND = PAD.offset(-4, 0, 0);
     private final String boundary;
     private final Path ledgerFile;
@@ -121,7 +121,12 @@ final class EscrowCargoFlightCuts extends EscrowCargoCutProbe {
             case 1 -> { if (admitted(device)) { step = 2; } }
             case 2 -> { if (retired(device, rocket)) { afterLoad(journal); } }
             case 3 -> fly(journal);
-            case 4 -> { if (admitted(second)) { step = 5; } }
+            case 4 -> {
+                if (observesAdmission(Boolean.getBoolean(EscrowTestEndpoints.HOOKS), name, recovery, server.getTickCount())) {
+                    observeAdmission(journal);
+                }
+                if (admitted(second)) { step = 5; }
+            }
             case 5 -> successor();
             case 6 -> governed(journal);
             default -> { }
@@ -144,6 +149,37 @@ final class EscrowCargoFlightCuts extends EscrowCargoCutProbe {
         EscrowCargoSwitches.forTests(server, EscrowOperation.Kind.FLUID_CARGO_LOAD, id(value), false);
         EscrowTags.require(op.phase() == EscrowOperation.Phase.PREPARED && op.guard().transfer() == null, "W142 load was not an unguarded PREPARED");
         return true;
+    }
+
+    static boolean observesAdmission(boolean hooks, String name, boolean recovery, int tick) {
+        return hooks && "FF_TWO_FLIGHTS".equals(name) && !recovery && tick % 100 == 0;
+    }
+
+    /** Bounded fixture-only observation; do not attempt admission or alter any queue/turn while diagnosing. */
+    private void observeAdmission(RocketTransferSavedData journal) {
+        var runtime = EscrowRuntime.of(server); var coordinator = data.bind(server); var root = data.ledger();
+        var queue = runtime.fills(server); var turns = coordinator.transferTurns();
+        var logical = rocket.assemblyTransactionId().orElseThrow();
+        var admission = (EscrowFluidCargoAdmission) field(second, "admission");
+        var pacer = field(second, "pacer"); var firstPacer = field(device, "pacer");
+        io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity.LOGGER.info(
+                "ARCE_SECOND_CARGO_ADMISSION tick={} game_time={} device={} logical={} physical={} live={} root={} refusal={} status={} enabled={} pacer_anchor={} first_pacer_anchor={} players={} forced_chunks={} entity_ticking={} queued={} ticket={} queue_active={} queue_waiting={} preparing={} turns_next={} turns_active={} logical_locked={} cargo_preparing={} records={} pending={} floors={} tombstones={} authorities={} armed={} journal={} journal_current={} resource_allowed={} writer_idle={} operational={}",
+                server.getTickCount(), level.getGameTime(), id(second), logical, rocket.getUUID(), second.live(), second.dataStatus(),
+                second.deviceRefusal(), admission.status(), EscrowCargoSwitches.enabled(server, EscrowOperation.Kind.FLUID_CARGO_LOAD, id(second)),
+                pacer == null ? null : field(pacer, "anchor"), firstPacer == null ? null : field(firstPacer, "anchor"),
+                level.players().size(), net.minecraftforge.common.world.ForgeChunkManager.hasForcedChunks(level),
+                level.isPositionEntityTicking(SECOND), field(admission, "queuedDevice"), admission.active(), field(queue, "active"),
+                ((java.util.Map<?, ?>) field(queue, "waiting")).keySet(), queue.preparing(), field(turns, "next"), field(turns, "active"),
+                coordinator.logicalLocked(logical), runtime.cargoPreparing(logical), root.records(), coordinator.admissionAuthority().pendingCount(),
+                root.floors().size(), root.tombstones().size(), root.rocketAuthorities().size(), root.armedFlights().size(),
+                journal.entries().size(), journal.acknowledgedCurrent(), RocketRuntime.resourceMutationAllowed(rocket),
+                coordinator.writerIdle(), coordinator.operational());
+    }
+
+    private static Object field(Object owner, String name) {
+        try {
+            var field = owner.getClass().getDeclaredField(name); field.setAccessible(true); return field.get(owner);
+        } catch (ReflectiveOperationException failure) { throw new IllegalStateException("Second cargo diagnostic field unavailable", failure); }
     }
 
     /** The ordinary C0-C8 retirement: no record names the device and both endpoints are pruned. */
