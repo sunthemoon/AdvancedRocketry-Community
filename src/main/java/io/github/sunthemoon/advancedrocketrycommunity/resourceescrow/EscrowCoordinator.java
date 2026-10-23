@@ -494,14 +494,22 @@ public final class EscrowCoordinator implements AutoCloseable {
     /** Package-private until the F1/F6 server adapter supplies complete retained proofs and leases. */
     boolean flightWrite(UUID logical, java.util.function.BiFunction<EscrowLedger, Long, EscrowLedger> change,
                         java.util.function.BooleanSupplier proofAndJournalLease, Consumer<Boolean> callback) {
+        return enqueueFlightWrite(logical, change, proofAndJournalLease, callback) == EscrowFlightWrites.Admission.QUEUED;
+    }
+    /** Admission is not capture: ordinary work drains before tick starts these retained, bounded requests. */
+    EscrowFlightWrites.Admission enqueueFlightWrite(UUID logical,
+                        java.util.function.BiFunction<EscrowLedger, Long, EscrowLedger> change,
+                        java.util.function.BooleanSupplier proofAndJournalLease, Consumer<Boolean> callback) {
         owner();
         if (EscrowLaunchTrace.selected(Boolean.getBoolean(EscrowTestEndpoints.HOOKS), Boolean.getBoolean(EscrowLaunchTrace.PROPERTY))) {
-            EscrowLaunchDiscard.note("FLIGHT_QUEUE", () -> "logical=" + logical + " tick=" + tick
+            EscrowLaunchDiscard.log(message -> io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity.LOGGER.info(message),
+                    "ARCE_FLIGHT_QUEUE", () -> "logical=" + logical + " tick=" + tick
                     + " closed=" + closed + " unavailable=" + writer.unavailable()
                     + " ordinary=" + queued.keySet() + " transitions=" + transitions
                     + " flights=" + flightWrites.observation() + " writer=" + writer.observation());
         }
-        if (closed || writer.unavailable() || !queued.isEmpty() || !transitions.isEmpty()) { return false; }
+        if (closed) { return EscrowFlightWrites.Admission.CLOSED; }
+        if (writer.unavailable()) { return EscrowFlightWrites.Admission.WRITER_UNAVAILABLE; }
         return flightWrites.request(logical, change, proofAndJournalLease, callback);
     }
     public void tick(long now) {
