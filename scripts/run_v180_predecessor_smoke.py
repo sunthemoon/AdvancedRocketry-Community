@@ -64,9 +64,11 @@ def verify(disk: dict, flight: dict, expected_fuel: int, restart: int, cut: str)
         require(not sources and len(destinations) == 1, "Completed proof/recovery did not exclude old S and retain D")
     if destinations:
         entity = destinations[0]; data = entity["RocketEntityData"]; state = data["flight_data"]
-        require(state["state"] == ("FUELED" if cut == "MOVE" else "LANDED")
+        descent_preimage = not restart and cut == "STORE" and state["state"] == "DESCENT"
+        require((descent_preimage or state["state"] == ("FUELED" if cut == "MOVE" else "LANDED"))
                 and state["fuel"]["amount"] == expected_fuel, "Lost current fuel or advanced countdown")
-        require(not state.get("active_transfer_id") and not state["passengers"]["assignments"] and not entity.get("Passengers"), "Changed crew/active transfer")
+        require((descent_preimage and state == transfers[0]["destination_flight"] or not state.get("active_transfer_id"))
+                and not state["passengers"]["assignments"] and not entity.get("Passengers"), "Changed crew/active transfer")
         require(data["snapshot"] == transfers[0]["destination_snapshot"], "Changed complete snapshot content")
         require(data["owner_id"] == transfers[0]["owner_id"], "Changed owner")
         expected = copy.deepcopy(transfers[0]["destination_flight"]["fuel"])

@@ -48,6 +48,14 @@ class PredecessorOracleTest(unittest.TestCase):
         self.disk["journal"]["transfers"].clear()
         with self.assertRaises(probe.smoke.SmokeError): self.check()
 
+    def test_descent_preimage_is_only_admissible_before_own_store(self):
+        state = self.disk["entities"][0]["entity"]["RocketEntityData"]["flight_data"]
+        state.update(state="DESCENT", active_transfer_id=[0, 0, 0, 2])
+        self.disk["journal"]["transfers"][0]["destination_flight"] = copy.deepcopy(state)
+        probe.verify(self.disk, self.flight, 500, 0, "STORE")
+        with self.assertRaises(probe.smoke.SmokeError): self.check()
+        with self.assertRaises(probe.smoke.SmokeError): probe.verify(self.disk, self.flight, 500, 0, "TERMINAL")
+
 
 if __name__ == "__main__":
     unittest.main()
