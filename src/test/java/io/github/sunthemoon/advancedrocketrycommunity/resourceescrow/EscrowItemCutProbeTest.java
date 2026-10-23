@@ -38,7 +38,7 @@ class EscrowItemCutProbeTest {
             for (var scenario : List.of("start", "recover")) {
                 assertTrue(EscrowItemCutProbe.selected(true, scenario, name));
                 assertFalse(EscrowItemCutProbe.selected(false, scenario, name));
-                assertFalse(EscrowReleaseProbe.selected(true, scenario, name));
+                assertFalse(EscrowReleaseProbe.permitsCase(name));
             }
             assertFalse(EscrowItemCutProbe.selected(true, null, name));
             assertFalse(EscrowItemCutProbe.selected(true, "ordinary", name));
@@ -47,24 +47,21 @@ class EscrowItemCutProbeTest {
             assertFalse(EscrowItemCutProbe.selected(true, "start", name));
         }
     }
-    @Test void genericProbeAcceptsOnlyItsOwnCasesAndNeverRoutesThemToItems() {
+    @Test void genericConstructorExcludesOnlyItemCutsWithoutRestrictingLegacyNames() {
         var cases = new java.util.ArrayList<>(List.of("G3", "G3L2", "E2", "E2_CAPTURE", "E4L1_FAIL", "E4L1_UNKNOWN",
                 "E4L2_FAIL", "E4L2_UNKNOWN", "E4L2_RESAVE"));
         for (int index = 0; index <= 10; index++) { cases.add("K" + index); }
         assertEquals(20, cases.size());
         for (String name : cases) {
             for (String scenario : List.of("start", "recover")) {
-                assertTrue(EscrowReleaseProbe.selected(true, scenario, name));
-                assertFalse(EscrowReleaseProbe.selected(false, scenario, name));
+                assertTrue(EscrowReleaseProbe.permitsCase(name));
                 assertFalse(EscrowItemCutProbe.selected(true, scenario, name));
             }
-            assertFalse(EscrowReleaseProbe.selected(true, null, name));
-            assertFalse(EscrowReleaseProbe.selected(true, "ordinary", name));
         }
         for (String name : new String[] {null, "", "none", "K11", "K01", "C1", "C2", "C3", "E5", "BENCH",
-                "IS_UNKNOWN", "IR_UNKNOWN", "FS_O1_AFTER", "IC_LOAD_K2", "SR_O1", "SO_O1"}) {
+                "E1", "E3", "FUTURE_NATIVE_CASE", "IS_UNKNOWN", "IR_UNKNOWN", "FS_O1_AFTER", "IC_LOAD_K2", "SR_O1", "SO_O1"}) {
             for (String scenario : List.of("start", "recover")) {
-                assertFalse(EscrowReleaseProbe.selected(true, scenario, name));
+                assertTrue(EscrowReleaseProbe.permitsCase(name));
                 assertFalse(EscrowItemCutProbe.selected(true, scenario, name));
             }
         }

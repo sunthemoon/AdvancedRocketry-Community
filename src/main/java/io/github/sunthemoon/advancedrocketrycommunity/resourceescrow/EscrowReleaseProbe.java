@@ -15,8 +15,6 @@ import net.minecraft.world.level.ChunkPos;
 
 /** Packaged, property-gated native fixture. No gameplay command or registry ID exposes admission. */
 final class EscrowReleaseProbe {
-    private static final Set<String> CASES = Set.of("K0", "K1", "K2", "K3", "K4", "K5", "K6", "K7", "K8", "K9", "K10",
-            "G3", "G3L2", "E2", "E2_CAPTURE", "E4L1_FAIL", "E4L1_UNKNOWN", "E4L2_FAIL", "E4L2_UNKNOWN", "E4L2_RESAVE");
     private static final BlockPos POSITION = new BlockPos(64, 100, 64);
     private final MinecraftServer server;
     private final ServerLevel level;
@@ -38,8 +36,7 @@ final class EscrowReleaseProbe {
 
     EscrowReleaseProbe(MinecraftServer server) {
         EscrowTestEndpoints.requireEnabled(server);
-        EscrowTags.require(selected(Boolean.getBoolean(EscrowTestEndpoints.HOOKS), System.getProperty(EscrowItemCutProbe.SCENARIO),
-                System.getProperty(EscrowItemCutProbe.CASE)), "Generic escrow probe requires its own case");
+        EscrowTags.require(permitsCase(System.getProperty(EscrowItemCutProbe.CASE)), "Generic escrow probe rejects item cut cases");
         this.server = server; level = server.overworld();
         cut = System.getProperty("advancedrocketrycommunity.escrowCheckpoint", "none");
         recovery = System.getProperty("advancedrocketrycommunity.escrowScenario").equals("recover");
@@ -50,8 +47,9 @@ final class EscrowReleaseProbe {
         level.getChunkSource().addRegionTicket(TicketType.START, chunk, 2, net.minecraft.util.Unit.INSTANCE);
         level.getChunk(chunk.x, chunk.z); // Explicit fixed test-fixture loading, not endpoint input.
     }
-    static boolean selected(boolean hooks, String scenario, String name) {
-        return hooks && ("start".equals(scenario) || "recover".equals(scenario)) && name != null && CASES.contains(name);
+    /** Exclusion guard, not a routing allowlist: older runners may supply any non-item case name. */
+    static boolean permitsCase(String name) {
+        return !EscrowItemCutProbe.selected(true, "start", name);
     }
     void checkpoint(String name) {
         if (!injected && (cut.equals("E4L1_FAIL") && name.equals("K1")

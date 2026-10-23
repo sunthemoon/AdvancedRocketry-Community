@@ -409,7 +409,7 @@ public final class EscrowRuntime {
             } else if (testCase.equals("C1") || testCase.equals("C2") || testCase.equals("C3")) {
                 if (runtime.chainProbe == null) { runtime.chainProbe = new EscrowChainReleaseProbe(event.getServer()); }
                 runtime.chainProbe.tick();
-            } else if (EscrowReleaseProbe.selected(true, System.getProperty(EscrowItemCutProbe.SCENARIO), testCase)) {
+            } else {
                 if (runtime.probe == null) { runtime.probe = new EscrowReleaseProbe(event.getServer()); }
                 runtime.probe.tick();
             }
