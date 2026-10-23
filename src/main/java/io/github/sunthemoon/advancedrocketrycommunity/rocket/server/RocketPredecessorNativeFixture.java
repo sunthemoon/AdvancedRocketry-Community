@@ -85,7 +85,7 @@ public final class RocketPredecessorNativeFixture {
         var snapshot = original.snapshot().orElseThrow(); var fuel = original.flightData().orElseThrow().fuel();
         var body = destination == source ? CelestialIds.EARTH_ID : CelestialIds.MOON_ID;
         var fromBody = destination == source ? CelestialIds.MOON_ID : CelestialIds.EARTH_ID;
-        var at = destination == source ? snapshot.sourceOrigin() : new RocketPosition(8, 100, 8);
+        var at = destinationOrigin(destination == source, snapshot.sourceOrigin());
         var arrival = snapshot.relocated(UUID.randomUUID(), destination.dimension().location(), at, now);
         var initial = RocketFlightData.initial(original.assemblyTransactionId().orElseThrow(), fuel.capacity(),
                 original.flightData().orElseThrow().passengers().seatCapacity(), fromBody, source.dimension().location(), snapshot.sourceOrigin(), now)
@@ -170,6 +170,10 @@ public final class RocketPredecessorNativeFixture {
     private void requireReady() {
         EscrowTestEndpoints.requireEnabled(server);
         if (!ready || closed) { throw new IllegalStateException("Predecessor fixture is not ready"); }
+    }
+
+    static RocketPosition destinationOrigin(boolean sameSlot, RocketPosition source) {
+        return sameSlot ? source : new RocketPosition(8, 100, 8);
     }
 
     @SubscribeEvent public void stopping(ServerStoppingEvent event) { if (event.getServer() == server) { close(); } }
