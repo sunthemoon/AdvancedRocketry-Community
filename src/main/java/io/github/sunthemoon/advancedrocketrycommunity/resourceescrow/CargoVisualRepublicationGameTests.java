@@ -174,6 +174,13 @@ public final class CargoVisualRepublicationGameTests {
         void check(boolean condition, String message) { helper.assertTrue(condition, message); }
         @Override public void close() {
             if (done) { return; } done = true;
+            io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity.LOGGER.info(
+                    "ARCE_CARGO_VISUAL_TEST item={} phase={} epoch={} packets={} unload_status={} unload_entity_ticking={}",
+                    item, phase, rocket == null ? -1 : rocket.escrowSection().epoch(),
+                    observers.stream().map(observer -> observer.packets.size()).toList(),
+                    item ? itemUnload == null ? null : itemUnload.displayStatus()
+                            : fluidUnload == null ? null : fluidUnload.displayStatus(),
+                    world.level.isPositionEntityTicking(at.offset(-2, 0, 0)));
             try { world.close(); } finally { observers.forEach(Observer::close); }
         }
     }
