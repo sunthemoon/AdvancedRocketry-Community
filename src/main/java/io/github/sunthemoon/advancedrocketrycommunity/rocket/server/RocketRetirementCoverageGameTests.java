@@ -3,6 +3,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowBarrier;
+import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowChunkStore;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowOperation;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowTestEndpoints;
@@ -10,6 +11,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightState;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecoveryAction;
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import net.minecraft.core.BlockPos;
@@ -180,8 +183,9 @@ public final class RocketRetirementCoverageGameTests {
     }
 
     /**
-     * A governed proof of a test endpoint's bank entity, begun one tick before an ordinary countdown cancellation, so
-     * that both captures share the Level's 20-tick batch. With {@code shared} the bank stands in the survivor's slot.
+     * A real primer capture opens a fresh dispatch window before the governed and ordinary captures. Read-only
+     * snapshots pin both attempts to that window and observe its dispatch; adjacent ticks alone do not prove this.
+     * With {@code shared} the bank stands in the survivor's slot.
      */
     private static final class Contention extends RocketSourceRetirementGameTests.Case {
         private static final BlockPos FAR = new BlockPos(610_001, 100, 610_001);
@@ -191,9 +195,12 @@ public final class RocketRetirementCoverageGameTests {
         BlockPos chest;
         ChunkPos ticketed;
         EscrowBarrier.Result governed;
+        EscrowBarrier.Result primer;
         long governedTick = -1;
+        long pairForceTick;
+        Object governedAttempt, ordinaryAttempt;
         int[] counters;
-        boolean returned, observed;
+        boolean priming, returned, dispatched, observed;
 
         Contention(GameTestHelper helper, boolean shared) { super(helper); this.shared = shared; }
 
@@ -228,10 +235,15 @@ public final class RocketRetirementCoverageGameTests {
             var server = server(); long now = server.getTickCount();
             var runtime = EscrowRuntime.of(server); var barrier = runtime.barrier();
             if (governedTick < 0) {
+                if (!openWindow(barrier, now)) { return false; }
                 var frontier = endpoints.bankState();
                 if (barrier.begin(runtime.store(level()), operation.destination(), frontier,
                         EscrowTestEndpoints.validator(operation.destination(), frontier), now, result -> governed = result)) {
                     governedTick = now;
+                    var batch = batch(barrier);
+                    helper.assertTrue(batch.governed().size() == 1 && batch.ordinary().isEmpty(), "The governed capture was not staged alone");
+                    governedAttempt = batch.governed().get(0);
+                    pairForceTick = batch.forceTick();
                 }
                 return false;
             }
@@ -243,8 +255,29 @@ public final class RocketRetirementCoverageGameTests {
                 assertReturnedAndHeld(true);
                 helper.assertTrue(recovery().retirements().attempts(record.logicalRocketId()) == 1,
                         "The ordinary attempt did not capture in the governed proof's batch");
+                var batch = batch(barrier);
+                helper.assertTrue(batch.forceTick() == pairForceTick && batch.governed().size() == 1
+                                && batch.governed().get(0) == governedAttempt && batch.ordinary().size() == 1,
+                        "The governed and ordinary captures did not join the same force batch: " + batch);
+                ordinaryAttempt = batch.ordinary().get(0);
+                EscrowChunkStore.Capture governedCapture = RocketSourceRetirementFixtures.field(governedAttempt, "capture");
+                EscrowChunkStore.Capture ordinaryCapture = RocketSourceRetirementFixtures.field(ordinaryAttempt, "capture");
+                helper.assertTrue(governedCapture.worker() == ordinaryCapture.worker(), "The pair did not share its entity worker");
                 returned = true;
                 return false;
+            }
+            if (!dispatched) {
+                var batch = batch(barrier);
+                if (batch.forceTick() == pairForceTick) {
+                    helper.assertTrue(batch.governed().equals(List.of(governedAttempt))
+                            && batch.ordinary().equals(List.of(ordinaryAttempt)), "The pair changed before dispatch");
+                    return false;
+                }
+                helper.assertTrue(batch.forceTick() > pairForceTick && batch.governed().isEmpty() && batch.ordinary().isEmpty(),
+                        "The paired batch did not dispatch together: " + batch);
+                dispatched = true;
+                AdvancedRocketryCommunity.LOGGER.info("W116F_MIXED_BATCH shared_slot={} governed=1 ordinary=1 workers=1 dispatch_tick={}",
+                        shared, pairForceTick);
             }
             if (governed == null) { return false; }
             if (shared) {
@@ -258,7 +291,38 @@ public final class RocketRetirementCoverageGameTests {
             return true;
         }
 
+        /** No barrier clock or queue mutation: wait for a real primer's proof and inspect the resulting window. */
+        boolean openWindow(EscrowBarrier barrier, long now) {
+            if (!priming) {
+                var frontier = endpoints.bankState();
+                priming = barrier.begin(EscrowRuntime.of(server()).store(level()), operation.destination(), frontier,
+                        EscrowTestEndpoints.validator(operation.destination(), frontier), now, result -> primer = result);
+                return false;
+            }
+            if (primer == null) { return false; }
+            helper.assertTrue(primer.confirmed(), "The batch primer did not confirm: " + primer.reason());
+            var batch = batch(barrier);
+            helper.assertTrue(batch.governed().isEmpty() && batch.ordinary().isEmpty(), "The primer left staged captures");
+            primer.proof().release(); primer = null; priming = false;
+            // Leave room for the next tick's ordinary capture. A slow primer can use another real batch.
+            return batch.forceTick() > now + 1;
+        }
+
+        /** Snapshots through the existing read-only fixture accessor; attempt identities survive until dispatch. */
+        Batch batch(EscrowBarrier barrier) {
+            String dimension = level().dimension().location().toString();
+            Map<String, Long> deadlines = RocketSourceRetirementFixtures.field(barrier, "nextForce");
+            Map<String, List<Object>> staged = RocketSourceRetirementFixtures.field(barrier, "staged");
+            var attempts = List.copyOf(staged.getOrDefault(dimension, List.of()));
+            return new Batch(deadlines.getOrDefault(dimension, -1L),
+                    attempts.stream().filter(attempt -> !RocketSourceRetirementFixtures.<Boolean>field(attempt, "ordinary")).toList(),
+                    attempts.stream().filter(attempt -> RocketSourceRetirementFixtures.<Boolean>field(attempt, "ordinary")).toList());
+        }
+
+        private record Batch(long forceTick, List<Object> governed, List<Object> ordinary) { }
+
         void retired() {
+            helper.assertTrue(dispatched, "The ordinary return retired without the observed mixed dispatch");
             if (shared) {
                 AdvancedRocketryCommunity.LOGGER.info("W116_SHARED_SLOT_OBSERVATION_AFTER_RETIREMENT governed_proof_valid={}",
                         governed.proof() != null && governed.proof().valid());
@@ -274,6 +338,7 @@ public final class RocketRetirementCoverageGameTests {
         }
 
         void restore() {
+            if (primer != null && primer.proof() != null) { primer.proof().release(); }
             if (governed != null && governed.proof() != null) { governed.proof().release(); }
             if (endpoints != null) { endpoints.bank().discard(); level().setBlockAndUpdate(chest, Blocks.AIR.defaultBlockState()); }
             if (ticketed != null) { level().getChunkSource().removeRegionTicket(TicketType.START, ticketed, 2, Unit.INSTANCE); }
