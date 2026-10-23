@@ -18,7 +18,7 @@ import uuid
 
 import run_dedicated_server_smoke as smoke
 import run_v180_loader_cuts as common
-from run_v060_flight_server_smoke import FlightHarness, EARTH, MOON, _server_command
+from run_v060_flight_server_smoke import FlightHarness, EARTH, MOON, LAUNCH_LOG, PHASE_LOG, EXPECTED_FLIGHT_EVENTS, _server_command
 from run_v180_transfer_concurrency import assemble, TEMP, nbt_uuid
 from run_v180_f3_n2_cuts import read_disk, save
 from run_v180_escrow_forced_stop import digest
@@ -35,6 +35,27 @@ CUTS = {
 def require(value, message):
     if not value:
         raise smoke.SmokeError(message)
+
+
+def first_flight(process, first):
+    """Current asynchronous admission, followed by the exact real flight's phase receipts."""
+    start = len(process.lines)
+    process.command(f"arce rocket release-test launch {first['entity']} moon")
+    receipt = process.wait_for(LAUNCH_LOG, 30, start_at=start)
+    transfer, entity, logical, source, destination, checkpoint, code, cost, fuel = LAUNCH_LOG.search(process.lines[receipt]).groups()
+    require(entity == first["entity"] and logical == first["logical"] and source == EARTH and destination == MOON
+            and checkpoint == "none" and code == "JOURNAL_PENDING", "Changed asynchronous launch identity or route")
+    end = process.wait_for(re.compile("ARCE_TRANSFER_PHASE transfer=" + transfer + r" .*event=landed_reservation_retained "), 30, start_at=receipt)
+    phases = [match for line in process.lines[receipt:end + 1] if (match := PHASE_LOG.search(line)) and match.group(1) == transfer]
+    require([match.group(4) for match in phases] == EXPECTED_FLIGHT_EVENTS, "Changed first flight phase sequence")
+    require(all(match.group(2) == logical and int(match.group(6)) == int(fuel) and int(match.group(8)) == int(cost)
+                and int(match.group(7)) == int(fuel) - int(cost) for match in phases), "Incorrect first-flight debit")
+    landed = next(match for match in phases if match.group(4) == "landing_complete").group(5)
+    report = FlightHarness.report(process, MOON, landed)
+    require(report["logical"] == logical and report["fuel"] == int(fuel) - int(cost) and report["state"] == "LANDED"
+            and report["blocks"] == 5 and report["passengers"] == 0, "Invalid first-flight arrival")
+    return dict(logical_rocket_id=logical, transfer_id=transfer, source_entity=entity, destination_entity=landed,
+                fuel_before=int(fuel), required_fuel=int(cost), origin=report["origin"]), report
 
 
 def retain_raw(world: Path, evidence: Path, restart: int):
@@ -112,9 +133,7 @@ def run_case(args, cut, evidence):
             if not restart:
                 first = assemble(process, 0)
                 save(process)  # Only initial pre-debit S; never flush the world at the actual cut.
-                leg, report = FlightHarness.launch_leg(FlightHarness.__new__(FlightHarness), process,
-                    sequence=1, trip=1, direction="OUT", source_dimension=EARTH, destination_dimension=MOON,
-                    destination_name="moon", entity=first["entity"], expected_logical=first["logical"])
+                leg, report = first_flight(process, first)
                 row["flight"] = leg; row["expected_fuel"] = report["fuel"]
                 if cut == "MOVE":
                     refuelled = FlightHarness.refuel(process, MOON, leg["destination_entity"])
