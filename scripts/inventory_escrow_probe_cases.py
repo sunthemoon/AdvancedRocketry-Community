@@ -21,7 +21,7 @@ DECLARED = (
     "cargo_cuts", "escrow_forced_stop", "escrow_destination", "escrow_phases",
     "escrow_reconciliation", "escrow_pre_f2", "escrow_source_clock", "fluid_loader_restart",
     "rocket_escrow_audit", "rocket_settlement_completion", "rocket_settlement_intent",
-    "escrow_arrival", "escrow_terminal", "escrow_returns", "escrow_pruning",
+    "escrow_arrival", "escrow_terminal", "escrow_returns", "escrow_pruning", "cargo_s4_s5_cuts",
 )
 SPECIAL = ("cargo_reconciliation", "escrow_benchmark", "f3_n2_cuts", "fill_countdown",
            "governed_benchmark", "item_cuts", "loader_cuts", "retire_before_fill", "transfer_concurrency")
@@ -30,7 +30,7 @@ SUPPLIERS = {"run_v180_" + name for name in DECLARED + SPECIAL}
 RELATED = SUPPLIERS | {"loader_cut_oracle", "cargo_storage_oracle", "cargo_contention_oracle",
                        "cargo_recovery_oracle", "item_cuts_oracle", "item_cut_fixture"}
 TOKEN = re.compile(r"(?:K\d+|C[123]|E[1-5](?:_[A-Z0-9_]+|L[12]_[A-Z0-9_]+)?|G3(?:L2)?|BENCH|GOVERNED_BENCH|"
-                   r"(?:FC|IC|LF|FT|RT|FP|FD|DP|SC|PF|SR|SO|RA|IS|IR)_[A-Z0-9_]+)")
+                   r"(?:FC|FS|FF|IC|LF|FT|RT|FP|FD|DP|SC|PF|SR|SO|RA|IS|IR)_[A-Z0-9_]+)")
 
 
 def inventory():
