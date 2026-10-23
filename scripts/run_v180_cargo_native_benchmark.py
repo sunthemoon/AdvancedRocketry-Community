@@ -21,11 +21,12 @@ import run_v180_escrow_forced_stop as escrow
 
 smoke = escrow.smoke
 DONE = re.compile(r"ARCE_CARGO_BENCH_DONE status=(\S+)")
+SAVE_TRACE_DONE = re.compile(r"ARCE_CARGO_SAVE_TRACE_DONE status=(\S+)")
 ROOT = Path("D:/GitHub/ARCE-Task-Evidence/root-queue/W144")
 TEMP = Path("D:/GitHub/ARCE-Task-Evidence/Temp")
 
 
-def probe_flags(case: str, stage: str, commit: str) -> list[str]:
+def probe_flags(case: str, stage: str, commit: str, diagnose_saves: bool = False) -> list[str]:
     flags = ["-Dadvancedrocketrycommunity.benchmarkCommit=" + commit]
     if case == "pressure":
         # No escrowScenario: leave historical BENCH and generic release-probe routing alone.
@@ -34,7 +35,19 @@ def probe_flags(case: str, stage: str, commit: str) -> list[str]:
         flags += ["-Dadvancedrocketrycommunity.escrowCase=GOVERNED_BENCH",
                   "-Dadvancedrocketrycommunity.escrowScenario=" + stage,
                   "-Dadvancedrocketrycommunity.cargoBenchmark=true"]
+    if diagnose_saves:
+        if case != "reference" or stage != "start":
+            raise ValueError("Save diagnosis is an observation-only reference start")
+        flags.append("-Dadvancedrocketrycommunity.cargoSaveTrace=true")
     return flags
+
+
+def native_stages(case: str, diagnose_saves: bool = False) -> list:
+    if diagnose_saves:
+        if case != "reference":
+            raise ValueError("Save diagnosis requires reference load")
+        return [("start", SAVE_TRACE_DONE)]
+    return [("start", pressure.DONE)] if case == "pressure" else [("start", DONE), ("recover", governed.RESTART)]
 
 
 def pressure_coverage(raw: dict) -> list[str]:
@@ -163,13 +176,13 @@ def run(args) -> dict:
                           {"block": "minecraft:dirt", "height": 2}, {"block": "minecraft:grass_block", "height": 1}],
                           "biome": "minecraft:plains"}, separators=(",", ":"))})
         (session / "server.properties").write_text("".join(f"{k}={v}\n" for k, v in sorted(props.items())), encoding="ascii")
-        stages = [("start", pressure.DONE if args.case == "pressure" else DONE)]
-        if args.case == "reference":
-            stages.append(("recover", governed.RESTART))
+        diagnose_saves = getattr(args, "diagnose_saves", False)
+        report["diagnostic_only"] = diagnose_saves
+        stages = native_stages(args.case, diagnose_saves)
         for stage, pattern in stages:
             report.setdefault("preflights", []).append(micro.preflight())
             command = escrow._server_command(args.java); command[2] = "-Xmx4G"
-            command[1:1] = ["-XX:ActiveProcessorCount=4", "-XX:+UseG1GC"] + probe_flags(args.case, stage, args.source_commit)
+            command[1:1] = ["-XX:ActiveProcessorCount=4", "-XX:+UseG1GC"] + probe_flags(args.case, stage, args.source_commit, diagnose_saves)
             process = smoke.CapturedProcess(command, session, evidence / (stage + ".log"))
             stop = threading.Event(); rss = []; audits = []; errors = []
 
@@ -213,12 +226,19 @@ def run(args) -> dict:
                 if process.process.poll() is None:
                     process.abort()
                 report["sessions"].append(dict(stage=stage, command=command, rss_bytes=rss, audits=audits, monitor_errors=errors))
-                for name in ("cargo-native.json", "cargo-pressure.json", "governed-benchmark.json", "governed-benchmark.csv", "escrow-benchmark.csv"):
+                for name in ("cargo-native.json", "cargo-save-trace.json", "cargo-pressure.json", "governed-benchmark.json", "governed-benchmark.csv", "escrow-benchmark.csv"):
                     if (session / "world" / name).is_file():
                         shutil.copy2(session / "world" / name, evidence / name)
             if errors or sampler.is_alive() or not rss:
                 raise RuntimeError("Native resource monitoring failed: " + str(errors))
             process = None
+            if diagnose_saves:
+                trace = json.loads((evidence / "cargo-save-trace.json").read_text(encoding="utf-8"))
+                raw = json.loads((evidence / "cargo-native.json").read_text(encoding="utf-8"))
+                report.update(status="DIAGNOSTIC_OBSERVED" if trace.get("status") == "OBSERVED" else "STOP_DIAGNOSTIC_INCOMPLETE",
+                              benchmark_status=raw.get("status"), coverage_gaps=native_coverage(raw),
+                              work_budget_failures=native_budgets(raw))
+                return report  # A tail observation is never benchmark acceptance or permission to restart.
             if stage == "start":
                 if args.case == "pressure":
                     phases = pressure.summarize(evidence / "escrow-benchmark.csv")
@@ -272,6 +292,7 @@ def run(args) -> dict:
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--case", choices=("pressure", "reference"), required=True)
+    parser.add_argument("--diagnose-saves", action="store_true", help="Observe saves and a bounded post-load tail, without benchmark acceptance or restart")
     parser.add_argument("--source-server", type=Path, required=True)
     parser.add_argument("--java", required=True)
     parser.add_argument("--jar", type=Path, required=True)

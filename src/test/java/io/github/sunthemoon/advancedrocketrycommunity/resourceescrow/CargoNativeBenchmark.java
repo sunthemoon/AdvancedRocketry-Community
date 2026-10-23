@@ -31,6 +31,7 @@ public final class CargoNativeBenchmark {
     private final List<Map<String, Object>> ticks = new ArrayList<>();
     private final Map<String, Object> report = new LinkedHashMap<>();
     private CargoNativePackets packets;
+    private CargoNativeSaveTrace saveTrace;
     private boolean placed, started, finished;
     private long startNanos;
     private int startTick;
@@ -196,13 +197,15 @@ public final class CargoNativeBenchmark {
     private void place() {
         packets = new CargoNativePackets(server);
         var runtime = EscrowRuntime.of(server);
+        if (Boolean.getBoolean(CargoNativeSaveTrace.PROPERTY)) { saveTrace = new CargoNativeSaveTrace(server); }
         runtime.terminalCutForTests(server, this::checkpoint);
         var scheduler = runtime.reconciliationScheduler();
         var driver = (EscrowReconciliationScheduler.Driver) field(scheduler, "driver");
         // Transparent diagnostic wrapper around the unchanged production dispatch, not a replacement executor.
         set(scheduler, "driver", (EscrowReconciliationScheduler.Driver) (op, records, completion) -> {
             reconciliations++; long before = System.nanoTime();
-            driver.attempt(op, records, completion);
+            if (saveTrace == null) { driver.attempt(op, records, completion); }
+            else { saveTrace.attempt(driver, op, records, completion); }
             if (started && op.kind().cargo()) {
                 EscrowTags.require(actions.size() < 32768, "Native action observation bound exceeded");
                 actions.add(Map.of("tick", server.getTickCount(), "operation", op.id(), "kind", op.kind().name(),
@@ -318,6 +321,7 @@ public final class CargoNativeBenchmark {
         catch (ReflectiveOperationException failure) { throw new IllegalStateException("Benchmark observation unavailable: " + name, failure); }
     }
     private void checkpoint(String label) {
+        if (saveTrace != null) { saveTrace.checkpoint(label); }
         if (!server.isSameThread() || !started || finished || !label.startsWith("C2_")) { return; }
         if (label.endsWith("BEFORE")) {
             previousHashes.clear(); devices.forEach(d -> previousHashes.put(d.rocket.getUUID(), d.rocket.snapshot().orElseThrow().contentHash()));

@@ -8,6 +8,19 @@ import run_v180_cargo_native_benchmark as runner
 
 
 class CargoNativeVerdictTest(unittest.TestCase):
+    def test_save_diagnosis_is_separate_and_cannot_restart_or_complete_the_benchmark(self):
+        stages = runner.native_stages("reference", True)
+        self.assertEqual(["start"], [stage for stage, _ in stages])
+        self.assertIsNone(stages[0][1].search("ARCE_CARGO_BENCH_DONE status=NATIVE_MEASURED"))
+        self.assertIsNotNone(stages[0][1].search("ARCE_CARGO_SAVE_TRACE_DONE status=OBSERVED"))
+        self.assertEqual(["start", "recover"], [stage for stage, _ in runner.native_stages("reference")])
+        self.assertIn("-Dadvancedrocketrycommunity.cargoSaveTrace=true", runner.probe_flags("reference", "start", "abc", True))
+        self.assertFalse(any("cargoSaveTrace" in flag for flag in runner.probe_flags("reference", "start", "abc")))
+        with self.assertRaises(ValueError):
+            runner.native_stages("pressure", True)
+        with self.assertRaises(ValueError):
+            runner.probe_flags("reference", "recover", "abc", True)
+
     def fixture(self):
         return dict(schema_version=1, status="NATIVE_MEASURED", heap_max_bytes=4 * 1024**3, mixed_queue_start=8,
                     item_nbt_refusals=[dict(status="CARGO_TOO_LARGE", unmutated=True) for _ in range(2)],
