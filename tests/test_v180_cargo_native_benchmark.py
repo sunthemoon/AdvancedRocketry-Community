@@ -41,6 +41,29 @@ class CargoNativeVerdictTest(unittest.TestCase):
         for raw in ({}, dict(status="STOP_MEASUREMENT_ERROR"), dict(status="STOP_MISSING_MEASUREMENT")):
             self.assertTrue(runner.native_coverage(raw))
 
+    def test_pressure_preserves_count_components_bytes_and_full_completion(self):
+        good = dict(schema_version=1, status="NATIVE_MEASURED", requested_records=64, admitted_records=64,
+                    acknowledged_records=64, retired_records=61, retained_records=3, payload_millibuckets=64000,
+                    component_sizes=[4, 4] + [1] * 56, operation_bytes=[1234] * 64,
+                    historical_operation_bytes=[1234] * 64, elapsed_ticks=1400, heap_max_bytes=4 * 1024**3)
+        self.assertEqual([], runner.pressure_coverage(good))
+        for key in good:
+            bad = copy.deepcopy(good); bad.pop(key)
+            self.assertTrue(runner.pressure_coverage(bad), key)
+        for key, value in (("component_sizes", [8] + [1] * 56), ("admitted_records", 63),
+                           ("historical_operation_bytes", [1235] * 64)):
+            bad = copy.deepcopy(good); bad[key] = value
+            self.assertTrue(runner.pressure_coverage(bad), key)
+
+    def test_pressure_does_not_select_historical_or_generic_release_probe(self):
+        flags = runner.probe_flags("pressure", "start", "abc")
+        self.assertIn("-Dadvancedrocketrycommunity.cargoPressureBenchmark=true", flags)
+        self.assertFalse(any("escrowCase" in f or "escrowScenario" in f for f in flags))
+        for stage in ("start", "recover"):
+            flags = runner.probe_flags("reference", stage, "abc")
+            self.assertIn("-Dadvancedrocketrycommunity.escrowScenario=" + stage, flags)
+            self.assertIn("-Dadvancedrocketrycommunity.escrowCase=GOVERNED_BENCH", flags)
+
 
 if __name__ == "__main__":
     unittest.main()

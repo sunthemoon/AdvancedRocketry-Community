@@ -25,6 +25,34 @@ ROOT = Path("D:/GitHub/ARCE-Task-Evidence/root-queue/W144")
 TEMP = Path("D:/GitHub/ARCE-Task-Evidence/Temp")
 
 
+def probe_flags(case: str, stage: str, commit: str) -> list[str]:
+    flags = ["-Dadvancedrocketrycommunity.benchmarkCommit=" + commit]
+    if case == "pressure":
+        # No escrowScenario: leave historical BENCH and generic release-probe routing alone.
+        flags.append("-Dadvancedrocketrycommunity.cargoPressureBenchmark=true")
+    else:
+        flags += ["-Dadvancedrocketrycommunity.escrowCase=GOVERNED_BENCH",
+                  "-Dadvancedrocketrycommunity.escrowScenario=" + stage,
+                  "-Dadvancedrocketrycommunity.cargoBenchmark=true"]
+    return flags
+
+
+def pressure_coverage(raw: dict) -> list[str]:
+    gaps = []
+    expected = dict(schema_version=1, status="NATIVE_MEASURED", requested_records=64,
+                    admitted_records=64, acknowledged_records=64, retired_records=61, retained_records=3,
+                    payload_millibuckets=64000, component_sizes=[4, 4] + [1] * 56)
+    for key, value in expected.items():
+        if raw.get(key) != value:
+            gaps.append("pressure:" + key)
+    sizes = raw.get("operation_bytes", [])
+    if len(sizes) != 64 or any(type(n) is not int or n <= 0 for n in sizes) or sizes != raw.get("historical_operation_bytes"):
+        gaps.append("pressure:unchanged operation byte load")
+    if raw.get("elapsed_ticks", 0) < 1400 or raw.get("heap_max_bytes", 2**63) > 4 * 1024**3:
+        gaps.append("pressure:tick window or heap")
+    return gaps
+
+
 def native_coverage(raw: dict) -> list[str]:
     gaps = list(raw.get("measurement_failures", []))
     if raw.get("schema_version") != 1 or raw.get("status") != "NATIVE_MEASURED":
@@ -114,11 +142,7 @@ def run(args) -> dict:
         for stage, pattern in stages:
             report.setdefault("preflights", []).append(micro.preflight())
             command = escrow._server_command(args.java); command[2] = "-Xmx4G"
-            command[1:1] = ["-XX:ActiveProcessorCount=4", "-XX:+UseG1GC",
-                            "-Dadvancedrocketrycommunity.escrowCase=" + ("BENCH" if args.case == "pressure" else "GOVERNED_BENCH"),
-                            "-Dadvancedrocketrycommunity.escrowScenario=" + stage,
-                            "-Dadvancedrocketrycommunity.cargoBenchmark=" + str(args.case == "reference").lower(),
-                            "-Dadvancedrocketrycommunity.benchmarkCommit=" + args.source_commit]
+            command[1:1] = ["-XX:ActiveProcessorCount=4", "-XX:+UseG1GC"] + probe_flags(args.case, stage, args.source_commit)
             process = smoke.CapturedProcess(command, session, evidence / (stage + ".log"))
             stop = threading.Event(); rss = []; audits = []; errors = []
 
@@ -162,7 +186,7 @@ def run(args) -> dict:
                 if process.process.poll() is None:
                     process.abort()
                 report["sessions"].append(dict(stage=stage, command=command, rss_bytes=rss, audits=audits, monitor_errors=errors))
-                for name in ("cargo-native.json", "governed-benchmark.json", "governed-benchmark.csv", "escrow-benchmark.csv"):
+                for name in ("cargo-native.json", "cargo-pressure.json", "governed-benchmark.json", "governed-benchmark.csv", "escrow-benchmark.csv"):
                     if (session / "world" / name).is_file():
                         shutil.copy2(session / "world" / name, evidence / name)
             if errors or sampler.is_alive() or not rss:
@@ -171,7 +195,9 @@ def run(args) -> dict:
             if stage == "start":
                 if args.case == "pressure":
                     phases = pressure.summarize(evidence / "escrow-benchmark.csv")
-                    gaps = [name for name in ("capture_main", "ledger_capture_main", "ledger_io", "force_io", "readback_io",
+                    raw = json.loads((evidence / "cargo-pressure.json").read_text(encoding="utf-8"))
+                    report["pressure_workload"] = raw
+                    gaps = pressure_coverage(raw) + [name for name in ("capture_main", "ledger_capture_main", "ledger_io", "force_io", "readback_io",
                         "terrain_load_queue_io", "entity_load_queue_io", "record_queue_age", "tick_main") if name not in phases]
                     if phases.get("record_queue_age", {}).get("count") != 61:
                         gaps.append("61 retired of 64 competing records (3 deliberate held records)")
