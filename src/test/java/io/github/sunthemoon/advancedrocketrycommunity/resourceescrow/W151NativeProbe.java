@@ -152,6 +152,10 @@ public final class W151NativeProbe {
         EscrowTags.require(data != null, "Restart lost the escrow root"); data.bind(server);
         var journal = RocketTransferSavedData.get(server);
         if (!journal.retryChecked(server) || !data.bind(server).operational()) { return; }
+        if (!recovery && !initialized) {
+            if (!baselineReady(data, data.bind(server))) { return; }
+            report.put("baseline_writer_generation", data.ledger().writerGeneration());
+        }
         if (!initialized) { initialize(); }
         long now = server.getTickCount();
         if (cycle != null && !cycle.containsKey("ack") && now - ((Number) cycle.get("requested")).longValue() > 1860) {
@@ -261,6 +265,12 @@ public final class W151NativeProbe {
     }
     static boolean readyToValidate(boolean producing, boolean travelComplete, int periodicSaves) {
         return !producing && travelComplete && periodicSaves >= 2;
+    }
+    static boolean baselineReady(ResourceEscrowSavedData data, EscrowCoordinator coordinator) {
+        if (data.ledger().writerGeneration() == 0) {
+            data.setDirty(); coordinator.autosave(); return false;
+        }
+        return !data.isDirty();
     }
     private void observeReference(String boundary) {
         UUID request = travelRequests.current(); if (request == null) { return; }
