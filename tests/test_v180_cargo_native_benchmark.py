@@ -98,7 +98,7 @@ class CargoNativeVerdictTest(unittest.TestCase):
         state = dict(ledger="root", **{f"{kind}_{i}": "hash" for kind in ("device", "rocket") for i in range(12)})
         baseline = dict(schema_version=1, source_commit="abc", state=state)
         good = dict(status="MATCHED", restart=1, source_commit="abc", state=state,
-                    governed_flights_verified=True, recovery_ticks=40, recovery_ns=100)
+                    governed_flights_verified=True, recovery_ticks=20, recovery_ns=100)
         self.assertEqual([], runner.recovery_coverage(good, 1, baseline, "abc"))
         for key in good:
             bad = copy.deepcopy(good); bad.pop(key)

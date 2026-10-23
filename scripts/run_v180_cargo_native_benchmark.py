@@ -63,7 +63,7 @@ def recovery_coverage(report: dict, index: int, baseline: dict, commit: str) -> 
                   and baseline.get("schema_version") == 1 and set(state) == expected
                   and state == baseline.get("state") and report.get("governed_flights_verified") is True
                   and type(report.get("recovery_ns")) is int and report["recovery_ns"] > 0
-                  and type(report.get("recovery_ticks")) is int and report["recovery_ticks"] >= 40) else [f"restart {index}: incomplete or changed state"]
+                  and type(report.get("recovery_ticks")) is int and report["recovery_ticks"] > 0) else [f"restart {index}: incomplete or changed state"]
 
 
 def pressure_coverage(raw: dict) -> list[str]:
@@ -300,7 +300,7 @@ def run(args) -> dict:
                 recovery = json.loads((evidence / f"cargo-recovery-{index}.json").read_text(encoding="utf-8"))
                 baseline = json.loads((evidence / "cargo-recovery-baseline.json").read_text(encoding="utf-8"))
                 gaps = recovery_coverage(recovery, index, baseline, args.source_commit)
-                if not any(governed.RESTART.search(line) for line in process_lines):
+                if not any(match and int(match[1]) >= 40 for match in (governed.RESTART.search(line) for line in process_lines)):
                     gaps.append("governed restart measurement missing")
                 report.setdefault("recoveries", []).append(recovery)
                 if gaps:
