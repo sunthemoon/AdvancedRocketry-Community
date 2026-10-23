@@ -45,6 +45,23 @@ class EscrowItemSettlementProofTest {
         }).join();
     }
 
+    @Test void productionSelectorTakesItemAndFluidCargoButNeverAFill() {
+        for (boolean load : List.of(true, false)) {
+            var item = EscrowItemReconciliationFixture.create(load).op();
+            assertEquals(List.of(item), EscrowSettlementProofs.nativeCargo(List.of(item), item.rocket()));
+            assertTrue(EscrowSettlementProofs.fluidCargo(List.of(item), item.rocket()).isEmpty());
+            assertTrue(EscrowSettlementProofs.nativeCargo(List.of(item), item.device()).isEmpty());
+
+            var fluid = EscrowCargoReconciliationFixture.create(load).op();
+            assertEquals(List.of(fluid), EscrowSettlementProofs.nativeCargo(List.of(fluid), fluid.rocket()));
+            assertTrue(EscrowSettlementProofs.nativeCargo(List.of(fluid), fluid.device()).isEmpty());
+        }
+        var fill = EscrowTestFixtures.operation(7);
+        assertFalse(fill.kind().cargo());
+        assertTrue(EscrowSettlementProofs.nativeCargo(List.of(fill), fill.destination()).isEmpty());
+        assertTrue(EscrowSettlementProofs.nativeCargo(List.of(fill), fill.source()).isEmpty());
+    }
+
     @Test void cargoRocketSurvivorIsProvedFromOneOffThreadDecodeThatOnlyTheOwnerConfirms() throws Exception {
         for (boolean load : List.of(true, false)) {
             var f = EscrowItemReconciliationFixture.create(load); var op = f.op().withReason(EscrowReason.OTHER_STATE);
