@@ -23,7 +23,7 @@ DECLARED = (
     "rocket_escrow_audit", "rocket_settlement_completion", "rocket_settlement_intent",
     "escrow_arrival", "escrow_terminal", "escrow_returns", "escrow_pruning", "cargo_s4_s5_cuts",
 )
-SPECIAL = ("cargo_reconciliation", "escrow_benchmark", "f3_n2_cuts", "fill_countdown",
+SPECIAL = ("cargo_native_benchmark", "cargo_reconciliation", "escrow_benchmark", "f3_n2_cuts", "fill_countdown",
            "governed_benchmark", "item_cuts", "loader_cuts", "retire_before_fill", "transfer_concurrency")
 DELEGATED = {"run_v180_" + name for name in ("escrow_arrival", "escrow_terminal", "escrow_returns", "escrow_pruning")}
 SUPPLIERS = {"run_v180_" + name for name in DECLARED + SPECIAL}

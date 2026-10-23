@@ -15,9 +15,9 @@ class EscrowProbeInventoryTest(unittest.TestCase):
     def test_committed_inventory_matches_all_reviewed_producers_and_test_tokens(self):
         self.assertEqual(inventory.TARGET.read_text(encoding="utf-8"), inventory.render(self.rows))
         self.assertEqual(522, len(self.rows))
-        self.assertEqual(21, len(self.coverage["direct"]))
+        self.assertEqual(22, len(self.coverage["direct"]))
         self.assertEqual(4, len(self.coverage["delegated"]))
-        self.assertEqual(30, len(self.coverage["tests"]))
+        self.assertEqual(31, len(self.coverage["tests"]))
 
     def test_transformed_values_are_emitted_names_not_runner_labels(self):
         origin = "scripts/run_v180_item_cuts.py"

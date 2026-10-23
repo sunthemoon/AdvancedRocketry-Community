@@ -24,6 +24,8 @@ from run_v040_atmosphere_server_smoke import _rss_bytes, percentile
 
 smoke = escrow.smoke
 BUDGETS = dict(mean_ms=25, p95_ms=50, p99_ms=100, nonsave_spike_ms=500, rss_bytes=int(5.5 * 1024**3))
+# The Java collector's source-inventoried vocabulary; its unit test pins exact parity.
+KNOWN_PHASES = frozenset(json.loads(Path(__file__).with_name("governed_benchmark_phases.json").read_text(encoding="utf-8")))
 DONE = re.compile(r"ARCE_GOVERNED_BENCH_DONE ticks=(\d+) flights=8 peak=8 saves=(\d+)")
 RESTART = re.compile(r"ARCE_GOVERNED_BENCH_RESTART survivors=8 player_ticks=(\d+) assembly=2048")
 GENERATION_PHASES = {"generation_capture_main", "generation_encode_main", "generation_root_bytes", "generation_queue_age", "generation_request_queue_age",
@@ -101,7 +103,7 @@ def read_samples(path: Path) -> tuple[dict, dict]:
             if index >= 131_072:
                 raise smoke.SmokeError("Benchmark sample bound exceeded")
             phase = row["phase"]; generation = int(row["generation"]); value = int(row["value"])
-            if not re.fullmatch(r"[a-zA-Z0-9_]+", phase) or value < 0 or generation < -1:
+            if phase not in KNOWN_PHASES or value < 0 or generation < -1:
                 raise smoke.SmokeError("Invalid governed benchmark sample")
             if (phase in GENERATION_PHASES) != (generation >= 0):
                 raise smoke.SmokeError("Generation/sample identity mismatch")

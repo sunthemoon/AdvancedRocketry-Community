@@ -1,4 +1,5 @@
 import copy
+import csv
 from pathlib import Path
 import sys
 import tempfile
@@ -9,6 +10,29 @@ import run_v180_governed_benchmark as runner
 
 
 class GovernedBenchmarkTest(unittest.TestCase):
+    def test_every_catalogued_phase_is_accepted_and_preserved(self):
+        with tempfile.TemporaryDirectory() as root:
+            path = Path(root) / "samples.csv"
+            for phase in sorted(runner.KNOWN_PHASES):
+                with self.subTest(phase=phase):
+                    with path.open("w", newline="", encoding="utf-8") as stream:
+                        writer = csv.writer(stream)
+                        writer.writerow(["phase", "generation", "value"])
+                        writer.writerow([phase, 1 if phase in runner.GENERATION_PHASES else -1, 17])
+                    phases, _ = runner.read_samples(path)
+                    self.assertEqual({phase}, set(phases))
+                    self.assertEqual(1, phases[phase]["count"])
+
+    def test_unknown_phase_or_diagnostic_fails_the_entire_collection(self):
+        with tempfile.TemporaryDirectory() as root:
+            path = Path(root) / "samples.csv"
+            for phase in ("unknown_phase", "settlement.unknown", "settlement.stall.UNKNOWN",
+                          "f1.stall.UNKNOWN", "cancel.wait.UNKNOWN", "settlement.attempt.extra", ""):
+                with self.subTest(phase=phase):
+                    path.write_text("phase,generation,value\nsettlement.attempt,-1,0\n" + phase + ",-1,0\n", encoding="utf-8")
+                    with self.assertRaises(runner.smoke.SmokeError):
+                        runner.read_samples(path)
+
     def proof(self):
         load = dict(schema_version=1, players=2, active_oxygen=16, active_providers=16, stations=10, satellite_tasks=100,
                     flights_completed=8, peak_concurrent=8, assembly_blocks=2048, dimension_transfers=8,
