@@ -254,9 +254,13 @@ public final class W151NativeProbe {
                 observeReference("after_periodic_save");
             }
         }
-        if (!producing && travelComplete && journal.entries().isEmpty() && RocketEscrowGate.idle(ordinary.rocket) && RocketEscrowGate.idle(control.rocket)) {
+        if (readyToValidate(producing, travelComplete, periodicSaves) && journal.entries().isEmpty()
+                && RocketEscrowGate.idle(ordinary.rocket) && RocketEscrowGate.idle(control.rocket)) {
             validate(); finish("COMPLETE", "");
         }
+    }
+    static boolean readyToValidate(boolean producing, boolean travelComplete, int periodicSaves) {
+        return !producing && travelComplete && periodicSaves >= 2;
     }
     private void observeReference(String boundary) {
         UUID request = travelRequests.current(); if (request == null) { return; }
