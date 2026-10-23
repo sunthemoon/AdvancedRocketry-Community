@@ -97,13 +97,19 @@ public final class CargoNativeBenchmark {
             moon.getChunk(chunk.x, chunk.z); // Fixed test setup only; all later endpoint access is loaded-only.
         }
     }
-    // One fixture pair per Anvil slot, within the stationary player's two-chunk view.
-    // Do not share the reference oxygen rooms' chunks (x=15/16, z=7/8).
+    // One fixture pair per Anvil slot. The eight measured rocket origins stay within
+    // the effective 16-block tracking range at view-distance=2, not merely its chunk square.
     static BlockPos at(int i) {
         if (i < 0 || i >= 12) { throw new IllegalArgumentException("Unknown cargo fixture"); }
-        int x = i < 10 ? 14 + i % 5 : i == 10 ? 14 : 18;
-        int z = i < 10 ? 9 + i / 5 : 8;
-        return new BlockPos(x * 16 + 4, 100, z * 16 + 4);
+        return new BlockPos(244 + (i % 3) * 16, 100, 168 + (i / 3) * 16);
+    }
+    static BlockPos watcherPosition() { return new BlockPos(264, 104, 184); }
+    static void positionWatcher(MinecraftServer server) {
+        EscrowTestEndpoints.requireEnabled(server);
+        var moon = Objects.requireNonNull(server.getLevel(CelestialIds.MOON_LEVEL));
+        EscrowTags.require(moon.players().size() == 1, "One owned Moon watcher required");
+        var pos = watcherPosition();
+        moon.players().get(0).teleportTo(moon, pos.getX(), pos.getY(), pos.getZ(), 0, 0);
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST) public void start(TickEvent.ServerTickEvent event) {
@@ -200,6 +206,7 @@ public final class CargoNativeBenchmark {
         }
     }
     private void place() {
+        positionWatcher(server);
         packets = new CargoNativePackets(server);
         var runtime = EscrowRuntime.of(server);
         if (Boolean.getBoolean(CargoNativeSaveTrace.PROPERTY)) { saveTrace = new CargoNativeSaveTrace(server); }

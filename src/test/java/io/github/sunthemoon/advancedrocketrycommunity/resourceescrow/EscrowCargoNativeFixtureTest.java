@@ -15,10 +15,15 @@ class EscrowCargoNativeFixtureTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
     @Test void pairsHaveDistinctSlotsInsideTheStationaryWatchersViewAndOutsideOxygenRooms() {
         var chunks = new java.util.HashSet<net.minecraft.world.level.ChunkPos>();
+        var watcher = CargoNativeBenchmark.watcherPosition(); var view = new net.minecraft.world.level.ChunkPos(watcher);
         for (int i = 0; i < 12; i++) {
             var pos = CargoNativeBenchmark.at(i); var chunk = new net.minecraft.world.level.ChunkPos(pos);
             assertTrue(chunks.add(chunk)); assertEquals(chunk, new net.minecraft.world.level.ChunkPos(pos.offset(4, 0, 0)));
-            assertTrue(Math.abs(chunk.x - 16) <= 2 && Math.abs(chunk.z - 8) <= 2);
+            assertTrue(Math.abs(chunk.x - view.x) <= 2 && Math.abs(chunk.z - view.z) <= 2);
+            if (i < 8) {
+                assertTrue(Math.abs(pos.getX() + 4 - watcher.getX()) <= 16);
+                assertTrue(Math.abs(pos.getZ() - watcher.getZ()) <= 16);
+            }
             assertFalse((chunk.x == 15 || chunk.x == 16) && (chunk.z == 7 || chunk.z == 8));
         }
         assertThrows(IllegalArgumentException.class, () -> CargoNativeBenchmark.at(12));

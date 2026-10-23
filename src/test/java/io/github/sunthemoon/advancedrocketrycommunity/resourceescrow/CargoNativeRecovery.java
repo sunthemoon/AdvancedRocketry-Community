@@ -104,6 +104,7 @@ public final class CargoNativeRecovery {
         var report = new LinkedHashMap<String, Object>(); report.put("restart", index);
         report.put("source_commit", System.getProperty("advancedrocketrycommunity.benchmarkCommit"));
         try {
+            CargoNativeBenchmark.positionWatcher(server);
             var path = server.getWorldPath(LevelResource.ROOT).resolve(BASELINE);
             EscrowTags.require(Files.size(path) <= 32768, "Recovery baseline too large");
             var baseline = JsonParser.parseString(Files.readString(path)).getAsJsonObject();
