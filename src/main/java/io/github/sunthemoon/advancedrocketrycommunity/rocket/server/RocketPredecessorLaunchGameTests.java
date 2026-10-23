@@ -28,20 +28,40 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 public final class RocketPredecessorLaunchGameTests {
     private static final String BATCH = "ordinary_predecessor_launch";
     private static final List<Scenario> RUNNING = new ArrayList<>();
+    private enum Mode { PROVE, CHANGED, CREW }
     private RocketPredecessorLaunchGameTests() { }
 
     @GameTest(template = "rocket_test", batch = BATCH, timeoutTicks = 1200)
     public static void relaunchRetainsThePredecessorUntilCurrentDestinationAndOldSourceAreProved(GameTestHelper helper) {
-        var scenario = new Scenario(helper); RUNNING.add(scenario); helper.onEachTick(scenario::tick);
+        start(helper, Mode.PROVE);
+    }
+
+    @GameTest(template = "rocket_test", batch = BATCH + "_changed", timeoutTicks = 1200)
+    public static void aChangedAcceptedSourceRefusesRelaunchWithoutReplacingItsPredecessor(GameTestHelper helper) {
+        start(helper, Mode.CHANGED);
+    }
+
+    @GameTest(template = "rocket_test", batch = BATCH + "_crew", timeoutTicks = 1200)
+    public static void unresolvedOldCrewSpendsTheDemandWithoutErasingTheirAuthority(GameTestHelper helper) {
+        start(helper, Mode.CREW);
+    }
+
+    private static void start(GameTestHelper helper, Mode mode) {
+        var scenario = new Scenario(helper, mode); RUNNING.add(scenario); helper.onEachTick(scenario::tick);
     }
 
     @AfterBatch(batch = BATCH)
     public static void cleanup(ServerLevel level) { RUNNING.forEach(Scenario::close); RUNNING.clear(); }
+    @AfterBatch(batch = BATCH + "_changed")
+    public static void cleanupChanged(ServerLevel level) { cleanup(level); }
+    @AfterBatch(batch = BATCH + "_crew")
+    public static void cleanupCrew(ServerLevel level) { cleanup(level); }
 
     private static final class Scenario {
         final GameTestHelper helper;
         final ServerLevel source, destination;
         final GameTestTickPacer pacer;
+        final Mode mode;
         final UUID request = UUID.randomUUID();
         RocketSourceRetirementFixtures.Flight fixture;
         RocketTransferRecord previous, next;
@@ -50,8 +70,9 @@ public final class RocketPredecessorLaunchGameTests {
         int step;
         boolean closed;
 
-        Scenario(GameTestHelper helper) {
+        Scenario(GameTestHelper helper, Mode mode) {
             this.helper = helper; source = helper.getLevel();
+            this.mode = mode;
             destination = source.getServer().getLevel(CelestialIds.MOON_LEVEL);
             pacer = new GameTestTickPacer(source.getServer());
         }
@@ -63,7 +84,8 @@ public final class RocketPredecessorLaunchGameTests {
             if (step == 0) {
                 if (!journal.retryChecked(server)) { return; }
                 fixture = RocketSourceRetirementFixtures.countdown(source, helper.absolutePos(new BlockPos(3, 2, 3)),
-                        destination, new BlockPos(880008, 100, 880008), List.of(), 0);
+                        destination, new BlockPos(880008 + mode.ordinal() * 128, 100, 880008),
+                        mode == Mode.CREW ? List.of(UUID.randomUUID()) : List.of(), 0);
                 RocketTransferEntities.keepLoaded(source, fixture.record().sourceSnapshot(), fixture.record().transferId());
                 RocketTransferEntities.keepLoaded(destination, fixture.record().destinationSnapshot(), fixture.record().transferId());
                 step = 1; return;
@@ -72,6 +94,10 @@ public final class RocketPredecessorLaunchGameTests {
                 if (!RocketTransferEntities.recoveryEndsAlreadyLoaded(server, fixture.record())) { return; }
                 rocket = fixture.spawnDestination(helper, destination);
                 rocket.updateFlightData(rocket.flightData().orElseThrow().land(destination.getGameTime()));
+                if (mode == Mode.CREW) {
+                    rocket.updateFlightData(rocket.flightData().orElseThrow().withPassengers(
+                            io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketPassengerManifest.empty(1)));
+                }
                 RocketTransferEntities.positionAtOrigin(rocket, fixture.record().destinationSnapshot().sourceOrigin());
                 previous = fixture.record().destinationSpawned(rocket.getUUID()).advance(RocketTransferPhase.PASSENGERS_TRANSFERRED)
                         .advance(RocketTransferPhase.SOURCE_REMOVED).advance(RocketTransferPhase.COMMITTED);
@@ -89,10 +115,27 @@ public final class RocketPredecessorLaunchGameTests {
                 helper.assertTrue(rocket.flightData().orElseThrow().state() != RocketFlightState.COUNTDOWN,
                         "Countdown began before replacement acknowledgement");
                 helper.assertTrue(!RocketRuntime.resourceMutationAllowed(rocket), "Pending relaunch allows resource mutation");
+                if (mode == Mode.CHANGED) {
+                    // A direct third-party mutation bypasses the admission interlock; it must invalidate the accepted quote.
+                    var changed = rocket.flightData().orElseThrow();
+                    rocket.updateFlightData(changed.withFuel(changed.fuel().fill(10).state(), destination.getGameTime()));
+                }
                 step = 3; return;
             }
             if (step == 3) {
                 next = journal.find(request).orElse(null);
+                if (mode != Mode.PROVE) {
+                    helper.assertTrue(next == null && journal.find(previous.transferId()).orElse(null) == previous,
+                            "Held or changed request replaced its predecessor");
+                    if (RocketRuntime.resourceMutationAllowed(rocket)) {
+                        helper.assertTrue(rocket.flightData().orElseThrow().state() != RocketFlightState.COUNTDOWN,
+                                "Refused demand started countdown");
+                        helper.assertTrue(mode != Mode.CREW || previous.sourceFlightData().passengers().assignments().size() == 1,
+                                "Old unresolved crew was erased");
+                        close(); helper.succeed();
+                    }
+                    return;
+                }
                 if (next == null) {
                     helper.assertTrue(journal.find(previous.transferId()).orElse(null) == previous, "Proof lost both transfer authorities");
                     return;
