@@ -494,7 +494,14 @@ public final class EscrowCoordinator implements AutoCloseable {
     /** Package-private until the F1/F6 server adapter supplies complete retained proofs and leases. */
     boolean flightWrite(UUID logical, java.util.function.BiFunction<EscrowLedger, Long, EscrowLedger> change,
                         java.util.function.BooleanSupplier proofAndJournalLease, Consumer<Boolean> callback) {
-        owner(); if (closed || writer.unavailable() || !queued.isEmpty() || !transitions.isEmpty()) { return false; }
+        owner();
+        if (EscrowLaunchTrace.selected(Boolean.getBoolean(EscrowTestEndpoints.HOOKS), Boolean.getBoolean(EscrowLaunchTrace.PROPERTY))) {
+            EscrowLaunchDiscard.note("FLIGHT_QUEUE", () -> "logical=" + logical + " tick=" + tick
+                    + " closed=" + closed + " unavailable=" + writer.unavailable()
+                    + " ordinary=" + queued.keySet() + " transitions=" + transitions
+                    + " flights=" + flightWrites.observation() + " writer=" + writer.observation());
+        }
+        if (closed || writer.unavailable() || !queued.isEmpty() || !transitions.isEmpty()) { return false; }
         return flightWrites.request(logical, change, proofAndJournalLease, callback);
     }
     public void tick(long now) {

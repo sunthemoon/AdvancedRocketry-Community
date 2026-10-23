@@ -30,6 +30,7 @@ final class EscrowFlightWrites {
     }
 
     boolean pending() { return !queued.isEmpty(); }
+    String observation() { return "queued:" + queued.keySet() + ",active:" + active.stream().map(Request::logical).toList(); }
     boolean locked(UUID logical) { return queued.containsKey(logical) || active.stream().anyMatch(value -> value.logical().equals(logical)); }
 
     /** Called only when the shared writer and coordinator cadence permit another immutable capture. */
