@@ -19,20 +19,25 @@ def fixture(phase):
     satellite = str(uuid.UUID(int=1))
     missions = [str(uuid.UUID(int=i)) for i in range(2, 4 if phase == "reinstalled" else 3)]
     owner = nbt_uuid(runner.OWNER)
-    state = {"schema_version": 1, "satellite_id": nbt_uuid(satellite), "owner_id": owner,
-             "definition_id": runner.DEFINITION, "status": "operational"}
+    state = {"schema_version": 2, "satellite_id": nbt_uuid(satellite), "owner_id": owner,
+             "definition_id": runner.DEFINITION, "status": "operational", "kind": "data", "kind_state": {},
+             "blueprint": {"components": [], "legacy": 1, "data": 1000, "rating": 0,
+                           "power": 4, "battery": 720, "cargo": 0}}
     if phase == "create": state["current_mission_id"] = nbt_uuid(missions[0])
     amount = {"create": 0, "mod-uninstalled": 126, "reinstalled": 337}[phase]
     earned = {"create": 0, "mod-uninstalled": 137, "reinstalled": 348}[phase]
-    data = {"schema_version": 2, "satellites": [state], "missions": [
-        {"schema_version": 1, "mission_id": nbt_uuid(identity), "satellite_id": nbt_uuid(satellite),
+    data = {"schema_version": 4, "format_epoch": "v1.8.0-ground-surveys", "save_epoch": 10,
+         "instances": [], "ground_surveys": [], "satellites": [state], "missions": [
+        {"schema_version": 2, "kind": "data", "seed": 0, "start_epoch": 1, "reward_version": "data-v1",
+         "mission_id": nbt_uuid(identity), "satellite_id": nbt_uuid(satellite),
          "owner_id": owner, "definition_id": runner.DEFINITION, "target_body_id": runner.HOST + ":earth",
          "discovery_required": 1 if i == 0 else 0, "started_at": 100, "completes_at": 500 if i == 0 else 120,
          "research_yield": 137 if i == 0 else 211, "discovery_cost": 11,
          "status": "active" if phase == "create" else "claimed"} for i, identity in enumerate(missions)],
          "research_accounts": [{"schema_version": 1, "owner_id": owner, "balance": amount,
                                 "lifetime_earned": earned, "lifetime_spent": 0 if phase == "create" else 11}]}
-    terminal = {"schema_version": 1, "owner_id": owner, "energy": 9000, "selected_target": 0,
+    terminal = {"schema_version": 2, "owner_id": owner, "energy": 9000, "selected_target": 0,
+                "terminal_id": nbt_uuid(str(uuid.UUID(int=5))), "reward_buffer": [], "receipts": [],
                 "last_result": 9 if phase == "reinstalled" else 0, "inventory": {"Size": 6, "Items": [
                     {"Slot": 2, "id": "minecraft:amethyst_shard", "Count": 1},
                     {"Slot": 3, "id": runner.HOST + ":satellite_control_chip", "Count": 1,
@@ -165,10 +170,10 @@ class SatellitePayloadSmokeTest(unittest.TestCase):
                 self.assertEqual(10, document[key]["elapsed_ticks"])
 
     def test_native_mission_snapshots_rewards_and_terminal_survive_three_phases(self):
-        previous = None
+        previous = previous_terminal = None
         for phase in runner.PHASES:
             data, terminal, satellite, missions = fixture(phase)
-            runner.validate_disk(data, terminal, phase, satellite, missions, previous)
+            previous_terminal = runner.validate_disk(data, terminal, phase, satellite, missions, previous, previous_terminal)
             previous = {runner.recovery.uuid_from_nbt(value["mission_id"]): copy.deepcopy(value) for value in data["missions"]}
 
     def test_corrupt_or_rewritten_native_state_is_not_accepted(self):
@@ -182,20 +187,39 @@ class SatellitePayloadSmokeTest(unittest.TestCase):
         for key, value in (("balance", 348), ("lifetime_earned", 337), ("lifetime_spent", 0)):
             bad = copy.deepcopy(data); bad["research_accounts"][0][key] = value
             with self.assertRaises(runner.SmokeError): runner.validate_disk(bad, terminal, "reinstalled", satellite, missions, None)
-        for key, value in (("energy", 10000), ("selected_target", 1), ("last_result", 0)):
+        for key, value in (("energy", 10000), ("selected_target", 1), ("last_result", 0), ("schema_version", 1),
+                           ("reward_buffer", [{"item": "minecraft:diamond", "count": 1}]), ("receipts", [nbt_uuid(missions[0])])):
             with self.assertRaises(runner.SmokeError): runner.validate_disk(data, dict(terminal, **{key: value}), "reinstalled", satellite, missions, None)
+        with self.assertRaises(runner.SmokeError):
+            runner.validate_disk(data, terminal, "reinstalled", satellite, missions, None, str(uuid.UUID(int=6)))
         bad = copy.deepcopy(terminal); bad["inventory"]["Items"][0]["Count"] = 2
         with self.assertRaises(runner.SmokeError): runner.validate_disk(data, bad, "reinstalled", satellite, missions, None)
         previous = {missions[0]: dict(data["missions"][0], started_at=99, completes_at=499)}
         with self.assertRaises(runner.SmokeError): runner.validate_disk(data, terminal, "reinstalled", satellite, missions, previous)
+
+    def test_native_data_kind_and_blueprint_metadata_are_not_relaxed(self):
+        data, terminal, satellite, missions = fixture("create")
+        for section, changes in (
+                ("satellites", (("schema_version", 1), ("kind", "solar"), ("kind_state", {"charge": 1}),
+                                ("orbit_body", runner.HOST + ":earth"), ("blueprint", {}))),
+                ("missions", (("schema_version", 1), ("kind", "gas_harvester"), ("seed", 1),
+                              ("start_epoch", 0), ("start_epoch", 11), ("reward_version", "data-v2"),
+                              ("instance_id", nbt_uuid(str(uuid.UUID(int=6)))), ("quarantine", {})))):
+            for key, value in changes:
+                bad = copy.deepcopy(data); bad[section][0][key] = value
+                with self.subTest(section=section, key=key, value=value), self.assertRaises(runner.SmokeError):
+                    runner.validate_disk(bad, terminal, "create", satellite, missions, None)
 
     def test_decoder_checks_native_schema_and_record_limits(self):
         data, _, _, _ = fixture("create")
         with patch.object(runner.recovery, "NbtReader") as reader:
             reader.return_value.read_root.return_value = {"data": data}
             self.assertEqual(data, runner.decode_saved(gzip.compress(b"fixture")))
-            for bad in ({}, {"data": dict(data, schema_version=9)}, {"data": dict(data, satellites=[])},
-                        {"data": dict(data, missions=data["missions"] * 3)}):
+            for bad in ({}, {"data": dict(data, schema_version=9)}, {"data": dict(data, schema_version=2)},
+                        {"data": dict(data, schema_version=3)}, {"data": dict(data, satellites=[])},
+                        {"data": dict(data, missions=data["missions"] * 3)}, {"data": dict(data, format_epoch="wrong")},
+                        {"data": dict(data, instances=[{}])}, {"data": dict(data, ground_surveys=[{}])},
+                        {"data": dict(data, save_epoch=0)}):
                 reader.return_value.read_root.return_value = bad
                 with self.assertRaises(runner.SmokeError): runner.decode_saved(gzip.compress(b"fixture"))
 
