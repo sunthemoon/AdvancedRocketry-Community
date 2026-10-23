@@ -19,6 +19,10 @@ class EscrowProbeRoutingTest {
     private static final String ITEM = "EscrowItemCutProbe.selected(true, System.getProperty(EscrowItemCutProbe.SCENARIO), testCase)";
     private static final String ITEM_BRANCH = "            } else if (" + ITEM + ") {\n"
             + "                // Item cuts already ran above; never create the synthetic fluid release fixture for them.\n";
+    // W142's fluid cargo cuts (C-S4, C-S5), merged beside W143: their own exclusive branch ahead of the fallback.
+    private static final String CARGO = "runtime.cargoCuts != null && EscrowCargoCutProbe.accepts(testCase)";
+    private static final String CARGO_BRANCH = "            } else if (" + CARGO + ") {\n"
+            + "                runtime.cargoCuts.tick();\n";
     private static final Pattern BRANCH = Pattern.compile("(?m)^ {12}(?:\\} else )?(?:if \\(([^\\n]+)\\) )?\\{$");
     private static final Pattern TICK = Pattern.compile("runtime\\.(\\w+)\\.tick\\(\\);");
 
@@ -30,7 +34,9 @@ class EscrowProbeRoutingTest {
         // Extracted verbatim from ab858afc4, before R77's generic allowlist. No Git access is needed to run this test.
         String before = resource("escrow-probe-dispatch-before-r77.txt");
         assertEquals(1, actual.split(Pattern.quote(ITEM_BRANCH), -1).length - 1);
-        assertEquals(before, actual.replace(ITEM_BRANCH, ""), "Non-item dispatch must retain the old unconditional fallback");
+        assertEquals(1, actual.split(Pattern.quote(CARGO_BRANCH), -1).length - 1);
+        assertEquals(before, actual.replace(ITEM_BRANCH, "").replace(CARGO_BRANCH, ""),
+                "Dispatch other than the item and cargo-cut branches must retain the old unconditional fallback");
         assertEquals(1, runtime.lines().filter(line -> line.trim().equals(
                 "if (runtime.itemCutProbe != null) { runtime.itemCutProbe.tick(); }")).count());
         assertTrue(actual.indexOf(ITEM_BRANCH) < actual.lastIndexOf("            } else {"));
@@ -48,7 +54,10 @@ class EscrowProbeRoutingTest {
             String name = fields[0];
             for (String scenario : List.of("start", "recover")) {
                 boolean item = EscrowItemCutProbe.selected(true, scenario, name);
-                assertEquals(item ? "itemCutProbe" : route(before, name, scenario), route(after, name, scenario), name + "/" + scenario);
+                boolean cargo = EscrowCargoCutProbe.accepts(name);
+                assertFalse(item && cargo, "A case selected both cut probes: " + name);
+                assertEquals(item ? "itemCutProbe" : cargo ? "cargoCuts" : route(before, name, scenario), route(after, name, scenario),
+                        name + "/" + scenario);
                 assertEquals(!item, EscrowReleaseProbe.permitsCase(name), "Constructor exclusion: " + name);
                 if (item) {
                     items.add(name);
@@ -115,6 +124,7 @@ class EscrowProbeRoutingTest {
         if (term.equals("testCase.startsWith(EscrowLoaderReleaseProbe.PREFIX)")) { return name.startsWith(EscrowLoaderReleaseProbe.PREFIX); }
         if (term.equals("EscrowCargoReconciliationProbe.accepts(testCase)")) { return EscrowCargoReconciliationProbe.accepts(name); }
         if (term.equals(ITEM)) { return EscrowItemCutProbe.selected(true, scenario, name); }
+        if (term.equals(CARGO)) { return EscrowCargoCutProbe.accepts(name); }
         var literal = Pattern.compile("testCase\\.(equals|startsWith)\\(\"([^\"]+)\"\\)").matcher(term);
         assertTrue(literal.matches(), "Unrecognized dispatch predicate: " + term);
         return literal.group(1).equals("equals") ? name.equals(literal.group(2)) : name.startsWith(literal.group(2));

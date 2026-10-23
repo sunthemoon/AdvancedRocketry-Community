@@ -69,6 +69,11 @@ public final class EscrowCargoTransferFixtures {
      * with its ARMED entry only inside the native envelope. C-I recognizes the cargo-changed rocket as its authority.
      */
     public static RocketTransferRecord governed(RocketEntity rocket, RocketStructureSnapshot recorded, UUID ledger) {
+        return governed(rocket, recorded, ledger, 10);
+    }
+
+    /** Native-cut setup names an authority generation covered by its next checked ledger write. */
+    static RocketTransferRecord governed(RocketEntity rocket, RocketStructureSnapshot recorded, UUID ledger, long generation) {
         EscrowTestEndpoints.requireEnabled(rocket.getServer());
         UUID transfer = UUID.randomUUID(), logical = rocket.assemblyTransactionId().orElseThrow(), owner = rocket.ownerId().orElseThrow();
         UUID sourcePhysical = UUID.randomUUID();
@@ -86,7 +91,7 @@ public final class EscrowCargoTransferFixtures {
         var descent = transit.arriveAtDestination(fuel.debit(plan).state(), plan.destinationBody(), dimension, recorded.sourceOrigin(), 161);
         var sourceEnvelope = envelope(sourcePhysical, logical, owner, ledger, source, idle, 7);
         var destinationEnvelope = envelope(rocket.getUUID(), logical, owner, ledger, recorded, descent, 0);
-        var arm = new EscrowFlightTables.Armed(ledger, logical, owner, sourcePhysical, 7, transfer, 1, 10, "1".repeat(64), "2".repeat(64),
+        var arm = new EscrowFlightTables.Armed(ledger, logical, owner, sourcePhysical, 7, transfer, 1, generation, "1".repeat(64), "2".repeat(64),
                 EscrowGovernedEnvelope.digest(sourceEnvelope), EscrowGovernedEnvelope.digest(destinationEnvelope), rocket.getUUID(),
                 new EscrowGuard(logical, null, 1, "3".repeat(64)), null, 0, EscrowFlightTables.Outcome.ARMED);
         var nativeTransfer = EscrowTransferEnvelope.capture(arm, sourceEnvelope, destinationEnvelope, source, recorded, transit, descent);
