@@ -73,6 +73,18 @@ def retain_raw(world: Path, evidence: Path, restart: int):
 def verify(disk: dict, flight: dict, expected_fuel: int, restart: int, cut: str):
     logical = flight["logical_rocket_id"]
     transfers = disk["journal"]["transfers"]
+    if restart and flight.get("source_recovery"):
+        require(cut == "STORE", "Source recovery cannot replace the already proved destination")
+        old = flight["predecessor"]
+        records = [row["entity"] for row in disk["entities"]]
+        require(not transfers and len(records) == 1, "Source recovery did not retire T or retained a duplicate")
+        entity = records[0]; data = entity["RocketEntityData"]; state = data["flight_data"]
+        require(str(nbt_uuid(entity["UUID"])) == flight["source_entity"]
+                and str(nbt_uuid(data["assembly_transaction_id"])) == logical and data["owner_id"] == old["owner_id"], "Changed recovered source identity")
+        require(data["snapshot"] == old["source_snapshot"] and state["fuel"] == old["source_flight"]["fuel"]
+                and state["passengers"] == old["source_flight"]["passengers"], "Changed recovered source resources")
+        require(state["state"] == "FUELED" and not state.get("active_transfer_id") and not entity.get("Passengers"), "Invalid source recovery state")
+        return
     require(len(transfers) == 1 and str(nbt_uuid(transfers[0]["logical_rocket_id"])) == logical
             and str(nbt_uuid(transfers[0]["transfer_id"])) == flight["transfer_id"]
             and transfers[0]["phase"] == "COMMITTED", "Old T was lost before replacement")
@@ -94,6 +106,10 @@ def verify(disk: dict, flight: dict, expected_fuel: int, restart: int, cut: str)
         require(data["owner_id"] == transfers[0]["owner_id"], "Changed owner")
         expected = copy.deepcopy(transfers[0]["destination_flight"]["fuel"])
         expected["amount"] = expected_fuel
+        if cut == "MOVE" and "propulsion" in expected:
+            # One declared abstract refuel changes both scalar/bank amounts and advances the bank revision once.
+            expected["propulsion"]["primary"]["amount"] = expected_fuel
+            expected["propulsion"]["revision"] += 1
         require(state["fuel"] == expected, "Changed complete fuel/debit content")
     if not restart and cut == "MOVE":
         staged = disk.get("pending", {}).get("transfers", [])
@@ -145,12 +161,18 @@ def run_case(args, cut, evidence):
                 process.process.kill(); entry["exit_code"] = process.finish(timeout=30)
             else:
                 leg = row["flight"]
-                process.wait_for(re.compile("ARCE_ROCKET_ENTITY_ACTIVE entity=" + leg["destination_entity"]), 120)
+                source_recovery = leg.get("source_recovery", False)
+                survivor = leg["source_entity" if source_recovery else "destination_entity"]
+                process.wait_for(re.compile("ARCE_ROCKET_ENTITY_ACTIVE entity=" + survivor), 120)
+                if source_recovery and restart == 1:
+                    process.wait_for(re.compile("ARCE_TRANSFER_RETIREMENT_PROVED transfer=" + leg["transfer_id"]
+                                                + r" .*site=RECOVERED_SOURCE "), 120)
                 # Let the ordinary recovery run; normal stop saves its result, never changes the unmodified cut copy.
                 time.sleep(3)
-                report = FlightHarness.report(process, MOON, leg["destination_entity"])
-                require(report["fuel"] == row["expected_fuel"]
-                        and report["state"] == ("FUELED" if cut == "MOVE" else "LANDED"), "Restart changed live authority")
+                report = FlightHarness.report(process, EARTH if source_recovery else MOON, survivor)
+                fuel = leg["predecessor"]["source_flight"]["fuel"]["amount"] if source_recovery else row["expected_fuel"]
+                require(report["fuel"] == fuel and report["state"] == ("FUELED" if source_recovery or cut == "MOVE" else "LANDED"),
+                        "Restart changed live authority")
                 process.command("stop"); entry["exit_code"] = process.finish()
                 require(entry["exit_code"] == 0, "Restart did not stop normally")
             entry["errors"] = [line for line in process.lines if "/ERROR]" in line or "/FATAL]" in line]
@@ -161,6 +183,12 @@ def run_case(args, cut, evidence):
             disk = read_disk(world)
             (evidence / f"disk-{restart}.json").write_text(json.dumps(disk, indent=2), encoding="utf-8")
             verify(disk, row["flight"], row["expected_fuel"], restart, cut)
+            if not restart:
+                # Existing four-case recovery selects S when the cut preceded D's first own store.
+                # This is not permission to change the source fallback or accept S after completed proof.
+                row["flight"]["predecessor"] = disk["journal"]["transfers"][0]
+                row["flight"]["source_recovery"] = cut == "STORE" and not any(
+                    str(nbt_uuid(e["entity"]["UUID"])) == row["flight"]["destination_entity"] for e in disk["entities"])
             entry["status"] = "PASS"
         row["status"] = "PASS"
     except Exception as error:

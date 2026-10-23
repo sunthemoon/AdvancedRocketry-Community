@@ -56,6 +56,28 @@ class PredecessorOracleTest(unittest.TestCase):
         with self.assertRaises(probe.smoke.SmokeError): self.check()
         with self.assertRaises(probe.smoke.SmokeError): probe.verify(self.disk, self.flight, 500, 0, "TERMINAL")
 
+    def test_refuel_updates_the_whole_bank_exactly_once(self):
+        data = self.disk["entities"][0]["entity"]["RocketEntityData"]
+        old = self.disk["journal"]["transfers"][0]["destination_flight"]["fuel"]
+        old["propulsion"] = dict(primary=dict(amount=500, branch="ABSTRACT"), revision=2)
+        data["flight_data"]["fuel"] = copy.deepcopy(old)
+        data["flight_data"]["fuel"].update(amount=1000)
+        data["flight_data"]["fuel"]["propulsion"].update(primary=dict(amount=1000, branch="ABSTRACT"), revision=3)
+        data["flight_data"]["state"] = "FUELED"
+        probe.verify(self.disk, self.flight, 1000, 1, "MOVE")
+        data["flight_data"]["fuel"]["propulsion"]["revision"] = 4
+        with self.assertRaises(probe.smoke.SmokeError): probe.verify(self.disk, self.flight, 1000, 1, "MOVE")
+
+    def test_pre_store_source_recovery_preserves_the_original_source_and_retires_t(self):
+        entity = self.disk["entities"][0]["entity"]; data = entity["RocketEntityData"]
+        entity["UUID"] = [0, 0, 0, 3]; data["flight_data"]["state"] = "FUELED"
+        self.flight.update(source_recovery=True, predecessor=dict(owner_id=data["owner_id"],
+            source_snapshot=copy.deepcopy(data["snapshot"]), source_flight=copy.deepcopy(data["flight_data"])))
+        self.disk["journal"]["transfers"].clear()
+        probe.verify(self.disk, self.flight, 500, 1, "STORE")
+        data["flight_data"]["fuel"]["amount"] -= 1
+        with self.assertRaises(probe.smoke.SmokeError): probe.verify(self.disk, self.flight, 500, 1, "STORE")
+
 
 if __name__ == "__main__":
     unittest.main()
