@@ -91,6 +91,11 @@ final class RocketOrdinaryRetirement {
         default boolean saveOff(RocketRetirementProof.Slot slot) { return false; }
         /** One attempt's sink: silent unless a gated release test selects a pause. */
         Consumer<String> sink();
+        /** Owner-thread terminal action under the proof's token. False means no mutation was submitted. */
+        default boolean terminal(RocketTransferSavedData journal, RocketTransferRecord record, CompoundTag frozen,
+                                 RocketTransferSavedData.Reservation own) {
+            journal.remove(record.transferId()); return true;
+        }
         /** Queues T's removal continuation with the attempt's reservation, consuming it. */
         boolean afterAcknowledged(RocketTransferSavedData journal, RocketTransferSavedData.Reservation token,
                                   BooleanSupplier effect, Runnable discarded);
@@ -400,10 +405,12 @@ final class RocketOrdinaryRetirement {
     }
 
     private void remove(Pending entry) {
+        if (!entry.port.terminal(entry.journal, entry.record, entry.frozen, entry.token)) {
+            abandon(entry, "TERMINAL_REFUSED"); return;
+        }
         var token = entry.token; entry.token = null;
         entry.releaseProofs(); entry.state = State.REMOVING;
         var record = entry.record;
-        entry.journal.remove(record.transferId());
         boolean submitted = entry.port.afterAcknowledged(entry.journal, token, () -> {
             drop(entry);
             if (!entry.effects.acknowledged().getAsBoolean()) { return false; }
