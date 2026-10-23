@@ -52,6 +52,29 @@ def observe_stationary(process, dimension, survivor):
     raise smoke.SmokeError("Recovered descent did not reach its stationary authority")
 
 
+def inspect_outbox(root, old, recovered_descent):
+    require(root.get("schema_version") == 3 and root.get("format_epoch") == "v1.8.0-first-moon-landing",
+            "Changed checked journal envelope")
+    outbox = root.get("classic_first_moon_landing")
+    if not recovered_descent:
+        require(outbox == dict(schema_version=1, state="EMPTY"), "Unexpected landing event")
+    else:
+        require(isinstance(outbox, dict) and outbox.get("schema_version") == 1
+                and outbox.get("state") == "DELIVERED", "Recovered landing did not deliver its event")
+        event = outbox.get("event", {})
+        require(all(event.get(key) == value for key, value in {
+            "kind": "first_moon_landing", "logical_rocket_id": old["logical_rocket_id"],
+            "owner_id": old["owner_id"], "transfer_id": old["transfer_id"],
+            "terminal_rocket_id": old["destination_entity_id"], "record_checksum": old["checksum"],
+            "level": old["destination_snapshot"]["source_dimension"],
+            "terminal_origin": old["destination_snapshot"]["source_origin"], "participants": []}.items()),
+            "Landing event changed its exact predecessor or participants")
+        require(len(event.get("event_id", [])) == 4 and any(event["event_id"])
+                and re.fullmatch(r"[0-9a-f]{64}", event.get("fingerprint", "")) is not None
+                and event.get("completed_at_game_time", -1) >= 0, "Invalid landing event identity")
+    return copy.deepcopy(outbox)
+
+
 def inspect(disk, old, expected_fuel, restart, boundary, survivor):
     """Validate the bounded physical census and complete resources, not just state/fuel scalars."""
     logical = str(nbt_uuid(old["logical_rocket_id"]))
@@ -228,7 +251,7 @@ def run_case(args, name, evidence):
                 process.process.kill(); entry["exit_code"] = process.finish(timeout=30)
             else:
                 survivor = row["survivor"]
-                if restart == 2 and not journal(world)["transfers"]:
+                if restart == 2 and not read_journal(world / "data/advancedrocketrycommunity_rocket_transfers.dat")["transfers"]:
                     # A standalone saved rocket has no transfer ticket after a fresh boot. Observe only its known
                     # origin column; this does not edit an entity or journal, nor save at the original cut.
                     snapshot = old["source_snapshot" if survivor == row["source_entity"] else "destination_snapshot"]
@@ -250,6 +273,10 @@ def run_case(args, name, evidence):
             process = None
             retain_raw(world, evidence, restart); disk = read_disk(world)
             disk["world_authority"] = world_authority(world, old)
+            entry["landing_outbox"] = inspect_outbox(disk["journal"], old,
+                    mode == "DESCENT" and cut == "STORE_D" and restart > 0)
+            if restart == 2:
+                require(entry["landing_outbox"] == row["starts"][1]["landing_outbox"], "Second restart changed landing outbox")
             (evidence / f"disk-{restart}.json").write_text(json.dumps(disk, indent=2), encoding="utf-8")
             if not restart:
                 destinations = [e for e in disk["entities"] if identity(e["entity"]) == row["destination_entity"]]

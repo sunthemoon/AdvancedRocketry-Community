@@ -109,4 +109,26 @@ class RestartObservationTest(unittest.TestCase):
             with self.assertRaises(probe.smoke.SmokeError): probe.observe_stationary(object(), "test:moon", "entity")
 
 
+class LandingOutboxTest(unittest.TestCase):
+    def test_recovered_descent_requires_its_exact_delivered_event(self):
+        old = dict(logical_rocket_id=[0, 0, 0, 1], owner_id=[0, 0, 0, 2], transfer_id=[0, 0, 0, 3],
+                   destination_entity_id=[0, 0, 0, 4], checksum="predecessor",
+                   destination_snapshot=dict(source_dimension="test:moon", source_origin=[8, 100, 8]))
+        event = dict(kind="first_moon_landing", logical_rocket_id=old["logical_rocket_id"], owner_id=old["owner_id"],
+                     transfer_id=old["transfer_id"], terminal_rocket_id=old["destination_entity_id"],
+                     record_checksum=old["checksum"], level="test:moon", terminal_origin=[8, 100, 8], participants=[],
+                     event_id=[0, 0, 0, 5], fingerprint="a" * 64, completed_at_game_time=254)
+        root = dict(schema_version=3, format_epoch="v1.8.0-first-moon-landing",
+                    classic_first_moon_landing=dict(schema_version=1, state="DELIVERED", event=event))
+        self.assertEqual(root["classic_first_moon_landing"], probe.inspect_outbox(root, old, True))
+        with self.assertRaises(probe.smoke.SmokeError): probe.inspect_outbox(root, old, False)
+        for key, value in (("terminal_rocket_id", [0, 0, 0, 6]), ("record_checksum", "other"), ("participants", [[0, 0, 0, 7]])):
+            saved = event[key]; event[key] = value
+            with self.assertRaises(probe.smoke.SmokeError): probe.inspect_outbox(root, old, True)
+            event[key] = saved
+        root["classic_first_moon_landing"] = dict(schema_version=1, state="EMPTY")
+        probe.inspect_outbox(root, old, False)
+        with self.assertRaises(probe.smoke.SmokeError): probe.inspect_outbox(root, old, True)
+
+
 if __name__ == "__main__": unittest.main()
