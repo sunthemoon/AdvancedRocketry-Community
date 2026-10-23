@@ -72,6 +72,24 @@ class SatellitePayloadSmokeTest(unittest.TestCase):
         return runner.SatelliteRun(Path(directory), Path(directory), [{"version": "1.20.1-1.8.0-dev"}],
                                    "java", 12345, 240)
 
+    def test_inspect_and_scheduler_require_exact_data_mission_receipts(self):
+        run = self.make_run("unused")
+        run.satellite, mission = str(uuid.UUID(int=1)), str(uuid.UUID(int=2))
+        receipt = (f"satellite={run.satellite} owner={runner.OWNER} type={runner.DEFINITION} "
+                   f"kind=data status=OPERATIONAL mission={mission}")
+        run.query = Mock(side_effect=lambda process, command, marker: marker.search(receipt))
+        self.assertEqual(mission, run.inspect_mission(object()))
+        marker = run.query.call_args.args[2]
+        for before, after in (("kind=data ", ""), ("kind=data", "kind=solar"), ("OPERATIONAL", "FAILED"),
+                              (runner.OWNER, str(uuid.UUID(int=9))), (runner.DEFINITION, "missing:id"),
+                              (f"satellite={run.satellite}", f"satellite={mission}"), (mission, "none")):
+            self.assertIsNone(marker.search(receipt.replace(before, after)))
+        scheduled = "ARCE_SATELLITE_SCHEDULER completed=1 pruned=0 inspected=1 remaining=0"
+        self.assertIsNotNone(runner.SCHEDULED.search(scheduled))
+        for before, after in (("completed=1", "completed=0"), ("pruned=0", "pruned=1"), ("pruned=0 ", ""),
+                              ("inspected=1", "inspected=2"), ("remaining=0", "remaining=1")):
+            self.assertIsNone(runner.SCHEDULED.search(scheduled.replace(before, after)))
+
     def test_interval_uses_observed_ticks_and_accepts_exact_boundary(self):
         run = self.make_run("unused")
         ticks = iter((100, 100, 109, 110))
