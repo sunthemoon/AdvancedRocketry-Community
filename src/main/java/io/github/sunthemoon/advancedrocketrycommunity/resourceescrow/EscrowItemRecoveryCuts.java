@@ -32,7 +32,8 @@ final class EscrowItemRecoveryCuts extends EscrowItemCutProbe {
     @Override void checkpoint(String label) { }
     private boolean damage() { return name.equals("IR_CONTAINER") || name.equals("IR_LOOT"); }
     @Override void beforeReconciliation() {
-        if (!damage() || recovery || step != 1 || data == null || data.ledger().records().size() != 1 || !baseline(data, server)) { return; }
+        if (!damage() || recovery || step != 1 || data == null) { return; }
+        if (preparedItem(data.ledger(), rocket, device) == null || !baseline(data, server)) { return; }
         EscrowCargoSwitches.forTests(server, EscrowOperation.Kind.ITEM_CARGO_UNLOAD, id(device), false);
         EscrowCargoSwitches.pauseReconciliationForTests(server, id(device), true);
         var candidate = candidate(Boolean.getBoolean(EscrowTestEndpoints.HOOKS), name, rocket.snapshot().orElseThrow(), rocket.getUUID());
@@ -81,7 +82,7 @@ final class EscrowItemRecoveryCuts extends EscrowItemCutProbe {
             if (damage()) { EscrowCargoSwitches.pauseReconciliationForTests(server, id(device), true); }
             EscrowCargoSwitches.forTests(server, EscrowOperation.Kind.ITEM_CARGO_UNLOAD, id(device), true); step = 1;
         } else if (step == 1 && !damage()) {
-            if (data.ledger().records().isEmpty()) { return; }
+            if (preparedItem(data.ledger(), rocket, device) == null) { return; }
             EscrowCargoSwitches.forTests(server, EscrowOperation.Kind.ITEM_CARGO_UNLOAD, id(device), false); step = 2;
         } else if (step == 2) {
             if (!data.ledger().records().isEmpty() || !rocket.escrowSection().markers().isEmpty() || !section(device).markers().isEmpty() || !baseline(data, server)) { return; }

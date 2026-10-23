@@ -38,6 +38,7 @@ class EscrowItemCutProbeTest {
             for (var scenario : List.of("start", "recover")) {
                 assertTrue(EscrowItemCutProbe.selected(true, scenario, name));
                 assertFalse(EscrowItemCutProbe.selected(false, scenario, name));
+                assertFalse(EscrowReleaseProbe.selected(true, scenario, name));
             }
             assertFalse(EscrowItemCutProbe.selected(true, null, name));
             assertFalse(EscrowItemCutProbe.selected(true, "ordinary", name));
@@ -45,6 +46,58 @@ class EscrowItemCutProbeTest {
         for (String name : new String[] {null, "", "IS_UNKNOWN", "FS_O1_AFTER", "IC_LOAD_K2"}) {
             assertFalse(EscrowItemCutProbe.selected(true, "start", name));
         }
+    }
+    @Test void genericProbeAcceptsOnlyItsOwnCasesAndNeverRoutesThemToItems() {
+        var cases = new java.util.ArrayList<>(List.of("G3", "G3L2", "E2", "E2_CAPTURE", "E4L1_FAIL", "E4L1_UNKNOWN",
+                "E4L2_FAIL", "E4L2_UNKNOWN", "E4L2_RESAVE"));
+        for (int index = 0; index <= 10; index++) { cases.add("K" + index); }
+        assertEquals(20, cases.size());
+        for (String name : cases) {
+            for (String scenario : List.of("start", "recover")) {
+                assertTrue(EscrowReleaseProbe.selected(true, scenario, name));
+                assertFalse(EscrowReleaseProbe.selected(false, scenario, name));
+                assertFalse(EscrowItemCutProbe.selected(true, scenario, name));
+            }
+            assertFalse(EscrowReleaseProbe.selected(true, null, name));
+            assertFalse(EscrowReleaseProbe.selected(true, "ordinary", name));
+        }
+        for (String name : new String[] {null, "", "none", "K11", "K01", "C1", "C2", "C3", "E5", "BENCH",
+                "IS_UNKNOWN", "IR_UNKNOWN", "FS_O1_AFTER", "IC_LOAD_K2", "SR_O1", "SO_O1"}) {
+            for (String scenario : List.of("start", "recover")) {
+                assertFalse(EscrowReleaseProbe.selected(true, scenario, name));
+                assertFalse(EscrowItemCutProbe.selected(true, scenario, name));
+            }
+        }
+    }
+    @Test void preparedBaselineRequiresTheIntendedNativeItemDirectionAndPhase() {
+        for (boolean load : List.of(false, true)) {
+            var op = EscrowItemReconciliationFixture.create(load).op();
+            var kind = load ? EscrowOperation.Kind.ITEM_CARGO_LOAD : EscrowOperation.Kind.ITEM_CARGO_UNLOAD;
+            assertDoesNotThrow(() -> requireBaseline(op, kind));
+            assertThrows(IllegalArgumentException.class, () -> requireBaseline(op,
+                    load ? EscrowOperation.Kind.ITEM_CARGO_UNLOAD : EscrowOperation.Kind.ITEM_CARGO_LOAD));
+            assertThrows(IllegalArgumentException.class, () -> requireBaseline(op.withReason(EscrowReason.OTHER_STATE), kind));
+            var incomplete = new EscrowOperation(op.id(), op.sequence(), op.owner(), op.createdTick(), op.phase(), op.reason(),
+                    op.payload(), op.payloadHash(), op.source(), op.destination(), op.guard(), op.kind(), op.settlement());
+            assertThrows(IllegalArgumentException.class, () -> requireBaseline(incomplete, kind));
+        }
+        var fluid = EscrowTestFixtures.nativeModel(EscrowTestFixtures.operation(1));
+        assertThrows(IllegalArgumentException.class, () -> requireBaseline(fluid, EscrowOperation.Kind.ITEM_CARGO_UNLOAD));
+        assertThrows(IllegalArgumentException.class, () -> requireBaseline(fluid, fluid.kind()));
+    }
+    @Test void preparedBaselineRejectsEveryForeignFixtureIdentity() {
+        var op = EscrowItemReconciliationFixture.create(false).op();
+        var expected = List.of(op.device().identity(), op.rocket().identity(), op.rocket().logicalRocket(),
+                op.owner(), op.nativeBinding().snapshot());
+        for (int index = 0; index < expected.size(); index++) {
+            var foreign = new java.util.ArrayList<>(expected); foreign.set(index, UUID.randomUUID());
+            assertThrows(IllegalArgumentException.class, () -> EscrowItemCutProbe.requirePreparedItem(op, op.kind(),
+                    foreign.get(0), foreign.get(1), foreign.get(2), foreign.get(3), foreign.get(4)));
+        }
+    }
+    private static void requireBaseline(EscrowOperation op, EscrowOperation.Kind kind) {
+        EscrowItemCutProbe.requirePreparedItem(op, kind, op.device().identity(), op.rocket().identity(),
+                op.rocket().logicalRocket(), op.owner(), op.nativeBinding().snapshot());
     }
     @Test void journalReplacementRequiresExactStartGate() {
         assertTrue(EscrowItemCutProbe.journalCut(true, "start", "IS_O3J_AFTER"));

@@ -136,7 +136,7 @@ final class EscrowItemSettlementCuts extends EscrowItemCutProbe {
     }
 
     private void admitted() {
-        var op = member(); if (op == null) { return; }
+        var op = preparedItem(data.ledger(), rocket, device); if (op == null) { return; }
         EscrowCargoSwitches.forTests(server, EscrowOperation.Kind.ITEM_CARGO_UNLOAD, deviceId, false);
         EscrowTags.require(op.phase() == EscrowOperation.Phase.PREPARED && op.nativeBinding().complete()
                 && (cut.scenario() == Scenario.NAMED) == (op.guard().transfer() != null), "W143 cargo admission did not reach the expected PREPARED");

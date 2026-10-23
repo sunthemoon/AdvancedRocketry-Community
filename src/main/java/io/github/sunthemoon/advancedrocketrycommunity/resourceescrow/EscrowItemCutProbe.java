@@ -38,7 +38,10 @@ public abstract class EscrowItemCutProbe {
     boolean done;
 
     EscrowItemCutProbe(MinecraftServer server) {
-        EscrowTestEndpoints.requireEnabled(server); this.server = server; level = server.overworld();
+        EscrowTestEndpoints.requireEnabled(server);
+        EscrowTags.require(selected(Boolean.getBoolean(EscrowTestEndpoints.HOOKS), System.getProperty(SCENARIO), System.getProperty(CASE)),
+                "Item cut probe requires its own case");
+        this.server = server; level = server.overworld();
         name = System.getProperty(CASE); recovery = "recover".equals(System.getProperty(SCENARIO));
         for (var pos : List.of(DEVICE, PAD)) {
             var chunk = new ChunkPos(pos);
@@ -81,6 +84,25 @@ public abstract class EscrowItemCutProbe {
         var coordinator = data.bind(server);
         if (data.ledger().writerGeneration() == 0 || data.isDirty() || !coordinator.writerIdle()) { coordinator.autosave(); return false; }
         EscrowLedgerBaseline.require(ResourceEscrowSavedData.file(server), data.ledger()); return true;
+    }
+    /** A fixture may proceed only with its own admitted item operation, never an unrelated PREPARED record. */
+    static EscrowOperation preparedItem(EscrowLedger ledger, RocketEntity rocket, RocketItemCargoBlockEntity device) {
+        if (ledger.records().isEmpty()) { return null; }
+        EscrowTags.require(ledger.records().size() == 1, "Item cut fixture has extra operations");
+        var op = ledger.records().get(0);
+        var kind = device.root().orElseThrow().role() == RocketCargoRole.LOAD
+                ? EscrowOperation.Kind.ITEM_CARGO_LOAD : EscrowOperation.Kind.ITEM_CARGO_UNLOAD;
+        requirePreparedItem(op, kind, id(device), rocket.getUUID(), rocket.assemblyTransactionId().orElseThrow(),
+                rocket.ownerId().orElseThrow(), rocket.snapshot().orElseThrow().snapshotId());
+        return op;
+    }
+    static void requirePreparedItem(EscrowOperation op, EscrowOperation.Kind kind, UUID device, UUID physical,
+            UUID logical, UUID owner, UUID snapshot) {
+        EscrowTags.require(kind.itemCargo() && op.kind() == kind && op.phase() == EscrowOperation.Phase.PREPARED
+                && op.reason() == EscrowReason.NONE && op.nativeBinding().complete()
+                && op.device().identity().equals(device) && op.rocket().identity().equals(physical)
+                && op.rocket().logicalRocket().equals(logical) && op.owner().equals(owner)
+                && snapshot.equals(op.nativeBinding().snapshot()), "Item cut fixture lacks its own native PREPARED item operation");
     }
     RocketEntity cargoRocket(int count) { return cargoRocket(level, ROCKET, count); }
     static RocketEntity cargoRocket(ServerLevel level, BlockPos origin, int count) {

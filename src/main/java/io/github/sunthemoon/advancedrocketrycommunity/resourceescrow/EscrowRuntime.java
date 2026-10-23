@@ -395,6 +395,8 @@ public final class EscrowRuntime {
                 // This probe runs before settlement recovery so its deliberate veto precedes every O2 attempt.
             } else if (testCase.startsWith("SO_")) {
                 // The O1 probe observes before recovery above, then follows eventual O2-O4.
+            } else if (EscrowItemCutProbe.selected(true, System.getProperty(EscrowItemCutProbe.SCENARIO), testCase)) {
+                // Item cuts already ran above; never create the synthetic fluid release fixture for them.
             } else if (testCase.startsWith("RA_")) {
                 if (runtime.rocketAuditProbe == null) { runtime.rocketAuditProbe = new EscrowRocketAuditProbe(event.getServer()); }
                 runtime.rocketAuditProbe.tick();
@@ -407,7 +409,7 @@ public final class EscrowRuntime {
             } else if (testCase.equals("C1") || testCase.equals("C2") || testCase.equals("C3")) {
                 if (runtime.chainProbe == null) { runtime.chainProbe = new EscrowChainReleaseProbe(event.getServer()); }
                 runtime.chainProbe.tick();
-            } else {
+            } else if (EscrowReleaseProbe.selected(true, System.getProperty(EscrowItemCutProbe.SCENARIO), testCase)) {
                 if (runtime.probe == null) { runtime.probe = new EscrowReleaseProbe(event.getServer()); }
                 runtime.probe.tick();
             }
