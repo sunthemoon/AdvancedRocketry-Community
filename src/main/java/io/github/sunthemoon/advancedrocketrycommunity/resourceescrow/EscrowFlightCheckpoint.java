@@ -164,7 +164,7 @@ final class EscrowFlightCheckpoint implements AutoCloseable {
                         pending.remove(launch.logical(), frozen); finished.accept(null); return;
                     }
                     runtime.checkpoint("F1_READBACK_AFTER"); var proof = result.proof();
-                    boolean queued = coordinator.flightWrite(launch.logical(), (root, generation) -> {
+                    var admission = coordinator.enqueueFlightWrite(launch.logical(), (root, generation) -> {
                         EscrowTags.require(frozen.observe(), "F1 source changed before ARMED capture");
                         runtime.checkpoint("F1_ARM_CAPTURE");
                         var candidate = preparation.capture(root, launch, generation);
@@ -186,7 +186,9 @@ final class EscrowFlightCheckpoint implements AutoCloseable {
                             finished.accept(null);
                         }
                     });
-                    if (!queued) {
+                    if (admission != EscrowFlightWrites.Admission.QUEUED) {
+                        EscrowLaunchDiscard.note("F1_QUEUE_REFUSED", () -> "logical=" + launch.logical()
+                                + " transfer=" + launch.transfer() + " reason=" + admission);
                         observation.sample("f1.stall.LEDGER_QUEUE_WAIT", 0);
                         proof.release(); pending.remove(launch.logical(), frozen);
                         if (!closed) { retry.failed(coordinator.ledger().id(), launch.logical(), launch.transfer(), 0,
