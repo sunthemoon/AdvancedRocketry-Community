@@ -46,9 +46,9 @@ public final class RocketPinnedCensusGameTests {
                 helper.getLevel().getChunk(slot.x, slot.z);
             }
             primary = new Return(this, source, blocked, true);
-            first = new Return(this, blocked.above(24), blocked.above(24), false);
-            second = new Return(this, blocked.above(48), blocked.above(48), false);
-            control = new Return(this, independent, independent, false);
+            first = new Return(this, blocked.above(24), blocked.above(24).east(2), false);
+            second = new Return(this, blocked.above(48), blocked.above(48).east(2), false);
+            control = new Return(this, independent, independent.east(2), false);
         }
 
         void tick() {

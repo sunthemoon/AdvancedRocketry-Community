@@ -17,7 +17,7 @@ public final class W151NativeReturns {
 
     public static RocketEntity create(ServerLevel level, BlockPos position, UUID logical, UUID owner) {
         EscrowTestEndpoints.requireEnabled(level.getServer());
-        var fixture = RocketSourceRetirementFixtures.countdown(level, position, position, List.of(), 0);
+        var fixture = RocketSourceRetirementFixtures.countdown(level, position, position.east(2), List.of(), 0);
         var rocket = Objects.requireNonNull(ModEntities.ROCKET.get().create(level));
         rocket.initialize(fixture.record().sourceSnapshot(), logical, owner);
         var initial = rocket.flightData().orElseThrow();
