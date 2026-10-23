@@ -273,6 +273,30 @@ public final class CargoNativeBenchmark {
         AdvancedRocketryCommunity.LOGGER.info("ARCE_CARGO_BENCH_DONE status={}", status);
     }
     private void write() {
+        // Observe only after collection stops, so diagnostics do not alter measured tick work.
+        var data = ResourceEscrowSavedData.existing(server);
+        if (data != null) {
+            report.put("final_ledger_snbt", EscrowCodec.encode(data.ledger()).toString());
+            report.put("final_writer_idle", data.bind(server).writerIdle());
+            report.put("final_ledger_operational", data.bind(server).operational());
+        }
+        for (var d : devices) {
+            var state = new LinkedHashMap<String, Object>();
+            state.put("device_id", d.device.id());
+            state.put("device_epoch", d.device.section().epoch());
+            state.put("device_section_snbt", d.device.section().encode().toString());
+            state.put("device_amount", d.device.amount());
+            state.put("rocket_section_snbt", d.rocket.escrowSection().encode().toString());
+            state.put("rocket_hash", d.rocket.snapshot().orElseThrow().contentHash());
+            state.put("rocket_removed", d.rocket.isRemoved());
+            var level = (net.minecraft.server.level.ServerLevel) d.rocket.level();
+            state.put("device_entity_ticking", level.isPositionEntityTicking(d.position()));
+            state.put("rocket_entity_ticking", level.isPositionEntityTicking(d.rocket.blockPosition()));
+            state.put("device_status", d.item
+                    ? ((RocketItemCargoBlockEntity) level.getBlockEntity(d.position())).displayStatus().name()
+                    : d.device.fluidEntity().displayStatus().name());
+            d.row.put("final_state", state);
+        }
         report.put("devices", devices.stream().map(d -> d.row).toList()); report.put("ticks", ticks);
         report.put("actions", actions);
         report.put("tracking_losses", trackingLosses);
