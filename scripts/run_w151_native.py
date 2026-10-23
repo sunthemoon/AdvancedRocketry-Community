@@ -61,6 +61,20 @@ def costs(raw: dict, rss: list[int]) -> dict:
                 passed=all(value <= performance.BUDGETS[key] for key, value in observed.items()))
 
 
+def reference_requests(raw: dict) -> list[dict]:
+    rows = [event for event in raw.get("events", []) if event.get("event") == "reference_request"]
+    if not rows or raw.get("reference_requests") != len(rows):
+        raise ValueError("Missing reference player request observations")
+    seen = set()
+    for index, row in enumerate(rows):
+        if row["request"] in seen or row["attempt"] != index + 1:
+            raise ValueError("Reference request replay or missing attempt")
+        if index and (row["previous_outcome"] != "FAILED" or row["previous_request"] != rows[index-1]["request"]):
+            raise ValueError("Reference player request replaced a non-failed request")
+        seen.add(row["request"])
+    return rows
+
+
 def run(args) -> dict:
     repo = Path(__file__).resolve().parents[1]
     commit = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=repo, text=True).strip()
@@ -91,6 +105,7 @@ def run(args) -> dict:
                     raise smoke.SmokeError("Insufficient disk before native start")
             command = escrow._server_command(args.java); command[2] = "-Xmx4G"
             command[1:1] = ["-XX:ActiveProcessorCount=4", "-Dadvancedrocketrycommunity.w151Native=true",
+                            "-Dadvancedrocketrycommunity.escrowLaunchTrace=true",
                             "-Dadvancedrocketrycommunity.w151Stage="+stage, "-Dadvancedrocketrycommunity.w151Case="+args.case,
                             "-Dadvancedrocketrycommunity.w151Commit="+commit]
             result["commands"].append(command)
@@ -128,6 +143,7 @@ def run(args) -> dict:
             if monitor_errors or any("/ERROR]" in line or "/FATAL]" in line for line in process.lines):
                 raise smoke.SmokeError("Monitor failure or native ERROR/FATAL")
             if stage == "start" and expected == "COMPLETE":
+                result["reference_requests"] = reference_requests(raw)
                 result["cycles"] = cycle_bounds(raw); result["performance"] = costs(raw, rss)
                 if not all(row["passed"] for row in result["cycles"]):
                     result["status"] = "BOUND_MISSED"; raise smoke.SmokeError("A prespecified service bound was missed; stopping")

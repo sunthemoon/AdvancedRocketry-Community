@@ -5,7 +5,7 @@ allprojects {
             dependsOn tasks.named('testClasses')
             archiveClassifier = 'w151-native'
             from sourceSets.main.output
-            from(sourceSets.test.output) { include '**/W151Native*.class' }
+            from(sourceSets.test.output) { include '**/W151Native*.class'; exclude '**/*Test.class' }
             manifest.from tasks.named('jar', Jar).get().manifest
         }
         project.reobf.create('w151NativeJar')

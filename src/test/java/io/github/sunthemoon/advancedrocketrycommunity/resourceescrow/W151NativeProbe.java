@@ -49,7 +49,10 @@ public final class W151NativeProbe {
     private long tickStart, measuredAt = -1, completedAt = -1;
     private int age, nextGoverned, supersedingStart, ordinaryStores, controlStores, controlDuring;
     private boolean initialized, measured, done, cut, awaitingCapture, backlogQueued, backlogAck, saved, injected, retried;
-    private boolean savedThisTick, travelRequested, travelComplete;
+    private boolean savedThisTick, travelComplete;
+    private final W151NativePlayerRequests travelRequests = new W151NativePlayerRequests(
+            n -> id(n == 0 ? "travel-request" : "travel-request-" + n));
+    private String lastReferenceState = "";
     private int periodicSaves;
 
     @SubscribeEvent public static void started(ServerStartedEvent event) {
@@ -106,7 +109,8 @@ public final class W151NativeProbe {
     }
     private void capture(EscrowSaveMonitor.Observation observation) {
         boolean ours = observation.slot().entities() && observation.slot().level().equals(load.earth.dimension().location().toString())
-                && (observation.slot().chunk() == new ChunkPos(shared).toLong() || observation.slot().chunk() == new ChunkPos(other).toLong());
+                && (observation.slot().chunk() == new ChunkPos(shared).toLong() || observation.slot().chunk() == new ChunkPos(other).toLong()
+                    || observation.slot().chunk() == new ChunkPos(EscrowFlightBenchmarkLoad.source(3)).toLong());
         if (!ours || done) { return; }
         int identity = watches.computeIfAbsent(observation.counter(), ignored -> watches.size() + 1);
         var row = new LinkedHashMap<String, Object>();
@@ -217,26 +221,63 @@ public final class W151NativeProbe {
             }
         }
         if (completedAt >= 0) {
-            if (!travelRequested && EscrowRuntime.of(server).barrier().available(load.earth.dimension().location().toString(), true, now)) {
-                W151NativeReturns.request(player, governed.get(3), RocketFlightAction.LAUNCH, id("travel-request")); travelRequested = true;
+            var reference = governed.get(3); var logical = id("governed-3");
+            var prior = travelRequests.current();
+            var outcome = prior == null ? null : W151NativeReturns.requestOutcome(reference, prior);
+            boolean ready = !travelComplete && reference.level() == load.earth && RocketEscrowGate.idle(reference)
+                    && journal.findByLogicalRocket(logical).isEmpty() && journal.actionAuthorityAvailable(logical)
+                    && EscrowRuntime.of(server).flightCheckpoint().retryReady(logical, now)
+                    && EscrowRuntime.of(server).barrier().available(load.earth.dimension().location().toString(), true, now);
+            UUID request = travelRequests.next(ready, outcome);
+            if (request != null) {
+                event(Map.of("event", "reference_request", "request", request.toString(), "tick", now,
+                        "attempt", travelRequests.attempts(), "previous_request", prior == null ? "none" : prior.toString(),
+                        "previous_outcome", outcome == null ? "none" : outcome.name()));
+                activeRequest = request.toString();
+                W151NativeReturns.request(player, reference, RocketFlightAction.LAUNCH, request);
             }
-            if (travelRequested && journal.findByLogicalRocket(id("governed-3")).isEmpty()) {
+            observeReference("tick");
+            if (travelRequests.current() != null && journal.findByLogicalRocket(logical).isEmpty()) {
                 var survivor = find(id("governed-3"));
                 if (survivor.level() == load.moon && survivor.flightData().orElseThrow().state() == RocketFlightState.LANDED
                         && RocketEscrowGate.idle(survivor)) {
                     EscrowTags.require(survivor.flightData().orElseThrow().fuel().totalAmount() == 841
-                            && survivor.flightData().orElseThrow().fuel().committedDebits().equals(List.of(id("travel-request"))),
+                            && survivor.flightData().orElseThrow().fuel().committedDebits().equals(List.of(travelRequests.current())),
                             "Reference dimension transfer debit changed");
                     governed.set(3, survivor); travelComplete = true;
                 }
             }
             if ((now - completedAt) % 200 == 199) {
+                observeReference("before_periodic_save");
                 savedThisTick = true;
                 EscrowTags.require(server.saveEverything(false, true, true), "Periodic save refused"); periodicSaves++;
+                observeReference("after_periodic_save");
             }
         }
         if (!producing && travelComplete && journal.entries().isEmpty() && RocketEscrowGate.idle(ordinary.rocket) && RocketEscrowGate.idle(control.rocket)) {
             validate(); finish("COMPLETE", "");
+        }
+    }
+    private void observeReference(String boundary) {
+        UUID request = travelRequests.current(); if (request == null) { return; }
+        var coordinator = data.bind(server);
+        EscrowFlightWrites writes = W151NativeReturnsAccess.field(coordinator, "flightWrites");
+        EscrowLedgerWriter writer = W151NativeReturnsAccess.field(coordinator, "writer");
+        Map<UUID, ?> queued = W151NativeReturnsAccess.field(writes, "queued");
+        Object pending = queued.get(id("governed-3"));
+        String guard = pending == null ? "not_queued" : Boolean.toString(
+                W151NativeReturnsAccess.<java.util.function.BooleanSupplier>field(pending, "valid").getAsBoolean());
+        var outcome = W151NativeReturns.requestOutcome(governed.get(3), request);
+        var row = new LinkedHashMap<String, Object>();
+        row.put("request", request.toString()); row.put("outcome", outcome == null ? "missing" : outcome.name());
+        row.put("flight_queue", writes.observation()); row.put("queued_guard", guard); row.put("writer", writer.observation());
+        row.put("ordinary_queue", W151NativeReturnsAccess.<Map<?, ?>>field(coordinator, "queued").keySet().toString());
+        row.put("transitions", W151NativeReturnsAccess.<Map<?, ?>>field(coordinator, "transitions").toString());
+        row.put("slot", new ChunkPos(EscrowFlightBenchmarkLoad.source(3)).toLong());
+        String state = row.toString();
+        if (!boundary.equals("tick") || !state.equals(lastReferenceState)) {
+            lastReferenceState = state; row.put("event", "reference_state"); row.put("boundary", boundary);
+            row.put("tick", server.getTickCount()); event(row);
         }
     }
     private void initialize() {
@@ -320,8 +361,32 @@ public final class W151NativeProbe {
         report.put("status", status); report.put("error", error); report.put("age", age); report.put("cycles", cycles);
         report.put("events", List.copyOf(events)); report.put("tick_ns", ticks); report.put("load", load.diagnostics());
         report.put("tick_ns_nonsave", nonSaveTicks); report.put("dimension_transfer", travelComplete); report.put("periodic_saves", periodicSaves);
+        report.put("reference_requests", travelRequests.attempts());
         report.put("ordinary_stores", ordinaryStores); report.put("control_stores", controlStores); report.put("control_during", controlDuring);
         if (ordinary != null) { report.put("ordinary_completed", ordinary.completed); report.put("ordinary_polls", ordinary.polls); report.put("control_completed", control.completed); }
+        if (initialized) {
+            var journal = RocketTransferSavedData.get(server); var authority = new ArrayList<Map<String, Object>>();
+            for (var rocket : all()) {
+                UUID logical = rocket.assemblyTransactionId().orElseThrow();
+                var transfer = journal.findByLogicalRocket(logical).orElse(null);
+                var row = new LinkedHashMap<String, Object>();
+                row.put("logical", logical.toString()); row.put("entity", rocket.getUUID().toString());
+                row.put("level", rocket.level().dimension().location().toString()); row.put("alive", rocket.isAlive());
+                row.put("state", rocket.flightData().orElseThrow().state().name());
+                row.put("fuel", rocket.flightData().orElseThrow().fuel().totalAmount());
+                row.put("debits", rocket.flightData().orElseThrow().fuel().committedDebits().stream().map(UUID::toString).toList());
+                row.put("transfer", transfer == null ? "none" : transfer.transferId().toString());
+                row.put("action_authority", journal.actionAuthorityAvailable(logical)); authority.add(row);
+            }
+            report.put("authority", authority); report.put("journal_acknowledged", journal.acknowledgedCurrent());
+            report.put("ordinary_pending", W151NativeReturns.observation(ordinary.rocket));
+            report.put("protected_slot_current", !EscrowRuntime.of(server).monitor().ordinaryAvailable(
+                    load.earth.dimension().location().toString(), new ChunkPos(shared)));
+            report.put("armed", data.ledger().armedFlights().stream().map(arm -> Map.of(
+                    "logical", arm.logical().toString(), "transfer", arm.transfer().toString(), "serial", arm.serial())).toList());
+            EscrowFlightWrites writes = W151NativeReturnsAccess.field(data.bind(server), "flightWrites");
+            report.put("flight_queue", writes.observation());
+        }
         try { Files.writeString(server.getWorldPath(LevelResource.ROOT).resolve("w151-native.json"),
                 new com.google.gson.GsonBuilder().setPrettyPrinting().create().toJson(report)); }
         catch (java.io.IOException failure) { throw new java.io.UncheckedIOException(failure); }

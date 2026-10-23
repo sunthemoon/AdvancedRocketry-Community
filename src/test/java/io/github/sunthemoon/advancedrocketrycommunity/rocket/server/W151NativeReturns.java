@@ -43,6 +43,20 @@ public final class W151NativeReturns {
         RocketRuntime.requestFlightIntent(player, rocket.getId(), action, RocketDestination.MOON, request);
     }
 
+    /** Read the normal player replay ledger; a pending warm-up must not be mistaken for a discarded request. */
+    public static io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketOperationLedger.Outcome requestOutcome(
+            RocketEntity rocket, UUID request) {
+        EscrowTestEndpoints.requireEnabled(rocket.getServer());
+        try {
+            var field = RocketRuntime.class.getDeclaredField("service"); field.setAccessible(true);
+            Object manager = field.get(null);
+            Object flights = RocketSourceRetirementFixtures.field(manager, "flights");
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketOperationLedger requests =
+                    RocketSourceRetirementFixtures.field(flights, "requests");
+            return requests.outcome(request);
+        } catch (ReflectiveOperationException failure) { throw new IllegalStateException(failure); }
+    }
+
     public static final class Producer {
         public final RocketEntity rocket;
         public int launches, cancellations, completed, polls;

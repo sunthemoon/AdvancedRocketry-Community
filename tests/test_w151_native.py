@@ -45,5 +45,18 @@ class NativeBoundTest(unittest.TestCase):
         with self.assertRaises(ValueError): native.costs({}, [100])
         with self.assertRaises(ValueError): native.costs({"tick_ns": [100]}, [])
 
+    def test_reference_rerequest_requires_a_failed_predecessor_and_fresh_id(self):
+        first = dict(event="reference_request", request="one", attempt=1, previous_request="none", previous_outcome="none")
+        second = dict(event="reference_request", request="two", attempt=2, previous_request="one", previous_outcome="FAILED")
+        raw = dict(reference_requests=2, events=[first, second])
+        self.assertEqual(len(native.reference_requests(raw)), 2)
+        second["previous_outcome"] = "ACTIVE"
+        with self.assertRaises(ValueError): native.reference_requests(raw)
+        second["previous_outcome"] = "FAILED"; second["request"] = "one"
+        with self.assertRaises(ValueError): native.reference_requests(raw)
+
+    def test_missing_reference_request_observation_fails(self):
+        with self.assertRaises(ValueError): native.reference_requests(dict(reference_requests=1, events=[]))
+
 
 if __name__ == "__main__": unittest.main()
