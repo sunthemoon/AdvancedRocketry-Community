@@ -3,6 +3,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 import static org.junit.jupiter.api.Assertions.*;
 
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataPolicy;
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowBarrier;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowChunkStore;
@@ -17,6 +18,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
 import java.nio.file.Path;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -123,6 +125,56 @@ class RocketRetirementTerminalTest {
         assertEquals(1, f.discarded);
     }
 
+    @Test void uncertainReplacementRetainsTheCandidateAndCompletesOnlyAfterItsCheckedRetry() {
+        var f = new Fixture(); f.begin(); f.complete(0); f.complete(1);
+        var type = ManagedSavedDataType.ROCKET_TRANSFERS; var file = directory.resolve(type.fileName());
+        var unknown = new CheckedSavedDataPolicy(type, (staged, target) -> {
+            CheckedSavedDataFile.atomicMove(staged, target); throw new IOException("Uncertain I7 move");
+        }, (target, managed) -> { throw new IllegalStateException("Unreadable I7 readback"); });
+        RocketJournalTestAccess.write(f.journal, file, unknown, 2000);
+        assertEquals(RocketTransferSavedData.WriteOutcome.UNKNOWN, f.journal.checkedWriteResult().outcome());
+        f.retirements.tick();
+        assertSame(f.next, f.journal.findByLogicalRocket(f.logical()).orElseThrow());
+        assertTrue(f.retirements.replacing(f.logical()));
+        assertEquals(0, f.accepted); assertEquals(0, f.discarded);
+        // Two independent reloads select T', with the accepted source fuel/debits and no old T.
+        for (int restart = 0; restart < 2; restart++) {
+            var loaded = RocketTransferSavedData.load(CheckedSavedDataFile.readPayload(file, type).orElseThrow());
+            assertEquals(1, loaded.entries().size());
+            var record = loaded.findByLogicalRocket(f.logical()).orElseThrow();
+            assertEquals(f.next.transferId(), record.transferId());
+            assertEquals(f.next.sourceFlightData(), record.sourceFlightData());
+            assertTrue(loaded.find(f.old.transferId()).isEmpty());
+        }
+        f.acknowledge(); f.acknowledge();
+        assertEquals(1, f.accepted); assertEquals(0, f.discarded); assertEquals(1, f.port.terminals);
+    }
+
+    @Test void reservationExhaustionDoesNotDiscardCandidatesOrMutateThePredecessor() {
+        var f = new Fixture(); f.begin(RocketOrdinaryRetirement.Site.BEFORE_REPLACE);
+        long sequence = f.journal.mutationSequence();
+        var tokens = new ArrayList<RocketTransferSavedData.Reservation>();
+        try {
+            for (int i = 0; i < 128; i++) { tokens.add(f.journal.reserve(UUID.randomUUID()).orElseThrow()); }
+            assertTrue(f.journal.reserve(UUID.randomUUID()).isEmpty());
+            f.retirements.tick();
+            assertEquals(0, f.port.preparations); assertEquals(0, f.port.terminals);
+            assertTrue(f.port.callbacks.isEmpty()); assertEquals(sequence, f.journal.mutationSequence());
+            assertSame(f.old, f.journal.findByLogicalRocket(f.logical()).orElseThrow());
+        } finally { tokens.forEach(RocketTransferSavedData.Reservation::close); f.retirements.clear(); }
+        assertEquals(1, f.discarded);
+        try (var token = f.journal.reserve(f.logical()).orElseThrow()) { assertTrue(f.journal.actionable(f.logical(), token)); }
+    }
+
+    @Test void unsupportedDestinationNeverUsesTheSourceFallbackOrTickets() {
+        var f = new Fixture(); f.port.supported = false; f.begin();
+        for (int tick = 101; tick < 1000; tick++) { f.port.now = tick; f.retirements.tick(); }
+        assertEquals(0, f.port.terminals); assertEquals(0, f.port.tickets); assertTrue(f.port.callbacks.isEmpty());
+        assertSame(f.old, f.journal.findByLogicalRocket(f.logical()).orElseThrow());
+        assertTrue(f.journal.clean()); assertTrue(f.retirements.replacing(f.logical()));
+        f.retirements.clear(); assertEquals(1, f.discarded);
+    }
+
     private final class Fixture {
         final RocketTransferSavedData journal = new RocketTransferSavedData();
         final RocketTransferRecord old = RocketStationMotionRuleTest.record(new RocketPosition(72, 80, 8))
@@ -138,7 +190,7 @@ class RocketRetirementTerminalTest {
             var type = ManagedSavedDataType.ROCKET_TRANSFERS;
             RocketJournalTestAccess.write(journal, directory.resolve(type.fileName()), CheckedSavedDataPolicy.atomic(type), ++writes * 1000);
         }
-        void begin() { begin(RocketOrdinaryRetirement.Site.BEFORE_FILL); }
+        void begin() { begin(RocketOrdinaryRetirement.Site.BEFORE_REPLACE); retirements.tick(); }
         void begin(RocketOrdinaryRetirement.Site site) {
             try (var held = RocketOrdinaryRetirement.hold(journal, logical())) {
                 retirements.begin(port, journal, site, old, old.destinationEntityId().orElseThrow(),
@@ -171,7 +223,7 @@ class RocketRetirementTerminalTest {
         final RocketTransferRecord replacement;
         final List<RocketRetirementProof.Slot> slots = new ArrayList<>();
         final List<Consumer<EscrowBarrier.Result>> callbacks = new ArrayList<>();
-        int terminals, tickets; long now = 100;
+        int terminals, tickets, preparations; long now = 100;
         boolean allowed = true, supported = true, loaded = true, saveOff;
         String changed;
         Port(RocketTransferRecord replacement) { this.replacement = replacement; }
@@ -199,6 +251,7 @@ class RocketRetirementTerminalTest {
             var tag = new CompoundTag(); tag.putUUID("UUID", survivor); tag.put(RocketRetirementProof.DATA, new CompoundTag()); return tag;
         }
         public void keepLoaded(RocketTransferRecord r, List<RocketRetirementProof.Slot> slots) { tickets++; }
+        public String prepare(RocketTransferRecord r, UUID id, List<RocketRetirementProof.Slot> slots) { preparations++; return null; }
         public String recheck(RocketTransferRecord r, UUID survivor) { return changed; }
         public Consumer<String> sink() { return label -> { }; }
         // Deliberately compiles before the port is introduced: the old coordinator ignores this terminal.
