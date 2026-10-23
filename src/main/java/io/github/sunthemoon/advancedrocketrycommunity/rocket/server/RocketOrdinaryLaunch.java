@@ -75,7 +75,17 @@ final class RocketOrdinaryLaunch {
                         || retirements.pending(record.logicalRocketId()) || retirements.size() >= RocketOrdinaryRetirement.MAX_PENDING) {
                     LandingPadService.release(server, plan); return blocked();
                 }
-                BooleanSupplier valid = () -> authorized.getAsBoolean() && destinationAvailable(rocket, record, otherReservations.get());
+                BooleanSupplier valid = () -> {
+                    String refusal = !authorized.getAsBoolean() ? "QUOTE_OR_PERMISSION_CHANGED"
+                            : !destinationAvailable(rocket, record, otherReservations.get()) ? "NEW_DESTINATION_UNAVAILABLE" : null;
+                    if (refusal == null) { return true; }
+                    var target = RocketTransferEntities.level(server, plan.destinationDimension());
+                    var origin = snapshot.sourceOrigin();
+                    AdvancedRocketryCommunity.LOGGER.info("ARCE_TRANSFER_RELAUNCH_RECHECK_REFUSED transfer={} logical={} reason={} target_origin_entities_loaded={}",
+                            record.transferId(), record.logicalRocketId(), refusal,
+                            target != null && target.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(origin.x() >> 4, origin.z() >> 4)));
+                    return false;
+                };
                 var port = recovery.replacementPort(server, journal, rocket, previous, record, valid);
                 if (!port.requestCurrent() || !valid.getAsBoolean() || !port.escrowAllows(journal, previous, token)) {
                     LandingPadService.release(server, plan); return blocked();
