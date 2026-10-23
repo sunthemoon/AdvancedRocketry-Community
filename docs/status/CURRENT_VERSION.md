@@ -38,7 +38,7 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: f7f8bc1a (W142 merged: cargo S2 families C-S4 and C-S5; with W138 and W143 all 120 cargo cuts of the design pass; before it, W143 merged D-S1 and D-S2)
+latest_code_commit: da7a98743 (W145 merged: governed launches queued instead of discarded before ARMED capture; before it, W144's cargo benchmark harness and W142's C-S4 and C-S5 cuts)
 latest_hosted_regression: the last green run is 39711262800 at 34dc9751 (the W130 merge); run 39736717569 at 367a84ff (the W134 merge) failed two Moon-flight GameTests and run 39737594848 at 2426f00d (the W133F merge) failed one other launch test, each passing elsewhere: an intermittent family of discarded launches that W139 investigates (QUEUE)
 ledger_planned_units: 19
 asset_review_items: 154
