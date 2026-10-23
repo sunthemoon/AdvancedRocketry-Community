@@ -33,6 +33,15 @@ public final class RocketVisualNetwork {
     }
 
     public int send(ServerPlayer player, RocketEntity rocket) {
+        return send(rocket, PacketDistributor.PLAYER.with(() -> player));
+    }
+
+    /** One encoding per committed change, delivered only to the entity's actual tracking connections. */
+    public int sendTracking(RocketEntity rocket) {
+        return send(rocket, PacketDistributor.TRACKING_ENTITY.with(() -> rocket));
+    }
+
+    private int send(RocketEntity rocket, PacketDistributor.PacketTarget target) {
         if (!rocket.operational()) {
             return 0;
         }
@@ -41,7 +50,7 @@ public final class RocketVisualNetwork {
         );
         List<RocketVisualChunkPacket> packets = RocketVisualChunker.chunk(rocket.getUUID(), visual);
         for (RocketVisualChunkPacket packet : packets) {
-            channel.send(PacketDistributor.PLAYER.with(() -> player), packet);
+            channel.send(target, packet);
         }
         return packets.size();
     }

@@ -189,6 +189,8 @@ public final class RocketEntity extends Entity implements MenuProvider {
             snapshot = oldSnapshot; flightData = oldFlight; escrowSection = oldWrapper; throw failure;
         }
         refreshSyncedData();
+        io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketVisualSynchronizer
+                .snapshotChanged(this, oldSnapshot);
     }
 
     /** Only F4's checked, one-use permit can initialize a new bound destination. */
