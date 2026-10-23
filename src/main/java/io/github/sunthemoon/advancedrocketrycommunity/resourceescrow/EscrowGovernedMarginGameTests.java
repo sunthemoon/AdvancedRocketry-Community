@@ -205,6 +205,7 @@ public final class EscrowGovernedMarginGameTests {
 
         /** The source is ready, the Moon has been empty past its idle threshold and the predicted pad is cold. */
         private void launchWhenCold(MinecraftServer server, RocketTransferSavedData journal) {
+            EscrowWarmupFixtures.requireReleasable(helper, server, List.of(destination));
             if (!ready(earth, fixtures.get(earth), position.getY()) || ready(moon, fixtures.get(moon), destination.sourceOrigin().y())) { return; }
             if (moonEmptySince < 0 || server.getTickCount() - moonEmptySince <= 300) { return; }
             if (!rocket.isAddedToWorld()) { helper.assertTrue(earth.addFreshEntity(rocket), "Margin fixture publication failed"); return; }
