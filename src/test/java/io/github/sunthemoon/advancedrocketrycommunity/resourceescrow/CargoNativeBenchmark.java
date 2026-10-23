@@ -31,6 +31,7 @@ public final class CargoNativeBenchmark {
     private final List<Map<String, Object>> ticks = new ArrayList<>();
     private final Map<String, Object> report = new LinkedHashMap<>();
     private CargoNativePackets packets;
+    private CargoNativeSaveTrace saveTrace;
     private boolean placed, started, finished;
     private long startNanos;
     private int startTick;
@@ -96,9 +97,20 @@ public final class CargoNativeBenchmark {
             moon.getChunk(chunk.x, chunk.z); // Fixed test setup only; all later endpoint access is loaded-only.
         }
     }
-    // Keep every origin within the stationary Moon player's two-chunk view distance. Snapshot size is unchanged;
-    // these are stationary, explicitly bound entities, so overlapping visual extents do not select a different device.
-    private static BlockPos at(int i) { return new BlockPos(248 + (i % 4) * 8, 100, 144 + (i / 4) * 8); }
+    // One fixture pair per Anvil slot. The eight measured rocket origins stay within
+    // the effective 16-block tracking range at view-distance=2, not merely its chunk square.
+    static BlockPos at(int i) {
+        if (i < 0 || i >= 12) { throw new IllegalArgumentException("Unknown cargo fixture"); }
+        return new BlockPos(244 + (i % 3) * 16, 100, 168 + (i / 3) * 16);
+    }
+    static BlockPos watcherPosition() { return new BlockPos(264, 104, 184); }
+    static void positionWatcher(MinecraftServer server) {
+        EscrowTestEndpoints.requireEnabled(server);
+        var moon = Objects.requireNonNull(server.getLevel(CelestialIds.MOON_LEVEL));
+        EscrowTags.require(moon.players().size() == 1, "One owned Moon watcher required");
+        var pos = watcherPosition();
+        moon.players().get(0).teleportTo(moon, pos.getX(), pos.getY(), pos.getZ(), 0, 0);
+    }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST) public void start(TickEvent.ServerTickEvent event) {
         if (event.getServer() != server || event.phase != TickEvent.Phase.START || !started || finished) { return; }
@@ -194,15 +206,18 @@ public final class CargoNativeBenchmark {
         }
     }
     private void place() {
+        positionWatcher(server);
         packets = new CargoNativePackets(server);
         var runtime = EscrowRuntime.of(server);
+        if (Boolean.getBoolean(CargoNativeSaveTrace.PROPERTY)) { saveTrace = new CargoNativeSaveTrace(server); }
         runtime.terminalCutForTests(server, this::checkpoint);
         var scheduler = runtime.reconciliationScheduler();
         var driver = (EscrowReconciliationScheduler.Driver) field(scheduler, "driver");
         // Transparent diagnostic wrapper around the unchanged production dispatch, not a replacement executor.
         set(scheduler, "driver", (EscrowReconciliationScheduler.Driver) (op, records, completion) -> {
             reconciliations++; long before = System.nanoTime();
-            driver.attempt(op, records, completion);
+            if (saveTrace == null) { driver.attempt(op, records, completion); }
+            else { saveTrace.attempt(driver, op, records, completion); }
             if (started && op.kind().cargo()) {
                 EscrowTags.require(actions.size() < 32768, "Native action observation bound exceeded");
                 actions.add(Map.of("tick", server.getTickCount(), "operation", op.id(), "kind", op.kind().name(),
@@ -270,9 +285,34 @@ public final class CargoNativeBenchmark {
     }
     private void finish(String status) {
         finished = true; report.put("status", status); write();
+        if ("NATIVE_MEASURED".equals(status)) { CargoNativeRecovery.prepareBaseline(server); return; }
         AdvancedRocketryCommunity.LOGGER.info("ARCE_CARGO_BENCH_DONE status={}", status);
     }
     private void write() {
+        // Observe only after collection stops, so diagnostics do not alter measured tick work.
+        var data = ResourceEscrowSavedData.existing(server);
+        if (data != null) {
+            report.put("final_ledger_snbt", EscrowCodec.encode(data.ledger()).toString());
+            report.put("final_writer_idle", data.bind(server).writerIdle());
+            report.put("final_ledger_operational", data.bind(server).operational());
+        }
+        for (var d : devices) {
+            var state = new LinkedHashMap<String, Object>();
+            state.put("device_id", d.device.id());
+            state.put("device_epoch", d.device.section().epoch());
+            state.put("device_section_snbt", d.device.section().encode().toString());
+            state.put("device_amount", d.device.amount());
+            state.put("rocket_section_snbt", d.rocket.escrowSection().encode().toString());
+            state.put("rocket_hash", d.rocket.snapshot().orElseThrow().contentHash());
+            state.put("rocket_removed", d.rocket.isRemoved());
+            var level = (net.minecraft.server.level.ServerLevel) d.rocket.level();
+            state.put("device_entity_ticking", level.isPositionEntityTicking(d.position()));
+            state.put("rocket_entity_ticking", level.isPositionEntityTicking(d.rocket.blockPosition()));
+            state.put("device_status", d.item
+                    ? ((RocketItemCargoBlockEntity) level.getBlockEntity(d.position())).displayStatus().name()
+                    : d.device.fluidEntity().displayStatus().name());
+            d.row.put("final_state", state);
+        }
         report.put("devices", devices.stream().map(d -> d.row).toList()); report.put("ticks", ticks);
         report.put("actions", actions);
         report.put("tracking_losses", trackingLosses);
@@ -294,6 +334,7 @@ public final class CargoNativeBenchmark {
         catch (ReflectiveOperationException failure) { throw new IllegalStateException("Benchmark observation unavailable: " + name, failure); }
     }
     private void checkpoint(String label) {
+        if (saveTrace != null) { saveTrace.checkpoint(label); }
         if (!server.isSameThread() || !started || finished || !label.startsWith("C2_")) { return; }
         if (label.endsWith("BEFORE")) {
             previousHashes.clear(); devices.forEach(d -> previousHashes.put(d.rocket.getUUID(), d.rocket.snapshot().orElseThrow().contentHash()));
