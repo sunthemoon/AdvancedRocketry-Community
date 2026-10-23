@@ -14,6 +14,7 @@ import json
 import re
 import shutil
 import sys
+import time
 import uuid
 from pathlib import Path
 
@@ -37,6 +38,8 @@ DEFINITION_FILE = PACK + "/data/arce_adapter_test/satellite_definitions/research
 REGISTERED = f"Registered satellite payload {DEFINITION} (API {recovery.API}, event 1)"
 PROBE = re.compile(r"ARCE_SAT_PAYLOAD (\{.*\})\s*$")
 SCHEDULED = re.compile(r"ARCE_SATELLITE_SCHEDULER completed=1 inspected=1 remaining=0")
+GAME_TIME = re.compile(r"The time is (\d+)\s*$")
+INTENT_INTERVAL_TICKS = 10  # ADR-049 section 10; the smoke uses the default COMMON configuration.
 
 
 def validate_registration(lines: list[str], installed: bool) -> None:
@@ -47,7 +50,7 @@ def validate_registration(lines: list[str], installed: bool) -> None:
 
 def validate_probe(value: dict, action: str, satellite: str | None, code: int) -> str:
     require(value.get("action") == action and value.get("energy") == 9000 and value.get("result") == code
-            and value.get("payload_count") == 1 and value.get("package_empty") is True
+            and value.get("payload_count") == 1 and value.get("package_empty") is (action != "create")
             and value.get("owner") == OWNER and value.get("definition") == DEFINITION, "Terminal payload receipt differs")
     identity = str(uuid.UUID(value["satellite"]))
     require(identity == value["satellite"] and (satellite is None or satellite == identity), "Satellite identity changed")
@@ -121,6 +124,25 @@ class SatelliteRun(recovery.RecoveryRun):
         self.satellite = validate_probe(result, action, getattr(self, "satellite", None), code)
         return result
 
+    def wait_intent_interval(self, process) -> dict:
+        """Observe ten world ticks after the last action, before sending the next intent."""
+        deadline = time.monotonic() + 10
+
+        def game_time() -> int:
+            remaining = deadline - time.monotonic()
+            require(remaining > 0, "Satellite intent interval did not advance within 10 seconds")
+            return int(self.query(process, "time query gametime", GAME_TIME, remaining).group(1))
+
+        start = previous = game_time()
+        while True:
+            # Poll pacing only; elapsed wall time never satisfies the server-tick condition.
+            time.sleep(.1)
+            end = game_time()
+            require(end >= previous, "Satellite intent clock moved backwards")
+            if end - start >= INTENT_INTERVAL_TICKS:
+                return {"after_action": start, "before_next_action": end, "elapsed_ticks": end - start}
+            previous = end
+
     def inspect_mission(self, process) -> str:
         result = self.query(process, f"arce satellite inspect {self.satellite}",
                 re.compile(rf"satellite={self.satellite} owner={OWNER} type={DEFINITION} status=OPERATIONAL mission=([0-9a-f-]{{36}})"))
@@ -149,6 +171,8 @@ class SatelliteRun(recovery.RecoveryRun):
                 process.command("gamerule doMobSpawning false"); process.command("gamerule randomTickSpeed 0")
                 process.command("setblock 264 101 264 minecraft:air")
                 document["create"] = self.fixture(process, "create", 0)
+                document["create_to_launch_ticks"] = self.wait_intent_interval(process)
+                document["launch"] = self.fixture(process, "launch", 0)
                 self.missions = [self.inspect_mission(process)]
                 self.write_override()
                 self.query(process, "reload", re.compile(r"Accepted satellite catalog generation 2 with 2 definitions"), 60)
@@ -165,6 +189,7 @@ class SatelliteRun(recovery.RecoveryRun):
                 self.missions.append(self.inspect_mission(process))
                 process.wait_for(SCHEDULED, 10)
                 document["claim"] = self.fixture(process, "claim", 0)
+                document["claim_to_replay_ticks"] = self.wait_intent_interval(process)
                 document["replay"] = self.fixture(process, "claim", 9)
             self.query(process, "save-all flush", server.SAVE_MARKER, 60)
             process.command("stop"); require(process.finish() == 0, "Satellite process did not exit cleanly")

@@ -61,7 +61,6 @@ final class SatellitePayloadFixture {
                                 if (!level.isEmptyBlock(position)) { throw new IllegalStateException("Fixture requires empty position"); }
                                 terminal = create(level, position, OWNER);
                                 act(terminal, OWNER, 2);
-                                act(terminal, OWNER, 3);
                             } else {
                                 terminal = level.getBlockEntity(position);
                                 if (terminal == null || !terminal.getBlockState().is(ForgeRegistries.BLOCKS.getValue(host("satellite_terminal")))) {

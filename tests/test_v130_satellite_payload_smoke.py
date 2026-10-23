@@ -6,7 +6,7 @@ import tempfile
 import unittest
 import uuid
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 from scripts import run_v130_satellite_payload_smoke as runner
 
 
@@ -53,13 +53,98 @@ class SatellitePayloadSmokeTest(unittest.TestCase):
 
     def test_probe_preserves_identity_consumption_and_authoritative_result(self):
         satellite = str(uuid.UUID(int=1))
-        value = {"action": "create", "energy": 9000, "result": 0, "payload_count": 1, "package_empty": True,
+        value = {"action": "create", "energy": 9000, "result": 0, "payload_count": 1, "package_empty": False,
                  "owner": runner.OWNER, "definition": runner.DEFINITION, "satellite": satellite}
         self.assertEqual(satellite, runner.validate_probe(value, "create", None, 0))
         for key, changed in (("action", "claim"), ("energy", 10000), ("result", 2), ("payload_count", 2),
-                             ("package_empty", False), ("owner", str(uuid.UUID(int=9))), ("definition", "missing:id")):
+                             ("package_empty", True), ("owner", str(uuid.UUID(int=9))), ("definition", "missing:id")):
             with self.assertRaises(runner.SmokeError): runner.validate_probe(dict(value, **{key: changed}), "create", satellite, 0)
         with self.assertRaises(runner.SmokeError): runner.validate_probe(value, "create", str(uuid.UUID(int=8)), 0)
+        for action, code in (("launch", 0), ("probe", 0), ("claim", 0), ("claim", 9)):
+            receipt = dict(value, action=action, result=code, package_empty=True)
+            self.assertEqual(satellite, runner.validate_probe(receipt, action, satellite, code))
+            with self.assertRaises(runner.SmokeError):
+                runner.validate_probe(dict(receipt, package_empty=False), action, satellite, code)
+            with self.assertRaises(runner.SmokeError):
+                runner.validate_probe(dict(receipt, result=28), action, satellite, code)
+
+    def make_run(self, directory):
+        return runner.SatelliteRun(Path(directory), Path(directory), [{"version": "1.20.1-1.8.0-dev"}],
+                                   "java", 12345, 240)
+
+    def test_interval_uses_observed_ticks_and_accepts_exact_boundary(self):
+        run = self.make_run("unused")
+        ticks = iter((100, 100, 109, 110))
+        run.query = Mock(side_effect=lambda *args: runner.GAME_TIME.search(f"The time is {next(ticks)}"))
+        process = object()
+        with patch.object(runner.time, "sleep") as sleep:
+            self.assertEqual({"after_action": 100, "before_next_action": 110, "elapsed_ticks": 10},
+                             run.wait_intent_interval(process))
+        self.assertEqual(3, sleep.call_count)
+        self.assertEqual(4, run.query.call_count)
+        for call in run.query.call_args_list:
+            self.assertEqual((process, "time query gametime", runner.GAME_TIME), call.args[:3])
+            self.assertGreater(call.args[3], 0)
+            self.assertLessEqual(call.args[3], 10)
+
+    def test_interval_rejects_stalled_or_reversed_clock_and_missing_receipt(self):
+        run = self.make_run("unused")
+        run.query = Mock(return_value=runner.GAME_TIME.search("The time is 100"))
+        with patch.object(runner.time, "sleep"), patch.object(runner.time, "monotonic", side_effect=(0, 0, 1, 10)):
+            with self.assertRaisesRegex(runner.SmokeError, "did not advance"):
+                run.wait_intent_interval(object())
+        self.assertEqual(2, run.query.call_count)
+        ticks = iter((100, 109, 108))
+        run.query = Mock(side_effect=lambda *args: runner.GAME_TIME.search(f"The time is {next(ticks)}"))
+        with patch.object(runner.time, "sleep"):
+            with self.assertRaisesRegex(runner.SmokeError, "moved backwards"):
+                run.wait_intent_interval(object())
+        run.query = Mock(side_effect=runner.SmokeError("Missing tick receipt"))
+        with self.assertRaisesRegex(runner.SmokeError, "Missing tick receipt"):
+            run.wait_intent_interval(object())
+
+    def test_phase_spaces_create_launch_and_claim_replay_without_changing_results(self):
+        class StopAtSave(Exception):
+            pass
+
+        for phase in ("create", "reinstalled"):
+            with self.subTest(phase=phase), tempfile.TemporaryDirectory() as directory:
+                run = self.make_run(directory)
+                process = Mock(lines=[])
+                process.process.poll.return_value = None
+                events, ticks, document = [], iter((100, 109, 110)), {}
+                run.mods = Mock(return_value={})
+                run.inspect_mission = Mock(return_value=str(uuid.UUID(int=2)))
+                run.write_override = Mock()
+                run.missions = [str(uuid.UUID(int=1))]
+
+                def fixture(process, action, code):
+                    events.append((action, code))
+                    return {"action": action, "result": code}
+
+                def query(process, command, marker, timeout=30):
+                    if command == "save-all flush":
+                        raise StopAtSave()
+                    if command == "time query gametime":
+                        tick = next(ticks)
+                        events.append(("tick", tick))
+                        return marker.search(f"The time is {tick}")
+                    self.assertEqual("reload", command)
+
+                run.fixture, run.query = fixture, query
+                with patch.object(runner.server, "CapturedProcess", return_value=process), \
+                        patch.object(runner.server, "wait_for_status", return_value={}), \
+                        patch.object(runner.recovery, "validate_status", return_value={}), \
+                        patch.object(runner, "validate_registration"), \
+                        patch.object(runner.recovery, "wait_condition"), patch.object(runner.time, "sleep"):
+                    with self.assertRaises(StopAtSave):
+                        run._run_phase(phase, Path(directory), document)
+                gap = [("tick", 100), ("tick", 109), ("tick", 110)]
+                expected = ([("create", 0)] + gap + [("launch", 0), ("probe", 0)] if phase == "create"
+                            else [("probe", 0), ("launch", 0), ("claim", 0)] + gap + [("claim", 9)])
+                self.assertEqual(expected, events)
+                key = "create_to_launch_ticks" if phase == "create" else "claim_to_replay_ticks"
+                self.assertEqual(10, document[key]["elapsed_ticks"])
 
     def test_native_mission_snapshots_rewards_and_terminal_survive_three_phases(self):
         previous = None
