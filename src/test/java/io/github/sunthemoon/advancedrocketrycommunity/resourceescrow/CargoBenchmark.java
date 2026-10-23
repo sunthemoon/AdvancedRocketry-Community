@@ -35,7 +35,7 @@ public final class CargoBenchmark {
         var results = new ArrayList<Map<String, Object>>(); report.put("fixtures", results);
         report.put("not_measured", new ArrayList<>(List.of("native_reference_load", "four_device_cycle_times",
                 "mixed_fuel_cargo_queue", "64_competing_records", "native_commit_and_reconciliation_counts",
-                "native_detached_memory", "native_visual_republication", "effective_depth_and_node_maxima")));
+                "native_detached_memory", "native_visual_republication")));
         try {
             require(Runtime.getRuntime().maxMemory() <= 4L * 1024 * MIB, "Heap exceeds 4 GiB");
             MinecraftBootstrap.initialize();

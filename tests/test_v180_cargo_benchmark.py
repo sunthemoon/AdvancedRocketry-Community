@@ -32,6 +32,21 @@ class CargoBenchmarkTest(unittest.TestCase):
         self.assertEqual(runner.NATIVE, result["missing_measurements"])
         self.assertEqual([], result["budget_failures"])
 
+    def test_effective_boundaries_require_unique_adjacent_nonmutating_observations(self):
+        report = self.report()
+        report["effective_boundaries"] = [dict(device=d, family=f,
+            admitted=dict(status="ELIGIBLE", parameter=10, wall_ns=1, unmutated=True),
+            rejected=dict(status="CARGO_TOO_LARGE", parameter=11, wall_ns=1, unmutated=True))
+            for d in runner.DEVICES for f in ("bytes", "depth", "nodes")]
+        missing = runner.evaluate(report, [1])["missing_measurements"]
+        self.assertNotIn("effective_depth_and_node_maxima", missing)
+        self.assertIn("native_reference_load", missing)
+        bad = copy.deepcopy(report); bad["effective_boundaries"][0]["rejected"]["unmutated"] = False
+        self.assertIn("effective_depth_and_node_maxima", runner.evaluate(bad, [1])["missing_measurements"])
+        report["effective_boundaries"].append(report["effective_boundaries"][0])
+        with self.assertRaises(ValueError):
+            runner.evaluate(report, [1])
+
     def test_all_timing_budgets_recomputed_not_trusted_from_summary(self):
         for nanos in (25_000_001, 50_000_001, 100_000_001, 500_000_001):
             report = self.report()

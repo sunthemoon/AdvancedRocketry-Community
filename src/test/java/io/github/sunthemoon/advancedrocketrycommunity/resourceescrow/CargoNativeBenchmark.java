@@ -51,7 +51,7 @@ public final class CargoNativeBenchmark {
             this.rocket = rocket; this.device = device; this.start = start;
             kind = load ? EscrowOperation.Kind.ITEM_CARGO_LOAD : EscrowOperation.Kind.ITEM_CARGO_UNLOAD;
             beforeRocket = EscrowNativeEnvelope.rocket(rocket); beforeDevice = device.saveWithFullMetadata();
-            row.put("kind", kind.name()); row.put("tag_byte_keys", 380); row.put("start_tick", start);
+            row.put("kind", kind.name()); row.put("tag_byte_keys", 355); row.put("start_tick", start);
         }
     }
     private static final class Device {
@@ -96,7 +96,9 @@ public final class CargoNativeBenchmark {
             moon.getChunk(chunk.x, chunk.z); // Fixed test setup only; all later endpoint access is loaded-only.
         }
     }
-    private static BlockPos at(int i) { return new BlockPos(208 + (i % 5) * 32, 100, 176 + (i / 5) * 32); }
+    // Keep every origin within the stationary Moon player's two-chunk view distance. Snapshot size is unchanged;
+    // these are stationary, explicitly bound entities, so overlapping visual extents do not select a different device.
+    private static BlockPos at(int i) { return new BlockPos(248 + (i % 4) * 8, 100, 144 + (i / 4) * 8); }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST) public void start(TickEvent.ServerTickEvent event) {
         if (event.getServer() != server || event.phase != TickEvent.Phase.START || !started || finished) { return; }
@@ -226,11 +228,13 @@ public final class CargoNativeBenchmark {
         for (int i = 10; i < 12; i++) {
             boolean load = i == 10; var position = at(i);
             var stack = new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.STONE, 64).save(new net.minecraft.nbt.CompoundTag());
-            var tag = new net.minecraft.nbt.CompoundTag(); for (int key = 0; key < 380; key++) { tag.putByte("n" + key, (byte) 1); }
+            var tag = new net.minecraft.nbt.CompoundTag(); for (int key = 0; key < 355; key++) { tag.putByte("n" + key, (byte) 1); }
             stack.put("tag", tag); EscrowItemStackCodec.validateNative(stack);
             var items = new net.minecraft.nbt.ListTag();
             if (!load) { var entry = stack.copy(); entry.putByte("Slot", (byte) 0); items.add(entry); }
             var snapshot = ItemCargoReconciliationFixtures.snapshot(moon, position.offset(4, 0, 0), items);
+            var framed = new EscrowItemCargoPayload(new EscrowCargoPayload.Cursor(snapshot.snapshotId(), 0, 0, 0,
+                    snapshot.blocks().get(0).blockEntityPayload().orElseThrow().adapterId().toString()), stack, 0, 0).encode();
             var rocket = Objects.requireNonNull(ModEntities.ROCKET.get().create(moon)); rocket.initialize(snapshot, UUID.randomUUID(), UUID.randomUUID());
             EscrowTags.require(moon.addFreshEntity(rocket), "Refusal fixture publication failed");
             EscrowCargoProbeDevice.create(moon, position, rocket, load, true);
@@ -239,6 +243,8 @@ public final class CargoNativeBenchmark {
                     : RocketItemCargoRoot.EMPTY;
             var outer = new net.minecraft.nbt.CompoundTag(); outer.put(RocketItemCargoRoot.KEY, device.root().orElseThrow().withBuffer(buffer).encode()); device.load(outer);
             var refusal = new Refusal(rocket, device, load, server.getTickCount()); refusals.add(refusal);
+            refusal.row.put("inner_and_frame_valid", true);
+            refusal.row.put("framed_bytes", io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNbtSize.uncompressedBytes(framed));
             EscrowCargoSwitches.forTests(server, refusal.kind, device.root().orElseThrow().device(), true); device.attempt();
         }
     }

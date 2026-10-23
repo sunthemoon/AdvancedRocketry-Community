@@ -38,6 +38,27 @@ def evaluate(report: dict, rss: list[int]) -> dict:
     missing = list(NATIVE)
     failures = []
     phases = {}
+    boundaries = report.get("effective_boundaries")
+    if boundaries is not None:
+        expected = {(device, family) for device in DEVICES for family in ("bytes", "depth", "nodes")}
+        found = set()
+        for row in boundaries:
+            key = (row.get("device"), row.get("family"))
+            if key not in expected or key in found:
+                raise ValueError("Invalid/duplicate effective boundary")
+            found.add(key)
+            yes, no = row.get("admitted", {}), row.get("rejected", {})
+            if (yes.get("status") != "ELIGIBLE" or no.get("status") != "CARGO_TOO_LARGE"
+                    or type(yes.get("parameter")) is not int or type(no.get("parameter")) is not int
+                    or no["parameter"] != yes["parameter"] + 1
+                    or any(value.get("unmutated") is not True or type(value.get("wall_ns")) is not int
+                           or value["wall_ns"] < 0 for value in (yes, no))):
+                missing.append("invalid effective boundary:" + str(key))
+        if found == expected and len(missing) == len(NATIVE):
+            missing.remove("effective_depth_and_node_maxima")
+            missing.remove("effective_framed_byte_maxima")
+        else:
+            missing.append("complete effective boundaries")
     if report.get("schema_version") != 1 or report.get("environment") != "A0_MICROBENCHMARK":
         missing.append("microbenchmark schema/environment")
     heap = report.get("max_heap_bytes")
@@ -170,7 +191,7 @@ def run(args) -> dict:
         result.update(evaluate(raw, rss))
         # R81: an outstanding native stage is work to run, not grounds to abort the micro stage.
         result["stage_status"] = ("MICRO_MEASURED" if raw.get("status") == "MICRO_MEASURED"
-                                  and not result["budget_failures"] and result["missing_measurements"] == NATIVE
+                                  and not result["budget_failures"] and set(result["missing_measurements"]).issubset(NATIVE)
                                   and len(raw.get("effective_boundaries", [])) == 12 else result["status"])
         if result["exit_code"] != 0:
             result["status"] = "STOP_MEASUREMENT_ERROR"
