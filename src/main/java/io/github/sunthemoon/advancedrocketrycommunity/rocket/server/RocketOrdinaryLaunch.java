@@ -48,7 +48,8 @@ final class RocketOrdinaryLaunch {
             var record = RocketTransferRecord.create(plan.requestId(), countdown.logicalRocketId(), rocket.ownerId().orElseThrow(),
                     rocket.getUUID(), rocket.snapshot().orElseThrow(), snapshot, transit, arrival, plan.requiredFuel(), countdown.stateStartedGameTime());
             BooleanSupplier acknowledged = () -> {
-                if (!RocketTransferEntities.currentEntity(rocket, record, false)
+                var current = previous == null ? rocket : source.getEntity(record.sourceEntityId()) instanceof RocketEntity found ? found : null;
+                if (!RocketTransferEntities.currentEntity(current, record, false)
                         || !RocketTransferEscrowRules.flightAllowed(server, journal, record, recovery.bays(),
                         RocketTransferBayRecoveryGate.Action.TICK_SOURCE)) {
                     io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowLaunchDiscard.note("PREPARED_CALLBACK",
@@ -62,8 +63,8 @@ final class RocketOrdinaryLaunch {
                 RocketTransferEntities.keepLoaded(source, record.sourceSnapshot(), record.transferId());
                 RocketTransferEntities.keepDestinationLoaded(RocketTransferEntities.level(server, plan.destinationDimension()),
                         record.destinationSnapshot(), record.transferId());
-                rocket.updateFlightData(countdown.cancelCountdown(source.getGameTime()).startCountdown(source.getGameTime()));
-                RocketFlightFeedback.countdownAccepted(rocket); live.add(record.transferId());
+                current.updateFlightData(countdown.cancelCountdown(source.getGameTime()).startCountdown(source.getGameTime()));
+                RocketFlightFeedback.countdownAccepted(current); live.add(record.transferId());
                 prepared.accept(record); completion.accepted().run(); return true;
             };
             if (previous == null) {
@@ -75,19 +76,9 @@ final class RocketOrdinaryLaunch {
                         || retirements.pending(record.logicalRocketId()) || retirements.size() >= RocketOrdinaryRetirement.MAX_PENDING) {
                     LandingPadService.release(server, plan); return blocked();
                 }
-                BooleanSupplier valid = () -> {
-                    String refusal = !authorized.getAsBoolean() ? "QUOTE_OR_PERMISSION_CHANGED"
-                            : !destinationAvailable(rocket, record, otherReservations.get()) ? "NEW_DESTINATION_UNAVAILABLE" : null;
-                    if (refusal == null) { return true; }
-                    var target = RocketTransferEntities.level(server, plan.destinationDimension());
-                    var origin = snapshot.sourceOrigin();
-                    AdvancedRocketryCommunity.LOGGER.info("ARCE_TRANSFER_RELAUNCH_RECHECK_REFUSED transfer={} logical={} reason={} target_origin_entities_loaded={}",
-                            record.transferId(), record.logicalRocketId(), refusal,
-                            target != null && target.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(origin.x() >> 4, origin.z() >> 4)));
-                    return false;
-                };
-                var port = recovery.replacementPort(server, journal, rocket, previous, record, valid);
-                if (!port.requestCurrent() || !valid.getAsBoolean() || !port.escrowAllows(journal, previous, token)) {
+                var port = recovery.replacementPort(server, journal, rocket, previous, record, authorized,
+                        () -> destinationAvailable(rocket, record, otherReservations.get()));
+                if (!port.requestCurrent() || !authorized.getAsBoolean() || !port.escrowAllows(journal, previous, token)) {
                     LandingPadService.release(server, plan); return blocked();
                 }
                 Runnable discarded = () -> {

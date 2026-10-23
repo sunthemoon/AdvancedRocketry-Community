@@ -326,6 +326,10 @@ final class RocketFlightService {
     private boolean revalidateLaunch(RocketEntity rocket, io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightPlan expected,
             TravelTarget source, TravelTarget destination, UUID actor, boolean operator, UUID requester) {
         var server = rocket.getServer();
+        // A paced I7 load can replace the Java instance, never the accepted physical or logical identity.
+        if (rocket.level() instanceof ServerLevel level && level.getEntity(rocket.getUUID()) instanceof RocketEntity loaded) {
+            rocket = loaded;
+        }
         if (server == null || !rocket.operational()) { return false; }
         if (requester != null) {
             var player = server.getPlayerList().getPlayer(requester);

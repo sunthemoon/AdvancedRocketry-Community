@@ -195,7 +195,8 @@ class RocketRetirementTerminalTest {
         for (int tick = 101; tick < 1000; tick++) { f.port.now = tick; f.retirements.tick(); }
         assertEquals(0, f.port.terminals); assertEquals(0, f.port.tickets); assertTrue(f.port.callbacks.isEmpty());
         assertSame(f.old, f.journal.findByLogicalRocket(f.logical()).orElseThrow());
-        assertTrue(f.journal.clean()); assertTrue(f.retirements.replacing(f.logical()));
+        assertTrue(f.journal.clean()); assertFalse(f.retirements.replacing(f.logical()), "I7 must finish a refused demand, not hold forever");
+        assertEquals(1, f.discarded); assertEquals(0, f.accepted);
         f.retirements.clear(); assertEquals(1, f.discarded);
     }
 

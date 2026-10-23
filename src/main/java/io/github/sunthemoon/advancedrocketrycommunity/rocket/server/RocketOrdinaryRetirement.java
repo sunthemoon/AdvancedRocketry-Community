@@ -85,6 +85,8 @@ final class RocketOrdinaryRetirement {
         boolean escrowAllows(RocketTransferSavedData journal, RocketTransferRecord record, RocketTransferSavedData.Reservation own);
         /** The survivor's frozen projection, or null unless it is still T's stationary source ({@link RocketRetirementGuards}). */
         CompoundTag projection(RocketTransferRecord record, UUID survivor);
+        /** Pre-ticket authority check; I7 may use its accepted image only to request a cold survivor's load. */
+        default boolean ticketReady(RocketTransferRecord record, UUID survivor) { return projection(record, survivor) != null; }
         /** The ordinary origin tickets the flight held, on every census column that is an end's origin (W90, W98-R3). */
         void keepLoaded(RocketTransferRecord record, List<RocketRetirementProof.Slot> census);
         /** Destination-site scan before freezing; returns a hold reason, or adds every discarded slot. */
@@ -304,11 +306,11 @@ final class RocketOrdinaryRetirement {
     }
 
     private void start(Pending entry, long now) {
-        if (entry.censusFull) { fail(entry, "CENSUS_LIMIT", now, RETRY_TICKS, false); return; }
+        if (entry.censusFull && entry.site != Site.BEFORE_REPLACE) { fail(entry, "CENSUS_LIMIT", now, RETRY_TICKS, false); return; }
         if (entry.token == null && attempting() >= MAX_ATTEMPTS) { return; }
         var record = entry.record; var port = entry.port;
         var presence = port.survivor(record, entry.survivor, entry.census.get(0));
-        if (presence != Presence.LOADED) {
+        if (presence == Presence.GONE || presence == Presence.UNLOADED && entry.site != Site.BEFORE_REPLACE) {
             if (presence == Presence.GONE) { abandon(entry, "SURVIVOR_GONE"); }
             else { waiting(entry, "SURVIVOR_UNLOADED", now); }
             return;
@@ -318,9 +320,19 @@ final class RocketOrdinaryRetirement {
             long next = fills.admit(entry.logical(), now, attempting() > MAX_ATTEMPTS);
             if (next != now) { entry.notBefore = next; entry.releaseToken(); return; }
             entry.notBefore = now + RETRY_TICKS;
+            // R89: I7's three opportunities also bound non-ticketable holds; a hold never grants an extra ticket.
+            // BEFORE_FILL retains R59's existing ticket accounting and source returns keep their loaded-only order.
+            if (entry.site == Site.BEFORE_REPLACE) { entry.ticketed++; }
+            if (entry.censusFull) { fail(entry, "CENSUS_LIMIT", now, RETRY_TICKS, false); return; }
             String held = fills.ticket(port, entry.journal, record, entry.survivor, entry.census, entry.token);
             if (held != null) { waiting(entry, held, now); return; }
-            entry.ticketed++;
+            if (entry.site != Site.BEFORE_REPLACE) { entry.ticketed++; }
+        }
+        if (entry.censusFull) { fail(entry, "CENSUS_LIMIT", now, RETRY_TICKS, false); return; }
+        if (presence != Presence.LOADED) {
+            if (presence == Presence.GONE) { abandon(entry, "SURVIVOR_GONE"); }
+            else { waiting(entry, "SURVIVOR_UNLOADED", now); }
+            return;
         }
         if (!port.crewReady(record, entry.survivor, entry.offlineAllowed, entry.delivered)) { waiting(entry, "CREW_WAITING", now); return; }
         String slots = holds.slots(port, entry.census);

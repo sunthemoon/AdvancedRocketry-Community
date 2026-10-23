@@ -210,9 +210,10 @@ final class RocketTransferRecoveryService {
     RocketTransferBayDispatch bays() { return bays; }
     RocketOrdinaryRetirement retirements() { return retirements; }
     RocketReplacementRetirement replacementPort(MinecraftServer server, RocketTransferSavedData journal, RocketEntity rocket,
-            RocketTransferRecord previous, RocketTransferRecord successor, java.util.function.BooleanSupplier authorized) {
+            RocketTransferRecord previous, RocketTransferRecord successor, java.util.function.BooleanSupplier authorized,
+            java.util.function.BooleanSupplier targetAvailable) {
         return new RocketReplacementRetirement(server, journal, bays, fences, liveTransfers, settledTransfers,
-                rocket, previous, successor, authorized);
+                rocket, previous, successor, authorized, targetAvailable);
     }
     /** R52 (b2): a loader's fill attempt only queues its demand; the first attempt starts from the coordinator's tick (W130-R4). */
     void retireBeforeFill(RocketEntity rocket) { retirements.fills().demand(rocket.assemblyTransactionId().orElseThrow(), rocket.getUUID()); }
