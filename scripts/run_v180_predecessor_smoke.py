@@ -7,6 +7,7 @@ B-PRE/B-REPLACE/B-HOLDS matrix: no cold-site, named-pad, same-slot, crew or V2 c
 from __future__ import annotations
 
 import argparse
+import copy
 import json
 import os
 from pathlib import Path
@@ -68,7 +69,9 @@ def verify(disk: dict, flight: dict, expected_fuel: int, restart: int, cut: str)
         require(not state.get("active_transfer_id") and not state["passengers"]["assignments"] and not entity.get("Passengers"), "Changed crew/active transfer")
         require(data["snapshot"] == transfers[0]["destination_snapshot"], "Changed complete snapshot content")
         require(data["owner_id"] == transfers[0]["owner_id"], "Changed owner")
-        require(state["fuel"]["committed_debits"] == transfers[0]["destination_flight"]["fuel"]["committed_debits"], "Changed debit history")
+        expected = copy.deepcopy(transfers[0]["destination_flight"]["fuel"])
+        expected["amount"] = expected_fuel
+        require(state["fuel"] == expected, "Changed complete fuel/debit content")
     if not restart and cut == "MOVE":
         staged = disk.get("pending", {}).get("transfers", [])
         require(len(staged) == 1 and staged[0]["phase"] == "PREPARED"
