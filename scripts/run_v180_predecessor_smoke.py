@@ -63,7 +63,8 @@ def verify(disk: dict, flight: dict, expected_fuel: int, restart: int, cut: str)
         require(not sources and len(destinations) == 1, "Completed proof/recovery did not exclude old S and retain D")
     if destinations:
         entity = destinations[0]; data = entity["RocketEntityData"]; state = data["flight_data"]
-        require(state["state"] == "LANDED" and state["fuel"]["amount"] == expected_fuel, "Lost current fuel or advanced countdown")
+        require(state["state"] == ("FUELED" if cut == "MOVE" else "LANDED")
+                and state["fuel"]["amount"] == expected_fuel, "Lost current fuel or advanced countdown")
         require(not state.get("active_transfer_id") and not state["passengers"]["assignments"] and not entity.get("Passengers"), "Changed crew/active transfer")
         require(data["snapshot"] == transfers[0]["destination_snapshot"], "Changed complete snapshot content")
         require(data["owner_id"] == transfers[0]["owner_id"], "Changed owner")
@@ -124,7 +125,8 @@ def run_case(args, cut, evidence):
                 # Let the ordinary recovery run; normal stop saves its result, never changes the unmodified cut copy.
                 time.sleep(3)
                 report = FlightHarness.report(process, MOON, leg["destination_entity"])
-                require(report["fuel"] == row["expected_fuel"] and report["state"] == "LANDED", "Restart changed live authority")
+                require(report["fuel"] == row["expected_fuel"]
+                        and report["state"] == ("FUELED" if cut == "MOVE" else "LANDED"), "Restart changed live authority")
                 process.command("stop"); entry["exit_code"] = process.finish()
                 require(entry["exit_code"] == 0, "Restart did not stop normally")
             entry["errors"] = [line for line in process.lines if "/ERROR]" in line or "/FATAL]" in line]
