@@ -82,6 +82,12 @@ def inspect(disk, old, expected_fuel, restart, boundary, survivor):
         require(at_source or identity(entity) == destination_id, "Unexpected physical candidate")
         require(data["owner_id"] == old["owner_id"], "Changed owner")
         require(data["snapshot"] == old["source_snapshot" if at_source else "destination_snapshot"], "Changed complete blocks/items/fluids/energy snapshot")
+        snapshot = data["snapshot"]; origin = snapshot["source_origin"]
+        require(entity["Pos"] == [origin[0] + 0.5, origin[1], origin[2] + 0.5]
+                and flight["current_origin"] == origin
+                and flight["current_dimension"] == snapshot["source_dimension"]
+                and flight["logical_rocket_id"] == old["logical_rocket_id"], "Changed current location or flight identity")
+        require(flight["passengers"]["seat_capacity"] == old["destination_flight"]["passengers"]["seat_capacity"], "Changed crew capacity")
         fuel = old["source_flight"]["fuel"] if at_source else expected_fuel
         require(flight["fuel"] == fuel, "Changed complete fuel banks or debit history")
         # CREW retains its old pending obligation in T, not in the deliberately empty current manifest.

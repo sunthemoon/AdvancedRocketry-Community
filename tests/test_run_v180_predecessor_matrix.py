@@ -13,20 +13,35 @@ class MatrixOracleTest(unittest.TestCase):
     def setUp(self):
         self.fuel = dict(amount=500, committed_debits=[[0, 0, 0, 2]], propulsion=dict(revision=1, primary=dict(amount=500)))
         source_fuel = dict(amount=1000, committed_debits=[], propulsion=dict(revision=0, primary=dict(amount=1000)))
-        snapshot = dict(blocks=[dict(id="chest", items=[dict(id="diamond", count=17)])])
+        snapshot = dict(source_origin=[8, 100, 8], source_dimension="test:moon",
+                        blocks=[dict(id="chest", items=[dict(id="diamond", count=17)])])
         self.old = dict(phase="COMMITTED", transfer_id=[0, 0, 0, 2], logical_rocket_id=[0, 0, 0, 1],
                         source_entity_id=[0, 0, 0, 3], destination_entity_id=[0, 0, 0, 4], owner_id=[0, 0, 0, 5],
                         source_snapshot=copy.deepcopy(snapshot), destination_snapshot=copy.deepcopy(snapshot),
-                        source_flight=dict(fuel=source_fuel), destination_flight=dict(fuel=copy.deepcopy(self.fuel)))
-        self.entity = dict(UUID=[0, 0, 0, 4], RocketEntityData=dict(assembly_transaction_id=[0, 0, 0, 1],
+                        source_flight=dict(fuel=source_fuel), destination_flight=dict(fuel=copy.deepcopy(self.fuel), passengers=dict(seat_capacity=1)))
+        self.entity = dict(UUID=[0, 0, 0, 4], Pos=[8.5, 100, 8.5], RocketEntityData=dict(assembly_transaction_id=[0, 0, 0, 1],
                 owner_id=[0, 0, 0, 5], snapshot=snapshot,
-                flight_data=dict(state="LANDED", fuel=copy.deepcopy(self.fuel), passengers=dict(assignments=[]))))
+                flight_data=dict(state="LANDED", current_origin=[8, 100, 8], current_dimension="test:moon",
+                                 logical_rocket_id=[0, 0, 0, 1], fuel=copy.deepcopy(self.fuel), passengers=dict(assignments=[], seat_capacity=1))))
         self.disk = dict(journal=dict(transfers=[copy.deepcopy(self.old)]), entities=[dict(entity=self.entity)])
 
     def check(self, restart=1, boundary="TERMINAL", survivor=4):
         return probe.inspect(self.disk, self.old, self.fuel, restart, boundary, str(UUID(int=survivor)))
 
     def test_current_destination_retained(self): self.check()
+
+    def test_location_identity_and_seat_capacity_are_checked(self):
+        for key, value in (("current_origin", [9, 100, 8]), ("current_dimension", "test:earth"),
+                           ("logical_rocket_id", [0, 0, 0, 7])):
+            flight = self.entity["RocketEntityData"]["flight_data"]
+            original = flight[key]; flight[key] = value
+            with self.assertRaises(probe.smoke.SmokeError): self.check()
+            flight[key] = original
+        self.entity["Pos"][0] += 1
+        with self.assertRaises(probe.smoke.SmokeError): self.check()
+        self.entity["Pos"][0] -= 1
+        self.entity["RocketEntityData"]["flight_data"]["passengers"]["seat_capacity"] = 2
+        with self.assertRaises(probe.smoke.SmokeError): self.check()
 
     def test_duplicate_and_missing_authority_fail(self):
         self.disk["entities"].append(copy.deepcopy(self.disk["entities"][0]))
