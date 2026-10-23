@@ -28,7 +28,7 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 public final class RocketPredecessorLaunchGameTests {
     private static final String BATCH = "ordinary_predecessor_launch";
     private static final List<Scenario> RUNNING = new ArrayList<>();
-    private enum Mode { PROVE, CHANGED, CREW }
+    private enum Mode { PROVE, CHANGED, CREW, COLD_TARGET }
     private RocketPredecessorLaunchGameTests() { }
 
     @GameTest(template = "rocket_test", batch = BATCH, timeoutTicks = 1200)
@@ -46,6 +46,11 @@ public final class RocketPredecessorLaunchGameTests {
         start(helper, Mode.CREW);
     }
 
+    @GameTest(template = "rocket_test", batch = BATCH + "_cold_target", timeoutTicks = 1200)
+    public static void relaunchProceedsWhenItsSelectedDestinationUnloadsDuringPredecessorProof(GameTestHelper helper) {
+        start(helper, Mode.COLD_TARGET);
+    }
+
     private static void start(GameTestHelper helper, Mode mode) {
         var scenario = new Scenario(helper, mode); RUNNING.add(scenario); helper.onEachTick(scenario::tick);
     }
@@ -56,6 +61,8 @@ public final class RocketPredecessorLaunchGameTests {
     public static void cleanupChanged(ServerLevel level) { cleanup(level); }
     @AfterBatch(batch = BATCH + "_crew")
     public static void cleanupCrew(ServerLevel level) { cleanup(level); }
+    @AfterBatch(batch = BATCH + "_cold_target")
+    public static void cleanupColdTarget(ServerLevel level) { cleanup(level); }
 
     private static final class Scenario {
         final GameTestHelper helper;
@@ -68,7 +75,8 @@ public final class RocketPredecessorLaunchGameTests {
         RocketEntity rocket;
         CompoundTag frozen;
         int step;
-        boolean closed;
+        boolean closed, observedColdTarget;
+        RocketTransferRecord selected;
 
         Scenario(GameTestHelper helper, Mode mode) {
             this.helper = helper; source = helper.getLevel();
@@ -108,13 +116,24 @@ public final class RocketPredecessorLaunchGameTests {
                 var flight = rocket.flightData().orElseThrow();
                 rocket.updateFlightData(flight.withFuel(flight.fuel().fill(400).state(), destination.getGameTime()));
                 frozen = new CompoundTag(); helper.assertTrue(rocket.save(frozen), "Could not freeze the current destination");
-                var result = RocketRuntime.requestAdminFlight(rocket, RocketDestination.EARTH, request);
+                var result = mode == Mode.COLD_TARGET ? RocketRuntime.requestAdminFlight(rocket,
+                        new io.github.sunthemoon.advancedrocketrycommunity.travel.model.TravelTarget.BodySurface(
+                                io.github.sunthemoon.advancedrocketrycommunity.celestial.content.PlanetaryContent.MARS), request)
+                        : RocketRuntime.requestAdminFlight(rocket, RocketDestination.EARTH, request);
                 helper.assertTrue(result.code() == RocketFlightRequestCode.JOURNAL_PENDING, "Relaunch refused: " + result.code());
                 helper.assertTrue(journal.find(previous.transferId()).orElse(null) == previous,
                         "Relaunch replaced T before its predecessor proof");
                 helper.assertTrue(rocket.flightData().orElseThrow().state() != RocketFlightState.COUNTDOWN,
                         "Countdown began before replacement acknowledgement");
                 helper.assertTrue(!RocketRuntime.resourceMutationAllowed(rocket), "Pending relaunch allows resource mutation");
+                if (mode == Mode.COLD_TARGET) {
+                    // Observe the selected server-owned end, not a second selection or a client coordinate.
+                    var retirements = RocketSourceRetirementFixtures.recovery(RocketRuntime.installedTransfers()).retirements();
+                    java.util.Map<UUID, ?> pending = RocketSourceRetirementFixtures.field(retirements, "pending");
+                    Object port = RocketSourceRetirementFixtures.field(pending.get(previous.logicalRocketId()), "port");
+                    selected = RocketSourceRetirementFixtures.field(port, "successor");
+                    observeTarget();
+                }
                 if (mode == Mode.CHANGED) {
                     // A direct third-party mutation bypasses the admission interlock; it must invalidate the accepted quote.
                     var changed = rocket.flightData().orElseThrow();
@@ -123,8 +142,9 @@ public final class RocketPredecessorLaunchGameTests {
                 step = 3; return;
             }
             if (step == 3) {
+                if (mode == Mode.COLD_TARGET) { observeTarget(); }
                 next = journal.find(request).orElse(null);
-                if (mode != Mode.PROVE) {
+                if (mode == Mode.CHANGED || mode == Mode.CREW) {
                     helper.assertTrue(next == null && journal.find(previous.transferId()).orElse(null) == previous,
                             "Held or changed request replaced its predecessor");
                     if (RocketRuntime.resourceMutationAllowed(rocket)) {
@@ -150,8 +170,18 @@ public final class RocketPredecessorLaunchGameTests {
             }
             if (step == 4 && rocket.flightData().orElseThrow().state() == RocketFlightState.COUNTDOWN) {
                 helper.assertTrue(journal.logicalAcknowledged(previous.logicalRocketId()), "Countdown before exact acknowledgement");
+                helper.assertTrue(mode != Mode.COLD_TARGET || observedColdTarget,
+                        "Cold-target regression did not observe an unloaded selected end");
                 close(); helper.succeed();
             }
+        }
+
+        void observeTarget() {
+            var end = selected.destinationSnapshot();
+            var level = RocketTransferEntities.level(source.getServer(), end.sourceDimension());
+            var origin = end.sourceOrigin();
+            observedColdTarget |= !level.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(origin.x() >> 4, origin.z() >> 4))
+                    || level.getChunkSource().getChunkNow(origin.x() >> 4, origin.z() >> 4) == null;
         }
 
         void close() {

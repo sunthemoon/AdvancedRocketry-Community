@@ -62,6 +62,30 @@ class RocketRetirementTerminalTest {
         assertTrue(f.journal.clean());
     }
 
+    @Test void anUnloadedDestinationConsumesAPacedTicketThenProvesAndRelaunches() {
+        var f = new Fixture(); f.port.coldSurvivor = true; f.begin();
+        assertEquals(1, f.port.tickets, "A cold I7 survivor must request its ordinary ticket");
+        assertTrue(f.port.callbacks.isEmpty());
+        assertSame(f.old, f.journal.findByLogicalRocket(f.logical()).orElseThrow());
+        f.port.coldSurvivor = false;
+        for (int tick = 101; tick < 300; tick++) { f.port.now = tick; f.retirements.tick(); }
+        assertEquals(1, f.port.tickets, "Loading must not bypass the 200-tick spacing");
+        f.port.now = 300; f.retirements.tick(); f.complete(0); f.complete(1); f.acknowledge();
+        assertEquals(2, f.port.tickets);
+        assertSame(f.next, f.journal.findByLogicalRocket(f.logical()).orElseThrow());
+        assertEquals(1, f.accepted); assertEquals(0, f.discarded);
+    }
+
+    @Test void aDestinationThatStaysUnloadedSpendsThreeStepsWithoutHoldingForever() {
+        var f = new Fixture(); f.port.coldSurvivor = true; f.begin();
+        for (int tick = 101; tick <= 1000; tick++) { f.port.now = tick; f.retirements.tick(); }
+        assertEquals(3, f.port.tickets);
+        assertTrue(f.port.callbacks.isEmpty()); assertEquals(0, f.accepted); assertEquals(1, f.discarded);
+        assertFalse(f.retirements.pending(f.logical()));
+        assertSame(f.old, f.journal.findByLogicalRocket(f.logical()).orElseThrow());
+        assertTrue(f.journal.clean());
+    }
+
     @Test void aRefusedTerminalKeepsTheOldAuthorityAndDiscardsOnce() {
         var f = new Fixture(); f.port.allowed = false; f.begin(); f.complete(0); f.complete(1);
         assertSame(f.old, f.journal.findByLogicalRocket(f.logical()).orElseThrow());
@@ -224,12 +248,12 @@ class RocketRetirementTerminalTest {
         final List<RocketRetirementProof.Slot> slots = new ArrayList<>();
         final List<Consumer<EscrowBarrier.Result>> callbacks = new ArrayList<>();
         int terminals, tickets, preparations; long now = 100;
-        boolean allowed = true, supported = true, loaded = true, saveOff;
+        boolean allowed = true, supported = true, loaded = true, saveOff, coldSurvivor;
         String changed;
         Port(RocketTransferRecord replacement) { this.replacement = replacement; }
         public long now() { return now; }
         public RocketOrdinaryRetirement.Presence survivor(RocketTransferRecord r, UUID id, RocketRetirementProof.Slot slot) {
-            return RocketOrdinaryRetirement.Presence.LOADED;
+            return coldSurvivor ? RocketOrdinaryRetirement.Presence.UNLOADED : RocketOrdinaryRetirement.Presence.LOADED;
         }
         public boolean crewReady(RocketTransferRecord r, UUID id, boolean offline, Set<UUID> delivered) { return true; }
         public RocketOrdinaryRetirement.SlotState slot(RocketRetirementProof.Slot slot) {
