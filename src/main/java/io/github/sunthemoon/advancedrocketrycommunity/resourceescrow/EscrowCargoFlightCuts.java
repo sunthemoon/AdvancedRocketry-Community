@@ -8,6 +8,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.Rocket
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightAction;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightState;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime;
@@ -16,7 +17,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.storage.LevelResource;
 
@@ -50,6 +54,10 @@ final class EscrowCargoFlightCuts extends EscrowCargoCutProbe {
     private int step;
     private boolean seen, cancelled, attempted;
     private volatile boolean armWriting, landed, terminalAcknowledged;
+    private final GovernedBaseline governedBaseline = new GovernedBaseline();
+    private RocketTransferRecord governedRecord;
+    private EscrowLedger governedLedger;
+    private CompoundTag governedJournal;
 
     EscrowCargoFlightCuts(MinecraftServer server) {
         super(server);
@@ -150,17 +158,11 @@ final class EscrowCargoFlightCuts extends EscrowCargoCutProbe {
                 && data.ledger().tombstones().isEmpty(), "The ordinary load did not conserve 1,000 mB");
         save(); // Complete the cargo fixture baseline, including both pruned wrappers, before testing a flight cut.
         if (boundary.startsWith("GOVERNED")) {
-            var record = EscrowCargoTransferFixtures.governed(rocket, before, data.ledger().id()); transfer = record.transferId();
-            if (boundary.equals("GOVERNED_DURABLE")) {
-                var root = data.ledger(); var a = record.nativeTransfer().orElseThrow().armed();
-                var handedOff = new EscrowFlightTables.Armed(a.ledger(), a.logical(), a.owner(), a.source(), a.epoch(), a.transfer(), a.serial(),
-                        a.generation(), a.binding(), a.launch(), a.sourceEnvelope(), a.destinationEnvelope(), a.destination(), a.journal(),
-                        a.anchor(), a.releaseGeneration(), EscrowFlightTables.Outcome.HANDED_OFF);
-                // Gated setup only: the terminal entry is acknowledged as the fixture's current root, then saved.
-                data.acknowledged(new EscrowLedger(root.id(), root.issuedThrough(), Math.max(root.writerGeneration(), a.generation()), root.records(),
-                        root.floors(), root.tombstones(), Math.max(root.issuedLaunchSerial(), a.serial()), root.rocketAuthorities(), List.of(handedOff)), true);
-            }
-            journal.put(record); journal.flushChecked(server); data.bind(server).autosave(); since = server.getTickCount(); step = 6; return;
+            governedRecord = EscrowCargoTransferFixtures.governed(rocket, before, data.ledger().id(),
+                    Math.addExact(data.ledger().writerGeneration(), 1));
+            transfer = governedRecord.transferId();
+            journal.put(governedRecord); governedJournal = journal.save(new CompoundTag()); journal.flushChecked(server);
+            since = server.getTickCount(); step = 6; return;
         }
         flight = new EscrowCargoCutLaunch(level, PAD, this::loaded); step = 3;
     }
@@ -196,10 +198,63 @@ final class EscrowCargoFlightCuts extends EscrowCargoCutProbe {
     }
 
     private void governed(RocketTransferSavedData journal) {
-        if (!journal.acknowledgedCurrent() || !data.bind(server).writerIdle() || journal.find(transfer).isEmpty()) { return; }
+        boolean ready = governedBaseline.advance(journal.checkedWriteResult(), completion -> data.bind(server).flightWrite(
+                governedRecord.logicalRocketId(), (root, generation) -> {
+                    var next = governedRoot(root, governedRecord, boundary.equals("GOVERNED_DURABLE"));
+                    governedLedger = next.generation(generation);
+                    return next;
+                }, () -> true, committed -> {
+                    completion.accept(committed);
+                    // Stop on the owner-thread acknowledgement, before production terminal cleanup can consume it.
+                    if (boundary.equals("GOVERNED_DURABLE")) { governed(journal); }
+                }), () -> {
+                    if (boundary.equals("GOVERNED_HELD") && server.getTickCount() - since < 200) { return false; }
+                    var savedLedger = CheckedSavedDataFile.readPayload(ledgerFile, ManagedSavedDataType.RESOURCE_ESCROW).orElseThrow();
+                    var journalFile = ledgerFile.resolveSibling(ManagedSavedDataType.ROCKET_TRANSFERS.fileName());
+                    var savedJournal = CheckedSavedDataFile.readPayload(journalFile, ManagedSavedDataType.ROCKET_TRANSFERS).orElseThrow();
+                    requireGovernedReadback(governedLedger, governedJournal, savedLedger, savedJournal);
+                    io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity.LOGGER.info(
+                            "ARCE_RELEASE_CARGO_GOVERNED_BASELINE cut={} ledger=COMMITTED journal=COMMITTED generation={} armed={} serial={} readback=exact",
+                            name, governedLedger.writerGeneration(), governedLedger.armedFlights().size(), governedLedger.issuedLaunchSerial());
+                    return true;
+                });
+        if (!ready) { return; }
         if (boundary.equals("GOVERNED_DURABLE")) { pause(boundary); return; }
-        if (server.getTickCount() - since < 200) { return; }
         requireHeld(journal); pause(boundary);
+    }
+
+    /** A gated fixture candidate, never an in-memory acknowledgement or a second ledger writer. */
+    static EscrowLedger governedRoot(EscrowLedger root, RocketTransferRecord record, boolean terminal) {
+        EscrowTags.require(root.armedFlights().isEmpty() && root.issuedLaunchSerial() == 0, "Governed fixture is not a fresh flight baseline");
+        if (!terminal) { return root; }
+        var a = record.nativeTransfer().orElseThrow().armed();
+        var handedOff = new EscrowFlightTables.Armed(a.ledger(), a.logical(), a.owner(), a.source(), a.epoch(), a.transfer(), a.serial(),
+                a.generation(), a.binding(), a.launch(), a.sourceEnvelope(), a.destinationEnvelope(), a.destination(), a.journal(),
+                a.anchor(), a.releaseGeneration(), EscrowFlightTables.Outcome.HANDED_OFF);
+        return new EscrowLedger(root.id(), root.issuedThrough(), root.writerGeneration(), root.records(), root.floors(), root.tombstones(),
+                a.serial(), root.rocketAuthorities(), List.of(handedOff));
+    }
+
+    static void requireGovernedReadback(EscrowLedger expectedLedger, CompoundTag expectedJournal, CompoundTag ledger, CompoundTag journal) {
+        EscrowTags.require(EscrowCodec.encode(expectedLedger).equals(ledger), "Governed fixture ledger readback differs");
+        EscrowTags.require(expectedJournal.equals(journal), "Governed fixture journal readback differs");
+    }
+
+    /** Request acceptance, successful completion and current journal acknowledgement are distinct steps. */
+    static final class GovernedBaseline {
+        private boolean requested, committed;
+
+        boolean advance(RocketTransferSavedData.CheckedWriteResult journal, Function<Consumer<Boolean>, Boolean> request,
+                        BooleanSupplier readback) {
+            if (journal.outcome() != RocketTransferSavedData.WriteOutcome.COMMITTED || !journal.acknowledgedCurrent()) { return false; }
+            if (!requested) { requested = request.apply(this::acknowledge); return false; }
+            return committed && readback.getAsBoolean();
+        }
+
+        private void acknowledge(boolean success) {
+            EscrowTags.require(success, "Governed fixture ledger write was not COMMITTED");
+            committed = true;
+        }
     }
 
     private void recover(RocketTransferSavedData journal) {

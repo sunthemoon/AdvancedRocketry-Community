@@ -3,10 +3,13 @@ package io.github.sunthemoon.advancedrocketrycommunity.resourceescrow;
 import static org.junit.jupiter.api.Assertions.*;
 
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataPolicy;
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
+import io.github.sunthemoon.advancedrocketrycommunity.testsupport.GovernedTransferFixture;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFuelState;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferPhase;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.PressurizedTankRocketAdapter;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.*;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.stats.RocketStats;
@@ -21,9 +24,87 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraftforge.fluids.FluidStack;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 class EscrowCargoCutProbeTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
+
+    @Test void governedFixtureRequiresCommittedCurrentJournalBeforeRequestOrReadback() {
+        var step = new EscrowCargoFlightCuts.GovernedBaseline();
+        for (var outcome : RocketTransferSavedData.WriteOutcome.values()) {
+            for (boolean current : List.of(false, true)) {
+                if (outcome == RocketTransferSavedData.WriteOutcome.COMMITTED && current) { continue; }
+                assertFalse(step.advance(new RocketTransferSavedData.CheckedWriteResult(outcome, 2, 1L, current),
+                        callback -> { fail("Unacknowledged journal requested ledger write"); return true; },
+                        () -> { fail("Unacknowledged journal reached readback"); return true; }));
+            }
+        }
+    }
+
+    @Test void governedFixtureRetriesRefusedRequestAndWaitsForItsCompletionAndReadback() {
+        var step = new EscrowCargoFlightCuts.GovernedBaseline();
+        var journal = new RocketTransferSavedData.CheckedWriteResult(RocketTransferSavedData.WriteOutcome.COMMITTED, 2, 2L, true);
+        var callback = new java.util.concurrent.atomic.AtomicReference<java.util.function.Consumer<Boolean>>();
+        var reads = new java.util.concurrent.atomic.AtomicInteger();
+        java.util.function.BooleanSupplier readback = () -> { reads.incrementAndGet(); return true; };
+        assertFalse(step.advance(journal, ignored -> false, readback)); // A cooldown/refusal is not an accepted write.
+        assertFalse(step.advance(journal, accepted -> { callback.set(accepted); return true; }, readback));
+        java.util.function.Function<java.util.function.Consumer<Boolean>, Boolean> noSecondRequest = ignored -> {
+            fail("Accepted ledger write was requested twice"); return false;
+        };
+        assertFalse(step.advance(journal, noSecondRequest, readback)); // Idle/pending without COMMITTED cannot pause.
+        assertEquals(0, reads.get());
+        callback.get().accept(true);
+        assertFalse(step.advance(new RocketTransferSavedData.CheckedWriteResult(RocketTransferSavedData.WriteOutcome.COMMITTED,
+                3, 2L, false), noSecondRequest, readback));
+        assertEquals(0, reads.get(), "A later journal mutation invalidates the cut readiness");
+        assertFalse(step.advance(journal, noSecondRequest, () -> false), "Completion does not replace disk readback");
+        assertTrue(step.advance(journal, noSecondRequest, readback));
+        assertEquals(1, reads.get());
+    }
+
+    @Test void governedFixtureRejectsUnsuccessfulLedgerCompletion() {
+        var step = new EscrowCargoFlightCuts.GovernedBaseline();
+        var callback = new java.util.concurrent.atomic.AtomicReference<java.util.function.Consumer<Boolean>>();
+        var journal = new RocketTransferSavedData.CheckedWriteResult(RocketTransferSavedData.WriteOutcome.COMMITTED, 1, 1L, true);
+        assertFalse(step.advance(journal, accepted -> { callback.set(accepted); return true; }, () -> true));
+        assertThrows(IllegalArgumentException.class, () -> callback.get().accept(false));
+        assertFalse(step.advance(journal, ignored -> true, () -> { fail("Failed write reached readback"); return true; }));
+    }
+
+    @Test void governedFixtureReadsExactTerminalAuthoritySerialAndJournalFromDisk(@TempDir java.nio.file.Path directory) {
+        var initial = GovernedTransferFixture.create().record();
+        var record = initial.destinationSpawned(initial.nativeTransfer().orElseThrow().armed().destination())
+                .advance(RocketTransferPhase.PASSENGERS_TRANSFERRED).advance(RocketTransferPhase.SOURCE_REMOVED)
+                .advance(RocketTransferPhase.COMMITTED);
+        var arm = record.nativeTransfer().orElseThrow().armed();
+        var before = EscrowLedger.empty(arm.ledger()).generation(arm.generation() - 1);
+        assertSame(before, EscrowCargoFlightCuts.governedRoot(before, record, false));
+        var terminal = EscrowCargoFlightCuts.governedRoot(before, record, true).generation(arm.generation());
+        assertEquals(EscrowFlightTables.Outcome.HANDED_OFF, terminal.armedFlights().get(0).outcome());
+        assertEquals(arm.serial(), terminal.issuedLaunchSerial());
+        assertEquals(EscrowGovernedDispatch.Route.CLEANUP, EscrowGovernedDispatch.decide(terminal, record).route());
+        var journal = new RocketTransferSavedData(); journal.put(record);
+        var expectedJournal = journal.save(new CompoundTag());
+        var ledgerFile = directory.resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName());
+        var journalFile = directory.resolve(ManagedSavedDataType.ROCKET_TRANSFERS.fileName());
+        CheckedSavedDataFile.replace(journalFile, ManagedSavedDataType.ROCKET_TRANSFERS, () -> expectedJournal);
+        CheckedSavedDataFile.replace(ledgerFile, ManagedSavedDataType.RESOURCE_ESCROW, () -> EscrowCodec.encode(before));
+        Runnable readback = () -> EscrowCargoFlightCuts.requireGovernedReadback(terminal, expectedJournal,
+                CheckedSavedDataFile.readPayload(ledgerFile, ManagedSavedDataType.RESOURCE_ESCROW).orElseThrow(),
+                CheckedSavedDataFile.readPayload(journalFile, ManagedSavedDataType.ROCKET_TRANSFERS).orElseThrow());
+        assertThrows(IllegalArgumentException.class, readback::run, "The pre-terminal file cannot qualify the cut");
+        CheckedSavedDataFile.replace(ledgerFile, ManagedSavedDataType.RESOURCE_ESCROW, () -> EscrowCodec.encode(terminal));
+        assertDoesNotThrow(readback::run);
+        var changedSerial = EscrowCodec.encode(terminal); changedSerial.putLong("issued_launch_serial", arm.serial() + 1);
+        assertThrows(IllegalArgumentException.class, () -> EscrowCargoFlightCuts.requireGovernedReadback(
+                terminal, expectedJournal, changedSerial, expectedJournal));
+        var missingArm = EscrowCodec.encode(before.generation(arm.generation()));
+        assertThrows(IllegalArgumentException.class, () -> EscrowCargoFlightCuts.requireGovernedReadback(
+                terminal, expectedJournal, missingArm, expectedJournal));
+        CheckedSavedDataFile.replace(journalFile, ManagedSavedDataType.ROCKET_TRANSFERS, () -> new RocketTransferSavedData().save(new CompoundTag()));
+        assertThrows(IllegalArgumentException.class, readback::run, "A different journal cannot qualify the cut");
+    }
 
     @Test void theGateNeedsTheHooksAScenarioAndAW142Case() {
         for (String scenario : List.of("start", "recover")) {
