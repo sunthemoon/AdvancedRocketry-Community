@@ -318,7 +318,38 @@ final class RocketFlightService {
                 report(player, rocket, RocketFlightAction.LAUNCH, destination, requestId,
                         new RocketFlightRequestResult(RocketFlightRequestCode.SUCCESS, planned.requiredFuel()));
             }
-        }, () -> requests.finish(requestId, false), requester));
+        }, () -> requests.finish(requestId, false), requester),
+                () -> revalidateLaunch(rocket, countdown.plan().orElseThrow(), source, destination, actorId, operator, requester));
+    }
+
+    /** I7 waits without refreshing its quote: changed permission, route or fuel calculation refuses the original request. */
+    private boolean revalidateLaunch(RocketEntity rocket, io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightPlan expected,
+            TravelTarget source, TravelTarget destination, UUID actor, boolean operator, UUID requester) {
+        var server = rocket.getServer();
+        if (server == null || !rocket.operational()) { return false; }
+        if (requester != null) {
+            var player = server.getPlayerList().getPlayer(requester);
+            if (player == null || !access(player, rocket.getId()).success() || !authorized(player, rocket)) { return false; }
+            operator = player.hasPermissions(2);
+        }
+        var flight = launchSource(rocket.flightData().orElseThrow(), rocket.level().getGameTime()).orElse(null);
+        var stations = StationRegistrySavedData.get(server);
+        if (flight == null || !stations.operational() || !flight.currentTarget().filter(source::equals).isPresent()) { return false; }
+        for (var target : List.of(source, destination)) {
+            if (!(target instanceof TravelTarget.Station stationTarget)) { continue; }
+            var station = stations.find(stationTarget.instanceId()).orElse(null);
+            if (station == null || !stationAccess.allowed(station, actor, operator, StationAccessAction.VISIT)) { return false; }
+            if (target == source && stations.findAt(rocket.blockPosition().getX(), rocket.blockPosition().getZ())
+                    .filter(value -> value.stationId().equals(stationTarget.instanceId())).isEmpty()) { return false; }
+        }
+        var checked = plan(rocket, flight, source, destination, stations, expected.requestId(), captureCatalog());
+        if (!checked.success()) { return false; }
+        var candidate = checked.plan();
+        return candidate.sourceBody().equals(expected.sourceBody()) && candidate.destinationBody().equals(expected.destinationBody())
+                && candidate.sourceDimension().equals(expected.sourceDimension()) && candidate.destinationDimension().equals(expected.destinationDimension())
+                && Objects.equals(candidate.destinationStationId(), expected.destinationStationId())
+                && candidate.destinationTarget().equals(expected.destinationTarget()) && candidate.requiredFuel() == expected.requiredFuel()
+                && Objects.equals(candidate.propulsionDebit(), expected.propulsionDebit());
     }
 
     RocketFlightRequestResult requestAdminPadFlight(RocketEntity rocket, UUID stationId,

@@ -139,6 +139,7 @@ final class RocketTransferRecoveryService {
         }
         classify(server, journal);
         RocketTransferRecord record = journal.find(transferId).orElse(null);
+        if (record != null && retirements.replacing(record.logicalRocketId())) { return retryLater(record); }
         if (record == null) {
             var authority = completedRecords.get(transferId);
             if (completedResults.containsKey(transferId) && authority != null) {
@@ -208,6 +209,11 @@ final class RocketTransferRecoveryService {
     }
     RocketTransferBayDispatch bays() { return bays; }
     RocketOrdinaryRetirement retirements() { return retirements; }
+    RocketReplacementRetirement replacementPort(MinecraftServer server, RocketTransferSavedData journal, RocketEntity rocket,
+            RocketTransferRecord previous, RocketTransferRecord successor, java.util.function.BooleanSupplier authorized) {
+        return new RocketReplacementRetirement(server, journal, bays, fences, liveTransfers, settledTransfers,
+                rocket, previous, successor, authorized);
+    }
     /** R52 (b2): a loader's fill attempt only queues its demand; the first attempt starts from the coordinator's tick (W130-R4). */
     void retireBeforeFill(RocketEntity rocket) { retirements.fills().demand(rocket.assemblyTransactionId().orElseThrow(), rocket.getUUID()); }
     private void beginBeforeFill(MinecraftServer server, UUID logical, UUID survivor) {
@@ -256,6 +262,7 @@ final class RocketTransferRecoveryService {
         }
         for (RocketTransferRecord record : journal.entries()) {
             if (record.nativeTransfer().isPresent()) { continue; }
+            if (retirements.replacing(record.logicalRocketId())) { continue; }
             // A fenced assignment is intentionally finished for this login; it remains durably assigned.
             if (fences.ids().contains(record.transferId())) { continue; }
             if (!bays.allowed(server, journal, record, RocketTransferBayRecoveryGate.Action.RECONNECT)

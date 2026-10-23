@@ -13,14 +13,12 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlight
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightRequestCode;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightRequestResult;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightState;
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFuelMutation;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketPassengerSeat;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferPhase;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferInspection;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecoveryReport;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRegion;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.RocketLandingPadSelection;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.RocketLandingPadSelector;
@@ -58,6 +56,7 @@ final class RocketTransferService {
     private final RocketDestinationCompletion destinations = new RocketDestinationCompletion(
             liveTransfers, settledTransfers, recovery.bays());
     private final RocketTransferContinuations continuations = new RocketTransferContinuations(liveTransfers, recovery.bays(), recovery.retirements());
+    private final RocketOrdinaryLaunch ordinary = new RocketOrdinaryLaunch(liveTransfers, settledTransfers, recovery);
     /** W85 Design M: pending landed disassemblies keep T's region and slot while T is absent from RAM. */
     private final RocketLandedDisassemblies landed = new RocketLandedDisassemblies();
     private final RocketArrivalFootprintWait arrivalFootprints = new RocketArrivalFootprintWait(liveTransfers); // W83b
@@ -67,10 +66,16 @@ final class RocketTransferService {
     }
 
     RocketFlightRequestResult prepareLaunch(RocketEntity rocket, RocketFlightData countdown, RocketRequestCompletion completion) {
-        return prepare(rocket, countdown, warmups.observe(rocket, countdown, completion)); // W90b: R22 S4's discard
+        return prepareLaunch(rocket, countdown, completion, () -> true);
     }
 
-    private RocketFlightRequestResult prepare(RocketEntity rocket, RocketFlightData countdown, RocketRequestCompletion completion) {
+    RocketFlightRequestResult prepareLaunch(RocketEntity rocket, RocketFlightData countdown, RocketRequestCompletion completion,
+            java.util.function.BooleanSupplier authorized) {
+        return prepare(rocket, countdown, warmups.observe(rocket, countdown, completion), authorized);
+    }
+
+    private RocketFlightRequestResult prepare(RocketEntity rocket, RocketFlightData countdown, RocketRequestCompletion completion,
+            java.util.function.BooleanSupplier authorized) {
         Objects.requireNonNull(rocket, "rocket");
         Objects.requireNonNull(countdown, "countdown");
         if (!(rocket.level() instanceof ServerLevel sourceLevel) || !rocket.operational()) {
@@ -154,87 +159,22 @@ final class RocketTransferService {
                     : RocketFlightRequestCode.TRANSFER_JOURNAL_BLOCKED, plan.requiredFuel());
         }
 
-        RocketTransferRecord record;
-        // The interlock above and reserve(L) refuse every state the journal must; before the session's first
-        // acknowledgement an untouched absent rocket is proved, so its launch is admitted (Root decision R30, W91-R2).
-        try (var reservation = journal.reserve(countdown.logicalRocketId()).orElse(null)) {
-            if (reservation == null) {
-                io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadService.release(server, plan);
-                return RocketFlightRequestResult.failure(RocketFlightRequestCode.TRANSFER_JOURNAL_BLOCKED);
-            }
-            RocketFlightData sourceTransit = scheduledTransit(countdown);
-            RocketFuelMutation debit = sourceTransit.fuel().debit(plan);
-            if (!debit.success()) {
-                io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadService.release(server, plan);
-                return RocketFlightRequestResult.failure(
-                        RocketFlightRequestCode.INSUFFICIENT_FUEL,
-                        plan.requiredFuel()
-                );
-            }
-            RocketStructureSnapshot destinationSnapshot = selected.snapshot().orElseThrow();
-            RocketFlightData destinationFlight = sourceTransit.arriveAtDestination(
-                    debit.state(),
-                    plan.destinationBody(),
-                    plan.destinationDimension(),
-                    destinationSnapshot.sourceOrigin(),
-                    scheduledArrival(countdown)
-            );
-            record = RocketTransferRecord.create(
-                    plan.requestId(),
-                    countdown.logicalRocketId(),
-                    rocket.ownerId().orElseThrow(),
-                    rocket.getUUID(),
-                    rocket.snapshot().orElseThrow(),
-                    destinationSnapshot,
-                    sourceTransit,
-                    destinationFlight,
-                    plan.requiredFuel(),
-                    countdown.stateStartedGameTime()
-            );
-            if (previous == null) {
-                journal.put(record);
-            } else {
-                journal.replace(previous.transferId(), record);
-            }
-            if (!journal.afterAcknowledged(server, reservation, () -> {
-                if (!RocketTransferEntities.currentEntity(rocket, record, false)
-                        || !flightAllowed(server, journal, record, TICK_SOURCE)) {
-                    io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowLaunchDiscard.note("PREPARED_CALLBACK",
-                            () -> "logical=" + record.logicalRocketId() + " transfer=" + record.transferId() + " reason=SOURCE_OR_ACTION_BOUNDARY");
-                    liveTransfers.remove(record.transferId()); return false;
-                }
-                if (previous != null) { liveTransfers.remove(previous.transferId()); settledTransfers.remove(previous.transferId()); }
-                RocketTransferEntities.keepLoaded(sourceLevel, record.sourceSnapshot(), record.transferId());
-                RocketTransferEntities.keepDestinationLoaded(destinationLevel, record.destinationSnapshot(), record.transferId());
-                rocket.updateFlightData(countdown.cancelCountdown(sourceLevel.getGameTime()).startCountdown(sourceLevel.getGameTime()));
-                RocketFlightFeedback.countdownAccepted(rocket);
-                liveTransfers.add(record.transferId()); diagnostics.prepared(record.transferId());
-                auditPrepare(rocket, plan, selected, RocketFlightRequestCode.SUCCESS);
-                completion.accepted().run(); return true;
-            }, completion.discarded())) { return RocketFlightRequestResult.failure(RocketFlightRequestCode.TRANSFER_JOURNAL_BLOCKED); }
-        } catch (RuntimeException exception) {
-            io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadService.release(server, plan);
-            // Retain any captured authority, including uncertain replacement. Recovery may retry it.
-            liveTransfers.remove(plan.requestId());
-            AdvancedRocketryCommunity.LOGGER.error(
-                    "ARCE_TRANSFER_PREPARE_FAILED transfer={} logical={} source={}",
-                    plan.requestId(),
-                    countdown.logicalRocketId(),
-                    rocket.getUUID(),
-                    exception
-            );
-            return RocketFlightRequestResult.failure(
-                    RocketFlightRequestCode.TRANSFER_PREPARE_FAILED,
-                    plan.requiredFuel()
-            );
-        }
-        return new RocketFlightRequestResult(RocketFlightRequestCode.JOURNAL_PENDING, plan.requiredFuel());
+        return ordinary.prepare(rocket, countdown, selected, previous, completion, authorized,
+                () -> launchReservations(server, journal, countdown.logicalRocketId()), record -> {
+                    diagnostics.prepared(record.transferId());
+                    auditPrepare(rocket, plan, selected, RocketFlightRequestCode.SUCCESS);
+                });
     }
 
     /** prepareLaunch's input: the journal, governed pre-F2 destinations and P's regions while T is absent (W85-R6). */
     List<RocketRegion> launchReservations(MinecraftServer server, RocketTransferSavedData journal) {
+        return launchReservations(server, journal, null);
+    }
+
+    private List<RocketRegion> launchReservations(MinecraftServer server, RocketTransferSavedData journal, UUID exceptReplacement) {
         return landingReservations(journal, java.util.stream.Stream.concat(io.github.sunthemoon.advancedrocketrycommunity
-                .resourceescrow.EscrowGovernedPreparation.pendingDestinations(server).stream(), landed.reservations(journal).stream()).toList());
+                .resourceescrow.EscrowGovernedPreparation.pendingDestinations(server).stream(), java.util.stream.Stream.concat(
+                        landed.reservations(journal).stream(), recovery.retirements().reservations(exceptReplacement).stream())).toList());
     }
 
     /** The same reservation inputs feed surface, station and explicitly named station selection. */
@@ -491,6 +431,7 @@ final class RocketTransferService {
     boolean resourceMutationAllowed(RocketEntity rocket) {
         if (!io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate.resourcesIdle(rocket)) { return false; }
         if (landed.pending(rocket.assemblyTransactionId().orElse(null))) { return false; }
+        if (recovery.retirements().replacing(rocket.assemblyTransactionId().orElse(null))) { return false; }
         if (!(rocket.level() instanceof ServerLevel level) || !level.getServer().isSameThread()
                 || !rocket.operational() || rocket.flightData().orElseThrow().activeTransferId().isPresent()) {
             return false;
@@ -526,11 +467,17 @@ final class RocketTransferService {
     }
 
     /** W44's FM12a hook only; player and release-test disassembly use {@link #beginLandedDisassembly}. */
-    boolean releaseLandedReservation(RocketEntity rocket) { return RocketLandedDisassemblies.releasePlain(rocket, this::landedPort); }
+    boolean releaseLandedReservation(RocketEntity rocket) {
+        return !recovery.retirements().replacing(rocket.assemblyTransactionId().orElse(null))
+                && RocketLandedDisassemblies.releasePlain(rocket, this::landedPort);
+    }
 
     /** W85 M0 and M1; SUCCESS means that L has no landed record T, so the caller runs today's one-tick path. */
     RocketValidationCode beginLandedDisassembly(RocketEntity rocket, java.util.function.Supplier<Optional<RocketValidationCode>> preflight,
-            RocketLandedDisassemblies.Request request) { return landed.begin(rocket, preflight, request, this::landedPort); }
+            RocketLandedDisassemblies.Request request) {
+        return recovery.retirements().replacing(rocket.assemblyTransactionId().orElse(null)) ? RocketValidationCode.REGION_BUSY
+                : landed.begin(rocket, preflight, request, this::landedPort);
+    }
     boolean landedDisassemblyPending(RocketEntity rocket) { return landed.pending(rocket.assemblyTransactionId().orElse(null)); }
     RocketLandedDisassemblies landedDisassemblies() { return landed; }
     RocketLandedDisassemblies.Port landedPort(MinecraftServer server, RocketTransferSavedData journal) {
@@ -776,7 +723,7 @@ final class RocketTransferService {
         return RocketTransferEscrowRules.flightAllowed(server, journal, record, recovery.bays(), action);
     }
 
-    private static RocketFlightData scheduledTransit(RocketFlightData countdown) {
+    static RocketFlightData scheduledTransit(RocketFlightData countdown) {
         long ascentStarted = Math.addExact(
                 countdown.stateStartedGameTime(),
                 RocketFlightLimits.COUNTDOWN_TICKS
@@ -786,7 +733,7 @@ final class RocketTransferService {
                 .beginTransit(countdown.plan().orElseThrow().requestId(), transitStarted);
     }
 
-    private static long scheduledArrival(RocketFlightData countdown) {
+    static long scheduledArrival(RocketFlightData countdown) {
         return Math.addExact(
                 scheduledTransit(countdown).stateStartedGameTime(),
                 RocketFlightLimits.TRANSIT_TICKS

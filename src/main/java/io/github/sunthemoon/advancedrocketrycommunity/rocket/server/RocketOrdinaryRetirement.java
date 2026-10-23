@@ -94,6 +94,8 @@ final class RocketOrdinaryRetirement {
         default boolean saveOff(RocketRetirementProof.Slot slot) { return false; }
         /** Read-only final census recheck; a newly loaded candidate invalidates the attempt, never its old authority. */
         default String recheck(RocketTransferRecord record, UUID survivor) { return null; }
+        default boolean requestCurrent() { return true; }
+        default io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRegion reservation() { return null; }
         /** One attempt's sink: silent unless a gated release test selects a pause. */
         Consumer<String> sink();
         /** Owner-thread terminal action under the proof's token. False means no mutation was submitted. */
@@ -173,6 +175,10 @@ final class RocketOrdinaryRetirement {
     boolean pending(UUID logical) { return pending.containsKey(logical); }
     boolean replacing(UUID logical) {
         var entry = pending.get(logical); return entry != null && entry.site == Site.BEFORE_REPLACE;
+    }
+    List<io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRegion> reservations(UUID except) {
+        return pending.values().stream().filter(entry -> !entry.logical().equals(except))
+                .map(entry -> entry.port.reservation()).filter(java.util.Objects::nonNull).toList();
     }
     int size() { return pending.size(); }
     /** Read-only, for tests: the attempts an entry for L has started so far, or -1 without one. */
@@ -286,6 +292,7 @@ final class RocketOrdinaryRetirement {
     /** T no longer belongs to this return: removed or replaced, fenced, claimed by a bay, or reclassified. */
     private String abandoned(Pending entry) {
         var record = entry.record;
+        if (!entry.port.requestCurrent()) { return "REQUEST_CHANGED"; }
         if (!entry.journal.operational() || !entry.journal.logicalAcknowledged(entry.logical())) { return "JOURNAL_STOPPED"; }
         if (entry.journal.find(record.transferId()).orElse(null) != record) { return "RECORD_CHANGED"; }
         if (fenced.get().contains(record.transferId())) { return "FENCED"; }
