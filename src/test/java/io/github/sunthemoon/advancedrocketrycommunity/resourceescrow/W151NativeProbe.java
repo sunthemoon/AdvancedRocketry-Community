@@ -34,6 +34,7 @@ public final class W151NativeProbe {
     private final ConcurrentLinkedQueue<Map<String, Object>> events = new ConcurrentLinkedQueue<>();
     private final AtomicInteger count = new AtomicInteger();
     private final List<Long> ticks = new ArrayList<>();
+    private final List<Long> nonSaveTicks = new ArrayList<>();
     private final List<Map<String, Object>> cycles = new ArrayList<>();
     private final List<RocketEntity> governed = new ArrayList<>();
     private final Map<String, Object> report = new LinkedHashMap<>();
@@ -48,6 +49,8 @@ public final class W151NativeProbe {
     private long tickStart, measuredAt = -1, completedAt = -1;
     private int age, nextGoverned, supersedingStart, ordinaryStores, controlStores, controlDuring;
     private boolean initialized, measured, done, cut, awaitingCapture, backlogQueued, backlogAck, saved, injected, retried;
+    private boolean savedThisTick, travelRequested, travelComplete;
+    private int periodicSaves;
 
     @SubscribeEvent public static void started(ServerStartedEvent event) {
         if (!Boolean.getBoolean("advancedrocketrycommunity.w151Native")) { return; }
@@ -123,13 +126,17 @@ public final class W151NativeProbe {
     @SubscribeEvent(priority = EventPriority.HIGHEST) public void start(TickEvent.ServerTickEvent event) {
         if (event.getServer() != server || event.phase != TickEvent.Phase.START || done) { return; }
         observedTick = server.getTickCount(); tickStart = System.nanoTime();
+        savedThisTick = false;
     }
     @SubscribeEvent(priority = EventPriority.LOWEST) public void end(TickEvent.ServerTickEvent event) {
         if (event.getServer() != server || event.phase != TickEvent.Phase.END || done) { return; }
         try {
             if (++age > 4000) { finish("BOUND_MISSED", "Fixed 4000-tick failure ceiling reached"); return; }
             work();
-            if (measured && !done) { ticks.add(System.nanoTime() - tickStart); }
+            if (measured && !done) {
+                long elapsed = System.nanoTime() - tickStart; ticks.add(elapsed);
+                if (!savedThisTick) { nonSaveTicks.add(elapsed); }
+            }
         } catch (RuntimeException failure) {
             report.put("stack", Arrays.stream(failure.getStackTrace()).limit(25).map(Object::toString).toList());
             finish("OBSERVATION_FAILED", failure.toString());
@@ -153,10 +160,11 @@ public final class W151NativeProbe {
         if (age % 200 == 0) { load.refill(); }
         if (recovery) { recover(); return; }
         var player = load.players.get(0);
-        boolean producing = completedAt < 0 || now - completedAt < 200;
+        boolean producing = completedAt < 0 || now - completedAt < 200 || now - measuredAt < 1400;
         if (nextGoverned < 3 && cycle == null && ordinary.completed > 0 && ordinary.countdown()
                 && EscrowRuntime.of(server).barrier().available(load.earth.dimension().location().toString(), true, now)) {
             if (!saved) {
+                savedThisTick = true;
                 EscrowTags.require(server.saveEverything(false, true, true), "Baseline save refused");
                 saved = true; return;
             }
@@ -202,10 +210,32 @@ public final class W151NativeProbe {
                     && journal.actionAuthorityAvailable(logical)) {
                 EscrowTags.require(rocket.flightData().orElseThrow().fuel().totalAmount() == 1000, "Governed return changed fuel");
                 cycle.put("settled", now); nextGoverned++; cycle = null; activeRequest = "none";
-                if (nextGoverned == 3) { completedAt = now; report.put("ordinary_at_governed_completion", ordinaryStores); }
+                if (nextGoverned == 3) {
+                    completedAt = now; report.put("ordinary_at_governed_completion", ordinaryStores);
+                    report.put("eligible_interval_superseding", EscrowRuntime.of(server).barrier().supersedingSaves() - supersedingStart);
+                }
             }
         }
-        if (!producing && journal.entries().isEmpty() && RocketEscrowGate.idle(ordinary.rocket) && RocketEscrowGate.idle(control.rocket)) {
+        if (completedAt >= 0) {
+            if (!travelRequested && EscrowRuntime.of(server).barrier().available(load.earth.dimension().location().toString(), true, now)) {
+                W151NativeReturns.request(player, governed.get(3), RocketFlightAction.LAUNCH, id("travel-request")); travelRequested = true;
+            }
+            if (travelRequested && journal.findByLogicalRocket(id("governed-3")).isEmpty()) {
+                var survivor = find(id("governed-3"));
+                if (survivor.level() == load.moon && survivor.flightData().orElseThrow().state() == RocketFlightState.LANDED
+                        && RocketEscrowGate.idle(survivor)) {
+                    EscrowTags.require(survivor.flightData().orElseThrow().fuel().totalAmount() == 841
+                            && survivor.flightData().orElseThrow().fuel().committedDebits().equals(List.of(id("travel-request"))),
+                            "Reference dimension transfer debit changed");
+                    governed.set(3, survivor); travelComplete = true;
+                }
+            }
+            if ((now - completedAt) % 200 == 199) {
+                savedThisTick = true;
+                EscrowTags.require(server.saveEverything(false, true, true), "Periodic save refused"); periodicSaves++;
+            }
+        }
+        if (!producing && travelComplete && journal.entries().isEmpty() && RocketEscrowGate.idle(ordinary.rocket) && RocketEscrowGate.idle(control.rocket)) {
             validate(); finish("COMPLETE", "");
         }
     }
@@ -214,12 +244,13 @@ public final class W151NativeProbe {
         if (recovery) {
             ordinary = new W151NativeReturns.Producer(find(id("ordinary")), this::event);
             control = new W151NativeReturns.Producer(find(id("control")), this::event);
-            for (int i = 0; i < 3; i++) { governed.add(find(id("governed-" + i))); }
+            for (int i = 0; i < 4; i++) { governed.add(find(id("governed-" + i))); }
         } else {
             ordinary = new W151NativeReturns.Producer(W151NativeReturns.create(load.earth, shared.above(24), id("ordinary"), player.getUUID()), this::event);
             control = new W151NativeReturns.Producer(W151NativeReturns.create(load.earth, other, id("control"), player.getUUID()), this::event);
-            for (int i = 0; i < 3; i++) {
-                var rocket = EscrowFlightBenchmarkLoad.createFlightRocket(load.earth, id("governed-" + i), player.getUUID(), shared.above(i * 8));
+            for (int i = 0; i < 4; i++) {
+                var position = i == 3 ? EscrowFlightBenchmarkLoad.source(3) : shared.above(i * 8);
+                var rocket = EscrowFlightBenchmarkLoad.createFlightRocket(load.earth, id("governed-" + i), player.getUUID(), position);
                 var initial = rocket.flightData().orElseThrow();
                 rocket.updateFlightData(initial.withFuel(initial.fuel().withFluidBank(false, ModIdentity.id("rocket_fuel"), null, 1000), load.earth.getGameTime()));
                 var tag = rocket.saveWithoutId(new CompoundTag());
@@ -231,8 +262,13 @@ public final class W151NativeProbe {
         initialized = true;
     }
     private RocketEntity find(UUID logical) {
-        var matches = load.earth.getEntitiesOfClass(RocketEntity.class, new AABB(64, 0, 64, 144, 256, 80)).stream()
-                .filter(r -> r.assemblyTransactionId().filter(logical::equals).isPresent()).toList();
+        var candidates = new HashSet<>(load.earth.getEntitiesOfClass(RocketEntity.class, new AABB(64, 0, 64, 192, 512, 80)));
+        for (int i = 0; i < 8; i++) {
+            var at = EscrowFlightBenchmarkLoad.destination(i);
+            candidates.addAll(load.moon.getEntitiesOfClass(RocketEntity.class,
+                    new AABB(at.getX() - 8, 0, at.getZ() - 8, at.getX() + 8, 512, at.getZ() + 8)));
+        }
+        var matches = candidates.stream().filter(r -> r.assemblyTransactionId().filter(logical::equals).isPresent()).toList();
         EscrowTags.require(matches.size() == 1, "Missing/duplicate native logical rocket " + logical); return matches.get(0);
     }
     private void recover() {
@@ -246,7 +282,8 @@ public final class W151NativeProbe {
         if (now - measuredAt < 200 || !journal.entries().isEmpty() || !journal.acknowledgedCurrent()) { return; }
         for (var rocket : all()) {
             EscrowTags.require(find(rocket.assemblyTransactionId().orElseThrow()) == rocket
-                    && rocket.flightData().orElseThrow().fuel().totalAmount() == 1000 && RocketEscrowGate.idle(rocket),
+                    && rocket.flightData().orElseThrow().fuel().totalAmount() == (rocket.level() == load.moon ? 841 : 1000)
+                    && RocketEscrowGate.idle(rocket),
                     "Restart lost conservation or retained authority");
         }
         finish("RECOVERED", "");
@@ -263,10 +300,10 @@ public final class W151NativeProbe {
                     "Missing one-attempt consumer observations: " + row);
         }
         EscrowTags.require(cycles.get(retried ? 1 : 0).containsKey("queued"), "No native W145 queue residence observed");
-        int superseding = EscrowRuntime.of(server).barrier().supersedingSaves() - supersedingStart;
+        int superseding = (int) report.get("eligible_interval_superseding");
         EscrowTags.require(superseding == (kind.equals("save") ? 1 : 0), "Unexpected governed invalidations: " + superseding);
         for (var rocket : all()) { EscrowTags.require(find(rocket.assemblyTransactionId().orElseThrow()) == rocket, "Duplicate survivor"); }
-        EscrowTags.require(load.assembled(), "Reference 2048-block assembly missing");
+        EscrowTags.require(load.assembled() && travelComplete && periodicSaves >= 2, "Reference assembly/transfer/saves missing");
     }
     private void pause(String boundary) {
         if (cut || done) { return; } cut = true; report.put("cut", boundary);
@@ -282,6 +319,7 @@ public final class W151NativeProbe {
     private void export(String status, String error) {
         report.put("status", status); report.put("error", error); report.put("age", age); report.put("cycles", cycles);
         report.put("events", List.copyOf(events)); report.put("tick_ns", ticks); report.put("load", load.diagnostics());
+        report.put("tick_ns_nonsave", nonSaveTicks); report.put("dimension_transfer", travelComplete); report.put("periodic_saves", periodicSaves);
         report.put("ordinary_stores", ordinaryStores); report.put("control_stores", controlStores); report.put("control_during", controlDuring);
         if (ordinary != null) { report.put("ordinary_completed", ordinary.completed); report.put("ordinary_polls", ordinary.polls); report.put("control_completed", control.completed); }
         try { Files.writeString(server.getWorldPath(LevelResource.ROOT).resolve("w151-native.json"),

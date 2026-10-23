@@ -52,10 +52,11 @@ def cycle_bounds(raw: dict) -> list[dict]:
 
 def costs(raw: dict, rss: list[int]) -> dict:
     values = sorted(value / 1_000_000 for value in raw.get("tick_ns", []))
-    if not values or not rss:
+    nonsave = [value / 1_000_000 for value in raw.get("tick_ns_nonsave", [])]
+    if not values or not rss or not nonsave:
         raise ValueError("Missing tick/RSS observations")
     observed = dict(mean_ms=statistics.mean(values), p95_ms=performance.percentile(values, .95),
-                    p99_ms=performance.percentile(values, .99), nonsave_spike_ms=max(values), rss_bytes=max(rss))
+                    p99_ms=performance.percentile(values, .99), nonsave_spike_ms=max(nonsave), rss_bytes=max(rss))
     return dict(observed=observed, limits=performance.BUDGETS,
                 passed=all(value <= performance.BUDGETS[key] for key, value in observed.items()))
 
