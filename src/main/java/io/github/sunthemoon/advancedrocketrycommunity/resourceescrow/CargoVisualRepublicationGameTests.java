@@ -57,7 +57,8 @@ public final class CargoVisualRepublicationGameTests {
     private static final class Scenario implements AutoCloseable {
         final GameTestHelper helper;
         final boolean item;
-        final BlockPos at = new BlockPos(28000, 160, 28000);
+        // Both endpoints and nearby trackers stay inside the fixture's entity-ticking ticket center.
+        final BlockPos at = new BlockPos(28008, 160, 28008);
         final EscrowCargoGameTestWorld world;
         final GameTestTickPacer pacer;
         final List<Observer> observers = new ArrayList<>();
@@ -80,6 +81,8 @@ public final class CargoVisualRepublicationGameTests {
             observers.forEach(observer -> check(observer.failure == null, "Transport observer failed: " + observer.failure));
             if (phase == 0) {
                 if (!world.ready()) { return; }
+                check(world.level.isPositionEntityTicking(at.offset(2, 0, 0))
+                        && world.level.isPositionEntityTicking(at.offset(-2, 0, 0)), "Both cargo endpoints must be entity-ticking");
                 world.isolate();
                 observe(at.offset(0, 2, 4), "CargoWatcher");
                 observe(at.offset(512, 2, 0), "CargoDistant");
