@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run W144 cargo microbenchmarks; missing native measurements always retain a stop verdict."""
+"""Run the W144 micro stage; native coverage is a separate stage, never inferred from it."""
 
 from __future__ import annotations
 
@@ -168,6 +168,10 @@ def run(args) -> dict:
                               elapsed_seconds=time.monotonic() - started)
         raw = json.loads((evidence / "micro.json").read_text(encoding="utf-8"))
         result.update(evaluate(raw, rss))
+        # R81: an outstanding native stage is work to run, not grounds to abort the micro stage.
+        result["stage_status"] = ("MICRO_MEASURED" if raw.get("status") == "MICRO_MEASURED"
+                                  and not result["budget_failures"] and result["missing_measurements"] == NATIVE
+                                  and len(raw.get("effective_boundaries", [])) == 12 else result["status"])
         if result["exit_code"] != 0:
             result["status"] = "STOP_MEASUREMENT_ERROR"
         return result
@@ -186,10 +190,12 @@ def main() -> int:
     parser.add_argument("--source-commit", required=True)
     args = parser.parse_args()
     try:
-        print(run(args)["status"], flush=True)
+        report = run(args)
+        print(report.get("stage_status", report["status"]), flush=True)
+        return 0 if report.get("stage_status") == "MICRO_MEASURED" else 1
     except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as failure:
         print("STOP: " + str(failure), flush=True)
-    return 1  # No native coverage is produced by this standalone microbenchmark driver.
+    return 1
 
 
 if __name__ == "__main__":

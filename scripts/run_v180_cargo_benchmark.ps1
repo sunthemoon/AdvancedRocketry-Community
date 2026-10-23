@@ -1,6 +1,8 @@
 param(
     [Parameter(Mandatory = $true)][string]$EvidenceDirectory,
-    [Parameter(Mandatory = $true)][string]$SourceCommit
+    [Parameter(Mandatory = $true)][string]$SourceCommit,
+    [ValidateSet('micro', 'pressure', 'reference')][string]$Stage = 'micro',
+    [string]$SourceServer
 )
 # Start this finite driver as a detached process. It alone acquires and releases its lock.
 $ErrorActionPreference = 'Stop'
@@ -19,6 +21,12 @@ $exitCode = 1
 try {
     Set-Location -LiteralPath $repo
     if ((git rev-parse HEAD) -ne $SourceCommit -or (git status --porcelain)) { throw 'Source must be clean and exact' }
+    $handoff = Join-Path $allowed 'last-heavy-release.txt'
+    if (Test-Path -LiteralPath $handoff) {
+        $released = [DateTimeOffset]::Parse((Get-Content -LiteralPath $handoff | Select-Object -First 1))
+        $remaining = 90 - ([DateTimeOffset]::UtcNow - $released).TotalSeconds
+        if ($remaining -gt 0) { Start-Sleep -Seconds ([int][Math]::Ceiling($remaining)) }
+    }
     $deadline = (Get-Date).AddHours(3)
     while ($true) {
         # Native mkdir is atomic; PowerShell New-Item is not the machine-lock protocol.
@@ -45,8 +53,9 @@ try {
     }
     Assert-Resources
     $classpath = Join-Path $evidence 'classpath.txt'
+    $task = if ($Stage -eq 'micro') { 'w144BenchmarkClasspath' } else { 'reobfW144NativeJar' }
     & .\gradlew.bat --offline --no-daemon --no-parallel --max-workers=1 -I scripts/cargo_benchmark.init.gradle `
-        "-Pw144Classpath=$classpath" w144BenchmarkClasspath --console=plain *> (Join-Path $evidence 'classpath-build.log')
+        "-Pw144Classpath=$classpath" $task --console=plain *> (Join-Path $evidence 'classpath-build.log')
     if ($LASTEXITCODE -ne 0) { throw "Classpath build failed: $LASTEXITCODE" }
     # --no-daemon's single-use JVM may exit just after the Gradle client. Do not kill any foreign JVM.
     $quietDeadline = (Get-Date).AddMinutes(5)
@@ -58,19 +67,28 @@ try {
     } while ($true)
     Assert-Resources
     $previous = $ErrorActionPreference; $ErrorActionPreference = 'Continue'
-    & python -B scripts/run_v180_cargo_benchmark.py --java "$env:JAVA_HOME/bin/java.exe" --classpath-file $classpath `
-        --source-commit $SourceCommit --evidence-dir (Join-Path $evidence 'micro') *> (Join-Path $evidence 'runner.log')
+    if ($Stage -eq 'micro') {
+        & python -B scripts/run_v180_cargo_benchmark.py --java "$env:JAVA_HOME/bin/java.exe" --classpath-file $classpath `
+            --source-commit $SourceCommit --evidence-dir (Join-Path $evidence 'micro') *> (Join-Path $evidence 'runner.log')
+    } else {
+        $jars = @(Get-ChildItem -LiteralPath "$repo/build/libs" -Filter '*-w144-benchmark.jar')
+        if ($jars.Count -ne 1 -or -not $SourceServer) { throw 'Requires one native benchmark artifact and a source server' }
+        & python -B scripts/run_v180_cargo_native_benchmark.py --java "$env:JAVA_HOME/bin/java.exe" --case $Stage `
+            --jar $jars[0].FullName --source-server $SourceServer --source-commit $SourceCommit `
+            --evidence-dir (Join-Path $evidence 'native') *> (Join-Path $evidence 'runner.log')
+    }
     $exitCode = $LASTEXITCODE; $ErrorActionPreference = $previous
 } catch {
     Write-Output $_.Exception.ToString()
 } finally {
-    # This harness creates no server copy or world. Never remove another task's work or lock.
+    # The native child removes its unique, marker-owned server in its finally before returning.
     if ($acquired) {
         $owner = Get-Content -LiteralPath "$lock/owner.txt" -ErrorAction SilentlyContinue | Select-Object -First 1
         $resolved = [IO.Path]::GetFullPath($lock)
         if ($owner -and $owner.StartsWith($token) -and $resolved -eq 'D:\GitHub\ARCE-Task-Evidence\locks\heavy-jvm') {
             Remove-Item -LiteralPath "$lock/owner.txt"
             Remove-Item -LiteralPath $lock
+            Set-Content -LiteralPath $handoff -Value ([DateTimeOffset]::UtcNow.ToString('o'))
         } else { Write-Output 'Lock ownership changed; left untouched' }
     }
     Set-Content -LiteralPath (Join-Path $evidence 'exit-code.txt') -Value $exitCode

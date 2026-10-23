@@ -1,0 +1,220 @@
+#!/usr/bin/env python3
+"""W144 native pressure/reference stages, called only by the owning detached lock driver."""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+from pathlib import Path
+import re
+import shutil
+import subprocess
+import threading
+import time
+import uuid
+
+import run_v180_cargo_benchmark as micro
+import run_v180_escrow_benchmark as pressure
+import run_v180_governed_benchmark as governed
+import run_v180_escrow_forced_stop as escrow
+
+smoke = escrow.smoke
+DONE = re.compile(r"ARCE_CARGO_BENCH_DONE status=(\S+)")
+ROOT = Path("D:/GitHub/ARCE-Task-Evidence/root-queue/W144")
+TEMP = Path("D:/GitHub/ARCE-Task-Evidence/Temp")
+
+
+def native_coverage(raw: dict) -> list[str]:
+    gaps = list(raw.get("measurement_failures", []))
+    if raw.get("schema_version") != 1 or raw.get("status") != "NATIVE_MEASURED":
+        gaps.append("native probe did not complete")
+    if raw.get("heap_max_bytes", 2**63) > 4 * 1024**3:
+        gaps.append("heap bound")
+    devices = raw.get("devices", [])
+    if len(devices) != 8 or {(d.get("device"), d.get("large")) for d in devices} != {
+            (name, large) for name in micro.DEVICES for large in (False, True)}:
+        gaps.append("all four real device kinds at both sizes")
+    for d in devices:
+        for name in ("resources_verified", "updated_visual", "adjacent_codec_refused"):
+            if d.get(name) is not True:
+                gaps.append(f"{d.get('device')}:{name}")
+        if d.get("large") and (d.get("blocks") != 2048 or d.get("payloads") != 128):
+            gaps.append("native maximum composition")
+        if not all(type(d.get(key)) is int and d[key] > 0 for key in ("cycle_ticks", "cycle_ns")):
+            gaps.append("device cycle missing")
+    if raw.get("fuel_device_epochs") != [1, 1] or raw.get("mixed_queue_start", 0) < 2:
+        gaps.append("mixed fuel/cargo queue")
+    refused = raw.get("item_nbt_refusals", [])
+    if len(refused) != 2 or any(r.get("status") != "CARGO_TOO_LARGE" or r.get("unmutated") is not True for r in refused):
+        gaps.append("real item NBT refusal without mutation")
+    if len(raw.get("ticks", [])) < 1400:
+        gaps.append("native tick window")
+    return gaps
+
+
+def native_budgets(raw: dict) -> list[str]:
+    failures = []
+    seen = set()
+    for row in raw.get("ticks", []):
+        tick = row.get("tick")
+        if type(tick) is not int or tick in seen:
+            raise ValueError("Invalid/duplicate native tick")
+        seen.add(tick)
+        for key, bound in (("charged_bytes", 16 * micro.MIB), ("visits", 16384), ("reconstructions", 1),
+                           ("commits", 64), ("reconciliations", 8), ("detached_capture_bytes", 16 * micro.MIB)):
+            if type(row.get(key)) is not int or not 0 <= row[key] <= bound:
+                failures.append(f"tick {tick}:{key}")
+    return failures
+
+
+def run(args) -> dict:
+    repo = Path(__file__).resolve().parents[1]
+    evidence = args.evidence_dir.resolve()
+    if ROOT.resolve() not in evidence.parents or evidence.exists():
+        raise ValueError("Evidence must be new under W144")
+    evidence.mkdir(parents=True)
+    session = TEMP / ("W144-" + uuid.uuid4().hex)
+    marker = session / ".w144-owned"
+    token = uuid.uuid4().hex
+    report = dict(status="STOP_MEASUREMENT_ERROR", source_commit=args.source_commit, reference_machine=False,
+                  case=args.case, budgets=governed.BUDGETS, sessions=[])
+    process = None
+    try:
+        actual = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=repo, text=True).strip()
+        if actual != args.source_commit or subprocess.check_output(["git", "status", "--porcelain"], cwd=repo, text=True):
+            raise ValueError("Native benchmark requires exact clean committed source")
+        lock_token = os.environ.get("W144_LOCK_TOKEN", "")
+        owner = Path("D:/GitHub/ARCE-Task-Evidence/locks/heavy-jvm/owner.txt").read_text(encoding="utf-8-sig")
+        if not lock_token.startswith("W144 pid=") or not owner.startswith(lock_token):
+            raise ValueError("Not owned by the detached W144 driver")
+        report["host"] = micro.preflight()
+        report["jar_sha256"] = escrow.digest(args.jar)
+        libraries = args.source_server.resolve() / "libraries"
+        argument_file = libraries / "net/minecraftforge/forge/1.20.1-47.4.10/win_args.txt"
+        if not argument_file.is_file() or any(p.is_symlink() for p in libraries.rglob("*")):
+            raise ValueError("Missing/linked pinned native libraries")
+        required = set(re.findall(r"libraries/[^\s;:]+\.jar", argument_file.read_text(encoding="utf-8")))
+        if not required or any(not (args.source_server / name).is_file() for name in required):
+            raise ValueError("Incomplete native libraries")
+        report["library_manifest"] = {name: escrow.digest(args.source_server / name) for name in sorted(required)}
+        session.mkdir(); marker.write_text(token, encoding="ascii")
+        shutil.copytree(libraries, session / "libraries"); (session / "mods").mkdir()
+        shutil.copy2(args.jar, session / "mods" / args.jar.name)
+        port = smoke.allocate_port(); smoke.write_server_configuration(session, port, True)
+        props = smoke.expected_server_properties(port, True)
+        props.update({"sync-chunk-writes": "true", "level-name": "world", "level-type": "minecraft:flat", "max-tick-time": "60000",
+                      "generator-settings": json.dumps({"layers": [{"block": "minecraft:bedrock", "height": 1},
+                          {"block": "minecraft:dirt", "height": 2}, {"block": "minecraft:grass_block", "height": 1}],
+                          "biome": "minecraft:plains"}, separators=(",", ":"))})
+        (session / "server.properties").write_text("".join(f"{k}={v}\n" for k, v in sorted(props.items())), encoding="ascii")
+        stages = [("start", pressure.DONE if args.case == "pressure" else DONE)]
+        if args.case == "reference":
+            stages.append(("recover", governed.RESTART))
+        for stage, pattern in stages:
+            report.setdefault("preflights", []).append(micro.preflight())
+            command = escrow._server_command(args.java); command[2] = "-Xmx4G"
+            command[1:1] = ["-XX:ActiveProcessorCount=4", "-XX:+UseG1GC",
+                            "-Dadvancedrocketrycommunity.escrowCase=" + ("BENCH" if args.case == "pressure" else "GOVERNED_BENCH"),
+                            "-Dadvancedrocketrycommunity.escrowScenario=" + stage,
+                            "-Dadvancedrocketrycommunity.cargoBenchmark=" + str(args.case == "reference").lower(),
+                            "-Dadvancedrocketrycommunity.benchmarkCommit=" + args.source_commit]
+            process = smoke.CapturedProcess(command, session, evidence / (stage + ".log"))
+            stop = threading.Event(); rss = []; audits = []; errors = []
+
+            def monitor():
+                next_audit = 0
+                try:
+                    while not stop.is_set():
+                        value = micro._rss_bytes(process.process.pid)
+                        if value is not None:
+                            rss.append(value)
+                            if value > governed.BUDGETS["rss_bytes"]:
+                                errors.append("RSS budget exceeded"); return
+                        if time.monotonic() >= next_audit:
+                            rows = micro.powershell_json("ConvertTo-Json -InputObject @(Get-CimInstance Win32_Process | "
+                                "Where-Object {$_.Name -in @('java.exe','javaw.exe')} | Select-Object ProcessId,CommandLine) -Compress")
+                            audits.append(dict(at=time.time(), processes=rows))
+                            if any(row["ProcessId"] != process.process.pid for row in rows):
+                                errors.append("Foreign JVM during native measurement"); return
+                            next_audit = time.monotonic() + 10
+                        if sum(p.stat().st_size for p in ROOT.rglob("*") if p.is_file()) >= 90_000_000:
+                            errors.append("W144 evidence safety threshold reached"); return
+                        stop.wait(.25)
+                except Exception as failure:
+                    errors.append(str(failure))
+
+            sampler = threading.Thread(target=monitor, daemon=True); sampler.start()
+            try:
+                # Short waits preserve the global, unchanged 360-second native deadline and permit monitor failure to stop the run.
+                deadline = time.monotonic() + 360
+                while not any(pattern.search(line) for line in process.lines):
+                    if errors or process.process.poll() is not None or time.monotonic() >= deadline:
+                        raise RuntimeError("Native measurement failed: " + str(errors or ["process exit/deadline"]))
+                    time.sleep(.25)
+                process.command("stop"); code = process.finish()
+                if code != 0 or any("/ERROR]" in line or "/FATAL]" in line for line in process.lines):
+                    raise RuntimeError("Native benchmark exit/ERROR/FATAL failure")
+                if args.case == "pressure" and not any("ARCE_ESCROW_BENCH_CACHES terrain=256 entities=256 sync=true" in line for line in process.lines):
+                    raise RuntimeError("Missing saturated caches")
+            finally:
+                stop.set(); sampler.join(40)
+                if process.process.poll() is None:
+                    process.abort()
+                report["sessions"].append(dict(stage=stage, command=command, rss_bytes=rss, audits=audits, monitor_errors=errors))
+                for name in ("cargo-native.json", "governed-benchmark.json", "governed-benchmark.csv", "escrow-benchmark.csv"):
+                    if (session / "world" / name).is_file():
+                        shutil.copy2(session / "world" / name, evidence / name)
+            if errors or sampler.is_alive() or not rss:
+                raise RuntimeError("Native resource monitoring failed: " + str(errors))
+            process = None
+            if stage == "start":
+                if args.case == "pressure":
+                    phases = pressure.summarize(evidence / "escrow-benchmark.csv")
+                    gaps = [name for name in ("capture_main", "ledger_capture_main", "ledger_io", "force_io", "readback_io",
+                        "terrain_load_queue_io", "entity_load_queue_io", "record_queue_age", "tick_main") if name not in phases]
+                    if phases.get("record_queue_age", {}).get("count") != 61:
+                        gaps.append("61 retired of 64 competing records (3 deliberate held records)")
+                    report["synthetic_records"] = 64
+                else:
+                    raw = json.loads((evidence / "cargo-native.json").read_text(encoding="utf-8"))
+                    phases, generations = governed.read_samples(evidence / "governed-benchmark.csv")
+                    load = json.loads((evidence / "governed-benchmark.json").read_text(encoding="utf-8"))
+                    gaps = native_coverage(raw) + governed.coverage(load, phases, generations, True)
+                    report.update(native=raw, reference_load=load, work_budget_failures=native_budgets(raw))
+                comparisons = governed.compare(phases, rss)
+                report.update(samples=phases, comparisons=comparisons, coverage_gaps=gaps)
+                if not all(comparisons.values()) or report.get("work_budget_failures"):
+                    report["status"] = "STOP_BUDGET"; return report
+                if gaps:
+                    report["status"] = "STOP_MISSING_MEASUREMENT"; return report
+            else:
+                report["restart_verified"] = True
+        report["status"] = "NATIVE_STAGE_MEASURED"
+        return report
+    except Exception as failure:
+        report["error"] = str(failure)
+        return report
+    finally:
+        if process is not None and process.process.poll() is None:
+            process.abort()
+        (evidence / "results.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
+        if session.parent.resolve() == TEMP.resolve() and session.name.startswith("W144-") and session.is_dir() and not session.is_symlink():
+            if marker.is_file() and not marker.is_symlink() and marker.read_text(encoding="ascii") == token:
+                shutil.rmtree(session)
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--case", choices=("pressure", "reference"), required=True)
+    parser.add_argument("--source-server", type=Path, required=True)
+    parser.add_argument("--java", required=True)
+    parser.add_argument("--jar", type=Path, required=True)
+    parser.add_argument("--source-commit", required=True)
+    parser.add_argument("--evidence-dir", type=Path, required=True)
+    report = run(parser.parse_args()); print(report["status"], flush=True)
+    return 0 if report["status"] == "NATIVE_STAGE_MEASURED" else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

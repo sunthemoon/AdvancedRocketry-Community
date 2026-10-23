@@ -39,6 +39,7 @@ public final class CargoBenchmark {
         try {
             require(Runtime.getRuntime().maxMemory() <= 4L * 1024 * MIB, "Heap exceeds 4 GiB");
             MinecraftBootstrap.initialize();
+            report.put("effective_boundaries", CargoBenchmarkBoundaries.measure());
             for (boolean item : List.of(false, true)) {
                 for (boolean load : List.of(true, false)) {
                     var result = new LinkedHashMap<String, Object>(); results.add(result);
@@ -78,8 +79,8 @@ public final class CargoBenchmark {
                     }
                 }
             }
-            report.put("status", "STOP_MISSING_MEASUREMENT");
-            report.put("stop_reason", "Microbenchmarks cannot establish the separately required native measurements.");
+            report.put("status", "MICRO_MEASURED");
+            report.put("remaining_stages", "Native reference-load and pressure measurements run separately; not a C-B/D-B pass.");
         } catch (Throwable failure) {
             report.put("status", "STOP_MEASUREMENT_ERROR"); report.put("error", failure.toString()); throw failure;
         } finally {
