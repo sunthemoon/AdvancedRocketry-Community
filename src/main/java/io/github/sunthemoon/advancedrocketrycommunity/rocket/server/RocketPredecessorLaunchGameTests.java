@@ -73,7 +73,7 @@ public final class RocketPredecessorLaunchGameTests {
         RocketSourceRetirementFixtures.Flight fixture;
         RocketTransferRecord previous, next;
         RocketEntity rocket;
-        CompoundTag frozen;
+        CompoundTag frozen, discoveries;
         int step;
         boolean closed, observedColdTarget;
         RocketTransferRecord selected;
@@ -91,6 +91,12 @@ public final class RocketPredecessorLaunchGameTests {
             var server = source.getServer(); var journal = RocketTransferSavedData.get(server);
             if (step == 0) {
                 if (!journal.retryChecked(server)) { return; }
+                if (mode == Mode.COLD_TARGET) {
+                    var progress = io.github.sunthemoon.advancedrocketrycommunity.celestial.persistence.CelestialSavedData.get(server);
+                    discoveries = progress.save(new CompoundTag());
+                    progress.discover(io.github.sunthemoon.advancedrocketrycommunity.celestial.content.PlanetaryContent.MARS,
+                            source.getGameTime());
+                }
                 fixture = RocketSourceRetirementFixtures.countdown(source, helper.absolutePos(new BlockPos(3, 2, 3)),
                         destination, new BlockPos(880008 + mode.ordinal() * 128, 100, 880008),
                         mode == Mode.CREW ? List.of(UUID.randomUUID()) : List.of(), 0);
@@ -191,6 +197,11 @@ public final class RocketPredecessorLaunchGameTests {
             if (previous != null) { journal.remove(previous.transferId()); RocketTransferEntities.releaseFlightTickets(server, previous); }
             if (next != null) { journal.remove(next.transferId()); RocketTransferEntities.releaseFlightTickets(server, next); }
             if (fixture != null) { RocketTransferEntities.releaseFlightTickets(server, fixture.record()); }
+            if (discoveries != null) {
+                server.overworld().getDataStorage().set(
+                        io.github.sunthemoon.advancedrocketrycommunity.celestial.persistence.CelestialSavedData.DATA_NAME,
+                        io.github.sunthemoon.advancedrocketrycommunity.celestial.persistence.CelestialSavedData.load(discoveries));
+            }
             journal.flushChecked(server);
         }
     }
