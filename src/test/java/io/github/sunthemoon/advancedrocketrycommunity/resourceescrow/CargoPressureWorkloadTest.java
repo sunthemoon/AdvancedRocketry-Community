@@ -6,9 +6,11 @@ import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import static org.junit.jupiter.api.Assertions.*;
 
 class CargoPressureWorkloadTest {
+    @TempDir java.nio.file.Path directory;
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
     @Test void sixtyFourRecordsKeepPayloadAndEncodedBytesWithTwoFourMemberChains() {
         var records = new ArrayList<EscrowOperation>(); var historical = new ArrayList<EscrowOperation>();
@@ -42,5 +44,26 @@ class CargoPressureWorkloadTest {
         assertThrows(IllegalArgumentException.class, () -> CargoNativePressureWorkload.component(64));
         assertEquals(List.of(0, 0, 0, 0, 4, 4, 4, 4, 8),
                 java.util.stream.IntStream.range(0, 9).map(CargoNativePressureWorkload::component).boxed().toList());
+    }
+    @Test void globalReservationRefusalRetainsThePreviouslyAdmittedPressureQueue() {
+        var data = ResourceEscrowSavedData.load(EscrowCodec.encode(EscrowTestFixtures.ledger()));
+        try (var writer = new EscrowLedgerWriter(directory.resolve("pressure"), 0);
+                var coordinator = new EscrowCoordinator(data, writer)) {
+            for (int i = 0; i < 62; i++) {
+                coordinator.prepareTest(CargoNativePressureWorkload.operation(EscrowTestFixtures.operation(
+                        i + 1, CargoNativePressureWorkload.component(i) + 1, 0), i), ignored -> { });
+            }
+            var before = EscrowCodec.encode(coordinator.ledger()); boolean dirty = data.isDirty();
+            assertEquals(63, coordinator.nextSequence());
+            assertEquals(62, coordinator.admissionAuthority().pendingCount());
+            var op = CargoNativePressureWorkload.operation(EscrowTestFixtures.operation(63, 63, 0), 62);
+            assertThrows(EscrowSettlementCapacity.ReservationFull.class,
+                    () -> coordinator.prepareTest(op, ignored -> fail("Refused admission callback")));
+            assertEquals(63, coordinator.nextSequence());
+            assertEquals(62, coordinator.admissionAuthority().pendingCount());
+            assertEquals(before, EscrowCodec.encode(coordinator.ledger()));
+            assertEquals(dirty, data.isDirty());
+            assertTrue(writer.capturedOperations().isEmpty());
+        }
     }
 }
