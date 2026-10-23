@@ -85,9 +85,8 @@ public final class RocketRetirementCoverageGameTests {
     }
 
     /**
-     * W98-R1, observed and not fixed (a named R-035 residual until governed admission opens): a governed proof of the
-     * ordinary survivor's own slot, in the same batch. The test asserts only the ordinary return's safety and logs the
-     * governed outcome for the record.
+     * W151: a governed proof of the ordinary survivor's own slot excludes ordinary capture through retained use.
+     * The ordinary return must then make its own fresh proof; all original conservation assertions still apply.
      */
     @GameTest(template = "rocket_test", batch = SHARED_SLOT, timeoutTicks = 400)
     public static void aGovernedProofOfTheSurvivorsOwnSlotIsObserved(GameTestHelper helper) {
@@ -198,6 +197,7 @@ public final class RocketRetirementCoverageGameTests {
         EscrowBarrier.Result primer;
         long governedTick = -1;
         long pairForceTick;
+        long retainedUntil = -1;
         Object governedAttempt, ordinaryAttempt;
         int[] counters;
         boolean priming, returned, dispatched, observed;
@@ -247,6 +247,7 @@ public final class RocketRetirementCoverageGameTests {
                 }
                 return false;
             }
+            if (shared) { return protectedBefore(); }
             if (!returned) {
                 helper.assertTrue(now - governedTick < 10, "The ordinary return could not join the governed proof's batch");
                 if (!barrier.availableOrdinary(level().dimension().location().toString(), now)) { return false; }
@@ -291,6 +292,30 @@ public final class RocketRetirementCoverageGameTests {
             return true;
         }
 
+        private boolean protectedBefore() {
+            var barrier = EscrowRuntime.of(server()).barrier();
+            long now = server().getTickCount();
+            if (!returned) {
+                helper.assertTrue(service.failBackToSource(server(), journal, record, source,
+                        RocketTransferReturnReason.COUNTDOWN_CANCELLED, completion()), "Countdown cancellation was refused");
+                assertReturnedAndHeld(true); returned = true;
+            } else {
+                assertReturnedAndHeld(false);
+                helper.assertTrue(journal.clean(), "A pin wait retained the ordinary journal reservation");
+            }
+            helper.assertTrue(recovery().retirements().attempts(record.logicalRocketId()) == 0,
+                    "The protected slot admitted an ordinary capture");
+            helper.assertTrue(batch(barrier).ordinary().isEmpty(), "Deferred ordinary work entered a force batch");
+            assertCountersUnchanged(barrier);
+            if (governed == null) { return false; }
+            helper.assertTrue(governed.confirmed(), "The one governed attempt did not confirm: " + governed.reason());
+            if (retainedUntil < 0) { retainedUntil = now + 40; }
+            if (now < retainedUntil) { return false; }
+            // A consumer owns the successful proof beyond the callback and across two ordinary quota windows.
+            governed.proof().release(); observed = true; dispatched = true;
+            return true;
+        }
+
         /** No barrier clock or queue mutation: wait for a real primer's proof and inspect the resulting window. */
         boolean openWindow(EscrowBarrier barrier, long now) {
             if (!priming) {
@@ -324,8 +349,9 @@ public final class RocketRetirementCoverageGameTests {
         void retired() {
             helper.assertTrue(dispatched, "The ordinary return retired without the observed mixed dispatch");
             if (shared) {
-                AdvancedRocketryCommunity.LOGGER.info("W116_SHARED_SLOT_OBSERVATION_AFTER_RETIREMENT governed_proof_valid={}",
-                        governed.proof() != null && governed.proof().valid());
+                helper.assertTrue(observed && governed.proof() != null && !governed.proof().active().get(),
+                        "The ordinary return preceded the governed consumer's release");
+                assertCountersUnchanged(EscrowRuntime.of(server()).barrier());
                 return;
             }
             helper.assertTrue(governed.proof().valid(), "The ordinary capture of another slot invalidated the governed proof");
