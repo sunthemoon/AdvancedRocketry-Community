@@ -845,7 +845,9 @@ def main():
             process.wait_for(server.SAVE_MARKER, 300, start_at=start); commands.append("stop"); process.command("stop")
             require(process.finish(300) == 0, "Native host did not clean-stop")
             receipt["clean_stop"] = clean_stop(process.lines)
-            findings = server.scan_log(process.lines); write(evidence / "log-findings.json", findings)
+            findings = server.scan_log(process.lines, expected_mod_version=(
+                server.V180_STARTUP_VERSION if artifact == host else None))
+            write(evidence / "log-findings.json", findings)
             require(not findings, "Unexpected native log findings (raw log retained)")
             root = capture(runtime, evidence)
             require(server.digest_file(identity) == identity_hash and server.digest_file(runtime / server.SERVER_PROPERTIES_IDENTITY_FILE) == properties, "Same-world/properties identity changed")

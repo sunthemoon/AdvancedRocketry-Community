@@ -209,8 +209,8 @@ def patch_oversized(runtime: Path, evidence: Path) -> bytes:
     return patched
 
 
-def audit_save_refusal(lines: list[str]) -> list[str]:
-    findings = server.scan_log(lines)
+def audit_save_refusal(lines: list[str], expected_version: str | None = None) -> list[str]:
+    findings = server.scan_log(lines, expected_mod_version=expected_version)
     require(findings and any(SAVE_REFUSAL in line for line in lines), "Missing explicit oversized tank save refusal")
     require(any(SAVE_ERROR.search(finding) for finding in findings), "Missing exact tank chunk-save failure")
     for finding in findings:
@@ -311,7 +311,8 @@ def main() -> None:
             process.command("stop")
             require(process.finish(300) == 0, "Packaged server failed clean stop")
             if oversized_chunk is not None:
-                receipt["expected_refusal_findings"] = audit_save_refusal(process.lines)
+                receipt["expected_refusal_findings"] = audit_save_refusal(process.lines, (
+                    server.V180_STARTUP_VERSION if host == current else None))
                 region = regions._read_regular(runtime / "world/region/r.0.0.mca", regions.MAX_REGION_BYTES)
                 persisted = regions._region_chunk(region, *CHUNK)
                 require(persisted == oversized_chunk, "Refused save overwrote the original native chunk")
@@ -320,7 +321,8 @@ def main() -> None:
                 (directory / "chunk-11-11.nbt.zlib").write_bytes(persisted)
                 result = {"oversized_chunk_unchanged": True, "other_block_change_not_persisted": True}
             else:
-                require(not server.scan_log(process.lines), "Unexpected packaged-server log findings")
+                require(not server.scan_log(process.lines, expected_mod_version=(
+                    server.V180_STARTUP_VERSION if host == current else None)), "Unexpected packaged-server log findings")
                 result = capture(runtime, directory, packaged) if host == current else None
             receipt.update(result="PASS", exit_code=0, log_counts=server.log_audit_counts(process.lines))
         except BaseException as error:
