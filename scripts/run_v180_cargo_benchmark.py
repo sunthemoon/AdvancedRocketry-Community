@@ -25,6 +25,14 @@ NATIVE = ["native_reference_load", "four_device_cycle_times", "mixed_fuel_cargo_
           "effective_depth_and_node_maxima", "effective_framed_byte_maxima", "timed_no_mutation_refusals"]
 
 
+def powershell_json(script: str):
+    # Windows PowerShell's redirected console defaults to a locale code page, not Python's UTF-8 mode.
+    command = "[Console]::OutputEncoding = New-Object System.Text.UTF8Encoding($false); " + script
+    result = subprocess.run(["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", command],
+                            capture_output=True, check=True, timeout=30)
+    return json.loads(result.stdout.decode("utf-8-sig"))
+
+
 def evaluate(report: dict, rss: list[int]) -> dict:
     """Recompute from raw samples; a microbenchmark never supplies native tick/load coverage."""
     missing = list(NATIVE)
@@ -97,9 +105,7 @@ def preflight() -> dict:
               "cpu=@($c|Select-Object Name,NumberOfCores,NumberOfLogicalProcessors); "
               "os=$o.Caption; java=@(Get-CimInstance Win32_Process|Where-Object {$_.Name -in @('java.exe','javaw.exe')}|"
               "Select-Object ProcessId,CommandLine)}|ConvertTo-Json -Depth 5")
-    result = subprocess.run(["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", script],
-                            capture_output=True, text=True, check=True, timeout=30)
-    data = json.loads(result.stdout)
+    data = powershell_json(script)
     data["disk_free_bytes"] = {drive: shutil.disk_usage(drive).free for drive in ("C:/", "D:/")}
     if data["free_memory_bytes"] < 6 * 1024**3 or any(value < 10 * 1024**3 for value in data["disk_free_bytes"].values()):
         raise RuntimeError("Requires 6 GiB free memory and 10 GiB free on both C: and D:")
@@ -142,11 +148,10 @@ def run(args) -> dict:
                         if value > BUDGETS["rss_bytes"]:
                             raise RuntimeError("RSS budget exceeded")
                     if time.monotonic() >= next_audit:
-                        audit = subprocess.run(["powershell.exe", "-NoProfile", "-NonInteractive", "-Command",
+                        audit = powershell_json(
                             "ConvertTo-Json -InputObject @(Get-CimInstance Win32_Process | Where-Object { $_.Name -in "
-                            "@('java.exe','javaw.exe') } | Select-Object ProcessId,CommandLine) -Compress"],
-                            capture_output=True, text=True, check=True, timeout=30)
-                        foreign_jvms.extend(row for row in json.loads(audit.stdout) if row["ProcessId"] != child.pid)
+                            "@('java.exe','javaw.exe') } | Select-Object ProcessId,CommandLine) -Compress")
+                        foreign_jvms.extend(row for row in audit if row["ProcessId"] != child.pid)
                         if foreign_jvms:
                             raise RuntimeError("Other JVMs appeared during the microbenchmark")
                         next_audit = time.monotonic() + 10

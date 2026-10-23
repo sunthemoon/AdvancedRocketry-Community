@@ -2,12 +2,20 @@ import copy
 from pathlib import Path
 import sys
 import unittest
+from unittest.mock import patch
+from types import SimpleNamespace
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 import run_v180_cargo_benchmark as runner
 
 
 class CargoBenchmarkTest(unittest.TestCase):
+    def test_windows_audit_uses_explicit_utf8_including_non_ascii_os_caption(self):
+        with patch.object(runner.subprocess, "run", return_value=SimpleNamespace(stdout='{"os":"测试"}'.encode("utf-8"))) as run:
+            self.assertEqual({"os": "测试"}, runner.powershell_json("ignored"))
+            self.assertIn("UTF8Encoding", run.call_args.args[0][-1])
+            self.assertNotIn("text", run.call_args.kwargs)
+
     def report(self):
         fixtures = []
         for device in sorted(runner.DEVICES):

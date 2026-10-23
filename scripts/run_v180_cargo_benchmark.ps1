@@ -57,9 +57,10 @@ try {
         Start-Sleep -Seconds 5
     } while ($true)
     Assert-Resources
+    $previous = $ErrorActionPreference; $ErrorActionPreference = 'Continue'
     & python -B scripts/run_v180_cargo_benchmark.py --java "$env:JAVA_HOME/bin/java.exe" --classpath-file $classpath `
         --source-commit $SourceCommit --evidence-dir (Join-Path $evidence 'micro') *> (Join-Path $evidence 'runner.log')
-    $exitCode = $LASTEXITCODE
+    $exitCode = $LASTEXITCODE; $ErrorActionPreference = $previous
 } catch {
     Write-Output $_.Exception.ToString()
 } finally {
