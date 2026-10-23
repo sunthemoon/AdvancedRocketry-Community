@@ -1771,6 +1771,16 @@ changes no decision status and accepts no risk. The risk is R-035.
 - **Open:** W98-R1 (an ordinary capture invalidates a governed proof of the same entity slot, before governed
   admission opens; W116 observed it on every run), W98-R6's offline-crew hold (R42; a durable cancellation intent
   is reconsidered with N3-B), N3-B (I6, I7) and the player checkpoint adapter.
+- **N3-B design (W148, reviewed; Root decision R87, 2026-10-23; not yet implemented).** I6 (landed disassembly:
+  the pre-retirement gap and a second, independent terrain transaction) and I7 (a replacement that loses the old
+  end's exclusion authority) take N3-A1's pre-retirement proof, with R52 and R59's on-demand ticketing extended to
+  them inside the unchanged shared caps. Root's answers to W148 section 7: (1) the terrain dependency is accepted and
+  no pre-M1-only player path ships; (2) the demand ticketing extends to I6 and I7, including the non-destructive
+  cold-disassembly preparation and a fresh confirmation; (3) a destination with unsupported entity storage refuses
+  instead of R34's R5(c) unproved fallback, with the scoped pending-operation and footprint exclusions; (4) the
+  existing-format U, checkpoint and recovery scope is approved, including all ordinary no-T disassembly. No saved
+  format, schema, bound, lease, budget, timeout or protocol changes. The holds and their recovery are in R-035.
+  Leaves N3-B1 to N3-B4 follow W148 section 7; N3-B2 needs an independent persistence review before integration.
 
 No saved format changes. This is a development implementation note, not owner acceptance or a Gate result.
 
