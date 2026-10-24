@@ -31,6 +31,12 @@ final class SealedProofBatch implements AutoCloseable {
         this.slots = slots; this.port = Objects.requireNonNull(port);
     }
     boolean active() { owner(); return active; }
+    long retryAt() { owner(); return notBefore; }
+    void deferUntil(long tick) {
+        owner();
+        if (closed || active) { throw new IllegalStateException("Only an unstarted proof plan may inherit retry backoff"); }
+        notBefore = Math.max(notBefore, tick);
+    }
     String diagnostic() {
         owner(); return "active=" + active + ",cursor=" + cursor + ",proofs=" + proofs.size() + "/" + slots
                 + ",age=" + (active ? port.now() - started : 0) + ",wait=" + (notBefore > port.now() ? notBefore - port.now() : 0);

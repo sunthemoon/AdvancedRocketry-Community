@@ -43,6 +43,7 @@ public final class SealedRocketBlockEntity extends BlockEntity {
     @Override public CompoundTag getUpdateTag() { return new CompoundTag(); }
 
     @Override public void load(CompoundTag tag) {
+        if (level instanceof ServerLevel server) { RocketRuntime.sealedTerrainChanged(server, worldPosition); }
         super.load(tag);
         root = SealedRocketRoot.load(tag); initialized = true; warned = false; nextUnsealAttempt = Long.MIN_VALUE;
         if (level instanceof ServerLevel server && !available(server)) { warnHeld(); }
@@ -54,6 +55,7 @@ public final class SealedRocketBlockEntity extends BlockEntity {
 
     @Override public void onLoad() {
         super.onLoad();
+        if (level instanceof ServerLevel server) { RocketRuntime.sealedTerrainChanged(server, worldPosition); }
         if (initialized && level instanceof ServerLevel server && !available(server)) { warnHeld(); }
         // A bounded hint neither asks for journal authority nor constructs/publishes a native target.
         if (initialized && level instanceof ServerLevel server) { RocketRuntime.sealedHint(server, worldPosition); }

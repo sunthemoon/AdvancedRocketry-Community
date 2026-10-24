@@ -28,6 +28,7 @@ final class SealedDisassemblyWorld implements SealedDisassembly.Port, AutoClosea
     private final BooleanSupplier currentRequest, attemptRoom, claimCurrent;
     private final boolean recovery;
     private SealedProofBatch batch;
+    private long proofRetryAt = Long.MIN_VALUE;
     private SealedDisassembly.Goal goal;
     private String reason;
     private String proofReason;
@@ -93,19 +94,25 @@ final class SealedDisassemblyWorld implements SealedDisassembly.Port, AutoClosea
     }
     @Override public void requestProof(SealedDisassembly.Goal goal) {
         if (this.goal == goal && batch != null || !terrain.prepared()) { return; }
-        if (batch != null) { batch.close(); }
+        if (batch != null) { invalidateProof(); }
         this.goal = goal;
         var slots = new ArrayList<Slot>();
         if (goal != SealedDisassembly.Goal.SEALED) { entities.columns().forEach(chunk -> slots.add(new Slot(true, chunk))); }
         terrain.chunks().forEach(chunk -> slots.add(new Slot(false, chunk)));
         boolean present = presentFor(goal);
         batch = new SealedProofBatch(slots.size(), new NativeProofs(List.copyOf(slots), goal, present));
+        batch.deferUntil(proofRetryAt);
     }
     void tickProof() { if (batch != null) { batch.tick(); } }
     void tickProofDeadline() { if (batch != null) { batch.tickDeadline(); } }
     boolean activeAttempt() { return batch != null && batch.active(); }
     String reason() { return reason + ":proof=" + proofReason + ":validation=" + validation + ":" + (batch == null ? "no-batch" : batch.diagnostic()); }
-    private void invalidateProof() { if (batch != null) { batch.close(); batch = null; goal = null; } }
+    void invalidateProof() {
+        if (batch != null) {
+            // A changed cell invalidates authority, not an IO/veto/deadline retry delay already imposed.
+            proofRetryAt = Math.max(proofRetryAt, batch.retryAt()); batch.close(); batch = null; goal = null;
+        }
+    }
     @Override public void held(SealedDisassembly.Phase phase, SealedDisassembly.Reason reason) { this.reason = phase + ":" + reason; }
     @Override public void close() { if (batch != null) { batch.close(); } terrain.close(); }
 

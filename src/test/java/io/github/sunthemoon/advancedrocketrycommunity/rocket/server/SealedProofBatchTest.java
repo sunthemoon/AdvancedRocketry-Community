@@ -43,6 +43,18 @@ class SealedProofBatchTest {
         f.tick(); assertEquals(2, f.callbacks.size());
     }
 
+    @Test void replacingAnInvalidatedPlanCannotEraseItsExistingFailureBackoff() throws Exception {
+        var old = new Fixture(1); old.tick(); old.callbacks.get(0).accept(new EscrowBarrier.Result(null, EscrowReason.BARRIER_IO));
+        long retry = (long) old.call("retryAt"); old.call("close");
+        var next = new Fixture(1);
+        var defer = next.batch.getClass().getDeclaredMethod("deferUntil", long.class); defer.setAccessible(true);
+        defer.invoke(next.batch, retry);
+        next.now = 199; next.tick(); assertTrue(next.callbacks.isEmpty());
+        next.now = 200; next.tick(); assertEquals(1, next.callbacks.size());
+        var active = assertThrows(java.lang.reflect.InvocationTargetException.class, () -> defer.invoke(next.batch, 500L));
+        assertInstanceOf(IllegalStateException.class, active.getCause(), "Deferral must not extend an active attempt");
+    }
+
     @Test void supersedingGenerationRetriesNextTickWithoutExtendingTheOldAttempt() throws Exception {
         var f = new Fixture(1); f.tick(); f.complete(0); assertTrue(f.current());
         f.generation.incrementAndGet(); assertFalse(f.current()); f.now++; f.tick();

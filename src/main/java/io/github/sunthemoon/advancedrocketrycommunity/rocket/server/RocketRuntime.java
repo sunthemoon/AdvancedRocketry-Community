@@ -46,6 +46,9 @@ public final class RocketRuntime {
     public static void sealedOnPlace(ServerLevel level, BlockPos position) {
         if (level.getServer().isSameThread() && service instanceof RocketManager manager) { manager.sealedOnPlace(level, position); }
     }
+    public static void sealedTerrainChanged(ServerLevel level, BlockPos position) {
+        if (level.getServer().isSameThread() && service instanceof RocketManager manager) { manager.sealedTerrainChanged(level, position); }
+    }
     public static void sealedHint(ServerLevel level, BlockPos position) {
         if (level.getServer().isSameThread() && service instanceof RocketManager manager) { manager.sealedHint(level, position); }
     }

@@ -135,8 +135,21 @@ final class SealedDisassemblyCoordinator {
                 work.values().stream().map(item -> item.world.entry)).map(entry -> entry.record().region()).distinct().toList();
     }
     boolean overlaps(RocketRegion region) { return work.values().stream().anyMatch(item -> item.world.entry.record().region().overlaps(region)); }
-    void onPlace(ServerLevel level, BlockPos pos) { if (server == level.getServer() && placement != null) { placement.onPlace(level, pos); } }
+    void terrainChanged(ServerLevel level, BlockPos pos) {
+        if (server != level.getServer() || !server.isSameThread()) { return; }
+        var position = new io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition(pos.getX(), pos.getY(), pos.getZ());
+        // Only the existing bounded RAM claims are visited; no world position is read or loaded here.
+        for (var item : work.values()) {
+            var region = item.world.entry.record().region();
+            if (region.dimension().equals(level.dimension().location()) && region.contains(position)) { item.world.invalidateProof(); }
+        }
+    }
+    void onPlace(ServerLevel level, BlockPos pos) {
+        terrainChanged(level, pos);
+        if (server == level.getServer() && placement != null) { placement.onPlace(level, pos); }
+    }
     boolean onRemove(ServerLevel level, BlockPos pos, net.minecraft.world.level.block.state.BlockState next) {
+        terrainChanged(level, pos);
         return server == level.getServer() && materializer != null && materializer.onRemove(level, pos, next);
     }
     boolean unseal(ServerLevel level, io.github.sunthemoon.advancedrocketrycommunity.rocket.sealed.SealedRocketBlockEntity carrier) {
