@@ -38,6 +38,36 @@ class SealedLazyWorkTest {
         queue.getClass().getMethod("clear").invoke(queue); assertEquals(0, size(queue));
     }
 
+    @Test void completedMembersUseOnlyRemainingWorkAndAreAttemptedWithoutAWorldSweep() throws Exception {
+        var attempted = new HashSet<Integer>(); var queue = queue(new AtomicInteger(), attempted);
+        var budget = new SealedWorkBudget(); budget.beginTick(1);
+        for (int i = 0; i < 255; i++) { assertTrue(budget.take()); }
+        var visited = new AtomicInteger();
+        Iterable<Integer> members = () -> java.util.stream.IntStream.range(1_000, 3_048)
+                .peek(ignored -> visited.incrementAndGet()).boxed().iterator();
+        hintAll(queue, members, budget);
+        assertEquals(1, visited.get()); assertEquals(1, size(queue)); assertFalse(budget.take());
+        assertTrue(attempted.isEmpty(), "Completion hints must not publish resources inline");
+        budget.beginTick(2); run(queue, budget);
+        assertTrue(attempted.contains(1_000), "Known completed member waited for a loaded-world sweep");
+    }
+
+    @Test void completionHintsCannotExpandTheQueueOrVisitUnbudgetedMembers() throws Exception {
+        var queue = queue(new AtomicInteger(), new HashSet<>());
+        var budget = new SealedWorkBudget(); budget.beginTick(1); var visited = new AtomicInteger();
+        Iterable<Integer> members = () -> java.util.stream.IntStream.range(1_000, 3_048)
+                .peek(ignored -> visited.incrementAndGet()).boxed().iterator();
+        hintAll(queue, members, budget);
+        assertEquals(64, visited.get()); assertEquals(64, size(queue));
+        hintAll(queue, members, budget); assertEquals(64, visited.get());
+        int remaining = 0; while (budget.take()) { remaining++; }
+        assertEquals(192, remaining);
+    }
+
+    private static void hintAll(Object queue, Iterable<Integer> hints, SealedWorkBudget budget) throws Exception {
+        queue.getClass().getMethod("hintAll", Iterable.class, SealedWorkBudget.class).invoke(queue, hints, budget);
+    }
+
     private static Object queue(AtomicInteger next, Set<Integer> attempted) throws Exception {
         var type = Class.forName(SealedLazyWorkTest.class.getPackageName() + ".SealedLazyWork");
         var port = Class.forName(type.getName() + "$Port");
