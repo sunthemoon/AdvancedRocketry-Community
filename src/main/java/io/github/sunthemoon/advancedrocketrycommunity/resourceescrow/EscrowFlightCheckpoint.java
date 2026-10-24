@@ -136,7 +136,7 @@ final class EscrowFlightCheckpoint implements AutoCloseable {
                     + " reason=" + refused.getClass().getSimpleName() + ": " + refused.getMessage());
             observation.sample("f1.refused.BINDING_OR_PREFLIGHT", 0); return false;
         }
-        var noTransfer = EscrowFlightJournal.noTransfer(journal, launch.logical(), launch.transfer(),
+        var noTransfer = new EscrowFlightJournal.PreparationLease(journal, launch.logical(), launch.transfer(),
                 Math.addExact(coordinator.ledger().issuedLaunchSerial(), 1));
         if (!noTransfer.getAsBoolean() || !frozen.observe()) { observation.sample("f1.refused.SOURCE_OR_JOURNAL_CHANGED", 0); return false; }
         var retry = retries.computeIfAbsent(launch.logical(), key -> new Retry(rocket, new EscrowSuccessorRetry())).schedule();
@@ -170,6 +170,7 @@ final class EscrowFlightCheckpoint implements AutoCloseable {
                         var candidate = preparation.capture(root, launch, generation);
                         serial.set(candidate.armedFlights().stream().filter(arm -> arm.logical().equals(launch.logical())
                                 && arm.transfer().equals(launch.transfer())).findFirst().orElseThrow().serial());
+                        EscrowTags.require(noTransfer.capture(serial.get()), "F1 assigned serial conflicts with the checked journal");
                         return candidate;
                     }, () -> proof.valid() && frozen.unchanged.get() && noTransfer.getAsBoolean(), committed -> {
                         proof.release(); pending.remove(launch.logical(), frozen);
