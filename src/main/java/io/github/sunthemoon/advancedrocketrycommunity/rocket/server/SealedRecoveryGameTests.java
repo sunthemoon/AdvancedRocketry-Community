@@ -80,6 +80,12 @@ public final class SealedRecoveryGameTests {
                 snapshot.contentHash(), snapshot.sourceDimension(), snapshot.sourceOrigin(), 0, snapshot.blocks().get(0).state(), null)));
         level.setBlockEntity(carrier); carrier.setChanged();
         var seen = new boolean[1]; var done = new boolean[1];
+        helper.runAtTickTime(399, () -> {
+            if (!done[0]) { helper.fail("Recovery incomplete: " + RocketRuntime.sealedDiagnosticForReleaseTest(server, id)
+                    + ",absent=" + data.acknowledgedAbsent(id, snapshot.snapshotId(), rocket.getUUID())
+                    + ",cells=" + level.getBlockState(origin) + "/" + level.getBlockState(origin.east())
+                    + ",lazy=" + RocketRuntime.sealedLazyDiagnosticForReleaseTest(server)); }
+        });
         helper.onEachTick(() -> {
             if (done[0]) { return; }
             seen[0] |= tracked(server, id);
@@ -91,6 +97,14 @@ public final class SealedRecoveryGameTests {
                 return;
             }
             helper.assertTrue(seen[0], "Sealed recovery never owned the durable record");
+            if (tracked(server, id)) {
+                // The aggregate writer acknowledges after the selected step; the claim belongs to its next continuation.
+                helper.assertTrue(!level.getBlockState(origin.east()).is(Blocks.CHEST), "A retained RAM owner admitted unseal");
+                if (rocket.isAlive() && rocket.isAddedToWorld()) {
+                    helper.assertTrue(RocketRuntime.sealedFrozen(rocket), "Pending acknowledgement continuation released D");
+                }
+                return;
+            }
             boolean rollback = !elected && survivor;
             if (rollback) {
                 helper.assertTrue(level.getEntity(rocket.getUUID()) == rocket && rocket.isAlive(), "Rollback lost the original D");
