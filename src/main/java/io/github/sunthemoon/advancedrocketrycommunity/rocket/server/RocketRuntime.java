@@ -46,6 +46,17 @@ public final class RocketRuntime {
     public static void sealedOnPlace(ServerLevel level, BlockPos position) {
         if (level.getServer().isSameThread() && service instanceof RocketManager manager) { manager.sealedOnPlace(level, position); }
     }
+    public static void sealedHint(ServerLevel level, BlockPos position) {
+        if (level.getServer().isSameThread() && service instanceof RocketManager manager) { manager.sealedHint(level, position); }
+    }
+    public static int sealedHintCountForReleaseTest(MinecraftServer server) {
+        io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowTestEndpoints.requireEnabled(server);
+        return service instanceof RocketManager manager ? manager.sealedHintCount(server) : 0;
+    }
+    public static String sealedLazyDiagnosticForReleaseTest(MinecraftServer server) {
+        io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowTestEndpoints.requireEnabled(server);
+        return service instanceof RocketManager manager ? manager.sealedLazyDiagnostic(server) : "no-manager";
+    }
     public static boolean sealedOnRemove(ServerLevel level, BlockPos position, net.minecraft.world.level.block.state.BlockState next) {
         return level.getServer().isSameThread() && service instanceof RocketManager manager && manager.sealedOnRemove(level, position, next);
     }

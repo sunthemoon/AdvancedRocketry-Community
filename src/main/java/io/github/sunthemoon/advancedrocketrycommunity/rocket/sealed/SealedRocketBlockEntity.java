@@ -19,6 +19,7 @@ public final class SealedRocketBlockEntity extends BlockEntity {
     private SealedRocketRoot root = SealedRocketRoot.absent();
     private boolean initialized;
     private boolean warned;
+    private long nextUnsealAttempt = Long.MIN_VALUE;
 
     public SealedRocketBlockEntity(BlockPos pos, BlockState state) { super(ModBlockEntities.SEALED_ROCKET_BLOCK.get(), pos, state); }
 
@@ -34,13 +35,16 @@ public final class SealedRocketBlockEntity extends BlockEntity {
     }
 
     public Optional<SealedRocketMember> member() { return root.member(); }
+    /** Ephemeral retry scheduling only; no authority or payload state is changed or persisted. */
+    public boolean unsealAttemptDue(long tick) { return tick >= nextUnsealAttempt; }
+    public void deferUnsealUntil(long tick) { nextUnsealAttempt = Math.max(nextUnsealAttempt, tick); }
     @Override public boolean onlyOpCanSetNbt() { return true; }
     @Override public <T> LazyOptional<T> getCapability(Capability<T> capability, Direction side) { return LazyOptional.empty(); }
     @Override public CompoundTag getUpdateTag() { return new CompoundTag(); }
 
     @Override public void load(CompoundTag tag) {
         super.load(tag);
-        root = SealedRocketRoot.load(tag); initialized = true; warned = false;
+        root = SealedRocketRoot.load(tag); initialized = true; warned = false; nextUnsealAttempt = Long.MIN_VALUE;
         if (level instanceof ServerLevel server && !available(server)) { warnHeld(); }
     }
     @Override protected void saveAdditional(CompoundTag tag) {
@@ -51,7 +55,8 @@ public final class SealedRocketBlockEntity extends BlockEntity {
     @Override public void onLoad() {
         super.onLoad();
         if (initialized && level instanceof ServerLevel server && !available(server)) { warnHeld(); }
-        // Loading never asks for journal authority and never constructs or publishes a native target.
+        // A bounded hint neither asks for journal authority nor constructs/publishes a native target.
+        if (initialized && level instanceof ServerLevel server) { RocketRuntime.sealedHint(server, worldPosition); }
     }
 
     /** Pure availability checks only. Adapter callbacks and authority checks belong to the coordinator. */

@@ -6,6 +6,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketP
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketTransactionSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.sealed.SealedDisassembly;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.sealed.SealedJournalRequests;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.sealed.SealedLazyWork;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.sealed.SealedRocketBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.sealed.SealedWorkBudget;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRegion;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRegionLockManager;
@@ -34,6 +36,10 @@ final class SealedDisassemblyCoordinator {
     private SealedJournalRequests writes;
     private SealedCarrierPlacement placement;
     private SealedMaterializer materializer;
+    private MinecraftServer discoveryServer;
+    private SealedLazyWork<SealedLoadedDiscovery.Hint> lazy;
+    private boolean lazyFirst;
+    private String lazyFailure;
     private int cursor;
 
     SealedDisassemblyCoordinator(RocketTransactionExecutor transactions, RocketOrdinaryRetirement ordinary) {
@@ -47,6 +53,7 @@ final class SealedDisassemblyCoordinator {
         if (this.server != null) { return; }
         this.server = server; budget = new SealedWorkBudget(); placement = new SealedCarrierPlacement();
         materializer = new SealedMaterializer();
+        ensureLazy(server);
         var data = RocketTransactionSavedData.get(server);
         writes = new SealedJournalRequests(new SealedJournalRequests.Port() {
             public long now() { return server.getTickCount(); }
@@ -122,14 +129,54 @@ final class SealedDisassemblyCoordinator {
         return server == level.getServer() && materializer != null && materializer.onRemove(level, pos, next);
     }
     boolean unseal(ServerLevel level, io.github.sunthemoon.advancedrocketrycommunity.rocket.sealed.SealedRocketBlockEntity carrier) {
+        return unsealResult(level, carrier) == SealedMaterializer.Result.PUBLISHED;
+    }
+    private SealedMaterializer.Result unsealResult(ServerLevel level, SealedRocketBlockEntity carrier) {
         bind(level.getServer()); budget.beginTick(server.getTickCount());
         var member = carrier.member().orElse(null);
-        if (member == null) { return false; }
+        if (member == null) { return SealedMaterializer.Result.HELD; }
         var point = new RocketRegion(member.dimension(), member.position(), member.position());
         // The same lock excludes synchronous assembly/disassembly reentrancy, not just durable U entries.
         try (var lock = transactions.reserveSealed(member.transaction(), point)) {
-            if (lock == null) { return false; }
+            if (lock == null) { return SealedMaterializer.Result.HELD; }
             return materializer.unseal(level, carrier, transactions.adapters(), () -> absentForUnseal(member, point), budget);
+        }
+    }
+    /** Safe before bind: allocating a bounded hint queue does not open or inspect either journal. */
+    void hint(ServerLevel level, BlockPos position) {
+        ensureLazy(level.getServer()); lazy.hint(new SealedLoadedDiscovery.Hint(level.dimension(), position));
+    }
+    int hintCount(MinecraftServer server) { ensureLazy(server); return lazy.size(); }
+    String lazyDiagnostic(MinecraftServer server) {
+        ensureLazy(server); return "queued=" + lazy.size() + ",last-failure=" + lazyFailure;
+    }
+    private void ensureLazy(MinecraftServer server) {
+        if (!server.isSameThread() || discoveryServer != null && discoveryServer != server) {
+            throw new IllegalStateException("Sealed hints require their owning server thread");
+        }
+        if (lazy != null) { return; }
+        discoveryServer = server;
+        var discovery = new SealedLoadedDiscovery(server);
+        lazy = new SealedLazyWork<>(new SealedLazyWork.Port<>() {
+            public SealedLoadedDiscovery.Hint discover() { return discovery.advance(); }
+            public void attempt(SealedLoadedDiscovery.Hint hint, SealedWorkBudget allowance) { attemptLazy(hint); }
+        });
+    }
+    private void attemptLazy(SealedLoadedDiscovery.Hint hint) {
+        var level = server.getLevel(hint.dimension());
+        if (level == null) { return; }
+        var pos = hint.position(); var chunk = level.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
+        if (chunk == null || !(chunk.getBlockEntities().get(pos) instanceof SealedRocketBlockEntity carrier)
+                || !carrier.unsealAttemptDue(server.getTickCount())) { return; }
+        try {
+            var result = unsealResult(level, carrier);
+            if (result == SealedMaterializer.Result.HELD) { carrier.deferUnsealUntil(server.getTickCount() + 20L); }
+            else if (result == SealedMaterializer.Result.PREPARATION_FAILED) {
+                lazyFailure = "PREPARATION_FAILED"; carrier.deferUnsealUntil(server.getTickCount() + 200L);
+            }
+        } catch (RuntimeException failure) {
+            // No cleanup/refill after a native callback failure. The next sweep considers only an actual remaining C.
+            lazyFailure = failure.getClass().getSimpleName(); carrier.deferUnsealUntil(server.getTickCount() + 200L);
         }
     }
     private boolean absentForUnseal(io.github.sunthemoon.advancedrocketrycommunity.rocket.sealed.SealedRocketMember member, RocketRegion point) {
@@ -151,10 +198,13 @@ final class SealedDisassemblyCoordinator {
     void tick(MinecraftServer server) {
         bind(server); budget.beginTick(server.getTickCount());
         var ids = List.copyOf(work.keySet());
+        // Proof deadlines still advance every tick, independently of the shared world-inspection cursor.
+        for (var item : work.values()) { item.world.tickProof(); }
+        lazyFirst = !lazyFirst;
+        if (lazyFirst) { lazy.tick(budget); }
         // Round-robin first entry: a maximal footprint cannot permanently starve a later one.
         for (int offset = 0; offset < ids.size(); offset++) {
             var id = ids.get((cursor + offset) % ids.size()); var item = work.get(id);
-            item.world.tickProof();
             try {
                 while (!item.world.terrain.prepared() && item.world.terrain.prepareOne(budget)) { }
                 while (item.machine.step(budget)) { }
@@ -167,6 +217,7 @@ final class SealedDisassemblyCoordinator {
             if (item.machine.result() != null) { finish(id, item, item.machine.result()); }
         }
         if (!ids.isEmpty()) { cursor = (cursor + 1) % ids.size(); }
+        if (!lazyFirst) { lazy.tick(budget); }
         writes.flush();
     }
     private void finish(UUID id, Work item, SealedDisassembly.Result result) {
@@ -177,6 +228,8 @@ final class SealedDisassemblyCoordinator {
     void clear() {
         for (var item : work.values()) { item.world.close(); item.lock.close(); }
         work.clear(); if (placement != null) { placement.clear(); }
+        if (lazy != null) { lazy.clear(); }
         server = null; budget = null; writes = null; placement = null; materializer = null; cursor = 0;
+        discoveryServer = null; lazy = null; lazyFirst = false; lazyFailure = null;
     }
 }

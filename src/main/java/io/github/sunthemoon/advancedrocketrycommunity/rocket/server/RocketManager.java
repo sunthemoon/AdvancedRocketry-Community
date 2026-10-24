@@ -100,6 +100,9 @@ public final class RocketManager implements RocketOperationService {
     }
 
     void sealedOnPlace(ServerLevel level, BlockPos position) { sealed.onPlace(level, position); }
+    void sealedHint(ServerLevel level, BlockPos position) { sealed.hint(level, position); }
+    int sealedHintCount(MinecraftServer server) { return sealed.hintCount(server); }
+    String sealedLazyDiagnostic(MinecraftServer server) { return sealed.lazyDiagnostic(server); }
     boolean sealedOnRemove(ServerLevel level, BlockPos position, net.minecraft.world.level.block.state.BlockState next) {
         return sealed.onRemove(level, position, next);
     }

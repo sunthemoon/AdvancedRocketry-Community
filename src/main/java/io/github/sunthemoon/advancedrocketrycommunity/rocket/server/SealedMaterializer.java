@@ -13,6 +13,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 /** One owner-thread C-to-N publication, using the native onRemove boundary proved by R95/R97. */
 final class SealedMaterializer {
+    enum Result { PUBLISHED, HELD, PREPARATION_FAILED, BUDGET }
     private final Thread owner = Thread.currentThread();
     private ServerLevel publishingLevel;
     private SealedRocketBlockEntity publishingCarrier;
@@ -20,27 +21,28 @@ final class SealedMaterializer {
     private SealedTargetPreparation publishingTarget;
     private boolean published;
 
-    boolean unseal(ServerLevel level, SealedRocketBlockEntity carrier, RocketBlockEntityAdapters adapters,
+    Result unseal(ServerLevel level, SealedRocketBlockEntity carrier, RocketBlockEntityAdapters adapters,
             BooleanSupplier authorized, SealedWorkBudget budget) {
         owner();
-        if (publishingLevel != null || !budget.take() || !authorized.getAsBoolean()) { return false; }
+        if (publishingLevel != null || !authorized.getAsBoolean()) { return Result.HELD; }
+        if (!budget.take()) { return Result.BUDGET; }
         var member = carrier.member().orElse(null);
-        if (member == null || !current(level, carrier, member)) { return false; }
+        if (member == null || !current(level, carrier, member)) { return Result.HELD; }
         var state = RocketBlockStateAdapter.restore(member.state()).orElse(null);
-        if (state == null) { return false; }
+        if (state == null) { return Result.HELD; }
         // Position plus publication; payload hosts additionally pay construction and all three external callbacks.
         int additional = member.payload() == null ? 1 : 4;
-        for (int i = 0; i < additional; i++) { if (!budget.take()) { return false; } }
+        for (int i = 0; i < additional; i++) { if (!budget.take()) { return Result.BUDGET; } }
         var candidate = SealedTargetPreparation.prepare(owner, carrier.getBlockPos(), state, member.payload(), adapters);
-        if (candidate.isEmpty()) { return false; }
+        if (candidate.isEmpty()) { return Result.PREPARATION_FAILED; }
         try (var prepared = candidate.orElseThrow()) {
             // Restore/recapture may run provider code: recheck both exact C identity and checked authority afterwards.
-            if (!current(level, carrier, member) || !authorized.getAsBoolean()) { return false; }
+            if (!current(level, carrier, member) || !authorized.getAsBoolean()) { return Result.HELD; }
             publishingLevel = level; publishingCarrier = carrier; publishingState = state;
             publishingTarget = prepared; published = false;
             try {
                 level.setBlock(carrier.getBlockPos(), state, Block.UPDATE_ALL);
-                return published;
+                return published ? Result.PUBLISHED : Result.PREPARATION_FAILED;
             } finally {
                 publishingLevel = null; publishingCarrier = null; publishingState = null; publishingTarget = null;
             }
