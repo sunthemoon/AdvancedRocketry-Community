@@ -20,19 +20,27 @@ public final class RocketMonitorView {
         values.add(monitor.height()); values.add(monitor.velocity()); values.add(selected); values.add(count);
         values.add(root == null ? 0 : root.mode()); values.add(root != null && root.armed() ? 1 : 0);
         values.add(refusal == null ? -1 : refusal.ordinal());
-        var fuel = flight == null ? null : flight.fuel();
+        values.addAll(fuelValues(flight == null ? null : flight.fuel(), quote));
+        return List.copyOf(values);
+    }
+    static List<Integer> fuelValues(io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFuelState fuel,
+            RocketMonitorQuote quote) {
+        var values = new ArrayList<Integer>(12);
         var nativeFuel = fuel == null ? null : fuel.propulsion().orElse(null);
         int banks = fuel == null ? 0 : nativeFuel != null && nativeFuel.descriptor().oxidizerCapacity() > 0 ? 2 : 1;
         values.add(banks);
-        var debit = quote == null || quote.plan() == null ? null : quote.plan().propulsionDebit();
-        long required = quote == null ? monitor.lastCost() : quote.cost();
+        var required = quote == null ? io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketRequiredCosts.UNKNOWN : quote.requiredCosts();
         bank(values, banks == 0 ? -1 : nativeFuel == null ? 0 : role(nativeFuel.descriptor().primaryRole()),
-                fuel == null ? 0 : fuel.amount(), fuel == null ? 0 : fuel.capacity(), debit == null ? (quote == null ? 0 : required) : debit.primary(),
+                fuel == null ? 0 : fuel.amount(), fuel == null ? 0 : fuel.capacity(), required.primary(),
                 nativeFuel == null ? null : nativeFuel.primary());
         bank(values, banks < 2 ? -1 : 3, banks < 2 ? 0 : nativeFuel.oxidizer().amount(),
-                banks < 2 ? 0 : nativeFuel.descriptor().oxidizerCapacity(), debit == null ? 0 : debit.oxidizer(),
+                banks < 2 ? 0 : nativeFuel.descriptor().oxidizerCapacity(), required.oxidizer(),
                 banks < 2 ? null : nativeFuel.oxidizer());
-        values.add(Math.toIntExact(required)); return List.copyOf(values);
+        values.add(Math.toIntExact(required.primary())); return List.copyOf(values);
+    }
+    public static net.minecraft.network.chat.Component costText(int required) {
+        return required < 0 ? net.minecraft.network.chat.Component.translatable("screen.advancedrocketrycommunity.monitor.flight.-1")
+                : net.minecraft.network.chat.Component.literal(Integer.toString(required));
     }
     private static int role(RocketPropulsion.Role role) {
         return switch (role) { case MONO -> 1; case BIPROPELLANT_FUEL -> 2; case OXIDIZER -> 3; case WORKING_FLUID -> 4; };

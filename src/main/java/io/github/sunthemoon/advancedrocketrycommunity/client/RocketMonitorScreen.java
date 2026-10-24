@@ -9,6 +9,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.registry.ModMenuTypes;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightRequestCode;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.monitor.RocketMonitorMenu;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.monitor.RocketMonitorStatus;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.monitor.RocketMonitorView;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -77,12 +78,12 @@ public final class RocketMonitorScreen extends AbstractContainerScreen<RocketMon
             int offset = 10 + bank * 5;
             Component fluid = v.get(offset + 4) < 0 ? Component.literal("-") : BuiltInRegistries.FLUID.byId(v.get(offset + 4)).getFluidType().getDescription();
             lines.add(Component.translatable(KEY + "bank", Component.translatable(KEY + "role." + v.get(offset)), fluid));
-            lines.add(Component.translatable(KEY + "bank_amount", v.get(offset + 1), v.get(offset + 2), v.get(offset + 3)));
+            lines.add(Component.translatable(KEY + "bank_amount", v.get(offset + 1), v.get(offset + 2), RocketMonitorView.costText(v.get(offset + 3))));
         }
-        lines.add(Component.translatable(KEY + "cost", v.get(20)));
+        lines.add(Component.translatable(KEY + "cost", RocketMonitorView.costText(v.get(20))));
         lines.add(Component.translatable(KEY + "armed_mode", Component.translatable(KEY + "armed." + v.get(7)),
                 Component.translatable(KEY + "mode." + v.get(6))));
-        if (v.get(8) > 0) { lines.add(Component.translatable(RocketFlightRequestCode.values()[v.get(8)].translationKey(), v.get(20))); }
+        if (v.get(8) > 0) { lines.add(Component.translatable(RocketFlightRequestCode.values()[v.get(8)].translationKey(), RocketMonitorView.costText(v.get(20)))); }
         view.status().ifPresent(status -> lines.add(Component.translatable(status.translationKey())));
         int y = 34;
         for (var line : lines) {

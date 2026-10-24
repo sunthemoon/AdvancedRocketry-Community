@@ -92,4 +92,14 @@ final class NetworkProtocolPinTest {
                     .toList();
         }
     }
+
+    @Test
+    void r102KeepsProtocolTwoWithUnavailableMonitorRequirements() throws IOException {
+        var kind = io.github.sunthemoon.advancedrocketrycommunity.classiccontrol.network.ClassicControlKind.ROCKET_MONITOR;
+        assertEquals(4, kind.wireId()); assertEquals(21, kind.valueCount());
+        for (int index : new int[] {13, 18, 20}) {
+            assertEquals(-1, kind.minimum(index)); assertEquals(2_048_000, kind.maximum(index));
+        }
+        assertEquals(3, expected().stream().filter(line -> line.startsWith(ModIdentity.id("classic_controls") + "|2|")).count());
+    }
 }

@@ -113,11 +113,10 @@ public final class RocketMonitorFlights {
         if (!flight.launchReady()) { return refused(target, RocketFlightRequestCode.INVALID_STATE, stamp); }
         var planned = flights.plan(rocket, flight, flight.currentTarget().orElseThrow(), target,
                 StationRegistrySavedData.get(rocket.getServer()), PREVIEW, flights.captureCatalog());
-        return new RocketMonitorQuote(target, RocketFlightRequestCode.fromPlanCode(planned.code()), primaryCost(planned), planned.plan(), flight, stamp);
+        return RocketMonitorQuote.planned(target, planned, flight, stamp);
     }
     static long primaryCost(RocketFlightPlanResult planned) {
-        return planned.plan() != null && planned.plan().propulsionDebit() != null
-                ? planned.plan().propulsionDebit().primary() : planned.requiredFuel();
+        return planned.requiredCosts().primary();
     }
 
     /** One admitted button or edge: a fresh request, never an admin request or a synthetic player. */
@@ -166,7 +165,7 @@ public final class RocketMonitorFlights {
         };
     }
     private static RocketMonitorQuote refused(TravelTarget target, RocketFlightRequestCode code, String stamp) {
-        return new RocketMonitorQuote(target, code, 0, null, null, stamp);
+        return new RocketMonitorQuote(target, code, -1, null, null, stamp, RocketRequiredCosts.UNKNOWN);
     }
 
     /** Catalog maps may iterate differently after restart; equivalent validated content must retain arming. */

@@ -110,6 +110,30 @@ final class ClassicControlPacketsTest {
     }
 
     @Test
+    void r102UnavailableCostsHaveGoldenBytesAndOnlyThreeNewMinima() {
+        var kind = ClassicControlKind.ROCKET_MONITOR;
+        var values = List.of(0, -1, 0, 0, -1, 0, 0, 0, -1, 0,
+                -1, 0, 0, -1, -1, -1, 0, 0, -1, -1, -1);
+        var packet = new ClassicControlViewPacket(1, kind, Optional.empty(), 0, values);
+        var encoded = encode(packet, ClassicControlViewPacket::encode);
+        String golden = "01010400000000000000000015"
+                + "00000000ffffffff0000000000000000ffffffff000000000000000000000000ffffffff00000000"
+                + "ffffffff0000000000000000ffffffffffffffffffffffff0000000000000000ffffffffffffffffffffffff";
+        assertEquals(golden, io.netty.buffer.ByteBufUtil.hexDump(encoded));
+        assertEquals(packet, ClassicControlViewPacket.decode(encoded));
+        int[] minimums = {0, -1, -4096000, -64000, -1, 0, 0, 0, -1, 0,
+                -1, 0, 0, -1, -1, -1, 0, 0, -1, -1, -1};
+        int[] maximums = {8, 8, 4096000, 64000, 159, 160, 1, 1, 27, 2,
+                4, 2048000, 2048000, 2048000, Integer.MAX_VALUE,
+                4, 2048000, 2048000, 2048000, Integer.MAX_VALUE, 2048000};
+        for (int index = 0; index < 21; index++) {
+            assertEquals(minimums[index], kind.minimum(index)); assertEquals(maximums[index], kind.maximum(index));
+            var invalid = new ArrayList<>(values); invalid.set(index, minimums[index] - 1);
+            assertThrows(DecoderException.class, () -> ClassicControlViewPacket.decode(wrap(view(1, 1, 4, 0, null, 0, 21, invalid))));
+        }
+    }
+
+    @Test
     void malformedIntentFramesAreDecoderExceptions() {
         List<byte[]> frames = List.of(
                 intent(2, 1, 0, 1, 0, 0L),   // schema 2
