@@ -22,6 +22,12 @@ final class FixtureContainerBlockEntity extends BlockEntity implements Container
 
     FixtureContainerBlockEntity(BlockPos position, BlockState state) {
         super(AdapterTestMod.CONTAINER_TYPE.get(), position, state);
+        SealedStagingProbeFixture.observe("external.constructor.return");
+    }
+
+    @Override public void onLoad() {
+        super.onLoad();
+        SealedStagingProbeFixture.observe("external.onLoad");
     }
 
     CompoundTag captureInventory() {
