@@ -68,12 +68,16 @@ public final class RocketRejoinSavedData extends SavedData implements AutoClosea
     }
     /** Storage only; no command calls this before the release and protected-rejoin leaves are integrated. */
     public boolean submit(RocketRejoinRoot candidate) {
+        return submit(candidate, () -> true);
+    }
+    /** S2's IO-safe proof lease is rechecked immediately before replacement, including every retained retry. */
+    public boolean submit(RocketRejoinRoot candidate, java.util.function.BooleanSupplier proof) {
         owner();
         if (closed || file == null || outcome == Outcome.UNKNOWN || outcome == Outcome.NOT_COMMITTED || generation == Long.MAX_VALUE) { return false; }
         if (candidate.nextSequence() < root.nextSequence()) { throw new IllegalArgumentException("Rejoin sequence moved backwards"); }
         if (!present && generation == 0 && candidate.batches().isEmpty()) { return false; }
         if (writer == null) { writer = new RocketRejoinWriter(file, policy, present, presence, force); }
-        if (!writer.request(generation + 1, candidate)) { return false; }
+        if (!writer.request(generation + 1, candidate, proof)) { return false; }
         root = candidate; generation++; setDirty(); return true;
     }
     public void tick(long tick) { owner(); if (writer != null && !closed) { writer.tick(tick, this::publish); } }
