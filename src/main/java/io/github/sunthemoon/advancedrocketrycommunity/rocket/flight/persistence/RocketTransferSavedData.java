@@ -341,7 +341,7 @@ public final class RocketTransferSavedData extends SavedData {
         }
         entries.put(record.transferId(), record);
         mutationSequence++;
-        leases.changed(record.logicalRocketId(), mutationSequence, existing);
+        leases.changed(record.logicalRocketId(), record.transferId(), mutationSequence, existing);
         if (nativeProbe != null) { nativeProbe.event(record.logicalRocketId(), "mutation", mutationSequence, record.phase().name(), 0); }
         setDirty();
         publishLeases();
@@ -375,7 +375,7 @@ public final class RocketTransferSavedData extends SavedData {
         }
         entries.put(migrated.transferId(), migrated);
         mutationSequence++;
-        leases.changed(migrated.logicalRocketId(), mutationSequence, legacy);
+        leases.changed(migrated.logicalRocketId(), migrated.transferId(), mutationSequence, legacy);
         if (nativeProbe != null) { nativeProbe.event(migrated.logicalRocketId(), "mutation", mutationSequence, migrated.phase().name(), 0); }
         setDirty();
         publishLeases();
@@ -388,7 +388,7 @@ public final class RocketTransferSavedData extends SavedData {
         var removed = entries.remove(Objects.requireNonNull(transferId, "transferId"));
         if (removed != null) {
             mutationSequence++;
-            leases.changed(removed.logicalRocketId(), mutationSequence, removed);
+            leases.changed(removed.logicalRocketId(), removed.transferId(), mutationSequence, removed);
             if (nativeProbe != null) { nativeProbe.event(removed.logicalRocketId(), "mutation", mutationSequence, "REMOVED", 0); }
             setDirty();
             publishLeases();
@@ -420,7 +420,7 @@ public final class RocketTransferSavedData extends SavedData {
             throw exception;
         }
         mutationSequence++;
-        leases.changed(replacement.logicalRocketId(), mutationSequence, previous);
+        leases.changed(replacement.logicalRocketId(), replacement.transferId(), mutationSequence, previous);
         if (nativeProbe != null) { nativeProbe.event(replacement.logicalRocketId(), "mutation", mutationSequence, replacement.phase().name(), 0); }
         setDirty();
         publishLeases();
@@ -532,8 +532,8 @@ public final class RocketTransferSavedData extends SavedData {
     /**
      * R17 item 3: the checked lease of logical rocket L for F1, F7, F8, the pre-F2 cancellation, settlement O3/O4 and
      * reconciliation C3 to C7. Null {@code transfer} or a serial below 1 checks no T or serial; another record that names
-     * them refuses it in RAM or in the last acknowledged generation (LR1). Owner-thread acquisition; the returned lease
-     * reads only an immutable published view, so the ledger writer may check it before replacement.
+     * them refuses it in RAM or the acknowledged generation; later L/T mutations permanently refuse this lease (R103).
+     * Owner-thread acquisition; the returned lease reads only an immutable published view for writer replacement checks.
      */
     public java.util.function.BooleanSupplier logicalLease(UUID logical, UUID transfer, long serial) {
         if (ownerServer != null && !ownerServer.isSameThread()) { throw new IllegalStateException("Journal lease requires the owner thread"); }

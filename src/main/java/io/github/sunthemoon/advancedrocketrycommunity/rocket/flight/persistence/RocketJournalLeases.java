@@ -13,21 +13,23 @@ import java.util.function.BooleanSupplier;
 /**
  * R17 item 3: the checked journal lease of one logical rocket L. It holds while the journal has the exact acknowledged
  * record instance of L (or the exact checked absence of any record of L), L's acknowledged guard is unchanged, no other
- * record names the operation's T or serial, and no change of L is unacknowledged. Another rocket's change never revokes
- * it. The owner thread publishes an immutable view; a lease reads only that view, so the ledger writer may check it.
+ * record names the operation's T or serial, and neither L nor T has changed since acquisition. Another rocket's change
+ * with a different T stays independent unless history overflows. The owner thread publishes an immutable view;
+ * a lease reads only that view, so the ledger writer may check it.
  *
  * <p>The conflict exclusion is checked (lease review LR1): it holds in RAM and in the last acknowledged generation. A
  * record that left RAM after that acknowledgement may still be on disk, so it keeps naming its T and serial until an
  * acknowledgement at or after its removal.
  */
 final class RocketJournalLeases {
-    /** Changes of more distinct rockets, or more unacknowledged removals, than this fold into one conservative floor. */
+    /** Each rocket/transfer history and the pending-removal history has this bound and its own conservative floor. */
     static final int MAX_HISTORY = 1_024;
 
     private record View(boolean usable, RocketJournalCheckpoint.Acknowledgement acknowledged,
                         Map<UUID, RocketTransferRecord> records, Map<UUID, Long> changes, long forgotten,
+                        Map<UUID, Long> transferChanges, long transfersForgotten,
                         List<RocketTransferRecord> removed, boolean removedForgotten) {
-        static final View NONE = new View(false, null, Map.of(), Map.of(), 0, List.of(), false);
+        static final View NONE = new View(false, null, Map.of(), Map.of(), 0, Map.of(), 0, List.of(), false);
 
         long changed(UUID logical) { return changes.getOrDefault(logical, forgotten); }
 
@@ -38,6 +40,8 @@ final class RocketJournalLeases {
 
         boolean leased(UUID logical, RocketTransferRecord expected, String digest, UUID transfer, long serial, long since) {
             if (!acknowledged(logical) || changed(logical) > since || records.get(logical) != expected) { return false; }
+            // T's history survives acknowledged removal, even when a different logical rocket published it.
+            if (transfer != null && transferChanges.getOrDefault(transfer, transfersForgotten) > since) { return false; }
             // L's acknowledged guard: its exact record digest, or no acknowledged record of L at all.
             if (expected == null ? acknowledged.logicalRockets().contains(logical)
                     : digest == null || !digest.equals(acknowledged.records().get(expected.transferId()))) { return false; }
@@ -66,6 +70,8 @@ final class RocketJournalLeases {
 
     private final LinkedHashMap<UUID, Long> changes = new LinkedHashMap<>();
     private long forgotten;
+    private final LinkedHashMap<UUID, Long> transferChanges = new LinkedHashMap<>();
+    private long transfersForgotten;
     private final ArrayDeque<Removed> removed = new ArrayDeque<>();
     private long removedFloor;
     private volatile View view = View.NONE;
@@ -80,14 +86,25 @@ final class RocketJournalLeases {
         }
     }
 
-    /** {@link #changed(UUID, long)}, where the change took {@code superseded} (if not null) out of RAM. */
-    void changed(UUID logical, long sequence, RocketTransferRecord superseded) {
+    /** Records both the published/removed T and any superseded T, including replacement by a different transfer. */
+    void changed(UUID logical, UUID transfer, long sequence, RocketTransferRecord superseded) {
         changed(logical, sequence);
+        transferChanged(transfer, sequence);
         if (superseded == null) { return; }
+        if (!superseded.transferId().equals(transfer)) { transferChanged(superseded.transferId(), sequence); }
         removed.addLast(new Removed(superseded, sequence));
         while (removed.size() > MAX_HISTORY) {
             // A dropped removal names every T and serial until an acknowledgement at or after it.
             removedFloor = Math.max(removedFloor, removed.removeFirst().sequence());
+        }
+    }
+
+    private void transferChanged(UUID transfer, long sequence) {
+        transferChanges.remove(transfer); transferChanges.put(Objects.requireNonNull(transfer), sequence);
+        var eldest = transferChanges.entrySet().iterator();
+        while (transferChanges.size() > MAX_HISTORY) {
+            // Forgetting a change cannot revive an older lease, even after every removal is acknowledged.
+            transfersForgotten = Math.max(transfersForgotten, eldest.next().getValue()); eldest.remove();
         }
     }
 
@@ -100,6 +117,7 @@ final class RocketJournalLeases {
         var byLogical = new HashMap<UUID, RocketTransferRecord>();
         for (var record : records) { byLogical.put(record.logicalRocketId(), record); }
         view = new View(usable, acknowledged, Map.copyOf(byLogical), Map.copyOf(changes), forgotten,
+                Map.copyOf(transferChanges), transfersForgotten,
                 removed.stream().map(Removed::record).toList(),
                 acknowledged == null || removedFloor > acknowledged.sequence());
     }
