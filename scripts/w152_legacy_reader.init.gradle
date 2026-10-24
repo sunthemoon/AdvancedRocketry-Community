@@ -1,0 +1,7 @@
+// Diagnostic-only test source for an exact pre-discriminator git archive; no production/build configuration change.
+allprojects {
+    afterEvaluate {
+        def fixture = providers.gradleProperty('w152LegacyTestRoot').get()
+        sourceSets.test.java.srcDir(file(fixture))
+    }
+}
