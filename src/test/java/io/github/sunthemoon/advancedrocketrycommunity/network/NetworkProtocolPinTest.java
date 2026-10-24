@@ -22,7 +22,7 @@ import org.junit.jupiter.api.Test;
  * its protocol version and its registered message list must equal the committed table.
  * ADR-064 section 14 adds exactly one required message-empty menu admission channel. ADR-066 section 5.2 adds the
  * suit motion channel with its fixed jetpack intent and paid impulse, and ADR-065 section 11.1 the three-message
- * {@code classic_controls} channel.
+ * {@code classic_controls} channel; R92 adds monitor kind 4 at protocol 2 without changing that message table.
  */
 final class NetworkProtocolPinTest {
     private static final Path MAIN = Path.of("src", "main", "java");
@@ -50,6 +50,9 @@ final class NetworkProtocolPinTest {
                 assertTrue(protocol.find() && !protocol.find(), "One protocol version per source: " + file);
                 channel.reset().find();
                 protocol.reset().find();
+                if ("classic_controls".equals(channel.group(1))) {
+                    assertEquals("2", protocol.group(1), "R92 monitor protocol must reject version-1 peers");
+                }
                 Matcher message = MESSAGE.matcher(source);
                 int messages = 0;
                 while (message.find()) {

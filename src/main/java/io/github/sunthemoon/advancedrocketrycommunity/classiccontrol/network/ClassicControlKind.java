@@ -30,7 +30,14 @@ public enum ClassicControlKind {
      */
     STATION_ORIENTATION_CONTROLLER(3, 19, -1, 0, -1,
             new int[] {0, -60, -60, -60, 0, 0, 0},
-            new int[] {1, 60, 60, 60, 359, 359, 359});
+            new int[] {1, 60, 60, 60, 359, 359, 359}),
+    /** R92: monitor actions and the 21-scalar layout documented in W153; earlier kinds are unchanged. */
+    ROCKET_MONITOR(4, 8, 2, 159, 6,
+            new int[] {0, -1, -4096000, -64000, -1, 0, 0, 0, -1, 0,
+                    -1, 0, 0, 0, -1, -1, 0, 0, 0, -1, 0},
+            new int[] {8, 8, 4096000, 64000, 159, 160, 1, 1, 27, 2,
+                    4, 2048000, 2048000, 2048000, Integer.MAX_VALUE,
+                    4, 2048000, 2048000, 2048000, Integer.MAX_VALUE, 2048000});
 
     private final int wireId;
     private final int actions;

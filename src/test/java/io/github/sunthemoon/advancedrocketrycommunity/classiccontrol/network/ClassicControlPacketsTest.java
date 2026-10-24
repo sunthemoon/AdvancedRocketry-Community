@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Test;
 
 /**
  * ADR-065 section 11.1: the three {@code classic_controls} messages. Every frame stays inside its frozen bound, a
- * deliberately malformed frame is a {@link DecoderException}, and only protocol 1 is accepted.
+ * deliberately malformed frame is a {@link DecoderException}, and only protocol 2 is accepted (R92).
  */
 final class ClassicControlPacketsTest {
     private static final ClassicControlKind WARP = ClassicControlKind.WARP_CONTROLLER;
@@ -38,9 +38,9 @@ final class ClassicControlPacketsTest {
 
     @Test
     void onlyTheExactProtocolIsAccepted() {
-        assertEquals("1", ClassicControlsNetwork.protocolVersion());
-        assertTrue(ClassicControlsNetwork.acceptsProtocol("1"));
-        for (String version : new String[] {null, "", "0", "2", "01", "1 ", "1.0",
+        assertEquals("2", ClassicControlsNetwork.protocolVersion());
+        assertTrue(ClassicControlsNetwork.acceptsProtocol("2"));
+        for (String version : new String[] {null, "", "0", "1", "3", "01", "1 ", "1.0", "02", "2 ", "2.0",
                 NetworkRegistry.ABSENT.version(), NetworkRegistry.ACCEPTVANILLA}) {
             assertFalse(ClassicControlsNetwork.acceptsProtocol(version), "version " + version);
         }
@@ -79,10 +79,41 @@ final class ClassicControlPacketsTest {
     }
 
     @Test
+    void r92KeepsTheLegacyKindsByteIdenticalAndAddsOnlyKindFour() {
+        // Golden version-1 frames: schema, container, kind, optional status, token, fixed int layout.
+        String[] goldenViews = {
+                "01010000000000000000000007ffffffffffffffff00000000000000000000000000000000ffffffff",
+                "0101010000000000000000000100000000",
+                "0101020000000000000000000100000004",
+                "0101030000000000000000000700000000ffffffc4ffffffc4ffffffc4000000000000000000000000"};
+        int[] actions = {5, 4, 5, 19};
+        for (int id = 0; id < 4; id++) {
+            var kind = ClassicControlKind.byWireId(id).orElseThrow();
+            assertEquals(actions[id], kind.actions());
+            assertEquals(id == 0 ? 2 : -1, kind.valueAction());
+            assertEquals(id == 0 ? 31 : 0, kind.valueMaximum());
+            assertEquals(id == 0 ? 3 : -1, kind.tokenAction());
+            var minimum = new ArrayList<Integer>();
+            for (int index = 0; index < kind.valueCount(); index++) { minimum.add(kind.minimum(index)); }
+            var view = encode(new ClassicControlViewPacket(1, kind, Optional.empty(), 0, minimum), ClassicControlViewPacket::encode);
+            assertEquals(goldenViews[id], io.netty.buffer.ByteBufUtil.hexDump(view));
+            var intent = encode(new ClassicControlIntentPacket(1, kind, 0, 0, 0), ClassicControlIntentPacket::encode);
+            assertEquals("01010" + id + "00000000000000000000", io.netty.buffer.ByteBufUtil.hexDump(intent));
+        }
+        var monitor = ClassicControlKind.ROCKET_MONITOR;
+        assertEquals(4, monitor.wireId()); assertEquals(21, monitor.valueCount());
+        assertEquals(512, ClassicControlIntentPacket.MAX_BYTES); assertEquals(8192, ClassicControlViewPacket.MAX_BYTES);
+        assertThrows(IllegalArgumentException.class, () -> new ClassicControlIntentPacket(1, monitor, 2, 160, 0));
+        assertThrows(IllegalArgumentException.class, () -> new ClassicControlIntentPacket(1, monitor, 6, 0, 0));
+        assertThrows(IllegalArgumentException.class, () -> new ClassicControlIntentPacket(1, monitor, 7, 0, 1));
+        assertThrows(IllegalArgumentException.class, () -> new ClassicControlIntentPacket(1, monitor, 8, 0, 0));
+    }
+
+    @Test
     void malformedIntentFramesAreDecoderExceptions() {
         List<byte[]> frames = List.of(
                 intent(2, 1, 0, 1, 0, 0L),   // schema 2
-                intent(1, 1, 4, 0, 0, 0L),   // unknown kind
+                intent(1, 1, 5, 0, 0, 0L),   // first unassigned kind after R92
                 intent(1, 0, 0, 0, 0, 0L),   // container 0
                 intent(1, 1, 0, 5, 0, 0L),   // warp action 5
                 intent(1, 1, 0, 2, 32, 0L),  // request value 32
@@ -164,7 +195,7 @@ final class ClassicControlPacketsTest {
         String code = StationManagementCode.WARP_ISSUED.name();
         List<byte[]> frames = List.of(
                 view(2, 1, 0, 0, null, 0L, 7, warpValues()),        // schema 2
-                view(1, 1, 9, 0, null, 0L, 7, warpValues()),        // unknown kind
+                view(1, 1, 5, 0, null, 0L, 7, warpValues()),        // first unassigned kind after R92
                 view(1, 1, 0, 2, null, 0L, 7, warpValues()),        // status flag 2
                 view(1, 1, 0, 1, "NOT_A_CODE", 0L, 7, warpValues()), // unknown code
                 view(1, 1, 0, 0, null, 0L, 6, warpValues()),        // a count that is not the kind's
