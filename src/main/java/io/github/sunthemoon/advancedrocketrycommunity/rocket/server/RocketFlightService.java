@@ -13,6 +13,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlight
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightState;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferInspection;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecoveryReport;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightQuotes;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketOperationLedger;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationDestinationSummary;
@@ -308,6 +310,9 @@ final class RocketFlightService {
         }
         RocketFlightData countdown = docked.withPlan(pad == null ? planned.plan() : planned.plan().withLandingPad(pad))
                 .startCountdown(rocket.level().getGameTime());
+        var server = ((ServerLevel) rocket.level()).getServer();
+        var journal = RocketTransferSavedData.get(server);
+        var predecessor = journal.findByLogicalRocket(countdown.logicalRocketId()).orElse(null);
         return transfers.prepareLaunch(rocket, countdown, new RocketRequestCompletion(() -> {
             if (requests.outcome(requestId) != RocketOperationLedger.Outcome.ACTIVE) { return; }
             requests.finish(requestId, true);
@@ -318,8 +323,18 @@ final class RocketFlightService {
                 report(player, rocket, RocketFlightAction.LAUNCH, destination, requestId,
                         new RocketFlightRequestResult(RocketFlightRequestCode.SUCCESS, planned.requiredFuel()));
             }
-        }, () -> requests.finish(requestId, false), requester),
+        }, launchDiscarded(requests, requestId, requester, journal, predecessor, (playerId, result) -> {
+            var player = server.getPlayerList().getPlayer(playerId);
+            if (player != null) { report(player, rocket, RocketFlightAction.LAUNCH, destination, requestId, result); }
+        }), requester),
                 () -> revalidateLaunch(rocket, countdown.plan().orElseThrow(), source, destination, actorId, operator, requester));
+    }
+
+    /** Owner-thread completion; the reporting adapter resolves the requester only when this callback runs. */
+    static Runnable launchDiscarded(RocketOperationLedger requests, UUID requestId, UUID requester,
+            RocketTransferSavedData journal, RocketTransferRecord predecessor,
+            java.util.function.BiConsumer<UUID, RocketFlightRequestResult> report) {
+        return () -> requests.finish(requestId, false);
     }
 
     /** I7 waits without refreshing its quote: changed permission, route or fuel calculation refuses the original request. */

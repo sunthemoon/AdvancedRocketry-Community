@@ -13,6 +13,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlight
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightPlanner;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFuelState;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightRequestCode;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketOperationLedger;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalTestAccess;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition;
@@ -162,6 +164,58 @@ class RocketRetirementTerminalTest {
         assertSame(f.old, f.journal.findByLogicalRocket(f.logical()).orElseThrow());
     }
 
+    @Test void spentDemandReportsExactlyOneExistingRefusalToItsRequesterAndNeverTicketsAgain() {
+        var f = new Fixture(); var requests = new RocketOperationLedger();
+        var request = f.next.transferId(); var requester = UUID.randomUUID();
+        assertEquals(RocketOperationLedger.BeginResult.STARTED, requests.begin(request));
+        var replies = new ArrayList<RocketFlightRequestCode>();
+        f.discardedEffect = RocketFlightService.launchDiscarded(requests, request, requester, f.journal, f.old,
+                (player, result) -> { assertEquals(requester, player); replies.add(result.code()); });
+        f.port.coldSurvivor = true; f.begin();
+        for (int tick = 101; tick < 500; tick++) { f.port.now = tick; f.retirements.tick(); }
+        assertTrue(replies.isEmpty()); assertEquals(RocketOperationLedger.Outcome.ACTIVE, requests.outcome(request));
+        f.port.now = 500; f.retirements.tick();
+        assertEquals(List.of(RocketFlightRequestCode.TRANSFER_JOURNAL_BLOCKED), replies);
+        assertEquals(RocketOperationLedger.Outcome.FAILED, requests.outcome(request));
+        assertEquals(3, f.port.tickets); assertFalse(f.retirements.pending(f.logical()));
+        for (int tick = 501; tick <= 1200; tick++) { f.port.now = tick; f.retirements.tick(); }
+        f.discardedEffect.run(); f.discardedEffect.run(); f.retirements.clear(); f.acknowledge();
+        assertEquals(1, replies.size()); assertEquals(3, f.port.tickets); assertEquals(0, f.accepted);
+        assertSame(f.old, f.journal.findByLogicalRocket(f.logical()).orElseThrow());
+    }
+
+    @Test void submittedUnknownSuccessorNeverReportsAPreReplacementRefusal() {
+        var f = new Fixture(); var requests = new RocketOperationLedger(); var request = f.next.transferId();
+        requests.begin(request); var replies = new ArrayList<RocketFlightRequestCode>();
+        f.discardedEffect = RocketFlightService.launchDiscarded(requests, request, UUID.randomUUID(), f.journal, f.old,
+                (player, result) -> replies.add(result.code()));
+        f.begin(); f.complete(0); f.complete(1);
+        var type = ManagedSavedDataType.ROCKET_TRANSFERS;
+        var unknown = new CheckedSavedDataPolicy(type, (staged, target) -> {
+            CheckedSavedDataFile.atomicMove(staged, target); throw new IOException("Uncertain I7 move");
+        }, (target, managed) -> { throw new IllegalStateException("Unreadable I7 readback"); });
+        RocketJournalTestAccess.write(f.journal, directory.resolve(type.fileName()), unknown, 2000);
+        assertEquals(RocketTransferSavedData.WriteOutcome.UNKNOWN, f.journal.checkedWriteResult().outcome());
+        for (int tick = 101; tick <= 1200; tick++) { f.port.now = tick; f.retirements.tick(); }
+        assertTrue(replies.isEmpty()); assertEquals(RocketOperationLedger.Outcome.ACTIVE, requests.outcome(request));
+        f.retirements.clear(); f.discardedEffect.run(); f.acknowledge();
+        assertTrue(replies.isEmpty()); assertEquals(0, f.accepted); assertEquals(1, f.port.tickets);
+        assertSame(f.next, f.journal.findByLogicalRocket(f.logical()).orElseThrow());
+    }
+
+    @Test void completedAndNonPlayerRequestsDoNotReceiveLateRefusals() {
+        var f = new Fixture(); var requests = new RocketOperationLedger(); var request = f.next.transferId();
+        requests.begin(request); requests.finish(request, true);
+        var replies = new ArrayList<RocketFlightRequestCode>();
+        RocketFlightService.launchDiscarded(requests, request, UUID.randomUUID(), f.journal, f.old,
+                (player, result) -> replies.add(result.code())).run();
+        assertEquals(RocketOperationLedger.Outcome.SUCCEEDED, requests.outcome(request));
+        requests.clear(); requests.begin(request);
+        RocketFlightService.launchDiscarded(requests, request, null, f.journal, f.old,
+                (player, result) -> replies.add(result.code())).run();
+        assertEquals(RocketOperationLedger.Outcome.FAILED, requests.outcome(request)); assertTrue(replies.isEmpty());
+    }
+
     @Test void aCandidateLoadedAfterCapturePreventsTheTerminal() {
         var f = new Fixture(); f.begin(); f.complete(0); f.port.changed = "CENSUS_CHANGED"; f.complete(1);
         assertSame(f.old, f.journal.findByLogicalRocket(f.logical()).orElseThrow());
@@ -237,6 +291,7 @@ class RocketRetirementTerminalTest {
         final Port port = new Port(next);
         final RocketOrdinaryRetirement retirements = new RocketOrdinaryRetirement(new HashSet<>(), new HashSet<>(), Set::of, s -> port);
         int accepted, discarded; long writes;
+        Runnable discardedEffect = () -> discarded++;
         Fixture() { journal.put(old); acknowledge(); }
         UUID logical() { return old.logicalRocketId(); }
         void acknowledge() {
@@ -247,7 +302,7 @@ class RocketRetirementTerminalTest {
         void begin(RocketOrdinaryRetirement.Site site) {
             try (var held = RocketOrdinaryRetirement.hold(journal, logical())) {
                 retirements.begin(port, journal, site, old, old.destinationEntityId().orElseThrow(),
-                        List.of(), false, held, new RocketOrdinaryRetirement.Effects(() -> { accepted++; return true; }, () -> discarded++));
+                        List.of(), false, held, new RocketOrdinaryRetirement.Effects(() -> { accepted++; return true; }, () -> discardedEffect.run()));
             }
         }
         void complete(int index) {
