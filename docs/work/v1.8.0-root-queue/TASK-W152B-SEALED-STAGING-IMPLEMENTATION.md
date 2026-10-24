@@ -91,3 +91,22 @@ remaining failure is the chest and barrel adapter's `saveWithoutMetadata()`, whi
    boundary applies.
 4. **Rerun the probe** with every scenario, including the 12 serialization cases. If all pass, continue with the
    slices; otherwise stop and report. Keep the 90-second lock hand-off rule.
+
+## Root decision R100 (2026-10-24), on the save-refusal prerequisite (`2a1e0a43`)
+
+The R98 probe passed. W154 section 2 left open whether a carrier with an out-of-bounds or non-round-trippable root
+reuses the R-021 save guard, which refuses saving the whole chunk.
+
+1. **The carrier uses no save refusal and does not reuse R-021's guard.** Only this mod's staging writes a carrier
+   root. Staging measures it before any mutation and refuses to stage if it would not fit, so no state is changed. In
+   play, nothing changes a carrier's contents afterwards; it is inert. A root that grew could only have come from an
+   operator edit or a corrupted file.
+2. **A loaded root that fails validation** (missing, malformed, future schema, unknown adapter or registry ID, or out of
+   bounds) keeps the member sealed and held. Its original tag is written back exactly as loaded on every save: no
+   re-encoding, truncation, empty member or air. Copying the loaded tag verbatim is lossless whatever its size, so
+   no save is refused. Log one bounded WARN per carrier per load, not per save.
+3. **No new exception-based save control** and no Level-wide state. ADR-065 and R-035 record this as the carrier's
+   preservation policy.
+
+Continue with the remaining slices (the registered carrier, `SEALED_DISASSEMBLY`, C0 to C5, unsealing and lazy
+unsealing, recovery, art and text, native cuts). Stop only for a new decision of the kind above.
