@@ -18,6 +18,7 @@ import java.util.UUID;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.IntSupplier;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import net.minecraft.nbt.CompoundTag;
@@ -167,6 +168,8 @@ final class RocketOrdinaryRetirement {
     private final RocketRetirementHolds holds = new RocketRetirementHolds();
     private final RocketFillRetirementPacing fills = new RocketFillRetirementPacing();
     private int attemptIds;
+    private IntSupplier sealedEntries = () -> 0, sealedAttempts = () -> 0;
+    private boolean capacityShared;
 
     RocketOrdinaryRetirement(Set<UUID> live, Set<UUID> settled, Supplier<Set<UUID>> fenced, Function<MinecraftServer, Port> ports) {
         this.live = live; this.settled = settled; this.fenced = fenced; this.ports = ports;
@@ -183,6 +186,17 @@ final class RocketOrdinaryRetirement {
                 .map(entry -> entry.port.reservation()).filter(java.util.Objects::nonNull).toList();
     }
     int size() { return pending.size(); }
+    /** One manager binds its sealed coordinator once. Counts are read on the same owner thread, never cached. */
+    void shareSealedCapacity(IntSupplier entries, IntSupplier attempts) {
+        if (capacityShared) { throw new IllegalStateException("Ordinary capacity already shared"); }
+        sealedEntries = java.util.Objects.requireNonNull(entries);
+        sealedAttempts = java.util.Objects.requireNonNull(attempts);
+        capacityShared = true;
+    }
+    boolean pendingRoom(UUID logical) {
+        return pending.containsKey(logical) || pending.size() + sealedEntries.getAsInt() < MAX_PENDING;
+    }
+    boolean attemptRoom() { return activeAttempts() + sealedAttempts.getAsInt() < MAX_ATTEMPTS; }
     /** Read-only, for tests: the attempts an entry for L has started so far, or -1 without one. */
     int attempts(UUID logical) { var entry = pending.get(logical); return entry == null ? -1 : entry.attempts; }
     /** Read-only, for tests: the last wait or failure reason of the entry for L, or null. */
@@ -194,7 +208,7 @@ final class RocketOrdinaryRetirement {
      */
     boolean admits(RocketTransferRecord record, RocketEntity survivor, List<RocketEntity> sources, List<RocketEntity> destinations) {
         // An existing entry for L is nudged or replaced by begin; only a new one needs room.
-        return holds.admitted(record, !pending.containsKey(record.logicalRocketId()) && pending.size() >= MAX_PENDING ? "PENDING_LIMIT"
+        return holds.admitted(record, !pendingRoom(record.logicalRocketId()) ? "PENDING_LIMIT"
                 : RocketRetirementGuards.offColumn(record, survivor, sources, destinations));
     }
 
@@ -307,7 +321,10 @@ final class RocketOrdinaryRetirement {
 
     private void start(Pending entry, long now) {
         if (entry.censusFull && entry.site != Site.BEFORE_REPLACE) { fail(entry, "CENSUS_LIMIT", now, RETRY_TICKS, false); return; }
-        if (entry.token == null && attempting() >= MAX_ATTEMPTS) { return; }
+        int own = entry.token != null ? 1 : 0;
+        if (activeAttempts() + sealedAttempts.getAsInt() - own >= MAX_ATTEMPTS) {
+            fail(entry, "BUSY", now, 1, false); return;
+        }
         var record = entry.record; var port = entry.port;
         var presence = port.survivor(record, entry.survivor, entry.census.get(0));
         if (presence == Presence.GONE || presence == Presence.UNLOADED && entry.site != Site.BEFORE_REPLACE) {
@@ -317,7 +334,7 @@ final class RocketOrdinaryRetirement {
         }
         if (entry.site.destination()) {
             // On demand only and paced (RocketFillRetirementPacing); source-return sites keep their loaded-only order below.
-            long next = fills.admit(entry.logical(), now, attempting() > MAX_ATTEMPTS);
+            long next = fills.admit(entry.logical(), now, activeAttempts() + sealedAttempts.getAsInt() > MAX_ATTEMPTS);
             if (next != now) { entry.notBefore = next; entry.releaseToken(); return; }
             entry.notBefore = now + RETRY_TICKS;
             // R89: I7's three opportunities also bound non-ticketable holds; a hold never grants an extra ticket.
@@ -527,7 +544,7 @@ final class RocketOrdinaryRetirement {
     }
 
     /** W98-R5: attempts in progress, and entries that still carry a caller's reservation. */
-    private int attempting() {
+    int activeAttempts() {
         int count = 0;
         for (var entry : pending.values()) { if (entry.state == State.PROVING || entry.token != null) { count++; } }
         return count;
