@@ -73,4 +73,14 @@ class RocketRejoinStartupTest {
             assertFalse(Files.exists(file(world))); assertEquals(0, new WorldDataMigrationService().migrate(world).migratedFileCount());
         }
     }
+
+    @Test void structuralPreflightRunsBeforeGenericMigrationCopies() {
+        var root = new CompoundTag() {
+            @Override public CompoundTag copy() { throw new AssertionError("Unvalidated root was copied"); }
+        };
+        root.putInt("schema_version", 1); root.putString("format_epoch", "v1.8.0-rocket-rejoins");
+        root.putLong("next_sequence", 0); root.put("batches", new ListTag()); root.put("entries", new ListTag());
+        // The structural preflight refuses a foreign writer as well as excessive size/depth/node count.
+        assertThrows(SavedDataMigrationException.class, () -> SavedDataSchemaMigrator.migrate(TYPE, root));
+    }
 }

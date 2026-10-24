@@ -25,6 +25,14 @@ public final class SavedDataSchemaMigrator {
     ) {
         Objects.requireNonNull(type, "type");
         Objects.requireNonNull(source, "source");
+        if (type == ManagedSavedDataType.ROCKET_REJOINS) {
+            // MigrationResult takes defensive copies; validate the sidecar's structure before those recursive walks.
+            try { io.github.sunthemoon.advancedrocketrycommunity.rocket.rejoin.RocketRejoinCodec.bounds(source); }
+            catch (RuntimeException invalid) {
+                throw new SavedDataMigrationException(MigrationDiagnosticId.INVALID_SCHEMA,
+                        type.dataName() + " exceeds its structural envelope", invalid);
+            }
+        }
         if (!source.contains(SCHEMA_KEY, Tag.TAG_INT)) {
             throw new SavedDataMigrationException(
                     MigrationDiagnosticId.INVALID_SCHEMA,
