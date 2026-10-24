@@ -57,7 +57,7 @@ public final class EscrowMonitorGameTests {
         final GameTestHelper helper;
         final ServerLevel earth, destinationLevel;
         final GameTestTickPacer pacer;
-        final BlockPos source = new BlockPos(660008, 100, 660008), device = source.south(3);
+        final BlockPos source, device;
         final UUID key = UUID.randomUUID();
         ResourceEscrowSavedData data;
         RocketEntity rocket;
@@ -72,6 +72,8 @@ public final class EscrowMonitorGameTests {
         long warmupStarted;
         Flight(GameTestHelper helper, boolean disarmAfterPrepared, boolean coldDestination) {
             this.disarmAfterPrepared = disarmAfterPrepared; this.coldDestination = coldDestination;
+            source = new BlockPos(660008 + (coldDestination ? 64 : disarmAfterPrepared ? 32 : 0), 100, 660008);
+            device = source.south(3);
             this.helper = helper; earth = helper.getLevel();
             destinationLevel = earth.getServer().getLevel(coldDestination ? CelestialIds.SPACE_LEVEL : CelestialIds.MOON_LEVEL);
             helper.assertTrue(destinationLevel != null, "Destination is unavailable"); pacer = new GameTestTickPacer(earth.getServer());
@@ -87,6 +89,10 @@ public final class EscrowMonitorGameTests {
         @Override public void testPassed(net.minecraft.gametest.framework.GameTestInfo info) { releaseTickets(); }
         @Override public void testFailed(net.minecraft.gametest.framework.GameTestInfo info) { releaseTickets(); }
         private void releaseTickets() {
+            if (monitor != null && earth.getBlockEntity(device) == monitor) {
+                earth.removeBlockEntity(device); earth.setBlockAndUpdate(device, Blocks.AIR.defaultBlockState());
+                earth.setBlockAndUpdate(device.east(), Blocks.AIR.defaultBlockState());
+            }
             earth.getChunkSource().removeRegionTicket(FIXTURE, new ChunkPos(source), 2, key);
             if (destination != null) {
                 for (var column : RocketDiscoveryColumns.of(destination).columns()) { destinationLevel.getChunkSource().removeRegionTicket(FIXTURE, column, 2, key); }
