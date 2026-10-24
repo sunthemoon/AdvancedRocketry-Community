@@ -1,0 +1,13 @@
+// Explicit native-cut test artifact. None of these observers enters the regular production JAR.
+allprojects {
+    afterEvaluate { project ->
+        tasks.register('w152NativeJar', Jar) {
+            dependsOn tasks.named('testClasses')
+            archiveClassifier = 'w152-native'
+            from sourceSets.main.output
+            from(sourceSets.test.output) { include '**/W152Native*.class'; exclude '**/*Test.class' }
+            manifest.from tasks.named('jar', Jar).get().manifest
+        }
+        project.reobf.create('w152NativeJar')
+    }
+}
