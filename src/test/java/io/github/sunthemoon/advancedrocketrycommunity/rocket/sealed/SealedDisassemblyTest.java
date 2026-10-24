@@ -11,6 +11,30 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 class SealedDisassemblyTest {
+    @Test void electedRecoveryDiscardsEveryExactCopyBeforeRequestingAbsence() throws Exception {
+        var world = new World(2); world.u = true; world.ram = "RESTORED"; world.copies = 3;
+        var run = recovery(world, true); run.finish(80);
+        assertEquals("SEALED", run.result()); assertEquals(0, world.copies);
+        assertEquals(3, world.mutations.stream().filter("discard"::equals).count());
+    }
+
+    @Test void preElectionRecoveryKeepsOneSurvivorAndRemovesOnlyItsExactDuplicates() throws Exception {
+        var world = new World(2); world.u = true; world.ram = "LOCKED"; world.copies = 3;
+        world.cells[0] = "OWNED";
+        var run = recovery(world, false); run.finish(80);
+        assertEquals("ROLLBACK_PROVED", run.result()); assertEquals(1, world.copies);
+        assertEquals(2, world.mutations.stream().filter("discard-duplicate"::equals).count());
+    }
+
+    @Test void lateExactCopyDuringNativeAbsenceWaitIsRetiredWithoutASecondElection() throws Exception {
+        var world = new World(2); var run = live(world);
+        while (!world.mutations.contains("discard")) { run.ticks(1); }
+        world.entity = "MATCHING"; world.copies = 1; world.proofs.remove("COMPLETE");
+        run.finish(80);
+        assertEquals("SEALED", run.result()); assertEquals(0, world.copies);
+        assertEquals(1, world.mutations.stream().filter("elect"::equals).count());
+        assertEquals(2, world.mutations.stream().filter("discard"::equals).count());
+    }
     @Test void aChangedSurvivorAfterTerrainProofCannotElectTheSealedSnapshot() throws Exception {
         var world = new World(2); var run = live(world);
         run.ticks(3); assertEquals(2, world.staged); assertFalse(run.flag("electionSubmitted"));
@@ -182,7 +206,7 @@ class SealedDisassemblyTest {
 
     private static final class World {
         final String[] cells; final List<String> mutations = new ArrayList<>(); final Set<String> proofs = new HashSet<>();
-        long tick; int inspected, staged, erased; int failStage = -1;
+        long tick; int inspected, staged, erased, copies = 1; int failStage = -1;
         boolean u, checkpoint, unknownElection, unknownRemoval, loseEntityOnFailure, refuseRetain;
         boolean autoAck = true, autoProof = true, request = true, predecessor = true;
         String entity = "MATCHING", gate = "READY", ram, ack;
@@ -195,6 +219,11 @@ class SealedDisassemblyTest {
                 case "predecessorAbsent" -> predecessor;
                 case "inspect" -> { inspected++; yield cells[(int) args[0]]; }
                 case "entity" -> entity;
+                case "soleSurvivor" -> copies == 1 && "MATCHING".equals(entity);
+                case "discardDuplicate" -> {
+                    assertTrue(copies > 1); assertNotEquals("RESTORED", ram);
+                    copies--; mutations.add("discard-duplicate"); yield true;
+                }
                 case "stage" -> {
                     int index = (int) args[0];
                     assertTrue(proofs.contains("PREPARE"), "Staged without expanded native capacity preflight");
@@ -209,7 +238,7 @@ class SealedDisassemblyTest {
                 }
                 case "discard" -> {
                     assertEquals("RESTORED", ack); assertTrue(proofs.contains("SEALED"));
-                    entity = "ABSENT"; mutations.add("discard"); yield true;
+                    copies--; entity = copies == 0 ? "ABSENT" : "MATCHING"; mutations.add("discard"); yield true;
                 }
                 case "retain" -> { if (!u && !refuseRetain) { u = true; ram = "LOCKED"; mutations.add("retain"); } yield null; }
                 case "retainedAcknowledged" -> u && "LOCKED".equals(ram) && ram.equals(ack);
@@ -228,7 +257,9 @@ class SealedDisassemblyTest {
                 }
                 case "absentAcknowledged" -> !u && "ABSENT".equals(ack);
                 case "checkpoint" -> { checkpoint = true; yield null; }
-                case "proofCurrent" -> proofs.contains(args[0].toString());
+                case "proofCurrent" -> proofs.contains(args[0].toString())
+                        && (!args[0].toString().equals("COMPLETE") || entity.equals("ABSENT"))
+                        && (!args[0].toString().equals("ROLLBACK") || copies == 1);
                 case "requestProof" -> { if (autoProof) { proofs.add(args[0].toString()); } yield null; }
                 case "held" -> null;
                 default -> throw new AssertionError(method);

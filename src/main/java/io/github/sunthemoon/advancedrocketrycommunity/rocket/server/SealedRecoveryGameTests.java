@@ -50,7 +50,18 @@ public final class SealedRecoveryGameTests {
     public static void earlierRecordWithoutDCompletesTheExistingBlockFallback(GameTestHelper helper) {
         recover(helper, false, false);
     }
+    @GameTest(template = "rocket_test", batch = "w152_copies", timeoutTicks = 400)
+    public static void electedRecoveryRetiresBothExactNativeCopies(GameTestHelper helper) {
+        recover(helper, true, true, true);
+    }
+    @GameTest(template = "rocket_test", batch = "w152_copies", timeoutTicks = 400)
+    public static void earlierRecoveryKeepsTheBoundSurvivorAndRetiresItsExactCopy(GameTestHelper helper) {
+        recover(helper, false, true, true);
+    }
     private static void recover(GameTestHelper helper, boolean elected, boolean survivor) {
+        recover(helper, elected, survivor, false);
+    }
+    private static void recover(GameTestHelper helper, boolean elected, boolean survivor, boolean duplicate) {
         var level = helper.getLevel(); var server = level.getServer();
         // Reflection lets the committed regression execute against the pre-implementation source.
         tracked(server, UUID.randomUUID());
@@ -68,6 +79,13 @@ public final class SealedRecoveryGameTests {
         var rocket = ModEntities.ROCKET.get().create(level); helper.assertTrue(rocket != null, "Missing rocket type");
         rocket.initialize(snapshot, logical, owner); RocketTransferEntities.positionAtOrigin(rocket, snapshot.sourceOrigin());
         if (survivor) { helper.assertTrue(level.addFreshEntity(rocket), "Fixture D was not published"); }
+        var copies = new java.util.ArrayList<io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity>();
+        if (duplicate) {
+            var image = new CompoundTag(); helper.assertTrue(rocket.save(image), "Fixture D was not serializable");
+            var copy = ModEntities.ROCKET.get().create(level); helper.assertTrue(copy != null, "Missing copy type");
+            copy.load(image); copy.setUUID(UUID.randomUUID());
+            helper.assertTrue(level.addFreshEntity(copy), "Fixture copy was not published"); copies.add(copy);
+        }
         var data = RocketTransactionSavedData.get(server);
         var record = new RocketTransactionRecord(id, RocketTransactionType.SEALED_DISASSEMBLY,
                 elected ? RocketTransactionPhase.RESTORED : RocketTransactionPhase.LOCKED,
@@ -106,6 +124,8 @@ public final class SealedRecoveryGameTests {
                 return;
             }
             boolean rollback = !elected && survivor;
+            helper.assertTrue(copies.stream().noneMatch(copy -> level.getEntity(copy.getUUID()) != null),
+                    "Recovery released U while an exact duplicate remained live");
             if (rollback) {
                 helper.assertTrue(level.getEntity(rocket.getUUID()) == rocket && rocket.isAlive(), "Rollback lost the original D");
                 helper.assertTrue(level.getBlockState(origin).isAir() && level.getBlockState(origin.east()).isAir(), "Rollback retained terrain");
