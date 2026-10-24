@@ -13,6 +13,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlight
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightState;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferInspection;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecoveryReport;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightQuotes;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketOperationLedger;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationDestinationSummary;
@@ -308,6 +310,9 @@ final class RocketFlightService {
         }
         RocketFlightData countdown = docked.withPlan(pad == null ? planned.plan() : planned.plan().withLandingPad(pad))
                 .startCountdown(rocket.level().getGameTime());
+        var server = ((ServerLevel) rocket.level()).getServer();
+        var journal = RocketTransferSavedData.get(server);
+        var predecessor = journal.findByLogicalRocket(countdown.logicalRocketId()).orElse(null);
         return transfers.prepareLaunch(rocket, countdown, new RocketRequestCompletion(() -> {
             if (requests.outcome(requestId) != RocketOperationLedger.Outcome.ACTIVE) { return; }
             requests.finish(requestId, true);
@@ -318,7 +323,61 @@ final class RocketFlightService {
                 report(player, rocket, RocketFlightAction.LAUNCH, destination, requestId,
                         new RocketFlightRequestResult(RocketFlightRequestCode.SUCCESS, planned.requiredFuel()));
             }
-        }, () -> requests.finish(requestId, false), requester));
+        }, launchDiscarded(requests, requestId, requester, journal, predecessor, (playerId, result) -> {
+            var player = server.getPlayerList().getPlayer(playerId);
+            if (player != null) { report(player, rocket, RocketFlightAction.LAUNCH, destination, requestId, result); }
+        }), requester),
+                () -> revalidateLaunch(rocket, countdown.plan().orElseThrow(), source, destination, actorId, operator, requester));
+    }
+
+    /** Owner-thread completion; the reporting adapter resolves the requester only when this callback runs. */
+    static Runnable launchDiscarded(RocketOperationLedger requests, UUID requestId, UUID requester,
+            RocketTransferSavedData journal, RocketTransferRecord predecessor,
+            java.util.function.BiConsumer<UUID, RocketFlightRequestResult> report) {
+        return () -> {
+            if (requests.outcome(requestId) != RocketOperationLedger.Outcome.ACTIVE) { return; }
+            requests.finish(requestId, false);
+            // A submitted successor (including UNKNOWN) is not a definitive pre-replacement refusal.
+            if (requester != null && predecessor != null && predecessor.nativeTransfer().isEmpty()
+                    && journal.find(predecessor.transferId()).orElse(null) == predecessor
+                    && journal.find(requestId).isEmpty()) {
+                report.accept(requester, RocketFlightRequestResult.failure(RocketFlightRequestCode.TRANSFER_JOURNAL_BLOCKED));
+            }
+        };
+    }
+
+    /** I7 waits without refreshing its quote: changed permission, route or fuel calculation refuses the original request. */
+    private boolean revalidateLaunch(RocketEntity rocket, io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightPlan expected,
+            TravelTarget source, TravelTarget destination, UUID actor, boolean operator, UUID requester) {
+        var server = rocket.getServer();
+        // A paced I7 load can replace the Java instance, never the accepted physical or logical identity.
+        if (rocket.level() instanceof ServerLevel level && level.getEntity(rocket.getUUID()) instanceof RocketEntity loaded) {
+            rocket = loaded;
+        }
+        if (server == null || !rocket.operational()) { return false; }
+        if (requester != null) {
+            var player = server.getPlayerList().getPlayer(requester);
+            if (player == null || !access(player, rocket.getId()).success() || !authorized(player, rocket)) { return false; }
+            operator = player.hasPermissions(2);
+        }
+        var flight = launchSource(rocket.flightData().orElseThrow(), rocket.level().getGameTime()).orElse(null);
+        var stations = StationRegistrySavedData.get(server);
+        if (flight == null || !stations.operational() || !flight.currentTarget().filter(source::equals).isPresent()) { return false; }
+        for (var target : List.of(source, destination)) {
+            if (!(target instanceof TravelTarget.Station stationTarget)) { continue; }
+            var station = stations.find(stationTarget.instanceId()).orElse(null);
+            if (station == null || !stationAccess.allowed(station, actor, operator, StationAccessAction.VISIT)) { return false; }
+            if (target == source && stations.findAt(rocket.blockPosition().getX(), rocket.blockPosition().getZ())
+                    .filter(value -> value.stationId().equals(stationTarget.instanceId())).isEmpty()) { return false; }
+        }
+        var checked = plan(rocket, flight, source, destination, stations, expected.requestId(), captureCatalog());
+        if (!checked.success()) { return false; }
+        var candidate = checked.plan();
+        return candidate.sourceBody().equals(expected.sourceBody()) && candidate.destinationBody().equals(expected.destinationBody())
+                && candidate.sourceDimension().equals(expected.sourceDimension()) && candidate.destinationDimension().equals(expected.destinationDimension())
+                && Objects.equals(candidate.destinationStationId(), expected.destinationStationId())
+                && candidate.destinationTarget().equals(expected.destinationTarget()) && candidate.requiredFuel() == expected.requiredFuel()
+                && Objects.equals(candidate.propulsionDebit(), expected.propulsionDebit());
     }
 
     RocketFlightRequestResult requestAdminPadFlight(RocketEntity rocket, UUID stationId,

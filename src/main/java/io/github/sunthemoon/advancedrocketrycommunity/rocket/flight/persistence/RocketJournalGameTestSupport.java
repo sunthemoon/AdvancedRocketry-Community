@@ -24,7 +24,18 @@ public final class RocketJournalGameTestSupport {
                     && !io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate.idle(rocket),
                     "Bound launch did not wait at its frozen F1/no-T boundary");
         } else {
-            helper.assertTrue(!journal.acknowledgedCurrent(), "Launch synchronously acknowledged its newly captured generation");
+            var logical = rocket.assemblyTransactionId().orElseThrow();
+            var predecessor = journal.findByLogicalRocket(logical).orElse(null);
+            if (predecessor != null && predecessor.phase()
+                    == io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferPhase.COMMITTED) {
+                // I7 has not captured T' yet: the acknowledged T remains while the destination proof owns the request.
+                helper.assertTrue(journal.logicalAcknowledged(logical)
+                        && predecessor.destinationEntityId().filter(rocket.getUUID()::equals).isPresent()
+                        && !io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime.resourceMutationAllowed(rocket),
+                        "Relaunch did not retain and interlock its acknowledged predecessor");
+            } else {
+                helper.assertTrue(!journal.acknowledgedCurrent(), "Launch synchronously acknowledged its newly captured generation");
+            }
         }
     }
     public static io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecoveryReport recoverFixture(

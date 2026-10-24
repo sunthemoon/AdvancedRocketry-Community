@@ -95,7 +95,7 @@ final class RocketFillRetirementPacing {
             return "UNSUPPORTED_ENTITY_STORAGE";
         }
         if (!port.escrowAllows(journal, record, token)) { return "BUSY"; }
-        if (port.projection(record, survivor) == null) { return "SURVIVOR_CONFLICT"; }
+        if (!port.ticketReady(record, survivor)) { return "SURVIVOR_CONFLICT"; }
         port.keepLoaded(record, census);
         return null;
     }

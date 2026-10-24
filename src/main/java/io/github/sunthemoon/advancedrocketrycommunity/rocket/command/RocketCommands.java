@@ -53,6 +53,7 @@ public final class RocketCommands {
             UUID.fromString("00000000-0000-0000-0000-000000000005");
 
     private final RocketManager rockets;
+    private io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketPredecessorNativeFixture predecessorFixture;
 
     public RocketCommands(RocketManager rockets) {
         this.rockets = Objects.requireNonNull(rockets, "rockets");
@@ -78,6 +79,16 @@ public final class RocketCommands {
                                 .executes(this::recoverTransfer)));
         if (Boolean.getBoolean(RELEASE_TEST_HOOK_PROPERTY)) {
             root.then(Commands.literal("release-test")
+                    .then(Commands.literal("predecessor-fixture").then(Commands.argument(ROCKET_ARGUMENT, EntityArgument.entity())
+                            .then(Commands.argument("mode", StringArgumentType.word()).executes(context -> {
+                                if (predecessorFixture != null) { throw new IllegalStateException("Only one predecessor fixture per process"); }
+                                predecessorFixture = new io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketPredecessorNativeFixture(
+                                        context.getSource().getServer(), (RocketEntity) EntityArgument.getEntity(context, ROCKET_ARGUMENT),
+                                        StringArgumentType.getString(context, "mode"));
+                                return 1;
+                            }))))
+                    .then(Commands.literal("predecessor-land").executes(context -> { predecessorFixture.land(); return 1; }))
+                    .then(Commands.literal("predecessor-launch").executes(context -> { predecessorFixture.launch(); return 1; }))
                     .then(Commands.literal("journal-probe-start").executes(context -> journalProbe(context, "start")))
                     .then(Commands.literal("journal-probe-dump").executes(context -> journalProbe(context, "dump")))
                     .then(Commands.literal("journal-hold-release").executes(context -> journalProbe(context, "release")))
