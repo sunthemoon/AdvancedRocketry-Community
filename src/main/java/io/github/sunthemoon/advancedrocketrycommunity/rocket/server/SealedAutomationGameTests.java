@@ -62,11 +62,14 @@ public final class SealedAutomationGameTests {
         var carriers = new ArrayList<SealedRocketBlockEntity>(); var roots = new ArrayList<CompoundTag>();
         var containers = new ArrayList<BlockPos>(); var recipient = new SimpleContainer(2);
         for (int index = 0; index < targets.size(); index++) {
-            var at = targets.get(index); var block = snapshot.blocks().get(index);
+            var at = targets.get(index);
+            var block = snapshot.blocks().stream().filter(value -> value.position().equals(new RocketPosition(at.getX() - origin.getX(),
+                    at.getY() - origin.getY(), at.getZ() - origin.getZ()))).findFirst().orElseThrow();
+            int memberIndex = snapshot.blocks().indexOf(block);
             var state = ModBlocks.SEALED_ROCKET_BLOCK.get().defaultBlockState(); level.setBlock(at, state, 2);
             var carrier = new SealedRocketBlockEntity(at, state);
             carrier.initialize(SealedRocketRoot.stage(new SealedRocketMember(id, snapshot.snapshotId(), entity, snapshot.contentHash(),
-                    snapshot.sourceDimension(), position(at), index, block.state(), block.blockEntityPayload().orElseThrow())));
+                    snapshot.sourceDimension(), position(at), memberIndex, block.state(), block.blockEntityPayload().orElseThrow())));
             level.setBlockEntity(carrier); carrier.setChanged(); carriers.add(carrier); roots.add(carrier.saveWithoutMetadata());
             level.setBlock(at.below(), Blocks.HOPPER.defaultBlockState().setValue(HopperBlock.FACING, Direction.EAST), 3);
             level.setBlock(at.west(), Blocks.HOPPER.defaultBlockState().setValue(HopperBlock.FACING, Direction.EAST), 3);
@@ -92,11 +95,17 @@ public final class SealedAutomationGameTests {
                     }
                     helper.assertTrue(((Container) level.getBlockEntity(at.west())).getItem(0).getCount() == 3, "Hopper inserted into C");
                     helper.assertTrue(count(level, containers, bounds, recipient, "original") == 0, "Hopper/dropper/pipe extracted from C");
+                    if (age == 59) {
+                        helper.assertTrue(((Container) level.getBlockEntity(at.north())).getItem(0).getCount() == 2, "Powered dropper did not tick");
+                        helper.assertTrue(((net.minecraft.world.level.block.entity.HopperBlockEntity) level.getBlockEntity(at.west()))
+                                .getLastUpdateTime() >= level.getGameTime() - 1, "Push hopper did not tick");
+                    }
                 } else if (live instanceof Container && !pipeUsed[index]) {
                     var handler = live.getCapability(ForgeCapabilities.ITEM_HANDLER).orElseThrow(IllegalStateException::new);
-                    var preview = handler.insertItem(1, pipeForeign[index], true);
-                    var remainder = handler.insertItem(1, pipeForeign[index], false);
+                    var preview = handler.insertItem(2, pipeForeign[index], true);
+                    var remainder = handler.insertItem(2, pipeForeign[index], false);
                     helper.assertTrue(preview.getCount() == remainder.getCount(), "Simulated insertion changed resources");
+                    helper.assertTrue(remainder.isEmpty(), "Published target refused pipe input into its empty slot");
                     pipeForeign[index] = remainder;
                     var simulated = handler.extractItem(0, 64, true); var extracted = handler.extractItem(0, 64, false);
                     helper.assertTrue(ItemStack.matches(simulated, extracted), "Simulated extraction changed resources");
@@ -112,8 +121,8 @@ public final class SealedAutomationGameTests {
                 if (released[0] < 0) { released[0] = level.getGameTime(); }
                 helper.assertTrue(data.acknowledgedAbsent(id, snapshot.snapshotId(), entity), "Native inventory preceded checked U absence");
                 helper.assertTrue(count(level, containers, bounds, recipient, "original") == 14, "Published original inventory was lost or replayed");
-                helper.assertTrue(carriers.stream().allMatch(BlockEntity -> BlockEntity.isRemoved()
-                        && !BlockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER).isPresent()), "Cached C reference gained access");
+                helper.assertTrue(carriers.stream().allMatch(carrier -> carrier.isRemoved()
+                        && !carrier.getCapability(ForgeCapabilities.ITEM_HANDLER).isPresent()), "Cached C reference gained access");
                 if (level.getGameTime() - released[0] >= 20) { done[0] = true; helper.succeed(); }
             }
         });
