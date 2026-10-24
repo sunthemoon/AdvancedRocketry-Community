@@ -73,14 +73,15 @@ public final class SealedDisassemblyGameTests {
                 var entities = AnvilRecordReader.read(server.getWorldPath(LevelResource.ROOT).resolve("entities"), new ChunkPos(origin)).root();
                 helper.assertTrue(RocketRetirementProof.absentSlot(entities, rocket.assemblyTransactionId().orElseThrow(), rocket.getUUID()),
                         "Native entity slot still held D at checked U retirement");
-                done[0] = true; helper.succeed();
+                done[0] = true;
             } catch (java.io.IOException | RuntimeException assertion) {
                 callbackFailure[0] = assertion.getClass().getSimpleName() + ":" + assertion.getMessage();
             }
         };
         helper.onEachTick(() -> {
             if (callbackFailure[0] != null) { helper.fail(callbackFailure[0]); }
-            if (done[0]) { return; }
+            // GameTest completion can synchronously start the next batch. Do not run it inside the production callback/claim.
+            if (done[0]) { helper.succeed(); return; }
             if (transaction[0] == null && level.areEntitiesLoaded(new ChunkPos(origin).toLong())) {
                 try {
                     var begin = RocketRuntime.class.getMethod("beginSealedForReleaseTest", RocketEntity.class, Consumer.class);
