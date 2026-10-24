@@ -84,6 +84,21 @@ class SealedTerrainImageTest {
         assertFalse(matches(root, members, true));
     }
 
+    @Test void recoveryProjectsOnlyMissingMembersAndRetainsExactExistingCarriers() throws Exception {
+        var first = member(1, 1, 1, 0); var second = member(2, 1, 1, 1);
+        var partial = project(empty(), List.of(first)).orElseThrow(); var before = partial.copy();
+        var members = List.of(first, second);
+        @SuppressWarnings("unchecked")
+        var full = (Optional<CompoundTag>) type().getMethod("projectRecovery", CompoundTag.class, List.class, BlockState.class)
+                .invoke(null, partial, members, Blocks.STONE.defaultBlockState());
+        assertTrue(full.isPresent()); assertEquals(before, partial);
+        assertTrue(matches(full.orElseThrow(), members, true));
+        assertEquals(2, full.orElseThrow().getList("block_entities", Tag.TAG_COMPOUND).size());
+        assertEquals(before.getList("block_entities", Tag.TAG_COMPOUND).getCompound(0),
+                full.orElseThrow().getList("block_entities", Tag.TAG_COMPOUND).getCompound(0));
+        assertTrue(project(partial, members).isEmpty(), "Live preflight must still require empty cells");
+    }
+
     @SuppressWarnings("unchecked") private static Optional<CompoundTag> project(CompoundTag root, List<SealedRocketMember> members)
             throws Exception {
         return (Optional<CompoundTag>) type().getMethod("project", CompoundTag.class, List.class, BlockState.class)

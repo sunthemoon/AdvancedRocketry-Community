@@ -174,6 +174,7 @@ class SealedDisassemblyTest {
                 case "entity" -> entity;
                 case "stage" -> {
                     int index = (int) args[0];
+                    assertTrue(proofs.contains("PREPARE"), "Staged without expanded native capacity preflight");
                     assertTrue(u && ram != null && ram.equals(ack), "Staged before exact U presence");
                     assertTrue(predecessor, "Staged before T absence"); assertEquals("EMPTY", cells[index]);
                     if (index == failStage) { if (loseEntityOnFailure) { entity = "ABSENT"; } yield false; }
