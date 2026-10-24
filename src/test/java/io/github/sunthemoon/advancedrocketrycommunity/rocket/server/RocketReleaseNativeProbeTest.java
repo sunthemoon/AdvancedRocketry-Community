@@ -11,6 +11,12 @@ import org.junit.jupiter.api.Test;
 
 class RocketReleaseNativeProbeTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
+    @Test void destinationAuthorityMustBeLoadedBeforeTheRestartObserverCountsIt() {
+        assertFalse(RocketReleaseNativeProbe.authorityReady("H2", true, false));
+        assertFalse(RocketReleaseNativeProbe.authorityReady("H2", false, true));
+        assertTrue(RocketReleaseNativeProbe.authorityReady("H2", true, true));
+        assertTrue(RocketReleaseNativeProbe.authorityReady("H1", true, false));
+    }
     private static RocketTransferRecord legacy() {
         var t = GovernedTransferFixture.create().record();
         return RocketTransferRecord.create(t.transferId(), t.logicalRocketId(), t.ownerId(), t.sourceEntityId(),

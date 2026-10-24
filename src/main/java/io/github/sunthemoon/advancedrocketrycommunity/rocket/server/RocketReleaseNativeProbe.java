@@ -89,9 +89,13 @@ public final class RocketReleaseNativeProbe {
                 && record.phase() != RocketTransferPhase.PREPARED && record.phase() != RocketTransferPhase.COMMITTED
                 && copies.contains(record.sourceEntityId()) && record.destinationEntityId().filter(copies::contains).isPresent();
     }
+    static boolean authorityReady(String hold, boolean source, boolean destination) {
+        return source && (!hold.equals("H2") || destination);
+    }
     private void advance() {
         require(++ticks <= 2400, "W158 native fixture exceeded 2400 ticks");
-        if (!server.overworld().areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(4, 4))) { return; }
+        if (!authorityReady(hold, server.overworld().areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(4, 4)),
+                server.getLevel(CelestialIds.MOON_LEVEL).areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(4, 4)))) { return; }
         if (!journal().retryChecked(server)) { return; }
         if (original == null && mode.equals("seed")) {
             var moon = server.getLevel(CelestialIds.MOON_LEVEL);

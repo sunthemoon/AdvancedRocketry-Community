@@ -31,10 +31,28 @@ public final class RocketReleaseNativeCuts {
         validate(server);
         return new CheckedSavedDataPolicy(type, (staged, target) -> {
             var payload = CheckedSavedDataFile.readPayload(staged, type).orElseThrow();
-            checkpoint(replacement(type, payload, false));
+            boolean release = type != ManagedSavedDataType.ROCKET_TRANSFERS || ARMED.get()
+                    && CheckedSavedDataFile.readPayload(target.resolveSibling(ManagedSavedDataType.ROCKET_REJOINS.fileName()),
+                            ManagedSavedDataType.ROCKET_REJOINS).map(RocketRejoinCodec::decode)
+                            .map(root -> journalRelease(payload, root)).orElse(false);
+            if (release) { checkpoint(replacement(type, payload, false)); }
             CheckedSavedDataFile.atomicMove(staged, target);
-            checkpoint(replacement(type, payload, true));
+            if (release) { checkpoint(replacement(type, payload, true)); }
         });
+    }
+    static boolean journalRelease(CompoundTag candidate, RocketRejoinRoot root) {
+        for (var batch : root.batches()) {
+            if (root.entries().stream().noneMatch(e -> e.release().equals(batch.release()) && e.seat() == RocketRejoinRoot.Seat.PENDING)) { continue; }
+            var record = candidate.getList("transfers", 10).stream().map(CompoundTag.class::cast)
+                    .filter(t -> t.hasUUID("transfer_id") && t.getUUID("transfer_id").equals(batch.transfer())).findFirst().orElse(null);
+            if (record == null) { if (batch.hold() == RocketRejoinRoot.Hold.H1) { return true; } continue; }
+            var version = batch.scrubbed();
+            if (!version.equals(batch.before()) && record.getString("checksum").equals(version.checksum())
+                    && record.getString("phase").equals(version.phase())
+                    && (version.destination() == null ? !record.contains("destination_entity_id")
+                        : record.hasUUID("destination_entity_id") && record.getUUID("destination_entity_id").equals(version.destination()))) { return true; }
+        }
+        return false;
     }
     static String replacement(ManagedSavedDataType type, CompoundTag candidate, boolean after) {
         if (type == ManagedSavedDataType.ROCKET_TRANSFERS) { return after ? "C5" : ""; }
@@ -47,7 +65,7 @@ public final class RocketReleaseNativeCuts {
     }
     public static void checkpoint(String boundary) {
         String selected = selection();
-        if (boundary.isEmpty() || !ARMED.get() || !selected.endsWith(":" + "seed")
+        if (boundary.isEmpty() || !ARMED.get() || !selected.endsWith(":seed")
                 || !(selected.split(":")[1].equals(boundary)
                     || selected.contains(":C17:") && boundary.equals("C6")) || !PAUSED.compareAndSet(false, true)) { return; }
         AdvancedRocketryCommunity.LOGGER.info("ARCE_W158_PAUSED case={} boundary={}", selected, boundary);
