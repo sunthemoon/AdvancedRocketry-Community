@@ -3,7 +3,9 @@ package io.github.sunthemoon.arceadaptertest;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
@@ -19,9 +21,11 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.ICapabilitySerializable;
+import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraft.world.level.material.Fluids;
@@ -53,6 +57,21 @@ final class SealedStagingProbeFixture {
             trace.retained = event.getObject();
             trace.events.add("attach:" + event.getObject().getClass().getSimpleName());
             // The constructor has not initialized subclass fields. Retain only; do not call its handlers here.
+            if (trace.serializableAttachment) {
+                event.addCapability(ResourceLocation.tryParse(AdapterTestMod.MOD_ID + ":sealed_probe_observer"),
+                        new ICapabilitySerializable<CompoundTag>() {
+                            @Override public <T> LazyOptional<T> getCapability(Capability<T> cap, Direction side) {
+                                return LazyOptional.empty();
+                            }
+                            @Override public CompoundTag serializeNBT() {
+                                trace.callback("attachment.serializeNBT");
+                                return new CompoundTag();
+                            }
+                            @Override public void deserializeNBT(CompoundTag tag) {
+                                trace.callback("attachment.deserializeNBT");
+                            }
+                        });
+            }
         }
     }
 
@@ -67,7 +86,7 @@ final class SealedStagingProbeFixture {
 
     static void observe(String phase) {
         Trace trace = ACTIVE.get();
-        if (trace != null) { trace.observe(phase); }
+        if (trace != null) { trace.callback(phase); }
     }
 
     static final class Trace {
@@ -81,6 +100,8 @@ final class SealedStagingProbeFixture {
         boolean armed;
         boolean consumed;
         boolean prematureWorldAccess;
+        boolean serializableAttachment;
+        int unpublishedCallbacks;
         int extracted;
         int foreignInserted;
         final SimpleContainer recipient = new SimpleContainer(1);
@@ -88,10 +109,14 @@ final class SealedStagingProbeFixture {
         FluidStack receivedFluid = FluidStack.EMPTY;
         FluidStack foreignFluid = new FluidStack(Fluids.LAVA, 500);
         int firstCapability = -1;
-        IItemHandler cached;
         IFluidHandler cachedFluid;
 
         Trace(ServerLevel level, BlockPos at) { this.level = level; this.at = at.immutable(); }
+
+        void callback(String phase) {
+            if (armed && !publish && retained != null && !retained.isRemoved()) { unpublishedCallbacks++; }
+            observe(phase);
+        }
 
         void observe(String phase) {
             BlockEntity world = level.getBlockEntity(at);
@@ -103,15 +128,15 @@ final class SealedStagingProbeFixture {
             if (!publish && world != null && world != carrier
                     && (world instanceof Container || capability)) { prematureWorldAccess = true; }
             if (!armed || consumed || retained == null || retained.isRemoved()) { return; }
-            // A neighbour consumer honours R96's removal boundary, but retains the AttachCapabilities target.
-            // Native Container and cached InvWrapper access do not require installation in the world.
+            // A callback consumer honours R96's removal boundary, but retains the AttachCapabilities target.
+            // Native Container access does not require installation in the world.
             consumed = true;
-            if (cached != null) {
-                recipient.setItem(0, cached.extractItem(0, 64, false));
-                foreignSupply = cached.insertItem(Math.min(1, cached.getSlots() - 1), foreignSupply, false);
-                extracted = recipient.getItem(0).getCount();
-                foreignInserted = 3 - foreignSupply.getCount();
-            } else if (retained instanceof Container container) {
+            // A detached chest cannot resolve its world-dependent capability. Its native Container
+            // interface is still available. Other handlers enforce their own detached-target rules.
+            if (!(retained instanceof Container)) {
+                cachedFluid = retained.getCapability(ForgeCapabilities.FLUID_HANDLER).resolve().orElse(null);
+            }
+            if (retained instanceof Container container) {
                 recipient.setItem(0, container.removeItemNoUpdate(0));
                 extracted = recipient.getItem(0).getCount();
                 container.setItem(1, foreignSupply.copy());

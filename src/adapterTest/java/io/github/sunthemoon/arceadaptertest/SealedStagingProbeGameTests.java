@@ -22,12 +22,11 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 import net.minecraftforge.registries.ForgeRegistries;
 
-/** R95/R96 prerequisite. Conservation assertions intentionally remain strict if the platform probe fails. */
+/** R95-R97 prerequisite. Conservation assertions remain strict if the platform probe fails. */
 @GameTestHolder(AdapterTestMod.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class SealedStagingProbeGameTests {
@@ -48,6 +47,11 @@ public final class SealedStagingProbeGameTests {
             try {
                 if (trace.prepared != null) {
                     restore(trace.prepared, trace.carrier.sealed);
+                    CompoundTag readback = recapture(trace.prepared);
+                    helper.assertTrue(trace.carrier.sealed.getAllKeys().stream()
+                            .allMatch(key -> trace.carrier.sealed.get(key).equals(readback.get(key))),
+                            "Prepared payload did not recapture exactly");
+                    helper.assertTrue(trace.prepared.getLevel() == null, "Preparation bound the target to a Level");
                     trace.observe("restored.unpublished");
                     helper.assertTrue(!trace.prematureWorldAccess, "Target became reachable during prepare");
                 } else { plain++; }
@@ -60,6 +64,7 @@ public final class SealedStagingProbeGameTests {
                 helper.assertTrue(helper.getLevel().getBlockEntity(trace.at) == trace.prepared,
                         "Publication constructed a different or empty native block entity");
                 if (trace.prepared != null) {
+                    helper.assertTrue(trace.prepared.getLevel() == helper.getLevel(), "Publication did not bind the Level");
                     helper.assertTrue(resource(trace.prepared, false) == original(block), "Published payload changed");
                     helper.assertTrue(trace.carrier.isRemoved(), "Carrier was not retired");
                 }
@@ -99,16 +104,25 @@ public final class SealedStagingProbeGameTests {
 
     @GameTest(templateNamespace = HOST, template = "rocket_test", batch = "w152_probe", timeoutTicks = 40)
     public static void attachmentReferencesMustConserveResourcesBeforeRemoval(GameTestHelper helper) {
+        conservation(helper, false);
+    }
+
+    @GameTest(templateNamespace = HOST, template = "rocket_test", batch = "w152_probe", timeoutTicks = 40)
+    public static void serializableAttachmentReferencesMustConserveResourcesBeforeRemoval(GameTestHelper helper) {
+        conservation(helper, true);
+    }
+
+    private static void conservation(GameTestHelper helper, boolean serializableAttachment) {
         List<String> violations = new ArrayList<>();
         for (Block block : payloadHosts(true)) {
             for (Failure failure : Failure.values()) {
-                var trace = prepare(helper, block);
+                var trace = prepare(helper, block, serializableAttachment);
                 try {
                     CompoundTag sealed = trace.carrier.sealed.copy();
                     trace.armed = true;
                     reject(trace, failure);
-                    trace.armed = false;
                     abort(trace.prepared);
+                    trace.armed = false;
                     trace.observe("abort.complete");
                     helper.assertTrue(trace.carrier.sealed.equals(sealed), "Aborted restore changed the carrier payload");
                     helper.assertTrue(!trace.prematureWorldAccess, "An uninstalled target was reachable through world lookup");
@@ -118,10 +132,13 @@ public final class SealedStagingProbeGameTests {
                             + trace.receivedFluid.getAmount() + rawOriginal;
                     int totalForeign = (block == host("pressurized_tank")
                             ? trace.foreignFluid.getAmount() : trace.foreignSupply.getCount()) + rawForeign;
-                    report(block, failure + ":retained", trace, totalOriginal, totalForeign);
-                    if (totalOriginal != original(block) || totalForeign != foreign(block)) {
+                    report(block, failure + (serializableAttachment ? ":serializable-retained" : ":retained"),
+                            trace, totalOriginal, totalForeign);
+                    if (totalOriginal != original(block) || totalForeign != foreign(block)
+                            || trace.unpublishedCallbacks != 0) {
                         violations.add(id(block) + "/" + failure + " original=" + totalOriginal + "/"
-                                + original(block) + " foreign=" + totalForeign + "/" + foreign(block));
+                                + original(block) + " foreign=" + totalForeign + "/" + foreign(block)
+                                + " callbacks=" + trace.unpublishedCallbacks);
                     }
                 } finally { cleanup(trace); }
             }
@@ -132,11 +149,17 @@ public final class SealedStagingProbeGameTests {
     }
 
     private static SealedStagingProbeFixture.Trace prepare(GameTestHelper helper, Block block) {
+        return prepare(helper, block, false);
+    }
+
+    private static SealedStagingProbeFixture.Trace prepare(GameTestHelper helper, Block block,
+            boolean serializableAttachment) {
         var level = helper.getLevel();
         BlockPos at = helper.absolutePos(RELATIVE);
         level.setBlock(at.east(), SealedStagingProbeFixture.OBSERVER.get().defaultBlockState(), Block.UPDATE_ALL);
         level.setBlock(at, SealedStagingProbeFixture.CARRIER.get().defaultBlockState(), Block.UPDATE_ALL);
         var trace = SealedStagingProbeFixture.begin(level, at);
+        trace.serializableAttachment = serializableAttachment;
         trace.carrier = (SealedStagingProbeFixture.Carrier) level.getBlockEntity(at);
         trace.carrier.sealed = payload(block);
         trace.observe("carrier.ready");
@@ -144,11 +167,8 @@ public final class SealedStagingProbeGameTests {
             trace.prepared = entityBlock.newBlockEntity(at, block.defaultBlockState());
             helper.assertTrue(trace.retained == trace.prepared, "AttachCapabilities did not expose the exact target");
             trace.events.add("constructor.return");
-            trace.prepared.setLevel(level);
-            trace.cached = trace.prepared.getCapability(ForgeCapabilities.ITEM_HANDLER).resolve().orElse(null);
-            trace.cachedFluid = trace.prepared.getCapability(ForgeCapabilities.FLUID_HANDLER).resolve().orElse(null);
-            trace.events.add("raw.capability.resolved:item=" + (trace.cached != null) + ",fluid=" + (trace.cachedFluid != null));
-            trace.observe("target.bound.uninstalled");
+            helper.assertTrue(trace.prepared.getLevel() == null, "Private target already has a Level");
+            trace.observe("target.level-less.uninstalled");
         }
         return trace;
     }
@@ -179,7 +199,12 @@ public final class SealedStagingProbeGameTests {
                     case SLOW -> {
                         while (System.nanoTime() - start < 20_000_000L) { LockSupport.parkNanos(1_000_000L); }
                     }
-                    case MISMATCH -> empty(trace.prepared);
+                    case MISMATCH -> {
+                        if (trace.prepared instanceof Container container) {
+                            // Preserve original resources while making recapture differ from C.
+                            container.setItem(container.getContainerSize() - 1, new ItemStack(Items.STICK));
+                        } else { empty(trace.prepared); }
+                    }
                 }
             } catch (IllegalStateException expected) {
                 if (failure != Failure.THROW) { throw expected; }
@@ -188,15 +213,24 @@ public final class SealedStagingProbeGameTests {
             }
         }
         long elapsed = System.nanoTime() - start;
-        CompoundTag readback = trace.prepared instanceof FixtureContainerBlockEntity fixture
-                ? new FixtureInventoryAdapter().capture(fixture) : trace.prepared.saveWithoutMetadata();
-        boolean same = trace.carrier.sealed.getAllKeys().stream()
-                .allMatch(key -> trace.carrier.sealed.get(key).equals(readback.get(key)));
+        // A rejected or over-budget restore is aborted without invoking a capture it does not need.
+        // Only an accepted, in-budget restore reaches the production recapture boundary.
+        boolean same = false;
+        if (accepted[0] && elapsed <= 5_000_000L) {
+            CompoundTag readback = recapture(trace.prepared);
+            same = trace.carrier.sealed.getAllKeys().stream()
+                    .allMatch(key -> trace.carrier.sealed.get(key).equals(readback.get(key)));
+        }
         if (accepted[0] && elapsed <= 5_000_000L && same) {
             throw new AssertionError("Injected prepare failure was accepted");
         }
         trace.events.add("restore.rejected:returned=" + accepted[0] + ",overBudget="
                 + (elapsed > 5_000_000L) + ",recapture=" + same);
+    }
+
+    private static CompoundTag recapture(BlockEntity target) {
+        return target instanceof FixtureContainerBlockEntity fixture
+                ? new FixtureInventoryAdapter().capture(fixture) : target.saveWithoutMetadata();
     }
 
     private static void restore(BlockEntity target, CompoundTag payload) {
@@ -282,9 +316,9 @@ public final class SealedStagingProbeGameTests {
     }
 
     private static void report(Block block, String scenario, SealedStagingProbeFixture.Trace trace, int original, int foreign) {
-        LogUtils.getLogger().info("W152_PROBE host={} scenario={} original={} foreign={} extracted={} inserted={} firstCap={} trace={}",
+        LogUtils.getLogger().info("W152_PROBE host={} scenario={} original={} foreign={} extracted={} inserted={} firstCap={} callbacks={} trace={}",
                 id(block), scenario, original, foreign, trace.extracted, trace.foreignInserted, trace.firstCapability,
-                String.join(" -> ", trace.events));
+                trace.unpublishedCallbacks, String.join(" -> ", trace.events));
     }
 
     private static int original(Block block) {
