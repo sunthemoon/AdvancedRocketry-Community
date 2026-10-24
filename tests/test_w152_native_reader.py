@@ -12,6 +12,20 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
 
 class W152NativeReaderTest(unittest.TestCase):
+    def test_native_record_can_end_without_unused_sector_padding(self):
+        from run_w152_native import preserve_native, replay_native
+        from run_v180_landed_disassembly_cuts import chunk_record
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary); world = root / "world"; out = root / "out"
+            (world / "entities").mkdir(parents=True); out.mkdir()
+            header = bytearray(8192); struct.pack_into(">I", header, 0, (2 << 8) | 1)
+            payload = zlib.compress(b"\x0a\x00\x00\x00")
+            record = struct.pack(">IB", len(payload) + 1, 2) + payload
+            (world / "entities/r.0.0.mca").write_bytes(header + record)
+            result = preserve_native(world, out, "start", {"files": {"entities/r.0.0.mca": "hash"}})
+            replay_native(out / result["file"], root / "replayed")
+            self.assertEqual({}, chunk_record(root / "replayed/entities/r.0.0.mca", 0, 0))
+
     def test_empty_native_region_file_stays_verbatim_empty(self):
         from run_w152_native import preserve_native, replay_native
         with tempfile.TemporaryDirectory() as temporary:

@@ -52,11 +52,12 @@ def preserve_native(world: Path, evidence: Path, stage: str, state: dict) -> dic
                     record = dict(chunk=[x, z], slot=slot, location=location); row["records"].append(record)
                     if location == 0: continue
                     offset, sectors = location >> 8, location & 255
-                    if offset < 2 or not sectors or (offset + sectors) * 4096 > row["size"]:
+                    if offset < 2 or not sectors or offset * 4096 + 5 > row["size"]:
                         raise ValueError("Invalid native record allocation")
                     stream.seek(offset * 4096); prefix = stream.read(5)
                     length, compression = struct.unpack(">IB", prefix)
-                    if not 1 < length <= 1_048_577 or length + 4 > sectors * 4096 or compression != 2:
+                    if (not 1 < length <= 1_048_577 or length + 4 > sectors * 4096 or compression != 2
+                            or offset * 4096 + length + 4 > row["size"]):
                         raise ValueError("Unsupported native record envelope")
                     raw = prefix + stream.read(length - 1)
                     if len(raw) != length + 4: raise ValueError("Truncated native record")
