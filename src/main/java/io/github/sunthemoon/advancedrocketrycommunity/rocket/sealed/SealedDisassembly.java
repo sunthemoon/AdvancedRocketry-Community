@@ -28,6 +28,9 @@ public final class SealedDisassembly {
         boolean erase(int index);
         Entity entity();
         boolean discard();
+        boolean soleSurvivor();
+        /** Remove one exact redundant copy, never the deterministic survivor or a conflicting payload. */
+        boolean discardDuplicate();
         /** Idempotent exact desired entry writes; conflicting authority must be refused, never overwritten. */
         void retain();
         boolean retainedAcknowledged();
@@ -98,7 +101,7 @@ public final class SealedDisassembly {
                 case COMPLETE -> complete();
                 case SELECT_RECOVERY -> select();
                 case ROLLBACK -> rollback(budget);
-                case PROVE_ROLLBACK -> proveRollback();
+                case PROVE_ROLLBACK -> proveRollback(budget);
                 case REMOVE_U -> remove();
                 case DONE -> false;
             };
@@ -169,17 +172,21 @@ public final class SealedDisassembly {
         phase = Phase.RETIRE_ENTITY; return true;
     }
     private boolean retire(SealedWorkBudget budget) {
-        if (!presence() || !proof(Goal.SEALED)) { return false; }
+        // Once checked removal is submitted, the retained continuation still owns the elected C proof.
+        // Never reinsert U merely to retire an exact copy that returned during its acknowledgement wait.
+        if ((!removalSubmitted && !presence()) || !proof(Goal.SEALED)) { return false; }
         Entity entity = port.entity();
         if (entity == Entity.UNLOADED) { return hold(Reason.UNLOADED); }
         if (entity == Entity.OTHER) { return hold(Reason.ENTITY_CONFLICT); }
         if (entity == Entity.MATCHING) {
             if (!budget.take()) { return false; }
             if (!port.discard()) { return hold(Reason.REMOVAL_FAILED); }
+            return true;
         }
         phase = Phase.COMPLETE; return true;
     }
     private boolean complete() {
+        if (port.entity() == Entity.MATCHING) { phase = Phase.RETIRE_ENTITY; return true; }
         if (!proof(Goal.COMPLETE)) { return false; }
         phase = Phase.REMOVE_U; return true;
     }
@@ -211,11 +218,18 @@ public final class SealedDisassembly {
         }
         cursor++; return true;
     }
-    private boolean proveRollback() {
+    private boolean proveRollback(SealedWorkBudget budget) {
+        if (!port.soleSurvivor()) {
+            if (!budget.take()) { return false; }
+            if (port.entity() == Entity.MATCHING && port.discardDuplicate()) { return true; }
+            return hold(Reason.ENTITY_CONFLICT);
+        }
         if (!proof(Goal.ROLLBACK)) { return false; }
         phase = Phase.REMOVE_U; return true;
     }
     private boolean remove() {
+        if (rollback && !port.soleSurvivor()) { phase = Phase.PROVE_ROLLBACK; return true; }
+        if (!rollback && port.entity() == Entity.MATCHING) { phase = Phase.RETIRE_ENTITY; return true; }
         if (!proof(rollback ? Goal.ROLLBACK : Goal.COMPLETE)) { return false; }
         removalSubmitted = true;
         port.removeRecord();

@@ -23,6 +23,13 @@ import org.junit.jupiter.api.Test;
 class SealedProofBatchTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
 
+    @Test void readinessSupersessionCannotStartWorkOnTheClosedPlan() throws Exception {
+        var f = new Fixture(1); f.onReadiness = () -> {
+            try { f.call("close"); } catch (Exception failure) { throw new AssertionError(failure); }
+        };
+        f.tick(); assertTrue(f.callbacks.isEmpty()); assertFalse(f.active());
+    }
+
     @Test void finalProofSetExpiresAndReleasesEveryWatchAtTheExistingAttemptDeadline() throws Exception {
         var f = new Fixture(2); f.tick(); assertTrue(f.active()); assertEquals(1, f.callbacks.size());
         f.complete(0); f.now++; f.tick(); f.complete(1); assertTrue(f.current());
@@ -123,6 +130,7 @@ class SealedProofBatchTest {
         long now; String readiness = "READY", held;
         boolean available = true;
         BooleanSupplier room = () -> true;
+        Runnable onReadiness = () -> { };
         final List<Consumer<EscrowBarrier.Result>> callbacks = new ArrayList<>();
         final AtomicInteger released = new AtomicInteger(); final AtomicLong generation = new AtomicLong(1);
         @SuppressWarnings("unchecked") Fixture(int count) throws Exception {
@@ -132,6 +140,7 @@ class SealedProofBatchTest {
                 return switch (method.getName()) {
                     case "now" -> now;
                     case "readiness" -> {
+                        onReadiness.run();
                         for (Object constant : method.getReturnType().getEnumConstants()) {
                             if (constant.toString().equals(readiness)) { yield constant; }
                         }

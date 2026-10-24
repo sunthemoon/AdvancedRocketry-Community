@@ -76,7 +76,7 @@ final class SealedDisassemblyCoordinator {
     /** The future I6 caller must keep its original actor, consent, snapshot and request-age predicate; never refresh it here. */
     UUID begin(RocketEntity rocket, BooleanSupplier authorized, Consumer<SealedDisassembly.Result> completion) {
         if (!(rocket.level() instanceof ServerLevel level) || !rocket.operational()) { return null; }
-        bind(level.getServer());
+        bind(level.getServer()); budget.beginTick(server.getTickCount());
         var logical = rocket.assemblyTransactionId().orElseThrow(); var snapshot = rocket.snapshot().orElseThrow();
         var data = RocketTransactionSavedData.get(server);
         if (ordinary.pending(logical) || !ordinary.pendingRoom(logical) || !data.operational()
@@ -92,7 +92,7 @@ final class SealedDisassemblyCoordinator {
             terrain = new SealedTerrain(level, entry, transactions.adapters(), placement);
             var port = new SealedDisassemblyWorld(level, entry, terrain, writes, authorized,
                     () -> activeAttempts() + ordinary.activeAttempts() < RocketOrdinaryRetirement.MAX_ATTEMPTS,
-                    () -> exclusive(entry), false);
+                    () -> exclusive(entry), false, budget);
             if (port.entity() != SealedDisassembly.Entity.MATCHING) { terrain.close(); lock.close(); return null; }
             var machine = new SealedDisassembly(snapshot.blocks().size(), port);
             work.put(id, new Work(port, machine, lock, completion, false));
@@ -142,6 +142,12 @@ final class SealedDisassemblyCoordinator {
         for (var item : work.values()) {
             var region = item.world.entry.record().region();
             if (region.dimension().equals(level.dimension().location()) && region.contains(position)) { item.world.invalidateProof(); }
+        }
+    }
+    void entityChanged(ServerLevel level, net.minecraft.world.entity.Entity entity) {
+        if (server != level.getServer() || !server.isSameThread()) { return; }
+        for (var item : work.values()) {
+            if (item.world.entities.names(level, entity)) { item.world.entities.invalidate(); item.world.entityChanged(); }
         }
     }
     void onPlace(ServerLevel level, BlockPos pos) {
@@ -249,7 +255,7 @@ final class SealedDisassemblyCoordinator {
             terrain = new SealedTerrain(level, entry, transactions.adapters(), placement);
             var port = new SealedDisassemblyWorld(level, entry, terrain, writes, () -> true,
                     () -> activeAttempts() + ordinary.activeAttempts() < RocketOrdinaryRetirement.MAX_ATTEMPTS,
-                    () -> exclusive(entry), true);
+                    () -> exclusive(entry), true, budget);
             boolean elected = entry.record().phase() == RocketTransactionPhase.RESTORED
                     || entry.record().phase() == RocketTransactionPhase.COMMITTED;
             work.put(id, new Work(port, SealedDisassembly.recover(entry.snapshot().blocks().size(), port, elected),

@@ -44,7 +44,7 @@ final class SealedProofBatch implements AutoCloseable {
     boolean current() {
         owner();
         return !closed && active && port.now() - started <= RocketOrdinaryRetirement.ATTEMPT_TICKS
-                && port.readiness() == Readiness.READY && proofs.size() == slots
+                && port.readiness() == Readiness.READY && !closed && proofs.size() == slots
                 && proofs.values().stream().allMatch(EscrowBarrier.Proof::valid);
     }
     /** Non-selected recovery may release an expired lease, but must not inspect or capture another slot. */
@@ -64,6 +64,7 @@ final class SealedProofBatch implements AutoCloseable {
                 fail("DEADLINE", RocketOrdinaryRetirement.RETRY_TICKS); return;
             }
             Readiness readiness = port.readiness();
+            if (closed) { return; }
             if (readiness != Readiness.READY) {
                 fail(readiness.name(), readiness == Readiness.CONFLICT
                         ? RocketOrdinaryRetirement.RETRY_TICKS : RocketOrdinaryRetirement.POLL_TICKS); return;

@@ -36,11 +36,12 @@ final class SealedDisassemblyWorld implements SealedDisassembly.Port, AutoClosea
 
     SealedDisassemblyWorld(ServerLevel level, RocketPersistedTransaction entry, SealedTerrain terrain,
             SealedJournalRequests writes, BooleanSupplier currentRequest, BooleanSupplier attemptRoom,
-            BooleanSupplier claimCurrent, boolean recovery) {
+            BooleanSupplier claimCurrent, boolean recovery,
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.sealed.SealedWorkBudget budget) {
         this.level = level; this.entry = entry; this.terrain = terrain; this.writes = writes;
         this.currentRequest = currentRequest; this.attemptRoom = attemptRoom; this.claimCurrent = claimCurrent; this.recovery = recovery;
         data = RocketTransactionSavedData.get(level.getServer()); journal = new SealedJournalEntry(data, entry);
-        entities = new SealedEntityView(level, entry, terrain.chunks().size());
+        entities = new SealedEntityView(level, entry, terrain.chunks().size(), budget, this::entityChanged);
         if (terrain.chunks().size() + entities.columns().size() > RocketOrdinaryRetirement.MAX_SLOTS) {
             throw new IllegalArgumentException("Sealed native proof plan exceeds existing slot bound");
         }
@@ -49,8 +50,14 @@ final class SealedDisassemblyWorld implements SealedDisassembly.Port, AutoClosea
     @Override public SealedDisassembly.Gate gate() {
         if (!data.operational() || !journal.compatible() || !claimCurrent.getAsBoolean()) { return SealedDisassembly.Gate.CONFLICT; }
         if (level.noSave()) { return SealedDisassembly.Gate.SAVE_OFF; }
-        return entities.loaded() && terrain.chunks().stream().allMatch(chunk -> level.getChunkSource().getChunkNow(chunk.x, chunk.z) != null)
-                ? SealedDisassembly.Gate.READY : SealedDisassembly.Gate.UNLOADED;
+        if (!entities.loaded() || terrain.chunks().stream().anyMatch(chunk -> level.getChunkSource().getChunkNow(chunk.x, chunk.z) == null)) {
+            return SealedDisassembly.Gate.UNLOADED;
+        }
+        return switch (entities.observe()) {
+            case UNLOADED -> SealedDisassembly.Gate.UNLOADED;
+            case OTHER -> SealedDisassembly.Gate.CONFLICT;
+            default -> SealedDisassembly.Gate.READY;
+        };
     }
     @Override public boolean requestCurrent() {
         boolean current = currentRequest.getAsBoolean() && entities.observe() == SealedDisassembly.Entity.MATCHING;
@@ -77,6 +84,8 @@ final class SealedDisassemblyWorld implements SealedDisassembly.Port, AutoClosea
     @Override public boolean erase(int index) { invalidateProof(); return terrain.erase(index); }
     @Override public SealedDisassembly.Entity entity() { return entities.observe(); }
     @Override public boolean discard() { return predecessorAbsent() && entities.discard(); }
+    @Override public boolean soleSurvivor() { return entities.soleSurvivor(); }
+    @Override public boolean discardDuplicate() { return predecessorAbsent() && entities.discardDuplicate(); }
     @Override public void retain() { journal.retain(); }
     @Override public boolean retainedAcknowledged() { return journal.retainedAcknowledged(); }
     @Override public void elect() { journal.elect(); }
@@ -112,6 +121,10 @@ final class SealedDisassemblyWorld implements SealedDisassembly.Port, AutoClosea
             // A changed cell invalidates authority, not an IO/veto/deadline retry delay already imposed.
             proofRetryAt = Math.max(proofRetryAt, batch.retryAt()); batch.close(); batch = null; goal = null;
         }
+    }
+    void entityChanged() {
+        // A D census change revokes entity-slot authority; it does not change the sealed terrain image.
+        if (goal != SealedDisassembly.Goal.SEALED) { invalidateProof(); }
     }
     @Override public void held(SealedDisassembly.Phase phase, SealedDisassembly.Reason reason) { this.reason = phase + ":" + reason; }
     @Override public void close() { if (batch != null) { batch.close(); } terrain.close(); }

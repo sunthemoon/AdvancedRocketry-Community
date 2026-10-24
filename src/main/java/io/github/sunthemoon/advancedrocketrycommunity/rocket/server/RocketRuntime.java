@@ -49,6 +49,9 @@ public final class RocketRuntime {
     public static void sealedTerrainChanged(ServerLevel level, BlockPos position) {
         if (level.getServer().isSameThread() && service instanceof RocketManager manager) { manager.sealedTerrainChanged(level, position); }
     }
+    public static void sealedEntityChanged(ServerLevel level, net.minecraft.world.entity.Entity entity) {
+        if (level.getServer().isSameThread() && service instanceof RocketManager manager) { manager.sealedEntityChanged(level, entity); }
+    }
     public static void sealedHint(ServerLevel level, BlockPos position) {
         if (level.getServer().isSameThread() && service instanceof RocketManager manager) { manager.sealedHint(level, position); }
     }

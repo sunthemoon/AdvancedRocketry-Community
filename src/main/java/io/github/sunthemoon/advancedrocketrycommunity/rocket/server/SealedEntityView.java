@@ -10,6 +10,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketS
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.sealed.SealedDisassembly;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
@@ -20,14 +21,19 @@ final class SealedEntityView {
     private final ServerLevel level;
     private final RocketPersistedTransaction entry;
     private final List<ChunkPos> columns;
-    private RocketEntity frozenEntity;
-    private RocketFlightData flight;
-    private io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot frozenSnapshot;
+    private record Binding(RocketEntity entity, RocketFlightData flight, RocketStructureSnapshot snapshot) { }
+    private final io.github.sunthemoon.advancedrocketrycommunity.rocket.sealed.SealedWorkBudget budget;
+    private final Runnable changed;
+    private Map<UUID, Binding> bindings = Map.of();
+    private List<RocketEntity> copies = List.of();
+    private long observedTick = Long.MIN_VALUE, epoch;
+    private SealedDisassembly.Entity observation = SealedDisassembly.Entity.UNLOADED;
     private CompoundTag frozen;
     private UUID logical;
 
-    SealedEntityView(ServerLevel level, RocketPersistedTransaction entry, int terrainSlots) {
-        this.level = level; this.entry = entry;
+    SealedEntityView(ServerLevel level, RocketPersistedTransaction entry, int terrainSlots,
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.sealed.SealedWorkBudget budget, Runnable changed) {
+        this.level = level; this.entry = entry; this.budget = budget; this.changed = changed;
         columns = columns(entry.snapshot(), terrainSlots);
         if (columns.isEmpty()) { throw new IllegalArgumentException("Sealed entity discovery exceeds existing proof bounds"); }
     }
@@ -50,25 +56,70 @@ final class SealedEntityView {
     List<ChunkPos> columns() { return columns; }
     UUID logical() { return logical; }
     boolean loaded() { return columns.stream().allMatch(column -> level.areEntitiesLoaded(column.toLong())); }
+    boolean names(ServerLevel candidateLevel, net.minecraft.world.entity.Entity entity) {
+        if (level != candidateLevel) { return false; }
+        return entity.getUUID().equals(entry.record().rocketEntityId()) || entity instanceof RocketEntity rocket
+                && (rocket.snapshot().filter(value -> value.snapshotId().equals(entry.snapshot().snapshotId())).isPresent()
+                || logical != null && rocket.assemblyTransactionId().filter(logical::equals).isPresent());
+    }
+    void invalidate() { observedTick = Long.MIN_VALUE; epoch++; }
     SealedDisassembly.Entity observe() {
+        long now = level.getServer().getTickCount();
+        if (observedTick == now) { return observation; }
+        observedTick = now; observation = SealedDisassembly.Entity.UNLOADED;
         if (!loaded()) { return SealedDisassembly.Entity.UNLOADED; }
-        var candidate = level.getEntity(entry.record().rocketEntityId());
-        if (candidate == null) { return SealedDisassembly.Entity.ABSENT; }
-        if (!(candidate instanceof RocketEntity rocket) || !eligible(rocket)) { return SealedDisassembly.Entity.OTHER; }
-        if (frozenEntity == null) {
-            // A restart may rebind only the full U snapshot and owner, not a similarly shaped rocket.
-            if (!RocketSnapshotNbtCodec.encode(entry.snapshot()).equals(RocketSnapshotNbtCodec.encode(rocket.snapshot().orElseThrow()))) {
-                return SealedDisassembly.Entity.OTHER;
-            }
-            var image = new CompoundTag();
-            if (!rocket.save(image) || image.contains("Passengers")) { return SealedDisassembly.Entity.OTHER; }
-            frozenEntity = rocket; flight = rocket.flightData().orElseThrow(); frozen = image;
-            frozenSnapshot = rocket.snapshot().orElseThrow();
-            logical = rocket.assemblyTransactionId().orElseThrow();
+        long generation = epoch;
+        var found = new java.util.ArrayList<RocketEntity>();
+        if (!budget.take()) { return observation; }
+        var exact = level.getEntity(entry.record().rocketEntityId());
+        if (exact != null) {
+            if (!(exact instanceof RocketEntity rocket)) { return observation = SealedDisassembly.Entity.OTHER; }
+            found.add(rocket);
         }
-        return rocket == frozenEntity && rocket.flightData().orElse(null) == flight
-                && rocket.snapshot().orElse(null) == frozenSnapshot
-                ? SealedDisassembly.Entity.MATCHING : SealedDisassembly.Entity.OTHER;
+        var region = entry.record().region();
+        var box = new net.minecraft.world.phys.AABB(region.minimum().x() - 1.0D, level.getMinBuildHeight(),
+                region.minimum().z() - 1.0D, region.maximum().x() + 2.0D, level.getMaxBuildHeight(), region.maximum().z() + 2.0D);
+        var exhausted = new boolean[1];
+        level.getEntities().get(net.minecraft.world.level.entity.EntityTypeTest.forClass(RocketEntity.class), box, rocket -> {
+            if (rocket == exact) { return net.minecraft.util.AbortableIterationConsumer.Continuation.CONTINUE; }
+            if (!budget.take()) { exhausted[0] = true; return net.minecraft.util.AbortableIterationConsumer.Continuation.ABORT; }
+            if (names(level, rocket)) { found.add(rocket); }
+            return found.size() >= io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightLimits.MAX_TRANSFER_ENTITY_MATCHES
+                    ? net.minecraft.util.AbortableIterationConsumer.Continuation.ABORT
+                    : net.minecraft.util.AbortableIterationConsumer.Continuation.CONTINUE;
+        });
+        if (exhausted[0] || generation != epoch) { return observation; }
+        if (found.size() >= io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightLimits.MAX_TRANSFER_ENTITY_MATCHES) {
+            return observation = SealedDisassembly.Entity.OTHER;
+        }
+        found.sort(java.util.Comparator.comparing(RocketEntity::getUUID,
+                io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferAuthorityOrder.preferred(entry.record().rocketEntityId())));
+        var checked = new java.util.LinkedHashMap<UUID, Binding>();
+        for (var rocket : found) {
+            if (!eligible(rocket)) { return observation = SealedDisassembly.Entity.OTHER; }
+            var prior = bindings.get(rocket.getUUID());
+            if (prior != null && prior.entity == rocket) {
+                if (prior.flight != rocket.flightData().orElse(null) || prior.snapshot != rocket.snapshot().orElse(null)) {
+                    return observation = SealedDisassembly.Entity.OTHER;
+                }
+            } else if (!bindImage(rocket)) { return observation = SealedDisassembly.Entity.OTHER; }
+            checked.put(rocket.getUUID(), new Binding(rocket, rocket.flightData().orElseThrow(), rocket.snapshot().orElseThrow()));
+        }
+        if (generation != epoch) { return observation; }
+        if (!copies.equals(found)) { changed.run(); }
+        copies = List.copyOf(found); bindings = Map.copyOf(checked);
+        return observation = copies.isEmpty() ? SealedDisassembly.Entity.ABSENT : SealedDisassembly.Entity.MATCHING;
+    }
+    private boolean bindImage(RocketEntity rocket) {
+        // Serialize only a newly observed object, not every position inspection. All saved resources must match.
+        var image = new CompoundTag();
+        if (!rocket.save(image) || image.contains("Passengers")) { return false; }
+        if (frozen == null) {
+            if (!RocketSnapshotNbtCodec.encode(entry.snapshot()).equals(RocketSnapshotNbtCodec.encode(rocket.snapshot().orElseThrow()))) { return false; }
+            frozen = image; logical = rocket.assemblyTransactionId().orElseThrow(); return true;
+        }
+        return image.getString("id").equals(frozen.getString("id")) && java.util.Objects.equals(image.get("Pos"), frozen.get("Pos"))
+                && java.util.Objects.equals(image.get(RocketRetirementProof.DATA), frozen.get(RocketRetirementProof.DATA));
     }
     private boolean eligible(RocketEntity rocket) {
         var origin = entry.snapshot().sourceOrigin();
@@ -84,22 +135,29 @@ final class SealedEntityView {
                 && RocketEscrowGate.retirementUnprotected(rocket);
     }
     String diagnostic() {
-        var candidate = level.getEntity(entry.record().rocketEntityId());
-        return "loaded=" + loaded() + ",same-entity=" + (candidate == frozenEntity)
-                + ",same-flight=" + (frozenEntity != null && frozenEntity.flightData().orElse(null) == flight)
-                + ",same-snapshot=" + (frozenEntity != null && frozenEntity.snapshot().orElse(null) == frozenSnapshot)
-                + ",eligible=" + (candidate instanceof RocketEntity rocket && eligible(rocket));
+        return "loaded=" + loaded() + ",census=" + observation + ",copies=" + copies.size() + ",epoch=" + epoch;
     }
     boolean discard() {
         if (observe() != SealedDisassembly.Entity.MATCHING) { return false; }
-        frozenEntity.discard();
-        return level.getEntity(entry.record().rocketEntityId()) == null;
+        return discard(copies.get(copies.size() - 1));
+    }
+    boolean soleSurvivor() { return observe() == SealedDisassembly.Entity.MATCHING && copies.size() == 1; }
+    boolean discardDuplicate() {
+        return observe() == SealedDisassembly.Entity.MATCHING && copies.size() > 1 && discard(copies.get(copies.size() - 1));
+    }
+    private boolean discard(RocketEntity target) {
+        if (!eligible(target)) { return false; }
+        target.discard(); invalidate(); changed.run();
+        return level.getEntity(target.getUUID()) == null;
     }
     java.util.function.Predicate<CompoundTag> validator(ChunkPos column, boolean requirePresent, java.util.function.Consumer<String> diagnostic) {
         boolean origin = column.equals(RocketRetirementProof.Slot.origin(entry.snapshot()).chunk());
-        var logical = this.logical; var frozen = this.frozen; var snapshot = entry.snapshot().snapshotId(); var entity = entry.record().rocketEntityId();
+        var logical = this.logical; var frozen = this.frozen == null ? null : this.frozen.copy();
+        var ids = copies.stream().map(RocketEntity::getUUID).toList();
+        if (frozen != null && !ids.isEmpty()) { frozen.putUUID("UUID", ids.get(0)); }
+        var snapshot = entry.snapshot().snapshotId(); var entity = entry.record().rocketEntityId();
         return root -> {
-            boolean valid = requirePresent && origin ? frozen != null && SealedEntityImages.present(root, logical, snapshot, entity, frozen)
+            boolean valid = requirePresent && origin ? frozen != null && SealedEntityImages.presentCopies(root, logical, snapshot, entity, frozen, ids)
                     : SealedEntityImages.absent(root, logical, snapshot, entity);
             diagnostic.accept("entity,present=" + requirePresent + ",origin=" + origin + ",valid=" + valid);
             return valid;
