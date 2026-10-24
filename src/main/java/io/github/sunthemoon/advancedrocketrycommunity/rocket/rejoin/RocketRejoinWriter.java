@@ -64,8 +64,6 @@ final class RocketRejoinWriter {
                 CompoundTag payload = RocketRejoinCodec.encode(capture.root()); String candidateDigest = digest(payload);
                 boolean[] ownershipRejected = {false}, provedAbsent = {false}, proofRejected = {false};
                 var guarded = policy.withCommitter((staged, target) -> {
-                    proofRejected[0] = !capture.proof().getAsBoolean();
-                    if (proofRejected[0]) { throw new IOException("Rejoin seat proof expired before replacement"); }
                     if (!ownsFile) {
                         ownershipRejected[0] = true;
                         var state = presence.apply(target);
@@ -78,6 +76,8 @@ final class RocketRejoinWriter {
                         attemptedDigest = candidateDigest;
                         ownershipRejected[0] = false;
                     }
+                    proofRejected[0] = !capture.proof().getAsBoolean();
+                    if (proofRejected[0]) { throw new IOException("Rejoin seat proof expired before replacement"); }
                     policy.committer().commit(staged, target);
                 });
                 outcome = disk.write(file, guarded, capture.generation(), payload, Map.of());
