@@ -2033,7 +2033,9 @@ TASK-W06F did. It changes no accepted behaviour or bound.
   instead of disagreeing about kind 4. Kinds 0 to 3 keep byte-identical layouts.
 - The bounds stay at 512 bytes per intent and 8 KiB per view. The view carries the kind's exact scalar values, a
   status code name and a quote token: no coordinates, inventories, native tags or another owner's rocket position.
-  Banks appear as the stable bank role IDs of the flight plan above, with amount, capacity and required debit.
+  Banks appear as the stable bank role IDs of the flight plan above, with amount, capacity and required debit. A
+  required cost the server cannot compute for a refused quote is sent as -1, meaning unavailable (R102, before
+  protocol 2 merged).
 - The intent names the open menu by container ID. The launch action carries the displayed quote's token, so a stale
   view cannot launch. The server creates the fresh request ID and uses the shared flight path. A destination is an
   index into the bounded accessible catalog the menu shows, checked again by the server.
