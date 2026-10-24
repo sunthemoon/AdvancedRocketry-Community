@@ -38,7 +38,7 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: 56d3360a3 (W147 merged: cargo benchmarks C-B and D-B measured on the combined tree; before it, W146 and W145 fixed cargo visual republication and discarded governed launches)
+latest_code_commit: ef5d60c24 (W150 merged: P1-N3 leaf N3-B1, the predecessor-aware terminal proof and I7; before it, W147 measured the cargo benchmarks C-B and D-B)
 latest_hosted_regression: the last green run is 39711262800 at 34dc9751 (the W130 merge); run 39736717569 at 367a84ff (the W134 merge) failed two Moon-flight GameTests and run 39737594848 at 2426f00d (the W133F merge) failed one other launch test, each passing elsewhere: an intermittent family of discarded launches that W139 investigates (QUEUE)
 ledger_planned_units: 19
 asset_review_items: 154
