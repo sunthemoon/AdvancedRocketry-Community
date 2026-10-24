@@ -33,14 +33,16 @@ def audit_log(lines, hold, cut, mode):
     manifest = json.loads(Path(__file__).with_name("w158_release_expected_log.json").read_text(encoding="utf-8"))
     row = manifest["expected_warn_counts"].get(f"{hold}-{cut}-{mode}", {})
     expected = {state: row.get(state, 0) for state in ("GONE", "CONFLICT")}
+    expected["source_hold"] = int(hold == "H1" and (mode == "seed" or mode == "recover" and cut in ("C0", "C1")))
+    source = re.compile(re.escape(manifest["existing_source_hold_message"]).replace(re.escape("{uuid}"), UUID_PATTERN))
     counts = dict.fromkeys(expected, 0)
     remainder = []
     for line in lines:
         header = HEADER.fullmatch(line.rstrip())
         matched = HELD.fullmatch(header["message"]) if header else None
-        if (matched and header["logger"] in PROJECT_LOGGERS and header["thread"] == "Server thread"
-                and header["level"] == "WARN"):
-            counts[matched[1]] += 1
+        if (header and header["logger"] in PROJECT_LOGGERS and header["thread"] == "Server thread" and header["level"] == "WARN"
+                and (matched or source.fullmatch(header["message"]))):
+            counts[matched[1] if matched else "source_hold"] += 1
         else:
             remainder.append(line)
     errors = smoke.scan_log(remainder, expected_mod_version=smoke.V180_STARTUP_VERSION)
@@ -178,8 +180,8 @@ def run(args):
                         process.command("stop"); row["exit"] = process.finish()
                         if row["exit"] != 0:
                             raise smoke.SmokeError("Restart process exited abnormally")
-                    row["log_audit"] = audit_log(process.lines, hold, cut, mode)
                     disk = capture(world, evidence / (name + "-saved"))
+                    row["log_audit"] = audit_log(process.lines, hold, cut, mode)
                     baseline = verify(disk, hold, cut, mode, baseline)
                     row["conserved"] = True
                     row["intentional_fixture_deletion"] = cut == "C14"
