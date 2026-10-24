@@ -117,6 +117,10 @@ final class SealedDisassemblyCoordinator {
     boolean overlaps(RocketRegion region) { return work.values().stream().anyMatch(item -> item.world.entry.record().region().overlaps(region)); }
     void onPlace(ServerLevel level, BlockPos pos) { if (server == level.getServer() && placement != null) { placement.onPlace(level, pos); } }
     private int activeAttempts() { return (int) work.values().stream().filter(item -> item.world.activeAttempt()).count(); }
+    String diagnostic(UUID id) {
+        var item = work.get(id);
+        return item == null ? "not-tracked" : item.machine.phase() + ":" + item.world.reason() + ":" + item.world.entities.diagnostic();
+    }
     void tick(MinecraftServer server) {
         bind(server); budget.beginTick(server.getTickCount());
         var ids = List.copyOf(work.keySet());

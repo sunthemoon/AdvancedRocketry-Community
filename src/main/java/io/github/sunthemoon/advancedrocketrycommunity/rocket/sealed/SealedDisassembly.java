@@ -159,6 +159,9 @@ public final class SealedDisassembly {
     }
     private boolean elect() {
         if (!proof(Goal.SEALED)) { return false; }
+        Entity entity = port.entity();
+        if (entity == Entity.UNLOADED) { return hold(Reason.UNLOADED); }
+        if (entity == Entity.OTHER) { return hold(Reason.ENTITY_CONFLICT); }
         // Submission, not its acknowledgement, is the irreversible live-process boundary.
         electionSubmitted = true;
         port.elect();

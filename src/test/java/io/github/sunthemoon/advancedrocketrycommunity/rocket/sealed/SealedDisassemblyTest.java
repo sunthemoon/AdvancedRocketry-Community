@@ -11,6 +11,13 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 class SealedDisassemblyTest {
+    @Test void aChangedSurvivorAfterTerrainProofCannotElectTheSealedSnapshot() throws Exception {
+        var world = new World(2); var run = live(world);
+        run.ticks(3); assertEquals(2, world.staged); assertFalse(run.flag("electionSubmitted"));
+        world.entity = "OTHER"; run.ticks(8);
+        assertFalse(run.flag("electionSubmitted")); assertEquals("LOCKED", world.ram); assertTrue(world.u);
+        assertFalse(world.mutations.contains("discard"));
+    }
     @Test void completionRetainsUUntilSealedTerrainAndNativeEntityAbsenceAreBothProved() throws Exception {
         var world = new World(3); var run = live(world);
         run.finish(40);

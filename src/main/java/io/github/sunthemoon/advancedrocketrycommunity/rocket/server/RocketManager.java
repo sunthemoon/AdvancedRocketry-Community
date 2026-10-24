@@ -101,6 +101,7 @@ public final class RocketManager implements RocketOperationService {
 
     void sealedOnPlace(ServerLevel level, BlockPos position) { sealed.onPlace(level, position); }
     boolean sealedFrozen(RocketEntity rocket) { return sealed.frozen(rocket); }
+    String sealedDiagnostic(UUID id) { return sealed.diagnostic(id); }
     UUID beginSealedForReleaseTest(RocketEntity rocket,
             java.util.function.Consumer<io.github.sunthemoon.advancedrocketrycommunity.rocket.sealed.SealedDisassembly.Result> completion) {
         io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowTestEndpoints.requireEnabled(rocket.getServer());

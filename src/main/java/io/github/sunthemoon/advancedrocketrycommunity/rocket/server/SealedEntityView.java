@@ -73,6 +73,7 @@ final class SealedEntityView {
     private boolean eligible(RocketEntity rocket) {
         var origin = entry.snapshot().sourceOrigin();
         return RocketTransferEntities.loadedEntity(rocket) && rocket.operational()
+                && level.dimension().location().equals(entry.snapshot().sourceDimension())
                 && rocket.ownerId().filter(entry.ownerId()::equals).isPresent()
                 && rocket.snapshot().filter(snapshot -> snapshot.snapshotId().equals(entry.snapshot().snapshotId())
                 && snapshot.contentHash().equals(entry.snapshot().contentHash())).isPresent()
@@ -81,6 +82,13 @@ final class SealedEntityView {
                 && data.passengers().assignments().isEmpty() && data.activeTransferId().isEmpty()).isPresent()
                 && rocket.getX() == origin.x() + 0.5D && rocket.getY() == origin.y() && rocket.getZ() == origin.z() + 0.5D
                 && RocketEscrowGate.retirementUnprotected(rocket);
+    }
+    String diagnostic() {
+        var candidate = level.getEntity(entry.record().rocketEntityId());
+        return "loaded=" + loaded() + ",same-entity=" + (candidate == frozenEntity)
+                + ",same-flight=" + (frozenEntity != null && frozenEntity.flightData().orElse(null) == flight)
+                + ",same-snapshot=" + (frozenEntity != null && frozenEntity.snapshot().orElse(null) == frozenSnapshot)
+                + ",eligible=" + (candidate instanceof RocketEntity rocket && eligible(rocket));
     }
     boolean discard() {
         if (observe() != SealedDisassembly.Entity.MATCHING) { return false; }

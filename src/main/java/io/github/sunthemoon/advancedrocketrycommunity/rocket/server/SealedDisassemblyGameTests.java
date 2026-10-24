@@ -52,9 +52,11 @@ public final class SealedDisassemblyGameTests {
         rocket.initialize(snapshot, UUID.randomUUID(), UUID.randomUUID());
         RocketTransferEntities.positionAtOrigin(rocket, snapshot.sourceOrigin());
         helper.assertTrue(level.addFreshEntity(rocket), "Source D was not published");
-        var transaction = new UUID[1]; var done = new boolean[1];
+        var transaction = new UUID[1]; var done = new boolean[1]; var callbackFailure = new String[1];
         Consumer<SealedDisassembly.Result> completion = result -> {
-            helper.assertTrue(result == SealedDisassembly.Result.SEALED, "Native completion did not elect sealed terrain: " + result);
+            try {
+            helper.assertTrue(result == SealedDisassembly.Result.SEALED, "Native completion did not elect sealed terrain: " + result
+                    + ":" + RocketRuntime.sealedDiagnosticForReleaseTest(server, transaction[0]));
             var journal = RocketTransactionSavedData.get(server);
             helper.assertTrue(journal.acknowledgedAbsent(transaction[0], snapshot.snapshotId(), rocket.getUUID()),
                     "Completion ran before exact checked U absence");
@@ -74,8 +76,10 @@ public final class SealedDisassemblyGameTests {
                         "Native entity slot still held D at checked U retirement");
                 done[0] = true; helper.succeed();
             } catch (java.io.IOException failure) { helper.fail("Native completion files unreadable: " + failure.getClass().getSimpleName()); }
+            } catch (RuntimeException assertion) { callbackFailure[0] = assertion.getMessage(); }
         };
         helper.onEachTick(() -> {
+            if (callbackFailure[0] != null) { helper.fail(callbackFailure[0]); }
             if (done[0]) { return; }
             if (transaction[0] == null && level.areEntitiesLoaded(new ChunkPos(origin).toLong())) {
                 try {

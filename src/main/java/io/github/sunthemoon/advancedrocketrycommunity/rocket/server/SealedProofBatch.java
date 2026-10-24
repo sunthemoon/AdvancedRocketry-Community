@@ -31,6 +31,10 @@ final class SealedProofBatch implements AutoCloseable {
         this.slots = slots; this.port = Objects.requireNonNull(port);
     }
     boolean active() { owner(); return active; }
+    String diagnostic() {
+        owner(); return "active=" + active + ",cursor=" + cursor + ",proofs=" + proofs.size() + "/" + slots
+                + ",age=" + (active ? port.now() - started : 0) + ",wait=" + Math.max(0, notBefore - port.now());
+    }
     boolean current() {
         owner();
         return !closed && active && port.now() - started <= RocketOrdinaryRetirement.ATTEMPT_TICKS

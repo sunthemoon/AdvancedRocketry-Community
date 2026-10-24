@@ -30,6 +30,7 @@ final class SealedDisassemblyWorld implements SealedDisassembly.Port, AutoClosea
     private SealedProofBatch batch;
     private SealedDisassembly.Goal goal;
     private String reason;
+    private String proofReason;
 
     SealedDisassemblyWorld(ServerLevel level, RocketPersistedTransaction entry, SealedTerrain terrain,
             SealedJournalRequests writes, BooleanSupplier currentRequest, BooleanSupplier attemptRoom,
@@ -50,7 +51,9 @@ final class SealedDisassemblyWorld implements SealedDisassembly.Port, AutoClosea
                 ? SealedDisassembly.Gate.READY : SealedDisassembly.Gate.UNLOADED;
     }
     @Override public boolean requestCurrent() {
-        return currentRequest.getAsBoolean() && entities.observe() == SealedDisassembly.Entity.MATCHING;
+        boolean current = currentRequest.getAsBoolean() && entities.observe() == SealedDisassembly.Entity.MATCHING;
+        if (!current) { reason = "REQUEST_CHANGED:" + entities.diagnostic(); }
+        return current;
     }
     @Override public boolean predecessorAbsent() {
         var transfers = RocketTransferSavedData.get(level.getServer());
@@ -68,8 +71,8 @@ final class SealedDisassemblyWorld implements SealedDisassembly.Port, AutoClosea
         return absent;
     }
     @Override public SealedDisassembly.Cell inspect(int index) { return terrain.inspect(index); }
-    @Override public boolean stage(int index) { return terrain.stage(index); }
-    @Override public boolean erase(int index) { return terrain.erase(index); }
+    @Override public boolean stage(int index) { invalidateProof(); return terrain.stage(index); }
+    @Override public boolean erase(int index) { invalidateProof(); return terrain.erase(index); }
     @Override public SealedDisassembly.Entity entity() { return entities.observe(); }
     @Override public boolean discard() { return predecessorAbsent() && entities.discard(); }
     @Override public void retain() { journal.retain(); }
@@ -99,7 +102,8 @@ final class SealedDisassemblyWorld implements SealedDisassembly.Port, AutoClosea
     }
     void tickProof() { if (batch != null) { batch.tick(); } }
     boolean activeAttempt() { return batch != null && batch.active(); }
-    String reason() { return reason; }
+    String reason() { return reason + ":proof=" + proofReason + ":" + (batch == null ? "no-batch" : batch.diagnostic()); }
+    private void invalidateProof() { if (batch != null) { batch.close(); batch = null; goal = null; } }
     @Override public void held(SealedDisassembly.Phase phase, SealedDisassembly.Reason reason) { this.reason = phase + ":" + reason; }
     @Override public void close() { if (batch != null) { batch.close(); } terrain.close(); }
 
@@ -123,6 +127,6 @@ final class SealedDisassemblyWorld implements SealedDisassembly.Port, AutoClosea
             return slot.entity ? runtime.barrier().beginOrdinary(runtime.store(level), name, slot.position, validator, now(), label -> { }, callback)
                     : runtime.barrier().beginOrdinaryTerrain(runtime.store(level), name, slot.position, validator, now(), label -> { }, callback);
         }
-        @Override public void held(String reason) { SealedDisassemblyWorld.this.reason = goal + ":" + reason; }
+        @Override public void held(String reason) { SealedDisassemblyWorld.this.proofReason = goal + ":" + reason; }
     }
 }
