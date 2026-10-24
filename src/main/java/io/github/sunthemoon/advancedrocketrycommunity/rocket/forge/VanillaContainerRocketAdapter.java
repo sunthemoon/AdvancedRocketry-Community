@@ -9,12 +9,15 @@ import java.util.Set;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
+import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BarrelBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
+import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
 
 /** Explicit chest/barrel adapter; no arbitrary Forge capability or metadata NBT is copied. */
 public final class VanillaContainerRocketAdapter implements RocketBlockEntityAdapter {
@@ -32,10 +35,21 @@ public final class VanillaContainerRocketAdapter implements RocketBlockEntityAda
 
     @Override
     public RocketBlockEntityPayload capture(BlockEntity blockEntity) {
-        if (!supports(blockEntity) || !(blockEntity instanceof Container container)) {
+        if (!supports(blockEntity) || !(blockEntity instanceof RandomizableContainerBlockEntity container)) {
             throw new IllegalArgumentException("Adapter supports only vanilla chest/barrel BlockEntities");
         }
-        CompoundTag source = blockEntity.saveWithoutMetadata();
+        // R98: native BE serialization invokes attached capability providers before whitelisting.
+        // Read the native owned fields instead. getItem() would unpack loot and is not a read-only path.
+        CompoundTag source = new CompoundTag();
+        if (container.lootTable != null) {
+            source.putString("LootTable", container.lootTable.toString());
+            if (container.lootTableSeed != 0L) { source.putLong("LootTableSeed", container.lootTableSeed); }
+        } else {
+            ContainerHelper.saveAllItems(source, container.getItems());
+        }
+        container.lockKey.addToTag(source);
+        Component name = container.getCustomName();
+        if (name != null) { source.putString("CustomName", Component.Serializer.toJson(name)); }
         CompoundTag approved = whitelist(source, container.getContainerSize());
         return new RocketBlockEntityPayload(ID, approved);
     }

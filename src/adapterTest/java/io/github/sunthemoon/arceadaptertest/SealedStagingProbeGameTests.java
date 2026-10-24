@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.concurrent.locks.LockSupport;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
@@ -21,12 +22,14 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.ChestBlockEntity;
+import net.minecraft.world.level.block.entity.BarrelBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 import net.minecraftforge.registries.ForgeRegistries;
 
-/** R95-R97 prerequisite. Conservation assertions remain strict if the platform probe fails. */
+/** R95-R98 prerequisite. Conservation assertions remain strict if the platform probe fails. */
 @GameTestHolder(AdapterTestMod.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class SealedStagingProbeGameTests {
@@ -34,6 +37,12 @@ public final class SealedStagingProbeGameTests {
     private static final BlockPos RELATIVE = new BlockPos(5, 2, 5);
     private static final UUID OWNER = UUID.fromString("618733de-22e0-45f4-a613-ef57c45782b3");
     private enum Failure { FALSE, THROW, SLOW, MISMATCH }
+    private static Function<BlockEntity, CompoundTag> builtInContainerCapture;
+
+    /** Test-batch injection by the host, keeping this independent fixture free of host-internal dependencies. */
+    public static void setBuiltInContainerCapture(Function<BlockEntity, CompoundTag> capture) {
+        builtInContainerCapture = capture;
+    }
 
     @GameTest(templateNamespace = HOST, template = "rocket_test", batch = "w152_probe", timeoutTicks = 40)
     public static void preparedPublicationCoversEveryAdmittedMember(GameTestHelper helper) {
@@ -114,7 +123,7 @@ public final class SealedStagingProbeGameTests {
 
     private static void conservation(GameTestHelper helper, boolean serializableAttachment) {
         List<String> violations = new ArrayList<>();
-        // The native chest/barrel adapters recapture through saveWithoutMetadata. The fixture
+        // The R98 chest/barrel adapters recapture owned data directly. The fixture
         // instead captures its owned inventory directly. Tank/bay adapters copy dedicated roots,
         // so their diagnostic resource reads must not stand in for native capability serialization.
         List<Block> hosts = serializableAttachment
@@ -234,6 +243,10 @@ public final class SealedStagingProbeGameTests {
     }
 
     private static CompoundTag recapture(BlockEntity target) {
+        if (target instanceof ChestBlockEntity || target instanceof BarrelBlockEntity) {
+            if (builtInContainerCapture == null) { throw new AssertionError("Host capture bridge is not installed"); }
+            return builtInContainerCapture.apply(target);
+        }
         return target instanceof FixtureContainerBlockEntity fixture
                 ? new FixtureInventoryAdapter().capture(fixture) : target.saveWithoutMetadata();
     }
