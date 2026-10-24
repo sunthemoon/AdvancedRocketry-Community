@@ -1782,7 +1782,7 @@ changes no decision status and accepts no risk. The risk is R-035.
   format, schema, bound, lease, budget, timeout or protocol changes. The holds and their recovery are in R-035.
   Leaves N3-B1 to N3-B4 follow W148 section 7; N3-B2 needs an independent persistence review before integration.
 - **N3-B2 isolation (W154 design revisions 1 and 2, `records/W154-DESIGN.md`; review W154-review BLOCK, SHA-256
-  `6facedc6…`, and its re-review, SHA-256 `c67bfebd…`; Root decisions R91 and R93 to R96, 2026-10-24; not yet
+  `6facedc6…`, and its re-review, SHA-256 `c67bfebd…`; Root decisions R91 and R93 to R97, 2026-10-24; not yet
   implemented).** W152 showed that vanilla container access (hoppers, the item capability, menus, breaking) bypasses
   the region locks while U is retained, so a rollback could restore items that had already left. Sealed staging closes
   that window. While U is retained, every member of the footprint is an inert carrier C: no inventory, capability,
@@ -1794,12 +1794,14 @@ changes no decision status and accepts no risk. The risk is R-035.
   - **Why no added residual:** after unsealing, C and the published container are two representations of one member
     in one terrain slot. A later transfer out of the container has the torn-save behaviour of every vanilla chest
     (ADR-054), not the disassembly's two-store transfer, so section 10's D3-A rule against an added residual holds.
-  - **Unsealing (R95, R96):** every adapter restores into a target that is not yet installed, while C stays in the
-    world. The target is verified by recapture and published in one step. A failed restore discards the target (it is
-    marked removed, and a built-in target is also emptied) and holds C.
-  - **Provider contract (method signatures unchanged):** restore receives a server-bound target before it is
-    installed and must work from the target and the payload. A provider that needs an installed host is held, and
-    nothing is lost.
+  - **Unsealing (R95 to R97):** every adapter restores into a target that is in no Level yet, while C stays in the
+    world, so no neighbour or comparator callback runs before publication (W152's probe showed that a server-bound
+    target's `setChanged` reaches a neighbour synchronously). The target is verified by recapture, then gets its
+    Level and is published in one step. A failed restore discards the target (it is marked removed, and a built-in
+    target is also emptied) and holds C.
+  - **Provider contract (method signatures unchanged):** at unseal, restore receives a host-created target that is
+    in no Level yet and must work from the target and the payload. A provider that needs a Level or an installed host
+    is held, and nothing is lost.
   - **Trust boundary:** code that keeps a raw block-entity reference from `AttachCapabilitiesEvent` and uses it after
     the block entity is removed is outside the protection, as it already is for every vanilla container instance a
     chunk unload leaves behind. R-035 discloses this boundary.
