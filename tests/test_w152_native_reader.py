@@ -19,6 +19,25 @@ class W152NativeReaderTest(unittest.TestCase):
         with self.assertRaises(ValueError): expected_resources("unknown")
         self.assertTrue(all(row["hosts"] == "ALL" for row in native_case_plan()))
 
+    def test_full_host_native_census_reads_extra_members_and_rejects_changed_fluid(self):
+        from run_w152_native import inspect
+        item = lambda label, count: {"id": "fixture:item", "Count": count, "tag": {"W152": label}}
+        fluid = {"FluidName": "minecraft:water", "Amount": 1000, "Tag": {"W152": "original-fluid"}}
+        rows = [dict(x=15, y=100, z=16, Items=[item("original", 7)]),
+                dict(x=16, y=100, z=15, Items=[item("original", 7)]),
+                dict(x=17, y=100, z=15, contents=fluid),
+                dict(x=17, y=100, z=16, package=item("original-package", 1))]
+        def chunk(path, x, z): return {"block_entities": rows} if path.parent.name == "region" else None
+        with patch("run_w152_native.chunk_record", side_effect=chunk), \
+                patch("run_w152_native.block_at", return_value="fixture:block"), \
+                patch("run_w152_native.block_state_at", return_value={"Name": "fixture:block"}):
+            state = inspect(Path("missing-world"), hosts="ALL")
+            self.assertEqual(6, len(state["native"]))
+            self.assertEqual({"original": 14, "original-fluid": 1000, "original-package": 1}, state["effective"])
+            fluid["Amount"] = 999
+            with self.assertRaisesRegex(ValueError, "conservation"):
+                inspect(Path("missing-world"), hosts="ALL")
+
     def test_cut_plan_has_recovery_kills_and_never_saved_entity_variants(self):
         from run_w152_native import native_case_plan
         cases = native_case_plan()

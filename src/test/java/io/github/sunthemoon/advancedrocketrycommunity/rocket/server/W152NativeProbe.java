@@ -48,6 +48,7 @@ public final class W152NativeProbe {
     private final W152NativeConsumers consumers;
     private final W152NativeFailure preparationFailure;
     private final boolean neverSaved = System.getProperty("advancedrocketrycommunity.w152InitialD", "SAVED").equals("NEVER_SAVED");
+    private final boolean allHosts = System.getProperty("advancedrocketrycommunity.w152PayloadHosts", "CONTAINERS").equals("ALL");
     private final ConcurrentLinkedQueue<Map<String, Object>> events = new ConcurrentLinkedQueue<>();
     private final AtomicInteger eventCount = new AtomicInteger();
     private final AtomicBoolean paused = new AtomicBoolean();
@@ -189,9 +190,13 @@ public final class W152NativeProbe {
             }
             blocks.add(new RocketBlock(new RocketPosition(x, 0, z), RocketBlockStateAdapter.capture(state), payload));
         } }
+        if (allHosts) {
+            for (int z = 0; z < 2; z++) { level.setBlock(ORIGIN.offset(2, 0, z), Blocks.AIR.defaultBlockState(), 3); }
+            W152NativeResourceHosts.add(blocks, id("owner"));
+        }
         var snapshot = RocketStructureSnapshot.create(id("snapshot"), level.dimension().location(),
                 new RocketPosition(ORIGIN.getX(), ORIGIN.getY(), ORIGIN.getZ()), blocks, List.of(new RocketPosition(0, 0, 0)),
-                new RocketStats(4, 400, 1000, 1000, 1, 1, 1, 2), level.getGameTime());
+                new RocketStats(blocks.size(), blocks.size() * 100, 1000, 1000, 1, 1, 1, allHosts ? 4 : 2), level.getGameTime());
         rocket = ModEntities.ROCKET.get().create(level); require(rocket != null, "Missing rocket type");
         rocket.setUUID(id("entity")); rocket.initialize(snapshot, id("logical"), id("owner"));
         RocketTransferEntities.positionAtOrigin(rocket, snapshot.sourceOrigin());
@@ -200,7 +205,7 @@ public final class W152NativeProbe {
     private boolean stable() {
         var data = RocketTransactionSavedData.get(server);
         if (!data.operational() || !data.entries().isEmpty() || !data.acknowledgedCurrent()) { return false; }
-        for (int x = 0; x < 2; x++) { for (int z = 0; z < 2; z++) {
+        for (int x = 0; x < (allHosts ? 3 : 2); x++) { for (int z = 0; z < 2; z++) {
             if (server.overworld().getBlockEntity(ORIGIN.offset(x, 0, z)) instanceof SealedRocketBlockEntity) { return false; }
         } }
         var survivor = server.overworld().getEntity(id("entity"));
@@ -224,6 +229,7 @@ public final class W152NativeProbe {
         report.put("source", System.getProperty("advancedrocketrycommunity.w152Commit"));
         report.put("stage", stage); report.put("boundary", boundary); report.put("status", status); report.put("detail", detail);
         report.put("initial_d", neverSaved ? "NEVER_SAVED" : "SAVED");
+        report.put("payload_hosts", allHosts ? "ALL" : "CONTAINERS");
         report.put("tick", age); report.put("events", List.copyOf(events)); report.put("entity", id("entity").toString());
         try { Files.writeString(server.getWorldPath(LevelResource.ROOT).resolve("w152-native.json"),
                 new com.google.gson.GsonBuilder().setPrettyPrinting().create().toJson(report)); }

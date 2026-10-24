@@ -46,7 +46,14 @@ def native_case_plan() -> list[dict]:
     cases.extend(dict(cut="C3_MOVE_AFTER", recovery=recovery, initial="SAVED")
                  for recovery in ("C4_DISCARD_AFTER", "COMPLETE_PROOF_CURRENT", "C5_MOVE_AFTER", "C5_UNKNOWN"))
     cases.append(dict(cut="C5_MOVE_AFTER", recovery="UNSEAL_PUBLISH_AFTER", initial="SAVED"))
+    for row in cases: row["hosts"] = "ALL"
     return cases
+
+
+def expected_resources(hosts: str) -> dict[str, int]:
+    if hosts == "CONTAINERS": return {"original": 14}
+    if hosts == "ALL": return {"original": 14, "original-fluid": 1000, "original-package": 1}
+    raise ValueError("Unknown native payload-host fixture")
 
 
 def block_state_at(chunk: dict, x: int, y: int, z: int) -> dict:
@@ -78,7 +85,9 @@ def consumer_verdict(state: dict, experiment: str) -> str:
     return "PASS" if experiment == "BOTH_SIDES_SAVED" else "DOCUMENTED_RESIDUAL"
 
 
-def inspect(world: Path, experiment: str = "") -> dict:
+def inspect(world: Path, experiment: str = "", hosts: str = "CONTAINERS") -> dict:
+    expected = expected_resources(hosts)
+    if experiment and hosts != "CONTAINERS": raise ValueError("Consumer control uses the container-only fixture")
     journal = world / "data/advancedrocketrycommunity_rocket_transactions.dat"
     records = nbt_file(journal, 67_108_864)["data"].get("transactions", []) if journal.exists() else []
     if len(records) > 1 or any(row.get("type") != "SEALED_DISASSEMBLY" for row in records):
@@ -96,7 +105,7 @@ def inspect(world: Path, experiment: str = "") -> dict:
                     entities.append(row)
                 elif row.get("id") == "minecraft:item":
                     recipients.append(row)
-            for dx in range(2):
+            for dx in range(3 if hosts == "ALL" else 2):
                 for dz in range(2):
                     at = (15 + dx, 100, 15 + dz)
                     if (at[0] >> 4, at[2] >> 4) != (x, z):
@@ -141,7 +150,7 @@ def inspect(world: Path, experiment: str = "") -> dict:
                         recipient_state=block_state_at(terrain, 80, 100, 15))
         observed["consumer_verdict"] = consumer_verdict(observed, experiment)
     else:
-        require_inventory(observed, {"original": 14})
+        require_inventory(observed, expected)
     return observed
 
 
@@ -183,7 +192,8 @@ def run(args) -> dict:
     session = temp / ("w152-native-" + uuid.uuid4().hex)
     owned = uuid.uuid4().hex; marker = session / ".w152-owned"
     result = dict(status="IN_PROGRESS", source_commit=commit, jar_sha256=escrow.digest(args.jar),
-                  cut=args.cut, recovery_cut=args.recovery_cut, initial_d=args.initial_d, commands=[], stages=[])
+                  cut=args.cut, recovery_cut=args.recovery_cut, initial_d=args.initial_d,
+                  payload_hosts=args.payload_hosts, commands=[], stages=[])
     experiment = args.cut if args.cut in CONSUMER_CUTS else ""
     try:
         session.mkdir(); marker.write_text(owned, encoding="ascii")
@@ -207,6 +217,7 @@ def run(args) -> dict:
                             "-Dadvancedrocketrycommunity.w152Stage="+stage, "-Dadvancedrocketrycommunity.w152Cut="+cut,
                             "-Dadvancedrocketrycommunity.w152Experiment="+experiment,
                             "-Dadvancedrocketrycommunity.w152InitialD="+args.initial_d,
+                            "-Dadvancedrocketrycommunity.w152PayloadHosts="+args.payload_hosts,
                             "-Dadvancedrocketrycommunity.w152Commit="+commit]
             result["commands"].append(command)
             process = smoke.CapturedProcess(command, session, evidence / (stage + ".log"))
@@ -230,12 +241,12 @@ def run(args) -> dict:
                 raise smoke.SmokeError(f"{stage}: {raw['status']}: {raw.get('detail')}")
             if any("/ERROR]" in line or "/FATAL]" in line for line in process.lines):
                 raise smoke.SmokeError("Native ERROR/FATAL observed")
-            state = inspect(session / "world", experiment)
+            state = inspect(session / "world", experiment, args.payload_hosts)
             (evidence / (stage + "-native.json")).write_text(json.dumps(state, indent=2), encoding="utf-8")
             raw_inputs = preserve_native(session / "world", evidence, stage, state)
             replayed = session / ("replayed-" + stage)
             replay_native(evidence / raw_inputs["file"], replayed)
-            if comparable(inspect(replayed, experiment)) != comparable(state):
+            if comparable(inspect(replayed, experiment, args.payload_hosts)) != comparable(state):
                 raise smoke.SmokeError("Retained native census records do not replay the original observation")
             result["stages"].append(dict(stage=stage, status=raw["status"], authority=state["authority"], raw_inputs=raw_inputs))
             if stage in ("recover1", "recover2"):
@@ -268,6 +279,7 @@ def main() -> int:
     parser.add_argument("--cut", choices=CUTS + CONSUMER_CUTS, required=True)
     parser.add_argument("--recovery-cut", choices=CUTS)
     parser.add_argument("--initial-d", choices=("SAVED", "NEVER_SAVED"), default="SAVED")
+    parser.add_argument("--payload-hosts", choices=("CONTAINERS", "ALL"), default="CONTAINERS")
     result = run(parser.parse_args()); print(json.dumps(result, indent=2))
     return 0 if result["status"] in ("PASS", "DOCUMENTED_RESIDUAL") else 1
 
