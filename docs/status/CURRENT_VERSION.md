@@ -39,8 +39,8 @@ development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
 latest_code_commit: 8dee86808 (W153 merged: C17a-04, the full linker and the rocket monitoring station on classic_controls protocol 2, with the W153H F1 serial-lease fix; before it, W151 merged W98-R1)
-latest_hosted_regression: the last green run is 40046839491 at 0a3fb94d (after the W150 merge); the run at 817aa30f (the W151 merge) is in progress. Every completed hosted regression since the failure at 2426f00d on 2026-10-22 is green (17 runs; two others were cancelled); W139 stays open until no hosted log shows ARCE_LAUNCH_DISCARD (QUEUE)
-ledger_planned_units: 19
+latest_hosted_regression: the last green run is 40092320937 at 8dee8680 (the W153 merge). Every completed hosted regression since the failure at 2426f00d on 2026-10-22 is green; W139 stays open until no hosted log shows ARCE_LAUNCH_DISCARD (QUEUE)
+ledger_planned_units: 17
 asset_review_items: 154
 required_gates_approved: none
 last_updated: 2026-10-24
@@ -84,9 +84,9 @@ It does not run:
 
 What is still open:
 
-- **Ledger.** 19 units are still PLANNED: C17a 6 and C17c 1
-  (the monitoring station, the five loader variants and the linker, which wait for the escrow
-  chain and the bay), C18a 1 (the oxygen charger, owner decision D4) and C18d 11 (the ten sounds,
+- **Ledger.** 17 units are still PLANNED: C17a 4 and C17c 1
+  (the five loader variants, which wait for the escrow chain's admission and the bay; W153 delivered
+  the monitoring station and the linker), C18a 1 (the oxygen charger, owner decision D4) and C18d 11 (the ten sounds,
   which wait for the owner's listen, and `modelBakeEvent`, which waits for an OBJ import). The
   backlog is in QUEUE.md.
 - **Assets.** 154 legacy assets are still under REVIEW (ADR-066 section 7.3).

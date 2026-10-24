@@ -96,7 +96,7 @@ block:lightSource,REJECTED,-,-,ADR-055 ADR-062,technical light block of the lega
 block:liquidTank,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:pressurized_tank,ADR-062 ADR-064,stackable bounded fluid storage; retained overflow and dropped-Item resources,docs/work/v1.8.0-c16a-tank/VERIFICATION.md
 block:loader,MERGED,-,block_variant:loader/*,ADR-062,"seven variants, each with its own row",
 block:microwaveReciever,IMPLEMENTED,v1.6.0,advancedrocketrycommunity:microwave_receiver,ADR-049,,
-block:monitoringStation,PLANNED,C17a,rocket monitoring station,ADR-062,rocket status and redstone launch through the server flight path,
+block:monitoringStation,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:rocket_monitoring_station,ADR-062 ADR-065,rocket status and redstone launch through the server flight path,docs/work/v1.8.0-c17a-monitor/VERIFICATION.md
 block:moonTurf,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:moon_turf,ADR-063,Moon surface block,docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
 block:moonTurf_dark,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:dark_moon_turf,ADR-063,Moon lowland block,docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
 block:nitrogenFluid,REDESIGNED,v1.8.0,advancedrocketrycommunity:nitrogen,ADR-062 ADR-064,container-only Forge gas with no world block or bucket,docs/work/v1.8.0-c16a-fluids/VERIFICATION.md
@@ -544,7 +544,7 @@ libvulpes:java/blockMotor,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:motor adv
 libvulpes:java/blockStructureBlock,REDESIGNED,v0.1.0,advancedrocketrycommunity:machine_casing,V0.1.0 ADR-062,machine structure block,
 libvulpes:java/itemBattery,REDESIGNED,v1.6.0,advancedrocketrycommunity:satellite_battery advancedrocketrycommunity:large_satellite_battery,ADR-049,satellite power storage,
 libvulpes:java/itemHoloProjector,REDESIGNED,v1.2.0,multiblock pattern diagnostics,ADR-016,the validator reports each mismatched cell,
-libvulpes:java/itemLinker,PLANNED,C17a,linker tool,ADR-062,"binds loaders, monitoring stations and pads server-side",
+libvulpes:java/itemLinker,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:linker,ADR-062 ADR-065,"binds loaders, monitoring stations and pads server-side",docs/work/v1.8.0-c17a-monitor/VERIFICATION.md
 libvulpes:java/motors,MERGED,-,libvulpes:java/blockMotor,ADR-062,motor tier list,
 libvulpes:ore/blockMotor,MERGED,-,libvulpes:java/blockMotor,ADR-062,motor tag,
 libvulpes:ore/itemBattery,MERGED,-,libvulpes:java/itemBattery,ADR-062,battery tag,
