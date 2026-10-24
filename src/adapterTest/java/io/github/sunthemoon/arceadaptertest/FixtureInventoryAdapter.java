@@ -40,6 +40,9 @@ final class FixtureInventoryAdapter implements RocketBlockEntityAdapter {
             probe.enter("RESTORE");
             if (probe.mode == FixtureAdapterFaults.Mode.RESTORE_FALSE) { return false; }
             if (probe.mode == FixtureAdapterFaults.Mode.RESTORE_MISMATCH) { container.clearContent(); }
+            if (probe.mode == FixtureAdapterFaults.Mode.RESTORE_NEEDS_LEVEL && container.getLevel() == null) { return false; }
+            if (probe.mode == FixtureAdapterFaults.Mode.RESTORE_NEEDS_INSTALLED && (container.getLevel() == null
+                    || container.getLevel().getBlockEntity(container.getBlockPos()) != container)) { return false; }
         }
         return true;
     }

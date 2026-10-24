@@ -52,6 +52,7 @@ final class SealedStagingProbeFixture {
     }
 
     static void attach(AttachCapabilitiesEvent<BlockEntity> event) {
+        SealedProductionProviderGameTests.attached(event.getObject());
         Trace trace = ACTIVE.get();
         if (trace != null && event.getObject().getBlockPos().equals(trace.at)) {
             trace.retained = event.getObject();
@@ -85,6 +86,7 @@ final class SealedStagingProbeFixture {
     static void end() { ACTIVE.remove(); }
 
     static void observe(String phase) {
+        SealedProductionProviderGameTests.callback(phase);
         Trace trace = ACTIVE.get();
         if (trace != null) { trace.callback(phase); }
     }
