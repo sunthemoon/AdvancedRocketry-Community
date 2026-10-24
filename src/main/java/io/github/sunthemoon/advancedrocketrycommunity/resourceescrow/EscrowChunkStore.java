@@ -51,12 +51,15 @@ public final class EscrowChunkStore {
         ChunkPos pos = entity ? new ChunkPos(endpoint.x(), endpoint.z())
                 : new ChunkPos(new net.minecraft.core.BlockPos(endpoint.x(), endpoint.y(), endpoint.z()));
         var watch = monitor.captureWatch(endpoint.level(), entity, pos, lifetime);
-        AtomicLong generation = watch.generation();
-        long capturedGeneration = watch.capturedGeneration(); // BEFORE serialization/event, never after store.
         if (entity) {
             try { return entities(pos, watch, validator); }
             catch (RuntimeException | Error failure) { watch.release(); throw failure; }
         }
+        return terrain(pos, watch, validator);
+    }
+    private Capture terrain(ChunkPos pos, EscrowSaveMonitor.Handle watch, Predicate<CompoundTag> validator) {
+        AtomicLong generation = watch.generation();
+        long capturedGeneration = watch.capturedGeneration(); // BEFORE serialization/event, never after store.
         LevelChunk chunk = level.getChunkSource().getChunkNow(pos.x, pos.z);
         if (chunk == null) { watch.release(); throw new IllegalArgumentException("Endpoint terrain chunk is not FULL loaded"); }
         Runnable restore = () -> {
@@ -73,7 +76,8 @@ public final class EscrowChunkStore {
             unchanged(generation, capturedGeneration);
             EscrowTags.require(level.getChunkSource().getChunkNow(pos.x, pos.z) == chunk, "Captured terrain chunk changed before store");
             // W107C: inert unless cut E1's gate is open; vanilla's store itself is always submitted unchanged.
-            CompletableFuture<Void> stored = fault.observed(level, endpoint.level(), pos, level.getChunkSource().chunkMap.worker.store(pos, tag));
+            CompletableFuture<Void> stored = fault.observed(level, level.dimension().location().toString(), pos,
+                    level.getChunkSource().chunkMap.worker.store(pos, tag));
             var map = level.getChunkSource().chunkMap;
             if (map.legacyStructureHandler != null) { map.legacyStructureHandler.removeIndex(pos.toLong()); }
             map.markPosition(pos, chunk.getStatus().getChunkType());
@@ -82,13 +86,26 @@ public final class EscrowChunkStore {
         } catch (RuntimeException | Error failure) { restore.run(); watch.release(); throw failure; }
     }
     boolean ordinaryAvailable(String id, ChunkPos pos) { return monitor.ordinaryAvailable(id, pos); }
+    boolean ordinaryAvailable(String id, boolean entity, ChunkPos pos) {
+        return (entity || level != null && level.dimension().location().toString().equals(id))
+                && monitor.ordinaryAvailable(id, entity, pos);
+    }
     EscrowSaveMonitor.Handle ordinaryWatch(String id, ChunkPos pos, java.util.function.BooleanSupplier reserve) {
         return monitor.ordinaryWatch(id, pos, reserve);
+    }
+    EscrowSaveMonitor.Handle ordinaryWatch(String id, boolean entity, ChunkPos pos, java.util.function.BooleanSupplier reserve) {
+        return ordinaryAvailable(id, entity, pos) ? monitor.ordinaryWatch(id, entity, pos, reserve) : null;
     }
     /** W98: an ordinary entity-slot capture, the same path as an ENTITY endpoint's, with no escrow identity. */
     Capture captureEntitySlot(ChunkPos pos, Predicate<CompoundTag> validator, EscrowSaveMonitor.Handle watch) {
         EscrowTags.require(level.getServer().isSameThread(), "Wrong entity-slot thread");
         return entities(pos, watch, validator);
+    }
+
+    /** Full original-worker terrain capture, sharing the governed serializer/bookkeeping but not its endpoint identity. */
+    Capture captureTerrainSlot(ChunkPos pos, Predicate<CompoundTag> validator, EscrowSaveMonitor.Handle watch) {
+        EscrowTags.require(level.getServer().isSameThread(), "Wrong terrain-slot thread");
+        return terrain(pos, watch, validator);
     }
 
     /**
