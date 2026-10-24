@@ -1850,7 +1850,9 @@ online together. Governed records stay excluded.
   unsupported.
 - **Leaves:** W80-storage, W80-release and W80-rejoin (the design's Appendix B), each with its own independent review.
   W80-storage merged on 2026-10-25 (W157 with W157F, `c7237169c`; review APPROVE after W157-R1): the sidecar, its checked
-  writer, lazy lifecycle and startup refusal, with no command.
+  writer, lazy lifecycle and startup refusal, with no command. R104 (2026-10-25) amends schema 1 before any world can
+  hold a sidecar: each batch also records B1's at most three entity slots (Level and chunk), so a restart after J1
+  removed T still reacquires B1. J1 uses the merged remaining-crew guard (placed or delivered), not all-online.
 
 ### W11c and W11d implementation note: rocket cargo scope and protections (design W11CD, admission disabled)
 
