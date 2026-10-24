@@ -46,6 +46,27 @@ class SealedEntityImagesTest {
         assertFalse(absent(slot(duplicate), logical));
     }
 
+    @Test void aNestedOnlyCopyCannotProveAnUnmountedNativeSurvivor() throws Exception {
+        var frozen = entity(); var parent = new CompoundTag(); parent.putString("id", "minecraft:boat");
+        parent.putUUID("UUID", UUID.randomUUID()); var passengers = new ListTag(); passengers.add(frozen);
+        parent.put("Passengers", passengers);
+        assertFalse(present(slot(parent), frozen), "A nested image is not the frozen unmounted survivor");
+    }
+
+    @Test void recoveryCopyCensusRequiresEveryExactPhysicalImageWithoutExtraOrMutatedCopies() throws Exception {
+        var frozen = entity(); var otherId = UUID.randomUUID(); var copy = frozen.copy(); copy.putUUID("UUID", otherId);
+        var ids = java.util.List.of(entity, otherId);
+        assertTrue(copies(slot(frozen, copy), frozen, ids));
+        assertFalse(copies(slot(frozen), frozen, ids));
+        assertFalse(copies(slot(frozen, copy), frozen, java.util.List.of(entity)));
+        assertFalse(copies(slot(frozen, frozen.copy()), frozen, ids));
+        var mutated = copy.copy(); mutated.getCompound("RocketEntityData").putInt("fuel", 999);
+        assertFalse(copies(slot(frozen, mutated), frozen, ids));
+        var parent = new CompoundTag(); parent.putString("id", "minecraft:boat");
+        var passengers = new ListTag(); passengers.add(copy); parent.put("Passengers", passengers);
+        assertFalse(copies(slot(frozen, parent), frozen, ids));
+    }
+
     @Test void malformedListsCannotBeCoercedIntoAnEmptyNativeCensus() throws Exception {
         var root = new CompoundTag(); root.putString("Entities", "not-a-list"); assertFalse(absent(root, logical));
         var wrong = new ListTag(); wrong.add(DoubleTag.valueOf(1)); root.put("Entities", wrong); assertFalse(absent(root, logical));
@@ -64,6 +85,10 @@ class SealedEntityImagesTest {
     private boolean present(CompoundTag root, CompoundTag frozen) throws Exception {
         return (boolean) type().getDeclaredMethod("present", CompoundTag.class, UUID.class, UUID.class, UUID.class, CompoundTag.class)
                 .invoke(null, root, logical, snapshot, entity, frozen);
+    }
+    private boolean copies(CompoundTag root, CompoundTag frozen, java.util.List<UUID> ids) throws Exception {
+        return (boolean) type().getDeclaredMethod("presentCopies", CompoundTag.class, UUID.class, UUID.class, UUID.class,
+                CompoundTag.class, java.util.List.class).invoke(null, root, logical, snapshot, entity, frozen, ids);
     }
     private boolean absent(CompoundTag root, UUID knownLogical) throws Exception {
         return (boolean) type().getDeclaredMethod("absent", CompoundTag.class, UUID.class, UUID.class, UUID.class)
