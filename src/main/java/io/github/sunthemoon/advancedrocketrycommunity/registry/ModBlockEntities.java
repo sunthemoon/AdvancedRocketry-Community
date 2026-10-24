@@ -39,6 +39,11 @@ public final class ModBlockEntities {
             AdvancedRocketryCommunity.MOD_ID
     );
 
+    public static final RegistryObject<BlockEntityType<io.github.sunthemoon.advancedrocketrycommunity.rocket.sealed.SealedRocketBlockEntity>>
+            SEALED_ROCKET_BLOCK = BLOCK_ENTITIES.register("sealed_rocket_block", () -> BlockEntityType.Builder.of(
+                    io.github.sunthemoon.advancedrocketrycommunity.rocket.sealed.SealedRocketBlockEntity::new,
+                    ModBlocks.SEALED_ROCKET_BLOCK.get()).build(null));
+
     public static final RegistryObject<BlockEntityType<io.github.sunthemoon.advancedrocketrycommunity.atmosphere.device.ScrubberBlockEntity>> CO2_SCRUBBER =
             BLOCK_ENTITIES.register("co2_scrubber", () -> BlockEntityType.Builder.of(io.github.sunthemoon.advancedrocketrycommunity.atmosphere.device.ScrubberBlockEntity::new, ModBlocks.CO2_SCRUBBER.get()).build(null));
     public static final RegistryObject<BlockEntityType<io.github.sunthemoon.advancedrocketrycommunity.atmosphere.device.PipeSealBlockEntity>> PIPE_SEAL =

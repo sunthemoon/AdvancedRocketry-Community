@@ -91,6 +91,10 @@ public final class RocketManager implements RocketOperationService {
         flightLifecycle.onInstalled();
     }
 
+    boolean sealedPayloadKnown(io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketBlockEntityPayload payload) {
+        return transactions.adapters().supportsPayload(payload);
+    }
+
     public boolean resourceMutationAllowed(RocketEntity rocket) {
         if (!flights.resourceMutationAllowed(rocket)) { return false; }
         var journal = io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketTransactionSavedData

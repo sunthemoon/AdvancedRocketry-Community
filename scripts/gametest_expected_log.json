@@ -1606,6 +1606,15 @@
       "counts": {"item_cargo_landed_disassembly": 1},
       "test": "ItemCargoLandedDisassemblyGameTests.retainedLegacyRecordDisassemblesExactlyTheLatestCargoOnce",
       "reason": "The checked legacy COMMITTED record observes the item-mutated destination's nonzero epoch before loaded endpoint proof and P1-F8 disassembly."
+    },
+    {
+      "id": "w152-sealed-loaded-root-preservation",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.sealed.SealedRocketBlockEntity/",
+      "message": "ARCE_SEALED_MEMBER_HELD position=-?[0-9]+ reason=unavailable-member repair=offline-whole-world",
+      "counts": {"w152_carrier": 7},
+      "test": "SealedCarrierGameTests.loadedInvalidRootsStayInertAndSaveWithoutRefusal",
+      "reason": "Seven invalid loaded roots each log once over three onLoad/save calls. Missing, wrong-type, future, oversized, unavailable registry/adapter and displaced data stay sealed and are saved without refusal."
     }
   ]
 }

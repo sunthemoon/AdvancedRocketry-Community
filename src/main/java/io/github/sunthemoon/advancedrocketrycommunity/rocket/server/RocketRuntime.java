@@ -35,6 +35,13 @@ public final class RocketRuntime {
         service = null;
     }
 
+    /** Availability only: no provider callback, journal access or materialization authority. */
+    public static boolean sealedPayloadKnown(ServerLevel level,
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketBlockEntityPayload payload) {
+        return level.getServer().isSameThread() && service instanceof RocketManager manager
+                && manager.sealedPayloadKnown(payload);
+    }
+
     /** Only this installed server session owns preparation state; nothing is saved or restored. */
     public static io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.RocketCargoPreparations cargoPreparations(MinecraftServer server) {
         if (!server.isSameThread()) { throw new IllegalStateException("Cargo preparation requires the server thread"); }
