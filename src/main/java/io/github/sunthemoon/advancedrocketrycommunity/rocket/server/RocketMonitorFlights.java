@@ -108,31 +108,57 @@ public final class RocketMonitorFlights {
         if (!flight.launchReady()) { return refused(target, RocketFlightRequestCode.INVALID_STATE, stamp); }
         var planned = flights.plan(rocket, flight, flight.currentTarget().orElseThrow(), target,
                 StationRegistrySavedData.get(rocket.getServer()), PREVIEW, flights.captureCatalog());
-        return new RocketMonitorQuote(target, RocketFlightRequestCode.fromPlanCode(planned.code()), planned.requiredFuel(), planned.plan(), flight, stamp);
+        return new RocketMonitorQuote(target, RocketFlightRequestCode.fromPlanCode(planned.code()), primaryCost(planned), planned.plan(), flight, stamp);
+    }
+    static long primaryCost(RocketFlightPlanResult planned) {
+        return planned.plan() != null && planned.plan().propulsionDebit() != null
+                ? planned.plan().propulsionDebit().primary() : planned.requiredFuel();
     }
 
     /** One admitted button or edge: a fresh request, never an admin request or a synthetic player. */
     public RocketFlightRequestResult launch(RocketMonitorBlockEntity monitor, RocketMonitorQuote shown, ServerPlayer initiator) {
         if (!(monitor.getLevel() instanceof ServerLevel level) || !level.getServer().isSameThread() || !monitor.live() || monitor.root() == null
-                || shown == null || !shown.same(quote(monitor, shown.target()))
-                || initiator != null && !monitor.admitted(initiator)) {
+                || initiator != null && (!monitor.admitted(initiator) || shown == null)
+                || initiator == null && !monitor.root().armed()) {
             return RocketFlightRequestResult.failure(RocketFlightRequestCode.UNAUTHORIZED);
         }
         var rocket = RocketMonitorBinding.resolve(monitor, true).rocket();
         if (rocket == null) { return RocketFlightRequestResult.failure(RocketFlightRequestCode.ENTITY_UNAVAILABLE); }
+        var target = initiator == null ? monitor.root().destination() : shown.target();
+        String stamp = initiator == null ? monitor.root().authority() : shown.authority();
+        if (stamp.isEmpty() || !stamp.equals(authority(monitor, target))) {
+            return RocketFlightRequestResult.failure(RocketFlightRequestCode.UNAUTHORIZED);
+        }
         UUID owner = monitor.root().owner();
         if (rate.check(owner, level.getGameTime()) != RocketIntentRateLimiter.Decision.ALLOWED) {
             return RocketFlightRequestResult.failure(RocketFlightRequestCode.RATE_LIMITED);
+        }
+        // Rate-limit unattended edges before route planning. A local button still confirms its displayed quote.
+        var checked = quote(monitor, target);
+        if (initiator != null && !shown.same(checked)) {
+            return RocketFlightRequestResult.failure(RocketFlightRequestCode.UNAUTHORIZED);
         }
         UUID request = UUID.randomUUID();
         if (requests.begin(request) != RocketOperationLedger.BeginResult.STARTED) {
             return RocketFlightRequestResult.failure(RocketFlightRequestCode.REQUEST_LEDGER_FULL);
         }
-        var result = flights.launch(rocket, shown.target(), owner, false, request, null, null, () ->
-                monitor.live() && shown.authority().equals(authority(monitor, shown.target()))
+        monitor.requestStarted(request);
+        var result = flights.launch(rocket, target, owner, false, request, null, null, () ->
+                monitor.live() && stamp.equals(authority(monitor, target))
                 && (initiator == null || monitor.admitted(initiator)), owner);
         if (result.code() != RocketFlightRequestCode.JOURNAL_PENDING) { requests.finish(request, result.success()); }
-        return result;
+        return result.success() || result.code() == RocketFlightRequestCode.JOURNAL_PENDING
+                ? new RocketFlightRequestResult(result.code(), checked.cost()) : result;
+    }
+    /** Transient display only; the shared ledger and transfer journal remain authoritative. */
+    public RocketFlightRequestCode completion(UUID request) {
+        var outcome = requests.outcome(request);
+        if (outcome == null) { return RocketFlightRequestCode.ENTITY_UNAVAILABLE; }
+        return switch (outcome) {
+            case ACTIVE -> RocketFlightRequestCode.JOURNAL_PENDING;
+            case SUCCEEDED -> RocketFlightRequestCode.SUCCESS;
+            case FAILED -> RocketFlightRequestCode.TRANSFER_JOURNAL_BLOCKED;
+        };
     }
     private static RocketMonitorQuote refused(TravelTarget target, RocketFlightRequestCode code, String stamp) {
         return new RocketMonitorQuote(target, code, 0, null, null, stamp);

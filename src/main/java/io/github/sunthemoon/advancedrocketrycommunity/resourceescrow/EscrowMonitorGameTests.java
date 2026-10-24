@@ -40,7 +40,7 @@ public final class EscrowMonitorGameTests {
     public static void offlineMonitorUsesGovernedPreparationAndOneAcknowledgedDebit(GameTestHelper helper) {
         new Flight(helper).start();
     }
-    private static final class Flight {
+    private static final class Flight implements net.minecraft.gametest.framework.GameTestListener {
         final GameTestHelper helper;
         final ServerLevel earth, moon;
         final GameTestTickPacer pacer;
@@ -57,7 +57,22 @@ public final class EscrowMonitorGameTests {
             this.helper = helper; earth = helper.getLevel(); moon = earth.getServer().getLevel(CelestialIds.MOON_LEVEL);
             helper.assertTrue(moon != null, "Moon is unavailable"); pacer = new GameTestTickPacer(earth.getServer());
         }
-        void start() { helper.onEachTick(this::tick); }
+        void start() {
+            try {
+                var field = GameTestHelper.class.getDeclaredField("testInfo"); field.setAccessible(true);
+                ((net.minecraft.gametest.framework.GameTestInfo) field.get(helper)).addListener(this);
+            } catch (ReflectiveOperationException failure) { throw new IllegalStateException("Cannot install monitor fixture cleanup", failure); }
+            helper.onEachTick(this::tick);
+        }
+        @Override public void testStructureLoaded(net.minecraft.gametest.framework.GameTestInfo info) { }
+        @Override public void testPassed(net.minecraft.gametest.framework.GameTestInfo info) { releaseTickets(); }
+        @Override public void testFailed(net.minecraft.gametest.framework.GameTestInfo info) { releaseTickets(); }
+        private void releaseTickets() {
+            earth.getChunkSource().removeRegionTicket(FIXTURE, new ChunkPos(source), 2, key);
+            if (destination != null) {
+                for (var column : RocketDiscoveryColumns.of(destination).columns()) { moon.getChunkSource().removeRegionTicket(FIXTURE, column, 2, key); }
+            }
+        }
         void tick() {
             if (step == 99) { return; }
             pacer.pace(); var server = earth.getServer(); var journal = RocketTransferSavedData.get(server);
@@ -84,10 +99,12 @@ public final class EscrowMonitorGameTests {
                 if (!RocketMarginGameTestSupport.endReady(server, destination) || !journal.retryChecked(server)) { return; }
                 quote = RocketRuntime.monitorFlights().orElseThrow().quote(monitor, new TravelTarget.BodySurface(CelestialIds.MOON_ID));
                 helper.assertTrue(quote.ready() && monitor.configure(quote, true, 0), "Cannot arm governed monitor: " + quote.code());
+                helper.assertTrue(quote.cost() == quote.plan().propulsionDebit().primary(), "Quote does not display the native primary debit");
                 helper.assertTrue(server.getPlayerList().getPlayer(monitor.root().owner()) == null, "Owner is not offline");
                 earth.setBlockAndUpdate(device.east(), Blocks.REDSTONE_BLOCK.defaultBlockState()); monitor.signal(true);
                 helper.assertTrue(monitor.lastFlight() == RocketFlightRequestCode.JOURNAL_PENDING,
                         "Monitor did not enter governed preparation: " + monitor.lastFlight());
+                helper.assertTrue(monitor.lastCost() == quote.cost(), "Pending launch changed the displayed debit");
                 step = 3; return;
             }
             if (step == 3) {
@@ -106,10 +123,9 @@ public final class EscrowMonitorGameTests {
             helper.assertTrue(flight.fuel().totalAmount() == quote.source().fuel().totalAmount() - quote.cost()
                     && flight.fuel().committedDebits().equals(java.util.List.of(prepared.transferId())), "Governed flight did not debit exactly once");
             helper.assertTrue(!rocket.isAlive(), "Governed source survived");
+            monitor.tick(); helper.assertTrue(monitor.lastFlight() == RocketFlightRequestCode.SUCCESS, "Acknowledged governed flight still displays pending");
             arrival.discard(); earth.removeBlockEntity(device); earth.setBlockAndUpdate(device, Blocks.AIR.defaultBlockState());
             earth.setBlockAndUpdate(device.east(), Blocks.AIR.defaultBlockState());
-            earth.getChunkSource().removeRegionTicket(FIXTURE, new ChunkPos(source), 2, key);
-            for (var column : RocketDiscoveryColumns.of(destination).columns()) { moon.getChunkSource().removeRegionTicket(FIXTURE, column, 2, key); }
             step = 99; helper.succeed();
         }
     }

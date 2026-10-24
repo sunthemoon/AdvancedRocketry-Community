@@ -161,6 +161,13 @@ public final class RocketMonitorGameTests {
                 for (int edge = 0; edge < 7; edge++) { monitor.signal(false); monitor.signal(true); }
                 helper.assertTrue(monitor.lastFlight() == RocketFlightRequestCode.RATE_LIMITED, "Repeated edges bypassed the shared limiter");
                 helper.assertTrue(rocket.flightData().orElseThrow().fuel().equals(low), "Retry changed fuel");
+                var changedAuthority = new CompoundTag();
+                changedAuthority.put(RocketMonitorRoot.KEY, new RocketMonitorRoot(owner, monitor.root().device(),
+                        monitor.root().binding(), 1, false, true, MOON, "a".repeat(64)).encode());
+                monitor.load(changedAuthority); monitor.signal(true);
+                helper.assertTrue(!monitor.root().armed() && monitor.root().mode() == 0
+                        && monitor.lastFlight() == RocketFlightRequestCode.UNAUTHORIZED
+                        && rocket.flightData().orElseThrow().fuel().equals(low), "Changed authority did not visibly refuse and disarm");
                 monitor.bind(null); helper.assertTrue(!monitor.root().armed() && monitor.root().mode() == 0, "Rebinding retained arming/mode");
             } finally {
                 rocket.discard(); helper.setBlock(DEVICE.east(), Blocks.AIR);
@@ -216,6 +223,7 @@ public final class RocketMonitorGameTests {
                 var debits = landed.flightData().orElseThrow().fuel().committedDebits();
                 helper.assertTrue(debits.size() == 1 && !debits.get(0).equals(quote.plan().requestId()), "Launch reused the preview request ID");
                 helper.assertTrue(!rocket.isAlive(), "Source rocket survived the committed flight");
+                monitor.tick(); helper.assertTrue(monitor.lastFlight() == RocketFlightRequestCode.SUCCESS, "Accepted flight still displays pending");
                 landed.discard(); helper.setBlock(DEVICE.east(), Blocks.AIR); FluidFuelLoaderFixtures.clear(level, monitor.getBlockPos());
                 RocketFlightGameTestFixtures.clearTransferJournal(level); helper.succeed();
             });

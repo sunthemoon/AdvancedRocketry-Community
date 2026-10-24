@@ -22,6 +22,7 @@ public final class RocketMonitorBlockEntity extends BlockEntity {
     private RocketMonitorRoot root = new RocketMonitorRoot(null, UUID.randomUUID(), null, 0, false, false, null, "");
     private Tag preserved;
     private RocketFlightRequestCode lastFlight;
+    private UUID lastRequest;
     private long lastCost;
     private RocketMonitorStatus status = RocketMonitorStatus.UNBOUND;
     private boolean submitting;
@@ -35,6 +36,7 @@ public final class RocketMonitorBlockEntity extends BlockEntity {
     public RocketMonitorStatus status() { return preserved == null ? status : RocketMonitorStatus.UNSUPPORTED_DATA; }
     public RocketFlightRequestCode lastFlight() { return lastFlight; }
     public long lastCost() { return lastCost; }
+    public void requestStarted(UUID request) { lastRequest = request; }
     public int height() { return height; }
     public int velocity() { return velocity; }
     public int comparator() { return comparator; }
@@ -59,7 +61,7 @@ public final class RocketMonitorBlockEntity extends BlockEntity {
     }
     public boolean bind(LoaderBinding binding) {
         if (!live() || root() == null || submitting) { return false; }
-        replace(root.bind(binding)); lastFlight = null; lastCost = 0; return true;
+        replace(root.bind(binding)); lastFlight = null; lastRequest = null; lastCost = 0; return true;
     }
     public void disarm() { if (live() && root() != null && !submitting) { replace(root.disarm()); } }
     public boolean configure(RocketMonitorQuote quote, boolean arm, int mode) {
@@ -71,7 +73,7 @@ public final class RocketMonitorBlockEntity extends BlockEntity {
     }
     public RocketFlightRequestResult launch(RocketMonitorQuote quote, ServerPlayer initiator) {
         if (!live() || root() == null || submitting) { return RocketFlightRequestResult.failure(RocketFlightRequestCode.INVALID_STATE); }
-        submitting = true;
+        submitting = true; lastRequest = null;
         try {
             var result = RocketRuntime.monitorFlights().map(service -> service.launch(this, quote, initiator))
                     .orElseGet(() -> RocketFlightRequestResult.failure(RocketFlightRequestCode.ENTITY_UNAVAILABLE));
@@ -92,13 +94,16 @@ public final class RocketMonitorBlockEntity extends BlockEntity {
         }
         var service = RocketRuntime.monitorFlights().orElse(null);
         if (service == null || !root.authority().equals(service.authority(this, root.destination()))) {
-            disarm(); return;
+            disarm(); lastFlight = RocketFlightRequestCode.UNAUTHORIZED; lastCost = 0; return;
         }
-        launch(service.quote(this, root.destination()), null);
+        launch(null, null);
     }
 
     public void tick() {
         if (!live()) { return; }
+        if (lastFlight == RocketFlightRequestCode.JOURNAL_PENDING && lastRequest != null) {
+            RocketRuntime.monitorFlights().ifPresent(service -> lastFlight = service.completion(lastRequest));
+        }
         var resolved = RocketMonitorBinding.resolve(this, false);
         status = resolved.status();
         long now = level.getGameTime();
@@ -131,7 +136,7 @@ public final class RocketMonitorBlockEntity extends BlockEntity {
             try { root = RocketMonitorRoot.decode(raw); }
             catch (IllegalArgumentException invalid) { preserved = raw; }
         }
-        sampledTick = -1; height = 0; velocity = 0; comparator = 0; lastFlight = null; lastCost = 0;
+        sampledTick = -1; height = 0; velocity = 0; comparator = 0; lastFlight = null; lastRequest = null; lastCost = 0;
     }
     @Override protected void saveAdditional(CompoundTag tag) {
         super.saveAdditional(tag); tag.put(RocketMonitorRoot.KEY, preserved == null ? root.encode() : preserved);
