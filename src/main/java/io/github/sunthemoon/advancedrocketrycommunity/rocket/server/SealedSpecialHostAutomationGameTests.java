@@ -39,10 +39,10 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 @GameTestHolder(ModIdentity.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class SealedSpecialHostAutomationGameTests {
-    @GameTest(template = "rocket_test", batch = "w152_special_hosts", timeoutTicks = 400)
+    @GameTest(template = "rocket_test", batch = "w152_special_containers", timeoutTicks = 400)
     public static void doubleChestBoundaryAndLazyLootStaySealedUnderTickingAutomation(GameTestHelper helper) { run(helper, false); }
 
-    @GameTest(template = "rocket_test", batch = "w152_special_hosts", timeoutTicks = 400)
+    @GameTest(template = "rocket_test", batch = "w152_special_resources", timeoutTicks = 400)
     public static void tankAndBayStaySealedUnderTickingAutomation(GameTestHelper helper) { run(helper, true); }
 
     private static void run(GameTestHelper helper, boolean resourceHosts) {
@@ -96,6 +96,12 @@ public final class SealedSpecialHostAutomationGameTests {
         helper.onEachTick(() -> {
             if (done[0]) { return; }
             long age = level.getGameTime() - began;
+            if (age == 399) {
+                io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity.LOGGER.info(
+                        "W152_SPECIAL_HOST_PENDING transaction={} state={} absent={} used={} published={}", id,
+                        RocketRuntime.sealedDiagnosticForReleaseTest(level.getServer(), id),
+                        data.acknowledgedAbsent(id, snapshot.snapshotId(), entity), java.util.Arrays.toString(used), published[0]);
+            }
             for (int i = 0; i < 2; i++) {
                 var at = targets.get(i); var live = level.getBlockEntity(at);
                 if (age < 60) {

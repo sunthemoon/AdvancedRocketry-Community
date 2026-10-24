@@ -38,23 +38,23 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 @GameTestHolder(ModIdentity.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class SealedRecoveryGameTests {
-    @GameTest(template = "rocket_test", batch = "w152_recovery", timeoutTicks = 400)
+    @GameTest(template = "rocket_test", batch = "w152_recovery_rollback", timeoutTicks = 400)
     public static void earlierRecordWithDProvesRollbackBeforeReleasingTheSurvivor(GameTestHelper helper) {
         recover(helper, false, true);
     }
-    @GameTest(template = "rocket_test", batch = "w152_recovery", timeoutTicks = 400)
+    @GameTest(template = "rocket_test", batch = "w152_recovery_elected", timeoutTicks = 400)
     public static void electedRecordCompletesPartialCBeforeDiscardingD(GameTestHelper helper) {
         recover(helper, true, true);
     }
-    @GameTest(template = "rocket_test", batch = "w152_recovery", timeoutTicks = 400)
+    @GameTest(template = "rocket_test", batch = "w152_recovery_fallback", timeoutTicks = 400)
     public static void earlierRecordWithoutDCompletesTheExistingBlockFallback(GameTestHelper helper) {
         recover(helper, false, false);
     }
-    @GameTest(template = "rocket_test", batch = "w152_copies", timeoutTicks = 400)
+    @GameTest(template = "rocket_test", batch = "w152_copies_elected", timeoutTicks = 400)
     public static void electedRecoveryRetiresBothExactNativeCopies(GameTestHelper helper) {
         recover(helper, true, true, true);
     }
-    @GameTest(template = "rocket_test", batch = "w152_copies", timeoutTicks = 400)
+    @GameTest(template = "rocket_test", batch = "w152_copies_rollback", timeoutTicks = 400)
     public static void earlierRecoveryKeepsTheBoundSurvivorAndRetiresItsExactCopy(GameTestHelper helper) {
         recover(helper, false, true, true);
     }
