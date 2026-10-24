@@ -50,7 +50,7 @@ public final class RocketReleaseBoardingGameTests {
         final MinecraftServer server;
         final GameTestTickPacer pacer;
         final UUID first = UUID.randomUUID(), second = UUID.randomUUID(), retained = UUID.randomUUID(), ticket = UUID.randomUUID();
-        final RocketFlightService intents = new RocketFlightService();
+        final RocketFlightService intents;
         final RocketTransferService transfers;
         final RocketTransferSavedData journal;
         RocketRejoinSavedData originalSidecar, sidecar;
@@ -73,6 +73,10 @@ public final class RocketReleaseBoardingGameTests {
             this.helper = helper; level = helper.getLevel(); server = level.getServer();
             pacer = new GameTestTickPacer(server); transfers = RocketRuntime.installedTransfers();
             journal = RocketTransferSavedData.get(server);
+            try {
+                var service = RocketRuntime.class.getDeclaredField("service"); service.setAccessible(true);
+                intents = RocketSourceRetirementFixtures.field(service.get(null), "flights");
+            } catch (ReflectiveOperationException failure) { throw new IllegalStateException(failure); }
         }
         void start() { helper.onEachTick(this::tick); }
         void tick() {
@@ -162,6 +166,9 @@ public final class RocketReleaseBoardingGameTests {
             helper.assertTrue(batch.released().containsAll(List.of(first, second)) && !batch.released().contains(retained)
                     && batch.slots().size() == 2, "Wrong released set or persisted slot census");
             helper.assertTrue(rocket.flightData().orElseThrow().passengers().assignments().isEmpty(), "E1 restored the departed rider");
+            var image = RocketSourceRetirementFixtures.diskImage(level, originSlot, rocket.getUUID());
+            helper.assertTrue(image != null && !hasSeat(image, first) && !hasSeat(image, second),
+                    "S2 did not revoke the authority's saved pre-release seats");
             assertOldSourcesClean();
             helper.assertTrue(intent(firstPlayer, RocketFlightAction.BOARD) == RocketFlightRequestCode.SUCCESS,
                     "Post-S2 real boarding was refused");
@@ -188,6 +195,7 @@ public final class RocketReleaseBoardingGameTests {
             helper.assertTrue(intent(firstPlayer, RocketFlightAction.BOARD) == RocketFlightRequestCode.ALREADY_BOARDED,
                     "Reload lost the replacement assignment before mounting");
             assertNewAssignment(); assertOldSourcesClean();
+            helper.assertTrue(!hasSeat(reloadedImage, second), "Reload revived the other released passenger");
             helper.assertTrue(sidecar.root().entries().stream().filter(e -> e.release().equals(release))
                     .allMatch(e -> e.seat() == RocketRejoinRoot.Seat.VERIFIED && e.placement() == RocketRejoinRoot.Placement.PENDING),
                     "Reload changed release-only placement obligations");
