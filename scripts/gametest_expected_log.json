@@ -1608,6 +1608,15 @@
       "reason": "The checked legacy COMMITTED record observes the item-mutated destination's nonzero epoch before loaded endpoint proof and P1-F8 disassembly."
     },
     {
+      "id": "w152-sealed-diagnostic-transition",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_DISASSEMBLY_DURABILITY_HELD transaction=fixture phase=STAGE reason=BARRIER_IO additional=\\[\\] overflow=0",
+      "counts": {"w152_diagnostics": 1},
+      "test": "SealedDiagnosticsGameTests.repeatedHoldAndCompletionEmitOnlyBoundedTransitions",
+      "reason": "The same held transition is observed twenty times but produces one aggregate WARN; its exact INFO completion is asserted in the GameTest because INFO is outside the unchanged checker."
+    },
+    {
       "id": "w152-sealed-loaded-root-preservation",
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.sealed.SealedRocketBlockEntity/",

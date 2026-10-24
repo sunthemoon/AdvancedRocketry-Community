@@ -53,6 +53,7 @@ final class SealedDisassemblyCoordinator {
     private String lazyFailure;
     private int cursor;
     private Consumer<String> nativeObserver = label -> { };
+    private SealedDiagnostics diagnostics;
 
     SealedDisassemblyCoordinator(RocketTransactionExecutor transactions, RocketOrdinaryRetirement ordinary) {
         this.transactions = transactions; this.ordinary = ordinary;
@@ -64,6 +65,10 @@ final class SealedDisassemblyCoordinator {
         }
         if (this.server != null) { return; }
         this.server = server; budget = new SealedWorkBudget(); placement = new SealedCarrierPlacement();
+        diagnostics = new SealedDiagnostics((warning, line) -> {
+            if (warning) { io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity.LOGGER.warn(line); }
+            else { io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity.LOGGER.info(line); }
+        });
         materializer = new SealedMaterializer(label -> nativeObserver.accept(label)); recoverySelection = new SealedRecoverySelection();
         ensureLazy(server);
         var data = RocketTransactionSavedData.get(server);
@@ -71,7 +76,13 @@ final class SealedDisassemblyCoordinator {
             public long now() { return server.getTickCount(); }
             public boolean operational() { return data.operational(); }
             public boolean current() { return data.acknowledgedCurrent(); }
-            public CheckedJournalCheckpoint.Outcome checkpoint() { return data.checkpoint(server); }
+            public CheckedJournalCheckpoint.Outcome checkpoint() {
+                var outcome = data.checkpoint(server);
+                if (outcome != CheckedJournalCheckpoint.Outcome.COMMITTED) {
+                    work.forEach((id, item) -> diagnostics.hold(id.toString(), item.machine.phase().name(), "JOURNAL_" + outcome));
+                }
+                return outcome;
+            }
         });
     }
     /** The future I6 caller must keep its original actor, consent, snapshot and request-age predicate; never refresh it here. */
@@ -93,7 +104,8 @@ final class SealedDisassemblyCoordinator {
             terrain = new SealedTerrain(level, entry, transactions.adapters(), placement);
             var port = new SealedDisassemblyWorld(level, entry, terrain, writes, authorized,
                     () -> activeAttempts() + ordinary.activeAttempts() < RocketOrdinaryRetirement.MAX_ATTEMPTS,
-                    () -> exclusive(entry), false, budget, label -> nativeObserver.accept(label));
+                    () -> exclusive(entry), false, budget, label -> nativeObserver.accept(label),
+                    (phase, reason) -> diagnostics.hold(id.toString(), phase, reason));
             if (port.entity() != SealedDisassembly.Entity.MATCHING) { terrain.close(); lock.close(); return null; }
             var machine = new SealedDisassembly(snapshot.blocks().size(), port);
             work.put(id, new Work(port, machine, lock, completion, false));
@@ -204,11 +216,20 @@ final class SealedDisassemblyCoordinator {
             if (result == SealedMaterializer.Result.HELD) { carrier.deferUnsealUntil(server.getTickCount() + 20L); }
             else if (result == SealedMaterializer.Result.PREPARATION_FAILED) {
                 lazyFailure = "PREPARATION_FAILED"; carrier.deferUnsealUntil(server.getTickCount() + 200L);
+                lazyHeld(level, "PREPARATION_FAILED");
             }
         } catch (RuntimeException failure) {
             // No cleanup/refill after a native callback failure. The next sweep considers only an actual remaining C.
             lazyFailure = failure.getClass().getSimpleName(); carrier.deferUnsealUntil(server.getTickCount() + 200L);
+            lazyHeld(level, "CALLBACK_FAILED");
         }
+    }
+    private void lazyHeld(ServerLevel level, String reason) {
+        // One remembered identity per Level/reason, not one per rediscovered carrier. Long registry names stay bounded.
+        String dimension = level.dimension().location().toString();
+        String identity = "lazy:" + dimension.substring(0, Math.min(96, dimension.length())) + "-"
+                + UUID.nameUUIDFromBytes((dimension + ":" + reason).getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        diagnostics.hold(identity, "UNSEAL", reason);
     }
     private boolean absentForUnseal(io.github.sunthemoon.advancedrocketrycommunity.rocket.sealed.SealedRocketMember member, RocketRegion point) {
         var data = RocketTransactionSavedData.get(server);
@@ -259,7 +280,8 @@ final class SealedDisassemblyCoordinator {
             terrain = new SealedTerrain(level, entry, transactions.adapters(), placement);
             var port = new SealedDisassemblyWorld(level, entry, terrain, writes, () -> true,
                     () -> activeAttempts() + ordinary.activeAttempts() < RocketOrdinaryRetirement.MAX_ATTEMPTS,
-                    () -> exclusive(entry), true, budget, label -> nativeObserver.accept(label));
+                    () -> exclusive(entry), true, budget, label -> nativeObserver.accept(label),
+                    (phase, reason) -> diagnostics.hold(id.toString(), phase, reason));
             boolean elected = entry.record().phase() == RocketTransactionPhase.RESTORED
                     || entry.record().phase() == RocketTransactionPhase.COMMITTED;
             work.put(id, new Work(port, SealedDisassembly.recover(entry.snapshot().blocks().size(), port, elected),
@@ -267,6 +289,7 @@ final class SealedDisassemblyCoordinator {
         } catch (RuntimeException unavailable) {
             if (terrain != null) { terrain.close(); }
             lock.close();
+            diagnostics.hold(id.toString(), "RECOVERY", "UNAVAILABLE");
         } catch (Error fatal) { if (terrain != null) { terrain.close(); } lock.close(); throw fatal; }
     }
     /** Returns only the selected legacy ID; null must never trigger an independent legacy scan. */
@@ -300,7 +323,10 @@ final class SealedDisassemblyCoordinator {
                 // An unresolved U remains claimed. Preparation before U exists has changed no world state.
                 if (RocketTransactionSavedData.get(server).entries().stream().noneMatch(entry -> entry.record().transactionId().equals(id))
                         && !item.machine.restorationStarted()) { finish(id, item, SealedDisassembly.Result.REJECTED); }
-                else { item.retryAt = server.getTickCount() + (long) RocketOrdinaryRetirement.RETRY_TICKS; }
+                else {
+                    item.retryAt = server.getTickCount() + (long) RocketOrdinaryRetirement.RETRY_TICKS;
+                    diagnostics.hold(id.toString(), item.machine.phase().name(), "UNAVAILABLE");
+                }
                 continue;
             }
             if (item.machine.result() != null) { finish(id, item, item.machine.result()); }
@@ -308,17 +334,22 @@ final class SealedDisassemblyCoordinator {
         if (!ids.isEmpty()) { cursor = (cursor + 1) % ids.size(); }
         if (!lazyFirst) { lazy.tick(budget); }
         writes.flush();
+        diagnostics.flush(server.getTickCount());
         return legacy;
     }
     private void finish(UUID id, Work item, SealedDisassembly.Result result) {
         // Callback observes the native proof and checked U absence while the RAM claim is still owned.
         try { item.completion.accept(result); }
-        finally { work.remove(id, item); item.world.close(); item.lock.close(); }
+        finally {
+            work.remove(id, item); item.world.close(); item.lock.close();
+            diagnostics.complete(id.toString(), result.name());
+        }
     }
     void clear() {
         for (var item : work.values()) { item.world.close(); item.lock.close(); }
         work.clear(); if (placement != null) { placement.clear(); }
         if (lazy != null) { lazy.clear(); }
+        if (diagnostics != null) { diagnostics.clear(); diagnostics = null; }
         server = null; budget = null; writes = null; placement = null; materializer = null; recoverySelection = null; cursor = 0;
         discoveryServer = null; lazy = null; lazyFirst = false; lazyFailure = null;
         nativeObserver = label -> { };

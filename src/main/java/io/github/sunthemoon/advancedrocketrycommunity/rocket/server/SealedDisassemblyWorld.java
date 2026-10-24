@@ -28,6 +28,7 @@ final class SealedDisassemblyWorld implements SealedDisassembly.Port, AutoClosea
     private final BooleanSupplier currentRequest, attemptRoom, claimCurrent;
     private final boolean recovery;
     private final Consumer<String> nativeObserver;
+    private final java.util.function.BiConsumer<String, String> diagnostics;
     private SealedProofBatch batch;
     private long proofRetryAt = Long.MIN_VALUE;
     private SealedDisassembly.Goal goal;
@@ -38,10 +39,12 @@ final class SealedDisassemblyWorld implements SealedDisassembly.Port, AutoClosea
     SealedDisassemblyWorld(ServerLevel level, RocketPersistedTransaction entry, SealedTerrain terrain,
             SealedJournalRequests writes, BooleanSupplier currentRequest, BooleanSupplier attemptRoom,
             BooleanSupplier claimCurrent, boolean recovery,
-            io.github.sunthemoon.advancedrocketrycommunity.rocket.sealed.SealedWorkBudget budget, Consumer<String> nativeObserver) {
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.sealed.SealedWorkBudget budget, Consumer<String> nativeObserver,
+            java.util.function.BiConsumer<String, String> diagnostics) {
         this.level = level; this.entry = entry; this.terrain = terrain; this.writes = writes;
         this.currentRequest = currentRequest; this.attemptRoom = attemptRoom; this.claimCurrent = claimCurrent; this.recovery = recovery;
         this.nativeObserver = nativeObserver;
+        this.diagnostics = diagnostics;
         data = RocketTransactionSavedData.get(level.getServer()); journal = new SealedJournalEntry(data, entry);
         entities = new SealedEntityView(level, entry, terrain.chunks().size(), budget, this::entityChanged);
         if (terrain.chunks().size() + entities.columns().size() > RocketOrdinaryRetirement.MAX_SLOTS) {
@@ -140,7 +143,13 @@ final class SealedDisassemblyWorld implements SealedDisassembly.Port, AutoClosea
         // A D census change revokes entity-slot authority; it does not change the sealed terrain image.
         if (goal != SealedDisassembly.Goal.SEALED) { invalidateProof(); }
     }
-    @Override public void held(SealedDisassembly.Phase phase, SealedDisassembly.Reason reason) { this.reason = phase + ":" + reason; }
+    @Override public void held(SealedDisassembly.Phase phase, SealedDisassembly.Reason reason) {
+        this.reason = phase + ":" + reason;
+        if (reason != SealedDisassembly.Reason.PROOF_PENDING && reason != SealedDisassembly.Reason.JOURNAL_UNPROVED
+                && reason != SealedDisassembly.Reason.PREDECESSOR_UNPROVED && (recovery || journal.owned())) {
+            diagnostics.accept(phase.name(), reason.name());
+        }
+    }
     @Override public void close() { if (batch != null) { batch.close(); } terrain.close(); }
 
     private final class NativeProofs implements SealedProofBatch.Port {
@@ -167,6 +176,11 @@ final class SealedDisassemblyWorld implements SealedDisassembly.Port, AutoClosea
             return slot.entity ? runtime.barrier().beginOrdinary(runtime.store(level), name, slot.position, validator, now(), observedCut, callback)
                     : runtime.barrier().beginOrdinaryTerrain(runtime.store(level), name, slot.position, validator, now(), observedCut, callback);
         }
-        @Override public void held(String reason) { SealedDisassemblyWorld.this.proofReason = goal + ":" + reason; }
+        @Override public void held(String reason) {
+            SealedDisassemblyWorld.this.proofReason = goal + ":" + reason;
+            if (!reason.equals("BUSY") && !reason.equals("SUPERSEDING_SAVE") && (recovery || journal.owned())) {
+                diagnostics.accept(goal.name(), reason);
+            }
+        }
     }
 }
