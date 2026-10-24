@@ -103,7 +103,7 @@ public final class EscrowGovernedPreparation {
                 EscrowLaunchTrace.note(rocket, countdown, "COUNTDOWN", "governed=true");
                 EscrowRuntime.of(server).checkpoint("F2_COUNTDOWN");
                 accepted.accept(record); return true;
-            }, discarded);
+            }, discarded, () -> EscrowRuntime.of(server).checkpoint("F2_PREPARED_SUBMITTED"));
         });
         EscrowLaunchTrace.note(rocket, countdown, queued ? "CHECKPOINT_QUEUED" : "CHECKPOINT_REFUSED", "");
         return queued;
@@ -117,7 +117,13 @@ public final class EscrowGovernedPreparation {
      */
     static boolean prepare(RocketTransferSavedData journal, net.minecraft.server.MinecraftServer server, RocketTransferRecord record,
                            BooleanSupplier countdown, Runnable discarded) {
+        return prepare(journal, server, record, countdown, discarded, () -> { });
+    }
+
+    private static boolean prepare(RocketTransferSavedData journal, net.minecraft.server.MinecraftServer server, RocketTransferRecord record,
+                           BooleanSupplier countdown, Runnable discarded, Runnable submitted) {
         journal.put(record);
+        submitted.run();
         return journal.afterAcknowledged(server, record.logicalRocketId(), countdown, discarded);
     }
 
