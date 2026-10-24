@@ -75,6 +75,8 @@ def inspect(world: Path) -> dict:
     observed = elect(phase, entities, sealed, native, recipients, retained=records[0].get("snapshot") if records else None)
     require_inventory(observed, {"original": 14})
     observed.update(phase=phase, blocks=blocks, entities=sorted(uuid_of(row["UUID"]) for row in entities),
+                    entity_data=sorted(({key: row[key] for key in ("id", "UUID", "Pos", "RocketEntityData")} for row in entities),
+                                       key=lambda row: uuid_of(row["UUID"])),
                     records=records, native=native, sealed=sealed, files=files)
     return observed
 

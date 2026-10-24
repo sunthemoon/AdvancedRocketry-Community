@@ -7,6 +7,16 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
 
 class W152NativeReaderTest(unittest.TestCase):
+    def test_entity_projection_keeps_non_inventory_identity_for_restart_comparison(self):
+        from run_w152_native import inspect
+        data = {"owner": "native-owner", "snapshot": {"items": [{"id": "minecraft:diamond", "Count": 14, "tag": {"W152": "original"}}]}}
+        entity = {"id": "advancedrocketrycommunity:rocket", "UUID": [1, 2, 3, 4], "Pos": [15.5, 100., 15.5], "RocketEntityData": data}
+        def image(path, x, z):
+            return {"Entities": [entity]} if path.parent.name == "entities" and (x, z) == (0, 0) else None
+        with patch("run_w152_native.chunk_record", side_effect=image):
+            result = inspect(Path("missing-world"))
+        self.assertEqual(result["entity_data"][0]["RocketEntityData"], data)
+
     def test_missing_baseline_is_not_conservation(self):
         from run_w152_native import inspect
         with patch("run_w152_native.chunk_record", return_value=None):
