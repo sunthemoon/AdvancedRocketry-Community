@@ -12,6 +12,16 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
 
 class W152NativeReaderTest(unittest.TestCase):
+    def test_empty_native_region_file_stays_verbatim_empty(self):
+        from run_w152_native import preserve_native, replay_native
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary); world = root / "world"; out = root / "out"
+            (world / "entities").mkdir(parents=True); out.mkdir()
+            (world / "entities/r.-1.-1.mca").write_bytes(b"")
+            result = preserve_native(world, out, "start", {"files": {"entities/r.-1.-1.mca": "hash"}})
+            replay_native(out / result["file"], root / "replayed")
+            self.assertEqual(b"", (root / "replayed/entities/r.-1.-1.mca").read_bytes())
+
     def test_native_projection_preserves_block_properties_not_only_registry_name(self):
         from run_w152_native import block_state_at
         state = {"Name": "minecraft:chest", "Properties": {"facing": "east", "type": "single", "waterlogged": "false"}}

@@ -35,7 +35,8 @@ def preserve_native(world: Path, evidence: Path, stage: str, state: dict) -> dic
         for name in sorted(names):
             file = world / name; row = dict(sha256=digest(file), size=file.stat().st_size)
             manifest["inputs"][name] = row
-            if file.suffix != ".mca":
+            # IOWorker may create a zero-length region before its first stored chunk.
+            if file.suffix != ".mca" or row["size"] == 0:
                 total += file.stat().st_size
                 if total > 100_000_000: raise ValueError("Native input bytes exceed their evidence bound")
                 output.write(file, name); row["entry"] = name; continue
