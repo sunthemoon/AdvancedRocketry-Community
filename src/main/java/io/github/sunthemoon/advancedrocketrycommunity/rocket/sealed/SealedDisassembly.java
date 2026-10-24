@@ -50,7 +50,7 @@ public final class SealedDisassembly {
     private Phase phase = Phase.PREFLIGHT;
     private Result result;
     private int cursor;
-    private boolean recovering, retentionSubmitted, restorationStarted, electionSubmitted, removalSubmitted, rollback;
+    private boolean recovering, retentionSubmitted, restorationStarted, electionSubmitted, removalSubmitted, rollback, capacityPrepared;
     private boolean stepping;
     private long notBefore = Long.MIN_VALUE;
 
@@ -74,17 +74,18 @@ public final class SealedDisassembly {
     /** One bounded step. A manager may interleave entries, but every call spends the same server-tick allowance. */
     public boolean step(SealedWorkBudget budget) {
         if (Thread.currentThread() != owner) { throw new IllegalStateException("Sealed disassembly requires its owner thread"); }
-        if (stepping || result != null || port.now() < notBefore || !budget.take()) { return false; }
+        if (stepping || result != null || !budget.take()) { return false; }
         stepping = true;
         try {
-            Gate gate = port.gate();
-            if (gate != Gate.READY) { return hold(Reason.valueOf(gate.name())); }
             if (!recovering && !restorationStarted && !electionSubmitted
                     && (!port.requestCurrent() || port.now() - requestedAt > 200)) {
                 if (!retentionSubmitted) { finish(Result.REJECTED); return true; }
                 recovering = true;
                 phase = Phase.SELECT_RECOVERY; cursor = 0;
             }
+            if (port.now() < notBefore) { return false; }
+            Gate gate = port.gate();
+            if (gate != Gate.READY) { return hold(Reason.valueOf(gate.name())); }
             return switch (phase) {
                 case PREFLIGHT -> preflight();
                 case PREPARE -> prepare();
@@ -114,7 +115,7 @@ public final class SealedDisassembly {
     private boolean prepare() {
         if (!port.predecessorAbsent()) { return hold(Reason.PREDECESSOR_UNPROVED); }
         if (!proof(Goal.PREPARE)) { return false; }
-        phase = Phase.RETAIN; return true;
+        capacityPrepared = true; phase = Phase.RETAIN; return true;
     }
     private boolean retain() {
         retentionSubmitted = true;
@@ -125,6 +126,10 @@ public final class SealedDisassembly {
     private boolean stage(SealedWorkBudget budget) {
         if (!presence()) { return false; }
         if (!port.predecessorAbsent()) { return hold(Reason.PREDECESSOR_UNPROVED); }
+        if (!capacityPrepared || !restorationStarted) {
+            if (!proof(Goal.PREPARE)) { return false; }
+            capacityPrepared = true;
+        }
         if (cursor == members) { phase = Phase.MATCH; cursor = 0; return true; }
         Cell cell = port.inspect(cursor);
         if (cell == Cell.UNLOADED) { return hold(Reason.UNLOADED); }

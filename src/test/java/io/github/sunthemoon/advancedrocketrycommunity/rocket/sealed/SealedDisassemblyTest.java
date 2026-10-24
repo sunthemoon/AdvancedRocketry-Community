@@ -115,6 +115,22 @@ class SealedDisassemblyTest {
         assertTrue(world.proofs.contains("ROLLBACK")); assertEquals(0, world.staged);
     }
 
+    @Test void anExpiredPrepareProofCannotAuthorizeTheFirstMutationAfterTheJournalWait() throws Exception {
+        var world = new World(2); world.autoAck = false; var run = live(world);
+        run.ticks(4); assertTrue(world.u); assertEquals(0, world.staged);
+        world.proofs.remove("PREPARE"); world.autoProof = false; world.ack = "LOCKED";
+        run.ticks(4); assertEquals(0, world.staged); assertFalse(run.flag("restorationStarted"));
+        world.proofs.add("PREPARE"); world.autoAck = true; world.autoProof = true;
+        run.finish(40); assertEquals("SEALED", run.result());
+    }
+
+    @Test void saveOffDoesNotExtendAnUnretainedRequestsOriginalDeadline() throws Exception {
+        var world = new World(2); world.gate = "SAVE_OFF"; var run = live(world);
+        run.ticks(1); assertFalse(world.u);
+        world.tick = 201; run.ticks(1);
+        assertEquals("REJECTED", run.result()); assertFalse(world.u); assertEquals(0, world.staged);
+    }
+
     private static Run live(World world) throws Exception { return new Run(world, null); }
     private static Run recovery(World world, boolean elected) throws Exception { return new Run(world, elected); }
 
@@ -162,12 +178,12 @@ class SealedDisassemblyTest {
         long tick; int inspected, staged, erased; int failStage = -1;
         boolean u, checkpoint, unknownElection, unknownRemoval, loseEntityOnFailure, refuseRetain;
         boolean autoAck = true, autoProof = true, request = true, predecessor = true;
-        String entity = "MATCHING", ram, ack;
+        String entity = "MATCHING", gate = "READY", ram, ack;
         World(int members) { cells = new String[members]; Arrays.fill(cells, "EMPTY"); }
         Object call(String method, Object[] args) {
             return switch (method) {
                 case "now" -> tick;
-                case "gate" -> "READY";
+                case "gate" -> gate;
                 case "requestCurrent" -> request;
                 case "predecessorAbsent" -> predecessor;
                 case "inspect" -> { inspected++; yield cells[(int) args[0]]; }

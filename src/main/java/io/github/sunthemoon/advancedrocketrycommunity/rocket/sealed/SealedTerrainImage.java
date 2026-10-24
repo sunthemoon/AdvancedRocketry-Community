@@ -35,19 +35,32 @@ public final class SealedTerrainImage {
         catch (IllegalArgumentException invalid) { return Optional.empty(); }
     }
 
+    /** Recovery may keep exact owned C and fill only air; a native/foreign member still refuses the whole projection. */
+    public static Optional<CompoundTag> projectRecovery(CompoundTag source, List<SealedRocketMember> members, BlockState carrier) {
+        try { return project(source, members, carrier, members.stream().map(SealedTerrainImage::frame).toList(), true); }
+        catch (IllegalArgumentException invalid) { return Optional.empty(); }
+    }
+
     /** Frames may include native/Forge-owned fields of the already prepared, detached carriers. */
     public static Optional<CompoundTag> project(CompoundTag source, List<SealedRocketMember> members, BlockState carrier,
                                                List<CompoundTag> frames) {
+        return project(source, members, carrier, frames, false);
+    }
+
+    public static Optional<CompoundTag> project(CompoundTag source, List<SealedRocketMember> members, BlockState carrier,
+                                               List<CompoundTag> frames, boolean recovery) {
         if (!bounded(source) || frames.size() != members.size()) { return Optional.empty(); }
         try {
             var image = new Image(source.copy());
-            if (!image.matches(members, carrier, false)) { return Optional.empty(); }
+            if (!image.projectable(members, carrier, recovery)) { return Optional.empty(); }
             for (int index = 0; index < members.size(); index++) {
                 var member = members.get(index); var frame = frames.get(index); var at = member.position();
                 if (!owned(frame, member) || !BoundedNbt.fits(frame, SealedRocketMember.MAX_BYTES,
                         SealedRocketMember.MAX_DEPTH, SealedRocketMember.MAX_NODES)) { return Optional.empty(); }
-                image.section(at.y() >> 4).set(at.x() & 15, at.y() & 15, at.z() & 15, carrier);
-                image.entities.add(frame.copy());
+                if (image.at.getOrDefault(at, List.of()).isEmpty()) {
+                    image.section(at.y() >> 4).set(at.x() & 15, at.y() & 15, at.z() & 15, carrier);
+                    image.entities.add(frame.copy());
+                }
             }
             image.writeStates();
             return fits(image.root) ? Optional.of(image.root) : Optional.empty();
@@ -126,6 +139,16 @@ public final class SealedTerrainImage {
                 if (sealed) {
                     if (!state.equals(carrier) || blockEntities.size() != 1 || !owned(blockEntities.get(0), member)) { return false; }
                 } else if (!state.isAir() || !blockEntities.isEmpty()) { return false; }
+            }
+            return true;
+        }
+        boolean projectable(List<SealedRocketMember> members, BlockState carrier, boolean recovery) {
+            if (!recovery) { return matches(members, carrier, false); }
+            if (members.isEmpty() || members.size() > RocketLimits.MAX_BLOCKS) { return false; }
+            var seen = new HashSet<RocketPosition>();
+            for (var member : members) {
+                if (!seen.add(member.position()) || !matches(List.of(member), carrier, false)
+                        && !matches(List.of(member), carrier, true)) { return false; }
             }
             return true;
         }
