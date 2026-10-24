@@ -34,6 +34,7 @@ def audit_log(lines, hold, cut, mode, *, expected_outbox_holds=None):
     row = manifest["expected_warn_counts"].get(f"{hold}-{cut}-{mode}", {})
     expected = {state: row.get(state, 0) for state in ("GONE", "CONFLICT")}
     expected["source_hold"] = int(hold == "H1" and (mode == "seed" or mode == "recover" and cut in ("C0", "C1")))
+    expected["retirement_gone"] = int(hold == "H1" and cut == "C14" and mode == "seed")
     # W44's pre-existing baseline warning is timing-dependent and already has an exact
     # 0..1 allowance in the unchanged native startup manifest. A controlled fixture may
     # additionally require its count; ordinary native starts retain that original gate.
@@ -42,15 +43,17 @@ def audit_log(lines, hold, cut, mode, *, expected_outbox_holds=None):
             raise smoke.SmokeError("Outbox expectation exceeds unchanged startup bound")
         expected["outbox_hold"] = expected_outbox_holds
     source = re.compile(re.escape(manifest["existing_source_hold_message"]).replace(re.escape("{uuid}"), UUID_PATTERN))
+    retired = re.compile(re.escape(manifest["existing_retirement_gone_message"]).replace(re.escape("{uuid}"), UUID_PATTERN))
     counts = dict.fromkeys(expected, 0)
     remainder = []
     for line in lines:
         header = HEADER.fullmatch(line.rstrip())
         matched = HELD.fullmatch(header["message"]) if header else None
         if (header and header["logger"] in PROJECT_LOGGERS and header["thread"] == "Server thread" and header["level"] == "WARN"
-                and (matched or source.fullmatch(header["message"])
+                and (matched or source.fullmatch(header["message"]) or retired.fullmatch(header["message"])
                      or expected_outbox_holds is not None and header["message"] == manifest["existing_outbox_hold_message"])):
-            counts[matched[1] if matched else "source_hold" if source.fullmatch(header["message"]) else "outbox_hold"] += 1
+            key = matched[1] if matched else "source_hold" if source.fullmatch(header["message"]) else "retirement_gone" if retired.fullmatch(header["message"]) else "outbox_hold"
+            counts[key] += 1
         else:
             remainder.append(line)
     errors = smoke.scan_log(remainder, expected_mod_version=smoke.V180_STARTUP_VERSION)
@@ -104,6 +107,11 @@ def verify(disk, hold, cut, mode, baseline):
     gone = cut == "C14"
     if len(rockets) != (0 if gone else 1):
         raise smoke.SmokeError(f"Native authority count: {len(rockets)}")
+    if gone:
+        witness = dict(gone_resources=sidecar["batches"][0]["resources"], fixture_destroyed=1000)
+        if baseline is not None and witness != baseline:
+            raise smoke.SmokeError("Gone restart changed the frozen resource witness")
+        baseline = witness
     if rockets:
         data = rockets[0]["entity"]["RocketEntityData"]
         flight = data["flight_data"]

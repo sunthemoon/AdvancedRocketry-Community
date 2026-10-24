@@ -14,6 +14,8 @@
   "all_other_warning_counts": 0,
   "existing_source_hold_message": "ARCE_TRANSFER_RECOVERY transfer={uuid} phase=PREPARED source_count=1 destination_count=0 action=KEEP_SOURCE status=WAITING_FOR_PASSENGERS",
   "existing_source_hold_count": "One in every H1 seed, and one in C0/C1 recovery before a fresh admission. Zero in every other start.",
+  "existing_retirement_gone_message": "ARCE_TRANSFER_RETIREMENT_ABANDONED transfer={uuid} logical={uuid} site=RECOVERED_SOURCE reason=SURVIVOR_GONE",
+  "existing_retirement_gone_count": "Exactly one in H1-C14-seed after the fixture explicitly deletes the authority; zero elsewhere.",
   "existing_outbox_hold_message": "ARCE_FIRST_EVENT_HELD kind=first_moon_landing reason=SOURCE_UNCONFIRMED",
   "existing_outbox_hold_count": "The unchanged native startup manifest's exact 0..1 allowance applies. Its occurrence depends on IO acknowledgement timing in both seed and restarted JVMs. Controlled audit fixtures may require an exact count within that existing bound.",
   "probe_messages": {
