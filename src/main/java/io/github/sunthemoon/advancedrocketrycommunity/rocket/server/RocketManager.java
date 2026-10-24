@@ -112,6 +112,7 @@ public final class RocketManager implements RocketOperationService {
     }
     boolean sealedFrozen(RocketEntity rocket) { return sealed.frozen(rocket); }
     String sealedDiagnostic(UUID id) { return sealed.diagnostic(id); }
+    boolean sealedRecovering(UUID id) { return sealed.recovering(id); }
     UUID beginSealedForReleaseTest(RocketEntity rocket,
             java.util.function.Consumer<io.github.sunthemoon.advancedrocketrycommunity.rocket.sealed.SealedDisassembly.Result> completion) {
         io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowTestEndpoints.requireEnabled(rocket.getServer());
@@ -263,13 +264,13 @@ public final class RocketManager implements RocketOperationService {
 
     public void tick(MinecraftServer server) {
         Objects.requireNonNull(server, "server");
-        sealed.tick(server);
+        var selectedRecovery = sealed.tick(server, !flightLifecycle.recoverySuppressedForReleaseTest());
         if (flightLifecycle.active()) {
             flights.tick(server);
             flightLifecycle.pauseIfReached(server);
         }
-        if (!flightLifecycle.recoverySuppressedForReleaseTest()) {
-            RocketTransactionRecoveryService.Outcome outcome = recovery.recoverOne(server);
+        if (selectedRecovery != null && !flightLifecycle.recoverySuppressedForReleaseTest()) {
+            RocketTransactionRecoveryService.Outcome outcome = recovery.recoverOne(server, selectedRecovery);
             if (outcome == RocketTransactionRecoveryService.Outcome.RECOVERED
                     || outcome == RocketTransactionRecoveryService.Outcome.CONFLICT) {
                 AdvancedRocketryCommunity.LOGGER.info("ARCE_ROCKET_RECOVERY outcome={}", outcome);

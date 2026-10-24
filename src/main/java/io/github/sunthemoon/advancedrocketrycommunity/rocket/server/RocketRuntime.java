@@ -72,6 +72,10 @@ public final class RocketRuntime {
         io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowTestEndpoints.requireEnabled(server);
         return service instanceof RocketManager manager ? manager.sealedDiagnostic(id) : "no-manager";
     }
+    public static boolean sealedRecoveryTrackedForReleaseTest(MinecraftServer server, UUID id) {
+        io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowTestEndpoints.requireEnabled(server);
+        return service instanceof RocketManager manager && manager.sealedRecovering(id);
+    }
 
     /** Gated native verification only; player disassembly is not enabled by N3-B2. */
     public static UUID beginSealedForReleaseTest(RocketEntity rocket,

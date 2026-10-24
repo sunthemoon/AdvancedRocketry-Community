@@ -32,6 +32,17 @@ class SealedProofBatchTest {
         f.now = 301; f.tick(); assertEquals(3, f.callbacks.size());
     }
 
+    @Test void unselectedRecoveryOnlyExpiresItsAttemptWithoutStartingAnotherCapture() throws Exception {
+        var f = new Fixture(2); f.tick(); f.complete(0);
+        f.now = 50; f.call("tickDeadline");
+        assertEquals(1, f.callbacks.size()); assertTrue(f.active());
+        f.now = 101; f.call("tickDeadline");
+        assertEquals(1, f.released.get()); assertFalse(f.active()); assertEquals("DEADLINE", f.held);
+        f.now = 500; f.call("tickDeadline");
+        assertEquals(1, f.callbacks.size(), "Unselected recovery must not acquire another proof attempt");
+        f.tick(); assertEquals(2, f.callbacks.size());
+    }
+
     @Test void supersedingGenerationRetriesNextTickWithoutExtendingTheOldAttempt() throws Exception {
         var f = new Fixture(1); f.tick(); f.complete(0); assertTrue(f.current());
         f.generation.incrementAndGet(); assertFalse(f.current()); f.now++; f.tick();

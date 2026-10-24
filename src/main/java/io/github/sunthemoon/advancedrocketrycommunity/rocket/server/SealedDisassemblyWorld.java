@@ -102,6 +102,7 @@ final class SealedDisassemblyWorld implements SealedDisassembly.Port, AutoClosea
         batch = new SealedProofBatch(slots.size(), new NativeProofs(List.copyOf(slots), goal, present));
     }
     void tickProof() { if (batch != null) { batch.tick(); } }
+    void tickProofDeadline() { if (batch != null) { batch.tickDeadline(); } }
     boolean activeAttempt() { return batch != null && batch.active(); }
     String reason() { return reason + ":proof=" + proofReason + ":validation=" + validation + ":" + (batch == null ? "no-batch" : batch.diagnostic()); }
     private void invalidateProof() { if (batch != null) { batch.close(); batch = null; goal = null; } }
