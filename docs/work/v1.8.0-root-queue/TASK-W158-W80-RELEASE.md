@@ -42,3 +42,27 @@ This is a persistence slice: a fresh Codex session reviews it before merge.
 
 W80-rejoin (the command, placement, protection and readback), governed records, enabling anything for players, ADRs,
 the risk register, status files and the ledger (Root).
+
+## Root decision R104 (2026-10-25), on the step-0 stop (`e26ac741`)
+
+1. **The slot census lives in the sidecar's schema 1.** Each batch persists B1's recorded entity slots, deduplicated
+   to at most three: the authority slot, T's source slot and T's destination slot. Each is stored as a canonical Level
+   ResourceLocation and chunk coordinates. That way C5's restart after J1 removed T can reacquire B1 without T.
+   W157's schema 1 merged only on 2026-10-25, and nothing writes a sidecar yet (no command, no `submit` caller), so no
+   world can hold the old layout. Amend schema 1 in place: no schema bump, no migration, no second store, no journal
+   change. Keep the batch within its existing 2,048-byte bound and the 1 MiB envelope. If it no longer fits, stop
+   and report with the measured size. The codec rejects a missing, duplicate or malformed slot. The "gone" outcome
+   applies only to slots the census names.
+2. **The remaining-crew rule is the merged guard.** J1 removes T only when the existing
+   `RocketRetirementGuards.crewReady` and `RocketRetirementProof` predicate holds for every passenger the release does
+   not name: placed (connected, alive, in the survivor's Level, mounted or unmounted on it) or remembered as delivered
+   in this return. "All online" is not enough. An online but unplaced remaining rider keeps T. MT still supplies the
+   source seats, and H2 still tests the live landed ME.
+3. **Carry the other step-0 findings into the implementation.** B1 keeps and revalidates its individual slot proofs
+   through S2; it uses `beginOrdinary` with its sub-quota, capture support and shared-slot exclusion, and invents no
+   endpoint. J1's passenger-only compare-and-replace is new. It keeps ordinary `put`'s checksum rule, the outbox and
+   governed records, and notifies both L's and T's mutation history. J1 takes fresh authority after its own mutation
+   and never revives an older lease. The release classifies a rocket before its first entity join, not only before
+   `ServerStarted` recovery.
+
+Root records the census in ADR-065's W80 note. Continue with step 2 of the task.
