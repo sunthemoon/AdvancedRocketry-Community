@@ -42,6 +42,21 @@ public final class RocketRuntime {
                 && manager.sealedPayloadKnown(payload);
     }
 
+    /** Native onPlace bridge, not a public staging or authority API. */
+    public static void sealedOnPlace(ServerLevel level, BlockPos position) {
+        if (level.getServer().isSameThread() && service instanceof RocketManager manager) { manager.sealedOnPlace(level, position); }
+    }
+    public static boolean sealedFrozen(RocketEntity rocket) {
+        return service instanceof RocketManager manager && manager.sealedFrozen(rocket);
+    }
+
+    /** Gated native verification only; player disassembly is not enabled by N3-B2. */
+    public static UUID beginSealedForReleaseTest(RocketEntity rocket,
+            java.util.function.Consumer<io.github.sunthemoon.advancedrocketrycommunity.rocket.sealed.SealedDisassembly.Result> completion) {
+        if (!(service instanceof RocketManager manager)) { throw new IllegalStateException("No rocket manager"); }
+        return manager.beginSealedForReleaseTest(rocket, completion);
+    }
+
     /** Only this installed server session owns preparation state; nothing is saved or restored. */
     public static io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.RocketCargoPreparations cargoPreparations(MinecraftServer server) {
         if (!server.isSameThread()) { throw new IllegalStateException("Cargo preparation requires the server thread"); }

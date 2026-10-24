@@ -38,6 +38,7 @@ public final class RocketManager implements RocketOperationService {
     private final RocketFlightService flights;
     private final RocketDisassemblyService disassembly;
     private final RocketTargetContextService targetContexts;
+    private final SealedDisassemblyCoordinator sealed;
     private final RocketFlightLifecycleController flightLifecycle = new RocketFlightLifecycleController();
 
     public RocketManager() {
@@ -84,6 +85,9 @@ public final class RocketManager implements RocketOperationService {
         disassembly = new RocketDisassemblyService(transactions, flights);
         targetContexts = new RocketTargetContextService(celestialCatalogs);
         recovery = new RocketTransactionRecoveryService(requiredAdapters);
+        sealed = new SealedDisassemblyCoordinator(transactions, flights.transfers().ordinaryRetirements());
+        transactions.sealedClaims(sealed::overlaps);
+        flights.transfers().sealedClaims(sealed::claimed, sealed::reservations);
     }
 
     @Override
@@ -93,6 +97,14 @@ public final class RocketManager implements RocketOperationService {
 
     boolean sealedPayloadKnown(io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketBlockEntityPayload payload) {
         return transactions.adapters().supportsPayload(payload);
+    }
+
+    void sealedOnPlace(ServerLevel level, BlockPos position) { sealed.onPlace(level, position); }
+    boolean sealedFrozen(RocketEntity rocket) { return sealed.frozen(rocket); }
+    UUID beginSealedForReleaseTest(RocketEntity rocket,
+            java.util.function.Consumer<io.github.sunthemoon.advancedrocketrycommunity.rocket.sealed.SealedDisassembly.Result> completion) {
+        io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowTestEndpoints.requireEnabled(rocket.getServer());
+        return sealed.begin(rocket, () -> true, completion);
     }
 
     public boolean resourceMutationAllowed(RocketEntity rocket) {
@@ -240,6 +252,7 @@ public final class RocketManager implements RocketOperationService {
 
     public void tick(MinecraftServer server) {
         Objects.requireNonNull(server, "server");
+        sealed.tick(server);
         if (flightLifecycle.active()) {
             flights.tick(server);
             flightLifecycle.pauseIfReached(server);
@@ -313,6 +326,7 @@ public final class RocketManager implements RocketOperationService {
     }
 
     public void clear() {
+        sealed.clear();
         recovery.clear();
         assemblerScans.clear();
         transactions.clear();

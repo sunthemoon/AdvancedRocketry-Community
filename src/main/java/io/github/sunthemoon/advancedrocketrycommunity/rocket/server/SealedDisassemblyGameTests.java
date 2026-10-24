@@ -63,8 +63,12 @@ public final class SealedDisassemblyGameTests {
                 var members = List.of(((SealedRocketBlockEntity) level.getBlockEntity(origin)).member().orElseThrow(),
                         ((SealedRocketBlockEntity) level.getBlockEntity(origin.east())).member().orElseThrow());
                 var terrain = server.getWorldPath(LevelResource.ROOT).resolve("region");
-                helper.assertTrue(SealedTerrainImage.matches(AnvilRecordReader.read(terrain, new ChunkPos(origin)).root(),
-                        members, level.getBlockState(origin), true), "Native terrain was not the complete sealed footprint");
+                var chunks = members.stream().collect(java.util.stream.Collectors.groupingBy(member ->
+                        new ChunkPos(member.position().x() >> 4, member.position().z() >> 4)));
+                for (var chunk : chunks.entrySet()) {
+                    helper.assertTrue(SealedTerrainImage.matches(AnvilRecordReader.read(terrain, chunk.getKey()).root(),
+                            chunk.getValue(), level.getBlockState(origin), true), "Native terrain was not the complete sealed footprint");
+                }
                 var entities = AnvilRecordReader.read(server.getWorldPath(LevelResource.ROOT).resolve("entities"), new ChunkPos(origin)).root();
                 helper.assertTrue(RocketRetirementProof.absentSlot(entities, rocket.assemblyTransactionId().orElseThrow(), rocket.getUUID()),
                         "Native entity slot still held D at checked U retirement");
@@ -78,6 +82,12 @@ public final class SealedDisassemblyGameTests {
                     var begin = RocketRuntime.class.getMethod("beginSealedForReleaseTest", RocketEntity.class, Consumer.class);
                     transaction[0] = (UUID) begin.invoke(null, rocket, completion);
                     helper.assertTrue(transaction[0] != null, "Ordinary sealed request was refused");
+                    helper.assertTrue(RocketRuntime.sealedFrozen(rocket), "Admission did not freeze D before writing U");
+                    rocket.kill(); helper.assertTrue(rocket.isAlive(), "Pending D accepted kill before election");
+                    boolean changed = false;
+                    try { rocket.updateFlightData(rocket.flightData().orElseThrow()); changed = true; }
+                    catch (IllegalStateException expected) { }
+                    helper.assertTrue(!changed, "Pending D accepted a flight/manifest mutation");
                 } catch (ReflectiveOperationException failure) { helper.fail("Sealed executor unavailable: " + failure.getClass().getSimpleName()); }
             }
             if (transaction[0] == null) { return; }
