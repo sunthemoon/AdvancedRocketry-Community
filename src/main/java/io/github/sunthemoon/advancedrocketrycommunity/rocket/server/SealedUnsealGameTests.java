@@ -36,7 +36,7 @@ public final class SealedUnsealGameTests {
         var level = helper.getLevel(); var at = helper.absolutePos(new BlockPos(1, 2, 1));
         var payload = inventory(); var snapshot = snapshot(level, at, Blocks.CHEST.defaultBlockState(), payload);
         var id = UUID.randomUUID(); var entity = UUID.randomUUID();
-        var record = new RocketTransactionRecord(id, RocketTransactionType.SEALED_DISASSEMBLY, RocketTransactionPhase.BLOCKS,
+        var record = new RocketTransactionRecord(id, RocketTransactionType.SEALED_DISASSEMBLY, RocketTransactionPhase.RESTORED,
                 snapshot.snapshotId(), snapshot.contentHash(), RocketRegion.fromSnapshot(snapshot), 1, entity);
         var data = RocketTransactionSavedData.get(level.getServer()); var journal = data.journalFor(snapshot, UUID.randomUUID());
         journal.write(record); data.checkpoint(level.getServer());
