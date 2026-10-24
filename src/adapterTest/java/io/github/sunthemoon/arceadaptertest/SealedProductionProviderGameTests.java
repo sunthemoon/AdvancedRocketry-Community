@@ -26,6 +26,18 @@ public final class SealedProductionProviderGameTests {
     private static final ThreadLocal<Observation> ACTIVE = new ThreadLocal<>();
 
     @GameTest(templateNamespace = "advancedrocketrycommunity", template = "rocket_test", batch = "w152_provider", timeoutTicks = 100)
+    public static void sealedProviderFixtureHasAnIndependentNativeType(GameTestHelper helper) {
+        var id = AdapterTestMod.id("sealed_cargo_container");
+        var block = net.minecraftforge.registries.ForgeRegistries.BLOCKS.getValue(id);
+        helper.assertTrue(block instanceof net.minecraft.world.level.block.EntityBlock, "Missing independent sealed provider fixture");
+        var target = ((net.minecraft.world.level.block.EntityBlock) block).newBlockEntity(BlockPos.ZERO, block.defaultBlockState());
+        helper.assertTrue(target instanceof FixtureContainerBlockEntity && target.getType() != AdapterTestMod.CONTAINER_TYPE.get()
+                && id.equals(net.minecraftforge.registries.ForgeRegistries.BLOCK_ENTITY_TYPES.getKey(target.getType())),
+                "Sealed provider shares the legacy fixture's native type");
+        helper.succeed();
+    }
+
+    @GameTest(templateNamespace = "advancedrocketrycommunity", template = "rocket_test", batch = "w152_provider", timeoutTicks = 100)
     public static void failedProductionPreparationRetainsCAndRejectsRemovedReferenceAccess(GameTestHelper helper) {
         var at = helper.absolutePos(new BlockPos(4, 2, 4));
         for (var mode : List.of(FixtureAdapterFaults.Mode.RESTORE_FALSE, FixtureAdapterFaults.Mode.RESTORE_THROW,
