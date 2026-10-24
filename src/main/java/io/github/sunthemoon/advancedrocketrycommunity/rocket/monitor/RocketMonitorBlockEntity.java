@@ -63,9 +63,10 @@ public final class RocketMonitorBlockEntity extends BlockEntity {
     }
     public void disarm() { if (live() && root() != null && !submitting) { replace(root.disarm()); } }
     public boolean configure(RocketMonitorQuote quote, boolean arm, int mode) {
-        if (!live() || root() == null || submitting || quote == null || !quote.ready()) { return false; }
+        if (!live() || root() == null || submitting || quote == null || quote.authority().isEmpty() || arm && !quote.ready()) { return false; }
         var service = RocketRuntime.monitorFlights().orElse(null);
-        if (service == null || !quote.same(service.quote(this, quote.target()))) { return false; }
+        if (service == null || !quote.same(service.quote(this, quote.target()))
+                || service.targets(this).stream().noneMatch(target -> target.target().equals(quote.target()))) { return false; }
         replace(root.configure(mode, arm, quote.target(), quote.authority())); return true;
     }
     public RocketFlightRequestResult launch(RocketMonitorQuote quote, ServerPlayer initiator) {

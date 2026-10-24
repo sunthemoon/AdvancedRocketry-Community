@@ -98,7 +98,11 @@ public final class RocketMonitorMenu extends AbstractContainerMenu implements Cl
                 status = Optional.of(token > 0 ? StationManagementCode.ISSUED : StationManagementCode.AUTHORITY_UNAVAILABLE);
             }
             case ARM, MODE -> {
-                boolean changed = monitor.configure(displayed, intent.action() == ARM || monitor.root().armed(),
+                var configuration = displayed;
+                if (intent.action() == MODE && configuration == null && selected >= 0) {
+                    configuration = service.quote(monitor, targets.get(selected).target());
+                }
+                boolean changed = monitor.configure(configuration, intent.action() == ARM || monitor.root().armed(),
                         intent.action() == MODE ? 1 - monitor.root().mode() : monitor.root().mode());
                 status = Optional.of(changed ? StationManagementCode.ISSUED : StationManagementCode.CONFIRMATION_EXPIRED);
             }

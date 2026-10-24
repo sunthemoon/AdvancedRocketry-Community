@@ -80,10 +80,15 @@ public final class RocketMonitorGameTests {
                     menu.acceptClassicControl(player, new io.github.sunthemoon.advancedrocketrycommunity.classiccontrol.network.ClassicControlIntentPacket(1, kind, 6, 0, shown.token()));
                     helper.assertTrue(menu.lastView().orElseThrow().token() == 0 && monitor.lastFlight() == null
                             && rocket.flightData().orElseThrow().fuel().equals(low), "A stale quote launched or changed resources");
+                    driver.after(11, () -> {
+                    menu.acceptClassicControl(player, new io.github.sunthemoon.advancedrocketrycommunity.classiccontrol.network.ClassicControlIntentPacket(1, kind, 7, 0, 0));
+                    helper.assertTrue(monitor.root().mode() == 1 && !monitor.root().armed() && menu.lastView().orElseThrow().token() == 0,
+                            "Selecting fuel display mode required launchable fuel or created a launch token");
                     player.teleportTo(level, monitor.getBlockPos().getX() + 20, monitor.getBlockPos().getY(), monitor.getBlockPos().getZ(), 0, 0);
                     helper.assertTrue(!menu.stillValid(player), "Distant menu remained valid");
                     player.closeContainer(); level.getServer().getPlayerList().remove(player); rocket.discard();
                     FluidFuelLoaderFixtures.clear(level, monitor.getBlockPos()); helper.succeed();
+                    });
                 });
             });
         });

@@ -29,6 +29,7 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 public final class RocketMonitorScreen extends AbstractContainerScreen<RocketMonitorMenu> {
     public static final String KEY = "screen.advancedrocketrycommunity.monitor.";
     private final List<Button> buttons = new ArrayList<>();
+    private final List<HoverLine> hoverLines = new ArrayList<>();
     private ClassicControlViewPacket drawn;
     public RocketMonitorScreen(RocketMonitorMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title); imageWidth = 300; imageHeight = 238;
@@ -60,6 +61,7 @@ public final class RocketMonitorScreen extends AbstractContainerScreen<RocketMon
     }
     @Override protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
         graphics.drawString(font, title, 10, 12, 0x263F43, false);
+        hoverLines.clear();
         drawn = null;
         var view = ClassicControlViewCache.view(menu.containerId, menu.classicControlKind()).orElse(null);
         if (view == null) { return; }
@@ -84,16 +86,14 @@ public final class RocketMonitorScreen extends AbstractContainerScreen<RocketMon
         view.status().ifPresent(status -> lines.add(Component.translatable(status.translationKey())));
         int y = 34;
         for (var line : lines) {
-            // The quote remains non-actionable if any complete cost/status line would be clipped.
+            // Names may be abbreviated, but the complete debit rows must be visible before launch.
             if (font.width(line) > imageWidth - 24) {
                 graphics.drawString(font, font.substrByWidth(line, imageWidth - 32).getString(), 12, y, 0xFFF1D18A, false);
-                if (mouseX >= 8 && mouseX < imageWidth - 8 && mouseY >= y && mouseY < y + 12) {
-                    graphics.renderTooltip(font, line, mouseX, mouseY);
-                }
+                hoverLines.add(new HoverLine(y, line));
             } else { graphics.drawString(font, line, 12, y, 0xFFE0EFE7, false); }
             y += 12;
         }
-        if (lines.stream().allMatch(line -> font.width(line) <= imageWidth - 24)) { drawn = view; }
+        if (java.util.stream.IntStream.of(5, 7, 8).allMatch(index -> font.width(lines.get(index)) <= imageWidth - 24)) { drawn = view; }
     }
     private static String decimal(int value) { return String.format(Locale.ROOT, "%.2f", value / 1000.0); }
     @Override public void render(GuiGraphics graphics, int mouseX, int mouseY, float partial) {
@@ -101,6 +101,13 @@ public final class RocketMonitorScreen extends AbstractContainerScreen<RocketMon
         var view = ClassicControlViewCache.view(menu.containerId, menu.classicControlKind()).orElse(null);
         for (int i = 0; i < buttons.size(); i++) { buttons.get(i).active = view != null && (i != 5 || view.token() > 0 && view.equals(drawn)); }
         super.render(graphics, mouseX, mouseY, partial);
+        for (var hover : hoverLines) {
+            if (mouseX >= leftPos + 8 && mouseX < leftPos + imageWidth - 8
+                    && mouseY >= topPos + hover.y() && mouseY < topPos + hover.y() + 12) {
+                graphics.renderTooltip(font, hover.text(), mouseX, mouseY); break;
+            }
+        }
     }
+    private record HoverLine(int y, Component text) { }
     @Override public void removed() { ClassicControlViewCache.clear(menu.containerId); super.removed(); }
 }
