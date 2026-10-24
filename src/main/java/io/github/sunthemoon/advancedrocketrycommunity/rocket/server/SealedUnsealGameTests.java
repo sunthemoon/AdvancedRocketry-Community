@@ -104,7 +104,7 @@ public final class SealedUnsealGameTests {
                     .invoke(null, level, carrier);
         } catch (ReflectiveOperationException failure) { throw new IllegalStateException("Production unsealer unavailable", failure); }
     }
-    private static SealedRocketBlockEntity install(ServerLevel level, BlockPos at, SealedRocketMember member) {
+    static SealedRocketBlockEntity install(ServerLevel level, BlockPos at, SealedRocketMember member) {
         var state = ModBlocks.SEALED_ROCKET_BLOCK.get().defaultBlockState();
         level.setBlock(at, state, 2);
         var carrier = new SealedRocketBlockEntity(at, state); carrier.initialize(SealedRocketRoot.stage(member));
@@ -114,8 +114,8 @@ public final class SealedUnsealGameTests {
         var chest = new ChestBlockEntity(BlockPos.ZERO, Blocks.CHEST.defaultBlockState());
         chest.setItem(0, new ItemStack(Items.DIAMOND, 7)); return new VanillaContainerRocketAdapter().capture(chest);
     }
-    private static RocketPosition position(BlockPos at) { return new RocketPosition(at.getX(), at.getY(), at.getZ()); }
-    private static RocketStructureSnapshot snapshot(ServerLevel level, BlockPos at, BlockState state, RocketBlockEntityPayload payload) {
+    static RocketPosition position(BlockPos at) { return new RocketPosition(at.getX(), at.getY(), at.getZ()); }
+    static RocketStructureSnapshot snapshot(ServerLevel level, BlockPos at, BlockState state, RocketBlockEntityPayload payload) {
         return RocketStructureSnapshot.create(UUID.randomUUID(), level.dimension().location(), position(at),
                 List.of(new RocketBlock(new RocketPosition(0, 0, 0), RocketBlockStateAdapter.capture(state), payload)),
                 List.of(new RocketPosition(0, 0, 0)), new RocketStats(1, 100, 1000, 1000, 1, 1, 1, payload == null ? 0 : 1), level.getGameTime());
