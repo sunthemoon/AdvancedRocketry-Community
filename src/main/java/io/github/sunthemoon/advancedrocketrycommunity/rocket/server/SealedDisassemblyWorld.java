@@ -31,6 +31,7 @@ final class SealedDisassemblyWorld implements SealedDisassembly.Port, AutoClosea
     private SealedDisassembly.Goal goal;
     private String reason;
     private String proofReason;
+    private volatile String validation;
 
     SealedDisassemblyWorld(ServerLevel level, RocketPersistedTransaction entry, SealedTerrain terrain,
             SealedJournalRequests writes, BooleanSupplier currentRequest, BooleanSupplier attemptRoom,
@@ -102,7 +103,7 @@ final class SealedDisassemblyWorld implements SealedDisassembly.Port, AutoClosea
     }
     void tickProof() { if (batch != null) { batch.tick(); } }
     boolean activeAttempt() { return batch != null && batch.active(); }
-    String reason() { return reason + ":proof=" + proofReason + ":" + (batch == null ? "no-batch" : batch.diagnostic()); }
+    String reason() { return reason + ":proof=" + proofReason + ":validation=" + validation + ":" + (batch == null ? "no-batch" : batch.diagnostic()); }
     private void invalidateProof() { if (batch != null) { batch.close(); batch = null; goal = null; } }
     @Override public void held(SealedDisassembly.Phase phase, SealedDisassembly.Reason reason) { this.reason = phase + ":" + reason; }
     @Override public void close() { if (batch != null) { batch.close(); } terrain.close(); }
@@ -122,8 +123,11 @@ final class SealedDisassemblyWorld implements SealedDisassembly.Port, AutoClosea
         }
         @Override public boolean capture(int index, Consumer<EscrowBarrier.Result> callback) {
             var runtime = EscrowRuntime.of(level.getServer()); var slot = slots.get(index); var name = level.dimension().location().toString();
-            java.util.function.Predicate<CompoundTag> validator = root -> slot.entity ? entities.image(slot.position, root, present)
-                    : terrain.image(slot.position, root, goal, recovery);
+            validation = index + ":not-validated";
+            Consumer<String> observed = value -> validation = index + ":" + value;
+            // The reader runs off-thread. Capture immutable inputs now, not the coordinator's later live/closed state.
+            java.util.function.Predicate<CompoundTag> validator = slot.entity ? entities.validator(slot.position, present, observed)
+                    : terrain.validator(slot.position, goal, recovery, observed);
             return slot.entity ? runtime.barrier().beginOrdinary(runtime.store(level), name, slot.position, validator, now(), label -> { }, callback)
                     : runtime.barrier().beginOrdinaryTerrain(runtime.store(level), name, slot.position, validator, now(), label -> { }, callback);
         }

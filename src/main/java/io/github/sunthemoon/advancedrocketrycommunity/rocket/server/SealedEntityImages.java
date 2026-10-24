@@ -33,9 +33,12 @@ final class SealedEntityImages {
                 if (image.getString("id").equals(ModIdentity.MOD_ID + ":rocket") || image.contains(RocketRetirementProof.DATA)) {
                     if (!image.contains(RocketRetirementProof.DATA, Tag.TAG_COMPOUND)) { return null; }
                     var data = image.getCompound(RocketRetirementProof.DATA);
-                    if (!data.hasUUID("assembly_transaction_id") || !data.contains("snapshot", Tag.TAG_COMPOUND)
-                            || !data.getCompound("snapshot").hasUUID("snapshot_id")) { return null; }
-                    matches |= data.getCompound("snapshot").getUUID("snapshot_id").equals(snapshot)
+                    if (!data.hasUUID("assembly_transaction_id") || !data.contains("snapshot", Tag.TAG_COMPOUND)) { return null; }
+                    // RocketSnapshotNbtCodec has always persisted this identity as canonical UUID text.
+                    // It is not the native UUID array used by the entity and the independent carrier schema.
+                    UUID capturedSnapshot = snapshotIdentity(data.getCompound("snapshot"));
+                    if (capturedSnapshot == null) { return null; }
+                    matches |= capturedSnapshot.equals(snapshot)
                             || logical != null && RocketRetirementProof.names(image, logical, entity);
                 }
                 if (matches) { found.add(image); }
@@ -45,6 +48,13 @@ final class SealedEntityImages {
             }
         }
         return found;
+    }
+    private static UUID snapshotIdentity(CompoundTag snapshot) {
+        if (!snapshot.contains("snapshot_id", Tag.TAG_STRING)) { return null; }
+        var text = snapshot.getString("snapshot_id");
+        if (text.length() != 36) { return null; }
+        try { var id = UUID.fromString(text); return id.toString().equals(text) ? id : null; }
+        catch (IllegalArgumentException malformed) { return null; }
     }
     private static ListTag list(CompoundTag root, String key) {
         return root.get(key) instanceof ListTag list && (list.isEmpty() || list.getElementType() == Tag.TAG_COMPOUND) ? list : null;

@@ -55,13 +55,12 @@ public final class SealedDisassemblyGameTests {
         var transaction = new UUID[1]; var done = new boolean[1]; var callbackFailure = new String[1];
         Consumer<SealedDisassembly.Result> completion = result -> {
             try {
-            helper.assertTrue(result == SealedDisassembly.Result.SEALED, "Native completion did not elect sealed terrain: " + result
-                    + ":" + RocketRuntime.sealedDiagnosticForReleaseTest(server, transaction[0]));
-            var journal = RocketTransactionSavedData.get(server);
-            helper.assertTrue(journal.acknowledgedAbsent(transaction[0], snapshot.snapshotId(), rocket.getUUID()),
-                    "Completion ran before exact checked U absence");
-            helper.assertTrue(level.getEntity(rocket.getUUID()) == null, "D remained live beside completed C");
-            try {
+                helper.assertTrue(result == SealedDisassembly.Result.SEALED, "Native completion did not elect sealed terrain: " + result
+                        + ":" + RocketRuntime.sealedDiagnosticForReleaseTest(server, transaction[0]));
+                var journal = RocketTransactionSavedData.get(server);
+                helper.assertTrue(journal.acknowledgedAbsent(transaction[0], snapshot.snapshotId(), rocket.getUUID()),
+                        "Completion ran before exact checked U absence");
+                helper.assertTrue(level.getEntity(rocket.getUUID()) == null, "D remained live beside completed C");
                 var members = List.of(((SealedRocketBlockEntity) level.getBlockEntity(origin)).member().orElseThrow(),
                         ((SealedRocketBlockEntity) level.getBlockEntity(origin.east())).member().orElseThrow());
                 var terrain = server.getWorldPath(LevelResource.ROOT).resolve("region");
@@ -75,8 +74,9 @@ public final class SealedDisassemblyGameTests {
                 helper.assertTrue(RocketRetirementProof.absentSlot(entities, rocket.assemblyTransactionId().orElseThrow(), rocket.getUUID()),
                         "Native entity slot still held D at checked U retirement");
                 done[0] = true; helper.succeed();
-            } catch (java.io.IOException failure) { helper.fail("Native completion files unreadable: " + failure.getClass().getSimpleName()); }
-            } catch (RuntimeException assertion) { callbackFailure[0] = assertion.getMessage(); }
+            } catch (java.io.IOException | RuntimeException assertion) {
+                callbackFailure[0] = assertion.getClass().getSimpleName() + ":" + assertion.getMessage();
+            }
         };
         helper.onEachTick(() -> {
             if (callbackFailure[0] != null) { helper.fail(callbackFailure[0]); }

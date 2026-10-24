@@ -32,7 +32,7 @@ class SealedEntityImagesTest {
         assertFalse(absent(slot(copy), null));
         var unrelated = entity(); unrelated.putUUID("UUID", UUID.randomUUID());
         var data = unrelated.getCompound("RocketEntityData"); data.putUUID("assembly_transaction_id", UUID.randomUUID());
-        data.getCompound("snapshot").putUUID("snapshot_id", UUID.randomUUID());
+        data.getCompound("snapshot").putString("snapshot_id", UUID.randomUUID().toString());
         assertTrue(absent(slot(unrelated), logical), "Same cargo hash alone cannot identify another rocket");
     }
 
@@ -42,7 +42,7 @@ class SealedEntityImagesTest {
         var parent = new CompoundTag(); parent.putString("id", "minecraft:boat");
         parent.putUUID("UUID", UUID.randomUUID()); var passengers = new ListTag(); passengers.add(duplicate); parent.put("Passengers", passengers);
         assertFalse(absent(slot(parent), logical));
-        duplicate.getCompound("RocketEntityData").getCompound("snapshot").putUUID("snapshot_id", UUID.randomUUID());
+        duplicate.getCompound("RocketEntityData").getCompound("snapshot").putString("snapshot_id", UUID.randomUUID().toString());
         assertFalse(absent(slot(duplicate), logical));
     }
 
@@ -74,7 +74,15 @@ class SealedEntityImagesTest {
         var tag = new CompoundTag(); tag.putString("id", "advancedrocketrycommunity:rocket"); tag.putUUID("UUID", entity);
         var pos = new ListTag(); pos.add(DoubleTag.valueOf(0.5)); pos.add(DoubleTag.valueOf(64)); pos.add(DoubleTag.valueOf(0.5)); tag.put("Pos", pos);
         var data = new CompoundTag(); data.putUUID("assembly_transaction_id", logical); data.putInt("owner", 1); data.putInt("fuel", 2); data.putInt("cargo", 3);
-        var structure = new CompoundTag(); structure.putUUID("snapshot_id", snapshot); structure.putString("content_hash", "a".repeat(64)); data.put("snapshot", structure);
+        var structure = io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot.create(snapshot,
+                net.minecraft.resources.ResourceLocation.tryParse("minecraft:overworld"),
+                new io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition(0, 64, 0),
+                java.util.List.of(new io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketBlock(
+                        new io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition(0, 0, 0),
+                        new io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketBlockState(
+                                net.minecraft.resources.ResourceLocation.tryParse("minecraft:iron_block"), java.util.Map.of()))),
+                java.util.List.of(), new io.github.sunthemoon.advancedrocketrycommunity.rocket.stats.RocketStats(1, 10, 0, 0, 0, 0, 0, 0), 0);
+        data.put("snapshot", io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketSnapshotNbtCodec.encode(structure));
         tag.put("RocketEntityData", data); return tag;
     }
     private static CompoundTag slot(CompoundTag... entities) {

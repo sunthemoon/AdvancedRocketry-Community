@@ -33,7 +33,7 @@ final class SealedProofBatch implements AutoCloseable {
     boolean active() { owner(); return active; }
     String diagnostic() {
         owner(); return "active=" + active + ",cursor=" + cursor + ",proofs=" + proofs.size() + "/" + slots
-                + ",age=" + (active ? port.now() - started : 0) + ",wait=" + Math.max(0, notBefore - port.now());
+                + ",age=" + (active ? port.now() - started : 0) + ",wait=" + (notBefore > port.now() ? notBefore - port.now() : 0);
     }
     boolean current() {
         owner();

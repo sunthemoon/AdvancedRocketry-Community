@@ -93,14 +93,19 @@ final class SealedTerrain implements AutoCloseable {
         return level.setBlock(position(index), Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE)
                 && inspect(index) == SealedDisassembly.Cell.EMPTY;
     }
-    boolean image(ChunkPos chunk, CompoundTag root, SealedDisassembly.Goal goal, boolean recovery) {
+    java.util.function.Predicate<CompoundTag> validator(ChunkPos chunk, SealedDisassembly.Goal goal, boolean recovery,
+            java.util.function.Consumer<String> diagnostic) {
         var group = chunks.get(chunk);
-        if (group == null || !prepared()) { return false; }
+        if (group == null || !prepared()) { throw new IllegalStateException("Unprepared native terrain proof"); }
         var state = ModBlocks.SEALED_ROCKET_BLOCK.get().defaultBlockState();
-        if (goal == SealedDisassembly.Goal.PREPARE) {
-            return SealedTerrainImage.project(root, group, state, group.stream().map(member -> frames.get(member.index())).toList(), recovery).isPresent();
-        }
-        return SealedTerrainImage.matches(root, group, state, goal != SealedDisassembly.Goal.ROLLBACK);
+        var capturedFrames = group.stream().map(member -> frames.get(member.index())).toList();
+        return root -> {
+            boolean valid = goal == SealedDisassembly.Goal.PREPARE
+                    ? SealedTerrainImage.project(root, group, state, capturedFrames, recovery).isPresent()
+                    : SealedTerrainImage.matches(root, group, state, goal != SealedDisassembly.Goal.ROLLBACK);
+            diagnostic.accept("terrain,valid=" + valid);
+            return valid;
+        };
     }
     private BlockPos position(int index) {
         var p = members.get(index).position(); return new BlockPos(p.x(), p.y(), p.z());

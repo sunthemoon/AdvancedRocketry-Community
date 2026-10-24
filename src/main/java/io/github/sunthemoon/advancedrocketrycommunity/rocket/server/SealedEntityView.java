@@ -95,10 +95,14 @@ final class SealedEntityView {
         frozenEntity.discard();
         return level.getEntity(entry.record().rocketEntityId()) == null;
     }
-    boolean image(ChunkPos column, CompoundTag root, boolean requirePresent) {
+    java.util.function.Predicate<CompoundTag> validator(ChunkPos column, boolean requirePresent, java.util.function.Consumer<String> diagnostic) {
         boolean origin = column.equals(RocketRetirementProof.Slot.origin(entry.snapshot()).chunk());
-        return requirePresent && origin ? frozen != null && SealedEntityImages.present(root, logical,
-                entry.snapshot().snapshotId(), entry.record().rocketEntityId(), frozen)
-                : SealedEntityImages.absent(root, logical, entry.snapshot().snapshotId(), entry.record().rocketEntityId());
+        var logical = this.logical; var frozen = this.frozen; var snapshot = entry.snapshot().snapshotId(); var entity = entry.record().rocketEntityId();
+        return root -> {
+            boolean valid = requirePresent && origin ? frozen != null && SealedEntityImages.present(root, logical, snapshot, entity, frozen)
+                    : SealedEntityImages.absent(root, logical, snapshot, entity);
+            diagnostic.accept("entity,present=" + requirePresent + ",origin=" + origin + ",valid=" + valid);
+            return valid;
+        };
     }
 }
