@@ -70,6 +70,7 @@ public final class EscrowMonitorGameTests {
         int step;
         final boolean disarmAfterPrepared, coldDestination;
         long warmupStarted;
+        boolean observingArrival;
         Flight(GameTestHelper helper, boolean disarmAfterPrepared, boolean coldDestination) {
             this.disarmAfterPrepared = disarmAfterPrepared; this.coldDestination = coldDestination;
             source = new BlockPos(660008 + (coldDestination ? 64 : disarmAfterPrepared ? 32 : 0), 100, 660008);
@@ -176,8 +177,16 @@ public final class EscrowMonitorGameTests {
                 }
                 step = 4;
             }
-            if (journal.find(prepared.transferId()).isPresent()
-                    || data.ledger().armedFlights().stream().anyMatch(armed -> armed.transfer().equals(prepared.transferId()))) { return; }
+            if (journal.find(prepared.transferId()).isPresent()) { return; }
+            if (coldDestination && !observingArrival) {
+                // Production tickets may expire once T retires. Observe F8 like the existing warm-up fixture,
+                // without making the cold destination ready before admission or holding it through the flight.
+                for (var column : RocketDiscoveryColumns.of(destination).columns()) {
+                    destinationLevel.getChunkSource().addRegionTicket(FIXTURE, column, 2, key);
+                }
+                observingArrival = true;
+            }
+            if (data.ledger().armedFlights().stream().anyMatch(armed -> armed.transfer().equals(prepared.transferId()))) { return; }
             var entity = destinationLevel.getEntity(prepared.nativeTransfer().orElseThrow().armed().destination());
             if (!(entity instanceof RocketEntity arrival)) { return; }
             var flight = arrival.flightData().orElseThrow();
