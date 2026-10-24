@@ -106,6 +106,15 @@ class SealedDisassemblyTest {
         budget.beginTick(0); a.step(budget); assertEquals(256, first.inspected + second.inspected);
     }
 
+    @Test void refusedRetentionStillNeedsCheckedAbsenceAndNativeRollbackBeforeReleasingD() throws Exception {
+        var world = new World(2); world.refuseRetain = true; world.autoAck = false; var run = live(world);
+        run.ticks(5); assertFalse(world.u); assertEquals(0, world.staged);
+        world.tick = 201; run.ticks(5); assertNull(run.result());
+        world.autoAck = true; run.finish(40);
+        assertEquals("ROLLBACK_PROVED", run.result()); assertEquals("MATCHING", world.entity);
+        assertTrue(world.proofs.contains("ROLLBACK")); assertEquals(0, world.staged);
+    }
+
     private static Run live(World world) throws Exception { return new Run(world, null); }
     private static Run recovery(World world, boolean elected) throws Exception { return new Run(world, elected); }
 
@@ -151,7 +160,7 @@ class SealedDisassemblyTest {
     private static final class World {
         final String[] cells; final List<String> mutations = new ArrayList<>(); final Set<String> proofs = new HashSet<>();
         long tick; int inspected, staged, erased; int failStage = -1;
-        boolean u, checkpoint, unknownElection, unknownRemoval, loseEntityOnFailure;
+        boolean u, checkpoint, unknownElection, unknownRemoval, loseEntityOnFailure, refuseRetain;
         boolean autoAck = true, autoProof = true, request = true, predecessor = true;
         String entity = "MATCHING", ram, ack;
         World(int members) { cells = new String[members]; Arrays.fill(cells, "EMPTY"); }
@@ -178,7 +187,7 @@ class SealedDisassemblyTest {
                     assertEquals("RESTORED", ack); assertTrue(proofs.contains("SEALED"));
                     entity = "ABSENT"; mutations.add("discard"); yield true;
                 }
-                case "retain" -> { if (!u) { u = true; ram = "LOCKED"; mutations.add("retain"); } yield null; }
+                case "retain" -> { if (!u && !refuseRetain) { u = true; ram = "LOCKED"; mutations.add("retain"); } yield null; }
                 case "retainedAcknowledged" -> u && "LOCKED".equals(ram) && ram.equals(ack);
                 case "elect" -> {
                     if (!"RESTORED".equals(ram)) {
