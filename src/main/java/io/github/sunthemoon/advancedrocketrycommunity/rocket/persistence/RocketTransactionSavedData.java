@@ -83,6 +83,32 @@ public final class RocketTransactionSavedData extends SavedData {
                 && checkpoint.current(mutationSequence);
     }
 
+    /** Computed once per desired entry version, not once per terrain member or polling tick. */
+    public static final class ExpectedEntry {
+        private final UUID transaction;
+        private final String digest;
+        private ExpectedEntry(UUID transaction, String digest) { this.transaction = transaction; this.digest = digest; }
+    }
+
+    public static ExpectedEntry expectedEntry(RocketPersistedTransaction entry) {
+        Objects.requireNonNull(entry);
+        return new ExpectedEntry(entry.record().transactionId(), CanonicalNbtDigest.of(encodeEntry(entry),
+                Math.toIntExact(TYPE.maxUncompressedBytes()), DIGEST_DEPTH));
+    }
+
+    /** Exact W123 presence: current entries, current sequence and the acknowledged full entry digest must agree. */
+    public boolean acknowledgedEntry(ExpectedEntry expected) {
+        requireOwner(); Objects.requireNonNull(expected);
+        return acknowledgedCurrent() && entries.containsKey(expected.transaction)
+                && expected.digest.equals(checkpoint.acknowledged().orElseThrow().records().get(expected.transaction));
+    }
+
+    /** Journal facts only; the caller must additionally exclude live owners/removals and overlapping operations. */
+    public boolean acknowledgedAbsent(UUID transaction, UUID snapshot, UUID entity) {
+        return absenceStatus(transaction, snapshot, entity) == AbsenceStatus.PROVED
+                && !checkpoint.acknowledged().orElseThrow().records().containsKey(transaction);
+    }
+
     /** W27d owns waiting and all-bay rejection; this read-only query never writes or removes a record. */
     public enum AbsenceStatus {
         PROVED, WRITE_REQUIRED, ASSEMBLY_JOURNAL_PENDING, ASSEMBLY_JOURNAL_UNPROVED
