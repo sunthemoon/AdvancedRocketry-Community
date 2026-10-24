@@ -121,7 +121,7 @@ class SealedJournalProofTest {
                     new RocketBlockEntityPayload(ResourceLocation.tryParse("w152:probe"), payload)));
         }
         var snapshot = RocketStructureSnapshot.create(UUID.randomUUID(), ResourceLocation.tryParse("minecraft:overworld"),
-                new RocketPosition(0, 64, 0), blocks, List.of(), new RocketStats(4, 40, 0, 0, 0, 0, 0, 0), 1);
+                new RocketPosition(0, 64, 0), blocks, List.of(), new RocketStats(4, 40, 0, 0, 0, 0, 0, 4), 1);
         RocketPersistedTransaction candidate = null;
         for (int index = 0; index < 66; index++) {
             candidate = new RocketPersistedTransaction(new RocketTransactionRecord(UUID.randomUUID(), RocketTransactionType.SEALED_DISASSEMBLY,
