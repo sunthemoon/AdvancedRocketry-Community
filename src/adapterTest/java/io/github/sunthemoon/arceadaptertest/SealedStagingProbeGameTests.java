@@ -114,7 +114,12 @@ public final class SealedStagingProbeGameTests {
 
     private static void conservation(GameTestHelper helper, boolean serializableAttachment) {
         List<String> violations = new ArrayList<>();
-        for (Block block : payloadHosts(true)) {
+        // The native chest/barrel adapters recapture through saveWithoutMetadata. The fixture
+        // instead captures its owned inventory directly. Tank/bay adapters copy dedicated roots,
+        // so their diagnostic resource reads must not stand in for native capability serialization.
+        List<Block> hosts = serializableAttachment
+                ? List.of(Blocks.CHEST, Blocks.BARREL, AdapterTestMod.CONTAINER.get()) : payloadHosts(true);
+        for (Block block : hosts) {
             for (Failure failure : Failure.values()) {
                 var trace = prepare(helper, block, serializableAttachment);
                 try {
