@@ -68,3 +68,26 @@ That window is inside the protection, and the stop was right.
 
 The other GameTest failure in your run (`EscrowGovernedWarmupRefusalGameTests`, the warm-up ended before the discard)
 is outside your slice. Root tracks it. Rerun it alone once and report the result, without changing it.
+
+## Root decision R98 (2026-10-24), on the recapture stop (`42806dec`)
+
+Level-less preparation closed the neighbour path (all 62 original scenarios and the 20 conservation cases pass). The
+remaining failure is the chest and barrel adapter's `saveWithoutMetadata()`, which runs every attached capability's
+`serializeNBT` during recapture.
+
+1. **Built-in chest and barrel capture read their owned data directly:** the item list without unpacking loot, and
+   the loot table and seed. They no longer call `saveWithoutMetadata()`, so no attached capability's serialization
+   runs during preparation or recapture. Access Transformer entries for the needed `RandomizableContainerBlockEntity`
+   members are permitted, with a comment naming R98 as the existing entries do; no Mixin. `Container.getItem`
+   unpacks loot, so do not use it here.
+2. **The payload stays byte-identical** to today's for the same contents. Rocket snapshots persist it, and assembly
+   capture uses the same code. Add a test that compares the new capture with `saveWithoutMetadata()`'s whitelisted
+   result over the existing capture fixtures: empty, full, every slot count, loot table with and without seed, and
+   the maximum payload.
+3. **Trust boundary, disclosed** (Root adds it to ADR-065 and R-035). Capability serialization is read-only by contract.
+   An attached capability whose attachment, serialization or invalidation callback moves resources is outside the
+   protection; it already makes every chunk save inconsistent. An external provider's capture is provider code under
+   the API's existing "must not mutate state" rule. If that capture runs attached-capability serialization, the same
+   boundary applies.
+4. **Rerun the probe** with every scenario, including the 12 serialization cases. If all pass, continue with the
+   slices; otherwise stop and report. Keep the 90-second lock hand-off rule.

@@ -1782,7 +1782,7 @@ changes no decision status and accepts no risk. The risk is R-035.
   format, schema, bound, lease, budget, timeout or protocol changes. The holds and their recovery are in R-035.
   Leaves N3-B1 to N3-B4 follow W148 section 7; N3-B2 needs an independent persistence review before integration.
 - **N3-B2 isolation (W154 design revisions 1 and 2, `records/W154-DESIGN.md`; review W154-review BLOCK, SHA-256
-  `6facedc6…`, and its re-review, SHA-256 `c67bfebd…`; Root decisions R91 and R93 to R97, 2026-10-24; not yet
+  `6facedc6…`, and its re-review, SHA-256 `c67bfebd…`; Root decisions R91 and R93 to R98, 2026-10-24; not yet
   implemented).** W152 showed that vanilla container access (hoppers, the item capability, menus, breaking) bypasses
   the region locks while U is retained, so a rollback could restore items that had already left. Sealed staging closes
   that window. While U is retained, every member of the footprint is an inert carrier C: no inventory, capability,
@@ -1804,7 +1804,11 @@ changes no decision status and accepts no risk. The risk is R-035.
     is held, and nothing is lost.
   - **Trust boundary:** code that keeps a raw block-entity reference from `AttachCapabilitiesEvent` and uses it after
     the block entity is removed is outside the protection, as it already is for every vanilla container instance a
-    chunk unload leaves behind. R-035 discloses this boundary.
+    chunk unload leaves behind. So is an attached capability whose attachment, serialization or invalidation callback
+    moves resources (R98): capability serialization is read-only by contract, and such a callback already makes every
+    chunk save inconsistent. The built-in chest and barrel capture reads its owned data directly, without
+    `saveWithoutMetadata()`, so no attached serialization runs during preparation; its payload stays byte-identical.
+    R-035 discloses this boundary.
   - **Saved format (R93):** one new block and block entity, the carrier, with a schema-1 root within U's per-member
     bounds and ADR-061/064 preservation; it is never discarded or replaced with air. Journal schema 2 gains the record
     type `SEALED_DISASSEMBLY`, so existing `DISASSEMBLY` records keep their current recovery. An older jar blocks the
