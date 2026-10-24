@@ -42,6 +42,7 @@ class RocketReleaseCoordinatorTest {
         final List<String> events = new ArrayList<>();
         final Map<Long, Set<UUID>> visited = new HashMap<>();
         RocketTransferSavedData journal;
+        Consumer<RocketReleaseCoordinator.Proof> delayed;
         public long now() { return tick; }
         public boolean boundary(Batch batch) { visited.computeIfAbsent(tick, n -> new HashSet<>()).add(batch.release()); return boundary; }
         public boolean applySeats(Batch batch) { scrubs++; return true; }
@@ -52,7 +53,7 @@ class RocketReleaseCoordinatorTest {
         public void ticket(UUID release, Slot slot) { tickets++; peakTickets = Math.max(peakTickets, tickets); }
         public void unticket(UUID release, Slot slot) { tickets--; }
         public boolean capture(Batch batch, Slot slot, RocketPassengerManifest b0, Consumer<RocketReleaseCoordinator.Proof> callback) {
-            captures++; if (!capture) { return false; } if (delay) { return true; }
+            captures++; if (!capture) { return false; } if (delay) { delayed = callback; return true; }
             var proof = new Proof(gone ? 0 : slot.equals(batch.slots().get(0)) ? 1 : 0); proofs.add(proof); callback.accept(proof); return true;
         }
         public void flushJournal() { journal.save(directory.resolve(ManagedSavedDataType.ROCKET_TRANSFERS.fileName()).toFile()); journal.pollWriter(tick); }
@@ -87,6 +88,9 @@ class RocketReleaseCoordinatorTest {
             s.world.tick = 200; s.step(); assertFalse(s.release.fenced(t.logicalRocketId()));
             assertTrue(s.sidecar.root().batches().isEmpty()); assertSame(t, s.journal.find(t.transferId()).orElseThrow());
             assertFalse(java.nio.file.Files.exists(directory.resolve(RocketRejoinSavedData.TYPE.fileName())));
+            var late = new Proof(1); s.world.delayed.accept(late);
+            assertTrue(late.closed); assertEquals(0, s.world.scrubs);
+            assertTrue(s.sidecar.root().batches().isEmpty());
         }
     }
 
@@ -206,6 +210,34 @@ class RocketReleaseCoordinatorTest {
             s.world.gone = true; s.finish();
             assertTrue(s.sidecar.acknowledgedRoot().entries().isEmpty()); assertTrue(s.sidecar.acknowledgedRoot().batches().isEmpty());
             assertEquals(1, s.sidecar.acknowledgedRoot().nextSequence());
+        }
+    }
+
+    @Test void coldTicketsExpireAtFourHundredTicksAndWaitTwoHundredBeforeReacquisition() throws Exception {
+        var t = legacy(); var p = plan(t); persist(p.admit(RocketRejoinRoot.empty()));
+        try (var s = new Session(t)) {
+            s.world.loaded = false;
+            waitFor(() -> s.world.tickets > 0, () -> { s.world.tick++; s.step(); });
+            long started = s.world.tick; int count = p.batch().slots().size();
+            assertEquals(count, s.world.tickets);
+            s.world.tick = started + 399; s.step(); assertEquals(count, s.world.tickets);
+            s.world.tick++; s.step(); assertEquals(0, s.world.tickets);
+            assertTrue(s.world.events.contains("TICKET_EXPIRED")); assertTrue(s.release.fenced(t.logicalRocketId()));
+            s.world.tick += 199; s.step(); assertEquals(0, s.world.tickets);
+            s.world.tick++; s.step(); assertEquals(count, s.world.tickets);
+            s.world.loaded = true; s.finish(); assertEquals(0, s.world.tickets);
+        }
+    }
+
+    @Test void b0AdmissionRefusalAndZeroCopiesNeverPublishSidecarOrScrubT() throws Exception {
+        var t = legacy();
+        try (var s = new Session(t)) {
+            s.world.capture = false; assertTrue(s.release.admit(plan(t))); s.step();
+            assertFalse(s.release.fenced(t.logicalRocketId())); assertTrue(s.sidecar.root().batches().isEmpty());
+            s.world.capture = true; s.world.gone = true; assertTrue(s.release.admit(plan(t))); s.step();
+            assertFalse(s.release.fenced(t.logicalRocketId())); assertTrue(s.sidecar.root().batches().isEmpty());
+            assertSame(t, s.journal.find(t.transferId()).orElseThrow()); assertEquals(0, s.world.scrubs);
+            assertFalse(java.nio.file.Files.exists(directory.resolve(RocketRejoinSavedData.TYPE.fileName())));
         }
     }
 }
