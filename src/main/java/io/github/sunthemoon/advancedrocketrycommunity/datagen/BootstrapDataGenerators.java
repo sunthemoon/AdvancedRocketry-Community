@@ -33,6 +33,8 @@ public final class BootstrapDataGenerators {
                 new V180LifeSupportData(output, event.includeClient(), event.includeServer()));
         generator.addProvider(event.includeClient() || event.includeServer(),
                 new V180ForceFieldData(output, event.includeClient(), event.includeServer()));
+        generator.addProvider(event.includeClient() || event.includeServer(),
+                new V180SealedRocketData(output, event.includeClient(), event.includeServer()));
         generator.addProvider(event.includeClient(), new V180CombustionArt(output));
         generator.addProvider(event.includeClient(), new V180FluidArt(output));
         generator.addProvider(event.includeClient(), new V180MotorArt(output));
