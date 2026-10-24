@@ -59,6 +59,7 @@ final class RocketTransferEntities {
     }
 
     static RocketEntity rebuildSource(MinecraftServer server, RocketTransferRecord record) {
+        if (RocketReleaseAccess.fenced(server, record.logicalRocketId())) { return null; }
         ServerLevel level = level(server, record.sourceSnapshot().sourceDimension());
         if (level == null) {
             return null;
@@ -91,6 +92,7 @@ final class RocketTransferEntities {
 
     /** Recovery can acknowledge the new UUID before exposing its materialized entity. */
     static RocketEntity createDestination(MinecraftServer server, RocketTransferRecord record) {
+        if (RocketReleaseAccess.fenced(server, record.logicalRocketId())) { return null; }
         ServerLevel level = level(server, record.destinationSnapshot().sourceDimension());
         if (level == null) {
             return null;
@@ -351,10 +353,11 @@ final class RocketTransferEntities {
             RocketEntity authority,
             RocketPosition origin
     ) {
+        if (RocketReleaseAccess.fenced(server, record.logicalRocketId())) { return; }
         var passengers = isReplaceableLandedAuthority(authority, record)
                 ? authority.flightData().orElseThrow().passengers()
                 : record.sourceFlightData().passengers();
-        for (RocketPassengerSeat seat : passengers.assignments()) {
+        for (RocketPassengerSeat seat : RocketReleaseAccess.filter(server, record.logicalRocketId(), passengers).assignments()) {
             ServerPlayer player = server.getPlayerList().getPlayer(seat.passengerId());
             if (player != null) {
                 movePassenger(player, authority, origin);
@@ -377,6 +380,7 @@ final class RocketTransferEntities {
             RocketEntity destination,
             RocketPosition safeOrigin
     ) {
+        if (RocketReleaseAccess.fenced(destination)) { return; }
         passenger.stopRiding();
         passenger.setDeltaMovement(Vec3.ZERO);
         passenger.fallDistance = 0.0F;

@@ -60,6 +60,14 @@ final class RocketTransferService {
     /** W85 Design M: pending landed disassemblies keep T's region and slot while T is absent from RAM. */
     private final RocketLandedDisassemblies landed = new RocketLandedDisassemblies();
     private final RocketArrivalFootprintWait arrivalFootprints = new RocketArrivalFootprintWait(liveTransfers); // W83b
+    private RocketReleaseAccess.Owner releases;
+
+    RocketReleaseAccess.Owner releaseOwner(MinecraftServer server) {
+        if (releases == null) { releases = new RocketReleaseAccess.Owner(server, recovery, liveTransfers, settledTransfers); }
+        if (releases.server != server) { throw new IllegalStateException("Release owner belongs to another server session"); }
+        return releases;
+    }
+    void closeReleases() { if (releases != null) { releases.close(); } }
 
     RocketFlightRequestResult prepareLaunch(RocketEntity rocket, RocketFlightData countdown) {
         return prepareLaunch(rocket, countdown, RocketRequestCompletion.NONE);
@@ -249,6 +257,7 @@ final class RocketTransferService {
         diagnostics.enterTick(server.getTickCount());
         // END transfer service diagnostics
         RocketTransferSavedData journal = RocketTransferSavedData.get(server);
+        var releaseOwner = releaseOwner(server); // Classify sidecar obligations before any recovery, even with absent T.
         if (!journal.operational()) {
             return;
         }
@@ -262,6 +271,7 @@ final class RocketTransferService {
         governedSources.tick(server, journal, recovery.bays());
         governedCleanup.tick(server, journal, recovery.bays());
         recovery.tickRetirements(server); // W98 (W98-R4): ordinary survivor proofs take the tick's capture after governed work
+        releaseOwner.coordinator.tick();
         List<UUID> active = liveTransfers.stream().sorted().toList();
         for (UUID transferId : active) {
             RocketTransferRecord record = journal.find(transferId).orElse(null);
@@ -432,6 +442,7 @@ final class RocketTransferService {
 
     boolean escrowReconciliationBoundary(RocketEntity rocket,
             io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGuard guard) {
+        if (RocketReleaseAccess.fenced(rocket)) { return false; }
         return RocketFillReconciliation.boundary(rocket, guard, recovery.bays(), liveTransfers, settledTransfers,
                 landed::pending, recovery::fenceReason);
     }
@@ -444,6 +455,7 @@ final class RocketTransferService {
 
     /** No endpoint may mutate a balance that restart recovery can replace from its journal. */
     boolean resourceMutationAllowed(RocketEntity rocket) {
+        if (RocketReleaseAccess.fenced(rocket)) { return false; }
         if (!io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate.resourcesIdle(rocket)) { return false; }
         if (landed.pending(rocket.assemblyTransactionId().orElse(null))) { return false; }
         if (recovery.retirements().replacing(rocket.assemblyTransactionId().orElse(null))) { return false; }
@@ -483,6 +495,7 @@ final class RocketTransferService {
 
     /** W44's FM12a hook only; player and release-test disassembly use {@link #beginLandedDisassembly}. */
     boolean releaseLandedReservation(RocketEntity rocket) {
+        if (RocketReleaseAccess.fenced(rocket)) { return false; }
         return !recovery.retirements().replacing(rocket.assemblyTransactionId().orElse(null))
                 && RocketLandedDisassemblies.releasePlain(rocket, this::landedPort);
     }
@@ -490,6 +503,7 @@ final class RocketTransferService {
     /** W85 M0 and M1; SUCCESS means that L has no landed record T, so the caller runs today's one-tick path. */
     RocketValidationCode beginLandedDisassembly(RocketEntity rocket, java.util.function.Supplier<Optional<RocketValidationCode>> preflight,
             RocketLandedDisassemblies.Request request) {
+        if (RocketReleaseAccess.fenced(rocket)) { return RocketValidationCode.REGION_BUSY; }
         return recovery.retirements().replacing(rocket.assemblyTransactionId().orElse(null)) ? RocketValidationCode.REGION_BUSY
                 : landed.begin(rocket, preflight, request, this::landedPort);
     }
@@ -500,6 +514,7 @@ final class RocketTransferService {
     }
 
     void clear() {
+        closeReleases(); releases = null;
         warmups.clear();
         landed.clear();
         arrivalFootprints.clear();
@@ -680,6 +695,7 @@ final class RocketTransferService {
     }
 
     private void transferPassengers(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record) {
+        if (RocketReleaseAccess.fenced(server, record.logicalRocketId())) { return; }
         RocketEntity destination = RocketTransferEntities.findDestination(server, record);
         if (destination == null) {
             if (journal.nativeProbe() != null) { journal.nativeProbe().event(record.logicalRocketId(), "owned_wait", journal.mutationSequence(), "DESTINATION_ENTITY", 0); }

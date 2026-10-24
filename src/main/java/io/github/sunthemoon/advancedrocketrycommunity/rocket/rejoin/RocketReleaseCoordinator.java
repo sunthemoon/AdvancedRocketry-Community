@@ -100,6 +100,9 @@ public final class RocketReleaseCoordinator implements AutoCloseable {
         return current;
     }
     public boolean pending(UUID transfer) { owner(); return work.values().stream().anyMatch(w -> w.batch.transfer().equals(transfer)); }
+    public java.util.Optional<UUID> release(UUID transfer) {
+        owner(); return work.values().stream().filter(w -> w.batch.transfer().equals(transfer)).map(w -> w.batch.release()).findFirst();
+    }
     public boolean released(UUID logical, UUID player) {
         owner(); return work.values().stream().anyMatch(w -> w.batch.rocket().equals(logical) && w.batch.released().contains(player));
     }

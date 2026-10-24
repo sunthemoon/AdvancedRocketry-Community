@@ -65,8 +65,16 @@ public final class RocketRuntime {
     }
 
     public static void onRocketJoined(RocketEntity rocket) {
+        RocketReleaseAccess.joined(rocket);
         if (service instanceof RocketManager manager) { manager.onRocketJoined(rocket); }
     }
+
+    public static boolean releaseFenced(RocketEntity rocket) { return RocketReleaseAccess.fenced(rocket); }
+    /** Internal gated test hook only; W80-rejoin owns any future command and protected placement. */
+    public static Optional<UUID> releaseAbsentForTests(MinecraftServer server, UUID transfer) {
+        return RocketReleaseAccess.admitForTests(server, transfer);
+    }
+    public static void closeReleasesForStop() { RocketReleaseAccess.stopping(); }
 
     /** Internal coordinator registration; the installed manager owns the gate for this server session. */
     public static void installBayRecoveryGate(MinecraftServer server, RocketTransferBayRecoveryGate gate) {
