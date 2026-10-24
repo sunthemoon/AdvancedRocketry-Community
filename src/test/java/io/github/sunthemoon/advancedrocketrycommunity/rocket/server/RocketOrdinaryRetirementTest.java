@@ -48,6 +48,31 @@ final class RocketOrdinaryRetirementTest {
 
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
 
+    @Test void sealedEntriesAndAttemptsUseTheSameOrdinaryCapacity() throws Exception {
+        var f = new Fixture(false);
+        var entries = new AtomicInteger(64); var attempts = new AtomicInteger(4);
+        var bind = RocketOrdinaryRetirement.class.getDeclaredMethod("shareSealedCapacity",
+                java.util.function.IntSupplier.class, java.util.function.IntSupplier.class);
+        bind.invoke(f.retirements, (java.util.function.IntSupplier) entries::get,
+                (java.util.function.IntSupplier) attempts::get);
+        var room = RocketOrdinaryRetirement.class.getDeclaredMethod("pendingRoom", UUID.class);
+        assertEquals(false, room.invoke(f.retirements, UUID.randomUUID()));
+        entries.set(63);
+        assertEquals(true, room.invoke(f.retirements, f.logical()));
+        f.begin(RocketOrdinaryRetirement.Site.RECOVERED_SOURCE);
+        assertEquals(1, f.retirements.size());
+        assertEquals(false, room.invoke(f.retirements, UUID.randomUUID()));
+        assertEquals(true, room.invoke(f.retirements, f.logical()), "The existing entry can be nudged");
+        assertEquals(0, f.port.captures.size(), "A caller-held reservation bypassed the shared four-attempt cap");
+        assertFalse(f.reserved(), "A busy first attempt must release its token");
+        attempts.set(3); f.tick();
+        assertEquals(1, f.port.captures.size());
+        var active = RocketOrdinaryRetirement.class.getDeclaredMethod("activeAttempts");
+        assertEquals(1, active.invoke(f.retirements));
+        f.complete(0, failed(EscrowReason.BARRIER_IO));
+        assertEquals(0, active.invoke(f.retirements));
+    }
+
     @Test
     void aProofThatNeverCompletesEndsAtItsDeadlineSoCleanIsHeldForOneAttemptAtMost() {
         var f = new Fixture(false);
