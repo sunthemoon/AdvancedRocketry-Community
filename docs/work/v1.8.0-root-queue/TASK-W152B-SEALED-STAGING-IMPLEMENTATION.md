@@ -44,3 +44,27 @@ terrain representation during the retained window.
    R93 authorizes. New log lines get exact manifest entries.
 
 This is a persistence slice: a fresh Codex session reviews it before merge.
+
+## Root decision R97 (2026-10-24), on the probe's stop (`c2b876c1`)
+
+The probe showed that a server-bound target's `setChanged` reaches a neighbour's `onNeighborChange` synchronously
+during restore, and that neighbour used a reference kept from `AttachCapabilitiesEvent` before the target was removed.
+That window is inside the protection, and the stop was right.
+
+1. **Every adapter prepares on a target with no Level**, built-in and external. With no Level, `setChanged` and the
+   comparator path do nothing, so no callback runs between construction and publication or abort. The construction
+   event fires before the target's own fields exist. The Level is set only at publication, by the installation step
+   the probe already showed works.
+2. **External providers.** At unseal the host calls restore and recapture on that level-less target, on the server
+   thread, without the wrapper's level check. The host's own thread check replaces it for this call. The provider
+   contract (API documentation, signatures unchanged) says restore at unseal receives a host-created target that is
+   in no Level yet. A provider that needs a Level fails restore and the member is held, so nothing is lost. This
+   widens R95's compatibility effect from "needs an installed host" to "needs a Level"; ADR-065 and R-035 say so.
+3. **Abort is unchanged:** C keeps its original payload; the target is emptied (built-ins) and marked removed.
+4. **Rerun the probe** with the attachment listener and every exit for the four payload hosts, the plain members and
+   the external fixture. It passes when the listener never gets a callback while the target is unpublished, and the
+   original and foreign items are each counted exactly once in all 20 conservation cases. Then continue with the
+   slices above. If any case still fails, stop and report.
+
+The other GameTest failure in your run (`EscrowGovernedWarmupRefusalGameTests`, the warm-up ended before the discard)
+is outside your slice. Root tracks it. Rerun it alone once and report the result, without changing it.
