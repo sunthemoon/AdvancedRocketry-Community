@@ -83,7 +83,7 @@ public final class RocketMonitorFlights {
             catalogHash = RocketNativeResources.hash(text.toString()); hashedCatalog = catalog;
         }
         var root = monitor.root();
-        var text = new StringBuilder(catalogHash).append(root.owner()).append(root.device()).append(root.binding()).append(target);
+        var text = new StringBuilder(effectiveCatalogAuthority(catalogHash)).append(root.owner()).append(root.device()).append(root.binding()).append(target);
         var source = resolved.rocket().flightData().orElseThrow().currentTarget().orElse(null);
         if (source == null) { return ""; }
         for (var location : List.of(source, target)) {
@@ -95,6 +95,11 @@ public final class RocketMonitorFlights {
             station.members().stream().sorted().forEach(text::append);
         }
         return RocketNativeResources.hash(text.toString());
+    }
+
+    static String effectiveCatalogAuthority(String planetarySignature) {
+        return RocketNativeResources.hash(planetarySignature + ":"
+                + io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.RocketFluidFuelRuntime.capture().signature());
     }
 
     public RocketMonitorQuote quote(RocketMonitorBlockEntity monitor, TravelTarget target) {

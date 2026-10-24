@@ -200,6 +200,58 @@ public final class RocketMonitorGameTests {
         }, DEVICE);
     }
 
+    @GameTest(template = "rocket_test", batch = "monitor_catalog", timeoutTicks = 100)
+    public static void poweredArmingReloadKeepsEquivalentFuelCatalogButDisarmsOnFuelOnlyChange(GameTestHelper helper) {
+        helper.startSequence().thenWaitUntil(() -> {
+            var level = helper.getLevel();
+            helper.assertTrue(level.getGameTime() % 20 == 0, "Waiting for the authority sampling tick");
+            helper.assertTrue(level.areEntitiesLoaded(new net.minecraft.world.level.ChunkPos(helper.absolutePos(ORIGIN)).toLong()),
+                    "Waiting for the source entity section");
+        }).thenExecute(() -> {
+            var previous = io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.RocketFluidFuelRuntime.capture();
+            var owner = UUID.randomUUID(); var rocket = FluidFuelLoaderFixtures.rocket(helper, ORIGIN, owner);
+            var monitor = monitor(helper, owner);
+            try {
+                var field = io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.RocketFluidFuelRuntime.class.getDeclaredField("catalog");
+                field.setAccessible(true);
+                var baseline = io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.RocketFluidFuelCatalog.defaults();
+                field.set(null, baseline);
+                var flight = rocket.flightData().orElseThrow();
+                rocket.updateFlightData(flight.withFuel(flight.fuel().fill(flight.fuel().capacity()).state(), helper.getLevel().getGameTime()));
+                helper.assertTrue(monitor.bind(RocketMonitorBinding.capture(rocket)), "Cannot bind catalog fixture");
+                helper.setBlock(DEVICE.east(), Blocks.REDSTONE_BLOCK); monitor.signal(true);
+                var service = RocketRuntime.monitorFlights().orElseThrow(); var quote = service.quote(monitor, MOON);
+                helper.assertTrue(quote.ready() && monitor.configure(quote, true, 1), "Cannot arm catalog fixture");
+                var saved = monitor.saveWithoutMetadata(); var before = rocket.flightData().orElseThrow();
+                field.set(null, io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.RocketFluidFuelCatalog.defaults());
+                monitor.load(saved); monitor.tick();
+                helper.assertTrue(monitor.root().armed() && monitor.root().powered() && monitor.lastFlight() == null,
+                        "Equivalent reload invalidated arming or retried the held edge");
+                var entries = new java.util.HashMap<io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.RocketFluidFuelCatalog.Key,
+                        io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.RocketFluidFuelCatalog.Efficiency>();
+                var role = io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPropulsion.Role.class;
+                for (var kind : role.getEnumConstants()) {
+                    var id = ModIdentity.id(kind.name().equals("MONO") ? "rocket_fuel" : kind.name().equals("OXIDIZER") ? "oxygen" : "hydrogen");
+                    entries.put(new io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.RocketFluidFuelCatalog.Key(kind, id),
+                            kind.name().equals("MONO") ? new io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.RocketFluidFuelCatalog.Efficiency(3, 1)
+                                    : baseline.find(kind, id));
+                }
+                field.set(null, new io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.RocketFluidFuelCatalog(entries));
+                monitor.load(saved); monitor.tick();
+                helper.assertTrue(!monitor.root().armed() && monitor.root().mode() == 0 && monitor.root().powered()
+                        && monitor.lastFlight() == null && before.equals(rocket.flightData().orElseThrow()),
+                        "Fuel-only reload retained powered arming or launched");
+            } catch (ReflectiveOperationException failure) { throw new IllegalStateException(failure); }
+            finally {
+                try {
+                    var field = io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.RocketFluidFuelRuntime.class.getDeclaredField("catalog");
+                    field.setAccessible(true); field.set(null, previous);
+                } catch (ReflectiveOperationException failure) { throw new IllegalStateException(failure); }
+                rocket.discard(); helper.setBlock(DEVICE.east(), Blocks.AIR); FluidFuelLoaderFixtures.clear(helper.getLevel(), monitor.getBlockPos());
+            }
+        }).thenSucceed();
+    }
+
     @GameTest(template = "rocket_test", batch = "monitor_flight", timeoutTicks = 800)
     public static void offlineOwnersRedstoneLaunchUsesTheOrdinaryJournalAndDebitsOnce(GameTestHelper helper) {
         var driver = new GameTestTickDriver(helper); var level = helper.getLevel();
