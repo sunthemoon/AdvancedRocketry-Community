@@ -152,9 +152,10 @@ public final class RocketReleaseCoordinator implements AutoCloseable {
             var proof = entry.proofs.get(slot);
             if (!proof.valid() || proof.copies() != 1) { drop(entry, "B0_FAILED"); return; }
             entry.stage = Stage.S1;
+            notice(entry, "S1");
             entry.submitted = sidecar.submit(entry.plan.admit(sidecar.root()));
             if (!entry.submitted) { drop(entry, "B0_FAILED"); return; }
-            releaseAttempt(entry); notice(entry, "S1"); return;
+            releaseAttempt(entry); return;
         }
         capture(entry, slot, entry.plan.manifest());
         // An own-store failure can complete synchronously; never use the removed admission afterward.
@@ -194,7 +195,7 @@ public final class RocketReleaseCoordinator implements AutoCloseable {
         if (!nativeValid(entry)) { fail(entry, "PROOF_EXPIRED"); return; }
         var permit = sidecar.releasePermit(entry.batch.release()).orElse(null);
         if (permit == null || !journal.releasePassengers(permit, port.crewReady(entry.batch), () -> nativeValid(entry))) { return; }
-        entry.journalInstalled = true; entry.stage = Stage.S2; port.flushJournal(); notice(entry, "J1");
+        entry.journalInstalled = true; entry.stage = Stage.S2; notice(entry, "J1"); port.flushJournal();
     }
 
     private void s2(Work entry) {

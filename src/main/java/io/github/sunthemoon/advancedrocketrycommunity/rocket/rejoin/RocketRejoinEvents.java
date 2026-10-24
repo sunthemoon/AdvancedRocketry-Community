@@ -38,14 +38,20 @@ public final class RocketRejoinEvents {
         if (!server.isSameThread() || server.overworld() == null) { throw new IllegalStateException("Rejoin classification needs the owning Level"); }
         var data = existing(server);
         if (data == null) {
-            data = RocketRejoinSavedData.open(ManagedRootSupplier.dataFile(server, RocketRejoinSavedData.TYPE));
+            data = open(server);
             server.overworld().getDataStorage().set(RocketRejoinSavedData.TYPE.dataName(), data);
         }
         return data;
     }
     public static RocketRejoinSavedData existing(MinecraftServer server) {
         return server.overworld() == null ? null : server.overworld().getDataStorage().get(
-                tag -> RocketRejoinSavedData.open(ManagedRootSupplier.dataFile(server, RocketRejoinSavedData.TYPE)),
+                tag -> open(server),
                 RocketRejoinSavedData.TYPE.dataName());
+    }
+    private static RocketRejoinSavedData open(MinecraftServer server) {
+        return RocketRejoinSavedData.open(ManagedRootSupplier.dataFile(server, RocketRejoinSavedData.TYPE),
+                RocketReleaseNativeCuts.policy(server, RocketRejoinSavedData.TYPE),
+                io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile::presence,
+                io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataPolicy.DirectoryForce.PLATFORM);
     }
 }

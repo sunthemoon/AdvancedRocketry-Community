@@ -148,7 +148,8 @@ final class RocketReleaseWorld implements RocketReleaseCoordinator.Port {
         if (!runtime.barrier().availableOrdinary(store, slot.level(), chunk(slot), now())) { return false; }
         return runtime.barrier().beginOrdinary(store, slot.level(), chunk(slot), root -> {
             int found = RocketReleaseProof.count(root, batch, slot, b0); count.set(found); return found >= 0;
-        }, now(), label -> { }, result -> complete.accept(readback(result, count.get())));
+        }, now(), label -> { if (b0 != null && label.equals("BARRIER_STORE_BEFORE")) { RocketReleaseNativeCuts.checkpoint("C0"); } },
+                result -> complete.accept(readback(result, count.get())));
     }
     static RocketReleaseCoordinator.Proof readback(EscrowBarrier.Result result, int copies) {
         if (!result.confirmed() || copies < 0 || copies > 1) {
@@ -166,11 +167,13 @@ final class RocketReleaseWorld implements RocketReleaseCoordinator.Port {
         if (journal.find(batch.transfer()).isEmpty()) { live.remove(batch.transfer()); settled.remove(batch.transfer()); }
     }
     @Override public void notice(Batch batch, String state) {
+        if (state.equals("B0")) { RocketReleaseNativeCuts.arm(server); }
         if (Set.of("B0", "S1", "E1", "B1", "J1", "S2").contains(state)) {
             AdvancedRocketryCommunity.LOGGER.info("ARCE_REJOIN_RELEASE release={} transfer={} logical={} state={}", batch.release(), batch.transfer(), batch.rocket(), state);
         } else {
             AdvancedRocketryCommunity.LOGGER.warn("ARCE_REJOIN_RELEASE_HELD release={} transfer={} logical={} state={}", batch.release(), batch.transfer(), batch.rocket(), state);
         }
+        RocketReleaseNativeProbe.notice(server, batch, state);
     }
     private ServerLevel level(Slot slot) { return RocketTransferEntities.level(server, ResourceLocation.tryParse(slot.level())); }
     private static ChunkPos chunk(Slot slot) { return new ChunkPos(slot.x(), slot.z()); }

@@ -1,0 +1,26 @@
+{
+  "schema": 1,
+  "scope": "W158 disposable native release campaign; counts are per complete process log",
+  "production_info_states": ["B0", "S1", "E1", "B1", "J1", "S2"],
+  "production_held_states": ["B0_FAILED", "CONFLICT", "BOUNDARY_HELD", "ENTITY_HELD", "SLOT_HELD", "TICKET_CAP", "TICKET_EXPIRED", "PROOF_EXPIRED", "PROOF_HELD", "COPIES_CONFLICT", "GONE", "CAPTURE_FAILED", "CAPTURE_REFUSED", "UNAVAILABLE"],
+  "held_message": "ARCE_REJOIN_RELEASE_HELD release={uuid} transfer={uuid} logical={uuid} state={state}",
+  "info_message": "ARCE_REJOIN_RELEASE release={uuid} transfer={uuid} logical={uuid} state={state}",
+  "expected_warn_counts": {
+    "H1-C14-seed": {"GONE": 1},
+    "H1-C16-seed": {"CONFLICT": 1},
+    "H1-C16-recover": {"CONFLICT": 1},
+    "H1-C16-check": {"CONFLICT": 1}
+  },
+  "all_other_warning_counts": 0,
+  "probe_messages": {
+    "baseline": "ARCE_W158_BASELINE case={hold}:{cut}:{mode} logical={uuid} transfer={uuid} resources=Resources[snapshot={sha256}, fuel={sha256}]",
+    "paused": "ARCE_W158_PAUSED case={hold}:{cut}:seed boundary={boundary}",
+    "result": "ARCE_W158_RESULT case={hold}:{cut}:{mode} result={released|conflict} sequence=1 journal={0|1}",
+    "failure": "ARCE_W158_FAILURE case={hold}:{cut}:{mode} reason={exception}"
+  },
+  "probe_failure_count": 0,
+  "reasons": {
+    "GONE": "The C14 fixture explicitly deletes its authority after acknowledged S1. Every recorded native slot is proved empty before J1.",
+    "CONFLICT": "C16 persists an unrecorded transfer version. Each process emits one refusal and retains its release fence and pending seats."
+  }
+}
