@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import ctypes
+from dataclasses import dataclass
 import gzip
 import hashlib
 import json
@@ -20,6 +21,112 @@ from run_v060_flight_server_smoke import _server_command
 
 NAME = "advancedrocketrycommunity_rocket_rejoins.dat"
 REFUSAL = "Beta world data check blocked startup; type=ROCKET_REJOINS;"
+HEADER = re.compile(r"^\[[^\]\r\n]+\] \[(?P<thread>[^\]\r\n]+)/(?P<level>\w+)\] "
+                    r"\[(?P<logger>[^\]\r\n]+)\]: (?P<message>[^\r\n]*)$")
+EXCEPTION = re.compile(r"^(?:(?:Caused by|Suppressed): )?[\w.$]+(?:Exception|Error)(?::.*)?$")
+PROJECT_LOGGERS = ("io.gi.su.ad.AdvancedRocketryCommunity/",
+                   "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/")
+VANILLA_NPE = ('java.lang.NullPointerException: Cannot invoke "net.minecraft.server.level.ServerLevel.m_6857_()" '
+               'because "serverlevel2" is null')
+VANILLA_FRAME = "at net.minecraft.server.MinecraftServer.m_129885_(MinecraftServer.java:513)"
+
+
+@dataclass(frozen=True)
+class RefusalExpectation:
+    name: str
+    loggers: tuple[str, ...]
+    level: str
+    message_pattern: str
+    reason: str
+    exceptions: tuple[str, ...] = ()
+    count: int = 1
+
+
+def refusal_expectations(case: str, session: Path) -> tuple[RefusalExpectation, ...]:
+    """Exact messages except the generated UUID and in-session crash filename.
+
+    This is a six-start fixture manifest, not a general native crash allowance.
+    Exception identities/causes are checked too: vanilla's generic error headers
+    must not hide a different failure. All counts are per complete process log.
+    """
+    diagnostic, reason = {
+        "malformed": ("ARCE-BETA-2000", "advancedrocketrycommunity_rocket_rejoins failed semantic validation"),
+        "future": ("ARCE-BETA-2001", "advancedrocketrycommunity_rocket_rejoins uses future schema 2"),
+    }[case]
+    exception = "io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.SavedDataMigrationException: " + reason
+    causes = (exception,) + (("Caused by: java.lang.IllegalArgumentException: Rejoin capacity or sequence",)
+                             if case == "malformed" else ())
+    message = (f"[{diagnostic}] {REFUSAL} reason={reason}. Keep the world stopped. Use compatible software or "
+               "validated whole-world repair including all Levels, entities, POI, journals, rejoins, player data and "
+               "metadata; never delete the sidecar or restore isolated files.")
+    return (
+        RefusalExpectation("sidecar-refusal", PROJECT_LOGGERS, "ERROR", re.escape(message),
+                           "The case's invalid root must refuse startup before loading Levels.", causes),
+        RefusalExpectation("forge-event-propagation", ("ne.mi.ev.EventBus/EVENTBUS", "net.minecraftforge.eventbus.EventBus/EVENTBUS"),
+                           "ERROR", re.escape("Exception caught during firing event: " + reason),
+                           "Forge propagates the same ServerAboutToStartEvent exception.", causes),
+        RefusalExpectation("server-start-propagation", ("minecraft/MinecraftServer",), "ERROR",
+                           re.escape("Encountered an unexpected exception"),
+                           "MinecraftServer.runServer reports the same startup refusal.", causes),
+        RefusalExpectation("forge-crash-report", ("ne.mi.co.ForgeMod/", "net.minecraftforge.common.ForgeMod/"), "FATAL",
+                           r"Preparing crash report with UUID [0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}",
+                           "Forge emits one generated crash-report UUID for the refused start."),
+        RefusalExpectation("server-crash-report", ("minecraft/MinecraftServer",), "ERROR",
+                           re.escape("This crash report has been saved to: " + session.as_posix())
+                           + r"/(?:\./)?crash-reports/crash-\d{4}-\d{2}-\d{2}_\d{2}\.\d{2}\.\d{2}-server\.txt",
+                           "The report must be in this disposable server, with only its generated timestamp variable."),
+        RefusalExpectation("vanilla-unloaded-overworld-stop", ("minecraft/MinecraftServer",), "ERROR",
+                           re.escape("Exception stopping the server"),
+                           "Minecraft 1.20.1 saveAllChunks:513 dereferences overworld.getWorldBorder before a Level exists. "
+                           "runServer unconditionally calls stopServer after pre-Level refusal; no Forge event skips this "
+                           "vanilla save. Avoidance would require a Mixin or changing the pre-Level refusal contract.",
+                           (VANILLA_NPE,)),
+    )
+
+
+def audit_log(lines: list[str], case: str, session: Path) -> dict:
+    if case == "unused":
+        findings = smoke.scan_log(lines, expected_mod_version=smoke.V180_STARTUP_VERSION)
+        if findings:
+            raise smoke.SmokeError("Unexpected native log entries: " + " | ".join(findings))
+        return dict(counts=smoke.log_audit_counts(lines), expectations=[])
+
+    expectations = refusal_expectations(case, session)
+    counts = [0] * len(expectations)
+    remainder = []
+    headers = [(index, match) for index, value in enumerate(lines) if (match := HEADER.fullmatch(value.rstrip()))]
+    for position, (start, header) in enumerate(headers):
+        end = headers[position + 1][0] if position + 1 < len(headers) else len(lines)
+        body = [value.strip() for value in lines[start + 1:end]]
+        # Normalise path separators, not message contents, for the crash path only.
+        for index, expected in enumerate(expectations):
+            message = header["message"].replace("\\", "/") if expected.name == "server-crash-report" else header["message"]
+            if (header["thread"] == "Server thread" and header["level"] == expected.level
+                    and header["logger"] in expected.loggers and re.fullmatch(expected.message_pattern, message)):
+                counts[index] += 1
+                if tuple(value for value in body if EXCEPTION.fullmatch(value)) != expected.exceptions:
+                    raise smoke.SmokeError(f"Unexpected exception under {expected.name}")
+                if expected.name == "vanilla-unloaded-overworld-stop":
+                    frames = [value for value in body if value.startswith("at ")]
+                    if (not frames or not re.fullmatch(re.escape(VANILLA_FRAME) + r"(?: ~\[[^\r\n]+\] \{[^\r\n]*\})?", frames[0])
+                            or any("advancedrocketrycommunity" in value.lower() for value in body)):
+                        raise smoke.SmokeError("Unexpected vanilla shutdown origin")
+                break
+        else:
+            remainder.append(lines[start])
+    # Scan every non-exempt header AND every continuation for linkage failures or
+    # malformed/unparsed ERROR/FATAL/project WARN entries. Never discard a stack.
+    header_indices = {index for index, _ in headers}
+    remainder.extend(value for index, value in enumerate(lines) if index not in header_indices)
+    findings = smoke.scan_log(remainder)
+    if findings:
+        raise smoke.SmokeError("Unexpected native log entries: " + " | ".join(findings))
+    if counts != [expected.count for expected in expectations]:
+        raise smoke.SmokeError(f"Refusal log expectation counts differ: {dict(zip((e.name for e in expectations), counts))}")
+    return dict(counts=smoke.log_audit_counts(lines), expectations=[
+        dict(name=e.name, loggers=e.loggers, level=e.level, message_pattern=e.message_pattern,
+             exceptions=e.exceptions, expected=e.count, observed=count, reason=e.reason)
+        for e, count in zip(expectations, counts)])
 
 
 def payload(schema: int, sequence: int) -> bytes:
@@ -103,11 +210,13 @@ def run(args) -> dict:
                 lines = "".join(process.lines)
                 refusals = lines.count(REFUSAL)
                 if case == "unused":
-                    if code != 0 or sidecar.exists() or "/ERROR]" in lines or "/FATAL]" in lines:
+                    if code != 0 or sidecar.exists():
                         raise smoke.SmokeError("Unused world failed or gained a sidecar")
                 elif refusals != 1 or sidecar.read_bytes() != original or 'For help, type "help"' in lines:
                     raise smoke.SmokeError("Startup refusal, byte preservation or no-login ordering failed")
+                audit = audit_log(process.lines, case, session)
                 result["starts"].append(dict(case=case, attempt=attempt, command=command, exit=code, refusals=refusals,
+                                             log_audit=audit,
                                              free_memory=memory.available,
                                              sidecar_present=sidecar.exists(),
                                              sidecar_sha256=hashlib.sha256(original).hexdigest() if original else None))
