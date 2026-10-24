@@ -78,4 +78,31 @@ class RocketMonitorRootTest {
             assertThrows(IllegalArgumentException.class, () -> RocketMonitorRoot.decode(malformed));
         }
     }
+    @Test void nestedSchemaRequiresTheExactIntegerType() {
+        for (var schema : new net.minecraft.nbt.Tag[] {net.minecraft.nbt.DoubleTag.valueOf(1.75),
+                net.minecraft.nbt.LongTag.valueOf(1), net.minecraft.nbt.ByteTag.valueOf((byte) 1)}) {
+            var tag = root().encode(); tag.getCompound("destination").put("schema_version", schema);
+            var before = tag.copy();
+            assertThrows(IllegalArgumentException.class, () -> RocketMonitorRoot.decode(tag), schema.toString());
+            assertEquals(before, tag, "Rejected metadata was normalized");
+        }
+    }
+    @Test void nestedDestinationsRequireCanonicalStringsExactFieldsAndTypes() {
+        var root = root();
+        var surface = new RocketMonitorRoot(root.owner(), root.device(), root.binding(), 0, true, true,
+                new TravelTarget.BodySurface(ResourceLocation.tryParse("minecraft:moon")), root.authority()).encode();
+        for (var good : new CompoundTag[] {root.encode(), surface}) {
+            var unknown = good.copy(); unknown.getCompound("destination").putInt("unknown", 1);
+            assertThrows(IllegalArgumentException.class, () -> RocketMonitorRoot.decode(unknown));
+            for (String key : good.getCompound("destination").getAllKeys()) {
+                var mistyped = good.copy(); mistyped.getCompound("destination").put(key, new CompoundTag());
+                assertThrows(IllegalArgumentException.class, () -> RocketMonitorRoot.decode(mistyped));
+            }
+        }
+        surface.getCompound("destination").putString("body_id", "moon");
+        assertThrows(IllegalArgumentException.class, () -> RocketMonitorRoot.decode(surface));
+        var station = root.encode();
+        station.getCompound("destination").putString("instance_id", "ABCDEFAB-1234-4567-8123-ABCDEFABCDEF");
+        assertThrows(IllegalArgumentException.class, () -> RocketMonitorRoot.decode(station));
+    }
 }

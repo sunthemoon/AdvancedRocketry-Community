@@ -281,4 +281,33 @@ public final class RocketMonitorGameTests {
             });
         });
     }
+
+    @GameTest(template = "rocket_test", batch = "monitor_nested_metadata", timeoutTicks = 80)
+    public static void malformedNestedDestinationsStayRawAndInertAcrossBlockEntitySaveReload(GameTestHelper helper) {
+        var monitor = monitor(helper, UUID.randomUUID());
+        try {
+            var binding = new io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.LoaderBinding(UUID.randomUUID(),
+                    helper.getLevel().dimension().location(), UUID.randomUUID(), helper.absolutePos(ORIGIN), null);
+            var valid = new RocketMonitorRoot(monitor.root().owner(), monitor.root().device(), binding, 1, true, true, MOON, "a".repeat(64)).encode();
+            var malformed = new ArrayList<CompoundTag>();
+            for (var schema : new net.minecraft.nbt.Tag[] {net.minecraft.nbt.DoubleTag.valueOf(1.75),
+                    net.minecraft.nbt.LongTag.valueOf(1), net.minecraft.nbt.ByteTag.valueOf((byte) 1)}) {
+                var root = valid.copy(); root.getCompound("destination").put("schema_version", schema); malformed.add(root);
+            }
+            var unknown = valid.copy(); unknown.getCompound("destination").putInt("unknown", 1); malformed.add(unknown);
+            var shorthand = valid.copy(); shorthand.getCompound("destination").putString("body_id", "moon"); malformed.add(shorthand);
+            for (var raw : malformed) {
+                var outer = new CompoundTag(); outer.put(RocketMonitorRoot.KEY, raw.copy()); monitor.load(outer);
+                for (int reload = 0; reload < 2; reload++) {
+                    helper.assertTrue(monitor.root() == null && monitor.status() == RocketMonitorStatus.UNSUPPORTED_DATA, "Malformed target remained live");
+                    monitor.signal(true); monitor.tick();
+                    var saved = monitor.saveWithoutMetadata();
+                    helper.assertTrue(raw.equals(saved.get(RocketMonitorRoot.KEY)) && monitor.lastFlight() == null,
+                            "Save/reload normalized or launched malformed metadata");
+                    monitor.load(saved);
+                }
+            }
+        } finally { FluidFuelLoaderFixtures.clear(helper.getLevel(), monitor.getBlockPos()); }
+        helper.succeed();
+    }
 }

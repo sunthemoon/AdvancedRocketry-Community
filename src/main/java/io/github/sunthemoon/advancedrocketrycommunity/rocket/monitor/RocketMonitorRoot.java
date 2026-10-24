@@ -58,8 +58,16 @@ public record RocketMonitorRoot(UUID owner, UUID device, LoaderBinding binding, 
         return new RocketMonitorRoot(tag.contains("owner") ? tag.getUUID("owner") : null, tag.getUUID("device"),
                 tag.contains("binding") ? LoaderBinding.decode(tag.get("binding")) : null,
                 tag.getInt("mode"), tag.getBoolean("powered"), tag.getBoolean("armed"), tag.contains("destination")
-                ? TravelTargetNbtCodec.decode(tag.get("destination")).result().orElseThrow(() -> new IllegalArgumentException("Invalid target")) : null,
+                ? strictDestination(tag.get("destination")) : null,
                 tag.getString("authority"));
+    }
+
+    private static TravelTarget strictDestination(Tag raw) {
+        require(raw instanceof CompoundTag && ((CompoundTag) raw).contains("schema_version", Tag.TAG_INT));
+        var target = TravelTargetNbtCodec.decode(raw).result().orElseThrow(() -> new IllegalArgumentException("Invalid target"));
+        // Local boundary only: equality also checks exact field types, keys and canonical ID/UUID strings.
+        require(raw.equals(TravelTargetNbtCodec.encode(target).result().orElseThrow()));
+        return target;
     }
 
     private static void require(boolean valid) { if (!valid) { throw new IllegalArgumentException("Unsupported monitor metadata"); } }
