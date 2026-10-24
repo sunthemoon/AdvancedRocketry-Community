@@ -1782,7 +1782,7 @@ changes no decision status and accepts no risk. The risk is R-035.
   format, schema, bound, lease, budget, timeout or protocol changes. The holds and their recovery are in R-035.
   Leaves N3-B1 to N3-B4 follow W148 section 7; N3-B2 needs an independent persistence review before integration.
 - **N3-B2 isolation (W154 design revisions 1 and 2, `records/W154-DESIGN.md`; review W154-review BLOCK, SHA-256
-  `6facedc6…`, and its re-review, SHA-256 `c67bfebd…`; Root decisions R91 and R93 to R98, 2026-10-24; not yet
+  `6facedc6…`, and its re-review, SHA-256 `c67bfebd…`; Root decisions R91, R93 to R98 and R100, 2026-10-24; not yet
   implemented).** W152 showed that vanilla container access (hoppers, the item capability, menus, breaking) bypasses
   the region locks while U is retained, so a rollback could restore items that had already left. Sealed staging closes
   that window. While U is retained, every member of the footprint is an inert carrier C: no inventory, capability,
@@ -1813,6 +1813,10 @@ changes no decision status and accepts no risk. The risk is R-035.
     bounds and ADR-061/064 preservation; it is never discarded or replaced with air. Journal schema 2 gains the record
     type `SEALED_DISASSEMBLY`, so existing `DISASSEMBLY` records keep their current recovery. An older jar blocks the
     journal root; downgrade follows section 13.
+  - **Carrier preservation (R100):** no save refusal and no reuse of R-021's chunk guard. Staging measures a carrier
+    root before any mutation and refuses to stage if it would not fit; nothing in play changes it afterwards. A loaded
+    root that fails validation keeps the member sealed and held, and is written back exactly as loaded on every save,
+    with one bounded WARN per carrier per load.
   - **Limits:** no bound, lease, budget, timeout or protocol change.
   - **Stop condition:** W152's first commit probes the publication sequence, including an attachment listener that
     keeps the raw target, and stops if no one-step publication exists without a Mixin.
