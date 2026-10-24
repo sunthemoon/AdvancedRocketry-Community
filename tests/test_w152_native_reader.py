@@ -12,6 +12,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
 
 class W152NativeReaderTest(unittest.TestCase):
+    def test_all_host_cut_fixture_requires_fluid_and_package_in_addition_to_containers(self):
+        from run_w152_native import expected_resources, native_case_plan
+        self.assertEqual({"original": 14}, expected_resources("CONTAINERS"))
+        self.assertEqual({"original": 14, "original-fluid": 1000, "original-package": 1}, expected_resources("ALL"))
+        with self.assertRaises(ValueError): expected_resources("unknown")
+        self.assertTrue(all(row["hosts"] == "ALL" for row in native_case_plan()))
+
     def test_cut_plan_has_recovery_kills_and_never_saved_entity_variants(self):
         from run_w152_native import native_case_plan
         cases = native_case_plan()
