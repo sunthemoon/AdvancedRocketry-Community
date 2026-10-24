@@ -141,20 +141,21 @@ final class RocketTransferRecoveryService {
         }
         classify(server, journal);
         RocketTransferRecord record = journal.find(transferId).orElse(null);
-        if (record != null && RocketReleaseAccess.fenced(server, record.logicalRocketId())) { return retryLater(record); }
         if (record != null && retirements.replacing(record.logicalRocketId())) { return retryLater(record); }
         if (record == null) {
             var authority = completedRecords.get(transferId);
             if (completedResults.containsKey(transferId) && authority != null) {
                 if (!bays.allowed(server, journal, authority, RocketTransferBayRecoveryGate.Action.RECOVER_BY_ID)
                         || !journal.actionable(authority.logicalRocketId())
-                        || journal.findByLogicalRocket(authority.logicalRocketId()).isPresent()) { return retryLater(authority); }
+                        || journal.findByLogicalRocket(authority.logicalRocketId()).isPresent()
+                        || RocketReleaseAccess.fenced(server, authority.logicalRocketId())) { return retryLater(authority); }
                 return takeCompleted(transferId);
             }
             return Result.notFound(transferId);
         }
         if (!bays.allowed(server, journal, record, RocketTransferBayRecoveryGate.Action.RECOVER_BY_ID)
                 || bays.source(transferId) != null) { return retryLater(record); }
+        if (RocketReleaseAccess.fenced(server, record.logicalRocketId())) { return retryLater(record); }
         journal.retryChecked(server);
         if (journal.find(transferId).orElse(null) != record) { return retryLater(record); }
         if (journal.actionable(record.logicalRocketId()) && completedResults.containsKey(transferId)) {
