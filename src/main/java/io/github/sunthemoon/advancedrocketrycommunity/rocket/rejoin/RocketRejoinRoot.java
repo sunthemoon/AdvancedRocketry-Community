@@ -87,6 +87,14 @@ public record RocketRejoinRoot(long nextSequence, List<Batch> batches, List<Entr
         public Position { coordinates(x, y, z); }
     }
 
+    /** R104: the complete recorded proof census survives the transfer's checked removal. */
+    public record Slot(String level, int x, int z) {
+        public Slot {
+            identifier(level);
+            require(x >= -1_875_000 && x < 1_875_000 && z >= -1_875_000 && z < 1_875_000, "Rejoin chunk outside world limits");
+        }
+    }
+
     /** Exact resource witnesses, without copying inventories, fluid NBT or a reconstructible rocket payload. */
     public record Resources(String snapshot, String fuel) {
         public Resources { hash(snapshot); hash(fuel); }
@@ -102,7 +110,7 @@ public record RocketRejoinRoot(long nextSequence, List<Batch> batches, List<Entr
 
     public record Batch(UUID release, long sequence, UUID transfer, UUID rocket, UUID authority, Hold hold,
                         String dimension, Position pad, Position minimum, Position maximum, Resources resources,
-                        Version before, Version scrubbed, List<UUID> released) {
+                        Version before, Version scrubbed, List<UUID> released, List<Slot> slots) {
         public Batch {
             Objects.requireNonNull(release); Objects.requireNonNull(transfer); Objects.requireNonNull(rocket);
             Objects.requireNonNull(authority); Objects.requireNonNull(hold); Objects.requireNonNull(pad);
@@ -111,6 +119,9 @@ public record RocketRejoinRoot(long nextSequence, List<Batch> batches, List<Entr
             require(sequence >= 0 && released.size() >= 1 && released.size() <= MAX_PER_BATCH, "Rejoin batch bounds");
             released = List.copyOf(released);
             require(new HashSet<>(released).size() == released.size(), "Duplicate released player");
+            slots = List.copyOf(slots);
+            require(!slots.isEmpty() && slots.size() <= 3 && new HashSet<>(slots).size() == slots.size(), "Invalid rejoin slot census");
+            require(slots.contains(new Slot(dimension, pad.x() >> 4, pad.z() >> 4)), "Missing rejoin authority slot");
             require(minimum.x() <= maximum.x() && minimum.y() <= maximum.y() && minimum.z() <= maximum.z(), "Reversed region");
             require(before.phase().equals(scrubbed.phase()) && Objects.equals(before.destination(), scrubbed.destination()),
                     "Scrubbing changed the transfer envelope");

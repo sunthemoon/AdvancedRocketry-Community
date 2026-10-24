@@ -56,18 +56,28 @@ public final class RocketRejoinCodec {
         resources.putString("fuel", batch.resources().fuel()); tag.put("resources", resources);
         tag.put("before", version(batch.before())); tag.put("scrubbed", version(batch.scrubbed()));
         var players = new ListTag(); batch.released().forEach(p -> players.add(NbtUtils.createUUID(p))); tag.put("released", players);
+        var slots = new ListTag();
+        for (var slot : batch.slots()) {
+            var s = new CompoundTag(); s.putString("level", slot.level()); s.putInt("x", slot.x()); s.putInt("z", slot.z()); slots.add(s);
+        }
+        tag.put("slots", slots);
         return tag;
     }
     private static Batch batch(CompoundTag tag) {
         fields(tag, "release", "sequence", "transfer", "rocket", "authority", "hold", "dimension", "pad", "minimum", "maximum",
-                "resources", "before", "scrubbed", "released");
+                "resources", "before", "scrubbed", "released", "slots");
         var resources = compound(tag, "resources"); fields(resources, "snapshot", "fuel");
         var players = new ArrayList<UUID>();
         for (Tag player : list(tag, "released", Tag.TAG_INT_ARRAY, MAX_PER_BATCH)) { players.add(NbtUtils.loadUUID(player)); }
+        var slots = new ArrayList<Slot>();
+        for (Tag raw : list(tag, "slots", Tag.TAG_COMPOUND, 3)) {
+            var s = (CompoundTag) raw; fields(s, "level", "x", "z");
+            slots.add(new Slot(string(s, "level"), integer(s, "x"), integer(s, "z")));
+        }
         return new Batch(uuid(tag, "release"), number(tag, "sequence"), uuid(tag, "transfer"), uuid(tag, "rocket"),
                 uuid(tag, "authority"), Hold.valueOf(string(tag, "hold")), string(tag, "dimension"), position(tag, "pad"),
                 position(tag, "minimum"), position(tag, "maximum"), new Resources(string(resources, "snapshot"), string(resources, "fuel")),
-                version(compound(tag, "before")), version(compound(tag, "scrubbed")), players);
+                version(compound(tag, "before")), version(compound(tag, "scrubbed")), players, slots);
     }
     private static CompoundTag entry(Entry entry) {
         var tag = new CompoundTag(); tag.putUUID("release", entry.release()); tag.putUUID("player", entry.player());

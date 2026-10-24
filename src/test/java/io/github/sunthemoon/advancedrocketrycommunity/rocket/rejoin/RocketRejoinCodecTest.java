@@ -20,7 +20,8 @@ class RocketRejoinCodecTest {
         return new RocketRejoinRoot.Batch(id(n), sequence, id(1_000 + n), id(2_000 + n), id(3_000 + n),
                 RocketRejoinRoot.Hold.H1, "minecraft:overworld", new RocketRejoinRoot.Position(0, 64, 0),
                 new RocketRejoinRoot.Position(-1, 64, -1), new RocketRejoinRoot.Position(1, 66, 1),
-                new RocketRejoinRoot.Resources("b".repeat(64), "c".repeat(64)), version, version, players);
+                new RocketRejoinRoot.Resources("b".repeat(64), "c".repeat(64)), version, version, players,
+                List.of(new RocketRejoinRoot.Slot("minecraft:overworld", 0, 0)));
     }
     static RocketRejoinRoot.Entry entry(long n, UUID player) {
         return new RocketRejoinRoot.Entry(id(n), player, 0, RocketRejoinRoot.Placement.PENDING,
@@ -31,6 +32,50 @@ class RocketRejoinCodecTest {
     }
     static CompoundTag encoded() { return RocketRejoinCodec.encode(fixture()); }
     static CompoundTag first(CompoundTag root, String key) { return root.getList(key, 10).getCompound(0); }
+
+    static CompoundTag slot(String dimension, int x, int z) {
+        var tag = new CompoundTag(); tag.putString("level", dimension); tag.putInt("x", x); tag.putInt("z", z); return tag;
+    }
+
+    @Test void releaseCensusSurvivesWithoutTheTransferAndRejectsMissingSlots() {
+        var encoded = encoded(); var batch = first(encoded, "batches");
+        var slots = new ListTag(); slots.add(slot("minecraft:overworld", 0, 0));
+        slots.add(slot("advancedrocketrycommunity:moon", 17, -19)); batch.put("slots", slots);
+        assertEquals(encoded, RocketRejoinCodec.encode(RocketRejoinCodec.decode(encoded)));
+        batch.remove("slots");
+        assertThrows(IllegalArgumentException.class, () -> RocketRejoinCodec.decode(encoded));
+    }
+
+    @Test void rejectsMalformedDuplicateAndOutOfBoundsCensus() {
+        for (var bad : List.<Consumer<ListTag>>of(
+                ListTag::clear, s -> s.add(s.getCompound(0).copy()),
+                s -> s.getCompound(0).remove("level"), s -> s.getCompound(0).putString("level", "bad"),
+                s -> s.getCompound(0).putInt("x", 1_875_000), s -> s.getCompound(0).putInt("z", -1_875_001),
+                s -> s.getCompound(0).putLong("x", 0), s -> s.getCompound(0).putInt("extra", 1),
+                s -> s.getCompound(0).putInt("x", 1),
+                s -> { for (int i = 1; i <= 3; i++) { s.add(slot("minecraft:overworld", i, i)); } })) {
+            var encoded = encoded(); var slots = new ListTag(); slots.add(slot("minecraft:overworld", 0, 0));
+            first(encoded, "batches").put("slots", slots); bad.accept(slots);
+            assertThrows(IllegalArgumentException.class, () -> RocketRejoinCodec.decode(encoded));
+        }
+    }
+
+    @Test void maximumReleaseCensusAndPassengerBatchFitTheUnchangedEnvelope() {
+        var players = new ArrayList<UUID>(); for (int i = 0; i < 16; i++) { players.add(id(100 + i)); }
+        var batch = batch(1, 0, players); var entries = players.stream().map(p -> entry(1, p)).toList();
+        var encoded = RocketRejoinCodec.encode(new RocketRejoinRoot(1, List.of(batch), entries));
+        var b = first(encoded, "batches"); var dimension = "a:" + "x".repeat(126); b.putString("dimension", dimension);
+        for (var key : List.of("before", "scrubbed")) {
+            b.getCompound(key).putString("phase", "DESTINATION_SPAWNED"); b.getCompound(key).putUUID("destination", id(99));
+        }
+        var slots = new ListTag(); slots.add(slot(dimension, 0, 0));
+        slots.add(slot("b:" + "y".repeat(126), -1_875_000, 1_874_999));
+        slots.add(slot("c:" + "z".repeat(126), 1_874_999, -1_875_000)); b.put("slots", slots);
+        int size = io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNbtSize.uncompressedBytes(b);
+        System.out.println("W158 maximum encoded batch bytes=" + size);
+        assertTrue(size <= 2_048, "Measured batch: " + size);
+        assertEquals(encoded, RocketRejoinCodec.encode(RocketRejoinCodec.decode(encoded)));
+    }
 
     @Test void schemaOneRoundTripsEveryStateAndAttempt() {
         assertEquals(fixture(), RocketRejoinCodec.decode(encoded()));
@@ -143,7 +188,7 @@ class RocketRejoinCodecTest {
             var version = new RocketRejoinRoot.Version("d".repeat(64), phase.name(), destination);
             var b = fixture().batches().get(0);
             var batch = new RocketRejoinRoot.Batch(b.release(), b.sequence(), b.transfer(), b.rocket(), b.authority(),
-                    b.hold(), b.dimension(), b.pad(), b.minimum(), b.maximum(), b.resources(), version, version, b.released());
+                    b.hold(), b.dimension(), b.pad(), b.minimum(), b.maximum(), b.resources(), version, version, b.released(), b.slots());
             var root = new RocketRejoinRoot(1, List.of(batch), fixture().entries());
             assertEquals(root, RocketRejoinCodec.decode(RocketRejoinCodec.encode(root)));
         }
