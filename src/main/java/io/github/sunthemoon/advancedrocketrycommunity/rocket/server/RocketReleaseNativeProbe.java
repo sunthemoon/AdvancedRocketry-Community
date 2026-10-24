@@ -71,15 +71,23 @@ public final class RocketReleaseNativeProbe {
     }
     private RocketTransferSavedData journal() { return RocketTransferSavedData.get(server); }
     private RocketEntity rocket() {
-        RocketEntity found = null;
+        var found = new java.util.ArrayList<RocketEntity>();
         for (var level : server.getAllLevels()) {
             for (var entity : level.getAllEntities()) {
                 if (entity instanceof RocketEntity rocket && !rocket.isRemoved()) {
-                    require(found == null, "Duplicate native fixture authority"); found = rocket;
+                    found.add(rocket); require(found.size() <= 2, "Additional native fixture authority");
                 }
             }
         }
-        return found;
+        if (found.size() == 2 && mode.equals("seed") && hold.equals("H2") && original != null
+                && transientPair(journal().find(original.transferId()).orElse(null), found.stream().map(RocketEntity::getUUID).toList())) { return null; }
+        require(found.size() <= 1, "Duplicate native fixture authority");
+        return found.isEmpty() ? null : found.get(0);
+    }
+    static boolean transientPair(RocketTransferRecord record, List<UUID> copies) {
+        return record != null && copies.size() == 2 && !copies.get(0).equals(copies.get(1))
+                && record.phase() != RocketTransferPhase.PREPARED && record.phase() != RocketTransferPhase.COMMITTED
+                && copies.contains(record.sourceEntityId()) && record.destinationEntityId().filter(copies::contains).isPresent();
     }
     private void advance() {
         require(++ticks <= 2400, "W158 native fixture exceeded 2400 ticks");
