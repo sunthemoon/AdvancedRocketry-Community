@@ -4,6 +4,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.persistence.BoundedNbt;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNbtSize;
 import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Predicate;
 import net.minecraft.nbt.CompoundTag;
@@ -42,18 +43,22 @@ public final class EscrowChunkStore {
         return entities.original().worker;
     }
     public Capture captureAndStore(EscrowEndpoint endpoint, Predicate<CompoundTag> validator) {
+        return captureAndStore(endpoint, validator, new AtomicBoolean(true));
+    }
+    Capture captureAndStore(EscrowEndpoint endpoint, Predicate<CompoundTag> validator, AtomicBoolean lifetime) {
         EscrowTags.require(level.getServer().isSameThread() && level.dimension().location().toString().equals(endpoint.level()), "Wrong endpoint thread/Level");
         boolean entity = endpoint.kind() == EscrowEndpoint.Kind.ENTITY;
         ChunkPos pos = entity ? new ChunkPos(endpoint.x(), endpoint.z())
                 : new ChunkPos(new net.minecraft.core.BlockPos(endpoint.x(), endpoint.y(), endpoint.z()));
-        AtomicLong generation = monitor.watch(endpoint.level(), entity, pos);
-        long capturedGeneration = generation.get(); // BEFORE serialization/event, never after store.
+        var watch = monitor.captureWatch(endpoint.level(), entity, pos, lifetime);
+        AtomicLong generation = watch.generation();
+        long capturedGeneration = watch.capturedGeneration(); // BEFORE serialization/event, never after store.
         if (entity) {
-            try { return entities(endpoint.level(), pos, generation, capturedGeneration, validator); }
-            catch (RuntimeException failure) { monitor.release(endpoint.level(), true, pos); throw failure; }
+            try { return entities(pos, watch, validator); }
+            catch (RuntimeException | Error failure) { watch.release(); throw failure; }
         }
         LevelChunk chunk = level.getChunkSource().getChunkNow(pos.x, pos.z);
-        if (chunk == null) { monitor.release(endpoint.level(), false, pos); throw new IllegalArgumentException("Endpoint terrain chunk is not FULL loaded"); }
+        if (chunk == null) { watch.release(); throw new IllegalArgumentException("Endpoint terrain chunk is not FULL loaded"); }
         Runnable restore = () -> {
             if (level.getChunkSource().getChunkNow(pos.x, pos.z) == chunk) { chunk.setUnsaved(true); }
         };
@@ -73,17 +78,17 @@ public final class EscrowChunkStore {
             if (map.legacyStructureHandler != null) { map.legacyStructureHandler.removeIndex(pos.toLong()); }
             map.markPosition(pos, chunk.getStatus().getChunkType());
             return new Capture(stored, map.worker, directory(false), pos, generation, capturedGeneration, bytes, restore,
-                    () -> monitor.release(endpoint.level(), false, pos));
-        } catch (RuntimeException failure) { restore.run(); monitor.release(endpoint.level(), false, pos); throw failure; }
+                    watch::release);
+        } catch (RuntimeException | Error failure) { restore.run(); watch.release(); throw failure; }
+    }
+    boolean ordinaryAvailable(String id, ChunkPos pos) { return monitor.ordinaryAvailable(id, pos); }
+    EscrowSaveMonitor.Handle ordinaryWatch(String id, ChunkPos pos, java.util.function.BooleanSupplier reserve) {
+        return monitor.ordinaryWatch(id, pos, reserve);
     }
     /** W98: an ordinary entity-slot capture, the same path as an ENTITY endpoint's, with no escrow identity. */
-    public Capture captureEntitySlot(ChunkPos pos, Predicate<CompoundTag> validator) {
+    Capture captureEntitySlot(ChunkPos pos, Predicate<CompoundTag> validator, EscrowSaveMonitor.Handle watch) {
         EscrowTags.require(level.getServer().isSameThread(), "Wrong entity-slot thread");
-        String id = level.dimension().location().toString();
-        AtomicLong generation = monitor.watch(id, true, pos);
-        long capturedGeneration = generation.get(); // BEFORE serialization/event, never after store.
-        try { return entities(id, pos, generation, capturedGeneration, validator); }
-        catch (RuntimeException failure) { monitor.release(id, true, pos); throw failure; }
+        return entities(pos, watch, validator);
     }
 
     /**
@@ -98,8 +103,8 @@ public final class EscrowChunkStore {
 
     static boolean vanillaEntityStorage(Class<?> storage) { return storage == net.minecraft.world.level.chunk.storage.EntityStorage.class; }
 
-    private Capture entities(String endpointLevel, ChunkPos pos, AtomicLong generation, long capturedGeneration,
-                             Predicate<CompoundTag> validator) {
+    private Capture entities(ChunkPos pos, EscrowSaveMonitor.Handle watch, Predicate<CompoundTag> validator) {
+        AtomicLong generation = watch.generation(); long capturedGeneration = watch.capturedGeneration();
         EscrowTags.require(level.areEntitiesLoaded(pos.toLong()), "Endpoint entity sections are not loaded");
         if (entities == null) { entities = new EscrowEntityStore(level, monitor); }
         int[] bytes = {0};
@@ -112,7 +117,7 @@ public final class EscrowChunkStore {
             return root;
         });
         return new Capture(stored, entities.original().worker, directory(true), pos, generation, capturedGeneration, bytes[0], () -> { },
-                () -> monitor.release(endpointLevel, true, pos));
+                watch::release);
     }
     private static CompoundTag serialize(Entity entity) {
         CompoundTag tag = new CompoundTag();

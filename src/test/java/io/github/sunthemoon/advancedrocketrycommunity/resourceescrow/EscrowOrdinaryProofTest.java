@@ -48,13 +48,14 @@ class EscrowOrdinaryProofTest {
     @Test void anOrdinaryAttemptReportsOnlyToItsSinkAndCountsNoGovernedFailure() {
         var governed = new ArrayList<String>(); var ordinary = new ArrayList<String>();
         var results = new ArrayList<EscrowBarrier.Result>();
+        var store = new EscrowChunkStore(null, new EscrowSaveMonitor());
         try (var barrier = new EscrowBarrier(governed::add)) {
             for (int tick = 0; tick < 4; tick++) {
                 // A refused capture releases its ordinary reservation and reports the reason only to the attempt.
-                assertTrue(barrier.beginOrdinary(null, OVERWORLD, new ChunkPos(0, 0), root -> true, tick, ordinary::add, results::add));
+                assertTrue(barrier.beginOrdinary(store, OVERWORLD, new ChunkPos(0, 0), root -> true, tick, ordinary::add, results::add));
             }
             assertFalse(barrier.availableOrdinary(OVERWORLD, 4));
-            assertFalse(barrier.beginOrdinary(null, OVERWORLD, new ChunkPos(0, 0), root -> true, 4, ordinary::add, results::add),
+            assertFalse(barrier.beginOrdinary(store, OVERWORLD, new ChunkPos(0, 0), root -> true, 4, ordinary::add, results::add),
                     "The per-Level sub-quota refuses before any capture");
             assertTrue(barrier.availableOrdinary(NETHER, 5), "Released attempts free the ordinary pending quota");
             assertEquals(4, results.size());

@@ -38,12 +38,12 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: ef5d60c24 (W150 merged: P1-N3 leaf N3-B1, the predecessor-aware terminal proof and I7; before it, W147 measured the cargo benchmarks C-B and D-B)
-latest_hosted_regression: the last green run is 39711262800 at 34dc9751 (the W130 merge); run 39736717569 at 367a84ff (the W134 merge) failed two Moon-flight GameTests and run 39737594848 at 2426f00d (the W133F merge) failed one other launch test, each passing elsewhere: an intermittent family of discarded launches that W139 investigates (QUEUE)
+latest_code_commit: 8cc3a0ed1 (W151 merged: W98-R1, the shared-slot ordinary capture exclusion; before it, W150 merged P1-N3 leaf N3-B1)
+latest_hosted_regression: the last green run is 40046839491 at 0a3fb94d (after the W150 merge); the run at 817aa30f (the W151 merge) is in progress. Every completed hosted regression since the failure at 2426f00d on 2026-10-22 is green (17 runs; two others were cancelled); W139 stays open until no hosted log shows ARCE_LAUNCH_DISCARD (QUEUE)
 ledger_planned_units: 19
 asset_review_items: 154
 required_gates_approved: none
-last_updated: 2026-10-22
+last_updated: 2026-10-24
 ```
 
 ## Current state

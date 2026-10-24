@@ -1781,8 +1781,38 @@ changes no decision status and accepts no risk. The risk is R-035.
   existing-format U, checkpoint and recovery scope is approved, including all ordinary no-T disassembly. No saved
   format, schema, bound, lease, budget, timeout or protocol changes. The holds and their recovery are in R-035.
   Leaves N3-B1 to N3-B4 follow W148 section 7; N3-B2 needs an independent persistence review before integration.
+- **N3-B2 isolation (W154 design revisions 1 and 2, `records/W154-DESIGN.md`; review W154-review BLOCK, SHA-256
+  `6facedc6…`, and its re-review, SHA-256 `c67bfebd…`; Root decisions R91 and R93 to R96, 2026-10-24; not yet
+  implemented).** W152 showed that vanilla container access (hoppers, the item capability, menus, breaking) bypasses
+  the region locks while U is retained, so a rollback could restore items that had already left. Sealed staging closes
+  that window. While U is retained, every member of the footprint is an inert carrier C: no inventory, capability,
+  menu, ticker, drops or item form; unbreakable, and immune to explosions and pistons. C holds the member's original
+  state, its adapter ID and the adapter payload that U holds.
+  - **Order (C0 to C5):** U LOCKED is acknowledged, then C is staged and proved, then RESTORED is acknowledged (the
+    terrain is elected), then D is retired and proved, then U is removed with W123's checked acknowledgement. Each C
+    is unsealed after that.
+  - **Why no added residual:** after unsealing, C and the published container are two representations of one member
+    in one terrain slot. A later transfer out of the container has the torn-save behaviour of every vanilla chest
+    (ADR-054), not the disassembly's two-store transfer, so section 10's D3-A rule against an added residual holds.
+  - **Unsealing (R95, R96):** every adapter restores into a target that is not yet installed, while C stays in the
+    world. The target is verified by recapture and published in one step. A failed restore discards the target (it is
+    marked removed, and a built-in target is also emptied) and holds C.
+  - **Provider contract (method signatures unchanged):** restore receives a server-bound target before it is
+    installed and must work from the target and the payload. A provider that needs an installed host is held, and
+    nothing is lost.
+  - **Trust boundary:** code that keeps a raw block-entity reference from `AttachCapabilitiesEvent` and uses it after
+    the block entity is removed is outside the protection, as it already is for every vanilla container instance a
+    chunk unload leaves behind. R-035 discloses this boundary.
+  - **Saved format (R93):** one new block and block entity, the carrier, with a schema-1 root within U's per-member
+    bounds and ADR-061/064 preservation; it is never discarded or replaced with air. Journal schema 2 gains the record
+    type `SEALED_DISASSEMBLY`, so existing `DISASSEMBLY` records keep their current recovery. An older jar blocks the
+    journal root; downgrade follows section 13.
+  - **Limits:** no bound, lease, budget, timeout or protocol change.
+  - **Stop condition:** W152's first commit probes the publication sequence, including an attachment listener that
+    keeps the raw target, and stops if no one-step publication exists without a Mixin.
 
-No saved format changes. This is a development implementation note, not owner acceptance or a Gate result.
+No saved format changes except the N3-B2 carrier and the `SEALED_DISASSEMBLY` record type that R93 authorizes above.
+This is a development implementation note, not owner acceptance or a Gate result.
 
 ### W11c and W11d implementation note: rocket cargo scope and protections (design W11CD, admission disabled)
 
@@ -1980,6 +2010,25 @@ All channels keep exact-version negotiation. Update the protocol fixture once
 with both station-sky consumers, and test wrong-direction/discriminator/version,
 maximal frames, canonical option flags/enums/VarInts and trailing bytes. These
 are proposed values/table, not registered runtime packets.
+
+### R92 implementation note: the monitoring station on `classic_controls` protocol 2 (Root, 2026-10-24)
+
+Section 4.3 needs a menu intent and a view that the table above does not assign, and W153 stopped at that boundary.
+Root decision R92 (QUEUE, TASK-W153) assigns them inside this ADR's accepted surface, as the suit_motion 2 bump of
+TASK-W06F did. It changes no accepted behaviour or bound.
+
+- The monitor is a fifth `ClassicControlKind`, `ROCKET_MONITOR`, wire byte 4, on the existing index 0 intent and
+  index 1 view. The table keeps its three messages, indices and directions.
+- `classic_controls` moves from protocol 1 to 2 with exact-version negotiation, so a protocol-1 peer cannot join
+  instead of disagreeing about kind 4. Kinds 0 to 3 keep byte-identical layouts.
+- The bounds stay at 512 bytes per intent and 8 KiB per view. The view carries the kind's exact scalar values, a
+  status code name and a quote token: no coordinates, inventories, native tags or another owner's rocket position.
+  Banks appear as the stable bank role IDs of the flight plan above, with amount, capacity and required debit.
+- The intent names the open menu by container ID. The launch action carries the displayed quote's token, so a stale
+  view cannot launch. The server creates the fresh request ID and uses the shared flight path. A destination is an
+  index into the bounded accessible catalog the menu shows, checked again by the server.
+- The malformed-kind tests move their unknown sample to the first unassigned byte (5). They and the protocol pin test
+  gain the version-2 cases; no assertion is removed.
 
 ### 11.2 Authority, content and verification
 
