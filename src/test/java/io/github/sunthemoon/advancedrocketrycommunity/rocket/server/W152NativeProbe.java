@@ -45,6 +45,7 @@ public final class W152NativeProbe {
     private final MinecraftServer server;
     private final String stage = System.getProperty("advancedrocketrycommunity.w152Stage", "start");
     private final String boundary = System.getProperty("advancedrocketrycommunity.w152Cut", "NONE");
+    private final W152NativeConsumers consumers;
     private final ConcurrentLinkedQueue<Map<String, Object>> events = new ConcurrentLinkedQueue<>();
     private final AtomicInteger eventCount = new AtomicInteger();
     private final AtomicBoolean paused = new AtomicBoolean();
@@ -55,6 +56,7 @@ public final class W152NativeProbe {
     private UUID transaction;
     private int placed, settled;
     private boolean initialized, begun;
+    private String completion;
 
     @SubscribeEvent public static void started(ServerStartedEvent event) {
         if (!Boolean.getBoolean("advancedrocketrycommunity.w152Native")) { return; }
@@ -64,6 +66,7 @@ public final class W152NativeProbe {
     }
     private W152NativeProbe(MinecraftServer server) {
         this.server = server;
+        consumers = new W152NativeConsumers(server, System.getProperty("advancedrocketrycommunity.w152Experiment", ""), this::pause);
         RocketRuntime.sealedNativeObserverForReleaseTest(server, this::observe);
         decorateWriter();
     }
@@ -100,15 +103,26 @@ public final class W152NativeProbe {
                 for (int x = -1; x <= 2; x++) { for (int z = -1; z <= 2; z++) {
                     server.overworld().setChunkForced(x, z, true); server.overworld().getChunk(x, z);
                 } }
+                consumers.loadRecipient();
                 initialized = true;
             }
             if (age < 30 || !loaded()) { return; }
             if (!begun) {
                 begun = true;
                 if (stage.equals("start")) {
-                    setup(); server.saveEverything(true, true, true); observe("C0_BASELINE_SAVED");
-                    transaction = RocketRuntime.beginSealedForReleaseTest(rocket, result -> observe("COMPLETE_" + result));
-                    require(transaction != null, "Native sealed admission refused: " + admissionDiagnostic());
+                    if (consumers.vanilla()) { consumers.prepareVanilla(); }
+                    else { setup(); }
+                    consumers.prepareRecipient();
+                    server.saveEverything(true, true, true); observe("C0_BASELINE_SAVED");
+                    if (consumers.vanilla()) {
+                        var data = RocketTransactionSavedData.get(server);
+                        if (!data.acknowledgedCurrent()) { data.checkpoint(server); }
+                    } else {
+                        transaction = RocketRuntime.beginSealedForReleaseTest(rocket, result -> {
+                            completion = result.name(); observe("COMPLETE_" + result);
+                        });
+                        require(transaction != null, "Native sealed admission refused: " + admissionDiagnostic());
+                    }
                 } else {
                     var data = RocketTransactionSavedData.get(server);
                     if (data.entries().isEmpty() && !data.acknowledgedCurrent()) { data.checkpoint(server); }
@@ -116,6 +130,11 @@ public final class W152NativeProbe {
             }
             if (age > 1200) { throw new IllegalStateException("Native fixture deadline: " + diagnostic()); }
             if (age > 60 && stable()) {
+                if (stage.equals("start") && (boundary.equals("NONE") || consumers.active())) {
+                    require(consumers.vanilla() || "SEALED".equals(completion), "Normal transaction did not complete SEALED: " + completion);
+                    require(server.overworld().getEntity(id("entity")) == null, "Normal completion retained D");
+                    if (consumers.active()) { consumers.tick(); return; }
+                }
                 if (++settled >= 30) {
                     require(stage.equals("start") && boundary.equals("NONE") || !stage.equals("start"), "Cut was not reached: " + boundary);
                     server.saveEverything(true, true, true); done = true; write("STABLE", diagnostic());

@@ -2,7 +2,7 @@
 """Sealed C0-C5 process cuts with independent native images and two stable restarts.
 
 Run only under the outer W152 atomic heavy-JVM lock, using a committed diagnostic JAR.
-This campaign does not certify the separate consumer-only-save residual experiment.
+Consumer-only saves are reported as a residual, separately from conservation passes.
 """
 from __future__ import annotations
 
@@ -14,10 +14,12 @@ import re
 import shutil
 import subprocess
 import uuid
+import zipfile
+from collections import Counter
 
 import run_v180_escrow_forced_stop as escrow
 from run_v180_landed_disassembly_cuts import block_at, chunk_record, nbt_file, uuid_of
-from sealed_cut_oracle import elect, require_inventory
+from sealed_cut_oracle import elect, inventory, require_inventory
 
 smoke = escrow.smoke
 CUTS = ("NONE", "C0_BASELINE_SAVED", "PREPARE_PROOF_CURRENT", "C1_RETAIN_BEFORE", "C1_RETAIN_AFTER",
@@ -29,11 +31,27 @@ CUTS = ("NONE", "C0_BASELINE_SAVED", "PREPARE_PROOF_CURRENT", "C1_RETAIN_BEFORE"
         "C5_REMOVE_BEFORE", "C5_MOVE_BEFORE", "C5_MOVE_AFTER", "C5_UNKNOWN", "C5_ACK",
         "UNSEAL_PREPARE_BEFORE", "UNSEAL_PREPARE_AFTER", "UNSEAL_PUBLISH_BEFORE", "UNSEAL_PUBLISH_AFTER",
         "ROLLBACK_ERASE_BEFORE", "ROLLBACK_ERASE_AFTER")
+CONSUMER_CUTS = ("C_SOURCE_CONSUMER_ONLY", "VANILLA_SOURCE_CONSUMER_ONLY", "BOTH_SIDES_SAVED")
 MARKER = re.compile(r"W152_NATIVE_(DONE status=(\S+)|CUT boundary=(\S+))")
 ORIGIN = (15, 100, 15)
 
 
-def inspect(world: Path) -> dict:
+def consumer_verdict(state: dict, experiment: str) -> str:
+    if experiment not in CONSUMER_CUTS:
+        raise ValueError("Unknown consumer experiment")
+    if state["phase"] is not None or state["entity_images"] or state["authority"] != "BLOCKS":
+        raise ValueError("Consumer experiment precedes checked publication")
+    if state["recipient_inventory"] != {"original": 14} or state["other_recipients"]:
+        raise ValueError("Independent recipient identity/count differs")
+    source = Counter(state["sealed_images"]); source.update(state["native_images"])
+    expected = {"foreign": 6} if experiment == "BOTH_SIDES_SAVED" else {"original": 14}
+    if dict(source) != expected:
+        raise ValueError("Consumer experiment source image differs")
+    require_inventory(state, {"foreign": 6, "original": 14} if experiment == "BOTH_SIDES_SAVED" else {"original": 28})
+    return "PASS" if experiment == "BOTH_SIDES_SAVED" else "DOCUMENTED_RESIDUAL"
+
+
+def inspect(world: Path, experiment: str = "") -> dict:
     journal = world / "data/advancedrocketrycommunity_rocket_transactions.dat"
     records = nbt_file(journal, 67_108_864)["data"].get("transactions", []) if journal.exists() else []
     if len(records) > 1 or any(row.get("type") != "SEALED_DISASSEMBLY" for row in records):
@@ -72,17 +90,67 @@ def inspect(world: Path) -> dict:
     for file in (world / "playerdata").glob("*.dat"):
         recipients.append(nbt_file(file, 4_194_304))
         files[str(file.relative_to(world))] = escrow.digest(file)
+    recipient = None
+    if experiment:
+        region = world / "region/r.0.0.mca"
+        terrain = chunk_record(region, 5, 0) or {}
+        recipient = next((row for row in terrain.get("block_entities", [])
+                          if tuple(row.get(k) for k in ("x", "y", "z")) == (80, 100, 15)), None)
+        if not recipient or recipient.get("id") != "minecraft:chest":
+            raise ValueError("Independent recipient chest is absent")
+        # Include entities in the recipient's independently stored chunk too.
+        for row in (chunk_record(world / "entities/r.0.0.mca", 5, 0) or {}).get("Entities", []):
+            if "RocketEntityData" in row: entities.append(row)
+            elif row.get("id") == "minecraft:item": recipients.append(row)
+    other_recipients = inventory(recipients)
+    if recipient: recipients.append(recipient)
     observed = elect(phase, entities, sealed, native, recipients, retained=records[0].get("snapshot") if records else None)
-    require_inventory(observed, {"original": 14})
     observed.update(phase=phase, blocks=blocks, entities=sorted(uuid_of(row["UUID"]) for row in entities),
                     entity_data=sorted(({key: row[key] for key in ("id", "UUID", "Pos", "RocketEntityData")} for row in entities),
                                        key=lambda row: uuid_of(row["UUID"])),
                     records=records, native=native, sealed=sealed, files=files)
+    if experiment:
+        observed.update(recipient_data=recipient, recipient_inventory=inventory(recipient), other_recipients=other_recipients)
+        observed["consumer_verdict"] = consumer_verdict(observed, experiment)
+    else:
+        require_inventory(observed, {"original": 14})
     return observed
 
 
 def comparable(state: dict) -> dict:
     return {key: value for key, value in state.items() if key != "files"}
+
+
+def compare_consumers(sealed: Path, vanilla: Path, both: Path) -> dict:
+    paths = (sealed, vanilla, both)
+    results = [json.loads((path / "results.json").read_text(encoding="utf-8")) for path in paths]
+    if [row["status"] for row in results] != ["DOCUMENTED_RESIDUAL", "DOCUMENTED_RESIDUAL", "PASS"]:
+        raise ValueError("Consumer comparison requires both residual observations and a both-sides-saved pass")
+    if len({(row["source_commit"], row["jar_sha256"]) for row in results}) != 1:
+        raise ValueError("Consumer comparison implementation differs")
+    states = [[comparable(json.loads((path / (stage + "-native.json")).read_text(encoding="utf-8")))
+               for stage in ("recover1", "recover2")] for path in paths]
+    if states[0][0] != states[0][1] or states[0] != states[1] or states[2][0] != states[2][1]:
+        raise ValueError("Consumer comparison native identity or second restart differs")
+    return dict(status="DOCUMENTED_RESIDUAL_MATCHES_VANILLA", conservation_exact=False,
+                source_commit=results[0]["source_commit"], jar_sha256=results[0]["jar_sha256"],
+                both_sides_saved="PASS", evidence=[str(path) for path in paths])
+
+
+def preserve_native(world: Path, evidence: Path, stage: str, state: dict) -> dict:
+    """Keep bounded raw inputs, not a world/export copy. Hashes cover the original file bytes."""
+    names = set(state["files"])
+    names.update(str(file.relative_to(world)) for file in (world / "poi").glob("*.mca"))
+    if (world / "level.dat").is_file(): names.add("level.dat")
+    if len(names) > 128 or sum((world / name).stat().st_size for name in names) > 100_000_000:
+        raise smoke.SmokeError("Native observation input archive exceeds its evidence bound")
+    archive = evidence / (stage + "-native-inputs.zip")
+    with zipfile.ZipFile(archive, "x", compression=zipfile.ZIP_DEFLATED) as output:
+        for name in sorted(names): output.write(world / name, name)
+    if archive.stat().st_size > 50_000_000:
+        raise smoke.SmokeError("Native observation archive exceeds the per-file evidence limit")
+    return dict(file=archive.name, sha256=escrow.digest(archive),
+                inputs={name: escrow.digest(world / name) for name in sorted(names)})
 
 
 def run(args) -> dict:
@@ -104,6 +172,7 @@ def run(args) -> dict:
     owned = uuid.uuid4().hex; marker = session / ".w152-owned"
     result = dict(status="IN_PROGRESS", source_commit=commit, jar_sha256=escrow.digest(args.jar),
                   cut=args.cut, recovery_cut=args.recovery_cut, commands=[], stages=[])
+    experiment = args.cut if args.cut in CONSUMER_CUTS else ""
     try:
         session.mkdir(); marker.write_text(owned, encoding="ascii")
         shutil.copytree(args.source_server / "libraries", session / "libraries")
@@ -124,6 +193,7 @@ def run(args) -> dict:
             command = escrow._server_command(args.java); command[2] = "-Xmx4G"
             command[1:1] = ["-XX:ActiveProcessorCount=4", "-Dadvancedrocketrycommunity.w152Native=true",
                             "-Dadvancedrocketrycommunity.w152Stage="+stage, "-Dadvancedrocketrycommunity.w152Cut="+cut,
+                            "-Dadvancedrocketrycommunity.w152Experiment="+experiment,
                             "-Dadvancedrocketrycommunity.w152Commit="+commit]
             result["commands"].append(command)
             process = smoke.CapturedProcess(command, session, evidence / (stage + ".log"))
@@ -147,16 +217,20 @@ def run(args) -> dict:
                 raise smoke.SmokeError(f"{stage}: {raw['status']}: {raw.get('detail')}")
             if any("/ERROR]" in line or "/FATAL]" in line for line in process.lines):
                 raise smoke.SmokeError("Native ERROR/FATAL observed")
-            state = inspect(session / "world")
+            state = inspect(session / "world", experiment)
             (evidence / (stage + "-native.json")).write_text(json.dumps(state, indent=2), encoding="utf-8")
-            result["stages"].append(dict(stage=stage, status=raw["status"], authority=state["authority"]))
+            raw_inputs = preserve_native(session / "world", evidence, stage, state)
+            result["stages"].append(dict(stage=stage, status=raw["status"], authority=state["authority"], raw_inputs=raw_inputs))
             if stage in ("recover1", "recover2"):
                 if state["phase"] is not None or state["sealed"]:
                     raise smoke.SmokeError("Stable restart left retained U or C")
                 stable.append(comparable(state))
         if stable[0] != stable[1]:
             raise smoke.SmokeError("Second restart changed the elected native state")
-        result["status"] = "PASS"
+        result["status"] = stable[1].get("consumer_verdict", "PASS")
+        if experiment:
+            result.update(experiment=experiment, conservation_exact=result["status"] == "PASS",
+                          vanilla_comparison="REQUIRED" if experiment != "BOTH_SIDES_SAVED" else "NOT_APPLICABLE")
     except Exception as failure:
         result.update(status="FAIL", error=str(failure))
     finally:
@@ -174,10 +248,10 @@ def main() -> int:
     parser.add_argument("--source-export", action="store_true", help="Outer lock owner supplied an exact git archive and source marker")
     parser.add_argument("--evidence-dir", type=Path, required=True)
     parser.add_argument("--java", required=True)
-    parser.add_argument("--cut", choices=CUTS, required=True)
+    parser.add_argument("--cut", choices=CUTS + CONSUMER_CUTS, required=True)
     parser.add_argument("--recovery-cut", choices=CUTS)
     result = run(parser.parse_args()); print(json.dumps(result, indent=2))
-    return 0 if result["status"] == "PASS" else 1
+    return 0 if result["status"] in ("PASS", "DOCUMENTED_RESIDUAL") else 1
 
 
 if __name__ == "__main__":

@@ -1,5 +1,8 @@
 import sys
 import unittest
+import json
+import tempfile
+import zipfile
 from pathlib import Path
 from unittest.mock import patch
 
@@ -7,6 +10,65 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
 
 class W152NativeReaderTest(unittest.TestCase):
+    def test_native_archive_preserves_input_bytes_and_only_declared_world_inputs(self):
+        from run_w152_native import preserve_native
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp); world = root / "world"; out = root / "out"
+            (world / "region").mkdir(parents=True); out.mkdir()
+            (world / "region/r.0.0.mca").write_bytes(b"original native bytes")
+            (world / "unrelated.log").write_text("not an input")
+            result = preserve_native(world, out, "start", {"files": {"region/r.0.0.mca": "hash"}})
+            with zipfile.ZipFile(out / result["file"]) as archive:
+                self.assertEqual(["region/r.0.0.mca"], archive.namelist())
+                self.assertEqual(b"original native bytes", archive.read("region/r.0.0.mca"))
+
+    def test_consumer_comparison_requires_same_implementation_and_full_native_identity(self):
+        from run_w152_native import compare_consumers
+        with tempfile.TemporaryDirectory() as temp:
+            paths = []
+            for name in ("sealed", "vanilla", "both"):
+                path = Path(temp) / name; path.mkdir(); paths.append(path)
+                (path / "results.json").write_text(json.dumps(dict(source_commit="sha", jar_sha256="jar",
+                    status="PASS" if name == "both" else "DOCUMENTED_RESIDUAL")))
+                state = dict(native=[{"owner": "native"}], phase=None, sealed=[], files={"region": name})
+                for stage in ("recover1", "recover2"):
+                    (path / (stage + "-native.json")).write_text(json.dumps(state))
+            self.assertEqual("DOCUMENTED_RESIDUAL_MATCHES_VANILLA", compare_consumers(*paths)["status"])
+            (paths[1] / "recover2-native.json").write_text(json.dumps(dict(native=[{"owner": "changed"}])))
+            with self.assertRaisesRegex(ValueError, "identity"):
+                compare_consumers(*paths)
+
+    def test_residual_requires_independent_recipient_and_an_exact_source_copy(self):
+        from run_w152_native import consumer_verdict
+        state = dict(phase=None, authority="BLOCKS", entity_images={}, sealed_images={"original": 14},
+                     native_images={}, recipient_inventory={"original": 14}, other_recipients={},
+                     effective={"original": 28})
+        self.assertEqual("DOCUMENTED_RESIDUAL", consumer_verdict(state, "C_SOURCE_CONSUMER_ONLY"))
+        state["recipient_inventory"] = {}
+        with self.assertRaisesRegex(ValueError, "recipient"):
+            consumer_verdict(state, "C_SOURCE_CONSUMER_ONLY")
+
+    def test_both_sides_saved_requires_foreign_identity_and_no_source_refill(self):
+        from run_w152_native import consumer_verdict
+        state = dict(phase=None, authority="BLOCKS", entity_images={}, sealed_images={},
+                     native_images={"foreign": 6}, recipient_inventory={"original": 14}, other_recipients={},
+                     effective={"foreign": 6, "original": 14})
+        self.assertEqual("PASS", consumer_verdict(state, "BOTH_SIDES_SAVED"))
+        state["native_images"] = {"foreign": 6, "original": 14}
+        with self.assertRaisesRegex(ValueError, "source"):
+            consumer_verdict(state, "BOTH_SIDES_SAVED")
+
+    def test_residual_never_licenses_retained_u_or_a_duplicate_entity(self):
+        from run_w152_native import consumer_verdict
+        state = dict(phase="RESTORED", authority="BLOCKS", entity_images={}, sealed_images={"original": 14},
+                     native_images={}, recipient_inventory={"original": 14}, other_recipients={},
+                     effective={"original": 28})
+        with self.assertRaisesRegex(ValueError, "publication"):
+            consumer_verdict(state, "C_SOURCE_CONSUMER_ONLY")
+        state.update(phase=None, entity_images={"original": 14})
+        with self.assertRaisesRegex(ValueError, "publication"):
+            consumer_verdict(state, "C_SOURCE_CONSUMER_ONLY")
+
     def test_entity_projection_keeps_non_inventory_identity_for_restart_comparison(self):
         from run_w152_native import inspect
         data = {"owner": "native-owner", "snapshot": {"items": [{"id": "minecraft:diamond", "Count": 14, "tag": {"W152": "original"}}]}}
