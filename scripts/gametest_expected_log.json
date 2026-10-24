@@ -1621,9 +1621,9 @@
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
       "message": "ARCE_DISASSEMBLY_DURABILITY_HELD transaction=[0-9a-f-]{36} phase=PREPARE reason=BARRIER_VETO additional=\\[\\] overflow=0",
-      "counts": {"w152_automation": 1},
-      "test": "SealedAutomationGameTests.tickingHoppersDropperAndCapabilityConsumerCannotAccessRetainedContainers",
-      "reason": "The deliberately foreign third cell holds native preparation while real automation ticks beside C; repairing that cell permits checked recovery."
+      "counts": {"w152_automation": 1, "w152_world_protection": 1},
+      "test": "SealedAutomationGameTests.tickingHoppersDropperAndCapabilityConsumerCannotAccessRetainedContainers; SealedWorldProtectionGameTests",
+      "reason": "Each fixture deliberately retains one foreign footprint cell while automation or native world damage acts beside C. Repairing only that fence permits checked recovery; each batch logs one preparation veto."
     },
     {
       "id": "w152-sealed-provider-restore-slow",
