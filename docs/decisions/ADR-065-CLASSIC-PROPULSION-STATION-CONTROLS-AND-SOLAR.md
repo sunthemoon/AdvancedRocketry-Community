@@ -1981,6 +1981,25 @@ with both station-sky consumers, and test wrong-direction/discriminator/version,
 maximal frames, canonical option flags/enums/VarInts and trailing bytes. These
 are proposed values/table, not registered runtime packets.
 
+### R92 implementation note: the monitoring station on `classic_controls` protocol 2 (Root, 2026-10-24)
+
+Section 4.3 needs a menu intent and a view that the table above does not assign, and W153 stopped at that boundary.
+Root decision R92 (QUEUE, TASK-W153) assigns them inside this ADR's accepted surface, as the suit_motion 2 bump of
+TASK-W06F did. It changes no accepted behaviour or bound.
+
+- The monitor is a fifth `ClassicControlKind`, `ROCKET_MONITOR`, wire byte 4, on the existing index 0 intent and
+  index 1 view. The table keeps its three messages, indices and directions.
+- `classic_controls` moves from protocol 1 to 2 with exact-version negotiation, so a protocol-1 peer cannot join
+  instead of disagreeing about kind 4. Kinds 0 to 3 keep byte-identical layouts.
+- The bounds stay at 512 bytes per intent and 8 KiB per view. The view carries the kind's exact scalar values, a
+  status code name and a quote token: no coordinates, inventories, native tags or another owner's rocket position.
+  Banks appear as the stable bank role IDs of the flight plan above, with amount, capacity and required debit.
+- The intent names the open menu by container ID. The launch action carries the displayed quote's token, so a stale
+  view cannot launch. The server creates the fresh request ID and uses the shared flight path. A destination is an
+  index into the bounded accessible catalog the menu shows, checked again by the server.
+- The malformed-kind tests move their unknown sample to the first unassigned byte (5). They and the protocol pin test
+  gain the version-2 cases; no assertion is removed.
+
 ### 11.2 Authority, content and verification
 
 C2S classic intents carry menu/container identity,
