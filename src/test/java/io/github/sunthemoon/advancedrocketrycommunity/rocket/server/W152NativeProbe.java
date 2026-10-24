@@ -35,6 +35,7 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.server.ServerStartedEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.fml.common.Mod;
 
 /** Explicit diagnostic JAR only. All transitions and writes remain the installed production implementation. */
@@ -90,8 +91,9 @@ public final class W152NativeProbe {
         catch (InterruptedException interrupted) { Thread.currentThread().interrupt(); }
         throw new IllegalStateException("External harness failed to kill at " + label);
     }
-    @SubscribeEvent public void tick(TickEvent.ServerTickEvent event) {
-        if (event.phase != TickEvent.Phase.END || done || paused.get()) { return; }
+    @SubscribeEvent(priority = EventPriority.HIGHEST) public void tick(TickEvent.ServerTickEvent event) {
+        // Submit a fixture request before the manager's END work pass, not after lazy discovery spent this tick's cursor.
+        if (event.phase != TickEvent.Phase.START || done || paused.get()) { return; }
         try {
             age++;
             if (!initialized) {
@@ -106,7 +108,7 @@ public final class W152NativeProbe {
                 if (stage.equals("start")) {
                     setup(); server.saveEverything(true, true, true); observe("C0_BASELINE_SAVED");
                     transaction = RocketRuntime.beginSealedForReleaseTest(rocket, result -> observe("COMPLETE_" + result));
-                    require(transaction != null, "Native sealed admission refused");
+                    require(transaction != null, "Native sealed admission refused: " + admissionDiagnostic());
                 } else {
                     var data = RocketTransactionSavedData.get(server);
                     if (data.entries().isEmpty() && !data.acknowledgedCurrent()) { data.checkpoint(server); }
@@ -163,6 +165,16 @@ public final class W152NativeProbe {
     }
     private String diagnostic() {
         return transaction == null ? "recovery" : RocketRuntime.sealedDiagnosticForReleaseTest(server, transaction);
+    }
+    private String admissionDiagnostic() {
+        try {
+            var service = field(RocketRuntime.class, "service").get(null);
+            var coordinator = field(RocketManager.class, "sealed").get(service);
+            var budget = field(SealedDisassemblyCoordinator.class, "budget").get(coordinator);
+            return "remaining=" + field(budget.getClass(), "remaining").get(budget)
+                    + ",loaded=" + RocketTransferEntities.loadedEntity(rocket) + ",operational=" + rocket.operational()
+                    + ",claimed=" + RocketRuntime.sealedFrozen(rocket);
+        } catch (ReflectiveOperationException failure) { throw new IllegalStateException(failure); }
     }
     private void write(String status, String detail) {
         var report = new LinkedHashMap<String, Object>();
