@@ -125,10 +125,48 @@ class SealedProofBatchTest {
         assertInstanceOf(IllegalArgumentException.class, error.getCause());
     }
 
+    @Test void ordinaryQuotaAndAttemptDeadlineNeverPublishAnIncompleteWideProofSet() throws Exception {
+        for (int slots : new int[] {21, 22, 129}) {
+            var f = new Fixture(slots); f.quota = new OrdinaryQuota();
+            for (f.now = 0; f.now <= 100; f.now++) {
+                int before = f.callbacks.size(); f.tick();
+                if (f.callbacks.size() > before) { f.complete(before); }
+                assertEquals(f.callbacks.size() == slots, f.current());
+            }
+            assertEquals(21, f.callbacks.size(), "The real shared quota allows four captures per twenty ticks");
+            f.tick();
+            assertFalse(f.active()); assertFalse(f.current());
+            assertEquals(21, f.released.get()); assertEquals("DEADLINE", f.held);
+            assertEquals(301L, f.call("retryAt"), "A wide census cannot extend its attempt or shorten retry backoff");
+        }
+    }
+
+    /** Real production quota, with immediate zero-byte IO to isolate its best-case capture ceiling. */
+    private static final class OrdinaryQuota {
+        final Object budget;
+        final java.lang.reflect.Method available, reserve, captured, release;
+        OrdinaryQuota() throws Exception {
+            var type = Class.forName("io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowBarrierBudget");
+            var constructor = type.getDeclaredConstructor(); constructor.setAccessible(true); budget = constructor.newInstance();
+            available = method(type, "availableOrdinary", String.class, boolean.class, long.class);
+            reserve = method(type, "reserveOrdinary", String.class, boolean.class, long.class);
+            captured = method(type, "captured", int.class); release = method(type, "releaseOrdinary", int.class);
+        }
+        boolean available(long tick) throws Exception { return (boolean) available.invoke(budget, "minecraft:overworld", true, tick); }
+        boolean capture(long tick) throws Exception {
+            if (!(boolean) reserve.invoke(budget, "minecraft:overworld", true, tick)) { return false; }
+            captured.invoke(budget, 0); release.invoke(budget, 0); return true;
+        }
+        private static java.lang.reflect.Method method(Class<?> type, String name, Class<?>... args) throws Exception {
+            var method = type.getDeclaredMethod(name, args); method.setAccessible(true); return method;
+        }
+    }
+
     private static final class Fixture {
         final Object batch;
         long now; String readiness = "READY", held;
         boolean available = true;
+        OrdinaryQuota quota;
         BooleanSupplier room = () -> true;
         Runnable onReadiness = () -> { };
         final List<Consumer<EscrowBarrier.Result>> callbacks = new ArrayList<>();
@@ -147,8 +185,11 @@ class SealedProofBatchTest {
                         throw new AssertionError(readiness);
                     }
                     case "attemptRoom" -> room.getAsBoolean();
-                    case "available" -> available;
-                    case "capture" -> { callbacks.add((Consumer<EscrowBarrier.Result>) args[1]); yield true; }
+                    case "available" -> available && (quota == null || quota.available(now));
+                    case "capture" -> {
+                        if (quota != null && !quota.capture(now)) { yield false; }
+                        callbacks.add((Consumer<EscrowBarrier.Result>) args[1]); yield true;
+                    }
                     case "held" -> { held = (String) args[0]; yield null; }
                     default -> throw new AssertionError(method);
                 };
