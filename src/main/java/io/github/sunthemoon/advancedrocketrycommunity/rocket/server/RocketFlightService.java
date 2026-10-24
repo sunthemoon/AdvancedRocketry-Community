@@ -334,7 +334,16 @@ final class RocketFlightService {
     static Runnable launchDiscarded(RocketOperationLedger requests, UUID requestId, UUID requester,
             RocketTransferSavedData journal, RocketTransferRecord predecessor,
             java.util.function.BiConsumer<UUID, RocketFlightRequestResult> report) {
-        return () -> requests.finish(requestId, false);
+        return () -> {
+            if (requests.outcome(requestId) != RocketOperationLedger.Outcome.ACTIVE) { return; }
+            requests.finish(requestId, false);
+            // A submitted successor (including UNKNOWN) is not a definitive pre-replacement refusal.
+            if (requester != null && predecessor != null && predecessor.nativeTransfer().isEmpty()
+                    && journal.find(predecessor.transferId()).orElse(null) == predecessor
+                    && journal.find(requestId).isEmpty()) {
+                report.accept(requester, RocketFlightRequestResult.failure(RocketFlightRequestCode.TRANSFER_JOURNAL_BLOCKED));
+            }
+        };
     }
 
     /** I7 waits without refreshing its quote: changed permission, route or fuel calculation refuses the original request. */
