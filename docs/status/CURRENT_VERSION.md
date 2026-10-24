@@ -38,7 +38,7 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: 8cc3a0ed1 (W151 merged: W98-R1, the shared-slot ordinary capture exclusion; before it, W150 merged P1-N3 leaf N3-B1)
+latest_code_commit: 8dee86808 (W153 merged: C17a-04, the full linker and the rocket monitoring station on classic_controls protocol 2, with the W153H F1 serial-lease fix; before it, W151 merged W98-R1)
 latest_hosted_regression: the last green run is 40046839491 at 0a3fb94d (after the W150 merge); the run at 817aa30f (the W151 merge) is in progress. Every completed hosted regression since the failure at 2426f00d on 2026-10-22 is green (17 runs; two others were cancelled); W139 stays open until no hosted log shows ARCE_LAUNCH_DISCARD (QUEUE)
 ledger_planned_units: 19
 asset_review_items: 154
