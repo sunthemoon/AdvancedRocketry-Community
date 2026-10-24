@@ -3,7 +3,6 @@ package io.github.sunthemoon.advancedrocketrycommunity.resourceescrow;
 import com.mojang.logging.LogUtils;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketTransactionSavedData;
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionType;
 import java.util.Locale;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -68,7 +67,7 @@ public final class BayReceiptRetirement {
             @Override public boolean transactionClear(UUID rocket) {
                 var journal = RocketTransactionSavedData.get(server);
                 return journal.operational() && journal.entries().stream().noneMatch(entry -> entry.record().transactionId().equals(rocket)
-                        || entry.record().type() == RocketTransactionType.DISASSEMBLY);
+                        || entry.record().type().isDisassembly());
             }
         };
     }

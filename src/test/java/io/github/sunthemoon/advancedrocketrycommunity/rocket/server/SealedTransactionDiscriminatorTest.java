@@ -49,6 +49,21 @@ class SealedTransactionDiscriminatorTest {
         }
     }
 
+    @Test void legacyRecoveryCannotRestoreASealedRecordAsNativeTerrain() {
+        assertTrue(RocketTransactionRecoveryService.handles(RocketTransactionType.ASSEMBLY));
+        assertTrue(RocketTransactionRecoveryService.handles(RocketTransactionType.DISASSEMBLY));
+        assertFalse(RocketTransactionRecoveryService.handles(RocketTransactionType.SEALED_DISASSEMBLY));
+        assertFalse(RocketTransactionType.ASSEMBLY.isDisassembly());
+        assertTrue(RocketTransactionType.DISASSEMBLY.isDisassembly());
+        assertTrue(RocketTransactionType.SEALED_DISASSEMBLY.isDisassembly());
+        assertThrows(IllegalArgumentException.class, () ->
+                io.github.sunthemoon.advancedrocketrycommunity.rocket.testing.RocketTransactionCheckpoint.parse(
+                        "SEALED_DISASSEMBLY:EXTRACTED:1"));
+        assertEquals(RocketTransactionType.SEALED_DISASSEMBLY,
+                io.github.sunthemoon.advancedrocketrycommunity.rocket.testing.RocketTransactionCheckpoint.parse(
+                        "SEALED_DISASSEMBLY:RESTORED:1").type());
+    }
+
     private static CompoundTag mixedRoot() {
         var snapshot = RocketStructureSnapshot.create(UUID.randomUUID(), ResourceLocation.tryParse("minecraft:overworld"),
                 new RocketPosition(8, 64, -2), List.of(new RocketBlock(new RocketPosition(0, 0, 0),

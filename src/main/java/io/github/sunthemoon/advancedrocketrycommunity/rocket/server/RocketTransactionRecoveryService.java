@@ -66,6 +66,8 @@ public final class RocketTransactionRecoveryService {
         int fencedRetries = 0;
         for (int offset = 0; offset < entries.size(); offset++) {
             RocketPersistedTransaction entry = entries.get((start + offset) % entries.size());
+            // Sealed records have a different materializer, proof and retirement order. Never use legacy block restore.
+            if (!handles(entry.record().type())) { continue; }
             UUID transaction = entry.record().transactionId();
             long now = server.getTickCount();
             if (fencedTransactions.contains(transaction)
@@ -124,6 +126,10 @@ public final class RocketTransactionRecoveryService {
     public void clear() {
         lastAttempted = null;
         fencedTransactions.clear(); fenceAttempts.clear();
+    }
+
+    static boolean handles(RocketTransactionType type) {
+        return type == RocketTransactionType.ASSEMBLY || type == RocketTransactionType.DISASSEMBLY;
     }
 
     private void fence(UUID transaction, long tick) {
