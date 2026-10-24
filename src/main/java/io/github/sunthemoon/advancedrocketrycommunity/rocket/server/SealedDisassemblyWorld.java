@@ -27,6 +27,7 @@ final class SealedDisassemblyWorld implements SealedDisassembly.Port, AutoClosea
     private final SealedJournalRequests writes;
     private final BooleanSupplier currentRequest, attemptRoom, claimCurrent;
     private final boolean recovery;
+    private final Consumer<String> nativeObserver;
     private SealedProofBatch batch;
     private long proofRetryAt = Long.MIN_VALUE;
     private SealedDisassembly.Goal goal;
@@ -37,9 +38,10 @@ final class SealedDisassemblyWorld implements SealedDisassembly.Port, AutoClosea
     SealedDisassemblyWorld(ServerLevel level, RocketPersistedTransaction entry, SealedTerrain terrain,
             SealedJournalRequests writes, BooleanSupplier currentRequest, BooleanSupplier attemptRoom,
             BooleanSupplier claimCurrent, boolean recovery,
-            io.github.sunthemoon.advancedrocketrycommunity.rocket.sealed.SealedWorkBudget budget) {
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.sealed.SealedWorkBudget budget, Consumer<String> nativeObserver) {
         this.level = level; this.entry = entry; this.terrain = terrain; this.writes = writes;
         this.currentRequest = currentRequest; this.attemptRoom = attemptRoom; this.claimCurrent = claimCurrent; this.recovery = recovery;
+        this.nativeObserver = nativeObserver;
         data = RocketTransactionSavedData.get(level.getServer()); journal = new SealedJournalEntry(data, entry);
         entities = new SealedEntityView(level, entry, terrain.chunks().size(), budget, this::entityChanged);
         if (terrain.chunks().size() + entities.columns().size() > RocketOrdinaryRetirement.MAX_SLOTS) {
@@ -80,23 +82,35 @@ final class SealedDisassemblyWorld implements SealedDisassembly.Port, AutoClosea
         return absent;
     }
     @Override public SealedDisassembly.Cell inspect(int index) { return terrain.inspect(index); }
-    @Override public boolean stage(int index) { invalidateProof(); return terrain.stage(index); }
-    @Override public boolean erase(int index) { invalidateProof(); return terrain.erase(index); }
+    @Override public boolean stage(int index) {
+        nativeObserver.accept("C2_STAGE_BEFORE"); invalidateProof(); boolean staged = terrain.stage(index);
+        if (staged) { nativeObserver.accept("C2_STAGE_AFTER"); } return staged;
+    }
+    @Override public boolean erase(int index) {
+        nativeObserver.accept("ROLLBACK_ERASE_BEFORE"); invalidateProof(); boolean erased = terrain.erase(index);
+        if (erased) { nativeObserver.accept("ROLLBACK_ERASE_AFTER"); } return erased;
+    }
     @Override public SealedDisassembly.Entity entity() { return entities.observe(); }
-    @Override public boolean discard() { return predecessorAbsent() && entities.discard(); }
+    @Override public boolean discard() {
+        if (!predecessorAbsent()) { return false; }
+        nativeObserver.accept("C4_DISCARD_BEFORE"); boolean discarded = entities.discard();
+        if (discarded) { nativeObserver.accept("C4_DISCARD_AFTER"); } return discarded;
+    }
     @Override public boolean soleSurvivor() { return entities.soleSurvivor(); }
     @Override public boolean discardDuplicate() { return predecessorAbsent() && entities.discardDuplicate(); }
-    @Override public void retain() { journal.retain(); }
-    @Override public boolean retainedAcknowledged() { return journal.retainedAcknowledged(); }
-    @Override public void elect() { journal.elect(); }
-    @Override public boolean electedAcknowledged() { return journal.electedAcknowledged(); }
-    @Override public void removeRecord() { journal.remove(); }
-    @Override public boolean absentAcknowledged() { return journal.absentAcknowledged(); }
+    @Override public void retain() { nativeObserver.accept("C1_RETAIN_BEFORE"); journal.retain(); nativeObserver.accept("C1_RETAIN_AFTER"); }
+    @Override public boolean retainedAcknowledged() { return acknowledged(journal.retainedAcknowledged(), "C1_ACK"); }
+    @Override public void elect() { nativeObserver.accept("C3_ELECT_BEFORE"); journal.elect(); nativeObserver.accept("C3_ELECT_AFTER"); }
+    @Override public boolean electedAcknowledged() { return acknowledged(journal.electedAcknowledged(), "C3_ACK"); }
+    @Override public void removeRecord() { nativeObserver.accept("C5_REMOVE_BEFORE"); journal.remove(); nativeObserver.accept("C5_REMOVE_AFTER"); }
+    @Override public boolean absentAcknowledged() { return acknowledged(journal.absentAcknowledged(), "C5_ACK"); }
+    private boolean acknowledged(boolean value, String label) { if (value) { nativeObserver.accept(label); } return value; }
     @Override public void checkpoint() { writes.request(); }
     @Override public boolean proofCurrent(SealedDisassembly.Goal goal) {
-        return this.goal == goal && batch != null && batch.current() && predecessorAbsent()
+        boolean current = this.goal == goal && batch != null && batch.current() && predecessorAbsent()
                 && (goal == SealedDisassembly.Goal.SEALED || entity() == (goal == SealedDisassembly.Goal.COMPLETE
                 ? SealedDisassembly.Entity.ABSENT : presentFor(goal) ? SealedDisassembly.Entity.MATCHING : SealedDisassembly.Entity.ABSENT));
+        if (current) { nativeObserver.accept(goal + "_PROOF_CURRENT"); } return current;
     }
     private boolean presentFor(SealedDisassembly.Goal goal) {
         return goal == SealedDisassembly.Goal.ROLLBACK || goal == SealedDisassembly.Goal.PREPARE && entities.observe() == SealedDisassembly.Entity.MATCHING;
@@ -149,8 +163,9 @@ final class SealedDisassemblyWorld implements SealedDisassembly.Port, AutoClosea
             // The reader runs off-thread. Capture immutable inputs now, not the coordinator's later live/closed state.
             java.util.function.Predicate<CompoundTag> validator = slot.entity ? entities.validator(slot.position, present, observed)
                     : terrain.validator(slot.position, goal, recovery, observed);
-            return slot.entity ? runtime.barrier().beginOrdinary(runtime.store(level), name, slot.position, validator, now(), label -> { }, callback)
-                    : runtime.barrier().beginOrdinaryTerrain(runtime.store(level), name, slot.position, validator, now(), label -> { }, callback);
+            Consumer<String> observedCut = label -> nativeObserver.accept(goal + ":" + (slot.entity ? "ENTITY:" : "TERRAIN:") + label);
+            return slot.entity ? runtime.barrier().beginOrdinary(runtime.store(level), name, slot.position, validator, now(), observedCut, callback)
+                    : runtime.barrier().beginOrdinaryTerrain(runtime.store(level), name, slot.position, validator, now(), observedCut, callback);
         }
         @Override public void held(String reason) { SealedDisassemblyWorld.this.proofReason = goal + ":" + reason; }
     }

@@ -52,6 +52,7 @@ final class SealedDisassemblyCoordinator {
     private boolean lazyFirst;
     private String lazyFailure;
     private int cursor;
+    private Consumer<String> nativeObserver = label -> { };
 
     SealedDisassemblyCoordinator(RocketTransactionExecutor transactions, RocketOrdinaryRetirement ordinary) {
         this.transactions = transactions; this.ordinary = ordinary;
@@ -63,7 +64,7 @@ final class SealedDisassemblyCoordinator {
         }
         if (this.server != null) { return; }
         this.server = server; budget = new SealedWorkBudget(); placement = new SealedCarrierPlacement();
-        materializer = new SealedMaterializer(); recoverySelection = new SealedRecoverySelection();
+        materializer = new SealedMaterializer(label -> nativeObserver.accept(label)); recoverySelection = new SealedRecoverySelection();
         ensureLazy(server);
         var data = RocketTransactionSavedData.get(server);
         writes = new SealedJournalRequests(new SealedJournalRequests.Port() {
@@ -92,7 +93,7 @@ final class SealedDisassemblyCoordinator {
             terrain = new SealedTerrain(level, entry, transactions.adapters(), placement);
             var port = new SealedDisassemblyWorld(level, entry, terrain, writes, authorized,
                     () -> activeAttempts() + ordinary.activeAttempts() < RocketOrdinaryRetirement.MAX_ATTEMPTS,
-                    () -> exclusive(entry), false, budget);
+                    () -> exclusive(entry), false, budget, label -> nativeObserver.accept(label));
             if (port.entity() != SealedDisassembly.Entity.MATCHING) { terrain.close(); lock.close(); return null; }
             var machine = new SealedDisassembly(snapshot.blocks().size(), port);
             work.put(id, new Work(port, machine, lock, completion, false));
@@ -226,6 +227,9 @@ final class SealedDisassemblyCoordinator {
         return item == null ? "not-tracked" : item.machine.phase() + ":" + item.world.reason() + ":" + item.world.entities.diagnostic();
     }
     boolean recovering(UUID id) { var item = work.get(id); return item != null && item.recovery; }
+    void nativeObserver(MinecraftServer server, Consumer<String> observer) {
+        bind(server); nativeObserver = java.util.Objects.requireNonNull(observer);
+    }
 
     /** A single selection owns both recovery implementations, including the post-removal RAM continuation. */
     private UUID selectRecovery(boolean allowed) {
@@ -255,7 +259,7 @@ final class SealedDisassemblyCoordinator {
             terrain = new SealedTerrain(level, entry, transactions.adapters(), placement);
             var port = new SealedDisassemblyWorld(level, entry, terrain, writes, () -> true,
                     () -> activeAttempts() + ordinary.activeAttempts() < RocketOrdinaryRetirement.MAX_ATTEMPTS,
-                    () -> exclusive(entry), true, budget);
+                    () -> exclusive(entry), true, budget, label -> nativeObserver.accept(label));
             boolean elected = entry.record().phase() == RocketTransactionPhase.RESTORED
                     || entry.record().phase() == RocketTransactionPhase.COMMITTED;
             work.put(id, new Work(port, SealedDisassembly.recover(entry.snapshot().blocks().size(), port, elected),
@@ -317,5 +321,6 @@ final class SealedDisassemblyCoordinator {
         if (lazy != null) { lazy.clear(); }
         server = null; budget = null; writes = null; placement = null; materializer = null; recoverySelection = null; cursor = 0;
         discoveryServer = null; lazy = null; lazyFirst = false; lazyFailure = null;
+        nativeObserver = label -> { };
     }
 }

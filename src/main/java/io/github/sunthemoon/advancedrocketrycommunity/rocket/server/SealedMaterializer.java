@@ -20,6 +20,9 @@ final class SealedMaterializer {
     private BlockState publishingState;
     private SealedTargetPreparation publishingTarget;
     private boolean published;
+    private final java.util.function.Consumer<String> nativeObserver;
+
+    SealedMaterializer(java.util.function.Consumer<String> nativeObserver) { this.nativeObserver = nativeObserver; }
 
     Result unseal(ServerLevel level, SealedRocketBlockEntity carrier, RocketBlockEntityAdapters adapters,
             BooleanSupplier authorized, SealedWorkBudget budget) {
@@ -30,17 +33,20 @@ final class SealedMaterializer {
         if (member == null || !current(level, carrier, member)) { return Result.HELD; }
         var state = RocketBlockStateAdapter.restore(member.state()).orElse(null);
         if (state == null) { return Result.HELD; }
-        // Position plus publication; payload hosts additionally pay construction and all three external callbacks.
+        // The position/publication step plus construction and all three external callbacks for a payload host.
         int additional = member.payload() == null ? 1 : 4;
         for (int i = 0; i < additional; i++) { if (!budget.take()) { return Result.BUDGET; } }
+        nativeObserver.accept("UNSEAL_PREPARE_BEFORE");
         var candidate = SealedTargetPreparation.prepare(owner, carrier.getBlockPos(), state, member.payload(), adapters);
-        if (candidate.isEmpty()) { return Result.PREPARATION_FAILED; }
+        if (candidate.isEmpty()) { nativeObserver.accept("UNSEAL_PREPARE_FAILED"); return Result.PREPARATION_FAILED; }
         try (var prepared = candidate.orElseThrow()) {
+            nativeObserver.accept("UNSEAL_PREPARE_AFTER");
             // Restore/recapture may run provider code: recheck both exact C identity and checked authority afterwards.
             if (!current(level, carrier, member) || !authorized.getAsBoolean()) { return Result.HELD; }
             publishingLevel = level; publishingCarrier = carrier; publishingState = state;
             publishingTarget = prepared; published = false;
             try {
+                nativeObserver.accept("UNSEAL_PUBLISH_BEFORE");
                 level.setBlock(carrier.getBlockPos(), state, Block.UPDATE_ALL);
                 return published ? Result.PUBLISHED : Result.PREPARATION_FAILED;
             } finally {
@@ -59,6 +65,7 @@ final class SealedMaterializer {
         target.published(); published = true;
         if (target.target() == null) { level.removeBlockEntity(pos); }
         else { level.setBlockEntity(target.target()); target.target().setChanged(); }
+        nativeObserver.accept("UNSEAL_PUBLISH_AFTER");
         return true;
     }
 
