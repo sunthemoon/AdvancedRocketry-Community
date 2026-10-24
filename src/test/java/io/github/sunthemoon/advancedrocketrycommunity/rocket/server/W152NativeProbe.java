@@ -83,8 +83,16 @@ public final class W152NativeProbe {
             if (label.equals("C1_RETAIN_AFTER")) { writerPhase = "C1"; }
             if (label.equals("C3_ELECT_AFTER")) { writerPhase = "C3"; }
             if (label.equals("C5_REMOVE_AFTER")) { writerPhase = "C5"; }
-            if (label.equals("C2_STAGE_AFTER") && ++placed == 1 && boundary.equals("PARTIAL_C_SAVED")) {
-                server.saveEverything(true, true, true); pause("PARTIAL_C_SAVED");
+            if (label.equals("C2_STAGE_AFTER") && ++placed == 2 && boundary.startsWith("PARTIAL_C_")) {
+                W152NativeTerrain.save(server.overworld(), ORIGIN.south(), "PARTIAL_C", this::observe);
+                if (boundary.equals("PARTIAL_C_SAVED")) { pause(boundary); }
+            }
+            if (label.equals("UNSEAL_PUBLISH_AFTER") && boundary.equals("MIXED_C_N_SAVED")) {
+                for (var at : List.of(ORIGIN.south(), ORIGIN.east())) {
+                    if (server.overworld().getBlockEntity(at) instanceof net.minecraft.world.Container) {
+                        W152NativeTerrain.save(server.overworld(), at, "MIXED_C_N", this::observe); pause(boundary);
+                    }
+                }
             }
         }
         if (label.equals(boundary)) { pause(label); }
@@ -230,7 +238,7 @@ public final class W152NativeProbe {
     private CheckedJournalCheckpoint.Outcome checkedWrite() {
         var type = ManagedSavedDataType.ROCKET_TRANSACTIONS; var atomic = CheckedSavedDataPolicy.atomic(type);
         String phase = writerPhase;
-        boolean unknown = boundary.equals(phase + "_UNKNOWN") && stage.equals("start");
+        boolean unknown = boundary.equals(phase + "_UNKNOWN");
         var policy = new CheckedSavedDataPolicy(type, (staged, target) -> {
             observe(phase + "_MOVE_BEFORE"); atomic.committer().commit(staged, target); observe(phase + "_MOVE_AFTER");
             if (unknown) { throw new IOException("W152 test-only post-move fault"); }

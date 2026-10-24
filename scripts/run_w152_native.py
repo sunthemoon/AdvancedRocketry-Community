@@ -23,17 +23,30 @@ from w152_native_inputs import preserve_native, replay_native
 
 smoke = escrow.smoke
 CUTS = ("NONE", "C0_BASELINE_SAVED", "PREPARE_PROOF_CURRENT", "C1_RETAIN_BEFORE", "C1_RETAIN_AFTER",
-        "C1_MOVE_BEFORE", "C1_MOVE_AFTER", "C1_ACK", "C2_STAGE_BEFORE", "C2_STAGE_AFTER", "PARTIAL_C_SAVED",
+        "C1_MOVE_BEFORE", "C1_MOVE_AFTER", "C1_UNKNOWN", "C1_ACK", "C2_STAGE_BEFORE", "C2_STAGE_AFTER", "PARTIAL_C_SAVED",
+        "PARTIAL_C_STORE_AFTER", "PARTIAL_C_FORCE_AFTER", "PARTIAL_C_READBACK_AFTER", "MIXED_C_N_SAVED",
         "SEALED:TERRAIN:BARRIER_STORE_AFTER", "SEALED:TERRAIN:BARRIER_FORCE_AFTER", "SEALED:TERRAIN:BARRIER_READBACK_AFTER",
         "SEALED_PROOF_CURRENT", "C3_ELECT_BEFORE", "C3_MOVE_BEFORE", "C3_MOVE_AFTER", "C3_UNKNOWN", "C3_ACK",
         "C4_DISCARD_BEFORE", "C4_DISCARD_AFTER", "COMPLETE:ENTITY:BARRIER_STORE_AFTER",
         "COMPLETE:ENTITY:BARRIER_FORCE_AFTER", "COMPLETE:ENTITY:BARRIER_READBACK_AFTER", "COMPLETE_PROOF_CURRENT",
         "C5_REMOVE_BEFORE", "C5_MOVE_BEFORE", "C5_MOVE_AFTER", "C5_UNKNOWN", "C5_ACK",
         "UNSEAL_PREPARE_BEFORE", "UNSEAL_PREPARE_AFTER", "UNSEAL_PUBLISH_BEFORE", "UNSEAL_PUBLISH_AFTER",
-        "ROLLBACK_ERASE_BEFORE", "ROLLBACK_ERASE_AFTER", "UNSEAL_PREPARE_FAILED", "RECOVERY_LOADED")
+        "ROLLBACK_ERASE_BEFORE", "ROLLBACK_ERASE_AFTER", "ROLLBACK_PROOF_CURRENT", "UNSEAL_PREPARE_FAILED", "RECOVERY_LOADED")
 CONSUMER_CUTS = ("C_SOURCE_CONSUMER_ONLY", "VANILLA_SOURCE_CONSUMER_ONLY", "BOTH_SIDES_SAVED")
 MARKER = re.compile(r"W152_NATIVE_(DONE status=(\S+)|CUT boundary=(\S+))")
 ORIGIN = (15, 100, 15)
+
+
+def native_case_plan() -> list[dict]:
+    cases = [dict(cut=cut, recovery="RECOVERY_LOADED", initial=initial)
+             for cut in CUTS if cut != "NONE" and not cut.startswith(("ROLLBACK", "RECOVERY"))
+             for initial in ("SAVED", "NEVER_SAVED") if initial == "SAVED" or cut != "C0_BASELINE_SAVED"]
+    cases.extend(dict(cut="PARTIAL_C_SAVED", recovery=recovery, initial="SAVED")
+                 for recovery in ("ROLLBACK_ERASE_BEFORE", "ROLLBACK_ERASE_AFTER", "ROLLBACK_PROOF_CURRENT", "C5_MOVE_AFTER", "C5_UNKNOWN"))
+    cases.extend(dict(cut="C3_MOVE_AFTER", recovery=recovery, initial="SAVED")
+                 for recovery in ("C4_DISCARD_AFTER", "COMPLETE_PROOF_CURRENT", "C5_MOVE_AFTER", "C5_UNKNOWN"))
+    cases.append(dict(cut="C5_MOVE_AFTER", recovery="UNSEAL_PUBLISH_AFTER", initial="SAVED"))
+    return cases
 
 
 def block_state_at(chunk: dict, x: int, y: int, z: int) -> dict:

@@ -12,6 +12,17 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
 
 class W152NativeReaderTest(unittest.TestCase):
+    def test_cut_plan_has_recovery_kills_and_never_saved_entity_variants(self):
+        from run_w152_native import native_case_plan
+        cases = native_case_plan()
+        self.assertTrue(all(row["recovery"] for row in cases))
+        self.assertTrue(any(row["cut"] == "C1_UNKNOWN" and row["initial"] == "NEVER_SAVED" for row in cases))
+        for cut in ("PARTIAL_C_STORE_AFTER", "PARTIAL_C_FORCE_AFTER", "PARTIAL_C_READBACK_AFTER", "MIXED_C_N_SAVED"):
+            self.assertEqual({"SAVED", "NEVER_SAVED"}, {row["initial"] for row in cases if row["cut"] == cut})
+        for recovery in ("ROLLBACK_ERASE_AFTER", "ROLLBACK_PROOF_CURRENT", "COMPLETE_PROOF_CURRENT", "C5_MOVE_AFTER", "C5_UNKNOWN"):
+            self.assertTrue(any(row["recovery"] == recovery for row in cases))
+        self.assertFalse(any(row["cut"] == "C0_BASELINE_SAVED" and row["initial"] == "NEVER_SAVED" for row in cases))
+
     def test_native_record_can_end_without_unused_sector_padding(self):
         from run_w152_native import preserve_native, replay_native
         from run_v180_landed_disassembly_cuts import chunk_record
