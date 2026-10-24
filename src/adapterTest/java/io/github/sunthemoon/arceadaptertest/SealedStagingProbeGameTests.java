@@ -49,7 +49,8 @@ public final class SealedStagingProbeGameTests {
         List<Block> members = members();
         helper.assertTrue(members.contains(Blocks.CHEST) && members.contains(Blocks.BARREL)
                 && members.contains(host("pressurized_tank")) && members.contains(host("rocket_satellite_bay"))
-                && members.contains(AdapterTestMod.CONTAINER.get()), "Probe omitted a payload host");
+                && members.contains(AdapterTestMod.CONTAINER.get()) && members.contains(AdapterTestMod.SEALED_CONTAINER.get()),
+                "Probe omitted a payload host");
         int plain = 0;
         for (Block block : members) {
             var trace = prepare(helper, block);
@@ -292,7 +293,8 @@ public final class SealedStagingProbeGameTests {
 
     private static CompoundTag payload(Block block) {
         var result = new CompoundTag();
-        if (block == Blocks.CHEST || block == Blocks.BARREL || block == AdapterTestMod.CONTAINER.get()) {
+        if (block == Blocks.CHEST || block == Blocks.BARREL || block == AdapterTestMod.CONTAINER.get()
+                || block == AdapterTestMod.SEALED_CONTAINER.get()) {
             var items = new ListTag();
             var item = new ItemStack(Items.DIAMOND, 7).save(new CompoundTag());
             item.putByte("Slot", (byte) 0);
