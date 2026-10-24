@@ -14,12 +14,12 @@ import re
 import shutil
 import subprocess
 import uuid
-import zipfile
 from collections import Counter
 
 import run_v180_escrow_forced_stop as escrow
 from run_v180_landed_disassembly_cuts import block_at, chunk_record, nbt_file, uuid_of
 from sealed_cut_oracle import elect, inventory, require_inventory
+from w152_native_inputs import preserve_native, replay_native
 
 smoke = escrow.smoke
 CUTS = ("NONE", "C0_BASELINE_SAVED", "PREPARE_PROOF_CURRENT", "C1_RETAIN_BEFORE", "C1_RETAIN_AFTER",
@@ -152,22 +152,6 @@ def compare_consumers(sealed: Path, vanilla: Path, both: Path) -> dict:
                 both_sides_saved="PASS", evidence=[str(path) for path in paths])
 
 
-def preserve_native(world: Path, evidence: Path, stage: str, state: dict) -> dict:
-    """Keep bounded raw inputs, not a world/export copy. Hashes cover the original file bytes."""
-    names = set(state["files"])
-    names.update(str(file.relative_to(world)) for file in (world / "poi").glob("*.mca"))
-    if (world / "level.dat").is_file(): names.add("level.dat")
-    if len(names) > 128 or sum((world / name).stat().st_size for name in names) > 100_000_000:
-        raise smoke.SmokeError("Native observation input archive exceeds its evidence bound")
-    archive = evidence / (stage + "-native-inputs.zip")
-    with zipfile.ZipFile(archive, "x", compression=zipfile.ZIP_DEFLATED) as output:
-        for name in sorted(names): output.write(world / name, name)
-    if archive.stat().st_size > 50_000_000:
-        raise smoke.SmokeError("Native observation archive exceeds the per-file evidence limit")
-    return dict(file=archive.name, sha256=escrow.digest(archive),
-                inputs={name: escrow.digest(world / name) for name in sorted(names)})
-
-
 def run(args) -> dict:
     repo = Path(__file__).resolve().parents[1]
     commit = args.source_commit
@@ -236,6 +220,10 @@ def run(args) -> dict:
             state = inspect(session / "world", experiment)
             (evidence / (stage + "-native.json")).write_text(json.dumps(state, indent=2), encoding="utf-8")
             raw_inputs = preserve_native(session / "world", evidence, stage, state)
+            replayed = session / ("replayed-" + stage)
+            replay_native(evidence / raw_inputs["file"], replayed)
+            if comparable(inspect(replayed, experiment)) != comparable(state):
+                raise smoke.SmokeError("Retained native census records do not replay the original observation")
             result["stages"].append(dict(stage=stage, status=raw["status"], authority=state["authority"], raw_inputs=raw_inputs))
             if stage in ("recover1", "recover2"):
                 if state["phase"] is not None or state["sealed"]:

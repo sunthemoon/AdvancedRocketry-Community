@@ -3,6 +3,8 @@ import unittest
 import json
 import tempfile
 import zipfile
+import struct
+import zlib
 from pathlib import Path
 from unittest.mock import patch
 
@@ -19,16 +21,39 @@ class W152NativeReaderTest(unittest.TestCase):
         self.assertNotEqual(different, block_state_at(chunk, 15, 100, 15))
 
     def test_native_archive_preserves_input_bytes_and_only_declared_world_inputs(self):
-        from run_w152_native import preserve_native
+        from run_w152_native import preserve_native, replay_native
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp); world = root / "world"; out = root / "out"
+            (world / "data").mkdir(parents=True); out.mkdir()
+            (world / "data/journal.dat").write_bytes(b"original native bytes")
+            (world / "unrelated.log").write_text("not an input")
+            result = preserve_native(world, out, "start", {"files": {"data\\journal.dat": "hash"}})
+            with zipfile.ZipFile(out / result["file"]) as archive:
+                self.assertIn("data/journal.dat", archive.namelist())
+                self.assertNotIn("unrelated.log", archive.namelist())
+                self.assertEqual(b"original native bytes", archive.read("data/journal.dat"))
+            replay_native(out / result["file"], root / "replayed")
+            self.assertEqual(b"original native bytes", (root / "replayed/data/journal.dat").read_bytes())
+
+    def test_bounded_native_archive_replays_exact_records_without_unobserved_spawn_chunks(self):
+        from run_w152_native import preserve_native, replay_native
+        from run_v180_landed_disassembly_cuts import chunk_record
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp); world = root / "world"; out = root / "out"
             (world / "region").mkdir(parents=True); out.mkdir()
-            (world / "region/r.0.0.mca").write_bytes(b"original native bytes")
-            (world / "unrelated.log").write_text("not an input")
+            header = bytearray(8192); data = bytearray()
+            for slot, label in ((0, b"kept"), (20 + 20 * 32, b"ignored")):
+                payload = zlib.compress(b'\x0a\x00\x00\x08\x00\x05label' + struct.pack('>H', len(label)) + label + b'\x00')
+                record = struct.pack('>IB', len(payload) + 1, 2) + payload
+                header[slot * 4:slot * 4 + 4] = struct.pack('>I', ((2 + len(data) // 4096) << 8) | 1)
+                data.extend(record + bytes(4096 - len(record)))
+            source = world / "region/r.0.0.mca"; source.write_bytes(header + data)
             result = preserve_native(world, out, "start", {"files": {"region/r.0.0.mca": "hash"}})
-            with zipfile.ZipFile(out / result["file"]) as archive:
-                self.assertEqual(["region/r.0.0.mca"], archive.namelist())
-                self.assertEqual(b"original native bytes", archive.read("region/r.0.0.mca"))
+            replay_native(out / result["file"], root / "replayed")
+            restored = root / "replayed/region/r.0.0.mca"
+            self.assertEqual(chunk_record(source, 0, 0), chunk_record(restored, 0, 0))
+            self.assertEqual({"label": "ignored"}, chunk_record(source, 20, 20))
+            self.assertIsNone(chunk_record(restored, 20, 20))
 
     def test_consumer_comparison_requires_same_implementation_and_full_native_identity(self):
         from run_w152_native import compare_consumers
