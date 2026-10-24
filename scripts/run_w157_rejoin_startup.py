@@ -209,8 +209,12 @@ def run(args) -> dict:
                         process.abort()
                 lines = "".join(process.lines)
                 refusals = lines.count(REFUSAL)
+                # This pinned vanilla/Forge refusal path reports and exits normally.
+                # A separate process failure must not be hidden by its expected log.
+                if code != 0:
+                    raise smoke.SmokeError(f"Native {case} process exited abnormally: {code}")
                 if case == "unused":
-                    if code != 0 or sidecar.exists():
+                    if sidecar.exists():
                         raise smoke.SmokeError("Unused world failed or gained a sidecar")
                 elif refusals != 1 or sidecar.read_bytes() != original or 'For help, type "help"' in lines:
                     raise smoke.SmokeError("Startup refusal, byte preservation or no-login ordering failed")

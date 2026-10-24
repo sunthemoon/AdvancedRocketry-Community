@@ -132,6 +132,12 @@ class W157RunnerTests(unittest.TestCase):
             sidecar.write_bytes(b"unexpected")
         self.assertEqual("FAIL", self.change("unused-1", create)["status"])
 
+    def test_abnormal_process_exit_fails_even_with_expected_refusal(self):
+        for case in ("unused", "malformed", "future"):
+            with self.subTest(case=case):
+                result = self.change(case + "-1", lambda p, _: setattr(p, "exit_code", 7))
+                self.assertEqual("FAIL", result["status"], result)
+
     def test_readiness_before_refusal_fails(self):
         result = self.change("malformed-1", lambda p, _: p.lines.insert(0, line('Done (0.1s)! For help, type "help"')))
         self.assertEqual("FAIL", result["status"], result)
