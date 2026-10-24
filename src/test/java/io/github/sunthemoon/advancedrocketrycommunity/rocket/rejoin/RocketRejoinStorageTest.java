@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import net.minecraft.nbt.CompoundTag;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -147,5 +148,64 @@ class RocketRejoinStorageTest {
             assertEquals(fixture(), data.acknowledgedRoot()); assertEquals(List.of(successor), data.pendingRoots());
             fail.set(false); await(data, 202); assertTrue(data.acknowledgedCurrent());
         }
+    }
+
+    @Test void identicalAppearedFileDoesNotProveFirstWriteOwnership() throws Exception {
+        try (var data = open(CheckedSavedDataPolicy.atomic(TYPE))) {
+            CheckedSavedDataFile.replace(file(), TYPE, RocketRejoinCodecTest::encoded);
+            byte[] foreign = Files.readAllBytes(file());
+            assertTrue(data.submit(fixture())); await(data, 1);
+            assertFalse(data.acknowledgedCurrent(), "Readback cannot bypass a rejected first-write ownership check");
+            assertEquals(Outcome.UNKNOWN, data.outcome()); assertTrue(data.isDirty());
+            assertArrayEquals(foreign, Files.readAllBytes(file()));
+        }
+    }
+
+    @Test void knownNonCommitDoesNotAuthorizeALaterIdenticalAppearedFile() throws Exception {
+        var moves = new AtomicInteger();
+        var policy = new CheckedSavedDataPolicy(TYPE, (staged, target) -> {
+            moves.incrementAndGet(); throw new IOException("before move");
+        });
+        try (var data = open(policy)) {
+            assertTrue(data.submit(fixture())); await(data, 1);
+            assertEquals(Outcome.NOT_COMMITTED, data.outcome()); assertEquals(1, moves.get());
+            CheckedSavedDataFile.replace(file(), TYPE, RocketRejoinCodecTest::encoded);
+            await(data, 201);
+            assertEquals(1, moves.get(), "Known non-commit cannot leave an ownership claim for the next attempt");
+            assertFalse(data.acknowledgedCurrent()); assertEquals(Outcome.UNKNOWN, data.outcome());
+        }
+    }
+
+    @Test void loadedRootRemainsNamedDuringAnUnknownFirstReplacement() throws Exception {
+        CheckedSavedDataFile.replace(file(), TYPE, RocketRejoinCodecTest::encoded);
+        var fail = new AtomicBoolean(true);
+        try (var data = RocketRejoinSavedData.open(file(), CheckedSavedDataPolicy.atomic(TYPE),
+                CheckedSavedDataFile::presence, p -> { if (fail.get()) { throw new IOException("force"); } })) {
+            assertFalse(data.acknowledgedCurrent());
+            var retired = new RocketRejoinRoot(1, List.of(), List.of());
+            assertTrue(data.submit(retired)); await(data, 1);
+            assertEquals(Outcome.UNKNOWN, data.outcome()); assertEquals(retired, data.root());
+            assertEquals(fixture(), data.acknowledgedRoot(), "Startup obligations must survive an uncertain replacement");
+            assertEquals(List.of(retired), data.pendingRoots());
+            fail.set(false); await(data, 201); assertTrue(data.acknowledgedCurrent());
+        }
+    }
+
+    @Test void closeResetsTheExistingRetryCountAfterEachCommittedGeneration() throws Exception {
+        var entered = new CountDownLatch(1); var release = new CountDownLatch(1); var moves = new AtomicInteger();
+        var policy = new CheckedSavedDataPolicy(TYPE, (staged, target) -> {
+            entered.countDown();
+            try { if (!release.await(10, TimeUnit.SECONDS)) { throw new IOException("Timed out gate"); } }
+            catch (InterruptedException e) { throw new IOException(e); }
+            if (moves.incrementAndGet() % 3 != 0) { throw new IOException("before move"); }
+            CheckedSavedDataFile.atomicMove(staged, target);
+        });
+        try (var data = open(policy)) {
+            assertTrue(data.submit(fixture())); assertTrue(entered.await(10, TimeUnit.SECONDS));
+            var successor = fixture().admit(batch(2, 1, List.of(id(101))), List.of(entry(2, id(101))));
+            assertTrue(data.submit(successor)); release.countDown(); data.close();
+            assertTrue(data.acknowledgedCurrent()); assertFalse(data.isDirty()); assertEquals(6, moves.get());
+            assertEquals(successor, RocketRejoinCodec.decode(CheckedSavedDataFile.readPayload(file(), TYPE).orElseThrow()));
+        } finally { release.countDown(); }
     }
 }

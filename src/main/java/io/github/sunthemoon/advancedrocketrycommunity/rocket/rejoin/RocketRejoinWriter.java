@@ -62,20 +62,27 @@ final class RocketRejoinWriter {
             Outcome outcome; var previous = disk.outcome();
             try {
                 CompoundTag payload = RocketRejoinCodec.encode(capture.root()); String candidateDigest = digest(payload);
+                boolean[] ownershipRejected = {false}, provedAbsent = {false};
                 var guarded = policy.withCommitter((staged, target) -> {
                     if (!ownsFile) {
+                        ownershipRejected[0] = true;
                         var state = presence.apply(target);
+                        provedAbsent[0] = state == CheckedSavedDataFile.Presence.ABSENT;
                         if (state != CheckedSavedDataFile.Presence.ABSENT) {
                             boolean ownAttempt = state == CheckedSavedDataFile.Presence.PRESENT && attemptedDigest != null
                                     && policy.read(target).map(RocketRejoinWriter::digest).filter(attemptedDigest::equals).isPresent();
                             if (!ownAttempt) { throw new IOException("Rejoin file appeared or its presence is unknown before first commit"); }
                         }
                         attemptedDigest = candidateDigest;
+                        ownershipRejected[0] = false;
                     }
                     policy.committer().commit(staged, target);
                 });
                 outcome = disk.write(file, guarded, capture.generation(), payload, Map.of());
-                if (outcome == Outcome.COMMITTED) { ownsFile = true; attemptedDigest = null; }
+                if (provedAbsent[0] && outcome == Outcome.NOT_COMMITTED) { attemptedDigest = null; }
+                // Exact readback is not ownership: the checkpoint may see an identical foreign file after our guard refused.
+                if (ownershipRejected[0]) { outcome = disk.unknown(); }
+                else if (outcome == Outcome.COMMITTED) { ownsFile = true; attemptedDigest = null; }
                 else if (previous == Outcome.UNKNOWN) { outcome = disk.unknown(); }
             } catch (RuntimeException invalid) {
                 outcome = previous == Outcome.UNKNOWN ? disk.unknown() : disk.refused();
@@ -103,7 +110,8 @@ final class RocketRejoinWriter {
             while (active != null) {
                 tick(firstTick + TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - started), result -> {
                     publish.accept(result);
-                    if (result.outcome() != Outcome.COMMITTED && ++failures[0] >= 3) { active = null; successor = null; }
+                    if (result.outcome() == Outcome.COMMITTED) { failures[0] = 0; }
+                    else if (++failures[0] >= 3) { active = null; successor = null; }
                 });
                 Thread.sleep(1);
             }

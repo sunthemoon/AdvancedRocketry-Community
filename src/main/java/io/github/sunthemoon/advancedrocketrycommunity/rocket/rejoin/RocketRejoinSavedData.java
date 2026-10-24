@@ -29,7 +29,9 @@ public final class RocketRejoinSavedData extends SavedData implements AutoClosea
     private long generation, completions;
     private boolean closed, failureReported;
 
-    private RocketRejoinSavedData(RocketRejoinRoot root, boolean present) { this.root = root; this.present = present; }
+    private RocketRejoinSavedData(RocketRejoinRoot root, boolean present) {
+        this.root = root; this.present = present; this.acknowledgedRoot = present ? root : null;
+    }
     public static RocketRejoinSavedData load(CompoundTag root) { return new RocketRejoinSavedData(RocketRejoinCodec.decode(root), true); }
     public static RocketRejoinSavedData open(Path file) {
         return open(file, CheckedSavedDataPolicy.atomic(TYPE), CheckedSavedDataFile::presence, CheckedSavedDataPolicy.DirectoryForce.PLATFORM);
@@ -45,7 +47,7 @@ public final class RocketRejoinSavedData extends SavedData implements AutoClosea
         data.file = file; data.policy = policy; data.presence = probe; data.force = force; return data;
     }
     public RocketRejoinRoot root() { owner(); return root; }
-    /** Retained while a later generation is pending, even when that generation's disk outcome is unknown. */
+    /** Last loaded or acknowledged root, retained for player names, not proof of a session write acknowledgement. */
     public RocketRejoinRoot acknowledgedRoot() { owner(); return acknowledgedRoot; }
     public java.util.List<RocketRejoinRoot> pendingRoots() {
         owner(); return writer == null ? java.util.List.of() : writer.pendingRoots();
