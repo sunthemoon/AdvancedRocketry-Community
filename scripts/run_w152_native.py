@@ -30,10 +30,24 @@ CUTS = ("NONE", "C0_BASELINE_SAVED", "PREPARE_PROOF_CURRENT", "C1_RETAIN_BEFORE"
         "COMPLETE:ENTITY:BARRIER_FORCE_AFTER", "COMPLETE:ENTITY:BARRIER_READBACK_AFTER", "COMPLETE_PROOF_CURRENT",
         "C5_REMOVE_BEFORE", "C5_MOVE_BEFORE", "C5_MOVE_AFTER", "C5_UNKNOWN", "C5_ACK",
         "UNSEAL_PREPARE_BEFORE", "UNSEAL_PREPARE_AFTER", "UNSEAL_PUBLISH_BEFORE", "UNSEAL_PUBLISH_AFTER",
-        "ROLLBACK_ERASE_BEFORE", "ROLLBACK_ERASE_AFTER")
+        "ROLLBACK_ERASE_BEFORE", "ROLLBACK_ERASE_AFTER", "UNSEAL_PREPARE_FAILED", "RECOVERY_LOADED")
 CONSUMER_CUTS = ("C_SOURCE_CONSUMER_ONLY", "VANILLA_SOURCE_CONSUMER_ONLY", "BOTH_SIDES_SAVED")
 MARKER = re.compile(r"W152_NATIVE_(DONE status=(\S+)|CUT boundary=(\S+))")
 ORIGIN = (15, 100, 15)
+
+
+def block_state_at(chunk: dict, x: int, y: int, z: int) -> dict:
+    """Read the complete native palette entry using 1.20.1's padded-long indices."""
+    for section in chunk.get("sections", []):
+        if section.get("Y") != y >> 4: continue
+        states = section.get("block_states", {}); palette = states.get("palette", [])
+        if not palette: raise ValueError("Native block has no palette")
+        if len(palette) == 1: return palette[0]
+        bits = max(4, (len(palette) - 1).bit_length()); per_long = 64 // bits
+        index = ((y & 15) << 8) | ((z & 15) << 4) | (x & 15)
+        value = (states["data"][index // per_long] & 0xFFFFFFFFFFFFFFFF) >> ((index % per_long) * bits)
+        return palette[value & ((1 << bits) - 1)]
+    raise ValueError("Native block section is absent")
 
 
 def consumer_verdict(state: dict, experiment: str) -> str:
@@ -81,7 +95,7 @@ def inspect(world: Path, experiment: str = "") -> dict:
                             raise ValueError("Carrier lacks its native root")
                         sealed.append(be)
                     elif name not in ("minecraft:air", "<chunk-not-stored>", "<section-not-stored>"):
-                        native.append(dict(state=name, block_entity=be))
+                        native.append(dict(state=block_state_at(terrain, *at), block_entity=be))
             for file in (region, entity_file):
                 if file.exists() and str(file.relative_to(world)) not in files:
                     files[str(file.relative_to(world))] = escrow.digest(file)
@@ -110,7 +124,8 @@ def inspect(world: Path, experiment: str = "") -> dict:
                                        key=lambda row: uuid_of(row["UUID"])),
                     records=records, native=native, sealed=sealed, files=files)
     if experiment:
-        observed.update(recipient_data=recipient, recipient_inventory=inventory(recipient), other_recipients=other_recipients)
+        observed.update(recipient_data=recipient, recipient_inventory=inventory(recipient), other_recipients=other_recipients,
+                        recipient_state=block_state_at(terrain, 80, 100, 15))
         observed["consumer_verdict"] = consumer_verdict(observed, experiment)
     else:
         require_inventory(observed, {"original": 14})
@@ -171,7 +186,7 @@ def run(args) -> dict:
     session = temp / ("w152-native-" + uuid.uuid4().hex)
     owned = uuid.uuid4().hex; marker = session / ".w152-owned"
     result = dict(status="IN_PROGRESS", source_commit=commit, jar_sha256=escrow.digest(args.jar),
-                  cut=args.cut, recovery_cut=args.recovery_cut, commands=[], stages=[])
+                  cut=args.cut, recovery_cut=args.recovery_cut, initial_d=args.initial_d, commands=[], stages=[])
     experiment = args.cut if args.cut in CONSUMER_CUTS else ""
     try:
         session.mkdir(); marker.write_text(owned, encoding="ascii")
@@ -194,6 +209,7 @@ def run(args) -> dict:
             command[1:1] = ["-XX:ActiveProcessorCount=4", "-Dadvancedrocketrycommunity.w152Native=true",
                             "-Dadvancedrocketrycommunity.w152Stage="+stage, "-Dadvancedrocketrycommunity.w152Cut="+cut,
                             "-Dadvancedrocketrycommunity.w152Experiment="+experiment,
+                            "-Dadvancedrocketrycommunity.w152InitialD="+args.initial_d,
                             "-Dadvancedrocketrycommunity.w152Commit="+commit]
             result["commands"].append(command)
             process = smoke.CapturedProcess(command, session, evidence / (stage + ".log"))
@@ -250,6 +266,7 @@ def main() -> int:
     parser.add_argument("--java", required=True)
     parser.add_argument("--cut", choices=CUTS + CONSUMER_CUTS, required=True)
     parser.add_argument("--recovery-cut", choices=CUTS)
+    parser.add_argument("--initial-d", choices=("SAVED", "NEVER_SAVED"), default="SAVED")
     result = run(parser.parse_args()); print(json.dumps(result, indent=2))
     return 0 if result["status"] in ("PASS", "DOCUMENTED_RESIDUAL") else 1
 

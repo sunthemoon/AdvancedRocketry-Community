@@ -46,6 +46,8 @@ public final class W152NativeProbe {
     private final String stage = System.getProperty("advancedrocketrycommunity.w152Stage", "start");
     private final String boundary = System.getProperty("advancedrocketrycommunity.w152Cut", "NONE");
     private final W152NativeConsumers consumers;
+    private final W152NativeFailure preparationFailure;
+    private final boolean neverSaved = System.getProperty("advancedrocketrycommunity.w152InitialD", "SAVED").equals("NEVER_SAVED");
     private final ConcurrentLinkedQueue<Map<String, Object>> events = new ConcurrentLinkedQueue<>();
     private final AtomicInteger eventCount = new AtomicInteger();
     private final AtomicBoolean paused = new AtomicBoolean();
@@ -67,6 +69,7 @@ public final class W152NativeProbe {
     private W152NativeProbe(MinecraftServer server) {
         this.server = server;
         consumers = new W152NativeConsumers(server, System.getProperty("advancedrocketrycommunity.w152Experiment", ""), this::pause);
+        preparationFailure = boundary.equals("UNSEAL_PREPARE_FAILED") ? W152NativeFailure.install() : null;
         RocketRuntime.sealedNativeObserverForReleaseTest(server, this::observe);
         decorateWriter();
     }
@@ -88,6 +91,7 @@ public final class W152NativeProbe {
     }
     private void pause(String label) {
         if (stage.equals("recover2") || !paused.compareAndSet(false, true)) { return; }
+        if (label.equals("UNSEAL_PREPARE_FAILED")) { preparationFailure.verifyAborted(); }
         write("CUT", label);
         AdvancedRocketryCommunity.LOGGER.info("W152_NATIVE_CUT boundary={}", label);
         try { Thread.sleep(20_000); }
@@ -110,10 +114,12 @@ public final class W152NativeProbe {
             if (!begun) {
                 begun = true;
                 if (stage.equals("start")) {
+                    if (neverSaved && !consumers.vanilla()) { server.saveEverything(true, true, true); }
                     if (consumers.vanilla()) { consumers.prepareVanilla(); }
                     else { setup(); }
                     consumers.prepareRecipient();
-                    server.saveEverything(true, true, true); observe("C0_BASELINE_SAVED");
+                    if (!neverSaved || consumers.vanilla()) { server.saveEverything(true, true, true); observe("C0_BASELINE_SAVED"); }
+                    else { observe("C0_D_NEVER_SAVED"); }
                     if (consumers.vanilla()) {
                         var data = RocketTransactionSavedData.get(server);
                         if (!data.acknowledgedCurrent()) { data.checkpoint(server); }
@@ -126,6 +132,7 @@ public final class W152NativeProbe {
                 } else {
                     var data = RocketTransactionSavedData.get(server);
                     if (data.entries().isEmpty() && !data.acknowledgedCurrent()) { data.checkpoint(server); }
+                    observe("RECOVERY_LOADED");
                 }
             }
             if (age > 1200) { throw new IllegalStateException("Native fixture deadline: " + diagnostic()); }
@@ -199,6 +206,7 @@ public final class W152NativeProbe {
         var report = new LinkedHashMap<String, Object>();
         report.put("source", System.getProperty("advancedrocketrycommunity.w152Commit"));
         report.put("stage", stage); report.put("boundary", boundary); report.put("status", status); report.put("detail", detail);
+        report.put("initial_d", neverSaved ? "NEVER_SAVED" : "SAVED");
         report.put("tick", age); report.put("events", List.copyOf(events)); report.put("entity", id("entity").toString());
         try { Files.writeString(server.getWorldPath(LevelResource.ROOT).resolve("w152-native.json"),
                 new com.google.gson.GsonBuilder().setPrettyPrinting().create().toJson(report)); }
@@ -240,7 +248,7 @@ public final class W152NativeProbe {
             return result;
         } catch (ReflectiveOperationException failure) { throw new IllegalStateException(failure); }
     }
-    private static java.lang.reflect.Field field(Class<?> type, String name) throws NoSuchFieldException {
+    static java.lang.reflect.Field field(Class<?> type, String name) throws NoSuchFieldException {
         var result = type.getDeclaredField(name); result.setAccessible(true); return result;
     }
     private static void require(boolean value, String message) { if (!value) { throw new IllegalStateException(message); } }

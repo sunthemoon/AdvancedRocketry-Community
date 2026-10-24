@@ -10,6 +10,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
 
 class W152NativeReaderTest(unittest.TestCase):
+    def test_native_projection_preserves_block_properties_not_only_registry_name(self):
+        from run_w152_native import block_state_at
+        state = {"Name": "minecraft:chest", "Properties": {"facing": "east", "type": "single", "waterlogged": "false"}}
+        chunk = {"sections": [{"Y": 6, "block_states": {"palette": [state]}}]}
+        self.assertEqual(state, block_state_at(chunk, 15, 100, 15))
+        different = dict(state, Properties=dict(state["Properties"], facing="west"))
+        self.assertNotEqual(different, block_state_at(chunk, 15, 100, 15))
+
     def test_native_archive_preserves_input_bytes_and_only_declared_world_inputs(self):
         from run_w152_native import preserve_native
         with tempfile.TemporaryDirectory() as temp:
@@ -90,6 +98,11 @@ class W152NativeReaderTest(unittest.TestCase):
         for boundary in ("C1_MOVE_BEFORE", "C1_MOVE_AFTER", "C3_MOVE_AFTER", "C5_MOVE_AFTER", "C3_UNKNOWN", "C5_UNKNOWN",
                          "PARTIAL_C_SAVED", "SEALED:TERRAIN:BARRIER_FORCE_AFTER", "ROLLBACK_ERASE_AFTER", "UNSEAL_PUBLISH_AFTER"):
             self.assertIn(boundary, CUTS)
+
+    def test_native_cut_table_includes_failed_preparation_and_an_additional_recovery_cut(self):
+        from run_w152_native import CUTS
+        self.assertIn("UNSEAL_PREPARE_FAILED", CUTS)
+        self.assertIn("RECOVERY_LOADED", CUTS)
 
     def test_stability_comparison_preserves_resources_but_not_evidence_hashes(self):
         from run_w152_native import comparable
