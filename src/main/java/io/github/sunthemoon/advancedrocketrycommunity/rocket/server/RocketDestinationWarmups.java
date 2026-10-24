@@ -57,7 +57,7 @@ final class RocketDestinationWarmups {
         return new RocketRequestCompletion(completion.accepted(), () -> {
             countdown.plan().ifPresent(plan -> launchEnded(rocket.getServer(), countdown.logicalRocketId(), plan.requestId()));
             completion.discarded().run();
-        }, completion.requester());
+        }, completion.requester(), completion.requiresOnline());
     }
 
     /**
@@ -71,7 +71,7 @@ final class RocketDestinationWarmups {
         var plan = countdown.plan().orElseThrow();
         var request = new RocketWarmupRegistry.Request(countdown.logicalRocketId(), completion.requester(), plan.requestId(),
                 rocket.level().dimension().location(), rocket.getUUID(), rocket.snapshot().orElseThrow(),
-                plan.destinationTarget(), destination);
+                plan.destinationTarget(), destination, completion.requiresOnline());
         decision = registry.decide(request, EscrowGovernedPreparation.available(rocket, countdown),
                 () -> RocketTransferEntities.endAlreadyLoaded(current, destination), current.getTickCount(), settings.get());
         if (decision.outcome() == RocketWarmupRegistry.Outcome.PROCEED) { return null; }

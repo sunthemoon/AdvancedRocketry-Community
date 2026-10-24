@@ -333,7 +333,7 @@ final class RocketFlightService {
         }, launchDiscarded(requests, requestId, requester, journal, predecessor, (playerId, result) -> {
             var player = server.getPlayerList().getPlayer(playerId);
             if (player != null) { report(player, rocket, RocketFlightAction.LAUNCH, destination, requestId, result); }
-        }), warmupOwner == null ? requester : warmupOwner),
+        }), warmupOwner == null ? requester : warmupOwner, requester != null),
                 () -> (localAuthority == null || localAuthority.getAsBoolean())
                         && revalidateLaunch(rocket, countdown.plan().orElseThrow(), source, destination, actorId, operator, requester),
                 () -> localAuthority == null || localAuthority.getAsBoolean()

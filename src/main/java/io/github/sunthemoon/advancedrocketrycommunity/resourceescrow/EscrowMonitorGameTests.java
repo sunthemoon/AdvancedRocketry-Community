@@ -38,11 +38,15 @@ public final class EscrowMonitorGameTests {
     private EscrowMonitorGameTests() { }
     @GameTest(template = "empty", batch = "monitor_governed", timeoutTicks = 2400)
     public static void offlineMonitorUsesGovernedPreparationAndOneAcknowledgedDebit(GameTestHelper helper) {
-        new Flight(helper, false).start();
+        new Flight(helper, false, false).start();
     }
     @GameTest(template = "empty", batch = "monitor_governed_cutoff", timeoutTicks = 2400)
     public static void disarmingAfterPreparedKeepsTheAcceptedLaunchAndItsRealOutcome(GameTestHelper helper) {
-        new Flight(helper, true).start();
+        new Flight(helper, true, false).start();
+    }
+    @GameTest(template = "empty", batch = "monitor_governed_cold", timeoutTicks = 2400)
+    public static void offlineMonitorWarmsAColdDestinationAndLaunchesOnlyOnAFreshEdge(GameTestHelper helper) {
+        new Flight(helper, false, true).start();
     }
     private static final class Flight implements net.minecraft.gametest.framework.GameTestListener {
         final GameTestHelper helper;
@@ -57,9 +61,10 @@ public final class EscrowMonitorGameTests {
         RocketMonitorQuote quote;
         RocketTransferRecord prepared;
         int step;
-        final boolean disarmAfterPrepared;
-        Flight(GameTestHelper helper, boolean disarmAfterPrepared) {
-            this.disarmAfterPrepared = disarmAfterPrepared;
+        final boolean disarmAfterPrepared, coldDestination;
+        long warmupStarted;
+        Flight(GameTestHelper helper, boolean disarmAfterPrepared, boolean coldDestination) {
+            this.disarmAfterPrepared = disarmAfterPrepared; this.coldDestination = coldDestination;
             this.helper = helper; earth = helper.getLevel(); moon = earth.getServer().getLevel(CelestialIds.MOON_LEVEL);
             helper.assertTrue(moon != null, "Moon is unavailable"); pacer = new GameTestTickPacer(earth.getServer());
         }
@@ -94,7 +99,12 @@ public final class EscrowMonitorGameTests {
                 if (!journal.retryChecked(server)) { return; }
                 var pads = predict(server, moon, rocket, 1); if (pads == null) { return; }
                 destination = pads.get(0);
-                for (var column : RocketDiscoveryColumns.of(destination).columns()) { moon.getChunkSource().addRegionTicket(FIXTURE, column, 2, key); }
+                if (coldDestination) {
+                    requireReleasable(helper, server, pads);
+                    if (!cold(server, destination)) { return; }
+                } else {
+                    for (var column : RocketDiscoveryColumns.of(destination).columns()) { moon.getChunkSource().addRegionTicket(FIXTURE, column, 2, key); }
+                }
                 earth.setBlockAndUpdate(device, ModBlocks.ROCKET_MONITORING_STATION.get().defaultBlockState());
                 monitor = (RocketMonitorBlockEntity) earth.getBlockEntity(device);
                 var root = new RocketMonitorRoot(rocket.ownerId().orElseThrow(), UUID.randomUUID(), RocketMonitorBinding.capture(rocket), 0, false, false, null, "");
@@ -102,15 +112,30 @@ public final class EscrowMonitorGameTests {
                 step = 2; return;
             }
             if (step == 2) {
-                if (!RocketMarginGameTestSupport.endReady(server, destination) || !journal.retryChecked(server)) { return; }
+                if (!coldDestination && !RocketMarginGameTestSupport.endReady(server, destination) || !journal.retryChecked(server)) { return; }
                 quote = RocketRuntime.monitorFlights().orElseThrow().quote(monitor, new TravelTarget.BodySurface(CelestialIds.MOON_ID));
                 helper.assertTrue(quote.ready() && monitor.configure(quote, true, 0), "Cannot arm governed monitor: " + quote.code());
                 helper.assertTrue(quote.cost() == quote.plan().propulsionDebit().primary(), "Quote does not display the native primary debit");
                 helper.assertTrue(server.getPlayerList().getPlayer(monitor.root().owner()) == null, "Owner is not offline");
                 earth.setBlockAndUpdate(device.east(), Blocks.REDSTONE_BLOCK.defaultBlockState()); monitor.signal(true);
+                if (coldDestination) {
+                    helper.assertTrue(monitor.lastFlight() == RocketFlightRequestCode.DESTINATION_LOADING, "Cold launch did not warm");
+                    warmupStarted = server.getTickCount(); step = 10; return;
+                }
                 helper.assertTrue(monitor.lastFlight() == RocketFlightRequestCode.JOURNAL_PENDING,
                         "Monitor did not enter governed preparation: " + monitor.lastFlight());
                 helper.assertTrue(monitor.lastCost() == quote.cost(), "Pending launch changed the displayed debit");
+                step = 3; return;
+            }
+            if (step == 10) {
+                var warming = warmup(server, rocket);
+                helper.assertTrue(warming != null && warming.player().equals(monitor.root().owner()), "Offline owner lost its attributed warm-up");
+                helper.assertTrue(journal.findByLogicalRocket(logical(rocket)).isEmpty()
+                        && rocket.flightData().orElseThrow().fuel().equals(quote.source().fuel()), "Held edge launched or debited");
+                if (!warming.state().equals("READY") || server.getTickCount() - warmupStarted < 20) { return; }
+                earth.setBlockAndUpdate(device.east(), Blocks.AIR.defaultBlockState()); monitor.signal(false);
+                earth.setBlockAndUpdate(device.east(), Blocks.REDSTONE_BLOCK.defaultBlockState()); monitor.signal(true);
+                helper.assertTrue(monitor.lastFlight() == RocketFlightRequestCode.JOURNAL_PENDING, "Fresh ready edge did not prepare");
                 step = 3; return;
             }
             if (step == 3) {
