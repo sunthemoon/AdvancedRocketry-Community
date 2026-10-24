@@ -52,7 +52,7 @@ public final class ClassicControlsChannelGameTests {
     public static void theInstalledChannelRejectsEveryOtherProtocol(GameTestHelper helper) {
         try {
             Map<ResourceLocation, String> advertised = advertised();
-            helper.assertTrue("1".equals(advertised.get(CHANNEL)), "The classic_controls channel is not installed at 1");
+            helper.assertTrue("2".equals(advertised.get(CHANNEL)), "The classic_controls channel is not installed at 2");
             for (String direction : new String[] {"validateClientChannels", "validateServerChannels"}) {
                 helper.assertTrue(rejected(direction, advertised).isEmpty(),
                         "The installed versions must be accepted by " + direction);
@@ -61,7 +61,7 @@ public final class ClassicControlsChannelGameTests {
                 Map<ResourceLocation, String> refusedMissing = rejected(direction, missing);
                 helper.assertTrue(refusedMissing.size() == 1 && refusedMissing.containsKey(CHANNEL),
                         "A peer without classic_controls must be rejected by " + direction);
-                for (String version : new String[] {"", "0", "2", "01", "1 ",
+                for (String version : new String[] {"", "0", "1", "3", "01", "1 ", "02", "2 ",
                         NetworkRegistry.ABSENT.version(), NetworkRegistry.ACCEPTVANILLA}) {
                     Map<ResourceLocation, String> other = new HashMap<>(advertised);
                     other.put(CHANNEL, version);

@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "advancedrocketrycommunity:control_board"
+    },
+    "M": {
+      "item": "advancedrocketrycommunity:machine_casing"
+    },
+    "T": {
+      "item": "advancedrocketrycommunity:tracking_circuit"
+    },
+    "U": {
+      "item": "advancedrocketrycommunity:user_interface"
+    }
+  },
+  "pattern": [
+    " T ",
+    "UCU",
+    " M "
+  ],
+  "result": {
+    "item": "advancedrocketrycommunity:rocket_monitoring_station"
+  }
+}

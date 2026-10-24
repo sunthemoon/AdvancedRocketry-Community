@@ -41,6 +41,7 @@ import net.minecraftforge.network.NetworkHooks;
 final class RocketFlightService {
     private final RocketOperationLedger requests = new RocketOperationLedger();
     private final RocketIntentRateLimiter rateLimiter = new RocketIntentRateLimiter();
+    final RocketMonitorFlights monitors = new RocketMonitorFlights(this, requests, rateLimiter);
     private final RocketTransferService transfers = new RocketTransferService();
     private final StationAccessService stationAccess = new StationAccessService();
     private final PlanetaryCatalogManager catalogs;
@@ -246,6 +247,12 @@ final class RocketFlightService {
     private RocketFlightRequestResult launch(RocketEntity rocket, TravelTarget destination, UUID actorId,
             boolean operator, UUID requestId,
             io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadReference pad, UUID requester) {
+        return launch(rocket, destination, actorId, operator, requestId, pad, requester, null, null);
+    }
+
+    RocketFlightRequestResult launch(RocketEntity rocket, TravelTarget destination, UUID actorId, boolean operator,
+            UUID requestId, io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadReference pad,
+            UUID requester, java.util.function.BooleanSupplier localAuthority, UUID warmupOwner) {
         RocketFlightData flight = launchSource(rocket.flightData().orElseThrow(), rocket.level().getGameTime()).orElse(null);
         if (flight == null) {
             io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowLaunchTrace.note(rocket, requestId, "FLIGHT_PRECONDITION", "LAUNCH_READY");
@@ -326,8 +333,11 @@ final class RocketFlightService {
         }, launchDiscarded(requests, requestId, requester, journal, predecessor, (playerId, result) -> {
             var player = server.getPlayerList().getPlayer(playerId);
             if (player != null) { report(player, rocket, RocketFlightAction.LAUNCH, destination, requestId, result); }
-        }), requester),
-                () -> revalidateLaunch(rocket, countdown.plan().orElseThrow(), source, destination, actorId, operator, requester));
+        }), warmupOwner == null ? requester : warmupOwner, requester != null),
+                () -> (localAuthority == null || localAuthority.getAsBoolean())
+                        && revalidateLaunch(rocket, countdown.plan().orElseThrow(), source, destination, actorId, operator, requester),
+                () -> localAuthority == null || localAuthority.getAsBoolean()
+                        && revalidateLaunch(rocket, countdown.plan().orElseThrow(), source, destination, actorId, operator, requester));
     }
 
     /** Owner-thread completion; the reporting adapter resolves the requester only when this callback runs. */
@@ -447,7 +457,7 @@ final class RocketFlightService {
         }, () -> requests.finish(requestId, false)));
     }
 
-    private RocketFlightPlanResult plan(
+    RocketFlightPlanResult plan(
             RocketEntity rocket,
             RocketFlightData flight,
             TravelTarget source,
@@ -506,7 +516,9 @@ final class RocketFlightService {
         );
     }
 
-    private PlanetaryCatalog captureCatalog() {
+    boolean configuredCatalogs() { return configuredCatalogs; }
+
+    PlanetaryCatalog captureCatalog() {
         return catalogs == null ? null : catalogs.capture().map(PlanetaryCatalogManager.Generation::catalog).orElse(null);
     }
 

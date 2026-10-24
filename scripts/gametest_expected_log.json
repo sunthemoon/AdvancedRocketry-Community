@@ -687,18 +687,18 @@
       "level": "ERROR",
       "logger": "net.minecraftforge.network.NetworkRegistry/NETREGISTRY",
       "message": "Channels \\[advancedrocketrycommunity:classic_controls\\] rejected their server side version number",
-      "counts": {"classic_controls_version": 8},
+      "counts": {"classic_controls_version": 11},
       "test": "ClassicControlsChannelGameTests.theInstalledChannelRejectsEveryOtherProtocol",
-      "reason": "The test offers a missing and seven mismatched classic_controls versions; Forge logs each rejected server-side version at ERROR."
+      "reason": "R92/W153 offers a missing and ten mismatched classic_controls versions, retaining malformed version-1 forms and adding version-2 forms; Forge logs each rejected server-side version at ERROR."
     },
     {
       "id": "classic-controls-client-version-rejected",
       "level": "ERROR",
       "logger": "net.minecraftforge.network.NetworkRegistry/NETREGISTRY",
       "message": "Channels \\[advancedrocketrycommunity:classic_controls\\] rejected their client side version number",
-      "counts": {"classic_controls_version": 8},
+      "counts": {"classic_controls_version": 11},
       "test": "ClassicControlsChannelGameTests.theInstalledChannelRejectsEveryOtherProtocol",
-      "reason": "The test offers a missing and seven mismatched classic_controls versions; Forge logs each rejected client-side version at ERROR."
+      "reason": "R92/W153 offers a missing and ten mismatched classic_controls versions, retaining malformed version-1 forms and adding version-2 forms; Forge logs each rejected client-side version at ERROR."
     },
     {
       "id": "classic-controls-unknown-index-dropped",

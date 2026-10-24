@@ -323,6 +323,11 @@ public final class ModBlockEntities {
     private ModBlockEntities() {
     }
 
+    public static final RegistryObject<BlockEntityType<io.github.sunthemoon.advancedrocketrycommunity.rocket.monitor.RocketMonitorBlockEntity>>
+            ROCKET_MONITORING_STATION = BLOCK_ENTITIES.register("rocket_monitoring_station", () -> BlockEntityType.Builder.of(
+                    io.github.sunthemoon.advancedrocketrycommunity.rocket.monitor.RocketMonitorBlockEntity::new,
+                    ModBlocks.ROCKET_MONITORING_STATION.get()).build(null));
+
     public static final RegistryObject<BlockEntityType<io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadBlockEntity>>
             LANDING_PAD = BLOCK_ENTITIES.register("landing_pad", () -> BlockEntityType.Builder.of(
                     io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadBlockEntity::new,
