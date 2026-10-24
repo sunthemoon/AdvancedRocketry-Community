@@ -100,6 +100,8 @@ public final class OperatorItemNbtGameTests {
             io.github.sunthemoon.advancedrocketrycommunity.atmosphere.torch.UnlitTorchBlockEntity.class,
             // W27b: the satellite bay's owner, package identity and guarded roots.
             io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.SatelliteBayBlockEntity.class,
+            // W152: the inert carrier's retained identities and opaque member payload.
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.sealed.SealedRocketBlockEntity.class,
             // W109: both fixed cargo roles keep owner, placement identity, binding and protected native roots.
             io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketFluidCargoBlockEntity.class,
             // W120: both item cargo roles keep owner, placement identity, binding, buffer and protected native roots.
