@@ -21,7 +21,8 @@ final class FixtureContainerBlockEntity extends BlockEntity implements Container
     FixtureAdapterFaults.Probe fault;
 
     FixtureContainerBlockEntity(BlockPos position, BlockState state) {
-        super(AdapterTestMod.CONTAINER_TYPE.get(), position, state);
+        super(state.is(AdapterTestMod.SEALED_CONTAINER.get()) ? AdapterTestMod.SEALED_CONTAINER_TYPE.get()
+                : AdapterTestMod.CONTAINER_TYPE.get(), position, state);
         SealedStagingProbeFixture.observe("external.constructor.return");
     }
 

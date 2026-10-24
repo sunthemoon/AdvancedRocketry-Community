@@ -135,10 +135,10 @@ public final class SealedProductionProviderGameTests {
         }
     }
     private static BlockEntity stage(ServerLevel level, BlockPos at) {
-        var source = new FixtureContainerBlockEntity(at, AdapterTestMod.CONTAINER.get().defaultBlockState());
+        var source = new FixtureContainerBlockEntity(at, AdapterTestMod.SEALED_CONTAINER.get().defaultBlockState());
         source.setItem(0, new ItemStack(Items.DIAMOND, 7));
         try { return (BlockEntity) Class.forName(ACCESS).getMethod("stage", ServerLevel.class, BlockEntity.class,
-                ResourceLocation.class, RocketBlockEntityAdapter.class).invoke(null, level, source, AdapterTestMod.ADAPTER_ID, new FixtureInventoryAdapter()); }
+                ResourceLocation.class, RocketBlockEntityAdapter.class).invoke(null, level, source, AdapterTestMod.SEALED_ADAPTER_ID, new FixtureInventoryAdapter()); }
         catch (ReflectiveOperationException failure) { throw new IllegalStateException("Production staging fixture unavailable", failure); }
     }
     private static boolean unseal(BlockEntity carrier) {

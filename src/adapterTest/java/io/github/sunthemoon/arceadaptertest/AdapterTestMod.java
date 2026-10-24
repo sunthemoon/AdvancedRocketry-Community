@@ -27,6 +27,8 @@ public final class AdapterTestMod {
     public static final String MOD_ID = "arce_adapter_test";
     static final ResourceLocation CONTAINER_ID = id("cargo_container");
     static final ResourceLocation ADAPTER_ID = id("cargo_inventory");
+    static final ResourceLocation SEALED_CONTAINER_ID = id("sealed_cargo_container");
+    static final ResourceLocation SEALED_ADAPTER_ID = id("sealed_cargo_inventory");
     static final ResourceLocation BOUNDARY_ID = id("state_boundary");
     static final int PAYLOAD_VERSION = 1;
 
@@ -37,11 +39,16 @@ public final class AdapterTestMod {
 
     static final RegistryObject<Block> CONTAINER =
             BLOCKS.register(CONTAINER_ID.getPath(), FixtureContainerBlock::new);
+    static final RegistryObject<Block> SEALED_CONTAINER =
+            BLOCKS.register(SEALED_CONTAINER_ID.getPath(), FixtureContainerBlock::new);
     static final RegistryObject<Block> BOUNDARY =
             BLOCKS.register(BOUNDARY_ID.getPath(), FixtureBoundaryBlock::new);
     static final RegistryObject<BlockEntityType<FixtureContainerBlockEntity>> CONTAINER_TYPE =
             BLOCK_ENTITIES.register(CONTAINER_ID.getPath(), () -> BlockEntityType.Builder.of(
                     FixtureContainerBlockEntity::new, CONTAINER.get()).build(null));
+    static final RegistryObject<BlockEntityType<FixtureContainerBlockEntity>> SEALED_CONTAINER_TYPE =
+            BLOCK_ENTITIES.register(SEALED_CONTAINER_ID.getPath(), () -> BlockEntityType.Builder.of(
+                    FixtureContainerBlockEntity::new, SEALED_CONTAINER.get()).build(null));
 
     private static volatile int registrationEvents;
     private static volatile RegisterRocketAdaptersEvent receivedEvent;
@@ -94,6 +101,8 @@ public final class AdapterTestMod {
             return;
         }
         event.register(ADAPTER_ID, Set.of(CONTAINER_ID), PAYLOAD_VERSION, new FixtureInventoryAdapter());
+        // Independent wrapper lifetime: sealed-publication slow faults cannot consume the legacy fixture's warning.
+        event.register(SEALED_ADAPTER_ID, Set.of(SEALED_CONTAINER_ID), PAYLOAD_VERSION, new FixtureInventoryAdapter());
         requireConflict(() -> event.register(ADAPTER_ID, Set.of(ResourceLocation.tryParse("minecraft:furnace")),
                 PAYLOAD_VERSION, new FixtureInventoryAdapter()));
         requireConflict(() -> event.register(id("conflicting_inventory"), Set.of(CONTAINER_ID),

@@ -1608,6 +1608,33 @@
       "reason": "The checked legacy COMMITTED record observes the item-mutated destination's nonzero epoch before loaded endpoint proof and P1-F8 disassembly."
     },
     {
+      "id": "w152-sealed-changed-carrier-proof",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_DISASSEMBLY_DURABILITY_HELD transaction=[0-9a-f-]{36} phase=SEALED reason=BARRIER_VETO additional=\\[\\] overflow=0",
+      "counts": {"w152_hardening": 1},
+      "test": "SealedSupersessionGameTests.changedCarrierInvalidatesItsPendingNativeProofBeforeElection",
+      "reason": "Changing the retained carrier invalidates the sealed proof. The veto is logged once despite retries; U remains retained until the fixture is repaired."
+    },
+    {
+      "id": "w152-sealed-automation-proof-fence",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_DISASSEMBLY_DURABILITY_HELD transaction=[0-9a-f-]{36} phase=PREPARE reason=BARRIER_VETO additional=\\[\\] overflow=0",
+      "counts": {"w152_automation": 1},
+      "test": "SealedAutomationGameTests.tickingHoppersDropperAndCapabilityConsumerCannotAccessRetainedContainers",
+      "reason": "The deliberately foreign third cell holds native preparation while real automation ticks beside C; repairing that cell permits checked recovery."
+    },
+    {
+      "id": "w152-sealed-provider-restore-slow",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.compat.rocket.ExternalRocketBlockEntityAdapter/",
+      "message": "Rocket adapter arce_adapter_test:sealed_cargo_inventory exceeded returned-time budget in restore",
+      "counts": {"w152_provider": 1},
+      "test": "SealedProductionProviderGameTests.failedProductionPreparationRetainsCAndRejectsRemovedReferenceAccess",
+      "reason": "The isolated provider's restore exceeds the existing returned-time limit, is refused, and logs once independently of the legacy provider's warning state."
+    },
+    {
       "id": "w152-sealed-diagnostic-transition",
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
