@@ -18,7 +18,9 @@ final class W152NativeTerrain {
         var chunkPos = new ChunkPos(position); var chunk = level.getChunkSource().getChunkNow(chunkPos.x, chunkPos.z);
         var target = level.getBlockEntity(position);
         if (chunk == null || target == null) { throw new IllegalStateException("Native incremental-save fixture is absent"); }
-        CompoundTag expected = target.saveWithFullMetadata(); var map = level.getChunkSource().chunkMap;
+        // Match the actual ChunkSerializer frame, including vanilla's keepPacked=false metadata.
+        CompoundTag expected = chunk.getBlockEntityNbtForSaving(position); var map = level.getChunkSource().chunkMap;
+        if (expected == null) { throw new IllegalStateException("Vanilla member serialization refused"); }
         try {
             chunk.setUnsaved(true);
             // Version-pinned 1.20.1 mapping: ChunkMap.save(ChunkAccess), including its native serialization/save event.

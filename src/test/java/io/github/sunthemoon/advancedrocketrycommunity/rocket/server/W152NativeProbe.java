@@ -84,18 +84,27 @@ public final class W152NativeProbe {
             if (label.equals("C3_ELECT_AFTER")) { writerPhase = "C3"; }
             if (label.equals("C5_REMOVE_AFTER")) { writerPhase = "C5"; }
             if (label.equals("C2_STAGE_AFTER") && ++placed == 2 && boundary.startsWith("PARTIAL_C_")) {
-                W152NativeTerrain.save(server.overworld(), ORIGIN.south(), "PARTIAL_C", this::observe);
+                incrementalSave(ORIGIN.south(), "PARTIAL_C");
                 if (boundary.equals("PARTIAL_C_SAVED")) { pause(boundary); }
             }
             if (label.equals("UNSEAL_PUBLISH_AFTER") && boundary.equals("MIXED_C_N_SAVED")) {
                 for (var at : List.of(ORIGIN.south(), ORIGIN.east())) {
                     if (server.overworld().getBlockEntity(at) instanceof net.minecraft.world.Container) {
-                        W152NativeTerrain.save(server.overworld(), at, "MIXED_C_N", this::observe); pause(boundary);
+                        incrementalSave(at, "MIXED_C_N"); pause(boundary);
                     }
                 }
             }
         }
         if (label.equals(boundary)) { pause(label); }
+    }
+    private void incrementalSave(BlockPos at, String prefix) {
+        try { W152NativeTerrain.save(server.overworld(), at, prefix, this::observe); }
+        catch (RuntimeException failure) {
+            // Production correctly retains work on a callback failure. Preserve the fixture cause before that catch.
+            done = true; write("FAIL", prefix + ": " + failure);
+            AdvancedRocketryCommunity.LOGGER.info("W152_NATIVE_DONE status=FAIL");
+            throw failure;
+        }
     }
     private void pause(String label) {
         if (stage.equals("recover2") || !paused.compareAndSet(false, true)) { return; }
