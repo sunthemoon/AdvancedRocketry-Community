@@ -76,4 +76,24 @@ class RocketReleasePlanTest {
         assertEquals(scrub.checksum(), scrub.releasePassengers(Set.of(id(101))).checksum());
         assertThrows(IllegalArgumentException.class, () -> GovernedTransferFixture.create().record().releasePassengers(Set.of(id(100))));
     }
+
+    @Test void admissionComparesCompleteSnapshotValuesAcrossIndependentNativeDecodes() {
+        var source = legacy();
+        var landed = source.destinationSpawned(id(800)).advance(RocketTransferPhase.PASSENGERS_TRANSFERRED)
+                .advance(RocketTransferPhase.SOURCE_REMOVED).advance(RocketTransferPhase.COMMITTED);
+        for (var hold : Hold.values()) {
+            var t = hold == Hold.H1 ? source : landed;
+            var snapshot = hold == Hold.H1 ? t.sourceSnapshot() : t.destinationSnapshot();
+            var decoded = io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketSnapshotNbtCodec.decode(
+                    io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketSnapshotNbtCodec.encode(snapshot)).snapshot().orElseThrow();
+            assertNotSame(snapshot, decoded);
+            var flight = hold == Hold.H1 ? source(t) : t.destinationFlightData().land(10);
+            var planned = RocketReleasePlan.create(RocketRejoinRoot.empty(), id(900), t, hold,
+                    hold == Hold.H1 ? t.sourceEntityId() : t.destinationEntityId().orElseThrow(), decoded, flight, p -> false, Set.of());
+            assertEquals(snapshot.contentHash(), planned.batch().resources().snapshot());
+            var different = decoded.relocated(id(999), decoded.sourceDimension(), decoded.sourceOrigin(), decoded.createdAtGameTime());
+            assertThrows(IllegalArgumentException.class, () -> RocketReleasePlan.create(RocketRejoinRoot.empty(), id(901), t, hold,
+                    hold == Hold.H1 ? t.sourceEntityId() : t.destinationEntityId().orElseThrow(), different, flight, p -> false, Set.of()));
+        }
+    }
 }

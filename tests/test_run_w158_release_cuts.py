@@ -7,6 +7,16 @@ import run_w158_release_cuts as runner
 
 
 class ReleaseCutRunnerTests(unittest.TestCase):
+    def test_restart_has_one_exact_outbox_baseline_confirmation_hold(self):
+        line = "[01:00:00] [Server thread/WARN] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_FIRST_EVENT_HELD kind=first_moon_landing reason=SOURCE_UNCONFIRMED\n"
+        runner.audit_log([line], "H1", "C6", "check")
+        with self.assertRaises(runner.smoke.SmokeError):
+            runner.audit_log([], "H1", "C6", "check")
+        with self.assertRaises(runner.smoke.SmokeError):
+            runner.audit_log([line, line], "H1", "C6", "check")
+        with self.assertRaises(runner.smoke.SmokeError):
+            runner.audit_log([line.replace("SOURCE_UNCONFIRMED", "SOURCE_UNAVAILABLE")], "H1", "C6", "check")
+
     def test_source_hold_has_one_exact_existing_recovery_warning(self):
         line = "[01:00:00] [Server thread/WARN] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_RECOVERY transfer=00000000-0000-4000-8000-000000000001 phase=PREPARED source_count=1 destination_count=0 action=KEEP_SOURCE status=WAITING_FOR_PASSENGERS\n"
         runner.audit_log([line], "H1", "C0", "seed")

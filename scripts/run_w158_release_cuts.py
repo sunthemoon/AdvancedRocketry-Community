@@ -34,6 +34,7 @@ def audit_log(lines, hold, cut, mode):
     row = manifest["expected_warn_counts"].get(f"{hold}-{cut}-{mode}", {})
     expected = {state: row.get(state, 0) for state in ("GONE", "CONFLICT")}
     expected["source_hold"] = int(hold == "H1" and (mode == "seed" or mode == "recover" and cut in ("C0", "C1")))
+    expected["outbox_hold"] = int(mode != "seed")
     source = re.compile(re.escape(manifest["existing_source_hold_message"]).replace(re.escape("{uuid}"), UUID_PATTERN))
     counts = dict.fromkeys(expected, 0)
     remainder = []
@@ -41,8 +42,8 @@ def audit_log(lines, hold, cut, mode):
         header = HEADER.fullmatch(line.rstrip())
         matched = HELD.fullmatch(header["message"]) if header else None
         if (header and header["logger"] in PROJECT_LOGGERS and header["thread"] == "Server thread" and header["level"] == "WARN"
-                and (matched or source.fullmatch(header["message"]))):
-            counts[matched[1] if matched else "source_hold"] += 1
+                and (matched or source.fullmatch(header["message"]) or header["message"] == manifest["existing_outbox_hold_message"])):
+            counts[matched[1] if matched else "source_hold" if source.fullmatch(header["message"]) else "outbox_hold"] += 1
         else:
             remainder.append(line)
     errors = smoke.scan_log(remainder, expected_mod_version=smoke.V180_STARTUP_VERSION)
@@ -185,6 +186,13 @@ def run(args):
                     baseline = verify(disk, hold, cut, mode, baseline)
                     row["conserved"] = True
                     row["intentional_fixture_deletion"] = cut == "C14"
+                except Exception:
+                    if process.process.poll() is None:
+                        process.abort()
+                    failed_capture = evidence / (name + "-failed-saved")
+                    if world.is_dir() and not failed_capture.exists():
+                        capture(world, failed_capture)
+                    raise
                 finally:
                     if process.process.poll() is None:
                         process.abort()

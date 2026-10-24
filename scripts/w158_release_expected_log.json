@@ -14,6 +14,8 @@
   "all_other_warning_counts": 0,
   "existing_source_hold_message": "ARCE_TRANSFER_RECOVERY transfer={uuid} phase=PREPARED source_count=1 destination_count=0 action=KEEP_SOURCE status=WAITING_FOR_PASSENGERS",
   "existing_source_hold_count": "One in every H1 seed, and one in C0/C1 recovery before a fresh admission. Zero in every other start.",
+  "existing_outbox_hold_message": "ARCE_FIRST_EVENT_HELD kind=first_moon_landing reason=SOURCE_UNCONFIRMED",
+  "existing_outbox_hold_count": "One per recovery/check JVM while the loaded journal's outbox obtains its fresh baseline acknowledgement; zero in seed JVMs.",
   "probe_messages": {
     "baseline": "ARCE_W158_BASELINE case={hold}:{cut}:{mode} logical={uuid} transfer={uuid} resources=Resources[snapshot={sha256}, fuel={sha256}]",
     "paused": "ARCE_W158_PAUSED case={hold}:{cut}:seed boundary={boundary}",

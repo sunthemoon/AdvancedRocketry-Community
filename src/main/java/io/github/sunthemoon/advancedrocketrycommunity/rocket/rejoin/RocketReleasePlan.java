@@ -7,6 +7,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.*;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketFlightNbtCodec;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketSnapshotNbtCodec;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRegion;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,10 +31,10 @@ public record RocketReleasePlan(Batch batch, List<Entry> entries, RocketPassenge
         require(hold == Hold.H1
                 ? transfer.phase() == RocketTransferPhase.PREPARED
                     && (flight.state() == RocketFlightState.ASSEMBLED || flight.state() == RocketFlightState.FUELED)
-                    && snapshot.equals(transfer.sourceSnapshot())
+                    && sameSnapshot(snapshot, transfer.sourceSnapshot())
                 : transfer.phase() == RocketTransferPhase.COMMITTED && flight.state().acceptsFuel()
                     && transfer.destinationEntityId().filter(authority::equals).isPresent()
-                    && snapshot.equals(transfer.destinationSnapshot()), "Not a stationary legacy hold");
+                    && sameSnapshot(snapshot, transfer.destinationSnapshot()), "Not a stationary legacy hold");
         require(root.batches().stream().noneMatch(b -> b.rocket().equals(transfer.logicalRocketId())
                 && root.entries().stream().anyMatch(e -> e.release().equals(b.release()) && e.seat() == Seat.PENDING)),
                 "Release already pending for rocket");
@@ -82,6 +83,9 @@ public record RocketReleasePlan(Batch batch, List<Entry> entries, RocketPassenge
 
     private static Slot slot(RocketStructureSnapshot snapshot) {
         return new Slot(snapshot.sourceDimension().toString(), snapshot.sourceOrigin().x() >> 4, snapshot.sourceOrigin().z() >> 4);
+    }
+    private static boolean sameSnapshot(RocketStructureSnapshot actual, RocketStructureSnapshot recorded) {
+        return actual == recorded || RocketSnapshotNbtCodec.encode(actual).equals(RocketSnapshotNbtCodec.encode(recorded));
     }
     private static Position position(RocketPosition p) { return new Position(p.x(), p.y(), p.z()); }
 }
