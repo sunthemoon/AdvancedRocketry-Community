@@ -19,7 +19,12 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.monitor.RocketMonit
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketMarginGameTestSupport;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.RocketDiscoveryColumns;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.RocketLandingPadSelector;
+import io.github.sunthemoon.advancedrocketrycommunity.station.forge.StationPlatformGenerator;
+import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState;
+import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationCreationService;
 import io.github.sunthemoon.advancedrocketrycommunity.travel.model.TravelTarget;
+import java.util.List;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
@@ -50,7 +55,7 @@ public final class EscrowMonitorGameTests {
     }
     private static final class Flight implements net.minecraft.gametest.framework.GameTestListener {
         final GameTestHelper helper;
-        final ServerLevel earth, moon;
+        final ServerLevel earth, destinationLevel;
         final GameTestTickPacer pacer;
         final BlockPos source = new BlockPos(660008, 100, 660008), device = source.south(3);
         final UUID key = UUID.randomUUID();
@@ -60,13 +65,16 @@ public final class EscrowMonitorGameTests {
         RocketStructureSnapshot destination;
         RocketMonitorQuote quote;
         RocketTransferRecord prepared;
+        StationState station;
+        TravelTarget target = new TravelTarget.BodySurface(CelestialIds.MOON_ID);
         int step;
         final boolean disarmAfterPrepared, coldDestination;
         long warmupStarted;
         Flight(GameTestHelper helper, boolean disarmAfterPrepared, boolean coldDestination) {
             this.disarmAfterPrepared = disarmAfterPrepared; this.coldDestination = coldDestination;
-            this.helper = helper; earth = helper.getLevel(); moon = earth.getServer().getLevel(CelestialIds.MOON_LEVEL);
-            helper.assertTrue(moon != null, "Moon is unavailable"); pacer = new GameTestTickPacer(earth.getServer());
+            this.helper = helper; earth = helper.getLevel();
+            destinationLevel = earth.getServer().getLevel(coldDestination ? CelestialIds.SPACE_LEVEL : CelestialIds.MOON_LEVEL);
+            helper.assertTrue(destinationLevel != null, "Destination is unavailable"); pacer = new GameTestTickPacer(earth.getServer());
         }
         void start() {
             try {
@@ -81,7 +89,7 @@ public final class EscrowMonitorGameTests {
         private void releaseTickets() {
             earth.getChunkSource().removeRegionTicket(FIXTURE, new ChunkPos(source), 2, key);
             if (destination != null) {
-                for (var column : RocketDiscoveryColumns.of(destination).columns()) { moon.getChunkSource().removeRegionTicket(FIXTURE, column, 2, key); }
+                for (var column : RocketDiscoveryColumns.of(destination).columns()) { destinationLevel.getChunkSource().removeRegionTicket(FIXTURE, column, 2, key); }
             }
         }
         void tick() {
@@ -91,19 +99,31 @@ public final class EscrowMonitorGameTests {
                 if (!journal.retryChecked(server)) { return; }
                 data = ResourceEscrowSavedData.forTests(server); data.bind(server);
                 earth.getChunkSource().addRegionTicket(FIXTURE, new ChunkPos(source), 2, key);
-                rocket = governed(earth, source, data.ledger().id()); step = 1; return;
+                rocket = governed(earth, source, data.ledger().id());
+                if (coldDestination) {
+                    // A fresh station isolates the cold pad from entities left by earlier Moon flights.
+                    station = new StationCreationService(new StationPlatformGenerator(), id -> true)
+                            .create(server, rocket.ownerId().orElseThrow(), "Monitor Warm-up Station", CelestialIds.EARTH_ID, false)
+                            .station().orElseThrow();
+                    target = new TravelTarget.Station(station.stationId());
+                }
+                step = 1; return;
             }
             if (step == 1) {
                 if (!columnReady(earth, source)) { return; }
                 if (!rocket.isAddedToWorld()) { helper.assertTrue(earth.addFreshEntity(rocket), "Source admission failed"); return; }
                 if (!journal.retryChecked(server)) { return; }
-                var pads = predict(server, moon, rocket, 1); if (pads == null) { return; }
-                destination = pads.get(0);
                 if (coldDestination) {
-                    requireReleasable(helper, server, pads);
+                    var pad = new RocketLandingPadSelector().selectStation(destinationLevel, rocket.snapshot().orElseThrow(),
+                            UUID.randomUUID(), station, List.of(), destinationLevel.getGameTime(), true);
+                    helper.assertTrue(pad.success(), "Fresh station pad is unavailable: " + pad.detail());
+                    destination = pad.snapshot().orElseThrow();
+                    requireReleasable(helper, server, List.of(destination));
                     if (!cold(server, destination)) { return; }
                 } else {
-                    for (var column : RocketDiscoveryColumns.of(destination).columns()) { moon.getChunkSource().addRegionTicket(FIXTURE, column, 2, key); }
+                    var pads = predict(server, destinationLevel, rocket, 1); if (pads == null) { return; }
+                    destination = pads.get(0);
+                    for (var column : RocketDiscoveryColumns.of(destination).columns()) { destinationLevel.getChunkSource().addRegionTicket(FIXTURE, column, 2, key); }
                 }
                 earth.setBlockAndUpdate(device, ModBlocks.ROCKET_MONITORING_STATION.get().defaultBlockState());
                 monitor = (RocketMonitorBlockEntity) earth.getBlockEntity(device);
@@ -113,7 +133,7 @@ public final class EscrowMonitorGameTests {
             }
             if (step == 2) {
                 if (!coldDestination && !RocketMarginGameTestSupport.endReady(server, destination) || !journal.retryChecked(server)) { return; }
-                quote = RocketRuntime.monitorFlights().orElseThrow().quote(monitor, new TravelTarget.BodySurface(CelestialIds.MOON_ID));
+                quote = RocketRuntime.monitorFlights().orElseThrow().quote(monitor, target);
                 helper.assertTrue(quote.ready() && monitor.configure(quote, true, 0), "Cannot arm governed monitor: " + quote.code());
                 helper.assertTrue(quote.cost() == quote.plan().propulsionDebit().primary(), "Quote does not display the native primary debit");
                 helper.assertTrue(server.getPlayerList().getPlayer(monitor.root().owner()) == null, "Owner is not offline");
@@ -135,7 +155,8 @@ public final class EscrowMonitorGameTests {
                 if (!warming.state().equals("READY") || server.getTickCount() - warmupStarted < 20) { return; }
                 earth.setBlockAndUpdate(device.east(), Blocks.AIR.defaultBlockState()); monitor.signal(false);
                 earth.setBlockAndUpdate(device.east(), Blocks.REDSTONE_BLOCK.defaultBlockState()); monitor.signal(true);
-                helper.assertTrue(monitor.lastFlight() == RocketFlightRequestCode.JOURNAL_PENDING, "Fresh ready edge did not prepare");
+                helper.assertTrue(monitor.lastFlight() == RocketFlightRequestCode.JOURNAL_PENDING,
+                        "Fresh ready edge did not prepare: " + monitor.lastFlight());
                 step = 3; return;
             }
             if (step == 3) {
@@ -151,7 +172,7 @@ public final class EscrowMonitorGameTests {
             }
             if (journal.find(prepared.transferId()).isPresent()
                     || data.ledger().armedFlights().stream().anyMatch(armed -> armed.transfer().equals(prepared.transferId()))) { return; }
-            var entity = moon.getEntity(prepared.nativeTransfer().orElseThrow().armed().destination());
+            var entity = destinationLevel.getEntity(prepared.nativeTransfer().orElseThrow().armed().destination());
             if (!(entity instanceof RocketEntity arrival)) { return; }
             var flight = arrival.flightData().orElseThrow();
             helper.assertTrue(flight.state() == RocketFlightState.LANDED && RocketEscrowGate.idle(arrival), "Flight did not settle");
