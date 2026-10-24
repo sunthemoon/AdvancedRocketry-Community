@@ -66,6 +66,33 @@ class EscrowPreparationLeaseTest {
         } finally { journal.stop(); }
     }
 
+    @Test void captureCannotHideAnUnsampledUseOfTheTransferByAnotherRocket() throws Exception {
+        var journal = new RocketTransferSavedData(); var peer = GovernedTransferFixture.create().record();
+        try {
+            acknowledge(journal);
+            var lease = new EscrowFlightJournal.PreparationLease(journal, logical, peer.transferId(), 1);
+            assertTrue(lease.getAsBoolean());
+            assertNotEquals(logical, peer.logicalRocketId());
+            journal.put(peer); acknowledge(journal); journal.remove(peer.transferId()); acknowledge(journal);
+            // No lease read between publication and acknowledged removal.
+            assertFalse(lease.capture(2), "Serial capture must retain the original transfer history");
+            assertFalse(lease.getAsBoolean());
+            assertTrue(new EscrowFlightJournal.PreparationLease(journal, logical, peer.transferId(), 2).capture(2));
+        } finally { journal.stop(); }
+    }
+
+    @Test void anUnsampledTransferChangeAfterCaptureRefusesReplacement() throws Exception {
+        var journal = new RocketTransferSavedData(); var peer = GovernedTransferFixture.create().record();
+        try {
+            acknowledge(journal);
+            var lease = new EscrowFlightJournal.PreparationLease(journal, logical, peer.transferId(), 1);
+            assertTrue(lease.capture(2));
+            journal.put(peer); acknowledge(journal); journal.remove(peer.transferId()); acknowledge(journal);
+            assertFalse(lease.getAsBoolean(), "The writer guard must remember transfer changes after capture");
+            assertFalse(lease.capture(3), "Recapture cannot renew the original transfer-history lease");
+        } finally { journal.stop(); }
+    }
+
     @Test void theInitialPreflightAndJournalLifecycleStillRefuse() throws Exception {
         var journal = new RocketTransferSavedData();
         try {
