@@ -1824,6 +1824,32 @@ changes no decision status and accepts no risk. The risk is R-035.
 No saved format changes except the N3-B2 carrier and the `SEALED_DISASSEMBLY` record type that R93 authorizes above.
 This is a development implementation note, not owner acceptance or a Gate result.
 
+### W80 implementation note: releasing a legacy rocket held by offline passengers (design frozen, not yet implemented)
+
+This note records the frozen design `records/W80-DESIGN.md` (revision 3, merged `aee68ef3`; reviews W80-review
+REDESIGN and W80-review-2 APPROVE-WITH-CHANGES). Root registered it on 2026-10-24, before implementation; the risk is
+R-035. It covers the F6-style indefinite wait of a legacy (not governed) rocket whose recorded passengers are never
+online together. Governed records stay excluded.
+
+- **The action.** A legacy-only operator command, `release-absent`, records bounded placement and seat-revocation
+  obligations in a lazy, checked, managed sidecar. The journal stays root 3, and the governed protocol is unchanged.
+  Before writing, it proves the entity's current manifest on disk, then removes only the released seats from that
+  manifest. Before the rocket accepts a later boarding, it proves in the native entity store and the reconstructible
+  journal that no recorded copy holds a released seat, or that the rocket is gone.
+- **Placement.** Players are placed as soon as the release is durable and its seats are removed in RAM. They are
+  placed unmounted, under bounded protection, at a probed pad or an equally checked Overworld fallback. A placement
+  retires only after an exact streaming readback of the installed player file's marker, dimension and position,
+  followed by a checked acknowledgement, never after `SaveToFile` alone. The server's own `saveAll` is called at most
+  once per 100 ticks to prompt that save.
+- **Not added:** an offline player-data writer, a new injection, or an automatic release timer.
+- **Permission.** Level 3 is checked when the command is parsed and again when it executes. Automatic origins (tick,
+  load and scheduled functions, command blocks) are refused. Its effect inside functions depends on the server's
+  function compilation level.
+- **Saved format:** the new sidecar (schema 1), lazily created; a world that never uses the command has none. A future,
+  malformed, oversized or unreadable sidecar refuses startup with its bytes unchanged. Downgrade after use is
+  unsupported.
+- **Leaves:** W80-storage, W80-release and W80-rejoin (the design's Appendix B), each with its own independent review.
+
 ### W11c and W11d implementation note: rocket cargo scope and protections (design W11CD, admission disabled)
 
 This note records the cargo design (W11CD, frozen at `49f7e08b`) and its first leaves: C-I, the
