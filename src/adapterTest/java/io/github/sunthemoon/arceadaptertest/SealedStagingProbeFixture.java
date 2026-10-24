@@ -6,6 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Container;
+import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
@@ -82,6 +83,10 @@ final class SealedStagingProbeFixture {
         boolean prematureWorldAccess;
         int extracted;
         int foreignInserted;
+        final SimpleContainer recipient = new SimpleContainer(1);
+        ItemStack foreignSupply = new ItemStack(Items.GOLD_INGOT, 3);
+        FluidStack receivedFluid = FluidStack.EMPTY;
+        FluidStack foreignFluid = new FluidStack(Fluids.LAVA, 500);
         int firstCapability = -1;
         IItemHandler cached;
         IFluidHandler cachedFluid;
@@ -102,16 +107,21 @@ final class SealedStagingProbeFixture {
             // Native Container and cached InvWrapper access do not require installation in the world.
             consumed = true;
             if (cached != null) {
-                extracted = cached.extractItem(0, 64, false).getCount();
-                ItemStack foreign = new ItemStack(Items.GOLD_INGOT, 3);
-                foreignInserted = 3 - cached.insertItem(Math.min(1, cached.getSlots() - 1), foreign, false).getCount();
+                recipient.setItem(0, cached.extractItem(0, 64, false));
+                foreignSupply = cached.insertItem(Math.min(1, cached.getSlots() - 1), foreignSupply, false);
+                extracted = recipient.getItem(0).getCount();
+                foreignInserted = 3 - foreignSupply.getCount();
             } else if (retained instanceof Container container) {
-                extracted = container.removeItemNoUpdate(0).getCount();
-                container.setItem(1, new ItemStack(Items.GOLD_INGOT, 3));
+                recipient.setItem(0, container.removeItemNoUpdate(0));
+                extracted = recipient.getItem(0).getCount();
+                container.setItem(1, foreignSupply.copy());
                 foreignInserted = container.getItem(1).getCount();
+                foreignSupply.shrink(foreignInserted);
             } else if (cachedFluid != null) {
-                extracted = cachedFluid.drain(1_000, IFluidHandler.FluidAction.EXECUTE).getAmount();
-                foreignInserted = cachedFluid.fill(new FluidStack(Fluids.LAVA, 500), IFluidHandler.FluidAction.EXECUTE);
+                receivedFluid = cachedFluid.drain(1_000, IFluidHandler.FluidAction.EXECUTE);
+                extracted = receivedFluid.getAmount();
+                foreignInserted = cachedFluid.fill(foreignFluid, IFluidHandler.FluidAction.EXECUTE);
+                foreignFluid.shrink(foreignInserted);
             }
             events.add("retained-consumer:removed=" + retained.isRemoved() + ",original=" + extracted
                     + ",foreign=" + foreignInserted);

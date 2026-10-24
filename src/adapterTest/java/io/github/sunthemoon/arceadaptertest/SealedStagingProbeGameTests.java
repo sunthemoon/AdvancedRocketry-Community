@@ -114,8 +114,10 @@ public final class SealedStagingProbeGameTests {
                     helper.assertTrue(!trace.prematureWorldAccess, "An uninstalled target was reachable through world lookup");
                     int rawOriginal = resource(trace.retained, false);
                     int rawForeign = resource(trace.retained, true);
-                    int totalOriginal = original(block) + trace.extracted + rawOriginal;
-                    int totalForeign = foreign(block) - trace.foreignInserted + rawForeign;
+                    int totalOriginal = original(block) + trace.recipient.getItem(0).getCount()
+                            + trace.receivedFluid.getAmount() + rawOriginal;
+                    int totalForeign = (block == host("pressurized_tank")
+                            ? trace.foreignFluid.getAmount() : trace.foreignSupply.getCount()) + rawForeign;
                     report(block, failure + ":retained", trace, totalOriginal, totalForeign);
                     if (totalOriginal != original(block) || totalForeign != foreign(block)) {
                         violations.add(id(block) + "/" + failure + " original=" + totalOriginal + "/"
@@ -145,6 +147,7 @@ public final class SealedStagingProbeGameTests {
             trace.prepared.setLevel(level);
             trace.cached = trace.prepared.getCapability(ForgeCapabilities.ITEM_HANDLER).resolve().orElse(null);
             trace.cachedFluid = trace.prepared.getCapability(ForgeCapabilities.FLUID_HANDLER).resolve().orElse(null);
+            trace.events.add("raw.capability.resolved:item=" + (trace.cached != null) + ",fluid=" + (trace.cachedFluid != null));
             trace.observe("target.bound.uninstalled");
         }
         return trace;
