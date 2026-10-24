@@ -38,7 +38,11 @@ public final class EscrowMonitorGameTests {
     private EscrowMonitorGameTests() { }
     @GameTest(template = "empty", batch = "monitor_governed", timeoutTicks = 2400)
     public static void offlineMonitorUsesGovernedPreparationAndOneAcknowledgedDebit(GameTestHelper helper) {
-        new Flight(helper).start();
+        new Flight(helper, false).start();
+    }
+    @GameTest(template = "empty", batch = "monitor_governed_cutoff", timeoutTicks = 2400)
+    public static void disarmingAfterPreparedKeepsTheAcceptedLaunchAndItsRealOutcome(GameTestHelper helper) {
+        new Flight(helper, true).start();
     }
     private static final class Flight implements net.minecraft.gametest.framework.GameTestListener {
         final GameTestHelper helper;
@@ -53,7 +57,9 @@ public final class EscrowMonitorGameTests {
         RocketMonitorQuote quote;
         RocketTransferRecord prepared;
         int step;
-        Flight(GameTestHelper helper) {
+        final boolean disarmAfterPrepared;
+        Flight(GameTestHelper helper, boolean disarmAfterPrepared) {
+            this.disarmAfterPrepared = disarmAfterPrepared;
             this.helper = helper; earth = helper.getLevel(); moon = earth.getServer().getLevel(CelestialIds.MOON_LEVEL);
             helper.assertTrue(moon != null, "Moon is unavailable"); pacer = new GameTestTickPacer(earth.getServer());
         }
@@ -112,6 +118,10 @@ public final class EscrowMonitorGameTests {
                 if (prepared == null) { return; }
                 helper.assertTrue(prepared.nativeTransfer().isPresent(), "Monitor bypassed governed preparation");
                 helper.assertTrue(!prepared.transferId().equals(quote.plan().requestId()), "Preview ID became a flight request");
+                if (disarmAfterPrepared) {
+                    monitor.disarm();
+                    helper.assertTrue(!monitor.root().armed() && monitor.root().powered(), "Disarm lost the held edge");
+                }
                 step = 4;
             }
             if (journal.find(prepared.transferId()).isPresent()
