@@ -1545,6 +1545,24 @@
       "reason": "W98-R3: a decoy naming the same logical rocket in the survivor's slot refuses two capture attempts, logged once for the reason; the third attempt, after recovery's own ticket expired, proves both slots."
     },
     {
+      "id": "w151-pinned-partial-census-deadline",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RETIREMENT_RETRY transfer=[0-9a-f-]{36} logical=[0-9a-f-]{36} site=RECOVERED_SOURCE reason=DEADLINE retry_ticks=200",
+      "counts": {"ordinary_retirement_pinned_census": 1},
+      "test": "RocketPinnedCensusGameTests.aPinnedDiscardedColumnExpiresTheWholeCensusAndTwoSharedReturnsWait",
+      "reason": "G2 deliberately retains the governed proof of a discarded-copy column beyond the unchanged 100-tick partial-census deadline, then checks cleanup and the existing 200-tick retry."
+    },
+    {
+      "id": "w151-pinned-partial-census-recovery",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RECOVERY transfer=[0-9a-f-]{36} phase=PREPARED source_count=1 destination_count=1 action=REMOVE_DESTINATION_KEEP_SOURCE status=RECOVERED",
+      "counts": {"ordinary_retirement_pinned_census": 1},
+      "test": "RocketPinnedCensusGameTests.aPinnedDiscardedColumnExpiresTheWholeCensusAndTwoSharedReturnsWait",
+      "reason": "G2 reports recovery exactly once after the later full census proves both the stationary survivor and the absence of its discarded destination copy."
+    },
+    {
       "id": "w116-unsupported-storage-fallback",
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
