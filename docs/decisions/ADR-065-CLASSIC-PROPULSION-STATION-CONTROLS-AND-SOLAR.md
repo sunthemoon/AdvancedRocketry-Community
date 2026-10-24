@@ -1849,6 +1849,8 @@ online together. Governed records stay excluded.
   malformed, oversized or unreadable sidecar refuses startup with its bytes unchanged. Downgrade after use is
   unsupported.
 - **Leaves:** W80-storage, W80-release and W80-rejoin (the design's Appendix B), each with its own independent review.
+  W80-storage merged on 2026-10-25 (W157 with W157F, `c7237169c`; review APPROVE after W157-R1): the sidecar, its checked
+  writer, lazy lifecycle and startup refusal, with no command.
 
 ### W11c and W11d implementation note: rocket cargo scope and protections (design W11CD, admission disabled)
 
