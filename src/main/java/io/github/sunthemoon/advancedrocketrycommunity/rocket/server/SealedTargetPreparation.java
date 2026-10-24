@@ -32,6 +32,12 @@ public final class SealedTargetPreparation implements AutoCloseable {
     public static Optional<SealedTargetPreparation> prepare(Thread owner, BlockPos pos, BlockState state,
             RocketBlockEntityPayload payload, RocketBlockEntityAdapters adapters) {
         requireOwner(owner);
+        try { return prepareOwned(owner, pos, state, payload, adapters); }
+        catch (RuntimeException failure) { return Optional.empty(); }
+    }
+
+    private static Optional<SealedTargetPreparation> prepareOwned(Thread owner, BlockPos pos, BlockState state,
+            RocketBlockEntityPayload payload, RocketBlockEntityAdapters adapters) {
         if (state.isAir() || state.getBlock() instanceof SealedRocketBlock
                 || state.hasBlockEntity() != (payload != null)) { return Optional.empty(); }
         if (payload == null) { return Optional.of(new SealedTargetPreparation(owner, null)); }

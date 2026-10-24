@@ -100,6 +100,13 @@ public final class RocketManager implements RocketOperationService {
     }
 
     void sealedOnPlace(ServerLevel level, BlockPos position) { sealed.onPlace(level, position); }
+    boolean sealedOnRemove(ServerLevel level, BlockPos position, net.minecraft.world.level.block.state.BlockState next) {
+        return sealed.onRemove(level, position, next);
+    }
+    boolean unsealForReleaseTest(ServerLevel level, io.github.sunthemoon.advancedrocketrycommunity.rocket.sealed.SealedRocketBlockEntity carrier) {
+        io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowTestEndpoints.requireEnabled(level.getServer());
+        return sealed.unseal(level, carrier);
+    }
     boolean sealedFrozen(RocketEntity rocket) { return sealed.frozen(rocket); }
     String sealedDiagnostic(UUID id) { return sealed.diagnostic(id); }
     UUID beginSealedForReleaseTest(RocketEntity rocket,

@@ -73,6 +73,16 @@ class SealedTargetPreparationTest {
         prepared.getClass().getMethod("published").invoke(prepared); close(prepared);
         assertFalse(target.isRemoved()); assertEquals(7, ((Container) target).getItem(0).getCount());
     }
+    @Test void constructorFailureDoesNotStartRestoreOrConsumeThePayload() throws Exception {
+        var block = new net.minecraft.world.level.block.BaseEntityBlock(net.minecraft.world.level.block.state.BlockBehaviour.Properties.of()) {
+            @Override public BlockEntity newBlockEntity(BlockPos at, BlockState state) {
+                throw new IllegalStateException("fixture constructor failure");
+            }
+        };
+        var payload = inventory();
+        assertTrue(prepare(block.defaultBlockState(), payload, RocketBlockEntityAdapters.defaults()).isEmpty());
+        assertEquals(7, payload.data().getList("Items", 10).getCompound(0).getByte("Count"));
+    }
     @Test void plainMembersNeedNoTargetAndPayloadShapeMismatchesRefuse() throws Exception {
         var plain = prepare(Blocks.IRON_BLOCK.defaultBlockState(), null, RocketBlockEntityAdapters.defaults()).orElseThrow();
         assertNull(target(plain)); close(plain);

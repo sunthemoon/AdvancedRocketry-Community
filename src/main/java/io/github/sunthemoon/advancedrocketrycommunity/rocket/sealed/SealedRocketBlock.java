@@ -27,6 +27,11 @@ public final class SealedRocketBlock extends BaseEntityBlock {
         }
         super.onPlace(state, level, pos, previous, moving);
     }
+    @Override public void onRemove(BlockState state, Level level, BlockPos pos, BlockState next, boolean moving) {
+        if (level instanceof net.minecraft.server.level.ServerLevel server
+                && io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime.sealedOnRemove(server, pos, next)) { return; }
+        super.onRemove(state, level, pos, next, moving);
+    }
     @Override public ItemStack getCloneItemStack(BlockGetter level, BlockPos pos, BlockState state) { return ItemStack.EMPTY; }
     @Override public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player,
             InteractionHand hand, BlockHitResult hit) { return InteractionResult.FAIL; }

@@ -46,6 +46,14 @@ public final class RocketRuntime {
     public static void sealedOnPlace(ServerLevel level, BlockPos position) {
         if (level.getServer().isSameThread() && service instanceof RocketManager manager) { manager.sealedOnPlace(level, position); }
     }
+    public static boolean sealedOnRemove(ServerLevel level, BlockPos position, net.minecraft.world.level.block.state.BlockState next) {
+        return level.getServer().isSameThread() && service instanceof RocketManager manager && manager.sealedOnRemove(level, position, next);
+    }
+    public static boolean unsealForReleaseTest(ServerLevel level,
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.sealed.SealedRocketBlockEntity carrier) {
+        io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowTestEndpoints.requireEnabled(level.getServer());
+        return service instanceof RocketManager manager && manager.unsealForReleaseTest(level, carrier);
+    }
     public static boolean sealedFrozen(RocketEntity rocket) {
         return service instanceof RocketManager manager && manager.sealedFrozen(rocket);
     }

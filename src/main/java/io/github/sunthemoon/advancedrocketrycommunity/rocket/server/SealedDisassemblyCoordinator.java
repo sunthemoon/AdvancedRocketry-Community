@@ -33,6 +33,7 @@ final class SealedDisassemblyCoordinator {
     private SealedWorkBudget budget;
     private SealedJournalRequests writes;
     private SealedCarrierPlacement placement;
+    private SealedMaterializer materializer;
     private int cursor;
 
     SealedDisassemblyCoordinator(RocketTransactionExecutor transactions, RocketOrdinaryRetirement ordinary) {
@@ -45,6 +46,7 @@ final class SealedDisassemblyCoordinator {
         }
         if (this.server != null) { return; }
         this.server = server; budget = new SealedWorkBudget(); placement = new SealedCarrierPlacement();
+        materializer = new SealedMaterializer();
         var data = RocketTransactionSavedData.get(server);
         writes = new SealedJournalRequests(new SealedJournalRequests.Port() {
             public long now() { return server.getTickCount(); }
@@ -116,6 +118,31 @@ final class SealedDisassemblyCoordinator {
     }
     boolean overlaps(RocketRegion region) { return work.values().stream().anyMatch(item -> item.world.entry.record().region().overlaps(region)); }
     void onPlace(ServerLevel level, BlockPos pos) { if (server == level.getServer() && placement != null) { placement.onPlace(level, pos); } }
+    boolean onRemove(ServerLevel level, BlockPos pos, net.minecraft.world.level.block.state.BlockState next) {
+        return server == level.getServer() && materializer != null && materializer.onRemove(level, pos, next);
+    }
+    boolean unseal(ServerLevel level, io.github.sunthemoon.advancedrocketrycommunity.rocket.sealed.SealedRocketBlockEntity carrier) {
+        bind(level.getServer()); budget.beginTick(server.getTickCount());
+        var member = carrier.member().orElse(null);
+        if (member == null) { return false; }
+        var point = new RocketRegion(member.dimension(), member.position(), member.position());
+        // The same lock excludes synchronous assembly/disassembly reentrancy, not just durable U entries.
+        try (var lock = transactions.reserveSealed(member.transaction(), point)) {
+            if (lock == null) { return false; }
+            return materializer.unseal(level, carrier, transactions.adapters(), () -> absentForUnseal(member, point), budget);
+        }
+    }
+    private boolean absentForUnseal(io.github.sunthemoon.advancedrocketrycommunity.rocket.sealed.SealedRocketMember member, RocketRegion point) {
+        var data = RocketTransactionSavedData.get(server);
+        var status = data.absenceStatus(member.transaction(), member.snapshot(), member.entity());
+        if (status == RocketTransactionSavedData.AbsenceStatus.WRITE_REQUIRED) { writes.request(); }
+        if (!data.acknowledgedAbsent(member.transaction(), member.snapshot(), member.entity())) { return false; }
+        return java.util.stream.Stream.concat(data.entries().stream(), work.values().stream().map(item -> item.world.entry))
+                .noneMatch(entry -> entry.record().transactionId().equals(member.transaction())
+                || entry.record().snapshotId().equals(member.snapshot())
+                || entry.record().rocketEntityIdOptional().filter(member.entity()::equals).isPresent()
+                || entry.record().region().overlaps(point));
+    }
     private int activeAttempts() { return (int) work.values().stream().filter(item -> item.world.activeAttempt()).count(); }
     String diagnostic(UUID id) {
         var item = work.get(id);
@@ -150,6 +177,6 @@ final class SealedDisassemblyCoordinator {
     void clear() {
         for (var item : work.values()) { item.world.close(); item.lock.close(); }
         work.clear(); if (placement != null) { placement.clear(); }
-        server = null; budget = null; writes = null; placement = null; cursor = 0;
+        server = null; budget = null; writes = null; placement = null; materializer = null; cursor = 0;
     }
 }
