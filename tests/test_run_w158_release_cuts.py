@@ -7,6 +7,60 @@ import run_w158_release_cuts as runner
 
 
 class ReleaseCutRunnerTests(unittest.TestCase):
+    def test_recovery_kill_is_independent_and_second_restart_is_clean(self):
+        self.assertEqual("C5", runner.stop_boundary("C5", "seed", "B1_CAPTURE"))
+        self.assertEqual("B1_CAPTURE", runner.stop_boundary("C5", "recover", "B1_CAPTURE"))
+        self.assertEqual("S2_PENDING", runner.stop_boundary("C2", "recover", "S2_PENDING"))
+        self.assertEqual("", runner.stop_boundary("C5", "check", "B1_CAPTURE"))
+        self.assertEqual("", runner.stop_boundary("C5", "recover", ""))
+
+    @staticmethod
+    def pending_seed():
+        return {"rockets": [{"entity": {"UUID": [1, 2, 3, 4], "RocketEntityData": {
+            "snapshot": {"items": [42]}, "flight_data": {"fuel": {"amount": 1000, "debits": []},
+            "passengers": {"assignments": []}}}}}], "journal": {"transfers": [], "outbox": {"state": "EMPTY"}},
+            "sidecar": {"next_sequence": 1, "batches": [{"slots": ["source", "destination"]}],
+                        "entries": [{"seat": "PENDING", "placement": "PENDING"}] * 2}}
+
+    def test_absent_t_recovery_cuts_require_pending_seats_and_preserve_resources(self):
+        import copy
+        seed = self.pending_seed()
+        baseline = runner.verify(seed, "H1", "C5", "seed", None)
+        for boundary in ("B1_CAPTURE", "S2_PENDING"):
+            runner.verify_recovery(seed, "H1", "C5", boundary, baseline, seed)
+            for change in ("fuel", "seats", "sidecar", "journal"):
+                changed = copy.deepcopy(seed)
+                data = changed["rockets"][0]["entity"]["RocketEntityData"]
+                if change == "fuel":
+                    data["flight_data"]["fuel"]["debits"].append("new")
+                elif change == "seats":
+                    data["flight_data"]["passengers"]["assignments"].append({"player": "revived", "seat": 0})
+                elif change == "sidecar":
+                    changed["sidecar"]["entries"][0]["seat"] = "VERIFIED"
+                else:
+                    changed["journal"]["transfers"].append({"resurrected": True})
+                with self.assertRaises(runner.smoke.SmokeError, msg=(boundary, change)):
+                    runner.verify_recovery(changed, "H1", "C5", boundary, baseline, seed)
+        verified = copy.deepcopy(seed)
+        for entry in verified["sidecar"]["entries"]:
+            entry["seat"] = "VERIFIED"
+        runner.verify_recovery(verified, "H1", "C5", "C6", baseline, seed)
+        with self.assertRaises(runner.smoke.SmokeError):
+            runner.verify_recovery(seed, "H1", "C6", "B1_CAPTURE", baseline, seed)
+
+    def test_frozen_census_and_outbox_cannot_change_during_recovery(self):
+        import copy
+        seed = self.pending_seed()
+        before = runner.preserved_stores(seed, None)
+        for key in ("slots", "outbox"):
+            changed = copy.deepcopy(seed)
+            if key == "slots":
+                changed["sidecar"]["batches"][0]["slots"] = ["source"]
+            else:
+                changed["journal"]["outbox"]["state"] = "DELIVERED"
+            with self.assertRaises(runner.smoke.SmokeError):
+                runner.preserved_stores(changed, before)
+
     def test_gone_restarts_preserve_the_frozen_resource_witness(self):
         import copy
         disk = {"rockets": [], "journal": {"transfers": []}, "sidecar": {"next_sequence": 1,

@@ -21,6 +21,7 @@ final class RocketReleaseAccess {
         final RocketRejoinSavedData sidecar;
         Owner(MinecraftServer server, RocketTransferRecoveryService recovery, Set<UUID> live, Set<UUID> settled) {
             this.server = server; sidecar = RocketRejoinEvents.get(server);
+            RocketReleaseNativeCuts.armRestored(server, sidecar.root());
             var journal = RocketTransferSavedData.get(server);
             world = new RocketReleaseWorld(server, journal, recovery, live, settled);
             coordinator = new RocketReleaseCoordinator(sidecar, journal, world);

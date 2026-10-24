@@ -33,10 +33,34 @@ class RocketReleaseNativeCutsTest {
         assertEquals("C6", RocketReleaseNativeCuts.replacement(ManagedSavedDataType.ROCKET_REJOINS, root, true));
         entries.clear();
         assertEquals("C6", RocketReleaseNativeCuts.replacement(ManagedSavedDataType.ROCKET_REJOINS, root, true));
-        assertEquals("", RocketReleaseNativeCuts.replacement(ManagedSavedDataType.ROCKET_REJOINS, root, false));
+        assertEquals("S2_PENDING", RocketReleaseNativeCuts.replacement(ManagedSavedDataType.ROCKET_REJOINS, root, false));
     }
     @Test void journalCutsOnlyAfterReplacement() {
         assertEquals("", RocketReleaseNativeCuts.replacement(ManagedSavedDataType.ROCKET_TRANSFERS, new CompoundTag(), false));
         assertEquals("C5", RocketReleaseNativeCuts.replacement(ManagedSavedDataType.ROCKET_TRANSFERS, new CompoundTag(), true));
+    }
+    @Test void recoveryCutIsIndependentOfSeedAndCannotFireOnTheSecondRestart() {
+        assertEquals("C5", RocketReleaseNativeCuts.selectedBoundary("H1:C5:seed", "B1_CAPTURE"));
+        assertEquals("B1_CAPTURE", RocketReleaseNativeCuts.selectedBoundary("H1:C5:recover", "B1_CAPTURE"));
+        assertEquals("S2_PENDING", RocketReleaseNativeCuts.selectedBoundary("H2:C2:recover", "S2_PENDING"));
+        assertEquals("", RocketReleaseNativeCuts.selectedBoundary("H1:C5:check", "B1_CAPTURE"));
+        assertEquals("", RocketReleaseNativeCuts.selectedBoundary("H1:C5:recover", ""));
+        assertEquals("C6", RocketReleaseNativeCuts.selectedBoundary("H1:C17:seed", ""));
+        assertThrows(IllegalArgumentException.class,
+                () -> RocketReleaseNativeCuts.selectedBoundary("H1:C5:recover", "C0"));
+    }
+    @Test void restoredPendingBatchArmsWithoutB0ButVerifiedSeatsDoNot() {
+        var root = RocketRejoinCodec.decode(RocketRejoinCodecTest.encoded());
+        assertTrue(RocketReleaseNativeCuts.needsRecoveryArm(root));
+        for (var entry : root.entries()) {
+            root = root.update(new RocketRejoinRoot.Entry(entry.release(), entry.player(), entry.seatIndex(),
+                    entry.placement(), RocketRejoinRoot.Seat.VERIFIED, entry.attempt()));
+        }
+        assertFalse(RocketReleaseNativeCuts.needsRecoveryArm(root));
+        assertFalse(RocketReleaseNativeCuts.needsRecoveryArm(RocketRejoinRoot.empty()));
+    }
+    @Test void recoveredS2HasAPreReplacementCutWhileTheWriteIsPending() {
+        assertEquals("S2_PENDING", RocketReleaseNativeCuts.replacement(
+                ManagedSavedDataType.ROCKET_REJOINS, new CompoundTag(), false));
     }
 }

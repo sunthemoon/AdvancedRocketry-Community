@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""W158 native release cuts: one seed/kill and two restarts on each owned disposable world."""
+"""W158 native release cuts, optionally killing the first recovery at an independent boundary."""
 from __future__ import annotations
 
 import argparse
+import copy
 import ctypes
 import hashlib
 import json
@@ -20,6 +21,7 @@ from run_v180_escrow_forced_stop import record
 from run_w157_rejoin_startup import HEADER, PROJECT_LOGGERS
 
 MODES = ("seed", "recover", "check")
+RECOVERY_CUTS = ("B1_CAPTURE", "S2_PENDING", "C6")
 CASES = [("H1", f"C{i}") for i in (*range(7), 14, 15, 16, 17)] + [("H2", f"C{i}") for i in (2, 3, 5, 6)]
 JOURNAL = "advancedrocketrycommunity_rocket_transfers.dat"
 SIDECAR = "advancedrocketrycommunity_rocket_rejoins.dat"
@@ -152,6 +154,51 @@ def verify(disk, hold, cut, mode, baseline):
     return baseline
 
 
+def verify_recovery(disk, hold, cut, boundary, baseline, seed):
+    """Inspect the interrupted recovery, not the completed-recovery oracle used by clean cases."""
+    if cut not in ("C2", "C3", "C4", "C5") or boundary not in RECOVERY_CUTS:
+        raise smoke.SmokeError("Recovery interruption requires a pending C2-C5 seed")
+    if boundary == "B1_CAPTURE":
+        # Before this first B1 store, E1 has changed RAM only. The recorded disk roster
+        # must still be exactly the seed roster, including its player/seat identities.
+        seed_flight = seed["rockets"][0]["entity"]["RocketEntityData"]["flight_data"]
+        flight = disk["rockets"][0]["entity"]["RocketEntityData"]["flight_data"] if len(disk["rockets"]) == 1 else None
+        if flight is None or seats(flight) != seats(seed_flight):
+            raise smoke.SmokeError("B1 capture changed the pre-store seat census")
+        if disk["journal"] != seed["journal"] or disk["sidecar"] != seed["sidecar"]:
+            raise smoke.SmokeError("B1 capture changed a persisted release or journal")
+        return verify(disk, hold, cut, "seed", baseline)
+    # S2_PENDING has installed J1 but has not replaced the pending-seat sidecar.
+    # C6 has replaced S2 but has not published the writer's callback.
+    return verify(disk, hold, "C5" if boundary == "S2_PENDING" else "C6", "seed", baseline)
+
+
+def preserved_stores(disk, previous):
+    """All non-passenger fields and the frozen census survive every cut/restart."""
+    journal = {k: v for k, v in disk["journal"].items() if k != "transfers"}
+    transfers = copy.deepcopy(disk["journal"]["transfers"])
+    for transfer in transfers:
+        transfer.pop("checksum")
+        for key in ("source_flight", "destination_flight"):
+            transfer[key].pop("passengers")
+    batches = disk["sidecar"]["batches"] if disk["sidecar"] else []
+    entries = [{k: v for k, v in e.items() if k != "seat"} for e in disk["sidecar"]["entries"]] if disk["sidecar"] else []
+    value = dict(journal=journal, transfers=transfers, batches=batches, entries=entries)
+    if previous is not None:
+        for key in value:
+            if previous[key] and value[key] and previous[key] != value[key]:
+                raise smoke.SmokeError("Cut changed non-passenger/frozen store: " + key)
+        if previous["journal"] != journal:
+            raise smoke.SmokeError("Cut changed the journal envelope or full outbox")
+    return value
+
+
+def stop_boundary(cut, mode, recovery_cut):
+    if mode == "seed":
+        return "C6" if cut == "C17" else cut
+    return recovery_cut if mode == "recover" else ""
+
+
 def run(args):
     repo = Path(__file__).resolve().parents[1]
     commit = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=repo, text=True).strip()
@@ -164,7 +211,9 @@ def run(args):
     evidence = args.evidence_dir.resolve(); evidence.mkdir(exist_ok=False)
     parent = Path("D:/GitHub/ARCE-Task-Evidence/Temp").resolve()
     session = parent / ("w158-native-" + uuid.uuid4().hex)
-    result = dict(status="IN_PROGRESS", source_commit=commit, jar_sha256=smoke.digest_file(args.jar), starts=[])
+    recovery_cut = args.recovery_cut
+    result = dict(status="IN_PROGRESS", source_commit=commit, jar_sha256=smoke.digest_file(args.jar),
+                  recovery_cut=recovery_cut, starts=[])
     try:
         session.mkdir(); shutil.copytree(args.source_server / "libraries", session / "libraries")
         (session / "mods").mkdir(); shutil.copy2(args.jar, session / "mods" / args.jar.name)
@@ -172,25 +221,32 @@ def run(args):
         chosen = CASES if not args.cases else [tuple(case.split("-")) for case in args.cases.split(",")]
         if any(case not in CASES for case in chosen):
             raise smoke.SmokeError("Unknown cut case")
+        if recovery_cut and any(cut not in ("C2", "C3", "C4", "C5") for _, cut in chosen):
+            raise smoke.SmokeError("Only C2-C5 have pending release work to interrupt; C6 is already durable")
         for hold, cut in chosen:
             world = session / f"world-W158-{hold}-{cut}"
             props = smoke.expected_server_properties(port, True)
             props.update({"level-name": world.name, "level-type": "minecraft:flat", "max-tick-time": "60000",
                           "generator-settings": json.dumps({"layers": [{"block": "minecraft:bedrock", "height": 1}], "biome": "minecraft:plains"})})
             (session / "server.properties").write_text("".join(f"{k}={v}\n" for k, v in sorted(props.items())), encoding="ascii")
-            baseline = None
+            baseline = previous = seed = None
             for mode in MODES:
                 name = f"{hold}-{cut}-{mode}"; row = dict(case=name, **resources()); result["starts"].append(row)
                 command = _server_command(args.java); command[2] = "-Xmx4G"
                 command.insert(3, f"-Dadvancedrocketrycommunity.rejoinReleaseProbe={hold}:{cut}:{mode}")
+                if recovery_cut:
+                    command.insert(3, f"-Dadvancedrocketrycommunity.rejoinReleaseRecoveryCut={recovery_cut}")
                 row["command"] = command
                 process = smoke.CapturedProcess(command, session, evidence / (name + ".log"))
                 try:
                     index = process.wait_for(re.compile(r"ARCE_W158_(?:PAUSED|RESULT|FAILURE) case="), 300)
                     marker = process.lines[index]
-                    if "ARCE_W158_FAILURE" in marker or ("ARCE_W158_PAUSED" in marker) != (mode == "seed"):
+                    boundary = stop_boundary(cut, mode, recovery_cut)
+                    if "ARCE_W158_FAILURE" in marker or ("ARCE_W158_PAUSED" in marker) != bool(boundary):
                         raise smoke.SmokeError("Native fixture failed or reached wrong boundary: " + marker)
-                    if mode == "seed":
+                    if boundary:
+                        if not marker.rstrip().endswith(f"ARCE_W158_PAUSED case={hold}:{cut}:{mode} boundary={boundary}"):
+                            raise smoke.SmokeError("Native pause did not name the selected boundary: " + marker)
                         process.process.kill(); process.abort(); row["exit"] = process.process.returncode
                     else:
                         process.command("stop"); row["exit"] = process.finish()
@@ -198,7 +254,13 @@ def run(args):
                             raise smoke.SmokeError("Restart process exited abnormally")
                     disk = capture(world, evidence / (name + "-saved"))
                     row["log_audit"] = audit_log(process.lines, hold, cut, mode)
-                    baseline = verify(disk, hold, cut, mode, baseline)
+                    baseline = (verify_recovery(disk, hold, cut, recovery_cut, baseline, seed)
+                                if mode == "recover" and recovery_cut else verify(disk, hold, cut, mode, baseline))
+                    previous = preserved_stores(disk, previous)
+                    if mode == "seed":
+                        seed = disk
+                    row["external_kill"] = bool(boundary)
+                    row["boundary"] = boundary
                     row["conserved"] = True
                     row["intentional_fixture_deletion"] = cut == "C14"
                 except Exception:
@@ -231,6 +293,8 @@ def main():
     for name in ("java", "source-commit"):
         parser.add_argument("--" + name, required=True)
     parser.add_argument("--cases", default="")
+    parser.add_argument("--recovery-cut", choices=RECOVERY_CUTS, default="",
+                        help="Independently kill the first recovery; omit to retain the clean-restart campaign")
     result = run(parser.parse_args()); print(json.dumps(result, indent=2))
     return 0 if result["status"] == "PASS" else 1
 

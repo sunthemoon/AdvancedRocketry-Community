@@ -148,7 +148,9 @@ final class RocketReleaseWorld implements RocketReleaseCoordinator.Port {
         if (!runtime.barrier().availableOrdinary(store, slot.level(), chunk(slot), now())) { return false; }
         return runtime.barrier().beginOrdinary(store, slot.level(), chunk(slot), root -> {
             int found = RocketReleaseProof.count(root, batch, slot, b0); count.set(found); return found >= 0;
-        }, now(), label -> { if (b0 != null && label.equals("BARRIER_STORE_BEFORE")) { RocketReleaseNativeCuts.checkpoint("C0"); } },
+        }, now(), label -> {
+            if (label.equals("BARRIER_STORE_BEFORE")) { RocketReleaseNativeCuts.checkpoint(b0 != null ? "C0" : "B1_CAPTURE"); }
+        },
                 result -> complete.accept(readback(result, count.get())));
     }
     static RocketReleaseCoordinator.Proof readback(EscrowBarrier.Result result, int copies) {

@@ -13,6 +13,7 @@ import net.minecraft.server.MinecraftServer;
 /** Disposable native process-stop seams. No property means no change to production stores. */
 public final class RocketReleaseNativeCuts {
     public static final String PROPERTY = "advancedrocketrycommunity.rejoinReleaseProbe";
+    public static final String RECOVERY_CUT = "advancedrocketrycommunity.rejoinReleaseRecoveryCut";
     private static final AtomicBoolean ARMED = new AtomicBoolean(), PAUSED = new AtomicBoolean();
     private RocketReleaseNativeCuts() { }
 
@@ -25,6 +26,7 @@ public final class RocketReleaseNativeCuts {
                 || !server.getWorldData().getLevelName().equals("world-W158-" + parts[0] + "-" + parts[1])) {
             throw new IllegalStateException("Not a disposable W158 release server");
         }
+        selectedBoundary(selection(), System.getProperty(RECOVERY_CUT, ""));
     }
     public static CheckedSavedDataPolicy policy(MinecraftServer server, ManagedSavedDataType type) {
         if (selection().isEmpty()) { return CheckedSavedDataPolicy.atomic(type); }
@@ -58,16 +60,35 @@ public final class RocketReleaseNativeCuts {
         if (type == ManagedSavedDataType.ROCKET_TRANSFERS) { return after ? "C5" : ""; }
         boolean pending = candidate.getList("entries", 10).stream()
                 .anyMatch(raw -> ((CompoundTag) raw).getString("seat").equals("PENDING"));
-        return pending ? after ? "C2" : "C1" : after ? "C6" : "";
+        return pending ? after ? "C2" : "C1" : after ? "C6" : "S2_PENDING";
     }
     public static void arm(MinecraftServer server) {
         if (!selection().isEmpty()) { validate(server); ARMED.set(true); }
     }
+    /** Restored work starts at S1, without the B0 notice that arms a fresh admission. */
+    public static void armRestored(MinecraftServer server, RocketRejoinRoot root) {
+        if (!selection().isEmpty() && needsRecoveryArm(root)) { arm(server); }
+    }
+    static boolean needsRecoveryArm(RocketRejoinRoot root) {
+        return root.entries().stream().anyMatch(e -> e.seat() == RocketRejoinRoot.Seat.PENDING);
+    }
+    static String selectedBoundary(String selection, String recovery) {
+        if (!recovery.isEmpty() && !java.util.Set.of("B1_CAPTURE", "C3", "C4", "C5", "S2_PENDING", "C6").contains(recovery)) {
+            throw new IllegalArgumentException("Invalid W158 recovery cut");
+        }
+        var parts = selection.split(":");
+        if (parts.length != 3) { return ""; }
+        return switch (parts[2]) {
+            case "seed" -> parts[1].equals("C17") ? "C6" : parts[1];
+            case "recover" -> recovery;
+            default -> "";
+        };
+    }
     public static void checkpoint(String boundary) {
         String selected = selection();
-        if (boundary.isEmpty() || !ARMED.get() || !selected.endsWith(":seed")
-                || !(selected.split(":")[1].equals(boundary)
-                    || selected.contains(":C17:") && boundary.equals("C6")) || !PAUSED.compareAndSet(false, true)) { return; }
+        if (boundary.isEmpty() || !ARMED.get()
+                || !boundary.equals(selectedBoundary(selected, System.getProperty(RECOVERY_CUT, "")))
+                || !PAUSED.compareAndSet(false, true)) { return; }
         AdvancedRocketryCommunity.LOGGER.info("ARCE_W158_PAUSED case={} boundary={}", selected, boundary);
         try { TimeUnit.SECONDS.sleep(30); }
         catch (InterruptedException interrupted) { Thread.currentThread().interrupt(); }
