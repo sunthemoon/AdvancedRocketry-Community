@@ -95,6 +95,49 @@ class SealedJournalProofTest {
         assertEquals(future, blocked.save(new CompoundTag()));
     }
 
+    @Test void appendCapacityPreflightDoesNotDirtyOrRewriteTheAcknowledgedRoot() throws Exception {
+        var data = new RocketTransactionSavedData(); var entry = entry();
+        data.saveChecked(file(), ATOMIC); var before = data.save(new CompoundTag());
+        assertTrue(canAppend(data, entry)); assertTrue(data.acknowledgedCurrent());
+        assertEquals(before, data.save(new CompoundTag()));
+        data.journalFor(entry.snapshot(), entry.ownerId()).write(entry.record());
+        assertFalse(canAppend(data, entry), "Append is not permission to replace a claimed transaction ID");
+        var future = before.copy(); future.putInt("schema_version", 99);
+        assertFalse(canAppend(RocketTransactionSavedData.load(future), entry));
+    }
+
+    @Test void appendRefusesTheExistingEntryAndWholeRootBoundsBeforeMutation() throws Exception {
+        var data = new RocketTransactionSavedData();
+        for (int index = 0; index < 256; index++) {
+            var entry = entry(); data.journalFor(entry.snapshot(), entry.ownerId()).write(entry.record());
+        }
+        assertFalse(canAppend(data, entry())); assertEquals(256, data.entries().size());
+        data = new RocketTransactionSavedData();
+        var blocks = new java.util.ArrayList<RocketBlock>();
+        for (int index = 0; index < 4; index++) {
+            var payload = new CompoundTag(); payload.putByteArray("opaque", new byte[255_000]);
+            blocks.add(new RocketBlock(new RocketPosition(index, 0, 0),
+                    new RocketBlockState(ResourceLocation.tryParse("minecraft:chest"), Map.of()),
+                    new RocketBlockEntityPayload(ResourceLocation.tryParse("w152:probe"), payload)));
+        }
+        var snapshot = RocketStructureSnapshot.create(UUID.randomUUID(), ResourceLocation.tryParse("minecraft:overworld"),
+                new RocketPosition(0, 64, 0), blocks, List.of(), new RocketStats(4, 40, 0, 0, 0, 0, 0, 0), 1);
+        RocketPersistedTransaction candidate = null;
+        for (int index = 0; index < 66; index++) {
+            candidate = new RocketPersistedTransaction(new RocketTransactionRecord(UUID.randomUUID(), RocketTransactionType.SEALED_DISASSEMBLY,
+                    RocketTransactionPhase.LOCKED, snapshot.snapshotId(), snapshot.contentHash(), RocketRegion.fromSnapshot(snapshot),
+                    0, UUID.randomUUID()), snapshot, UUID.randomUUID());
+            if (index < 65) { data.journalFor(snapshot, candidate.ownerId()).write(candidate.record()); }
+        }
+        var before = data.entries(); assertEquals(65, before.size());
+        assertFalse(canAppend(data, candidate), "Root capacity was replaced by only the per-snapshot limit");
+        assertEquals(before, data.entries());
+    }
+
+    private static boolean canAppend(RocketTransactionSavedData data, RocketPersistedTransaction entry) throws Exception {
+        return (boolean) RocketTransactionSavedData.class.getMethod("canAppend", RocketPersistedTransaction.class).invoke(data, entry);
+    }
+
     private Path file() { return directory.resolve(TYPE.fileName()); }
     private static Object expected(RocketPersistedTransaction entry) throws Exception {
         return RocketTransactionSavedData.class.getMethod("expectedEntry", RocketPersistedTransaction.class).invoke(null, entry);
