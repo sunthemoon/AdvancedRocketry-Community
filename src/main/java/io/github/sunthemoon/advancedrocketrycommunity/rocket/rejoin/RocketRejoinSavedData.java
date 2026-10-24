@@ -56,6 +56,16 @@ public final class RocketRejoinSavedData extends SavedData implements AutoClosea
     public long completions() { owner(); return completions; }
     public boolean operational() { return true; } // Invalid roots refuse startup; never replace them with empty state.
     public boolean acknowledgedCurrent() { owner(); return acknowledged != null && acknowledged.sequence() == generation; }
+    /** Loaded bytes classify seats immediately, but J1 needs this session's checked S1 acknowledgement. */
+    public java.util.Optional<RocketReleasePermit> releasePermit(java.util.UUID release) {
+        owner(); return root.batches().stream().filter(b -> b.release().equals(release) && releaseAcknowledged(b))
+                .findFirst().map(b -> new RocketReleasePermit(this, b));
+    }
+    boolean releaseAcknowledged(RocketRejoinRoot.Batch batch) {
+        owner(); return !closed && acknowledged != null && acknowledgedRoot != null
+                && root.batches().contains(batch) && acknowledgedRoot.batches().contains(batch)
+                && acknowledgedRoot.entries().stream().anyMatch(e -> e.release().equals(batch.release()) && e.seat() == RocketRejoinRoot.Seat.PENDING);
+    }
     /** Storage only; no command calls this before the release and protected-rejoin leaves are integrated. */
     public boolean submit(RocketRejoinRoot candidate) {
         owner();
