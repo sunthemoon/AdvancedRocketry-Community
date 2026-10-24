@@ -1,7 +1,8 @@
 // Diagnostic-only test source for an exact pre-discriminator git archive; no production/build configuration change.
 allprojects {
-    afterEvaluate {
-        def fixture = providers.gradleProperty('w152LegacyTestRoot').get()
-        sourceSets.test.java.srcDir(file(fixture))
+    afterEvaluate { project ->
+        def fixture = project.file(project.providers.gradleProperty('w152LegacyTestRoot').get())
+        if (!fixture.isDirectory()) { throw new GradleException('Missing old-reader test source: ' + fixture) }
+        project.sourceSets.test.java.srcDir(fixture)
     }
 }
