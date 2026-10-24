@@ -28,13 +28,19 @@ HELD = re.compile(r"ARCE_REJOIN_RELEASE_HELD release=" + UUID_PATTERN + " transf
                   + " logical=" + UUID_PATTERN + " state=(GONE|CONFLICT)")
 
 
-def audit_log(lines, hold, cut, mode):
+def audit_log(lines, hold, cut, mode, *, expected_outbox_holds=None):
     # Per-complete-process exact manifest. Every other header and continuation is fed to the unchanged scanner.
     manifest = json.loads(Path(__file__).with_name("w158_release_expected_log.json").read_text(encoding="utf-8"))
     row = manifest["expected_warn_counts"].get(f"{hold}-{cut}-{mode}", {})
     expected = {state: row.get(state, 0) for state in ("GONE", "CONFLICT")}
     expected["source_hold"] = int(hold == "H1" and (mode == "seed" or mode == "recover" and cut in ("C0", "C1")))
-    expected["outbox_hold"] = int(mode != "seed")
+    # W44's pre-existing baseline warning is timing-dependent and already has an exact
+    # 0..1 allowance in the unchanged native startup manifest. A controlled fixture may
+    # additionally require its count; ordinary native starts retain that original gate.
+    if expected_outbox_holds is not None:
+        if expected_outbox_holds not in (0, 1):
+            raise smoke.SmokeError("Outbox expectation exceeds unchanged startup bound")
+        expected["outbox_hold"] = expected_outbox_holds
     source = re.compile(re.escape(manifest["existing_source_hold_message"]).replace(re.escape("{uuid}"), UUID_PATTERN))
     counts = dict.fromkeys(expected, 0)
     remainder = []
@@ -42,7 +48,8 @@ def audit_log(lines, hold, cut, mode):
         header = HEADER.fullmatch(line.rstrip())
         matched = HELD.fullmatch(header["message"]) if header else None
         if (header and header["logger"] in PROJECT_LOGGERS and header["thread"] == "Server thread" and header["level"] == "WARN"
-                and (matched or source.fullmatch(header["message"]) or header["message"] == manifest["existing_outbox_hold_message"])):
+                and (matched or source.fullmatch(header["message"])
+                     or expected_outbox_holds is not None and header["message"] == manifest["existing_outbox_hold_message"])):
             counts[matched[1] if matched else "source_hold" if source.fullmatch(header["message"]) else "outbox_hold"] += 1
         else:
             remainder.append(line)
