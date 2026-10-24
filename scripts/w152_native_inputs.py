@@ -7,6 +7,7 @@ its records, not the new sector offsets or region-file hash, equal the source.
 from __future__ import annotations
 
 import hashlib
+import gzip
 import json
 from pathlib import Path, PurePosixPath
 import struct
@@ -16,6 +17,20 @@ import zipfile
 def digest(file: Path) -> str:
     with file.open("rb") as stream:
         return hashlib.file_digest(stream, "sha256").hexdigest()
+
+
+def compact_trace(path: Path) -> dict:
+    """Losslessly compress an owned completed trace; the case index retains both hashes."""
+    destination = path.with_name(path.name + ".gz")
+    if destination.exists(): raise ValueError("Do not overwrite a retained native trace")
+    original = path.read_bytes(); encoded = gzip.compress(original, mtime=0)
+    destination.write_bytes(encoded)
+    if gzip.decompress(destination.read_bytes()) != original:
+        raise ValueError("Native trace compression did not preserve its bytes")
+    result = dict(file=destination.name, sha256=digest(destination), original_file=path.name,
+                  original_sha256=hashlib.sha256(original).hexdigest(), original_bytes=len(original), bytes=len(encoded))
+    path.unlink()
+    return result
 
 
 def preserve_native(world: Path, evidence: Path, stage: str, state: dict) -> dict:

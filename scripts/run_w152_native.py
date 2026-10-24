@@ -19,7 +19,7 @@ from collections import Counter
 import run_v180_escrow_forced_stop as escrow
 from run_v180_landed_disassembly_cuts import block_at, chunk_record, nbt_file, uuid_of
 from sealed_cut_oracle import elect, inventory, require_inventory
-from w152_native_inputs import preserve_native, replay_native
+from w152_native_inputs import preserve_native, replay_native, compact_trace
 
 smoke = escrow.smoke
 CUTS = ("NONE", "C0_BASELINE_SAVED", "PREPARE_PROOF_CURRENT", "C1_RETAIN_BEFORE", "C1_RETAIN_AFTER",
@@ -253,6 +253,9 @@ def run(args) -> dict:
                 if state["phase"] is not None or state["sealed"]:
                     raise smoke.SmokeError("Stable restart left retained U or C")
                 stable.append(comparable(state))
+            if args.payload_hosts == "ALL":
+                result["stages"][-1]["traces"] = [compact_trace(evidence / (stage + suffix))
+                                                for suffix in (".log", ".json", "-native.json")]
         if stable[0] != stable[1]:
             raise smoke.SmokeError("Second restart changed the elected native state")
         result["status"] = stable[1].get("consumer_verdict", "PASS")

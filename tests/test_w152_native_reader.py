@@ -12,6 +12,19 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
 
 class W152NativeReaderTest(unittest.TestCase):
+    def test_compact_trace_keeps_exact_readable_bytes_and_both_hashes(self):
+        import gzip
+        import hashlib
+        from w152_native_inputs import compact_trace
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "start.log"; original = b"native observation\n" * 100
+            path.write_bytes(original); result = compact_trace(path)
+            archive = path.with_name(result["file"])
+            self.assertEqual(original, gzip.decompress(archive.read_bytes()))
+            self.assertEqual(hashlib.sha256(original).hexdigest(), result["original_sha256"])
+            self.assertEqual(hashlib.sha256(archive.read_bytes()).hexdigest(), result["sha256"])
+            self.assertFalse(path.exists())
+
     def test_all_host_cut_fixture_requires_fluid_and_package_in_addition_to_containers(self):
         from run_w152_native import expected_resources, native_case_plan
         self.assertEqual({"original": 14}, expected_resources("CONTAINERS"))
