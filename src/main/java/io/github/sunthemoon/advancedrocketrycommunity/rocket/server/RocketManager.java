@@ -164,6 +164,8 @@ public final class RocketManager implements RocketOperationService {
         return flights.quotes(player, rocket);
     }
 
+    RocketMonitorFlights monitorFlights() { return flights.monitors; }
+
     @Override
     public io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketNavigation navigation(ServerPlayer player, RocketEntity rocket) {
         return flights.navigation(player, rocket);

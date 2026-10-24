@@ -227,6 +227,10 @@ public final class ModBlocks {
     private ModBlocks() {
     }
 
+    public static final RegistryObject<Block> ROCKET_MONITORING_STATION = BLOCKS.register("rocket_monitoring_station", () ->
+            new io.github.sunthemoon.advancedrocketrycommunity.rocket.monitor.RocketMonitorBlock(
+                    BlockBehaviour.Properties.of().strength(3.0F).requiresCorrectToolForDrops()));
+
     private static RegistryObject<Block> metalBlock(String name) {
         return BLOCKS.register(name, () -> new Block(metalProperties()));
     }

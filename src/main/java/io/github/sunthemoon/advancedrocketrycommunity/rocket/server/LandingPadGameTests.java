@@ -163,6 +163,7 @@ public final class LandingPadGameTests {
                 helper.assertTrue(landed.assemblyTransactionId().orElseThrow().equals(logical), "Logical identity changed");
                 helper.assertTrue(LandingPadIndex.get(f.space.getServer()).find(f.station.stationId(), entry.reference()).orElseThrow().claim() == null, "Commit claim retained");
                 helper.assertTrue(f.station.landingPad().equals(StationRegistrySavedData.get(f.space.getServer()).find(f.station.stationId()).orElseThrow().landingPad()), "Named pad rewrote allocated cell");
+                io.github.sunthemoon.advancedrocketrycommunity.gametest.RocketMonitorPadAssertions.verify(helper, f.space, f.pad, landed);
                 landed.discard(); RocketTransferSavedData.get(f.space.getServer()).remove(transfer);
                 var defaultSelection = new io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.RocketLandingPadSelector()
                         .selectStation(f.space, snapshot, UUID.randomUUID(), f.station, List.of(), 0);

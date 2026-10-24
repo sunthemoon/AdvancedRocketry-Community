@@ -71,11 +71,16 @@ final class RocketTransferService {
 
     RocketFlightRequestResult prepareLaunch(RocketEntity rocket, RocketFlightData countdown, RocketRequestCompletion completion,
             java.util.function.BooleanSupplier authorized) {
-        return prepare(rocket, countdown, warmups.observe(rocket, countdown, completion), authorized);
+        return prepareLaunch(rocket, countdown, completion, authorized, () -> true);
+    }
+
+    RocketFlightRequestResult prepareLaunch(RocketEntity rocket, RocketFlightData countdown, RocketRequestCompletion completion,
+            java.util.function.BooleanSupplier authorized, java.util.function.BooleanSupplier governedAuthority) {
+        return prepare(rocket, countdown, warmups.observe(rocket, countdown, completion), authorized, governedAuthority);
     }
 
     private RocketFlightRequestResult prepare(RocketEntity rocket, RocketFlightData countdown, RocketRequestCompletion completion,
-            java.util.function.BooleanSupplier authorized) {
+            java.util.function.BooleanSupplier authorized, java.util.function.BooleanSupplier governedAuthority) {
         Objects.requireNonNull(rocket, "rocket");
         Objects.requireNonNull(countdown, "countdown");
         if (!(rocket.level() instanceof ServerLevel sourceLevel) || !rocket.operational()) {
@@ -138,7 +143,8 @@ final class RocketTransferService {
             }
             boolean started = io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGovernedPreparation.begin(
                     rocket, countdown, selected.snapshot().orElseThrow(),
-                    candidate -> RocketGovernedLaunchBoundary.allows(server, journal, candidate, rocket, recovery.bays()),
+                    candidate -> governedAuthority.getAsBoolean()
+                            && RocketGovernedLaunchBoundary.allows(server, journal, candidate, rocket, recovery.bays()),
                     acknowledged -> {
                         // The exact F2 callback already consumed START_COUNTDOWN. Never use the legacy idle exemption.
                         RocketTransferEntities.keepLoaded(sourceLevel, acknowledged.sourceSnapshot(), acknowledged.transferId());

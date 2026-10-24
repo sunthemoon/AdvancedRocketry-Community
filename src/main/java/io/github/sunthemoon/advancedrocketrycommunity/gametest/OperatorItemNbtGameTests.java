@@ -81,6 +81,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 public final class OperatorItemNbtGameTests {
     /** Block entities whose item NBT only a creative operator may load. */
     private static final Set<Class<? extends BlockEntity>> OPERATOR_ONLY = Set.of(
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.monitor.RocketMonitorBlockEntity.class,
             // Operator-only before W23.
             PumpBlockEntity.class, SolarGeneratorBlockEntity.class, SolarArrayBlockEntity.class,
             PlanetaryBeaconBlockEntity.class, LandingPadBlockEntity.class, ForceFieldProjectorBlockEntity.class,

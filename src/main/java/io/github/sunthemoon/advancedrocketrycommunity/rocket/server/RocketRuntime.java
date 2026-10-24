@@ -25,6 +25,10 @@ public final class RocketRuntime {
     private RocketRuntime() {
     }
 
+    public static Optional<RocketMonitorFlights> monitorFlights() {
+        return service instanceof RocketManager manager ? Optional.of(manager.monitorFlights()) : Optional.empty();
+    }
+
     public static void install(RocketOperationService installedService) {
         RocketOperationService checked = Objects.requireNonNull(installedService, "installedService");
         checked.onInstalled();
