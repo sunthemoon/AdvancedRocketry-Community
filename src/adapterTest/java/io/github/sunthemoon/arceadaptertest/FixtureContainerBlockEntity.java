@@ -12,11 +12,18 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.core.Direction;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.wrapper.InvWrapper;
 
 /** Independent two-slot container, deliberately not a vanilla chest/barrel subclass. */
 final class FixtureContainerBlockEntity extends BlockEntity implements Container {
     private static final int SLOT_COUNT = 2;
     private final NonNullList<ItemStack> inventory = NonNullList.withSize(SLOT_COUNT, ItemStack.EMPTY);
+    private LazyOptional<IItemHandler> sealedPort = LazyOptional.of(() -> new InvWrapper(this));
     // Ephemeral diagnostic state owned by this test instance, never serialized or captured.
     FixtureAdapterFaults.Probe fault;
 
@@ -143,4 +150,13 @@ final class FixtureContainerBlockEntity extends BlockEntity implements Container
     }
 
     @Override public boolean canPlaceItem(int slot, ItemStack stack) { return !isRemoved(); }
+
+    @Override public <T> LazyOptional<T> getCapability(Capability<T> capability, Direction side) {
+        if (getType() == AdapterTestMod.SEALED_CONTAINER_TYPE.get() && capability == ForgeCapabilities.ITEM_HANDLER) {
+            return isRemoved() ? LazyOptional.empty() : sealedPort.cast();
+        }
+        return super.getCapability(capability, side);
+    }
+    @Override public void invalidateCaps() { super.invalidateCaps(); sealedPort.invalidate(); }
+    @Override public void reviveCaps() { super.reviveCaps(); sealedPort = LazyOptional.of(() -> new InvWrapper(this)); }
 }
