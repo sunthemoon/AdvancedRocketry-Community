@@ -45,7 +45,7 @@ public final class SealedDisassemblyGameTests {
                 new RocketPosition(origin.getX(), origin.getY(), origin.getZ()), List.of(
                         new RocketBlock(new RocketPosition(0, 0, 0), RocketBlockStateAdapter.capture(Blocks.IRON_BLOCK.defaultBlockState())),
                         new RocketBlock(new RocketPosition(1, 0, 0), RocketBlockStateAdapter.capture(Blocks.CHEST.defaultBlockState()), payload)),
-                List.of(new RocketPosition(0, 0, 0)), new RocketStats(2, 200, 1_000, 1_000, 1, 1, 1, 0), level.getGameTime());
+                List.of(new RocketPosition(0, 0, 0)), new RocketStats(2, 200, 1_000, 1_000, 1, 1, 1, 1), level.getGameTime());
         level.setBlock(origin, Blocks.AIR.defaultBlockState(), 2); level.setBlock(origin.east(), Blocks.AIR.defaultBlockState(), 2);
         var rocket = ModEntities.ROCKET.get().create(level);
         helper.assertTrue(rocket != null, "Rocket type unavailable");
