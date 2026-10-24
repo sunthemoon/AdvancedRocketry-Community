@@ -12,6 +12,7 @@ public final class BetaWorldMigrationEvents {
     static final String MIGRATION_HINT = "Keep the world stopped and restore the newest complete migration backup if recovery is required.";
     static final String ESCROW_HINT = "Keep the world stopped. Escrow recovery requires a consistent whole-world backup including all terrain, entities, POI, journals and player data; never restore or delete only the escrow file.";
     private final WorldDataMigrationService migrations;
+    static final String REJOIN_HINT = "Keep the world stopped. Use compatible software or validated whole-world repair including all Levels, entities, POI, journals, rejoins, player data and metadata; never delete the sidecar or restore isolated files.";
 
     public BetaWorldMigrationEvents() {
         this(new WorldDataMigrationService());
@@ -33,6 +34,13 @@ public final class BetaWorldMigrationEvents {
                     report.backupDirectory().orElse("none")
             );
         } catch (SavedDataMigrationException exception) {
+            if (exception.dataType().orElse(null) == ManagedSavedDataType.ROCKET_REJOINS
+                    || recoveryHint(worldRoot).equals(REJOIN_HINT)) {
+                AdvancedRocketryCommunity.LOGGER.error("[{}] Beta world data check blocked startup; type={}; reason={}. {}",
+                        exception.diagnosticId().code(), exception.dataType().map(Enum::name).orElse("WORLD"),
+                        boundedReason(exception.getMessage()), REJOIN_HINT, exception);
+                throw exception;
+            }
             if (recoveryHint(worldRoot).equals(ESCROW_HINT)) {
                 logEscrowRefusal(exception);
                 throw exception;
@@ -69,6 +77,8 @@ public final class BetaWorldMigrationEvents {
      * refused startup.
      */
     static String recoveryHint(Path worldRoot) {
+        Path rejoins = worldRoot.resolve("data").resolve(ManagedSavedDataType.ROCKET_REJOINS.fileName());
+        if (CheckedSavedDataFile.presence(rejoins) != CheckedSavedDataFile.Presence.ABSENT) { return REJOIN_HINT; }
         Path ledger = worldRoot.resolve("data").resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName());
         Path receipts = worldRoot.resolve("data").resolve(ManagedSavedDataType.BAY_RECEIPTS.fileName());
         return Files.exists(ledger, LinkOption.NOFOLLOW_LINKS) || Files.exists(receipts, LinkOption.NOFOLLOW_LINKS)

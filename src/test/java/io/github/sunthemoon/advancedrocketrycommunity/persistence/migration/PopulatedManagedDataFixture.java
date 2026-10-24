@@ -114,6 +114,21 @@ final class PopulatedManagedDataFixture {
                 .encode(new io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceiptRoot(id(60), 2, 3,
                         List.of(bayReceipt(1, io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceipt.Phase.INTENT),
                                 bayReceipt(2, io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceipt.Phase.REJECTED)))));
+        var rejoinVersion = new io.github.sunthemoon.advancedrocketrycommunity.rocket.rejoin.RocketRejoinRoot.Version(
+                "a".repeat(64), "PREPARED", null);
+        var rejoinBatch = new io.github.sunthemoon.advancedrocketrycommunity.rocket.rejoin.RocketRejoinRoot.Batch(
+                id(100), 0, id(101), id(102), id(103),
+                io.github.sunthemoon.advancedrocketrycommunity.rocket.rejoin.RocketRejoinRoot.Hold.H1, "minecraft:overworld",
+                new io.github.sunthemoon.advancedrocketrycommunity.rocket.rejoin.RocketRejoinRoot.Position(0, 64, 0),
+                new io.github.sunthemoon.advancedrocketrycommunity.rocket.rejoin.RocketRejoinRoot.Position(0, 64, 0),
+                new io.github.sunthemoon.advancedrocketrycommunity.rocket.rejoin.RocketRejoinRoot.Position(1, 65, 1),
+                new io.github.sunthemoon.advancedrocketrycommunity.rocket.rejoin.RocketRejoinRoot.Resources("b".repeat(64), "c".repeat(64)),
+                rejoinVersion, rejoinVersion, List.of(OWNER));
+        var rejoinEntry = new io.github.sunthemoon.advancedrocketrycommunity.rocket.rejoin.RocketRejoinRoot.Entry(id(100), OWNER, 0,
+                io.github.sunthemoon.advancedrocketrycommunity.rocket.rejoin.RocketRejoinRoot.Placement.PENDING,
+                io.github.sunthemoon.advancedrocketrycommunity.rocket.rejoin.RocketRejoinRoot.Seat.PENDING, null);
+        payloads.put(ManagedSavedDataType.ROCKET_REJOINS, io.github.sunthemoon.advancedrocketrycommunity.rocket.rejoin.RocketRejoinCodec.encode(
+                new io.github.sunthemoon.advancedrocketrycommunity.rocket.rejoin.RocketRejoinRoot(1, List.of(rejoinBatch), List.of(rejoinEntry))));
         return payloads;
     }
 
@@ -135,6 +150,7 @@ final class PopulatedManagedDataFixture {
             case STATIONS -> StationRegistrySavedData.load(payload);
             case SATELLITE_MISSIONS -> SatelliteMissionSavedData.load(payload);
             case ENDGAME -> EndgameSavedData.load(payload);
+            case ROCKET_REJOINS -> io.github.sunthemoon.advancedrocketrycommunity.rocket.rejoin.RocketRejoinSavedData.load(payload);
             case RESOURCE_ESCROW -> io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.ResourceEscrowSavedData.load(payload);
             case CLASSIC_PROGRESSION -> io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent
                     .ClassicProgressionSavedData.load(payload);
