@@ -11,11 +11,12 @@ final class FixtureInventoryAdapter implements RocketBlockEntityAdapter {
         if (blockEntity instanceof FixtureContainerBlockEntity container && container.fault != null) {
             container.fault.enter("CAN_MOVE");
         }
-        return blockEntity instanceof FixtureContainerBlockEntity;
+        return blockEntity instanceof FixtureContainerBlockEntity && !blockEntity.isRemoved();
     }
 
     @Override
     public CompoundTag capture(BlockEntity blockEntity) {
+        if (blockEntity.isRemoved()) { throw new IllegalStateException("Removed provider target"); }
         FixtureContainerBlockEntity container = (FixtureContainerBlockEntity) blockEntity;
         if (container.fault != null) { container.fault.enter("CAPTURE"); }
         FixtureAdapterFaults.Probe restoreProbe = FixtureAdapterFaults.restoring();

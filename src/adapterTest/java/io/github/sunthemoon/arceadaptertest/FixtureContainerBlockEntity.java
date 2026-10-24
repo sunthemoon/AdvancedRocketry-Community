@@ -37,6 +37,7 @@ final class FixtureContainerBlockEntity extends BlockEntity implements Container
     }
 
     boolean restoreInventory(CompoundTag data) {
+        if (isRemoved()) { return false; }
         if (!data.getAllKeys().equals(Set.of("Items")) || !data.contains("Items", Tag.TAG_LIST)) {
             return false;
         }
@@ -93,16 +94,17 @@ final class FixtureContainerBlockEntity extends BlockEntity implements Container
 
     @Override
     public boolean isEmpty() {
-        return inventory.stream().allMatch(ItemStack::isEmpty);
+        return isRemoved() || inventory.stream().allMatch(ItemStack::isEmpty);
     }
 
     @Override
     public ItemStack getItem(int slot) {
-        return inventory.get(slot);
+        return isRemoved() ? ItemStack.EMPTY : inventory.get(slot);
     }
 
     @Override
     public ItemStack removeItem(int slot, int amount) {
+        if (isRemoved()) { return ItemStack.EMPTY; }
         ItemStack removed = ContainerHelper.removeItem(inventory, slot, amount);
         if (!removed.isEmpty()) {
             setChanged();
@@ -112,11 +114,12 @@ final class FixtureContainerBlockEntity extends BlockEntity implements Container
 
     @Override
     public ItemStack removeItemNoUpdate(int slot) {
-        return ContainerHelper.takeItem(inventory, slot);
+        return isRemoved() ? ItemStack.EMPTY : ContainerHelper.takeItem(inventory, slot);
     }
 
     @Override
     public void setItem(int slot, ItemStack stack) {
+        if (isRemoved()) { return; }
         if (stack.getCount() > Math.min(getMaxStackSize(), stack.getMaxStackSize())) {
             throw new IllegalArgumentException("Oversized fixture inventory stack");
         }
@@ -126,14 +129,17 @@ final class FixtureContainerBlockEntity extends BlockEntity implements Container
 
     @Override
     public boolean stillValid(Player player) {
-        return level != null && level.getBlockEntity(worldPosition) == this
+        return !isRemoved() && level != null && level.getBlockEntity(worldPosition) == this
                 && player.distanceToSqr(worldPosition.getX() + 0.5D,
                         worldPosition.getY() + 0.5D, worldPosition.getZ() + 0.5D) <= 64.0D;
     }
 
     @Override
     public void clearContent() {
+        if (isRemoved()) { return; }
         inventory.clear();
         setChanged();
     }
+
+    @Override public boolean canPlaceItem(int slot, ItemStack stack) { return !isRemoved(); }
 }
