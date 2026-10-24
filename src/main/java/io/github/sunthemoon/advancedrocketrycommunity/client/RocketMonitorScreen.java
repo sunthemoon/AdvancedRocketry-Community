@@ -80,7 +80,7 @@ public final class RocketMonitorScreen extends AbstractContainerScreen<RocketMon
         lines.add(Component.translatable(KEY + "cost", v.get(20)));
         lines.add(Component.translatable(KEY + "armed_mode", Component.translatable(KEY + "armed." + v.get(7)),
                 Component.translatable(KEY + "mode." + v.get(6))));
-        if (v.get(8) >= 0) { lines.add(Component.translatable(RocketFlightRequestCode.values()[v.get(8)].translationKey())); }
+        if (v.get(8) > 0) { lines.add(Component.translatable(RocketFlightRequestCode.values()[v.get(8)].translationKey(), v.get(20))); }
         view.status().ifPresent(status -> lines.add(Component.translatable(status.translationKey())));
         int y = 34;
         for (var line : lines) {

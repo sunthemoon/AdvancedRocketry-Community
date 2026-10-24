@@ -25,9 +25,9 @@ public final class RocketMonitorView {
         int banks = fuel == null ? 0 : nativeFuel != null && nativeFuel.descriptor().oxidizerCapacity() > 0 ? 2 : 1;
         values.add(banks);
         var debit = quote == null || quote.plan() == null ? null : quote.plan().propulsionDebit();
-        long required = quote == null ? 0 : quote.cost();
+        long required = quote == null ? monitor.lastCost() : quote.cost();
         bank(values, banks == 0 ? -1 : nativeFuel == null ? 0 : role(nativeFuel.descriptor().primaryRole()),
-                fuel == null ? 0 : fuel.amount(), fuel == null ? 0 : fuel.capacity(), debit == null ? required : debit.primary(),
+                fuel == null ? 0 : fuel.amount(), fuel == null ? 0 : fuel.capacity(), debit == null ? (quote == null ? 0 : required) : debit.primary(),
                 nativeFuel == null ? null : nativeFuel.primary());
         bank(values, banks < 2 ? -1 : 3, banks < 2 ? 0 : nativeFuel.oxidizer().amount(),
                 banks < 2 ? 0 : nativeFuel.descriptor().oxidizerCapacity(), debit == null ? 0 : debit.oxidizer(),

@@ -22,6 +22,7 @@ public final class RocketMonitorBlockEntity extends BlockEntity {
     private RocketMonitorRoot root = new RocketMonitorRoot(null, UUID.randomUUID(), null, 0, false, false, null, "");
     private Tag preserved;
     private RocketFlightRequestCode lastFlight;
+    private long lastCost;
     private RocketMonitorStatus status = RocketMonitorStatus.UNBOUND;
     private boolean submitting;
     private double lastHeight;
@@ -33,6 +34,7 @@ public final class RocketMonitorBlockEntity extends BlockEntity {
     public RocketMonitorRoot root() { return preserved == null ? root : null; }
     public RocketMonitorStatus status() { return preserved == null ? status : RocketMonitorStatus.UNSUPPORTED_DATA; }
     public RocketFlightRequestCode lastFlight() { return lastFlight; }
+    public long lastCost() { return lastCost; }
     public int height() { return height; }
     public int velocity() { return velocity; }
     public int comparator() { return comparator; }
@@ -57,7 +59,7 @@ public final class RocketMonitorBlockEntity extends BlockEntity {
     }
     public boolean bind(LoaderBinding binding) {
         if (!live() || root() == null || submitting) { return false; }
-        replace(root.bind(binding)); lastFlight = null; return true;
+        replace(root.bind(binding)); lastFlight = null; lastCost = 0; return true;
     }
     public void disarm() { if (live() && root() != null && !submitting) { replace(root.disarm()); } }
     public boolean configure(RocketMonitorQuote quote, boolean arm, int mode) {
@@ -72,7 +74,7 @@ public final class RocketMonitorBlockEntity extends BlockEntity {
         try {
             var result = RocketRuntime.monitorFlights().map(service -> service.launch(this, quote, initiator))
                     .orElseGet(() -> RocketFlightRequestResult.failure(RocketFlightRequestCode.ENTITY_UNAVAILABLE));
-            lastFlight = result.code();
+            lastFlight = result.code(); lastCost = result.requiredFuel();
             if (result.success() || result.code() == RocketFlightRequestCode.JOURNAL_PENDING) { status = RocketMonitorStatus.REQUESTED; }
             return result;
         } finally { submitting = false; }
@@ -84,6 +86,9 @@ public final class RocketMonitorBlockEntity extends BlockEntity {
         boolean rising = RocketMonitorRules.rising(root.powered(), signal);
         replace(root.signal(signal)); // Publish the edge before any launch callback can reenter.
         if (!rising || !root.armed()) { return; }
+        if (RocketMonitorBinding.resolve(this, false).status() == RocketMonitorStatus.WAITING_UNLOADED) {
+            lastFlight = RocketFlightRequestCode.ENTITY_UNAVAILABLE; lastCost = 0; return;
+        }
         var service = RocketRuntime.monitorFlights().orElse(null);
         if (service == null || !root.authority().equals(service.authority(this, root.destination()))) {
             disarm(); return;
@@ -108,7 +113,8 @@ public final class RocketMonitorBlockEntity extends BlockEntity {
             long capacity = fuel.propulsion().map(value -> value.descriptor().primaryCapacity() + value.descriptor().oxidizerCapacity()).orElse(fuel.capacity());
             output = RocketMonitorRules.comparator(root.mode(), relative, RocketFlightLimits.FLIGHT_ALTITUDE_BLOCKS, fuel.totalAmount(), capacity);
         } else { height = 0; velocity = 0; sampledTick = -1; }
-        if (root() != null && !root.authority().isEmpty() && now % 20 == 0) {
+        if (root() != null && !root.authority().isEmpty() && now % 20 == 0
+                && resolved.status() != RocketMonitorStatus.WAITING_UNLOADED) {
             var service = RocketRuntime.monitorFlights().orElse(null);
             if (service == null || !root.authority().equals(service.authority(this, root.destination()))) { disarm(); output = 0; }
         }
@@ -124,7 +130,7 @@ public final class RocketMonitorBlockEntity extends BlockEntity {
             try { root = RocketMonitorRoot.decode(raw); }
             catch (IllegalArgumentException invalid) { preserved = raw; }
         }
-        sampledTick = -1; height = 0; velocity = 0; comparator = 0; lastFlight = null;
+        sampledTick = -1; height = 0; velocity = 0; comparator = 0; lastFlight = null; lastCost = 0;
     }
     @Override protected void saveAdditional(CompoundTag tag) {
         super.saveAdditional(tag); tag.put(RocketMonitorRoot.KEY, preserved == null ? root.encode() : preserved);

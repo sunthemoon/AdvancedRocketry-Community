@@ -144,6 +144,7 @@ public final class RocketMonitorGameTests {
                 helper.setBlock(DEVICE.east(), Blocks.REDSTONE_BLOCK);
                 monitor.signal(true);
                 helper.assertTrue(monitor.lastFlight() == RocketFlightRequestCode.INSUFFICIENT_FUEL, "Missing refused-launch reason: " + monitor.lastFlight());
+                helper.assertTrue(monitor.lastCost() > low.amount(), "Refused launch lost its required cost");
                 helper.assertTrue(rocket.flightData().orElseThrow().fuel().equals(low), "Refusal changed fuel");
                 var saved = monitor.saveWithoutMetadata(); monitor.load(saved); monitor.signal(true);
                 helper.assertTrue(monitor.lastFlight() == null && monitor.root().powered(), "Powered reload retried the edge");
@@ -161,6 +162,30 @@ public final class RocketMonitorGameTests {
                 FluidFuelLoaderFixtures.clear(helper.getLevel(), monitor.getBlockPos());
             }
         }, ORIGIN, DEVICE);
+    }
+
+    @GameTest(template = "rocket_test", batch = "monitor_unloaded", timeoutTicks = 80)
+    public static void anUnloadedEndpointPausesWithoutLoadingOrForgettingThePersistedEdge(GameTestHelper helper) {
+        EntitySections.whenLoaded(helper, () -> {
+            var level = helper.getLevel(); var owner = UUID.randomUUID(); var monitor = monitor(helper, owner);
+            var distant = new BlockPos(2345678, 100, 2345678);
+            helper.assertTrue(level.getChunkSource().getChunkNow(distant.getX() >> 4, distant.getZ() >> 4) == null, "Fixture chunk is loaded");
+            var binding = new io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.LoaderBinding(UUID.randomUUID(),
+                    level.dimension().location(), UUID.randomUUID(), distant, null);
+            var root = new RocketMonitorRoot(owner, monitor.root().device(), binding, 1, false, true, MOON, "a".repeat(64));
+            var tag = new CompoundTag(); tag.put(RocketMonitorRoot.KEY, root.encode());
+            helper.setBlock(DEVICE.east(), Blocks.REDSTONE_BLOCK); monitor.load(tag);
+            try {
+                monitor.tick();
+                helper.assertTrue(monitor.status() == RocketMonitorStatus.WAITING_UNLOADED && monitor.root().armed()
+                        && monitor.root().powered() && monitor.root().mode() == 1 && monitor.comparator() == 0,
+                        "An unavailable endpoint lost its arming or produced telemetry");
+                helper.assertTrue(monitor.lastFlight() == RocketFlightRequestCode.ENTITY_UNAVAILABLE, "Unloaded edge did not refuse");
+                monitor.load(monitor.saveWithoutMetadata()); monitor.signal(true);
+                helper.assertTrue(monitor.lastFlight() == null && monitor.root().armed(), "Powered reload submitted again");
+                helper.assertTrue(level.getChunkSource().getChunkNow(distant.getX() >> 4, distant.getZ() >> 4) == null, "Monitor loaded the locator chunk");
+            } finally { helper.setBlock(DEVICE.east(), Blocks.AIR); FluidFuelLoaderFixtures.clear(level, monitor.getBlockPos()); }
+        }, DEVICE);
     }
 
     @GameTest(template = "rocket_test", batch = "monitor_flight", timeoutTicks = 800)

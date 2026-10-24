@@ -69,6 +69,7 @@ public final class RocketMonitorFlights {
         if (!stations.operational()) { return ""; }
         var catalog = flights.captureCatalog();
         if (catalog == null && flights.configuredCatalogs()) { return ""; }
+        if (catalog != null && !PlanetaryFlightAdmission.discovered(level, target, catalog.celestial(), stations)) { return ""; }
         if (catalog != hashedCatalog || catalogHash.isEmpty()) {
             var text = new StringBuilder("monitor-catalog-1:");
             if (catalog != null) {
@@ -83,12 +84,14 @@ public final class RocketMonitorFlights {
         }
         var root = monitor.root();
         var text = new StringBuilder(catalogHash).append(root.owner()).append(root.device()).append(root.binding()).append(target);
-        var source = resolved.rocket().flightData().orElseThrow().currentTarget().orElseThrow();
+        var source = resolved.rocket().flightData().orElseThrow().currentTarget().orElse(null);
+        if (source == null) { return ""; }
         for (var location : List.of(source, target)) {
             if (!(location instanceof TravelTarget.Station named)) { continue; }
             StationState station = stations.find(named.instanceId()).orElse(null);
             if (station == null || !access.allowed(station, root.owner(), false, StationAccessAction.VISIT)) { return ""; }
-            text.append(station.stationId()).append(station.ownerId()).append(station.orbitBody()).append(station.region());
+            text.append(station.stationId()).append(station.ownerId()).append(station.orbitBody()).append(station.region())
+                    .append(station.orbitalControls());
             station.members().stream().sorted().forEach(text::append);
         }
         return RocketNativeResources.hash(text.toString());
