@@ -91,9 +91,9 @@ public final class W152NativeProbe {
         catch (InterruptedException interrupted) { Thread.currentThread().interrupt(); }
         throw new IllegalStateException("External harness failed to kill at " + label);
     }
-    @SubscribeEvent(priority = EventPriority.HIGHEST) public void tick(TickEvent.ServerTickEvent event) {
-        // Submit a fixture request before the manager's END work pass, not after lazy discovery spent this tick's cursor.
-        if (event.phase != TickEvent.Phase.START || done || paused.get()) { return; }
+    @SubscribeEvent(priority = EventPriority.HIGHEST) public void tick(TickEvent.LevelTickEvent event) {
+        // Forge ServerTick START precedes tickCount++; LevelTick START follows it and precedes the END work pass.
+        if (event.level != server.overworld() || event.phase != TickEvent.Phase.START || done || paused.get()) { return; }
         try {
             age++;
             if (!initialized) {
