@@ -27,6 +27,15 @@ public final class SealedLazyWork<T> {
         queued.add(hint); queue.addLast(hint); return true;
     }
     public int size() { owner(); return queue.size(); }
+    /** Known completed positions remain advisory and consume the same work and queue bounds as discovery. */
+    public void hintAll(Iterable<T> hints, SealedWorkBudget budget) {
+        owner(); Objects.requireNonNull(hints); Objects.requireNonNull(budget);
+        var positions = hints.iterator();
+        // Charge before hasNext: a lazy iterator may compute its next position there.
+        while (queue.size() < RocketFlightLimits.MAX_ACTIVE_TRANSFERS && budget.take() && positions.hasNext()) {
+            hint(positions.next());
+        }
+    }
     public void tick(SealedWorkBudget budget) {
         owner();
         while (budget.take()) {

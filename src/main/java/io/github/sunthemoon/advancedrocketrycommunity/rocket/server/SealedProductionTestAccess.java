@@ -81,5 +81,11 @@ public final class SealedProductionTestAccess {
         var member = ((SealedRocketBlockEntity) carrier).member().orElseThrow();
         return RocketTransactionSavedData.get(level.getServer()).acknowledgedAbsent(member.transaction(), member.snapshot(), member.entity());
     }
+    public static String diagnostic(BlockEntity carrier) {
+        var level = (ServerLevel) carrier.getLevel(); EscrowTestEndpoints.requireEnabled(level.getServer());
+        var member = ((SealedRocketBlockEntity) carrier).member().orElseThrow();
+        return "state=" + RocketRuntime.sealedDiagnosticForReleaseTest(level.getServer(), member.transaction())
+                + ",absent=" + checkedAbsent(carrier) + ",lazy=" + RocketRuntime.sealedLazyDiagnosticForReleaseTest(level.getServer());
+    }
     private SealedProductionTestAccess() { }
 }

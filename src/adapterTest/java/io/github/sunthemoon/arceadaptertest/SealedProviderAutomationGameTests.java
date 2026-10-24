@@ -49,6 +49,11 @@ public final class SealedProviderAutomationGameTests {
         helper.onEachTick(() -> {
             if (done[0]) { return; }
             long age = level.getGameTime() - began; var live = level.getBlockEntity(at);
+            if (age == 399) {
+                com.mojang.logging.LogUtils.getLogger().info("W152_PROVIDER_AUTOMATION_PENDING {} live={} consumed={} releaseAge={}",
+                        call("diagnostic", carrier), live == null ? "none" : live.getClass().getSimpleName(),
+                        consumed[0], release[0] < 0 ? -1 : level.getGameTime() - release[0]);
+            }
             if (age < 60) {
                 helper.assertTrue(live == carrier && held.equals(carrier.saveWithoutMetadata()), "Native automation changed retained provider C");
                 for (int face = -1; face < Direction.values().length; face++) {

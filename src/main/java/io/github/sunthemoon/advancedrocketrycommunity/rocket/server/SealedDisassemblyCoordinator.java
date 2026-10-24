@@ -343,6 +343,14 @@ final class SealedDisassemblyCoordinator {
         finally {
             work.remove(id, item); item.world.close(); item.lock.close();
             diagnostics.complete(id.toString(), result.name());
+            if (result == SealedDisassembly.Result.SEALED) {
+                // U absence is checked, but hints grant no publication authority. Each consumer rechecks it.
+                // Queue/budget overflow remains discoverable from intact loaded C, without retaining a RAM claim.
+                lazy.hintAll(() -> item.world.terrain.members().stream().map(member -> new SealedLoadedDiscovery.Hint(
+                        net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.DIMENSION,
+                                member.dimension()), new BlockPos(member.position().x(), member.position().y(), member.position().z())))
+                        .iterator(), budget);
+            }
         }
     }
     void clear() {
