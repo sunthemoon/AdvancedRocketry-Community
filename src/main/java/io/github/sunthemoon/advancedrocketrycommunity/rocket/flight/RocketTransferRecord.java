@@ -4,6 +4,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructu
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowTransferEnvelope;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 /** Immutable, versioned authority record for one bounded inter-Level rocket transfer. */
@@ -265,6 +266,22 @@ public final class RocketTransferRecord {
                 migratedChecksum,
                 null
         );
+    }
+
+    /** Passenger-only legacy projection. Publication still requires the checked release CAS, never ordinary put. */
+    public RocketTransferRecord releasePassengers(Set<UUID> released) {
+        if (nativeTransfer != null) { throw new IllegalArgumentException("Governed passengers cannot be released"); }
+        Objects.requireNonNull(released, "released");
+        var passengers = sourceFlightData.passengers();
+        for (UUID player : released) { passengers = passengers.remove(player); }
+        if (passengers.equals(sourceFlightData.passengers())) { return this; }
+        var source = sourceFlightData.withPassengers(passengers);
+        var destination = destinationFlightData.withPassengers(passengers);
+        String updatedChecksum = RocketTransferChecksum.compute(schemaVersion, transferId, logicalRocketId,
+                ownerId, sourceEntityId, sourceSnapshot, destinationSnapshot, source, destination, requiredFuel, createdAtGameTime);
+        return new RocketTransferRecord(schemaVersion, transferId, phase, logicalRocketId, ownerId,
+                sourceEntityId, destinationEntityId, sourceSnapshot, destinationSnapshot, source, destination,
+                requiredFuel, createdAtGameTime, updatedChecksum, null);
     }
 
     private RocketTransferRecord copy(RocketTransferPhase updatedPhase, UUID updatedDestinationEntityId) {
