@@ -136,4 +136,16 @@ class RocketRejoinCodecTest {
         var batch = encoded(); first(batch, "batches").putByteArray("large", new byte[2_048]);
         assertThrows(IllegalArgumentException.class, () -> RocketRejoinCodec.bounds(batch));
     }
+
+    @Test void everyExistingTransferPhaseCanBeComparedWithoutChangingItsIdentity() {
+        for (var phase : io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferPhase.values()) {
+            UUID destination = phase.destinationAuthoritative() ? id(700) : null;
+            var version = new RocketRejoinRoot.Version("d".repeat(64), phase.name(), destination);
+            var b = fixture().batches().get(0);
+            var batch = new RocketRejoinRoot.Batch(b.release(), b.sequence(), b.transfer(), b.rocket(), b.authority(),
+                    b.hold(), b.dimension(), b.pad(), b.minimum(), b.maximum(), b.resources(), version, version, b.released());
+            var root = new RocketRejoinRoot(1, List.of(batch), fixture().entries());
+            assertEquals(root, RocketRejoinCodec.decode(RocketRejoinCodec.encode(root)));
+        }
+    }
 }

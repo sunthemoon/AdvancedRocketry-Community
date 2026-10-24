@@ -95,7 +95,7 @@ public record RocketRejoinRoot(long nextSequence, List<Batch> batches, List<Entr
     public record Version(String checksum, String phase, UUID destination) {
         public Version {
             hash(checksum);
-            require(List.of("PREPARED", "DESTINATION_SPAWNED", "COMMITTED").contains(phase), "Unknown transfer phase");
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferPhase.valueOf(phase);
             require(phase.equals("PREPARED") == (destination == null), "Transfer version destination shape");
         }
     }
