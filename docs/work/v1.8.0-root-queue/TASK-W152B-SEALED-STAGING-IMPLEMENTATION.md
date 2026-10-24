@@ -110,3 +110,16 @@ reuses the R-021 save guard, which refuses saving the whole chunk.
 
 Continue with the remaining slices (the registered carrier, `SEALED_DISASSEMBLY`, C0 to C5, unsealing and lazy
 unsealing, recovery, art and text, native cuts). Stop only for a new decision of the kind above.
+
+## Root decision R101 (2026-10-24), on the native-tag diagnostic (`97277f8a`)
+
+"Written back exactly as loaded" in R100 means this: the carrier keeps the loaded tag object (a copy) and hands it,
+unchanged by this mod, to Minecraft's own NBT writer. The writer's normalizations are accepted: an empty list's element
+type written as END, and canonical NaN bits. It applies them to every tag of every chunk, and they change no
+resource, count or identity. No custom serializer. Test that the root round-trips through the native writer and
+reader to a stable form, equal on the second save, and that no field, element or value changes beyond those two
+normalizations.
+
+From here on, stop only for a decision that affects resources, a saved format beyond R93 and R100, a bound, lease,
+budget, timeout or the protocol. Choose behaviour that vanilla applies to every saved tag yourself, and record the
+choice.
