@@ -71,6 +71,9 @@ public final class RocketReleaseBoardingGameTests {
         String saveFailure;
         int phase, ticks, seat;
         boolean closed, installed, departed;
+        boolean b1Captured, captureFailed;
+        java.util.concurrent.atomic.AtomicLong b1Generation;
+        long capturedGeneration;
 
         Boarding(GameTestHelper helper) {
             this.helper = helper; level = helper.getLevel(); server = level.getServer();
@@ -148,6 +151,14 @@ public final class RocketReleaseBoardingGameTests {
         }
         void admit() {
             if (!journal.actionable(record.logicalRocketId())) { return; }
+            EscrowRuntime.of(server).monitor().observerForTests(server, observation -> {
+                if (observation.slot().entities() && observation.slot().chunk() == originSlot.toLong()) {
+                    if (!b1Captured && observation.cause().equals("CAPTURE") && release != null
+                            && transfers.releaseOwner(server).coordinator.stage(release).equals("B1")) {
+                        b1Captured = true; b1Generation = observation.counter(); capturedGeneration = observation.generation();
+                    }
+                }
+            });
             release = RocketRuntime.releaseAbsentForTests(server, record.transferId()).orElseThrow();
             helper.assertTrue(RocketRuntime.releaseFenced(rocket), "Admission did not hold the release fence");
             var before = rocket.flightData().orElseThrow().passengers();
@@ -173,10 +184,21 @@ public final class RocketReleaseBoardingGameTests {
         }
         void awaitS2() {
             // B0 proves the frozen ME exactly. Exercise permitted departure after that proof, while B1 is running.
-            if (!departed && sidecar.releasePermit(release).isPresent()
-                    && transfers.releaseOwner(server).coordinator.stage(release).equals("B1")) { leaveUnderFence(); }
+            if (!departed && b1Captured) {
+                var work = ((java.util.Map<?, ?>) RocketSourceRetirementFixtures.field(transfers.releaseOwner(server).coordinator, "work")).get(release);
+                helper.assertTrue((boolean) RocketSourceRetirementFixtures.field(work, "capturing"), "Departure missed the pending B1 capture");
+                leaveUnderFence();
+                helper.assertTrue(b1Generation.get() == capturedGeneration, "Departure alone invalidated the native capture");
+                // W80 permits this changed manifest. A newer native save, however, must invalidate B1.
+                // Explicitly supersede the pending capture instead of depending on incidental entity saves.
+                helper.assertTrue(level.entityManager.storeChunkSections(originSlot.toLong(), entity -> { }), "Departure save was refused");
+                helper.assertTrue(b1Generation.get() > capturedGeneration, "Departure save did not supersede the B1 generation");
+            }
+            var work = ((java.util.Map<?, ?>) RocketSourceRetirementFixtures.field(transfers.releaseOwner(server).coordinator, "work")).get(release);
+            if (work != null && "CAPTURE_FAILED".equals(RocketSourceRetirementFixtures.field(work, "notice"))) { captureFailed = true; }
             if (RocketRuntime.releaseFenced(rocket)) { return; }
             helper.assertTrue(departed, "S2 completed before the retained-rider departure was exercised");
+            helper.assertTrue(captureFailed, "The superseded B1 capture was not rejected before retrying");
             helper.assertTrue(sidecar.acknowledgedCurrent() && sidecar.acknowledgedRoot().entries().stream()
                     .filter(e -> e.release().equals(release)).allMatch(e -> e.seat() == RocketRejoinRoot.Seat.VERIFIED),
                     "Boarding reopened before the checked S2 acknowledgement");
@@ -301,6 +323,7 @@ public final class RocketReleaseBoardingGameTests {
         }
         void close() {
             if (closed) { return; } closed = true;
+            EscrowRuntime.of(server).monitor().observerForTests(server, null);
             if (firstPlayer != null) { firstPlayer.stopRiding(); }
             if (firstPlayer != null && firstPlayer.connection != null) { server.getPlayerList().remove(firstPlayer); }
             if (stranger != null) { stranger.stopRiding(); }
