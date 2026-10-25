@@ -1783,7 +1783,7 @@ changes no decision status and accepts no risk. The risk is R-035.
   Leaves N3-B1 to N3-B4 follow W148 section 7; N3-B2 needs an independent persistence review before integration.
 - **N3-B2 isolation (W154 design revisions 1 and 2, `records/W154-DESIGN.md`; review W154-review BLOCK, SHA-256
   `6facedc6…`, and its re-review, SHA-256 `c67bfebd…`; Root decisions R91, R93 to R98 and R100, 2026-10-24, and R107,
-  2026-10-25; implemented by W152, W152F and W152G and merged at `6f00cbf5e`; R110 and W152H follow).** W152 showed that vanilla container access (hoppers, the item capability, menus, breaking) bypasses
+  2026-10-25; implemented by W152, W152F and W152G and merged at `6f00cbf5e`; W152H and W152I merged at `787c28e52` under R110, R112 and R114; W152J follows).** W152 showed that vanilla container access (hoppers, the item capability, menus, breaking) bypasses
   the region locks while U is retained, so a rollback could restore items that had already left. Sealed staging closes
   that window. While U is retained, every member of the footprint is an inert carrier C: no inventory, capability,
   menu, ticker, drops or item form; unbreakable, and immune to explosions and pistons. C holds the member's original
@@ -1822,7 +1822,7 @@ changes no decision status and accepts no risk. The risk is R-035.
     root that fails validation keeps the member sealed and held, and is written back exactly as loaded on every save,
     with one bounded WARN per carrier per load.
   - **Limits:** no bound, lease, budget, timeout or protocol change.
-  - **Proof admission (R109 and R110, 2026-10-25):** an active proof attempt is served every tick, and a sealed
+  - **Proof admission (R109 and R110, 2026-10-25; R112 and R114, 2026-10-26):** an active proof attempt is served every tick, and a sealed
     attempt reserves the four ordinary capture slots of its Level until it ends. A plan wider than 21 slots is never
     started: that is a conservative admission policy within the unchanged quotas and 100-tick deadline, not an
     absolute native limit (a window opened earlier can fit 24). Supported assemblies can reach the planner's 129-slot
@@ -1830,14 +1830,19 @@ changes no decision status and accepts no risk. The risk is R-035.
     INFO line; the rocket entity is unchanged. A U record already over the limit (only from earlier test builds)
     stays retained with one WARN per record per load, and recovery follows R-035's whole-world copy process. W152H
     also lets a waiting ordinary return in between sealed attempts and keeps a pre-U request's 200-tick expiry
-    running during proof backoff. Player admission (N3-B3) stays off until W152H is merged after a fresh review.
+    running during proof backoff. The hand-off bound is relative to native capture availability (R112): the
+    waiting class gets its Level's first native capture opportunity at or after the other class's attempt ends,
+    plus the 2-tick service lag; with the unchanged quota that can be 16 ticks after a sealed attempt. W152H and
+    W152I merged at `787c28e52` with review finding W152H-R1 open (R114): ordinary fail-back reservations can
+    still delay sealed admission without bound. Player admission (N3-B3) stays off until W152J fixes that and is
+    merged after a fresh review.
   - **Stop condition:** W152's first commit probes the publication sequence, including an attachment listener that
     keeps the raw target, and stops if no one-step publication exists without a Mixin.
 
 No saved format changes except the N3-B2 carrier and the `SEALED_DISASSEMBLY` record type that R93 authorizes above.
 This is a development implementation note, not owner acceptance or a Gate result.
 
-### W80 implementation note: releasing a legacy rocket held by offline passengers (design frozen; storage, release and the rejoin core merged, no command yet)
+### W80 implementation note: releasing a legacy rocket held by offline passengers (design frozen; all three leaves merged)
 
 This note records the frozen design `records/W80-DESIGN.md` (revision 3, merged `aee68ef3`; reviews W80-review
 REDESIGN and W80-review-2 APPROVE-WITH-CHANGES). Root registered it on 2026-10-24, before implementation; the risk is
@@ -1874,8 +1879,13 @@ online together. Governed records stay excluded.
   re-review APPROVE-WITH-CHANGES on one low log-manifest item that W160 takes): login protection, safe placement with P1,
   prompt saves and the exact readback with P2, with no command. R108 makes P2 the commit point, bound to an install-time
   lease (the session is current and the target is safe), so a death, clone, new login or unsafe target before P2 is
-  installed keeps the obligation. Still to come: W160, the command with its execution-time check, the `rejoins` view,
-  the command matrix and the combined native matrix.
+  installed keeps the obligation. The command and view merged on 2026-10-26 (W160 with W160F and W160G, `f68b4867e`;
+  review BLOCK on W160-R1 to W160-R4, then re-review APPROVE): `release-absent` with its execution-time
+  `hasPermission(3)` check, the read-only `rejoins` view, the command matrix and the combined native matrix (62
+  counted starts). R113 keeps `59f08e179` as the unused-world downgrade baseline and declares exactly its two
+  missing `rocket_monitoring_station` registry entries; downgrade after use stays unsupported. W152H's cross-guard
+  (`787c28e52`) keeps release planning and sealed staging apart. Two-client evidence waits for the owner's final
+  campaign.
 
 ### W11c and W11d implementation note: rocket cargo scope and protections (design W11CD, admission disabled)
 

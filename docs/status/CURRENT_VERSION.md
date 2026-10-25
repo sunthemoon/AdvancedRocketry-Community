@@ -38,7 +38,7 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: 6f00cbf5e (W152 merged: N3-B2 sealed staging with the W152F and W152G fixes; player admission stays off until W152H, R110. Before it, W159 merged the W80-rejoin core at af7523215)
+latest_code_commit: f68b4867e (W160 merged with W160F and W160G: the W80 `release-absent` command and `rejoins` view, so all three W80 leaves are in. Before it, W152H and W152I merged at 787c28e52: the W80 and sealed-staging cross-guard, request expiry, proof hand-off and wide-plan refusal, with review finding W152H-R1 open under R114; player admission (N3-B3) stays off until W152J)
 latest_hosted_regression: the last green run is 40199348299 at c54de4b0 (after the W152 merge). Its first attempt failed only the log check: all 1,399 GameTests passed, but batch rocket_release_boarding logged an undeclared ARCE_REJOIN_RELEASE_HELD state=CAPTURE_FAILED WARN; the rerun of that job passed. That WARN stays open in W161. Every completed hosted regression since the failure at 2426f00d on 2026-10-22 is green; W139 stays open until no hosted log shows ARCE_LAUNCH_DISCARD (QUEUE)
 ledger_planned_units: 17
 asset_review_items: 154
