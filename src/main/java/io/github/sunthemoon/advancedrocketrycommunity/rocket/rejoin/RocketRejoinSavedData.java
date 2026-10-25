@@ -51,6 +51,16 @@ public final class RocketRejoinSavedData extends SavedData implements AutoClosea
     public RocketRejoinGuards guards(net.minecraft.server.MinecraftServer server) {
         owner(); if (guards == null) { guards = new RocketRejoinGuards(server, this); } return guards;
     }
+    /** Isolated placement fixtures supply an already-applied E1 without replacing the player writer. */
+    void guardsForGameTest(net.minecraft.server.MinecraftServer server) {
+        guardsForGameTest(server, () -> io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime.rejoinAdmissions(server));
+    }
+    void guardsForGameTest(net.minecraft.server.MinecraftServer server,
+                          java.util.function.Supplier<java.util.List<RocketRejoinRoot.Entry>> admissions) {
+        owner();
+        if (!(server instanceof net.minecraft.gametest.framework.GameTestServer) || guards != null) { throw new IllegalStateException("Not a fresh GameTest guard"); }
+        guards = new RocketRejoinGuards(server, this, release -> true, admissions);
+    }
     /** Last loaded or acknowledged root, retained for player names, not proof of a session write acknowledgement. */
     public RocketRejoinRoot acknowledgedRoot() { owner(); return acknowledgedRoot; }
     public java.util.List<RocketRejoinRoot> pendingRoots() {

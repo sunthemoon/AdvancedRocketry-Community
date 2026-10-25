@@ -25,8 +25,9 @@ public final class RocketRejoinGuards {
         final Set<MobEffect> originalEffects;
         ServerLevel level;
         Vec3 position;
-        boolean online = true, disconnected, durable, invalidated;
+        boolean online = true, disconnected, durable, invalidated, freshAttempt;
         String reason = "waiting";
+        long placedAt = -1, disconnectedAt = -1;
         Session(ServerPlayer player, long now, boolean durable) {
             this.player = player; deadline = now + DEADLINE; this.durable = durable;
             level = player.serverLevel(); position = player.position();
@@ -37,18 +38,24 @@ public final class RocketRejoinGuards {
     private final RocketRejoinSavedData data;
     private final Map<UUID, Session> sessions = new HashMap<>();
     private final RocketRejoinPlacement placement;
+    private final java.util.function.Supplier<java.util.List<RocketRejoinRoot.Entry>> admissions;
 
     RocketRejoinGuards(MinecraftServer server, RocketRejoinSavedData data) {
         this(server, data, release -> RocketRuntime.rejoinPlacementReady(server, release));
     }
     RocketRejoinGuards(MinecraftServer server, RocketRejoinSavedData data, java.util.function.Predicate<UUID> releaseReady) {
+        this(server, data, releaseReady, () -> RocketRuntime.rejoinAdmissions(server));
+    }
+    RocketRejoinGuards(MinecraftServer server, RocketRejoinSavedData data, java.util.function.Predicate<UUID> releaseReady,
+                      java.util.function.Supplier<java.util.List<RocketRejoinRoot.Entry>> admissions) {
+        this.admissions = admissions;
         this.server = server; this.data = data; placement = new RocketRejoinPlacement(server, data, this, releaseReady);
     }
 
     RocketRejoinIndex index() {
         var roots = new ArrayList<>(data.pendingRoots()); roots.add(data.root());
         if (data.acknowledgedRoot() != null) { roots.add(data.acknowledgedRoot()); }
-        return new RocketRejoinIndex(roots, RocketRuntime.rejoinAdmissions(server));
+        return new RocketRejoinIndex(roots, admissions.get());
     }
     public boolean required(UUID player) { return index().contains(player); }
     public boolean active(ServerPlayer player) { var s = sessions.get(player.getUUID()); return s != null && s.player == player; }
@@ -61,6 +68,7 @@ public final class RocketRejoinGuards {
         }
         var old = sessions.get(player.getUUID());
         if (old != null && old.player == player && old.online) { return; }
+        boolean cloned = old != null && (old.invalidated || old.freshAttempt);
         if (old != null) { placement.cancel(old); sessions.remove(player.getUUID()); }
         var index = index();
         if (!index.contains(player.getUUID())) { return; }
@@ -69,6 +77,8 @@ public final class RocketRejoinGuards {
             player.connection.disconnect(message("capacity", true)); return;
         }
         var session = new Session(player, server.getTickCount(), durable(player.getUUID()));
+        session.freshAttempt = cloned || !player.isAlive() || player.deathTime != 0;
+        if (session.freshAttempt) { player.getPersistentData().remove(RocketRejoinMarker.KEY); }
         sessions.put(player.getUUID(), session); pin(session);
         log(session, "guard");
         player.displayClientMessage(message("waiting", false), false);
@@ -85,14 +95,14 @@ public final class RocketRejoinGuards {
                 complete(s);
                 if (s.online && !s.disconnected) { RocketRuntime.resumeDroppedRejoin(s.player); }
             } else if (s.online && !s.disconnected && server.getTickCount() >= s.deadline) {
-                pin(s); s.disconnected = true; placement.cancel(s); log(s, "disconnect"); s.player.connection.disconnect(message(s.reason, true));
+                pin(s); s.disconnected = true; s.disconnectedAt = server.getTickCount(); placement.cancel(s); log(s, "disconnect"); s.player.connection.disconnect(message(s.reason, true));
             }
         }
         placement.tick();
     }
     void reason(Session s, String reason) {
         if (!s.reason.equals(reason)) {
-            s.reason = reason; log(s, reason);
+            s.reason = reason; if (!reason.equals("oversized")) { log(s, reason); }
             if (s.online) { s.player.displayClientMessage(message(reason, false), false); }
         }
     }

@@ -77,5 +77,27 @@ class RocketRejoinPlayerFileTest {
         assertEquals(RocketRejoinPlayerFile.Status.IO, scan().status());
         Files.createDirectory(file()); assertEquals(RocketRejoinPlayerFile.Status.IO, scan().status());
     }
+    @Test void changedModificationTimeRejectsOtherwiseMatchingBytes() throws Exception {
+        write(valid()); var before = Files.getLastModifiedTime(file()); var calls = new java.util.concurrent.atomic.AtomicInteger();
+        var result = RocketRejoinPlayerFile.scan(directory, expected(), RocketRejoinPlayerFile.Limits.DEFAULT, () -> {
+            if (calls.incrementAndGet() == 6) {
+                try { Files.setLastModifiedTime(file(), java.nio.file.attribute.FileTime.fromMillis(before.toMillis() + 2000)); }
+                catch (IOException failure) { throw new UncheckedIOException(failure); }
+            }
+            return System.nanoTime();
+        });
+        assertEquals(RocketRejoinPlayerFile.Status.CHANGED, result.status());
+    }
+    @Test void maximumDepthAndNestedUnknownListsAreSkippedWithoutLosingProofFields() throws Exception {
+        var tag = valid(); var nested = tag;
+        for (int i = 0; i < 512; i++) { var next = new CompoundTag(); nested.put("n", next); nested = next; }
+        var list = new ListTag(); var inside = new ListTag(); inside.add(LongTag.valueOf(12)); list.add(inside); tag.put("UnknownLists", list);
+        write(tag); assertEquals(RocketRejoinPlayerFile.Status.MATCH, scan().status());
+    }
+    @Test void symbolicLinkIsNeverOpened() throws Exception {
+        write(valid()); var target = directory.resolve("actual.dat"); Files.move(file(), target);
+        Files.createSymbolicLink(file(), target.getFileName());
+        assertEquals(RocketRejoinPlayerFile.Status.IO, scan().status());
+    }
     void gzip(byte[] raw) throws Exception { try (var out = new GZIPOutputStream(Files.newOutputStream(file()))) { out.write(raw); } }
 }

@@ -26,6 +26,29 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 public final class RocketRejoinGuardGameTests {
     private RocketRejoinGuardGameTests() { }
 
+    @GameTest(template = "rocket_test", batch = "rocket_rejoin_dropped")
+    public static void droppedAdmissionEndsProtectionAndAllowsOrdinaryMounting(GameTestHelper helper) {
+        var server = helper.getLevel().getServer(); var previous = RocketRejoinEvents.get(server);
+        var player = new ServerPlayer(server, helper.getLevel(), new GameProfile(UUID.randomUUID(), "W159Dropped"));
+        var entries = new java.util.concurrent.atomic.AtomicReference<>(root(player.getUUID()).entries());
+        var data = RocketRejoinSavedData.load(RocketRejoinCodec.encode(RocketRejoinRoot.empty()));
+        data.guardsForGameTest(server, entries::get);
+        server.overworld().getDataStorage().set(RocketRejoinSavedData.TYPE.dataName(), data);
+        var boat = new net.minecraft.world.entity.vehicle.Boat(helper.getLevel(), 0, 80, 0);
+        try {
+            var connection = new Connection(PacketFlow.SERVERBOUND); new EmbeddedChannel(connection);
+            server.getPlayerList().placeNewPlayer(connection, player);
+            helper.assertTrue(RocketRejoinProtection.guarded(player) && !player.startRiding(boat, true), "Unpublished admission did not guard mounting");
+            entries.set(List.of()); data.guards(server).tick();
+            helper.assertTrue(!RocketRejoinProtection.guarded(player) && !RocketRejoinProtection.required(server, player.getUUID())
+                    && player.startRiding(boat, true), "Dropped B0 admission did not restore ordinary behavior");
+        } finally {
+            player.stopRiding(); if (player.connection != null) { server.getPlayerList().remove(player); }
+            data.close(); server.overworld().getDataStorage().set(RocketRejoinSavedData.TYPE.dataName(), previous); boat.discard();
+        }
+        helper.succeed();
+    }
+
     @GameTest(template = "rocket_test", batch = "rocket_rejoin_guard")
     public static void joinProtectsDamageAndForceEffectsThenCleansOnlyGainedEffects(GameTestHelper helper) {
         var server = helper.getLevel().getServer();
@@ -53,6 +76,10 @@ public final class RocketRejoinGuardGameTests {
             }
             player.forceAddEffect(new MobEffectInstance(MobEffects.WITHER, 600), player);
             helper.assertTrue(!player.hasEffect(MobEffects.WITHER), "forceAddEffect bypassed Applicable denial");
+            net.minecraft.world.level.block.Blocks.WITHER_ROSE.entityInside(net.minecraft.world.level.block.Blocks.WITHER_ROSE.defaultBlockState(),
+                    player.level(), player.blockPosition(), player);
+            helper.assertTrue(!player.hasEffect(MobEffects.WITHER), "Wither rose bypassed Applicable denial");
+            player.lavaHurt(); helper.assertTrue(player.getHealth() == 1, "Lava's supported damage route bypassed guard");
             // R106 defence-in-depth route: mutate the public effect map without canBeAffected.
             player.getActiveEffectsMap().put(MobEffects.WITHER, new MobEffectInstance(MobEffects.WITHER, 600));
             player.setRemainingFireTicks(200); player.setTicksFrozen(200); player.fallDistance = 100;

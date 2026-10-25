@@ -41,8 +41,8 @@ final class RocketRejoinPlacement implements AutoCloseable {
     }
     void tick() {
         for (var s : guards.sessions()) {
-            if (s.online && !s.disconnected && !work.containsKey(s.player.getUUID())) {
-                if (work.size() < CAPACITY) { work.put(s.player.getUUID(), new Work(s)); }
+            if (s.online && !s.disconnected && !s.invalidated && !work.containsKey(s.player.getUUID())) {
+                if (work.size() < CAPACITY) { work.put(s.player.getUUID(), new Work(s)); guards.reason(s, "waiting"); }
                 else { guards.reason(s, "capacity"); }
             }
         }
@@ -89,12 +89,13 @@ final class RocketRejoinPlacement implements AutoCloseable {
             s.player.getPersistentData().remove(RocketRejoinMarker.KEY);
         }
         Attempt attempt = w.entry.attempt();
-        if (attempt == null || !world.safe(s.player, w.batch, attempt)) {
+        if (attempt == null || s.freshAttempt || !world.safe(s.player, w.batch, attempt)) {
             if (!data.pendingRoots().isEmpty()) { return; }
             attempt = world.choose(s.player, w.batch);
             if (attempt == null) { guards.reason(s, "unsafe"); return; }
             var replacement = new Entry(w.entry.release(), w.entry.player(), w.entry.seatIndex(), Placement.PENDING, w.entry.seat(), attempt);
             if (!data.submit(data.root().update(replacement))) { guards.reason(s, "io"); }
+            else { s.freshAttempt = false; }
             return;
         }
         var acknowledged = data.acknowledgedRoot();
@@ -102,12 +103,17 @@ final class RocketRejoinPlacement implements AutoCloseable {
         // Exact P1, same live session, and a second safety check immediately before any teleport.
         if (!world.safe(s.player, w.batch, attempt)) { guards.reason(s, "unsafe"); return; }
         w.attempt = attempt; s.level = world.level(w.batch, attempt.target()); s.position = new Vec3(attempt.x(), attempt.y(), attempt.z());
+        boolean resumed = RocketRejoinMarker.matches(s.player.getPersistentData(), w.entry)
+                && s.player.serverLevel() == s.level && s.player.position().equals(s.position) && !s.player.isPassenger();
         RocketRejoinGuards.pin(s);
         s.player.getPersistentData().put(RocketRejoinMarker.KEY, RocketRejoinMarker.encode(
                 new RocketRejoinMarker.Value(w.entry.release(), w.entry.player(), attempt.generation())));
-        w.placed = true;
-        AdvancedRocketryCommunity.LOGGER.info("ARCE_REJOIN_PLACED player={} release={} generation={} target={}",
-                w.entry.player(), w.entry.release(), attempt.generation(), attempt.target());
+        w.placed = true; s.placedAt = server.getTickCount();
+        guards.reason(s, "waiting");
+        if (!resumed) {
+            AdvancedRocketryCommunity.LOGGER.info("ARCE_REJOIN_PLACED player={} release={} generation={} target={}",
+                    w.entry.player(), w.entry.release(), attempt.generation(), attempt.target());
+        }
         RocketRejoinNativeCuts.placed(s.player, w.entry, data);
     }
     void saved(net.minecraft.server.level.ServerPlayer player) {
@@ -134,6 +140,7 @@ final class RocketRejoinPlacement implements AutoCloseable {
         if (w.session.online && !world.safe(w.session.player, w.batch, w.attempt)) { guards.reason(w.session, "unsafe"); return; }
         w.submitted = data.submit(data.root().update(new Entry(current.release(), current.player(), current.seatIndex(), Placement.VERIFIED, current.seat(), null)));
         if (!w.submitted) { guards.reason(w.session, "io"); }
+        else { guards.reason(w.session, "waiting"); }
     }
     private void apply(RocketRejoinReader.Completion result) {
         var w = (Work) result.identity(); var s = w.session;
