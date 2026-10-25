@@ -39,7 +39,7 @@ development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
 latest_code_commit: b371c9bc1 (W158 merged: W80-release, the release coordination for legacy records through a gated internal entry point, with no command yet; before it, W157 merged W80-storage)
-latest_hosted_regression: the last green run is 40129726137 at c7237169 (the W157 merge). Every completed hosted regression since the failure at 2426f00d on 2026-10-22 is green; W139 stays open until no hosted log shows ARCE_LAUNCH_DISCARD (QUEUE)
+latest_hosted_regression: the last green run is 40152525151 at 32c8ded4 (after the W158 merge), green on a rerun of its failed job; its first attempt failed three GameTests (the relogin intermittent below). Every completed hosted regression since the failure at 2426f00d on 2026-10-22 is green; W139 stays open until no hosted log shows ARCE_LAUNCH_DISCARD (QUEUE)
 ledger_planned_units: 17
 asset_review_items: 154
 required_gates_approved: none
@@ -124,7 +124,12 @@ What is still open:
 - **Risks.** R-021 and the risks the W slices added (R-028 to R-040) stay open. Root registered R-039 (the bay receipt store) before W27c1 and R-040 (the checked transaction journal and its unreadable-root hold) with W123.
 - **Earlier intermittent GameTests.** W73 fixed the landing-pad cancellation test, W74 the
   six-host natural-beds test, W76 the first-Moon-landing and spawn-egg tests, and W78 the sealed
-  sleep-room test. Hosted runs confirm each fix as they accumulate. The open one is the escrow
-  proof timeout above.
+  sleep-room test. Hosted runs confirm each fix as they accumulate. The open ones are the escrow
+  proof timeout above and the relogin timeout below.
+- **Intermittent relogin GameTest (2026-10-25).** The first attempt of hosted run 40152525151 at `32c8ded4` timed out
+  `EscrowGovernedSourceFlightGameTests.logoutDuringAscentAndLoginAfterLandingCompletesHandoffAndCleanup` at 600 ticks:
+  the passenger logged in after landing and the handoff never completed. Two later fixtures then failed with
+  "Terminal cut requires exclusive owner-thread setup", because the first one cleans up only on success. A rerun of
+  the same commit passed, and W158F's local full run passed it. Queued as W161 (QUEUE).
 
 No v1.8 Required Gate is approved. Only the owner marks a Gate or the version as passed.
