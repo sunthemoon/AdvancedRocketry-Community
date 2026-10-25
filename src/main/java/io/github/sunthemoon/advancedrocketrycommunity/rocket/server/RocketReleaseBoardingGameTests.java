@@ -9,6 +9,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.Chec
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedRootSupplier;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModEntities;
+import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.*;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
@@ -66,6 +67,8 @@ public final class RocketReleaseBoardingGameTests {
         UUID release;
         RocketRejoinRoot.Resources resources;
         CompoundTag reloadedImage;
+        final java.util.Set<ChunkPos> savedSlots = new java.util.HashSet<>(), savingSlots = new java.util.HashSet<>();
+        String saveFailure;
         int phase, ticks, seat;
         boolean closed, installed;
 
@@ -83,6 +86,7 @@ public final class RocketReleaseBoardingGameTests {
             if (closed) { return; }
             try {
                 helper.assertTrue(++ticks < 380, "Release boarding fixture exceeded its bounded wait at phase " + phase);
+                helper.assertTrue(saveFailure == null, "Native fixture save failed: " + saveFailure);
                 switch (phase) {
                     case 0 -> setup();
                     case 1 -> saveOldCopies();
@@ -125,11 +129,12 @@ public final class RocketReleaseBoardingGameTests {
                     record.destinationFlightData().land(level.getGameTime()));
             RocketTransferEntities.positionAtOrigin(stale, record.destinationSnapshot().sourceOrigin());
             helper.assertTrue(level.addFreshEntity(stale), "Old recorded copy was not published");
-            helper.assertTrue(server.saveEverything(false, true, true), "Could not save old entity copies");
             phase = 1;
         }
         void saveOldCopies() {
             if (!journal.retryChecked(server)) { return; }
+            saveSlot(originSlot, rocket.getUUID()); saveSlot(otherSlot, stale.getUUID());
+            if (!savedSlots.containsAll(List.of(originSlot, otherSlot))) { return; }
             var old = RocketSourceRetirementFixtures.diskImage(level, otherSlot, stale.getUUID());
             var source = RocketSourceRetirementFixtures.diskImage(level, originSlot, rocket.getUUID());
             if (old == null || source == null) { return; }
@@ -173,10 +178,12 @@ public final class RocketReleaseBoardingGameTests {
             helper.assertTrue(intent(firstPlayer, RocketFlightAction.BOARD) == RocketFlightRequestCode.SUCCESS,
                     "Post-S2 real boarding was refused");
             assertNewAssignment();
-            helper.assertTrue(server.saveEverything(false, true, true), "Could not save the new assignment");
+            savedSlots.remove(originSlot);
             phase = 4;
         }
         void saveNewAssignment() {
+            saveSlot(originSlot, rocket.getUUID());
+            if (!savedSlots.contains(originSlot)) { return; }
             var image = RocketSourceRetirementFixtures.diskImage(level, originSlot, rocket.getUUID());
             if (image == null || !hasSeat(image, first)) { return; }
             reloadedImage = image;
@@ -226,6 +233,22 @@ public final class RocketReleaseBoardingGameTests {
             return entity.getCompound("RocketEntityData").getCompound("flight_data").getCompound("passengers")
                     .getList("assignments", 10).stream().map(CompoundTag.class::cast)
                     .anyMatch(seat -> seat.hasUUID("passenger_id") && seat.getUUID("passenger_id").equals(player));
+        }
+        void saveSlot(ChunkPos slot, UUID entity) {
+            if (savedSlots.contains(slot) || savingSlots.contains(slot)) { return; }
+            var runtime = EscrowRuntime.of(server); var store = runtime.store(level);
+            if (!runtime.barrier().availableOrdinary(store, level.dimension().location().toString(), slot, server.getTickCount())) { return; }
+            savingSlots.add(slot);
+            boolean admitted = runtime.barrier().beginOrdinary(store, level.dimension().location().toString(), slot,
+                    root -> root.getList("Entities", 10).stream().map(CompoundTag.class::cast)
+                            .anyMatch(tag -> tag.hasUUID("UUID") && tag.getUUID("UUID").equals(entity) && hasSeat(tag, first)),
+                    server.getTickCount(), label -> { }, result -> {
+                        savingSlots.remove(slot);
+                        if (result.confirmed()) { savedSlots.add(slot); }
+                        else { saveFailure = slot.toString(); }
+                        if (result.proof() != null) { result.proof().release(); }
+                    });
+            if (!admitted) { savingSlots.remove(slot); }
         }
         void installSidecar() {
             level.getServer().overworld().getDataStorage().set(RocketRejoinSavedData.TYPE.dataName(), sidecar);
