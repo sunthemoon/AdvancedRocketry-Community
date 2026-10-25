@@ -78,13 +78,28 @@ final class RocketReleaseAccess {
         if (sidecar == null || journal == null || !journal.operational()) { return RocketReleaseResult.unavailable(); }
         var owner = owner(server); if (owner == null) { return RocketReleaseResult.unavailable(); }
         var pending = owner.coordinator.release(transfer);
-        if (pending.isPresent()) {
-            return new RocketReleaseResult(RocketReleaseResult.Status.PENDING, pending.get(), owner.coordinator.stage(pending.get()));
+        return resolve(pending, owner.coordinator.pending(transfer), sidecar.admissionAvailable(), owner.coordinator::stage, () -> {
+            var plan = owner.world.plan(owner.sidecar.root(), transfer);
+            return plan != null && owner.coordinator.admit(plan) ? plan.batch().release() : null;
+        });
+    }
+    /** Admission response policy, separated from world reads so repeats never accidentally enqueue work. */
+    static RocketReleaseResult resolve(Optional<UUID> pending, boolean seatsPending, boolean available,
+            java.util.function.Function<UUID, String> stage, java.util.function.Supplier<UUID> tryAdmission) {
+        if (pending.isPresent() && seatsPending) {
+            return new RocketReleaseResult(RocketReleaseResult.Status.PENDING, pending.get(), stage.apply(pending.get()));
         }
-        if (!sidecar.admissionAvailable()) { return RocketReleaseResult.unavailable(); }
-        var plan = owner.world.plan(owner.sidecar.root(), transfer);
-        return plan != null && owner.coordinator.admit(plan)
-                ? new RocketReleaseResult(RocketReleaseResult.Status.ADMITTED, plan.batch().release(), "B0") : RocketReleaseResult.refused();
+        // After S2, an H1 survivor can have different remaining riders become absent. A valid new
+        // plan may release those riders; an ordinary repeat with no new admission only reports status.
+        if (available) {
+            var release = tryAdmission.get();
+            if (release != null) {
+                return new RocketReleaseResult(RocketReleaseResult.Status.ADMITTED, release, "B0");
+            }
+        } else if (pending.isEmpty()) { return RocketReleaseResult.unavailable(); }
+        return pending.isPresent()
+                ? new RocketReleaseResult(RocketReleaseResult.Status.PENDING, pending.get(), stage.apply(pending.get()))
+                : RocketReleaseResult.refused();
     }
     static RocketRejoinInspection inspect(MinecraftServer server, UUID player) {
         if (!server.isSameThread()) { throw new IllegalStateException("Inspection requires server thread"); }
