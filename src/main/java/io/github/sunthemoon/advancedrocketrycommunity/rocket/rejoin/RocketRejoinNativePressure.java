@@ -29,6 +29,8 @@ public final class RocketRejoinNativePressure {
     public RocketRejoinNativePressure(MinecraftServer server, String cut, String mode) {
         RocketReleaseNativeCuts.validate(server); this.server = server; this.cut = cut; this.mode = mode;
         if (!List.of("C28", "C29", "C30", "C33").contains(cut)) { throw new IllegalArgumentException("Unknown pressure row"); }
+        // Keep the exact low-health witness stable during the 200-tick observation window.
+        server.overworld().getGameRules().getRule(net.minecraft.world.level.GameRules.RULE_NATURAL_REGENERATION).set(false, server);
     }
     public boolean advance(RocketRejoinSavedData data) {
         if (!setup) {
@@ -56,7 +58,8 @@ public final class RocketRejoinNativePressure {
         for (var player : players) {
             var s = data.guards(server).session(player.getUUID());
             require(s != null && player.isAlive() && player.getHealth() == 1 && player.getVehicle() == null,
-                    "Native pressure exposed a passenger");
+                    "Native pressure exposed a passenger: session=" + (s != null) + " alive=" + player.isAlive()
+                            + " health=" + player.getHealth() + " mounted=" + (player.getVehicle() != null));
             capacity |= s.reason.equals("capacity"); unsafe |= s.reason.equals("unsafe");
             if (cut.equals("C28") || cut.equals("C29")) { require(s.reason.equals("conflict"), "Conflicting history was selected instead of refused"); }
             allDisconnected &= s.disconnected;
