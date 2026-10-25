@@ -52,7 +52,7 @@ public final class SealedPreparationLatchGameTests {
         var at = helper.absolutePos(new BlockPos(4, 2, 4));
         var trial = new Trial(helper, at, mode);
         // Source capture happens outside the fault scope; only coordinator-created detached targets are counted.
-        trial.carrier = SealedProductionProviderGameTests.stage(helper.getLevel(), at);
+        trial.carrier = SealedProductionProviderGameTests.stageForLatch(helper.getLevel(), at);
         trial.saved = trial.carrier.saveWithFullMetadata();
         trial.root = trial.carrier.saveWithoutMetadata();
         ACTIVE.put(at, trial);

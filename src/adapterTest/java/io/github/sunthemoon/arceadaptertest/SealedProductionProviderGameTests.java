@@ -136,10 +136,19 @@ public final class SealedProductionProviderGameTests {
         }
     }
     static BlockEntity stage(ServerLevel level, BlockPos at) {
-        var source = new FixtureContainerBlockEntity(at, AdapterTestMod.SEALED_CONTAINER.get().defaultBlockState());
+        return stage(level, at, false);
+    }
+    static BlockEntity stageForLatch(ServerLevel level, BlockPos at) { return stage(level, at, true); }
+    private static BlockEntity stage(ServerLevel level, BlockPos at, boolean latch) {
+        var source = new FixtureContainerBlockEntity(at, (latch ? AdapterTestMod.LATCH_CONTAINER : AdapterTestMod.SEALED_CONTAINER).get().defaultBlockState());
+        if (latch && (source.getType() != AdapterTestMod.LATCH_CONTAINER_TYPE.get()
+                || source.getType() == AdapterTestMod.SEALED_CONTAINER_TYPE.get())) {
+            throw new IllegalStateException("Latch fixture must own an independent native provider type");
+        }
         source.setItem(0, new ItemStack(Items.DIAMOND, 7));
         try { return (BlockEntity) Class.forName(ACCESS).getMethod("stage", ServerLevel.class, BlockEntity.class,
-                ResourceLocation.class, RocketBlockEntityAdapter.class).invoke(null, level, source, AdapterTestMod.SEALED_ADAPTER_ID, new FixtureInventoryAdapter()); }
+                ResourceLocation.class, RocketBlockEntityAdapter.class).invoke(null, level, source,
+                        latch ? AdapterTestMod.LATCH_ADAPTER_ID : AdapterTestMod.SEALED_ADAPTER_ID, new FixtureInventoryAdapter()); }
         catch (ReflectiveOperationException failure) { throw new IllegalStateException("Production staging fixture unavailable", failure); }
     }
     static boolean unseal(BlockEntity carrier) {

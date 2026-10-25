@@ -1653,6 +1653,15 @@
       "reason": "Seven invalid loaded roots each log once over three onLoad/save calls. Missing, wrong-type, future, oversized, unavailable registry/adapter and displaced data stay sealed and are saved without refusal."
     },
     {
+      "id": "w152f-sealed-latch-provider-restore-slow",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.compat.rocket.ExternalRocketBlockEntityAdapter/",
+      "message": "Rocket adapter arce_adapter_test:latch_cargo_inventory exceeded returned-time budget in restore",
+      "counts": {"w152f_failure_latch": 1},
+      "test": "SealedPreparationLatchGameTests.slowRestoreIsLatchedPerLoad",
+      "reason": "The lifetime fixture has its own provider wrapper. Two loaded carriers each refuse the slow restore; the wrapper's existing diagnostic emits once independently of every other provider fixture."
+    },
+    {
       "id": "w152f-sealed-preparation-latched",
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.sealed.SealedRocketBlockEntity/",

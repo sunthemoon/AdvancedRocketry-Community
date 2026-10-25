@@ -29,6 +29,8 @@ public final class AdapterTestMod {
     static final ResourceLocation ADAPTER_ID = id("cargo_inventory");
     static final ResourceLocation SEALED_CONTAINER_ID = id("sealed_cargo_container");
     static final ResourceLocation SEALED_ADAPTER_ID = id("sealed_cargo_inventory");
+    static final ResourceLocation LATCH_CONTAINER_ID = id("latch_cargo_container");
+    static final ResourceLocation LATCH_ADAPTER_ID = id("latch_cargo_inventory");
     static final ResourceLocation BOUNDARY_ID = id("state_boundary");
     static final int PAYLOAD_VERSION = 1;
 
@@ -41,6 +43,8 @@ public final class AdapterTestMod {
             BLOCKS.register(CONTAINER_ID.getPath(), FixtureContainerBlock::new);
     static final RegistryObject<Block> SEALED_CONTAINER =
             BLOCKS.register(SEALED_CONTAINER_ID.getPath(), FixtureContainerBlock::new);
+    static final RegistryObject<Block> LATCH_CONTAINER =
+            BLOCKS.register(LATCH_CONTAINER_ID.getPath(), FixtureContainerBlock::new);
     static final RegistryObject<Block> BOUNDARY =
             BLOCKS.register(BOUNDARY_ID.getPath(), FixtureBoundaryBlock::new);
     static final RegistryObject<BlockEntityType<FixtureContainerBlockEntity>> CONTAINER_TYPE =
@@ -49,6 +53,9 @@ public final class AdapterTestMod {
     static final RegistryObject<BlockEntityType<FixtureContainerBlockEntity>> SEALED_CONTAINER_TYPE =
             BLOCK_ENTITIES.register(SEALED_CONTAINER_ID.getPath(), () -> BlockEntityType.Builder.of(
                     FixtureContainerBlockEntity::new, SEALED_CONTAINER.get()).build(null));
+    static final RegistryObject<BlockEntityType<FixtureContainerBlockEntity>> LATCH_CONTAINER_TYPE =
+            BLOCK_ENTITIES.register(LATCH_CONTAINER_ID.getPath(), () -> BlockEntityType.Builder.of(
+                    FixtureContainerBlockEntity::new, LATCH_CONTAINER.get()).build(null));
 
     private static volatile int registrationEvents;
     private static volatile RegisterRocketAdaptersEvent receivedEvent;
@@ -103,6 +110,8 @@ public final class AdapterTestMod {
         event.register(ADAPTER_ID, Set.of(CONTAINER_ID), PAYLOAD_VERSION, new FixtureInventoryAdapter());
         // Independent wrapper lifetime: sealed-publication slow faults cannot consume the legacy fixture's warning.
         event.register(SEALED_ADAPTER_ID, Set.of(SEALED_CONTAINER_ID), PAYLOAD_VERSION, new FixtureInventoryAdapter());
+        // Lifetime/reload faults must not consume another test's one-warning-per-wrapper diagnostic.
+        event.register(LATCH_ADAPTER_ID, Set.of(LATCH_CONTAINER_ID), PAYLOAD_VERSION, new FixtureInventoryAdapter());
         requireConflict(() -> event.register(ADAPTER_ID, Set.of(ResourceLocation.tryParse("minecraft:furnace")),
                 PAYLOAD_VERSION, new FixtureInventoryAdapter()));
         requireConflict(() -> event.register(id("conflicting_inventory"), Set.of(CONTAINER_ID),
