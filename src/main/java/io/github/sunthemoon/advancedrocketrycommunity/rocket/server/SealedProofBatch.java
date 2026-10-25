@@ -17,19 +17,23 @@ final class SealedProofBatch implements AutoCloseable {
         boolean available(int slot);
         boolean capture(int slot, Consumer<EscrowBarrier.Result> callback);
         void held(String reason);
-        default void attemptEnded() { }
     }
     private final Thread owner = Thread.currentThread();
     private final int slots;
     private final Port port;
+    private final Runnable attemptEnded;
     private final Map<Integer, EscrowBarrier.Proof> proofs = new HashMap<>();
     private long started, notBefore = Long.MIN_VALUE, lastTick = Long.MIN_VALUE;
     private int cursor, attempt;
     private boolean active, closed;
 
     SealedProofBatch(int slots, Port port) {
+        this(slots, port, () -> { });
+    }
+    SealedProofBatch(int slots, Port port, Runnable attemptEnded) {
         if (slots < 1 || slots > RocketOrdinaryRetirement.MAX_SLOTS) { throw new IllegalArgumentException("Sealed proof census exceeds ordinary bound"); }
         this.slots = slots; this.port = Objects.requireNonNull(port);
+        this.attemptEnded = Objects.requireNonNull(attemptEnded);
     }
     boolean active() { owner(); return active; }
     long retryAt() { owner(); return notBefore; }
@@ -112,7 +116,7 @@ final class SealedProofBatch implements AutoCloseable {
         boolean ended = active;
         proofs.values().forEach(EscrowBarrier.Proof::release); proofs.clear();
         active = false; cursor = 0; attempt++;
-        if (ended) { port.attemptEnded(); }
+        if (ended) { attemptEnded.run(); }
     }
     @Override public void close() { owner(); closed = true; release(); }
     private void owner() {

@@ -129,7 +129,7 @@ final class SealedDisassemblyWorld implements SealedDisassembly.Port, AutoClosea
         if (goal != SealedDisassembly.Goal.SEALED) { entities.columns().forEach(chunk -> slots.add(new Slot(true, chunk))); }
         terrain.chunks().forEach(chunk -> slots.add(new Slot(false, chunk)));
         boolean present = presentFor(goal);
-        batch = new SealedProofBatch(slots.size(), new NativeProofs(List.copyOf(slots), goal, present));
+        batch = new SealedProofBatch(slots.size(), new NativeProofs(List.copyOf(slots), goal, present), attemptEnded);
         batch.deferUntil(proofRetryAt);
     }
     void tickProof() { if (batch != null) { batch.tick(); } }
@@ -167,7 +167,6 @@ final class SealedDisassemblyWorld implements SealedDisassembly.Port, AutoClosea
         private final boolean present;
         NativeProofs(List<Slot> slots, SealedDisassembly.Goal goal, boolean present) { this.slots = slots; this.goal = goal; this.present = present; }
         @Override public long now() { return SealedDisassemblyWorld.this.now(); }
-        @Override public void attemptEnded() { attemptEnded.run(); }
         @Override public SealedProofBatch.Readiness readiness() { return SealedProofBatch.Readiness.valueOf(gate().name()); }
         @Override public boolean attemptRoom() {
             return admission.allowed() && attemptRoom.getAsBoolean();

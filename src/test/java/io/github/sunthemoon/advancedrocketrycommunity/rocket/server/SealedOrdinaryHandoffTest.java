@@ -146,7 +146,7 @@ class SealedOrdinaryHandoffTest {
             final UUID id; final SealedProofBatch batch; final boolean fullDeadline;
             long censusTick = -1, started = -1, finished = -1; boolean done, ready;
             Entry(int id, int slots, boolean fullDeadline) {
-                this.id = new UUID(0, id); this.fullDeadline = fullDeadline; batch = new SealedProofBatch(slots, this);
+                this.id = new UUID(0, id); this.fullDeadline = fullDeadline; batch = new SealedProofBatch(slots, this, this::attemptEnded);
             }
             public UUID id() { return id; }
             public boolean recovery() { return true; }
