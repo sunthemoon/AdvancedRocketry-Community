@@ -108,10 +108,17 @@ public final class RocketI6PlainGameTests {
                     "T disappeared without old-origin exclusion");
             if (!transfers.releaseLandedReservation(rocket)) { return; }
             helper.assertTrue(journal.logicalAcknowledged(record.logicalRocketId()), "Completion preceded checked absence");
+            io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity.LOGGER.info(
+                    "W164_PLAIN_OBSERVATION alive={} removal={} closed={} loaded_same={} tick={}",
+                    rocket.isAlive(), rocket.getRemovalReason(), closed,
+                    destination.getEntity(rocket.getUUID()) == rocket, server.getTickCount());
             helper.assertTrue(rocket.isAlive(), "Plain hook restored or removed D");
             close(); helper.succeed();
         }
         void close() {
+            io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity.LOGGER.info(
+                    "W164_PLAIN_CLOSE closed={} step={} removal={} tick={}", closed, step,
+                    rocket == null ? null : rocket.getRemovalReason(), source.getServer().getTickCount());
             if (closed) { return; } closed = true;
             if (rocket != null) { rocket.discard(); }
             var server = source.getServer(); var journal = RocketTransferSavedData.get(server);
