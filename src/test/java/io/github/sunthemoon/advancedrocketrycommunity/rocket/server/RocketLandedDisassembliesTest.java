@@ -74,6 +74,40 @@ class RocketLandedDisassembliesTest {
 
     private Path file() { return directory.resolve(TYPE.fileName()); }
 
+    @Test void proofHandoffDoesNotRefreshTheOriginalRequestAge() {
+        var f = new Fixture(new RocketPosition(64, 80, 64));
+        f.request.requestedAt = 10; f.port.now = 211;
+        f.release(); f.acknowledge();
+        assertEquals(0, f.request.restores, "M1 must retain M0's request age");
+        assertSame(f.landed, f.journal.find(f.landed.transferId()).orElseThrow());
+        f.acknowledge(); f.close();
+    }
+
+    @Test void asynchronousRestoreKeepsPendingUntilItsCompletionAndIgnoresLateCallbacks() {
+        var f = new Fixture(new RocketPosition(64, 80, 64)); f.request.deferred = true;
+        assertEquals(RocketValidationCode.DISASSEMBLY_PENDING, f.release()); f.acknowledge();
+        assertTrue(f.disassemblies.pending(f.logical()), "M2 must wait for the retained executor");
+        assertTrue(f.request.reports.isEmpty()); assertTrue(f.world.blocks.isEmpty());
+        var callback = f.request.completion;
+        assertNotNull(callback);
+        var result = f.request.restore(); callback.accept(result); callback.accept(result);
+        assertEquals(List.of("SUCCESS"), f.request.reports);
+        assertFalse(f.disassemblies.pending(f.logical())); assertTrue(f.journal.entries().isEmpty()); f.close();
+    }
+
+    @Test void ramRollbackCountsWithoutNativeCertificationCannotWriteTBack() {
+        var f = new Fixture(new RocketPosition(64, 80, 64)); f.request.certified = false;
+        f.request.injector = (point, progress) -> {
+            if (point == RocketFailurePoint.DURING_RESTORATION && progress == 2) {
+                throw new RocketTransactionAbortException(RocketValidationCode.EXTRACTION_FAILED, "RAM rollback only");
+            }
+        };
+        f.release(); f.acknowledge();
+        assertTrue(f.world.blocks.isEmpty()); assertTrue(f.world.rockets.containsKey(f.entity));
+        assertTrue(f.journal.find(f.landed.transferId()).isEmpty(), "RAM rollback is not M3 permission");
+        assertFalse(f.disassemblies.pending(f.logical())); f.close();
+    }
+
     @Test void successRestoresOnceAfterTheRemovalIsAcknowledgedAndNeverWritesBack() {
         var f = new Fixture(new RocketPosition(64, 80, 64));
         assertEquals(RocketValidationCode.DISASSEMBLY_PENDING, f.release());
@@ -708,6 +742,9 @@ class RocketLandedDisassembliesTest {
         boolean restorable = true;
         RuntimeException restorableThrows;
         int restores;
+        boolean deferred, certified = true;
+        long requestedAt = Long.MIN_VALUE;
+        java.util.function.Consumer<RocketTransactionResult> completion;
 
         FakeRequest(FakeWorld world, RocketTransferRecord record) { this.world = world; this.record = record; }
 
@@ -729,6 +766,13 @@ class RocketLandedDisassembliesTest {
                     RocketTransactionJournal.NO_OP, injector).execute(UUID.randomUUID(),
                     record.destinationEntityId().orElseThrow(), record.destinationSnapshot());
         }
+        // This overload intentionally compiles against the old synchronous contract for the red run.
+        public void restore(java.util.function.Consumer<RocketTransactionResult> completion) {
+            if (deferred) { this.completion = completion; } else { completion.accept(restore()); }
+        }
+        public boolean rollbackCertified() { return certified; }
+        public boolean requiresNativeRollbackProof() { return true; }
+        public long requestedAt() { return requestedAt; }
         @Override public void finished(RocketValidationCode code, RocketTransactionResult result) {
             reports.add(code.name());
             if (notifierThrows && code == RocketValidationCode.SUCCESS) {

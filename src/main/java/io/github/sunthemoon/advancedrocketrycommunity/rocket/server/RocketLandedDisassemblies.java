@@ -39,6 +39,8 @@ final class RocketLandedDisassemblies {
 
     /** The request's world side: E, the v0.5 transaction and the requester's or the release-test hook's report. */
     interface Request {
+        /** Original M0 time; the sentinel is only for legacy direct callers that have no proof stage. */
+        default long requestedAt() { return Long.MIN_VALUE; }
         /** E is alive and loaded and still equals S. */
         boolean matches();
 
@@ -53,6 +55,17 @@ final class RocketLandedDisassemblies {
 
         /** Today's one-tick v0.5 transaction. Called at most once, with the latch already set. */
         RocketTransactionResult restore();
+
+        /** Resumable completion. A synchronous adapter is not a native rollback certificate. */
+        default void restore(java.util.function.Consumer<RocketTransactionResult> completion) {
+            completion.accept(restore());
+        }
+
+        /** True only after the executor proves native rollback and checked U absence. */
+        default boolean rollbackCertified() { return false; }
+
+        /** Legacy direct execution remains unchanged until its caller is replaced by the retained executor. */
+        default boolean requiresNativeRollbackProof() { return false; }
 
         /** Called at most once per P: the result's code, or REGION_BUSY when M2 did not restore (result null). */
         void finished(RocketValidationCode code, RocketTransactionResult result);
@@ -255,7 +268,8 @@ final class RocketLandedDisassemblies {
                 || !reservation.logical().equals(record.logicalRocketId())) {
             return RocketValidationCode.REGION_BUSY;
         }
-        Pending entry = new Pending(record, Objects.requireNonNull(entity, "entity"), port.now(),
+        long requestedAt = request.requestedAt() == Long.MIN_VALUE ? port.now() : request.requestedAt();
+        Pending entry = new Pending(record, Objects.requireNonNull(entity, "entity"), requestedAt,
                 Objects.requireNonNull(request, "request"), Objects.requireNonNull(port, "port"), journal);
         pending.put(entry.logical(), entry);
         journal.remove(record.transferId());
@@ -288,11 +302,22 @@ final class RocketLandedDisassemblies {
                 return true;
             }
             entry.progress.startRestoration();
-            RocketTransactionResult result = entry.request.restore();
+            entry.request.restore(result -> restorationCompleted(entry, result));
+        } catch (RuntimeException failure) {
+            restorationFailed(entry);
+        }
+        return true;
+    }
+
+    private void restorationCompleted(Pending entry, RocketTransactionResult result) {
+        if (!current(entry) || entry.stage() != Stage.RESTORING) { return; }
+        try {
             entry.code = result.code();
             entry.result = result;
             Outcome outcome = RocketLandedDisassemblyRules.classify(result.success(), result.code(),
-                    result.changedBlocks(), result.rolledBackBlocks(), !result.success() && entry.request.matches());
+                    result.changedBlocks(), result.rolledBackBlocks(), !result.success()
+                            && (!entry.request.requiresNativeRollbackProof() || entry.request.rollbackCertified())
+                            && entry.request.matches());
             switch (outcome) {
                 case SUCCESS -> {
                     report(entry);
@@ -310,19 +335,26 @@ final class RocketLandedDisassemblies {
                 }
             }
         } catch (RuntimeException failure) {
-            if (!entry.restorationStarted() || entry.progress.certified()) {
-                writeBack(entry);
-            } else if (current(entry) && entry.stage() == Stage.RESTORING) {
-                // Mutation is uncertain, also after a SUCCESS whose notification threw: never write T back.
-                notRestored(entry, "uncertain");
-                end(entry);
-                if (entry.result == null) {
-                    entry.code = RocketValidationCode.ROLLBACK_FAILED;
-                }
-                report(entry);
-            }
+            restorationFailed(entry);
+        } catch (Error fatal) {
+            // A late callback cannot leave a RAM-only owner alive after its executor releases the claim.
+            end(entry);
+            throw fatal;
         }
-        return true;
+    }
+
+    private void restorationFailed(Pending entry) {
+        if (!entry.restorationStarted() || entry.progress.certified()) {
+            writeBack(entry);
+        } else if (current(entry) && entry.stage() == Stage.RESTORING) {
+            // Mutation is uncertain, also after a SUCCESS whose notification threw: never write T back.
+            notRestored(entry, "uncertain");
+            end(entry);
+            if (entry.result == null) {
+                entry.code = RocketValidationCode.ROLLBACK_FAILED;
+            }
+            report(entry);
+        }
     }
 
     /**
