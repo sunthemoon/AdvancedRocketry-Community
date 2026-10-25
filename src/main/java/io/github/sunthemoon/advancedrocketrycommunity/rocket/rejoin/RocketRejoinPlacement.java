@@ -108,11 +108,13 @@ final class RocketRejoinPlacement implements AutoCloseable {
         w.placed = true;
         AdvancedRocketryCommunity.LOGGER.info("ARCE_REJOIN_PLACED player={} release={} generation={} target={}",
                 w.entry.player(), w.entry.release(), attempt.generation(), attempt.target());
+        RocketRejoinNativeCuts.placed(s.player, w.entry, data);
     }
     void saved(net.minecraft.server.level.ServerPlayer player) {
         var w = work.get(player.getUUID());
         if (w != null && w.session.player == player && w.placed && !w.submitted && !w.session.invalidated
                 && RocketRejoinMarker.matches(player.getPersistentData(), w.entry)) { w.readRequested = true; }
+        RocketRejoinNativeCuts.saved(player);
     }
     private void verify(Work w) {
         if (!w.proof) {
@@ -139,6 +141,7 @@ final class RocketRejoinPlacement implements AutoCloseable {
                 || !w.placed || !w.attempt.generation().equals(result.expected().generation()) || w.submitted) { return; }
         if (s.online && (!s.player.isAlive() || s.player.deathTime != 0)) { guards.reason(s, "dead"); return; }
         w.proof = result.result().status() == RocketRejoinPlayerFile.Status.MATCH;
+        if (w.proof) { RocketReleaseNativeCuts.checkpoint("C10"); }
         if (!w.proof) {
             boolean oversized = result.result().status() == RocketRejoinPlayerFile.Status.OVERSIZED || result.result().status() == RocketRejoinPlayerFile.Status.DEPTH;
             if (oversized && !s.reason.equals("oversized")) {

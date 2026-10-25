@@ -18,11 +18,12 @@ public final class RocketReleaseNativeCuts {
     private RocketReleaseNativeCuts() { }
 
     public static String selection() { return System.getProperty(PROPERTY, ""); }
+    public static boolean rejoin() { return selection().matches("H[12]:C(?:[7-9]|10|11|13):(seed|recover|check)"); }
     public static void validate(MinecraftServer server) {
         EscrowTestEndpoints.requireEnabled(server);
         String[] parts = selection().split(":");
         if (!server.isDedicatedServer() || parts.length != 3 || !parts[0].matches("H[12]")
-                || !parts[1].matches("C(?:[0-6]|14|15|16|17)") || !parts[2].matches("seed|recover|check")
+                || !parts[1].matches("C(?:[0-9]|10|11|13|14|15|16|17)") || !parts[2].matches("seed|recover|check")
                 || !server.getWorldData().getLevelName().equals("world-W158-" + parts[0] + "-" + parts[1])) {
             throw new IllegalStateException("Not a disposable W158 release server");
         }
@@ -33,14 +34,28 @@ public final class RocketReleaseNativeCuts {
         validate(server);
         return new CheckedSavedDataPolicy(type, (staged, target) -> {
             var payload = CheckedSavedDataFile.readPayload(staged, type).orElseThrow();
+            String placement = rejoin() && type == ManagedSavedDataType.ROCKET_REJOINS
+                    ? placementReplacement(CheckedSavedDataFile.readPayload(target, type).orElse(null), payload) : "";
             boolean release = type != ManagedSavedDataType.ROCKET_TRANSFERS || ARMED.get()
                     && CheckedSavedDataFile.readPayload(target.resolveSibling(ManagedSavedDataType.ROCKET_REJOINS.fileName()),
                             ManagedSavedDataType.ROCKET_REJOINS).map(RocketRejoinCodec::decode)
                             .map(root -> journalRelease(payload, root)).orElse(false);
             if (release) { checkpoint(replacement(type, payload, false)); }
             CheckedSavedDataFile.atomicMove(staged, target);
+            if (!placement.isEmpty()) { checkpoint(placement); }
             if (release) { checkpoint(replacement(type, payload, true)); }
         });
+    }
+    static String placementReplacement(CompoundTag before, CompoundTag after) {
+        var old = before == null ? RocketRejoinRoot.empty() : RocketRejoinCodec.decode(before);
+        var next = RocketRejoinCodec.decode(after);
+        for (var entry : next.entries()) {
+            if (entry.attempt() != null && old.entries().stream().noneMatch(e -> e.key().equals(entry.key()) && entry.attempt().equals(e.attempt()))) { return "C7"; }
+        }
+        for (var entry : old.entries()) {
+            if (entry.attempt() != null && next.entries().stream().noneMatch(e -> e.key().equals(entry.key()) && e.placement() == RocketRejoinRoot.Placement.PENDING)) { return "C11"; }
+        }
+        return "";
     }
     static boolean journalRelease(CompoundTag candidate, RocketRejoinRoot root) {
         for (var batch : root.batches()) {
@@ -67,13 +82,14 @@ public final class RocketReleaseNativeCuts {
     }
     /** Restored work starts at S1, without the B0 notice that arms a fresh admission. */
     public static void armRestored(MinecraftServer server, RocketRejoinRoot root) {
-        if (!selection().isEmpty() && needsRecoveryArm(root)) { arm(server); }
+        if (!selection().isEmpty() && (needsRecoveryArm(root)
+                || rejoin() && root.entries().stream().anyMatch(e -> e.placement() == RocketRejoinRoot.Placement.PENDING))) { arm(server); }
     }
     static boolean needsRecoveryArm(RocketRejoinRoot root) {
         return root.entries().stream().anyMatch(e -> e.seat() == RocketRejoinRoot.Seat.PENDING);
     }
     static String selectedBoundary(String selection, String recovery) {
-        if (!recovery.isEmpty() && !java.util.Set.of("B1_CAPTURE", "C3", "C4", "C5", "S2_PENDING", "C6").contains(recovery)) {
+        if (!recovery.isEmpty() && !java.util.Set.of("B1_CAPTURE", "C3", "C4", "C5", "S2_PENDING", "C6", "C10").contains(recovery)) {
             throw new IllegalArgumentException("Invalid W158 recovery cut");
         }
         var parts = selection.split(":");
