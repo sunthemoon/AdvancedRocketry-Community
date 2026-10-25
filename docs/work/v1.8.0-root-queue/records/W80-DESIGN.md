@@ -484,6 +484,16 @@ Old callbacks, changed generations, missing markers and saves made before placem
 already dead or respawning keeps the obligation, and W80 classifies and places the cloned session rather than
 certifying the old body's save.
 
+*Correction (Root decision R108, 2026-10-25, from the W159 review; refines "Applying a result" above):* the session must
+still be current when P2 is **installed**, not only when it is submitted. P2's installation is therefore bound to a
+lease that the owner thread maintains and the writer's IO thread only reads. The lease holds while no death, clone or
+new login has invalidated the session, and, for an online player, while the target passed the full safety check in
+the latest tick. A failed lease keeps the obligation durable and allows a newly checked attempt, and a held P2 never
+blocks later writes. A death or safety change after the lease check, during the replacement itself, counts as after P2
+(cut C11). After P2's acknowledgement the fresh safety check stays. If it fails in the remaining window, the player
+stays guarded and is placed again in the same session from the same 64 candidates, with no new durable record. If no
+candidate becomes safe by the deadline, the protected disconnect saves the pinned position, and the next login is
+ordinary. That residual is bounded by the window between the last lease refresh and the acknowledgement.
 **Durability boundary.** Checked sidecar and journal writes, B0 and B1 use their existing force contract. Player
 readback proves the installed file for process-stop and restart tests, not an fsync of vanilla's player data. P2 does
 not make power loss, file-system rollback or partial backup restoration safe. Closing that separate gap needs the
