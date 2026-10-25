@@ -5,12 +5,10 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.rejoin.*;
 import io.netty.channel.embedded.EmbeddedChannel;
 import java.util.UUID;
-import net.minecraft.core.BlockPos;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.level.block.Blocks;
 
 /** Connected dedicated-server passenger for W158's real, gated admission and the W159 crash matrix. */
 final class RocketRejoinNativeProbe {
@@ -25,24 +23,15 @@ final class RocketRejoinNativeProbe {
         if (!old.startRiding(rocket, true)) { throw new IllegalStateException("Seed passenger could not mount old seat"); }
         server.getPlayerList().saveAll(); server.getPlayerList().remove(old); seeded = true;
     }
+    void admitted() {
+        if (player != null) { return; }
+        player = connect();
+        if (!RocketRejoinProtection.guarded(player)) { throw new IllegalStateException("B0 login was not guarded"); }
+    }
     boolean advance(RocketRejoinSavedData data) {
         if (data.root().nextSequence() == 0) { return false; }
         if (player == null) {
             RocketRejoinNativeCuts.cleanFixtureBackup(server, PLAYER);
-            for (var batch : RocketReleaseNativeCuts.selection().endsWith(":seed") ? data.root().batches() : java.util.List.<RocketRejoinRoot.Batch>of()) {
-                var level = server.getLevel(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.DIMENSION,
-                        new net.minecraft.resources.ResourceLocation(batch.dimension())));
-                if (level == null) { continue; }
-                var safe = new BlockPos(batch.minimum().x() + (batch.maximum().x() - batch.minimum().x()) / 2,
-                        batch.maximum().y() + 8, batch.minimum().z() - 1);
-                if (!level.hasChunkAt(safe)) { continue; }
-                for (int x = -1; x <= 1; x++) { for (int z = -1; z <= 1; z++) { for (int y = -1; y <= 2; y++) {
-                    level.setBlockAndUpdate(safe.offset(x, y, z), (y == -1 ? Blocks.STONE : Blocks.AIR).defaultBlockState());
-                } } }
-            }
-            if (RocketReleaseNativeCuts.selection().endsWith(":seed") && !server.saveEverything(false, true, true)) {
-                throw new IllegalStateException("Native placement terrain was not saved");
-            }
             player = connect();
         }
         if (!player.isAlive() || player.getHealth() <= 0) { throw new IllegalStateException("Native guarded passenger died"); }

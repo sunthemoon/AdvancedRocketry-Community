@@ -54,8 +54,12 @@ def verify(disk, hold, cut, mode, boundary, baseline, seed):
         raise smoke.SmokeError("Native snapshot/fuel/debit/identity changed across restart")
     entries = pending(disk); marker = player.get("ForgeData", {}).get("arce_passenger_rejoin")
     if mode == "seed" and cut in ("C7", "C8", "C9", "C13"):
-        if len(entries) != 1 or "attempt" not in entries[0] or marker is not None or "RootVehicle" not in player:
-            raise smoke.SmokeError("Pre-save cut did not retain pending attempt and old mounted file")
+        # RocketEntity.hasExactlyOnePlayerPassenger deliberately returns false: its old seat is
+        # persisted by position/manifest, never as a second RootVehicle authority in player NBT.
+        if len(entries) != 1 or "attempt" not in entries[0] or marker is not None or "RootVehicle" in player:
+            raise smoke.SmokeError("Pre-save cut did not retain pending attempt and an unmarked old-seat file")
+        if player["Pos"] == [entries[0]["attempt"][k] for k in ("x", "y", "z")]:
+            raise smoke.SmokeError("Pre-save cut unexpectedly installed the P1 position")
         if cut == "C13" and not any(e["seat"] == "PENDING" for e in sidecar["entries"]):
             raise smoke.SmokeError("C13 lost independent unfinished seat work")
     elif boundary == "C10" or mode == "seed" and cut == "C10":

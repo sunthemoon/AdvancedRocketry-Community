@@ -32,7 +32,7 @@ class RejoinCutRunnerTests(unittest.TestCase):
         with self.assertRaises(runner.smoke.SmokeError): runner.verify(bad, "H1", "C10", "seed", "C10", baseline, None)
 
     def test_pre_save_and_post_p2_are_different_oracles(self):
-        disk = self.fixture(); disk["player"]["ForgeData"].clear(); disk["player"]["RootVehicle"] = {"old": 1}
+        disk = self.fixture(); disk["player"]["ForgeData"].clear(); disk["player"]["Pos"][1] = 60
         baseline = runner.verify(disk, "H1", "C8", "seed", "C8", None, None)
         with self.assertRaises(runner.smoke.SmokeError): runner.verify(disk, "H1", "C11", "seed", "C11", baseline, None)
         disk = self.fixture(); disk["sidecar"]["entries"].clear()

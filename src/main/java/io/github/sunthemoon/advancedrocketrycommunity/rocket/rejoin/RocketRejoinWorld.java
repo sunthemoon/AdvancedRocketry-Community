@@ -65,18 +65,24 @@ final class RocketRejoinWorld implements AutoCloseable {
     }
     static boolean safe(ServerPlayer player, ServerLevel level, Vec3 pos) {
         if (level == null || !player.isAlive() || !Double.isFinite(pos.x) || !Double.isFinite(pos.y) || !Double.isFinite(pos.z)) { return false; }
+        // Our candidates are centered, integral-height columns. This also keeps vanilla's expanded
+        // collision iterator inside the same 3-by-3-by-4 envelope for a restored attempt.
+        if (pos.y != Math.floor(pos.y) || pos.x - Math.floor(pos.x) != 0.5 || pos.z - Math.floor(pos.z) != 0.5) { return false; }
         var feet = BlockPos.containing(pos); var box = new AABB(pos.x - 0.3, pos.y, pos.z - 0.3, pos.x + 0.3, pos.y + 1.8, pos.z + 0.3);
-        if (!level.getWorldBorder().isWithinBounds(box) || feet.getY() - 1 < level.getMinBuildHeight()
-                || feet.getY() + 2 >= level.getMaxBuildHeight()) { return false; }
-        for (int x = -1; x <= 1; x++) { for (int z = -1; z <= 1; z++) {
-            if (level.getChunkSource().getChunkNow((feet.getX() + x) >> 4, (feet.getZ() + z) >> 4) == null) { return false; }
-            for (int y = -1; y <= 2; y++) {
-                var at = feet.offset(x, y, z); var state = level.getBlockState(at);
-                if (!state.getFluidState().isEmpty() || !knownHarmless(state.getBlock())) { return false; }
+        return RocketRejoinSafety.check(new RocketRejoinSafety.Probe() {
+            public boolean bounds(int x, int y, int z) {
+                return level.getWorldBorder().isWithinBounds(box) && y - 1 >= level.getMinBuildHeight() && y + 2 < level.getMaxBuildHeight();
             }
-        } }
-        return level.getBlockState(feet.below()).isFaceSturdy(level, feet.below(), Direction.UP)
-                && level.noCollision(player, box) && AtmosphereRuntime.rejoinSurvivable(level, feet.above(), player);
+            public boolean loaded(int x, int z) { return level.getChunkSource().getChunkNow(x >> 4, z >> 4) != null; }
+            public boolean harmless(int x, int y, int z) {
+                var state = level.getBlockState(new BlockPos(x, y, z)); return state.getFluidState().isEmpty() && knownHarmless(state.getBlock());
+            }
+            public boolean supported(int x, int y, int z) {
+                var at = new BlockPos(x, y, z); return level.getBlockState(at).isFaceSturdy(level, at, Direction.UP);
+            }
+            public boolean clear() { return level.noCollision(player, box); }
+            public boolean survives(int x, int y, int z) { return AtmosphereRuntime.rejoinSurvivable(level, new BlockPos(x, y, z), player); }
+        }, feet.getX(), feet.getY(), feet.getZ());
     }
     /** Unknown/modded collision callbacks are not assumed harmless. Exact classes exclude damaging subclasses. */
     private static boolean knownHarmless(Block block) {

@@ -168,6 +168,7 @@ public final class RocketReleaseNativeProbe {
         if (!admitted) {
             if (rejoin != null) { rejoin.seedOldPlayer(entity); }
             admitted = RocketRuntime.releaseAbsentForTests(server, current.transferId()).isPresent();
+            if (admitted && rejoin != null) { rejoin.admitted(); }
             return;
         }
         if (conflictInstalled && ticks >= 550 && journal().acknowledgedCurrent()) { RocketReleaseNativeCuts.checkpoint("C16"); }

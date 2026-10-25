@@ -98,7 +98,7 @@ final class RocketRejoinPlacement implements AutoCloseable {
             return;
         }
         var acknowledged = data.acknowledgedRoot();
-        if (acknowledged == null || !acknowledged.entries().contains(w.entry)) { return; }
+        if (!attemptAcknowledged(acknowledged, w.entry)) { return; }
         // Exact P1, same live session, and a second safety check immediately before any teleport.
         if (!world.safe(s.player, w.batch, attempt)) { guards.reason(s, "unsafe"); return; }
         w.attempt = attempt; s.level = world.level(w.batch, attempt.target()); s.position = new Vec3(attempt.x(), attempt.y(), attempt.z());
@@ -166,5 +166,9 @@ final class RocketRejoinPlacement implements AutoCloseable {
         if (w != null && w.session == session) { work.remove(session.player.getUUID()); world.release(session.player.getUUID()); }
     }
     void logout(RocketRejoinGuards.Session session) { world.release(session.player.getUUID()); }
+    static boolean attemptAcknowledged(RocketRejoinRoot installed, Entry entry) {
+        return installed != null && entry.attempt() != null && installed.entries().stream().anyMatch(e -> e.key().equals(entry.key())
+                && e.placement() == Placement.PENDING && entry.attempt().equals(e.attempt()));
+    }
     @Override public void close() { reader.close(); work.clear(); world.close(); }
 }
