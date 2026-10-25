@@ -20,7 +20,7 @@ REASON = "Whilst parsing command on line 1: Incorrect argument for command at po
 
 
 def declaration():
-    return dict(scope="Only this compile-level-2 disposable start", logger="minecraft/ServerFunctionLibrary",
+    return dict(scope="Only this compile-level-2 disposable start", logger="minecraft/ServerFunctionLibrary", thread="main",
                 level="ERROR", message=MESSAGE, expected=1,
                 exceptions=["java.util.concurrent.CompletionException: java.lang.IllegalArgumentException: " + REASON,
                             "Caused by: java.lang.IllegalArgumentException: " + REASON])
@@ -35,7 +35,7 @@ def audit_log(lines):
     for header, event in events:
         if header and header["message"] == MESSAGE:
             if (header["logger"] != expected["logger"] or header["level"] != "ERROR"
-                    or not re.fullmatch(r"(?:Worker-Main-\d+|Server thread)", header["thread"])):
+                    or header["thread"] != expected["thread"]):
                 raise smoke.SmokeError("Unexpected function compilation logger, thread or level")
             body = [line.rstrip() for line in event[1:] if line.strip()]
             exceptions = [line for line in body if not re.fullmatch(r"\s+(?:at .+|\.\.\. \d+ more)", line)]
