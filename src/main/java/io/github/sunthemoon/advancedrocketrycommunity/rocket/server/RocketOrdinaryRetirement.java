@@ -52,8 +52,9 @@ final class RocketOrdinaryRetirement {
     static final int MAX_SLOTS = 1 + 2 * RocketFlightLimits.MAX_TRANSFER_ENTITY_MATCHES;
 
     enum Site {
-        FAIL_BACK, RECOVERED_SOURCE, RECONNECT, BEFORE_FILL, BEFORE_REPLACE;
-        boolean destination() { return this == BEFORE_FILL || this == BEFORE_REPLACE; }
+        FAIL_BACK, RECOVERED_SOURCE, RECONNECT, BEFORE_FILL, BEFORE_REPLACE, BEFORE_RELEASE;
+        boolean destination() { return this == BEFORE_FILL || demand(); }
+        boolean demand() { return this == BEFORE_REPLACE || this == BEFORE_RELEASE; }
     }
 
     /** Where the survivor is: loaded, absent from its loaded slot, or not visible because that slot is unloaded. */
@@ -244,7 +245,7 @@ final class RocketOrdinaryRetirement {
         }
         if (existing != null) {
             // A loader retry is demand, not a reconnect: it must never cancel the retirement's backoff.
-            if (site.destination() || existing.site == Site.BEFORE_REPLACE) { effects.discarded().run(); return; }
+            if (site.destination() || existing.site.demand()) { effects.discarded().run(); return; }
             var nudged = existing;
             discarded.forEach(slot -> addSlot(nudged, slot));
             nudged.notBefore = Math.min(nudged.notBefore, now);
@@ -273,7 +274,7 @@ final class RocketOrdinaryRetirement {
         pending.put(entry.logical(), entry);
         // The first attempt starts at once under the caller's reservation; later steps follow the barrier's callbacks.
         // I7 admission never loads the old site from a packet callback. The coordinator tick owns its demand.
-        if (site == Site.BEFORE_REPLACE) { entry.releaseToken(); } else { guarded(entry, now); }
+        if (site.demand()) { entry.releaseToken(); } else { guarded(entry, now); }
     }
 
     private static void addSlot(Pending entry, RocketRetirementProof.Slot slot) {
@@ -329,7 +330,7 @@ final class RocketOrdinaryRetirement {
 
     private void start(Pending entry, long now) {
         entry.admissionTick = now;
-        if (entry.censusFull && entry.site != Site.BEFORE_REPLACE) { fail(entry, "CENSUS_LIMIT", now, RETRY_TICKS, false); return; }
+        if (entry.censusFull && !entry.site.demand()) { fail(entry, "CENSUS_LIMIT", now, RETRY_TICKS, false); return; }
         int own = entry.token != null ? 1 : 0;
         // Destination demand must not place tickets while another class owns admission.
         boolean turn = ordinaryTurn(entry);
@@ -350,11 +351,11 @@ final class RocketOrdinaryRetirement {
             entry.notBefore = now + RETRY_TICKS;
             // R89: I7's three opportunities also bound non-ticketable holds; a hold never grants an extra ticket.
             // BEFORE_FILL retains R59's existing ticket accounting and source returns keep their loaded-only order.
-            if (entry.site == Site.BEFORE_REPLACE) { entry.ticketed++; }
+            if (entry.site.demand()) { entry.ticketed++; }
             if (entry.censusFull) { fail(entry, "CENSUS_LIMIT", now, RETRY_TICKS, false); return; }
             String held = fills.ticket(port, entry.journal, record, entry.survivor, entry.census, entry.token);
             if (held != null) { waiting(entry, held, now); return; }
-            if (entry.site != Site.BEFORE_REPLACE) { entry.ticketed++; }
+            if (!entry.site.demand()) { entry.ticketed++; }
         }
         if (entry.censusFull) { fail(entry, "CENSUS_LIMIT", now, RETRY_TICKS, false); return; }
         if (presence != Presence.LOADED) {
@@ -492,7 +493,7 @@ final class RocketOrdinaryRetirement {
         entry.releaseProofs(); entry.state = State.REMOVING;
         var record = entry.record;
         boolean submitted = entry.port.afterAcknowledged(entry.journal, token, () -> {
-            if (entry.site == Site.BEFORE_REPLACE && pending.get(entry.logical()) != entry) { return false; }
+            if (entry.site.demand() && pending.get(entry.logical()) != entry) { return false; }
             if (entry.site == Site.BEFORE_REPLACE) { entry.sink.accept("I7_ACK_BEFORE_EFFECTS"); }
             drop(entry);
             if (!entry.effects.acknowledged().getAsBoolean()) { return false; }
