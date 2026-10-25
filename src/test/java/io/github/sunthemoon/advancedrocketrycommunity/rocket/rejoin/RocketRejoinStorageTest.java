@@ -46,6 +46,35 @@ class RocketRejoinStorageTest {
         assertFalse(Files.exists(file()));
     }
 
+    @Test void seatCompletionRequiresLiveProofAtReplacementAndRetriesOnlyAfterTwoHundredTicks() throws Exception {
+        var valid = new AtomicBoolean(true); var moves = new AtomicInteger();
+        var policy = new CheckedSavedDataPolicy(TYPE, (staged, target) -> {
+            moves.incrementAndGet(); CheckedSavedDataFile.atomicMove(staged, target);
+        });
+        try (var data = open(policy)) {
+            assertTrue(data.submit(fixture())); await(data, 1); byte[] before = Files.readAllBytes(file());
+            var entry = fixture().entries().get(0);
+            var s2 = fixture().update(new RocketRejoinRoot.Entry(entry.release(), entry.player(), entry.seatIndex(),
+                    entry.placement(), RocketRejoinRoot.Seat.VERIFIED, null));
+            valid.set(false); assertTrue(data.submit(s2, valid::get)); await(data, 2);
+            assertFalse(data.acknowledgedCurrent()); assertArrayEquals(before, Files.readAllBytes(file()));
+            assertEquals(fixture(), data.acknowledgedRoot()); assertEquals(s2, data.root());
+            assertEquals(1, moves.get()); valid.set(true);
+            data.tick(201); Thread.sleep(25); data.tick(201); assertEquals(1, moves.get());
+            await(data, 202); assertTrue(data.acknowledgedCurrent()); assertEquals(2, moves.get());
+            assertEquals(s2, RocketRejoinCodec.decode(CheckedSavedDataFile.readPayload(file(), TYPE).orElseThrow()));
+        }
+    }
+
+    @Test void identicalDiskReadbackCannotBypassARejectedSeatProof() throws Exception {
+        try (var data = open(CheckedSavedDataPolicy.atomic(TYPE))) {
+            assertTrue(data.submit(fixture())); await(data, 1);
+            assertTrue(data.submit(fixture(), () -> false)); await(data, 2);
+            assertFalse(data.acknowledgedCurrent()); assertEquals(Outcome.UNKNOWN, data.outcome());
+            assertEquals(fixture(), data.acknowledgedRoot());
+        }
+    }
+
     @Test void acknowledgementIsOwnerPublishedAndEmptyUsedSidecarIsKept() throws Exception {
         try (var data = open(CheckedSavedDataPolicy.atomic(TYPE))) {
             assertTrue(data.submit(fixture())); assertTrue(data.isDirty()); assertFalse(data.acknowledgedCurrent());

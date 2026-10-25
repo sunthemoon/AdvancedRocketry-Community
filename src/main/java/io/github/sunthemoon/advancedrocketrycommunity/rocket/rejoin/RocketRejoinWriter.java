@@ -18,7 +18,7 @@ import net.minecraft.nbt.CompoundTag;
 
 /** Fixed-target writer: one active immutable root and one successor; no world access on its IO thread. */
 final class RocketRejoinWriter {
-    record Capture(long generation, RocketRejoinRoot root) { }
+    record Capture(long generation, RocketRejoinRoot root, java.util.function.BooleanSupplier proof) { }
     record Completion(Capture capture, Outcome outcome, CheckedJournalCheckpoint.Acknowledgement acknowledged) { }
     private final Thread owner = Thread.currentThread();
     private final Path file;
@@ -41,12 +41,12 @@ final class RocketRejoinWriter {
         this.file = file; this.policy = policy; this.presence = presence;
         this.ownsFile = present; this.disk = new CheckedJournalCheckpoint(force, RocketRejoinCodec.DEPTH);
     }
-    boolean request(long generation, RocketRejoinRoot root) {
+    boolean request(long generation, RocketRejoinRoot root, java.util.function.BooleanSupplier proof) {
         owner();
         if (closed || draining || active != null && successor != null) { return false; }
         if (generation <= lastGeneration) { throw new IllegalArgumentException("Rejoin writer generation did not advance"); }
         lastGeneration = generation;
-        var capture = new Capture(generation, root);
+        var capture = new Capture(generation, root, java.util.Objects.requireNonNull(proof));
         if (active == null) { active = capture; start(); } else { successor = capture; }
         return true;
     }
@@ -62,7 +62,7 @@ final class RocketRejoinWriter {
             Outcome outcome; var previous = disk.outcome();
             try {
                 CompoundTag payload = RocketRejoinCodec.encode(capture.root()); String candidateDigest = digest(payload);
-                boolean[] ownershipRejected = {false}, provedAbsent = {false};
+                boolean[] ownershipRejected = {false}, provedAbsent = {false}, proofRejected = {false};
                 var guarded = policy.withCommitter((staged, target) -> {
                     if (!ownsFile) {
                         ownershipRejected[0] = true;
@@ -76,12 +76,14 @@ final class RocketRejoinWriter {
                         attemptedDigest = candidateDigest;
                         ownershipRejected[0] = false;
                     }
+                    proofRejected[0] = !capture.proof().getAsBoolean();
+                    if (proofRejected[0]) { throw new IOException("Rejoin seat proof expired before replacement"); }
                     policy.committer().commit(staged, target);
                 });
                 outcome = disk.write(file, guarded, capture.generation(), payload, Map.of());
                 if (provedAbsent[0] && outcome == Outcome.NOT_COMMITTED) { attemptedDigest = null; }
                 // Exact readback is not ownership: the checkpoint may see an identical foreign file after our guard refused.
-                if (ownershipRejected[0]) { outcome = disk.unknown(); }
+                if (ownershipRejected[0] || proofRejected[0]) { outcome = disk.unknown(); }
                 else if (outcome == Outcome.COMMITTED) { ownsFile = true; attemptedDigest = null; }
                 else if (previous == Outcome.UNKNOWN) { outcome = disk.unknown(); }
             } catch (RuntimeException invalid) {

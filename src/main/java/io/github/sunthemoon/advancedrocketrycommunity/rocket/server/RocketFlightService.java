@@ -523,7 +523,7 @@ final class RocketFlightService {
     }
 
     private RocketFlightRequestResult board(ServerPlayer player, RocketEntity rocket) {
-        if (!passengerMutationAllowed(rocket)) {
+        if (RocketReleaseAccess.fenced(rocket) || !passengerMutationAllowed(rocket)) {
             return RocketFlightRequestResult.failure(RocketFlightRequestCode.TRANSFER_JOURNAL_BLOCKED);
         }
         RocketFlightData flight = rocket.flightData().orElseThrow();
@@ -547,7 +547,8 @@ final class RocketFlightService {
     }
 
     private RocketFlightRequestResult leave(ServerPlayer player, RocketEntity rocket) {
-        if (!passengerMutationAllowed(rocket)) {
+        if (RocketReleaseAccess.fenced(rocket) ? !RocketReleaseAccess.retainedRiderMayLeave(rocket, player.getUUID())
+                : !passengerMutationAllowed(rocket)) {
             return RocketFlightRequestResult.failure(RocketFlightRequestCode.TRANSFER_JOURNAL_BLOCKED);
         }
         RocketFlightData flight = rocket.flightData().orElseThrow();

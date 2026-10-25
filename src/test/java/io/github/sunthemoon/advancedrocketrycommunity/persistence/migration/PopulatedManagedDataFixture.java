@@ -123,7 +123,8 @@ final class PopulatedManagedDataFixture {
                 new io.github.sunthemoon.advancedrocketrycommunity.rocket.rejoin.RocketRejoinRoot.Position(0, 64, 0),
                 new io.github.sunthemoon.advancedrocketrycommunity.rocket.rejoin.RocketRejoinRoot.Position(1, 65, 1),
                 new io.github.sunthemoon.advancedrocketrycommunity.rocket.rejoin.RocketRejoinRoot.Resources("b".repeat(64), "c".repeat(64)),
-                rejoinVersion, rejoinVersion, List.of(OWNER));
+                rejoinVersion, rejoinVersion, List.of(OWNER),
+                List.of(new io.github.sunthemoon.advancedrocketrycommunity.rocket.rejoin.RocketRejoinRoot.Slot("minecraft:overworld", 0, 0)));
         var rejoinEntry = new io.github.sunthemoon.advancedrocketrycommunity.rocket.rejoin.RocketRejoinRoot.Entry(id(100), OWNER, 0,
                 io.github.sunthemoon.advancedrocketrycommunity.rocket.rejoin.RocketRejoinRoot.Placement.PENDING,
                 io.github.sunthemoon.advancedrocketrycommunity.rocket.rejoin.RocketRejoinRoot.Seat.PENDING, null);

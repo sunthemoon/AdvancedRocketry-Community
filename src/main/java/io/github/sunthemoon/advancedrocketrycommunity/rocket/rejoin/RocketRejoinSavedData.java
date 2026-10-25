@@ -56,14 +56,28 @@ public final class RocketRejoinSavedData extends SavedData implements AutoClosea
     public long completions() { owner(); return completions; }
     public boolean operational() { return true; } // Invalid roots refuse startup; never replace them with empty state.
     public boolean acknowledgedCurrent() { owner(); return acknowledged != null && acknowledged.sequence() == generation; }
+    /** Loaded bytes classify seats immediately, but J1 needs this session's checked S1 acknowledgement. */
+    public java.util.Optional<RocketReleasePermit> releasePermit(java.util.UUID release) {
+        owner(); return root.batches().stream().filter(b -> b.release().equals(release) && releaseAcknowledged(b))
+                .findFirst().map(b -> new RocketReleasePermit(this, b));
+    }
+    boolean releaseAcknowledged(RocketRejoinRoot.Batch batch) {
+        owner(); return !closed && acknowledged != null && acknowledgedRoot != null
+                && root.batches().contains(batch) && acknowledgedRoot.batches().contains(batch)
+                && acknowledgedRoot.entries().stream().anyMatch(e -> e.release().equals(batch.release()) && e.seat() == RocketRejoinRoot.Seat.PENDING);
+    }
     /** Storage only; no command calls this before the release and protected-rejoin leaves are integrated. */
     public boolean submit(RocketRejoinRoot candidate) {
+        return submit(candidate, () -> true);
+    }
+    /** S2's IO-safe proof lease is rechecked immediately before replacement, including every retained retry. */
+    public boolean submit(RocketRejoinRoot candidate, java.util.function.BooleanSupplier proof) {
         owner();
         if (closed || file == null || outcome == Outcome.UNKNOWN || outcome == Outcome.NOT_COMMITTED || generation == Long.MAX_VALUE) { return false; }
         if (candidate.nextSequence() < root.nextSequence()) { throw new IllegalArgumentException("Rejoin sequence moved backwards"); }
         if (!present && generation == 0 && candidate.batches().isEmpty()) { return false; }
         if (writer == null) { writer = new RocketRejoinWriter(file, policy, present, presence, force); }
-        if (!writer.request(generation + 1, candidate)) { return false; }
+        if (!writer.request(generation + 1, candidate, proof)) { return false; }
         root = candidate; generation++; setDirty(); return true;
     }
     public void tick(long tick) { owner(); if (writer != null && !closed) { writer.tick(tick, this::publish); } }

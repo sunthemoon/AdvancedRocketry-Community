@@ -83,8 +83,10 @@ final class RocketTransferRecoveryService {
         journal.retryChecked(server);
         var promoted = fences.reevaluateOne(server, journal, liveTransfers, settledTransfers);
         // W98-R8: a return the ordinary coordinator holds is that coordinator's; recovery never runs it again.
-        if (promoted != null && !retirements.pending(promoted.logicalRocketId())) { return recover(server, journal, promoted, true); }
+        if (promoted != null && !retirements.pending(promoted.logicalRocketId())
+                && !RocketReleaseAccess.fenced(server, promoted.logicalRocketId())) { return recover(server, journal, promoted, true); }
         Step step = step(entries.stream().filter(candidate -> journal.actionable(candidate.logicalRocketId())
+                        && !RocketReleaseAccess.fenced(server, candidate.logicalRocketId())
                         && !retirements.pending(candidate.logicalRocketId())).toList(),
                 liveTransfers, settledTransfers, bays.excluded(), recoveryCursor,
                 candidate -> RocketTransferEntities.recoveryEntityChunksLoaded(server, candidate));
@@ -145,13 +147,15 @@ final class RocketTransferRecoveryService {
             if (completedResults.containsKey(transferId) && authority != null) {
                 if (!bays.allowed(server, journal, authority, RocketTransferBayRecoveryGate.Action.RECOVER_BY_ID)
                         || !journal.actionable(authority.logicalRocketId())
-                        || journal.findByLogicalRocket(authority.logicalRocketId()).isPresent()) { return retryLater(authority); }
+                        || journal.findByLogicalRocket(authority.logicalRocketId()).isPresent()
+                        || RocketReleaseAccess.fenced(server, authority.logicalRocketId())) { return retryLater(authority); }
                 return takeCompleted(transferId);
             }
             return Result.notFound(transferId);
         }
         if (!bays.allowed(server, journal, record, RocketTransferBayRecoveryGate.Action.RECOVER_BY_ID)
                 || bays.source(transferId) != null) { return retryLater(record); }
+        if (RocketReleaseAccess.fenced(server, record.logicalRocketId())) { return retryLater(record); }
         journal.retryChecked(server);
         if (journal.find(transferId).orElse(null) != record) { return retryLater(record); }
         if (journal.actionable(record.logicalRocketId()) && completedResults.containsKey(transferId)) {
@@ -276,9 +280,11 @@ final class RocketTransferRecoveryService {
             }
             var passengers = settled == null ? record.sourceFlightData().passengers()
                     : settled.flightData().orElseThrow().passengers();
+            passengers = RocketReleaseAccess.filter(server, record.logicalRocketId(), passengers);
             if (passengers.assignment(player.getUUID()).isEmpty()) {
                 continue;
             }
+            if (RocketReleaseAccess.fenced(server, record.logicalRocketId())) { return false; }
             if (!journal.actionable(record.logicalRocketId())) { return false; }
             if (!RocketTransferEntities.authorityEntityChunkLoaded(server, record)) {
                 return false;
@@ -334,6 +340,7 @@ final class RocketTransferRecoveryService {
             RocketTransferRecord record,
             boolean loadedOnly
     ) {
+        if (RocketReleaseAccess.fenced(server, record.logicalRocketId())) { return retryLater(record); }
         if (!journal.actionable(record.logicalRocketId()) || journal.find(record.transferId()).orElse(null) != record) {
             return retryLater(record);
         }
@@ -473,6 +480,7 @@ final class RocketTransferRecoveryService {
             List<RocketEntity> discarded,
             Runnable recovered
     ) {
+        if (RocketReleaseAccess.fenced(server, record.logicalRocketId())) { return Status.RETRY_LATER; }
         if (!bays.allowed(server, journal, record, RocketTransferBayRecoveryGate.Action.SETTLE_SOURCE)) { return Status.RETRY_LATER; }
         liveTransfers.remove(record.transferId());
         boolean ready = RocketRetirementGuards.crewReady(server, record, survivor, false);
@@ -531,6 +539,7 @@ final class RocketTransferRecoveryService {
             RocketEntity authority,
             List<RocketEntity> discarded
     ) {
+        if (RocketReleaseAccess.fenced(server, record.logicalRocketId())) { return; }
         if (!journal.actionable(record.logicalRocketId())
                 || !bays.allowed(server, journal, record, RocketTransferBayRecoveryGate.Action.SETTLE_SOURCE)
                 || bays.source(record.transferId()) != null) { return; }

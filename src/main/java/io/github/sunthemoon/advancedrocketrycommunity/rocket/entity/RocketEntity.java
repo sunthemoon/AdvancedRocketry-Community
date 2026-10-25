@@ -552,6 +552,7 @@ public final class RocketEntity extends Entity implements MenuProvider {
     @Override
     protected boolean canAddPassenger(Entity passenger) {
         return operational()
+                && (level().isClientSide || !RocketRuntime.releaseFenced(this))
                 && passenger instanceof Player
                 && flightData.passengers().assignment(passenger.getUUID()).isPresent()
                 && getPassengers().size() < flightData.passengers().seatCapacity();

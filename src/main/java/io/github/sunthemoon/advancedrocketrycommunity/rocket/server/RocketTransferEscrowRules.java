@@ -33,6 +33,7 @@ final class RocketTransferEscrowRules {
 
     private static boolean rule(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
             RocketTransferBayDispatch bays, RocketTransferBayRecoveryGate.Action action, boolean mutationProof) {
+        if (RocketReleaseAccess.fenced(server, record.logicalRocketId())) { return false; }
         var boundary = bays.before(server, journal, record, action);
         if (boundary == null) { return false; }
         // Record-3 data is never authority for a legacy callback, even when its ARMED entry is absent.

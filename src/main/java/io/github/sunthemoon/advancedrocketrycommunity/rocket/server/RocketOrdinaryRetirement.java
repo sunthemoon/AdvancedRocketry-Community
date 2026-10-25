@@ -175,6 +175,11 @@ final class RocketOrdinaryRetirement {
     /** The BEFORE_FILL site's demand queue and pacing (W130F). */
     RocketFillRetirementPacing fills() { return fills; }
     boolean pending(UUID logical) { return pending.containsKey(logical); }
+    /** W80 preserves this return's remembered deliveries, not the obsolete all-online predicate. */
+    Set<UUID> delivered(UUID transfer, UUID survivor) {
+        return pending.values().stream().filter(p -> p.record.transferId().equals(transfer) && p.survivor.equals(survivor))
+                .findFirst().map(p -> Set.copyOf(p.delivered)).orElse(Set.of());
+    }
     boolean replacing(UUID logical) {
         var entry = pending.get(logical); return entry != null && entry.site == Site.BEFORE_REPLACE;
     }

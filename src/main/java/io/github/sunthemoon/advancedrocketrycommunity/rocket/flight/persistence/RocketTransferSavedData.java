@@ -340,11 +340,7 @@ public final class RocketTransferSavedData extends SavedData {
             ensureNoAuthorityConflict(record);
         }
         entries.put(record.transferId(), record);
-        mutationSequence++;
-        leases.changed(record.logicalRocketId(), record.transferId(), mutationSequence, existing);
-        if (nativeProbe != null) { nativeProbe.event(record.logicalRocketId(), "mutation", mutationSequence, record.phase().name(), 0); }
-        setDirty();
-        publishLeases();
+        changed(record, existing, record.phase().name());
     }
 
     /** Replaces a committed schema-1 record with its checksum-rebound schema-2 form. */
@@ -374,11 +370,7 @@ public final class RocketTransferSavedData extends SavedData {
             throw new IllegalArgumentException("Migrated transfer record exceeds the fixed NBT limit");
         }
         entries.put(migrated.transferId(), migrated);
-        mutationSequence++;
-        leases.changed(migrated.logicalRocketId(), migrated.transferId(), mutationSequence, legacy);
-        if (nativeProbe != null) { nativeProbe.event(migrated.logicalRocketId(), "mutation", mutationSequence, migrated.phase().name(), 0); }
-        setDirty();
-        publishLeases();
+        changed(migrated, legacy, migrated.phase().name());
     }
 
     public void remove(UUID transferId) {
@@ -387,12 +379,27 @@ public final class RocketTransferSavedData extends SavedData {
         }
         var removed = entries.remove(Objects.requireNonNull(transferId, "transferId"));
         if (removed != null) {
-            mutationSequence++;
-            leases.changed(removed.logicalRocketId(), removed.transferId(), mutationSequence, removed);
-            if (nativeProbe != null) { nativeProbe.event(removed.logicalRocketId(), "mutation", mutationSequence, "REMOVED", 0); }
-            setDirty();
-            publishLeases();
+            changed(removed, removed, "REMOVED");
         }
+    }
+
+    /** J1 only: a valid S1 capability, native proof and exact recorded version; ordinary put remains unchanged. */
+    public boolean releasePassengers(io.github.sunthemoon.advancedrocketrycommunity.rocket.rejoin.RocketReleasePermit permit,
+                                     boolean remainingCrewReady, java.util.function.BooleanSupplier nativeProof) {
+        if (ownerServer != null && !ownerServer.isSameThread()) { throw new IllegalStateException("Release requires owner thread"); }
+        var mutation = RocketLegacyRelease.prepare(this, permit, remainingCrewReady, nativeProof);
+        if (mutation == null) { return false; }
+        if (mutation.before() == mutation.after()) { return true; }
+        var before = mutation.before(); var after = mutation.after();
+        if (after == null) { entries.remove(before.transferId()); } else { entries.put(after.transferId(), after); }
+        changed(after == null ? before : after, before, after == null ? "REMOVED" : after.phase().name());
+        return true;
+    }
+
+    private void changed(RocketTransferRecord record, RocketTransferRecord previous, String event) {
+        mutationSequence++; leases.changed(record.logicalRocketId(), record.transferId(), mutationSequence, previous);
+        if (nativeProbe != null) { nativeProbe.event(record.logicalRocketId(), "mutation", mutationSequence, event, 0); }
+        setDirty(); publishLeases();
     }
 
     /** Atomically replaces a committed landed reservation with its return flight. */
@@ -419,11 +426,7 @@ public final class RocketTransferSavedData extends SavedData {
             entries.put(previousTransferId, previous);
             throw exception;
         }
-        mutationSequence++;
-        leases.changed(replacement.logicalRocketId(), replacement.transferId(), mutationSequence, previous);
-        if (nativeProbe != null) { nativeProbe.event(replacement.logicalRocketId(), "mutation", mutationSequence, replacement.phase().name(), 0); }
-        setDirty();
-        publishLeases();
+        changed(replacement, previous, replacement.phase().name());
     }
 
     /** Enqueues only this journal, never an unrelated world-wide SavedData save. */
