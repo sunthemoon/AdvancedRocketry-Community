@@ -42,6 +42,41 @@ def pending(disk):
     return [entry for entry in disk["sidecar"]["entries"] if uuid_text(entry["player"]) == PLAYER and entry["placement"] == "PENDING"]
 
 
+def audit_log(lines, hold, cut, mode):
+    """Account only for the C9 fixture's exact vanilla failure; retain every other log entry."""
+    manifest = json.loads(Path(__file__).with_name("w159_rejoin_expected_log.json").read_text(encoding="utf-8"))["native_c9"]
+    expected = {key: count if cut == "C9" and mode == "seed" else 0 for key, count in manifest["counts"].items()}
+    counts = dict.fromkeys(expected, 0); remainder = []
+    path = r"\.[/\\]world-W158-" + hold + r"-C9[/\\]playerdata[/\\]" + PLAYER + r"\.dat_old"
+    events = []
+    for line in lines:
+        header = release.HEADER.fullmatch(line.rstrip())
+        if header or not events: events.append([header, [line]])
+        else: events[-1][1].append(line)
+    for header, event in events:
+        key = None
+        if header and header["thread"] == "Server thread" and header["logger"] in manifest["loggers"]:
+            for name, pattern in manifest["messages"].items():
+                match = re.fullmatch(pattern.replace("{path}", path), header["message"])
+                if match and header["level"] == ("WARN" if name in ("delete", "sequence") else "ERROR"):
+                    key = "retry_" + match[1] if name == "retry" else name
+                    break
+        if key is None: remainder.extend(event); continue
+        continuation = [line.rstrip() for line in event[1:] if line.strip()]
+        if key == "delete":
+            if (not continuation or not re.fullmatch(r"java\.nio\.file\.DirectoryNotEmptyException: " + path, continuation[0])
+                    or not all(re.fullmatch(r"\s+at [^\r\n]+\([^\r\n]*\)[^\r\n]*", line) for line in continuation[1:])
+                    or not any("RocketRejoinPlacement.tick(" in line for line in continuation)
+                    or not any("PlayerDataStorage." in line for line in continuation)):
+                raise smoke.SmokeError("C9 delete entry has an unexpected exception or stack")
+        elif continuation:
+            raise smoke.SmokeError("C9 non-exception entry has unexpected continuation")
+        counts[key] += 1
+    if counts != expected:
+        raise smoke.SmokeError(f"C9 log counts differ: expected={expected}, observed={counts}")
+    return dict(c9_expected=expected, c9_observed=counts, base=release.audit_log(remainder, hold, cut, mode))
+
+
 def verify(disk, hold, cut, mode, boundary, baseline, seed):
     player, sidecar, rockets = disk["player"], disk["sidecar"], disk["rockets"]
     if uuid_text(player["UUID"]) != PLAYER or player["Health"] <= 0 or player["DeathTime"] != 0:
@@ -49,7 +84,10 @@ def verify(disk, hold, cut, mode, boundary, baseline, seed):
     if sidecar is None or sidecar["next_sequence"] != 1 or len(rockets) != 1:
         raise smoke.SmokeError("Missing sidecar or unique native authority")
     rocket = rockets[0]["entity"]; data = rocket["RocketEntityData"]
-    witness = dict(snapshot=data["snapshot"], fuel=data["flight_data"]["fuel"], uuid=rocket["UUID"])
+    others = sorted((e for e in sidecar["entries"] if uuid_text(e["player"]) != PLAYER and e["placement"] == "PENDING"),
+                    key=lambda e: (uuid_text(e["release"]), uuid_text(e["player"])))
+    witness = dict(snapshot=data["snapshot"], fuel=data["flight_data"]["fuel"], uuid=rocket["UUID"],
+                   other_pending=[{k: e[k] for k in ("release", "player", "placement", "attempt") if k in e} for e in others])
     if witness["fuel"]["amount"] != (1000 if hold == "H1" else 500) or baseline is not None and witness != baseline:
         raise smoke.SmokeError("Native snapshot/fuel/debit/identity changed across restart")
     entries = pending(disk); marker = player.get("ForgeData", {}).get("arce_passenger_rejoin")
@@ -141,7 +179,7 @@ def run(args):
                     disk = capture(world, evidence / (name + "-saved"))
                     baseline = verify(disk, hold, cut, mode, boundary, baseline, seed)
                     row.update(external_kill=bool(boundary), boundary=boundary, conserved=True)
-                    row["log_audit"] = release.audit_log(process.lines, hold, cut, mode)
+                    row["log_audit"] = audit_log(process.lines, hold, cut, mode)
                     if mode == "seed": seed = disk
                 except Exception:
                     if process.process.poll() is None: process.abort()

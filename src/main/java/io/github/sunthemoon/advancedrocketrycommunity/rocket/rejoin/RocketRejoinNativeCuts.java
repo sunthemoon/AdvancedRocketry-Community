@@ -12,9 +12,9 @@ import net.minecraft.world.level.storage.LevelResource;
 public final class RocketRejoinNativeCuts {
     private RocketRejoinNativeCuts() { }
     private static boolean seed(MinecraftServer server, String cut) {
-        if (!RocketReleaseNativeCuts.rejoin()) { return false; }
+        if (!RocketReleaseNativeCuts.rejoin() || !RocketReleaseNativeCuts.selection().endsWith(":" + cut + ":seed")) { return false; }
         RocketReleaseNativeCuts.validate(server);
-        return RocketReleaseNativeCuts.selection().endsWith(":" + cut + ":seed");
+        return true;
     }
     static void placed(ServerPlayer player, RocketRejoinRoot.Entry entry, RocketRejoinSavedData data) {
         var server = player.getServer(); if (!RocketReleaseNativeCuts.rejoin()) { return; }

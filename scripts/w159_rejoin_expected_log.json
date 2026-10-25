@@ -13,5 +13,17 @@
   "target_values": ["PAD", "OVERWORLD_SPAWN"],
   "limit_kinds": ["OVERSIZED", "DEPTH"],
   "isolated_integration_counts": {"guard": 2, "placed": 1, "verified": 1, "player_limit": 0},
-  "all_other_warning_counts": 0
+  "all_other_warning_counts": 0,
+  "native_c9": {
+    "scope": "Only H1/H2 C9 seed: one marked nonempty backup directory; no allowances on either restart.",
+    "loggers": ["minecraft/Util", "net.minecraft.Util/"],
+    "messages": {
+      "delete": "Failed to delete",
+      "sequence": "Failed to execute delete old {path}",
+      "retry": "Failed to create backup {path}, retrying ([0-9])/10",
+      "abort": "Failed to create backup {path}, aborting, progress might be lost"
+    },
+    "counts": {"delete": 10, "sequence": 10, "retry_0": 1, "retry_1": 1, "retry_2": 1, "retry_3": 1,
+      "retry_4": 1, "retry_5": 1, "retry_6": 1, "retry_7": 1, "retry_8": 1, "retry_9": 1, "abort": 1}
+  }
 }
