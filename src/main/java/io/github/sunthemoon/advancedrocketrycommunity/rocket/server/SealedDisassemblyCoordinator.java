@@ -213,10 +213,12 @@ final class SealedDisassemblyCoordinator {
                 || !carrier.unsealAttemptDue(server.getTickCount())) { return; }
         try {
             var result = unsealResult(level, carrier);
-            if (result == SealedMaterializer.Result.HELD) { carrier.deferUnsealUntil(server.getTickCount() + 20L); }
+            if (result == SealedMaterializer.Result.HELD) {
+                carrier.deferUnsealUntil(server.getTickCount() + (long) RocketOrdinaryRetirement.RETRY_TICKS);
+            }
             else if (result == SealedMaterializer.Result.PREPARATION_FAILED) {
-                lazyFailure = "PREPARATION_FAILED"; carrier.deferUnsealUntil(server.getTickCount() + 200L);
-                lazyHeld(level, "PREPARATION_FAILED");
+                // The materializer already latched and emitted the carrier's one diagnostic, including direct calls.
+                lazyFailure = "PREPARATION_FAILED";
             }
         } catch (RuntimeException failure) {
             // No cleanup/refill after a native callback failure. The next sweep considers only an actual remaining C.

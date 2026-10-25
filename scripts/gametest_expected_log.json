@@ -1651,6 +1651,15 @@
       "counts": {"w152_carrier": 7},
       "test": "SealedCarrierGameTests.loadedInvalidRootsStayInertAndSaveWithoutRefusal",
       "reason": "Seven invalid loaded roots each log once over three onLoad/save calls. Missing, wrong-type, future, oversized, unavailable registry/adapter and displaced data stay sealed and are saved without refusal."
+    },
+    {
+      "id": "w152f-sealed-preparation-latched",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.sealed.SealedRocketBlockEntity/",
+      "message": "ARCE_SEALED_MEMBER_HELD position=-?[0-9]+ reason=preparation-failed repair=offline-whole-world",
+      "counts": {"w152_provider": 6, "w152f_failure_latch": 12},
+      "test": "SealedProductionProviderGameTests.failedProductionPreparationRetainsCAndRejectsRemovedReferenceAccess; SealedPreparationLatchGameTests",
+      "reason": "Each of the six terminal provider failures latches once per loaded carrier. The coordinator regression observes each carrier beyond 200 ticks, reconstructs it through native load, and asserts one further attempt and WARN without retrying during either load."
     }
   ]
 }

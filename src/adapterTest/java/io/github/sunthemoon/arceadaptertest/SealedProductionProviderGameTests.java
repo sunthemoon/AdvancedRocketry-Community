@@ -97,6 +97,7 @@ public final class SealedProductionProviderGameTests {
     }
 
     static void attached(BlockEntity target) {
+        SealedPreparationLatchGameTests.attached(target);
         var observation = ACTIVE.get();
         if (observation != null && target.getBlockPos().equals(observation.at) && target instanceof FixtureContainerBlockEntity) {
             observation.target = target; observation.events.add("attachment");
@@ -134,14 +135,14 @@ public final class SealedProductionProviderGameTests {
                     && ((Container) target).getItem(1).getCount() == 3, "Foreign resources lost or duplicated");
         }
     }
-    private static BlockEntity stage(ServerLevel level, BlockPos at) {
+    static BlockEntity stage(ServerLevel level, BlockPos at) {
         var source = new FixtureContainerBlockEntity(at, AdapterTestMod.SEALED_CONTAINER.get().defaultBlockState());
         source.setItem(0, new ItemStack(Items.DIAMOND, 7));
         try { return (BlockEntity) Class.forName(ACCESS).getMethod("stage", ServerLevel.class, BlockEntity.class,
                 ResourceLocation.class, RocketBlockEntityAdapter.class).invoke(null, level, source, AdapterTestMod.SEALED_ADAPTER_ID, new FixtureInventoryAdapter()); }
         catch (ReflectiveOperationException failure) { throw new IllegalStateException("Production staging fixture unavailable", failure); }
     }
-    private static boolean unseal(BlockEntity carrier) {
+    static boolean unseal(BlockEntity carrier) {
         try { return (boolean) Class.forName(ACCESS).getMethod("unseal", BlockEntity.class).invoke(null, carrier); }
         catch (ReflectiveOperationException failure) { throw new IllegalStateException("Production publication failed", failure); }
     }

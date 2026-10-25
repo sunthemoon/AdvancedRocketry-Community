@@ -20,6 +20,7 @@ final class FixtureInventoryAdapter implements RocketBlockEntityAdapter {
         FixtureContainerBlockEntity container = (FixtureContainerBlockEntity) blockEntity;
         if (container.fault != null) { container.fault.enter("CAPTURE"); }
         FixtureAdapterFaults.Probe restoreProbe = FixtureAdapterFaults.restoring();
+        if (restoreProbe == null) { restoreProbe = SealedPreparationLatchGameTests.probe(blockEntity); }
         if (restoreProbe != null) { restoreProbe.readbacks++; }
         CompoundTag body = container.captureInventory();
         if (container.fault != null && container.fault.mode == FixtureAdapterFaults.Mode.CAPTURE_OVERSIZED) {
@@ -35,6 +36,7 @@ final class FixtureInventoryAdapter implements RocketBlockEntityAdapter {
             return false;
         }
         FixtureAdapterFaults.Probe probe = FixtureAdapterFaults.restoring();
+        if (probe == null) { probe = SealedPreparationLatchGameTests.probe(blockEntity); }
         if (probe != null) {
             // Fail after writing only the new target's owned data, exercising real cleanup.
             probe.enter("RESTORE");

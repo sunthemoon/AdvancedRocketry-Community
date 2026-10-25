@@ -19,6 +19,7 @@ public final class SealedRocketBlockEntity extends BlockEntity {
     private SealedRocketRoot root = SealedRocketRoot.absent();
     private boolean initialized;
     private boolean warned;
+    private boolean preparationFailed;
     private long nextUnsealAttempt = Long.MIN_VALUE;
 
     public SealedRocketBlockEntity(BlockPos pos, BlockState state) { super(ModBlockEntities.SEALED_ROCKET_BLOCK.get(), pos, state); }
@@ -36,8 +37,11 @@ public final class SealedRocketBlockEntity extends BlockEntity {
 
     public Optional<SealedRocketMember> member() { return root.member(); }
     /** Ephemeral retry scheduling only; no authority or payload state is changed or persisted. */
-    public boolean unsealAttemptDue(long tick) { return tick >= nextUnsealAttempt; }
+    public boolean unsealAttemptDue(long tick) { return !preparationFailed && tick >= nextUnsealAttempt; }
     public void deferUnsealUntil(long tick) { nextUnsealAttempt = Math.max(nextUnsealAttempt, tick); }
+    public boolean preparationFailed() { return preparationFailed; }
+    /** R107: terminal for this loaded carrier only; neither the retained root nor its schema changes. */
+    public void failPreparation() { preparationFailed = true; warnHeld("preparation-failed"); }
     @Override public boolean onlyOpCanSetNbt() { return true; }
     @Override public <T> LazyOptional<T> getCapability(Capability<T> capability, Direction side) { return LazyOptional.empty(); }
     @Override public CompoundTag getUpdateTag() { return new CompoundTag(); }
@@ -45,7 +49,8 @@ public final class SealedRocketBlockEntity extends BlockEntity {
     @Override public void load(CompoundTag tag) {
         if (level instanceof ServerLevel server) { RocketRuntime.sealedTerrainChanged(server, worldPosition); }
         super.load(tag);
-        root = SealedRocketRoot.load(tag); initialized = true; warned = false; nextUnsealAttempt = Long.MIN_VALUE;
+        root = SealedRocketRoot.load(tag); initialized = true; warned = false; preparationFailed = false;
+        nextUnsealAttempt = Long.MIN_VALUE;
         if (level instanceof ServerLevel server && !available(server)) { warnHeld(); }
     }
     @Override protected void saveAdditional(CompoundTag tag) {
@@ -75,10 +80,13 @@ public final class SealedRocketBlockEntity extends BlockEntity {
 
     /** One bounded diagnostic per load, never from saving; no tag contents enter the log. */
     public void warnHeld() {
+        warnHeld("unavailable-member");
+    }
+    private void warnHeld(String reason) {
         if (!warned) {
             warned = true;
-            LogUtils.getLogger().warn("ARCE_SEALED_MEMBER_HELD position={} reason=unavailable-member repair=offline-whole-world",
-                    worldPosition.asLong());
+            LogUtils.getLogger().warn("ARCE_SEALED_MEMBER_HELD position={} reason={} repair=offline-whole-world",
+                    worldPosition.asLong(), reason);
         }
     }
 }

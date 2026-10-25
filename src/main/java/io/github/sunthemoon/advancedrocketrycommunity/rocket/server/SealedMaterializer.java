@@ -20,6 +20,7 @@ final class SealedMaterializer {
     private BlockState publishingState;
     private SealedTargetPreparation publishingTarget;
     private boolean published;
+    private boolean preparing;
     private final java.util.function.Consumer<String> nativeObserver;
 
     SealedMaterializer(java.util.function.Consumer<String> nativeObserver) { this.nativeObserver = nativeObserver; }
@@ -27,7 +28,8 @@ final class SealedMaterializer {
     Result unseal(ServerLevel level, SealedRocketBlockEntity carrier, RocketBlockEntityAdapters adapters,
             BooleanSupplier authorized, SealedWorkBudget budget) {
         owner();
-        if (publishingLevel != null || !authorized.getAsBoolean()) { return Result.HELD; }
+        if (carrier.preparationFailed()) { return Result.PREPARATION_FAILED; }
+        if (preparing || publishingLevel != null || !authorized.getAsBoolean()) { return Result.HELD; }
         if (!budget.take()) { return Result.BUDGET; }
         var member = carrier.member().orElse(null);
         if (member == null || !current(level, carrier, member)) { return Result.HELD; }
@@ -37,8 +39,16 @@ final class SealedMaterializer {
         int additional = member.payload() == null ? 1 : 4;
         for (int i = 0; i < additional; i++) { if (!budget.take()) { return Result.BUDGET; } }
         nativeObserver.accept("UNSEAL_PREPARE_BEFORE");
-        var candidate = SealedTargetPreparation.prepare(owner, carrier.getBlockPos(), state, member.payload(), adapters);
-        if (candidate.isEmpty()) { nativeObserver.accept("UNSEAL_PREPARE_FAILED"); return Result.PREPARATION_FAILED; }
+        java.util.Optional<SealedTargetPreparation> candidate;
+        preparing = true;
+        try {
+            candidate = SealedTargetPreparation.prepare(owner, carrier.getBlockPos(), state, member.payload(), adapters);
+            if (candidate.isEmpty()) {
+                carrier.failPreparation();
+                nativeObserver.accept("UNSEAL_PREPARE_FAILED");
+                return Result.PREPARATION_FAILED;
+            }
+        } finally { preparing = false; }
         try (var prepared = candidate.orElseThrow()) {
             nativeObserver.accept("UNSEAL_PREPARE_AFTER");
             // Restore/recapture may run provider code: recheck both exact C identity and checked authority afterwards.
@@ -48,6 +58,7 @@ final class SealedMaterializer {
             try {
                 nativeObserver.accept("UNSEAL_PUBLISH_BEFORE");
                 level.setBlock(carrier.getBlockPos(), state, Block.UPDATE_ALL);
+                if (!published) { carrier.failPreparation(); }
                 return published ? Result.PUBLISHED : Result.PREPARATION_FAILED;
             } finally {
                 publishingLevel = null; publishingCarrier = null; publishingState = null; publishingTarget = null;
