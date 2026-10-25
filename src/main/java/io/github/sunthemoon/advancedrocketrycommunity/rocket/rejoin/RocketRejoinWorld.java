@@ -53,7 +53,7 @@ final class RocketRejoinWorld implements AutoCloseable {
         for (var column : RocketRejoinCandidates.columns(batch.minimum(), batch.maximum(), spawn.getX(), spawn.getZ())) {
             var level = level(batch, column.target()); if (level == null) { continue; }
             var chunk = level.getChunkSource().getChunkNow(column.x() >> 4, column.z() >> 4);
-            if (chunk == null) { continue; }
+            if (chunk == null || !chunk.hasPrimedHeightmap(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES)) { continue; }
             int y = chunk.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, column.x() & 15, column.z() & 15) + 1;
             var pos = new Vec3(column.x() + 0.5, y, column.z() + 0.5);
             if (safe(player, level, pos)) { return new Attempt(UUID.randomUUID(), column.target(), pos.x, pos.y, pos.z); }

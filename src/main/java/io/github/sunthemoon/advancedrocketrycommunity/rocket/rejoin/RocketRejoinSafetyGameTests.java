@@ -17,6 +17,24 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 @PrefixGameTestTemplate(false)
 public final class RocketRejoinSafetyGameTests {
     private RocketRejoinSafetyGameTests() { }
+    @GameTest(template = "rocket_test", batch = "rocket_rejoin_heightmap")
+    public static void missingHeightmapIsNotPrimedByCandidateSelection(GameTestHelper helper) {
+        var level = helper.getLevel(); var at = helper.absolutePos(new BlockPos(2, 4, 2));
+        var chunk = level.getChunkAt(at); var type = net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES;
+        var saved = chunk.getHeightmaps().stream().filter(e -> e.getKey() == type).findFirst().orElseThrow().getValue().getRawData().clone();
+        var player = new ServerPlayer(level.getServer(), level, new GameProfile(UUID.randomUUID(), "W159Heightmap"));
+        var old = RocketRejoinGuardGameTests.root(player.getUUID()).batches().get(0);
+        var pos = new RocketRejoinRoot.Position(at.getX(), at.getY(), at.getZ());
+        var batch = new RocketRejoinRoot.Batch(old.release(), 0, old.transfer(), old.rocket(), old.authority(), old.hold(),
+                old.dimension(), pos, pos, pos, old.resources(), old.before(), old.scrubbed(), old.released(),
+                List.of(new RocketRejoinRoot.Slot(old.dimension(), at.getX() >> 4, at.getZ() >> 4)));
+        try (var world = new RocketRejoinWorld(level.getServer())) {
+            chunk.getHeightmaps().removeIf(e -> e.getKey() == type);
+            world.choose(player, batch);
+            helper.assertTrue(!chunk.hasPrimedHeightmap(type), "Candidate lookup primed a missing heightmap by scanning blocks");
+        } finally { chunk.setHeightmap(type, saved); }
+        helper.succeed();
+    }
     @GameTest(template = "rocket_test", batch = "rocket_rejoin_safety")
     public static void loadedEnvelopeRejectsHazardsFluidsCollisionAndMissingSupport(GameTestHelper helper) {
         var level = helper.getLevel(); var at = helper.absolutePos(new BlockPos(2, 4, 2));
