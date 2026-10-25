@@ -70,6 +70,8 @@ public final class SealedDisassembly {
     }
     public Result result() { return result; }
     public Phase phase() { return phase; }
+    /** Scheduler eligibility only; observing a hold must never renew it. */
+    public long retryAt() { return notBefore; }
     public boolean restorationStarted() { return restorationStarted; }
     public boolean electionSubmitted() { return electionSubmitted; }
     public boolean removalSubmitted() { return removalSubmitted; }

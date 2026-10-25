@@ -26,7 +26,7 @@ import net.minecraft.server.level.ServerLevel;
 
 /** Server-lifetime RAM claims. The durable U is never removed merely because the caller, proof or server stops. */
 final class SealedDisassemblyCoordinator {
-    private static final class Work {
+    private final class Work implements SealedWorkScheduler.Entry {
         final SealedDisassemblyWorld world;
         final SealedDisassembly machine;
         final RocketRegionLockManager.LockToken lock;
@@ -37,6 +37,15 @@ final class SealedDisassemblyCoordinator {
                 Consumer<SealedDisassembly.Result> completion, boolean recovery) {
             this.world = world; this.machine = machine; this.lock = lock; this.completion = completion; this.recovery = recovery;
         }
+        public UUID id() { return world.entry.record().transactionId(); }
+        public boolean recovery() { return recovery; }
+        public boolean activeAttempt() { return world.activeAttempt(); }
+        public boolean eligible(long now) {
+            return work.get(id()) == this && now >= retryAt && now >= machine.retryAt() && now >= world.retryAt();
+        }
+        public void tickDeadline() { world.tickProofDeadline(); }
+        public void tickProof() { world.tickProof(); }
+        public void work() { service(id(), this); }
     }
     private final RocketTransactionExecutor transactions;
     private final RocketOrdinaryRetirement ordinary;
@@ -49,9 +58,9 @@ final class SealedDisassemblyCoordinator {
     private SealedRecoverySelection recoverySelection;
     private MinecraftServer discoveryServer;
     private SealedLazyWork<SealedLoadedDiscovery.Hint> lazy;
-    private boolean lazyFirst;
+    private SealedWorkScheduler scheduler;
+    private long priorityTick = Long.MIN_VALUE;
     private String lazyFailure;
-    private int cursor;
     private Consumer<String> nativeObserver = label -> { };
     private SealedDiagnostics diagnostics;
 
@@ -70,6 +79,7 @@ final class SealedDisassemblyCoordinator {
             else { io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity.LOGGER.info(line); }
         });
         materializer = new SealedMaterializer(label -> nativeObserver.accept(label)); recoverySelection = new SealedRecoverySelection();
+        scheduler = new SealedWorkScheduler();
         ensureLazy(server);
         var data = RocketTransactionSavedData.get(server);
         writes = new SealedJournalRequests(new SealedJournalRequests.Port() {
@@ -88,7 +98,9 @@ final class SealedDisassemblyCoordinator {
     /** The future I6 caller must keep its original actor, consent, snapshot and request-age predicate; never refresh it here. */
     UUID begin(RocketEntity rocket, BooleanSupplier authorized, Consumer<SealedDisassembly.Result> completion) {
         if (!(rocket.level() instanceof ServerLevel level) || !rocket.operational()) { return null; }
-        bind(level.getServer()); budget.beginTick(server.getTickCount());
+        bind(level.getServer());
+        if (SealedProofAdmission.priorityPending(activeAttempts(), server.getTickCount(), priorityTick)) { return null; }
+        budget.beginTick(server.getTickCount());
         var logical = rocket.assemblyTransactionId().orElseThrow(); var snapshot = rocket.snapshot().orElseThrow();
         var data = RocketTransactionSavedData.get(server);
         if (ordinary.pending(logical) || !ordinary.pendingRoom(logical) || !data.operational()
@@ -103,7 +115,7 @@ final class SealedDisassemblyCoordinator {
         try {
             terrain = new SealedTerrain(level, entry, transactions.adapters(), placement);
             var port = new SealedDisassemblyWorld(level, entry, terrain, writes, authorized,
-                    () -> activeAttempts() + ordinary.activeAttempts() < RocketOrdinaryRetirement.MAX_ATTEMPTS,
+                    this::attemptRoom,
                     () -> exclusive(entry), false, budget, label -> nativeObserver.accept(label),
                     (phase, reason) -> diagnostics.hold(id.toString(), phase, reason));
             if (port.entity() != SealedDisassembly.Entity.MATCHING) { terrain.close(); lock.close(); return null; }
@@ -175,7 +187,11 @@ final class SealedDisassemblyCoordinator {
         return unsealResult(level, carrier) == SealedMaterializer.Result.PUBLISHED;
     }
     private SealedMaterializer.Result unsealResult(ServerLevel level, SealedRocketBlockEntity carrier) {
-        bind(level.getServer()); budget.beginTick(server.getTickCount());
+        bind(level.getServer());
+        if (SealedProofAdmission.priorityPending(activeAttempts(), server.getTickCount(), priorityTick)) {
+            return SealedMaterializer.Result.HELD;
+        }
+        budget.beginTick(server.getTickCount());
         var member = carrier.member().orElse(null);
         if (member == null) { return SealedMaterializer.Result.HELD; }
         var point = new RocketRegion(member.dimension(), member.position(), member.position());
@@ -248,6 +264,11 @@ final class SealedDisassemblyCoordinator {
                 || entry.record().region().overlaps(point));
     }
     private int activeAttempts() { return (int) work.values().stream().filter(item -> item.world.activeAttempt()).count(); }
+    private boolean attemptRoom() {
+        int active = activeAttempts();
+        return budget.remaining() > 0 && SealedProofAdmission.inspectionRoom(active)
+                && active + ordinary.activeAttempts() < RocketOrdinaryRetirement.MAX_ATTEMPTS;
+    }
     String diagnostic(UUID id) {
         var item = work.get(id);
         return item == null ? "not-tracked" : item.machine.phase() + ":" + item.world.reason() + ":" + item.world.entities.diagnostic();
@@ -266,7 +287,7 @@ final class SealedDisassemblyCoordinator {
                 work.entrySet().stream().filter(entry -> entry.getValue().recovery).map(Map.Entry::getKey)).toList();
         return recoverySelection.select(server.getTickCount(), ids, id -> {
             var owned = work.get(id);
-            if (owned != null) { return owned.recovery && server.getTickCount() >= owned.retryAt; }
+            if (owned != null) { return owned.recovery && !owned.activeAttempt() && owned.eligible(server.getTickCount()); }
             var entry = entries.stream().filter(candidate -> candidate.record().transactionId().equals(id)).findFirst().orElse(null);
             return entry != null && (entry.record().type() != RocketTransactionType.SEALED_DISASSEMBLY
                     || ordinary.size() + work.size() < RocketOrdinaryRetirement.MAX_PENDING);
@@ -284,7 +305,7 @@ final class SealedDisassemblyCoordinator {
         try {
             terrain = new SealedTerrain(level, entry, transactions.adapters(), placement);
             var port = new SealedDisassemblyWorld(level, entry, terrain, writes, () -> true,
-                    () -> activeAttempts() + ordinary.activeAttempts() < RocketOrdinaryRetirement.MAX_ATTEMPTS,
+                    this::attemptRoom,
                     () -> exclusive(entry), true, budget, label -> nativeObserver.accept(label),
                     (phase, reason) -> diagnostics.hold(id.toString(), phase, reason));
             boolean elected = entry.record().phase() == RocketTransactionPhase.RESTORED
@@ -311,43 +332,28 @@ final class SealedDisassemblyCoordinator {
             // Legacy work is handed to its executor independently of this sealed inspection allowance.
             if (!work.containsKey(selected)) { recoverySelection.serviced(selected); }
         }
-        var ids = List.copyOf(work.keySet());
-        // Proof deadlines still advance every tick, independently of the shared world-inspection cursor.
-        for (var id : ids) {
-            work.get(id).world.tickProofDeadline();
-        }
-        lazyFirst = !lazyFirst;
-        if (lazyFirst) { lazy.tick(budget); }
-        int nextCursor = cursor;
-        boolean serviced = false;
-        // Both cursors move on service, not elapsed ticks; lazy/live work cannot consume another owner's turn.
-        for (int offset = 0; offset < ids.size(); offset++) {
-            int index = (cursor + offset) % ids.size();
-            var id = ids.get(index); var item = work.get(id);
-            if (item.recovery && !id.equals(selected) || server.getTickCount() < item.retryAt || budget.remaining() == 0) { continue; }
-            if (!serviced) { nextCursor = (index + 1) % ids.size(); serviced = true; }
-            if (item.recovery) { recoverySelection.serviced(id); }
-            try {
-                item.world.tickProof();
-                while (!item.world.terrain.prepared() && item.world.terrain.prepareOne(budget)) { }
-                while (item.machine.step(budget)) { }
-            } catch (RuntimeException unavailable) {
-                // An unresolved U remains claimed. Preparation before U exists has changed no world state.
-                if (RocketTransactionSavedData.get(server).entries().stream().noneMatch(entry -> entry.record().transactionId().equals(id))
-                        && !item.machine.restorationStarted()) { finish(id, item, SealedDisassembly.Result.REJECTED); }
-                else {
-                    item.retryAt = server.getTickCount() + (long) RocketOrdinaryRetirement.RETRY_TICKS;
-                    diagnostics.hold(id.toString(), item.machine.phase().name(), "UNAVAILABLE");
-                }
-                continue;
-            }
-            if (item.machine.result() != null) { finish(id, item, item.machine.result()); }
-        }
-        cursor = nextCursor;
-        if (!lazyFirst) { lazy.tick(budget); }
+        scheduler.tick(server.getTickCount(), List.copyOf(work.values()), selected, budget,
+                () -> { priorityTick = server.getTickCount(); lazy.tick(budget); }, recoverySelection::serviced);
         writes.flush();
         diagnostics.flush(server.getTickCount());
         return legacy;
+    }
+    private void service(UUID id, Work item) {
+        if (!item.eligible(server.getTickCount())) { return; }
+        try {
+            while (!item.world.terrain.prepared() && item.world.terrain.prepareOne(budget)) { }
+            while (item.machine.step(budget)) { }
+        } catch (RuntimeException unavailable) {
+            // An unresolved U remains claimed. Preparation before U exists has changed no world state.
+            if (RocketTransactionSavedData.get(server).entries().stream().noneMatch(entry -> entry.record().transactionId().equals(id))
+                    && !item.machine.restorationStarted()) { finish(id, item, SealedDisassembly.Result.REJECTED); }
+            else {
+                item.retryAt = server.getTickCount() + (long) RocketOrdinaryRetirement.RETRY_TICKS;
+                diagnostics.hold(id.toString(), item.machine.phase().name(), "UNAVAILABLE");
+            }
+            return;
+        }
+        if (item.machine.result() != null) { finish(id, item, item.machine.result()); }
     }
     private void finish(UUID id, Work item, SealedDisassembly.Result result) {
         // Callback observes the native proof and checked U absence while the RAM claim is still owned.
@@ -370,8 +376,9 @@ final class SealedDisassemblyCoordinator {
         work.clear(); if (placement != null) { placement.clear(); }
         if (lazy != null) { lazy.clear(); }
         if (diagnostics != null) { diagnostics.clear(); diagnostics = null; }
-        server = null; budget = null; writes = null; placement = null; materializer = null; recoverySelection = null; cursor = 0;
-        discoveryServer = null; lazy = null; lazyFirst = false; lazyFailure = null;
+        server = null; budget = null; writes = null; placement = null; materializer = null; recoverySelection = null; scheduler = null;
+        discoveryServer = null; lazy = null; lazyFailure = null;
+        priorityTick = Long.MIN_VALUE;
         nativeObserver = label -> { };
     }
 }

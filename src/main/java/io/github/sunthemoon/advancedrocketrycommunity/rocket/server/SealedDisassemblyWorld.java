@@ -132,6 +132,7 @@ final class SealedDisassemblyWorld implements SealedDisassembly.Port, AutoClosea
     void tickProof() { if (batch != null) { batch.tick(); } }
     void tickProofDeadline() { if (batch != null) { batch.tickDeadline(); } }
     boolean activeAttempt() { return batch != null && batch.active(); }
+    long retryAt() { return batch == null ? proofRetryAt : Math.max(proofRetryAt, batch.retryAt()); }
     String reason() { return reason + ":proof=" + proofReason + ":validation=" + validation + ":" + (batch == null ? "no-batch" : batch.diagnostic()); }
     void invalidateProof() {
         if (batch != null) {
@@ -159,7 +160,9 @@ final class SealedDisassemblyWorld implements SealedDisassembly.Port, AutoClosea
         NativeProofs(List<Slot> slots, SealedDisassembly.Goal goal, boolean present) { this.slots = slots; this.goal = goal; this.present = present; }
         @Override public long now() { return SealedDisassemblyWorld.this.now(); }
         @Override public SealedProofBatch.Readiness readiness() { return SealedProofBatch.Readiness.valueOf(gate().name()); }
-        @Override public boolean attemptRoom() { return attemptRoom.getAsBoolean(); }
+        @Override public boolean attemptRoom() {
+            return SealedProofAdmission.fitsNativeWindow(slots.size()) && attemptRoom.getAsBoolean();
+        }
         @Override public boolean available(int index) {
             var runtime = EscrowRuntime.of(level.getServer()); var slot = slots.get(index); var name = level.dimension().location().toString();
             return slot.entity ? runtime.barrier().availableOrdinary(runtime.store(level), name, slot.position, now())
