@@ -517,7 +517,13 @@ final class RocketTransferService {
             RocketLandedDisassemblies.Request request) {
         return i6.begin(rocket, preflight, request);
     }
-    boolean landedDisassemblyPending(RocketEntity rocket) { return landed.pending(rocket.assemblyTransactionId().orElse(null)); }
+    boolean landedDisassemblyPending(RocketEntity rocket) {
+        var logical = rocket.assemblyTransactionId().orElse(null);
+        return landed.pending(logical) || recovery.retirements().plainReleasePending(logical);
+    }
+    RocketValidationCode prepareLandedDisassembly(RocketEntity rocket, java.util.function.BooleanSupplier authorized) {
+        return i6.prepare(rocket, authorized);
+    }
     RocketLandedDisassemblies landedDisassemblies() { return landed; }
     RocketLandedDisassemblies.Port landedPort(MinecraftServer server, RocketTransferSavedData journal) {
         return new RocketLandedDisassemblyPort(server, journal, recovery.bays(), liveTransfers, settledTransfers);

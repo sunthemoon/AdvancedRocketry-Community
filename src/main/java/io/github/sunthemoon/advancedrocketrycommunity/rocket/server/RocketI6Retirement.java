@@ -13,6 +13,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.BooleanSupplier;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
 
@@ -23,6 +24,38 @@ final class RocketI6Retirement extends RocketDestinationRetirement {
     private final RocketFlightData flight;
     private final RocketStructureSnapshot snapshot;
     private final Set<UUID> delivered = new HashSet<>();
+    private BooleanSupplier authorized = () -> true;
+    private Terminal terminal;
+    private RocketLandedDisassemblies.Port continuation;
+    private boolean preparation, prepared;
+
+    interface Terminal {
+        boolean submit(RocketTransferSavedData journal, RocketTransferRecord record,
+                       RocketTransferSavedData.Reservation reservation);
+    }
+
+    void prepareOnly(BooleanSupplier authorized) { this.authorized = authorized; preparation = true; }
+    void handoff(BooleanSupplier authorized, Terminal terminal, RocketLandedDisassemblies.Port continuation) {
+        this.authorized = authorized; this.terminal = terminal; this.continuation = continuation;
+    }
+    @Override public boolean preparationOnly() { return preparation; }
+    @Override public boolean preparationReady() {
+        prepared = RocketTransferEntities.recoveryEndsAlreadyLoaded(server, predecessor); return prepared;
+    }
+    @Override public boolean needsTicketStep() { return terminal == null; }
+    @Override public void releaseTickets(RocketTransferRecord record) {
+        // Completed preparation leaves its existing finite ticket to expire; it never renews while awaiting a click.
+        if (!(preparation && prepared)) { super.releaseTickets(record); }
+    }
+    @Override public boolean terminal(RocketTransferSavedData journal, RocketTransferRecord record, CompoundTag frozen,
+                                      RocketTransferSavedData.Reservation own) {
+        return terminal == null ? super.terminal(journal, record, frozen, own) : terminal.submit(journal, record, own);
+    }
+    @Override public boolean afterAcknowledged(RocketTransferSavedData journal, RocketTransferSavedData.Reservation own,
+                                               BooleanSupplier effect, Runnable discarded) {
+        return continuation == null ? super.afterAcknowledged(journal, own, effect, discarded)
+                : continuation.queueRemoval(own, effect, discarded);
+    }
 
     RocketI6Retirement(MinecraftServer server, RocketTransferSavedData journal, RocketTransferBayDispatch bays,
             RocketTransferFences fences, Set<UUID> live, Set<UUID> settled, RocketTransferRecord predecessor, RocketEntity rocket) {
@@ -39,7 +72,7 @@ final class RocketI6Retirement extends RocketDestinationRetirement {
 
     @Override public boolean requestCurrent() {
         var rocket = rocket(predecessor, survivor); var origin = snapshot.sourceOrigin();
-        return RocketTransferEntities.loadedEntity(rocket) && rocket.operational()
+        return authorized.getAsBoolean() && RocketTransferEntities.loadedEntity(rocket) && rocket.operational()
                 && rocket.ownerId().filter(predecessor.ownerId()::equals).isPresent()
                 && rocket.snapshot().filter(snapshot::equals).isPresent()
                 && rocket.flightData().filter(flight::equals).isPresent()
