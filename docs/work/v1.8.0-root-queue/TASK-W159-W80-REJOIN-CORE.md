@@ -99,3 +99,14 @@ UUID lists are capped at 16.
 
 The command, the `rejoins` view and the command matrix (W160), governed records, two-real-client evidence (owner's
 final campaign), ADRs, the risk register, status files and the ledger (Root).
+
+## Root decision R106 (2026-10-25), on the step-0 stop (`b4b7f379`)
+
+1. **The correction stands.** `forceAddEffect` fires `MobEffectEvent.Applicable` indirectly through `canBeAffected`,
+   so the design's sentence that it fires no event is wrong. Root has added a correction to W80-DESIGN section 4 and
+   to W80.md. This only strengthens the guard. Keep both the `Applicable` denial and the install-time effect record
+   with the cleanup before unguarding. Test that a guarded player refuses a harmful `forceAddEffect`, and that the
+   cleanup still removes a harmful effect gained while guarded by another route the test can drive.
+2. **The other step-0 results hold.** Entity-join is the only hook before the `RootVehicle` remount, so install the
+   guard there; the login event repeats it idempotently. The Windows overlap test passes, so the leaf is not blocked.
+3. **Continue with steps 2 to 4 of this task** in the same session, on the same branch.

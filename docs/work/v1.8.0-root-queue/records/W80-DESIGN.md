@@ -358,6 +358,11 @@ Before unguarding, W80 clears fire ticks and frozen ticks and removes every harm
 record. `forceAddEffect` fires no event, and the record covers it as well. A harmful effect that the player already
 had when they logged off is left as it was saved.
 
+*Correction (Root decision R106, 2026-10-25, from W159's step 0; supersedes the sentence on `forceAddEffect` above):*
+in the pinned Forge 47.4.10, `forceAddEffect` calls `canBeAffected` at bytecode offset 2. It therefore fires
+`MobEffectEvent.Applicable` indirectly and honours its result, so the guard's denial covers it too. The install-time
+record and the cleanup before unguarding stay as defence in depth.
+
 **Queue and deadline (R2).** The placement and readback queue has 128 slots and runs at most four owner-thread
 actions per tick. Guards use the player index, not a queue slot, and a full queue leaves the player protected without
 repeated offers. Unknown journal or sidecar readiness refuses ordinary reconnect for the indexed players only.
