@@ -13,6 +13,7 @@ final class RocketRejoinNativeProbe {
     private final MinecraftServer server;
     private ServerPlayer player;
     private boolean seeded;
+    private int changedAt = -1;
     RocketRejoinNativeProbe(MinecraftServer server) { this.server = server; RocketReleaseNativeCuts.validate(server); }
     void seedOldPlayer(RocketEntity rocket) {
         if (seeded) { return; }
@@ -30,6 +31,23 @@ final class RocketRejoinNativeProbe {
         if (player == null) {
             RocketRejoinNativeCuts.cleanFixtureBackup(server, PLAYER);
             player = connect();
+            if (!player.isAlive() && RocketReleaseNativeCuts.selection().matches("H[12]:C18:(recover|check)")) {
+                player = ReleaseTestPlayers.respawn(server, player);
+            }
+        }
+        if (RocketRejoinNativeCuts.failedLeaseSeed() && RocketRejoinNativeCuts.heldLease()) {
+            if (changedAt < 0) {
+                if (!RocketRejoinProtection.guarded(player)) { throw new IllegalStateException("Held P2 player is unguarded"); }
+                if (RocketReleaseNativeCuts.selection().contains(":C18:")) {
+                    player.setHealth(0);
+                    net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(new net.minecraftforge.event.entity.living.LivingDeathEvent(player, player.damageSources().generic()));
+                } else {
+                    player.serverLevel().setBlockAndUpdate(player.blockPosition().below(), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
+                }
+                server.getPlayerList().saveAll(); server.saveEverything(false, true, true);
+                changedAt = server.getTickCount();
+            } else if (server.getTickCount() > changedAt + 1) { RocketRejoinNativeCuts.releaseLease(server); }
+            return false;
         }
         if (!player.isAlive() || player.getHealth() <= 0) { throw new IllegalStateException("Native guarded passenger died"); }
         if (data.root().entries().stream().anyMatch(e -> e.player().equals(PLAYER) && e.placement() == RocketRejoinRoot.Placement.PENDING)

@@ -73,6 +73,7 @@ public final class RocketRejoinSavedData extends SavedData implements AutoClosea
     public java.util.List<RocketRejoinRoot> pendingRoots() {
         owner(); return writer == null ? java.util.List.of() : writer.pendingRoots();
     }
+    boolean placementPending(RocketRejoinLease lease) { owner(); return writer != null && writer.placementPending(lease); }
     public Outcome outcome() { owner(); return outcome; }
     public long completions() { owner(); return completions; }
     public boolean operational() { return true; } // Invalid roots refuse startup; never replace them with empty state.

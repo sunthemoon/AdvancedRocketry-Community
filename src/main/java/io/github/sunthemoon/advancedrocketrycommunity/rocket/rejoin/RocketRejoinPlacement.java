@@ -20,9 +20,10 @@ final class RocketRejoinPlacement implements AutoCloseable {
         Entry entry;
         Batch batch;
         Attempt attempt;
+        Attempt handoff;
         boolean placed, readRequested, submitted;
         RocketRejoinPlayerFile.Expected proof;
-        final RocketRejoinLease lease = new RocketRejoinLease();
+        RocketRejoinLease lease = new RocketRejoinLease();
         Work(RocketRejoinGuards.Session session) { this.session = session; }
     }
     private final MinecraftServer server;
@@ -48,7 +49,7 @@ final class RocketRejoinPlacement implements AutoCloseable {
                 else { guards.reason(s, "capacity"); }
             }
         }
-        int actions = 0;
+        int actions = refreshLease();
         var result = reader.poll(); if (result != null) { apply(result); actions++; }
         var entries = new ArrayList<>(work.values()); int size = entries.size();
         // Reserve one action for the server-wide save. No callback mutates owner state off-thread.
@@ -64,11 +65,23 @@ final class RocketRejoinPlacement implements AutoCloseable {
             saves.saved(server.getTickCount()); server.getPlayerList().saveAll();
         }
     }
+    private int refreshLease() {
+        // The writer admits only one exclusive P2. Its refresh consumes one of the same four actions,
+        // rather than depending on round-robin placement scheduling under queue saturation.
+        for (var w : work.values()) {
+            if (!w.submitted || !data.placementPending(w.lease)) { continue; }
+            var s = w.session;
+            boolean current = guards.session(s.player.getUUID()) == s && !s.invalidated && !s.disconnected;
+            w.lease.refresh(current && (!s.online || s.player.deathTime == 0 && world.safe(s.player, w.batch, w.attempt)));
+            return 1;
+        }
+        return 0;
+    }
     private void step(Work w) {
         var s = w.session;
         if (guards.session(s.player.getUUID()) != s || s.disconnected || s.invalidated
                 || !s.online && (!w.placed || server.getTickCount() >= s.deadline)) { cancel(s); return; }
-        if (s.online && (!s.player.isAlive() || s.player.deathTime != 0)) { guards.reason(s, "dead"); return; }
+        if (s.online && (!s.player.isAlive() || s.player.deathTime != 0)) { w.lease.revoke(); guards.reason(s, "dead"); return; }
         if (w.submitted) { finish(w); return; }
         var entries = data.root().entries().stream().filter(e -> e.player().equals(s.player.getUUID()) && e.placement() == Placement.PENDING).toList();
         if (entries.size() > 1) { guards.reason(s, "conflict"); return; }
@@ -162,8 +175,27 @@ final class RocketRejoinPlacement implements AutoCloseable {
     }
     private void finish(Work w) {
         var installed = data.acknowledgedRoot(); if (installed == null) { return; }
-        if (installed.entries().stream().anyMatch(e -> e.key().equals(w.entry.key()) && e.placement() == Placement.PENDING)) { return; }
-        if (w.session.online && !world.safe(w.session.player, w.batch, w.attempt)) { guards.reason(w.session, "unsafe"); return; }
+        if (installed.entries().stream().anyMatch(e -> e.key().equals(w.entry.key()) && e.placement() == Placement.PENDING)) {
+            if (!w.lease.getAsBoolean() && !data.placementPending(w.lease) && data.pendingRoots().isEmpty()) {
+                // A never-installed P2 was discarded. Start another allowed PENDING -> PENDING attempt.
+                w.submitted = false; w.placed = false; w.proof = null; w.readRequested = false; w.attempt = null;
+                w.lease = new RocketRejoinLease(); w.session.freshAttempt = true;
+                w.session.player.getPersistentData().remove(RocketRejoinMarker.KEY);
+                guards.reason(w.session, "unsafe");
+            }
+            return;
+        }
+        var target = w.handoff == null ? w.attempt : w.handoff;
+        if (w.session.online && !world.safe(w.session.player, w.batch, target)) {
+            // P2 is already durable. This narrow post-check window has session-only protection (R108).
+            guards.reason(w.session, "unsafe");
+            if (!world.ticket(w.session, w.batch)) { return; }
+            var safe = world.choose(w.session.player, w.batch);
+            if (safe == null || !world.safe(w.session.player, w.batch, safe)) { return; }
+            w.handoff = safe; w.session.level = world.level(w.batch, safe.target());
+            w.session.position = new Vec3(safe.x(), safe.y(), safe.z()); RocketRejoinGuards.pin(w.session);
+            return; // Recheck on a later owner action, before unguarding.
+        }
         w.session.player.getPersistentData().remove(RocketRejoinMarker.KEY);
         AdvancedRocketryCommunity.LOGGER.info("ARCE_REJOIN_VERIFIED player={} release={} generation={}",
                 w.entry.player(), w.entry.release(), w.attempt.generation());

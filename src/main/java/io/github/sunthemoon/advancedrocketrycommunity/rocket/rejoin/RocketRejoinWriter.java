@@ -67,6 +67,9 @@ final class RocketRejoinWriter {
         return active == null ? java.util.List.of() : successor == null ? java.util.List.of(active.root())
                 : java.util.List.of(active.root(), successor.root());
     }
+    boolean placementPending(RocketRejoinLease lease) {
+        owner(); return active != null && active.revocable() && active.proof() == lease;
+    }
     private void start() {
         if (running || active == null || tick < retryAt) { return; }
         running = true; Capture capture = active;
@@ -98,8 +101,9 @@ final class RocketRejoinWriter {
                 if (provedAbsent[0] && outcome == Outcome.NOT_COMMITTED) { attemptedDigest = null; }
                 // Exact readback is not ownership: the checkpoint may see an identical foreign file after our guard refused.
                 if (proofRejected[0] && capture.revocable() && !uncertainPlacement && !ownershipRejected[0]) {
-                    // The committer was not called, including on every prior attempt. P1 remains authority.
+                    // This check precedes the committer, and no prior attempt has an uncertain outcome.
                     outcome = disk.refused(); discarded = true;
+                    RocketRejoinNativeCuts.rejectedLease();
                 } else if (ownershipRejected[0] || proofRejected[0]) { outcome = disk.unknown(); }
                 else if (outcome == Outcome.COMMITTED) { ownsFile = true; attemptedDigest = null; }
                 else if (previous == Outcome.UNKNOWN) { outcome = disk.unknown(); }

@@ -7,6 +7,7 @@ import java.util.function.BooleanSupplier;
 final class RocketRejoinLease implements BooleanSupplier {
     private final Thread owner = Thread.currentThread();
     private final AtomicBoolean valid = new AtomicBoolean(true);
+    void refresh(boolean safe) { if (!safe) { revoke(); } }
     void revoke() {
         if (Thread.currentThread() != owner) { throw new IllegalStateException("Rejoin lease requires its owner thread"); }
         valid.set(false);

@@ -60,6 +60,20 @@ public final class ReleaseTestPlayers {
         return player;
     }
 
+    /** Respawn only an exact facility-owned pair, retaining its existing channel for the replacement body. */
+    public static ServerPlayer respawn(MinecraftServer server, ServerPlayer original) {
+        requireEnabled(server);
+        var channels = CHANNELS.get(server);
+        if (server.getPlayerList().getPlayer(original.getUUID()) != original || !owned(channels, original, original.connection)) {
+            throw new IllegalStateException("Cannot respawn a connection not created by the release-test facility");
+        }
+        var channel = channels.get(original).channel;
+        var replacement = server.getPlayerList().respawn(original, false);
+        replacement.connection.player = replacement;
+        channels.remove(original); own(server, replacement, channel);
+        return replacement;
+    }
+
     /**
      * Ticks every test player as the server ticks a connected one, then drains its outbound packets and answers
      * keep-alives; forgets players who left. The server ticks only the connections it accepted, so without this a test

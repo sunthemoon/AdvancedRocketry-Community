@@ -4,6 +4,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 
 class RocketRejoinLeaseTest {
+    @Test void unsafeRefreshRevokesPermanentlyInsteadOfRevivingOldProof() {
+        var lease = new RocketRejoinLease(); lease.refresh(true); assertTrue(lease.getAsBoolean());
+        lease.refresh(false); lease.refresh(true); assertFalse(lease.getAsBoolean());
+    }
     @Test void onlyOwnerRevokesAndIoOnlyReads() throws Exception {
         var lease = new RocketRejoinLease();
         var io = new Thread(() -> {

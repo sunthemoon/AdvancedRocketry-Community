@@ -10,7 +10,27 @@ import net.minecraft.world.level.storage.LevelResource;
 
 /** Disposable C7-C11/C13 boundaries and a real backup-replacement failure, never a player writer injection. */
 public final class RocketRejoinNativeCuts {
+    private static final java.util.UUID PLAYER = java.util.UUID.fromString("01580000-0000-4000-8000-000000000002");
+    private static final java.util.concurrent.atomic.AtomicBoolean GATED = new java.util.concurrent.atomic.AtomicBoolean();
+    private static volatile java.util.concurrent.CountDownLatch held = new java.util.concurrent.CountDownLatch(1);
+    private static volatile java.util.concurrent.CountDownLatch proceed = new java.util.concurrent.CountDownLatch(1);
     private RocketRejoinNativeCuts() { }
+    public static boolean failedLeaseSeed() { return RocketReleaseNativeCuts.selection().matches("H[12]:C(?:18|19):seed"); }
+    public static boolean heldLease() { return failedLeaseSeed() && held.getCount() == 0; }
+    public static void releaseLease(MinecraftServer server) { RocketReleaseNativeCuts.validate(server); proceed.countDown(); }
+    /** Immutable capture and latches only: the checked writer never reads world state. */
+    static void beforeProof(RocketRejoinRoot root) {
+        if (!failedLeaseSeed() || root.nextSequence() == 0 || root.entries().stream()
+                .anyMatch(e -> e.player().equals(PLAYER) && e.placement() == RocketRejoinRoot.Placement.PENDING)
+                || !GATED.compareAndSet(false, true)) { return; }
+        held.countDown();
+        try { if (!proceed.await(10, java.util.concurrent.TimeUnit.SECONDS)) { throw new IllegalStateException("Native lease gate timed out"); } }
+        catch (InterruptedException e) { Thread.currentThread().interrupt(); throw new IllegalStateException(e); }
+    }
+    static void rejectedLease() {
+        if (heldLease()) { RocketReleaseNativeCuts.checkpoint(RocketReleaseNativeCuts.selection().split(":")[1]); }
+    }
+    static void reset() { GATED.set(false); held = new java.util.concurrent.CountDownLatch(1); proceed = new java.util.concurrent.CountDownLatch(1); }
     private static boolean seed(MinecraftServer server, String cut) {
         if (!RocketReleaseNativeCuts.rejoin() || !RocketReleaseNativeCuts.selection().endsWith(":" + cut + ":seed")) { return false; }
         RocketReleaseNativeCuts.validate(server);

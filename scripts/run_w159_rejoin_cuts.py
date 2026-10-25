@@ -17,7 +17,7 @@ from run_v060_flight_server_smoke import _server_command
 from run_v180_resource_restarts import read_nbt
 
 PLAYER = "01580000-0000-4000-8000-000000000002"
-CASES = [(hold, f"C{i}") for hold in ("H1", "H2") for i in (7, 8, 9, 10, 11, 13)]
+CASES = [(hold, f"C{i}") for hold in ("H1", "H2") for i in (7, 8, 9, 10, 11, 13, 18, 19)]
 
 
 def uuid_text(value):
@@ -34,6 +34,22 @@ def capture(world, target):
     result["player"] = read_nbt(file)
     result["player_sha256"] = smoke.digest_file(file)
     shutil.copy2(file, target / file.name)
+    # Inspect every released identity, including explicit absence rather than inventing an offline file.
+    identities = {PLAYER}
+    for batch in (result["sidecar"] or {}).get("batches", []):
+        identities.update(uuid_text(value) for value in batch["released"])
+    result["players"] = {}
+    for identity in sorted(identities):
+        installed = world / "playerdata" / (identity + ".dat")
+        if not installed.exists():
+            result["players"][identity] = {"present": False}
+            continue
+        if installed.is_symlink() or not installed.is_file() or installed.stat().st_size > 64 * 1024**2:
+            raise smoke.SmokeError("Invalid released-player file")
+        fields = read_nbt(installed)
+        result["players"][identity] = dict(present=True, sha256=smoke.digest_file(installed),
+            **{key: fields.get(key) for key in ("UUID", "Dimension", "Pos", "RootVehicle", "Health", "DeathTime")},
+            marker=fields.get("ForgeData", {}).get("arce_passenger_rejoin"))
     (target / "inspection.json").write_text(json.dumps(result, indent=2), encoding="utf-8")
     return result
 
@@ -79,7 +95,9 @@ def audit_log(lines, hold, cut, mode):
 
 def verify(disk, hold, cut, mode, boundary, baseline, seed):
     player, sidecar, rockets = disk["player"], disk["sidecar"], disk["rockets"]
-    if uuid_text(player["UUID"]) != PLAYER or player["Health"] <= 0 or player["DeathTime"] != 0:
+    dead_cut = cut == "C18" and mode == "seed"
+    alive = player["Health"] > 0 and player["DeathTime"] == 0
+    if uuid_text(player["UUID"]) != PLAYER or not (player["Health"] == 0 and player["DeathTime"] >= 0 if dead_cut else alive):
         raise smoke.SmokeError("Player identity/liveness changed")
     if sidecar is None or sidecar["next_sequence"] != 1 or len(rockets) != 1:
         raise smoke.SmokeError("Missing sidecar or unique native authority")
@@ -100,7 +118,7 @@ def verify(disk, hold, cut, mode, boundary, baseline, seed):
             raise smoke.SmokeError("Pre-save cut unexpectedly installed the P1 position")
         if cut == "C13" and not any(e["seat"] == "PENDING" for e in sidecar["entries"]):
             raise smoke.SmokeError("C13 lost independent unfinished seat work")
-    elif boundary == "C10" or mode == "seed" and cut == "C10":
+    elif boundary == "C10" or mode == "seed" and cut in ("C10", "C18", "C19"):
         if len(entries) != 1:
             raise smoke.SmokeError("Matching-readback cut prematurely retired placement")
         entry = entries[0]; attempt = entry["attempt"]
@@ -114,6 +132,12 @@ def verify(disk, hold, cut, mode, boundary, baseline, seed):
             raise smoke.SmokeError("Installed file is not unmounted and motionless")
         if seed and cut == "C10" and player["Pos"] != seed["player"]["Pos"]:
             raise smoke.SmokeError("Matching restart relocated the passenger")
+        if seed and cut in ("C18", "C19"):
+            old = pending(seed)[0]["attempt"]
+            if attempt["generation"] == old["generation"]:
+                raise smoke.SmokeError("Failed lease reused the invalidated attempt")
+            if cut == "C19" and player["Pos"] == seed["player"]["Pos"]:
+                raise smoke.SmokeError("Failed safety lease reused the unsafe target")
     elif mode == "seed" and cut == "C11":
         if entries or marker is None or "RootVehicle" in player:
             raise smoke.SmokeError("Post-replacement P2 did not retain only a stale marker")

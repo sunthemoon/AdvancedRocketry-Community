@@ -77,6 +77,28 @@ class RejoinCutRunnerTests(unittest.TestCase):
                 with self.assertRaises(runner.smoke.SmokeError): runner.audit_log(bad, "H1", "C9", "seed")
             with self.assertRaises(runner.smoke.SmokeError): runner.audit_log(lines, "H1", "C9", "recover")
 
+    def test_failed_death_lease_keeps_pending_dead_body_until_fresh_recovery(self):
+        seed = self.fixture(); seed["player"]["Health"] = 0
+        runner.verify(seed, "H1", "C18", "seed", "C18", None, None)
+        bad = copy.deepcopy(seed); bad["sidecar"]["entries"].clear()
+        with self.assertRaises(runner.smoke.SmokeError): runner.verify(bad, "H1", "C18", "seed", "C18", None, None)
+        recovered = self.fixture()
+        with self.assertRaises(runner.smoke.SmokeError): runner.verify(recovered, "H1", "C18", "recover", "C10", None, seed)
+        recovered["sidecar"]["entries"][0]["attempt"]["generation"] = [9, 8, 7, 6]
+        recovered["player"]["ForgeData"]["arce_passenger_rejoin"]["generation"] = [9, 8, 7, 6]
+        runner.verify(recovered, "H1", "C18", "recover", "C10", None, seed)
+
+    def test_failed_safety_lease_keeps_pending_until_fresh_safe_candidate(self):
+        seed = self.fixture(); runner.verify(seed, "H1", "C19", "seed", "C19", None, None)
+        bad = copy.deepcopy(seed); bad["sidecar"]["entries"].clear()
+        with self.assertRaises(runner.smoke.SmokeError): runner.verify(bad, "H1", "C19", "seed", "C19", None, None)
+        recovered = self.fixture()
+        with self.assertRaises(runner.smoke.SmokeError): runner.verify(recovered, "H1", "C19", "recover", "C10", None, seed)
+        recovered["sidecar"]["entries"][0]["attempt"].update(generation=[9, 8, 7, 6], x=4.5)
+        recovered["player"]["ForgeData"]["arce_passenger_rejoin"]["generation"] = [9, 8, 7, 6]
+        recovered["player"]["Pos"][0] = 4.5
+        runner.verify(recovered, "H1", "C19", "recover", "C10", None, seed)
+
 
 if __name__ == "__main__":
     unittest.main()
