@@ -7,29 +7,6 @@ import java.lang.reflect.Proxy;
 import org.junit.jupiter.api.Test;
 
 class SealedWorkSchedulingTest {
-    @Test void phaseCeilingsShareTheOwnerAllowanceAndCannotResetOrEscapeTheirTick() {
-        var owner = new SealedWorkBudget(); owner.beginTick(1);
-        owner.runLimitedTo(128, () -> {
-            owner.beginTick(1);
-            owner.runLimitedTo(200, () -> {
-                for (int i = 0; i < 128; i++) { assertTrue(owner.take()); }
-                assertFalse(owner.take());
-            });
-            assertFalse(owner.take());
-            assertThrows(IllegalStateException.class, () -> owner.beginTick(2));
-        });
-        assertEquals(128, owner.remaining());
-        assertThrows(IllegalArgumentException.class, () -> owner.runLimitedTo(64, () -> {
-            for (int i = 0; i < 64; i++) { assertTrue(owner.take()); }
-            assertFalse(owner.take());
-            throw new IllegalArgumentException("fixture callback");
-        }));
-        assertEquals(64, owner.remaining());
-        for (int i = 0; i < 64; i++) { assertTrue(owner.take()); }
-        assertFalse(owner.take()); owner.beginTick(2);
-        assertEquals(256, owner.remaining());
-    }
-
     @Test void everyConsumerSharesTheSame256VisitsAndRepeatedTickEntryCannotResetThem() throws Exception {
         var budget = budget(); begin(budget, 4);
         for (int i = 0; i < 256; i++) {

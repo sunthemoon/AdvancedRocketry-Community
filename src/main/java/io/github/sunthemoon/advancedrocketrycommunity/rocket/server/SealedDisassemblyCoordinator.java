@@ -304,30 +304,30 @@ final class SealedDisassemblyCoordinator {
                     .filter(candidate -> candidate.record().transactionId().equals(selected)).findFirst().orElse(null);
             if (entry != null && entry.record().type() == RocketTransactionType.SEALED_DISASSEMBLY) { adoptRecovery(entry); }
             else if (entry != null) { legacy = selected; }
+            // A refused adoption has had its turn; an adopted owner still needs inspection time below.
+            // Legacy work is handed to its executor independently of this sealed inspection allowance.
+            if (!work.containsKey(selected)) { recoverySelection.serviced(selected); }
         }
         var ids = List.copyOf(work.keySet());
         // Proof deadlines still advance every tick, independently of the shared world-inspection cursor.
         for (var id : ids) {
-            var item = work.get(id);
-            if (item.recovery && !id.equals(selected) || server.getTickCount() < item.retryAt) { item.world.tickProofDeadline(); }
+            work.get(id).world.tickProofDeadline();
         }
         lazyFirst = !lazyFirst;
-        if (lazyFirst) { lazy.tickBeforeRecovery(budget); }
-        var serviceOrder = new java.util.ArrayList<UUID>();
-        for (int offset = 0; offset < ids.size(); offset++) { serviceOrder.add(ids.get((cursor + offset) % ids.size())); }
-        // Selection must get an inspection opportunity even when a live maximal footprint is also active.
-        // Its own ceiling leaves the other half for the rotating live owners.
-        if (selected != null && serviceOrder.remove(selected)) { serviceOrder.add(0, selected); }
-        // Round-robin first entry: a maximal footprint cannot permanently starve a later one.
-        for (var id : serviceOrder) {
-            var item = work.get(id);
-            if (item.recovery && !id.equals(selected) || server.getTickCount() < item.retryAt) { continue; }
+        if (lazyFirst) { lazy.tick(budget); }
+        int nextCursor = cursor;
+        boolean serviced = false;
+        // Both cursors move on service, not elapsed ticks; lazy/live work cannot consume another owner's turn.
+        for (int offset = 0; offset < ids.size(); offset++) {
+            int index = (cursor + offset) % ids.size();
+            var id = ids.get(index); var item = work.get(id);
+            if (item.recovery && !id.equals(selected) || server.getTickCount() < item.retryAt || budget.remaining() == 0) { continue; }
+            if (!serviced) { nextCursor = (index + 1) % ids.size(); serviced = true; }
+            if (item.recovery) { recoverySelection.serviced(id); }
             try {
-                budget.runLimitedTo(item.recovery ? budget.remaining() / 2 : budget.remaining(), () -> {
-                    item.world.tickProof();
-                    while (!item.world.terrain.prepared() && item.world.terrain.prepareOne(budget)) { }
-                    while (item.machine.step(budget)) { }
-                });
+                item.world.tickProof();
+                while (!item.world.terrain.prepared() && item.world.terrain.prepareOne(budget)) { }
+                while (item.machine.step(budget)) { }
             } catch (RuntimeException unavailable) {
                 // An unresolved U remains claimed. Preparation before U exists has changed no world state.
                 if (RocketTransactionSavedData.get(server).entries().stream().noneMatch(entry -> entry.record().transactionId().equals(id))
@@ -340,7 +340,7 @@ final class SealedDisassemblyCoordinator {
             }
             if (item.machine.result() != null) { finish(id, item, item.machine.result()); }
         }
-        if (!ids.isEmpty()) { cursor = (cursor + 1) % ids.size(); }
+        cursor = nextCursor;
         if (!lazyFirst) { lazy.tick(budget); }
         writes.flush();
         diagnostics.flush(server.getTickCount());

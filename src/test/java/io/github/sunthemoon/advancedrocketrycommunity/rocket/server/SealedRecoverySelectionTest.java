@@ -9,6 +9,15 @@ import java.util.function.Predicate;
 import org.junit.jupiter.api.Test;
 
 class SealedRecoverySelectionTest {
+    @Test void discoveryAndOtherOwnersCannotAdvanceAnUnservicedSelection() {
+        var selector = new SealedRecoverySelection(); var ids = List.of(id(1), id(2), id(3));
+        for (int tick = 0; tick < 5; tick++) { assertEquals(Optional.of(id(1)), selector.select(tick, ids, value -> true)); }
+        assertThrows(IllegalArgumentException.class, () -> selector.serviced(id(2)));
+        selector.serviced(id(1));
+        assertEquals(Optional.of(id(2)), selector.select(5, ids, value -> true));
+        selector.serviced(id(2));
+        assertEquals(Optional.of(id(3)), selector.select(6, ids, value -> true));
+    }
     @Test void legacyAndSealedCandidatesShareOneSelectionPerTick() throws Exception {
         var selector = selector(); var candidates = List.of(id(3), id(1), id(2));
         assertEquals(Optional.of(id(1)), select(selector, 10, candidates, value -> true));
@@ -42,7 +51,10 @@ class SealedRecoverySelectionTest {
     }
     @SuppressWarnings("unchecked") private static Optional<UUID> select(Object selector, long tick, List<UUID> candidates,
             Predicate<UUID> eligible) throws Exception {
-        return (Optional<UUID>) selector.getClass().getMethod("select", long.class, List.class, Predicate.class)
+        var selected = (Optional<UUID>) selector.getClass().getMethod("select", long.class, List.class, Predicate.class)
                 .invoke(selector, tick, candidates, eligible);
+        // These ordering tests give every returned candidate its requested service opportunity.
+        if (selected.isPresent()) { selector.getClass().getMethod("serviced", UUID.class).invoke(selector, selected.orElseThrow()); }
+        return selected;
     }
 }

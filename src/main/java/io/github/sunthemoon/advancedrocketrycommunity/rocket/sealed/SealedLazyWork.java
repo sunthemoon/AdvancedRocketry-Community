@@ -36,11 +36,6 @@ public final class SealedLazyWork<T> {
             hint(positions.next());
         }
     }
-    /** The lazy-first phase shares the owner tick with selected recovery. */
-    public void tickBeforeRecovery(SealedWorkBudget budget) {
-        budget.runLimitedTo(budget.remaining() / 2, () -> tick(budget));
-    }
-
     public void tick(SealedWorkBudget budget) {
         owner();
         while (budget.take()) {

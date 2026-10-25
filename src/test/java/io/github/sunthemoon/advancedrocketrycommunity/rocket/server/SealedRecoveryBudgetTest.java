@@ -49,12 +49,13 @@ class SealedRecoveryBudgetTest {
                 var selected = selection.select(tick, ids, candidate -> true).orElseThrow();
                 int index = ids.indexOf(selected);
                 lazyFirst = !lazyFirst;
-                if (lazyFirst) { lazy.tickBeforeRecovery(budget); }
+                if (lazyFirst) { lazy.tick(budget); }
                 // Each disjoint record's preparation and state machine use the same owner allowance.
-                budget.runLimitedTo(budget.remaining() / 2, () -> {
+                if (budget.remaining() > 0) {
+                    selection.serviced(selected);
                     if (budget.take()) { serviced[index]++; }
                     while (machines.get(index).step(budget)) { }
-                });
+                }
                 // A competing maximal live footprint may use all visits left after selected recovery.
                 while (budget.take()) { }
                 if (!lazyFirst) { lazy.tick(budget); }
