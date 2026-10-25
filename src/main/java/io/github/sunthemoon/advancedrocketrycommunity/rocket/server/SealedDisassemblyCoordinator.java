@@ -66,7 +66,7 @@ final class SealedDisassemblyCoordinator {
 
     SealedDisassemblyCoordinator(RocketTransactionExecutor transactions, RocketOrdinaryRetirement ordinary) {
         this.transactions = transactions; this.ordinary = ordinary;
-        ordinary.shareSealedCapacity(work::size, this::activeAttempts);
+        ordinary.shareSealedCapacity(work::size, () -> SealedProofAdmission.nativeReservations(activeAttempts()));
     }
     private void bind(MinecraftServer server) {
         if (!server.isSameThread() || this.server != null && this.server != server) {
@@ -266,8 +266,7 @@ final class SealedDisassemblyCoordinator {
     private int activeAttempts() { return (int) work.values().stream().filter(item -> item.world.activeAttempt()).count(); }
     private boolean attemptRoom() {
         int active = activeAttempts();
-        return budget.remaining() > 0 && SealedProofAdmission.inspectionRoom(active)
-                && active + ordinary.activeAttempts() < RocketOrdinaryRetirement.MAX_ATTEMPTS;
+        return budget.remaining() > 0 && SealedProofAdmission.canStart(active, ordinary.activeAttempts());
     }
     String diagnostic(UUID id) {
         var item = work.get(id);

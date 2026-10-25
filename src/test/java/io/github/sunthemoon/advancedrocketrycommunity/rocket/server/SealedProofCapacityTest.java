@@ -32,7 +32,7 @@ class SealedProofCapacityTest {
         });
         for (int index = 0; index < count; index++) {
             var entry = new Attempt(new UUID(0, index + 1), slots, now, budget, quota);
-            entry.room = () -> SealedProofAdmission.inspectionRoom((int) entries.stream().filter(Attempt::activeAttempt).count());
+            entry.room = () -> SealedProofAdmission.canStart((int) entries.stream().filter(Attempt::activeAttempt).count(), 0);
             entries.add(entry);
         }
         int maxActive = 0;
@@ -102,6 +102,68 @@ class SealedProofCapacityTest {
         assertTrue(SealedProofAdmission.priorityPending(1, 25, Long.MIN_VALUE));
         assertFalse(SealedProofAdmission.priorityPending(1, 25, 25));
         assertFalse(SealedProofAdmission.priorityPending(0, 25, 24));
+    }
+
+    @Test void anActiveSealedPlanReservesNativeCapacityAgainstNewOrdinaryAttempts() {
+        int[] sealed = {0};
+        var ordinary = new RocketOrdinaryRetirement(new java.util.HashSet<>(), new java.util.HashSet<>(),
+                java.util.Set::of, server -> { throw new AssertionError("No world access"); });
+        ordinary.shareSealedCapacity(() -> sealed[0], () -> SealedProofAdmission.nativeReservations(sealed[0]));
+        assertTrue(ordinary.attemptRoom());
+        sealed[0] = 1;
+        assertFalse(ordinary.attemptRoom(), "A later ordinary attempt must not overcommit the sealed deadline");
+        assertTrue(ordinary.pendingRoom(UUID.randomUUID()), "Reservation must not reduce the pending bound");
+        sealed[0] = 0;
+        assertTrue(ordinary.attemptRoom(), "Completion/expiry must release the reservation");
+    }
+
+    @ParameterizedTest @CsvSource({"3,true", "4,true", "3,false", "4,false"})
+    void unfinishedOrdinaryAttemptsFinishBeforeASealedAttemptIsAdmitted(int count, boolean sealedFirst) throws Exception {
+        var quota = new NativeQuota();
+        var budget = new SealedWorkBudget();
+        long[] now = {0};
+        var ordinary = new ArrayList<SealedProofBatch>();
+        var sealed = new Attempt(UUID.randomUUID(), 21, now, budget, quota);
+        sealed.room = () -> SealedProofAdmission.canStart(sealed.activeAttempt() ? 1 : 0,
+                (int) ordinary.stream().filter(SealedProofBatch::active).count());
+        int[] completed = {0};
+        try {
+            // Four five-slot ordinary plans exactly fill the twenty-capture complete-window capacity.
+            // Starting another 21-slot plan among them would overcommit its unchanged deadline.
+            for (int index = 0; index < count; index++) {
+                now[0] = index;
+                var batch = new SealedProofBatch(5, new SealedProofBatch.Port() {
+                    public long now() { return now[0]; }
+                    public SealedProofBatch.Readiness readiness() { return SealedProofBatch.Readiness.READY; }
+                    public boolean attemptRoom() { return true; }
+                    public boolean available(int slot) { return quota.available(now()); }
+                    public boolean capture(int slot, Consumer<EscrowBarrier.Result> callback) {
+                        if (!quota.capture(now())) { return false; }
+                        callback.accept(SealedRecoveryProofSchedulingTest.proved()); return true;
+                    }
+                    public void held(String reason) { fail("Ordinary attempt: " + reason); }
+                });
+                ordinary.add(batch); batch.tick(); assertTrue(batch.active()); assertFalse(batch.current());
+            }
+            assertEquals(count, ordinary.stream().filter(SealedProofBatch::active).count());
+            for (int tick = count; tick <= 300 && !sealed.done; tick++) {
+                now[0] = tick; budget.beginTick(tick);
+                if (sealedFirst) { sealed.tickProof(); sealed.work(); }
+                for (var batch : ordinary) {
+                    if (batch.active()) {
+                        batch.tick();
+                        if (batch.current()) { completed[0]++; batch.close(); }
+                    }
+                }
+                if (!sealedFirst) { sealed.tickProof(); sealed.work(); }
+                if (completed[0] != count) {
+                    assertEquals(0, sealed.starts, "An outstanding native plan must defer the new sealed attempt");
+                }
+            }
+            assertEquals(count, completed[0]); assertTrue(sealed.done);
+            assertEquals(1, sealed.starts); assertEquals(21, sealed.captures); assertEquals(0, sealed.deadlines);
+            assertTrue(sealed.finished - sealed.started <= RocketOrdinaryRetirement.ATTEMPT_TICKS);
+        } finally { sealed.batch.close(); ordinary.forEach(SealedProofBatch::close); }
     }
 
     @Test void fourNativeAttemptsAndALastSlotStartStillFitTheOriginalDeadline() throws Exception {

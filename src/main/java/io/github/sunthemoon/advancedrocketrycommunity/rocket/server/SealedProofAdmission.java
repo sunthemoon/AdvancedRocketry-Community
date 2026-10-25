@@ -5,6 +5,15 @@ final class SealedProofAdmission {
     // A sealed census is non-resumable and may need the complete 256-inspection tick.
     // Reserve that next-tick service before starting; other sealed plans remain unstarted.
     static boolean inspectionRoom(int activeSealedAttempts) { return activeSealedAttempts == 0; }
+    static boolean canStart(int activeSealedAttempts, int ordinaryAttempts) {
+        return inspectionRoom(activeSealedAttempts) && ordinaryAttempts == 0;
+    }
+    // The full-width sealed plan can need the complete ordinary capture window.
+    // Wait for existing ordinary attempts, then reserve against new ones through
+    // their existing shared-capacity admission seam. No running attempt is revoked.
+    static int nativeReservations(int activeSealedAttempts) {
+        return activeSealedAttempts > 0 ? RocketOrdinaryRetirement.MAX_ATTEMPTS : 0;
+    }
     static boolean priorityPending(int activeSealedAttempts, long now, long servicedTick) {
         return activeSealedAttempts > 0 && now != servicedTick;
     }
