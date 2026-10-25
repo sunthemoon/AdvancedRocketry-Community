@@ -1782,8 +1782,8 @@ changes no decision status and accepts no risk. The risk is R-035.
   format, schema, bound, lease, budget, timeout or protocol changes. The holds and their recovery are in R-035.
   Leaves N3-B1 to N3-B4 follow W148 section 7; N3-B2 needs an independent persistence review before integration.
 - **N3-B2 isolation (W154 design revisions 1 and 2, `records/W154-DESIGN.md`; review W154-review BLOCK, SHA-256
-  `6facedc6…`, and its re-review, SHA-256 `c67bfebd…`; Root decisions R91, R93 to R98 and R100, 2026-10-24; not yet
-  implemented).** W152 showed that vanilla container access (hoppers, the item capability, menus, breaking) bypasses
+  `6facedc6…`, and its re-review, SHA-256 `c67bfebd…`; Root decisions R91, R93 to R98 and R100, 2026-10-24, and R107,
+  2026-10-25; implemented by W152 and in its fix cycle, not yet merged).** W152 showed that vanilla container access (hoppers, the item capability, menus, breaking) bypasses
   the region locks while U is retained, so a rollback could restore items that had already left. Sealed staging closes
   that window. While U is retained, every member of the footprint is an inert carrier C: no inventory, capability,
   menu, ticker, drops or item form; unbreakable, and immune to explosions and pistons. C holds the member's original
@@ -1798,7 +1798,11 @@ changes no decision status and accepts no risk. The risk is R-035.
     world, so no neighbour or comparator callback runs before publication (W152's probe showed that a server-bound
     target's `setChanged` reaches a neighbour synchronously). The target is verified by recapture, then gets its
     Level and is published in one step. A failed restore discards the target (it is marked removed, and a built-in
-    target is also emptied) and holds C.
+    target is also emptied) and holds C. A terminal preparation failure (the adapter throws, needs a Level, returns
+    false, mismatches on recapture or exceeds its time check) is latched in RAM on the loaded carrier. It is not
+    retried while that carrier stays loaded; each new load of the carrier allows one attempt and one WARN, as R100
+    allows for an invalid root (R107, 2026-10-25). Transient holds, such as an unloaded footprint or a delayed writer,
+    keep their 200-tick retry.
   - **Provider contract (method signatures unchanged):** at unseal, restore receives a host-created target that is
     in no Level yet and must work from the target and the payload. A provider that needs a Level or an installed host
     is held, and nothing is lost.
