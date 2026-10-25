@@ -47,7 +47,7 @@ final class RocketReleaseWorld implements RocketReleaseCoordinator.Port {
             return true;
         }) || copies.size() != 1) { return null; }
         var authority = copies.get(0); var flight = authority.flightData().orElseThrow();
-        if (!RocketTransferEntities.loadedEntity(authority) || authority.isPassenger()
+        if (RocketRuntime.sealedClaimed(authority) || !RocketTransferEntities.loadedEntity(authority) || authority.isPassenger()
                 || authority.ownerId().filter(t.ownerId()::equals).isEmpty() || !RocketEscrowGate.idle(authority)) { return null; }
         if (hold == Hold.H1 ? !RocketTransferRecoveryService.recoveredStationarySource(t, authority,
                     settled.contains(transfer), live.contains(transfer)) || !flight.fuel().equals(t.sourceFlightData().fuel())
@@ -86,7 +86,7 @@ final class RocketReleaseWorld implements RocketReleaseCoordinator.Port {
         for (var level : server.getAllLevels()) {
             if (level.getEntity(batch.authority()) instanceof RocketEntity rocket) {
                 var flight = rocket.flightData().orElse(null);
-                if (!rocket.operational() || !RocketEscrowGate.idle(rocket) || rocket.isPassenger() || flight == null
+                if (RocketRuntime.sealedClaimed(rocket) || !rocket.operational() || !RocketEscrowGate.idle(rocket) || rocket.isPassenger() || flight == null
                         || !level.dimension().location().toString().equals(batch.dimension())
                         || rocket.getX() != batch.pad().x() + .5D || rocket.getY() != batch.pad().y() || rocket.getZ() != batch.pad().z() + .5D
                         || !flight.state().acceptsFuel() || flight.activeTransferId().isPresent()

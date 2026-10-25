@@ -58,7 +58,9 @@ final class SealedDisassemblyWorld implements SealedDisassembly.Port, AutoClosea
         if (!entities.loaded() || terrain.chunks().stream().anyMatch(chunk -> level.getChunkSource().getChunkNow(chunk.x, chunk.z) == null)) {
             return SealedDisassembly.Gate.UNLOADED;
         }
-        return switch (entities.observe()) {
+        var entity = entities.observe();
+        if (RocketReleaseAccess.fenced(level.getServer(), entities.logical())) { return SealedDisassembly.Gate.CONFLICT; }
+        return switch (entity) {
             case UNLOADED -> SealedDisassembly.Gate.UNLOADED;
             case OTHER -> SealedDisassembly.Gate.CONFLICT;
             default -> SealedDisassembly.Gate.READY;

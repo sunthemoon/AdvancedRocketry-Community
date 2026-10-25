@@ -114,6 +114,7 @@ public final class RocketManager implements RocketOperationService {
         return sealed.unseal(level, carrier);
     }
     boolean sealedFrozen(RocketEntity rocket) { return sealed.frozen(rocket); }
+    boolean sealedClaimed(RocketEntity rocket) { return sealed.claimed(rocket); }
     String sealedDiagnostic(UUID id) { return sealed.diagnostic(id); }
     boolean sealedRecovering(UUID id) { return sealed.recovering(id); }
     UUID beginSealedForReleaseTest(RocketEntity rocket,

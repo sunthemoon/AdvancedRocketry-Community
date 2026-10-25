@@ -78,6 +78,9 @@ public final class RocketRuntime {
     public static boolean sealedFrozen(RocketEntity rocket) {
         return service instanceof RocketManager manager && manager.sealedFrozen(rocket);
     }
+    static boolean sealedClaimed(RocketEntity rocket) {
+        return service instanceof RocketManager manager && manager.sealedClaimed(rocket);
+    }
     public static String sealedDiagnosticForReleaseTest(MinecraftServer server, UUID id) {
         io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowTestEndpoints.requireEnabled(server);
         return service instanceof RocketManager manager ? manager.sealedDiagnostic(id) : "no-manager";

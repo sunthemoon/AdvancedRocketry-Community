@@ -103,7 +103,7 @@ final class SealedDisassemblyCoordinator {
         budget.beginTick(server.getTickCount());
         var logical = rocket.assemblyTransactionId().orElseThrow(); var snapshot = rocket.snapshot().orElseThrow();
         var data = RocketTransactionSavedData.get(server);
-        if (ordinary.pending(logical) || !ordinary.pendingRoom(logical) || !data.operational()
+        if (RocketReleaseAccess.fenced(rocket) || ordinary.pending(logical) || !ordinary.pendingRoom(logical) || !data.operational()
                 || claimed(rocket) || !authorized.getAsBoolean()) { return null; }
         var id = UUID.randomUUID(); var region = RocketRegion.fromSnapshot(snapshot);
         var record = new RocketTransactionRecord(id, RocketTransactionType.SEALED_DISASSEMBLY, RocketTransactionPhase.LOCKED,
