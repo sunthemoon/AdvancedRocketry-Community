@@ -39,6 +39,8 @@ public final class RocketRejoinAdmissionGameTests {
     public static void sourceHoldRefusalsDoNotMutateAuthority(GameTestHelper helper) { new Scenario(helper, false, true).start(); }
     @GameTest(template = "rocket_test", batch = "rocket_rejoin_command_refuse_h2", timeoutTicks = 600)
     public static void landedHoldRefusalsDoNotMutateAuthority(GameTestHelper helper) { new Scenario(helper, true, true).start(); }
+    @GameTest(template = "rocket_test", batch = "rocket_rejoin_command_unloaded", timeoutTicks = 600)
+    public static void unloadedAuthorityRefusesWithoutLoadingItsSection(GameTestHelper helper) { new Scenario(helper, false, true, true).start(); }
 
     @GameTest(template = "rocket_test", batch = "rocket_rejoin_command_view")
     public static void viewCapsEightEntriesAndFiltersOfflineUuidWithoutWrites(GameTestHelper helper) throws Exception {
@@ -79,7 +81,7 @@ public final class RocketRejoinAdmissionGameTests {
     }
     private static final class Scenario {
         final GameTestHelper helper; final ServerLevel level; final MinecraftServer server;
-        final boolean landed, refusalOnly; final RocketTransferService transfers; final RocketTransferSavedData journal;
+        final boolean landed, refusalOnly, unloadedOnly; final RocketTransferService transfers; final RocketTransferSavedData journal;
         final GameTestTickPacer pacer; final Output output = new Output();
         final List<UUID> riders = List.of(UUID.randomUUID(), UUID.randomUUID());
         final List<ServerPlayer> players = new ArrayList<>();
@@ -87,8 +89,9 @@ public final class RocketRejoinAdmissionGameTests {
         RocketTransferRecord transfer; RocketEntity rocket; RocketRejoinRoot.Resources resources;
         Path file; int phase, ticks; boolean closed, installed;
         Scenario(GameTestHelper helper, boolean landed) { this(helper, landed, false); }
-        Scenario(GameTestHelper helper, boolean landed, boolean refusalOnly) {
-            this.helper = helper; this.landed = landed; this.refusalOnly = refusalOnly; level = helper.getLevel(); server = level.getServer();
+        Scenario(GameTestHelper helper, boolean landed, boolean refusalOnly) { this(helper, landed, refusalOnly, false); }
+        Scenario(GameTestHelper helper, boolean landed, boolean refusalOnly, boolean unloadedOnly) {
+            this.helper = helper; this.landed = landed; this.refusalOnly = refusalOnly; this.unloadedOnly = unloadedOnly; level = helper.getLevel(); server = level.getServer();
             transfers = RocketRuntime.installedTransfers(); journal = RocketTransferSavedData.get(server); pacer = new GameTestTickPacer(server);
         }
         void start() { helper.onEachTick(this::tick); }
@@ -146,7 +149,10 @@ public final class RocketRejoinAdmissionGameTests {
             var before = RocketRejoinCodec.encode(data.root());
             helper.assertTrue(command("arce rocket recover " + UUID.randomUUID() + " release-absent") == 0, "Unknown transfer admitted");
             helper.assertTrue(before.equals(RocketRejoinCodec.encode(data.root())) && !data.isDirty(), "Refusal changed sidecar");
-            if (refusalOnly) { refusals(); close(); helper.succeed(); return; }
+            if (refusalOnly) {
+                if (unloadedOnly) { unloaded(); } else { refusals(); }
+                close(); helper.succeed(); return;
+            }
             helper.assertTrue(command(release()) == 1 && output.lines.size() == 1, "Release not admitted with one reply");
             var owner = transfers.existingReleaseOwner(server); var id = owner.coordinator.release(transfer.transferId()).orElseThrow();
             helper.assertTrue(command(release()) == 1 && owner.coordinator.release(transfer.transferId()).orElseThrow().equals(id), "Repeated submission changed release");
@@ -178,12 +184,6 @@ public final class RocketRejoinAdmissionGameTests {
                 rocket.updateFlightData(flight.withPassengers(RocketPassengerManifest.empty(flight.passengers().seatCapacity())));
                 try { refused("Empty absent set"); } finally { rocket.updateFlightData(flight); }
             }
-            var position = rocket.position();
-            rocket.setPos(29_000_000.5, rocket.getY(), 29_000_000.5);
-            try {
-                helper.assertTrue(!RocketTransferEntities.loadedEntity(rocket), "Unloaded authority fixture remained loaded");
-                refused("Unloaded authority section");
-            } finally { rocket.setPos(position); }
             rocket.updateFlightData(transfer.sourceFlightData());
             try { refused("Authority outside stationary hold"); } finally { rocket.updateFlightData(flight); }
             ready("duplicate authority");
@@ -211,6 +211,15 @@ public final class RocketRejoinAdmissionGameTests {
                 helper.assertTrue(rocket != null, "Authority restore type missing"); rocket.load(image);
                 helper.assertTrue(level.addFreshEntity(rocket), "Authority restore failed");
             }
+        }
+        void unloaded() throws Exception {
+            ready("unloaded authority");
+            var slot = new net.minecraft.world.level.ChunkPos(29_000_000 >> 4, 29_000_000 >> 4);
+            helper.assertTrue(!level.hasChunk(slot.x, slot.z), "Remote fixture chunk was already loaded");
+            rocket.setPos(29_000_000.5, rocket.getY(), 29_000_000.5);
+            helper.assertTrue(!RocketTransferEntities.loadedEntity(rocket), "Unloaded authority fixture remained loaded");
+            refused("Unloaded authority section");
+            helper.assertTrue(!level.hasChunk(slot.x, slot.z), "Command loaded the remote entity section");
         }
         void ready(String name) {
             helper.assertTrue(transfers.releaseOwner(server).world.plan(data.root(), transfer.transferId()) != null,
