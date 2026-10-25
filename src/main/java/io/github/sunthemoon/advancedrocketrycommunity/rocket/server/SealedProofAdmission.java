@@ -18,11 +18,12 @@ final class SealedProofAdmission {
         return activeSealedAttempts > 0 && now != servicedTick;
     }
 
-    // Existing ordinary quota: four captures per Level per twenty ticks. Even with
-    // immediate IO, a plan starting with capture 0 cannot finish more than 21 slots
-    // by its inclusive age-100 deadline. Keep wider plans intact and unstarted.
+    // Conservative, phase-independent admission for four captures per Level per twenty ticks.
+    // A window opened earlier by another capture can fit 24 within age 100; 21 is policy,
+    // not an absolute native limit. Neither the quota nor the inclusive deadline is raised.
+    static final int NATIVE_SLOT_LIMIT = RocketOrdinaryRetirement.ATTEMPT_TICKS / 20 * 4 + 1;
     static boolean fitsNativeWindow(int slots) {
-        return slots > 0 && slots <= RocketOrdinaryRetirement.ATTEMPT_TICKS / 20 * 4 + 1;
+        return slots > 0 && slots <= NATIVE_SLOT_LIMIT;
     }
 
     private SealedProofAdmission() { }

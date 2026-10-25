@@ -21,6 +21,7 @@ final class SealedDisassemblyWorld implements SealedDisassembly.Port, AutoClosea
     final RocketPersistedTransaction entry;
     final SealedTerrain terrain;
     final SealedEntityView entities;
+    private final SealedPlanAdmission admission;
     private final ServerLevel level;
     private final RocketTransactionSavedData data;
     private final SealedJournalEntry journal;
@@ -49,9 +50,7 @@ final class SealedDisassemblyWorld implements SealedDisassembly.Port, AutoClosea
         this.diagnostics = diagnostics;
         data = RocketTransactionSavedData.get(level.getServer()); journal = new SealedJournalEntry(data, entry);
         entities = new SealedEntityView(level, entry, terrain.chunks().size(), budget, this::entityChanged);
-        if (terrain.chunks().size() + entities.columns().size() > RocketOrdinaryRetirement.MAX_SLOTS) {
-            throw new IllegalArgumentException("Sealed native proof plan exceeds existing slot bound");
-        }
+        admission = new SealedPlanAdmission(terrain.chunks().size() + entities.columns().size());
     }
     @Override public long now() { return level.getServer().getTickCount(); }
     @Override public SealedDisassembly.Gate gate() {
@@ -136,7 +135,11 @@ final class SealedDisassemblyWorld implements SealedDisassembly.Port, AutoClosea
     void tickProof() { if (batch != null) { batch.tick(); } }
     void tickProofDeadline() { if (batch != null) { batch.tickDeadline(); } }
     boolean activeAttempt() { return batch != null && batch.active(); }
-    boolean waitingProof() { return batch != null && SealedProofAdmission.fitsNativeWindow(terrain.chunks().size() + entities.columns().size()); }
+    boolean waitingProof() { return batch != null && admission.allowed(); }
+    void reportRetainedPlanLimit() {
+        admission.reportRetained(entry.record().transactionId(),
+                io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity.LOGGER::warn);
+    }
     long retryAt() { return batch == null ? proofRetryAt : Math.max(proofRetryAt, batch.retryAt()); }
     String reason() { return reason + ":proof=" + proofReason + ":validation=" + validation + ":" + (batch == null ? "no-batch" : batch.diagnostic()); }
     void invalidateProof() {
@@ -167,7 +170,7 @@ final class SealedDisassemblyWorld implements SealedDisassembly.Port, AutoClosea
         @Override public void attemptEnded() { attemptEnded.run(); }
         @Override public SealedProofBatch.Readiness readiness() { return SealedProofBatch.Readiness.valueOf(gate().name()); }
         @Override public boolean attemptRoom() {
-            return SealedProofAdmission.fitsNativeWindow(slots.size()) && attemptRoom.getAsBoolean();
+            return admission.allowed() && attemptRoom.getAsBoolean();
         }
         @Override public boolean available(int index) {
             var runtime = EscrowRuntime.of(level.getServer()); var slot = slots.get(index); var name = level.dimension().location().toString();
@@ -186,6 +189,11 @@ final class SealedDisassemblyWorld implements SealedDisassembly.Port, AutoClosea
                     : runtime.barrier().beginOrdinaryTerrain(runtime.store(level), name, slot.position, validator, now(), observedCut, callback);
         }
         @Override public void held(String reason) {
+            if (!admission.allowed()) {
+                SealedDisassemblyWorld.this.proofReason = goal + ":PROOF_PLAN_LIMIT";
+                // A separate per-record/load WARN was emitted at adoption. BUSY must not hide or repeat it.
+                return;
+            }
             SealedDisassemblyWorld.this.proofReason = goal + ":" + reason;
             if (!reason.equals("BUSY") && !reason.equals("SUPERSEDING_SAVE") && (recovery || journal.owned())) {
                 diagnostics.accept(goal.name(), reason);

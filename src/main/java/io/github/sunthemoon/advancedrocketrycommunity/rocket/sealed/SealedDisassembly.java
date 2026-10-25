@@ -12,7 +12,7 @@ public final class SealedDisassembly {
     public enum Phase { PREFLIGHT, PREPARE, RETAIN, STAGE, MATCH, PROVE, ELECT, RETIRE_ENTITY, COMPLETE,
         SELECT_RECOVERY, ROLLBACK, PROVE_ROLLBACK, REMOVE_U, DONE }
     /** REJECTED grants no M3 permission; only ROLLBACK_PROVED certifies native rollback plus checked U absence. */
-    public enum Result { SEALED, ROLLBACK_PROVED, REJECTED }
+    public enum Result { SEALED, ROLLBACK_PROVED, REJECTED, PROOF_PLAN_LIMIT }
     public enum Reason { UNLOADED, SAVE_OFF, CONFLICT, MEMBER_CONFLICT, ENTITY_CONFLICT, PREDECESSOR_UNPROVED,
         JOURNAL_UNPROVED, PROOF_PENDING, PLACEMENT_FAILED, REMOVAL_FAILED }
 

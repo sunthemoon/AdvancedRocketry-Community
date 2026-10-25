@@ -114,6 +114,12 @@ final class SealedDisassemblyCoordinator {
         var data = RocketTransactionSavedData.get(server);
         if (RocketReleaseAccess.fenced(rocket) || ordinary.pending(logical) || !ordinary.pendingRoom(logical) || !data.operational()
                 || claimed(rocket) || !authorized.getAsBoolean()) { return null; }
+        SealedPlanAdmission admission;
+        try { admission = new SealedPlanAdmission(snapshot); }
+        catch (IllegalArgumentException invalid) { return null; }
+        var refusal = admission.refuseNew(rocket.getUUID(),
+                io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity.LOGGER::info);
+        if (refusal != null) { completion.accept(refusal); return null; }
         var id = UUID.randomUUID(); var region = RocketRegion.fromSnapshot(snapshot);
         var record = new RocketTransactionRecord(id, RocketTransactionType.SEALED_DISASSEMBLY, RocketTransactionPhase.LOCKED,
                 snapshot.snapshotId(), snapshot.contentHash(), region, 0, rocket.getUUID());
@@ -320,6 +326,7 @@ final class SealedDisassemblyCoordinator {
                     || entry.record().phase() == RocketTransactionPhase.COMMITTED;
             work.put(id, new Work(port, SealedDisassembly.recover(entry.snapshot().blocks().size(), port, elected),
                     lock, result -> { }, true));
+            port.reportRetainedPlanLimit();
         } catch (RuntimeException unavailable) {
             if (terrain != null) { terrain.close(); }
             lock.close();
