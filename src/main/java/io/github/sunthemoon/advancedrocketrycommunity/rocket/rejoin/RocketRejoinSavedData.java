@@ -77,6 +77,11 @@ public final class RocketRejoinSavedData extends SavedData implements AutoClosea
     public Outcome outcome() { owner(); return outcome; }
     public long completions() { owner(); return completions; }
     public boolean operational() { return true; } // Invalid roots refuse startup; never replace them with empty state.
+    /** Admission must reserve a writable generation before creating its RAM fence or native B0 write. */
+    public boolean admissionAvailable() {
+        owner(); return !closed && file != null && generation != Long.MAX_VALUE
+                && outcome != Outcome.UNKNOWN && outcome != Outcome.NOT_COMMITTED && pendingRoots().isEmpty();
+    }
     public boolean acknowledgedCurrent() { owner(); return acknowledged != null && acknowledged.sequence() == generation; }
     /** Loaded bytes classify seats immediately, but J1 needs this session's checked S1 acknowledgement. */
     public java.util.Optional<RocketReleasePermit> releasePermit(java.util.UUID release) {

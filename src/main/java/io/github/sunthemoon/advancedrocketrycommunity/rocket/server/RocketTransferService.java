@@ -61,6 +61,23 @@ final class RocketTransferService {
     private final RocketLandedDisassemblies landed = new RocketLandedDisassemblies();
     private final RocketArrivalFootprintWait arrivalFootprints = new RocketArrivalFootprintWait(liveTransfers); // W83b
     private RocketReleaseAccess.Owner releases;
+    RocketReleaseAccess.Owner existingReleaseOwner(MinecraftServer server) {
+        return releases != null && releases.server == server ? releases : null;
+    }
+    /** Isolated command GameTests restore their prior owner without reflection or a production command hook. */
+    RocketReleaseAccess.Owner swapReleaseOwnerForGameTest(MinecraftServer server, RocketReleaseAccess.Owner replacement) {
+        if (!(server instanceof net.minecraft.gametest.framework.GameTestServer) || !server.isSameThread()) {
+            throw new IllegalStateException("Release fixture requires GameTest owner thread");
+        }
+        var prior = releases; releases = replacement; return prior;
+    }
+    void holdForGameTest(MinecraftServer server, UUID transfer, boolean landed, boolean remove) {
+        if (!(server instanceof net.minecraft.gametest.framework.GameTestServer) || !server.isSameThread()) {
+            throw new IllegalStateException("Hold fixture requires GameTest owner thread");
+        }
+        if (remove) { liveTransfers.remove(transfer); settledTransfers.remove(transfer); }
+        else { (landed ? liveTransfers : settledTransfers).add(transfer); }
+    }
 
     RocketReleaseAccess.Owner releaseOwner(MinecraftServer server) {
         if (releases == null) { releases = new RocketReleaseAccess.Owner(server, recovery, liveTransfers, settledTransfers); }

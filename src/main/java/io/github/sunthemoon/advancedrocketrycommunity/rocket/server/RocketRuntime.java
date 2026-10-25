@@ -70,7 +70,11 @@ public final class RocketRuntime {
     }
 
     public static boolean releaseFenced(RocketEntity rocket) { return RocketReleaseAccess.fenced(rocket); }
-    /** Internal gated test hook only; W80-rejoin owns any future command and protected placement. */
+    public static io.github.sunthemoon.advancedrocketrycommunity.rocket.rejoin.RocketReleaseResult
+            releaseAbsent(MinecraftServer server, UUID transfer) { return RocketReleaseAccess.admit(server, transfer); }
+    public static io.github.sunthemoon.advancedrocketrycommunity.rocket.rejoin.RocketRejoinInspection
+            inspectRejoins(MinecraftServer server, UUID player) { return RocketReleaseAccess.inspect(server, player); }
+    /** Gated fixtures share the production admission operation. */
     public static Optional<UUID> releaseAbsentForTests(MinecraftServer server, UUID transfer) {
         return RocketReleaseAccess.admitForTests(server, transfer);
     }
