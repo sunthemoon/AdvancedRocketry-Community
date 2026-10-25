@@ -75,4 +75,10 @@ final class RocketReleaseAccess {
         return plan != null && owner.coordinator.admit(plan) ? Optional.of(plan.batch().release()) : Optional.empty();
     }
     static void stopping() { var transfers = RocketRuntime.installedTransfers(); if (transfers != null) { transfers.closeReleases(); } }
+    static java.util.List<RocketRejoinRoot.Entry> admissions(MinecraftServer server) {
+        var owner = owner(server); return owner == null ? java.util.List.of() : owner.coordinator.unpublishedPlacements();
+    }
+    static boolean placementReady(MinecraftServer server, UUID release) {
+        var owner = owner(server); return owner != null && owner.coordinator.placementReady(release);
+    }
 }

@@ -33,6 +33,16 @@ public final class ReleaseTestPlayers {
     /** The player with this ID at {@code at} in {@code level}, joining it first when it is offline. */
     public static ServerPlayer place(MinecraftServer server, UUID id, String name, ServerLevel level, Vec3 at) {
         requireEnabled(server);
+        boolean offline = server.getPlayerList().getPlayer(id) == null;
+        var player = login(server, id, name, level);
+        if (offline) { player.setGameMode(GameType.CREATIVE); }
+        player.teleportTo(level, at.x, at.y, at.z, 0.0F, 0.0F);
+        return player;
+    }
+
+    /** Native login without a fixture teleport or game-mode change, for exact installed-player-file tests. */
+    public static ServerPlayer login(MinecraftServer server, UUID id, String name, ServerLevel level) {
+        requireEnabled(server);
         if (level.getServer() != server) { throw new IllegalArgumentException("Foreign test-player Level"); }
         var channels = CHANNELS.computeIfAbsent(server, ignored -> new IdentityHashMap<>());
         ServerPlayer player = server.getPlayerList().getPlayer(id);
@@ -44,12 +54,24 @@ public final class ReleaseTestPlayers {
                 server.getPlayerList().placeNewPlayer(connection, player);
                 own(server, player, channel);
             } catch (RuntimeException failed) { channel.finishAndReleaseAll(); throw failed; }
-            player.setGameMode(GameType.CREATIVE);
         } else if (!owned(channels, player, player.connection)) {
             throw new IllegalStateException("Cannot adopt a connection not created by the release-test facility");
         }
-        player.teleportTo(level, at.x, at.y, at.z, 0.0F, 0.0F);
         return player;
+    }
+
+    /** Respawn only an exact facility-owned pair, retaining its existing channel for the replacement body. */
+    public static ServerPlayer respawn(MinecraftServer server, ServerPlayer original) {
+        requireEnabled(server);
+        var channels = CHANNELS.get(server);
+        if (server.getPlayerList().getPlayer(original.getUUID()) != original || !owned(channels, original, original.connection)) {
+            throw new IllegalStateException("Cannot respawn a connection not created by the release-test facility");
+        }
+        var channel = channels.get(original).channel;
+        var replacement = server.getPlayerList().respawn(original, false);
+        replacement.connection.player = replacement;
+        channels.remove(original); own(server, replacement, channel);
+        return replacement;
     }
 
     /**

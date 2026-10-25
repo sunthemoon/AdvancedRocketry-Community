@@ -7,6 +7,17 @@ import net.minecraft.nbt.ListTag;
 import org.junit.jupiter.api.Test;
 
 class RocketReleaseNativeCutsTest {
+    @org.junit.jupiter.api.Test void placementCutsBindExactAttemptAndRetirementRatherThanAnySeatSave() {
+        var root = RocketRejoinCodecTest.fixture(); var old = root.entries().get(0);
+        var attempt = new RocketRejoinRoot.Attempt(java.util.UUID.randomUUID(), RocketRejoinRoot.Target.PAD, 2.5, 70, 3.5);
+        var p1 = root.update(new RocketRejoinRoot.Entry(old.release(), old.player(), 0, old.placement(), old.seat(), attempt));
+        org.junit.jupiter.api.Assertions.assertEquals("C7", RocketReleaseNativeCuts.placementReplacement(RocketRejoinCodec.encode(root), RocketRejoinCodec.encode(p1)));
+        org.junit.jupiter.api.Assertions.assertEquals("", RocketReleaseNativeCuts.placementReplacement(RocketRejoinCodec.encode(p1), RocketRejoinCodec.encode(p1)));
+        var s2 = p1.update(new RocketRejoinRoot.Entry(old.release(), old.player(), 0, old.placement(), RocketRejoinRoot.Seat.VERIFIED, attempt));
+        org.junit.jupiter.api.Assertions.assertEquals("", RocketReleaseNativeCuts.placementReplacement(RocketRejoinCodec.encode(p1), RocketRejoinCodec.encode(s2)));
+        var p2 = s2.update(new RocketRejoinRoot.Entry(old.release(), old.player(), 0, RocketRejoinRoot.Placement.VERIFIED, RocketRejoinRoot.Seat.VERIFIED, null));
+        org.junit.jupiter.api.Assertions.assertEquals("C11", RocketReleaseNativeCuts.placementReplacement(RocketRejoinCodec.encode(s2), RocketRejoinCodec.encode(p2)));
+    }
     @org.junit.jupiter.api.BeforeAll static void bootstrap() {
         io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap.initialize();
     }

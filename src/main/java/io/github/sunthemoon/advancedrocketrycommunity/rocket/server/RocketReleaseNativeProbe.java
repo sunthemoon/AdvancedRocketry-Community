@@ -27,6 +27,7 @@ public final class RocketReleaseNativeProbe {
     private static RocketReleaseNativeProbe active;
     private final MinecraftServer server;
     private final String hold, cut, mode;
+    private final RocketRejoinNativeProbe rejoin;
     private RocketTransferRecord original;
     private UUID logical;
     private boolean admitted, prepared, done, coldRequested, conflictInstalled;
@@ -35,6 +36,7 @@ public final class RocketReleaseNativeProbe {
     private RocketReleaseNativeProbe(MinecraftServer server) {
         RocketReleaseNativeCuts.validate(server); this.server = server;
         var parts = RocketReleaseNativeCuts.selection().split(":"); hold = parts[0]; cut = parts[1]; mode = parts[2];
+        rejoin = RocketReleaseNativeCuts.rejoin() ? new RocketRejoinNativeProbe(server) : null;
         server.overworld().setChunkForced(4, 4, true);
         if (mode.equals("seed") || hold.equals("H2")) { server.getLevel(CelestialIds.MOON_LEVEL).setChunkForced(4, 4, true); }
     }
@@ -119,6 +121,10 @@ public final class RocketReleaseNativeProbe {
             logical = !sidecar.root().batches().isEmpty() ? sidecar.root().batches().get(0).rocket()
                     : entity == null ? null : entity.assemblyTransactionId().orElseThrow();
         }
+        if (rejoin != null && sidecar.root().nextSequence() > 0) {
+            if (rejoin.advance(sidecar)) { complete("rejoined"); }
+            return;
+        }
         if (cut.equals("C16") && !mode.equals("seed")) {
             if (ticks < 450) { return; }
             require(logical != null && RocketReleaseAccess.fenced(server, logical), "Unrecorded T lost release fence");
@@ -160,7 +166,9 @@ public final class RocketReleaseNativeProbe {
             if (moon.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(4, 4))) { return; }
         }
         if (!admitted) {
+            if (rejoin != null) { rejoin.seedOldPlayer(entity); }
             admitted = RocketRuntime.releaseAbsentForTests(server, current.transferId()).isPresent();
+            if (admitted && rejoin != null) { rejoin.admitted(); }
             return;
         }
         if (conflictInstalled && ticks >= 550 && journal().acknowledgedCurrent()) { RocketReleaseNativeCuts.checkpoint("C16"); }

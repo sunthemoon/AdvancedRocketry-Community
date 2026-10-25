@@ -85,7 +85,8 @@ public final class PlayerLifeSupportService {
 
         PlayerLifeSupportSnapshot snapshot;
         boolean suffocationAttempt = false;
-        if (player.isCreative() || player.isSpectator()) {
+        if (player.isCreative() || player.isSpectator()
+                || io.github.sunthemoon.advancedrocketrycommunity.rocket.rejoin.RocketRejoinProtection.guarded(player)) {
             state.vacuumPhase = 0;
             snapshot = new PlayerLifeSupportSnapshot(
                     PlayerProtectionStatus.EXEMPT,

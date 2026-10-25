@@ -100,6 +100,21 @@ public final class RocketReleaseCoordinator implements AutoCloseable {
         return current;
     }
     public boolean pending(UUID transfer) { owner(); return work.values().stream().anyMatch(w -> w.batch.transfer().equals(transfer)); }
+    /** Before S1, these named players exist only in the admission, not in a saved root. */
+    public List<Entry> unpublishedPlacements() {
+        owner(); return work.values().stream().filter(w -> !w.durable && w.plan != null)
+                .flatMap(w -> w.plan.entries().stream()).filter(e -> e.placement() == Placement.PENDING).toList();
+    }
+    /** Placement is independent of B1/J1 conflicts, but cannot precede a checked S1 and E1. */
+    public boolean placementReady(UUID release) {
+        owner();
+        var batch = sidecar.root().batches().stream().filter(b -> b.release().equals(release)).findFirst().orElse(null);
+        var installed = sidecar.acknowledgedRoot();
+        // Loaded S1 is durable classification; placement must not depend on a conflicting J1.
+        // Never reapply an old filter after S2: later boarding is a different assignment.
+        return batch != null && installed != null && installed.batches().contains(batch)
+                && (!pendingSeats(installed, release) || port.applySeats(batch));
+    }
     public java.util.Optional<UUID> release(UUID transfer) {
         owner(); return work.values().stream().filter(w -> w.batch.transfer().equals(transfer)).map(w -> w.batch.release()).findFirst();
     }

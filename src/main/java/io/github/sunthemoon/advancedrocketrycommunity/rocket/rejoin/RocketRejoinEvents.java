@@ -52,6 +52,7 @@ public final class RocketRejoinEvents {
         return RocketRejoinSavedData.open(ManagedRootSupplier.dataFile(server, RocketRejoinSavedData.TYPE),
                 RocketReleaseNativeCuts.policy(server, RocketRejoinSavedData.TYPE),
                 io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile::presence,
-                io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataPolicy.DirectoryForce.PLATFORM);
+                io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataPolicy.DirectoryForce.PLATFORM,
+                RocketRejoinNativeCuts::beforeProof);
     }
 }
