@@ -58,6 +58,7 @@ public final class RocketReleaseNativeProbe {
     }
     static void notice(MinecraftServer server, RocketRejoinRoot.Batch batch, String state) {
         var probe = active; if (probe == null || probe.server != server) { return; }
+        if (probe.rows != null) { probe.rows.notice(batch, state); }
         if (state.equals("E1")) {
             if (probe.mode.equals("seed") && probe.cut.equals("C16")) {
                 var current = probe.journal().find(batch.transfer()).orElseThrow();

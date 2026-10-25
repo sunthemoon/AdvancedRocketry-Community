@@ -1,5 +1,6 @@
 import copy
 import unittest
+from unittest.mock import patch
 from test_w160_two_rider_oracle import fixture, words
 import run_w160_native_rows as rows
 import run_w159_rejoin_cuts as rejoin
@@ -36,6 +37,32 @@ class NativeRowsTests(unittest.TestCase):
             with self.assertRaises(rows.smoke.SmokeError): rows.verify_rollback(before, bad)
         bad = copy.deepcopy(after); bad["rockets"][0]["entity"]["RocketEntityData"]["flight_data"]["fuel"]["amount"] = 999
         with self.assertRaises(rows.smoke.SmokeError): rows.verify_rollback(before, bad)
+
+    def test_pressure_retains_every_obligation_and_every_installed_player(self):
+        for cut in ("C28", "C30"):
+            disk = fixture(); disk["journal"]["transfers"] = []
+            ids = [rejoin.FIRST, rejoin.PLAYER, rejoin.PLAYER] if cut == "C28" else [rejoin.FIRST, rejoin.PLAYER] + [str(__import__('uuid').UUID(int=i+1000)) for i in range(129)]
+            disk["sidecar"].update(next_sequence=2 if cut == "C28" else 10,
+                                   entries=[dict(player=words(i), seat="VERIFIED", placement="PENDING") for i in ids])
+            for identity in set(ids) - {rejoin.FIRST}:
+                disk["players"][identity] = copy.deepcopy(disk["players"][rejoin.PLAYER]); disk["players"][identity]["UUID"] = words(identity)
+            baseline = rows.verify(disk, cut, "seed")
+            rows.verify(disk, cut, "recover", baseline, disk)
+            for mutate in (lambda d: d["sidecar"]["entries"].pop(), lambda d: d["sidecar"]["entries"][0].update(attempt={}),
+                           lambda d: d["players"][ids[-1]].update(Health=0), lambda d: d["players"][ids[-1]].update(Pos=[99, 99, 99])):
+                bad = copy.deepcopy(disk); mutate(bad)
+                with self.assertRaises(rows.smoke.SmokeError): rows.verify(bad, cut, "recover", baseline, disk)
+
+    def test_disk_ceiling_log_is_exact_scoped_and_requires_the_native_observations(self):
+        prefix = "[12:00:00] [Server thread/{}] [io.gi.su.ad.AdvancedRocketryCommunity/]: "
+        warning = prefix.format("WARN") + f"ARCE_REJOIN_PLAYER_LIMIT player={rejoin.PLAYER} kind=OVERSIZED size=68157440 ceiling=67108864"
+        lines = [warning, prefix.format("INFO") + "ARCE_W160F_DISK_CEILING bytes=68157440 ceiling=67108864 pending=true",
+                 prefix.format("INFO") + "ARCE_W160F_EXPANDED mode=seed payload_bytes=3145728 entries=0"]
+        with patch.object(rows.release, "audit_log", return_value={}):
+            rows.audit_log(lines, "C33", "seed")
+            for bad in (lines[1:], lines + [warning], lines[:-1], [s.replace("68157440", "67108864") for s in lines]):
+                with self.assertRaises(rows.smoke.SmokeError): rows.audit_log(bad, "C33", "seed")
+            with self.assertRaises(rows.smoke.SmokeError): rows.audit_log(lines, "C33", "recover")
 
 
 if __name__ == "__main__": unittest.main()

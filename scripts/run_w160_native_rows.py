@@ -2,6 +2,8 @@
 """Command-driven W160F native rows, with explicit seed and two independent restarts."""
 import argparse
 import copy
+import hashlib
+import gzip
 import json
 import os
 from pathlib import Path
@@ -16,8 +18,28 @@ import run_dedicated_server_smoke as smoke
 from run_v060_flight_server_smoke import _server_command
 from run_v180_resource_restarts import read_nbt
 from run_v180_escrow_forced_stop import record
+from inspect_celestial_saved_data import NbtReader
 
-CASES = ("C12", "C25", "C26", "C27")
+CASES = ("C12", "C25", "C26", "C27", "C28", "C29", "C30", "C32", "C33")
+
+
+class NativePlayerReader(NbtReader):
+    """Keep the existing inspection bounds except for the one bounded native padding byte array."""
+    def _payload(self, tag_type, depth):
+        if tag_type == 7:
+            length = self._unpack(">i", 4)
+            if not 0 <= length <= 3*1024**2: raise smoke.SmokeError("Native player byte array exceeds fixture bound")
+            raw = self._bytes(length)
+            return dict(length=length, sha256=hashlib.sha256(raw).hexdigest()) if length > 4096 else list(raw)
+        return super()._payload(tag_type, depth)
+
+
+def read_player(path):
+    if path.is_symlink() or not path.is_file() or path.stat().st_size > 4*1024**2:
+        raise smoke.SmokeError("Native installed player exceeds capture bound")
+    with gzip.open(path, "rb") as stream: raw = stream.read(4*1024**2 + 1)
+    if len(raw) > 4*1024**2: raise smoke.SmokeError("Native expanded capture exceeds 4 MiB")
+    return NativePlayerReader(raw).read_root()
 
 
 def block(world, x, y, z):
@@ -31,14 +53,20 @@ def block(world, x, y, z):
 
 
 def capture(world, target, cut):
-    disk = rejoin.capture(world, target)
+    disk = release.capture(world, target)
+    disk["player"] = read_player(world / "playerdata" / (rejoin.PLAYER + ".dat"))
+    padding = disk["player"].get("ForgeData", {}).pop("w160f_native_padding", None)
+    if padding is not None:
+        if not isinstance(padding, dict): raise smoke.SmokeError("Expanded native padding is not over 4096 bytes")
+        disk["padding"] = padding
     # C12's first rider has no placement obligation. The other rows exercise both logins.
     disk["players"] = {}
-    for identity in (rejoin.FIRST, rejoin.PLAYER):
+    identities = {rejoin.FIRST, rejoin.PLAYER} | {rejoin.uuid_text(e["player"]) for e in disk["sidecar"]["entries"]}
+    for identity in sorted(identities):
         path = world / "playerdata" / (identity + ".dat")
         if not path.exists():
             disk["players"][identity] = dict(present=False); continue
-        data = read_nbt(path)
+        data = read_player(path)
         disk["players"][identity] = dict(present=True, **{k: data[k] for k in ("UUID", "Health", "DeathTime", "Dimension", "Pos")},
                 RootVehicle=data.get("RootVehicle"), marker=data.get("ForgeData", {}).get("arce_passenger_rejoin"))
         shutil.copy2(path, target / path.name)
@@ -49,7 +77,7 @@ def capture(world, target, cut):
 
 def verify(disk, cut, mode, baseline=None, seed=None):
     root = disk["sidecar"]; journal = disk["journal"]; rockets = disk["rockets"]
-    if root is None or root["next_sequence"] != 1:
+    if root is None or root["next_sequence"] != (2 if cut == "C28" else 10 if cut == "C30" else 1):
         raise smoke.SmokeError("Missing or reused native release sequence")
     early = mode == "seed" and cut in ("C12", "C26")
     if len(rockets) != (0 if cut == "C25" else 1): raise smoke.SmokeError("Native authority count differs")
@@ -66,6 +94,30 @@ def verify(disk, cut, mode, baseline=None, seed=None):
             raise smoke.SmokeError("Native disassembly did not retain both restored blocks")
         witness["restored_blocks"] = disk["restored_blocks"]
     if baseline is not None and witness != baseline: raise smoke.SmokeError("Native resources or outbox changed across restart")
+    if cut in ("C29", "C32"):
+        if len(journal["transfers"]) != 1 or journal["transfers"][0]["schema_version"] != 3:
+            raise smoke.SmokeError("Native journal peer is not a unique governed record")
+        if seed and journal["transfers"] != seed["journal"]["transfers"]:
+            raise smoke.SmokeError("Native journal peer changed across restart")
+        peer = journal["transfers"][0]
+        if cut == "C29" and any(not any(rejoin.uuid_text(s["passenger_id"]) == rejoin.PLAYER for s in release.seats(peer[key]))
+                                for key in ("source_flight", "destination_flight")):
+            raise smoke.SmokeError("Newer-transfer fixture lost its conflicting rider")
+        if cut == "C32" and journal["classic_first_moon_landing"]["state"] != "DELIVERED":
+            raise smoke.SmokeError("Interleaved W44 event was not durably delivered")
+    if cut in ("C28", "C29", "C30"):
+        expected_entries = 3 if cut == "C28" else 2 if cut == "C29" else 131
+        if len(root["entries"]) != expected_entries or cut != "C29" and journal["transfers"] or any(
+                e["seat"] != "VERIFIED" or e["placement"] != "PENDING" or "attempt" in e for e in root["entries"]):
+            raise smoke.SmokeError("Native conflict/queue timeout changed obligations")
+        ids = {rejoin.PLAYER} if cut != "C30" else {rejoin.uuid_text(e["player"]) for e in root["entries"]} - {rejoin.FIRST}
+        for identity in ids:
+            p = disk["players"].get(identity, {})
+            if not p.get("present") or p["Health"] != 1 or p["DeathTime"] != 0 or p["marker"] is not None or p["RootVehicle"] is not None:
+                raise smoke.SmokeError("Protected timeout did not preserve a healthy unmounted player")
+        if seed and (root != seed["sidecar"] or disk["players"] != seed["players"]):
+            raise smoke.SmokeError("Native pressure restart altered obligations or installed positions")
+        return witness
     if early:
         entries = sorted((rejoin.uuid_text(e["player"]), e["seat"], e["placement"]) for e in root["entries"])
         expected = [(rejoin.FIRST, "PENDING", "NOT_REQUIRED" if cut == "C12" else "PENDING"),
@@ -75,7 +127,7 @@ def verify(disk, cut, mode, baseline=None, seed=None):
         if disk["player"].get("ForgeData", {}).get("arce_passenger_rejoin") is not None:
             raise smoke.SmokeError("Early cut unexpectedly placed the player")
     else:
-        if root["entries"] or root["batches"] or journal["transfers"]:
+        if root["entries"] or root["batches"] or cut != "C32" and journal["transfers"]:
             raise smoke.SmokeError("Final native row retained a placement or reconstructible transfer")
         for identity in ((rejoin.PLAYER,) if cut == "C12" else (rejoin.FIRST, rejoin.PLAYER)):
             player = disk["players"].get(identity, {})
@@ -86,6 +138,10 @@ def verify(disk, cut, mode, baseline=None, seed=None):
             if seed and not (cut in ("C12", "C26") and mode == "recover") and seed["players"].get(identity, {}).get("present"):
                 if player["Pos"] != seed["players"][identity]["Pos"]:
                     raise smoke.SmokeError("Completed native player moved on restart")
+        if cut == "C33" and disk.get("padding", {}).get("length") != 3 * 1024**2:
+            raise smoke.SmokeError("Native expanded player no longer exceeds 2 MiB")
+        if cut == "C33" and seed and disk["padding"] != seed["padding"]:
+            raise smoke.SmokeError("Native expanded player payload changed")
     return witness
 
 
@@ -155,9 +211,15 @@ def run(args):
                     if cut == "C12" and mode == "seed":
                         verify_rollback(before, disk)
                     baseline = verify(disk, cut, mode, baseline, seed)
-                    row["audit"] = release.audit_log(process.lines, "H1", cut, mode)
+                    row["audit"] = audit_log(process.lines, cut, mode)
                     row["conserved"] = True
                     if mode in ("seed", "recover"): seed = copy.deepcopy(disk)
+                except Exception:
+                    if process.process.poll() is None: process.abort()
+                    if world.is_dir():
+                        try: capture(world, evidence / (name + "-failed-saved"), cut)
+                        except Exception as capture_failure: row["capture_error"] = str(capture_failure)
+                    raise
                 finally:
                     if process.process.poll() is None: process.abort()
                 save()
@@ -169,6 +231,37 @@ def run(args):
         if session.is_dir() and session.resolve().parent == parent and not smoke.is_link_or_junction(session): shutil.rmtree(session)
         result["temporary_removed"] = not session.exists(); save()
     return result
+
+
+def audit_log(lines, cut, mode):
+    # The only new WARN is the one production disk-ceiling refusal in C33 seed.
+    limit = re.compile(r"ARCE_REJOIN_PLAYER_LIMIT player=" + re.escape(rejoin.PLAYER)
+                       + r" kind=OVERSIZED size=([0-9]+) ceiling=67108864")
+    count = 0; remaining = []; messages = []
+    for line in lines:
+        h = release.HEADER.fullmatch(line.rstrip()); m = limit.fullmatch(h["message"]) if h else None
+        if h and h["logger"] in release.PROJECT_LOGGERS and h["thread"] == "Server thread" and h["level"] == "INFO":
+            messages.append(h["message"])
+        if h and m and h["logger"] in release.PROJECT_LOGGERS and h["thread"] == "Server thread" and h["level"] == "WARN":
+            if int(m[1]) <= 64*1024**2: raise smoke.SmokeError("Oversized native log did not cross its ceiling")
+            count += 1
+        else: remaining.append(line)
+    if count != int(cut == "C33" and mode == "seed"): raise smoke.SmokeError("Wrong native disk-ceiling warning count")
+    def exactly(pattern, expected):
+        observed = sum(bool(re.fullmatch(pattern, text)) for text in messages)
+        if observed != expected: raise smoke.SmokeError(f"Native row observation count differs: {pattern}: {observed} != {expected}")
+    if cut in ("C28", "C29", "C30"):
+        queue = cut == "C30"
+        exactly(f"ARCE_W160F_PRESSURE case={cut} mode={mode} players={130 if queue else 1} "
+                f"capacity={str(queue).lower()} unsafe={str(queue).lower()} retained={131 if queue else 3 if cut == 'C28' else 2} timeout_ticks=200", 1)
+    if cut == "C33":
+        exactly(f"ARCE_W160F_EXPANDED mode={mode} payload_bytes=3145728 entries=0", 1)
+        exactly(r"ARCE_W160F_DISK_CEILING bytes=[0-9]+ ceiling=67108864 pending=true", int(mode == "seed"))
+    if cut == "C26" and mode != "seed":
+        exactly(f"ARCE_W160F_PLAYER_FIRST mode={mode} loaded_rockets=0 guarded={str(mode == 'recover').lower()}", 1)
+    if cut == "C32":
+        exactly(r"ARCE_W160F_INTERLEAVE peer=" + release.UUID_PATTERN + r" sequence=[0-9]+ elected=true", int(mode == "seed"))
+    return dict(disk_ceiling=count, base=release.audit_log(remaining, "H1", cut, mode))
 
 
 if __name__ == "__main__":

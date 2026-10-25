@@ -23,13 +23,18 @@ final class RocketRejoinNativeRows {
     private static final BlockPos ORIGIN = new BlockPos(72, 100, 72);
     private final MinecraftServer server;
     private final String cut, mode;
+    private final RocketRejoinNativePressure pressure;
     private ServerPlayer first, second;
     private boolean prepared, disassembled, boarded;
+    private io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord peer;
+    private boolean interleaved;
+    private long priorTime = -1;
 
-    static boolean selected(String cut) { return List.of("C12", "C25", "C26", "C27").contains(cut); }
+    static boolean selected(String cut) { return List.of("C12", "C25", "C26", "C27", "C28", "C29", "C30", "C32", "C33").contains(cut); }
     RocketRejoinNativeRows(MinecraftServer server, String cut, String mode) {
         this.server = server; this.cut = cut; this.mode = mode;
         RocketReleaseNativeCuts.validate(server);
+        pressure = List.of("C28", "C29", "C30", "C33").contains(cut) ? new RocketRejoinNativePressure(server, cut, mode) : null;
         if (cut.equals("C26") && !mode.equals("seed")) {
             // ServerStarted occurs before this fixture forces the recorded entity column.
             require(java.util.stream.StreamSupport.stream(server.overworld().getAllEntities().spliterator(), false)
@@ -43,6 +48,11 @@ final class RocketRejoinNativeRows {
     }
     boolean prepare(RocketEntity rocket) {
         if (prepared) { return true; }
+        if (cut.equals("C29")) {
+            priorTime = io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData.get(server)
+                    .findByLogicalRocket(rocket.assemblyTransactionId().orElseThrow()).orElseThrow().createdAtGameTime();
+        }
+        if (cut.equals("C32") && !peerReady()) { return false; }
         if (cut.equals("C26")) {
             server.overworld().setDefaultSpawnPos(new BlockPos(8192, 100, 8192), 0);
             server.overworld().setChunkForced(4, 4, false);
@@ -68,6 +78,13 @@ final class RocketRejoinNativeRows {
     boolean advance(RocketRejoinSavedData data, RocketEntity rocket) {
         if (data.acknowledgedRoot() == null || data.root().entries().stream().anyMatch(e -> e.seat() == RocketRejoinRoot.Seat.PENDING)
                 || !data.acknowledgedCurrent()) { return false; }
+        if (cut.equals("C29") && !peerReady()) { return false; }
+        if (pressure != null) {
+            if (!pressure.advance(data)) { return false; }
+            require(server.saveEverything(false, true, true), "Native pressure final save failed");
+            if (mode.equals("seed")) { RocketReleaseNativeCuts.checkpoint(cut); }
+            return true;
+        }
         if (cut.equals("C25")) {
             if (rocket != null && !disassembled) {
                 require(mode.equals("seed"), "Disassembled rocket reconstructed on restart");
@@ -87,6 +104,13 @@ final class RocketRejoinNativeRows {
             if (!finished(data, first)) { return false; }
         }
         require(data.root().entries().isEmpty() && data.acknowledgedRoot().entries().isEmpty(), "Native row retained completed obligations");
+        if (cut.equals("C32")) {
+            var journal = io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData.get(server);
+            if (!journal.acknowledgedCurrent() || journal.durableFirstMoonLanding().outbox().state()
+                    != io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent.FirstEventOutbox.State.DELIVERED) { return false; }
+            require(journal.entries().size() == 1 && journal.entries().get(0).nativeTransfer().isPresent(), "Interleave changed the governed peer");
+            require(!mode.equals("seed") || interleaved, "Journal interleave was not exercised");
+        }
         if (cut.equals("C27")) {
             if (!boarded) {
                 if (mode.equals("seed")) {
@@ -112,6 +136,36 @@ final class RocketRejoinNativeRows {
         player.setPos(rocket.position());
         RocketRuntime.requestFlightIntent(player, rocket.getId(), RocketFlightAction.BOARD,
                 new TravelTarget.BodySurface(io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds.EARTH_ID), UUID.randomUUID());
+    }
+    private boolean peerReady() {
+        var journal = io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData.get(server);
+        if (peer == null) {
+            peer = journal.entries().stream().filter(t -> t.nativeTransfer().isPresent()).findFirst().orElse(null);
+            if (peer == null) {
+                require(mode.equals("seed"), "Native restart lost the governed peer");
+                var legacy = RocketSourceRetirementFixtures.countdown(server.overworld(), new BlockPos(12000256, 100, 12000256),
+                        server.getLevel(io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds.MOON_LEVEL),
+                        new BlockPos(12000256, 100, 12000256), List.of(cut.equals("C29") ? SECOND : new UUID(160, 999)), 0).record();
+                peer = RocketRejoinNativeJournal.governed(legacy);
+                if (cut.equals("C29")) {
+                    require(priorTime >= 0 && peer.createdAtGameTime() > priorTime, "Conflicting peer is not newer than the released transfer");
+                    AdvancedRocketryCommunity.LOGGER.info("ARCE_W160F_NEWER previous={} peer={}", priorTime, peer.createdAtGameTime());
+                }
+                journal.put(peer); return false;
+            }
+        }
+        return journal.acknowledgedCurrent();
+    }
+    void notice(RocketRejoinRoot.Batch batch, String state) {
+        if (!cut.equals("C32") || !mode.equals("seed") || !state.equals("E1") || interleaved) { return; }
+        var journal = io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData.get(server);
+        peer = peer.destinationSpawned(peer.nativeTransfer().orElseThrow().armed().destination()); journal.put(peer);
+        var event = io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent.FirstEvent.MoonLanding.create(
+                UUID.randomUUID(), batch.transfer(), batch.rocket(), peer.ownerId(), batch.authority(), batch.before().checksum(),
+                72, 100, 72, server.overworld().getGameTime(), List.of(FIRST, SECOND));
+        require(journal.electFirstMoonLanding(event) && !journal.acknowledgedCurrent(), "E1 did not interleave a new journal/outbox generation");
+        interleaved = true;
+        AdvancedRocketryCommunity.LOGGER.info("ARCE_W160F_INTERLEAVE peer={} sequence={} elected=true", peer.transferId(), journal.mutationSequence());
     }
     private boolean finished(RocketRejoinSavedData data, ServerPlayer player) {
         require(player.isAlive() && player.getHealth() > 0, "Native row passenger died");
