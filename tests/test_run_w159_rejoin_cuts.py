@@ -10,6 +10,52 @@ import run_w159_rejoin_cuts as runner
 
 
 class RejoinCutRunnerTests(unittest.TestCase):
+    def test_two_rider_completion_keeps_both_installed_identities_clean(self):
+        self.assertIn(("H1", "C22"), runner.CASES)
+        disk = self.fixture(); disk["sidecar"].update(entries=[], batches=[]); disk["players"] = {}
+        for identity in (runner.FIRST, runner.PLAYER):
+            disk["players"][identity] = dict(present=True, UUID=[(uuid.UUID(identity).int >> n) & 0xFFFFFFFF for n in (96, 64, 32, 0)],
+                    Health=1, DeathTime=0, Dimension="minecraft:overworld", Pos=[2.5, 70, 3.5], RootVehicle=None, marker=None)
+        runner.verify_two_riders(disk, None)
+        for key, value in (("present", False), ("Health", 0), ("marker", {}), ("RootVehicle", {})):
+            altered = copy.deepcopy(disk); altered["players"][runner.FIRST][key] = value
+            with self.assertRaises(runner.smoke.SmokeError): runner.verify_two_riders(altered, disk)
+
+    def test_temporary_write_cut_requires_old_file_and_one_exact_warning(self):
+        self.assertIn(("H1", "C21"), runner.CASES)
+        disk = self.fixture(); disk["player"]["ForgeData"].clear(); disk["player"]["Pos"][1] = 60
+        runner.verify(disk, "H1", "C21", "seed", "C21", None, None)
+        with self.assertRaises(runner.smoke.SmokeError):
+            runner.verify(self.fixture(), "H1", "C21", "seed", "C21", None, None)
+        line = "[12:00:00] [Server thread/WARN] [minecraft/PlayerDataStorage]: Failed to save player data for W159Passenger"
+        with patch.object(runner.release, "audit_log", return_value={}):
+            self.assertEqual(1, runner.audit_log([line], "H1", "C21", "seed")["temporary_failure_observed"])
+            for bad in ([], [line, line], [line + " unexpected"]):
+                with self.assertRaises(runner.smoke.SmokeError): runner.audit_log(bad, "H1", "C21", "seed")
+            with self.assertRaises(runner.smoke.SmokeError): runner.audit_log([line], "H1", "C21", "recover")
+
+    def test_shutdown_clean_is_one_exact_parsed_message_only_in_c20_seed(self):
+        line = "[12:00:00] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_W159_SHUTDOWN_CLEAN threads=0 tickets=0"
+        with patch.object(runner.release, "audit_log", return_value={}):
+            with self.assertRaises(runner.smoke.SmokeError):
+                runner.audit_log([], "H1", "C20", "seed")
+            for hold in ("H1", "H2"):
+                report = runner.audit_log([line], hold, "C20", "seed")
+                self.assertEqual(1, report["shutdown_clean_observed"])
+                for bad in ([], [line, line], [line.replace("threads=0", "threads=1")],
+                            [line.replace("tickets=0", "tickets=1")],
+                            [line.replace("Server thread", "Other thread")],
+                            [line.replace("INFO", "WARN")], [line + " trailing"],
+                            [line.replace("io.gi.su.ad.AdvancedRocketryCommunity/", "minecraft/Util")],
+                            [line, "unexpected continuation"]):
+                    with self.assertRaises(runner.smoke.SmokeError):
+                        runner.audit_log(bad, hold, "C20", "seed")
+            for hold, cut, mode in (("H1", "C20", "recover"), ("H2", "C20", "check"),
+                                    ("H1", "C10", "seed"), ("H3", "C20", "seed")):
+                with self.assertRaises(runner.smoke.SmokeError):
+                    runner.audit_log([line], hold, cut, mode)
+                self.assertEqual(0, runner.audit_log([], hold, cut, mode)["shutdown_clean_observed"])
+
     @staticmethod
     def fixture():
         player = [(uuid.UUID(runner.PLAYER).int >> n) & 0xFFFFFFFF for n in (96, 64, 32, 0)]

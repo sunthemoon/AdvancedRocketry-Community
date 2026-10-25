@@ -14,7 +14,7 @@ import java.util.UUID;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
-/** Session-owned W80 seat track. No player placement, login guard, resource mutation or production admission. */
+/** Session-owned W80 seat track. Placement and protection are independent services. */
 public final class RocketReleaseCoordinator implements AutoCloseable {
     public static final int B0_TICKS = 200, RETRY_TICKS = 200, TICKET_TICKS = 400;
     public static final int BATCHES_PER_TICK = 2, MAX_TICKETS = 6;
@@ -74,13 +74,13 @@ public final class RocketReleaseCoordinator implements AutoCloseable {
         }
     }
 
-    /** Internal only. The world adapter must check its test gate and admission witnesses before calling. */
+    /** The world adapter validates the admission witnesses before calling. */
     public boolean admit(RocketReleasePlan plan) {
         owner(); var batch = plan.batch();
         var existing = work.values().stream().filter(w -> w.batch.rocket().equals(batch.rocket())).findFirst().orElse(null);
         if (existing != null) { return existing.batch.transfer().equals(batch.transfer()); }
         // Reserve the next sequence before B0. Only one unpublished admission may own it.
-        if (closed || work.size() >= MAX_BATCHES || work.values().stream().anyMatch(w -> !w.durable)
+        if (closed || !sidecar.admissionAvailable() || work.size() >= MAX_BATCHES || work.values().stream().anyMatch(w -> !w.durable)
                 || !sidecar.pendingRoots().isEmpty() || !journal.actionable(batch.rocket())
                 || !port.boundary(batch)) { return false; }
         try { plan.admit(sidecar.root()); } catch (IllegalArgumentException stale) { return false; }
@@ -100,6 +100,10 @@ public final class RocketReleaseCoordinator implements AutoCloseable {
         return current;
     }
     public boolean pending(UUID transfer) { owner(); return work.values().stream().anyMatch(w -> w.batch.transfer().equals(transfer)); }
+    public RocketRejoinInspection inspect(UUID player) {
+        owner(); return RocketRejoinInspection.of(sidecar.root(), work.values().stream()
+                .filter(w -> !w.durable && w.plan != null).map(w -> w.plan).toList(), this::stage, player);
+    }
     /** Before S1, these named players exist only in the admission, not in a saved root. */
     public List<Entry> unpublishedPlacements() {
         owner(); return work.values().stream().filter(w -> !w.durable && w.plan != null)
@@ -116,12 +120,19 @@ public final class RocketReleaseCoordinator implements AutoCloseable {
                 && (!pendingSeats(installed, release) || port.applySeats(batch));
     }
     public java.util.Optional<UUID> release(UUID transfer) {
-        owner(); return work.values().stream().filter(w -> w.batch.transfer().equals(transfer)).map(w -> w.batch.release()).findFirst();
+        owner();
+        var pending = work.values().stream().filter(w -> w.batch.transfer().equals(transfer)).map(w -> w.batch.release()).findFirst();
+        return pending.isPresent() ? pending : sidecar.root().batches().stream()
+                .filter(b -> b.transfer().equals(transfer)).map(Batch::release).findFirst();
     }
     public boolean released(UUID logical, UUID player) {
         owner(); return work.values().stream().anyMatch(w -> w.batch.rocket().equals(logical) && w.batch.released().contains(player));
     }
-    public String stage(UUID release) { owner(); var entry = work.get(release); return entry == null ? "NONE" : entry.stage.name(); }
+    public String stage(UUID release) {
+        owner(); var entry = work.get(release);
+        return entry != null ? entry.stage.name()
+                : sidecar.root().batches().stream().anyMatch(b -> b.release().equals(release)) ? "PLACEMENT" : "NONE";
+    }
     public int tickets() { owner(); return work.values().stream().mapToInt(w -> w.tickets.size()).sum(); }
 
     public void tick() {

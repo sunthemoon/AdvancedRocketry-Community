@@ -145,7 +145,7 @@ public final class RocketReleaseNativeProbe {
         var current = journal().findByLogicalRocket(logical).orElse(null); if (current == null) { return; }
         if (hold.equals("H2") && current.phase() != RocketTransferPhase.COMMITTED) { return; }
         if (!prepared) {
-            if (hold.equals("H2")) {
+            if (hold.equals("H2") || cut.equals("C24")) {
                 var flight = entity.flightData().orElseThrow();
                 entity.updateFlightData(flight.withPassengers(flight.passengers().remove(FIRST).assign(NEWCOMER).orElseThrow()));
             } else if (cut.equals("C17")) {
@@ -167,7 +167,11 @@ public final class RocketReleaseNativeProbe {
         }
         if (!admitted) {
             if (rejoin != null) { rejoin.seedOldPlayer(entity); }
-            admitted = RocketRuntime.releaseAbsentForTests(server, current.transferId()).isPresent();
+            if (Boolean.getBoolean("advancedrocketrycommunity.rejoinReleaseCommand")) {
+                // Already inside the disposable-server gate; use the real registered operator command unchanged.
+                admitted = server.getCommands().performPrefixedCommand(server.createCommandSourceStack(),
+                        "arce rocket recover " + current.transferId() + " release-absent") == 1;
+            } else { admitted = RocketRuntime.releaseAbsentForTests(server, current.transferId()).isPresent(); }
             if (admitted && rejoin != null) { rejoin.admitted(); }
             return;
         }
