@@ -17,7 +17,8 @@ from run_v060_flight_server_smoke import _server_command
 from run_v180_resource_restarts import read_nbt
 
 PLAYER = "01580000-0000-4000-8000-000000000002"
-CASES = [(hold, f"C{i}") for hold in ("H1", "H2") for i in (7, 8, 9, 10, 11, 13, 18, 19, 20)]
+FIRST = "01580000-0000-4000-8000-000000000001"
+CASES = [(hold, f"C{i}") for hold in ("H1", "H2") for i in (7, 8, 9, 10, 11, 13, 18, 19, 20, 21)] + [("H1", "C22")]
 
 
 def uuid_text(value):
@@ -35,7 +36,7 @@ def capture(world, target):
     result["player_sha256"] = smoke.digest_file(file)
     shutil.copy2(file, target / file.name)
     # Inspect every released identity, including explicit absence rather than inventing an offline file.
-    identities = {PLAYER}
+    identities = {PLAYER, FIRST} if world.name.endswith("-C22") else {PLAYER}
     for batch in (result["sidecar"] or {}).get("batches", []):
         identities.update(uuid_text(value) for value in batch["released"])
     result["players"] = {}
@@ -59,8 +60,16 @@ def pending(disk):
 
 
 def audit_log(lines, hold, cut, mode):
-    """Account only for the C9 fixture's exact vanilla failure; retain every other log entry."""
-    manifest = json.loads(Path(__file__).with_name("w159_rejoin_expected_log.json").read_text(encoding="utf-8"))["native_c9"]
+    """Count exact C9 failure and C20 shutdown events; retain every unrelated entry."""
+    declarations = json.loads(Path(__file__).with_name("w159_rejoin_expected_log.json").read_text(encoding="utf-8"))
+    manifest = declarations["native_c9"]
+    shutdown = declarations["native_shutdown_clean"]
+    shutdown_expected = shutdown["count"] if (hold in shutdown["holds"] and cut == shutdown["cut"]
+                                               and mode == shutdown["mode"]) else shutdown["otherwise_count"]
+    shutdown_count = 0
+    temporary = declarations["native_temporary_failure"]
+    temporary_expected = temporary["count"] if hold in ("H1", "H2") and cut == "C21" and mode == "seed" else 0
+    temporary_count = 0
     expected = {key: count if cut == "C9" and mode == "seed" else 0 for key, count in manifest["counts"].items()}
     counts = dict.fromkeys(expected, 0); remainder = []
     path = r"\.[/\\]world-W158-" + hold + r"-C9[/\\]playerdata[/\\]" + PLAYER + r"\.dat_old"
@@ -70,6 +79,19 @@ def audit_log(lines, hold, cut, mode):
         if header or not events: events.append([header, [line]])
         else: events[-1][1].append(line)
     for header, event in events:
+        if header and header["message"] == temporary["message"]:
+            if (header["thread"] != temporary["thread"] or header["level"] != temporary["level"]
+                    or header["logger"] not in temporary["loggers"] or any(line.strip() for line in event[1:])):
+                raise smoke.SmokeError("Unexpected temporary-write warning origin or continuation")
+            temporary_count += 1
+            continue
+        if any("ARCE_W159_SHUTDOWN_CLEAN" in line for line in event):
+            if (not header or header["thread"] != shutdown["thread"] or header["level"] != shutdown["level"]
+                    or header["logger"] not in shutdown["loggers"] or header["message"] != shutdown["message"]
+                    or any(line.strip() for line in event[1:])):
+                raise smoke.SmokeError("C20 shutdown entry does not match its exact declaration")
+            shutdown_count += 1
+            continue
         key = None
         if header and header["thread"] == "Server thread" and header["logger"] in manifest["loggers"]:
             for name, pattern in manifest["messages"].items():
@@ -90,7 +112,13 @@ def audit_log(lines, hold, cut, mode):
         counts[key] += 1
     if counts != expected:
         raise smoke.SmokeError(f"C9 log counts differ: expected={expected}, observed={counts}")
-    return dict(c9_expected=expected, c9_observed=counts, base=release.audit_log(remainder, hold, cut, mode))
+    if shutdown_count != shutdown_expected:
+        raise smoke.SmokeError(f"C20 shutdown count differs: expected={shutdown_expected}, observed={shutdown_count}")
+    if temporary_count != temporary_expected:
+        raise smoke.SmokeError(f"Temporary-write count differs: expected={temporary_expected}, observed={temporary_count}")
+    return dict(c9_expected=expected, c9_observed=counts, shutdown_clean_expected=shutdown_expected,
+                shutdown_clean_observed=shutdown_count, temporary_failure_expected=temporary_expected,
+                temporary_failure_observed=temporary_count, base=release.audit_log(remainder, hold, cut, mode))
 
 
 def verify(disk, hold, cut, mode, boundary, baseline, seed):
@@ -109,7 +137,7 @@ def verify(disk, hold, cut, mode, boundary, baseline, seed):
     if witness["fuel"]["amount"] != (1000 if hold == "H1" else 500) or baseline is not None and witness != baseline:
         raise smoke.SmokeError("Native snapshot/fuel/debit/identity changed across restart")
     entries = pending(disk); marker = player.get("ForgeData", {}).get("arce_passenger_rejoin")
-    if mode == "seed" and cut in ("C7", "C8", "C9", "C13"):
+    if mode == "seed" and cut in ("C7", "C8", "C9", "C13", "C21"):
         # RocketEntity.hasExactlyOnePlayerPassenger deliberately returns false: its old seat is
         # persisted by position/manifest, never as a second RootVehicle authority in player NBT.
         if len(entries) != 1 or "attempt" not in entries[0] or marker is not None or "RootVehicle" in player:
@@ -141,14 +169,35 @@ def verify(disk, hold, cut, mode, boundary, baseline, seed):
     elif mode == "seed" and cut == "C11":
         if entries or marker is None or "RootVehicle" in player:
             raise smoke.SmokeError("Post-replacement P2 did not retain only a stale marker")
-    elif not boundary:
+    elif not boundary or cut == "C22":
         if entries or marker is not None or "RootVehicle" in player:
             raise smoke.SmokeError("Final restart did not retire placement and remove stale live marker")
         if any(e["seat"] == "PENDING" for e in sidecar["entries"]):
             raise smoke.SmokeError("Final restart left seat proof unfinished")
         if any(uuid_text(s["passenger_id"]) == PLAYER for s in release.seats(data["flight_data"])):
             raise smoke.SmokeError("Released passenger returned to a native seat")
+    if cut == "C22": verify_two_riders(disk, seed)
     return witness
+
+
+def verify_two_riders(disk, seed):
+    if disk["sidecar"]["entries"] or disk["sidecar"]["batches"]:
+        raise smoke.SmokeError("Two-rider completion retained an obligation")
+    released = {FIRST, PLAYER}
+    manifests = [copy["entity"]["RocketEntityData"]["flight_data"] for copy in disk["rockets"]]
+    manifests.extend(transfer[key] for transfer in disk["journal"]["transfers"]
+                     for key in ("source_flight", "destination_flight"))
+    if any(uuid_text(seat["passenger_id"]) in released for manifest in manifests for seat in release.seats(manifest)):
+        raise smoke.SmokeError("Two-rider completion retained a released seat in native or reconstructible journal data")
+    for identity in (FIRST, PLAYER):
+        installed = disk["players"].get(identity, {})
+        if (not installed.get("present") or uuid_text(installed["UUID"]) != identity
+                or installed["Health"] <= 0 or installed["DeathTime"] != 0
+                or installed["RootVehicle"] is not None or installed["marker"] is not None
+                or installed["Dimension"] != "minecraft:overworld" or len(installed["Pos"]) != 3):
+            raise smoke.SmokeError("Two-rider completion lost an installed clean player")
+        if seed and any(installed[key] != seed["players"][identity][key] for key in ("UUID", "Dimension", "Pos")):
+            raise smoke.SmokeError("Two-rider restart relocated an already completed player")
 
 
 def run(args):
@@ -182,6 +231,8 @@ def run(args):
                 boundary = cut if mode == "seed" else recovery if mode == "recover" else ""
                 name = f"{hold}-{cut}-{mode}"; row = dict(case=name, **release.resources()); result["starts"].append(row)
                 command = _server_command(args.java); command[2] = "-Xmx4G"
+                if getattr(args, "command", False):
+                    command.insert(3, "-Dadvancedrocketrycommunity.rejoinReleaseCommand=true")
                 command.insert(3, f"-Dadvancedrocketrycommunity.rejoinReleaseProbe={hold}:{cut}:{mode}")
                 if mode == "recover" and recovery:
                     command.insert(3, f"-Dadvancedrocketrycommunity.rejoinReleaseRecoveryCut={recovery}")
@@ -197,7 +248,7 @@ def run(args):
                             raise smoke.SmokeError("Wrong native pause: " + marker)
                         if cut == "C20" and mode == "seed":
                             process.command("stop"); row["exit"] = process.finish()
-                            if row["exit"] != 0 or sum("ARCE_W159_SHUTDOWN_CLEAN threads=0 tickets=0" in line for line in process.lines) != 1:
+                            if row["exit"] != 0:
                                 raise smoke.SmokeError("In-flight shutdown did not close its reader and native tickets")
                         else:
                             process.process.kill(); process.abort(); row["exit"] = process.process.returncode
@@ -233,6 +284,7 @@ def main():
     for name in ("source-server", "jar", "evidence-dir"): parser.add_argument("--" + name, type=Path, required=True)
     for name in ("java", "source-commit"): parser.add_argument("--" + name, required=True)
     parser.add_argument("--cases", default="")
+    parser.add_argument("--command", action="store_true", help="Admit through the registered release-absent command")
     result = run(parser.parse_args()); print(json.dumps(result, indent=2)); return 0 if result["status"] == "PASS" else 1
 
 

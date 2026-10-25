@@ -7,4 +7,5 @@ final class RocketRejoinSaveClock {
         return placed && !reading && (last == Long.MIN_VALUE || now - last >= 100);
     }
     void saved(long now) { last = now; }
+    long lastPromptTick() { return last; }
 }

@@ -40,6 +40,10 @@ public final class RocketRejoinReadbackGameTests {
     public static void realTemporaryWriteFailureKeepsObligationUntilNextPrompt(GameTestHelper helper) { new Fixture(helper, "Temp").start(); }
     @GameTest(template = "rocket_test", batch = "rocket_rejoin_replace_failure", timeoutTicks = 240)
     public static void realReplacementFailureEventCannotProveOldFile(GameTestHelper helper) { new Fixture(helper, "Replace").start(); }
+    @GameTest(template = "rocket_test", batch = "rocket_rejoin_temp_ordinary", timeoutTicks = 240)
+    public static void ordinarySaveAfterTemporaryFailureCanCompleteReadback(GameTestHelper helper) { new Fixture(helper, "Temp", true).start(); }
+    @GameTest(template = "rocket_test", batch = "rocket_rejoin_replace_ordinary", timeoutTicks = 240)
+    public static void ordinarySaveAfterReplacementFailureCanCompleteReadback(GameTestHelper helper) { new Fixture(helper, "Replace", true).start(); }
     @GameTest(template = "rocket_test", batch = "rocket_rejoin_unsafe", timeoutTicks = 240)
     public static void noSafeCandidateEndsAtProtectedDeadline(GameTestHelper helper) { new Fixture(helper, "Unsafe").start(); }
     @GameTest(template = "rocket_test", batch = "rocket_rejoin_vehicle", timeoutTicks = 240)
@@ -54,6 +58,8 @@ public final class RocketRejoinReadbackGameTests {
         final MinecraftServer server;
         final GameTestTickPacer pacer;
         final String mode;
+        final boolean ordinarySave;
+        final java.util.ArrayList<Long> prompts = new java.util.ArrayList<>();
         final UUID id = UUID.randomUUID();
         final Consumer<PlayerEvent.SaveToFile> listener = this::saved;
         RocketRejoinSavedData original, data;
@@ -66,14 +72,20 @@ public final class RocketRejoinReadbackGameTests {
         Boat boat;
         boolean closed, blockedDirectory, blockedBackup, borderChanged, quit;
         double borderX, borderZ, borderSize;
-        int phase, ticks, saves, lastSaveAt = -1;
+        int phase, ticks, saves;
+        long ordinarySavedAt = -1;
         Fixture(GameTestHelper helper, String mode) {
+            this(helper, mode, false);
+        }
+        Fixture(GameTestHelper helper, String mode, boolean ordinarySave) {
+            this.ordinarySave = ordinarySave;
             this.helper = helper; this.mode = mode; server = helper.getLevel().getServer(); pacer = new GameTestTickPacer(server);
         }
         void start() { helper.onEachTick(this::tick); }
         void tick() {
             if (closed) { return; }
             try {
+                if (data != null) { observePrompt(); }
                 helper.assertTrue(++ticks < 230, "Rejoin fixture did not finish at phase " + phase + " mode=" + mode);
                 if (phase == 0) { setup(); phase = 1; }
                 else if (mode.equals("Unsafe")) { unsafe(); }
@@ -160,6 +172,19 @@ public final class RocketRejoinReadbackGameTests {
                 }
                 restoreBackup();
             }
+            if (ordinarySave) {
+                helper.assertTrue(data.root().entries().get(0).placement() == Placement.PENDING,
+                        "Failed write retired placement before the ordinary save");
+                helper.assertTrue(server.getTickCount() - session.placedAt < 100,
+                        "Controlled ordinary save missed the interval before the next W80 prompt");
+                long prompt = data.guards(server).lastPromptTick();
+                ordinarySavedAt = server.getTickCount();
+                server.getPlayerList().saveAll();
+                helper.assertTrue(data.guards(server).lastPromptTick() == prompt,
+                        "An ordinary save was counted as a W80 prompt");
+                helper.assertTrue(scan().status() == RocketRejoinPlayerFile.Status.MATCH,
+                        "Ordinary save did not install the exact readback");
+            }
             phase = mode.equals("Clone") ? 3 : 2;
         }
         void cloneBody() {
@@ -189,7 +214,14 @@ public final class RocketRejoinReadbackGameTests {
             if (data.acknowledgedRoot() == null || !data.acknowledgedRoot().entries().isEmpty() || data.guards(server).active(player)) { return; }
             helper.assertTrue(scan().status() == RocketRejoinPlayerFile.Status.MATCH, "P2 lacks its installed exact proof");
             if (mode.equals("Temp") || mode.equals("Replace")) {
-                helper.assertTrue(lastSaveAt - session.placedAt >= 100, "Prompt save retried before the global 100-tick cadence");
+                observePrompt();
+                helper.assertTrue(!prompts.isEmpty(), "Failure fixture never observed a W80 prompt");
+                if (ordinarySave) {
+                    helper.assertTrue(ordinarySavedAt >= prompts.get(0) && ordinarySavedAt - prompts.get(0) < 100,
+                            "Ordinary save was not between the first prompt and its next allowed retry");
+                }
+                io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity.LOGGER.info(
+                        "ARCE_W160F_PROMPTS mode={} ordinary={} ticks={} ordinaryAt={} p2=true", mode, ordinarySave, prompts, ordinarySavedAt);
             }
             if (quit) {
                 player = connect(); quit = false;
@@ -212,7 +244,14 @@ public final class RocketRejoinReadbackGameTests {
             close(); helper.succeed();
         }
         void saved(PlayerEvent.SaveToFile event) {
-            if (event.getEntity().getUUID().equals(id)) { saves++; lastSaveAt = server.getTickCount(); }
+            if (event.getEntity().getUUID().equals(id)) { saves++; }
+        }
+        void observePrompt() {
+            long prompt = data.guards(server).lastPromptTick();
+            if (prompt == Long.MIN_VALUE || !prompts.isEmpty() && prompts.get(prompts.size() - 1) == prompt) { return; }
+            helper.assertTrue(prompts.isEmpty() || prompt - prompts.get(prompts.size() - 1) >= 100,
+                    "Prompt save retried before the global 100-tick cadence");
+            prompts.add(prompt);
         }
         void restoreDirectory() throws IOException {
             if (!blockedDirectory) { return; }

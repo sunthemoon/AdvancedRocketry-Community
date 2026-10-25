@@ -377,17 +377,18 @@ class ManifestValidationTests(unittest.TestCase):
         self.assertEqual(
             # W153/R92 adds three exact-version rejection cases in each direction.
             # W159 adds ten actual backup retries and their single abort, all in one named fixture.
-            124, sum(sum(item.counts.values()) for item in expectations if item.level == "ERROR")
+            # W160F repeats that real filesystem fault in the controlled ordinary-save regression.
+            135, sum(sum(item.counts.values()) for item in expectations if item.level == "ERROR")
         )
 
     def test_w159_player_save_failures_are_exact_and_batch_scoped(self) -> None:
         rules = {item.id: item for item in load_manifest(DEFAULT_MANIFEST) if item.id.startswith("w159-")}
         self.assertEqual({
-            "w159-temporary-player-write-failure": {"rocket_rejoin_temp_failure": 1},
-            "w159-player-backup-delete-failure": {"rocket_rejoin_replace_failure": 10},
-            "w159-player-backup-delete-sequence": {"rocket_rejoin_replace_failure": 10},
-            "w159-player-backup-retries": {"rocket_rejoin_replace_failure": 10},
-            "w159-player-backup-abort": {"rocket_rejoin_replace_failure": 1},
+            "w159-temporary-player-write-failure": {"rocket_rejoin_temp_failure": 1, "rocket_rejoin_temp_ordinary": 1},
+            "w159-player-backup-delete-failure": {"rocket_rejoin_replace_failure": 10, "rocket_rejoin_replace_ordinary": 10},
+            "w159-player-backup-delete-sequence": {"rocket_rejoin_replace_failure": 10, "rocket_rejoin_replace_ordinary": 10},
+            "w159-player-backup-retries": {"rocket_rejoin_replace_failure": 10, "rocket_rejoin_replace_ordinary": 10},
+            "w159-player-backup-abort": {"rocket_rejoin_replace_failure": 1, "rocket_rejoin_replace_ordinary": 1},
             "w159-old-root-vehicle-remount-refused": {"rocket_rejoin_vehicle": 1, "rocket_rejoin_vehicle_first": 1},
         }, {name: rule.counts for name, rule in rules.items()})
         self.assertTrue(all(rule.maximum is None and not rule.allows_batch("defaultBatch") for rule in rules.values()))

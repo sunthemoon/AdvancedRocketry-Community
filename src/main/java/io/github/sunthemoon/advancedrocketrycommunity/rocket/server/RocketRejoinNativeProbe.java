@@ -11,9 +11,10 @@ import net.minecraft.server.level.ServerPlayer;
 final class RocketRejoinNativeProbe {
     static final UUID PLAYER = UUID.fromString("01580000-0000-4000-8000-000000000002");
     private final MinecraftServer server;
-    private ServerPlayer player;
+    private ServerPlayer player, first;
     private boolean seeded;
     private int changedAt = -1;
+    private java.nio.file.Path blockedPlayerDirectory, retainedPlayerDirectory;
     RocketRejoinNativeProbe(MinecraftServer server) { this.server = server; RocketReleaseNativeCuts.validate(server); }
     void seedOldPlayer(RocketEntity rocket) {
         if (seeded) { return; }
@@ -25,9 +26,33 @@ final class RocketRejoinNativeProbe {
         if (player != null) { return; }
         player = connect();
         if (!RocketRejoinProtection.guarded(player)) { throw new IllegalStateException("B0 login was not guarded"); }
+        if (RocketReleaseNativeCuts.selection().matches("H[12]:C21:seed")) {
+            // The online vanilla writer must fail to create its temporary file; no offline player file is edited.
+            blockedPlayerDirectory = server.getWorldPath(net.minecraft.world.level.storage.LevelResource.PLAYER_DATA_DIR);
+            retainedPlayerDirectory = blockedPlayerDirectory.resolveSibling("w160-retained-playerdata");
+            try {
+                java.nio.file.Files.move(blockedPlayerDirectory, retainedPlayerDirectory);
+                java.nio.file.Files.writeString(blockedPlayerDirectory, "W160 temporary-write fixture");
+            } catch (java.io.IOException failure) { throw new java.io.UncheckedIOException(failure); }
+        }
     }
     boolean advance(RocketRejoinSavedData data) {
         if (data.root().nextSequence() == 0) { return false; }
+        if (blockedPlayerDirectory != null && player.getPersistentData().contains("arce_passenger_rejoin")) {
+            if (!RocketRejoinProtection.guarded(player) || data.root().entries().stream().noneMatch(e -> e.player().equals(PLAYER)
+                    && e.placement() == RocketRejoinRoot.Placement.PENDING && e.attempt() != null)) {
+                throw new IllegalStateException("Temporary-write failure lost its protected pending attempt");
+            }
+            try {
+                if (!java.nio.file.Files.readString(blockedPlayerDirectory).equals("W160 temporary-write fixture")) {
+                    throw new java.io.IOException("Temporary-write marker changed");
+                }
+                java.nio.file.Files.delete(blockedPlayerDirectory);
+                java.nio.file.Files.move(retainedPlayerDirectory, blockedPlayerDirectory);
+                blockedPlayerDirectory = null;
+            } catch (java.io.IOException failure) { throw new java.io.UncheckedIOException(failure); }
+            RocketReleaseNativeCuts.checkpoint("C21");
+        }
         if (player == null) {
             RocketRejoinNativeCuts.cleanFixtureBackup(server, PLAYER);
             player = connect();
@@ -54,6 +79,19 @@ final class RocketRejoinNativeProbe {
                 || RocketRejoinProtection.guarded(player)) { return false; }
         if (player.getVehicle() != null || player.getPersistentData().contains("arce_passenger_rejoin")) {
             throw new IllegalStateException("Completed rejoin kept a vehicle or stale marker");
+        }
+        if (RocketReleaseNativeCuts.selection().startsWith("H1:C22:")) {
+            if (first == null) {
+                first = ReleaseTestPlayers.login(server, UUID.fromString("01580000-0000-4000-8000-000000000001"), "W160First", server.overworld());
+                return false;
+            }
+            if (!data.root().entries().isEmpty() || RocketRejoinProtection.guarded(first)) { return false; }
+            if (!first.isAlive() || first.getVehicle() != null || first.getPersistentData().contains("arce_passenger_rejoin")) {
+                throw new IllegalStateException("First rider did not finish cleanly");
+            }
+            if (data.acknowledgedRoot() == null || !data.acknowledgedRoot().entries().isEmpty()) { return false; }
+            if (!server.saveEverything(false, true, true)) { throw new IllegalStateException("Two-rider final save failed"); }
+            RocketReleaseNativeCuts.checkpoint("C22");
         }
         return data.acknowledgedRoot() != null && data.acknowledgedRoot().entries().stream().noneMatch(e -> e.seat() == RocketRejoinRoot.Seat.PENDING);
     }

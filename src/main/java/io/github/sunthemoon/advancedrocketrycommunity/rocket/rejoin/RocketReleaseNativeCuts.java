@@ -18,12 +18,12 @@ public final class RocketReleaseNativeCuts {
     private RocketReleaseNativeCuts() { }
 
     public static String selection() { return System.getProperty(PROPERTY, ""); }
-    public static boolean rejoin() { return selection().matches("H[12]:C(?:[7-9]|10|11|13|18|19|20):(seed|recover|check)"); }
+    public static boolean rejoin() { return selection().matches("H[12]:C(?:[7-9]|10|11|12|13|18|19|20|21|22|25|26|27|28|29|30|32|33):(seed|recover|check)"); }
     public static void validate(MinecraftServer server) {
         EscrowTestEndpoints.requireEnabled(server);
         String[] parts = selection().split(":");
         if (!server.isDedicatedServer() || parts.length != 3 || !parts[0].matches("H[12]")
-                || !parts[1].matches("C(?:[0-9]|10|11|13|14|15|16|17|18|19|20)") || !parts[2].matches("seed|recover|check")
+                || !parts[1].matches("C(?:[0-9]|10|11|12|13|14|15|16|17|18|19|20|21|22|24|25|26|27|28|29|30|32|33)") || !parts[2].matches("seed|recover|check")
                 || !server.getWorldData().getLevelName().equals("world-W158-" + parts[0] + "-" + parts[1])) {
             throw new IllegalStateException("Not a disposable W158 release server");
         }
@@ -95,7 +95,8 @@ public final class RocketReleaseNativeCuts {
         var parts = selection.split(":");
         if (parts.length != 3) { return ""; }
         return switch (parts[2]) {
-            case "seed" -> parts[1].equals("C17") ? "C6" : parts[1];
+            case "seed" -> parts[1].equals("C17") ? "C6" : parts[1].equals("C24") ? "C3"
+                    : java.util.Set.of("C12", "C26").contains(parts[1]) ? "C2" : parts[1];
             case "recover" -> recovery;
             default -> "";
         };

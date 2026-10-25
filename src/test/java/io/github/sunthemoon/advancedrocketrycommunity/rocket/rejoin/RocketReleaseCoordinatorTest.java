@@ -94,6 +94,29 @@ class RocketReleaseCoordinatorTest {
         }
     }
 
+    @Test void closedSidecarRefusesBeforeTheRamFenceOrNativeCapture() throws Exception {
+        var t = legacy();
+        try (var s = new Session(t)) {
+            s.sidecar.close();
+            assertFalse(s.release.admit(plan(t)));
+            assertFalse(s.release.fenced(t.logicalRocketId()));
+            assertEquals(0, s.world.captures);
+            assertTrue(s.world.events.isEmpty());
+            assertSame(t, s.journal.find(t.transferId()).orElseThrow());
+        }
+    }
+
+    @Test void repeatStillFindsPlacementOnlyBatchAfterSeatsComplete() throws Exception {
+        var t = legacy(); var p = plan(t);
+        try (var s = new Session(t)) {
+            assertTrue(s.release.admit(p)); s.finish();
+            assertFalse(s.release.fenced(t.logicalRocketId()));
+            assertEquals(p.batch().release(), s.release.release(t.transferId()).orElseThrow());
+            assertEquals("PLACEMENT", s.release.stage(p.batch().release()));
+            assertEquals(1, s.sidecar.root().nextSequence());
+        }
+    }
+
     @Test void completesOnlyAfterBothAcknowledgementsAndDoesNotRevokeALaterSameSeatAssignment() throws Exception {
         var t = legacy(); var p = plan(t);
         try (var s = new Session(t)) {

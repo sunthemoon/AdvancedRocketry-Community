@@ -14,6 +14,26 @@
   "limit_kinds": ["OVERSIZED", "DEPTH"],
   "integration_heavy_1_only_counts": {"guard": 2, "placed": 1, "verified": 1, "player_limit": 0},
   "all_other_warning_counts": 0,
+  "native_temporary_failure": {
+    "scope": "One failed temporary player write in H1/H2 C21 seed; zero elsewhere.",
+    "message": "Failed to save player data for W159Passenger",
+    "loggers": ["minecraft/PlayerDataStorage", "net.minecraft.world.level.storage.PlayerDataStorage/"],
+    "thread": "Server thread",
+    "level": "WARN",
+    "count": 1
+  },
+  "native_shutdown_clean": {
+    "scope": "Exactly once in H1/H2 C20 seed; zero in every other run.",
+    "holds": ["H1", "H2"],
+    "cut": "C20",
+    "mode": "seed",
+    "count": 1,
+    "otherwise_count": 0,
+    "thread": "Server thread",
+    "level": "INFO",
+    "loggers": ["io.gi.su.ad.AdvancedRocketryCommunity/", "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/"],
+    "message": "ARCE_W159_SHUTDOWN_CLEAN threads=0 tickets=0"
+  },
   "native_c9": {
     "scope": "Only H1/H2 C9 seed: one marked nonempty backup directory; no allowances on either restart.",
     "loggers": ["minecraft/Util", "net.minecraft.Util/"],

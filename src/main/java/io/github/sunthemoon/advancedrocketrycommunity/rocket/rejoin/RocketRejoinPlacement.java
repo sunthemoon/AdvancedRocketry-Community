@@ -35,6 +35,7 @@ final class RocketRejoinPlacement implements AutoCloseable {
     private final RocketRejoinSaveClock saves = new RocketRejoinSaveClock();
     private final Map<UUID, Work> work = new LinkedHashMap<>();
     private int cursor;
+    long lastPromptTick() { return saves.lastPromptTick(); }
     RocketRejoinPlacement(MinecraftServer server, RocketRejoinSavedData data, RocketRejoinGuards guards) {
         this(server, data, guards, release -> RocketRuntime.rejoinPlacementReady(server, release));
     }

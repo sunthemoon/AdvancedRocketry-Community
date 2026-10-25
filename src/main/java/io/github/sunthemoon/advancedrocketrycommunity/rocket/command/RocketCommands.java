@@ -139,6 +139,7 @@ public final class RocketCommands {
         }
         event.getDispatcher().register(Commands.literal("arce").then(root));
         RocketDisassemblyCommands.register(event.getDispatcher(), rockets);
+        RocketRejoinCommands.register(event.getDispatcher());
     }
 
     private int journalProbe(CommandContext<CommandSourceStack> context, String operation) throws CommandSyntaxException {
