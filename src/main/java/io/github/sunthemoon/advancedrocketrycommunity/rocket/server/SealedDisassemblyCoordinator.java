@@ -211,6 +211,9 @@ final class SealedDisassemblyCoordinator {
         var pos = hint.position(); var chunk = level.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
         if (chunk == null || !(chunk.getBlockEntities().get(pos) instanceof SealedRocketBlockEntity carrier)
                 || !carrier.unsealAttemptDue(server.getTickCount())) { return; }
+        // An active recovery owns publication: its reservation would refuse this attempt by construction.
+        // Do not manufacture a transient failure/backoff before the owner's checked completion hint.
+        if (carrier.member().filter(member -> work.containsKey(member.transaction())).isPresent()) { return; }
         try {
             var result = unsealResult(level, carrier);
             if (result == SealedMaterializer.Result.HELD) {
