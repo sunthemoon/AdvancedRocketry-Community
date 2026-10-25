@@ -109,7 +109,11 @@ public final class RocketReleaseCoordinator implements AutoCloseable {
     public boolean placementReady(UUID release) {
         owner();
         var batch = sidecar.root().batches().stream().filter(b -> b.release().equals(release)).findFirst().orElse(null);
-        return batch != null && sidecar.acknowledgedCurrent() && port.applySeats(batch);
+        var installed = sidecar.acknowledgedRoot();
+        // Loaded S1 is durable classification; placement must not depend on a conflicting J1.
+        // Never reapply an old filter after S2: later boarding is a different assignment.
+        return batch != null && installed != null && installed.batches().contains(batch)
+                && (!pendingSeats(installed, release) || port.applySeats(batch));
     }
     public java.util.Optional<UUID> release(UUID transfer) {
         owner(); return work.values().stream().filter(w -> w.batch.transfer().equals(transfer)).map(w -> w.batch.release()).findFirst();

@@ -36,8 +36,11 @@ public final class RocketRejoinGuards {
     private final MinecraftServer server;
     private final RocketRejoinSavedData data;
     private final Map<UUID, Session> sessions = new HashMap<>();
+    private final RocketRejoinPlacement placement;
 
-    RocketRejoinGuards(MinecraftServer server, RocketRejoinSavedData data) { this.server = server; this.data = data; }
+    RocketRejoinGuards(MinecraftServer server, RocketRejoinSavedData data) {
+        this.server = server; this.data = data; placement = new RocketRejoinPlacement(server, data, this);
+    }
 
     RocketRejoinIndex index() {
         var roots = new ArrayList<>(data.pendingRoots()); roots.add(data.root());
@@ -49,9 +52,13 @@ public final class RocketRejoinGuards {
     Session session(UUID player) { return sessions.get(player); }
     java.util.List<Session> sessions() { return java.util.List.copyOf(sessions.values()); }
     public void join(ServerPlayer player) {
+        if (data.root().entries().stream().noneMatch(e -> e.player().equals(player.getUUID())
+                && e.placement() == RocketRejoinRoot.Placement.PENDING && RocketRejoinMarker.matches(player.getPersistentData(), e))) {
+            player.getPersistentData().remove(RocketRejoinMarker.KEY);
+        }
         var old = sessions.get(player.getUUID());
         if (old != null && old.player == player && old.online) { return; }
-        if (old != null) { sessions.remove(player.getUUID()); }
+        if (old != null) { placement.cancel(old); sessions.remove(player.getUUID()); }
         var index = index();
         if (!index.contains(player.getUUID())) { return; }
         if (index.overflow() || sessions.size() >= RocketRejoinRoot.MAX_ENTRIES) {
@@ -60,6 +67,7 @@ public final class RocketRejoinGuards {
         }
         var session = new Session(player, server.getTickCount(), durable(player.getUUID()));
         sessions.put(player.getUUID(), session); pin(session);
+        log(session, "guard");
         player.displayClientMessage(message("waiting", false), false);
     }
     private boolean durable(UUID player) {
@@ -74,12 +82,16 @@ public final class RocketRejoinGuards {
                 complete(s);
                 if (s.online && !s.disconnected) { RocketRuntime.resumeDroppedRejoin(s.player); }
             } else if (s.online && !s.disconnected && server.getTickCount() >= s.deadline) {
-                pin(s); s.disconnected = true; s.player.connection.disconnect(message(s.reason, true));
+                pin(s); s.disconnected = true; placement.cancel(s); log(s, "disconnect"); s.player.connection.disconnect(message(s.reason, true));
             }
         }
+        placement.tick();
     }
     void reason(Session s, String reason) {
-        if (!s.reason.equals(reason)) { s.reason = reason; if (s.online) { s.player.displayClientMessage(message(reason, false), false); } }
+        if (!s.reason.equals(reason)) {
+            s.reason = reason; log(s, reason);
+            if (s.online) { s.player.displayClientMessage(message(reason, false), false); }
+        }
     }
     public void pin(ServerPlayer player) { var s = sessions.get(player.getUUID()); if (s != null && s.player == player) { pin(s); } }
     static void pin(Session s) { if (s.online) { pin(s.player, s.level, s.position); } }
@@ -96,7 +108,7 @@ public final class RocketRejoinGuards {
     }
     void complete(Session s) {
         if (sessions.get(s.player.getUUID()) != s) { return; }
-        pin(s); cleanup(s.player, s.originalEffects); sessions.remove(s.player.getUUID());
+        pin(s); cleanup(s.player, s.originalEffects); placement.cancel(s); sessions.remove(s.player.getUUID());
     }
     static void cleanup(ServerPlayer player, Set<MobEffect> original) {
         player.clearFire(); player.setTicksFrozen(0);
@@ -104,7 +116,11 @@ public final class RocketRejoinGuards {
             if (effect.getCategory() == MobEffectCategory.HARMFUL && !original.contains(effect)) { player.removeEffect(effect); }
         }
     }
-    public void close() { sessions.values().forEach(RocketRejoinGuards::pin); sessions.clear(); }
+    public void close() { sessions.values().forEach(RocketRejoinGuards::pin); placement.close(); sessions.clear(); }
+    private static void log(Session s, String state) {
+        io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity.LOGGER.info(
+                "ARCE_REJOIN_GUARD player={} state={} reason={}", s.player.getUUID(), state, s.reason);
+    }
     private static Component message(String reason, boolean disconnect) {
         return Component.translatable("message.advancedrocketrycommunity.rejoin." + (disconnect ? "disconnect" : "guard"),
                 Component.translatable("message.advancedrocketrycommunity.rejoin." + reason));

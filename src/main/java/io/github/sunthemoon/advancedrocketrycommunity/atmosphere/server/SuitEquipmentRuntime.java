@@ -10,6 +10,12 @@ import net.minecraft.world.item.ItemStack;
 
 /** Item-use bridge to the mod-owned service; session state clears through server-stop handling. */
 public final class SuitEquipmentRuntime {
+    /** Read-only landing check; no debit or equipment mutation grants this result. */
+    public static boolean hasRejoinAir(net.minecraft.server.level.ServerPlayer player) {
+        SuitEquipmentService current = service;
+        return current != null && player.getServer().isSameThread() && current.countPieces(player) == 4
+                && current.readOxygen(player).oxygenUnits() > 0;
+    }
     private static volatile SuitEquipmentService service;
 
     private SuitEquipmentRuntime() { }
