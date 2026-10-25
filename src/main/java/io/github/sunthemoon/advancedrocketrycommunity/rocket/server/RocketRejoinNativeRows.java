@@ -40,6 +40,9 @@ final class RocketRejoinNativeRows {
             require(java.util.stream.StreamSupport.stream(server.overworld().getAllEntities().spliterator(), false)
                     .noneMatch(e -> e instanceof RocketEntity),
                     "Player-first fixture already loaded its rocket");
+            // Arm the gated native hooks before vanilla temporarily publishes the joining player;
+            // ReleaseTestPlayers records channel ownership only when placeNewPlayer returns.
+            RocketRejoinEvents.get(server);
             second = login(SECOND, "W160FSecond");
             if (mode.equals("recover")) { require(RocketRejoinProtection.guarded(second), "Player-first login was not guarded"); }
             AdvancedRocketryCommunity.LOGGER.info("ARCE_W160F_PLAYER_FIRST mode={} loaded_rockets=0 guarded={}",
