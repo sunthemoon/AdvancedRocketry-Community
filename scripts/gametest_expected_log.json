@@ -54,9 +54,9 @@
       "level": "WARN",
       "logger": "net.minecraft.server.players.PlayerList/",
       "message": "Couldn't reattach entity to player",
-      "counts": {"rocket_rejoin_vehicle": 1},
+      "counts": {"rocket_rejoin_vehicle": 1, "rocket_rejoin_vehicle_first": 1},
       "test": "RocketRejoinReadbackGameTests.entityJoinGuardPreventsVanillaRootVehicleRemount",
-      "reason": "The entity-join guard refuses vanilla's subsequent attempt to remount the saved boat RootVehicle."
+      "reason": "Both entity-first and player-first logins refuse vanilla's subsequent attempt to remount the saved boat RootVehicle."
     },
     {
       "id": "w132-item-cargo-named-cleanup",

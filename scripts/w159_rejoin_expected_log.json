@@ -12,7 +12,7 @@
   "guard_states": ["guard", "disconnect", "waiting", "capacity", "conflict", "unsafe", "tickets", "io", "oversized", "dead"],
   "target_values": ["PAD", "OVERWORLD_SPAWN"],
   "limit_kinds": ["OVERSIZED", "DEPTH"],
-  "isolated_integration_counts": {"guard": 2, "placed": 1, "verified": 1, "player_limit": 0},
+  "integration_heavy_1_only_counts": {"guard": 2, "placed": 1, "verified": 1, "player_limit": 0},
   "all_other_warning_counts": 0,
   "native_c9": {
     "scope": "Only H1/H2 C9 seed: one marked nonempty backup directory; no allowances on either restart.",

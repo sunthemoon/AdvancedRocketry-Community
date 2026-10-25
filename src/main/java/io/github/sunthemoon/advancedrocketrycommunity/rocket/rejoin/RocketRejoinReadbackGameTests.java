@@ -44,6 +44,8 @@ public final class RocketRejoinReadbackGameTests {
     public static void noSafeCandidateEndsAtProtectedDeadline(GameTestHelper helper) { new Fixture(helper, "Unsafe").start(); }
     @GameTest(template = "rocket_test", batch = "rocket_rejoin_vehicle", timeoutTicks = 240)
     public static void entityJoinGuardPreventsVanillaRootVehicleRemount(GameTestHelper helper) { new Fixture(helper, "Vehicle").start(); }
+    @GameTest(template = "rocket_test", batch = "rocket_rejoin_vehicle_first", timeoutTicks = 240)
+    public static void playerFirstLoginCannotRemountItsSubsequentlyLoadedRootVehicle(GameTestHelper helper) { new Fixture(helper, "VehicleFirst").start(); }
     @GameTest(template = "rocket_test", batch = "rocket_rejoin_clone", timeoutTicks = 240)
     public static void deathAndRealRespawnDiscardTheOldSessionsReadback(GameTestHelper helper) { new Fixture(helper, "Clone").start(); }
 
@@ -101,7 +103,7 @@ public final class RocketRejoinReadbackGameTests {
                     b.resources(), b.before(), b.scrubbed(), b.released(), List.of(new Slot("minecraft:overworld", p.x() >> 4, p.z() >> 4)));
             entry = new Entry(b.release(), id, 0, Placement.PENDING, Seat.VERIFIED, null);
             var root = new RocketRejoinRoot(1, List.of(b), List.of(entry));
-            if (mode.equals("Vehicle")) {
+            if (mode.startsWith("Vehicle")) {
                 player = connect(); player.setHealth(1);
                 boat = new Boat(helper.getLevel(), center.getX() + 0.5, center.getY(), center.getZ() + 0.5);
                 helper.assertTrue(helper.getLevel().addFreshEntity(boat) && player.startRiding(boat, true), "Old vehicle fixture did not mount");
@@ -109,6 +111,7 @@ public final class RocketRejoinReadbackGameTests {
                 try (var input = Files.newInputStream(playerDirectory.resolve(id + ".dat"))) {
                     helper.assertTrue(net.minecraft.nbt.NbtIo.readCompressed(input).contains("RootVehicle"), "Vanilla did not save the old RootVehicle");
                 }
+                if (mode.equals("VehicleFirst")) { boat.discard(); }
             }
             helper.assertTrue(data.submit(root), "Fixture S1 refused");
             player = connect(); player.setHealth(1);
