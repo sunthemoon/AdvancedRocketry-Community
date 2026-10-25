@@ -189,6 +189,9 @@ final class RocketOrdinaryRetirement {
     boolean replacing(UUID logical) {
         var entry = pending.get(logical); return entry != null && entry.site == Site.BEFORE_REPLACE;
     }
+    boolean plainReleasePending(UUID logical) {
+        var entry = pending.get(logical); return entry != null && entry.site == Site.BEFORE_RELEASE;
+    }
     List<io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRegion> reservations(UUID except) {
         return pending.values().stream().filter(entry -> !entry.logical().equals(except))
                 .map(entry -> entry.port.reservation()).filter(java.util.Objects::nonNull).toList();

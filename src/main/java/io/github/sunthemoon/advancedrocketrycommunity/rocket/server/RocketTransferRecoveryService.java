@@ -213,6 +213,9 @@ final class RocketTransferRecoveryService {
     }
     RocketTransferBayDispatch bays() { return bays; }
     RocketOrdinaryRetirement retirements() { return retirements; }
+    RocketI6Retirement i6Port(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record, RocketEntity rocket) {
+        return new RocketI6Retirement(server, journal, bays, fences, liveTransfers, settledTransfers, record, rocket);
+    }
     RocketReplacementRetirement replacementPort(MinecraftServer server, RocketTransferSavedData journal, RocketEntity rocket,
             RocketTransferRecord previous, RocketTransferRecord successor, java.util.function.BooleanSupplier authorized,
             java.util.function.BooleanSupplier targetAvailable) {

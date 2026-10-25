@@ -488,7 +488,8 @@ final class RocketTransferService {
         if (sealedClaim.test(rocket)) { return false; }
         if (!io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate.resourcesIdle(rocket)) { return false; }
         if (landed.pending(rocket.assemblyTransactionId().orElse(null))) { return false; }
-        if (recovery.retirements().replacing(rocket.assemblyTransactionId().orElse(null))) { return false; }
+        if (recovery.retirements().replacing(rocket.assemblyTransactionId().orElse(null))
+                || plainReleasePending(rocket)) { return false; }
         if (!(rocket.level() instanceof ServerLevel level) || !level.getServer().isSameThread()
                 || !rocket.operational() || rocket.flightData().orElseThrow().activeTransferId().isPresent()) {
             return false;
@@ -525,9 +526,30 @@ final class RocketTransferService {
 
     /** W44's FM12a hook only; player and release-test disassembly use {@link #beginLandedDisassembly}. */
     boolean releaseLandedReservation(RocketEntity rocket) {
-        if (RocketReleaseAccess.fenced(rocket)) { return false; }
-        return !recovery.retirements().replacing(rocket.assemblyTransactionId().orElse(null))
-                && RocketLandedDisassemblies.releasePlain(rocket, this::landedPort);
+        if (!(rocket.level() instanceof ServerLevel level) || !level.getServer().isSameThread() || !rocket.operational()
+                || RocketReleaseAccess.fenced(rocket) || sealedClaim.test(rocket)) { return false; }
+        var server = level.getServer(); var journal = RocketTransferSavedData.get(server);
+        var logical = rocket.assemblyTransactionId().orElseThrow(); var retirements = recovery.retirements();
+        if (!journal.operational() || retirements.pending(logical) || landed.pending(logical)) { return false; }
+        var record = journal.findByLogicalRocket(logical).orElse(null);
+        if (record == null) { return !journal.resourceMutationUnproved(logical); }
+        if (!RocketLandedDisassemblyRules.landedRecordAdmitted(record.schemaVersion(), record.nativeTransfer().isPresent())
+                || !RocketTransferEntities.isReplaceableLandedAuthority(rocket, record) || !retirements.pendingRoom(logical)) { return false; }
+        var proof = recovery.i6Port(server, journal, record, rocket);
+        try (var held = RocketOrdinaryRetirement.hold(journal, logical)) {
+            if (held.token() == null || !proof.requestCurrent() || !proof.escrowAllows(journal, record, held.token())) { return false; }
+            var port = landedPort(server, journal);
+            retirements.begin(proof, journal, RocketOrdinaryRetirement.Site.BEFORE_RELEASE, record, rocket.getUUID(),
+                    List.of(), false, held, RocketOrdinaryRetirement.Effects.of(() -> {
+                        if (port.bayAllowsRemoval(record)) { port.released(record, rocket.getUUID()); }
+                        return true;
+                    }));
+        }
+        return false;
+    }
+
+    private boolean plainReleasePending(RocketEntity rocket) {
+        return recovery.retirements().plainReleasePending(rocket.assemblyTransactionId().orElse(null));
     }
 
     /** W85 M0 and M1; SUCCESS means that L has no landed record T, so the caller runs today's one-tick path. */
