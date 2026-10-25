@@ -88,6 +88,7 @@ final class RocketTransferService {
 
     private java.util.function.Predicate<RocketEntity> sealedClaim = rocket -> false;
     private java.util.function.Function<MinecraftServer, List<RocketRegion>> sealedReservations = server -> List.of();
+    private final RocketI6Entry i6 = new RocketI6Entry(recovery, landed, rocket -> sealedClaim.test(rocket), this::landedPort);
 
     RocketOrdinaryRetirement ordinaryRetirements() { return recovery.retirements(); }
     void sealedClaims(java.util.function.Predicate<RocketEntity> claim,
@@ -484,25 +485,7 @@ final class RocketTransferService {
 
     /** No endpoint may mutate a balance that restart recovery can replace from its journal. */
     boolean resourceMutationAllowed(RocketEntity rocket) {
-        if (RocketReleaseAccess.fenced(rocket)) { return false; }
-        if (sealedClaim.test(rocket)) { return false; }
-        if (!io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate.resourcesIdle(rocket)) { return false; }
-        if (landed.pending(rocket.assemblyTransactionId().orElse(null))) { return false; }
-        if (recovery.retirements().replacing(rocket.assemblyTransactionId().orElse(null))
-                || plainReleasePending(rocket)) { return false; }
-        if (!(rocket.level() instanceof ServerLevel level) || !level.getServer().isSameThread()
-                || !rocket.operational() || rocket.flightData().orElseThrow().activeTransferId().isPresent()) {
-            return false;
-        }
-        var journal = RocketTransferSavedData.get(level.getServer());
-        if (journal.resourceMutationUnproved(rocket.assemblyTransactionId().orElseThrow())) { return false; }
-        var record = journal.findByLogicalRocket(rocket.assemblyTransactionId().orElseThrow()).orElse(null);
-        if (record != null && record.nativeTransfer().isPresent()) {
-            return io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate.terminalSuccessor(rocket);
-        }
-        return resourceMutationAllowed(journal.operational(), record == null ? null : record.phase(),
-                record != null && settledTransfers.contains(record.transferId()) && !liveTransfers.contains(record.transferId()),
-                record != null && RocketTransferEntities.isReplaceableLandedAuthority(rocket, record));
+        return i6.resourceMutationAllowed(rocket, liveTransfers, settledTransfers);
     }
 
     static boolean resourceMutationAllowed(boolean operational, RocketTransferPhase phase,
@@ -526,38 +509,13 @@ final class RocketTransferService {
 
     /** W44's FM12a hook only; player and release-test disassembly use {@link #beginLandedDisassembly}. */
     boolean releaseLandedReservation(RocketEntity rocket) {
-        if (!(rocket.level() instanceof ServerLevel level) || !level.getServer().isSameThread() || !rocket.operational()
-                || RocketReleaseAccess.fenced(rocket) || sealedClaim.test(rocket)) { return false; }
-        var server = level.getServer(); var journal = RocketTransferSavedData.get(server);
-        var logical = rocket.assemblyTransactionId().orElseThrow(); var retirements = recovery.retirements();
-        if (!journal.operational() || retirements.pending(logical) || landed.pending(logical)) { return false; }
-        var record = journal.findByLogicalRocket(logical).orElse(null);
-        if (record == null) { return !journal.resourceMutationUnproved(logical); }
-        if (!RocketLandedDisassemblyRules.landedRecordAdmitted(record.schemaVersion(), record.nativeTransfer().isPresent())
-                || !RocketTransferEntities.isReplaceableLandedAuthority(rocket, record) || !retirements.pendingRoom(logical)) { return false; }
-        var proof = recovery.i6Port(server, journal, record, rocket);
-        try (var held = RocketOrdinaryRetirement.hold(journal, logical)) {
-            if (held.token() == null || !proof.requestCurrent() || !proof.escrowAllows(journal, record, held.token())) { return false; }
-            var port = landedPort(server, journal);
-            retirements.begin(proof, journal, RocketOrdinaryRetirement.Site.BEFORE_RELEASE, record, rocket.getUUID(),
-                    List.of(), false, held, RocketOrdinaryRetirement.Effects.of(() -> {
-                        if (port.bayAllowsRemoval(record)) { port.released(record, rocket.getUUID()); }
-                        return true;
-                    }));
-        }
-        return false;
-    }
-
-    private boolean plainReleasePending(RocketEntity rocket) {
-        return recovery.retirements().plainReleasePending(rocket.assemblyTransactionId().orElse(null));
+        return i6.releasePlain(rocket);
     }
 
     /** W85 M0 and M1; SUCCESS means that L has no landed record T, so the caller runs today's one-tick path. */
     RocketValidationCode beginLandedDisassembly(RocketEntity rocket, java.util.function.Supplier<Optional<RocketValidationCode>> preflight,
             RocketLandedDisassemblies.Request request) {
-        if (RocketReleaseAccess.fenced(rocket)) { return RocketValidationCode.REGION_BUSY; }
-        return sealedClaim.test(rocket) || recovery.retirements().replacing(rocket.assemblyTransactionId().orElse(null)) ? RocketValidationCode.REGION_BUSY
-                : landed.begin(rocket, preflight, request, this::landedPort);
+        return i6.begin(rocket, preflight, request);
     }
     boolean landedDisassemblyPending(RocketEntity rocket) { return landed.pending(rocket.assemblyTransactionId().orElse(null)); }
     RocketLandedDisassemblies landedDisassemblies() { return landed; }
