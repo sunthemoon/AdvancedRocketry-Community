@@ -61,7 +61,7 @@ public final class RocketReleaseBoardingGameTests {
         RocketEntity rocket, stale;
         ServerPlayer retainedPlayer;
         FakePlayer firstPlayer, stranger;
-        Path directory;
+        Path sidecarFile;
         ChunkPos originSlot, otherSlot;
         BlockPos origin, other;
         UUID release;
@@ -106,11 +106,15 @@ public final class RocketReleaseBoardingGameTests {
             level.getChunkSource().addRegionTicket(TICKET, otherSlot, 2, ticket);
             level.getChunk(otherSlot.x, otherSlot.z);
             if (!level.areEntitiesLoaded(originSlot.toLong()) || !level.areEntitiesLoaded(otherSlot.toLong())) { return; }
-            // Isolate only this test's sidecar. Other tests' real journal entries and the unused-world test stay intact.
-            directory = Files.createTempDirectory("arce-w158-boarding-");
+            // Own only an initially absent sidecar, and restore that absence after the test. Keep its actual world
+            // filename so a vanilla autosave cannot try to rebind a detached writer. Other journal entries stay intact.
             originalSidecar = RocketRejoinEvents.get(server);
+            var file = ManagedRootSupplier.dataFile(server, RocketRejoinSavedData.TYPE);
+            helper.assertTrue(originalSidecar.root().equals(RocketRejoinRoot.empty()) && !Files.exists(file),
+                    "Boarding fixture requires an unused sidecar; existing release state must not be replaced");
+            sidecarFile = file;
             originalOwner = RocketSourceRetirementFixtures.field(transfers, "releases");
-            sidecar = RocketRejoinSavedData.open(directory.resolve(RocketRejoinSavedData.TYPE.fileName()));
+            sidecar = RocketRejoinSavedData.open(sidecarFile);
             installSidecar(); installed = true;
             retainedPlayer = FirstEventGameTestPlayers.join(server, retained, "W158Retained", level, origin);
             fixture = RocketSourceRetirementFixtures.countdown(level, origin, other, List.of(first, second, retained), 0);
@@ -198,7 +202,7 @@ public final class RocketReleaseBoardingGameTests {
             assertOldSourcesClean();
             firstPlayer.stopRiding(); rocket.discard();
             transfers.releaseOwner(server).close(); sidecar.close();
-            sidecar = RocketRejoinSavedData.open(directory.resolve(RocketRejoinSavedData.TYPE.fileName()));
+            sidecar = RocketRejoinSavedData.open(sidecarFile);
             installSidecar(); phase = 5;
         }
         void reload() {
@@ -283,10 +287,9 @@ public final class RocketReleaseBoardingGameTests {
                 RocketTransferEntities.releaseFlightTickets(server, record);
             }
             if (otherSlot != null) { level.getChunkSource().removeRegionTicket(TICKET, otherSlot, 2, ticket); }
-            if (directory != null) {
-                try (var paths = Files.walk(directory)) {
-                    for (var path : paths.sorted(java.util.Comparator.reverseOrder()).toList()) { Files.delete(path); }
-                } catch (IOException failure) { throw new java.io.UncheckedIOException(failure); }
+            if (sidecarFile != null) {
+                try { Files.deleteIfExists(sidecarFile); }
+                catch (IOException failure) { throw new java.io.UncheckedIOException(failure); }
             }
         }
     }
