@@ -183,6 +183,12 @@ def verify(disk, hold, cut, mode, boundary, baseline, seed):
 def verify_two_riders(disk, seed):
     if disk["sidecar"]["entries"] or disk["sidecar"]["batches"]:
         raise smoke.SmokeError("Two-rider completion retained an obligation")
+    released = {FIRST, PLAYER}
+    manifests = [copy["entity"]["RocketEntityData"]["flight_data"] for copy in disk["rockets"]]
+    manifests.extend(transfer[key] for transfer in disk["journal"]["transfers"]
+                     for key in ("source_flight", "destination_flight"))
+    if any(uuid_text(seat["passenger_id"]) in released for manifest in manifests for seat in release.seats(manifest)):
+        raise smoke.SmokeError("Two-rider completion retained a released seat in native or reconstructible journal data")
     for identity in (FIRST, PLAYER):
         installed = disk["players"].get(identity, {})
         if (not installed.get("present") or uuid_text(installed["UUID"]) != identity

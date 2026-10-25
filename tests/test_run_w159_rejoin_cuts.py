@@ -13,6 +13,7 @@ class RejoinCutRunnerTests(unittest.TestCase):
     def test_two_rider_completion_keeps_both_installed_identities_clean(self):
         self.assertIn(("H1", "C22"), runner.CASES)
         disk = self.fixture(); disk["sidecar"].update(entries=[], batches=[]); disk["players"] = {}
+        disk["journal"] = {"transfers": []}
         for identity in (runner.FIRST, runner.PLAYER):
             disk["players"][identity] = dict(present=True, UUID=[(uuid.UUID(identity).int >> n) & 0xFFFFFFFF for n in (96, 64, 32, 0)],
                     Health=1, DeathTime=0, Dimension="minecraft:overworld", Pos=[2.5, 70, 3.5], RootVehicle=None, marker=None)
