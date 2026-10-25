@@ -190,7 +190,44 @@ def preserved_stores(disk, previous):
                 raise smoke.SmokeError("Cut changed non-passenger/frozen store: " + key)
         if previous["journal"] != journal:
             raise smoke.SmokeError("Cut changed the journal envelope or full outbox")
+        for key in ("batches", "entries"):
+            if previous[key] and not value[key]:
+                raise smoke.SmokeError("Cut dropped frozen release obligations: " + key)
     return value
+
+
+def verify_seat_census(disk, hold, cut, mode, recovery_cut=""):
+    """Check exact fixture identities and seat indices, not just the number of riders."""
+    def passenger(last):
+        return (22544384, 16384, -2147483648, last)
+    def assignments(flight):
+        return sorted((tuple(seat["passenger_id"]), seat["seat_index"]) for seat in seats(flight))
+    original = sorted(((passenger(1), 0), (passenger(2), 1)))
+    released = original if hold == "H1" else sorted(((passenger(3), 0), (passenger(2), 1)))
+    interrupted = mode == "recover" and bool(recovery_cut)
+    before_store = (mode == "seed" or interrupted and recovery_cut == "B1_CAPTURE") and cut in ("C0", "C1", "C2", "C3", "C16")
+    expected_live = released if before_store else []
+    for rocket in disk["rockets"]:
+        if assignments(rocket["entity"]["RocketEntityData"]["flight_data"]) != expected_live:
+            raise smoke.SmokeError("Native player/seat census differs at cut")
+    done = cut != "C16" and (cut in ("C5", "C6", "C14", "C15", "C17")
+                              or mode != "seed" and not (interrupted and recovery_cut == "B1_CAPTURE"))
+    expected_t = [(passenger(1), 0)] if done and hold == "H2" else original
+    for transfer in disk["journal"]["transfers"]:
+        if any(assignments(transfer[key]) != expected_t for key in ("source_flight", "destination_flight")):
+            raise smoke.SmokeError("Journal player/seat census differs at cut")
+    sidecar = disk["sidecar"]
+    if sidecar is not None and cut != "C17":
+        if len(sidecar["batches"]) != 1:
+            raise smoke.SmokeError("Missing frozen batch census")
+        batch = sidecar["batches"][0]
+        if sorted((tuple(e["player"]), e["seat_index"]) for e in sidecar["entries"]) != released:
+            raise smoke.SmokeError("Sidecar player/seat census differs at cut")
+        if sorted(map(tuple, batch["released"])) != sorted(player for player, _ in released):
+            raise smoke.SmokeError("Frozen released set differs")
+        if sorted((s["level"], s["x"], s["z"]) for s in batch["slots"]) != [
+                ("advancedrocketrycommunity:moon", 4, 4), ("minecraft:overworld", 4, 4)]:
+            raise smoke.SmokeError("Persisted native slot census differs")
 
 
 def stop_boundary(cut, mode, recovery_cut):
@@ -257,6 +294,7 @@ def run(args):
                     baseline = (verify_recovery(disk, hold, cut, recovery_cut, baseline, seed)
                                 if mode == "recover" and recovery_cut else verify(disk, hold, cut, mode, baseline))
                     previous = preserved_stores(disk, previous)
+                    verify_seat_census(disk, hold, cut, mode, recovery_cut)
                     if mode == "seed":
                         seed = disk
                     row["external_kill"] = bool(boundary)

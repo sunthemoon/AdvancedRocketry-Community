@@ -61,6 +61,17 @@ class ReleaseCutRunnerTests(unittest.TestCase):
             with self.assertRaises(runner.smoke.SmokeError):
                 runner.preserved_stores(changed, before)
 
+    def test_exact_census_rejects_a_wrong_surviving_player_with_the_same_count(self):
+        def assignment(player, seat):
+            return {"passenger_id": [22544384, 16384, -2147483648, player], "seat_index": seat}
+        flight = {"passengers": {"assignments": [assignment(1, 0)]}}
+        disk = {"rockets": [], "sidecar": None, "journal": {"transfers": [
+            {"source_flight": flight, "destination_flight": flight}]}}
+        runner.verify_seat_census(disk, "H2", "C5", "recover", "S2_PENDING")
+        flight["passengers"]["assignments"] = [assignment(2, 0)]
+        with self.assertRaises(runner.smoke.SmokeError):
+            runner.verify_seat_census(disk, "H2", "C5", "recover", "S2_PENDING")
+
     def test_gone_restarts_preserve_the_frozen_resource_witness(self):
         import copy
         disk = {"rockets": [], "journal": {"transfers": []}, "sidecar": {"next_sequence": 1,
