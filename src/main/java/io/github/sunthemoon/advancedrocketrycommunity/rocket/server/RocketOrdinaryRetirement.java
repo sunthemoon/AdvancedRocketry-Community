@@ -205,6 +205,15 @@ final class RocketOrdinaryRetirement {
         return pending.containsKey(logical) || pending.size() + sealedEntries.getAsInt() < MAX_PENDING;
     }
     boolean attemptRoom() { return activeAttempts() + sealedAttempts.getAsInt() < MAX_ATTEMPTS; }
+    /** Fail-back arrivals and nudges must win admission before reserving and changing the source (N2). */
+    Held holdFailBack(RocketTransferSavedData journal, UUID logical) {
+        return attemptRoom() && proofTurns.ordinaryReservationRoom(logical) ? hold(journal, logical) : new Held(null);
+    }
+    /** Recovery or reconnect may nudge an existing fail-back and renew its creation-tick token too. */
+    Held holdReturn(RocketTransferSavedData journal, UUID logical) {
+        var existing = pending.get(logical);
+        return existing != null && existing.site == Site.FAIL_BACK ? holdFailBack(journal, logical) : hold(journal, logical);
+    }
     /** Read-only, for tests: the attempts an entry for L has started so far, or -1 without one. */
     int attempts(UUID logical) { var entry = pending.get(logical); return entry == null ? -1 : entry.attempts; }
     /** Read-only, for tests: the last wait or failure reason of the entry for L, or null. */
@@ -541,6 +550,7 @@ final class RocketOrdinaryRetirement {
         if (!reason.equals("BUSY")) { proofTurns.withdraw(entry.logical()); }
         entry.releaseProofs();
         if (entry.site != Site.FAIL_BACK || entry.created != now) { entry.releaseToken(); }
+        else if (entry.token != null) { proofTurns.ordinaryReservationHeld(); }
         entry.state = State.WAITING;
         entry.notBefore = entry.site.destination() ? Math.max(entry.notBefore, now + delay) : now + delay;
         if (delay == 1 && !entry.site.destination()) { wake(entry); }

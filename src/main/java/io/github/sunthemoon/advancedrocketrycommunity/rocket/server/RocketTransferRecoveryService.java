@@ -358,7 +358,7 @@ final class RocketTransferRecoveryService {
         boolean sourceAction = action == RocketTransferRecoveryAction.KEEP_SOURCE
                 || action == RocketTransferRecoveryAction.REMOVE_DESTINATION_KEEP_SOURCE || action == RocketTransferRecoveryAction.REBUILD_SOURCE;
         if (sourceAction && !retirements.admits(record, null, sources, destinations)) { return retryLater(record); }
-        try (var held = RocketOrdinaryRetirement.hold(journal, record.logicalRocketId())) {
+        try (var held = retirements.holdReturn(journal, record.logicalRocketId())) {
             var reservation = held.token();
             if (reservation == null) { return retryLater(record); }
             Status status;
@@ -552,7 +552,7 @@ final class RocketTransferRecoveryService {
         }
         if (!bays.allowed(server, journal, record, RocketTransferBayRecoveryGate.Action.REMOVE_JOURNAL)) { return; }
         // W98 (I3): a waiting return is nudged; otherwise the survivor's own slot is proved before the record goes.
-        try (var held = RocketOrdinaryRetirement.hold(journal, record.logicalRocketId())) {
+        try (var held = retirements.holdReturn(journal, record.logicalRocketId())) {
             if (held.token() == null) { return; }
             retirements.begin(server, journal, RocketOrdinaryRetirement.Site.RECONNECT, record, authority, discarded, false, held,
                     settlementReleased(server, journal, record, authority));

@@ -22,7 +22,15 @@ final class SealedProofTurns {
         ordinary.putIfAbsent(id, due);
         return !sealedWaiting.getAsBoolean() || ordinaryTurn && id.equals(nextOrdinary());
     }
-    void ordinaryStarted(UUID id) { ordinary.remove(id); ordinaryTurn = false; }
+    /** Before caller mutation: a refusal registers no demand, and a new caller cannot pass an older due return. */
+    boolean ordinaryReservationRoom(UUID id) {
+        if (!sealedWaiting.getAsBoolean()) { return true; }
+        UUID next = nextOrdinary();
+        return ordinaryTurn && (next == null || id.equals(next));
+    }
+    void ordinaryStarted(UUID id) { ordinary.remove(id); ordinaryReservationHeld(); }
+    /** A caller-held token consumes admission even when its proof must wait for crew, budget or another guard. */
+    void ordinaryReservationHeld() { ordinaryTurn = false; }
     void withdraw(UUID id) { ordinary.remove(id); }
     void sealedEnded() { ordinaryTurn = true; }
     void clear() { ordinary.clear(); ordinaryTurn = false; }
