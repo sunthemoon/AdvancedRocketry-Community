@@ -306,6 +306,15 @@ public final class EscrowGovernedSourceFlightGameTests {
             finish(journal, null);
         }
 
+        private void dismountForRemount(RocketTransferRecord record, RocketEntity arrival) {
+            if (logout()) { EscrowTerminalRetryCut.assertNotStarted(helper, level.getServer(), record); }
+            helper.assertTrue(arrival.getPassengers().equals(List.of(passenger)), "F5 lost its online assignment");
+            passenger.stopRiding();
+            helper.assertTrue(passenger.getVehicle() == null && !passenger.startRiding(arrival, true),
+                    "Physical dismount was cancelled or an external mount bypassed ARMED");
+            dismounted = true;
+        }
+
         private void restingHold(RocketTransferSavedData journal) {
             var server = level.getServer(); var record = journal.find(transfer).orElseThrow();
             if (changedAt < 0) {
@@ -387,7 +396,13 @@ public final class EscrowGovernedSourceFlightGameTests {
                 if (offlineLandedAt < 0) { offlineLandedAt = level.getServer().getTickCount(); }
                 if (level.getServer().getTickCount() - offlineLandedAt < 20) { return; }
                 passenger = connect(passenger.getUUID()); reconnected = true;
-                helper.assertTrue(passenger.getVehicle() == null, "Login fixture seated its passenger instead of F5"); return;
+                helper.assertTrue(passenger.getVehicle() == null, "Login fixture seated its passenger instead of F5");
+                // Exercise checked F5 and the deliberate second dismount in one owner-thread callback.
+                // Otherwise the dispatcher starts F6 after remounting, before this fixture can dismount.
+                helper.assertTrue(io.github.sunthemoon.advancedrocketrycommunity.rocket.server
+                        .RocketGovernedPassengerGameTestSupport.reconnect(level.getServer(), journal, record, arrival)
+                        == EscrowGovernedPhases.Result.COMMITTED, "Checked relogin F5 did not complete");
+                dismountForRemount(record, arrival); return;
             }
             if (departure == Departure.LANDED && !departed
                     && arrival.flightData().orElseThrow().state() == RocketFlightState.LANDED) {
@@ -403,11 +418,7 @@ public final class EscrowGovernedSourceFlightGameTests {
             }
             if (passenger.getVehicle() != arrival) { return; }
             if (!dismounted) {
-                helper.assertTrue(arrival.getPassengers().equals(List.of(passenger)), "F5 lost its online assignment");
-                passenger.stopRiding();
-                helper.assertTrue(passenger.getVehicle() == null && !passenger.startRiding(arrival, true),
-                        "Physical dismount was cancelled or an external mount bypassed ARMED");
-                dismounted = true; return;
+                dismountForRemount(record, arrival); return;
             }
             helper.assertTrue(arrival.getPassengers().equals(List.of(passenger)), "Checked F5 reconnect duplicated its passenger");
             if (fault == Fault.LANDING) {
