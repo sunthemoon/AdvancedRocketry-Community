@@ -1734,6 +1734,15 @@
       "counts": {"w152_provider": 6, "w152f_failure_latch": 12},
       "test": "SealedProductionProviderGameTests.failedProductionPreparationRetainsCAndRejectsRemovedReferenceAccess; SealedPreparationLatchGameTests",
       "reason": "Each of the six terminal provider failures latches once per loaded carrier. The coordinator regression observes each carrier beyond 200 ticks, reconstructs it through native load, and asserts one further attempt and WARN without retrying during either load."
+    },
+    {
+      "id": "w161-release-boarding-superseding-save",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_REJOIN_RELEASE_HELD release=[0-9a-f-]{36} transfer=[0-9a-f-]{36} logical=[0-9a-f-]{36} state=CAPTURE_FAILED",
+      "counts": {"rocket_release_boarding": 1},
+      "test": "RocketReleaseBoardingGameTests.sameSeatBoardsOnlyAfterS2AndSurvivesReloadWithoutRevivingOldCopies",
+      "reason": "After a permitted retained-rider departure, the fixture explicitly stores the entity chunk while B1 is pending and asserts that its native generation supersedes the capture. W80 requires that capture to fail once and retry before S2; departure alone does not invalidate the manifest proof."
     }
   ]
 }

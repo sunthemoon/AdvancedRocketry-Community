@@ -104,7 +104,7 @@ public final class ItemCargoSettlementGameTests {
                     else {
                         // Hold the ordinary executor right after one endpoint (load) or both (unload) published.
                         String label = load ? "C2_SOURCE_AFTER" : "C2_DESTINATION_AFTER"; UUID id = EscrowCargoGameTestWorld.id(device);
-                        runtime.terminalCutForTests(server, value -> {
+                        EscrowGameTestTerminalCut.install(helper, value -> {
                             if (!cut && value.equals(label) && server.isSameThread()) { cut = true; runtime.cargoSwitches.pause(id, true); }
                         });
                         cutInstalled = true;
@@ -182,7 +182,7 @@ public final class ItemCargoSettlementGameTests {
             queued = EscrowRuntime.of(server).settlement().confirm(server, op.id(), preview.choice(), actor, preview.digest(), committed -> {
                 check(committed, "O1 was not acknowledged");
                 frozen = EscrowSettlementIntent.decode(world.member(device).settlement());
-                EscrowRuntime.of(server).terminalCutForTests(server, boundary -> {
+                EscrowGameTestTerminalCut.install(helper, boundary -> {
                     if (boundary.startsWith("O2_AFTER_") || List.of("O3_CAPTURE", "O3_AFTER", "O3J_AFTER", "O4_CAPTURE", "O4_AFTER").contains(boundary)) {
                         order.add(boundary);
                     }

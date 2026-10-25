@@ -191,7 +191,7 @@ public final class EscrowGovernedLiveReturnGameTests {
                             "Failed landing skipped live source phases or its native return wait");
                     helper.assertTrue(record.phase() == (fault == Fault.SPAWN ? RocketTransferPhase.DESTINATION_SPAWNED : RocketTransferPhase.PREPARED)
                             && (fault != Fault.SPAWN || vetoes == 1), "Return was not caused by the intended live failure");
-                    requested = true; leaseCut = new EscrowTerminalLeaseCut(server, data, record, EscrowFlightTables.Outcome.CANCELLED); return;
+                    requested = true; leaseCut = new EscrowTerminalLeaseCut(helper, data, record, EscrowFlightTables.Outcome.CANCELLED); return;
                 }
                 helper.assertTrue(flight.state() == RocketFlightState.COUNTDOWN && journal.acknowledgedCurrent(),
                         "Cancellation did not start from a live checked countdown");
@@ -201,7 +201,7 @@ public final class EscrowGovernedLiveReturnGameTests {
                 helper.assertTrue(returns.handles(record, rocket) && !returns.checkpoint(server, record)
                         && before.equals(EscrowNativeEnvelope.rocket(rocket)), "Cancellation bypassed its native proof wait");
                 requested = true;
-                if (retryCut == null) { leaseCut = new EscrowTerminalLeaseCut(server, data, record, EscrowFlightTables.Outcome.CANCELLED); }
+                if (retryCut == null) { leaseCut = new EscrowTerminalLeaseCut(helper, data, record, EscrowFlightTables.Outcome.CANCELLED); }
                 return;
             }
         }

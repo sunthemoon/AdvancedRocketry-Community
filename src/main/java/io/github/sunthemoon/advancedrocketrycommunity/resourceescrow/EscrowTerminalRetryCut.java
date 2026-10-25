@@ -14,6 +14,11 @@ final class EscrowTerminalRetryCut {
     private int injected;
     private int observedFailures;
 
+    static void assertNotStarted(GameTestHelper helper, MinecraftServer server, RocketTransferRecord record) {
+        var captures = (Map<?, ?>) field(EscrowRuntime.of(server).terminal(), "work");
+        helper.assertTrue(!captures.containsKey(record.transferId()), "Relogin fixture dismount raced an already-started F6 capture");
+    }
+
     static void assertInvalidated(GameTestHelper helper, MinecraftServer server, RocketTransferRecord record) {
         var captures = (Map<?, ?>) field(EscrowRuntime.of(server).terminal(), "work");
         var source = (EscrowFlightSource) field(captures.get(record.transferId()), "source");

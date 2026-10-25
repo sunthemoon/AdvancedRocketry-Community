@@ -130,7 +130,7 @@ public final class EscrowPendingLandingGameTests {
                 refusedSource.updateFlightData(extraFlight.withFuel(extraFlight.fuel().withFluidBank(false,
                         ModIdentity.id("rocket_fuel"), null, 1000), earth.getGameTime()));
                 helper.assertTrue(earth.addFreshEntity(refusedSource), "Refusal fixture publication failed");
-                runtime.terminalCutForTests(server, cut -> {
+                EscrowGameTestTerminalCut.install(helper, cut -> {
                     checkpoints.merge(cut, 1, Integer::sum);
                     if (cut.equals("F1_ARM_ACK")) {
                         try (var reservation = journal.canQueueEffect(UUID.randomUUID()).orElse(null)) {

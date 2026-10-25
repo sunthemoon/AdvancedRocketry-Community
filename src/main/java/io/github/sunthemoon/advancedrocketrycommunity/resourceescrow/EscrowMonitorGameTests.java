@@ -254,7 +254,7 @@ public final class EscrowMonitorGameTests {
             if (revocation == Revocation.NONE) { return; }
             var server = earth.getServer(); var runtime = EscrowRuntime.of(server);
             String selected = revocation == Revocation.BEFORE ? "F1_ARM_ACK" : "F2_PREPARED_SUBMITTED";
-            runtime.terminalCutForTests(server, cut -> {
+            EscrowGameTestTerminalCut.install(helper, cut -> {
                 if (!selected.equals(cut)) { return; }
                 runtime.terminalCutForTests(server, null); cutInstalled = false;
                 var journal = RocketTransferSavedData.get(server);
