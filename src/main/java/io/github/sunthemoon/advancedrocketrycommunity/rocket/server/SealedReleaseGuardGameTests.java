@@ -33,9 +33,16 @@ public final class SealedReleaseGuardGameTests {
         // H1 may retain an offline MT assignment after that rider left ME. This is also a valid empty sealed D.
         var flight = RocketTransferEntities.stationarySource(record, level.getGameTime());
         var rocket = fixture.spawn(helper, level, flight.withPassengers(flight.passengers().remove(passenger)), false);
-        final boolean[] done = {false};
+        final boolean[] done = {false}, tested = {false}, authorized = {true}, cancelled = {false};
         helper.onEachTick(() -> {
             if (done[0] || !RocketTransferEntities.loadedEntity(rocket) || !journal.retryChecked(server)) { return; }
+            if (tested[0]) {
+                if (sealedFirst && !cancelled[0]) { return; }
+                rocket.discard(); journal.remove(record.transferId());
+                RocketSourceRetirementFixtures.settled(transfers).remove(record.transferId());
+                RocketTransferEntities.releaseFlightTickets(server, record);
+                done[0] = true; helper.succeed(); return;
+            }
             var owner = transfers.releaseOwner(server);
             var plan = owner.world.plan(owner.sidecar.root(), record.transferId());
             if (plan == null) { return; }
@@ -45,11 +52,14 @@ public final class SealedReleaseGuardGameTests {
             try { var field = RocketRuntime.class.getDeclaredField("service"); field.setAccessible(true); service = field.get(null); }
             catch (ReflectiveOperationException failure) { throw new IllegalStateException(failure); }
             SealedDisassemblyCoordinator sealed = RocketSourceRetirementFixtures.field(service, "sealed");
-            boolean[] authorized = {true}; boolean[] cancelled = {false};
+            if (sealedFirst) {
+                var id = sealed.begin(rocket, () -> authorized[0], result -> cancelled[0] = result == SealedDisassembly.Result.REJECTED);
+                // The same-tick inspection allowance may already belong to lazy discovery. Do not reset it for a fixture.
+                if (id == null) { return; }
+            }
             try {
                 if (sealedFirst) {
-                    var id = sealed.begin(rocket, () -> authorized[0], result -> cancelled[0] = result == SealedDisassembly.Result.REJECTED);
-                    helper.assertTrue(id != null && RocketRuntime.sealedFrozen(rocket), "Sealed RAM claim did not start");
+                    helper.assertTrue(RocketRuntime.sealedFrozen(rocket), "Sealed RAM claim did not start");
                     helper.assertTrue(owner.world.plan(sidecar, record.transferId()) == null, "Release planning crossed sealed claim");
                     helper.assertTrue(!owner.world.boundary(plan.batch()) && !owner.coordinator.admit(plan), "Stale release plan crossed sealed boundary");
                     helper.assertTrue(!owner.coordinator.fenced(record.logicalRocketId()), "Refused release installed a fence");
@@ -61,24 +71,17 @@ public final class SealedReleaseGuardGameTests {
                 }
                 helper.assertTrue(owner.sidecar.root().equals(sidecar) && data.entries().equals(entries)
                         && rocket.flightData().orElseThrow().equals(before), "Cross-guard changed sidecar, journal or entity");
+                tested[0] = true;
             } finally {
                 authorized[0] = false;
-                if (sealedFirst) {
-                    sealed.tick(server, false);
-                    helper.assertTrue(cancelled[0], "RAM-only fixture request did not cancel");
-                } else {
+                if (!sealedFirst) {
                     // Only this fixture's unpublished B0 exists; closing releases its RAM fence without a sidecar write.
                     helper.assertTrue(owner.coordinator.release(record.transferId()).isPresent(), "Fixture lost its release");
                     owner.close();
                     try { var field = RocketTransferService.class.getDeclaredField("releases"); field.setAccessible(true); field.set(transfers, null); }
                     catch (ReflectiveOperationException failure) { throw new IllegalStateException(failure); }
                 }
-                rocket.discard(); journal.remove(record.transferId());
-                RocketSourceRetirementFixtures.settled(transfers).remove(record.transferId());
-                RocketTransferEntities.releaseFlightTickets(server, record);
-                done[0] = true;
             }
-            helper.succeed();
         });
     }
     private SealedReleaseGuardGameTests() { }
