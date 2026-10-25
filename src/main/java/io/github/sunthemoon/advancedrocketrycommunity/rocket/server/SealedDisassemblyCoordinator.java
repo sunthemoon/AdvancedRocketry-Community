@@ -55,6 +55,7 @@ final class SealedDisassemblyCoordinator {
     }
     private final RocketTransactionExecutor transactions;
     private final RocketOrdinaryRetirement ordinary;
+    private final SealedProofTurns proofTurns;
     private final Map<UUID, Work> work = new LinkedHashMap<>();
     private MinecraftServer server;
     private SealedWorkBudget budget;
@@ -73,6 +74,8 @@ final class SealedDisassemblyCoordinator {
     SealedDisassemblyCoordinator(RocketTransactionExecutor transactions, RocketOrdinaryRetirement ordinary) {
         this.transactions = transactions; this.ordinary = ordinary;
         ordinary.shareSealedCapacity(work::size, () -> SealedProofAdmission.nativeReservations(activeAttempts()));
+        proofTurns = ordinary.shareSealedTurns(() -> server != null && work.values().stream()
+                .anyMatch(item -> !item.activeAttempt() && item.eligible(server.getTickCount() + 1L) && item.world.waitingProof()));
     }
     private void bind(MinecraftServer server) {
         if (!server.isSameThread() || this.server != null && this.server != server) {
@@ -121,7 +124,7 @@ final class SealedDisassemblyCoordinator {
         try {
             terrain = new SealedTerrain(level, entry, transactions.adapters(), placement);
             var port = new SealedDisassemblyWorld(level, entry, terrain, writes, authorized,
-                    this::attemptRoom,
+                    this::attemptRoom, proofTurns::sealedEnded,
                     () -> exclusive(entry), false, budget, label -> nativeObserver.accept(label),
                     (phase, reason) -> diagnostics.hold(id.toString(), phase, reason));
             if (port.entity() != SealedDisassembly.Entity.MATCHING) { terrain.close(); lock.close(); return null; }
@@ -272,7 +275,7 @@ final class SealedDisassemblyCoordinator {
     private int activeAttempts() { return (int) work.values().stream().filter(item -> item.world.activeAttempt()).count(); }
     private boolean attemptRoom() {
         int active = activeAttempts();
-        return budget.remaining() > 0 && SealedProofAdmission.canStart(active, ordinary.activeAttempts());
+        return budget.remaining() > 0 && proofTurns.sealedRoom() && SealedProofAdmission.canStart(active, ordinary.activeAttempts());
     }
     String diagnostic(UUID id) {
         var item = work.get(id);
@@ -310,7 +313,7 @@ final class SealedDisassemblyCoordinator {
         try {
             terrain = new SealedTerrain(level, entry, transactions.adapters(), placement);
             var port = new SealedDisassemblyWorld(level, entry, terrain, writes, () -> true,
-                    this::attemptRoom,
+                    this::attemptRoom, proofTurns::sealedEnded,
                     () -> exclusive(entry), true, budget, label -> nativeObserver.accept(label),
                     (phase, reason) -> diagnostics.hold(id.toString(), phase, reason));
             boolean elected = entry.record().phase() == RocketTransactionPhase.RESTORED

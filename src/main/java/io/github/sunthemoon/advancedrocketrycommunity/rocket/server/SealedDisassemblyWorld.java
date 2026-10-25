@@ -28,6 +28,7 @@ final class SealedDisassemblyWorld implements SealedDisassembly.Port, AutoClosea
     private final BooleanSupplier currentRequest, attemptRoom, claimCurrent;
     private final boolean recovery;
     private final Consumer<String> nativeObserver;
+    private final Runnable attemptEnded;
     private final java.util.function.BiConsumer<String, String> diagnostics;
     private SealedProofBatch batch;
     private long proofRetryAt = Long.MIN_VALUE;
@@ -37,13 +38,14 @@ final class SealedDisassemblyWorld implements SealedDisassembly.Port, AutoClosea
     private volatile String validation;
 
     SealedDisassemblyWorld(ServerLevel level, RocketPersistedTransaction entry, SealedTerrain terrain,
-            SealedJournalRequests writes, BooleanSupplier currentRequest, BooleanSupplier attemptRoom,
+            SealedJournalRequests writes, BooleanSupplier currentRequest, BooleanSupplier attemptRoom, Runnable attemptEnded,
             BooleanSupplier claimCurrent, boolean recovery,
             io.github.sunthemoon.advancedrocketrycommunity.rocket.sealed.SealedWorkBudget budget, Consumer<String> nativeObserver,
             java.util.function.BiConsumer<String, String> diagnostics) {
         this.level = level; this.entry = entry; this.terrain = terrain; this.writes = writes;
         this.currentRequest = currentRequest; this.attemptRoom = attemptRoom; this.claimCurrent = claimCurrent; this.recovery = recovery;
         this.nativeObserver = nativeObserver;
+        this.attemptEnded = attemptEnded;
         this.diagnostics = diagnostics;
         data = RocketTransactionSavedData.get(level.getServer()); journal = new SealedJournalEntry(data, entry);
         entities = new SealedEntityView(level, entry, terrain.chunks().size(), budget, this::entityChanged);
@@ -134,6 +136,7 @@ final class SealedDisassemblyWorld implements SealedDisassembly.Port, AutoClosea
     void tickProof() { if (batch != null) { batch.tick(); } }
     void tickProofDeadline() { if (batch != null) { batch.tickDeadline(); } }
     boolean activeAttempt() { return batch != null && batch.active(); }
+    boolean waitingProof() { return batch != null && SealedProofAdmission.fitsNativeWindow(terrain.chunks().size() + entities.columns().size()); }
     long retryAt() { return batch == null ? proofRetryAt : Math.max(proofRetryAt, batch.retryAt()); }
     String reason() { return reason + ":proof=" + proofReason + ":validation=" + validation + ":" + (batch == null ? "no-batch" : batch.diagnostic()); }
     void invalidateProof() {
@@ -161,6 +164,7 @@ final class SealedDisassemblyWorld implements SealedDisassembly.Port, AutoClosea
         private final boolean present;
         NativeProofs(List<Slot> slots, SealedDisassembly.Goal goal, boolean present) { this.slots = slots; this.goal = goal; this.present = present; }
         @Override public long now() { return SealedDisassemblyWorld.this.now(); }
+        @Override public void attemptEnded() { attemptEnded.run(); }
         @Override public SealedProofBatch.Readiness readiness() { return SealedProofBatch.Readiness.valueOf(gate().name()); }
         @Override public boolean attemptRoom() {
             return SealedProofAdmission.fitsNativeWindow(slots.size()) && attemptRoom.getAsBoolean();

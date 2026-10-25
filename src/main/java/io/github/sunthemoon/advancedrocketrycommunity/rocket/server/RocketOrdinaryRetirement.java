@@ -170,6 +170,7 @@ final class RocketOrdinaryRetirement {
     private int attemptIds;
     private IntSupplier sealedEntries = () -> 0, sealedAttempts = () -> 0;
     private boolean capacityShared;
+    private final SealedProofTurns proofTurns = new SealedProofTurns();
 
     RocketOrdinaryRetirement(Set<UUID> live, Set<UUID> settled, Supplier<Set<UUID>> fenced, Function<MinecraftServer, Port> ports) {
         this.live = live; this.settled = settled; this.fenced = fenced; this.ports = ports;
@@ -198,6 +199,7 @@ final class RocketOrdinaryRetirement {
         sealedAttempts = java.util.Objects.requireNonNull(attempts);
         capacityShared = true;
     }
+    SealedProofTurns shareSealedTurns(BooleanSupplier waiting) { proofTurns.bind(waiting); return proofTurns; }
     boolean pendingRoom(UUID logical) {
         return pending.containsKey(logical) || pending.size() + sealedEntries.getAsInt() < MAX_PENDING;
     }
@@ -327,7 +329,9 @@ final class RocketOrdinaryRetirement {
     private void start(Pending entry, long now) {
         if (entry.censusFull && entry.site != Site.BEFORE_REPLACE) { fail(entry, "CENSUS_LIMIT", now, RETRY_TICKS, false); return; }
         int own = entry.token != null ? 1 : 0;
-        if (activeAttempts() + sealedAttempts.getAsInt() - own >= MAX_ATTEMPTS) {
+        // Destination demand must not place tickets while another class owns admission.
+        if (entry.site.destination() && (activeAttempts() + sealedAttempts.getAsInt() - own >= MAX_ATTEMPTS
+                || !proofTurns.ordinaryRoom(entry.logical()))) {
             fail(entry, "BUSY", now, 1, false); return;
         }
         var record = entry.record; var port = entry.port;
@@ -362,10 +366,16 @@ final class RocketOrdinaryRetirement {
         // The destination site holds before its tickets instead, with its own WARN (RocketFillRetirementPacing).
         boolean supported = holds.supported(port, entry.census, !entry.site.destination());
         if (!supported && entry.site.destination()) { waiting(entry, "UNSUPPORTED_ENTITY_STORAGE", now); return; }
+        if (!port.bayAllows(entry.journal, record, RocketTransferBayRecoveryGate.Action.REMOVE_JOURNAL)) { abandon(entry, "BAY_HELD"); return; }
+        if (!port.escrowAllows(entry.journal, record, entry.token)) {
+            proofTurns.withdraw(entry.logical()); fail(entry, "BUSY", now, 1, false); return;
+        }
+        boolean turn = proofTurns.ordinaryRoom(entry.logical());
+        if (!turn || activeAttempts() + sealedAttempts.getAsInt() - own >= MAX_ATTEMPTS) {
+            fail(entry, "BUSY", now, 1, false); return;
+        }
         // W98-R5: an attempt starts only when its first capture can run now, so no reservation waits for capture budget.
         if (supported && !port.captureAvailable(entry.census.get(0), now)) { fail(entry, "BUSY", now, 1, false); return; }
-        if (!port.bayAllows(entry.journal, record, RocketTransferBayRecoveryGate.Action.REMOVE_JOURNAL)) { abandon(entry, "BAY_HELD"); return; }
-        if (!port.escrowAllows(entry.journal, record, entry.token)) { fail(entry, "BUSY", now, 1, false); return; }
         // The destination scan may discard obsolete entities: reserve before that mutation, including on retries.
         if (entry.site.destination() && entry.token == null) {
             entry.token = entry.journal.reserve(entry.logical()).orElse(null);
@@ -382,6 +392,7 @@ final class RocketOrdinaryRetirement {
         if (!supported) { removeUnproved(entry); return; }
         if (!entry.site.destination()) { port.keepLoaded(record, entry.census); }
         entry.state = State.PROVING; entry.attempt = ++attemptIds; entry.attempts++;
+        proofTurns.ordinaryStarted(entry.logical());
         entry.started = now; entry.frozen = frozen; entry.cursor = 0; entry.sink = port.sink();
         prove(entry, now);
     }
@@ -492,7 +503,9 @@ final class RocketOrdinaryRetirement {
         entry.effects.discarded().run();
     }
 
-    private void drop(Pending entry) { pending.remove(entry.logical(), entry); entry.port.releaseTickets(entry.record); }
+    private void drop(Pending entry) {
+        proofTurns.withdraw(entry.logical()); pending.remove(entry.logical(), entry); entry.port.releaseTickets(entry.record);
+    }
 
     /**
      * T stays with its classification unchanged, as a waiting return's always was; the caller's request is discarded.
@@ -518,6 +531,7 @@ final class RocketOrdinaryRetirement {
      * keeps its own reservation until the next tick, so its request reports JOURNAL_PENDING and completes only once.
      */
     private void fail(Pending entry, String reason, long now, int delay, boolean fault) {
+        if (!reason.equals("BUSY")) { proofTurns.withdraw(entry.logical()); }
         entry.releaseProofs();
         if (entry.site != Site.FAIL_BACK || entry.created != now) { entry.releaseToken(); }
         entry.state = State.WAITING;
@@ -563,6 +577,6 @@ final class RocketOrdinaryRetirement {
             try { entry.releaseToken(); } catch (RuntimeException stopped) { entry.token = null; }
             if (entry.state != State.REMOVING) { entry.effects.discarded().run(); }
         }
-        pending.clear(); holds.clear(); fills.clear();
+        pending.clear(); holds.clear(); fills.clear(); proofTurns.clear();
     }
 }

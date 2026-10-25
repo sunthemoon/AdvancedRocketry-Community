@@ -17,6 +17,7 @@ final class SealedProofBatch implements AutoCloseable {
         boolean available(int slot);
         boolean capture(int slot, Consumer<EscrowBarrier.Result> callback);
         void held(String reason);
+        default void attemptEnded() { }
     }
     private final Thread owner = Thread.currentThread();
     private final int slots;
@@ -108,8 +109,10 @@ final class SealedProofBatch implements AutoCloseable {
         release(); notBefore = port.now() + delay; port.held(reason);
     }
     private void release() {
+        boolean ended = active;
         proofs.values().forEach(EscrowBarrier.Proof::release); proofs.clear();
         active = false; cursor = 0; attempt++;
+        if (ended) { port.attemptEnded(); }
     }
     @Override public void close() { owner(); closed = true; release(); }
     private void owner() {
