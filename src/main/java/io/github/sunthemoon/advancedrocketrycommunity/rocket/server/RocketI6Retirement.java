@@ -8,6 +8,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketTransactionSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRegion;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionRecord;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -48,14 +49,27 @@ final class RocketI6Retirement extends RocketDestinationRetirement {
 
     @Override public CompoundTag projection(RocketTransferRecord record, UUID survivor) {
         if (!requestCurrent() || RocketReleaseAccess.fenced(server, record.logicalRocketId())) { return null; }
-        var data = RocketTransactionSavedData.get(server); var footprint = RocketRegion.fromSnapshot(snapshot);
-        if (!data.operational() || data.entries().stream().anyMatch(entry -> entry.record().region().overlaps(footprint)
-                || entry.record().snapshotId().equals(snapshot.snapshotId())
-                || entry.record().rocketEntityIdOptional().filter(survivor::equals).isPresent())) { return null; }
+        var data = RocketTransactionSavedData.get(server);
+        if (!data.operational() || data.entries().stream().anyMatch(entry -> transactionConflicts(
+                entry.record(), record, snapshot, survivor))) { return null; }
         return super.projection(record, survivor);
     }
 
+    static boolean transactionConflicts(RocketTransactionRecord transaction, RocketTransferRecord predecessor,
+            RocketStructureSnapshot current, UUID survivor) {
+        return transaction.region().overlaps(RocketRegion.fromSnapshot(current))
+                || transaction.region().overlaps(RocketRegion.fromSnapshot(predecessor.sourceSnapshot()))
+                || transaction.region().overlaps(RocketRegion.fromSnapshot(predecessor.destinationSnapshot()))
+                || transaction.snapshotId().equals(current.snapshotId())
+                || transaction.snapshotId().equals(predecessor.sourceSnapshot().snapshotId())
+                || transaction.snapshotId().equals(predecessor.destinationSnapshot().snapshotId())
+                || transaction.rocketEntityIdOptional().filter(id -> id.equals(survivor)
+                        || id.equals(predecessor.sourceEntityId()) || predecessor.destinationEntityId().filter(id::equals).isPresent()).isPresent();
+    }
+
     @Override public String prepare(RocketTransferRecord record, UUID survivor, List<RocketRetirementProof.Slot> census) {
+        // Recovery of U must not regain an obsolete end after its last transfer authority is forgotten.
+        if (projection(record, survivor) == null) { return "SURVIVOR_CONFLICT"; }
         // A saturated bounded discovery is not a complete census and grants no discard authority.
         var sources = RocketTransferEntities.loadedMatches(server, record, false);
         var destinations = RocketTransferEntities.loadedMatches(server, record, true);
