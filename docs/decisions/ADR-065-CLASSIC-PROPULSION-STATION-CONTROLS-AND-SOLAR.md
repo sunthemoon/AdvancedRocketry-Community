@@ -1824,7 +1824,7 @@ changes no decision status and accepts no risk. The risk is R-035.
 No saved format changes except the N3-B2 carrier and the `SEALED_DISASSEMBLY` record type that R93 authorizes above.
 This is a development implementation note, not owner acceptance or a Gate result.
 
-### W80 implementation note: releasing a legacy rocket held by offline passengers (design frozen, not yet implemented)
+### W80 implementation note: releasing a legacy rocket held by offline passengers (design frozen; two of three leaves merged, no command yet)
 
 This note records the frozen design `records/W80-DESIGN.md` (revision 3, merged `aee68ef3`; reviews W80-review
 REDESIGN and W80-review-2 APPROVE-WITH-CHANGES). Root registered it on 2026-10-24, before implementation; the risk is
@@ -1853,6 +1853,12 @@ online together. Governed records stay excluded.
   writer, lazy lifecycle and startup refusal, with no command. R104 (2026-10-25) amends schema 1 before any world can
   hold a sidecar: each batch also records B1's at most three entity slots (Level and chunk), so a restart after J1
   removed T still reacquires B1. J1 uses the merged remaining-crew guard (placed or delivered), not all-online.
+  W80-release merged on 2026-10-25 (W158 with W158F, `b371c9bc1`; review BLOCK on W158-R1 and W158-R2, then re-review
+  APPROVE): H1 and H2 planning, the release fence, B0, B1, J1 and S2 for legacy records, driven only through a gated
+  internal entry point; governed records are refused and production admission stays disabled. Native cases kill the
+  first recovery at B1's capture and around S2's write and restart it. Still to come: W80-rejoin, which R105
+  (2026-10-25) splits into W159 (login protection, placement, prompt saves and readback, with no command) and W160
+  (the command with its execution-time check, the `rejoins` view and the command matrix).
 
 ### W11c and W11d implementation note: rocket cargo scope and protections (design W11CD, admission disabled)
 

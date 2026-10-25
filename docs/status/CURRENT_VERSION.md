@@ -38,8 +38,8 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: c7237169c (W157 merged: W80-storage, the checked rejoin sidecar with its startup refusal and no command yet, and the ResearchRuntime early-stop fix; before it, W155 closed W153-R7)
-latest_hosted_regression: the last green run is 40098467252 at ed1c29fe (the W155 merge). Every completed hosted regression since the failure at 2426f00d on 2026-10-22 is green; W139 stays open until no hosted log shows ARCE_LAUNCH_DISCARD (QUEUE)
+latest_code_commit: b371c9bc1 (W158 merged: W80-release, the release coordination for legacy records through a gated internal entry point, with no command yet; before it, W157 merged W80-storage)
+latest_hosted_regression: the last green run is 40129726137 at c7237169 (the W157 merge). Every completed hosted regression since the failure at 2426f00d on 2026-10-22 is green; W139 stays open until no hosted log shows ARCE_LAUNCH_DISCARD (QUEUE)
 ledger_planned_units: 17
 asset_review_items: 154
 required_gates_approved: none
