@@ -10,6 +10,17 @@ import run_w159_rejoin_cuts as runner
 
 
 class RejoinCutRunnerTests(unittest.TestCase):
+    def test_two_rider_completion_keeps_both_installed_identities_clean(self):
+        self.assertIn(("H1", "C22"), runner.CASES)
+        disk = self.fixture(); disk["sidecar"].update(entries=[], batches=[]); disk["players"] = {}
+        for identity in (runner.FIRST, runner.PLAYER):
+            disk["players"][identity] = dict(present=True, UUID=[(uuid.UUID(identity).int >> n) & 0xFFFFFFFF for n in (96, 64, 32, 0)],
+                    Health=1, DeathTime=0, Dimension="minecraft:overworld", Pos=[2.5, 70, 3.5], RootVehicle=None, marker=None)
+        runner.verify_two_riders(disk, None)
+        for key, value in (("present", False), ("Health", 0), ("marker", {}), ("RootVehicle", {})):
+            altered = copy.deepcopy(disk); altered["players"][runner.FIRST][key] = value
+            with self.assertRaises(runner.smoke.SmokeError): runner.verify_two_riders(altered, disk)
+
     def test_temporary_write_cut_requires_old_file_and_one_exact_warning(self):
         self.assertIn(("H1", "C21"), runner.CASES)
         disk = self.fixture(); disk["player"]["ForgeData"].clear(); disk["player"]["Pos"][1] = 60

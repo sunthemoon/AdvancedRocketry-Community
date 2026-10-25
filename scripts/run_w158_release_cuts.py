@@ -22,7 +22,7 @@ from run_w157_rejoin_startup import HEADER, PROJECT_LOGGERS
 
 MODES = ("seed", "recover", "check")
 RECOVERY_CUTS = ("B1_CAPTURE", "S2_PENDING", "C6")
-CASES = [("H1", f"C{i}") for i in (*range(7), 14, 15, 16, 17)] + [("H2", f"C{i}") for i in (2, 3, 5, 6)]
+CASES = [("H1", f"C{i}") for i in (*range(7), 14, 15, 16, 17, 24)] + [("H2", f"C{i}") for i in (2, 3, 5, 6)]
 JOURNAL = "advancedrocketrycommunity_rocket_transfers.dat"
 SIDECAR = "advancedrocketrycommunity_rocket_rejoins.dat"
 UUID_PATTERN = r"[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}"
@@ -154,6 +154,37 @@ def verify(disk, hold, cut, mode, baseline):
     return baseline
 
 
+def verify_diverged(disk, mode, baseline):
+    """C24: H1 MT={old,absent}, ME={newcomer,absent}; E1 must not remove the newcomer."""
+    def player(n): return (22544384, 16384, -2147483648, n)
+    def roster(flight): return sorted((tuple(s["passenger_id"]), s["seat_index"]) for s in seats(flight))
+    root = disk["sidecar"]
+    if len(disk["rockets"]) != 1 or root is None or root["next_sequence"] != 1 or len(root["batches"]) != 1:
+        raise smoke.SmokeError("Diverged release lost its unique authority or frozen batch")
+    entity = disk["rockets"][0]["entity"]; data = entity["RocketEntityData"]; flight = data["flight_data"]
+    expected = [(player(2), 1), (player(3), 0)] if mode == "seed" else [(player(3), 0)]
+    if roster(flight) != expected or flight["fuel"]["amount"] != 1000:
+        raise smoke.SmokeError("Diverged release changed a retained rider or resource")
+    batch = root["batches"][0]
+    if sorted(map(tuple, batch["released"])) != [player(1), player(2)] or sorted((s["level"], s["x"], s["z"]) for s in batch["slots"]) != [
+            ("advancedrocketrycommunity:moon", 4, 4), ("minecraft:overworld", 4, 4)]:
+        raise smoke.SmokeError("Diverged release changed A or its recorded slots")
+    entries = sorted((tuple(e["player"]), e["seat_index"], e["seat"], e["placement"]) for e in root["entries"])
+    wanted = [(player(1), 0, "PENDING", "NOT_REQUIRED"), (player(2), 1, "PENDING", "PENDING")] if mode == "seed" else [
+        (player(2), 1, "VERIFIED", "PENDING")]
+    if entries != wanted or any("attempt" in e for e in root["entries"]):
+        raise smoke.SmokeError("Diverged release changed its frozen classification")
+    records = disk["journal"]["transfers"]
+    if len(records) != (1 if mode == "seed" else 0) or any(roster(t[key]) != [(player(1), 0), (player(2), 1)]
+            for t in records for key in ("source_flight", "destination_flight")):
+        raise smoke.SmokeError("Diverged J1 did not retire only the recorded riders")
+    witness = dict(uuid=entity["UUID"], snapshot=data["snapshot"], fuel=flight["fuel"], batch=batch,
+                   journal={k: v for k, v in disk["journal"].items() if k != "transfers"})
+    if baseline is not None and baseline != witness:
+        raise smoke.SmokeError("Diverged restart changed resources, batch or journal envelope")
+    return witness
+
+
 def verify_recovery(disk, hold, cut, boundary, baseline, seed):
     """Inspect the interrupted recovery, not the completed-recovery oracle used by clean cases."""
     if cut not in ("C2", "C3", "C4", "C5") or boundary not in RECOVERY_CUTS:
@@ -232,7 +263,7 @@ def verify_seat_census(disk, hold, cut, mode, recovery_cut=""):
 
 def stop_boundary(cut, mode, recovery_cut):
     if mode == "seed":
-        return "C6" if cut == "C17" else cut
+        return "C6" if cut == "C17" else "C3" if cut == "C24" else cut
     return recovery_cut if mode == "recover" else ""
 
 
@@ -293,10 +324,13 @@ def run(args):
                             raise smoke.SmokeError("Restart process exited abnormally")
                     disk = capture(world, evidence / (name + "-saved"))
                     row["log_audit"] = audit_log(process.lines, hold, cut, mode)
-                    baseline = (verify_recovery(disk, hold, cut, recovery_cut, baseline, seed)
-                                if mode == "recover" and recovery_cut else verify(disk, hold, cut, mode, baseline))
-                    previous = preserved_stores(disk, previous)
-                    verify_seat_census(disk, hold, cut, mode, recovery_cut)
+                    if cut == "C24":
+                        baseline = verify_diverged(disk, mode, baseline)
+                    else:
+                        baseline = (verify_recovery(disk, hold, cut, recovery_cut, baseline, seed)
+                                    if mode == "recover" and recovery_cut else verify(disk, hold, cut, mode, baseline))
+                        previous = preserved_stores(disk, previous)
+                        verify_seat_census(disk, hold, cut, mode, recovery_cut)
                     if mode == "seed":
                         seed = disk
                     row["external_kill"] = bool(boundary)

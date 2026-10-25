@@ -145,7 +145,7 @@ public final class RocketReleaseNativeProbe {
         var current = journal().findByLogicalRocket(logical).orElse(null); if (current == null) { return; }
         if (hold.equals("H2") && current.phase() != RocketTransferPhase.COMMITTED) { return; }
         if (!prepared) {
-            if (hold.equals("H2")) {
+            if (hold.equals("H2") || cut.equals("C24")) {
                 var flight = entity.flightData().orElseThrow();
                 entity.updateFlightData(flight.withPassengers(flight.passengers().remove(FIRST).assign(NEWCOMER).orElseThrow()));
             } else if (cut.equals("C17")) {

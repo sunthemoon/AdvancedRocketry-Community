@@ -11,7 +11,7 @@ import net.minecraft.server.level.ServerPlayer;
 final class RocketRejoinNativeProbe {
     static final UUID PLAYER = UUID.fromString("01580000-0000-4000-8000-000000000002");
     private final MinecraftServer server;
-    private ServerPlayer player;
+    private ServerPlayer player, first;
     private boolean seeded;
     private int changedAt = -1;
     private java.nio.file.Path blockedPlayerDirectory, retainedPlayerDirectory;
@@ -79,6 +79,19 @@ final class RocketRejoinNativeProbe {
                 || RocketRejoinProtection.guarded(player)) { return false; }
         if (player.getVehicle() != null || player.getPersistentData().contains("arce_passenger_rejoin")) {
             throw new IllegalStateException("Completed rejoin kept a vehicle or stale marker");
+        }
+        if (RocketReleaseNativeCuts.selection().startsWith("H1:C22:")) {
+            if (first == null) {
+                first = ReleaseTestPlayers.login(server, UUID.fromString("01580000-0000-4000-8000-000000000001"), "W160First", server.overworld());
+                return false;
+            }
+            if (!data.root().entries().isEmpty() || RocketRejoinProtection.guarded(first)) { return false; }
+            if (!first.isAlive() || first.getVehicle() != null || first.getPersistentData().contains("arce_passenger_rejoin")) {
+                throw new IllegalStateException("First rider did not finish cleanly");
+            }
+            if (data.acknowledgedRoot() == null || !data.acknowledgedRoot().entries().isEmpty()) { return false; }
+            if (!server.saveEverything(false, true, true)) { throw new IllegalStateException("Two-rider final save failed"); }
+            RocketReleaseNativeCuts.checkpoint("C22");
         }
         return data.acknowledgedRoot() != null && data.acknowledgedRoot().entries().stream().noneMatch(e -> e.seat() == RocketRejoinRoot.Seat.PENDING);
     }

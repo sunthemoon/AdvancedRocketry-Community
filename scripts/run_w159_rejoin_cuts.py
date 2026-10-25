@@ -17,7 +17,8 @@ from run_v060_flight_server_smoke import _server_command
 from run_v180_resource_restarts import read_nbt
 
 PLAYER = "01580000-0000-4000-8000-000000000002"
-CASES = [(hold, f"C{i}") for hold in ("H1", "H2") for i in (7, 8, 9, 10, 11, 13, 18, 19, 20, 21)]
+FIRST = "01580000-0000-4000-8000-000000000001"
+CASES = [(hold, f"C{i}") for hold in ("H1", "H2") for i in (7, 8, 9, 10, 11, 13, 18, 19, 20, 21)] + [("H1", "C22")]
 
 
 def uuid_text(value):
@@ -35,7 +36,7 @@ def capture(world, target):
     result["player_sha256"] = smoke.digest_file(file)
     shutil.copy2(file, target / file.name)
     # Inspect every released identity, including explicit absence rather than inventing an offline file.
-    identities = {PLAYER}
+    identities = {PLAYER, FIRST} if world.name.endswith("-C22") else {PLAYER}
     for batch in (result["sidecar"] or {}).get("batches", []):
         identities.update(uuid_text(value) for value in batch["released"])
     result["players"] = {}
@@ -168,14 +169,29 @@ def verify(disk, hold, cut, mode, boundary, baseline, seed):
     elif mode == "seed" and cut == "C11":
         if entries or marker is None or "RootVehicle" in player:
             raise smoke.SmokeError("Post-replacement P2 did not retain only a stale marker")
-    elif not boundary:
+    elif not boundary or cut == "C22":
         if entries or marker is not None or "RootVehicle" in player:
             raise smoke.SmokeError("Final restart did not retire placement and remove stale live marker")
         if any(e["seat"] == "PENDING" for e in sidecar["entries"]):
             raise smoke.SmokeError("Final restart left seat proof unfinished")
         if any(uuid_text(s["passenger_id"]) == PLAYER for s in release.seats(data["flight_data"])):
             raise smoke.SmokeError("Released passenger returned to a native seat")
+    if cut == "C22": verify_two_riders(disk, seed)
     return witness
+
+
+def verify_two_riders(disk, seed):
+    if disk["sidecar"]["entries"] or disk["sidecar"]["batches"]:
+        raise smoke.SmokeError("Two-rider completion retained an obligation")
+    for identity in (FIRST, PLAYER):
+        installed = disk["players"].get(identity, {})
+        if (not installed.get("present") or uuid_text(installed["UUID"]) != identity
+                or installed["Health"] <= 0 or installed["DeathTime"] != 0
+                or installed["RootVehicle"] is not None or installed["marker"] is not None
+                or installed["Dimension"] != "minecraft:overworld" or len(installed["Pos"]) != 3):
+            raise smoke.SmokeError("Two-rider completion lost an installed clean player")
+        if seed and any(installed[key] != seed["players"][identity][key] for key in ("UUID", "Dimension", "Pos")):
+            raise smoke.SmokeError("Two-rider restart relocated an already completed player")
 
 
 def run(args):
