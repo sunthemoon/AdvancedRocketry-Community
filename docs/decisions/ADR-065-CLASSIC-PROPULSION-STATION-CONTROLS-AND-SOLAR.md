@@ -1783,7 +1783,7 @@ changes no decision status and accepts no risk. The risk is R-035.
   Leaves N3-B1 to N3-B4 follow W148 section 7; N3-B2 needs an independent persistence review before integration.
 - **N3-B2 isolation (W154 design revisions 1 and 2, `records/W154-DESIGN.md`; review W154-review BLOCK, SHA-256
   `6facedc6…`, and its re-review, SHA-256 `c67bfebd…`; Root decisions R91, R93 to R98 and R100, 2026-10-24, and R107,
-  2026-10-25; implemented by W152 and in its fix cycle, not yet merged).** W152 showed that vanilla container access (hoppers, the item capability, menus, breaking) bypasses
+  2026-10-25; implemented by W152, W152F and W152G and merged at `6f00cbf5e`; R110 and W152H follow).** W152 showed that vanilla container access (hoppers, the item capability, menus, breaking) bypasses
   the region locks while U is retained, so a rollback could restore items that had already left. Sealed staging closes
   that window. While U is retained, every member of the footprint is an inert carrier C: no inventory, capability,
   menu, ticker, drops or item form; unbreakable, and immune to explosions and pistons. C holds the member's original
@@ -1822,6 +1822,15 @@ changes no decision status and accepts no risk. The risk is R-035.
     root that fails validation keeps the member sealed and held, and is written back exactly as loaded on every save,
     with one bounded WARN per carrier per load.
   - **Limits:** no bound, lease, budget, timeout or protocol change.
+  - **Proof admission (R109 and R110, 2026-10-25):** an active proof attempt is served every tick, and a sealed
+    attempt reserves the four ordinary capture slots of its Level until it ends. A plan wider than 21 slots is never
+    started: that is a conservative admission policy within the unchanged quotas and 100-tick deadline, not an
+    absolute native limit (a window opened earlier can fit 24). Supported assemblies can reach the planner's 129-slot
+    ceiling, so W152H refuses such a request before any claim, carrier or journal write, with its own result and one
+    INFO line; the rocket entity is unchanged. A U record already over the limit (only from earlier test builds)
+    stays retained with one WARN per record per load, and recovery follows R-035's whole-world copy process. W152H
+    also lets a waiting ordinary return in between sealed attempts and keeps a pre-U request's 200-tick expiry
+    running during proof backoff. Player admission (N3-B3) stays off until W152H is merged after a fresh review.
   - **Stop condition:** W152's first commit probes the publication sequence, including an attachment listener that
     keeps the raw target, and stops if no one-step publication exists without a Mixin.
 

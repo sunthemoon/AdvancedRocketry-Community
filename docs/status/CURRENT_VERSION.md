@@ -38,7 +38,7 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: af7523215 (W159 merged: the W80-rejoin core, login protection, safe placement and the exact player-file readback for legacy records, with no command yet; before it, W158 merged W80-release)
+latest_code_commit: 6f00cbf5e (W152 merged: N3-B2 sealed staging with the W152F and W152G fixes; player admission stays off until W152H, R110. Before it, W159 merged the W80-rejoin core at af7523215)
 latest_hosted_regression: the last green run is 40186709911 at 19b2a252 (after the W159 merge), green on its first attempt. Every completed hosted regression since the failure at 2426f00d on 2026-10-22 is green; W139 stays open until no hosted log shows ARCE_LAUNCH_DISCARD (QUEUE)
 ledger_planned_units: 17
 asset_review_items: 154
