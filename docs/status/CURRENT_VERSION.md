@@ -38,7 +38,7 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: b371c9bc1 (W158 merged: W80-release, the release coordination for legacy records through a gated internal entry point, with no command yet; before it, W157 merged W80-storage)
+latest_code_commit: af7523215 (W159 merged: the W80-rejoin core, login protection, safe placement and the exact player-file readback for legacy records, with no command yet; before it, W158 merged W80-release)
 latest_hosted_regression: the last green run is 40152525151 at 32c8ded4 (after the W158 merge), green on a rerun of its failed job; its first attempt failed three GameTests (the relogin intermittent below). Every completed hosted regression since the failure at 2426f00d on 2026-10-22 is green; W139 stays open until no hosted log shows ARCE_LAUNCH_DISCARD (QUEUE)
 ledger_planned_units: 17
 asset_review_items: 154
