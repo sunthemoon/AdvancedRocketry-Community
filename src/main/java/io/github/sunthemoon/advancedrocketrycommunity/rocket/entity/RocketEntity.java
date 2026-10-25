@@ -286,6 +286,7 @@ public final class RocketEntity extends Entity implements MenuProvider {
         if (level().isClientSide) {
             throw new IllegalStateException("Only the server may update rocket flight data");
         }
+        if (RocketRuntime.sealedFrozen(this)) { throw new IllegalStateException("Rocket is retained by sealed disassembly"); }
         RocketFlightData previous = flightData;
         RocketFlightData candidate = normalizeFlightData(Objects.requireNonNull(updatedFlightData, "updatedFlightData"));
         if (RocketEscrowGate.flightFrozen(this) && !RocketEscrowGate.terminalFuelUpdate(this, candidate)) {
@@ -553,6 +554,7 @@ public final class RocketEntity extends Entity implements MenuProvider {
     protected boolean canAddPassenger(Entity passenger) {
         return operational()
                 && (level().isClientSide || !RocketRuntime.releaseFenced(this))
+                && (level().isClientSide || !RocketRuntime.sealedFrozen(this))
                 && passenger instanceof Player
                 && flightData.passengers().assignment(passenger.getUUID()).isPresent()
                 && getPassengers().size() < flightData.passengers().seatCapacity();
@@ -591,7 +593,7 @@ public final class RocketEntity extends Entity implements MenuProvider {
 
     @Override
     public void kill() {
-        if (level().isClientSide || RocketEscrowGate.idle(this)) { super.kill(); }
+        if (level().isClientSide || !RocketRuntime.sealedFrozen(this) && RocketEscrowGate.idle(this)) { super.kill(); }
     }
 
     @Override

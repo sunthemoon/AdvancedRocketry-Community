@@ -66,6 +66,22 @@ public final class RocketBlockEntityAdapters {
         return adapter != null && adapter.canRestorePayload(payload);
     }
 
+    /** Restore/recapture without installing a Level, exclusively for sealed unsealing. */
+    public boolean restoreDetached(Thread owner, BlockEntity target, RocketBlockEntityPayload payload) {
+        RocketBlockEntityAdapter.requireDetached(owner, target);
+        var adapter = byId.get(payload.adapterId());
+        try {
+            if (adapter == null || !adapter.canRestorePayload(payload) || !adapter.supports(target)
+                    || !adapter.restoreDetached(owner, target, payload)) { return false; }
+            RocketBlockEntityAdapter.requireDetached(owner, target);
+            var captured = adapter.captureDetached(owner, target);
+            RocketBlockEntityAdapter.requireDetached(owner, target);
+            return payload.equals(captured);
+        } catch (RuntimeException failure) {
+            return false;
+        }
+    }
+
     private static String typeId(BlockEntity blockEntity) {
         ResourceLocation id = ForgeRegistries.BLOCK_ENTITY_TYPES.getKey(blockEntity.getType());
         return id == null ? "unregistered_block_entity" : id.toString();

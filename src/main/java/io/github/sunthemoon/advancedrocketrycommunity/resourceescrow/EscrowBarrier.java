@@ -128,17 +128,28 @@ public final class EscrowBarrier implements AutoCloseable {
      */
     public boolean beginOrdinary(EscrowChunkStore store, String level, net.minecraft.world.level.ChunkPos slot,
                                  Predicate<CompoundTag> validator, long tick, Consumer<String> sink, Consumer<Result> callback) {
+        return beginOrdinary(store, level, true, slot, validator, tick, sink, callback);
+    }
+
+    /** Ordinary sealed-terrain proof, charged with entity proofs against the existing ordinary sub-quota. */
+    public boolean beginOrdinaryTerrain(EscrowChunkStore store, String level, net.minecraft.world.level.ChunkPos slot,
+                                 Predicate<CompoundTag> validator, long tick, Consumer<String> sink, Consumer<Result> callback) {
+        return beginOrdinary(store, level, false, slot, validator, tick, sink, callback);
+    }
+
+    private boolean beginOrdinary(EscrowChunkStore store, String level, boolean entity, net.minecraft.world.level.ChunkPos slot,
+                                 Predicate<CompoundTag> validator, long tick, Consumer<String> sink, Consumer<Result> callback) {
         owner();
-        if (!working.get() || !availableOrdinary(store, level, slot, tick)) { return false; }
+        if (!working.get() || !budget.availableOrdinary(level, entity, tick) || !store.ordinaryAvailable(level, entity, slot)) { return false; }
         EscrowChunkStore.Capture capture;
         EscrowSaveMonitor.Handle watch = null;
         boolean[] reserved = {false};
         try {
             // The authoritative check gates the reservation itself, not just serialization.
-            watch = store.ordinaryWatch(level, slot, () -> reserved[0] = budget.reserveOrdinary(level, tick));
+            watch = store.ordinaryWatch(level, entity, slot, () -> reserved[0] = budget.reserveOrdinary(level, entity, tick));
             if (watch == null) { return false; }
             sink.accept("BARRIER_STORE_BEFORE");
-            capture = store.captureEntitySlot(slot, validator, watch);
+            capture = entity ? store.captureEntitySlot(slot, validator, watch) : store.captureTerrainSlot(slot, validator, watch);
         }
         catch (RuntimeException failure) {
             if (watch != null) { watch.release(); }
@@ -162,6 +173,11 @@ public final class EscrowBarrier implements AutoCloseable {
     /** Slot-aware hint. The ordinary watch rechecks before calling the budget reservation. */
     public boolean availableOrdinary(EscrowChunkStore store, String level, net.minecraft.world.level.ChunkPos slot, long tick) {
         return availableOrdinary(level, tick) && store.ordinaryAvailable(level, slot);
+    }
+
+    public boolean availableOrdinaryTerrain(EscrowChunkStore store, String level, net.minecraft.world.level.ChunkPos slot, long tick) {
+        owner();
+        return working.get() && budget.availableOrdinary(level, false, tick) && store.ordinaryAvailable(level, false, slot);
     }
 
     /** Unit tests: one already captured attempt, reserved and staged as {@link #begin} or {@link #beginOrdinary} would. */

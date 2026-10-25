@@ -223,7 +223,7 @@ final class RocketTransferRecoveryService {
     void retireBeforeFill(RocketEntity rocket) { retirements.fills().demand(rocket.assemblyTransactionId().orElseThrow(), rocket.getUUID()); }
     private void beginBeforeFill(MinecraftServer server, UUID logical, UUID survivor) {
         var journal = RocketTransferSavedData.get(server);
-        if (retirements.pending(logical) || retirements.size() >= RocketOrdinaryRetirement.MAX_PENDING) { return; }
+        if (retirements.pending(logical) || !retirements.pendingRoom(logical)) { return; }
         var record = journal.findByLogicalRocket(logical).orElse(null);
         if (record == null || record.nativeTransfer().isPresent() || !journal.actionable(logical)
                 || !settledTransfers.contains(record.transferId()) || liveTransfers.contains(record.transferId())) { return; }

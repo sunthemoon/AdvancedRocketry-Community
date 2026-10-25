@@ -60,11 +60,17 @@ public final class EscrowSaveMonitor {
     }
     /** Check and reserve without calling a serializer, observer or checkpoint between them. */
     Handle ordinaryWatch(String level, ChunkPos pos, BooleanSupplier reserve) {
-        if (!ordinaryAvailable(level, pos) || !reserve.getAsBoolean()) { return null; }
-        return acquire(new Slot(level, true, pos.toLong()), false, null);
+        return ordinaryWatch(level, true, pos, reserve);
+    }
+    Handle ordinaryWatch(String level, boolean entities, ChunkPos pos, BooleanSupplier reserve) {
+        if (!ordinaryAvailable(level, entities, pos) || !reserve.getAsBoolean()) { return null; }
+        return acquire(new Slot(level, entities, pos.toLong()), false, null);
     }
     public boolean ordinaryAvailable(String level, ChunkPos pos) {
-        Watch watch = slots.get(new Slot(level, true, pos.toLong()));
+        return ordinaryAvailable(level, true, pos);
+    }
+    boolean ordinaryAvailable(String level, boolean entities, ChunkPos pos) {
+        Watch watch = slots.get(new Slot(level, entities, pos.toLong()));
         return watch == null || watch.pin == null || !watch.pin.protects();
     }
     private Handle acquire(Slot slot, boolean protect, AtomicBoolean lifetime) {

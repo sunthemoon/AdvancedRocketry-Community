@@ -42,6 +42,11 @@ public final class RocketTransactionRecoveryService {
 
     /** Attempts at most one loaded transaction, so restart work remains bounded per tick. */
     public Outcome recoverOne(MinecraftServer server) {
+        return recoverOne(server, null);
+    }
+
+    /** Manager-selected legacy entry, sharing the sealed/legacy one-transaction allowance. */
+    Outcome recoverOne(MinecraftServer server, UUID selected) {
         Objects.requireNonNull(server, "server");
         RocketTransactionSavedData data = RocketTransactionSavedData.get(server);
         if (!data.operational()) {
@@ -66,7 +71,10 @@ public final class RocketTransactionRecoveryService {
         int fencedRetries = 0;
         for (int offset = 0; offset < entries.size(); offset++) {
             RocketPersistedTransaction entry = entries.get((start + offset) % entries.size());
+            // Sealed records have a different materializer, proof and retirement order. Never use legacy block restore.
+            if (!handles(entry.record().type())) { continue; }
             UUID transaction = entry.record().transactionId();
+            if (selected != null && !transaction.equals(selected)) { continue; }
             long now = server.getTickCount();
             if (fencedTransactions.contains(transaction)
                     && now - fenceAttempts.getOrDefault(transaction, now) < RocketTransferFences.RETRY_TICKS) { continue; }
@@ -124,6 +132,10 @@ public final class RocketTransactionRecoveryService {
     public void clear() {
         lastAttempted = null;
         fencedTransactions.clear(); fenceAttempts.clear();
+    }
+
+    static boolean handles(RocketTransactionType type) {
+        return type == RocketTransactionType.ASSEMBLY || type == RocketTransactionType.DISASSEMBLY;
     }
 
     private void fence(UUID transaction, long tick) {

@@ -22,9 +22,12 @@ final class EscrowBarrierBudget {
         if ((entity ? batch.entities() : batch.terrain()) >= PER_TYPE) { return false; }
         return true;
     }
-    /** An ordinary entity capture: everything {@link #available} requires, inside the ordinary sub-quota. */
+    /** Existing entity caller, with the same shared ordinary sub-quota as terrain. */
     boolean availableOrdinary(String level, long tick) {
-        if (ordinaryPending >= ORDINARY_PENDING || !available(level, true, tick)) { return false; }
+        return availableOrdinary(level, true, tick);
+    }
+    boolean availableOrdinary(String level, boolean entity, long tick) {
+        if (ordinaryPending >= ORDINARY_PENDING || !available(level, entity, tick)) { return false; }
         Batch batch = batches.get(level);
         return batch == null || tick - batch.start() >= CADENCE || batch.ordinary() < ORDINARY_PER_LEVEL;
     }
@@ -37,7 +40,10 @@ final class EscrowBarrierBudget {
         lastCapture = tick; pending++; bytes += AnvilRecordReader.DECODED_BYTES; return true;
     }
     boolean reserveOrdinary(String level, long tick) {
-        if (!availableOrdinary(level, tick) || !reserve(level, true, tick)) { return false; }
+        return reserveOrdinary(level, true, tick);
+    }
+    boolean reserveOrdinary(String level, boolean entity, long tick) {
+        if (!availableOrdinary(level, entity, tick) || !reserve(level, entity, tick)) { return false; }
         Batch batch = batches.get(level);
         batches.put(level, new Batch(batch.start(), batch.terrain(), batch.entities(), batch.ordinary() + 1));
         ordinaryPending++; return true;

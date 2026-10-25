@@ -73,7 +73,7 @@ final class RocketOrdinaryLaunch {
             } else {
                 var retirements = recovery.retirements();
                 if (previous.nativeTransfer().isPresent() || !settled.contains(previous.transferId()) || live.contains(previous.transferId())
-                        || retirements.pending(record.logicalRocketId()) || retirements.size() >= RocketOrdinaryRetirement.MAX_PENDING) {
+                        || retirements.pending(record.logicalRocketId()) || !retirements.pendingRoom(record.logicalRocketId())) {
                     LandingPadService.release(server, plan); return blocked();
                 }
                 var port = recovery.replacementPort(server, journal, rocket, previous, record, authorized,

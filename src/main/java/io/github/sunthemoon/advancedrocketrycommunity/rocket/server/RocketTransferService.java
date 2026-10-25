@@ -69,6 +69,15 @@ final class RocketTransferService {
     }
     void closeReleases() { if (releases != null) { releases.close(); } }
 
+    private java.util.function.Predicate<RocketEntity> sealedClaim = rocket -> false;
+    private java.util.function.Function<MinecraftServer, List<RocketRegion>> sealedReservations = server -> List.of();
+
+    RocketOrdinaryRetirement ordinaryRetirements() { return recovery.retirements(); }
+    void sealedClaims(java.util.function.Predicate<RocketEntity> claim,
+            java.util.function.Function<MinecraftServer, List<RocketRegion>> reservations) {
+        sealedClaim = Objects.requireNonNull(claim); sealedReservations = Objects.requireNonNull(reservations);
+    }
+
     RocketFlightRequestResult prepareLaunch(RocketEntity rocket, RocketFlightData countdown) {
         return prepareLaunch(rocket, countdown, RocketRequestCompletion.NONE);
     }
@@ -197,7 +206,8 @@ final class RocketTransferService {
     private List<RocketRegion> launchReservations(MinecraftServer server, RocketTransferSavedData journal, UUID exceptReplacement) {
         return landingReservations(journal, java.util.stream.Stream.concat(io.github.sunthemoon.advancedrocketrycommunity
                 .resourceescrow.EscrowGovernedPreparation.pendingDestinations(server).stream(), java.util.stream.Stream.concat(
-                        landed.reservations(journal).stream(), recovery.retirements().reservations(exceptReplacement).stream())).toList());
+                        landed.reservations(journal).stream(), java.util.stream.Stream.concat(
+                                recovery.retirements().reservations(exceptReplacement).stream(), sealedReservations.apply(server).stream()))).toList());
     }
 
     /** The same reservation inputs feed surface, station and explicitly named station selection. */
@@ -444,6 +454,7 @@ final class RocketTransferService {
     boolean escrowReconciliationBoundary(RocketEntity rocket,
             io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGuard guard) {
         if (RocketReleaseAccess.fenced(rocket)) { return false; }
+        if (sealedClaim.test(rocket)) { return false; }
         return RocketFillReconciliation.boundary(rocket, guard, recovery.bays(), liveTransfers, settledTransfers,
                 landed::pending, recovery::fenceReason);
     }
@@ -457,6 +468,7 @@ final class RocketTransferService {
     /** No endpoint may mutate a balance that restart recovery can replace from its journal. */
     boolean resourceMutationAllowed(RocketEntity rocket) {
         if (RocketReleaseAccess.fenced(rocket)) { return false; }
+        if (sealedClaim.test(rocket)) { return false; }
         if (!io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate.resourcesIdle(rocket)) { return false; }
         if (landed.pending(rocket.assemblyTransactionId().orElse(null))) { return false; }
         if (recovery.retirements().replacing(rocket.assemblyTransactionId().orElse(null))) { return false; }
@@ -505,7 +517,7 @@ final class RocketTransferService {
     RocketValidationCode beginLandedDisassembly(RocketEntity rocket, java.util.function.Supplier<Optional<RocketValidationCode>> preflight,
             RocketLandedDisassemblies.Request request) {
         if (RocketReleaseAccess.fenced(rocket)) { return RocketValidationCode.REGION_BUSY; }
-        return recovery.retirements().replacing(rocket.assemblyTransactionId().orElse(null)) ? RocketValidationCode.REGION_BUSY
+        return sealedClaim.test(rocket) || recovery.retirements().replacing(rocket.assemblyTransactionId().orElse(null)) ? RocketValidationCode.REGION_BUSY
                 : landed.begin(rocket, preflight, request, this::landedPort);
     }
     boolean landedDisassemblyPending(RocketEntity rocket) { return landed.pending(rocket.assemblyTransactionId().orElse(null)); }

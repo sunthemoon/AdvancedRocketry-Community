@@ -12,16 +12,31 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.core.Direction;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.wrapper.InvWrapper;
 
 /** Independent two-slot container, deliberately not a vanilla chest/barrel subclass. */
 final class FixtureContainerBlockEntity extends BlockEntity implements Container {
     private static final int SLOT_COUNT = 2;
     private final NonNullList<ItemStack> inventory = NonNullList.withSize(SLOT_COUNT, ItemStack.EMPTY);
+    private LazyOptional<IItemHandler> sealedPort = LazyOptional.of(() -> new InvWrapper(this));
     // Ephemeral diagnostic state owned by this test instance, never serialized or captured.
     FixtureAdapterFaults.Probe fault;
 
     FixtureContainerBlockEntity(BlockPos position, BlockState state) {
-        super(AdapterTestMod.CONTAINER_TYPE.get(), position, state);
+        super(state.is(AdapterTestMod.SEALED_CONTAINER.get()) ? AdapterTestMod.SEALED_CONTAINER_TYPE.get()
+                : state.is(AdapterTestMod.LATCH_CONTAINER.get()) ? AdapterTestMod.LATCH_CONTAINER_TYPE.get()
+                : AdapterTestMod.CONTAINER_TYPE.get(), position, state);
+        SealedStagingProbeFixture.observe("external.constructor.return");
+    }
+
+    @Override public void onLoad() {
+        super.onLoad();
+        SealedStagingProbeFixture.observe("external.onLoad");
     }
 
     CompoundTag captureInventory() {
@@ -31,6 +46,7 @@ final class FixtureContainerBlockEntity extends BlockEntity implements Container
     }
 
     boolean restoreInventory(CompoundTag data) {
+        if (isRemoved()) { return false; }
         if (!data.getAllKeys().equals(Set.of("Items")) || !data.contains("Items", Tag.TAG_LIST)) {
             return false;
         }
@@ -87,16 +103,17 @@ final class FixtureContainerBlockEntity extends BlockEntity implements Container
 
     @Override
     public boolean isEmpty() {
-        return inventory.stream().allMatch(ItemStack::isEmpty);
+        return isRemoved() || inventory.stream().allMatch(ItemStack::isEmpty);
     }
 
     @Override
     public ItemStack getItem(int slot) {
-        return inventory.get(slot);
+        return isRemoved() ? ItemStack.EMPTY : inventory.get(slot);
     }
 
     @Override
     public ItemStack removeItem(int slot, int amount) {
+        if (isRemoved()) { return ItemStack.EMPTY; }
         ItemStack removed = ContainerHelper.removeItem(inventory, slot, amount);
         if (!removed.isEmpty()) {
             setChanged();
@@ -106,11 +123,12 @@ final class FixtureContainerBlockEntity extends BlockEntity implements Container
 
     @Override
     public ItemStack removeItemNoUpdate(int slot) {
-        return ContainerHelper.takeItem(inventory, slot);
+        return isRemoved() ? ItemStack.EMPTY : ContainerHelper.takeItem(inventory, slot);
     }
 
     @Override
     public void setItem(int slot, ItemStack stack) {
+        if (isRemoved()) { return; }
         if (stack.getCount() > Math.min(getMaxStackSize(), stack.getMaxStackSize())) {
             throw new IllegalArgumentException("Oversized fixture inventory stack");
         }
@@ -120,14 +138,26 @@ final class FixtureContainerBlockEntity extends BlockEntity implements Container
 
     @Override
     public boolean stillValid(Player player) {
-        return level != null && level.getBlockEntity(worldPosition) == this
+        return !isRemoved() && level != null && level.getBlockEntity(worldPosition) == this
                 && player.distanceToSqr(worldPosition.getX() + 0.5D,
                         worldPosition.getY() + 0.5D, worldPosition.getZ() + 0.5D) <= 64.0D;
     }
 
     @Override
     public void clearContent() {
+        if (isRemoved()) { return; }
         inventory.clear();
         setChanged();
     }
+
+    @Override public boolean canPlaceItem(int slot, ItemStack stack) { return !isRemoved(); }
+
+    @Override public <T> LazyOptional<T> getCapability(Capability<T> capability, Direction side) {
+        if (getType() == AdapterTestMod.SEALED_CONTAINER_TYPE.get() && capability == ForgeCapabilities.ITEM_HANDLER) {
+            return isRemoved() ? LazyOptional.empty() : sealedPort.cast();
+        }
+        return super.getCapability(capability, side);
+    }
+    @Override public void invalidateCaps() { super.invalidateCaps(); sealedPort.invalidate(); }
+    @Override public void reviveCaps() { super.reviveCaps(); sealedPort = LazyOptional.of(() -> new InvWrapper(this)); }
 }
