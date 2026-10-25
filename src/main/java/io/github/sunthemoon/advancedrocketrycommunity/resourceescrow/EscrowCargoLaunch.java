@@ -92,7 +92,7 @@ final class EscrowCargoLaunch implements AutoCloseable {
         }
         if (EscrowRuntime.of(server).terminal().checkpoint(server, record)) { sawF6 = true; }
         if (leaseCut == null && !sawF7 && data.bind(server).writerIdle()) {
-            leaseCut = new EscrowTerminalLeaseCut(server, data, record, cancel ? EscrowFlightTables.Outcome.CANCELLED : EscrowFlightTables.Outcome.HANDED_OFF);
+            leaseCut = new EscrowTerminalLeaseCut(helper, data, record, cancel ? EscrowFlightTables.Outcome.CANCELLED : EscrowFlightTables.Outcome.HANDED_OFF);
         }
         if (leaseCut != null && leaseCut.ready()) {
             check(sawF6, "F7 was captured without its joint F6 checkpoint");

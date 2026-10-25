@@ -241,7 +241,7 @@ public final class RocketSettlementIdleGameTests {
             if (!Boolean.getBoolean(EscrowTestEndpoints.HOOKS) || !release.name().equals(System.getProperty(DISCARD_PROPERTY))) { return; }
             var server = level.getServer(); var armed = rocket;
             discardHook = true;
-            EscrowRuntime.of(server).terminalCutForTests(server, cut -> {
+            EscrowGameTestTerminalCut.install(helper, cut -> {
                 if (!"F1_ARM_ACK".equals(cut) || !discardHook) { return; }
                 discardHook = false; EscrowRuntime.of(server).terminalCutForTests(server, null);
                 armed.discard();
@@ -359,7 +359,7 @@ public final class RocketSettlementIdleGameTests {
                     RocketFlightState.ASCENT, RocketFlightState.TRANSIT)) && phases.containsAll(java.util.EnumSet.allOf(RocketTransferPhase.class))
                     && flight.plan().isEmpty() && flight.activeTransferId().isEmpty() && !RocketEscrowGate.resourcesIdle(successor),
                     "Flight skipped a checked phase or released its landed successor before F7");
-            terminalRecord = record; leaseCut = new EscrowTerminalLeaseCut(server, data, record); step = 7;
+            terminalRecord = record; leaseCut = new EscrowTerminalLeaseCut(helper, data, record); step = 7;
         }
 
         /**

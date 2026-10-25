@@ -78,10 +78,16 @@ public final class EscrowRuntime {
     private volatile EscrowTerminalProbe terminalProbe;
     private volatile EscrowLoaderReleaseProbe loaderProbe;
     private volatile java.util.function.Consumer<String> terminalTestCut;
-    void terminalCutForTests(MinecraftServer server, java.util.function.Consumer<String> cut) {
+    private Object terminalTestCutOwner;
+    Runnable terminalCutForTests(MinecraftServer server, java.util.function.Consumer<String> cut) {
         EscrowTestEndpoints.requireEnabled(server);
         EscrowTags.require(server.isSameThread() && (cut == null || terminalTestCut == null), "Terminal cut requires exclusive owner-thread setup");
         terminalTestCut = cut;
+        var owner = new Object(); terminalTestCutOwner = owner;
+        return () -> {
+            EscrowTags.require(server.isSameThread(), "Terminal cut release requires owner thread");
+            if (terminalTestCutOwner == owner) { terminalTestCut = null; terminalTestCutOwner = null; }
+        };
     }
     private EscrowReturnProbe returnProbe;
     private final EscrowSettlementOperator settlement = new EscrowSettlementOperator();

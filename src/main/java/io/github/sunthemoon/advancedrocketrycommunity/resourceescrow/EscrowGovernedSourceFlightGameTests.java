@@ -428,7 +428,7 @@ public final class EscrowGovernedSourceFlightGameTests {
                         "Governed landing changed the frozen debit or assignments");
                 if (terminalCheckpoint) {
                     terminalRecord = record; terminalArrival = arrival;
-                    leaseCut = new EscrowTerminalLeaseCut(level.getServer(), data, record);
+                    leaseCut = new EscrowTerminalLeaseCut(helper, data, record);
                     step = 5; return;
                 }
                 finish(journal, arrival); return;

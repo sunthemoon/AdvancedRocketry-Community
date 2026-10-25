@@ -272,7 +272,7 @@ public final class EscrowGovernedWarmupRefusalGameTests {
 
         @Override void relaunch(MinecraftServer server, RocketTransferSavedData journal) {
             // The cut removes itself before it throws, so it can never reach another test's flight.
-            EscrowRuntime.of(server).terminalCutForTests(server, checkpoint -> {
+            EscrowGameTestTerminalCut.install(helper, checkpoint -> {
                 if (checkpoint.equals("F2_PREPARED_ACK") && thrown.compareAndSet(false, true)) {
                     EscrowRuntime.of(server).terminalCutForTests(server, null);
                     throw new IllegalStateException("W90b fixture: F2's countdown effect fails after journal.put");
