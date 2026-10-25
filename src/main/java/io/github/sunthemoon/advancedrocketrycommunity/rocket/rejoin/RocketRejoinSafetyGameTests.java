@@ -2,7 +2,6 @@ package io.github.sunthemoon.advancedrocketrycommunity.rocket.rejoin;
 
 import com.mojang.authlib.GameProfile;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
-import java.util.List;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
@@ -19,20 +18,14 @@ public final class RocketRejoinSafetyGameTests {
     private RocketRejoinSafetyGameTests() { }
     @GameTest(template = "rocket_test", batch = "rocket_rejoin_heightmap")
     public static void missingHeightmapIsNotPrimedByCandidateSelection(GameTestHelper helper) {
-        var level = helper.getLevel(); var at = helper.absolutePos(new BlockPos(2, 4, 2));
-        var chunk = level.getChunkAt(at); var type = net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES;
-        var saved = chunk.getHeightmaps().stream().filter(e -> e.getKey() == type).findFirst().orElseThrow().getValue().getRawData().clone();
-        var player = new ServerPlayer(level.getServer(), level, new GameProfile(UUID.randomUUID(), "W159Heightmap"));
-        var old = RocketRejoinGuardGameTests.root(player.getUUID()).batches().get(0);
-        var pos = new RocketRejoinRoot.Position(at.getX(), at.getY(), at.getZ());
-        var batch = new RocketRejoinRoot.Batch(old.release(), 0, old.transfer(), old.rocket(), old.authority(), old.hold(),
-                old.dimension(), pos, pos, pos, old.resources(), old.before(), old.scrubbed(), old.released(),
-                List.of(new RocketRejoinRoot.Slot(old.dimension(), at.getX() >> 4, at.getZ() >> 4)));
-        try (var world = new RocketRejoinWorld(level.getServer())) {
-            chunk.getHeightmaps().removeIf(e -> e.getKey() == type);
-            world.choose(player, batch);
-            helper.assertTrue(!chunk.hasPrimedHeightmap(type), "Candidate lookup primed a missing heightmap by scanning blocks");
-        } finally { chunk.setHeightmap(type, saved); }
+        var level = helper.getLevel();
+        var chunk = new net.minecraft.world.level.chunk.ProtoChunk(new net.minecraft.world.level.ChunkPos(0, 0),
+                net.minecraft.world.level.chunk.UpgradeData.EMPTY, level,
+                level.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.BIOME), null);
+        var type = net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES;
+        helper.assertTrue(!chunk.hasPrimedHeightmap(type), "Fixture unexpectedly has a primed heightmap");
+        helper.assertTrue(RocketRejoinWorld.candidateHeight(chunk, 0, 0).isEmpty(), "Unknown heightmap supplied a candidate");
+        helper.assertTrue(!chunk.hasPrimedHeightmap(type), "Candidate lookup primed a missing heightmap by scanning blocks");
         helper.succeed();
     }
     @GameTest(template = "rocket_test", batch = "rocket_rejoin_safety")
@@ -44,7 +37,7 @@ public final class RocketRejoinSafetyGameTests {
         } } }
         var pos = new Vec3(at.getX() + 0.5, at.getY(), at.getZ() + 0.5);
         helper.assertTrue(RocketRejoinWorld.safe(player, level, pos), "Plain supported air was refused");
-        for (var block : List.of(Blocks.LAVA, Blocks.WATER, Blocks.FIRE, Blocks.WITHER_ROSE, Blocks.CACTUS,
+        for (var block : java.util.List.of(Blocks.LAVA, Blocks.WATER, Blocks.FIRE, Blocks.WITHER_ROSE, Blocks.CACTUS,
                 Blocks.MAGMA_BLOCK, Blocks.POWDER_SNOW, Blocks.SWEET_BERRY_BUSH, Blocks.CAMPFIRE, Blocks.NETHER_PORTAL)) {
             level.setBlockAndUpdate(at.east(), block.defaultBlockState());
             helper.assertTrue(!RocketRejoinWorld.safe(player, level, pos), "Hazard accepted: " + block);

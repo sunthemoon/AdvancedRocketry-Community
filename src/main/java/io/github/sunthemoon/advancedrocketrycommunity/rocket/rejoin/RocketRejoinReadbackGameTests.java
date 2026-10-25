@@ -165,6 +165,8 @@ public final class RocketRejoinReadbackGameTests {
             player.setHealth(0);
             MinecraftForge.EVENT_BUS.post(new net.minecraftforge.event.entity.living.LivingDeathEvent(player, player.damageSources().generic()));
             player = server.getPlayerList().respawn(player, false);
+            // handleClientCommand adopts the returned body immediately after PlayerList.respawn.
+            player.connection.player = player;
             session = data.guards(server).session(id);
             helper.assertTrue(old.invalidated && session != null && session != old && session.player == player
                     && player != originalPlayer && player.isAlive() && RocketRejoinProtection.guarded(player),
@@ -198,7 +200,8 @@ public final class RocketRejoinReadbackGameTests {
                     new RocketRejoinPlayerFile.Expected(id, entry.release(), a.generation(), "minecraft:overworld", a.x(), a.y(), a.z()));
         }
         void unsafe() {
-            helper.assertTrue(player.isAlive() && player.getHealth() == 1 && RocketRejoinProtection.guarded(player), "Unsafe wait exposed player");
+            helper.assertTrue((session.disconnected || player.isAlive()) && player.getHealth() == 1 && RocketRejoinProtection.guarded(player),
+                    "Unsafe wait exposed player: health=" + player.getHealth() + " guarded=" + RocketRejoinProtection.guarded(player));
             if (!session.disconnected) { return; }
             helper.assertTrue(session.disconnectedAt == session.deadline && session.reason.equals("unsafe")
                     && player.position().equals(session.position) && data.root().entries().get(0).placement() == Placement.PENDING,

@@ -53,12 +53,17 @@ final class RocketRejoinWorld implements AutoCloseable {
         for (var column : RocketRejoinCandidates.columns(batch.minimum(), batch.maximum(), spawn.getX(), spawn.getZ())) {
             var level = level(batch, column.target()); if (level == null) { continue; }
             var chunk = level.getChunkSource().getChunkNow(column.x() >> 4, column.z() >> 4);
-            if (chunk == null || !chunk.hasPrimedHeightmap(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES)) { continue; }
-            int y = chunk.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, column.x() & 15, column.z() & 15) + 1;
+            var height = candidateHeight(chunk, column.x(), column.z()); if (height.isEmpty()) { continue; }
+            int y = height.getAsInt();
             var pos = new Vec3(column.x() + 0.5, y, column.z() + 0.5);
             if (safe(player, level, pos)) { return new Attempt(UUID.randomUUID(), column.target(), pos.x, pos.y, pos.z); }
         }
         return null;
+    }
+    static java.util.OptionalInt candidateHeight(net.minecraft.world.level.chunk.ChunkAccess chunk, int x, int z) {
+        var type = Heightmap.Types.MOTION_BLOCKING_NO_LEAVES;
+        return chunk == null || !chunk.hasPrimedHeightmap(type) ? java.util.OptionalInt.empty()
+                : java.util.OptionalInt.of(chunk.getHeight(type, x & 15, z & 15) + 1);
     }
     boolean safe(ServerPlayer player, Batch batch, Attempt attempt) {
         return safe(player, level(batch, attempt.target()), new Vec3(attempt.x(), attempt.y(), attempt.z()));
