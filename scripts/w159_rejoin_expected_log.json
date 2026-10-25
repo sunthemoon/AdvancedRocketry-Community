@@ -23,7 +23,7 @@
     "otherwise_count": 0,
     "thread": "Server thread",
     "level": "INFO",
-    "loggers": ["advancedrocketrycommunity/", "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/"],
+    "loggers": ["io.gi.su.ad.AdvancedRocketryCommunity/", "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/"],
     "message": "ARCE_W159_SHUTDOWN_CLEAN threads=0 tickets=0"
   },
   "native_c9": {

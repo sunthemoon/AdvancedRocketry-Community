@@ -11,7 +11,7 @@ import run_w159_rejoin_cuts as runner
 
 class RejoinCutRunnerTests(unittest.TestCase):
     def test_shutdown_clean_is_one_exact_parsed_message_only_in_c20_seed(self):
-        line = "[12:00:00] [Server thread/INFO] [advancedrocketrycommunity/]: ARCE_W159_SHUTDOWN_CLEAN threads=0 tickets=0"
+        line = "[12:00:00] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_W159_SHUTDOWN_CLEAN threads=0 tickets=0"
         with patch.object(runner.release, "audit_log", return_value={}):
             with self.assertRaises(runner.smoke.SmokeError):
                 runner.audit_log([], "H1", "C20", "seed")
@@ -22,7 +22,7 @@ class RejoinCutRunnerTests(unittest.TestCase):
                             [line.replace("tickets=0", "tickets=1")],
                             [line.replace("Server thread", "Other thread")],
                             [line.replace("INFO", "WARN")], [line + " trailing"],
-                            [line.replace("advancedrocketrycommunity/", "minecraft/Util")],
+                            [line.replace("io.gi.su.ad.AdvancedRocketryCommunity/", "minecraft/Util")],
                             [line, "unexpected continuation"]):
                     with self.assertRaises(runner.smoke.SmokeError):
                         runner.audit_log(bad, hold, "C20", "seed")
