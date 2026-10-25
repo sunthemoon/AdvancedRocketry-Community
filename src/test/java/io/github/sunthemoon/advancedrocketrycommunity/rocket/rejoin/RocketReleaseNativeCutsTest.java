@@ -51,6 +51,10 @@ class RocketReleaseNativeCutsTest {
         assertEquals("C5", RocketReleaseNativeCuts.replacement(ManagedSavedDataType.ROCKET_TRANSFERS, new CompoundTag(), true));
     }
     @Test void recoveryCutIsIndependentOfSeedAndCannotFireOnTheSecondRestart() {
+        assertEquals("C2", RocketReleaseNativeCuts.selectedBoundary("H1:C12:seed", ""));
+        assertEquals("C2", RocketReleaseNativeCuts.selectedBoundary("H1:C26:seed", ""));
+        assertEquals("C25", RocketReleaseNativeCuts.selectedBoundary("H1:C25:seed", ""));
+        assertEquals("C27", RocketReleaseNativeCuts.selectedBoundary("H1:C27:seed", ""));
         assertEquals("C5", RocketReleaseNativeCuts.selectedBoundary("H1:C5:seed", "B1_CAPTURE"));
         assertEquals("B1_CAPTURE", RocketReleaseNativeCuts.selectedBoundary("H1:C5:recover", "B1_CAPTURE"));
         assertEquals("S2_PENDING", RocketReleaseNativeCuts.selectedBoundary("H2:C2:recover", "S2_PENDING"));

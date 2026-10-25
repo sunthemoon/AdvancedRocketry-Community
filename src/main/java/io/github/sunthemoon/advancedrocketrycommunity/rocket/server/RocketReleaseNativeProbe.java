@@ -28,6 +28,7 @@ public final class RocketReleaseNativeProbe {
     private final MinecraftServer server;
     private final String hold, cut, mode;
     private final RocketRejoinNativeProbe rejoin;
+    private final RocketRejoinNativeRows rows;
     private RocketTransferRecord original;
     private UUID logical;
     private boolean admitted, prepared, done, coldRequested, conflictInstalled;
@@ -36,7 +37,8 @@ public final class RocketReleaseNativeProbe {
     private RocketReleaseNativeProbe(MinecraftServer server) {
         RocketReleaseNativeCuts.validate(server); this.server = server;
         var parts = RocketReleaseNativeCuts.selection().split(":"); hold = parts[0]; cut = parts[1]; mode = parts[2];
-        rejoin = RocketReleaseNativeCuts.rejoin() ? new RocketRejoinNativeProbe(server) : null;
+        rows = RocketRejoinNativeRows.selected(cut) ? new RocketRejoinNativeRows(server, cut, mode) : null;
+        rejoin = rows == null && RocketReleaseNativeCuts.rejoin() ? new RocketRejoinNativeProbe(server) : null;
         server.overworld().setChunkForced(4, 4, true);
         if (mode.equals("seed") || hold.equals("H2")) { server.getLevel(CelestialIds.MOON_LEVEL).setChunkForced(4, 4, true); }
     }
@@ -125,6 +127,10 @@ public final class RocketReleaseNativeProbe {
             if (rejoin.advance(sidecar)) { complete("rejoined"); }
             return;
         }
+        if (rows != null && sidecar.root().nextSequence() > 0) {
+            if (rows.advance(sidecar, entity)) { complete("native-row"); }
+            return;
+        }
         if (cut.equals("C16") && !mode.equals("seed")) {
             if (ticks < 450) { return; }
             require(logical != null && RocketReleaseAccess.fenced(server, logical), "Unrecorded T lost release fence");
@@ -166,6 +172,7 @@ public final class RocketReleaseNativeProbe {
             if (moon.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(4, 4))) { return; }
         }
         if (!admitted) {
+            if (rows != null && !rows.prepare(entity)) { return; }
             if (rejoin != null) { rejoin.seedOldPlayer(entity); }
             if (Boolean.getBoolean("advancedrocketrycommunity.rejoinReleaseCommand")) {
                 // Already inside the disposable-server gate; use the real registered operator command unchanged.
