@@ -59,8 +59,8 @@ public final class RocketReleaseBoardingGameTests {
         RocketSourceRetirementFixtures.Flight fixture;
         RocketTransferRecord record;
         RocketEntity rocket, stale;
-        ServerPlayer retainedPlayer;
-        FakePlayer firstPlayer, stranger;
+        ServerPlayer retainedPlayer, firstPlayer;
+        FakePlayer stranger;
         Path sidecarFile;
         ChunkPos originSlot, otherSlot;
         BlockPos origin, other;
@@ -94,6 +94,7 @@ public final class RocketReleaseBoardingGameTests {
                     case 3 -> awaitS2();
                     case 4 -> saveNewAssignment();
                     case 5 -> reload();
+                    case 6 -> awaitPlacement();
                     default -> throw new IllegalStateException("Unknown boarding phase");
                 }
                 if (!closed) { pacer.pace(); }
@@ -187,8 +188,36 @@ public final class RocketReleaseBoardingGameTests {
             helper.assertTrue(image != null && !hasSeat(image, first) && !hasSeat(image, second),
                     "S2 did not revoke the authority's saved pre-release seats");
             assertOldSourcesClean();
+            helper.assertTrue(intent(firstPlayer, RocketFlightAction.BOARD) == RocketFlightRequestCode.TRANSFER_JOURNAL_BLOCKED,
+                    "S2 admitted an AP passenger before placement proof");
+            // W159: the same released passenger now completes P1, vanilla save, installed readback and P2.
+            // The fixture supplies terrain, not equipment, outside the recorded footprint.
+            var safe = new BlockPos(batch.minimum().x() + (batch.maximum().x() - batch.minimum().x()) / 2,
+                    batch.maximum().y() + 8, batch.minimum().z() - 1);
+            for (int x = -1; x <= 1; x++) { for (int z = -1; z <= 1; z++) { for (int y = -1; y <= 2; y++) {
+                level.setBlockAndUpdate(safe.offset(x, y, z), (y == -1 ? net.minecraft.world.level.block.Blocks.STONE
+                        : net.minecraft.world.level.block.Blocks.AIR).defaultBlockState());
+            } } }
+            firstPlayer = FirstEventGameTestPlayers.join(server, first, "W159Returning", level, origin);
+            helper.assertTrue(RocketRejoinProtection.guarded(firstPlayer), "Returning AP passenger was not guarded");
+            phase = 6;
+        }
+        void awaitPlacement() {
+            if (RocketRejoinProtection.guarded(firstPlayer)) { return; }
+            helper.assertTrue(sidecar.acknowledgedRoot().entries().stream().noneMatch(e -> e.player().equals(first)),
+                    "Guard ended before checked P2 retired the seat-verified entry");
+            helper.assertTrue(!firstPlayer.getPersistentData().contains("arce_passenger_rejoin") && firstPlayer.getVehicle() == null,
+                    "Verified placement retained its live marker or vehicle");
+            var file = server.getWorldPath(net.minecraft.world.level.storage.LevelResource.PLAYER_DATA_DIR).resolve(first + ".dat");
+            try (var input = Files.newInputStream(file)) {
+                var saved = net.minecraft.nbt.NbtIo.readCompressed(input);
+                helper.assertTrue(saved.hasUUID("UUID") && saved.getUUID("UUID").equals(first)
+                        && saved.getFloat("Health") > 0 && !saved.contains("RootVehicle")
+                        && saved.getCompound("ForgeData").getCompound("arce_passenger_rejoin").hasUUID("generation"),
+                        "P2 had no installed healthy, unmounted marker-bearing player file");
+            } catch (IOException failure) { throw new java.io.UncheckedIOException(failure); }
             helper.assertTrue(intent(firstPlayer, RocketFlightAction.BOARD) == RocketFlightRequestCode.SUCCESS,
-                    "Post-S2 real boarding was refused");
+                    "Post-P2 real boarding was refused");
             assertNewAssignment();
             savedSlots.remove(originSlot);
             phase = 4;
@@ -273,6 +302,7 @@ public final class RocketReleaseBoardingGameTests {
         void close() {
             if (closed) { return; } closed = true;
             if (firstPlayer != null) { firstPlayer.stopRiding(); }
+            if (firstPlayer != null && firstPlayer.connection != null) { server.getPlayerList().remove(firstPlayer); }
             if (stranger != null) { stranger.stopRiding(); }
             if (retainedPlayer != null) { retainedPlayer.stopRiding(); server.getPlayerList().remove(retainedPlayer); }
             if (rocket != null) { rocket.discard(); } if (stale != null) { stale.discard(); }

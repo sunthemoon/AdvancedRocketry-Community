@@ -1,0 +1,17 @@
+{
+  "schema": 1,
+  "scope": "W159 protected placement and installed player-file proof",
+  "info": {
+    "guard": "ARCE_REJOIN_GUARD player={uuid} state={state} reason={reason}",
+    "placed": "ARCE_REJOIN_PLACED player={uuid} release={uuid} generation={uuid} target={target}",
+    "verified": "ARCE_REJOIN_VERIFIED player={uuid} release={uuid} generation={uuid}"
+  },
+  "warn": {
+    "player_limit": "ARCE_REJOIN_PLAYER_LIMIT player={uuid} kind={kind} size={size} ceiling={ceiling}"
+  },
+  "guard_states": ["guard", "disconnect", "waiting", "capacity", "conflict", "unsafe", "tickets", "io", "oversized", "dead"],
+  "target_values": ["PAD", "OVERWORLD_SPAWN"],
+  "limit_kinds": ["OVERSIZED", "DEPTH"],
+  "isolated_integration_counts": {"guard": 2, "placed": 1, "verified": 1, "player_limit": 0},
+  "all_other_warning_counts": 0
+}

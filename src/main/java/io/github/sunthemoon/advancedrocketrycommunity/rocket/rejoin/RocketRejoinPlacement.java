@@ -20,17 +20,24 @@ final class RocketRejoinPlacement implements AutoCloseable {
         Entry entry;
         Batch batch;
         Attempt attempt;
-        boolean placed;
+        boolean placed, readRequested, proof, submitted;
         Work(RocketRejoinGuards.Session session) { this.session = session; }
     }
     private final MinecraftServer server;
     private final RocketRejoinSavedData data;
     private final RocketRejoinGuards guards;
     private final RocketRejoinWorld world;
+    private final java.util.function.Predicate<UUID> releaseReady;
+    private final RocketRejoinReader reader = new RocketRejoinReader();
+    private final RocketRejoinSaveClock saves = new RocketRejoinSaveClock();
     private final Map<UUID, Work> work = new LinkedHashMap<>();
     private int cursor;
     RocketRejoinPlacement(MinecraftServer server, RocketRejoinSavedData data, RocketRejoinGuards guards) {
-        this.server = server; this.data = data; this.guards = guards; world = new RocketRejoinWorld(server);
+        this(server, data, guards, release -> RocketRuntime.rejoinPlacementReady(server, release));
+    }
+    RocketRejoinPlacement(MinecraftServer server, RocketRejoinSavedData data, RocketRejoinGuards guards,
+                         java.util.function.Predicate<UUID> releaseReady) {
+        this.server = server; this.data = data; this.guards = guards; this.releaseReady = releaseReady; world = new RocketRejoinWorld(server);
     }
     void tick() {
         for (var s : guards.sessions()) {
@@ -39,18 +46,28 @@ final class RocketRejoinPlacement implements AutoCloseable {
                 else { guards.reason(s, "capacity"); }
             }
         }
+        int actions = 0;
+        var result = reader.poll(); if (result != null) { apply(result); actions++; }
         var entries = new ArrayList<>(work.values()); int size = entries.size();
-        for (int i = 0; i < Math.min(ACTIONS, size); i++) {
+        // Reserve one action for the server-wide save. No callback mutates owner state off-thread.
+        for (int i = 0; i < Math.min(ACTIONS - actions - 1, size); i++) {
             var next = entries.get(Math.floorMod(cursor++, size));
             if (work.get(next.session.player.getUUID()) != next) { continue; }
             step(next);
         }
         cursor = Math.floorMod(cursor, Math.max(1, work.size()));
+        boolean pendingSave = work.values().stream().anyMatch(w -> w.placed && !w.submitted && w.session.online && !w.session.disconnected);
+        if (saves.due(server.getTickCount(), pendingSave, reader.busy())) {
+            for (var w : List.copyOf(work.values())) { if (w.placed && !w.submitted) { RocketRejoinGuards.pin(w.session); } }
+            saves.saved(server.getTickCount()); server.getPlayerList().saveAll();
+        }
     }
     private void step(Work w) {
         var s = w.session;
-        if (guards.session(s.player.getUUID()) != s || s.disconnected || !s.online) { cancel(s); return; }
-        if (!s.player.isAlive() || s.player.deathTime != 0) { guards.reason(s, "dead"); return; }
+        if (guards.session(s.player.getUUID()) != s || s.disconnected || s.invalidated
+                || !s.online && (!w.placed || server.getTickCount() >= s.deadline)) { cancel(s); return; }
+        if (s.online && (!s.player.isAlive() || s.player.deathTime != 0)) { guards.reason(s, "dead"); return; }
+        if (w.submitted) { finish(w); return; }
         var entries = data.root().entries().stream().filter(e -> e.player().equals(s.player.getUUID()) && e.placement() == Placement.PENDING).toList();
         if (entries.size() > 1) { guards.reason(s, "conflict"); return; }
         if (entries.isEmpty()) { return; } // B0/S1 admission, or P2 awaiting acknowledgement.
@@ -63,9 +80,14 @@ final class RocketRejoinPlacement implements AutoCloseable {
                 || r.destinationFlightData().passengers().assignment(s.player.getUUID()).isPresent()))) {
             guards.reason(s, "conflict"); return;
         }
-        if (!RocketRuntime.rejoinPlacementReady(server, w.entry.release())) { return; }
+        if (!s.online) { verify(w); return; }
+        if (!releaseReady.test(w.entry.release())) { return; }
         if (!world.ticket(s, w.batch)) { guards.reason(s, "tickets"); return; }
-        if (w.placed) { return; }
+        if (w.placed) {
+            if (w.attempt.equals(w.entry.attempt()) && world.safe(s.player, w.batch, w.attempt)) { verify(w); return; }
+            w.placed = false; w.proof = false; w.readRequested = false; w.attempt = null;
+            s.player.getPersistentData().remove(RocketRejoinMarker.KEY);
+        }
         Attempt attempt = w.entry.attempt();
         if (attempt == null || !world.safe(s.player, w.batch, attempt)) {
             if (!data.pendingRoots().isEmpty()) { return; }
@@ -87,9 +109,59 @@ final class RocketRejoinPlacement implements AutoCloseable {
         AdvancedRocketryCommunity.LOGGER.info("ARCE_REJOIN_PLACED player={} release={} generation={} target={}",
                 w.entry.player(), w.entry.release(), attempt.generation(), attempt.target());
     }
+    void saved(net.minecraft.server.level.ServerPlayer player) {
+        var w = work.get(player.getUUID());
+        if (w != null && w.session.player == player && w.placed && !w.submitted && !w.session.invalidated
+                && RocketRejoinMarker.matches(player.getPersistentData(), w.entry)) { w.readRequested = true; }
+    }
+    private void verify(Work w) {
+        if (!w.proof) {
+            if (w.readRequested && !reader.busy()) {
+                w.readRequested = false;
+                reader.start(server.getWorldPath(net.minecraft.world.level.storage.LevelResource.PLAYER_DATA_DIR), w,
+                        new RocketRejoinPlayerFile.Expected(w.entry.player(), w.entry.release(), w.attempt.generation(),
+                                w.attempt.target() == Target.PAD ? w.batch.dimension() : "minecraft:overworld",
+                                w.attempt.x(), w.attempt.y(), w.attempt.z()));
+            }
+            return;
+        }
+        if (!data.pendingRoots().isEmpty()) { return; }
+        var current = data.root().entries().stream().filter(e -> e.key().equals(w.entry.key())).findFirst().orElse(null);
+        if (current == null || current.placement() != Placement.PENDING || !w.attempt.equals(current.attempt())) { return; }
+        // Applying the read result is linearized here on the current owner-thread session, never in an IO callback.
+        if (w.session.online && !world.safe(w.session.player, w.batch, w.attempt)) { guards.reason(w.session, "unsafe"); return; }
+        w.submitted = data.submit(data.root().update(new Entry(current.release(), current.player(), current.seatIndex(), Placement.VERIFIED, current.seat(), null)));
+        if (!w.submitted) { guards.reason(w.session, "io"); }
+    }
+    private void apply(RocketRejoinReader.Completion result) {
+        var w = (Work) result.identity(); var s = w.session;
+        if (work.get(s.player.getUUID()) != w || guards.session(s.player.getUUID()) != s || s.invalidated || s.disconnected
+                || !w.placed || !w.attempt.generation().equals(result.expected().generation()) || w.submitted) { return; }
+        if (s.online && (!s.player.isAlive() || s.player.deathTime != 0)) { guards.reason(s, "dead"); return; }
+        w.proof = result.result().status() == RocketRejoinPlayerFile.Status.MATCH;
+        if (!w.proof) {
+            boolean oversized = result.result().status() == RocketRejoinPlayerFile.Status.OVERSIZED || result.result().status() == RocketRejoinPlayerFile.Status.DEPTH;
+            if (oversized && !s.reason.equals("oversized")) {
+                AdvancedRocketryCommunity.LOGGER.warn("ARCE_REJOIN_PLAYER_LIMIT player={} kind={} size={} ceiling={}",
+                        w.entry.player(), result.result().status(), result.result().size(), result.result().ceiling());
+            }
+            guards.reason(s, oversized ? "oversized" : "io");
+            if (result.result().status() == RocketRejoinPlayerFile.Status.CHANGED) { w.readRequested = true; }
+        }
+    }
+    private void finish(Work w) {
+        var installed = data.acknowledgedRoot(); if (installed == null) { return; }
+        if (installed.entries().stream().anyMatch(e -> e.key().equals(w.entry.key()) && e.placement() == Placement.PENDING)) { return; }
+        if (w.session.online && !world.safe(w.session.player, w.batch, w.attempt)) { guards.reason(w.session, "unsafe"); return; }
+        w.session.player.getPersistentData().remove(RocketRejoinMarker.KEY);
+        AdvancedRocketryCommunity.LOGGER.info("ARCE_REJOIN_VERIFIED player={} release={} generation={}",
+                w.entry.player(), w.entry.release(), w.attempt.generation());
+        guards.complete(w.session);
+    }
     void cancel(RocketRejoinGuards.Session session) {
         var w = work.get(session.player.getUUID());
         if (w != null && w.session == session) { work.remove(session.player.getUUID()); world.release(session.player.getUUID()); }
     }
-    @Override public void close() { work.clear(); world.close(); }
+    void logout(RocketRejoinGuards.Session session) { world.release(session.player.getUUID()); }
+    @Override public void close() { reader.close(); work.clear(); world.close(); }
 }

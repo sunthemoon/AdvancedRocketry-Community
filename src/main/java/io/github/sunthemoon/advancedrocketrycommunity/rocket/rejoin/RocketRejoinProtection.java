@@ -46,6 +46,16 @@ public final class RocketRejoinProtection {
     @SubscribeEvent(priority = EventPriority.LOWEST) public static void logout(PlayerEvent.PlayerLoggedOutEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) { guards(player).logout(player); }
     }
+    @SubscribeEvent public static void saved(PlayerEvent.SaveToFile event) {
+        if (event.getEntity() instanceof ServerPlayer player) { guards(player).saved(player); }
+    }
+    @SubscribeEvent(priority = EventPriority.LOWEST) public static void died(net.minecraftforge.event.entity.living.LivingDeathEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) { guards(player).invalidate(player); }
+    }
+    @SubscribeEvent(priority = EventPriority.HIGHEST) public static void cloned(PlayerEvent.Clone event) {
+        if (event.getOriginal() instanceof ServerPlayer original) { guards(original).invalidate(original); }
+        if (event.getEntity() instanceof ServerPlayer player) { guards(player).join(player); }
+    }
     @SubscribeEvent(priority = EventPriority.LOWEST) public static void playerTick(TickEvent.PlayerTickEvent event) {
         if (event.phase == TickEvent.Phase.END && event.player instanceof ServerPlayer player) { guards(player).pin(player); }
     }

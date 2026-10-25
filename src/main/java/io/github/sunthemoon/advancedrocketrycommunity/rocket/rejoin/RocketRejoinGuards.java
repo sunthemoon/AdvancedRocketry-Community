@@ -25,7 +25,7 @@ public final class RocketRejoinGuards {
         final Set<MobEffect> originalEffects;
         ServerLevel level;
         Vec3 position;
-        boolean online = true, disconnected, durable;
+        boolean online = true, disconnected, durable, invalidated;
         String reason = "waiting";
         Session(ServerPlayer player, long now, boolean durable) {
             this.player = player; deadline = now + DEADLINE; this.durable = durable;
@@ -39,7 +39,10 @@ public final class RocketRejoinGuards {
     private final RocketRejoinPlacement placement;
 
     RocketRejoinGuards(MinecraftServer server, RocketRejoinSavedData data) {
-        this.server = server; this.data = data; placement = new RocketRejoinPlacement(server, data, this);
+        this(server, data, release -> RocketRuntime.rejoinPlacementReady(server, release));
+    }
+    RocketRejoinGuards(MinecraftServer server, RocketRejoinSavedData data, java.util.function.Predicate<UUID> releaseReady) {
+        this.server = server; this.data = data; placement = new RocketRejoinPlacement(server, data, this, releaseReady);
     }
 
     RocketRejoinIndex index() {
@@ -104,7 +107,12 @@ public final class RocketRejoinGuards {
     }
     public void logout(ServerPlayer player) {
         var s = sessions.get(player.getUUID());
-        if (s != null && s.player == player) { pin(s); s.online = false; }
+        if (s != null && s.player == player) { pin(s); s.online = false; placement.logout(s); }
+    }
+    public void saved(ServerPlayer player) { placement.saved(player); }
+    public void invalidate(ServerPlayer player) {
+        var s = sessions.get(player.getUUID());
+        if (s != null && s.player == player) { s.invalidated = true; placement.cancel(s); reason(s, "dead"); }
     }
     void complete(Session s) {
         if (sessions.get(s.player.getUUID()) != s) { return; }
