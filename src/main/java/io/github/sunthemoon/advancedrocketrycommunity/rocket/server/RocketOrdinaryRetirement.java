@@ -99,6 +99,11 @@ final class RocketOrdinaryRetirement {
         /** Read-only final census recheck; a newly loaded candidate invalidates the attempt, never its old authority. */
         default String recheck(RocketTransferRecord record, UUID survivor) { return null; }
         default boolean requestCurrent() { return true; }
+        /** A cold I6 demand has loading authority only, never candidate-discard or terminal authority. */
+        default boolean preparationOnly() { return false; }
+        default boolean preparationReady() { return false; }
+        /** A fresh destructive I6 request uses already-loaded ends; it must not renew preparation's tickets. */
+        default boolean needsTicketStep() { return true; }
         default io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRegion reservation() { return null; }
         /** One attempt's sink: silent unless a gated release test selects a pause. */
         Consumer<String> sink();
@@ -151,6 +156,7 @@ final class RocketOrdinaryRetirement {
         long admissionTick = Long.MIN_VALUE;
         String reason;
         Runnable retry = () -> { };
+        long preparationPollAt = Long.MIN_VALUE;
 
         Pending(Port port, RocketTransferSavedData journal, RocketTransferRecord record, UUID survivor, Site site,
                 boolean offlineAllowed, Effects effects) {
@@ -309,6 +315,13 @@ final class RocketOrdinaryRetirement {
     private void step(Pending entry, long now) {
         String abandon = abandoned(entry);
         if (abandon != null) { abandon(entry, abandon); return; }
+        if (entry.port.preparationOnly() && now >= entry.preparationPollAt) {
+            entry.preparationPollAt = now + POLL_TICKS;
+            if (entry.port.preparationReady()) {
+                // No proof, discard, journal mutation or renewed ticket accompanies readiness.
+                entry.releaseToken(); drop(entry); entry.effects.acknowledged().getAsBoolean(); return;
+            }
+        }
         if (entry.state == State.PROVING) { prove(entry, now); return; }
         if (now < entry.notBefore) {
             if (entry.created != now) { entry.releaseToken(); } // a fail-back's deferred release (see fail)
@@ -347,7 +360,7 @@ final class RocketOrdinaryRetirement {
             else { waiting(entry, "SURVIVOR_UNLOADED", now); }
             return;
         }
-        if (entry.site.destination()) {
+        if (entry.site.destination() && entry.port.needsTicketStep()) {
             // On demand only and paced (RocketFillRetirementPacing); source-return sites keep their loaded-only order below.
             long next = fills.admit(entry.logical(), now, activeAttempts() + sealedAttempts.getAsInt() > MAX_ATTEMPTS);
             if (next != now) { entry.notBefore = next; entry.releaseToken(); return; }
@@ -360,6 +373,7 @@ final class RocketOrdinaryRetirement {
             if (held != null) { waiting(entry, held, now); return; }
             if (!entry.site.demand()) { entry.ticketed++; }
         }
+        if (entry.port.preparationOnly()) { waiting(entry, "SLOT_UNLOADED", now); return; }
         if (entry.censusFull) { fail(entry, "CENSUS_LIMIT", now, RETRY_TICKS, false); return; }
         if (presence != Presence.LOADED) {
             if (presence == Presence.GONE) { abandon(entry, "SURVIVOR_GONE"); }

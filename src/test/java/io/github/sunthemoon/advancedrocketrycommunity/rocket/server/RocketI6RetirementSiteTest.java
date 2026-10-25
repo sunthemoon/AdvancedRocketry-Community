@@ -35,6 +35,28 @@ class RocketI6RetirementSiteTest {
     @TempDir Path directory;
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
 
+    @Test void preparationOnlyLoadsAndCompletesWithoutDiscardCaptureOrTerminal() {
+        var f = new Fixture(); f.port.preparing = true; f.port.loaded = false; f.begin();
+        f.retirements.tick(); assertEquals(1, f.port.tickets);
+        f.port.loaded = true; f.port.now += RocketOrdinaryRetirement.POLL_TICKS;
+        f.retirements.tick();
+        assertEquals(1, f.effects); assertEquals(0, f.discarded);
+        assertEquals(1, f.port.tickets, "Readiness must not consume a second 200-tick ticket step");
+        assertEquals(0, f.port.preparations); assertTrue(f.port.callbacks.isEmpty());
+        assertSame(f.record, f.journal.find(f.record.transferId()).orElseThrow());
+        assertFalse(f.retirements.pending(f.logical()));
+    }
+
+    @Test void aFreshLoadedProofDoesNotRenewThePreparationsTicketOrAge() {
+        var f = new Fixture(); f.port.preparing = true; f.port.loaded = false; f.begin();
+        f.retirements.tick(); f.port.loaded = true; f.port.now += 20; f.retirements.tick();
+        f.port.preparing = false; f.port.ticketStep = false; f.begin(); f.retirements.tick();
+        assertEquals(1, f.port.tickets);
+        assertEquals(1, f.port.callbacks.size(), "A fresh proof uses the prepared site, not another ticket demand");
+        f.complete(0); f.complete(1); f.acknowledge();
+        assertEquals(2, f.effects);
+    }
+
     @Test void plainReleaseWaitsForCoordinatorBothSlotsAndCheckedRemoval() {
         var f = new Fixture(); f.begin();
         assertEquals(0, f.port.tickets); assertTrue(f.port.callbacks.isEmpty());
@@ -105,12 +127,19 @@ class RocketI6RetirementSiteTest {
     }
 
     private static final class Port implements RocketOrdinaryRetirement.Port {
-        long now = 100; int tickets;
+        long now = 100; int tickets, preparations;
+        boolean preparing, ticketStep = true;
         boolean supported = true, loaded = true;
         final List<Long> ticketTicks = new ArrayList<>();
         final List<RocketRetirementProof.Slot> slots = new ArrayList<>();
         final List<Consumer<EscrowBarrier.Result>> callbacks = new ArrayList<>();
         public long now() { return now; }
+        public boolean preparationOnly() { return preparing; }
+        public boolean preparationReady() { return loaded; }
+        public boolean needsTicketStep() { return ticketStep; }
+        public String prepare(RocketTransferRecord r, UUID id, List<RocketRetirementProof.Slot> slots) {
+            preparations++; return null;
+        }
         public RocketOrdinaryRetirement.Presence survivor(RocketTransferRecord r, UUID id, RocketRetirementProof.Slot slot) {
             return RocketOrdinaryRetirement.Presence.LOADED;
         }
