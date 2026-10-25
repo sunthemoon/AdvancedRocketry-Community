@@ -28,7 +28,7 @@ public final class SealedWidePlanGameTests {
         for (int x = 0; x < 160; x++) { blocks.add(new RocketBlock(new RocketPosition(x, 0, 0),
                 RocketBlockStateAdapter.capture(Blocks.IRON_BLOCK.defaultBlockState()))); }
         var snapshot = RocketStructureSnapshot.create(UUID.randomUUID(), level.dimension().location(), origin, blocks,
-                List.of(new RocketPosition(0, 0, 0)), new RocketStats(160, 200, 1000, 1000, 1, 1, 1, 1), level.getGameTime());
+                List.of(new RocketPosition(0, 0, 0)), new RocketStats(160, 200, 1000, 1000, 1, 1, 1, 0), level.getGameTime());
         var rocket = ModEntities.ROCKET.get().create(level); helper.assertTrue(rocket != null, "Rocket type unavailable");
         rocket.initialize(snapshot, UUID.randomUUID(), UUID.randomUUID()); RocketTransferEntities.positionAtOrigin(rocket, origin);
         helper.assertTrue(level.addFreshEntity(rocket), "Fixture rocket was not published");

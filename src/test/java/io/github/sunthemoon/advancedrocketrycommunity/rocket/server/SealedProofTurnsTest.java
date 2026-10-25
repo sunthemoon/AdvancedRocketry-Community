@@ -6,6 +6,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.Test;
 
 class SealedProofTurnsTest {
+    @Test void aFuturePollOrRemovedEntryCannotKeepTheOtherClassWaiting() throws Exception {
+        var due = new AtomicBoolean(true); var turns = new SealedProofTurns(); turns.bind(() -> true);
+        var id = UUID.randomUUID();
+        turns.ordinaryRoom(id, due::get);
+        turns.sealedEnded(); assertFalse(turns.sealedRoom());
+        due.set(false); assertTrue(turns.sealedRoom(), "A future poll or removed entry retained the ordinary turn");
+        due.set(true); assertFalse(turns.sealedRoom(), "A still-pending return must rejoin when due");
+    }
     @Test void waitingClassesAlternateAndOrdinaryCandidatesKeepTheirOrder() {
         var turns = new SealedProofTurns(); turns.bind(() -> true);
         var first = UUID.randomUUID(); var second = UUID.randomUUID();

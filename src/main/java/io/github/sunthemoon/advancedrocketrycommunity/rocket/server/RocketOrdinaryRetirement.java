@@ -147,6 +147,7 @@ final class RocketOrdinaryRetirement {
         Consumer<String> sink = label -> { };
         int attempt, cursor, attempts, ticketed;
         long created, started, notBefore;
+        long admissionTick = Long.MIN_VALUE;
         String reason;
         Runnable retry = () -> { };
 
@@ -327,11 +328,12 @@ final class RocketOrdinaryRetirement {
     }
 
     private void start(Pending entry, long now) {
+        entry.admissionTick = now;
         if (entry.censusFull && entry.site != Site.BEFORE_REPLACE) { fail(entry, "CENSUS_LIMIT", now, RETRY_TICKS, false); return; }
         int own = entry.token != null ? 1 : 0;
         // Destination demand must not place tickets while another class owns admission.
-        if (entry.site.destination() && (activeAttempts() + sealedAttempts.getAsInt() - own >= MAX_ATTEMPTS
-                || !proofTurns.ordinaryRoom(entry.logical()))) {
+        boolean turn = ordinaryTurn(entry);
+        if (entry.site.destination() && (!turn || activeAttempts() + sealedAttempts.getAsInt() - own >= MAX_ATTEMPTS)) {
             fail(entry, "BUSY", now, 1, false); return;
         }
         var record = entry.record; var port = entry.port;
@@ -370,7 +372,7 @@ final class RocketOrdinaryRetirement {
         if (!port.escrowAllows(entry.journal, record, entry.token)) {
             proofTurns.withdraw(entry.logical()); fail(entry, "BUSY", now, 1, false); return;
         }
-        boolean turn = proofTurns.ordinaryRoom(entry.logical());
+        turn = ordinaryTurn(entry);
         if (!turn || activeAttempts() + sealedAttempts.getAsInt() - own >= MAX_ATTEMPTS) {
             fail(entry, "BUSY", now, 1, false); return;
         }
@@ -395,6 +397,11 @@ final class RocketOrdinaryRetirement {
         proofTurns.ordinaryStarted(entry.logical());
         entry.started = now; entry.frozen = frozen; entry.cursor = 0; entry.sink = port.sink();
         prove(entry, now);
+    }
+
+    private boolean ordinaryTurn(Pending entry) {
+        return proofTurns.ordinaryRoom(entry.logical(), () -> pending.get(entry.logical()) == entry && entry.state == State.WAITING
+                && (entry.port.now() == entry.admissionTick || entry.port.now() + 1L >= entry.notBefore));
     }
 
     private void prove(Pending entry, long now) {

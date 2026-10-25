@@ -44,6 +44,17 @@ class SealedOrdinaryHandoffTest {
     }
 
     @ParameterizedTest @ValueSource(booleans = {true, false})
+    void destinationDemandAlsoReceivesTheNextAdmissionTurn(boolean callbacksFirst) throws Exception {
+        try (var f = new Fixture(2, callbacksFirst, false)) {
+            f.tick(0); f.tick(1);
+            var ordinary = f.enqueue(RocketOrdinaryRetirement.Site.BEFORE_FILL);
+            for (int tick = 2; tick < 300 && ordinary.started < 0; tick++) { f.tick(tick); }
+            assertTrue(ordinary.started >= f.entries.get(0).finished && ordinary.started <= f.entries.get(0).finished + 2,
+                    "Destination demand missed the turn: " + ordinary.started);
+        }
+    }
+
+    @ParameterizedTest @ValueSource(booleans = {true, false})
     void fullHundredTickAttemptStillHandsOffWithinTwoTicks(boolean callbacksFirst) throws Exception {
         try (var f = new Fixture(2, callbacksFirst, true)) {
             f.tick(0); f.tick(1); var ordinary = f.enqueue();
@@ -103,9 +114,12 @@ class SealedOrdinaryHandoffTest {
         }
         int active() { return (int) entries.stream().filter(Entry::activeAttempt).count(); }
         Return enqueue() {
+            return enqueue(RocketOrdinaryRetirement.Site.RECOVERED_SOURCE);
+        }
+        Return enqueue(RocketOrdinaryRetirement.Site site) {
             var r = new Return(returns.size()); returns.add(r);
             try (var held = RocketOrdinaryRetirement.hold(r.journal, r.record.logicalRocketId())) {
-                ordinary.begin(r.port, r.journal, RocketOrdinaryRetirement.Site.RECOVERED_SOURCE, r.record,
+                ordinary.begin(r.port, r.journal, site, r.record,
                         r.record.sourceEntityId(), List.of(), false, held, RocketOrdinaryRetirement.Effects.of(() -> true));
             }
             return r;
