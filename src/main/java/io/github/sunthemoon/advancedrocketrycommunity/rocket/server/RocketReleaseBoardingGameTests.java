@@ -70,7 +70,7 @@ public final class RocketReleaseBoardingGameTests {
         final java.util.Set<ChunkPos> savedSlots = new java.util.HashSet<>(), savingSlots = new java.util.HashSet<>();
         String saveFailure;
         int phase, ticks, seat;
-        boolean closed, installed;
+        boolean closed, installed, departed;
 
         Boarding(GameTestHelper helper) {
             this.helper = helper; level = helper.getLevel(); server = level.getServer();
@@ -154,16 +154,24 @@ public final class RocketReleaseBoardingGameTests {
                     "Rejected boarding changed the manifest or mounted the player");
             helper.assertTrue(!firstPlayer.startRiding(rocket, false) && !firstPlayer.startRiding(rocket, true),
                     "Normal or forced mounting bypassed the release fence");
+            phase = 3;
+        }
+        void leaveUnderFence() {
+            helper.assertTrue(RocketRuntime.releaseFenced(rocket), "Retained rider left outside the release fence");
             helper.assertTrue(intent(retainedPlayer, RocketFlightAction.LEAVE) == RocketFlightRequestCode.SUCCESS
                     && retainedPlayer.getVehicle() == null
                     && rocket.flightData().orElseThrow().passengers().assignment(retained).isEmpty(),
                     "The fence prevented a non-released passenger from leaving");
             // Their now-offline seat in MT keeps a scrubbed T, exercising both persistent seat sources after S2.
             server.getPlayerList().remove(retainedPlayer); retainedPlayer = null;
-            phase = 3;
+            departed = true;
         }
         void awaitS2() {
+            // B0 proves the frozen ME exactly. Exercise permitted departure after that proof, while B1 is running.
+            if (!departed && sidecar.releasePermit(release).isPresent()
+                    && transfers.releaseOwner(server).coordinator.stage(release).equals("B1")) { leaveUnderFence(); }
             if (RocketRuntime.releaseFenced(rocket)) { return; }
+            helper.assertTrue(departed, "S2 completed before the retained-rider departure was exercised");
             helper.assertTrue(sidecar.acknowledgedCurrent() && sidecar.acknowledgedRoot().entries().stream()
                     .filter(e -> e.release().equals(release)).allMatch(e -> e.seat() == RocketRejoinRoot.Seat.VERIFIED),
                     "Boarding reopened before the checked S2 acknowledgement");
