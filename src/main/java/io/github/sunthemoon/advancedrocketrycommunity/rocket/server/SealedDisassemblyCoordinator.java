@@ -77,6 +77,10 @@ final class SealedDisassemblyCoordinator {
         proofTurns = ordinary.shareSealedTurns(() -> server != null && work.values().stream()
                 .anyMatch(item -> !item.activeAttempt() && item.eligible(server.getTickCount() + 1L) && item.world.waitingProof()));
     }
+    void shareLandedCapacity(RocketLandedDisassemblies landed) {
+        ordinary.shareLandedCapacity(landed::logicalIds,
+                logical -> work.values().stream().anyMatch(item -> logical.equals(item.world.entities.logical())));
+    }
     private void bind(MinecraftServer server) {
         if (!server.isSameThread() || this.server != null && this.server != server) {
             throw new IllegalStateException("Sealed executor requires its owning server thread");
@@ -304,12 +308,12 @@ final class SealedDisassemblyCoordinator {
             if (owned != null) { return owned.recovery && !owned.activeAttempt() && owned.eligible(server.getTickCount()); }
             var entry = entries.stream().filter(candidate -> candidate.record().transactionId().equals(id)).findFirst().orElse(null);
             return entry != null && (entry.record().type() != RocketTransactionType.SEALED_DISASSEMBLY
-                    || ordinary.size() + work.size() < RocketOrdinaryRetirement.MAX_PENDING);
+                    || ordinary.totalPending() < RocketOrdinaryRetirement.MAX_PENDING);
         }).orElse(null);
     }
     private void adoptRecovery(RocketPersistedTransaction entry) {
         var id = entry.record().transactionId();
-        if (work.containsKey(id) || ordinary.size() + work.size() >= RocketOrdinaryRetirement.MAX_PENDING) { return; }
+        if (work.containsKey(id) || ordinary.totalPending() >= RocketOrdinaryRetirement.MAX_PENDING) { return; }
         var level = server.getLevel(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.DIMENSION,
                 entry.record().region().dimension()));
         if (level == null || !exclusive(entry)) { return; }

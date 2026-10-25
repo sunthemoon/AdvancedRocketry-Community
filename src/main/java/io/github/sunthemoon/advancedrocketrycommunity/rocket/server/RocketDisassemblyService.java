@@ -7,6 +7,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlight
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketTransactionSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionResult;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.sealed.SealedDisassembly;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.validation.RocketValidationCode;
 import java.util.Objects;
 import java.util.Optional;
@@ -22,17 +23,36 @@ final class RocketDisassemblyService {
     private static final String MESSAGE = "message.advancedrocketrycommunity.rocket.";
     private final RocketTransactionExecutor transactions;
     private final RocketFlightService flights;
+    private final SealedDisassemblyCoordinator sealed;
     private final RocketDisassemblyConfirmations confirmations = new RocketDisassemblyConfirmations();
     private final RocketIntentRateLimiter limiter = new RocketIntentRateLimiter();
 
     RocketDisassemblyService(RocketTransactionExecutor transactions, RocketFlightService flights) {
+        this(transactions, flights, null);
+    }
+
+    RocketDisassemblyService(RocketTransactionExecutor transactions, RocketFlightService flights,
+                             SealedDisassemblyCoordinator sealed) {
         this.transactions = Objects.requireNonNull(transactions, "transactions");
         this.flights = Objects.requireNonNull(flights, "flights");
+        this.sealed = sealed;
     }
 
     void requestDisassembly(ServerPlayer player, RocketEntity rocket) {
         if (!allowRequest(player) || !validatePlayer(player, rocket)) {
             return;
+        }
+        if (sealed != null && io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate.retirementUnprotected(rocket)) {
+            var preparing = LandedRequest.of(this, player.serverLevel(), rocket, player, false);
+            if (preparing == null) { reject(player, RocketValidationCode.ENTITY_STATE_INVALID); return; }
+            var readiness = flights.transfers().prepareLandedDisassembly(rocket, preparing::preparationCurrent);
+            if (readiness != RocketValidationCode.SUCCESS) {
+                confirmations.forget(player.getUUID());
+                if (readiness == RocketValidationCode.DISASSEMBLY_PENDING) {
+                    player.sendSystemMessage(Component.translatable(MESSAGE + "disassembly_preparing"));
+                } else { reject(player, readiness); }
+                return;
+            }
         }
         long fuel = rocket.flightData().orElseThrow().fuel().totalAmount();
         if (fuel > 0L) {
@@ -104,7 +124,7 @@ final class RocketDisassemblyService {
         Objects.requireNonNull(rocket, "rocket");
         boolean actor = player.isAlive() && !player.isSpectator() && player.level() == rocket.level();
         boolean inRange = actor && RocketInteraction.withinRange(player, rocket.getX(), rocket.getY(), rocket.getZ());
-        if (flights.landedDisassemblyPending(rocket)) {
+        if (pending(rocket)) {
             return RocketLandedDisassemblyRules.status(actor, inRange, identity(rocket), authorized(player, rocket));
         }
         if (!actor) {
@@ -177,6 +197,11 @@ final class RocketDisassemblyService {
         if (landed != RocketValidationCode.SUCCESS) {
             return reject(player, landed);
         }
+        if (request.retainedExecutor()) {
+            if (!request.beginRetained(request::finishedRetained)) { return reject(player, request.admissionRefusal()); }
+            player.displayClientMessage(Component.translatable(RocketValidationCode.DISASSEMBLY_PENDING.translationKey()), true);
+            return true;
+        }
         RocketTransactionResult result = execute(level, rocket, snapshot, fuel);
         reportTransaction(level, snapshot, player, result);
         if (result.success() && fuel > 0L) {
@@ -187,7 +212,7 @@ final class RocketDisassemblyService {
 
     RocketValidationCode disassembleForReleaseTest(RocketEntity rocket, long expectedDiscardFuel) {
         Objects.requireNonNull(rocket, "rocket");
-        if (flights.landedDisassemblyPending(rocket)) {
+        if (pending(rocket)) {
             return RocketLandedDisassemblyRules.status(true, true, identity(rocket), true);
         }
         RocketValidationCode code = validateRocket(rocket);
@@ -213,11 +238,19 @@ final class RocketDisassemblyService {
         if (request == null) {
             return RocketValidationCode.ENTITY_STATE_INVALID;
         }
+        if (request.retainedExecutor()) {
+            var readiness = flights.transfers().prepareLandedDisassembly(rocket, request::preparationCurrent);
+            if (readiness != RocketValidationCode.SUCCESS) { return readiness; }
+        }
         // A landed arrival answers DISASSEMBLY_PENDING; its receipt line follows when M2 or M3 finishes.
         RocketValidationCode landed = flights.beginLandedDisassembly(rocket, () -> preflight(level, rocket, snapshot),
                 request);
         if (landed != RocketValidationCode.SUCCESS) {
             return landed;
+        }
+        if (request.retainedExecutor()) {
+            return request.beginRetained(request::finishedRetained)
+                    ? RocketValidationCode.DISASSEMBLY_PENDING : request.admissionRefusal();
         }
         RocketTransactionResult result = execute(level, rocket, snapshot, fuel);
         logReleaseTest(rocket.getUUID(), rocket.assemblyTransactionId().orElse(null), result.code(),
@@ -268,6 +301,10 @@ final class RocketDisassemblyService {
         return player.serverLevel().getServer().overworld().getGameTime();
     }
 
+    private boolean pending(RocketEntity rocket) {
+        return flights.landedDisassemblyPending(rocket) || sealed != null && sealed.frozen(rocket);
+    }
+
     private static boolean reject(ServerPlayer player, RocketValidationCode code) {
         player.displayClientMessage(Component.translatable(code.translationKey()), true);
         return false;
@@ -315,6 +352,9 @@ final class RocketDisassemblyService {
         private final UUID logical;
         private final ServerPlayer requester;
         private final boolean releaseTest;
+        private final long requestedAt;
+        private RocketValidationCode admissionRefusal = RocketValidationCode.REGION_BUSY;
+        private boolean retainedReported;
 
         private LandedRequest(RocketDisassemblyService service, ServerLevel level, RocketEntity rocket,
                               ServerPlayer requester, boolean releaseTest) {
@@ -325,6 +365,10 @@ final class RocketDisassemblyService {
             this.logical = rocket.assemblyTransactionId().orElseThrow();
             this.requester = requester;
             this.releaseTest = releaseTest;
+            requestedAt = level.getServer().overworld().getGameTime();
+            if (service.sealed == null && !(level.getServer() instanceof net.minecraft.gametest.framework.GameTestServer)) {
+                throw new IllegalStateException("Legacy disassembly adapter is GameTest-only");
+            }
         }
 
         /** Null when S cannot be formed, which refuses the request before any mutation. */
@@ -339,6 +383,64 @@ final class RocketDisassemblyService {
 
         private RocketEntity rocket() {
             return level.getEntity(snapshot.entityId()) instanceof RocketEntity rocket ? rocket : null;
+        }
+
+        @Override public long requestedAt() { return requestedAt; }
+        @Override public boolean retainedExecutor() {
+            var rocket = rocket();
+            return service.sealed != null && rocket != null
+                    && io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate.retirementUnprotected(rocket);
+        }
+        boolean preparationCurrent() {
+            var rocket = rocket();
+            return matches() && (releaseTest || requester != null && !requester.hasDisconnected()
+                    && requester.isAlive() && !requester.isSpectator() && requester.level() == level
+                    && RocketDisassemblyService.authorized(requester, rocket)
+                    && RocketInteraction.withinRange(requester, snapshot.x(), snapshot.y(), snapshot.z()));
+        }
+        @Override public boolean authorized() {
+            long now = level.getServer().overworld().getGameTime();
+            // No resourceMutationAllowed/whole-journal check here: B2 owns its exact U after admission.
+            return now >= requestedAt && now - requestedAt <= RocketDisassemblyConfirmations.LIFETIME_TICKS
+                    && preparationCurrent() && !RocketReleaseAccess.fenced(level.getServer(), logical);
+        }
+        @Override public boolean beginRetained(java.util.function.Consumer<SealedDisassembly.Result> completion) {
+            var rocket = rocket();
+            if (rocket == null || !authorized()) { return false; }
+            var inline = new SealedDisassembly.Result[1]; var admitting = new boolean[] {true};
+            var id = service.sealed.begin(rocket, this::authorized, result -> {
+                if (admitting[0]) { inline[0] = result; } else { completion.accept(result); }
+            });
+            admitting[0] = false;
+            if (id == null) {
+                // A null return and the optional pre-admission result have started no executor or world mutation.
+                admissionRefusal = inline[0] == SealedDisassembly.Result.PROOF_PLAN_LIMIT
+                        ? RocketValidationCode.SCAN_BUDGET_EXCEEDED : RocketValidationCode.REGION_BUSY;
+                return false;
+            }
+            return true;
+        }
+        @Override public RocketValidationCode admissionRefusal() { return admissionRefusal; }
+        @Override public void finishedRetained(SealedDisassembly.Result result) {
+            if (retainedReported) { return; } retainedReported = true;
+            var player = requester == null ? null : level.getServer().getPlayerList().getPlayer(requester.getUUID());
+            if (player == null && requester != null && !requester.hasDisconnected()) { player = requester; }
+            AdvancedRocketryCommunity.LOGGER.info("ARCE_ROCKET_SEALED_DISASSEMBLY entity={} logical={} result={}",
+                    snapshot.entityId(), logical, result);
+            if (result != SealedDisassembly.Result.SEALED) {
+                if (player != null) { reject(player, RocketValidationCode.REGION_BUSY); }
+                return;
+            }
+            long fuel = snapshot.flight().fuel().totalAmount();
+            if (fuel > 0) {
+                AdvancedRocketryCommunity.LOGGER.info(
+                        "ARCE_ROCKET_FUEL_DISCARDED entity={} logical={} amount={} vector={} reason=confirmed_disassembly",
+                        snapshot.entityId(), logical, fuel, snapshot.flight().fuel().summary());
+            }
+            if (player != null) {
+                RocketInteraction.notifyStats(player, structure, "disassembly sealed");
+                if (fuel > 0) { player.sendSystemMessage(Component.translatable(MESSAGE + "disassembly_fuel_discarded", fuel)); }
+            }
         }
 
         @Override

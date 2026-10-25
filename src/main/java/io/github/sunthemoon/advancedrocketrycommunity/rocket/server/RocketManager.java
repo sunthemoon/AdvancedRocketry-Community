@@ -82,10 +82,11 @@ public final class RocketManager implements RocketOperationService {
         flights = new RocketFlightService(celestialCatalogs, planetaryCatalogs);
         transactions = new RocketTransactionExecutor(requiredAdapters);
         assemblerScans = new RocketAssemblerScanService(transactions, components);
-        disassembly = new RocketDisassemblyService(transactions, flights);
         targetContexts = new RocketTargetContextService(celestialCatalogs);
         recovery = new RocketTransactionRecoveryService(requiredAdapters);
         sealed = new SealedDisassemblyCoordinator(transactions, flights.transfers().ordinaryRetirements());
+        sealed.shareLandedCapacity(flights.transfers().landedDisassemblies());
+        disassembly = new RocketDisassemblyService(transactions, flights, sealed);
         transactions.sealedClaims(sealed::overlaps);
         flights.transfers().sealedClaims(sealed::claimed, sealed::reservations);
     }

@@ -261,6 +261,7 @@ final class RocketLandedDisassemblies {
     int size() {
         return pending.size();
     }
+    java.util.Set<UUID> logicalIds() { return java.util.Set.copyOf(pending.keySet()); }
 
     boolean hasCapacity() {
         return pending.size() < MAX_PENDING;
@@ -321,7 +322,12 @@ final class RocketLandedDisassemblies {
                 return true;
             }
             if (entry.request.retainedExecutor()) {
-                if (!entry.request.beginRetained(result -> retainedCompleted(entry, result))) {
+                boolean admitted;
+                try { admitted = entry.request.beginRetained(result -> retainedCompleted(entry, result)); }
+                catch (RuntimeException | Error uncertain) {
+                    entry.progress.startRestoration(); throw uncertain;
+                }
+                if (!admitted) {
                     entry.code = entry.request.admissionRefusal(); writeBack(entry); return true;
                 }
                 entry.progress.startRestoration();
