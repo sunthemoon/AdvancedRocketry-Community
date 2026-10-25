@@ -67,7 +67,7 @@ final class SealedDisassemblyWorld implements SealedDisassembly.Port, AutoClosea
         };
     }
     @Override public boolean requestCurrent() {
-        boolean current = currentRequest.getAsBoolean() && entities.observe() == SealedDisassembly.Entity.MATCHING;
+        boolean current = currentRequest.getAsBoolean() && entities.requestCurrent();
         if (!current) { reason = "REQUEST_CHANGED:" + entities.diagnostic(); }
         return current;
     }

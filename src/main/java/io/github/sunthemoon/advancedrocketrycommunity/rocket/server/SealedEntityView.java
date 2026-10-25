@@ -55,6 +55,13 @@ final class SealedEntityView {
     }
     List<ChunkPos> columns() { return columns; }
     UUID logical() { return logical; }
+    /** The original live request's exact D binding, not a new search for copies. The gate still owns that census. */
+    boolean requestCurrent() {
+        var binding = bindings.get(entry.record().rocketEntityId());
+        return binding != null && !binding.entity.isRemoved() && eligible(binding.entity)
+                && binding.flight == binding.entity.flightData().orElse(null)
+                && binding.snapshot == binding.entity.snapshot().orElse(null);
+    }
     boolean loaded() { return columns.stream().allMatch(column -> level.areEntitiesLoaded(column.toLong())); }
     boolean names(ServerLevel candidateLevel, net.minecraft.world.entity.Entity entity) {
         if (level != candidateLevel) { return false; }

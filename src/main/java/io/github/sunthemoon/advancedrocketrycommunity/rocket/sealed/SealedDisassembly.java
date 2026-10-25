@@ -19,7 +19,7 @@ public final class SealedDisassembly {
     public interface Port {
         long now();
         Gate gate();
-        /** Original actor/consent/snapshot check; never a refreshed request or a new timeout. */
+        /** Cheap original actor/consent/snapshot check, without a world census or IO; never refresh the request. */
         boolean requestCurrent();
         /** Actual predecessor/no-T journal proof, not a fabricated transfer record. */
         boolean predecessorAbsent();
@@ -75,6 +75,13 @@ public final class SealedDisassembly {
     public boolean restorationStarted() { return restorationStarted; }
     public boolean electionSubmitted() { return electionSubmitted; }
     public boolean removalSubmitted() { return removalSubmitted; }
+
+    /** RAM-only request lifetime is independent of machine/proof backoff and spends no world-inspection budget. */
+    public void tickRequest() {
+        if (Thread.currentThread() != owner) { throw new IllegalStateException("Sealed disassembly requires its owner thread"); }
+        if (!stepping && result == null && !recovering && !retentionSubmitted
+                && (port.now() - requestedAt > 200 || !port.requestCurrent())) { finish(Result.REJECTED); }
+    }
 
     /** One bounded step. A manager may interleave entries, but every call spends the same server-tick allowance. */
     public boolean step(SealedWorkBudget budget) {

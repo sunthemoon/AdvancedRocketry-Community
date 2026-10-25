@@ -44,6 +44,12 @@ final class SealedDisassemblyCoordinator {
             return work.get(id()) == this && now >= retryAt && now >= machine.retryAt() && now >= world.retryAt();
         }
         public void tickDeadline() { world.tickProofDeadline(); }
+        public void tickRequest() {
+            try {
+                machine.tickRequest();
+                if (machine.result() != null && work.get(id()) == this) { finish(id(), this, machine.result()); }
+            } catch (RuntimeException unavailable) { failed(id(), this); }
+        }
         public void tickProof() { world.tickProof(); }
         public void work() { service(id(), this); }
     }
@@ -343,16 +349,20 @@ final class SealedDisassemblyCoordinator {
             while (!item.world.terrain.prepared() && item.world.terrain.prepareOne(budget)) { }
             while (item.machine.step(budget)) { }
         } catch (RuntimeException unavailable) {
-            // An unresolved U remains claimed. Preparation before U exists has changed no world state.
-            if (RocketTransactionSavedData.get(server).entries().stream().noneMatch(entry -> entry.record().transactionId().equals(id))
-                    && !item.machine.restorationStarted()) { finish(id, item, SealedDisassembly.Result.REJECTED); }
-            else {
-                item.retryAt = server.getTickCount() + (long) RocketOrdinaryRetirement.RETRY_TICKS;
-                diagnostics.hold(id.toString(), item.machine.phase().name(), "UNAVAILABLE");
-            }
+            failed(id, item);
             return;
         }
         if (item.machine.result() != null) { finish(id, item, item.machine.result()); }
+    }
+    private void failed(UUID id, Work item) {
+        // An unresolved U remains claimed. Preparation before U exists has changed no world state.
+        if (work.get(id) != item) { return; }
+        if (RocketTransactionSavedData.get(server).entries().stream().noneMatch(entry -> entry.record().transactionId().equals(id))
+                && !item.machine.restorationStarted()) { finish(id, item, SealedDisassembly.Result.REJECTED); }
+        else {
+            item.retryAt = server.getTickCount() + (long) RocketOrdinaryRetirement.RETRY_TICKS;
+            diagnostics.hold(id.toString(), item.machine.phase().name(), "UNAVAILABLE");
+        }
     }
     private void finish(UUID id, Work item, SealedDisassembly.Result result) {
         // Callback observes the native proof and checked U absence while the RAM claim is still owned.

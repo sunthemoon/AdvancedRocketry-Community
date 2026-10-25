@@ -12,6 +12,7 @@ final class SealedWorkScheduler {
         boolean recovery();
         boolean activeAttempt();
         boolean eligible(long now);
+        default void tickRequest() { }
         void tickDeadline();
         void tickProof();
         void work();
@@ -21,6 +22,7 @@ final class SealedWorkScheduler {
 
     void tick(long now, List<? extends Entry> entries, UUID selected, SealedWorkBudget budget,
             Runnable lazy, Consumer<UUID> serviced) {
+        entries.forEach(Entry::tickRequest);
         entries.forEach(Entry::tickDeadline);
         var active = entries.stream().filter(Entry::activeAttempt).toList();
         // Capture/poll every active plan before any machine can spend the remaining inspection allowance.
