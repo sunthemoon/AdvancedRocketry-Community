@@ -205,7 +205,7 @@ def verify_seat_census(disk, hold, cut, mode, recovery_cut=""):
     original = sorted(((passenger(1), 0), (passenger(2), 1)))
     released = original if hold == "H1" else sorted(((passenger(3), 0), (passenger(2), 1)))
     interrupted = mode == "recover" and bool(recovery_cut)
-    before_store = (mode == "seed" or interrupted and recovery_cut == "B1_CAPTURE") and cut in ("C0", "C1", "C2", "C3", "C16")
+    before_store = (mode == "seed" or interrupted and recovery_cut == "B1_CAPTURE") and cut in ("C0", "C1", "C2", "C3")
     expected_live = released if before_store else []
     for rocket in disk["rockets"]:
         if assignments(rocket["entity"]["RocketEntityData"]["flight_data"]) != expected_live:

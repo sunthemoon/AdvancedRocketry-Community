@@ -72,6 +72,17 @@ class ReleaseCutRunnerTests(unittest.TestCase):
         with self.assertRaises(runner.smoke.SmokeError):
             runner.verify_seat_census(disk, "H2", "C5", "recover", "S2_PENDING")
 
+    def test_conflict_cut_keeps_t_but_has_already_saved_the_filtered_authority(self):
+        assignments = [{"passenger_id": [22544384, 16384, -2147483648, i + 1], "seat_index": i} for i in range(2)]
+        original = {"passengers": {"assignments": assignments}}
+        clean = {"passengers": {"assignments": []}}
+        disk = {"sidecar": None, "rockets": [{"entity": {"RocketEntityData": {"flight_data": clean}}}],
+                "journal": {"transfers": [{"source_flight": original, "destination_flight": original}]}}
+        runner.verify_seat_census(disk, "H1", "C16", "seed")
+        clean["passengers"]["assignments"] = assignments
+        with self.assertRaises(runner.smoke.SmokeError):
+            runner.verify_seat_census(disk, "H1", "C16", "seed")
+
     def test_gone_restarts_preserve_the_frozen_resource_witness(self):
         import copy
         disk = {"rockets": [], "journal": {"transfers": []}, "sidecar": {"next_sequence": 1,
