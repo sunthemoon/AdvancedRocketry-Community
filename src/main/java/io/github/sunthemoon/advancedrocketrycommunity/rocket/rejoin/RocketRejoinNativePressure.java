@@ -57,7 +57,8 @@ public final class RocketRejoinNativePressure {
         boolean allDisconnected = true;
         for (var player : players) {
             var s = data.guards(server).session(player.getUUID());
-            require(s != null && player.isAlive() && player.getHealth() == 1 && player.getVehicle() == null,
+            require(s != null && (s.disconnected || player.isAlive()) && player.deathTime == 0
+                            && player.getHealth() == 1 && player.getVehicle() == null,
                     "Native pressure exposed a passenger: session=" + (s != null) + " alive=" + player.isAlive()
                             + " health=" + player.getHealth() + " mounted=" + (player.getVehicle() != null));
             capacity |= s.reason.equals("capacity"); unsafe |= s.reason.equals("unsafe");
