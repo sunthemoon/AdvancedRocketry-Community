@@ -72,6 +72,43 @@ Run heavy work under the heavy-JVM lock with the atomic pattern and the 90-secon
 lock. Before starting, check that C: and D: each have more than 10 GiB free and that 6 GiB of memory is free. Keep the
 evidence under 100,000,000 bytes and delete only the server and export copies you create.
 
+## Continuation under Root decision R115 (2026-10-26)
+
+The first session stopped at checkpoint `be1b01062` (05:48 to 07:20), not merge-ready.
+
+- **Done:**
+  - the bounded `BEFORE_RELEASE` site;
+  - the plain hook through the current-D and predecessor proof;
+  - the predecessor-U guards;
+  - the asynchronous completion, rollback-certificate and original-age seams.
+- **Results:** 5,130 unit tests pass. The complete GameTest had 1,415 of 1,416 pass:
+  `RocketI6PlainGameTests.plainHookKeepsTUntilCurrentDAndOldOriginAreProved` fails only in the complete run ("Plain
+  hook restored or removed D").
+- **Native count:** the record corrects the count. B-PRE alone is 20 cases and 60 counted starts, so B-PLAIN, B-M and
+  the combined terrain matrix cannot fit the 60-start limit above.
+
+A fresh Codex session continues on the same branch. It starts from the record and
+`D:/GitHub/ARCE-Task-Evidence/root-queue/W164/verification-9336b0fd4/INTEGRATION-NOTES.md`, in this order:
+
+1. **Diagnose the complete-run failure first.** Tell fixture timing from production behaviour, then fix the cause with
+   a regression. Do not raise a timeout or change the assertion.
+2. **Keep `RocketTransferService` under 800 lines** by extracting the I6 entry point. Do not add logic to it.
+3. **Finish items 3 to 5 above:**
+   - M0 and M1 with the proved P hand-off;
+   - cold preparation with a fresh request;
+   - B2 delegation using B2's actual result, shared capacity and original request age;
+   - M3 only on `ROLLBACK_PROVED`;
+   - no-T routing;
+   - the pending-preparation feedback.
+4. **Run native verification in tranches of at most 60 counted starts.**
+   - Tranche 1 is B-PRE (20 cases, 60 starts), after the implementation is complete. Then stop and report the count.
+   - B-PLAIN, B-M and the combined terrain matrix are tranche 2, in a later continuation before merge.
+   - No case is dropped or folded into another.
+
+Stage temporary source archives under `build/`, not in the evidence directory. The `W152J` notes above still apply:
+your small edits to `RocketOrdinaryRetirement` and `RocketTransferRecoveryService` stay in their own commits, and
+Root reconciles them after W152J merges.
+
 ## Not in this task
 
 - N3-B4 (the combined cut evidence), W98-R1 and governed admission.
