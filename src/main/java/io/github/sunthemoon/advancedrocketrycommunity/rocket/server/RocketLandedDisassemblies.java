@@ -13,6 +13,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketLanded
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketLandedDisassemblyRules.WriteBack;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRegion;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionResult;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.sealed.SealedDisassembly;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.validation.RocketValidationCode;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -41,6 +42,15 @@ final class RocketLandedDisassemblies {
     interface Request {
         /** Original M0 time; the sentinel is only for legacy direct callers that have no proof stage. */
         default long requestedAt() { return Long.MIN_VALUE; }
+        /** The installed ordinary caller uses B2; legacy synchronous adapters are isolated test fixtures. */
+        default boolean retainedExecutor() { return false; }
+        /** False means no executor was admitted; completion must not run inline before admission returns. */
+        default boolean beginRetained(java.util.function.Consumer<SealedDisassembly.Result> completion) {
+            throw new UnsupportedOperationException("No retained executor");
+        }
+        default RocketValidationCode admissionRefusal() { return RocketValidationCode.REGION_BUSY; }
+        default void finishedRetained(SealedDisassembly.Result result) { }
+        default boolean authorized() { return matches(); }
         /** E is alive and loaded and still equals S. */
         boolean matches();
 
@@ -106,6 +116,7 @@ final class RocketLandedDisassemblies {
         private final Progress progress = new Progress();
         private RocketValidationCode code = RocketValidationCode.REGION_BUSY;
         private RocketTransactionResult result;
+        private SealedDisassembly.Result retainedResult;
         private boolean reported;
 
         private Pending(RocketTransferRecord record, UUID entity, long requestedAt, Request request, Port port,
@@ -309,12 +320,33 @@ final class RocketLandedDisassemblies {
                 writeBack(entry);
                 return true;
             }
-            entry.progress.startRestoration();
-            entry.request.restore(result -> restorationCompleted(entry, result));
+            if (entry.request.retainedExecutor()) {
+                if (!entry.request.beginRetained(result -> retainedCompleted(entry, result))) {
+                    entry.code = entry.request.admissionRefusal(); writeBack(entry); return true;
+                }
+                entry.progress.startRestoration();
+            } else {
+                entry.progress.startRestoration();
+                entry.request.restore(result -> restorationCompleted(entry, result));
+            }
         } catch (RuntimeException failure) {
             restorationFailed(entry);
         }
         return true;
+    }
+
+    private void retainedCompleted(Pending entry, SealedDisassembly.Result result) {
+        if (!current(entry) || entry.stage() != Stage.RESTORING) { return; }
+        try {
+            entry.retainedResult = Objects.requireNonNull(result);
+            if (result == SealedDisassembly.Result.ROLLBACK_PROVED && entry.request.matches()) {
+                entry.progress.certifyCleanRollback(); writeBack(entry);
+            } else {
+                // REJECTED/PROOF_PLAN_LIMIT are not native rollback certificates. No invented block counters.
+                end(entry); report(entry);
+            }
+        } catch (RuntimeException failure) { restorationFailed(entry); }
+        catch (Error fatal) { end(entry); throw fatal; }
     }
 
     private void restorationCompleted(Pending entry, RocketTransactionResult result) {
@@ -464,7 +496,8 @@ final class RocketLandedDisassemblies {
             return;
         }
         entry.reported = true;
-        entry.request.finished(entry.code, entry.result);
+        if (entry.retainedResult != null) { entry.request.finishedRetained(entry.retainedResult); }
+        else { entry.request.finished(entry.code, entry.result); }
     }
 
     /**

@@ -24,6 +24,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructu
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketLandedDisassemblyRules.Presence;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketLandedDisassemblyRules.Stage;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.stats.RocketStats;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.sealed.SealedDisassembly;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketDisassemblyTransaction;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketFailureInjector;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketFailurePoint;
@@ -73,6 +74,31 @@ class RocketLandedDisassembliesTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
 
     private Path file() { return directory.resolve(TYPE.fileName()); }
+
+    @Test void retainedCompletionUsesActualResultAndOnlyRollbackProvedWritesBack() {
+        for (var result : SealedDisassembly.Result.values()) {
+            var f = new Fixture(new RocketPosition(64, 80, 64)); f.request.retained = true;
+            f.release(); f.acknowledge();
+            assertEquals(0, f.request.restores, "The retained executor must replace synchronous restore");
+            assertTrue(f.disassemblies.pending(f.logical()));
+            assertNotNull(f.request.retainedCompletion);
+            f.request.retainedCompletion.accept(result); f.request.retainedCompletion.accept(result);
+            assertEquals(List.of(result.name()), f.request.reports);
+            assertEquals(result == SealedDisassembly.Result.ROLLBACK_PROVED,
+                    f.journal.find(f.landed.transferId()).isPresent());
+            f.acknowledge(); assertFalse(f.disassemblies.pending(f.logical())); f.close();
+        }
+    }
+
+    @Test void retainedAdmissionRefusalDoesNotSetTheMutationLatch() {
+        var f = new Fixture(new RocketPosition(64, 80, 64));
+        f.request.retained = true; f.request.acceptRetained = false;
+        f.release(); f.acknowledge();
+        assertEquals(0, f.request.restores);
+        assertSame(f.landed, f.journal.find(f.landed.transferId()).orElseThrow());
+        assertFalse(f.disassemblies.find(f.logical()).restorationStarted());
+        f.acknowledge(); f.close();
+    }
 
     @Test void provedHandoffCreatesPendingWithoutQueueingTheReservationTwice() throws Exception {
         var f = new Fixture(new RocketPosition(64, 80, 64));
@@ -765,6 +791,14 @@ class RocketLandedDisassembliesTest {
         boolean deferred, certified = true;
         long requestedAt = Long.MIN_VALUE;
         java.util.function.Consumer<RocketTransactionResult> completion;
+        boolean retained, acceptRetained = true;
+        java.util.function.Consumer<SealedDisassembly.Result> retainedCompletion;
+        public boolean retainedExecutor() { return retained; }
+        public boolean beginRetained(java.util.function.Consumer<SealedDisassembly.Result> completion) {
+            if (!acceptRetained) { return false; }
+            retainedCompletion = completion; return true;
+        }
+        public void finishedRetained(SealedDisassembly.Result result) { reports.add(result.name()); }
 
         FakeRequest(FakeWorld world, RocketTransferRecord record) { this.world = world; this.record = record; }
 
