@@ -20,7 +20,8 @@ final class RocketRejoinPlacement implements AutoCloseable {
         Entry entry;
         Batch batch;
         Attempt attempt;
-        boolean placed, readRequested, proof, submitted;
+        boolean placed, readRequested, submitted;
+        RocketRejoinPlayerFile.Expected proof;
         Work(RocketRejoinGuards.Session session) { this.session = session; }
     }
     private final MinecraftServer server;
@@ -85,7 +86,7 @@ final class RocketRejoinPlacement implements AutoCloseable {
         if (!world.ticket(s, w.batch)) { guards.reason(s, "tickets"); return; }
         if (w.placed) {
             if (w.attempt.equals(w.entry.attempt()) && world.safe(s.player, w.batch, w.attempt)) { verify(w); return; }
-            w.placed = false; w.proof = false; w.readRequested = false; w.attempt = null;
+            w.placed = false; w.proof = null; w.readRequested = false; w.attempt = null;
             s.player.getPersistentData().remove(RocketRejoinMarker.KEY);
         }
         Attempt attempt = w.entry.attempt();
@@ -123,13 +124,12 @@ final class RocketRejoinPlacement implements AutoCloseable {
         RocketRejoinNativeCuts.saved(player);
     }
     private void verify(Work w) {
-        if (!w.proof) {
+        if (w.attempt == null || !w.attempt.equals(w.entry.attempt())) { w.proof = null; guards.reason(w.session, "io"); return; }
+        if (!proofMatches(w.proof, w.entry, w.batch)) {
             if (w.readRequested && !reader.busy()) {
                 w.readRequested = false;
                 reader.start(server.getWorldPath(net.minecraft.world.level.storage.LevelResource.PLAYER_DATA_DIR), w,
-                        new RocketRejoinPlayerFile.Expected(w.entry.player(), w.entry.release(), w.attempt.generation(),
-                                w.attempt.target() == Target.PAD ? w.batch.dimension() : "minecraft:overworld",
-                                w.attempt.x(), w.attempt.y(), w.attempt.z()));
+                        expected(w.entry, w.batch));
             }
             return;
         }
@@ -145,11 +145,11 @@ final class RocketRejoinPlacement implements AutoCloseable {
     private void apply(RocketRejoinReader.Completion result) {
         var w = (Work) result.identity(); var s = w.session;
         if (work.get(s.player.getUUID()) != w || guards.session(s.player.getUUID()) != s || s.invalidated || s.disconnected
-                || !w.placed || !w.attempt.generation().equals(result.expected().generation()) || w.submitted) { return; }
+                || !w.placed || !proofMatches(result.expected(), w.entry, w.batch) || w.submitted) { return; }
         if (s.online && (!s.player.isAlive() || s.player.deathTime != 0)) { guards.reason(s, "dead"); return; }
-        w.proof = result.result().status() == RocketRejoinPlayerFile.Status.MATCH;
-        if (w.proof) { RocketReleaseNativeCuts.checkpoint("C10"); }
-        if (!w.proof) {
+        w.proof = result.result().status() == RocketRejoinPlayerFile.Status.MATCH ? result.expected() : null;
+        if (w.proof != null) { RocketReleaseNativeCuts.checkpoint("C10"); }
+        if (w.proof == null) {
             boolean oversized = result.result().status() == RocketRejoinPlayerFile.Status.OVERSIZED || result.result().status() == RocketRejoinPlayerFile.Status.DEPTH;
             if (oversized && !s.reason.equals("oversized")) {
                 AdvancedRocketryCommunity.LOGGER.warn("ARCE_REJOIN_PLAYER_LIMIT player={} kind={} size={} ceiling={}",
@@ -173,6 +173,14 @@ final class RocketRejoinPlacement implements AutoCloseable {
         if (w != null && w.session == session) { work.remove(session.player.getUUID()); world.release(session.player.getUUID()); }
     }
     void logout(RocketRejoinGuards.Session session) { world.release(session.player.getUUID()); }
+    static boolean proofMatches(RocketRejoinPlayerFile.Expected proof, Entry entry, Batch batch) {
+        return proof != null && entry.attempt() != null && proof.equals(expected(entry, batch));
+    }
+    private static RocketRejoinPlayerFile.Expected expected(Entry entry, Batch batch) {
+        var attempt = entry.attempt();
+        return new RocketRejoinPlayerFile.Expected(entry.player(), entry.release(), attempt.generation(),
+                attempt.target() == Target.PAD ? batch.dimension() : "minecraft:overworld", attempt.x(), attempt.y(), attempt.z());
+    }
     static boolean attemptAcknowledged(RocketRejoinRoot installed, Entry entry) {
         return installed != null && entry.attempt() != null && installed.entries().stream().anyMatch(e -> e.key().equals(entry.key())
                 && e.placement() == Placement.PENDING && entry.attempt().equals(e.attempt()));
