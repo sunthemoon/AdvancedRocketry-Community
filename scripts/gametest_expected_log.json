@@ -16,7 +16,7 @@
       "level": "WARN",
       "logger": "net.minecraft.world.level.storage.PlayerDataStorage/",
       "message": "Failed to save player data for W159Temp",
-      "counts": {"rocket_rejoin_temp_failure": 1},
+      "counts": {"rocket_rejoin_temp_failure": 1, "rocket_rejoin_temp_ordinary": 1},
       "test": "RocketRejoinReadbackGameTests.realTemporaryWriteFailureKeepsObligationUntilNextPrompt",
       "reason": "The fixture temporarily replaces its owned playerdata directory with a marked file. Vanilla cannot create a temporary file and fires no save event."
     },
@@ -27,7 +27,7 @@
       "message": "Failed to delete",
       "exception": "java\\.nio\\.file\\.DirectoryNotEmptyException: \\.[/\\\\]world[/\\\\]playerdata[/\\\\][0-9a-f-]{36}\\.dat_old",
       "stack_contains": "RocketRejoinPlacement.tick",
-      "counts": {"rocket_rejoin_replace_failure": 10},
+      "counts": {"rocket_rejoin_replace_failure": 10, "rocket_rejoin_replace_ordinary": 10},
       "test": "RocketRejoinReadbackGameTests.realReplacementFailureEventCannotProveOldFile",
       "reason": "A nonempty owned backup directory makes each of vanilla's ten delete attempts fail. The old installed player file must remain unproven."
     },
@@ -36,7 +36,7 @@
       "level": "WARN",
       "logger": "net.minecraft.Util/",
       "message": "Failed to execute delete old \\.[/\\\\]world[/\\\\]playerdata[/\\\\][0-9a-f-]{36}\\.dat_old",
-      "counts": {"rocket_rejoin_replace_failure": 10},
+      "counts": {"rocket_rejoin_replace_failure": 10, "rocket_rejoin_replace_ordinary": 10},
       "test": "RocketRejoinReadbackGameTests.realReplacementFailureEventCannotProveOldFile",
       "reason": "Each deliberate backup deletion failure is followed by vanilla's failed-sequence warning."
     },
@@ -45,7 +45,7 @@
       "level": "ERROR",
       "logger": "net.minecraft.Util/",
       "message": "Failed to create backup \\.[/\\\\]world[/\\\\]playerdata[/\\\\][0-9a-f-]{36}\\.dat_old, retrying [0-9]/10",
-      "counts": {"rocket_rejoin_replace_failure": 10},
+      "counts": {"rocket_rejoin_replace_failure": 10, "rocket_rejoin_replace_ordinary": 10},
       "test": "RocketRejoinReadbackGameTests.realReplacementFailureEventCannotProveOldFile",
       "reason": "The actual safeReplaceFile failure retries ten times before returning without replacing the installed file."
     },
@@ -54,7 +54,7 @@
       "level": "ERROR",
       "logger": "net.minecraft.Util/",
       "message": "Failed to create backup \\.[/\\\\]world[/\\\\]playerdata[/\\\\][0-9a-f-]{36}\\.dat_old, aborting, progress might be lost",
-      "counts": {"rocket_rejoin_replace_failure": 1},
+      "counts": {"rocket_rejoin_replace_failure": 1, "rocket_rejoin_replace_ordinary": 1},
       "test": "RocketRejoinReadbackGameTests.realReplacementFailureEventCannotProveOldFile",
       "reason": "Vanilla returns after ten failed backup attempts and still fires SaveToFile; W159 must reject the old file as proof."
     },

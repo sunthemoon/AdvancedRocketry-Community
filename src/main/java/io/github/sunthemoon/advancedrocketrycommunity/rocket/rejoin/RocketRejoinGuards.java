@@ -58,6 +58,8 @@ public final class RocketRejoinGuards {
         return new RocketRejoinIndex(roots, admissions.get());
     }
     public boolean required(UUID player) { return index().contains(player); }
+    /** Read-only observation of W80's call site, independent of vanilla SaveToFile events. */
+    long lastPromptTick() { return placement.lastPromptTick(); }
     public boolean active(ServerPlayer player) { var s = sessions.get(player.getUUID()); return s != null && s.player == player; }
     Session session(UUID player) { return sessions.get(player); }
     java.util.List<Session> sessions() { return java.util.List.copyOf(sessions.values()); }
