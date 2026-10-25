@@ -178,6 +178,8 @@ final class RocketOrdinaryRetirement {
     private int attemptIds;
     private IntSupplier sealedEntries = () -> 0, sealedAttempts = () -> 0;
     private boolean capacityShared;
+    private Supplier<Set<UUID>> landedOwners = Set::of;
+    private Predicate<UUID> sealedOwner = logical -> false;
     private final SealedProofTurns proofTurns = new SealedProofTurns();
 
     RocketOrdinaryRetirement(Set<UUID> live, Set<UUID> settled, Supplier<Set<UUID>> fenced, Function<MinecraftServer, Port> ports) {
@@ -211,8 +213,16 @@ final class RocketOrdinaryRetirement {
         capacityShared = true;
     }
     SealedProofTurns shareSealedTurns(BooleanSupplier waiting) { proofTurns.bind(waiting); return proofTurns; }
+    void shareLandedCapacity(Supplier<Set<UUID>> owners, Predicate<UUID> sealedOwner) {
+        this.landedOwners = java.util.Objects.requireNonNull(owners);
+        this.sealedOwner = java.util.Objects.requireNonNull(sealedOwner);
+    }
+    int totalPending() {
+        return pending.size() + sealedEntries.getAsInt() + (int) landedOwners.get().stream()
+                .filter(logical -> !pending.containsKey(logical) && !sealedOwner.test(logical)).count();
+    }
     boolean pendingRoom(UUID logical) {
-        return pending.containsKey(logical) || pending.size() + sealedEntries.getAsInt() < MAX_PENDING;
+        return pending.containsKey(logical) || landedOwners.get().contains(logical) || totalPending() < MAX_PENDING;
     }
     boolean attemptRoom() { return activeAttempts() + sealedAttempts.getAsInt() < MAX_ATTEMPTS; }
     /** Read-only, for tests: the attempts an entry for L has started so far, or -1 without one. */
