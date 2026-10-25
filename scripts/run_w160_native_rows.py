@@ -211,7 +211,8 @@ def run(args):
                     if cut == "C12" and mode == "seed":
                         verify_rollback(before, disk)
                     baseline = verify(disk, cut, mode, baseline, seed)
-                    row["audit"] = audit_log(process.lines, cut, mode)
+                    peer = rejoin.uuid_text(disk["journal"]["transfers"][0]["transfer_id"]) if cut in ("C29", "C32") else None
+                    row["audit"] = audit_log(process.lines, cut, mode, peer)
                     row["conserved"] = True
                     if mode in ("seed", "recover"): seed = copy.deepcopy(disk)
                 except Exception:
@@ -233,20 +234,26 @@ def run(args):
     return result
 
 
-def audit_log(lines, cut, mode):
-    # The only new WARN is the one production disk-ceiling refusal in C33 seed.
+def audit_log(lines, cut, mode, peer=None):
+    # Exact fixture-only warnings: disk refusal, or the unpublished peer's absent ledger.
+    governed = cut in ("C29", "C32")
+    if governed != (peer is not None): raise smoke.SmokeError("Wrong native governed peer scope")
+    held = f"ARCE_TRANSFER_FENCED transfer={peer} reason=GOVERNED_LEDGER_MISSING repair=offline-whole-world"
     limit = re.compile(r"ARCE_REJOIN_PLAYER_LIMIT player=" + re.escape(rejoin.PLAYER)
                        + r" kind=OVERSIZED size=([0-9]+) ceiling=67108864")
-    count = 0; remaining = []; messages = []
+    count = peer_count = 0; remaining = []; messages = []
     for line in lines:
         h = release.HEADER.fullmatch(line.rstrip()); m = limit.fullmatch(h["message"]) if h else None
         if h and h["logger"] in release.PROJECT_LOGGERS and h["thread"] == "Server thread" and h["level"] == "INFO":
             messages.append(h["message"])
-        if h and m and h["logger"] in release.PROJECT_LOGGERS and h["thread"] == "Server thread" and h["level"] == "WARN":
+        if h and governed and h["message"] == held and h["logger"] in release.PROJECT_LOGGERS and h["thread"] == "Server thread" and h["level"] == "WARN":
+            peer_count += 1
+        elif h and m and h["logger"] in release.PROJECT_LOGGERS and h["thread"] == "Server thread" and h["level"] == "WARN":
             if int(m[1]) <= 64*1024**2: raise smoke.SmokeError("Oversized native log did not cross its ceiling")
             count += 1
         else: remaining.append(line)
     if count != int(cut == "C33" and mode == "seed"): raise smoke.SmokeError("Wrong native disk-ceiling warning count")
+    if peer_count != int(governed): raise smoke.SmokeError("Wrong unpublished native peer hold count")
     def exactly(pattern, expected):
         observed = sum(bool(re.fullmatch(pattern, text)) for text in messages)
         if observed != expected: raise smoke.SmokeError(f"Native row observation count differs: {pattern}: {observed} != {expected}")
@@ -261,7 +268,7 @@ def audit_log(lines, cut, mode):
         exactly(f"ARCE_W160F_PLAYER_FIRST mode={mode} loaded_rockets=0 guarded={str(mode == 'recover').lower()}", 1)
     if cut == "C32":
         exactly(r"ARCE_W160F_INTERLEAVE peer=" + release.UUID_PATTERN + r" sequence=[0-9]+ elected=true", int(mode == "seed"))
-    return dict(disk_ceiling=count, base=release.audit_log(remaining, "H1", cut, mode))
+    return dict(disk_ceiling=count, unpublished_peer_hold=peer_count, base=release.audit_log(remaining, "H1", cut, mode))
 
 
 if __name__ == "__main__":

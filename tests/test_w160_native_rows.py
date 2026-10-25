@@ -64,5 +64,18 @@ class NativeRowsTests(unittest.TestCase):
                 with self.assertRaises(rows.smoke.SmokeError): rows.audit_log(bad, "C33", "seed")
             with self.assertRaises(rows.smoke.SmokeError): rows.audit_log(lines, "C33", "recover")
 
+    def test_unpublished_governed_peer_has_one_exact_identity_scoped_hold(self):
+        prefix = "[12:00:00] [Server thread/{}] [io.gi.su.ad.AdvancedRocketryCommunity/]: "
+        peer = "01580000-0000-4000-8000-000000000099"
+        warning = prefix.format("WARN") + f"ARCE_TRANSFER_FENCED transfer={peer} reason=GOVERNED_LEDGER_MISSING repair=offline-whole-world"
+        observation = prefix.format("INFO") + "ARCE_W160F_PRESSURE case=C29 mode=recover players=1 capacity=false unsafe=false retained=2 timeout_ticks=200"
+        with patch.object(rows.release, "audit_log", return_value={}):
+            rows.audit_log([warning, observation], "C29", "recover", peer)
+            for bad in ([observation], [warning, warning, observation],
+                        [warning.replace(peer, rejoin.FIRST), observation],
+                        [warning.replace("GOVERNED_LEDGER_MISSING", "OTHER"), observation]):
+                with self.assertRaises(rows.smoke.SmokeError): rows.audit_log(bad, "C29", "recover", peer)
+            with self.assertRaises(rows.smoke.SmokeError): rows.audit_log([warning], "C25", "recover", peer)
+
 
 if __name__ == "__main__": unittest.main()
