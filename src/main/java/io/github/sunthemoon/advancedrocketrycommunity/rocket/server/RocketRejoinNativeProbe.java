@@ -1,12 +1,9 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
-import com.mojang.authlib.GameProfile;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.command.ReleaseTestPlayers;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.rejoin.*;
-import io.netty.channel.embedded.EmbeddedChannel;
 import java.util.UUID;
-import net.minecraft.network.Connection;
-import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 
@@ -43,8 +40,6 @@ final class RocketRejoinNativeProbe {
         return data.acknowledgedRoot() != null && data.acknowledgedRoot().entries().stream().noneMatch(e -> e.seat() == RocketRejoinRoot.Seat.PENDING);
     }
     private ServerPlayer connect() {
-        var player = new ServerPlayer(server, server.overworld(), new GameProfile(PLAYER, "W159Passenger"));
-        var connection = new Connection(PacketFlow.SERVERBOUND); new EmbeddedChannel(connection);
-        server.getPlayerList().placeNewPlayer(connection, player); return player;
+        return ReleaseTestPlayers.login(server, PLAYER, "W159Passenger", server.overworld());
     }
 }
