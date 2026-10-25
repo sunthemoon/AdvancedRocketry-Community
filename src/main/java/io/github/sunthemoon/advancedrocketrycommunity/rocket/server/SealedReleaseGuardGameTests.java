@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketTransactionSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.sealed.SealedDisassembly;
@@ -34,9 +35,19 @@ public final class SealedReleaseGuardGameTests {
         var flight = RocketTransferEntities.stationarySource(record, level.getGameTime());
         var rocket = fixture.spawn(helper, level, flight.withPassengers(flight.passengers().remove(passenger)), false);
         final boolean[] done = {false}, tested = {false}, authorized = {true}, cancelled = {false};
+        var pacer = new GameTestTickPacer(server);
+        var ticks = new int[1]; var waiting = new String[] {"entity load"};
         helper.onEachTick(() -> {
-            if (done[0] || !RocketTransferEntities.loadedEntity(rocket) || !journal.retryChecked(server)) { return; }
+            if (done[0]) { return; }
+            pacer.pace();
+            helper.assertTrue(++ticks[0] < 195, "Cross-guard fixture stalled at " + waiting[0]
+                    + "; actionable=" + journal.actionable(record.logicalRocketId()) + "; tested=" + tested[0]);
+            waiting[0] = "entity load";
+            if (!RocketTransferEntities.loadedEntity(rocket)) { return; }
+            waiting[0] = "checked journal acknowledgement";
+            if (!journal.retryChecked(server)) { return; }
             if (tested[0]) {
+                waiting[0] = "sealed cancellation";
                 if (sealedFirst && !cancelled[0]) { return; }
                 rocket.discard(); journal.remove(record.transferId());
                 RocketSourceRetirementFixtures.settled(transfers).remove(record.transferId());
@@ -44,6 +55,7 @@ public final class SealedReleaseGuardGameTests {
                 done[0] = true; helper.succeed(); return;
             }
             var owner = transfers.releaseOwner(server);
+            waiting[0] = "positive release-plan control";
             var plan = owner.world.plan(owner.sidecar.root(), record.transferId());
             if (plan == null) { return; }
             var sidecar = owner.sidecar.root(); var before = rocket.flightData().orElseThrow();
@@ -53,6 +65,7 @@ public final class SealedReleaseGuardGameTests {
             catch (ReflectiveOperationException failure) { throw new IllegalStateException(failure); }
             SealedDisassemblyCoordinator sealed = RocketSourceRetirementFixtures.field(service, "sealed");
             if (sealedFirst) {
+                waiting[0] = "sealed admission";
                 var id = sealed.begin(rocket, () -> authorized[0], result -> cancelled[0] = result == SealedDisassembly.Result.REJECTED);
                 // The same-tick inspection allowance may already belong to lazy discovery. Do not reset it for a fixture.
                 if (id == null) { return; }
