@@ -203,14 +203,13 @@ public final class RocketRejoinAdmissionGameTests {
             var marked = image.copy();
             marked.getCompound("RocketEntityData").put("resource_escrow", new io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowSection(
                     UUID.randomUUID(), 0, List.of()).encode());
-            rocket.load(marked);
+            // A live load deliberately retains the old escrow wrapper. Publish a fresh, bound
+            // endpoint instead, as vanilla loading would, and leave its legitimate fence intact.
+            rocket.discard(); rocket = ModEntities.ROCKET.get().create(level);
+            helper.assertTrue(rocket != null, "Escrow authority type missing"); rocket.load(marked);
+            helper.assertTrue(level.addFreshEntity(rocket), "Escrow authority was not published");
             helper.assertTrue(!io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate.idle(rocket), "Escrow fixture was not held");
-            try { refused("Escrow-held authority"); }
-            finally {
-                rocket.discard(); rocket = ModEntities.ROCKET.get().create(level);
-                helper.assertTrue(rocket != null, "Authority restore type missing"); rocket.load(image);
-                helper.assertTrue(level.addFreshEntity(rocket), "Authority restore failed");
-            }
+            refused("Escrow-held authority");
         }
         void unloaded() throws Exception {
             ready("unloaded authority");

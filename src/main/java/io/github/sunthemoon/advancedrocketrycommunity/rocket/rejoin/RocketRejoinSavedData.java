@@ -93,7 +93,7 @@ public final class RocketRejoinSavedData extends SavedData implements AutoClosea
                 && root.batches().contains(batch) && acknowledgedRoot.batches().contains(batch)
                 && acknowledgedRoot.entries().stream().anyMatch(e -> e.release().equals(batch.release()) && e.seat() == RocketRejoinRoot.Seat.PENDING);
     }
-    /** Storage only; no command calls this before the release and protected-rejoin leaves are integrated. */
+    /** The coordinators publish checked generations; command admission itself does not submit S1. */
     public boolean submit(RocketRejoinRoot candidate) {
         return submit(candidate, () -> true);
     }
