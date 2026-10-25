@@ -39,7 +39,8 @@ public final class RocketRejoinNativePressure {
             if (cut.equals("C30")) { hazards(frozen.batches().get(0)); }
             setup = true; return false;
         }
-        if (!data.acknowledgedCurrent()) { return false; }
+        // A restart may load an already-installed root without submitting any new generation.
+        if (!data.root().equals(data.acknowledgedRoot()) || !data.pendingRoots().isEmpty()) { return false; }
         if (!connected) {
             var ids = cut.equals("C30") ? frozen.entries().stream().map(Entry::player).distinct().filter(id -> !id.equals(FIRST)).toList() : List.of(PLAYER);
             for (var id : ids) {
@@ -85,7 +86,8 @@ public final class RocketRejoinNativePressure {
         require(p.getPersistentData().getByteArray(PADDING).length == 3 << 20 && !p.getPersistentData().contains(RocketRejoinMarker.KEY)
                 && p.isAlive() && p.getVehicle() == null, "Expanded installed player did not complete cleanly");
         if (first == null) { first = ReleaseTestPlayers.login(server, FIRST, "W160FFirst", server.overworld()); return false; }
-        if (!data.root().entries().isEmpty() || RocketRejoinProtection.guarded(first) || !data.acknowledgedCurrent()) { return false; }
+        if (!data.root().entries().isEmpty() || RocketRejoinProtection.guarded(first)
+                || !data.root().equals(data.acknowledgedRoot()) || !data.pendingRoots().isEmpty()) { return false; }
         AdvancedRocketryCommunity.LOGGER.info("ARCE_W160F_EXPANDED mode={} payload_bytes={} entries=0", mode, 3 << 20);
         return true;
     }

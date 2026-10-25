@@ -77,7 +77,7 @@ final class RocketRejoinNativeRows {
     }
     boolean advance(RocketRejoinSavedData data, RocketEntity rocket) {
         if (data.acknowledgedRoot() == null || data.root().entries().stream().anyMatch(e -> e.seat() == RocketRejoinRoot.Seat.PENDING)
-                || !data.acknowledgedCurrent()) { return false; }
+                || !data.root().equals(data.acknowledgedRoot()) || !data.pendingRoots().isEmpty()) { return false; }
         if (cut.equals("C29") && !peerReady()) { return false; }
         if (pressure != null) {
             if (!pressure.advance(data)) { return false; }
