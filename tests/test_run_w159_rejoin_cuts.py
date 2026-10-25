@@ -10,6 +10,19 @@ import run_w159_rejoin_cuts as runner
 
 
 class RejoinCutRunnerTests(unittest.TestCase):
+    def test_temporary_write_cut_requires_old_file_and_one_exact_warning(self):
+        self.assertIn(("H1", "C21"), runner.CASES)
+        disk = self.fixture(); disk["player"]["ForgeData"].clear(); disk["player"]["Pos"][1] = 60
+        runner.verify(disk, "H1", "C21", "seed", "C21", None, None)
+        with self.assertRaises(runner.smoke.SmokeError):
+            runner.verify(self.fixture(), "H1", "C21", "seed", "C21", None, None)
+        line = "[12:00:00] [Server thread/WARN] [minecraft/PlayerDataStorage]: Failed to save player data for W159Passenger"
+        with patch.object(runner.release, "audit_log", return_value={}):
+            self.assertEqual(1, runner.audit_log([line], "H1", "C21", "seed")["temporary_failure_observed"])
+            for bad in ([], [line, line], [line + " unexpected"]):
+                with self.assertRaises(runner.smoke.SmokeError): runner.audit_log(bad, "H1", "C21", "seed")
+            with self.assertRaises(runner.smoke.SmokeError): runner.audit_log([line], "H1", "C21", "recover")
+
     def test_shutdown_clean_is_one_exact_parsed_message_only_in_c20_seed(self):
         line = "[12:00:00] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_W159_SHUTDOWN_CLEAN threads=0 tickets=0"
         with patch.object(runner.release, "audit_log", return_value={}):

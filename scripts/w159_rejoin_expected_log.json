@@ -14,6 +14,14 @@
   "limit_kinds": ["OVERSIZED", "DEPTH"],
   "integration_heavy_1_only_counts": {"guard": 2, "placed": 1, "verified": 1, "player_limit": 0},
   "all_other_warning_counts": 0,
+  "native_temporary_failure": {
+    "scope": "One failed temporary player write in H1/H2 C21 seed; zero elsewhere.",
+    "message": "Failed to save player data for W159Passenger",
+    "loggers": ["minecraft/PlayerDataStorage", "net.minecraft.world.level.storage.PlayerDataStorage/"],
+    "thread": "Server thread",
+    "level": "WARN",
+    "count": 1
+  },
   "native_shutdown_clean": {
     "scope": "Exactly once in H1/H2 C20 seed; zero in every other run.",
     "holds": ["H1", "H2"],

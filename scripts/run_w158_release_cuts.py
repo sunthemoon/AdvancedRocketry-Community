@@ -270,6 +270,8 @@ def run(args):
             for mode in MODES:
                 name = f"{hold}-{cut}-{mode}"; row = dict(case=name, **resources()); result["starts"].append(row)
                 command = _server_command(args.java); command[2] = "-Xmx4G"
+                if getattr(args, "command", False):
+                    command.insert(3, "-Dadvancedrocketrycommunity.rejoinReleaseCommand=true")
                 command.insert(3, f"-Dadvancedrocketrycommunity.rejoinReleaseProbe={hold}:{cut}:{mode}")
                 if recovery_cut:
                     command.insert(3, f"-Dadvancedrocketrycommunity.rejoinReleaseRecoveryCut={recovery_cut}")
@@ -331,6 +333,7 @@ def main():
     for name in ("java", "source-commit"):
         parser.add_argument("--" + name, required=True)
     parser.add_argument("--cases", default="")
+    parser.add_argument("--command", action="store_true", help="Admit through the registered release-absent command")
     parser.add_argument("--recovery-cut", choices=RECOVERY_CUTS, default="",
                         help="Independently kill the first recovery; omit to retain the clean-restart campaign")
     result = run(parser.parse_args()); print(json.dumps(result, indent=2))

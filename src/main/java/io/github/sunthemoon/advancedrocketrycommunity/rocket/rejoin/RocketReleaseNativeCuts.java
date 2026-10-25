@@ -18,12 +18,12 @@ public final class RocketReleaseNativeCuts {
     private RocketReleaseNativeCuts() { }
 
     public static String selection() { return System.getProperty(PROPERTY, ""); }
-    public static boolean rejoin() { return selection().matches("H[12]:C(?:[7-9]|10|11|13|18|19|20):(seed|recover|check)"); }
+    public static boolean rejoin() { return selection().matches("H[12]:C(?:[7-9]|10|11|13|18|19|20|21):(seed|recover|check)"); }
     public static void validate(MinecraftServer server) {
         EscrowTestEndpoints.requireEnabled(server);
         String[] parts = selection().split(":");
         if (!server.isDedicatedServer() || parts.length != 3 || !parts[0].matches("H[12]")
-                || !parts[1].matches("C(?:[0-9]|10|11|13|14|15|16|17|18|19|20)") || !parts[2].matches("seed|recover|check")
+                || !parts[1].matches("C(?:[0-9]|10|11|13|14|15|16|17|18|19|20|21)") || !parts[2].matches("seed|recover|check")
                 || !server.getWorldData().getLevelName().equals("world-W158-" + parts[0] + "-" + parts[1])) {
             throw new IllegalStateException("Not a disposable W158 release server");
         }
