@@ -34,8 +34,8 @@ class SealedOrdinaryHandoffTest {
             for (int tick = 2; tick < 20_000 && ordinary.started < 0; tick++) { f.tick(tick); }
             var first = f.entries.get(0);
             assertTrue(first.finished >= 0);
-            assertTrue(ordinary.started >= first.finished && ordinary.started <= first.finished + 2,
-                    "Ordinary started at " + ordinary.started + ", active sealed attempt ended at " + first.finished);
+            assertHandoff(first.opportunity, ordinary.started, first.finished);
+            assertNoSealedOvertake(f, ordinary);
             assertEquals(1, f.entries.stream().filter(e -> e.done).count(), "Another sealed owner passed the waiting return");
             for (long tick = f.now + 1; tick < 20_000 && f.entries.stream().anyMatch(e -> !e.done); tick++) { f.tick(tick); }
             assertTrue(f.entries.stream().allMatch(e -> e.done));
@@ -49,20 +49,21 @@ class SealedOrdinaryHandoffTest {
             f.tick(0); f.tick(1);
             var ordinary = f.enqueue(RocketOrdinaryRetirement.Site.BEFORE_FILL);
             for (int tick = 2; tick < 300 && ordinary.started < 0; tick++) { f.tick(tick); }
-            assertTrue(ordinary.started >= f.entries.get(0).finished && ordinary.started <= f.entries.get(0).finished + 2,
-                    "Destination demand missed the turn: " + ordinary.started);
+            var first = f.entries.get(0);
+            assertHandoff(first.opportunity, ordinary.started, first.finished);
+            assertNoSealedOvertake(f, ordinary);
         }
     }
 
     @ParameterizedTest @ValueSource(booleans = {true, false})
-    void fullHundredTickAttemptStillHandsOffWithinTwoTicks(boolean callbacksFirst) throws Exception {
+    void fullHundredTickAttemptHandsOffAtNativeAvailability(boolean callbacksFirst) throws Exception {
         try (var f = new Fixture(2, callbacksFirst, true)) {
             f.tick(0); f.tick(1); var ordinary = f.enqueue();
             for (int tick = 2; tick < 300 && ordinary.started < 0; tick++) { f.tick(tick); }
             var first = f.entries.get(0);
             assertEquals(100, first.finished - first.started);
-            assertTrue(ordinary.started >= first.finished && ordinary.started <= first.finished + 2,
-                    "Ordinary missed the deadline-length hand-off: " + ordinary.started);
+            assertHandoff(first.opportunity, ordinary.started, first.finished);
+            assertNoSealedOvertake(f, ordinary);
             assertEquals(0, f.deadlines);
         }
     }
@@ -80,9 +81,42 @@ class SealedOrdinaryHandoffTest {
             assertTrue(sealed.started >= 0, "Continuous ordinary traffic starved sealed work");
             long lastEnd = f.returns.stream().filter(r -> r.started >= 0 && r.started < sealed.started)
                     .mapToLong(r -> r.finished).max().orElseThrow();
-            assertTrue(lastEnd >= 0 && sealed.started <= lastEnd + 2,
-                    "Sealed reserved at " + sealed.started + ", preceding ordinary turn ended at " + lastEnd);
+            long opportunity = f.returns.stream().filter(r -> r.finished == lastEnd)
+                    .mapToLong(r -> r.opportunity).max().orElseThrow();
+            assertHandoff(opportunity, sealed.started, lastEnd);
+            assertTrue(f.returns.stream().noneMatch(r -> r.started >= lastEnd && r.started < sealed.started),
+                    "New ordinary attempt passed the waiting sealed candidate");
         }
+    }
+
+    @ParameterizedTest @CsvSource({"2,true", "2,false", "63,true", "63,false"})
+    void exhaustedNativeWindowHandsOffAtTick100AfterCompletionAt84(int count, boolean callbacksFirst) throws Exception {
+        try (var f = new Fixture(count, callbacksFirst, false, 20)) {
+            // Discovery uses tick -1; the first real attempt and Level window start at zero.
+            f.tick(-1); f.tick(0); assertTrue(f.entries.get(0).activeAttempt());
+            var ordinary = f.enqueue();
+            for (int tick = 1; tick < 200 && ordinary.started < 0; tick++) {
+                f.tick(tick);
+                assertNoSealedOvertake(f, ordinary);
+            }
+            var first = f.entries.get(0);
+            assertEquals(List.of(0L, 1L, 2L, 3L, 20L, 21L, 22L, 23L, 40L, 41L,
+                    42L, 43L, 60L, 61L, 62L, 63L, 80L, 81L, 82L, 83L), first.captures);
+            assertEquals(84, first.finished);
+            assertEquals(100, first.opportunity);
+            assertHandoff(first.opportunity, ordinary.started, first.finished);
+            assertEquals(0, f.deadlines);
+        }
+    }
+
+    private static void assertHandoff(long opportunity, long started, long ended) {
+        assertTrue(ended >= 0 && opportunity >= ended && started >= opportunity && started <= opportunity + 2,
+                "Attempt ended at " + ended + ", next native opportunity " + opportunity + ", first capture " + started);
+    }
+
+    private static void assertNoSealedOvertake(Fixture f, Fixture.Return ordinary) {
+        assertTrue(f.entries.stream().skip(1).noneMatch(e -> e.activeAttempt() || e.started >= 0),
+                "Another sealed attempt reserved or captured before the waiting ordinary return at " + ordinary.started);
     }
 
     private final class Fixture implements AutoCloseable {
@@ -106,8 +140,11 @@ class SealedOrdinaryHandoffTest {
         boolean sealedDemand;
         int deadlines;
         Fixture(int count, boolean callbacksFirst, boolean fullDeadline) throws Exception {
+            this(count, callbacksFirst, fullDeadline, 18);
+        }
+        Fixture(int count, boolean callbacksFirst, boolean fullDeadline, int firstSlots) throws Exception {
             this.callbacksFirst = callbacksFirst;
-            for (int i = 0; i < count; i++) { entries.add(new Entry(i + 1, i == 0 ? 18 : 16, fullDeadline && i == 0)); }
+            for (int i = 0; i < count; i++) { entries.add(new Entry(i + 1, i == 0 ? firstSlots : 16, fullDeadline && i == 0)); }
             ordinary.shareSealedCapacity(() -> (int) entries.stream().filter(e -> !e.done).count(),
                     () -> SealedProofAdmission.nativeReservations(active()));
             turns = ordinary.shareSealedTurns(() -> sealedDemand && entries.stream().anyMatch(e -> !e.activeAttempt() && e.eligible(now + 1)));
@@ -144,7 +181,8 @@ class SealedOrdinaryHandoffTest {
 
         final class Entry implements SealedWorkScheduler.Entry, SealedProofBatch.Port {
             final UUID id; final SealedProofBatch batch; final boolean fullDeadline;
-            long censusTick = -1, started = -1, finished = -1; boolean done, ready;
+            final List<Long> captures = new ArrayList<>();
+            long censusTick = Long.MIN_VALUE, started = -1, finished = -1, opportunity = -1; boolean done, ready;
             Entry(int id, int slots, boolean fullDeadline) {
                 this.id = new UUID(0, id); this.fullDeadline = fullDeadline; batch = new SealedProofBatch(slots, this, this::attemptEnded);
             }
@@ -154,7 +192,11 @@ class SealedOrdinaryHandoffTest {
             public boolean eligible(long tick) { return !done && tick >= batch.retryAt(); }
             public void tickDeadline() { batch.tickDeadline(); }
             public void tickProof() { batch.tick(); }
-            public void work() { if (budget.take() && batch.current()) { done = true; finished = now; batch.close(); } }
+            public void work() {
+                if (budget.take() && batch.current()) {
+                    done = true; finished = now; opportunity = quota.nextAvailable(now); batch.close();
+                }
+            }
             public long now() { return now; }
             public SealedProofBatch.Readiness readiness() {
                 if (censusTick != now) { censusTick = now; ready = budget.take(); }
@@ -166,6 +208,7 @@ class SealedOrdinaryHandoffTest {
             public boolean capture(int slot, Consumer<EscrowBarrier.Result> callback) {
                 if (!quota.capture(now)) { return false; }
                 if (slot == 0) { started = now; }
+                captures.add(now);
                 completions.add(new Completion(fullDeadline ? started + 100 : now + 1,
                         () -> callback.accept(SealedRecoveryProofSchedulingTest.proved())));
                 return true;
@@ -179,7 +222,7 @@ class SealedOrdinaryHandoffTest {
             final Path file;
             final CompoundTag image = new CompoundTag();
             final RocketOrdinaryRetirement.Port port;
-            long started = -1, finished = -1;
+            long started = -1, finished = -1, opportunity = -1;
             Return(int index) {
                 file = directory.resolve("return-" + index + "-" + UUID.randomUUID()).resolve(ManagedSavedDataType.ROCKET_TRANSFERS.fileName());
                 try { java.nio.file.Files.createDirectories(file.getParent()); }
@@ -206,7 +249,9 @@ class SealedOrdinaryHandoffTest {
                                     : journal.actionable(record.logicalRocketId(), (RocketTransferSavedData.Reservation) args[2]);
                             case "sink" -> (Consumer<String>) label -> { };
                             case "prepare", "recheck", "reservation", "keepLoaded", "releaseTickets" -> null;
-                            case "terminal" -> { journal.remove(record.transferId()); finished = now; yield true; }
+                            case "terminal" -> {
+                                journal.remove(record.transferId()); finished = now; opportunity = quota.nextAvailable(now); yield true;
+                            }
                             case "afterAcknowledged" -> RocketJournalTestAccess.queue(journal, (RocketTransferSavedData.Reservation) args[1],
                                     (BooleanSupplier) args[2], (Runnable) args[3]);
                             default -> true;
@@ -226,6 +271,11 @@ class SealedOrdinaryHandoffTest {
             captured = method(type, "captured", int.class); release = method(type, "releaseOrdinary", int.class);
         }
         boolean available(long tick) { return (boolean) invoke(available, "minecraft:overworld", true, tick); }
+        // availableOrdinary is read-only: forecast the exhausted window without resetting or reserving it.
+        long nextAvailable(long tick) {
+            for (long next = tick; next <= tick + 100; next++) { if (available(next)) { return next; } }
+            throw new AssertionError("No native opportunity within the unchanged attempt deadline");
+        }
         boolean capture(long tick) {
             if (!(boolean) invoke(reserve, "minecraft:overworld", true, tick)) { return false; }
             invoke(captured, 0); invoke(release, 0); return true;
