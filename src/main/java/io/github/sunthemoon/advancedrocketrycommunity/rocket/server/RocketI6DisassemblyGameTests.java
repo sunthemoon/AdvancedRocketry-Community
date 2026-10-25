@@ -86,7 +86,8 @@ public final class RocketI6DisassemblyGameTests {
                 step++; return;
             }
             if (step == 3) {
-                helper.assertTrue(RocketRuntime.confirmDisassembly(player, player.token), "Confirmed request was refused");
+                helper.assertTrue(server.getCommands().performPrefixedCommand(player.createCommandSourceStack(),
+                        "arce rocket-disassembly confirm " + player.token) == 1, "Confirmed request was refused");
                 helper.assertTrue(rocket.isAlive(), "Player entry restored synchronously instead of admitting B2");
                 helper.assertTrue(predecessor == journal.find(record.transferId()).isPresent(), "M0 removed T before proof");
                 helper.assertTrue(player.discarded == 0, "Pending request published fuel disposal");
