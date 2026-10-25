@@ -40,7 +40,8 @@ public final class PlayerEnvironmentalService {
             state.conditions = conditions;
         }
         int hazards = 0;
-        if (conditions.enabled() && player.isAlive() && !player.isCreative() && !player.isSpectator()) {
+        if (conditions.enabled() && player.isAlive() && !player.isCreative() && !player.isSpectator()
+                && !io.github.sunthemoon.advancedrocketrycommunity.rocket.rejoin.RocketRejoinProtection.guarded(player)) {
             BlockPos eye = BlockPos.containing(player.getX(), player.getEyeY(), player.getZ());
             hazards = EnvironmentalExposure.hazards(conditions, EnvironmentalProtection.read(player),
                     atmosphere.controlledAt(level, eye), directSunlight(level, eye));

@@ -305,6 +305,7 @@ final class RocketTransferService {
 
     void onPlayerLoggedIn(ServerPlayer player) {
         Objects.requireNonNull(player, "player");
+        if (io.github.sunthemoon.advancedrocketrycommunity.rocket.rejoin.RocketRejoinProtection.required(player.getServer(), player.getUUID())) { return; }
         MinecraftServer server = player.getServer();
         if (server == null) {
             return;

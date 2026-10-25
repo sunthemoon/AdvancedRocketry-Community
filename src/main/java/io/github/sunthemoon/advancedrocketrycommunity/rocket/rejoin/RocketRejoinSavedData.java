@@ -23,6 +23,7 @@ public final class RocketRejoinSavedData extends SavedData implements AutoClosea
     private CheckedSavedDataPolicy.DirectoryForce force;
     private Function<Path, CheckedSavedDataFile.Presence> presence;
     private RocketRejoinWriter writer;
+    private RocketRejoinGuards guards;
     private CheckedJournalCheckpoint.Acknowledgement acknowledged;
     private RocketRejoinRoot acknowledgedRoot;
     private Outcome outcome = Outcome.UNACKNOWLEDGED;
@@ -47,6 +48,9 @@ public final class RocketRejoinSavedData extends SavedData implements AutoClosea
         data.file = file; data.policy = policy; data.presence = probe; data.force = force; return data;
     }
     public RocketRejoinRoot root() { owner(); return root; }
+    public RocketRejoinGuards guards(net.minecraft.server.MinecraftServer server) {
+        owner(); if (guards == null) { guards = new RocketRejoinGuards(server, this); } return guards;
+    }
     /** Last loaded or acknowledged root, retained for player names, not proof of a session write acknowledgement. */
     public RocketRejoinRoot acknowledgedRoot() { owner(); return acknowledgedRoot; }
     public java.util.List<RocketRejoinRoot> pendingRoots() {
@@ -98,6 +102,6 @@ public final class RocketRejoinSavedData extends SavedData implements AutoClosea
         if (file != null && !file.equals(target.toPath().toAbsolutePath().normalize())) { throw new IllegalArgumentException("Cannot rebind rejoin writer"); }
         // submit owns checked generations; vanilla must never write an unchecked or unused root.
     }
-    @Override public void close() { owner(); if (!closed) { if (writer != null) { writer.close(this::publish); } closed = true; } }
+    @Override public void close() { owner(); if (!closed) { if (guards != null) { guards.close(); } if (writer != null) { writer.close(this::publish); } closed = true; } }
     private void owner() { if (Thread.currentThread() != owner) { throw new IllegalStateException("Rejoin state requires its owner thread"); } }
 }

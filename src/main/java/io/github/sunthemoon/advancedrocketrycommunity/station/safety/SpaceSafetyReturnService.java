@@ -121,6 +121,7 @@ public final class SpaceSafetyReturnService {
 
     /** One player tick: the phase, then at most one admitted job. */
     public void tickPlayer(ServerPlayer player) {
+        if (io.github.sunthemoon.advancedrocketrycommunity.rocket.rejoin.RocketRejoinProtection.guarded(player)) { return; }
         MinecraftServer server = player.getServer();
         if (server == null || !server.isSameThread()) {
             return;

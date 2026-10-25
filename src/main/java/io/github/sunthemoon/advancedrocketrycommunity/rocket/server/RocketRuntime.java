@@ -315,4 +315,15 @@ public final class RocketRuntime {
                 true
         );
     }
+
+    public static java.util.List<io.github.sunthemoon.advancedrocketrycommunity.rocket.rejoin.RocketRejoinRoot.Entry>
+            rejoinAdmissions(MinecraftServer server) { return RocketReleaseAccess.admissions(server); }
+    public static boolean rejoinPlacementReady(MinecraftServer server, UUID release) {
+        return RocketReleaseAccess.placementReady(server, release);
+    }
+    public static void resumeDroppedRejoin(ServerPlayer player) {
+        if (service instanceof RocketManager manager) {
+            manager.onPlayerLoggedIn(new net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent(player));
+        }
+    }
 }

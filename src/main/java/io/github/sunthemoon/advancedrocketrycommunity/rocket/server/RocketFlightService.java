@@ -159,6 +159,10 @@ final class RocketFlightService {
         }
         Objects.requireNonNull(player, "player");
         Objects.requireNonNull(action, "action");
+        if (io.github.sunthemoon.advancedrocketrycommunity.rocket.rejoin.RocketRejoinProtection.guarded(player)
+                || io.github.sunthemoon.advancedrocketrycommunity.rocket.rejoin.RocketRejoinProtection.required(player.getServer(), player.getUUID())) {
+            return RocketFlightRequestResult.failure(RocketFlightRequestCode.TRANSFER_JOURNAL_BLOCKED);
+        }
         Objects.requireNonNull(target, "target");
         Objects.requireNonNull(requestId, "requestId");
         RocketIntentRateLimiter.Decision rateDecision = rateLimiter.check(
@@ -254,6 +258,10 @@ final class RocketFlightService {
             UUID requestId, io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadReference pad,
             UUID requester, java.util.function.BooleanSupplier localAuthority, UUID warmupOwner) {
         RocketFlightData flight = launchSource(rocket.flightData().orElseThrow(), rocket.level().getGameTime()).orElse(null);
+        if (flight != null && flight.passengers().assignments().stream().anyMatch(seat ->
+                io.github.sunthemoon.advancedrocketrycommunity.rocket.rejoin.RocketRejoinProtection.required(rocket.getServer(), seat.passengerId()))) {
+            return RocketFlightRequestResult.failure(RocketFlightRequestCode.TRANSFER_JOURNAL_BLOCKED);
+        }
         if (flight == null) {
             io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowLaunchTrace.note(rocket, requestId, "FLIGHT_PRECONDITION", "LAUNCH_READY");
             return RocketFlightRequestResult.failure(RocketFlightRequestCode.INVALID_STATE);

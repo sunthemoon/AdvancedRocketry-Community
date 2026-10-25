@@ -256,6 +256,7 @@ final class RocketTransferRecoveryService {
     }
 
     private boolean tryReconnect(ServerPlayer player, RocketTransferSavedData journal) {
+        if (io.github.sunthemoon.advancedrocketrycommunity.rocket.rejoin.RocketRejoinProtection.required(player.getServer(), player.getUUID())) { return true; }
         MinecraftServer server = player.getServer();
         if (server == null || journal.entries().isEmpty()) {
             return true;
