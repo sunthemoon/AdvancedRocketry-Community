@@ -262,17 +262,8 @@ final class RocketLandedDisassemblies {
      */
     RocketValidationCode release(RocketTransferSavedData journal, RocketTransferRecord record, UUID entity,
                                  Request request, Port port, Reservation reservation) {
-        Objects.requireNonNull(journal, "journal");
-        Objects.requireNonNull(record, "record");
-        if (pending.containsKey(record.logicalRocketId()) || !hasCapacity() || reservation == null
-                || !reservation.logical().equals(record.logicalRocketId())) {
-            return RocketValidationCode.REGION_BUSY;
-        }
-        long requestedAt = request.requestedAt() == Long.MIN_VALUE ? port.now() : request.requestedAt();
-        Pending entry = new Pending(record, Objects.requireNonNull(entity, "entity"), requestedAt,
-                Objects.requireNonNull(request, "request"), Objects.requireNonNull(port, "port"), journal);
-        pending.put(entry.logical(), entry);
-        journal.remove(record.transferId());
+        Pending entry = prepareRelease(journal, record, entity, request, port, reservation);
+        if (entry == null) { return RocketValidationCode.REGION_BUSY; }
         if (!port.queueRemoval(reservation, () -> removalAcknowledged(entry), () -> removalDiscarded(entry))) {
             end(entry);
             try {
@@ -285,11 +276,28 @@ final class RocketLandedDisassemblies {
         return RocketValidationCode.DISASSEMBLY_PENDING;
     }
 
+    /** M1 under the proof coordinator's token; that coordinator alone queues the removal continuation. */
+    Pending prepareRelease(RocketTransferSavedData journal, RocketTransferRecord record, UUID entity,
+                           Request request, Port port, Reservation reservation) {
+        Objects.requireNonNull(journal, "journal");
+        Objects.requireNonNull(record, "record");
+        if (pending.containsKey(record.logicalRocketId()) || !hasCapacity() || reservation == null
+                || !reservation.logical().equals(record.logicalRocketId())) {
+            return null;
+        }
+        long requestedAt = request.requestedAt() == Long.MIN_VALUE ? port.now() : request.requestedAt();
+        Pending entry = new Pending(record, Objects.requireNonNull(entity, "entity"), requestedAt,
+                Objects.requireNonNull(request, "request"), Objects.requireNonNull(port, "port"), journal);
+        pending.put(entry.logical(), entry);
+        journal.remove(record.transferId());
+        return entry;
+    }
+
     /**
      * M2, inside the removal's exact-acknowledgement continuation; it also runs while another record's write has failed
      * definitely, because the acknowledgement that it needs is already retained. Every handled case returns true (N1).
      */
-    private boolean removalAcknowledged(Pending entry) {
+    boolean removalAcknowledged(Pending entry) {
         if (!current(entry) || entry.stage() != Stage.RELEASED) {
             return true;
         }
@@ -361,7 +369,7 @@ final class RocketLandedDisassemblies {
      * The removal's discarded callback (N1's four cases). Once the latch is set without a certified clean rollback it
      * only logs and ends P, which is all it does while an {@code Error} unwinds; otherwise it runs M3.
      */
-    private void removalDiscarded(Pending entry) {
+    void removalDiscarded(Pending entry) {
         if (!current(entry) || entry.stage() == Stage.WRITE_BACK || entry.stage() == Stage.ENDED) {
             return;
         }

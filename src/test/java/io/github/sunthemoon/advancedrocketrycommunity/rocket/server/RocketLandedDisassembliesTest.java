@@ -74,6 +74,26 @@ class RocketLandedDisassembliesTest {
 
     private Path file() { return directory.resolve(TYPE.fileName()); }
 
+    @Test void provedHandoffCreatesPendingWithoutQueueingTheReservationTwice() throws Exception {
+        var f = new Fixture(new RocketPosition(64, 80, 64));
+        var prepare = RocketLandedDisassemblies.class.getDeclaredMethod("prepareRelease",
+                RocketTransferSavedData.class, RocketTransferRecord.class, UUID.class,
+                RocketLandedDisassemblies.Request.class, RocketLandedDisassemblies.Port.class,
+                RocketTransferSavedData.Reservation.class);
+        try (var token = f.journal.reserve(f.logical()).orElseThrow()) {
+            var pending = prepare.invoke(f.disassemblies, f.journal, f.landed, f.entity, f.request, f.port, token);
+            assertNotNull(pending);
+            assertSame(pending, f.disassemblies.find(f.logical()));
+            assertTrue(f.journal.find(f.landed.transferId()).isEmpty());
+            assertEquals(1, f.disassemblies.heldSlots(f.journal));
+            assertEquals(0, f.request.restores);
+            assertTrue(RocketJournalTestAccess.queue(f.journal, token, () -> true, () -> { }),
+                    "The proof coordinator must still own the one continuation slot");
+        }
+        f.acknowledge(); assertEquals(0, f.request.restores);
+        f.disassemblies.clear(); f.close();
+    }
+
     @Test void proofHandoffDoesNotRefreshTheOriginalRequestAge() {
         var f = new Fixture(new RocketPosition(64, 80, 64));
         f.request.requestedAt = 10; f.port.now = 211;
