@@ -115,7 +115,7 @@ public final class RocketRejoinAdmissionGameTests {
                 level.setBlockAndUpdate(pos.offset(x, -1, z), Blocks.STONE.defaultBlockState());
                 for (int y = 0; y < 4; y++) { level.setBlockAndUpdate(pos.offset(x, y, z), Blocks.AIR.defaultBlockState()); }
             } }
-            var fixture = RocketSourceRetirementFixtures.countdown(level, pos, pos, riders, 0);
+            var fixture = RocketSourceRetirementFixtures.countdown(level, pos, pos.offset(1, 0, 0), riders, 0);
             transfer = fixture.record();
             rocket = ModEntities.ROCKET.get().create(level); helper.assertTrue(rocket != null, "Rocket type missing");
             if (landed) {
@@ -184,7 +184,7 @@ public final class RocketRejoinAdmissionGameTests {
             duplicate.initializeTransferred(rocket.snapshot().orElseThrow(), transfer.logicalRocketId(), transfer.ownerId(), flight);
             duplicate.setPos(rocket.position()); helper.assertTrue(level.addFreshEntity(duplicate), "Duplicate fixture not loaded");
             try { refused("Nonunique authority"); } finally { duplicate.discard(); }
-            var other = RocketSourceRetirementFixtures.countdown(level, rocket.blockPosition().offset(3, 0, 0), rocket.blockPosition().offset(3, 0, 0), riders, 0);
+            var other = RocketSourceRetirementFixtures.countdown(level, rocket.blockPosition().offset(3, 0, 0), rocket.blockPosition().offset(4, 0, 0), riders, 0);
             var otherEntity = other.spawn(helper, level, RocketTransferEntities.stationarySource(other.record(), level.getGameTime()), false);
             try { refused("Double seated passenger"); } finally { otherEntity.discard(); }
             journal.put(other.record());
