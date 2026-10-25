@@ -51,6 +51,8 @@ public final class RocketI6PlainGameTests {
         RocketEntity rocket;
         CompoundTag frozen;
         int step;
+        int acknowledgedAt = -1;
+        boolean observationTicket;
         boolean closed;
 
         Scenario(GameTestHelper helper, boolean crew) {
@@ -70,6 +72,11 @@ public final class RocketI6PlainGameTests {
                         crew ? List.of(UUID.randomUUID()) : List.of(), 0);
                 RocketTransferEntities.keepLoaded(source, fixture.record().sourceSnapshot(), fixture.record().transferId());
                 RocketTransferEntities.keepLoaded(destination, fixture.record().destinationSnapshot(), fixture.record().transferId());
+                // This observer outlives the production flight ticket, which ends on acknowledged release.
+                // Without it a complete run can unload D between acknowledgement and this fixture's assertion.
+                var slot = fixture.destinationSlot();
+                observationTicket = !destination.getForcedChunks().contains(slot.toLong());
+                if (observationTicket) { destination.setChunkForced(slot.x, slot.z, true); }
                 step++; return;
             }
             if (step == 1) {
@@ -108,22 +115,22 @@ public final class RocketI6PlainGameTests {
                     "T disappeared without old-origin exclusion");
             if (!transfers.releaseLandedReservation(rocket)) { return; }
             helper.assertTrue(journal.logicalAcknowledged(record.logicalRocketId()), "Completion preceded checked absence");
-            io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity.LOGGER.info(
-                    "W164_PLAIN_OBSERVATION alive={} removal={} closed={} loaded_same={} tick={}",
-                    rocket.isAlive(), rocket.getRemovalReason(), closed,
-                    destination.getEntity(rocket.getUUID()) == rocket, server.getTickCount());
             helper.assertTrue(rocket.isAlive(), "Plain hook restored or removed D");
+            helper.assertTrue(destination.getEntity(rocket.getUUID()) == rocket, "Release replaced the observed D");
+            // Observe another real tick after the removal callback released the production ticket.
+            if (acknowledgedAt < 0) { acknowledgedAt = server.getTickCount(); return; }
+            if (server.getTickCount() == acknowledgedAt) { return; }
             close(); helper.succeed();
         }
         void close() {
-            io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity.LOGGER.info(
-                    "W164_PLAIN_CLOSE closed={} step={} removal={} tick={}", closed, step,
-                    rocket == null ? null : rocket.getRemovalReason(), source.getServer().getTickCount());
             if (closed) { return; } closed = true;
             if (rocket != null) { rocket.discard(); }
             var server = source.getServer(); var journal = RocketTransferSavedData.get(server);
             if (record != null) { journal.remove(record.transferId()); RocketTransferEntities.releaseFlightTickets(server, record); }
             if (fixture != null) { RocketTransferEntities.releaseFlightTickets(server, fixture.record()); }
+            if (observationTicket) {
+                var slot = fixture.destinationSlot(); destination.setChunkForced(slot.x, slot.z, false);
+            }
             journal.flushChecked(server);
         }
     }
