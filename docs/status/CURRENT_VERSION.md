@@ -38,8 +38,8 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: f68b4867e (W160 merged with W160F and W160G: the W80 `release-absent` command and `rejoins` view, so all three W80 leaves are in. Before it, W152H and W152I merged at 787c28e52: the W80 and sealed-staging cross-guard, request expiry, proof hand-off and wide-plan refusal, with review finding W152H-R1 open under R114; player admission (N3-B3) stays off until W152J)
-latest_hosted_regression: the last green run is 40199348299 at c54de4b0 (after the W152 merge). Its first attempt failed only the log check: all 1,399 GameTests passed, but batch rocket_release_boarding logged an undeclared ARCE_REJOIN_RELEASE_HELD state=CAPTURE_FAILED WARN; the rerun of that job passed. That WARN stays open in W161. Every completed hosted regression since the failure at 2426f00d on 2026-10-22 is green; W139 stays open until no hosted log shows ARCE_LAUNCH_DISCARD (QUEUE)
+latest_code_commit: 20f1859e9 (W161 merged: test-side fixes for the relogin timeout, terminal-cut cleanup after a failed or timed-out fixture, and the boarding CAPTURE_FAILED WARN. Before it, f68b4867e merged W160 with W160F and W160G: the W80 `release-absent` command and `rejoins` view, so all three W80 leaves are in. Before it, W152H and W152I merged at 787c28e52: the W80 and sealed-staging cross-guard, request expiry, proof hand-off and wide-plan refusal, with review finding W152H-R1 open under R114; player admission (N3-B3) stays off until W152J)
+latest_hosted_regression: run 40231943202 at cac55dcc (after the W152H, W152I and W160 merges) passed on its first attempt: clean build, unit tests, runData with a clean tree, all 1,411 GameTests and the log check. W161, merged after it, makes the boarding WARN that failed the first attempt of run 40199348299 deterministic and declares it once; the next hosted run checks that. Every completed hosted regression since the failure at 2426f00d on 2026-10-22 is green; W139 stays open until no hosted log shows ARCE_LAUNCH_DISCARD (QUEUE)
 ledger_planned_units: 17
 asset_review_items: 154
 required_gates_approved: none
@@ -130,6 +130,10 @@ What is still open:
   `EscrowGovernedSourceFlightGameTests.logoutDuringAscentAndLoginAfterLandingCompletesHandoffAndCleanup` at 600 ticks:
   the passenger logged in after landing and the handoff never completed. Two later fixtures then failed with
   "Terminal cut requires exclusive owner-thread setup", because the first one cleans up only on success. A rerun of
-  the same commit passed, and W158F's local full run passed it. Queued as W161 (QUEUE).
+  the same commit passed, and W158F's local full run passed it. W161 (merged at `20f1859e9`) found the cause in
+  the fixture: it waited for the dispatcher's remount, which also starts F6, and then dismounted, so it invalidated
+  its own terminal capture and paid the 100-tick retry. The fixture now runs the installed F5 executor and dismounts
+  in the same callback, and terminal-cut fixtures clean up on failure or timeout. The 600-tick timeout itself was
+  not reproduced; this stays open until hosted runs show no recurrence.
 
 No v1.8 Required Gate is approved. Only the owner marks a Gate or the version as passed.
