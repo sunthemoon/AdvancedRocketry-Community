@@ -31,6 +31,60 @@ public final class RocketRejoinNativeCuts {
         if (heldLease()) { RocketReleaseNativeCuts.checkpoint(RocketReleaseNativeCuts.selection().split(":")[1]); }
     }
     static void reset() { GATED.set(false); held = new java.util.concurrent.CountDownLatch(1); proceed = new java.util.concurrent.CountDownLatch(1); }
+    private static boolean shutdownSeed() { return RocketReleaseNativeCuts.selection().matches("H[12]:C20:seed"); }
+    /** C20 holds the real installed-file stream open until an external normal server stop interrupts it. */
+    static java.util.function.LongSupplier scanClock() {
+        if (!shutdownSeed()) { return System::nanoTime; }
+        var calls = new java.util.concurrent.atomic.AtomicInteger();
+        return () -> {
+            if (calls.incrementAndGet() == 2 && GATED.compareAndSet(false, true)) {
+                held.countDown();
+                io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity.LOGGER.info(
+                        "ARCE_W158_PAUSED case={} boundary=C20", RocketReleaseNativeCuts.selection());
+                try { proceed.await(10, java.util.concurrent.TimeUnit.SECONDS); }
+                catch (InterruptedException expected) { Thread.currentThread().interrupt(); }
+            }
+            return System.nanoTime();
+        };
+    }
+    static void stopping(MinecraftServer server) {
+        if (!shutdownSeed()) { return; }
+        RocketReleaseNativeCuts.validate(server);
+        if (held.getCount() != 0 || ticketCount(server) == 0
+                || Thread.getAllStackTraces().keySet().stream().noneMatch(t -> t.isAlive() && t.getName().equals("arce-passenger-readback"))) {
+            throw new IllegalStateException("C20 needs an in-flight reader and held rejoin tickets");
+        }
+    }
+    static void stopped(MinecraftServer server) {
+        if (!shutdownSeed()) { return; }
+        long threads = Thread.getAllStackTraces().keySet().stream().filter(t -> t.isAlive() && t.getName().equals("arce-passenger-readback")).count();
+        int tickets = ticketCount(server);
+        if (threads != 0 || tickets != 0) { throw new IllegalStateException("C20 leaked reader or rejoin ticket"); }
+        io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity.LOGGER.info("ARCE_W159_SHUTDOWN_CLEAN threads={} tickets={}", threads, tickets);
+    }
+    /** Fixture-only inspection by field type works in mapped GameTest and obfuscated packaged servers. */
+    private static int ticketCount(MinecraftServer server) {
+        int count = 0;
+        try {
+            for (var level : server.getAllLevels()) {
+                var manager = level.getChunkSource().chunkMap.getDistanceManager();
+                for (var field : net.minecraft.server.level.DistanceManager.class.getDeclaredFields()) {
+                    if (!it.unimi.dsi.fastutil.longs.Long2ObjectMap.class.isAssignableFrom(field.getType())) { continue; }
+                    field.setAccessible(true);
+                    var map = (it.unimi.dsi.fastutil.longs.Long2ObjectMap<?>) field.get(manager);
+                    for (var value : map.values()) {
+                        if (value instanceof Iterable<?> entries) {
+                            for (var entry : entries) {
+                                if (entry instanceof net.minecraft.server.level.Ticket<?> ticket
+                                        && ticket.getType().toString().equals("arce_passenger_rejoin")) { count++; }
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (ReflectiveOperationException error) { throw new IllegalStateException("Cannot inspect native rejoin tickets", error); }
+        return count;
+    }
     private static boolean seed(MinecraftServer server, String cut) {
         if (!RocketReleaseNativeCuts.rejoin() || !RocketReleaseNativeCuts.selection().endsWith(":" + cut + ":seed")) { return false; }
         RocketReleaseNativeCuts.validate(server);

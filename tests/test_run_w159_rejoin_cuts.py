@@ -99,6 +99,13 @@ class RejoinCutRunnerTests(unittest.TestCase):
         recovered["player"]["Pos"][0] = 4.5
         runner.verify(recovered, "H1", "C19", "recover", "C10", None, seed)
 
+    def test_inflight_shutdown_retains_exact_pending_installed_player(self):
+        disk = self.fixture(); runner.verify(disk, "H1", "C20", "seed", "C20", None, None)
+        for mutate in (lambda d: d["sidecar"]["entries"].clear(), lambda d: d["player"]["ForgeData"].clear(),
+                       lambda d: d["player"].update(RootVehicle={})):
+            bad = copy.deepcopy(disk); mutate(bad)
+            with self.assertRaises(runner.smoke.SmokeError): runner.verify(bad, "H1", "C20", "seed", "C20", None, None)
+
 
 if __name__ == "__main__":
     unittest.main()

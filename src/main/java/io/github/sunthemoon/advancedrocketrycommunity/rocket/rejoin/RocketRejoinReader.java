@@ -9,14 +9,19 @@ import java.util.concurrent.Executors;
 final class RocketRejoinReader implements AutoCloseable {
     record Completion(Object identity, RocketRejoinPlayerFile.Expected expected, RocketRejoinPlayerFile.Result result) { }
     private ExecutorService executor;
+    private Thread thread;
     private CompletableFuture<Completion> active;
+    private final java.util.function.LongSupplier clock;
+    RocketRejoinReader() { this(RocketRejoinNativeCuts.scanClock()); }
+    RocketRejoinReader(java.util.function.LongSupplier clock) { this.clock = clock; }
     boolean busy() { return active != null; }
     void start(Path directory, Object identity, RocketRejoinPlayerFile.Expected expected) {
         if (active != null) { throw new IllegalStateException("Concurrent rejoin scan"); }
         if (executor == null) {
-            executor = Executors.newSingleThreadExecutor(run -> { var thread = new Thread(run, "arce-passenger-readback"); thread.setDaemon(true); return thread; });
+            executor = Executors.newSingleThreadExecutor(run -> { thread = new Thread(run, "arce-passenger-readback"); thread.setDaemon(true); return thread; });
         }
-        active = CompletableFuture.supplyAsync(() -> new Completion(identity, expected, RocketRejoinPlayerFile.scan(directory, expected)), executor)
+        active = CompletableFuture.supplyAsync(() -> new Completion(identity, expected,
+                RocketRejoinPlayerFile.scan(directory, expected, RocketRejoinPlayerFile.Limits.DEFAULT, clock)), executor)
                 .exceptionally(failure -> new Completion(identity, expected, new RocketRejoinPlayerFile.Result(RocketRejoinPlayerFile.Status.IO, 0, 0)));
     }
     Completion poll() {
@@ -24,5 +29,18 @@ final class RocketRejoinReader implements AutoCloseable {
         var completed = active; active = null;
         return completed.join();
     }
-    @Override public void close() { if (executor != null) { executor.shutdownNow(); } active = null; }
+    @Override public void close() {
+        if (executor != null) {
+            executor.shutdownNow();
+            try {
+                while (!executor.awaitTermination(1, java.util.concurrent.TimeUnit.SECONDS)) {
+                    // Keep the owning Level alive until the bounded, interrupted scanner closes its file.
+                }
+                if (thread != null) { thread.join(); }
+            } catch (InterruptedException interrupted) {
+                Thread.currentThread().interrupt(); throw new IllegalStateException("Rejoin reader drain interrupted", interrupted);
+            }
+        }
+        active = null;
+    }
 }

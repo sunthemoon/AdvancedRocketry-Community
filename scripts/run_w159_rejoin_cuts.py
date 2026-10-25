@@ -17,7 +17,7 @@ from run_v060_flight_server_smoke import _server_command
 from run_v180_resource_restarts import read_nbt
 
 PLAYER = "01580000-0000-4000-8000-000000000002"
-CASES = [(hold, f"C{i}") for hold in ("H1", "H2") for i in (7, 8, 9, 10, 11, 13, 18, 19)]
+CASES = [(hold, f"C{i}") for hold in ("H1", "H2") for i in (7, 8, 9, 10, 11, 13, 18, 19, 20)]
 
 
 def uuid_text(value):
@@ -118,7 +118,7 @@ def verify(disk, hold, cut, mode, boundary, baseline, seed):
             raise smoke.SmokeError("Pre-save cut unexpectedly installed the P1 position")
         if cut == "C13" and not any(e["seat"] == "PENDING" for e in sidecar["entries"]):
             raise smoke.SmokeError("C13 lost independent unfinished seat work")
-    elif boundary == "C10" or mode == "seed" and cut in ("C10", "C18", "C19"):
+    elif boundary == "C10" or mode == "seed" and cut in ("C10", "C18", "C19", "C20"):
         if len(entries) != 1:
             raise smoke.SmokeError("Matching-readback cut prematurely retired placement")
         entry = entries[0]; attempt = entry["attempt"]
@@ -195,14 +195,19 @@ def run(args):
                     if boundary:
                         if not marker.rstrip().endswith(f"ARCE_W158_PAUSED case={hold}:{cut}:{mode} boundary={boundary}"):
                             raise smoke.SmokeError("Wrong native pause: " + marker)
-                        process.process.kill(); process.abort(); row["exit"] = process.process.returncode
+                        if cut == "C20" and mode == "seed":
+                            process.command("stop"); row["exit"] = process.finish()
+                            if row["exit"] != 0 or sum("ARCE_W159_SHUTDOWN_CLEAN threads=0 tickets=0" in line for line in process.lines) != 1:
+                                raise smoke.SmokeError("In-flight shutdown did not close its reader and native tickets")
+                        else:
+                            process.process.kill(); process.abort(); row["exit"] = process.process.returncode
                     else:
                         process.command("stop"); row["exit"] = process.finish()
                         if row["exit"] != 0:
                             raise smoke.SmokeError("Normal restart exited abnormally")
                     disk = capture(world, evidence / (name + "-saved"))
                     baseline = verify(disk, hold, cut, mode, boundary, baseline, seed)
-                    row.update(external_kill=bool(boundary), boundary=boundary, conserved=True)
+                    row.update(external_kill=bool(boundary) and not (cut == "C20" and mode == "seed"), boundary=boundary, conserved=True)
                     row["log_audit"] = audit_log(process.lines, hold, cut, mode)
                     if mode == "seed": seed = disk
                 except Exception:

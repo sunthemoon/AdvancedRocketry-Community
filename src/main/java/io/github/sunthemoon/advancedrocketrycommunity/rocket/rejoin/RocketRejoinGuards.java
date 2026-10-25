@@ -134,7 +134,12 @@ public final class RocketRejoinGuards {
             if (effect.getCategory() == MobEffectCategory.HARMFUL && !original.contains(effect)) { player.removeEffect(effect); }
         }
     }
-    public void close() { sessions.values().forEach(RocketRejoinGuards::pin); placement.close(); sessions.clear(); }
+    public void close() {
+        sessions.values().forEach(RocketRejoinGuards::pin);
+        RocketRejoinNativeCuts.stopping(server);
+        placement.close(); sessions.clear();
+        RocketRejoinNativeCuts.stopped(server);
+    }
     private static void log(Session s, String state) {
         io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity.LOGGER.info(
                 "ARCE_REJOIN_GUARD player={} state={} reason={}", s.player.getUUID(), state, s.reason);
