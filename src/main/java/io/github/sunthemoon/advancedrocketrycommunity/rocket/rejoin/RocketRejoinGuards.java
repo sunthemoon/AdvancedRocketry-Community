@@ -68,7 +68,7 @@ public final class RocketRejoinGuards {
         }
         var old = sessions.get(player.getUUID());
         if (old != null && old.player == player && old.online) { return; }
-        boolean cloned = old != null && (old.invalidated || old.freshAttempt);
+        boolean cloned = old != null;
         if (old != null) { placement.cancel(old); sessions.remove(player.getUUID()); }
         var index = index();
         if (!index.contains(player.getUUID())) { return; }

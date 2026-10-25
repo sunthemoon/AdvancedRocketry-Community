@@ -23,6 +23,7 @@ public final class RocketRejoinSavedData extends SavedData implements AutoClosea
     private CheckedSavedDataPolicy.DirectoryForce force;
     private Function<Path, CheckedSavedDataFile.Presence> presence;
     private RocketRejoinWriter writer;
+    private java.util.function.Consumer<RocketRejoinRoot> beforeProof = root -> { };
     private RocketRejoinGuards guards;
     private CheckedJournalCheckpoint.Acknowledgement acknowledged;
     private RocketRejoinRoot acknowledgedRoot;
@@ -39,13 +40,19 @@ public final class RocketRejoinSavedData extends SavedData implements AutoClosea
     }
     static RocketRejoinSavedData open(Path file, CheckedSavedDataPolicy policy,
                                      Function<Path, CheckedSavedDataFile.Presence> probe, CheckedSavedDataPolicy.DirectoryForce force) {
+        return open(file, policy, probe, force, root -> { });
+    }
+    /** Isolated checked-writer gate; receives immutable captures and never accesses a Level. */
+    static RocketRejoinSavedData open(Path file, CheckedSavedDataPolicy policy,
+                                     Function<Path, CheckedSavedDataFile.Presence> probe, CheckedSavedDataPolicy.DirectoryForce force,
+                                     java.util.function.Consumer<RocketRejoinRoot> beforeProof) {
         file = file.toAbsolutePath().normalize();
         if (policy.type() != TYPE || !file.getFileName().toString().equals(TYPE.fileName())) { throw new IllegalArgumentException("Wrong rejoin file identity"); }
         var state = probe.apply(file);
         if (state == CheckedSavedDataFile.Presence.UNKNOWN) { throw new IllegalStateException("Unknown rejoin presence"); }
         var data = state == CheckedSavedDataFile.Presence.ABSENT ? new RocketRejoinSavedData(RocketRejoinRoot.empty(), false)
                 : load(policy.read(file).orElseThrow(() -> new IllegalStateException("Rejoin root disappeared during startup")));
-        data.file = file; data.policy = policy; data.presence = probe; data.force = force; return data;
+        data.file = file; data.policy = policy; data.presence = probe; data.force = force; data.beforeProof = beforeProof; return data;
     }
     public RocketRejoinRoot root() { owner(); return root; }
     public RocketRejoinGuards guards(net.minecraft.server.MinecraftServer server) {
@@ -86,18 +93,33 @@ public final class RocketRejoinSavedData extends SavedData implements AutoClosea
     }
     /** S2's IO-safe proof lease is rechecked immediately before replacement, including every retained retry. */
     public boolean submit(RocketRejoinRoot candidate, java.util.function.BooleanSupplier proof) {
+        return submit(candidate, proof, false);
+    }
+    /** P2 is exclusive and not published as owner authority before its installation acknowledgement. */
+    boolean submitPlacement(RocketRejoinRoot candidate, RocketRejoinLease lease) {
+        if (!pendingRoots().isEmpty()) { return false; }
+        return submit(candidate, lease, true);
+    }
+    private boolean submit(RocketRejoinRoot candidate, java.util.function.BooleanSupplier proof, boolean revocable) {
         owner();
         if (closed || file == null || outcome == Outcome.UNKNOWN || outcome == Outcome.NOT_COMMITTED || generation == Long.MAX_VALUE) { return false; }
         if (candidate.nextSequence() < root.nextSequence()) { throw new IllegalArgumentException("Rejoin sequence moved backwards"); }
         if (!present && generation == 0 && candidate.batches().isEmpty()) { return false; }
-        if (writer == null) { writer = new RocketRejoinWriter(file, policy, present, presence, force); }
-        if (!writer.request(generation + 1, candidate, proof)) { return false; }
-        root = candidate; generation++; setDirty(); return true;
+        if (writer == null) { writer = new RocketRejoinWriter(file, policy, present, presence, force, beforeProof); }
+        if (!writer.request(generation + 1, candidate, proof, revocable)) { return false; }
+        if (!revocable) { root = candidate; }
+        generation++; setDirty(); return true;
     }
     public void tick(long tick) { owner(); if (writer != null && !closed) { writer.tick(tick, this::publish); } }
     private void publish(RocketRejoinWriter.Completion result) {
         owner(); completions++; outcome = result.outcome(); acknowledged = result.acknowledged();
+        if (result.discarded()) {
+            // Only an exclusive P2 proven never installed can be discarded. The generation is not reused.
+            outcome = Outcome.UNACKNOWLEDGED;
+            return;
+        }
         if (outcome == Outcome.COMMITTED) {
+            if (result.capture().revocable()) { root = result.capture().root(); }
             acknowledgedRoot = result.capture().root();
             if (acknowledgedCurrent()) { setDirty(false); }
             if (failureReported) { AdvancedRocketryCommunity.LOGGER.info("ARCE_REJOIN_WRITE_RECOVERED"); failureReported = false; }

@@ -18,13 +18,14 @@ import net.minecraft.nbt.CompoundTag;
 
 /** Fixed-target writer: one active immutable root and one successor; no world access on its IO thread. */
 final class RocketRejoinWriter {
-    record Capture(long generation, RocketRejoinRoot root, java.util.function.BooleanSupplier proof) { }
-    record Completion(Capture capture, Outcome outcome, CheckedJournalCheckpoint.Acknowledgement acknowledged) { }
+    record Capture(long generation, RocketRejoinRoot root, java.util.function.BooleanSupplier proof, boolean revocable) { }
+    record Completion(Capture capture, Outcome outcome, CheckedJournalCheckpoint.Acknowledgement acknowledged, boolean discarded) { }
     private final Thread owner = Thread.currentThread();
     private final Path file;
     private final CheckedSavedDataPolicy policy;
     private final Function<Path, CheckedSavedDataFile.Presence> presence;
     private final CheckedJournalCheckpoint disk;
+    private final Consumer<RocketRejoinRoot> beforeProof;
     private final ExecutorService io = Executors.newSingleThreadExecutor(r -> {
         var thread = new Thread(r, "ARCE-rocket-rejoins"); thread.setDaemon(true); return thread;
     });
@@ -35,18 +36,29 @@ final class RocketRejoinWriter {
     // IO-thread ownership: an UNKNOWN first move can leave only this exact attempted candidate on disk.
     private boolean ownsFile;
     private String attemptedDigest;
+    private boolean uncertainPlacement;
 
     RocketRejoinWriter(Path file, CheckedSavedDataPolicy policy, boolean present,
                        Function<Path, CheckedSavedDataFile.Presence> presence, CheckedSavedDataPolicy.DirectoryForce force) {
+        this(file, policy, present, presence, force, root -> { });
+    }
+    RocketRejoinWriter(Path file, CheckedSavedDataPolicy policy, boolean present,
+                       Function<Path, CheckedSavedDataFile.Presence> presence, CheckedSavedDataPolicy.DirectoryForce force,
+                       Consumer<RocketRejoinRoot> beforeProof) {
         this.file = file; this.policy = policy; this.presence = presence;
+        this.beforeProof = beforeProof;
         this.ownsFile = present; this.disk = new CheckedJournalCheckpoint(force, RocketRejoinCodec.DEPTH);
     }
     boolean request(long generation, RocketRejoinRoot root, java.util.function.BooleanSupplier proof) {
+        return request(generation, root, proof, false);
+    }
+    boolean request(long generation, RocketRejoinRoot root, java.util.function.BooleanSupplier proof, boolean revocable) {
         owner();
-        if (closed || draining || active != null && successor != null) { return false; }
+        // No later root may depend on a revocable capture. Existing S2 captures keep their successor and retries.
+        if (closed || draining || active != null && (successor != null || active.revocable() || revocable)) { return false; }
         if (generation <= lastGeneration) { throw new IllegalArgumentException("Rejoin writer generation did not advance"); }
         lastGeneration = generation;
-        var capture = new Capture(generation, root, java.util.Objects.requireNonNull(proof));
+        var capture = new Capture(generation, root, java.util.Objects.requireNonNull(proof), revocable);
         if (active == null) { active = capture; start(); } else { successor = capture; }
         return true;
     }
@@ -60,6 +72,7 @@ final class RocketRejoinWriter {
         running = true; Capture capture = active;
         io.execute(() -> {
             Outcome outcome; var previous = disk.outcome();
+            boolean discarded = false;
             try {
                 CompoundTag payload = RocketRejoinCodec.encode(capture.root()); String candidateDigest = digest(payload);
                 boolean[] ownershipRejected = {false}, provedAbsent = {false}, proofRejected = {false};
@@ -76,6 +89,7 @@ final class RocketRejoinWriter {
                         attemptedDigest = candidateDigest;
                         ownershipRejected[0] = false;
                     }
+                    beforeProof.accept(capture.root());
                     proofRejected[0] = !capture.proof().getAsBoolean();
                     if (proofRejected[0]) { throw new IOException("Rejoin seat proof expired before replacement"); }
                     policy.committer().commit(staged, target);
@@ -83,13 +97,17 @@ final class RocketRejoinWriter {
                 outcome = disk.write(file, guarded, capture.generation(), payload, Map.of());
                 if (provedAbsent[0] && outcome == Outcome.NOT_COMMITTED) { attemptedDigest = null; }
                 // Exact readback is not ownership: the checkpoint may see an identical foreign file after our guard refused.
-                if (ownershipRejected[0] || proofRejected[0]) { outcome = disk.unknown(); }
+                if (proofRejected[0] && capture.revocable() && !uncertainPlacement && !ownershipRejected[0]) {
+                    // The committer was not called, including on every prior attempt. P1 remains authority.
+                    outcome = disk.refused(); discarded = true;
+                } else if (ownershipRejected[0] || proofRejected[0]) { outcome = disk.unknown(); }
                 else if (outcome == Outcome.COMMITTED) { ownsFile = true; attemptedDigest = null; }
                 else if (previous == Outcome.UNKNOWN) { outcome = disk.unknown(); }
             } catch (RuntimeException invalid) {
                 outcome = previous == Outcome.UNKNOWN ? disk.unknown() : disk.refused();
             } catch (Throwable unknown) { outcome = disk.unknown(); }
-            completed.add(new Completion(capture, outcome, disk.acknowledged().orElse(null)));
+            if (capture.revocable()) { uncertainPlacement = outcome == Outcome.UNKNOWN; }
+            completed.add(new Completion(capture, outcome, disk.acknowledged().orElse(null), discarded));
         });
     }
     void tick(long now, Consumer<Completion> publish) {
@@ -98,7 +116,7 @@ final class RocketRejoinWriter {
         if (result != null) {
             if (active != result.capture()) { throw new IllegalStateException("Foreign rejoin completion"); }
             running = false;
-            if (result.outcome() == Outcome.COMMITTED) { active = successor; successor = null; retryAt = 0; }
+            if (result.outcome() == Outcome.COMMITTED || result.discarded()) { active = successor; successor = null; retryAt = 0; }
             else { retryAt = tick + 200; }
             publish.accept(result);
         }

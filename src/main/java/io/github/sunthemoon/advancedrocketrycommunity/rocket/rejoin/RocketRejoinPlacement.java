@@ -22,6 +22,7 @@ final class RocketRejoinPlacement implements AutoCloseable {
         Attempt attempt;
         boolean placed, readRequested, submitted;
         RocketRejoinPlayerFile.Expected proof;
+        final RocketRejoinLease lease = new RocketRejoinLease();
         Work(RocketRejoinGuards.Session session) { this.session = session; }
     }
     private final MinecraftServer server;
@@ -136,9 +137,9 @@ final class RocketRejoinPlacement implements AutoCloseable {
         if (!data.pendingRoots().isEmpty()) { return; }
         var current = data.root().entries().stream().filter(e -> e.key().equals(w.entry.key())).findFirst().orElse(null);
         if (current == null || current.placement() != Placement.PENDING || !w.attempt.equals(current.attempt())) { return; }
-        // Applying the read result is linearized here on the current owner-thread session, never in an IO callback.
+        // Installation, not submission, is the commit point. IO only reads the owner's atomic lease.
         if (w.session.online && !world.safe(w.session.player, w.batch, w.attempt)) { guards.reason(w.session, "unsafe"); return; }
-        w.submitted = data.submit(data.root().update(new Entry(current.release(), current.player(), current.seatIndex(), Placement.VERIFIED, current.seat(), null)));
+        w.submitted = data.submitPlacement(data.root().update(new Entry(current.release(), current.player(), current.seatIndex(), Placement.VERIFIED, current.seat(), null)), w.lease);
         if (!w.submitted) { guards.reason(w.session, "io"); }
         else { guards.reason(w.session, "waiting"); }
     }
@@ -170,7 +171,7 @@ final class RocketRejoinPlacement implements AutoCloseable {
     }
     void cancel(RocketRejoinGuards.Session session) {
         var w = work.get(session.player.getUUID());
-        if (w != null && w.session == session) { work.remove(session.player.getUUID()); world.release(session.player.getUUID()); }
+        if (w != null && w.session == session) { w.lease.revoke(); work.remove(session.player.getUUID()); world.release(session.player.getUUID()); }
     }
     void logout(RocketRejoinGuards.Session session) { world.release(session.player.getUUID()); }
     static boolean proofMatches(RocketRejoinPlayerFile.Expected proof, Entry entry, Batch batch) {
@@ -185,5 +186,5 @@ final class RocketRejoinPlacement implements AutoCloseable {
         return installed != null && entry.attempt() != null && installed.entries().stream().anyMatch(e -> e.key().equals(entry.key())
                 && e.placement() == Placement.PENDING && entry.attempt().equals(e.attempt()));
     }
-    @Override public void close() { reader.close(); work.clear(); world.close(); }
+    @Override public void close() { work.values().forEach(w -> w.lease.revoke()); reader.close(); work.clear(); world.close(); }
 }
