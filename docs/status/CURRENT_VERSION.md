@@ -43,7 +43,7 @@ latest_hosted_regression: run 40231943202 at cac55dcc (after the W152H, W152I an
 ledger_planned_units: 17
 asset_review_items: 154
 required_gates_approved: none
-last_updated: 2026-10-25
+last_updated: 2026-10-26
 ```
 
 ## Current state
