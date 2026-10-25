@@ -59,8 +59,13 @@ def pending(disk):
 
 
 def audit_log(lines, hold, cut, mode):
-    """Account only for the C9 fixture's exact vanilla failure; retain every other log entry."""
-    manifest = json.loads(Path(__file__).with_name("w159_rejoin_expected_log.json").read_text(encoding="utf-8"))["native_c9"]
+    """Count exact C9 failure and C20 shutdown events; retain every unrelated entry."""
+    declarations = json.loads(Path(__file__).with_name("w159_rejoin_expected_log.json").read_text(encoding="utf-8"))
+    manifest = declarations["native_c9"]
+    shutdown = declarations["native_shutdown_clean"]
+    shutdown_expected = shutdown["count"] if (hold in shutdown["holds"] and cut == shutdown["cut"]
+                                               and mode == shutdown["mode"]) else shutdown["otherwise_count"]
+    shutdown_count = 0
     expected = {key: count if cut == "C9" and mode == "seed" else 0 for key, count in manifest["counts"].items()}
     counts = dict.fromkeys(expected, 0); remainder = []
     path = r"\.[/\\]world-W158-" + hold + r"-C9[/\\]playerdata[/\\]" + PLAYER + r"\.dat_old"
@@ -70,6 +75,13 @@ def audit_log(lines, hold, cut, mode):
         if header or not events: events.append([header, [line]])
         else: events[-1][1].append(line)
     for header, event in events:
+        if any("ARCE_W159_SHUTDOWN_CLEAN" in line for line in event):
+            if (not header or header["thread"] != shutdown["thread"] or header["level"] != shutdown["level"]
+                    or header["logger"] not in shutdown["loggers"] or header["message"] != shutdown["message"]
+                    or any(line.strip() for line in event[1:])):
+                raise smoke.SmokeError("C20 shutdown entry does not match its exact declaration")
+            shutdown_count += 1
+            continue
         key = None
         if header and header["thread"] == "Server thread" and header["logger"] in manifest["loggers"]:
             for name, pattern in manifest["messages"].items():
@@ -90,7 +102,10 @@ def audit_log(lines, hold, cut, mode):
         counts[key] += 1
     if counts != expected:
         raise smoke.SmokeError(f"C9 log counts differ: expected={expected}, observed={counts}")
-    return dict(c9_expected=expected, c9_observed=counts, base=release.audit_log(remainder, hold, cut, mode))
+    if shutdown_count != shutdown_expected:
+        raise smoke.SmokeError(f"C20 shutdown count differs: expected={shutdown_expected}, observed={shutdown_count}")
+    return dict(c9_expected=expected, c9_observed=counts, shutdown_clean_expected=shutdown_expected,
+                shutdown_clean_observed=shutdown_count, base=release.audit_log(remainder, hold, cut, mode))
 
 
 def verify(disk, hold, cut, mode, boundary, baseline, seed):
@@ -197,7 +212,7 @@ def run(args):
                             raise smoke.SmokeError("Wrong native pause: " + marker)
                         if cut == "C20" and mode == "seed":
                             process.command("stop"); row["exit"] = process.finish()
-                            if row["exit"] != 0 or sum("ARCE_W159_SHUTDOWN_CLEAN threads=0 tickets=0" in line for line in process.lines) != 1:
+                            if row["exit"] != 0:
                                 raise smoke.SmokeError("In-flight shutdown did not close its reader and native tickets")
                         else:
                             process.process.kill(); process.abort(); row["exit"] = process.process.returncode

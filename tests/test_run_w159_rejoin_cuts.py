@@ -10,6 +10,28 @@ import run_w159_rejoin_cuts as runner
 
 
 class RejoinCutRunnerTests(unittest.TestCase):
+    def test_shutdown_clean_is_one_exact_parsed_message_only_in_c20_seed(self):
+        line = "[12:00:00] [Server thread/INFO] [advancedrocketrycommunity/]: ARCE_W159_SHUTDOWN_CLEAN threads=0 tickets=0"
+        with patch.object(runner.release, "audit_log", return_value={}):
+            with self.assertRaises(runner.smoke.SmokeError):
+                runner.audit_log([], "H1", "C20", "seed")
+            for hold in ("H1", "H2"):
+                report = runner.audit_log([line], hold, "C20", "seed")
+                self.assertEqual(1, report["shutdown_clean_observed"])
+                for bad in ([], [line, line], [line.replace("threads=0", "threads=1")],
+                            [line.replace("tickets=0", "tickets=1")],
+                            [line.replace("Server thread", "Other thread")],
+                            [line.replace("INFO", "WARN")], [line + " trailing"],
+                            [line.replace("advancedrocketrycommunity/", "minecraft/Util")],
+                            [line, "unexpected continuation"]):
+                    with self.assertRaises(runner.smoke.SmokeError):
+                        runner.audit_log(bad, hold, "C20", "seed")
+            for hold, cut, mode in (("H1", "C20", "recover"), ("H2", "C20", "check"),
+                                    ("H1", "C10", "seed"), ("H3", "C20", "seed")):
+                with self.assertRaises(runner.smoke.SmokeError):
+                    runner.audit_log([line], hold, cut, mode)
+                self.assertEqual(0, runner.audit_log([], hold, cut, mode)["shutdown_clean_observed"])
+
     @staticmethod
     def fixture():
         player = [(uuid.UUID(runner.PLAYER).int >> n) & 0xFFFFFFFF for n in (96, 64, 32, 0)]
