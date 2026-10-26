@@ -60,6 +60,20 @@ class DiscoveryReceiptOrderTest {
                 "The paid receipt was in the file before the discovery");
     }
 
+    /** A replayed receipt whose mission this registry lacks (an installed fixture registry) asks for no write. */
+    @Test void aMissingMissionIsAnsweredWithoutARequest() {
+        var data = SatelliteMissionSavedData.create(0);
+        var stranger = SatelliteMissionSavedData.create(0);
+        stranger.launch(satellite, mission, owner, PlanetaryContent.surveySatellite(), PlanetaryContent.MARS, 0, true);
+        var receipt = stranger.token();
+        var requests = new AtomicInteger();
+        var missing = DiscoveryClaimRecovery.recoverAcknowledged(data, CelestialSavedData.create(), mission, receipt, 1,
+                id -> true, requests::incrementAndGet, value -> fail("A missing mission wrote a discovery"));
+        assertEquals(SatelliteOperationCode.MISSION_NOT_FOUND, missing.code());
+        assertEquals(0, requests.get(), "A missing mission requested a registry write");
+        assertFalse(data.isDirty());
+    }
+
     private Path missions() { return root.resolve(ManagedSavedDataType.SATELLITE_MISSIONS.fileName()); }
     private Path celestial() { return root.resolve(ManagedSavedDataType.CELESTIAL.fileName()); }
 }

@@ -55,13 +55,13 @@ public final class DiscoveryClaimRecovery {
     public static SatelliteOperationResult recoverAcknowledged(SatelliteMissionSavedData missions, CelestialSavedData celestial,
             UUID missionId, SatelliteRegistryProof.Token receipt, long gameTime, Predicate<ResourceLocation> available,
             Runnable requestMissions, Consumer<CelestialSavedData> saveCelestial) {
-        if (!missions.covers(receipt)) {
-            requestMissions.run();
-            MissionState mission = missions.mission(missionId).orElse(null);
-            return mission == null ? new SatelliteOperationResult(SatelliteOperationCode.MISSION_NOT_FOUND, false,
-                    Optional.empty(), Optional.empty(), 0) : result(missions, mission, SatelliteOperationCode.PENDING_DISCOVERY);
+        MissionState mission = missions.mission(missionId).orElse(null);
+        // A missing mission is answered by recover without a request; a covered receipt may be discovered.
+        if (mission == null || missions.covers(receipt)) {
+            return recover(missions, celestial, missionId, gameTime, available, data -> requestMissions.run(), saveCelestial);
         }
-        return recover(missions, celestial, missionId, gameTime, available, data -> requestMissions.run(), saveCelestial);
+        requestMissions.run();
+        return result(missions, mission, SatelliteOperationCode.PENDING_DISCOVERY);
     }
 
     private static SatelliteOperationResult result(SatelliteMissionSavedData data, MissionState mission,
