@@ -31,7 +31,7 @@ public final class RocketDisassemblyGameTests {
     private RocketDisassemblyGameTests() {
     }
 
-    @GameTest(template = "rocket_test", timeoutTicks = 40)
+    @GameTest(template = "rocket_test", batch = "rocket_disassembly_consent", timeoutTicks = 40)
     public static void offhandAndRepeatedMainHandNeverConfirmDisposal(GameTestHelper helper) {
         EntitySections.whenLoaded(helper, () -> {
             try (var fixture = new RocketAdapterFailureFixture(helper, true)) {
@@ -58,7 +58,7 @@ public final class RocketDisassemblyGameTests {
         }, RocketAdapterFailureFixture.ORIGIN);
     }
 
-    @GameTest(template = "rocket_test", timeoutTicks = 40)
+    @GameTest(template = "rocket_test", batch = "rocket_disassembly_consent", timeoutTicks = 40)
     public static void serviceRateLimitsOffersAndConfirmationTogether(GameTestHelper helper) {
         EntitySections.whenLoaded(helper, () -> {
             try (var fixture = new RocketAdapterFailureFixture(helper, true)) {
@@ -79,7 +79,7 @@ public final class RocketDisassemblyGameTests {
         }, RocketAdapterFailureFixture.ORIGIN);
     }
 
-    @GameTest(template = "rocket_test", timeoutTicks = 40)
+    @GameTest(template = "rocket_test", batch = "rocket_disassembly_consent", timeoutTicks = 40)
     public static void countdownInvalidatesPreviouslyOfferedConsent(GameTestHelper helper) {
         EntitySections.whenLoaded(helper, () -> {
             try (var fixture = new RocketAdapterFailureFixture(helper, true)) {
@@ -104,7 +104,7 @@ public final class RocketDisassemblyGameTests {
         }, RocketAdapterFailureFixture.ORIGIN);
     }
 
-    @GameTest(template = "rocket_test", timeoutTicks = 40)
+    @GameTest(template = "rocket_test", batch = "rocket_disassembly_consent", timeoutTicks = 40)
     public static void changedPlayerEligibilityAndMissingEntityRejectConsent(GameTestHelper helper) {
         EntitySections.whenLoaded(helper, () -> {
             try (var fixture = new RocketAdapterFailureFixture(helper, true)) {
@@ -131,7 +131,7 @@ public final class RocketDisassemblyGameTests {
         }, RocketAdapterFailureFixture.ORIGIN);
     }
 
-    @GameTest(template = "rocket_test", timeoutTicks = 40)
+    @GameTest(template = "rocket_test", batch = "rocket_disassembly_consent", timeoutTicks = 40)
     public static void zeroFuelStillRestoresCargoWithoutConfirmation(GameTestHelper helper) {
         EntitySections.whenLoaded(helper, () -> {
             try (var fixture = new RocketAdapterFailureFixture(helper, true)) {
@@ -144,7 +144,7 @@ public final class RocketDisassemblyGameTests {
         }, RocketAdapterFailureFixture.ORIGIN);
     }
 
-    @GameTest(template = "rocket_test", timeoutTicks = 40)
+    @GameTest(template = "rocket_test", batch = "rocket_disassembly_consent", timeoutTicks = 40)
     public static void fueledCargoRequiresSeparateNonOperatorCommand(GameTestHelper helper) {
         EntitySections.whenLoaded(helper, () -> {
             try (var fixture = new RocketAdapterFailureFixture(helper, true)) {
@@ -171,7 +171,7 @@ public final class RocketDisassemblyGameTests {
         }, RocketAdapterFailureFixture.ORIGIN);
     }
 
-    @GameTest(template = "rocket_test", timeoutTicks = 40)
+    @GameTest(template = "rocket_test", batch = "rocket_disassembly_consent", timeoutTicks = 40)
     public static void changedFuelInvalidatesQuoteWithoutMutation(GameTestHelper helper) {
         EntitySections.whenLoaded(helper, () -> {
             try (var fixture = new RocketAdapterFailureFixture(helper, true)) {
@@ -189,7 +189,7 @@ public final class RocketDisassemblyGameTests {
         }, RocketAdapterFailureFixture.ORIGIN);
     }
 
-    @GameTest(template = "rocket_test", timeoutTicks = 40)
+    @GameTest(template = "rocket_test", batch = "rocket_disassembly_consent", timeoutTicks = 40)
     public static void otherPlayerAndDistantOwnerCannotUseConsent(GameTestHelper helper) {
         EntitySections.whenLoaded(helper, () -> {
             try (var fixture = new RocketAdapterFailureFixture(helper, true)) {
@@ -215,7 +215,7 @@ public final class RocketDisassemblyGameTests {
         }, RocketAdapterFailureFixture.ORIGIN);
     }
 
-    @GameTest(template = "rocket_test", timeoutTicks = 40)
+    @GameTest(template = "rocket_test", batch = "rocket_disassembly_consent", timeoutTicks = 40)
     public static void logoutAndRestartInvalidateConsentButPreserveFuel(GameTestHelper helper) {
         EntitySections.whenLoaded(helper, () -> {
             try (var fixture = new RocketAdapterFailureFixture(helper, true)) {
@@ -247,7 +247,7 @@ public final class RocketDisassemblyGameTests {
         }, RocketAdapterFailureFixture.ORIGIN);
     }
 
-    @GameTest(template = "rocket_test", timeoutTicks = 40)
+    @GameTest(template = "rocket_test", batch = "rocket_disassembly_consent", timeoutTicks = 40)
     public static void occupiedTargetDoesNotDiscardConfirmedFuel(GameTestHelper helper) {
         EntitySections.whenLoaded(helper, () -> {
             try (var fixture = new RocketAdapterFailureFixture(helper, true)) {
@@ -266,7 +266,7 @@ public final class RocketDisassemblyGameTests {
         }, RocketAdapterFailureFixture.ORIGIN);
     }
 
-    @GameTest(template = "rocket_test", timeoutTicks = 40)
+    @GameTest(template = "rocket_test", batch = "rocket_disassembly_consent", timeoutTicks = 40)
     public static void restorationFailureRollsBackWithoutDiscardingFuel(GameTestHelper helper) {
         EntitySections.whenLoaded(helper, () -> {
             try (var fixture = new RocketAdapterFailureFixture(helper, true)) {
