@@ -79,6 +79,8 @@ final class RocketDisassemblyRequest implements RocketLandedDisassemblies.Reques
     @Override public boolean beginRetained(java.util.function.Consumer<SealedDisassembly.Result> completion) {
         var rocket = rocket();
         if (rocket == null || !authorized()) { return false; }
+        var issue = service.preflight(level, rocket, structure);
+        if (issue.isPresent()) { admissionRefusal = issue.orElseThrow(); return false; }
         var inline = new SealedDisassembly.Result[1]; var admitting = new boolean[] {true};
         var id = service.sealed.begin(rocket, this::authorized, result -> {
             if (admitting[0]) { inline[0] = result; } else { completion.accept(result); }
