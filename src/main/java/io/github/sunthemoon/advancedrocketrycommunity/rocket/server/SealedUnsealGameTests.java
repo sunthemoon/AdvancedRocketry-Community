@@ -39,24 +39,34 @@ public final class SealedUnsealGameTests {
         var record = new RocketTransactionRecord(id, RocketTransactionType.SEALED_DISASSEMBLY, RocketTransactionPhase.RESTORED,
                 snapshot.snapshotId(), snapshot.contentHash(), RocketRegion.fromSnapshot(snapshot), 1, entity);
         var data = RocketTransactionSavedData.get(level.getServer()); var journal = data.journalFor(snapshot, UUID.randomUUID());
-        journal.write(record); data.checkpoint(level.getServer());
-        var carrier = install(level, at, new SealedRocketMember(id, snapshot.snapshotId(), entity, snapshot.contentHash(),
-                level.dimension().location(), position(at), 0, snapshot.blocks().get(0).state(), payload));
-        helper.assertTrue(!unseal(level, carrier), "Retained U admitted unseal");
-        helper.assertTrue(level.getBlockEntity(at) == carrier, "Held member was replaced");
-        journal.remove(id);
-        helper.assertTrue(!unseal(level, carrier), "RAM-only U removal admitted unseal");
-        helper.assertTrue(level.getBlockEntity(at) == carrier, "Unacknowledged member was replaced");
-        data.checkpoint(level.getServer());
-        helper.assertTrue(data.acknowledgedAbsent(id, snapshot.snapshotId(), entity), "Fixture has no exact absence proof");
-        helper.assertTrue(unseal(level, carrier), "Checked member did not publish");
-        var target = (ChestBlockEntity) level.getBlockEntity(at);
-        helper.assertTrue(target != null && target.getLevel() == level && !target.isRemoved(), "Restored target was not installed");
-        helper.assertTrue(target.getItem(0).is(Items.DIAMOND) && target.getItem(0).getCount() == 7, "Publication lost original items");
-        target.removeItemNoUpdate(0); target.setItem(1, new ItemStack(Items.GOLD_INGOT, 3));
-        helper.assertTrue(!unseal(level, carrier), "Stale C was replayed over native terrain");
-        helper.assertTrue(target.getItem(0).isEmpty() && target.getItem(1).getCount() == 3, "Native contents were refilled or erased");
-        helper.succeed();
+        var carrier = new SealedRocketBlockEntity[1];
+        // W129aM transition (ADR-074 item 8): U is written and removed within one tick, as before, because a U that
+        // outlives its tick is adopted by the production recovery; only the removal's acknowledgement is awaited.
+        SealedProductionTestAccess.afterJournalAcknowledged(helper, () -> {
+            journal.write(record);
+            carrier[0] = install(level, at, new SealedRocketMember(id, snapshot.snapshotId(), entity, snapshot.contentHash(),
+                    level.dimension().location(), position(at), 0, snapshot.blocks().get(0).state(), payload));
+            helper.assertTrue(!unseal(level, carrier[0]), "Retained U admitted unseal");
+            helper.assertTrue(level.getBlockEntity(at) == carrier[0], "Held member was replaced");
+            journal.remove(id);
+            helper.assertTrue(!unseal(level, carrier[0]), "RAM-only U removal admitted unseal");
+            helper.assertTrue(level.getBlockEntity(at) == carrier[0], "Unacknowledged member was replaced");
+            helper.assertTrue(data.requestCheckpoint(level.getServer()) == RocketTransactionSavedData.CheckpointRequest.REQUESTED
+                    && data.absenceStatus(id, snapshot.snapshotId(), entity) == RocketTransactionSavedData.AbsenceStatus.WRITE_PENDING,
+                    "The removal's write was not pending");
+            helper.assertTrue(!data.acknowledgedAbsent(id, snapshot.snapshotId(), entity) && !unseal(level, carrier[0])
+                    && level.getBlockEntity(at) == carrier[0], "WRITE_PENDING admitted unseal");
+        }, () -> {
+            helper.assertTrue(data.acknowledgedAbsent(id, snapshot.snapshotId(), entity), "Fixture has no exact absence proof");
+            helper.assertTrue(unseal(level, carrier[0]), "Checked member did not publish");
+            var target = (ChestBlockEntity) level.getBlockEntity(at);
+            helper.assertTrue(target != null && target.getLevel() == level && !target.isRemoved(), "Restored target was not installed");
+            helper.assertTrue(target.getItem(0).is(Items.DIAMOND) && target.getItem(0).getCount() == 7, "Publication lost original items");
+            target.removeItemNoUpdate(0); target.setItem(1, new ItemStack(Items.GOLD_INGOT, 3));
+            helper.assertTrue(!unseal(level, carrier[0]), "Stale C was replayed over native terrain");
+            helper.assertTrue(target.getItem(0).isEmpty() && target.getItem(1).getCount() == 3, "Native contents were refilled or erased");
+            helper.succeed();
+        });
     }
 
     @GameTest(template = "rocket_test", batch = "w152_unseal", timeoutTicks = 100)
@@ -91,11 +101,14 @@ public final class SealedUnsealGameTests {
         var snapshot = snapshot(level, at, Blocks.IRON_BLOCK.defaultBlockState(), null);
         var member = new SealedRocketMember(UUID.randomUUID(), snapshot.snapshotId(), UUID.randomUUID(), snapshot.contentHash(),
                 level.dimension().location(), position(at), 0, snapshot.blocks().get(0).state(), null);
-        var carrier = install(level, at, member);
-        RocketTransactionSavedData.get(level.getServer()).checkpoint(level.getServer());
-        helper.assertTrue(unseal(level, carrier), "Plain member not published");
-        helper.assertTrue(level.getBlockState(at).is(Blocks.IRON_BLOCK) && level.getBlockEntity(at) == null, "Plain publication retained C");
-        helper.succeed();
+        // W129aM transition: the former checkpoint after installation is awaited before it, so loaded discovery cannot
+        // publish the hinted C in the ticks of the wait; the installation changes no journal entry.
+        SealedProductionTestAccess.afterJournalAcknowledged(helper, () -> {
+            var carrier = install(level, at, member);
+            helper.assertTrue(unseal(level, carrier), "Plain member not published");
+            helper.assertTrue(level.getBlockState(at).is(Blocks.IRON_BLOCK) && level.getBlockEntity(at) == null, "Plain publication retained C");
+            helper.succeed();
+        });
     }
 
     private static boolean unseal(ServerLevel level, SealedRocketBlockEntity carrier) {

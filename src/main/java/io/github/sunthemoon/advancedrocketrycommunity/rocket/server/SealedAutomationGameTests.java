@@ -56,7 +56,8 @@ public final class SealedAutomationGameTests {
         var data = RocketTransactionSavedData.get(level.getServer());
         data.journalFor(snapshot, UUID.randomUUID()).write(new RocketTransactionRecord(id, RocketTransactionType.SEALED_DISASSEMBLY,
                 RocketTransactionPhase.RESTORED, snapshot.snapshotId(), snapshot.contentHash(), RocketRegion.fromSnapshot(snapshot), 2, entity));
-        data.checkpoint(level.getServer());
+        // W129aM transition (ADR-074 item 8): a request; the held recovery waits for its acknowledgement by itself.
+        data.requestCheckpoint(level.getServer());
         // A foreign third member holds native capacity proof without disabling saving or ticking unrelated blocks.
         level.setBlock(fence, Blocks.BEDROCK.defaultBlockState(), 2);
         var carriers = new ArrayList<SealedRocketBlockEntity>(); var roots = new ArrayList<CompoundTag>();

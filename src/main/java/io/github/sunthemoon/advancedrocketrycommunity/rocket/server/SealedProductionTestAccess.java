@@ -17,6 +17,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.sealed.SealedRocket
 import java.util.Set;
 import java.util.List;
 import java.util.UUID;
+import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Container;
@@ -26,9 +27,36 @@ import net.minecraftforge.registries.ForgeRegistries;
 
 /** Gated fixture setup only; publication still uses the installed production coordinator and provider wrapper. */
 public final class SealedProductionTestAccess {
+    /**
+     * W129aM (ADR-074 item 8): the journal is written off-thread and acknowledged on a later tick. Runs each step once
+     * the journal is acknowledged current, in this tick when it already is, then requests the write the next step needs.
+     * Call it from the test method itself; it registers at most one {@code onEachTick} and steps must not schedule.
+     */
+    public static void afterJournalAcknowledged(GameTestHelper helper, Runnable... steps) {
+        var server = helper.getLevel().getServer(); EscrowTestEndpoints.requireEnabled(server);
+        var data = RocketTransactionSavedData.get(server); int[] next = {0};
+        Runnable advance = () -> {
+            while (next[0] < steps.length) {
+                if (!data.acknowledgedCurrent()) {
+                    // WRITE_PENDING waits; a stale or failed publication is asked for again once the writer is idle.
+                    if (!data.writerBusy() && data.requestCheckpoint(server) != RocketTransactionSavedData.CheckpointRequest.REQUESTED) {
+                        throw new IllegalStateException("Fixture journal checkpoint request was refused");
+                    }
+                    return;
+                }
+                steps[next[0]++].run();
+            }
+        };
+        advance.run();
+        if (next[0] < steps.length) { helper.onEachTick(advance); }
+    }
     public static BlockEntity stage(ServerLevel level, BlockEntity source, ResourceLocation adapterId,
             RocketBlockEntityAdapter provider) {
         EscrowTestEndpoints.requireEnabled(level.getServer());
+        // Staging changes no journal entry; the former synchronous checkpoint is the caller's afterJournalAcknowledged.
+        if (!RocketTransactionSavedData.get(level.getServer()).acknowledgedCurrent()) {
+            throw new IllegalStateException("Stage C only once the journal is acknowledged (afterJournalAcknowledged)");
+        }
         source.setLevel(level);
         var registry = new RocketAdapterRegistry(ForgeRegistries.BLOCK_ENTITY_TYPES::containsKey);
         registry.forOwner(adapterId.getNamespace()).register(adapterId,
@@ -43,7 +71,6 @@ public final class SealedProductionTestAccess {
         var state = ModBlocks.SEALED_ROCKET_BLOCK.get().defaultBlockState(); level.setBlock(pos, state, 2);
         var carrier = new SealedRocketBlockEntity(pos, state); carrier.initialize(SealedRocketRoot.stage(member));
         level.setBlockEntity(carrier); carrier.setChanged();
-        RocketTransactionSavedData.get(level.getServer()).checkpoint(level.getServer());
         return carrier;
     }
     public static boolean unseal(BlockEntity carrier) {
@@ -64,7 +91,8 @@ public final class SealedProductionTestAccess {
         var id = UUID.randomUUID(); var entity = UUID.randomUUID(); var data = RocketTransactionSavedData.get(level.getServer());
         data.journalFor(snapshot, UUID.randomUUID()).write(new RocketTransactionRecord(id, RocketTransactionType.SEALED_DISASSEMBLY,
                 RocketTransactionPhase.RESTORED, snapshot.snapshotId(), snapshot.contentHash(), RocketRegion.fromSnapshot(snapshot), 1, entity));
-        data.checkpoint(level.getServer());
+        // The held recovery waits for this write's acknowledgement by itself (JOURNAL_UNPROVED, no diagnostic line).
+        data.requestCheckpoint(level.getServer());
         if (source instanceof Container container) { container.clearContent(); } source.setRemoved();
         level.setBlock(at.south(3), Blocks.BEDROCK.defaultBlockState(), 2);
         return SealedUnsealGameTests.install(level, at, new SealedRocketMember(id, snapshot.snapshotId(), entity, snapshot.contentHash(),

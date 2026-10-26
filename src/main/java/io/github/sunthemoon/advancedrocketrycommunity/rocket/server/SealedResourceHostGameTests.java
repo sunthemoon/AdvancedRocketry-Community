@@ -38,50 +38,67 @@ public final class SealedResourceHostGameTests {
         var states = List.of(ModBlocks.PRESSURIZED_TANK.get().defaultBlockState(), ModBlocks.ROCKET_SATELLITE_BAY.get().defaultBlockState());
         var payloads = List.of(PressurizedTankRocketAdapter.payload(water), new RocketBlockEntityPayload(SatelliteBayRocketAdapter.ID,
                 SatelliteBayRoot.encode(new SatelliteBayRoot.Contents(owner, original.save(new CompoundTag()), null))));
-        for (int index = 0; index < states.size(); index++) {
+        var steps = new java.util.ArrayList<Runnable>();
+        for (int host = 0; host < states.size(); host++) {
+            int index = host;
             var at = helper.absolutePos(new BlockPos(2 + index * 4, 3, 2));
             var snapshot = SealedUnsealGameTests.snapshot(level, at, states.get(index), payloads.get(index));
             var id = UUID.randomUUID(); var entity = UUID.randomUUID(); var data = RocketTransactionSavedData.get(server);
             var journal = data.journalFor(snapshot, owner);
-            journal.write(new RocketTransactionRecord(id, RocketTransactionType.SEALED_DISASSEMBLY, RocketTransactionPhase.RESTORED,
-                    snapshot.snapshotId(), snapshot.contentHash(), RocketRegion.fromSnapshot(snapshot), 1, entity));
-            data.checkpoint(server);
-            var carrier = SealedUnsealGameTests.install(level, at, new SealedRocketMember(id, snapshot.snapshotId(), entity, snapshot.contentHash(),
-                    snapshot.sourceDimension(), SealedUnsealGameTests.position(at), 0, snapshot.blocks().get(0).state(), payloads.get(index)));
-            var held = carrier.saveWithoutMetadata();
-            for (int face = -1; face < Direction.values().length; face++) {
-                var side = face < 0 ? null : Direction.values()[face];
-                helper.assertTrue(!carrier.getCapability(ForgeCapabilities.ITEM_HANDLER, side).isPresent()
-                        && !carrier.getCapability(ForgeCapabilities.FLUID_HANDLER, side).isPresent(), "Retained resource host exposes automation");
-            }
-            helper.assertTrue(!RocketRuntime.unsealForReleaseTest(level, carrier), "Retained U exposed native tank/bay");
-            journal.remove(id);
-            helper.assertTrue(!RocketRuntime.unsealForReleaseTest(level, carrier) && held.equals(carrier.saveWithoutMetadata()),
-                    "Unacknowledged removal changed resource host");
-            data.checkpoint(server);
-            helper.assertTrue(RocketRuntime.unsealForReleaseTest(level, carrier), "Checked resource host did not publish");
-            var target = level.getBlockEntity(at);
-            if (index == 0) {
-                var handler = target.getCapability(ForgeCapabilities.FLUID_HANDLER).orElseThrow(IllegalStateException::new);
-                var preview = handler.drain(1000, FluidAction.SIMULATE); var extracted = handler.drain(1000, FluidAction.EXECUTE);
-                helper.assertTrue(preview.isFluidStackIdentical(water) && extracted.isFluidStackIdentical(water), "Tank lost or normalized original fluid");
-                var lava = new FluidStack(Fluids.LAVA, 333); lava.getOrCreateTag().putString("W152", "foreign-fluid");
-                helper.assertTrue(handler.fill(lava, FluidAction.SIMULATE) == 333 && handler.fill(lava, FluidAction.EXECUTE) == 333,
-                        "Published tank refused matching simulated/real insertion");
-                helper.assertTrue(!RocketRuntime.unsealForReleaseTest(level, carrier) && handler.getFluidInTank(0).isFluidStackIdentical(lava),
-                        "Stale carrier replayed original fluid over foreign fluid");
-            } else {
-                var handler = target.getCapability(ForgeCapabilities.ITEM_HANDLER).orElseThrow(IllegalStateException::new);
-                helper.assertTrue(ItemStack.matches(handler.extractItem(0, 1, true), original)
-                        && ItemStack.matches(handler.extractItem(0, 1, false), original), "Bay lost or normalized its package");
-                helper.assertTrue(handler.insertItem(0, foreign, true).isEmpty() && handler.insertItem(0, foreign, false).isEmpty(),
-                        "Published bay refused foreign package");
-                helper.assertTrue(!RocketRuntime.unsealForReleaseTest(level, carrier) && ItemStack.matches(handler.getStackInSlot(0), foreign),
-                        "Stale carrier replayed the original package");
-            }
-            helper.assertTrue(carrier.isRemoved() && held.equals(carrier.saveWithoutMetadata()), "Removed C changed its saved shadow");
+            var carrier = new io.github.sunthemoon.advancedrocketrycommunity.rocket.sealed.SealedRocketBlockEntity[1];
+            var held = new CompoundTag[1];
+            // W129aM transition (ADR-074 item 8): each host's U is written and removed within one tick, as before, because
+            // a U that outlives its tick is adopted by the production recovery; only the removal's acknowledgement is awaited.
+            steps.add(() -> {
+                journal.write(new RocketTransactionRecord(id, RocketTransactionType.SEALED_DISASSEMBLY, RocketTransactionPhase.RESTORED,
+                        snapshot.snapshotId(), snapshot.contentHash(), RocketRegion.fromSnapshot(snapshot), 1, entity));
+                carrier[0] = SealedUnsealGameTests.install(level, at, new SealedRocketMember(id, snapshot.snapshotId(), entity, snapshot.contentHash(),
+                        snapshot.sourceDimension(), SealedUnsealGameTests.position(at), 0, snapshot.blocks().get(0).state(), payloads.get(index)));
+                held[0] = carrier[0].saveWithoutMetadata();
+                for (int face = -1; face < Direction.values().length; face++) {
+                    var side = face < 0 ? null : Direction.values()[face];
+                    helper.assertTrue(!carrier[0].getCapability(ForgeCapabilities.ITEM_HANDLER, side).isPresent()
+                            && !carrier[0].getCapability(ForgeCapabilities.FLUID_HANDLER, side).isPresent(), "Retained resource host exposes automation");
+                }
+                helper.assertTrue(!RocketRuntime.unsealForReleaseTest(level, carrier[0]), "Retained U exposed native tank/bay");
+                journal.remove(id);
+                helper.assertTrue(!RocketRuntime.unsealForReleaseTest(level, carrier[0]) && held[0].equals(carrier[0].saveWithoutMetadata()),
+                        "Unacknowledged removal changed resource host");
+                helper.assertTrue(data.requestCheckpoint(server) == RocketTransactionSavedData.CheckpointRequest.REQUESTED
+                        && data.absenceStatus(id, snapshot.snapshotId(), entity) == RocketTransactionSavedData.AbsenceStatus.WRITE_PENDING
+                        && !RocketRuntime.unsealForReleaseTest(level, carrier[0]) && held[0].equals(carrier[0].saveWithoutMetadata()),
+                        "WRITE_PENDING exposed or changed the resource host");
+            });
+            steps.add(() -> verify(helper, level, at, carrier[0], held[0], index, water, original, foreign));
         }
-        helper.succeed();
+        steps.add(helper::succeed);
+        SealedProductionTestAccess.afterJournalAcknowledged(helper, steps.toArray(Runnable[]::new));
+    }
+
+    private static void verify(GameTestHelper helper, net.minecraft.server.level.ServerLevel level, BlockPos at,
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.sealed.SealedRocketBlockEntity carrier, CompoundTag held, int index,
+            FluidStack water, ItemStack original, ItemStack foreign) {
+        helper.assertTrue(RocketRuntime.unsealForReleaseTest(level, carrier), "Checked resource host did not publish");
+        var target = level.getBlockEntity(at);
+        if (index == 0) {
+            var handler = target.getCapability(ForgeCapabilities.FLUID_HANDLER).orElseThrow(IllegalStateException::new);
+            var preview = handler.drain(1000, FluidAction.SIMULATE); var extracted = handler.drain(1000, FluidAction.EXECUTE);
+            helper.assertTrue(preview.isFluidStackIdentical(water) && extracted.isFluidStackIdentical(water), "Tank lost or normalized original fluid");
+            var lava = new FluidStack(Fluids.LAVA, 333); lava.getOrCreateTag().putString("W152", "foreign-fluid");
+            helper.assertTrue(handler.fill(lava, FluidAction.SIMULATE) == 333 && handler.fill(lava, FluidAction.EXECUTE) == 333,
+                    "Published tank refused matching simulated/real insertion");
+            helper.assertTrue(!RocketRuntime.unsealForReleaseTest(level, carrier) && handler.getFluidInTank(0).isFluidStackIdentical(lava),
+                    "Stale carrier replayed original fluid over foreign fluid");
+        } else {
+            var handler = target.getCapability(ForgeCapabilities.ITEM_HANDLER).orElseThrow(IllegalStateException::new);
+            helper.assertTrue(ItemStack.matches(handler.extractItem(0, 1, true), original)
+                    && ItemStack.matches(handler.extractItem(0, 1, false), original), "Bay lost or normalized its package");
+            helper.assertTrue(handler.insertItem(0, foreign, true).isEmpty() && handler.insertItem(0, foreign, false).isEmpty(),
+                    "Published bay refused foreign package");
+            helper.assertTrue(!RocketRuntime.unsealForReleaseTest(level, carrier) && ItemStack.matches(handler.getStackInSlot(0), foreign),
+                    "Stale carrier replayed the original package");
+        }
+        helper.assertTrue(carrier.isRemoved() && held.equals(carrier.saveWithoutMetadata()), "Removed C changed its saved shadow");
     }
     private static ItemStack pkg(UUID owner, String label) {
         var stack = new ItemStack(ModItems.DATA_SATELLITE_PACKAGE.get());
