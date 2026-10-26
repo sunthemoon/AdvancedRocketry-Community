@@ -189,6 +189,10 @@ public final class V180LanguageProvider extends LanguageProvider {
                     : "Satellite deployment is pending or temporarily unavailable";
             case REGISTRY_BLOCKED -> chinese ? "卫星注册表不可用；请检查存档数据"
                     : "Satellite registry is blocked; check its saved data";
+            case REGISTRY_PENDING -> chinese ? "正在等待卫星注册表保存；结果稍后显示"
+                    : "Waiting for the satellite registry to save; the result follows";
+            case REGISTRY_BUSY -> chinese ? "等待保存的卫星操作过多；请稍后重试"
+                    : "Too many satellite actions are waiting to save; try again later";
             default -> throw new IllegalArgumentException("Translated before v1.8: " + code);
         };
     }

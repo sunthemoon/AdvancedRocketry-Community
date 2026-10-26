@@ -838,6 +838,8 @@
   "status.advancedrocketrycommunity.satellite.deployment_pending": "卫星部署尚未完成或暂不可用",
   "status.advancedrocketrycommunity.satellite.offline_repair_required": "需要离线修复；请备份世界并联系管理员",
   "status.advancedrocketrycommunity.satellite.registry_blocked": "卫星注册表不可用；请检查存档数据",
+  "status.advancedrocketrycommunity.satellite.registry_busy": "等待保存的卫星操作过多；请稍后重试",
+  "status.advancedrocketrycommunity.satellite.registry_pending": "正在等待卫星注册表保存；结果稍后显示",
   "subtitle.advancedrocketrycommunity.air_hiss_loop": "空气嘶嘶作响",
   "subtitle.advancedrocketrycommunity.basic_laser_gun": "激光开火",
   "subtitle.advancedrocketrycommunity.combustion_rocket": "火箭发动机轰鸣",
