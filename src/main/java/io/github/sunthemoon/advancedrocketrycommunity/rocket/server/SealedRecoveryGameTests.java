@@ -105,12 +105,8 @@ public final class SealedRecoveryGameTests {
                     + ",cells=" + level.getBlockState(origin) + "/" + level.getBlockState(origin.east())
                     + ",lazy=" + RocketRuntime.sealedLazyDiagnosticForReleaseTest(server)); }
         });
-        // W129aM: each waiting tick lasts the dedicated server's 50 ms, so the journal's off-thread acknowledgement and the
-        // native proofs keep their wall-clock relation to the unchanged tick windows (SealedProductionTestAccess.tickPacer).
-        var pace = SealedProductionTestAccess.tickPacer(level);
         helper.onEachTick(() -> {
             if (done[0]) { return; }
-            pace.run();
             seen[0] |= tracked(server, id);
             boolean absent = data.acknowledgedAbsent(id, snapshot.snapshotId(), rocket.getUUID());
             if (!absent) {

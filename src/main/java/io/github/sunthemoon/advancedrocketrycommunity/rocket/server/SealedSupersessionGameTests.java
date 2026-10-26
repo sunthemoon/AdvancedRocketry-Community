@@ -38,11 +38,7 @@ public final class SealedSupersessionGameTests {
         helper.assertTrue(level.addFreshEntity(rocket), "Fixture D was not installed");
         var id = new UUID[1]; var original = new CompoundTag[1]; var changedAt = new long[] {-1};
         var repaired = new boolean[1]; var completed = new SealedDisassembly.Result[1];
-        // W129aM: each waiting tick lasts the dedicated server's 50 ms, so the journal's off-thread acknowledgement and the
-        // native proofs keep their wall-clock relation to the unchanged tick windows (SealedProductionTestAccess.tickPacer).
-        var pace = SealedProductionTestAccess.tickPacer(level);
         helper.onEachTick(() -> {
-            pace.run();
             if (id[0] == null) {
                 if (!level.areEntitiesLoaded(new ChunkPos(at).toLong())) { return; }
                 id[0] = RocketRuntime.beginSealedForReleaseTest(rocket, result -> completed[0] = result);

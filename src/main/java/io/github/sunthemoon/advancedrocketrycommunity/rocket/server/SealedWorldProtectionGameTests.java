@@ -65,12 +65,8 @@ public final class SealedWorldProtectionGameTests {
         level.setBlock(at.west(), Blocks.PISTON.defaultBlockState().setValue(PistonBaseBlock.FACING, Direction.EAST), 3);
         level.setBlock(at.west(2), Blocks.REDSTONE_BLOCK.defaultBlockState(), 3);
         var began = level.getGameTime(); var done = new boolean[1];
-        // W129aM: each waiting tick lasts the dedicated server's 50 ms, so the journal's off-thread acknowledgement and the
-        // native proofs keep their wall-clock relation to the unchanged tick windows (SealedProductionTestAccess.tickPacer).
-        var pace = SealedProductionTestAccess.tickPacer(level);
         helper.onEachTick(() -> {
             if (done[0]) { return; }
-            pace.run();
             long age = level.getGameTime() - began;
             if (age == 10) {
                 helper.assertTrue(!level.getBlockState(at.west()).getValue(PistonBaseBlock.EXTENDED), "Powered piston moved the carrier");

@@ -78,14 +78,10 @@ public final class SealedDisassemblyGameTests {
                 callbackFailure[0] = assertion.getClass().getSimpleName() + ":" + assertion.getMessage();
             }
         };
-        // W129aM: each waiting tick lasts the dedicated server's 50 ms, so the journal's off-thread acknowledgement and the
-        // native proofs keep their wall-clock relation to the unchanged tick windows (SealedProductionTestAccess.tickPacer).
-        var pace = SealedProductionTestAccess.tickPacer(level);
         helper.onEachTick(() -> {
             if (callbackFailure[0] != null) { helper.fail(callbackFailure[0]); }
             // GameTest completion can synchronously start the next batch. Do not run it inside the production callback/claim.
             if (done[0]) { helper.succeed(); return; }
-            pace.run();
             if (transaction[0] == null && level.areEntitiesLoaded(new ChunkPos(origin).toLong())) {
                 try {
                     var begin = RocketRuntime.class.getMethod("beginSealedForReleaseTest", RocketEntity.class, Consumer.class);
