@@ -54,6 +54,48 @@ Run heavy work under the heavy-JVM lock, with the atomic pattern and the 90-seco
 lock. Before starting, check that C: and D: each have more than 10 GiB free and that 6 GiB of memory is free. Keep the
 evidence under 100,000,000 bytes. A fresh Codex session reviews afterwards.
 
+## Continuation under Root decision R117 (2026-10-26)
+
+W152J delivered `737d2e95d` (fix `f44640ee5`). The fresh Codex review
+(`D:/GitHub/ARCE-Task-Evidence/root-queue/W152J-review/REVIEW.md`, SHA-256 `8f38f669…e2e7`) returned **BLOCK**. The
+original W152H-R1 sequences now pass, but the hand-off fails in the other direction:
+
+- **W152J-R1 (High).** `holdFailBack` refuses without registering any demand. After the sealed attempt ends,
+  `nextOrdinary()` is null, so the next sealed owner starts in the same service call. A fail-back retried before
+  service every tick then misses the bound: first capture at 164 against 85 with two sealed owners, and never through
+  tick 300 with 63.
+- **W152J-R2 (High).** `ordinaryReservationHeld()` consumes the ordinary turn for every creation-tick hold, including
+  `BUSY` because the native capture window is used up. A pending return nudged between the sealed end (84) and the
+  next native opportunity (100) first captures at 180, while the next sealed owner captures at 100. The no-nudge
+  control captures at 100, within the bound of 102.
+
+A fresh Codex session continues on the same branch. It starts from the review and its probe,
+`probe-src/.../SealedAdmissionReviewTest.java` in the review folder:
+
+1. **R1.** A refused fail-back keeps a real, bounded chance before another sealed owner is admitted.
+   - No journal reservation and no source, record or pad change on refusal (N2).
+   - No pending return kept forever: any demand it leaves is RAM-only, expires on a stated bound, and counts toward
+     the existing 64-pending limit or is shown not to need to.
+2. **R2.** Separate the token's safety lifetime from using up the first-capture turn. A `BUSY` result caused by the
+   native window keeps the pending return's place through the next capture opportunity. Crew-waiting arrivals must
+   not reopen W152H-R1: keep token counting and retention.
+3. **Regressions:**
+   - both producer-before-service sequences from R1 (2 and 63 sealed owners);
+   - the 84-to-100 nudge case and its no-nudge control from R2;
+   - both callback orders;
+   - all W152J and earlier cases unchanged.
+4. **No change** to quotas, the 100-tick proof deadline, the 200-tick retry, the 64-pending bound, the inspection
+   allowance, saved formats or the protocol.
+
+Verification is the same as above:
+
+- the new tests failing first;
+- the unit classes and the three packages;
+- one complete GameTest;
+- the eight native cases, since scheduling code changes.
+
+Another fresh review follows.
+
 ## Not in this task
 
 - Enabling player admission (N3-B3) or I6.
