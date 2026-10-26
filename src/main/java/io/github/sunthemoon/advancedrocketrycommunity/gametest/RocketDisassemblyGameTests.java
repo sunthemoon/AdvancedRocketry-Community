@@ -8,6 +8,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.command.RocketDisas
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightPlanner;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketManager;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketLandedDisassemblyGameTestSupport;
 import java.util.UUID;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.gametest.framework.GameTest;
@@ -24,7 +25,7 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
-/** Production disassembly consent, command permissions and failure resource ownership. */
+/** Consent/refusal guards, plus the legacy synchronous adapter contract. Installed B2 cargo tests are separate. */
 @GameTestHolder(AdvancedRocketryCommunity.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class RocketDisassemblyGameTests {
@@ -137,7 +138,7 @@ public final class RocketDisassemblyGameTests {
             try (var fixture = new RocketAdapterFailureFixture(helper, true)) {
                 var rocket = fixture.assemble();
                 var player = player(fixture, rocket);
-                new RocketManager(fixture.adapters).requestDisassembly(player, rocket);
+                RocketLandedDisassemblyGameTestSupport.legacyAdapters(helper, fixture.adapters).requestDisassembly(player, rocket);
                 helper.assertTrue(rocket.isRemoved() && player.token == null, "Empty rocket required consent");
                 fixture.assertSourceRestored();
             }
@@ -150,7 +151,7 @@ public final class RocketDisassemblyGameTests {
             try (var fixture = new RocketAdapterFailureFixture(helper, true)) {
                 var rocket = fueled(fixture);
                 var player = player(fixture, rocket);
-                var manager = new RocketManager(fixture.adapters);
+                var manager = RocketLandedDisassemblyGameTestSupport.legacyAdapters(helper, fixture.adapters);
                 var flight = rocket.flightData().orElseThrow();
                 manager.requestDisassembly(player, rocket);
                 UUID token = player.token;
@@ -272,7 +273,7 @@ public final class RocketDisassemblyGameTests {
             try (var fixture = new RocketAdapterFailureFixture(helper, true)) {
                 var rocket = fueled(fixture);
                 var player = player(fixture, rocket);
-                var manager = new RocketManager(fixture.adapters);
+                var manager = RocketLandedDisassemblyGameTestSupport.legacyAdapters(helper, fixture.adapters);
                 manager.requestDisassembly(player, rocket);
                 fixture.adapter.fault = RocketAdapterFailureFixture.Fault.RESTORE_FALSE;
                 helper.assertTrue(!manager.confirmDisassembly(player, player.token), "Faulty restore committed");
@@ -284,9 +285,18 @@ public final class RocketDisassemblyGameTests {
         }, RocketAdapterFailureFixture.ORIGIN);
     }
 
+    static int confirmCommand(RocketLandedDisassemblyGameTestSupport manager, ConsentPlayer player) {
+        return confirmCommand(manager::confirmDisassembly, player);
+    }
+
     static int confirmCommand(RocketManager manager, ConsentPlayer player) {
+        return confirmCommand(manager::confirmDisassembly, player);
+    }
+
+    private static int confirmCommand(java.util.function.BiPredicate<net.minecraft.server.level.ServerPlayer, UUID> confirm,
+            ConsentPlayer player) {
         var dispatcher = new CommandDispatcher<CommandSourceStack>();
-        RocketDisassemblyCommands.register(dispatcher, manager);
+        RocketDisassemblyCommands.register(dispatcher, confirm);
         try {
             return dispatcher.execute(player.command.substring(1), player.createCommandSourceStack().withPermission(0));
         } catch (com.mojang.brigadier.exceptions.CommandSyntaxException exception) {

@@ -13,11 +13,17 @@ public final class RocketDisassemblyCommands {
     }
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher, RocketManager rockets) {
+        register(dispatcher, rockets::confirmDisassembly);
+    }
+
+    /** Same command/permission contract for an isolated service fixture; no alternative gameplay command. */
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher,
+            java.util.function.BiPredicate<ServerPlayer, java.util.UUID> confirmation) {
         dispatcher.register(Commands.literal("arce").then(Commands.literal("rocket-disassembly")
                 .requires(source -> source.getEntity() instanceof ServerPlayer)
                 .then(Commands.literal("confirm")
                         .then(Commands.argument("confirmation", UuidArgument.uuid())
-                                .executes(context -> rockets.confirmDisassembly(
+                                .executes(context -> confirmation.test(
                                         context.getSource().getPlayerOrException(),
                                         UuidArgument.getUuid(context, "confirmation")) ? 1 : 0)))));
     }

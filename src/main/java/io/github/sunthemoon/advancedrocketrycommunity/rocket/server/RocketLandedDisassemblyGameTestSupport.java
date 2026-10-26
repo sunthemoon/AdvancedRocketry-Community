@@ -31,13 +31,14 @@ public final class RocketLandedDisassemblyGameTestSupport {
     private final RocketFlightService flights = new RocketFlightService(null, null);
     private final RocketDisassemblyService disassembly;
 
-    private RocketLandedDisassemblyGameTestSupport(GameTestHelper helper, RocketFailureInjector faults) {
+    private RocketLandedDisassemblyGameTestSupport(GameTestHelper helper, RocketBlockEntityAdapters adapters,
+                                                   RocketFailureInjector faults) {
         if (!(helper.getLevel().getServer() instanceof GameTestServer) || !helper.getLevel().getServer().isSameThread()) {
             throw new IllegalStateException("The landed disassembly bridge requires a GameTestServer");
         }
         this.helper = helper;
         disassembly = new RocketDisassemblyService(
-                new RocketTransactionExecutor(RocketBlockEntityAdapters.defaults(), faults), flights);
+                new RocketTransactionExecutor(adapters, faults), flights);
     }
 
     public static RocketLandedDisassemblyGameTestSupport create(GameTestHelper helper) {
@@ -45,14 +46,19 @@ public final class RocketLandedDisassemblyGameTestSupport {
     }
 
     public static RocketLandedDisassemblyGameTestSupport create(GameTestHelper helper, RocketFailureInjector faults) {
-        return new RocketLandedDisassemblyGameTestSupport(helper, faults);
+        return new RocketLandedDisassemblyGameTestSupport(helper, RocketBlockEntityAdapters.defaults(), faults);
     }
 
-    public void requestDisassembly(Requester player, RocketEntity rocket) {
+    /** Historical synchronous adapter contract only, not coverage of the installed ordinary B2 route. */
+    public static RocketLandedDisassemblyGameTestSupport legacyAdapters(GameTestHelper helper, RocketBlockEntityAdapters adapters) {
+        return new RocketLandedDisassemblyGameTestSupport(helper, adapters, RocketFailureInjector.NONE);
+    }
+
+    public void requestDisassembly(net.minecraft.server.level.ServerPlayer player, RocketEntity rocket) {
         disassembly.requestDisassembly(player, rocket);
     }
 
-    public boolean confirmDisassembly(Requester player, UUID token) {
+    public boolean confirmDisassembly(net.minecraft.server.level.ServerPlayer player, UUID token) {
         return disassembly.confirmDisassembly(player, token);
     }
 
