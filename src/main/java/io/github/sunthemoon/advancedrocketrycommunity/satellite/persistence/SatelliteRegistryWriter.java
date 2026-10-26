@@ -153,6 +153,7 @@ final class SatelliteRegistryWriter {
                 completedWrites, lastWriterNanos / 1e6, lastWriterCpuNanos / 1e6, maxWriterNanos / 1e6);
     }
     long lastWriterNanos() { return lastWriterNanos; }
+    Optional<Outcome> lastOutcome() { requireOwner(); return Optional.ofNullable(lastOutcome); }
 
     /** The release-test status line's writer fields (W129bc native cuts). */
     String releaseTestStatus() {
