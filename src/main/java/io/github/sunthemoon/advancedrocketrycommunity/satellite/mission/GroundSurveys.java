@@ -311,7 +311,7 @@ public final class GroundSurveys {
 
     /** Existing scheduler pass; no live job is removed to admit another. */
     int prune(long now) {
-        if (registry.saveEpoch() == Long.MAX_VALUE) { return 0; }
+        if (!registry.epochs().admitsChange()) { return 0; }
         int removed = 0;
         int inspected = 0;
         while (removed < 16 && inspected < 32 && !ledger.queue.isEmpty()) {
@@ -365,7 +365,7 @@ public final class GroundSurveys {
         if (problem == null) { problem = touchedProblem(next, after); }
         if (problem != null) { return new Result(Code.INVARIANT_FAILED, false, Optional.ofNullable(current), problem); }
         try {
-            Math.addExact(registry.saveEpoch(), 1L);
+            Math.addExact(registry.epochs().ceiling(), 1L);
             // START and account creation add records and keep the whole-root preflight. Other changes stay
             // inside their records' lifecycle reservations, which bound the root without encoding it.
             boolean adds = current == null || newAccount;

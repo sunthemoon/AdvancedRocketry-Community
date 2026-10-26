@@ -30,6 +30,7 @@ final class SatelliteRegistryWriter {
     static final String LABEL = "satellite_registry", THREAD = "ARCE-satellite-registry";
     static final String EPOCH_CAPACITY_EXHAUSTED = "EPOCH_CAPACITY_EXHAUSTED";
     private static final ManagedSavedDataType TYPE = ManagedSavedDataType.SATELLITE_MISSIONS;
+    private static final org.slf4j.Logger LOGGER = com.mojang.logging.LogUtils.getLogger();
 
     private final Thread owner = Thread.currentThread();
     private final Object session = new Object();
@@ -44,6 +45,7 @@ final class SatelliteRegistryWriter {
     private Path target;
     private Capture flight;
     private RuntimeException lastFailure;
+    private boolean exhaustionReported;
 
     /** One checkpoint request: answered by the first published completion whose capture covers sequence m. */
     private static final class Ticket {
@@ -217,7 +219,10 @@ final class SatelliteRegistryWriter {
         if (flight != null) { throw new IllegalStateException("A registry capture is already in flight"); }
         Capture capture;
         try { capture = capture(sequence); }
-        catch (ArithmeticException exhausted) { throw new CheckedRootWriter.CaptureRefused(EPOCH_CAPACITY_EXHAUSTED); }
+        catch (ArithmeticException unrepresentable) {
+            exhausted();
+            throw new CheckedRootWriter.CaptureRefused(EPOCH_CAPACITY_EXHAUSTED);
+        }
         if (capture.operational()) { registry.epochs().captured(capture.epoch()); }
         flight = capture;
         return capture;
@@ -280,6 +285,26 @@ final class SatelliteRegistryWriter {
     private long tick() {
         MinecraftServer server = data.server();
         return server == null ? TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - createdNanos) : server.getTickCount();
+    }
+
+    /**
+     * ADR-074 item 5, design section 4.3: a mutation needing a new epoch is admitted only while a successor of the
+     * ceiling r = max(E, h, w) is representable; every stamp t is at most r. Checked before RAM, items or FE change.
+     */
+    boolean admitsChange() {
+        requireOwner();
+        if (registry.epochs().admitsChange()) { exhaustionReported = false; return true; }
+        exhausted();
+        return false;
+    }
+
+    /** One diagnostic per exhaustion streak, never per refused poll; the work stays dirty and unproved. */
+    private void exhausted() {
+        if (exhaustionReported) { return; }
+        exhaustionReported = true;
+        var epochs = registry.epochs();
+        LOGGER.error("ARCE_SATELLITE_REGISTRY_EPOCH_EXHAUSTED durable={} reserved={} in_flight={} sequence={} dirty={}",
+                epochs.durable(), epochs.reserved(), epochs.inFlight(), mutationSequence, data.isDirty());
     }
 
     /** Every registry mutation runs on the owner thread, never inside an IO callback (ADR-074 item 2). */

@@ -179,6 +179,10 @@ public final class SatelliteMissionSavedData extends SavedData {
     public GroundSurveys.Result groundSurveys(java.util.function.Function<GroundSurveys, GroundSurveys.Result> operation) {
         requireOperational();
         writer.requireOwnerThread();
+        if (!writer.admitsChange()) {
+            return new GroundSurveys.Result(GroundSurveys.Code.CAPACITY_REACHED, false, Optional.empty(),
+                    SatelliteRegistryWriter.EPOCH_CAPACITY_EXHAUSTED);
+        }
         GroundSurveys.Result result = observeClock(() -> operation.apply(registry.groundSurveys()));
         if (result.changed()) { changed(); }
         return result;
@@ -208,6 +212,10 @@ public final class SatelliteMissionSavedData extends SavedData {
     private SatelliteOperationResult mutation(java.util.function.Supplier<SatelliteOperationResult> operation) {
         requireOperational();
         writer.requireOwnerThread();
+        if (!writer.admitsChange()) {
+            return new SatelliteOperationResult(io.github.sunthemoon.advancedrocketrycommunity.satellite.mission
+                    .SatelliteOperationCode.CAPACITY_REACHED, false, Optional.empty(), Optional.empty(), 0);
+        }
         SatelliteOperationResult result = observeClock(operation);
         if (result.changed()) { changed(); }
         return result;
@@ -238,6 +246,9 @@ public final class SatelliteMissionSavedData extends SavedData {
             return io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.ResourceMissions.Reconciled.blocked();
         }
         writer.requireOwnerThread();
+        if (!writer.admitsChange()) {
+            return io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.ResourceMissions.Reconciled.blocked();
+        }
         var reconciled = observeClock(() -> registry.resources().reconcile(terminal, missionId, receipt, display, observedGameTime));
         if (reconciled.changed()) {
             changed();
@@ -377,6 +388,8 @@ public final class SatelliteMissionSavedData extends SavedData {
     public io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SchedulerPass completeDue(long observedGameTime) {
         requireOperational();
         writer.requireOwnerThread();
+        // ADR-074 item 5: without a representable epoch the pass only observes the clock, which keeps E.
+        if (!writer.admitsChange()) { return observeClock(() -> registry.observeOnly(observedGameTime)); }
         io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SchedulerPass result = observeClock(() -> registry.completeDue(observedGameTime));
         if (result.changed()) {
             changed();

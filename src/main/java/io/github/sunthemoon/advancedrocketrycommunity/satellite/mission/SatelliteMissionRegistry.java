@@ -364,6 +364,12 @@ public final class SatelliteMissionRegistry {
         return result(SatelliteOperationCode.SUCCESS, true, updated, mission);
     }
 
+    /** At epoch-capacity exhaustion the scheduler only observes the clock; a clock-only write keeps E (ADR-074). */
+    public synchronized SchedulerPass observeOnly(long observedGameTime) {
+        long before = clock.logicalGameTime(), now = clock.advance(observedGameTime);
+        return new SchedulerPass(now, now != before, 0, 0, 0, scheduler.scheduledCount(), 0, 0);
+    }
+
     public synchronized SchedulerPass completeDue(long observedGameTime) {
         long before = clock.logicalGameTime();
         long logicalTime = clock.advance(observedGameTime);

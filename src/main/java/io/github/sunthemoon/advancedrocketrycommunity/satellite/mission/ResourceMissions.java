@@ -393,7 +393,7 @@ public final class ResourceMissions {
                 next = instance.transition(expiresAt.getAsLong() > now ? InstanceState.AVAILABLE
                         : InstanceState.EXPIRED, expiresAt, Optional.empty());
                 if (instance.origin().kind() == InstanceOrigin.Kind.GROUND_SURVEY) {
-                    Math.addExact(registry.saveEpoch(), 1L);
+                    Math.addExact(registry.epochs().ceiling(), 1L);
                     GroundSurveyJob job = registry.groundSurveys().job(instance.origin().id()).orElseThrow();
                     int reserved = registry.sizer.instanceBytes(next);
                     if (reserved < 0 || reserved > SatelliteLimits.MAX_INSTANCE_RECORD_NBT_BYTES
