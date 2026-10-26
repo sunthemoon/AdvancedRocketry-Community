@@ -62,6 +62,8 @@ public final class SatelliteManager {
     private final long[] postTickNanos = new long[100];
     private boolean coalescedFailureReported;
     private final DiscoveryReplayQueue pendingDiscoveryReplay = new DiscoveryReplayQueue();
+    /** ADR-074 item 7: terminal effects waiting for a registry acknowledgement, for one server lifetime. */
+    private final TerminalActionTable terminalActions = new TerminalActionTable();
     private boolean replayInitialized;
     private int replayBackoffTicks;
     private boolean replayFailureReported;
@@ -218,8 +220,10 @@ public final class SatelliteManager {
             if (validation.request().isEmpty()) { return validation.result(); }
             SatelliteOperationResult result = launches.register(server, validation.request().orElseThrow(),
                     server.overworld().getGameTime());
+            // ADR-074 item 6: the launch is a RAM change and a prompt request; the terminal extracts the package
+            // only once a published acknowledgement proves the registration.
             if (result.success() && (result.changed() || data.isDirty())) {
-                data.flush(server);
+                data.request(server);
             }
             return result;
         } catch (RuntimeException exception) {
@@ -584,7 +588,13 @@ public final class SatelliteManager {
         return celestialCatalogs.current();
     }
 
+    /** ADR-074 item 7: the server-lifetime table of terminal actions waiting for an acknowledgement. */
+    public TerminalActionTable terminalActions() {
+        return terminalActions;
+    }
+
     public void clear() {
+        terminalActions.discard();
         scans.clear();
         intents.clear();
         lastCoalescedFlush = Integer.MIN_VALUE / 2;

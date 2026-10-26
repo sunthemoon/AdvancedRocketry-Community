@@ -152,6 +152,13 @@ public final class SatelliteMissionSavedData extends SavedData {
 
     /** W129b development-only owner-thread await of the live barriers; W129c replaces every production caller. */
     public void flush(MinecraftServer server) { flush(file(server)); }
+    /** ADR-074 item 6: a prompt plain request; the write runs off-thread and is published on a later tick START. */
+    public boolean request(MinecraftServer server) {
+        if (ownerServer != server || !server.isSameThread()) {
+            throw new IllegalStateException("Registry requests require their owning server thread");
+        }
+        return writer.request(file(server));
+    }
     /** Detached registries: request, await publication and throw unless the write covers RAM. */
     public void flush(java.nio.file.Path file) { writer.flush(file); }
     /** ADR-074 item 9: running, a dirty root requests and returns; stopping, it drains to the final target. */
