@@ -331,6 +331,7 @@ public final class SatelliteManager {
                     server.overworld().getGameTime(),
                     discoveryRequired(server, targetBodyId)
             );
+            // Release-test only: the hook waits for the commit, as its native harnesses expect (ADR-074 item 6).
             if (result.changed() || data.isDirty()) {
                 data.flush(server);
             }
@@ -346,10 +347,25 @@ public final class SatelliteManager {
         if (!Boolean.getBoolean(RELEASE_TEST_HOOK_PROPERTY)) {
             return failure(SatelliteOperationCode.UNAUTHORIZED);
         }
-        MissionState mission = SatelliteMissionSavedData.get(server).mission(missionId).orElse(null);
-        return mission == null
-                ? failure(SatelliteOperationCode.MISSION_NOT_FOUND)
-                : claimMission(server, missionId, mission.ownerId());
+        SatelliteMissionSavedData data = SatelliteMissionSavedData.get(server);
+        MissionState mission = data.mission(missionId).orElse(null);
+        if (mission == null) {
+            return failure(SatelliteOperationCode.MISSION_NOT_FOUND);
+        }
+        SatelliteOperationResult result = claimMission(server, missionId, mission.ownerId());
+        try {
+            // Release-test only: wait for the paid receipt's commit, then for the discovery and the finished claim.
+            data.flush(server);
+            if (needsDiscoveryRetry(result)) {
+                result = applyDiscovery(server, missionId, pendingDiscoveryReplay.receipt(missionId, data::token));
+                if (!needsDiscoveryRetry(result)) { pendingDiscoveryReplay.remove(missionId); }
+                data.flush(server);
+            }
+        } catch (RuntimeException exception) {
+            logOperationFailure("release-test claim", exception);
+            return failure(SatelliteOperationCode.UNSUPPORTED_DATA);
+        }
+        return result;
     }
 
     /** Bounded packaged-server stress hook using the production registry and scheduler. */
@@ -401,7 +417,7 @@ public final class SatelliteManager {
                 }
             }
             if (created > 0) {
-                data.flush(server);
+                data.flush(server); // Release-test only, as above.
             }
             return new ReleaseTestBatchResult(
                     created == requested

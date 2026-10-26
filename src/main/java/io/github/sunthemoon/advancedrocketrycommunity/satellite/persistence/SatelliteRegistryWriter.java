@@ -221,9 +221,16 @@ final class SatelliteRegistryWriter {
      */
     void await() {
         requireOwner();
+        SatelliteRegistryTestAwait.require(data.server());
         if (writer == null) { return; }
         try { writer.await(System::nanoTime, TimeUnit.NANOSECONDS::sleep); }
         catch (CheckedRootWriter.CaptureRefused refused) { /* reported at capture */ }
+    }
+
+    /** One awaited write on the bound target whose committer fails before replacement; nothing else changes. */
+    Outcome failOnce(Path file) {
+        var failing = policy.withCommitter((staged, target) -> { throw new SatelliteRegistryTestAwait.InjectedFailure(); });
+        return awaited(file, new Attributes(failing, null)).outcome();
     }
 
     /** Request, await, and answer with the first published completion that covers the request's sequence. */
@@ -296,7 +303,11 @@ final class SatelliteRegistryWriter {
 
     /** ADR-074 item 12: one ERROR at the first failed or unknown write of a streak, one INFO at the commit ending it. */
     private void report(Outcome outcome, Capture capture) {
-        if (outcome == Outcome.COMMITTED) {
+        if (outcome != Outcome.COMMITTED && injected(lastFailure)) {
+            // The release-test and GameTest seam's own failure: reported, but no failure streak starts.
+            LOGGER.info("ARCE_SATELLITE_REGISTRY_INJECTED_FAILURE outcome={} sequence={} epoch={}", outcome,
+                    capture.sequence(), capture.epoch());
+        } else if (outcome == Outcome.COMMITTED) {
             if (failureReported) {
                 failureReported = false;
                 LOGGER.info("ARCE_SATELLITE_REGISTRY_ACKNOWLEDGED sequence={} epoch={} after an unacknowledged write",
@@ -352,6 +363,13 @@ final class SatelliteRegistryWriter {
         var epochs = registry.epochs();
         LOGGER.error("ARCE_SATELLITE_REGISTRY_EPOCH_EXHAUSTED durable={} reserved={} in_flight={} sequence={} dirty={}",
                 epochs.durable(), epochs.reserved(), epochs.inFlight(), mutationSequence, data.isDirty());
+    }
+
+    private static boolean injected(Throwable failure) {
+        for (Throwable cause = failure; cause != null; cause = cause.getCause()) {
+            if (cause instanceof SatelliteRegistryTestAwait.InjectedFailure) { return true; }
+        }
+        return false;
     }
 
     /** Every registry mutation runs on the owner thread, never inside an IO callback (ADR-074 item 2). */
