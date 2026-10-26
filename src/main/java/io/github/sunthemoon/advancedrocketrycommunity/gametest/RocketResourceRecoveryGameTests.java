@@ -80,9 +80,15 @@ public final class RocketResourceRecoveryGameTests {
                 pacer.pace();
                 var transactions = io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketTransactionSavedData
                         .get(helper.getLevel().getServer());
+                var world = new io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.ServerLevelRocketTransactionWorld(
+                        fixture.moon, io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.RocketBlockEntityAdapters.defaults(), fixture.owner);
                 if (fixture.rocket.isAlive() || !transactions.acknowledgedCurrent()
                         || transactions.entries().stream().anyMatch(entry -> entry.record().snapshotId()
-                                .equals(fixture.record.destinationSnapshot().snapshotId()))) {
+                                .equals(fixture.record.destinationSnapshot().snapshotId()))
+                        || fixture.record.destinationSnapshot().blocks().stream().anyMatch(block -> world.readBlock(
+                                fixture.record.destinationSnapshot().sourceOrigin().add(block.position())).filter(
+                                        io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketWorldBlock
+                                                .fromSnapshotBlock(block)::equals).isEmpty())) {
                     driver.after(1, completed[0]); return;
                 }
                 helper.assertTrue(fixture.rocket.isRemoved(), "Empty arrival disassembly refused");

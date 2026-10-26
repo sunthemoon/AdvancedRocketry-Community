@@ -37,7 +37,7 @@ public final class RocketSealedPropulsionGameTests {
         placeLegalRocket(helper, origin); helper.setBlock(origin, ModBlocks.BIPROPELLANT_ROCKET_MOTOR.get());
         helper.setBlock(origin.west(), ModBlocks.BIPROPELLANT_FUEL_TANK.get());
         helper.setBlock(origin.east(), ModBlocks.OXIDIZER_FUEL_TANK.get());
-        var rocket = new RocketEntity[1]; var player = new RocketDisassemblyGameTests.ConsentPlayer[1];
+        var rocket = new RocketEntity[1]; var player = new RocketPropulsionGameTests.ContainerPlayer[1];
         var retained = new io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightData[1];
         boolean[] done = {false};
         helper.onEachTick(() -> {
@@ -51,7 +51,7 @@ public final class RocketSealedPropulsionGameTests {
                         new RocketOperationLedger(), RocketTransactionJournal.NO_OP).execute(UUID.randomUUID(), snapshot);
                 helper.assertTrue(assembly.success(), "Container fixture assembly refused");
                 rocket[0] = (RocketEntity) level.getEntity(assembly.rocketEntityId().orElseThrow()); OWNED.add(rocket[0]);
-                player[0] = new RocketDisassemblyGameTests.ConsentPlayer(level, owner); player[0].setPos(rocket[0].position());
+                player[0] = new RocketPropulsionGameTests.ContainerPlayer(level, owner); player[0].setPos(rocket[0].position());
                 var hand = InteractionHand.MAIN_HAND;
                 player[0].setItemInHand(hand, new ItemStack(ModItems.HYDROGEN_CANISTER.get()));
                 helper.assertTrue(RocketPropulsionInteraction.exchange(player[0], rocket[0], hand) == InteractionResult.CONSUME,
@@ -97,7 +97,7 @@ public final class RocketSealedPropulsionGameTests {
             done[0] = true; helper.succeed();
         });
     }
-    private static int confirm(RocketDisassemblyGameTests.ConsentPlayer player, UUID token) {
+    private static int confirm(RocketPropulsionGameTests.ContainerPlayer player, UUID token) {
         return player.serverLevel().getServer().getCommands().performPrefixedCommand(
                 player.createCommandSourceStack().withPermission(0), "arce rocket-disassembly confirm " + token);
     }

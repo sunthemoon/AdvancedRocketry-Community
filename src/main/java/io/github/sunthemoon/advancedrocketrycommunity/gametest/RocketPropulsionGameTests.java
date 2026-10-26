@@ -160,8 +160,10 @@ public final class RocketPropulsionGameTests {
             helper.succeed();
         }, new GameTestTickPacer(helper.getLevel().getServer()), origin);
     }
-    private static final class ContainerPlayer extends net.minecraft.server.level.ServerPlayer {
+    static final class ContainerPlayer extends net.minecraft.server.level.ServerPlayer {
         UUID token;
+        String command;
+        long discarded;
         ContainerPlayer(ServerLevel level, UUID owner) {
             super(level.getServer(), level, new com.mojang.authlib.GameProfile(owner, "ARCEPropulsion"));
         }
@@ -169,8 +171,10 @@ public final class RocketPropulsionGameTests {
         @Override public void sendSystemMessage(net.minecraft.network.chat.Component message) {
             var click = message.getStyle().getClickEvent();
             if (click != null && click.getAction() == net.minecraft.network.chat.ClickEvent.Action.SUGGEST_COMMAND) {
-                String command = click.getValue(); token = UUID.fromString(command.substring(command.lastIndexOf(' ') + 1));
+                command = click.getValue(); token = UUID.fromString(command.substring(command.lastIndexOf(' ') + 1));
             }
+            if (message.getContents() instanceof net.minecraft.network.chat.contents.TranslatableContents text
+                    && text.getKey().endsWith("disassembly_fuel_discarded")) { discarded = ((Number) text.getArgs()[0]).longValue(); }
         }
     }
     private static void flight(GameTestHelper helper, GameTestTickDriver driver, Block motor, RocketPropulsion.Mode mode, long numerator, long denominator) {

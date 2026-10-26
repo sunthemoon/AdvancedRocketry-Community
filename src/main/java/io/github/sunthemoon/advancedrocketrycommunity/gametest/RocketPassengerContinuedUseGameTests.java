@@ -123,7 +123,7 @@ public final class RocketPassengerContinuedUseGameTests {
         var driver = new GameTestTickDriver(helper);
         var pacer = new GameTestTickPacer(helper.getLevel().getServer());
         afterLanding(helper, driver, (rocket, done) -> {
-            var player = new RocketDisassemblyGameTests.ConsentPlayer(
+            var player = new RocketPropulsionGameTests.ContainerPlayer(
                     (ServerLevel) rocket.level(), rocket.ownerId().orElseThrow());
             // T retains the original seat obligation. Observe its owner alive and placed at D rather than
             // erasing that obligation just because the current manifest is empty after disembarkation.
@@ -145,9 +145,17 @@ public final class RocketPassengerContinuedUseGameTests {
                     .recoverFixture(helper, () -> manager.recoverTransfer(helper.getLevel().getServer(), retained.transferId())).status()
                     == io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecoveryReport.Status.RECOVERED,
                     "Fresh disassembly manager did not reconcile arrival authority");
+            Runnable[] demand = new Runnable[1];
+            long[] retry = {0};
+            demand[0] = () -> {
+            pacer.pace();
+            if (!RocketRuntime.resourceMutationAllowed(rocket) || helper.getTick() < retry[0]) {
+                driver.after(1, demand[0]); return;
+            }
             RocketRuntime.requestDisassembly(player, rocket);
             helper.assertTrue(rocket.isAlive() && rocket.flightData().orElseThrow().fuel().amount() == 1000,
                     "Implicit fueled teardown changed arrival authority");
+            if (player.command == null) { retry[0] = helper.getTick() + 20; driver.after(1, demand[0]); return; }
             // W85: the confirmed request answers pending; nothing is restored or discarded before the acknowledgement.
             helper.assertTrue(helper.getLevel().getServer().getCommands().performPrefixedCommand(
                     player.createCommandSourceStack().withPermission(0), player.command.substring(1)) == 1 && rocket.isAlive()
@@ -166,6 +174,8 @@ public final class RocketPassengerContinuedUseGameTests {
                 done.run();
             };
             driver.after(1, completion[0]);
+            };
+            driver.after(1, demand[0]);
         });
     }
 
