@@ -24,6 +24,7 @@ final class RocketDisassemblyRequest implements RocketLandedDisassemblies.Reques
     private final UUID logical;
     private final ServerPlayer requester;
     private final boolean releaseTest;
+    private final boolean retainedExecutor;
     private final long requestedAt;
     private RocketValidationCode admissionRefusal = RocketValidationCode.REGION_BUSY;
     private boolean retainedReported;
@@ -37,6 +38,8 @@ final class RocketDisassemblyRequest implements RocketLandedDisassemblies.Reques
         this.logical = rocket.assemblyTransactionId().orElseThrow();
         this.requester = requester;
         this.releaseTest = releaseTest;
+        retainedExecutor = service.sealed != null
+                && io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate.retirementUnprotected(rocket);
         requestedAt = level.getServer().overworld().getGameTime();
         if (service.sealed == null && !(level.getServer() instanceof net.minecraft.gametest.framework.GameTestServer)) {
             throw new IllegalStateException("Legacy disassembly adapter is GameTest-only");
@@ -58,11 +61,7 @@ final class RocketDisassemblyRequest implements RocketLandedDisassemblies.Reques
     }
 
     @Override public long requestedAt() { return requestedAt; }
-    @Override public boolean retainedExecutor() {
-        var rocket = rocket();
-        return service.sealed != null && rocket != null
-                && io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate.retirementUnprotected(rocket);
-    }
+    @Override public boolean retainedExecutor() { return retainedExecutor; }
     boolean preparationCurrent() {
         var rocket = rocket();
         return matches() && (releaseTest || requester != null && !requester.hasDisconnected()
@@ -78,7 +77,7 @@ final class RocketDisassemblyRequest implements RocketLandedDisassemblies.Reques
     }
     @Override public boolean beginRetained(java.util.function.Consumer<SealedDisassembly.Result> completion) {
         var rocket = rocket();
-        if (rocket == null || !authorized()) { return false; }
+        if (!retainedExecutor || rocket == null || !authorized()) { return false; }
         var issue = service.preflight(level, rocket, structure);
         if (issue.isPresent()) { admissionRefusal = issue.orElseThrow(); return false; }
         var inline = new SealedDisassembly.Result[1]; var admitting = new boolean[] {true};
