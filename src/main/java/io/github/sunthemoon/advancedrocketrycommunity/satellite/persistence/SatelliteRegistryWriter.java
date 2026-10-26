@@ -40,6 +40,7 @@ final class SatelliteRegistryWriter {
     private final SatelliteMissionSavedData data;
     private final SatelliteMissionRegistry registry;
     private final List<Checkpoint> tickets = new ArrayList<>();
+    private final SatelliteRegistryWriterCuts cuts = new SatelliteRegistryWriterCuts();
     private long mutationSequence, completedWrites, lastWriterNanos, lastWriterCpuNanos, maxWriterNanos;
     /** Milliseconds spent in awaits: the await's cadence clock ran ahead of the server's tick count by at most this. */
     private long awaitedMillis;
@@ -48,6 +49,7 @@ final class SatelliteRegistryWriter {
     private CheckedRootWriter<Capture, Attributes, Result> writer;
     private Path target;
     private Capture flight;
+    private Outcome lastOutcome;
     private RuntimeException lastFailure;
     private boolean exhaustionReported, failureReported;
 
@@ -66,6 +68,7 @@ final class SatelliteRegistryWriter {
         this.policy = policy;
     }
     CheckedSavedDataPolicy policy() { return policy; }
+    SatelliteRegistryWriterCuts cuts() { return cuts; }
 
     Watch watch(UUID satellite) {
         requireOwner();
@@ -114,7 +117,8 @@ final class SatelliteRegistryWriter {
     Capture capture(long sequence) {
         if (!data.operational()) { return new Capture(sequence, 0L, 0L, null, data.blockedRoot(), null); }
         var epochs = registry.epochs();
-        return new Capture(sequence, epochs.stateChanges(), epochs.toCarry(), registry.sections(), null, null);
+        return new Capture(sequence, epochs.stateChanges(), epochs.toCarry(), registry.sections(), null,
+                cuts.beforeEncode(sequence));
     }
 
     /** A plain request with the write policy: autosave, the coalesced flush and prompt barrier requests. */
@@ -149,6 +153,15 @@ final class SatelliteRegistryWriter {
                 completedWrites, lastWriterNanos / 1e6, lastWriterCpuNanos / 1e6, maxWriterNanos / 1e6);
     }
     long lastWriterNanos() { return lastWriterNanos; }
+
+    /** The release-test status line's writer fields (W129bc native cuts). */
+    String releaseTestStatus() {
+        requireOwner();
+        return String.format(java.util.Locale.ROOT, "sequence=%d acknowledged=%s outcome=%s busy=%s dirty=%s epoch=%d",
+                mutationSequence, acknowledged == null ? "none" : String.valueOf(acknowledged.sequence()),
+                lastOutcome == null ? "NONE" : lastOutcome, busy(), data.isDirty(),
+                data.operational() ? registry.saveEpoch() : -1L);
+    }
     long lastWriterCpuNanos() { return lastWriterCpuNanos; }
 
     /** Detached (unit tests and diagnostics): request one write, await its publication and throw unless it covers RAM. */
@@ -282,6 +295,7 @@ final class SatelliteRegistryWriter {
         Result result = completion.payload();
         lastFailure = result == null ? null : result.failure();
         Outcome outcome = Outcome.valueOf(completion.status().name());
+        lastOutcome = outcome;
         boolean mutatedInFlight = mutationSequence != capture.sequence();
         if (capture.operational()) {
             switch (outcome) {
@@ -394,7 +408,9 @@ final class SatelliteRegistryWriter {
         @Override public long mutationSequence() { return mutationSequence; }
         @Override public Capture capture(long sequence) { return take(sequence); }
         @Override public CheckedRootWriter.Attempt<Result> write(Capture capture, Attributes attributes) {
-            return SatelliteRegistryCapture.write(capture, attributes, file);
+            // The release-test cut wraps the committer only while a cut is armed (W129bc native cuts).
+            return SatelliteRegistryCapture.write(capture, new Attributes(cuts.policy(attributes.policy()),
+                    attributes.force()), file);
         }
         @Override public void publish(CheckedRootWriter.Completion<Result> completion) {
             SatelliteRegistryWriter.this.publish(completion);

@@ -160,6 +160,8 @@ public final class SatelliteMissionSavedData extends SavedData {
     public void flush(MinecraftServer server) { SatelliteRegistryTestAwait.require(server); flush(file(server)); }
     /** GameTest and release-test servers only: pump the writer on the owner thread until it is idle. */
     public void awaitForTests(MinecraftServer server) { SatelliteRegistryTestAwait.require(server); writer.await(); }
+    /** The release-test cut seams (W129bc); inert unless armed on an empty release-test dedicated server. */
+    public SatelliteRegistryWriterCuts cuts() { return writer.cuts(); }
     /**
      * GameTest and release-test servers only: one write on the bound target whose committer fails before replacement
      * (research's same-target failure seam); a fake target is never bound. Returns that write's outcome.

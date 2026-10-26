@@ -41,7 +41,7 @@ public final class TerminalPendingEffects {
         if (table == null || table.size() == 0) { return 0; }
         if (server.isStopped() || !server.isRunning()) { table.discard(); return 0; }
         var registry = SatelliteMissionSavedData.existing(server);
-        if (registry == null) { return 0; }
+        if (registry == null || registry.cuts().effectsHeld()) { return 0; }
         int completed = 0;
         for (var entry : table.rotation()) {
             if (completed >= TerminalActionTable.MAX_COMPLETIONS_PER_TICK) { break; }

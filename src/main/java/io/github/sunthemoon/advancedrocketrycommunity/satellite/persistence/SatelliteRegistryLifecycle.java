@@ -24,14 +24,20 @@ public final class SatelliteRegistryLifecycle {
     public static void tick(TickEvent.ServerTickEvent event) {
         if (event.phase == TickEvent.Phase.START) {
             var registry = SatelliteMissionSavedData.existing(event.getServer());
-            if (registry != null) { registry.pollWriter(); }
+            if (registry != null) {
+                registry.cuts().onTickStart(registry);
+                registry.pollWriter();
+            }
         }
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void stopping(ServerStoppingEvent event) {
         var registry = SatelliteMissionSavedData.existing(event.getServer());
-        if (registry != null) { registry.latchShutdown(); }
+        if (registry != null) {
+            registry.latchShutdown();
+            registry.cuts().onStopping(registry.mutationSequence());
+        }
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)

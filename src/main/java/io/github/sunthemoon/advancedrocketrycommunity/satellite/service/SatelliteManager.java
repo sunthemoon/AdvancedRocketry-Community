@@ -665,6 +665,9 @@ public final class SatelliteManager {
 
     private void replayDiscoveries(MinecraftServer server) {
         if (replayBackoffTicks > 0) { replayBackoffTicks--; return; }
+        if (pendingDiscoveryReplay.size() > 0 && SatelliteMissionSavedData.get(server).cuts().discoveryHeld()) {
+            return; // W129bc release-test cut only
+        }
         try {
             // A mission queued without a token waits for the next commit after now.
             pendingDiscoveryReplay.drain(id -> !needsDiscoveryRetry(applyDiscovery(server, id,
