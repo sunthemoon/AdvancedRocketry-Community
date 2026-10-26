@@ -104,7 +104,7 @@ public final class RocketPropulsionGameTests {
             helper.succeed();
         }
     }
-    @GameTest(template = "rocket_test", timeoutTicks = 40)
+    @GameTest(template = "rocket_test", batch = "propulsion_disassembly_consent", timeoutTicks = 40)
     public static void wholeContainersRoundTripAndOxidizerOnlyRequiresFreshConsent(GameTestHelper helper) {
         BlockPos origin = new BlockPos(3, 2, 3);
         placeLegalRocket(helper, origin);
