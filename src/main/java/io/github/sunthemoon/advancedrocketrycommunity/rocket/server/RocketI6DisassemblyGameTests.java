@@ -84,7 +84,13 @@ public final class RocketI6DisassemblyGameTests {
                 RocketTransferEntities.positionAtOrigin(rocket, fixture.record().destinationSnapshot().sourceOrigin());
                 record = fixture.record().destinationSpawned(rocket.getUUID()).advance(RocketTransferPhase.PASSENGERS_TRANSFERRED)
                         .advance(RocketTransferPhase.SOURCE_REMOVED).advance(RocketTransferPhase.COMMITTED);
-                if (predecessor) { journal.put(record); journal.flushChecked(server); }
+                if (predecessor) {
+                    journal.put(record);
+                    // This fixture represents a completed arrival, not an unclassified restart. In particular, cold
+                    // setup must not let restart recovery load S before the first player demand.
+                    RocketSourceRetirementFixtures.settled(RocketRuntime.installedTransfers()).add(record.transferId());
+                    journal.flushChecked(server);
+                }
                 player = new RocketLandedDisassemblyGameTestSupport.Requester(destination, record.ownerId());
                 player.setPos(rocket.getX() + 2, rocket.getY(), rocket.getZ());
                 step++; return;
