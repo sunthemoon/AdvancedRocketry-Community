@@ -41,6 +41,8 @@ final class SatelliteRegistryWriter {
     private final SatelliteMissionRegistry registry;
     private final List<Checkpoint> tickets = new ArrayList<>();
     private long mutationSequence, completedWrites, lastWriterNanos, lastWriterCpuNanos, maxWriterNanos;
+    /** Milliseconds spent in awaits: the await's cadence clock ran ahead of the server's tick count by at most this. */
+    private long awaitedMillis;
     private Acknowledgement acknowledged;
     private CheckedSavedDataPolicy policy = CheckedSavedDataPolicy.atomic(TYPE);
     private CheckedRootWriter<Capture, Attributes, Result> writer;
@@ -216,15 +218,17 @@ final class SatelliteRegistryWriter {
     }
 
     /**
-     * Pumps publication on the calling thread until the writer is idle. Detached registries only, plus W129b's
-     * development-only owner-thread await of the live barriers, which W129c replaces before any merge.
+     * Pumps publication on the calling thread until the writer is idle: detached registries, and the GameTest and
+     * release-test servers that {@link SatelliteRegistryTestAwait} admits. A live production server never awaits.
      */
     void await() {
         requireOwner();
         SatelliteRegistryTestAwait.require(data.server());
         if (writer == null) { return; }
+        long started = System.nanoTime();
         try { writer.await(System::nanoTime, TimeUnit.NANOSECONDS::sleep); }
         catch (CheckedRootWriter.CaptureRefused refused) { /* reported at capture */ }
+        finally { awaitedMillis += TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - started) + 1; }
     }
 
     /** One awaited write on the bound target whose committer fails before replacement; nothing else changes. */
@@ -342,7 +346,9 @@ final class SatelliteRegistryWriter {
     /** The server tick; a detached registry counts one tick per monotonic millisecond, as the drain clock does. */
     private long tick() {
         MinecraftServer server = data.server();
-        return server == null ? TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - createdNanos) : server.getTickCount();
+        // A bound registry's later ticks advance the cadence one each even after an await ran its clock ahead.
+        return server == null ? TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - createdNanos)
+                : server.getTickCount() + awaitedMillis;
     }
 
     /**
