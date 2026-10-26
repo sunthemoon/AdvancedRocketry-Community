@@ -50,6 +50,7 @@ public final class RocketResourceRecoveryGameTests {
 
     @GameTest(template = "rocket_test", batch = "resource_arrival_recovery", timeoutTicks = 400)
     public static void drainedArrivalSurvivesReloadAndDisassemblyRetiresJournal(GameTestHelper helper) {
+        var driver = new GameTestTickDriver(helper);
         var fixture = new Fixture(helper, false);
         fixture.whenReady(() -> {
             fixture.land();
@@ -68,24 +69,37 @@ public final class RocketResourceRecoveryGameTests {
             fixture.recover(RocketTransferRecoveryReport.Status.RECOVERED);
             fixture.assertBalances(0, 0, 2_000);
             // W85: one zero-fuel request answers pending; the acknowledged removal's continuation restores the rocket.
-            fixture.manager.requestDisassembly(fixture.player, fixture.rocket);
+            RocketRuntime.requestDisassembly(fixture.player, fixture.rocket);
             helper.assertTrue(fixture.rocket.isAlive() && fixture.player.refusal != null
                     && fixture.player.refusal.getContents() instanceof net.minecraft.network.chat.contents.TranslatableContents pending
                     && pending.getKey().endsWith("disassembly_pending"), "Unacknowledged retirement disassembled an arrival");
             io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport.acknowledgeFixture(helper);
-            helper.assertTrue(fixture.rocket.isRemoved(), "Empty arrival disassembly refused");
-            helper.assertTrue(fixture.journal().find(fixture.record.transferId()).isEmpty(),
-                    "Disassembly retained reconstructable arrival resources");
-            assertSnapshotBlocks(helper, new io.github.sunthemoon.advancedrocketrycommunity.rocket.forge
-                    .ServerLevelRocketTransactionWorld(fixture.moon,
-                            io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.RocketBlockEntityAdapters.defaults(),
-                            fixture.owner), fixture.record.destinationSnapshot());
-            fixture.reloadJournalAndPlayer();
-            helper.assertTrue(fixture.manager.recoverTransfer(fixture.earth.getServer(), fixture.record.transferId())
-                    .status() == RocketTransferRecoveryReport.Status.NOT_FOUND, "Retired arrival recovered again");
-            fixture.assertBalances(0, 0, 2_000, 0);
-            clearSnapshotBlocks(fixture.moon, fixture.record.destinationSnapshot());
-            helper.succeed();
+            var pacer = new GameTestTickPacer(helper.getLevel().getServer());
+            Runnable[] completed = new Runnable[1];
+            completed[0] = () -> {
+                pacer.pace();
+                var transactions = io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketTransactionSavedData
+                        .get(helper.getLevel().getServer());
+                if (fixture.rocket.isAlive() || !transactions.acknowledgedCurrent()
+                        || transactions.entries().stream().anyMatch(entry -> entry.record().snapshotId()
+                                .equals(fixture.record.destinationSnapshot().snapshotId()))) {
+                    driver.after(1, completed[0]); return;
+                }
+                helper.assertTrue(fixture.rocket.isRemoved(), "Empty arrival disassembly refused");
+                helper.assertTrue(fixture.journal().find(fixture.record.transferId()).isEmpty(),
+                        "Disassembly retained reconstructable arrival resources");
+                assertSnapshotBlocks(helper, new io.github.sunthemoon.advancedrocketrycommunity.rocket.forge
+                        .ServerLevelRocketTransactionWorld(fixture.moon,
+                                io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.RocketBlockEntityAdapters.defaults(),
+                                fixture.owner), fixture.record.destinationSnapshot());
+                fixture.reloadJournalAndPlayer();
+                helper.assertTrue(fixture.manager.recoverTransfer(fixture.earth.getServer(), fixture.record.transferId())
+                        .status() == RocketTransferRecoveryReport.Status.NOT_FOUND, "Retired arrival recovered again");
+                fixture.assertBalances(0, 0, 2_000, 0);
+                clearSnapshotBlocks(fixture.moon, fixture.record.destinationSnapshot());
+                helper.succeed();
+            };
+            driver.after(1, completed[0]);
         });
     }
 

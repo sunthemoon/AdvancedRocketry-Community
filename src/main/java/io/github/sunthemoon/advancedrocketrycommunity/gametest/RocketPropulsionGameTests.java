@@ -134,7 +134,10 @@ public final class RocketPropulsionGameTests {
             player.setItemInHand(hand, new net.minecraft.world.item.ItemStack(ModItems.OXYGEN_CANISTER.get()));
             helper.assertTrue(RocketPropulsionInteraction.exchange(player, rocket, hand)
                     == net.minecraft.world.InteractionResult.CONSUME, "Oxidizer fill refused");
-            var manager = new RocketManager(RocketBlockEntityAdapters.defaults());
+            // This 40-tick fixture keeps the historical synchronous adapter contract. The installed native route
+            // and the same complete fluid-consent/resource checks run in RocketSealedPropulsionGameTests.
+            var manager = io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketLandedDisassemblyGameTestSupport
+                    .legacyAdapters(helper, RocketBlockEntityAdapters.defaults());
             manager.requestDisassembly(player, rocket);
             helper.assertTrue(player.token != null && rocket.isAlive(), "Oxidizer-only bypassed consent");
             UUID stale = player.token;
