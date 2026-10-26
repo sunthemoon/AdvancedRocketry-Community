@@ -47,20 +47,16 @@ public final class SatelliteMissionRegistry {
     private RegistryLimits limits = RegistryLimits.DEFAULTS;
     private RestoreReport restoreReport = new RestoreReport(0, 0, 0, 0);
     /**
-     * ADR-050 §2 save epoch. A write carries {@link #epochToWrite()}; the epoch advances only when that write
-     * returned without error and carried a change, so an unchanged reload writes the same bytes. A mission started
-     * at epoch s is therefore present in every file whose epoch is greater than s.
+     * ADR-050 §2 and ADR-074 item 5: the durable save epoch E advances only when a published COMMITTED capture
+     * carried a change, so an unchanged reload writes the same bytes; stamps read the snapshot epoch. A mission stamped
+     * t is therefore present in every file whose epoch is greater than t.
      */
-    private long saveEpoch;
-    private boolean changedSinceEpoch;
+    private final RegistryEpochs epochs;
 
     private SatelliteMissionRegistry(MonotonicMissionClock clock, long saveEpoch, RecordSizer sizer) {
         this.clock = Objects.requireNonNull(clock, "clock");
         this.sizer = Objects.requireNonNull(sizer, "sizer");
-        if (saveEpoch < 1L) {
-            throw new IllegalArgumentException("Save epoch starts at 1");
-        }
-        this.saveEpoch = saveEpoch;
+        this.epochs = new RegistryEpochs(saveEpoch);
     }
 
     public static SatelliteMissionRegistry create(long observedGameTime) {
@@ -170,7 +166,7 @@ public final class SatelliteMissionRegistry {
         RestoreReport report = new RestoreReport(plan.missionQuarantines().size(), plan.recoveries().size(),
                 plan.instanceQuarantines().size(), accountsAdded, plan.groundQuarantines().size());
         if (report.changed()) {
-            changedSinceEpoch = true;
+            epochs.markChanged();
         }
         restoreReport = report;
         return report;
@@ -352,7 +348,7 @@ public final class SatelliteMissionRegistry {
         MissionState mission;
         try {
             mission = MissionState.start(missionId, satelliteId, ownerId, SatelliteDefinitionSnapshot.from(definition),
-                    targetBodyId, logicalTime, discoveryRequired, saveEpoch);
+                    targetBodyId, logicalTime, discoveryRequired, epochs.stamp());
         } catch (ArithmeticException exception) {
             return result(SatelliteOperationCode.CAPACITY_REACHED, false, satellite, null);
         }
@@ -374,13 +370,13 @@ public final class SatelliteMissionRegistry {
         MissionDeadlineScheduler.DrainResult drained = scheduler.drainDue(logicalTime,
                 SatelliteLimits.MAX_COMPLETIONS_PER_PASS, id -> Optional.ofNullable(missions.get(id)),
                 mission -> putMission(mission.complete(logicalTime)));
-        int pruned = retention.prune(logicalTime, limits.finishedPerOwner(), saveEpoch, missions::get,
+        int pruned = retention.prune(logicalTime, limits.finishedPerOwner(), epochs.durable(), missions::get,
                 this::removeMission);
         int expired = ledger.pass(logicalTime, instances::get, this::storeInstance,
                 instance -> dropInstance(instance.instanceId()));
         pruned += groundSurveys.prune(logicalTime);
         if (drained.completed() > 0 || pruned > 0 || expired > 0) {
-            changedSinceEpoch = true;
+            epochs.markChanged();
         }
         return new SchedulerPass(logicalTime, logicalTime != before, drained.completed(), drained.inspectedEntries(),
                 drained.staleEntries(), drained.remainingScheduled(), pruned, expired);
@@ -549,35 +545,39 @@ public final class SatelliteMissionRegistry {
         return Collections.unmodifiableList(values);
     }
 
+    /** E, the durable epoch: every durability check reads it. */
     public synchronized long saveEpoch() {
-        return saveEpoch;
+        return epochs.durable();
+    }
+
+    /** The snapshot epoch: every stamp reads it (ADR-074 item 5). */
+    public synchronized long stampEpoch() {
+        return epochs.stamp();
+    }
+
+    /** ADR-074 item 5: the epochs, for the registry writer on the owner thread. */
+    public synchronized RegistryEpochs epochs() {
+        return epochs;
     }
 
     /** Records that the registry state changed since the last persisted epoch. */
     public synchronized void markChanged() {
-        changedSinceEpoch = true;
+        epochs.markChanged();
     }
 
-    /** The epoch value the next write carries. */
+    /** The epoch value the next write carries (rule 1). */
     public synchronized long epochToWrite() {
-        return changedSinceEpoch ? Math.addExact(saveEpoch, 1L) : saveEpoch;
+        return epochs.toCarry();
     }
 
-    /** Called once a write carrying {@link #epochToWrite()} has returned without error. */
+    /** Domain fixtures without a writer: a write carrying {@link #epochToWrite()} has returned without error. */
     public synchronized void markPersisted() {
-        markPersisted(epochToWrite());
+        if (epochs.persistedNow()) { resources.epochAdvanced(); }
     }
 
-    /** A synchronous current capture may skip epochs carried by unknown writes (W27 section 3). */
-    public synchronized void markPersisted(long carriedEpoch) {
-        if (carriedEpoch < epochToWrite()) {
-            throw new IllegalArgumentException("A registry acknowledgement cannot precede its current epoch");
-        }
-        if (carriedEpoch > saveEpoch) {
-            saveEpoch = carriedEpoch;
-            changedSinceEpoch = false;
-            resources.epochAdvanced();
-        }
+    /** Publication of a COMMITTED capture (rule 3); a durable epoch advance re-offers acknowledged claims. */
+    public synchronized void committed(long stateChangesAtCapture) {
+        if (epochs.committed(stateChangesAtCapture)) { resources.epochAdvanced(); }
     }
 
     public synchronized long logicalGameTime() {
@@ -649,13 +649,13 @@ public final class SatelliteMissionRegistry {
     /** Every mission write goes through here, so counters, queues and indexes never drift. */
     void putMission(MissionState next) {
         MissionState previous = missions.put(next.missionId(), next);
-        retention.changed(previous, next, saveEpoch);
+        retention.changed(previous, next, epochs.durable());
         terminals.changed(previous, next);
     }
 
     void removeMission(MissionState mission) {
         missions.remove(mission.missionId());
-        retention.changed(mission, null, saveEpoch);
+        retention.changed(mission, null, epochs.durable());
         terminals.changed(mission, null);
         budget.release(StorageBudget.Section.MISSIONS, mission.missionId());
     }
@@ -740,7 +740,7 @@ public final class SatelliteMissionRegistry {
     }
 
     void reoffer(List<MissionState> durable) {
-        retention.epochAdvanced(durable, saveEpoch);
+        retention.epochAdvanced(durable, epochs.durable());
     }
 
     /** Releases the satellite only if it names this mission (ADR-050 section 8). */

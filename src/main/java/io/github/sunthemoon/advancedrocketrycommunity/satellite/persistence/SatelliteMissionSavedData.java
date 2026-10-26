@@ -63,13 +63,25 @@ public final class SatelliteMissionSavedData extends SavedData {
                 () -> create(server.overworld().getGameTime()),
                 DATA_NAME
         );
-        if (data.ownerServer != server) {
-            if (data.ownerServer != null) { throw new IllegalStateException("Registry belongs to another server"); }
-            data.ownerServer = server;
-            data.deploymentFence = (satellite, removal) ->
+        data.bind(server);
+        return data;
+    }
+
+    /** The lifecycle hooks' view: the cached registry, or the one vanilla reads from its file, never a new empty one. */
+    public static SatelliteMissionSavedData existing(MinecraftServer server) {
+        if (server.overworld() == null) { return null; }
+        var data = server.overworld().getDataStorage().get(SatelliteMissionSavedData::load, DATA_NAME);
+        if (data != null) { data.bind(server); }
+        return data;
+    }
+
+    private void bind(MinecraftServer server) {
+        if (ownerServer != server) {
+            if (ownerServer != null) { throw new IllegalStateException("Registry belongs to another server"); }
+            ownerServer = server;
+            deploymentFence = (satellite, removal) ->
                     io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceipts.blocksRegistry(server, satellite, removal);
         }
-        return data;
     }
 
     public static SatelliteMissionSavedData load(CompoundTag source) {
@@ -120,8 +132,12 @@ public final class SatelliteMissionSavedData extends SavedData {
         super.setDirty(dirty);
     }
 
-    void pendingWrite() { super.setDirty(true); }
-    void persisted() { super.setDirty(false); flushPending = false; }
+    /** Publication of a COMMITTED capture: dirty clears if nothing mutated since it, flushPending if no state changed. */
+    void published(boolean clean, boolean settled) {
+        if (clean) { super.setDirty(false); }
+        if (settled) { flushPending = false; }
+    }
+    MinecraftServer server() { return ownerServer; }
     public long mutationSequence() { return writer.sequence(); }
     public SatelliteRegistryProof.Watch watch(UUID satellite) { requireOperational(); return writer.watch(satellite); }
     public Optional<SatelliteRegistryProof.Acknowledgement> acknowledgement() { return writer.acknowledgement(); }
@@ -134,9 +150,17 @@ public final class SatelliteMissionSavedData extends SavedData {
                 false, Optional.empty(), Optional.empty(), 0);
     }
 
+    /** W129b development-only owner-thread await of the live barriers; W129c replaces every production caller. */
     public void flush(MinecraftServer server) { flush(file(server)); }
+    /** Detached registries: request, await publication and throw unless the write covers RAM. */
     public void flush(java.nio.file.Path file) { writer.flush(file); }
+    /** ADR-074 item 9: running, a dirty root requests and returns; stopping, it drains to the final target. */
     @Override public void save(java.io.File file) { writer.save(file); }
+    /** Tick START (SatelliteRegistryLifecycle): publish at most one completion, then start a pending request. */
+    public void pollWriter() { writer.poll(); }
+    public void latchShutdown() { writer.latch(); }
+    public void close() { writer.close(); }
+    public void abort() { writer.abort(); }
 
     public SatelliteRegistryProof.Completion checkpoint(MinecraftServer server, List<SatelliteRegistryProof.Watch> watches) {
         if (!server.isSameThread()) { throw new IllegalStateException("Registry checkpoint requires the server thread"); }
@@ -148,12 +172,13 @@ public final class SatelliteMissionSavedData extends SavedData {
         return writer.checkpoint(file, List.copyOf(watches), policy, force);
     }
 
-    private static java.nio.file.Path file(MinecraftServer server) {
+    static java.nio.file.Path file(MinecraftServer server) {
         return server.getWorldPath(LevelResource.ROOT).resolve("data").resolve(ManagedSavedDataType.SATELLITE_MISSIONS.fileName());
     }
 
     public GroundSurveys.Result groundSurveys(java.util.function.Function<GroundSurveys, GroundSurveys.Result> operation) {
         requireOperational();
+        writer.requireOwnerThread();
         GroundSurveys.Result result = observeClock(() -> operation.apply(registry.groundSurveys()));
         if (result.changed()) { changed(); }
         return result;
@@ -179,34 +204,28 @@ public final class SatelliteMissionSavedData extends SavedData {
         }
     }
 
-    public SatelliteOperationResult releaseQuarantine(UUID missionId) {
+    /** One registry mutation; a changed result waits for the coalesced flush (ADR-050 section 2). */
+    private SatelliteOperationResult mutation(java.util.function.Supplier<SatelliteOperationResult> operation) {
         requireOperational();
-        SatelliteOperationResult result = registry.releaseQuarantine(missionId);
-        if (result.changed()) {
-            changed();
-        }
+        writer.requireOwnerThread();
+        SatelliteOperationResult result = observeClock(operation);
+        if (result.changed()) { changed(); }
         return result;
     }
 
+    public SatelliteOperationResult releaseQuarantine(UUID missionId) {
+        return mutation(() -> registry.releaseQuarantine(missionId));
+    }
+
     public SatelliteOperationResult recoverSatellite(UUID satelliteId) {
-        requireOperational();
-        SatelliteOperationResult result = registry.recoverSatellite(satelliteId);
-        if (result.changed()) {
-            changed();
-        }
-        return result;
+        return mutation(() -> registry.recoverSatellite(satelliteId));
     }
 
     /** ADR-051 operations: one registry mutation; a changed record waits for the coalesced flush (ADR-050 §2). */
     public SatelliteOperationResult resources(
             java.util.function.Function<io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.ResourceMissions,
                     SatelliteOperationResult> operation) {
-        requireOperational();
-        SatelliteOperationResult result = observeClock(() -> operation.apply(registry.resources()));
-        if (result.changed()) {
-            changed();
-        }
-        return result;
+        return mutation(() -> operation.apply(registry.resources()));
     }
 
     /** ADR-051 section 7 for one mission; a blocked registry changes nothing and refuses resource actions. */
@@ -218,6 +237,7 @@ public final class SatelliteMissionSavedData extends SavedData {
         if (!operational()) {
             return io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.ResourceMissions.Reconciled.blocked();
         }
+        writer.requireOwnerThread();
         var reconciled = observeClock(() -> registry.resources().reconcile(terminal, missionId, receipt, display, observedGameTime));
         if (reconciled.changed()) {
             changed();
@@ -264,6 +284,17 @@ public final class SatelliteMissionSavedData extends SavedData {
 
     /** Tests: the capture a write would take now. */
     SatelliteRegistryCapture.Capture captureForTests() { return writer.capture(writer.sequence()); }
+    /** Unit tests and benchmarks: a real but unstarted server supplies the tick and both shutdown flags. */
+    void bindServerForTests(MinecraftServer server) { ownerServer = server; }
+    boolean requestWrite(java.nio.file.Path file, CheckedSavedDataPolicy policy) {
+        return writer.request(file, new SatelliteRegistryCapture.Attributes(policy, null));
+    }
+    boolean writerBusy() { return writer.busy(); }
+    boolean writerInFlight() { return writer.inFlight(); }
+    Optional<io.github.sunthemoon.advancedrocketrycommunity.persistence.CheckedRootWriter.DrainReport> drainReport() {
+        return writer.drainReport();
+    }
+    SatelliteRegistryWriter writerForTests() { return writer; }
 
     public SatelliteOperationResult launch(
             UUID satelliteId,
@@ -276,31 +307,15 @@ public final class SatelliteMissionSavedData extends SavedData {
     ) {
         requireOperational();
         if (deploymentPending(satelliteId)) { return deploymentPendingResult(); }
-        SatelliteOperationResult result = observeClock(() -> registry.launch(
-                satelliteId,
-                missionId,
-                ownerId,
-                definition,
-                targetBodyId,
-                observedGameTime,
-                discoveryRequired
-        ));
-        if (result.changed()) {
-            changed();
-        }
-        return result;
+        return mutation(() -> registry.launch(satelliteId, missionId, ownerId, definition, targetBodyId, observedGameTime,
+                discoveryRequired));
     }
 
     public SatelliteOperationResult launchIdle(
             java.util.function.LongFunction<SatelliteState> factory,
             long observedGameTime
     ) {
-        requireOperational();
-        SatelliteOperationResult result = observeClock(() -> registry.launchIdle(factory, observedGameTime, this::deploymentPending));
-        if (result.changed()) {
-            changed();
-        }
-        return result;
+        return mutation(() -> registry.launchIdle(factory, observedGameTime, this::deploymentPending));
     }
 
     public SatelliteOperationResult previewLaunch(UUID satellite, UUID mission, UUID owner,
@@ -324,20 +339,11 @@ public final class SatelliteMissionSavedData extends SavedData {
     ) {
         requireOperational();
         if (deploymentFence.test(satelliteId, true)) { return deploymentPendingResult(); }
-        SatelliteOperationResult result = registry.decommission(satelliteId, requesterId, operator, receiverMissing);
-        if (result.changed()) {
-            changed();
-        }
-        return result;
+        return mutation(() -> registry.decommission(satelliteId, requesterId, operator, receiverMissing));
     }
 
     public SatelliteOperationResult updateKindState(UUID satelliteId, SatelliteKindState next) {
-        requireOperational();
-        SatelliteOperationResult result = registry.updateKindState(satelliteId, next);
-        if (result.changed()) {
-            changed();
-        }
-        return result;
+        return mutation(() -> registry.updateKindState(satelliteId, next));
     }
 
     public int ownerSatellites(UUID ownerId) {
@@ -347,12 +353,7 @@ public final class SatelliteMissionSavedData extends SavedData {
 
     /** ADR-049 section 8: a paid scan is a registry change; a refused one is not. */
     public SatelliteOperationResult payScan(UUID satelliteId, UUID requesterId, boolean operator, long observedGameTime) {
-        requireOperational();
-        SatelliteOperationResult result = observeClock(() -> registry.payScan(satelliteId, requesterId, operator, observedGameTime));
-        if (result.changed()) {
-            changed();
-        }
-        return result;
+        return mutation(() -> registry.payScan(satelliteId, requesterId, operator, observedGameTime));
     }
 
     public List<UUID> linkedTo(UUID receiverId) {
@@ -369,24 +370,13 @@ public final class SatelliteMissionSavedData extends SavedData {
             long observedGameTime,
             boolean discoveryRequired
     ) {
-        requireOperational();
-        SatelliteOperationResult result = observeClock(() -> registry.startMission(
-                satelliteId,
-                missionId,
-                ownerId,
-                definition,
-                targetBodyId,
-                observedGameTime,
-                discoveryRequired
-        ));
-        if (result.changed()) {
-            changed();
-        }
-        return result;
+        return mutation(() -> registry.startMission(satelliteId, missionId, ownerId, definition, targetBodyId,
+                observedGameTime, discoveryRequired));
     }
 
     public io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SchedulerPass completeDue(long observedGameTime) {
         requireOperational();
+        writer.requireOwnerThread();
         io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SchedulerPass result = observeClock(() -> registry.completeDue(observedGameTime));
         if (result.changed()) {
             changed();
@@ -395,21 +385,11 @@ public final class SatelliteMissionSavedData extends SavedData {
     }
 
     public SatelliteOperationResult claim(UUID missionId, UUID ownerId, long observedGameTime) {
-        requireOperational();
-        SatelliteOperationResult result = observeClock(() -> registry.claim(missionId, ownerId, observedGameTime));
-        if (result.changed()) {
-            changed();
-        }
-        return result;
+        return mutation(() -> registry.claim(missionId, ownerId, observedGameTime));
     }
 
     public SatelliteOperationResult finishDiscovery(UUID missionId) {
-        requireOperational();
-        SatelliteOperationResult result = registry.finishDiscovery(missionId);
-        if (result.changed()) {
-            changed();
-        }
-        return result;
+        return mutation(() -> registry.finishDiscovery(missionId));
     }
 
     public SatelliteOperationResult cancel(
@@ -418,14 +398,7 @@ public final class SatelliteMissionSavedData extends SavedData {
             boolean operator,
             long observedGameTime
     ) {
-        requireOperational();
-        SatelliteOperationResult result = observeClock(() -> registry.cancel(
-                missionId, requesterId, operator, observedGameTime
-        ));
-        if (result.changed()) {
-            changed();
-        }
-        return result;
+        return mutation(() -> registry.cancel(missionId, requesterId, operator, observedGameTime));
     }
 
     public Optional<SatelliteState> satellite(UUID satelliteId) {

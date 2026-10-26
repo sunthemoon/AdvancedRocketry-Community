@@ -122,7 +122,7 @@ public final class GroundSurveys {
             }
             GroundSurveyJob job = new GroundSurveyJob(SatelliteLimits.GROUND_SURVEY_SCHEMA_VERSION, start.jobId(),
                     start.ownerId(), instance.instanceId(), start.source(), GroundSurveyJob.Snapshot.from(instance),
-                    start.surveyTicks(), start.surveyEnergy(), 0, now, registry.saveEpoch(), Phase.ACTIVE,
+                    start.surveyTicks(), start.surveyEnergy(), 0, now, registry.stampEpoch(), Phase.ACTIVE,
                     OptionalLong.empty(), OptionalLong.empty(), new Analysis(AnalysisState.WAITING,
                     start.analysisTicks(), start.analysisEnergy(), start.credit(), 0, Optional.empty()), Optional.empty());
             ResearchAccount account = registry.account(start.ownerId());
@@ -211,7 +211,7 @@ public final class GroundSurveys {
             if (job.phase() != Phase.READY) { return result(Code.NOT_READY, false, job); }
             if (ledger.processorBusy(processor.id(), id)) { return result(Code.PROCESSOR_BUSY, false, job); }
             Analysis next = job.analysis().with(AnalysisState.RUNNING, 0,
-                    Optional.of(new Claim(registry.saveEpoch(), processor)));
+                    Optional.of(new Claim(registry.stampEpoch(), processor)));
             return mutate(job.analyzed(next, registry.clock.preview(observedTime)), observedTime);
         }
     }
@@ -229,7 +229,7 @@ public final class GroundSurveys {
             }
             if (ledger.processorBusy(target.id(), id)) { return result(Code.PROCESSOR_BUSY, false, job); }
             Analysis next = job.analysis().with(AnalysisState.RUNNING, job.analysis().progress(),
-                    Optional.of(new Claim(registry.saveEpoch(), target)));
+                    Optional.of(new Claim(registry.stampEpoch(), target)));
             return mutate(job.analyzed(next, registry.clock.preview(observedTime)), observedTime);
         }
     }
