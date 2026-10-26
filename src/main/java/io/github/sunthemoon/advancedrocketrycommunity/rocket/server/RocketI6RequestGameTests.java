@@ -30,7 +30,7 @@ public final class RocketI6RequestGameTests {
             if (request[0] == null) {
                 var at = helper.absolutePos(new BlockPos(3, 2, 3));
                 if (!level.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(at.getX() >> 4, at.getZ() >> 4))) { return; }
-                var fixture = RocketSourceRetirementFixtures.countdown(level, at, at, List.of(), 0);
+                var fixture = RocketSourceRetirementFixtures.countdown(level, at.east(), at, List.of(), 0);
                 rocket[0] = fixture.spawnDestination(helper, level); OWNED.add(rocket[0]);
                 rocket[0].updateFlightData(rocket[0].flightData().orElseThrow().land(now));
                 RocketTransferEntities.positionAtOrigin(rocket[0], fixture.record().destinationSnapshot().sourceOrigin());
