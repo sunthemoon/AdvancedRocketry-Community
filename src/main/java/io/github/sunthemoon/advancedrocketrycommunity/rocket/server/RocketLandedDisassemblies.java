@@ -118,6 +118,7 @@ final class RocketLandedDisassemblies {
         private RocketTransactionResult result;
         private SealedDisassembly.Result retainedResult;
         private boolean reported;
+        private boolean retainedReady;
 
         private Pending(RocketTransferRecord record, UUID entity, long requestedAt, Request request, Port port,
                         RocketTransferSavedData journal) {
@@ -322,15 +323,9 @@ final class RocketLandedDisassemblies {
                 return true;
             }
             if (entry.request.retainedExecutor()) {
-                boolean admitted;
-                try { admitted = entry.request.beginRetained(result -> retainedCompleted(entry, result)); }
-                catch (RuntimeException | Error uncertain) {
-                    entry.progress.startRestoration(); throw uncertain;
-                }
-                if (!admitted) {
-                    entry.code = entry.request.admissionRefusal(); writeBack(entry); return true;
-                }
-                entry.progress.startRestoration();
+                // The journal callback runs after B2's END-tick work. P retains its capacity/region until the next
+                // manager turn, before the shared inspection allowance is consumed. No U or executor exists yet.
+                entry.retainedReady = true;
             } else {
                 entry.progress.startRestoration();
                 entry.request.restore(result -> restorationCompleted(entry, result));
@@ -339,6 +334,25 @@ final class RocketLandedDisassemblies {
             restorationFailed(entry);
         }
         return true;
+    }
+
+    /** Service acknowledged handoffs before B2 spends this server tick's existing inspection budget. */
+    void tickRetained() {
+        for (var entry : List.copyOf(pending.values())) {
+            if (!entry.retainedReady || entry.stage() != Stage.RELEASED) { continue; }
+            entry.retainedReady = false;
+            try {
+                if (!entry.request.authorized() || !RocketLandedDisassemblyRules.restore(entry.requestedAt,
+                        entry.port.now(), entry.request.matches(), entry.request.restorable(), entry.port.bayAllowsRemoval(entry.record))) {
+                    writeBack(entry); continue;
+                }
+                boolean admitted;
+                try { admitted = entry.request.beginRetained(result -> retainedCompleted(entry, result)); }
+                catch (RuntimeException | Error uncertain) { entry.progress.startRestoration(); throw uncertain; }
+                if (!admitted) { entry.code = entry.request.admissionRefusal(); writeBack(entry); continue; }
+                entry.progress.startRestoration();
+            } catch (RuntimeException failure) { restorationFailed(entry); }
+        }
     }
 
     private void retainedCompleted(Pending entry, SealedDisassembly.Result result) {

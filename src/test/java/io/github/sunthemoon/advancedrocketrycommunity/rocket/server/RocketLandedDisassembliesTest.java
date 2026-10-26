@@ -75,10 +75,21 @@ class RocketLandedDisassembliesTest {
 
     private Path file() { return directory.resolve(TYPE.fileName()); }
 
+    @Test void checkedRemovalDefersRetainedAdmissionToItsOwnBudgetedTurn() throws Exception {
+        var f = new Fixture(new RocketPosition(64, 80, 64)); f.request.retained = true;
+        f.release(); f.acknowledge();
+        assertNull(f.request.retainedCompletion, "An END-tick journal callback must not consume an already-spent B2 budget");
+        assertTrue(f.disassemblies.pending(f.logical())); assertEquals(0, f.request.restores);
+        f.port.now++;
+        RocketLandedDisassemblies.class.getDeclaredMethod("tickRetained").invoke(f.disassemblies);
+        assertNotNull(f.request.retainedCompletion);
+        f.request.retainedCompletion.accept(SealedDisassembly.Result.SEALED); f.close();
+    }
+
     @Test void retainedCompletionUsesActualResultAndOnlyRollbackProvedWritesBack() {
         for (var result : SealedDisassembly.Result.values()) {
             var f = new Fixture(new RocketPosition(64, 80, 64)); f.request.retained = true;
-            f.release(); f.acknowledge();
+            f.release(); f.acknowledge(); f.disassemblies.tickRetained();
             assertEquals(0, f.request.restores, "The retained executor must replace synchronous restore");
             assertTrue(f.disassemblies.pending(f.logical()));
             assertNotNull(f.request.retainedCompletion);
@@ -93,7 +104,7 @@ class RocketLandedDisassembliesTest {
     @Test void retainedAdmissionRefusalDoesNotSetTheMutationLatch() {
         var f = new Fixture(new RocketPosition(64, 80, 64));
         f.request.retained = true; f.request.acceptRetained = false;
-        f.release(); f.acknowledge();
+        f.release(); f.acknowledge(); f.disassemblies.tickRetained();
         assertEquals(0, f.request.restores);
         assertSame(f.landed, f.journal.find(f.landed.transferId()).orElseThrow());
         assertFalse(f.disassemblies.find(f.logical()).restorationStarted());

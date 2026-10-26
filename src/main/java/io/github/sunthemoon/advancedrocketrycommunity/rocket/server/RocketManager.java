@@ -271,6 +271,7 @@ public final class RocketManager implements RocketOperationService {
 
     public void tick(MinecraftServer server) {
         Objects.requireNonNull(server, "server");
+        flights.transfers().landedDisassemblies().tickRetained();
         var selectedRecovery = sealed.tick(server, !flightLifecycle.recoverySuppressedForReleaseTest());
         if (flightLifecycle.active()) {
             flights.tick(server);
