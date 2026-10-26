@@ -305,7 +305,6 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
         ResourceLocation target = selectedTarget();
 
         ItemStack packageStack = inventory.getStackInSlot(SLOT_PACKAGE);
-        SatelliteOperationResult result;
         if (!packageStack.isEmpty()) {
             if (!SatelliteTerminalInventory.validPackage(packageStack)) {
                 updateResult(player, SatelliteOperationCode.RECEIVER_REQUIRED);
@@ -334,9 +333,8 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
                 updateResult(player, SatelliteOperationCode.TARGET_NOT_ALLOWED);
                 return;
             }
-            result = SatelliteRuntime.startMission(player, chip, target);
+            updateResult(player, dataAction(player, chip, () -> SatelliteRuntime.startMission(player, chip, target)));
         }
-        updateResult(player, result.code());
     }
 
     private void claim(ServerPlayer player) {
@@ -344,8 +342,15 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
         if (chip == null) {
             return;
         }
-        updateResult(player, chip.kind() == SatelliteKind.DATA ? SatelliteRuntime.claim(player, chip).code()
+        updateResult(player, chip.kind() == SatelliteKind.DATA ? dataAction(player, chip, () -> SatelliteRuntime.claim(player, chip))
                 : resources.claim(player, chip));
+    }
+
+    /** ADR-074 item 6: an admitted data action whose changed result waits for a covering commit. */
+    private SatelliteOperationCode dataAction(ServerPlayer player, SatelliteIdentity chip,
+                                              java.util.function.Supplier<SatelliteOperationResult> action) {
+        SatelliteOperationCode refused = TerminalRegistryActions.admit(this, chip.satelliteId());
+        return refused != null ? refused : TerminalRegistryActions.dataAction(this, player, chip, action.get());
     }
 
     private void cancel(ServerPlayer player) {
@@ -354,7 +359,8 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
             return;
         }
         boolean delivered = chip.kind() == SatelliteKind.ASTEROID_MINER || chip.kind() == SatelliteKind.GAS_HARVESTER;
-        updateResult(player, delivered ? resources.cancel(player, chip) : SatelliteRuntime.cancel(player, chip).code());
+        updateResult(player, delivered ? resources.cancel(player, chip)
+                : dataAction(player, chip, () -> SatelliteRuntime.cancel(player, chip)));
     }
 
     /**

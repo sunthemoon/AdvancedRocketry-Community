@@ -98,6 +98,18 @@ final class TerminalRegistryActions {
         return true;
     }
 
+    /**
+     * After a data start, claim or cancel: a changed RAM result is stored with the token fixed now, and shown once a
+     * commit covers that token; later polls never replace it with a moving sequence. No item is locked.
+     */
+    static SatelliteOperationCode dataAction(SatelliteTerminalBlockEntity terminal, ServerPlayer player,
+                                             SatelliteIdentity chip, SatelliteOperationResult result) {
+        if (!result.changed()) { return result.code(); }
+        var token = SatelliteMissionSavedData.get(player.getServer()).token();
+        table().orElseThrow().data(key(terminal), chip, token, result.code(), player.getUUID());
+        return SatelliteOperationCode.REGISTRY_PENDING;
+    }
+
     private static Optional<TerminalActionTable> table() { return SatelliteRuntime.terminalActions(); }
 
     private static boolean server(SatelliteTerminalBlockEntity terminal) {

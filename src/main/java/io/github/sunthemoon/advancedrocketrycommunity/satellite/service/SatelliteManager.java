@@ -265,8 +265,9 @@ public final class SatelliteManager {
                     server.overworld().getGameTime(),
                     discoveryRequired(server, targetBodyId)
             );
+            // ADR-074 item 6: a prompt request; the terminal shows the stored result once a commit covers it.
             if (result.changed() || data.isDirty()) {
-                data.flush(server);
+                data.request(server);
             }
             return result;
         } catch (RuntimeException exception) {
@@ -446,7 +447,7 @@ public final class SatelliteManager {
                     server.overworld().getGameTime()
             );
             if (dataMission(result) && (result.changed() || data.isDirty())) {
-                data.flush(server);
+                data.request(server);
             }
             return result;
         } catch (RuntimeException exception) {
@@ -468,8 +469,9 @@ public final class SatelliteManager {
                     true,
                     server.overworld().getGameTime()
             );
+            // The command reports this RAM result; the cancel is durable once a later commit covers it.
             if (dataMission(result) && (result.changed() || data.isDirty())) {
-                data.flush(server);
+                data.request(server);
             }
             return result;
         } catch (RuntimeException exception) {
@@ -684,7 +686,7 @@ public final class SatelliteManager {
                 if (!needsDiscoveryRetry(result)) { pendingDiscoveryReplay.remove(missionId); }
             }
             if (data.isDirty()) {
-                data.flush(server);
+                data.request(server);
             }
             return result;
         } catch (RuntimeException exception) {
@@ -725,7 +727,7 @@ public final class SatelliteManager {
         return null;
     }
 
-    /** ADR-050 section 2: only the existing {@code data} paths keep their barrier; v1.6 kinds wait for the coalesced flush. */
+    /** ADR-050 section 2: only the {@code data} paths request at once; v1.6 kinds wait for the coalesced request. */
     private static boolean dataMission(SatelliteOperationResult result) {
         return result.mission().map(mission -> mission.kind() == MissionKind.DATA).orElse(true);
     }

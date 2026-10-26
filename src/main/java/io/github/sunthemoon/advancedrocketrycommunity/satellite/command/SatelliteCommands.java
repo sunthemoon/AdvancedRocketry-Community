@@ -177,7 +177,13 @@ public final class SatelliteCommands {
                     .ifPresent(service -> service.audit(context.getSource().getServer(), "CANCEL",
                             result.mission().orElseThrow(), null, "by=operator"));
         }
-        return audit(context, "mission_cancel", missionId, result);
+        int audited = audit(context, "mission_cancel", missionId, result);
+        if (result.changed()) {
+            // ADR-074 item 6: the command distinguishes the RAM result from durable completion.
+            context.getSource().sendSuccess(() -> Component.literal("mission_cancel " + missionId + ": ram_result="
+                    + result.code() + " durable=after_next_registry_commit"), false);
+        }
+        return audited;
     }
 
     private int recoverChip(CommandContext<CommandSourceStack> context)
