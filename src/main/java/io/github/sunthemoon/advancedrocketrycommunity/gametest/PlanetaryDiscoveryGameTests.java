@@ -115,7 +115,14 @@ public final class PlanetaryDiscoveryGameTests {
                                     try {
                                         helper.assertTrue(menu.quotes().forTarget(MARS).status() == RocketNavigationStatus.DISCOVERY_REQUIRED,
                                                 "Pre-claim menu refresh lost discovery lock");
-                                        helper.assertTrue(SatelliteRuntime.claim(owner, identity).success(), "Owner research claim failed");
+                                        // ADR-074 item 6: the discovery waits for the commit of the paid receipt.
+                                        var research = SatelliteRuntime.currentMission(server, identity).orElseThrow().missionId();
+                                        helper.assertTrue(SatelliteRuntime.claim(owner, identity).code() == SatelliteOperationCode.PENDING_DISCOVERY
+                                                && progress.get(PlanetaryContent.MARS).isEmpty(), "Owner research discovery ran ahead of its receipt");
+                                        SatelliteRegistrySettle.settle(server);
+                                        helper.assertTrue(progress.get(PlanetaryContent.MARS).isPresent()
+                                                && missions.mission(research).orElseThrow().status() == MissionStatus.CLAIMED,
+                                                "Owner research claim failed");
                                         helper.assertTrue(missions.account(owner.getUUID()).balance() == 20 && missions.account(other.getUUID()).balance() == 0,
                                                 "Shared discovery transferred private research");
                                         helper.assertTrue(!menu.quotes().forTarget(MARS).canLaunch(), "Menu did not retain its bounded refresh interval");
@@ -133,6 +140,8 @@ public final class PlanetaryDiscoveryGameTests {
                                                 for (int i = 0; i < 3; i++) {
                                                     helper.assertTrue(SatelliteRuntime.claim(owner, capacityIdentity).code() == SatelliteOperationCode.PENDING_DISCOVERY,
                                                             "Full retained ledger was not reported pending");
+                                                    // The later retries reach the full ledger once the receipt is committed.
+                                                    if (i == 0) { SatelliteRegistrySettle.settle(server); }
                                                 }
                                                 helper.assertTrue(missions.account(owner.getUUID()).balance() == 40 && full.equals(progress.save(new CompoundTag()))
                                                         && SatelliteRuntime.currentMission(server, capacityIdentity).orElseThrow().status() == MissionStatus.CLAIM_PENDING_DISCOVERY,

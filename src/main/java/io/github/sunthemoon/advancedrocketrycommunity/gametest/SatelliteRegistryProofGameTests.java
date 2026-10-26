@@ -149,9 +149,11 @@ public final class SatelliteRegistryProofGameTests {
         helper.assertTrue(terminal.menuInventory().insertItem(SatelliteTerminalBlockEntity.SLOT_CONTROL_CHIP, chip, false).isEmpty(), "Chip refused");
         helper.assertTrue(terminal.menuInventory().insertItem(SatelliteTerminalBlockEntity.SLOT_PACKAGE, pkg, false).isEmpty(), "Package refused");
     }
+    /** Presses, then waits for the registry's acknowledgement and the terminal's effect (ADR-074 item 6). */
     private static void press(GameTestHelper helper, SatelliteTerminalBlockEntity terminal, FakePlayer player, int button,
                               SatelliteOperationCode expected) {
         terminal.handleButton(player, button);
+        SatelliteRegistrySettle.settle(helper.getLevel().getServer());
         int result = terminal.saveWithoutMetadata().getCompound("SatelliteTerminal").getInt("last_result");
         helper.assertTrue(result == expected.ordinal(), "Expected " + expected + ", got " + SatelliteOperationCode.values()[result]);
     }

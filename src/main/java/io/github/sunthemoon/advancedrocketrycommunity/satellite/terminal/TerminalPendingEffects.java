@@ -32,13 +32,16 @@ public final class TerminalPendingEffects {
 
     @SubscribeEvent
     public static void tick(TickEvent.ServerTickEvent event) {
-        if (event.phase != TickEvent.Phase.START) { return; }
+        if (event.phase == TickEvent.Phase.START) { complete(event.getServer()); }
+    }
+
+    /** One pass, as at tick START: returns how many entries completed (at most 32). GameTests call it to settle. */
+    public static int complete(MinecraftServer server) {
         var table = SatelliteRuntime.terminalActions().orElse(null);
-        if (table == null || table.size() == 0) { return; }
-        MinecraftServer server = event.getServer();
-        if (server.isStopped() || !server.isRunning()) { table.discard(); return; }
+        if (table == null || table.size() == 0) { return 0; }
+        if (server.isStopped() || !server.isRunning()) { table.discard(); return 0; }
         var registry = SatelliteMissionSavedData.existing(server);
-        if (registry == null) { return; }
+        if (registry == null) { return 0; }
         int completed = 0;
         for (var entry : table.rotation()) {
             if (completed >= TerminalActionTable.MAX_COMPLETIONS_PER_TICK) { break; }
@@ -56,6 +59,7 @@ public final class TerminalPendingEffects {
             if (TerminalRegistryActions.complete(terminal, entry)) { table.completed(entry); completed++; }
             else { hold(table, entry, "SLOT_MISMATCH"); }
         }
+        return completed;
     }
 
     /** {@code ServerStoppingEvent} (normal path); the tick check above covers a thrown tick without this event. */

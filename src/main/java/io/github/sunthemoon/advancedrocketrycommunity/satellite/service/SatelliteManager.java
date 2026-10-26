@@ -610,6 +610,15 @@ public final class SatelliteManager {
         return celestialCatalogs.current();
     }
 
+    /** GameTest and release-test servers only: one discovery replay pass now, as the END tick would run it. */
+    public void replayDiscoveriesForTests(MinecraftServer server) {
+        if (!io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteRegistryTestAwait.allowed(server)) {
+            throw new IllegalStateException("Discovery replay is driven by the server tick on a normal server");
+        }
+        replayBackoffTicks = 0;
+        replayDiscoveries(server);
+    }
+
     /** ADR-074 item 7: the server-lifetime table of terminal actions waiting for an acknowledgement. */
     public TerminalActionTable terminalActions() {
         return terminalActions;

@@ -13,6 +13,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.satellite.content.Satellit
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.MissionStatus;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteOperationCode;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteMissionSavedData;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteRegistryProof;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -64,18 +65,27 @@ public final class DiscoveryRecoveryGameTests {
             helper.assertTrue(missions.account(owner.getUUID()).balance() == 20, "Startup paid historical research twice");
 
             var identity = new SatelliteIdentity(UUID.randomUUID(), owner.getUUID(), SatelliteIds.DATA_SATELLITE);
-            var obstacle = server.getWorldPath(LevelResource.ROOT).resolve("data")
-                    .resolve(SatelliteMissionSavedData.DATA_NAME + ".dat.arce-pending");
+            var disk = server.getWorldPath(LevelResource.ROOT).resolve("data");
+            var obstacle = disk.resolve(SatelliteMissionSavedData.DATA_NAME + ".dat.arce-pending");
             java.nio.file.Files.createDirectory(obstacle);
+            SatelliteRegistryProof.Token launched;
             try {
                 AdvancedRocketryCommunity.LOGGER.info("ARCE_DISCOVERY_EXPECTED_SAVE_FAILURE testing launch acknowledgment");
-                helper.assertTrue(manager.launch(owner, identity, PlanetaryContent.VENUS).code()
-                        == SatelliteOperationCode.UNSUPPORTED_DATA, "Unacknowledged launch was reported successful");
+                // ADR-074 item 6: the launch changes RAM; only a published commit acknowledges it.
+                helper.assertTrue(manager.launch(owner, identity, PlanetaryContent.VENUS).code() == SatelliteOperationCode.SUCCESS,
+                        "The launch was refused");
+                launched = missions.token();
+                missions.awaitForTests(server);
+                helper.assertTrue(!missions.covers(launched) && SatelliteMissionSavedData.load(NbtIo.readCompressed(
+                        disk.resolve(SatelliteMissionSavedData.DATA_NAME + ".dat").toFile()).getCompound("data"))
+                        .satellite(identity.satelliteId()).isEmpty(), "A failed write acknowledged the launch");
             } finally { java.nio.file.Files.delete(obstacle); }
-            helper.assertTrue(manager.launch(owner, identity, PlanetaryContent.VENUS).success(), "Second mission did not launch");
-            var acknowledgedLaunch = SatelliteMissionSavedData.load(NbtIo.readCompressed(server.getWorldPath(LevelResource.ROOT)
-                    .resolve("data").resolve(SatelliteMissionSavedData.DATA_NAME + ".dat").toFile()).getCompound("data"));
-            helper.assertTrue(acknowledgedLaunch.satellite(identity.satelliteId()).isPresent(),
+            helper.assertTrue(manager.launch(owner, identity, PlanetaryContent.VENUS).code() == SatelliteOperationCode.IDEMPOTENT,
+                    "Second mission did not launch");
+            missions.awaitForTests(server);
+            var acknowledgedLaunch = SatelliteMissionSavedData.load(NbtIo.readCompressed(
+                    disk.resolve(SatelliteMissionSavedData.DATA_NAME + ".dat").toFile()).getCompound("data"));
+            helper.assertTrue(missions.covers(launched) && acknowledgedLaunch.satellite(identity.satelliteId()).isPresent(),
                     "Idempotent launch retry skipped the failed persistence acknowledgment");
             UUID next = missions.satellite(identity.satelliteId()).orElseThrow().currentMissionId().orElseThrow();
             var started = missions.mission(next).orElseThrow();
@@ -83,8 +93,11 @@ public final class DiscoveryRecoveryGameTests {
             helper.assertTrue(catalogs.applyCandidate(CelestialCatalog.create(all.stream()
                     .filter(body -> !body.id().equals(PlanetaryContent.VENUS)).toList())), "Removed fixture catalog rejected");
             for (int retry = 0; retry < 3; retry++) {
-                helper.assertTrue(manager.claimCurrent(owner, identity).code() == SatelliteOperationCode.CATALOG_UNAVAILABLE,
+                // The paying claim waits for its receipt's commit; the retries then find the target removed.
+                helper.assertTrue(manager.claimCurrent(owner, identity).code() == (retry == 0
+                                ? SatelliteOperationCode.PENDING_DISCOVERY : SatelliteOperationCode.CATALOG_UNAVAILABLE),
                         "Removed target was not retained for recovery");
+                if (retry == 0) { missions.awaitForTests(server); }
             }
             helper.assertTrue(missions.account(owner.getUUID()).balance() == 40
                     && missions.mission(next).orElseThrow().status() == MissionStatus.CLAIM_PENDING_DISCOVERY,
@@ -99,7 +112,7 @@ public final class DiscoveryRecoveryGameTests {
             helper.assertTrue(missions.account(owner.getUUID()).balance() == 40
                     && missions.mission(next).orElseThrow().completesAtLogicalTime() == started.completesAtLogicalTime(),
                     "Replay changed research or the captured mission deadline");
-            var disk = server.getWorldPath(LevelResource.ROOT).resolve("data");
+            missions.awaitForTests(server);
             var restored = SatelliteMissionSavedData.load(NbtIo.readCompressed(
                     disk.resolve(SatelliteMissionSavedData.DATA_NAME + ".dat").toFile()).getCompound("data"));
             var restoredProgress = CelestialSavedData.load(NbtIo.readCompressed(
@@ -112,6 +125,8 @@ public final class DiscoveryRecoveryGameTests {
             progress.recordVisit(PlanetaryContent.VENUS, time);
             missions.setDirty();
             server.overworld().getDataStorage().save();
+            // ADR-074 item 9: the save requests the registry's write; the registry is clean once its commit is published.
+            missions.awaitForTests(server);
             var autosaved = CelestialSavedData.load(NbtIo.readCompressed(
                     disk.resolve(CelestialSavedData.DATA_NAME + ".dat").toFile()).getCompound("data"));
             helper.assertTrue(!progress.isDirty() && !missions.isDirty()
