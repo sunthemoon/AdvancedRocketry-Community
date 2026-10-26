@@ -69,9 +69,19 @@ class SealedWorkSchedulingTest {
             assertTrue(port.written.isEmpty(), "WRITE_PENDING was reported as a result");
             assertFalse(port.current);
             port.publish(); port.tick++; flush(scheduler);
-            assertEquals(outcome == Outcome.COMMITTED ? List.of() : List.of(outcome), port.written);
+            assertEquals(List.of(outcome), port.written, "The published result is reported once");
             assertEquals(outcome == Outcome.COMMITTED ? 1 : 2, port.writes, "Only a published failure may capture again");
         }
+    }
+
+    @Test void aCommittedWriteThatMadeTheJournalCurrentStillAllowsTheNextTick() throws Exception {
+        var port = new Port(); var scheduler = scheduler(port);
+        request(scheduler); flush(scheduler); assertEquals(1, port.writes);
+        port.publish(); flush(scheduler);
+        assertTrue(port.current); assertEquals(List.of(Outcome.COMMITTED), port.written);
+        // A later change inside the 200-tick failure wait: a COMMITTED result always allowed the next tick.
+        port.tick = 1; port.current = false; request(scheduler); flush(scheduler);
+        assertEquals(2, port.writes, "A COMMITTED result settled while current kept the failure wait");
     }
 
     @Test void aRefusedRequestKeepsDemandBehindTheRetryAndReportsNoResult() throws Exception {

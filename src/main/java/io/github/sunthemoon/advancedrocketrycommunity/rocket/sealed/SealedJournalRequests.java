@@ -30,18 +30,19 @@ public final class SealedJournalRequests {
     /** Call after the owner's work pass. Callers re-query presence/absence later, never use this as permission. */
     public void flush() {
         owner();
-        if (!requested || !port.operational()) { return; }
-        if (port.current()) { requested = false; awaiting = false; return; }
-        // WRITE_PENDING means "not proved yet, wait": it is no result, keeps the demand and starts no other capture.
-        if (port.writePending()) { return; }
-        long now = port.now();
-        if (awaiting) {
+        if (awaiting && !port.writePending()) {
             // The writer is sequential: its first idle answer after the request reflects a capture taken at or after it.
+            // Settle it even when that capture made the journal current, so a COMMITTED result keeps its next-tick retry.
             awaiting = false;
             Outcome result = port.outcome();
             port.written(result);
             if (result == Outcome.COMMITTED) { notBefore = lastAttempt + 1; }
         }
+        if (!requested || !port.operational()) { return; }
+        if (port.current()) { requested = false; return; }
+        // WRITE_PENDING means "not proved yet, wait": it is no result, keeps the demand and starts no other capture.
+        if (port.writePending()) { return; }
+        long now = port.now();
         if (lastAttempt == now || now < notBefore) { return; }
         lastAttempt = now;
         // Set before entering the writer, so an exception cannot create an immediate write loop.
