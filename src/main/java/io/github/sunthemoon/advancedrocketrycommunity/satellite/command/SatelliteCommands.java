@@ -352,7 +352,8 @@ public final class SatelliteCommands {
             return 0;
         }
         String line = data.diagnostics() + " flush_pending=" + data.flushPending()
-                + " coalesced_flushes=" + satellites.coalescedFlushes() + " " + satellites.coalescedFlushTimes();
+                + " coalesced_flushes=" + satellites.coalescedFlushes() + " "
+                + satellites.coalescedFlushTimes(context.getSource().getServer());
         AdvancedRocketryCommunity.LOGGER.info("ARCE_SATELLITE_DIAGNOSTICS {}", line);
         context.getSource().sendSuccess(() -> Component.literal(line), false);
         return 1;

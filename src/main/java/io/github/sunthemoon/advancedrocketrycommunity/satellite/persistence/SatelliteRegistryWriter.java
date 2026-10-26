@@ -40,7 +40,7 @@ final class SatelliteRegistryWriter {
     private final SatelliteMissionSavedData data;
     private final SatelliteMissionRegistry registry;
     private final List<Checkpoint> tickets = new ArrayList<>();
-    private long mutationSequence, completedWrites, lastWriterNanos, lastWriterCpuNanos;
+    private long mutationSequence, completedWrites, lastWriterNanos, lastWriterCpuNanos, maxWriterNanos;
     private Acknowledgement acknowledged;
     private CheckedSavedDataPolicy policy = CheckedSavedDataPolicy.atomic(TYPE);
     private CheckedRootWriter<Capture, Attributes, Result> writer;
@@ -142,6 +142,10 @@ final class SatelliteRegistryWriter {
     boolean inFlight() { requireOwner(); return writer != null && writer.inFlight(); }
     boolean completionReady() { requireOwner(); return writer != null && writer.completionReady(); }
     long completedWrites() { return completedWrites; }
+    String diagnostics() {
+        return String.format(java.util.Locale.ROOT, "registry_writes=%d writer_last_ms=%.3f writer_cpu_last_ms=%.3f writer_max_ms=%.3f",
+                completedWrites, lastWriterNanos / 1e6, lastWriterCpuNanos / 1e6, maxWriterNanos / 1e6);
+    }
     long lastWriterNanos() { return lastWriterNanos; }
     long lastWriterCpuNanos() { return lastWriterCpuNanos; }
 
@@ -263,6 +267,7 @@ final class SatelliteRegistryWriter {
         }
         flight = null;
         completedWrites++; lastWriterNanos = completion.writerNanos(); lastWriterCpuNanos = completion.writerCpuNanos();
+        maxWriterNanos = Math.max(maxWriterNanos, lastWriterNanos);
         Result result = completion.payload();
         lastFailure = result == null ? null : result.failure();
         Outcome outcome = Outcome.valueOf(completion.status().name());

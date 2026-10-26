@@ -149,8 +149,9 @@ public final class SatelliteManager {
     }
 
     /**
-     * ADR-050 section 2: while a state change is pending, one flush runs at most every 100 ticks, on top of the
-     * barrier flushes. A failing flush keeps the change pending and is reported once until a flush succeeds.
+     * ADR-050 section 2 and ADR-074 item 6: while a state change is pending, one request is made at most every 100
+     * ticks, on top of the prompt requests. The write runs off-thread; its failures are reported once per streak by
+     * the registry writer, and the change stays pending until a commit covers it.
      */
     private void coalescedFlush(MinecraftServer server, SatelliteMissionSavedData data) {
         int now = server.getTickCount();
@@ -160,7 +161,7 @@ public final class SatelliteManager {
         lastCoalescedFlush = now;
         try {
             long started = System.nanoTime();
-            data.flush(server);
+            data.request(server);
             long elapsed = System.nanoTime() - started;
             coalescedFlushNanos += elapsed;
             coalescedFlushMaxNanos = Math.max(coalescedFlushMaxNanos, elapsed);
@@ -179,11 +180,14 @@ public final class SatelliteManager {
         return coalescedFlushes;
     }
 
-    /** Mean and maximum coalesced flush time in milliseconds since the server started (C9 cost measurement). */
-    public String coalescedFlushTimes() {
-        return String.format(java.util.Locale.ROOT, "coalesced_flush_mean_ms=%.3f coalesced_flush_max_ms=%.3f",
+    /**
+     * C9 cost measurement, split by ADR-074: the coalesced request's server-thread time (which takes the capture), mean
+     * and maximum in milliseconds, then the registry writer's own IO-thread times.
+     */
+    public String coalescedFlushTimes(MinecraftServer server) {
+        return String.format(java.util.Locale.ROOT, "coalesced_request_mean_ms=%.3f coalesced_request_max_ms=%.3f %s",
                 coalescedFlushes == 0 ? 0.0D : coalescedFlushNanos / 1_000_000.0D / coalescedFlushes,
-                coalescedFlushMaxNanos / 1_000_000.0D);
+                coalescedFlushMaxNanos / 1_000_000.0D, SatelliteMissionSavedData.get(server).writerDiagnostics());
     }
 
     /**

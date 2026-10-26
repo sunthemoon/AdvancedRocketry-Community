@@ -295,8 +295,12 @@ public final class SatelliteMissionSavedData extends SavedData {
                 + " bytes_missions=" + registry.reservedBytes("MISSIONS")
                 + " bytes_instances=" + registry.reservedBytes("INSTANCES")
                 + " bytes_accounts=" + registry.reservedBytes("ACCOUNTS")
-                + " save_epoch=" + registry.saveEpoch();
+                + " save_epoch=" + registry.saveEpoch() + " stamp_epoch=" + registry.stampEpoch()
+                + " reserved_epoch=" + registry.epochs().reserved();
     }
+
+    /** The registry writer's IO-thread figures: writes published, last and maximum wall time, last CPU time. */
+    public String writerDiagnostics() { return writer.diagnostics(); }
 
     public boolean operational() {
         return preservedBlockedData == null;
