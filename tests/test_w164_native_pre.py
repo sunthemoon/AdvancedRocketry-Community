@@ -28,7 +28,8 @@ class W164NativePreTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory); world = root / "world"; evidence = root / "evidence"
             (world / "entities").mkdir(parents=True); (world / "data").mkdir(); evidence.mkdir()
-            samples = {"entities/r.0.0.mca": bytes(range(256)) * 32, "data/record.dat": b"exact native bytes"}
+            samples = {"entities/r.0.0.mca": bytes(range(256)) * 32, "data/record.dat": b"exact native bytes",
+                       "entities/c.0.0.mcc": b"external oversized entity chunk"}
             for name, raw in samples.items(): (world / name).write_bytes(raw)
             result = native.preserve(world, evidence, 0)
             import zipfile

@@ -11,7 +11,6 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
-import re
 import time
 import zipfile
 
@@ -32,7 +31,7 @@ def preserve(world: Path, evidence: Path, restart: int) -> dict:
     hashes = {}
     with zipfile.ZipFile(archive, "x", compression=zipfile.ZIP_DEFLATED) as output:
         for path in sorted(world.rglob("*")):
-            if not path.is_file() or not (path.suffix in (".mca", ".dat", ".arce-pending") or path.name == "level.dat_old"):
+            if not path.is_file() or not (path.suffix in (".mca", ".mcc", ".dat", ".arce-pending") or path.name == "level.dat_old"):
                 continue
             name = path.relative_to(world).as_posix()
             require(not path.is_symlink(), "Native storage input is a link")
