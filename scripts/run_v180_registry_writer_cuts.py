@@ -36,6 +36,7 @@ CELESTIAL = "advancedrocketrycommunity_celestial.dat"
 MARS = "advancedrocketrycommunity:mars"
 SHIM = "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/persistence/RocketTransactionSavedData.java"
 PREFIX = "arce satellite release-test registry-writer "
+EXPORT_MARKER = ".arce-export-source"
 STATUS = re.compile(r"ARCE_RELEASE_SRW_STATUS sequence=(\d+) acknowledged=(\w+) outcome=(\w+) busy=(true|false) "
                     r"dirty=(true|false) epoch=(-?\d+) satellites=(\d+) missions=(\d+) terminal=(\w+) package=(\w+) "
                     r"result=(\w+) pending=(-?\d+) research=(\w+) discovered=(true|false) balance=(-?\d+)")
@@ -166,8 +167,17 @@ def check_first_start(case: str, lines: list[str], code: int | None) -> dict:
 
 
 def assert_pin(source: str, allow_shim: bool) -> str | None:
-    """The committed source, optionally with exactly the uncommitted local compile shim; returns the shim's hash."""
+    """The committed source, optionally with exactly the uncommitted local compile shim; returns the shim's hash.
+
+    A heavy driver's export (a git archive of the commit plus any recorded patch, no .git) names its source in
+    EXPORT_MARKER instead; the source must then match it exactly and no shim applies.
+    """
     repo = Path(__file__).resolve().parents[1]
+    marker = repo / EXPORT_MARKER
+    if not (repo / ".git").exists() and marker.is_file():
+        if allow_shim or marker.read_text(encoding="ascii").strip() != source:
+            raise smoke.SmokeError("The export's recorded source differs from --source-commit")
+        return None
     head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=repo, text=True).strip()
     status = [line for line in subprocess.check_output(["git", "status", "--porcelain"], cwd=repo, text=True).splitlines()
               if line.strip()]

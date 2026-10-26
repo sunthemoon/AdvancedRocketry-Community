@@ -146,6 +146,23 @@ class FirstStartTests(unittest.TestCase):
                                                         "A single server tick took 10.00 seconds\n"], 1)
 
 
+class PinTests(unittest.TestCase):
+    def test_an_export_must_name_exactly_the_given_source(self):
+        with TemporaryDirectory() as raw:
+            repo = Path(raw); (repo / "scripts").mkdir()
+            (repo / runner.EXPORT_MARKER).write_text("abc123+patch\n", encoding="ascii")
+            original = runner.__file__
+            try:
+                runner.__file__ = str(repo / "scripts" / "run_v180_registry_writer_cuts.py")
+                self.assertIsNone(runner.assert_pin("abc123+patch", False))
+                with self.assertRaises(runner.smoke.SmokeError):
+                    runner.assert_pin("abc123", False)
+                with self.assertRaises(runner.smoke.SmokeError):
+                    runner.assert_pin("abc123+patch", True)
+            finally:
+                runner.__file__ = original
+
+
 class CaseTableTests(unittest.TestCase):
     def test_every_case_names_a_supported_cut_and_fits_the_start_limit(self):
         for case, (fixture, point, mode, ending, satellites, staging) in runner.CASES.items():
