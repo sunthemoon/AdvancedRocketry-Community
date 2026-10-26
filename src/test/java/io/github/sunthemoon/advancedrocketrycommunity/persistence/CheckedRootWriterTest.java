@@ -239,6 +239,27 @@ class CheckedRootWriterTest {
         assertThrows(IllegalStateException.class, () -> writer.await(clock, clock));
     }
 
+    @Test void aRefusedCaptureDropsThePendingRequestRetriesNothingAndADrainReportsItWithoutSpendingTheBudget() {
+        var root = new FakeRoot(); var io = new ManualIo(); var writer = writer(root, io);
+        try (var log = new LogLines(CheckedRootWriter.class)) {
+            root.mutate(); root.refuse = true;
+            var refused = assertThrows(CheckedRootWriter.CaptureRefused.class, () -> writer.request("a", 0));
+            assertEquals("TEST_REFUSED", refused.reason());
+            assertFalse(writer.busy(), "A refused capture leaves no pending request to retry");
+            for (long tick = 1; tick < 400; tick += 13) { writer.poll(tick); }
+            assertTrue(root.captures.isEmpty()); assertEquals(0, io.queued());
+            writer.latchShutdown();
+            var clock = new VirtualClock(io);
+            var report = writer.drain("a", clock, clock);
+            assertFalse(report.success()); assertEquals("TEST_REFUSED", report.reason());
+            assertEquals(0, report.attempts(), "A refused capture is not an IO attempt");
+            assertTrue(root.dirty);
+            assertEquals(report, writer.close("a", clock, clock), "Close resumes the same drain and reports the same reason");
+            assertEquals(List.of("WARN ARCE_CHECKED_WRITER_DRAIN_INCOMPLETE root=test target=2 committed=0 attempts=0 "
+                    + "reason=TEST_REFUSED"), log.lines(), "One WARN per shutdown");
+        }
+    }
+
     private static CheckedRootWriter<Long, String, String> writer(FakeRoot root, ManualIo io) {
         return new CheckedRootWriter<>("test", root, io);
     }
@@ -279,7 +300,7 @@ class CheckedRootWriterTest {
     /** An in-memory root: a sequence, vanilla's dirty flag and a writer function the test replaces. */
     static final class FakeRoot implements CheckedRootWriter.Root<Long, String, String> {
         long sequence = 1;
-        boolean dirty, failNextPublish;
+        boolean dirty, failNextPublish, refuse;
         final List<Long> captures = new ArrayList<>();
         final List<String> attributes = new CopyOnWriteArrayList<>();
         final List<CheckedRootWriter.Completion<String>> published = new ArrayList<>();
@@ -289,7 +310,10 @@ class CheckedRootWriterTest {
         void mutate() { sequence++; dirty = true; }
         List<Long> publishedSequences() { return published.stream().map(CheckedRootWriter.Completion::sequence).toList(); }
         @Override public long mutationSequence() { return sequence; }
-        @Override public Long capture(long at) { captures.add(at); return at; }
+        @Override public Long capture(long at) {
+            if (refuse) { throw new CheckedRootWriter.CaptureRefused("TEST_REFUSED"); }
+            captures.add(at); return at;
+        }
         @Override public CheckedRootWriter.Attempt<String> write(Long capture, String attempted) {
             ioThread = Thread.currentThread(); attributes.add(attempted); return writer.apply(capture);
         }
