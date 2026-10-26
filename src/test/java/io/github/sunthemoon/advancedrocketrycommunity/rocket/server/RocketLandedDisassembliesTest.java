@@ -86,6 +86,27 @@ class RocketLandedDisassembliesTest {
         f.request.retainedCompletion.accept(SealedDisassembly.Result.SEALED); f.close();
     }
 
+    @Test void normalStopWritesBackAnAcknowledgedHandoffThatNeverEnteredB2() throws Exception {
+        var f = new Fixture(new RocketPosition(64, 80, 64)); f.request.retained = true;
+        f.release(); f.acknowledge();
+        RocketLandedDisassemblies.class.getDeclaredMethod("cancelRetainedHandoffs").invoke(f.disassemblies);
+        assertSame(f.landed, f.journal.find(f.landed.transferId()).orElseThrow());
+        assertNull(f.request.retainedCompletion); assertEquals(0, f.request.restores);
+        f.acknowledge(); assertFalse(f.disassemblies.pending(f.logical())); f.close();
+    }
+
+    @Test void deferredHandoffCannotRefreshAgeOrStartAfterClear() {
+        var f = new Fixture(new RocketPosition(64, 80, 64)); f.request.retained = true;
+        f.request.requestedAt = 10; f.port.now = 210; f.release(); f.acknowledge();
+        f.port.now = 211; f.disassemblies.tickRetained();
+        assertNull(f.request.retainedCompletion);
+        assertSame(f.landed, f.journal.find(f.landed.transferId()).orElseThrow());
+        f.acknowledge(); f.close();
+        var stopped = new Fixture(new RocketPosition(64, 80, 64)); stopped.request.retained = true;
+        stopped.release(); stopped.acknowledge(); stopped.disassemblies.clear(); stopped.disassemblies.tickRetained();
+        assertNull(stopped.request.retainedCompletion); stopped.close();
+    }
+
     @Test void retainedCompletionUsesActualResultAndOnlyRollbackProvedWritesBack() {
         for (var result : SealedDisassembly.Result.values()) {
             var f = new Fixture(new RocketPosition(64, 80, 64)); f.request.retained = true;

@@ -143,6 +143,11 @@ public final class RocketRuntime {
     }
     public static void closeReleasesForStop() { RocketReleaseAccess.stopping(); }
 
+    /** Cancel only proved I6 handoffs that have not entered B2, before the transfer writer's final capture. */
+    public static void cancelLandedHandoffsForStop() {
+        if (service instanceof RocketManager manager) { manager.transfers().landedDisassemblies().cancelRetainedHandoffs(); }
+    }
+
     /** Internal coordinator registration; the installed manager owns the gate for this server session. */
     public static void installBayRecoveryGate(MinecraftServer server, RocketTransferBayRecoveryGate gate) {
         if (!server.isSameThread() || !(service instanceof RocketManager manager)) {

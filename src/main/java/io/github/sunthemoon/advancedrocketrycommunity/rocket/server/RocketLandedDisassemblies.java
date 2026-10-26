@@ -355,6 +355,15 @@ final class RocketLandedDisassemblies {
         }
     }
 
+    /** Before the transfer writer stops, M3 still owns a handoff that has entered no executor and made no terrain change. */
+    void cancelRetainedHandoffs() {
+        for (var entry : List.copyOf(pending.values())) {
+            if (entry.retainedReady && entry.stage() == Stage.RELEASED) {
+                entry.retainedReady = false; writeBack(entry);
+            }
+        }
+    }
+
     private void retainedCompleted(Pending entry, SealedDisassembly.Result result) {
         if (!current(entry) || entry.stage() != Stage.RESTORING) { return; }
         try {
