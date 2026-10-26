@@ -94,8 +94,12 @@ public final class SealedSpecialHostAutomationGameTests {
         var cachedOutside = resourceHosts ? null : level.getBlockEntity(outside).getCapability(ForgeCapabilities.ITEM_HANDLER).orElseThrow(IllegalStateException::new);
         var bounds = new AABB(origin.offset(-2, -3, -3), origin.offset(7, 3, 5)); var began = level.getGameTime();
         var used = new boolean[2]; var done = new boolean[1]; var published = new long[] {-1};
+        // W129aM: each waiting tick lasts the dedicated server's 50 ms, so the journal's off-thread acknowledgement and the
+        // native proofs keep their wall-clock relation to the unchanged tick windows (SealedProductionTestAccess.tickPacer).
+        var pace = SealedProductionTestAccess.tickPacer(level);
         helper.onEachTick(() -> {
             if (done[0]) { return; }
+            pace.run();
             long age = level.getGameTime() - began;
             if (age == 399) {
                 io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity.LOGGER.info(

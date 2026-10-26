@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
 import io.github.sunthemoon.advancedrocketrycommunity.api.rocket.RocketBlockEntityAdapter;
 import io.github.sunthemoon.advancedrocketrycommunity.compat.rocket.RocketAdapterRegistry;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowTestEndpoints;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.RocketBlockStateAdapter;
@@ -49,6 +50,15 @@ public final class SealedProductionTestAccess {
         };
         advance.run();
         if (next[0] < steps.length) { helper.onEachTick(advance); }
+    }
+    /**
+     * W129aM: one waiting tick of a sealed fixture held to the dedicated server's 50 ms ({@link GameTestTickPacer}). The
+     * journal's acknowledgement now arrives from its IO thread in wall-clock time, while a native proof stays current
+     * for a fixed number of ticks, so unthrottled GameTest ticks would measure the host instead of the protocol.
+     */
+    public static Runnable tickPacer(ServerLevel level) {
+        EscrowTestEndpoints.requireEnabled(level.getServer());
+        return new GameTestTickPacer(level.getServer())::pace;
     }
     public static BlockEntity stage(ServerLevel level, BlockEntity source, ResourceLocation adapterId,
             RocketBlockEntityAdapter provider) {

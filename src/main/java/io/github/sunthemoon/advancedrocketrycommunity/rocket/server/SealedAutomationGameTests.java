@@ -83,8 +83,12 @@ public final class SealedAutomationGameTests {
         var began = level.getGameTime(); var released = new long[] {-1}; var done = new boolean[1];
         var pipeForeign = new ItemStack[] {item(Items.LAPIS_LAZULI, 3, "pipe"), item(Items.LAPIS_LAZULI, 3, "pipe")};
         var pipeUsed = new boolean[2]; var bounds = new AABB(origin.offset(-2, -3, -3), origin.offset(7, 3, 5));
+        // W129aM: each waiting tick lasts the dedicated server's 50 ms, so the journal's off-thread acknowledgement and the
+        // native proofs keep their wall-clock relation to the unchanged tick windows (SealedProductionTestAccess.tickPacer).
+        var pace = SealedProductionTestAccess.tickPacer(level);
         helper.onEachTick(() -> {
             if (done[0]) { return; }
+            pace.run();
             long age = level.getGameTime() - began;
             for (int index = 0; index < targets.size(); index++) {
                 var at = targets.get(index); var live = level.getBlockEntity(at);
