@@ -59,6 +59,13 @@ class StatusTests(unittest.TestCase):
                               research="CLAIM_PENDING_DISCOVERY", discovered=False, balance=20),
                          runner.parse_status(STATUS))
 
+    def test_only_a_published_commit_of_the_change_covers_it(self):
+        status = runner.parse_status(STATUS)  # acknowledged=5, outcome=COMMITTED
+        self.assertTrue(runner.covered(status, 5))
+        self.assertFalse(runner.covered(status, 6), "An older commit's outcome covered a newer change")
+        self.assertFalse(runner.covered(dict(status, outcome="FAILED"), 5))
+        self.assertFalse(runner.covered(dict(status, acknowledged="none"), 0))
+
     def test_a_line_without_status_is_refused(self):
         with self.assertRaises(runner.smoke.SmokeError):
             runner.parse_status("ARCE_RELEASE_SRW_REQUESTED result=true sequence=3")

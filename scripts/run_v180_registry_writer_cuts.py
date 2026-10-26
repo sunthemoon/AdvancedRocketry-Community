@@ -49,6 +49,8 @@ STREAK = re.compile(r"ARCE_SATELLITE_REGISTRY_UNACKNOWLEDGED outcome=(\w+) seque
 CRASH = "ARCE_RELEASE_SRW_CRASH"
 CRASHED = re.compile(r"ARCE_RELEASE_SRW_CRASH sequence=(\d+) in_flight=(true|false)")
 REQUESTED = re.compile(r"ARCE_RELEASE_SRW_REQUESTED result=(true|false) sequence=(\d+)")
+TERMINAL = re.compile(r"ARCE_RELEASE_SRW_TERMINAL handled=(true|false) sequence=(\d+)")
+MUTATED = re.compile(r"ARCE_RELEASE_SRW_MUTATED result=(\w+) sequence=(\d+) satellites=(\d+)")
 INJECTED = "ARCE_RELEASE_SRW_INJECTED"
 WATCHDOG = re.compile(r"Considering it to be crashed|A single server tick took")
 
@@ -78,6 +80,12 @@ def parse_status(line: str) -> dict:
     return dict(sequence=int(g[0]), acknowledged=g[1], outcome=g[2], busy=g[3] == "true", dirty=g[4] == "true",
                 epoch=int(g[5]), satellites=int(g[6]), missions=int(g[7]), terminal=g[8], package=g[9], result=g[10],
                 pending=int(g[11]), research=g[12], discovered=g[13] == "true", balance=int(g[14]))
+
+
+def covered(status: dict, sequence: int) -> bool:
+    """A published commit covers the change made at {sequence}; RAM, or an older commit's outcome, never does."""
+    return (status["outcome"] == "COMMITTED" and status["acknowledged"] != "none"
+            and int(status["acknowledged"]) >= sequence)
 
 
 def uuid_of(value) -> str:
@@ -243,9 +251,15 @@ class Session:
 
     def proved(self, sequence: int) -> dict:
         # The scheduler's clock may move the sequence on after the commit; coverage of the request is what counts.
-        return self.await_status(lambda s: s["outcome"] == "COMMITTED" and s["acknowledged"] != "none"
-                                 and int(s["acknowledged"]) >= sequence and not s["busy"],
+        return self.await_status(lambda s: covered(s, sequence) and not s["busy"],
                                  f"a published commit covering sequence {sequence}")
+
+    def mutate(self, satellites: int) -> int:
+        """One registry change with no request; returns its sequence."""
+        match = MUTATED.search(self.send("add", MUTATED))
+        if match.group(1) != "SUCCESS" or int(match.group(3)) != satellites:
+            raise smoke.SmokeError(f"The registry change was refused: {match.group(0)}")
+        return int(match.group(2))
 
     def mark(self) -> int:
         assert self.process is not None
@@ -285,8 +299,7 @@ def first_start(run: Session, case: str) -> dict:
             raise smoke.SmokeError(f"The paid claim did not wait for its receipt's commit: {claim.group(0)}")
         receipt = int(claim.group(2))
         observed["receipt"] = run.await_status(lambda s: s["research"] == "CLAIM_PENDING_DISCOVERY" and s["balance"] > 0
-                                               and s["outcome"] == "COMMITTED" and s["acknowledged"] != "none"
-                                               and int(s["acknowledged"]) >= receipt and not s["discovered"],
+                                               and covered(s, receipt) and not s["discovered"],
                                                "the paid receipt's published commit without its discovery")
         observed.update(check_first_start(case, process.lines, run.end("kill", run.args.exit_timeout)))
         return observed
@@ -296,15 +309,17 @@ def first_start(run: Session, case: str) -> dict:
     if fixture == "terminal":
         if point is None:
             run.send("hold-effects true", DONE)
-        line = run.send("terminal-launch", re.compile(r"ARCE_RELEASE_SRW_TERMINAL handled="))
+        line = run.send("terminal-launch", TERMINAL)
         if "handled=true" not in line or "pending=1" not in line or "package=bound" not in line:
             raise smoke.SmokeError(f"The terminal launch did not wait with its package: {line}")
+        launched = int(TERMINAL.search(line).group(2))
         if point is None:
-            observed["published"] = run.await_status(lambda s: s["outcome"] == "COMMITTED" and s["satellites"] == 1
+            # R4: the launch's own commit is published, and its terminal effect is held.
+            observed["published"] = run.await_status(lambda s: covered(s, launched) and s["satellites"] == 1
                                                      and s["pending"] == 1 and s["package"] == "bound",
                                                      "a published registration with its terminal effect held")
     else:
-        run.send("add", re.compile(r"ARCE_RELEASE_SRW_MUTATED result=SUCCESS .* satellites=1"))
+        first = run.mutate(1)
     if mode in ("PAUSE", "STALL"):
         if fixture != "terminal":
             run.send("request", REQUESTED)  # the coalesced request may already have started the attempt
@@ -314,13 +329,12 @@ def first_start(run: Session, case: str) -> dict:
             raise smoke.SmokeError(f"A write in flight was not busy: {observed['in_flight']}")
     if fixture == "flight":
         # R5: a mutation during the flight, then the commit, with the next capture held before it encodes.
-        run.send("add", re.compile(r"ARCE_RELEASE_SRW_MUTATED result=SUCCESS .* satellites=2"))
+        second = run.mutate(2)
         held = run.mark()
         run.send("arm CAPTURE PAUSE", re.compile(r"ARCE_RELEASE_SRW_ARMED point=CAPTURE mode=PAUSE"))
         run.send("release", DONE)
-        observed["published"] = run.await_status(lambda s: s["outcome"] == "COMMITTED" and s["acknowledged"] != "none"
-                                                 and int(s["acknowledged"]) < s["sequence"] and s["dirty"],
-                                                 "the older commit with the in-flight mutation still dirty")
+        observed["published"] = run.await_status(lambda s: covered(s, first) and int(s["acknowledged"]) < second
+                                                 and s["dirty"], "the first change's commit with the second still dirty")
         run.send("request", REQUESTED)  # the coalesced request may already have started the held capture
         run.wait(re.compile(r"ARCE_RELEASE_SRW_PAUSED point=CAPTURE mode=PAUSE"), held)
     if ending == "stop":
@@ -380,7 +394,7 @@ def run_case(run: Session, case: str) -> dict:
         entry = dict(restart=restart, loaded=loaded)
         if restart == 1:
             if fixture == "terminal":
-                line = run.send("terminal-launch", re.compile(r"ARCE_RELEASE_SRW_TERMINAL handled="))
+                line = run.send("terminal-launch", TERMINAL)
                 if "handled=true" not in line:
                     raise smoke.SmokeError(f"{case}/1: the replay press was refused: {line}")
                 entry["replay"] = line.strip()

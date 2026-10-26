@@ -92,7 +92,9 @@ public final class SatelliteRegistryWriterCommands {
                 .then(Commands.literal("terminal-launch").executes(context -> run(context, (server, data) -> {
                     var terminal = terminal(server);
                     boolean handled = terminal.handleButton(actor(server), SatelliteTerminalMenu.BUTTON_LAUNCH);
-                    LOGGER.info("ARCE_RELEASE_SRW_TERMINAL handled={} {}", handled, describe(server));
+                    // The launch's change is at this sequence; only a published commit covering it proves the registration.
+                    LOGGER.info("ARCE_RELEASE_SRW_TERMINAL handled={} sequence={} {}", handled, data.mutationSequence(),
+                            describe(server));
                 })))
                 .then(Commands.literal("discovery-launch").executes(context -> run(context, (server, data) ->
                         LOGGER.info("ARCE_RELEASE_SRW_DISCOVERY step=launch result={}", SatelliteRuntime.launch(actor(server),
