@@ -67,9 +67,12 @@ public final class V180LanguageProvider extends LanguageProvider {
         V180BeaconData.language(chinese).forEach(this::add);
         V180SatelliteBayData.language(chinese).forEach(this::add);
         V180BayReceiptLanguage.entries(chinese).forEach(this::add);
+        V180SealedRocketData.language(chinese).forEach(this::add);
         V180FluidFuelLoaderData.language(chinese).forEach(this::add);
         V180RocketCargoData.language(chinese).forEach(this::add);
         V180RocketItemCargoData.language(chinese).forEach(this::add);
+        V180RocketMonitorData.language(chinese).forEach(this::add);
+        V180ItemCargoStatusLanguage.language(chinese).forEach(this::add);
         V180ThermiteLanguage.translations(chinese).forEach(this::add);
         V180SleepLanguage.translations(chinese).forEach(this::add);
         V180UnlitTorchLanguage.translations(chinese).forEach(this::add);
@@ -86,6 +89,7 @@ public final class V180LanguageProvider extends LanguageProvider {
         V180LandedDisassemblyLanguage.entries(chinese).forEach(this::add);
         V180PresentationLanguage.translations(chinese).forEach(this::add);
         V180SafetyReturnLanguage.translations(chinese).forEach(this::add);
+        V180RejoinLanguage.entries(chinese).forEach(this::add);
 
         add("screen." + NS + ".railgun.redstone_short", chinese ? "红石" : "Signal");
         add("screen." + NS + ".orbital_laser_drill.redstone_short", chinese ? "红石" : "Signal");

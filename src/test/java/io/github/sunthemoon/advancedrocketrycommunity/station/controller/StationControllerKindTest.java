@@ -33,6 +33,10 @@ final class StationControllerKindTest {
             assertEquals(IntStream.range(0, wire.actions()).boxed().toList(),
                     layouts.get(kind).stream().map(StationControllerMenu.Button::id).sorted().toList(), kind.id());
         }
+        assertEquals(EnumSet.of(ClassicControlKind.WARP_CONTROLLER, ClassicControlKind.STATION_GRAVITY_CONTROLLER,
+                ClassicControlKind.STATION_ALTITUDE_CONTROLLER, ClassicControlKind.STATION_ORIENTATION_CONTROLLER), used);
+        // R92 adds a rocket menu, not a fifth station controller; retain exhaustive channel-kind coverage.
+        assertTrue(used.add(ClassicControlKind.ROCKET_MONITOR));
         assertEquals(EnumSet.allOf(ClassicControlKind.class), used);
         assertEquals(WarpControllerMenu.BUTTON_REQUEST, ClassicControlKind.WARP_CONTROLLER.valueAction());
         assertEquals(WarpControllerMenu.BUTTON_CONFIRM, ClassicControlKind.WARP_CONTROLLER.tokenAction());

@@ -56,7 +56,10 @@ VALIDATED = re.compile(
 )
 RECOVERED = re.compile(r"ARCE_ROCKET_RECOVERY outcome=([A-Z_]+)")
 OPERATOR = re.compile(
-    r"ARCE-BETA-1101 build=([^ ]+) forge=[^ ]+ jei=[^ ]+ root_schema=2 "
+    r"ARCE-BETA-1101 build=([^ ]+) forge=[^ ]+ jei=[^ ]+ "
+    # 37e4be6296093b9ab41020e3e8f4be5439146676 split the default and station
+    # schema fields. Keep the historical form, but never accept another default schema.
+    r"(?:root_schema=2|default_root_schema=2 station_root_schema=\d+ satellite_root_schema=\d+) "
     r"operational=true roots=11111 bodies=\d+ transactions=(\d+) "
     r"transfers=0 stations=0 missions=0 players=0/\d+ "
 )
@@ -210,7 +213,7 @@ class TransactionHarness(flight.FlightHarness):
 
     def finish_clean(self, process) -> dict:
         self.stop(process)
-        findings = server_smoke.scan_log(process.lines)
+        findings = server_smoke.scan_log(process.lines, expected_mod_version=self.expected_version)
         if findings:
             raise SmokeError(f"Transaction server logged a blocking finding: {findings[0]}")
         journal = read_journal(self.server / "world/data" / JOURNAL)

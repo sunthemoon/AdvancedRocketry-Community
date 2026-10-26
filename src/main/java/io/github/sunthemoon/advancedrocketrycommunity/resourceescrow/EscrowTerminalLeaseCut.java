@@ -26,13 +26,15 @@ final class EscrowTerminalLeaseCut implements AutoCloseable {
     private final AtomicBoolean intercepted = new AtomicBoolean();
     private final java.util.function.Consumer<String> checkpoint;
     private final EscrowCoordinator coordinator;
+    private final EscrowGameTestTerminalCut hook;
 
-    EscrowTerminalLeaseCut(MinecraftServer server, ResourceEscrowSavedData data, RocketTransferRecord record) {
-        this(server, data, record, EscrowFlightTables.Outcome.HANDED_OFF);
+    EscrowTerminalLeaseCut(GameTestHelper helper, ResourceEscrowSavedData data, RocketTransferRecord record) {
+        this(helper, data, record, EscrowFlightTables.Outcome.HANDED_OFF);
     }
 
-    EscrowTerminalLeaseCut(MinecraftServer server, ResourceEscrowSavedData data, RocketTransferRecord record,
+    EscrowTerminalLeaseCut(GameTestHelper helper, ResourceEscrowSavedData data, RocketTransferRecord record,
                            EscrowFlightTables.Outcome outcome) {
+        var server = helper.getLevel().getServer();
         EscrowTestEndpoints.requireEnabled(server);
         this.server = server; this.data = data; this.record = record; this.outcome = outcome;
         EscrowTags.require(outcome != EscrowFlightTables.Outcome.ARMED, "Terminal cut requires a terminal outcome");
@@ -50,7 +52,7 @@ final class EscrowTerminalLeaseCut implements AutoCloseable {
                 if (!resume.await(5, TimeUnit.SECONDS)) { throw new IllegalStateException("Terminal cut owner did not resume the writer"); }
             } catch (InterruptedException stopped) { Thread.currentThread().interrupt(); throw new IllegalStateException(stopped); }
         };
-        EscrowRuntime.of(server).terminalCutForTests(server, checkpoint);
+        hook = new EscrowGameTestTerminalCut(helper, checkpoint, resume::countDown);
     }
 
     boolean ready() { return reached.getCount() == 0; }
@@ -126,6 +128,6 @@ final class EscrowTerminalLeaseCut implements AutoCloseable {
     }
 
     @Override public void close() {
-        resume.countDown(); EscrowRuntime.of(server).terminalCutForTests(server, null);
+        hook.close();
     }
 }

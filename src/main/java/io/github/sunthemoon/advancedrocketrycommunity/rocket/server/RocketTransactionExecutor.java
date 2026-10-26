@@ -22,6 +22,7 @@ final class RocketTransactionExecutor {
     private final RocketBlockEntityAdapters adapters;
     private final RocketRegionLockManager locks = new RocketRegionLockManager();
     private final RocketOperationLedger ledger = new RocketOperationLedger();
+    private java.util.function.Predicate<RocketRegion> sealedClaims = region -> false;
     private final RocketTransactionReleaseProbe releaseProbe = new RocketTransactionReleaseProbe(
             Boolean.getBoolean("advancedrocketrycommunity.releaseTestHooks"),
             System.getProperty(RocketTransactionReleaseProbe.PROPERTY));
@@ -42,6 +43,9 @@ final class RocketTransactionExecutor {
     RocketBlockEntityAdapters adapters() {
         return adapters;
     }
+
+    void sealedClaims(java.util.function.Predicate<RocketRegion> claims) { sealedClaims = Objects.requireNonNull(claims); }
+    RocketRegionLockManager.LockToken reserveSealed(UUID id, RocketRegion region) { return locks.tryAcquire(id, region).orElse(null); }
 
     RocketTransactionResult assemble(
             MinecraftServer server,
@@ -95,7 +99,7 @@ final class RocketTransactionExecutor {
             RocketStructureSnapshot snapshot
     ) {
         RocketRegion requested = RocketRegion.fromSnapshot(snapshot);
-        return savedData.entries().stream()
+        return sealedClaims.test(requested) || savedData.entries().stream()
                 .anyMatch(entry -> entry.record().region().overlaps(requested));
     }
 

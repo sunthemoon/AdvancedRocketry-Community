@@ -38,6 +38,7 @@ public final class RocketManager implements RocketOperationService {
     private final RocketFlightService flights;
     private final RocketDisassemblyService disassembly;
     private final RocketTargetContextService targetContexts;
+    private final SealedDisassemblyCoordinator sealed;
     private final RocketFlightLifecycleController flightLifecycle = new RocketFlightLifecycleController();
 
     public RocketManager() {
@@ -84,11 +85,42 @@ public final class RocketManager implements RocketOperationService {
         disassembly = new RocketDisassemblyService(transactions, flights);
         targetContexts = new RocketTargetContextService(celestialCatalogs);
         recovery = new RocketTransactionRecoveryService(requiredAdapters);
+        sealed = new SealedDisassemblyCoordinator(transactions, flights.transfers().ordinaryRetirements());
+        transactions.sealedClaims(sealed::overlaps);
+        flights.transfers().sealedClaims(sealed::claimed, sealed::reservations);
     }
 
     @Override
     public void onInstalled() {
         flightLifecycle.onInstalled();
+    }
+
+    boolean sealedPayloadKnown(io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketBlockEntityPayload payload) {
+        return transactions.adapters().supportsPayload(payload);
+    }
+
+    void sealedOnPlace(ServerLevel level, BlockPos position) { sealed.onPlace(level, position); }
+    void sealedTerrainChanged(ServerLevel level, BlockPos position) { sealed.terrainChanged(level, position); }
+    void sealedEntityChanged(ServerLevel level, net.minecraft.world.entity.Entity entity) { sealed.entityChanged(level, entity); }
+    void sealedNativeObserver(MinecraftServer server, java.util.function.Consumer<String> observer) { sealed.nativeObserver(server, observer); }
+    void sealedHint(ServerLevel level, BlockPos position) { sealed.hint(level, position); }
+    int sealedHintCount(MinecraftServer server) { return sealed.hintCount(server); }
+    String sealedLazyDiagnostic(MinecraftServer server) { return sealed.lazyDiagnostic(server); }
+    boolean sealedOnRemove(ServerLevel level, BlockPos position, net.minecraft.world.level.block.state.BlockState next) {
+        return sealed.onRemove(level, position, next);
+    }
+    boolean unsealForReleaseTest(ServerLevel level, io.github.sunthemoon.advancedrocketrycommunity.rocket.sealed.SealedRocketBlockEntity carrier) {
+        io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowTestEndpoints.requireEnabled(level.getServer());
+        return sealed.unseal(level, carrier);
+    }
+    boolean sealedFrozen(RocketEntity rocket) { return sealed.frozen(rocket); }
+    boolean sealedClaimed(RocketEntity rocket) { return sealed.claimed(rocket); }
+    String sealedDiagnostic(UUID id) { return sealed.diagnostic(id); }
+    boolean sealedRecovering(UUID id) { return sealed.recovering(id); }
+    UUID beginSealedForReleaseTest(RocketEntity rocket,
+            java.util.function.Consumer<io.github.sunthemoon.advancedrocketrycommunity.rocket.sealed.SealedDisassembly.Result> completion) {
+        io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowTestEndpoints.requireEnabled(rocket.getServer());
+        return sealed.begin(rocket, () -> true, completion);
     }
 
     public boolean resourceMutationAllowed(RocketEntity rocket) {
@@ -164,6 +196,8 @@ public final class RocketManager implements RocketOperationService {
         return flights.quotes(player, rocket);
     }
 
+    RocketMonitorFlights monitorFlights() { return flights.monitors; }
+
     @Override
     public io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketNavigation navigation(ServerPlayer player, RocketEntity rocket) {
         return flights.navigation(player, rocket);
@@ -236,12 +270,13 @@ public final class RocketManager implements RocketOperationService {
 
     public void tick(MinecraftServer server) {
         Objects.requireNonNull(server, "server");
+        var selectedRecovery = sealed.tick(server, !flightLifecycle.recoverySuppressedForReleaseTest());
         if (flightLifecycle.active()) {
             flights.tick(server);
             flightLifecycle.pauseIfReached(server);
         }
-        if (!flightLifecycle.recoverySuppressedForReleaseTest()) {
-            RocketTransactionRecoveryService.Outcome outcome = recovery.recoverOne(server);
+        if (selectedRecovery != null && !flightLifecycle.recoverySuppressedForReleaseTest()) {
+            RocketTransactionRecoveryService.Outcome outcome = recovery.recoverOne(server, selectedRecovery);
             if (outcome == RocketTransactionRecoveryService.Outcome.RECOVERED
                     || outcome == RocketTransactionRecoveryService.Outcome.CONFLICT) {
                 AdvancedRocketryCommunity.LOGGER.info("ARCE_ROCKET_RECOVERY outcome={}", outcome);
@@ -309,6 +344,7 @@ public final class RocketManager implements RocketOperationService {
     }
 
     public void clear() {
+        sealed.clear();
         recovery.clear();
         assemblerScans.clear();
         transactions.clear();

@@ -23,7 +23,7 @@ import net.minecraft.world.level.ChunkPos;
  * checked set (at most 16), added exactly once at its start because re-adding an equal ticket resets its age, and a
  * reservation of that exact region. It is never renewed, never saved, and never evidence for a census: F1 and F2
  * still read the world. One warm-up per L, at most {@link RocketWarmupSettings#globalCap()} in every state together
- * and {@link RocketWarmupSettings#perPlayer()} per initiating player; admin and release-test warm-ups have no player
+ * and {@link RocketWarmupSettings#perPlayer()} per initiating player or monitor owner; admin and release-test warm-ups have no player
  * and count only globally.
  * <p>
  * States: WARMING from the start; READY when the service tick first finds the margin loaded and entity-ticking (a hint
@@ -57,11 +57,16 @@ public final class RocketWarmupRegistry {
 
     /**
      * One governed launch at the decision, after every existing check and the server's pad selection. {@code player}
-     * is the initiating player, or null for admin and release-test launches; {@code target} is the plan's destination
+     * is the quota owner (initiating player or monitor owner), or null for admin and release-test launches.
+     * {@code requiresOnline} is false for unattended monitor requests; {@code target} is the plan's destination
      * target, compared by equality.
      */
     public record Request(UUID logical, UUID player, UUID requestId, ResourceLocation sourceLevel, UUID sourceEntity,
-                          RocketStructureSnapshot source, Object target, RocketStructureSnapshot destination) {
+                          RocketStructureSnapshot source, Object target, RocketStructureSnapshot destination, boolean requiresOnline) {
+        public Request(UUID logical, UUID player, UUID requestId, ResourceLocation sourceLevel, UUID sourceEntity,
+                       RocketStructureSnapshot source, Object target, RocketStructureSnapshot destination) {
+            this(logical, player, requestId, sourceLevel, sourceEntity, source, target, destination, player != null);
+        }
         public Request {
             Objects.requireNonNull(logical, "logical"); Objects.requireNonNull(requestId, "requestId");
             Objects.requireNonNull(sourceLevel, "sourceLevel"); Objects.requireNonNull(sourceEntity, "sourceEntity");
@@ -73,7 +78,7 @@ public final class RocketWarmupRegistry {
     /** One live warm-up; {@code lifetime} is the setting captured at its start, {@code transfer} is set while BOUND. */
     public record Warmup(UUID logical, UUID player, UUID request, ResourceLocation sourceLevel, UUID sourceEntity,
                          UUID sourceSnapshot, String sourceHash, Object target, RocketStructureSnapshot destination,
-                         List<ChunkPos> columns, long started, int lifetime, State state, UUID transfer) {
+                         List<ChunkPos> columns, long started, int lifetime, State state, UUID transfer, boolean requiresOnline) {
         public ResourceLocation level() { return destination.sourceDimension(); }
         public RocketRegion region() { return RocketRegion.fromSnapshot(destination); }
         public long age(long now) { return Math.max(0L, now - started); }
@@ -81,7 +86,7 @@ public final class RocketWarmupRegistry {
 
         private Warmup with(State next, UUID bound) {
             return new Warmup(logical, player, request, sourceLevel, sourceEntity, sourceSnapshot, sourceHash, target,
-                    destination, columns, started, lifetime, next, bound);
+                    destination, columns, started, lifetime, next, bound, requiresOnline);
         }
 
         /** The same Level and exact region, from the same source geometry (R22 amendment 1). */
@@ -131,7 +136,15 @@ public final class RocketWarmupRegistry {
         pending = null;
         var current = live.get(request.logical());
         if (!available || current != null && current.state() == State.BOUND) { return proceed(request, false); }
-        if (current != null && !current.sameDestination(request)) { release(current, Release.REPLACED, now); current = null; }
+        if (current != null && !current.sameDestination(request)) {
+            release(current, Release.REPLACED, now);
+            var replaced = current;
+            io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowLaunchDiscard.log(log, "ARCE_GOVERNED_WARMUP_REPLACED",
+                    () -> "logical=" + request.logical() + " request=" + request.requestId()
+                            + " previous=" + replaced.request() + " from=" + replaced.region()
+                            + " to=" + RocketRegion.fromSnapshot(request.destination()) + " same_source=" + replaced.sameSource(request.source()));
+            current = null;
+        }
         boolean destinationReady = ready.getAsBoolean();
         if (current == null) {
             if (!slot(request.player(), settings)) { return destinationReady ? proceed(request, false) : new Decision(Outcome.LIMIT,
@@ -183,7 +196,7 @@ public final class RocketWarmupRegistry {
         for (var current : List.copyOf(live.values())) {
             if (current.age(now) >= current.lifetime()) { release(current, Release.EXPIRED, now); continue; }
             if (current.state() == State.BOUND) { continue; }
-            if (current.player() != null && !probe.online(current.player())) { release(current, Release.DISCONNECTED, now); continue; }
+            if (current.requiresOnline() && current.player() != null && !probe.online(current.player())) { release(current, Release.DISCONNECTED, now); continue; }
             if (!probe.sourcePresent(current)) { release(current, Release.ROCKET_REMOVED, now); continue; }
             if (current.state() == State.WARMING && probe.ready(current)) {
                 var ready = current.with(State.READY, null);
@@ -251,7 +264,7 @@ public final class RocketWarmupRegistry {
     private void start(Request request, List<ChunkPos> columns, long now, RocketWarmupSettings settings) {
         var started = new Warmup(request.logical(), request.player(), request.requestId(), request.sourceLevel(),
                 request.sourceEntity(), request.source().snapshotId(), request.source().contentHash(), request.target(),
-                request.destination(), List.copyOf(columns), now, settings.lifetimeTicks(), State.WARMING, null);
+                request.destination(), List.copyOf(columns), now, settings.lifetimeTicks(), State.WARMING, null, request.requiresOnline());
         live.put(started.logical(), started);
         // Exactly once: no repeated request, poll, bind or handover adds these tickets again.
         for (var column : started.columns()) { tickets.add(started.level(), column, started.logical()); }

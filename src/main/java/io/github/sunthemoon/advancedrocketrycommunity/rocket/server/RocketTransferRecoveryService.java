@@ -83,8 +83,10 @@ final class RocketTransferRecoveryService {
         journal.retryChecked(server);
         var promoted = fences.reevaluateOne(server, journal, liveTransfers, settledTransfers);
         // W98-R8: a return the ordinary coordinator holds is that coordinator's; recovery never runs it again.
-        if (promoted != null && !retirements.pending(promoted.logicalRocketId())) { return recover(server, journal, promoted, true); }
+        if (promoted != null && !retirements.pending(promoted.logicalRocketId())
+                && !RocketReleaseAccess.fenced(server, promoted.logicalRocketId())) { return recover(server, journal, promoted, true); }
         Step step = step(entries.stream().filter(candidate -> journal.actionable(candidate.logicalRocketId())
+                        && !RocketReleaseAccess.fenced(server, candidate.logicalRocketId())
                         && !retirements.pending(candidate.logicalRocketId())).toList(),
                 liveTransfers, settledTransfers, bays.excluded(), recoveryCursor,
                 candidate -> RocketTransferEntities.recoveryEntityChunksLoaded(server, candidate));
@@ -139,18 +141,21 @@ final class RocketTransferRecoveryService {
         }
         classify(server, journal);
         RocketTransferRecord record = journal.find(transferId).orElse(null);
+        if (record != null && retirements.replacing(record.logicalRocketId())) { return retryLater(record); }
         if (record == null) {
             var authority = completedRecords.get(transferId);
             if (completedResults.containsKey(transferId) && authority != null) {
                 if (!bays.allowed(server, journal, authority, RocketTransferBayRecoveryGate.Action.RECOVER_BY_ID)
                         || !journal.actionable(authority.logicalRocketId())
-                        || journal.findByLogicalRocket(authority.logicalRocketId()).isPresent()) { return retryLater(authority); }
+                        || journal.findByLogicalRocket(authority.logicalRocketId()).isPresent()
+                        || RocketReleaseAccess.fenced(server, authority.logicalRocketId())) { return retryLater(authority); }
                 return takeCompleted(transferId);
             }
             return Result.notFound(transferId);
         }
         if (!bays.allowed(server, journal, record, RocketTransferBayRecoveryGate.Action.RECOVER_BY_ID)
                 || bays.source(transferId) != null) { return retryLater(record); }
+        if (RocketReleaseAccess.fenced(server, record.logicalRocketId())) { return retryLater(record); }
         journal.retryChecked(server);
         if (journal.find(transferId).orElse(null) != record) { return retryLater(record); }
         if (journal.actionable(record.logicalRocketId()) && completedResults.containsKey(transferId)) {
@@ -208,26 +213,36 @@ final class RocketTransferRecoveryService {
     }
     RocketTransferBayDispatch bays() { return bays; }
     RocketOrdinaryRetirement retirements() { return retirements; }
-    void retireBeforeFill(RocketEntity rocket) {
-        var server = ((net.minecraft.server.level.ServerLevel) rocket.level()).getServer();
+    RocketReplacementRetirement replacementPort(MinecraftServer server, RocketTransferSavedData journal, RocketEntity rocket,
+            RocketTransferRecord previous, RocketTransferRecord successor, java.util.function.BooleanSupplier authorized,
+            java.util.function.BooleanSupplier targetAvailable) {
+        return new RocketReplacementRetirement(server, journal, bays, fences, liveTransfers, settledTransfers,
+                rocket, previous, successor, authorized, targetAvailable);
+    }
+    /** R52 (b2): a loader's fill attempt only queues its demand; the first attempt starts from the coordinator's tick (W130-R4). */
+    void retireBeforeFill(RocketEntity rocket) { retirements.fills().demand(rocket.assemblyTransactionId().orElseThrow(), rocket.getUUID()); }
+    private void beginBeforeFill(MinecraftServer server, UUID logical, UUID survivor) {
         var journal = RocketTransferSavedData.get(server);
-        var logical = rocket.assemblyTransactionId().orElseThrow();
-        if (retirements.pending(logical) || retirements.size() >= RocketOrdinaryRetirement.MAX_PENDING) { return; }
+        if (retirements.pending(logical) || !retirements.pendingRoom(logical)) { return; }
         var record = journal.findByLogicalRocket(logical).orElse(null);
         if (record == null || record.nativeTransfer().isPresent() || !journal.actionable(logical)
                 || !settledTransfers.contains(record.transferId()) || liveTransfers.contains(record.transferId())) { return; }
         var port = new RocketDestinationRetirement(server, journal, bays, fences, liveTransfers, settledTransfers);
-        if (port.projection(record, rocket.getUUID()) == null || !port.escrowAllows(journal, record, null)) { return; }
+        // A rocket that is no longer loaded, for example after the entry's own tickets were released, is no demand.
+        if (port.projection(record, survivor) == null || !port.escrowAllows(journal, record, null)) { return; }
         try (var held = RocketOrdinaryRetirement.hold(journal, logical)) {
             if (held.token() == null) { return; }
-            retirements.begin(port, journal, RocketOrdinaryRetirement.Site.BEFORE_FILL, record, rocket.getUUID(), List.of(), false, held,
+            retirements.begin(port, journal, RocketOrdinaryRetirement.Site.BEFORE_FILL, record, survivor, List.of(), false, held,
                     RocketOrdinaryRetirement.Effects.of(() -> {
                         io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadService.release(server, record);
                         return true;
                     }));
         }
     }
-    void tickRetirements(MinecraftServer server) { retirements.tick(); }
+    void tickRetirements(MinecraftServer server) {
+        retirements.fills().drain(RocketOrdinaryRetirement.MAX_ATTEMPTS, (logical, survivor) -> beginBeforeFill(server, logical, survivor));
+        retirements.tick();
+    }
     Set<UUID> fencedIds() { return fences.ids(); }
     String fenceReason(UUID id) { return fences.reason(id); }
     String fencedDiagnostics() { return fences.ids().stream().sorted().limit(4)
@@ -241,6 +256,7 @@ final class RocketTransferRecoveryService {
     }
 
     private boolean tryReconnect(ServerPlayer player, RocketTransferSavedData journal) {
+        if (io.github.sunthemoon.advancedrocketrycommunity.rocket.rejoin.RocketRejoinProtection.required(player.getServer(), player.getUUID())) { return true; }
         MinecraftServer server = player.getServer();
         if (server == null || journal.entries().isEmpty()) {
             return true;
@@ -252,6 +268,7 @@ final class RocketTransferRecoveryService {
         }
         for (RocketTransferRecord record : journal.entries()) {
             if (record.nativeTransfer().isPresent()) { continue; }
+            if (retirements.replacing(record.logicalRocketId())) { continue; }
             // A fenced assignment is intentionally finished for this login; it remains durably assigned.
             if (fences.ids().contains(record.transferId())) { continue; }
             if (!bays.allowed(server, journal, record, RocketTransferBayRecoveryGate.Action.RECONNECT)
@@ -264,9 +281,11 @@ final class RocketTransferRecoveryService {
             }
             var passengers = settled == null ? record.sourceFlightData().passengers()
                     : settled.flightData().orElseThrow().passengers();
+            passengers = RocketReleaseAccess.filter(server, record.logicalRocketId(), passengers);
             if (passengers.assignment(player.getUUID()).isEmpty()) {
                 continue;
             }
+            if (RocketReleaseAccess.fenced(server, record.logicalRocketId())) { return false; }
             if (!journal.actionable(record.logicalRocketId())) { return false; }
             if (!RocketTransferEntities.authorityEntityChunkLoaded(server, record)) {
                 return false;
@@ -322,6 +341,7 @@ final class RocketTransferRecoveryService {
             RocketTransferRecord record,
             boolean loadedOnly
     ) {
+        if (RocketReleaseAccess.fenced(server, record.logicalRocketId())) { return retryLater(record); }
         if (!journal.actionable(record.logicalRocketId()) || journal.find(record.transferId()).orElse(null) != record) {
             return retryLater(record);
         }
@@ -461,6 +481,7 @@ final class RocketTransferRecoveryService {
             List<RocketEntity> discarded,
             Runnable recovered
     ) {
+        if (RocketReleaseAccess.fenced(server, record.logicalRocketId())) { return Status.RETRY_LATER; }
         if (!bays.allowed(server, journal, record, RocketTransferBayRecoveryGate.Action.SETTLE_SOURCE)) { return Status.RETRY_LATER; }
         liveTransfers.remove(record.transferId());
         boolean ready = RocketRetirementGuards.crewReady(server, record, survivor, false);
@@ -519,6 +540,7 @@ final class RocketTransferRecoveryService {
             RocketEntity authority,
             List<RocketEntity> discarded
     ) {
+        if (RocketReleaseAccess.fenced(server, record.logicalRocketId())) { return; }
         if (!journal.actionable(record.logicalRocketId())
                 || !bays.allowed(server, journal, record, RocketTransferBayRecoveryGate.Action.SETTLE_SOURCE)
                 || bays.source(record.transferId()) != null) { return; }

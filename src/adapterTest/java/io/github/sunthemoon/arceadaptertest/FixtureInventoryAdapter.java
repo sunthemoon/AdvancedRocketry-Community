@@ -11,14 +11,16 @@ final class FixtureInventoryAdapter implements RocketBlockEntityAdapter {
         if (blockEntity instanceof FixtureContainerBlockEntity container && container.fault != null) {
             container.fault.enter("CAN_MOVE");
         }
-        return blockEntity instanceof FixtureContainerBlockEntity;
+        return blockEntity instanceof FixtureContainerBlockEntity && !blockEntity.isRemoved();
     }
 
     @Override
     public CompoundTag capture(BlockEntity blockEntity) {
+        if (blockEntity.isRemoved()) { throw new IllegalStateException("Removed provider target"); }
         FixtureContainerBlockEntity container = (FixtureContainerBlockEntity) blockEntity;
         if (container.fault != null) { container.fault.enter("CAPTURE"); }
         FixtureAdapterFaults.Probe restoreProbe = FixtureAdapterFaults.restoring();
+        if (restoreProbe == null) { restoreProbe = SealedPreparationLatchGameTests.probe(blockEntity); }
         if (restoreProbe != null) { restoreProbe.readbacks++; }
         CompoundTag body = container.captureInventory();
         if (container.fault != null && container.fault.mode == FixtureAdapterFaults.Mode.CAPTURE_OVERSIZED) {
@@ -34,11 +36,15 @@ final class FixtureInventoryAdapter implements RocketBlockEntityAdapter {
             return false;
         }
         FixtureAdapterFaults.Probe probe = FixtureAdapterFaults.restoring();
+        if (probe == null) { probe = SealedPreparationLatchGameTests.probe(blockEntity); }
         if (probe != null) {
             // Fail after writing only the new target's owned data, exercising real cleanup.
             probe.enter("RESTORE");
             if (probe.mode == FixtureAdapterFaults.Mode.RESTORE_FALSE) { return false; }
             if (probe.mode == FixtureAdapterFaults.Mode.RESTORE_MISMATCH) { container.clearContent(); }
+            if (probe.mode == FixtureAdapterFaults.Mode.RESTORE_NEEDS_LEVEL && container.getLevel() == null) { return false; }
+            if (probe.mode == FixtureAdapterFaults.Mode.RESTORE_NEEDS_INSTALLED && (container.getLevel() == null
+                    || container.getLevel().getBlockEntity(container.getBlockPos()) != container)) { return false; }
         }
         return true;
     }

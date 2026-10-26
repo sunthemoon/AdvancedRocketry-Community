@@ -70,16 +70,24 @@ public final class EscrowRuntime {
     private EscrowPreF2Probe preF2Probe;
     private volatile EscrowReconciliationProbe reconciliationProbe;
     private volatile EscrowCargoReconciliationProbe cargoReconciliationProbe;
+    private volatile EscrowItemCutProbe itemCutProbe;
+    private volatile EscrowCargoCutProbe cargoCuts;
     private EscrowSourceClockProbe sourceClockProbe;
     private EscrowDestinationProbe destinationProbe;
     private EscrowPhaseProbe phaseProbe;
     private volatile EscrowTerminalProbe terminalProbe;
     private volatile EscrowLoaderReleaseProbe loaderProbe;
     private volatile java.util.function.Consumer<String> terminalTestCut;
-    void terminalCutForTests(MinecraftServer server, java.util.function.Consumer<String> cut) {
+    private Object terminalTestCutOwner;
+    Runnable terminalCutForTests(MinecraftServer server, java.util.function.Consumer<String> cut) {
         EscrowTestEndpoints.requireEnabled(server);
         EscrowTags.require(server.isSameThread() && (cut == null || terminalTestCut == null), "Terminal cut requires exclusive owner-thread setup");
         terminalTestCut = cut;
+        var owner = new Object(); terminalTestCutOwner = owner;
+        return () -> {
+            EscrowTags.require(server.isSameThread(), "Terminal cut release requires owner thread");
+            if (terminalTestCutOwner == owner) { terminalTestCut = null; terminalTestCutOwner = null; }
+        };
     }
     private EscrowReturnProbe returnProbe;
     private final EscrowSettlementOperator settlement = new EscrowSettlementOperator();
@@ -166,12 +174,15 @@ public final class EscrowRuntime {
     }
     boolean loaderAdmissionAllowed(java.util.UUID device) { return admissionDevices.contains(device); }
     boolean cargoStoreAllowed(EscrowOperation op, EscrowEndpoint endpoint) {
-        return cargoReconciliationProbe == null || cargoReconciliationProbe.permitsStore(op, endpoint);
+        var cuts = cargoCuts;
+        return (cargoReconciliationProbe == null || cargoReconciliationProbe.permitsStore(op, endpoint)) && (cuts == null || cuts.permitsStore(op, endpoint));
     }
     public void checkpoint(String cut) {
         var measured = flightBenchmark; if (measured != null) { measured.metrics.checkpoint(cut); }
         var ordinary = reconciliationProbe; if (ordinary != null) { ordinary.checkpoint(cut); }
         var cargoProbe = cargoReconciliationProbe; if (cargoProbe != null) { cargoProbe.checkpoint(cut); }
+        var itemProbe = itemCutProbe; if (itemProbe != null) { itemProbe.checkpoint(cut); }
+        var cuts = cargoCuts; if (cuts != null) { cuts.checkpoint(cut); }
         var terminalCut = terminalTestCut; if (terminalCut != null) { terminalCut.accept(cut); }
         var nativeTerminal = terminalProbe; if (nativeTerminal != null) { nativeTerminal.checkpoint(cut); }
         var loader = loaderProbe; if (loader != null) { loader.checkpoint(cut); }
@@ -186,7 +197,7 @@ public final class EscrowRuntime {
         if (sourceClockProbe != null) { sourceClockProbe.checkpoint(cut); }
     }
     io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile.Committer ledgerCommitter(MinecraftServer server) {
-        String testCase = EscrowLoaderStorageProbe.writerCase(System.getProperty("advancedrocketrycommunity.escrowCase", ""));
+        String testCase = EscrowCargoStorageProbe.writerCase(EscrowLoaderStorageProbe.writerCase(System.getProperty("advancedrocketrycommunity.escrowCase", "")));
         if (Boolean.getBoolean(EscrowTestEndpoints.HOOKS)
                 && "start".equals(System.getProperty("advancedrocketrycommunity.escrowScenario"))
                 && (testCase.equals("E4L1_UNKNOWN") || testCase.equals("E4L2_UNKNOWN") || testCase.equals("E4L2_RESAVE")
@@ -340,6 +351,8 @@ public final class EscrowRuntime {
             }
         }
         if (runtime.barrier != null) { runtime.barrier.tick(event.getServer().getTickCount()); }
+        runtime.itemCutProbe = EscrowItemCutProbe.attach(event.getServer(), runtime.itemCutProbe);
+        if (runtime.itemCutProbe != null) { runtime.itemCutProbe.beforeReconciliation(); }
         if (Boolean.getBoolean(EscrowTestEndpoints.HOOKS)
                 && System.getProperty("advancedrocketrycommunity.escrowCase", "").startsWith("CR_")) {
             if (runtime.reconciliationProbe == null) { runtime.reconciliationProbe = new EscrowReconciliationProbe(event.getServer()); }
@@ -350,11 +363,13 @@ public final class EscrowRuntime {
             if (runtime.cargoReconciliationProbe == null) { runtime.cargoReconciliationProbe = new EscrowCargoReconciliationProbe(event.getServer()); }
             runtime.cargoReconciliationProbe.beforeReconciliation();
         }
+        if ((runtime.cargoCuts = EscrowCargoCutProbe.attach(event.getServer(), runtime.cargoCuts)) != null) { runtime.cargoCuts.beforeReconciliation(); }
         if (runtime.scheduler != null && data != null) {
             runtime.scheduler.tick(event.getServer().getTickCount()); data.bind(event.getServer()).persistTransitions();
         }
         if (data != null) { runtime.settlements.tick(event.getServer(), data.bind(event.getServer()), runtime); }
         if (data != null) { runtime.preF2Cancellation.tick(event.getServer(), data.bind(event.getServer()), runtime); }
+        if (runtime.itemCutProbe != null) { runtime.itemCutProbe.tick(); }
         if (Boolean.getBoolean(EscrowTestEndpoints.HOOKS)
                 && System.getProperty("advancedrocketrycommunity.escrowScenario") != null) {
             String testCase = System.getProperty("advancedrocketrycommunity.escrowCase", "");
@@ -362,6 +377,8 @@ public final class EscrowRuntime {
                 runtime.flightBenchmark.tick();
             } else if (EscrowCargoReconciliationProbe.accepts(testCase)) {
                 runtime.cargoReconciliationProbe.tick();
+            } else if (runtime.cargoCuts != null && EscrowCargoCutProbe.accepts(testCase)) {
+                runtime.cargoCuts.tick();
             } else if (testCase.startsWith("CR_")) {
                 if (runtime.reconciliationProbe == null) { runtime.reconciliationProbe = new EscrowReconciliationProbe(event.getServer()); }
                 runtime.reconciliationProbe.tick();
@@ -390,6 +407,8 @@ public final class EscrowRuntime {
                 // This probe runs before settlement recovery so its deliberate veto precedes every O2 attempt.
             } else if (testCase.startsWith("SO_")) {
                 // The O1 probe observes before recovery above, then follows eventual O2-O4.
+            } else if (EscrowItemCutProbe.selected(true, System.getProperty(EscrowItemCutProbe.SCENARIO), testCase)) {
+                // Item cuts already ran above; never create the synthetic fluid release fixture for them.
             } else if (testCase.startsWith("RA_")) {
                 if (runtime.rocketAuditProbe == null) { runtime.rocketAuditProbe = new EscrowRocketAuditProbe(event.getServer()); }
                 runtime.rocketAuditProbe.tick();
@@ -431,6 +450,8 @@ public final class EscrowRuntime {
     }
     @SubscribeEvent(priority = EventPriority.HIGHEST) public static void stopping(ServerStoppingEvent event) {
         EscrowRuntime runtime = of(event.getServer()); runtime.stopping = true;
+        if (runtime.cargoReconciliationProbe != null) { runtime.cargoReconciliationProbe.checkpoint("G3_STOPPING"); }
+        if (runtime.cargoReconciliationProbe != null) { runtime.cargoReconciliationProbe.close(); }
         if (runtime.cargo != null) { runtime.cargo.close(); }
         runtime.cargoSwitches.clear();
         if (runtime.fills != null) { runtime.fills.clear(); }
@@ -465,6 +486,7 @@ public final class EscrowRuntime {
         EscrowRuntime runtime = overworld.getCapability(CAPABILITY).resolve().orElse(null);
         if (runtime == null || runtime.stopping) { return; }
         runtime.stopping = true;
+        if (runtime.cargoReconciliationProbe != null) { runtime.cargoReconciliationProbe.close(); }
         if (runtime.cargo != null && server.isSameThread()) { runtime.cargo.close(); }
         runtime.cargoSwitches.clear();
         if (runtime.fills != null && server.isSameThread()) { runtime.fills.clear(); }

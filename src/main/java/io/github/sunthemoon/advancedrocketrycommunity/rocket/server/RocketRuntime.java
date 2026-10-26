@@ -25,6 +25,10 @@ public final class RocketRuntime {
     private RocketRuntime() {
     }
 
+    public static Optional<RocketMonitorFlights> monitorFlights() {
+        return service instanceof RocketManager manager ? Optional.of(manager.monitorFlights()) : Optional.empty();
+    }
+
     public static void install(RocketOperationService installedService) {
         RocketOperationService checked = Objects.requireNonNull(installedService, "installedService");
         checked.onInstalled();
@@ -33,6 +37,69 @@ public final class RocketRuntime {
 
     public static void clear() {
         service = null;
+    }
+
+    /** Availability only: no provider callback, journal access or materialization authority. */
+    public static boolean sealedPayloadKnown(ServerLevel level,
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketBlockEntityPayload payload) {
+        return level.getServer().isSameThread() && service instanceof RocketManager manager
+                && manager.sealedPayloadKnown(payload);
+    }
+
+    /** Native onPlace bridge, not a public staging or authority API. */
+    public static void sealedOnPlace(ServerLevel level, BlockPos position) {
+        if (level.getServer().isSameThread() && service instanceof RocketManager manager) { manager.sealedOnPlace(level, position); }
+    }
+    public static void sealedTerrainChanged(ServerLevel level, BlockPos position) {
+        if (level.getServer().isSameThread() && service instanceof RocketManager manager) { manager.sealedTerrainChanged(level, position); }
+    }
+    public static void sealedEntityChanged(ServerLevel level, net.minecraft.world.entity.Entity entity) {
+        if (level.getServer().isSameThread() && service instanceof RocketManager manager) { manager.sealedEntityChanged(level, entity); }
+    }
+    public static void sealedHint(ServerLevel level, BlockPos position) {
+        if (level.getServer().isSameThread() && service instanceof RocketManager manager) { manager.sealedHint(level, position); }
+    }
+    public static int sealedHintCountForReleaseTest(MinecraftServer server) {
+        io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowTestEndpoints.requireEnabled(server);
+        return service instanceof RocketManager manager ? manager.sealedHintCount(server) : 0;
+    }
+    public static String sealedLazyDiagnosticForReleaseTest(MinecraftServer server) {
+        io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowTestEndpoints.requireEnabled(server);
+        return service instanceof RocketManager manager ? manager.sealedLazyDiagnostic(server) : "no-manager";
+    }
+    public static boolean sealedOnRemove(ServerLevel level, BlockPos position, net.minecraft.world.level.block.state.BlockState next) {
+        return level.getServer().isSameThread() && service instanceof RocketManager manager && manager.sealedOnRemove(level, position, next);
+    }
+    public static boolean unsealForReleaseTest(ServerLevel level,
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.sealed.SealedRocketBlockEntity carrier) {
+        io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowTestEndpoints.requireEnabled(level.getServer());
+        return service instanceof RocketManager manager && manager.unsealForReleaseTest(level, carrier);
+    }
+    public static boolean sealedFrozen(RocketEntity rocket) {
+        return service instanceof RocketManager manager && manager.sealedFrozen(rocket);
+    }
+    static boolean sealedClaimed(RocketEntity rocket) {
+        return service instanceof RocketManager manager && manager.sealedClaimed(rocket);
+    }
+    public static String sealedDiagnosticForReleaseTest(MinecraftServer server, UUID id) {
+        io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowTestEndpoints.requireEnabled(server);
+        return service instanceof RocketManager manager ? manager.sealedDiagnostic(id) : "no-manager";
+    }
+    public static boolean sealedRecoveryTrackedForReleaseTest(MinecraftServer server, UUID id) {
+        io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowTestEndpoints.requireEnabled(server);
+        return service instanceof RocketManager manager && manager.sealedRecovering(id);
+    }
+    public static void sealedNativeObserverForReleaseTest(MinecraftServer server, java.util.function.Consumer<String> observer) {
+        io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowTestEndpoints.requireEnabled(server);
+        if (!(service instanceof RocketManager manager)) { throw new IllegalStateException("No rocket manager"); }
+        manager.sealedNativeObserver(server, observer);
+    }
+
+    /** Gated native verification only; player disassembly is not enabled by N3-B2. */
+    public static UUID beginSealedForReleaseTest(RocketEntity rocket,
+            java.util.function.Consumer<io.github.sunthemoon.advancedrocketrycommunity.rocket.sealed.SealedDisassembly.Result> completion) {
+        if (!(service instanceof RocketManager manager)) { throw new IllegalStateException("No rocket manager"); }
+        return manager.beginSealedForReleaseTest(rocket, completion);
     }
 
     /** Only this installed server session owns preparation state; nothing is saved or restored. */
@@ -61,8 +128,20 @@ public final class RocketRuntime {
     }
 
     public static void onRocketJoined(RocketEntity rocket) {
+        RocketReleaseAccess.joined(rocket);
         if (service instanceof RocketManager manager) { manager.onRocketJoined(rocket); }
     }
+
+    public static boolean releaseFenced(RocketEntity rocket) { return RocketReleaseAccess.fenced(rocket); }
+    public static io.github.sunthemoon.advancedrocketrycommunity.rocket.rejoin.RocketReleaseResult
+            releaseAbsent(MinecraftServer server, UUID transfer) { return RocketReleaseAccess.admit(server, transfer); }
+    public static io.github.sunthemoon.advancedrocketrycommunity.rocket.rejoin.RocketRejoinInspection
+            inspectRejoins(MinecraftServer server, UUID player) { return RocketReleaseAccess.inspect(server, player); }
+    /** Gated fixtures share the production admission operation. */
+    public static Optional<UUID> releaseAbsentForTests(MinecraftServer server, UUID transfer) {
+        return RocketReleaseAccess.admitForTests(server, transfer);
+    }
+    public static void closeReleasesForStop() { RocketReleaseAccess.stopping(); }
 
     /** Internal coordinator registration; the installed manager owns the gate for this server session. */
     public static void installBayRecoveryGate(MinecraftServer server, RocketTransferBayRecoveryGate gate) {
@@ -302,5 +381,16 @@ public final class RocketRuntime {
                 Component.translatable("message.advancedrocketrycommunity.rocket.service_unavailable"),
                 true
         );
+    }
+
+    public static java.util.List<io.github.sunthemoon.advancedrocketrycommunity.rocket.rejoin.RocketRejoinRoot.Entry>
+            rejoinAdmissions(MinecraftServer server) { return RocketReleaseAccess.admissions(server); }
+    public static boolean rejoinPlacementReady(MinecraftServer server, UUID release) {
+        return RocketReleaseAccess.placementReady(server, release);
+    }
+    public static void resumeDroppedRejoin(ServerPlayer player) {
+        if (service instanceof RocketManager manager) {
+            manager.onPlayerLoggedIn(new net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent(player));
+        }
     }
 }

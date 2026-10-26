@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "advancedrocketrycommunity:laser_target",
+    "advancedrocketrycommunity:railgun",
+    "advancedrocketrycommunity:elevator_anchor",
+    "advancedrocketrycommunity:elevator_terminal",
+    "advancedrocketrycommunity:sealed_rocket_block"
+  ]
+}

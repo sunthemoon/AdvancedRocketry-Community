@@ -81,6 +81,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 public final class OperatorItemNbtGameTests {
     /** Block entities whose item NBT only a creative operator may load. */
     private static final Set<Class<? extends BlockEntity>> OPERATOR_ONLY = Set.of(
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.monitor.RocketMonitorBlockEntity.class,
             // Operator-only before W23.
             PumpBlockEntity.class, SolarGeneratorBlockEntity.class, SolarArrayBlockEntity.class,
             PlanetaryBeaconBlockEntity.class, LandingPadBlockEntity.class, ForceFieldProjectorBlockEntity.class,
@@ -100,6 +101,8 @@ public final class OperatorItemNbtGameTests {
             io.github.sunthemoon.advancedrocketrycommunity.atmosphere.torch.UnlitTorchBlockEntity.class,
             // W27b: the satellite bay's owner, package identity and guarded roots.
             io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.SatelliteBayBlockEntity.class,
+            // W152: the inert carrier's retained identities and opaque member payload.
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.sealed.SealedRocketBlockEntity.class,
             // W109: both fixed cargo roles keep owner, placement identity, binding and protected native roots.
             io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketFluidCargoBlockEntity.class,
             // W120: both item cargo roles keep owner, placement identity, binding, buffer and protected native roots.

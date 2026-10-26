@@ -358,6 +358,11 @@ Before unguarding, W80 clears fire ticks and frozen ticks and removes every harm
 record. `forceAddEffect` fires no event, and the record covers it as well. A harmful effect that the player already
 had when they logged off is left as it was saved.
 
+*Correction (Root decision R106, 2026-10-25, from W159's step 0; supersedes the sentence on `forceAddEffect` above):*
+in the pinned Forge 47.4.10, `forceAddEffect` calls `canBeAffected` at bytecode offset 2. It therefore fires
+`MobEffectEvent.Applicable` indirectly and honours its result, so the guard's denial covers it too. The install-time
+record and the cleanup before unguarding stay as defence in depth.
+
 **Queue and deadline (R2).** The placement and readback queue has 128 slots and runs at most four owner-thread
 actions per tick. Guards use the player index, not a queue slot, and a full queue leaves the player protected without
 repeated offers. Unknown journal or sidecar readiness refuses ordinary reconnect for the indexed players only.
@@ -479,6 +484,16 @@ Old callbacks, changed generations, missing markers and saves made before placem
 already dead or respawning keeps the obligation, and W80 classifies and places the cloned session rather than
 certifying the old body's save.
 
+*Correction (Root decision R108, 2026-10-25, from the W159 review; refines "Applying a result" above):* the session must
+still be current when P2 is **installed**, not only when it is submitted. P2's installation is therefore bound to a
+lease that the owner thread maintains and the writer's IO thread only reads. The lease holds while no death, clone or
+new login has invalidated the session, and, for an online player, while the target passed the full safety check in
+the latest tick. A failed lease keeps the obligation durable and allows a newly checked attempt, and a held P2 never
+blocks later writes. A death or safety change after the lease check, during the replacement itself, counts as after P2
+(cut C11). After P2's acknowledgement the fresh safety check stays. If it fails in the remaining window, the player
+stays guarded and is placed again in the same session from the same 64 candidates, with no new durable record. If no
+candidate becomes safe by the deadline, the protected disconnect saves the pinned position, and the next login is
+ordinary. That residual is bounded by the window between the last lease refresh and the acknowledgement.
 **Durability boundary.** Checked sidecar and journal writes, B0 and B1 use their existing force contract. Player
 readback proves the installed file for process-stop and restart tests, not an fsync of vanilla's player data. P2 does
 not make power loss, file-system rollback or partial backup restoration safe. Closing that separate gap needs the

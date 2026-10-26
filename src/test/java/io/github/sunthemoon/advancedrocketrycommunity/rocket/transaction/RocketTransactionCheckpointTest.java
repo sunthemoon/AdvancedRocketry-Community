@@ -91,7 +91,8 @@ class RocketTransactionCheckpointTest {
     void returningObserverPreservesNormalTransactionAndJournalCleanup() {
         TestWorld world = new TestWorld(true);
         Map<RocketPosition, RocketWorldBlock> before = Map.copyOf(world.blocks);
-        for (RocketTransactionType type : RocketTransactionType.values()) {
+        // This fixture executes the two legacy one-call executors; sealed work has its own multi-tick coordinator.
+        for (RocketTransactionType type : List.of(RocketTransactionType.ASSEMBLY, RocketTransactionType.DISASSEMBLY)) {
             Journal journal = new Journal();
             List<RocketTransactionRecord> observed = new ArrayList<>();
             var probe = new RocketTransactionFaultProbe(
@@ -103,15 +104,19 @@ class RocketTransactionCheckpointTest {
         }
         assertEquals(before, world.blocks);
         assertFalse(world.entity);
+        assertThrows(IllegalArgumentException.class, () -> execute(RocketTransactionType.SEALED_DISASSEMBLY,
+                world, new Journal(), new RocketRegionLockManager()));
     }
 
     private static RocketTransactionResult execute(RocketTransactionType type, RocketTransactionWorld world,
                                                    RocketTransactionJournal journal, RocketRegionLockManager locks) {
-        return type == RocketTransactionType.ASSEMBLY
-                ? new RocketAssemblyTransaction(world, locks, new RocketOperationLedger(), journal)
-                        .execute(new UUID(1L, 1L), SNAPSHOT)
-                : new RocketDisassemblyTransaction(world, locks, new RocketOperationLedger(), journal)
-                        .execute(new UUID(1L, 2L), ENTITY, SNAPSHOT);
+        return switch (type) {
+            case ASSEMBLY -> new RocketAssemblyTransaction(world, locks, new RocketOperationLedger(), journal)
+                    .execute(new UUID(1L, 1L), SNAPSHOT);
+            case DISASSEMBLY -> new RocketDisassemblyTransaction(world, locks, new RocketOperationLedger(), journal)
+                    .execute(new UUID(1L, 2L), ENTITY, SNAPSHOT);
+            case SEALED_DISASSEMBLY -> throw new IllegalArgumentException("Not a legacy executor");
+        };
     }
 
     private static RocketStructureSnapshot snapshot() {

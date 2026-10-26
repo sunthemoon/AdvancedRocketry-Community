@@ -16,20 +16,24 @@ import java.util.function.BiFunction;
  * refuses at capture or immediately before replacement alone receives false; the others are captured again.
  */
 final class EscrowFlightWrites {
+    enum Admission { QUEUED, CLOSED, WRITER_UNAVAILABLE, CAPACITY, LOGICAL_PENDING }
     private record Request(UUID logical, BiFunction<EscrowLedger, Long, EscrowLedger> change, BooleanSupplier valid, Consumer<Boolean> callback, long requestedAt) { }
     private final Map<UUID, Request> queued = new LinkedHashMap<>();
     private List<Request> active = List.of();
     private boolean closed;
 
     /** valid must use only retained atomic proof tokens/leases: the writer also runs it off-thread. */
-    boolean request(UUID logical, BiFunction<EscrowLedger, Long, EscrowLedger> change, BooleanSupplier valid, Consumer<Boolean> callback) {
+    Admission request(UUID logical, BiFunction<EscrowLedger, Long, EscrowLedger> change, BooleanSupplier valid, Consumer<Boolean> callback) {
         java.util.Objects.requireNonNull(logical); java.util.Objects.requireNonNull(change);
         java.util.Objects.requireNonNull(valid); java.util.Objects.requireNonNull(callback);
-        if (closed || queued.size() + active.size() >= 64 || locked(logical)) { return false; }
-        queued.put(logical, new Request(logical, change, valid, callback, System.nanoTime())); return true;
+        if (closed) { return Admission.CLOSED; }
+        if (queued.size() + active.size() >= 64) { return Admission.CAPACITY; }
+        if (locked(logical)) { return Admission.LOGICAL_PENDING; }
+        queued.put(logical, new Request(logical, change, valid, callback, System.nanoTime())); return Admission.QUEUED;
     }
 
     boolean pending() { return !queued.isEmpty(); }
+    String observation() { return "queued:" + queued.keySet() + ",active:" + active.stream().map(Request::logical).toList(); }
     boolean locked(UUID logical) { return queued.containsKey(logical) || active.stream().anyMatch(value -> value.logical().equals(logical)); }
 
     /** Called only when the shared writer and coordinator cadence permit another immutable capture. */

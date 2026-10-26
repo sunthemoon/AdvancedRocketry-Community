@@ -47,6 +47,7 @@ public final class WorldDataMigrationService {
     private final Clock clock;
     private final FileCommitter committer;
     private final FileStager stager;
+    private final java.util.function.Function<Path, CheckedSavedDataFile.Presence> rejoinPresence;
 
     public WorldDataMigrationService() {
         this(Clock.systemUTC(), WorldDataMigrationService::replaceFile);
@@ -57,13 +58,21 @@ public final class WorldDataMigrationService {
     }
 
     WorldDataMigrationService(Clock clock, FileCommitter committer, FileStager stager) {
+        this(clock, committer, stager, CheckedSavedDataFile::presence);
+    }
+
+    WorldDataMigrationService(Clock clock, FileCommitter committer, FileStager stager,
+                             java.util.function.Function<Path, CheckedSavedDataFile.Presence> rejoinPresence) {
         this.clock = Objects.requireNonNull(clock, "clock");
         this.committer = Objects.requireNonNull(committer, "committer");
         this.stager = Objects.requireNonNull(stager, "stager");
+        this.rejoinPresence = Objects.requireNonNull(rejoinPresence, "rejoinPresence");
     }
 
     public MigrationReport migrate(Path suppliedWorldRoot) {
         WorldPaths paths = validateWorldPaths(suppliedWorldRoot);
+        // Files.exists cannot prove absence when stat fails. Refuse unknown presence before discovery.
+        requireKnownRejoinPresence(paths.dataDirectory().resolve(ManagedSavedDataType.ROCKET_REJOINS.fileName()));
         if (!Files.exists(paths.dataDirectory(), LinkOption.NOFOLLOW_LINKS)) {
             return MigrationReport.noData();
         }
@@ -106,7 +115,9 @@ public final class WorldDataMigrationService {
         for (ManagedSavedDataType type : ManagedSavedDataType.values()) {
             try {
                 Path source = safeChild(paths.dataDirectory(), type.fileName(), paths.worldRoot());
-                if (!Files.exists(source, LinkOption.NOFOLLOW_LINKS)) {
+                if (type == ManagedSavedDataType.ROCKET_REJOINS
+                        ? requireKnownRejoinPresence(source) == CheckedSavedDataFile.Presence.ABSENT
+                        : !Files.exists(source, LinkOption.NOFOLLOW_LINKS)) {
                     continue;
                 }
                 requireRegularFile(source);
@@ -134,6 +145,15 @@ public final class WorldDataMigrationService {
             }
         }
         return List.copyOf(sources);
+    }
+
+    private CheckedSavedDataFile.Presence requireKnownRejoinPresence(Path source) {
+        var presence = rejoinPresence.apply(source);
+        if (presence == CheckedSavedDataFile.Presence.UNKNOWN) {
+            throw new SavedDataMigrationException(MigrationDiagnosticId.INVALID_SCHEMA, "Unknown rocket rejoin sidecar presence")
+                    .forType(ManagedSavedDataType.ROCKET_REJOINS);
+        }
+        return presence;
     }
 
     private Backup createBackup(WorldPaths paths, List<SourceFile> sources) {

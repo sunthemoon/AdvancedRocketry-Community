@@ -1,5 +1,6 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence;
 
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.CanonicalNbtDigest;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.CheckedJournalCheckpoint;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.CheckedRootWriter;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataPolicy;
@@ -97,6 +98,57 @@ public final class RocketTransactionSavedData extends SavedData {
     public Optional<CheckedJournalCheckpoint.Acknowledgement> acknowledgement() { return Optional.ofNullable(acknowledged); }
     public boolean acknowledgedCurrent() {
         return operational() && outcome == COMMITTED && acknowledged != null && acknowledged.sequence() == mutationSequence;
+    }
+
+    /** Computed once per desired entry version, not once per terrain member or polling tick. */
+    public static final class ExpectedEntry {
+        private final UUID transaction;
+        private final String digest;
+        private ExpectedEntry(UUID transaction, String digest) { this.transaction = transaction; this.digest = digest; }
+    }
+
+    public static ExpectedEntry expectedEntry(RocketPersistedTransaction entry) {
+        Objects.requireNonNull(entry);
+        return new ExpectedEntry(entry.record().transactionId(), CanonicalNbtDigest.of(RocketTransactionCodec.encodeEntry(entry),
+                Math.toIntExact(TYPE.maxUncompressedBytes()), RocketTransactionWriter.DIGEST_DEPTH));
+    }
+
+    /** Read-only admission sizing; never introduce a new over-bound root or replace an existing transaction ID. */
+    public boolean canAppend(RocketPersistedTransaction candidate) {
+        requireOwner(); Objects.requireNonNull(candidate);
+        if (!operational() || entries.containsKey(candidate.record().transactionId())
+                || entries.size() >= RocketLimits.MAX_ACTIVE_TRANSACTIONS) { return false; }
+        int maximum = Math.toIntExact(TYPE.maxUncompressedBytes());
+        var header = new CompoundTag(); SavedDataSchemaMigrator.stampCurrent(TYPE, header);
+        header.put("transactions", new ListTag());
+        var measured = io.github.sunthemoon.advancedrocketrycommunity.persistence.BoundedNbt.measure(
+                header, maximum, RocketTransactionWriter.DIGEST_DEPTH, maximum);
+        if (measured == null) { return false; }
+        long bytes = measured.bytes();
+        // One bounded entry at a time, rather than allocating another whole 64 MiB root.
+        for (var entry : java.util.stream.Stream.concat(entries.values().stream(), java.util.stream.Stream.of(candidate)).toList()) {
+            try {
+                var size = io.github.sunthemoon.advancedrocketrycommunity.persistence.BoundedNbt.measure(
+                        RocketTransactionCodec.encodeEntry(entry), maximum, RocketTransactionWriter.DIGEST_DEPTH - 2, maximum);
+                if (size == null) { return false; }
+                bytes += size.bytes() - 3; // List children have no named-root header.
+                if (bytes > maximum) { return false; }
+            } catch (IllegalArgumentException invalid) { return false; }
+        }
+        return true;
+    }
+
+    /** Exact W123 presence: current entries, current sequence and the acknowledged full entry digest must agree. */
+    public boolean acknowledgedEntry(ExpectedEntry expected) {
+        requireOwner(); Objects.requireNonNull(expected);
+        return acknowledgedCurrent() && entries.containsKey(expected.transaction)
+                && expected.digest.equals(acknowledged.records().get(expected.transaction));
+    }
+
+    /** Journal facts only; the caller must additionally exclude live owners/removals and overlapping operations. */
+    public boolean acknowledgedAbsent(UUID transaction, UUID snapshot, UUID entity) {
+        return absenceStatus(transaction, snapshot, entity) == AbsenceStatus.PROVED
+                && !acknowledged.records().containsKey(transaction);
     }
 
     /**

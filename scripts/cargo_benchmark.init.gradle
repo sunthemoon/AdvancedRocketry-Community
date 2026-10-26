@@ -1,0 +1,27 @@
+// W144 test-only classpath export. Does not alter production artifacts or enable admission.
+allprojects {
+    afterEvaluate { project ->
+        if (project.plugins.hasPlugin('java')) {
+            def nativeJar = tasks.register('w144NativeJar', Jar) {
+                dependsOn tasks.named('testClasses')
+                archiveClassifier = 'w144-benchmark'
+                from sourceSets.main.output
+                from(sourceSets.test.output) {
+                    include '**/CargoNative*.class'
+                }
+                manifest.from tasks.named('jar', Jar).get().manifest
+            }
+            // Only this explicitly requested diagnostic artifact includes the native observer.
+            // Neither the normal jar nor production source sets are changed.
+            project.reobf.create('w144NativeJar')
+            tasks.register('w144BenchmarkClasspath') {
+                dependsOn tasks.named('testClasses')
+                doLast {
+                    def output = project.findProperty('w144Classpath')
+                    if (!output) { throw new GradleException('Supply -Pw144Classpath=<external output file>') }
+                    new File(output.toString()).text = sourceSets.test.runtimeClasspath.asPath
+                }
+            }
+        }
+    }
+}

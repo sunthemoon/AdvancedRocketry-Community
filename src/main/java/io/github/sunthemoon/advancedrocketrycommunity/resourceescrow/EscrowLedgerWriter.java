@@ -271,6 +271,11 @@ public final class EscrowLedgerWriter implements AutoCloseable {
     public boolean unavailable() { owner(); return baselineFailed || failures >= 3; }
     boolean baselineAvailable() { owner(); return !baselineFailed; }
     public boolean idle() { owner(); return active == null; }
+    String observation() {
+        owner(); return "active:" + (active != null) + ",successor:" + (successor != null)
+                + ",completions:" + completions.size() + ",running:" + running + ",unknown:" + uncertain
+                + ",generation:" + lastGeneration + ",durable:" + durableGeneration;
+    }
     boolean unknown() { owner(); return uncertain; }
     public long lastGeneration() { owner(); return lastGeneration; }
     long lastIoStart() { owner(); return lastIoStart; }

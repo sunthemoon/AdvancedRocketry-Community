@@ -1120,7 +1120,9 @@ This note records mechanics; it changes no decision and accepts no risk. The ris
 
 - **Checked writes.** `ROCKET_TRANSACTIONS` adopts W11b2's checked policy and exact acknowledgement (mutation
   sequence, NC1 root digest, transaction-to-record digests) on a checked-write core now shared with the transfer
-  journal, whose per-attempt results are unchanged. Writes stay synchronous at the journal's existing save cadence.
+  journal, whose per-attempt results are unchanged. Writes stay synchronous at the journal's existing save cadence
+  (superseded in mechanism by ADR-074, accepted 2026-10-26: W129a moves them to an off-thread checked writer, with
+  the results above unchanged).
   A definite failure keeps the old disk proof and dirty RAM; an ambiguous replacement, readback or directory force
   is UNKNOWN until a successful checked write. The acknowledgement is session-local; loading never acknowledges.
 - **B14 for W27d's D0.** A bounded absence query (at most 256 records) refuses a remaining assembly or disassembly
@@ -1359,10 +1361,11 @@ or accept a risk. The risks are R-031, R-032 and R-035.
     still has its COMMITTED transfer record T, the retirement places the existing ordinary flight ticket on the old
     launch site's origin column and refreshes the destination's, so W98's on-disk proof can remove T before the fill.
     It starts on demand only: at most four starts per tick and one attempt per rocket per 200 ticks, never at startup
-    by itself, released on success or by the 400-tick expiry, without resetting W98's backoff. Open before admission
-    (W130-R1, TASK-W130F under R59): during a wait that never ends by itself (a search area over the limit, a Level
-    with saving off, unsupported entity storage) one demand keeps re-ticketing both ends every 200 ticks and keeps
-    the landed rocket's column loaded. Unreachable while production admission is off.
+    by itself, released on success or by the 400-tick expiry, without resetting W98's backoff. W130F (merged
+    `6d1230f0`, R59, closing W130-R1) checks the three holds that no ticket can end (a discovery region over its limit,
+    a Level with saving off, unsupported entity storage) before any ticket; one demand allows at most three ticket
+    steps, after which the entry ends with T kept (`DEMAND_SPENT`) until a new demand; a loader only queues its
+    demand, and the coordinator's tick starts the attempt. Unreachable while production admission is off.
 - **Checked column set (R21 item 2).**
   - One server-free, overflow-checked helper defines the columns for readiness, governed pad admission, F1's source,
     refresh and release.
@@ -1770,8 +1773,121 @@ changes no decision status and accepts no risk. The risk is R-035.
 - **Open:** W98-R1 (an ordinary capture invalidates a governed proof of the same entity slot, before governed
   admission opens; W116 observed it on every run), W98-R6's offline-crew hold (R42; a durable cancellation intent
   is reconsidered with N3-B), N3-B (I6, I7) and the player checkpoint adapter.
+- **N3-B design (W148, reviewed; Root decision R87, 2026-10-23; not yet implemented).** I6 (landed disassembly:
+  the pre-retirement gap and a second, independent terrain transaction) and I7 (a replacement that loses the old
+  end's exclusion authority) take N3-A1's pre-retirement proof, with R52 and R59's on-demand ticketing extended to
+  them inside the unchanged shared caps. Root's answers to W148 section 7: (1) the terrain dependency is accepted and
+  no pre-M1-only player path ships; (2) the demand ticketing extends to I6 and I7, including the non-destructive
+  cold-disassembly preparation and a fresh confirmation; (3) a destination with unsupported entity storage refuses
+  instead of R34's R5(c) unproved fallback, with the scoped pending-operation and footprint exclusions; (4) the
+  existing-format U, checkpoint and recovery scope is approved, including all ordinary no-T disassembly. No saved
+  format, schema, bound, lease, budget, timeout or protocol changes. The holds and their recovery are in R-035.
+  Leaves N3-B1 to N3-B4 follow W148 section 7; N3-B2 needs an independent persistence review before integration.
+- **N3-B2 isolation (W154 design revisions 1 and 2, `records/W154-DESIGN.md`; review W154-review BLOCK, SHA-256
+  `6facedc6…`, and its re-review, SHA-256 `c67bfebd…`; Root decisions R91, R93 to R98 and R100, 2026-10-24, and R107,
+  2026-10-25; implemented by W152, W152F and W152G and merged at `6f00cbf5e`; W152H and W152I merged at `787c28e52` under R110, R112 and R114; W152J follows).** W152 showed that vanilla container access (hoppers, the item capability, menus, breaking) bypasses
+  the region locks while U is retained, so a rollback could restore items that had already left. Sealed staging closes
+  that window. While U is retained, every member of the footprint is an inert carrier C: no inventory, capability,
+  menu, ticker, drops or item form; unbreakable, and immune to explosions and pistons. C holds the member's original
+  state, its adapter ID and the adapter payload that U holds.
+  - **Order (C0 to C5):** U LOCKED is acknowledged, then C is staged and proved, then RESTORED is acknowledged (the
+    terrain is elected), then D is retired and proved, then U is removed with W123's checked acknowledgement. Each C
+    is unsealed after that.
+  - **Why no added residual:** after unsealing, C and the published container are two representations of one member
+    in one terrain slot. A later transfer out of the container has the torn-save behaviour of every vanilla chest
+    (ADR-054), not the disassembly's two-store transfer, so section 10's D3-A rule against an added residual holds.
+  - **Unsealing (R95 to R97):** every adapter restores into a target that is in no Level yet, while C stays in the
+    world, so no neighbour or comparator callback runs before publication (W152's probe showed that a server-bound
+    target's `setChanged` reaches a neighbour synchronously). The target is verified by recapture, then gets its
+    Level and is published in one step. A failed restore discards the target (it is marked removed, and a built-in
+    target is also emptied) and holds C. A terminal preparation failure (the adapter throws, needs a Level, returns
+    false, mismatches on recapture or exceeds its time check) is latched in RAM on the loaded carrier. It is not
+    retried while that carrier stays loaded; each new load of the carrier allows one attempt and one WARN, as R100
+    allows for an invalid root (R107, 2026-10-25). Transient holds, such as an unloaded footprint or a delayed writer,
+    keep their 200-tick retry.
+  - **Provider contract (method signatures unchanged):** at unseal, restore receives a host-created target that is
+    in no Level yet and must work from the target and the payload. A provider that needs a Level or an installed host
+    is held, and nothing is lost.
+  - **Trust boundary:** code that keeps a raw block-entity reference from `AttachCapabilitiesEvent` and uses it after
+    the block entity is removed is outside the protection, as it already is for every vanilla container instance a
+    chunk unload leaves behind. So is an attached capability whose attachment, serialization or invalidation callback
+    moves resources (R98): capability serialization is read-only by contract, and such a callback already makes every
+    chunk save inconsistent. The built-in chest and barrel capture reads its owned data directly, without
+    `saveWithoutMetadata()`, so no attached serialization runs during preparation; its payload stays byte-identical.
+    R-035 discloses this boundary.
+  - **Saved format (R93):** one new block and block entity, the carrier, with a schema-1 root within U's per-member
+    bounds and ADR-061/064 preservation; it is never discarded or replaced with air. Journal schema 2 gains the record
+    type `SEALED_DISASSEMBLY`, so existing `DISASSEMBLY` records keep their current recovery. An older jar blocks the
+    journal root; downgrade follows section 13.
+  - **Carrier preservation (R100):** no save refusal and no reuse of R-021's chunk guard. Staging measures a carrier
+    root before any mutation and refuses to stage if it would not fit; nothing in play changes it afterwards. A loaded
+    root that fails validation keeps the member sealed and held, and is written back exactly as loaded on every save,
+    with one bounded WARN per carrier per load.
+  - **Limits:** no bound, lease, budget, timeout or protocol change.
+  - **Proof admission (R109 and R110, 2026-10-25; R112 and R114, 2026-10-26):** an active proof attempt is served every tick, and a sealed
+    attempt reserves the four ordinary capture slots of its Level until it ends. A plan wider than 21 slots is never
+    started: that is a conservative admission policy within the unchanged quotas and 100-tick deadline, not an
+    absolute native limit (a window opened earlier can fit 24). Supported assemblies can reach the planner's 129-slot
+    ceiling, so W152H refuses such a request before any claim, carrier or journal write, with its own result and one
+    INFO line; the rocket entity is unchanged. A U record already over the limit (only from earlier test builds)
+    stays retained with one WARN per record per load, and recovery follows R-035's whole-world copy process. W152H
+    also lets a waiting ordinary return in between sealed attempts and keeps a pre-U request's 200-tick expiry
+    running during proof backoff. The hand-off bound is relative to native capture availability (R112): the
+    waiting class gets its Level's first native capture opportunity at or after the other class's attempt ends,
+    plus the 2-tick service lag; with the unchanged quota that can be 16 ticks after a sealed attempt. W152H and
+    W152I merged at `787c28e52` with review finding W152H-R1 open (R114): ordinary fail-back reservations can
+    still delay sealed admission without bound. Player admission (N3-B3) stays off until W152J fixes that and is
+    merged after a fresh review.
+  - **Stop condition:** W152's first commit probes the publication sequence, including an attachment listener that
+    keeps the raw target, and stops if no one-step publication exists without a Mixin.
 
-No saved format changes. This is a development implementation note, not owner acceptance or a Gate result.
+No saved format changes except the N3-B2 carrier and the `SEALED_DISASSEMBLY` record type that R93 authorizes above.
+This is a development implementation note, not owner acceptance or a Gate result.
+
+### W80 implementation note: releasing a legacy rocket held by offline passengers (design frozen; all three leaves merged)
+
+This note records the frozen design `records/W80-DESIGN.md` (revision 3, merged `aee68ef3`; reviews W80-review
+REDESIGN and W80-review-2 APPROVE-WITH-CHANGES). Root registered it on 2026-10-24, before implementation; the risk is
+R-035. It covers the F6-style indefinite wait of a legacy (not governed) rocket whose recorded passengers are never
+online together. Governed records stay excluded.
+
+- **The action.** A legacy-only operator command, `release-absent`, records bounded placement and seat-revocation
+  obligations in a lazy, checked, managed sidecar. The journal stays root 3, and the governed protocol is unchanged.
+  Before writing, it proves the entity's current manifest on disk, then removes only the released seats from that
+  manifest. Before the rocket accepts a later boarding, it proves in the native entity store and the reconstructible
+  journal that no recorded copy holds a released seat, or that the rocket is gone.
+- **Placement.** Players are placed as soon as the release is durable and its seats are removed in RAM. They are
+  placed unmounted, under bounded protection, at a probed pad or an equally checked Overworld fallback. A placement
+  retires only after an exact streaming readback of the installed player file's marker, dimension and position,
+  followed by a checked acknowledgement, never after `SaveToFile` alone. The server's own `saveAll` is called at most
+  once per 100 ticks to prompt that save.
+- **Not added:** an offline player-data writer, a new injection, or an automatic release timer.
+- **Permission.** Level 3 is checked when the command is parsed and again when it executes. Automatic origins (tick,
+  load and scheduled functions, command blocks) are refused. Its effect inside functions depends on the server's
+  function compilation level.
+- **Saved format:** the new sidecar (schema 1), lazily created; a world that never uses the command has none. A future,
+  malformed, oversized or unreadable sidecar refuses startup with its bytes unchanged. Downgrade after use is
+  unsupported.
+- **Leaves:** W80-storage, W80-release and W80-rejoin (the design's Appendix B), each with its own independent review.
+  W80-storage merged on 2026-10-25 (W157 with W157F, `c7237169c`; review APPROVE after W157-R1): the sidecar, its checked
+  writer, lazy lifecycle and startup refusal, with no command. R104 (2026-10-25) amends schema 1 before any world can
+  hold a sidecar: each batch also records B1's at most three entity slots (Level and chunk), so a restart after J1
+  removed T still reacquires B1. J1 uses the merged remaining-crew guard (placed or delivered), not all-online.
+  W80-release merged on 2026-10-25 (W158 with W158F, `b371c9bc1`; review BLOCK on W158-R1 and W158-R2, then re-review
+  APPROVE): H1 and H2 planning, the release fence, B0, B1, J1 and S2 for legacy records, driven only through a gated
+  internal entry point; governed records are refused and production admission stays disabled. Native cases kill the
+  first recovery at B1's capture and around S2's write and restart it. R105 (2026-10-25) splits W80-rejoin into W159 and
+  W160. The rejoin core merged on 2026-10-25 (W159 with W159F, `af7523215`; review BLOCK on W159-R1 to W159-R3, then
+  re-review APPROVE-WITH-CHANGES on one low log-manifest item that W160 takes): login protection, safe placement with P1,
+  prompt saves and the exact readback with P2, with no command. R108 makes P2 the commit point, bound to an install-time
+  lease (the session is current and the target is safe), so a death, clone, new login or unsafe target before P2 is
+  installed keeps the obligation. The command and view merged on 2026-10-26 (W160 with W160F and W160G, `f68b4867e`;
+  review BLOCK on W160-R1 to W160-R4, then re-review APPROVE): `release-absent` with its execution-time
+  `hasPermission(3)` check, the read-only `rejoins` view, the command matrix and the combined native matrix (62
+  counted starts). R113 keeps `59f08e179` as the unused-world downgrade baseline and declares exactly its two
+  missing `rocket_monitoring_station` registry entries; downgrade after use stays unsupported. W152H's cross-guard
+  (`787c28e52`) keeps release planning and sealed staging apart. Two-client evidence waits for the owner's final
+  campaign.
 
 ### W11c and W11d implementation note: rocket cargo scope and protections (design W11CD, admission disabled)
 
@@ -1969,6 +2085,27 @@ All channels keep exact-version negotiation. Update the protocol fixture once
 with both station-sky consumers, and test wrong-direction/discriminator/version,
 maximal frames, canonical option flags/enums/VarInts and trailing bytes. These
 are proposed values/table, not registered runtime packets.
+
+### R92 implementation note: the monitoring station on `classic_controls` protocol 2 (Root, 2026-10-24)
+
+Section 4.3 needs a menu intent and a view that the table above does not assign, and W153 stopped at that boundary.
+Root decision R92 (QUEUE, TASK-W153) assigns them inside this ADR's accepted surface, as the suit_motion 2 bump of
+TASK-W06F did. It changes no accepted behaviour or bound.
+
+- The monitor is a fifth `ClassicControlKind`, `ROCKET_MONITOR`, wire byte 4, on the existing index 0 intent and
+  index 1 view. The table keeps its three messages, indices and directions.
+- `classic_controls` moves from protocol 1 to 2 with exact-version negotiation, so a protocol-1 peer cannot join
+  instead of disagreeing about kind 4. Kinds 0 to 3 keep byte-identical layouts.
+- The bounds stay at 512 bytes per intent and 8 KiB per view. The view carries the kind's exact scalar values, a
+  status code name and a quote token: no coordinates, inventories, native tags or another owner's rocket position.
+  Banks appear as the stable bank role IDs of the flight plan above, with amount, capacity and required debit. A
+  required cost the server cannot compute for a refused quote is sent as -1, meaning unavailable (R102, before
+  protocol 2 merged).
+- The intent names the open menu by container ID. The launch action carries the displayed quote's token, so a stale
+  view cannot launch. The server creates the fresh request ID and uses the shared flight path. A destination is an
+  index into the bounded accessible catalog the menu shows, checked again by the server.
+- The malformed-kind tests move their unknown sample to the first unassigned byte (5). They and the protocol pin test
+  gain the version-2 cases; no assertion is removed.
 
 ### 11.2 Authority, content and verification
 

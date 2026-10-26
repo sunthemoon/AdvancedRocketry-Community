@@ -49,6 +49,12 @@ class RocketRetirementWorld implements RocketOrdinaryRetirement.Port {
     }
 
     @Override
+    public boolean saveOff(RocketRetirementProof.Slot slot) {
+        var level = RocketTransferEntities.level(server, slot.dimension());
+        return level != null && level.noSave();
+    }
+
+    @Override
     public boolean captureSupported(RocketRetirementProof.Slot slot) {
         var runtime = EscrowRuntime.of(server);
         var level = RocketTransferEntities.level(server, slot.dimension());
@@ -57,7 +63,9 @@ class RocketRetirementWorld implements RocketOrdinaryRetirement.Port {
 
     @Override
     public boolean captureAvailable(RocketRetirementProof.Slot slot, long now) {
-        return EscrowRuntime.of(server).barrier().availableOrdinary(slot.dimension().toString(), now);
+        var runtime = EscrowRuntime.of(server);
+        var level = RocketTransferEntities.level(server, slot.dimension());
+        return level != null && runtime.barrier().availableOrdinary(runtime.store(level), slot.dimension().toString(), slot.chunk(), now);
     }
 
     @Override

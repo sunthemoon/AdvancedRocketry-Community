@@ -504,7 +504,7 @@ public final class RocketGameTests {
         helper.succeed();
     }
 
-    @GameTest(template = TEMPLATE, timeoutTicks = 40)
+    @GameTest(template = TEMPLATE, batch = "w152_legacy_manager", timeoutTicks = 40)
     public static void adminManagerAssemblyAndRecoveryUseServerAuthority(GameTestHelper helper) {
         BlockPos assemblerPosition = new BlockPos(3, 1, 3);
         BlockPos rocketOrigin = assemblerPosition.above();
@@ -548,18 +548,23 @@ public final class RocketGameTests {
         savedData.journalFor(snapshot, ownerId).write(stale);
 
         manager.tick(level.getServer());
-        helper.assertTrue(!rocket.isAlive(), "Recovery left the stale RocketEntity alive");
-        helper.assertTrue(helper.getBlockState(rocketOrigin).is(ModBlocks.ROCKET_MOTOR.get()),
-                "Recovery did not restore the motor");
-        ChestBlockEntity restoredChest = (ChestBlockEntity) helper.getBlockEntity(rocketOrigin.east());
-        helper.assertTrue(
-                restoredChest.getItem(0).is(Items.DIAMOND)
-                        && restoredChest.getItem(0).getCount() == 17,
-                "Recovery changed the approved chest payload"
-        );
-        helper.assertTrue(savedData.entries().isEmpty(), "Recovery did not clear the durable journal");
-        manager.clear();
-        helper.succeed();
+        helper.assertTrue(rocket.isAlive(), "A second call in the same server tick repeated recovery selection");
+        helper.runAfterDelay(1, () -> {
+            try {
+                manager.tick(level.getServer());
+                helper.assertTrue(!rocket.isAlive(), "Recovery left the stale RocketEntity alive");
+                helper.assertTrue(helper.getBlockState(rocketOrigin).is(ModBlocks.ROCKET_MOTOR.get()),
+                        "Recovery did not restore the motor");
+                ChestBlockEntity restoredChest = (ChestBlockEntity) helper.getBlockEntity(rocketOrigin.east());
+                helper.assertTrue(
+                        restoredChest.getItem(0).is(Items.DIAMOND)
+                                && restoredChest.getItem(0).getCount() == 17,
+                        "Recovery changed the approved chest payload"
+                );
+                helper.assertTrue(savedData.entries().isEmpty(), "Recovery did not clear the durable journal");
+                helper.succeed();
+            } finally { manager.clear(); }
+        });
     }
 
     private static CompoundTag stackTag(int slot, ItemStack stack) {

@@ -51,6 +51,16 @@ final class ExternalRocketBlockEntityAdapter implements
     @Override
     public RocketBlockEntityPayload capture(BlockEntity blockEntity) {
         requireServer(blockEntity);
+        return captureOwned(blockEntity);
+    }
+
+    @Override
+    public RocketBlockEntityPayload captureDetached(Thread owner, BlockEntity target) {
+        io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.RocketBlockEntityAdapter.requireDetached(owner, target);
+        return captureOwned(target);
+    }
+
+    private RocketBlockEntityPayload captureOwned(BlockEntity blockEntity) {
         if (!supports(blockEntity) || !call("canMove", () -> provider.canMove(blockEntity))) {
             throw new IllegalArgumentException("Provider rejected source container");
         }
@@ -66,6 +76,16 @@ final class ExternalRocketBlockEntityAdapter implements
     @Override
     public boolean restore(BlockEntity blockEntity, RocketBlockEntityPayload payload) {
         requireServer(blockEntity);
+        return restoreOwned(blockEntity, payload);
+    }
+
+    @Override
+    public boolean restoreDetached(Thread owner, BlockEntity target, RocketBlockEntityPayload payload) {
+        io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.RocketBlockEntityAdapter.requireDetached(owner, target);
+        return restoreOwned(target, payload);
+    }
+
+    private boolean restoreOwned(BlockEntity blockEntity, RocketBlockEntityPayload payload) {
         if (!supports(blockEntity) || !id.equals(payload.adapterId())) {
             return false;
         }

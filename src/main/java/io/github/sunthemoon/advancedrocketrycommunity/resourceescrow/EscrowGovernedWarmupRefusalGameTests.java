@@ -204,6 +204,8 @@ public final class EscrowGovernedWarmupRefusalGameTests {
                 stage = 2; return false;
             }
             // Saved with its chunk: the column is unloaded and the copy is in no entity index.
+            // Our temporary ticket is gone; diagnose a permanent hold before the unload checks can short-circuit.
+            requireReleasable(helper, server, List.of(pad));
             return moon.getChunkSource().getChunkNow(copyAt.getX() >> 4, copyAt.getZ() >> 4) == null
                     && moon.getEntity(copy) == null && cold(server, pad);
         }
@@ -260,6 +262,7 @@ public final class EscrowGovernedWarmupRefusalGameTests {
             var picks = predict(server, moon, rocket, 1);
             helper.assertTrue(picks != null, "No admissible Moon pad");
             pad = picks.get(0);
+            requireReleasable(helper, server, picks);
             return cold(server, pad);
         }
 
@@ -269,7 +272,7 @@ public final class EscrowGovernedWarmupRefusalGameTests {
 
         @Override void relaunch(MinecraftServer server, RocketTransferSavedData journal) {
             // The cut removes itself before it throws, so it can never reach another test's flight.
-            EscrowRuntime.of(server).terminalCutForTests(server, checkpoint -> {
+            EscrowGameTestTerminalCut.install(helper, checkpoint -> {
                 if (checkpoint.equals("F2_PREPARED_ACK") && thrown.compareAndSet(false, true)) {
                     EscrowRuntime.of(server).terminalCutForTests(server, null);
                     throw new IllegalStateException("W90b fixture: F2's countdown effect fails after journal.put");

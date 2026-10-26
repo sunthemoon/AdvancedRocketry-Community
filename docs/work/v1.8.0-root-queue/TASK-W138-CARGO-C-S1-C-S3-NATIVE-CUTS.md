@@ -41,6 +41,11 @@ whole task), releasing it and deleting every server copy and `build/gametest/wor
 detached script that took it. Check C: and D: above 10 GiB and that 6 GiB of memory is free before each Gradle run or
 native start. Keep the evidence under 100 MB (AGENTS section 9).
 
+**Known shared-head failure (Root note, 2026-10-22).** The shared head since W134's merge fails two existing Moon-flight
+GameTests, `EscrowGovernedMarginGameTests.borderCrossingMarginsLandOnAnEmptyMoonAndARestartReticketsTheSameColumns` and
+`RocketPassengerContinuedUseGameTests.logoutImmediatelyCancelsOnlyItsPendingReconnect`, which W139 investigates. If your
+full GameTest fails only those two, record it and continue with the cuts; any other failure stops you as usual.
+
 ## Not in this task
 
 C-S4 and C-S5, the item families D-S1 and D-S2, enabling admission, ADRs, the risk register, status files and the ledger

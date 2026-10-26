@@ -48,7 +48,12 @@ public final class ResearchRuntime {
     @SubscribeEvent public static void unload(LevelEvent.Unload event) {
         if (event.getLevel() instanceof ServerLevel level && level.getServer().overworld() != null) { service(level).unload(level); }
     }
-    @SubscribeEvent public static void stopped(ServerStoppedEvent event) { service(event.getServer().overworld()).close(); }
+    @SubscribeEvent public static void stopped(ServerStoppedEvent event) {
+        // A refused start has no overworld. A failed start or Level teardown may
+        // also leave no capability; stop only an existing service, never require one.
+        var overworld = event.getServer().overworld();
+        if (overworld != null) { overworld.getCapability(SERVICE).ifPresent(ResearchService::close); }
+    }
     @SubscribeEvent public static void logout(net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent event) {
         if (event.getEntity().level() instanceof ServerLevel level) { service(level).logout(event.getEntity().getUUID()); }
     }

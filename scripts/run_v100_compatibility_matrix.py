@@ -180,13 +180,13 @@ def archive_native_logs(game: Path, output: Path, prefix: str) -> list[dict]:
     return records
 
 
-def stop_server(process: server.CapturedProcess) -> int:
+def stop_server(process: server.CapturedProcess, expected_version: str | None = None) -> int:
     start = len(process.lines)
     process.command("save-all flush")
     process.wait_for(server.SAVE_MARKER, 60, start_at=start)
     process.command("stop")
     code = process.finish()
-    findings = server.scan_log(process.lines)
+    findings = server.scan_log(process.lines, expected_mod_version=expected_version)
     if code or findings:
         raise server.SmokeError(f"Packaged server stop/audit failed: exit={code}; {findings[:1]}")
     return code
@@ -221,7 +221,7 @@ def run_lane(args, forge: str, artifact: Path, summary: dict) -> None:
             if cycle == "matrix":
                 for _, jei, username in (cell for cell in CELLS if cell[0] == forge):
                     run_client(args, forge, jei, username, port, artifact, process, summary)
-            code = stop_server(process)
+            code = stop_server(process, args.version)
             summary["servers"].append({"forge": forge, "cycle": cycle, "port": port,
                                        "server_properties_startup_sha256": properties, "offline_loopback": True,
                                        "mods": check_mods(game, artifact, None), "status": status,

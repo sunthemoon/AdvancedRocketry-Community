@@ -24,9 +24,14 @@ final class RocketRetirementTestHook {
         if (cut.isEmpty()) { return label -> { }; }
         EscrowTestEndpoints.requireEnabled(server);
         var once = new AtomicBoolean();
+        int separator = cut.lastIndexOf(':');
+        String selected = separator < 0 ? cut : cut.substring(0, separator);
+        int occurrence = separator < 0 ? 1 : Integer.parseInt(cut.substring(separator + 1));
+        if (occurrence < 1 || occurrence > RocketOrdinaryRetirement.MAX_SLOTS) { throw new IllegalArgumentException("Invalid cut occurrence"); }
+        var seen = new java.util.concurrent.atomic.AtomicInteger();
         return label -> {
-            if (!label.equals(cut) || !once.compareAndSet(false, true)) { return; }
-            AdvancedRocketryCommunity.LOGGER.info("ARCE_N3_RETIREMENT_PAUSED boundary={}", label);
+            if (!label.equals(selected) || seen.incrementAndGet() != occurrence || !once.compareAndSet(false, true)) { return; }
+            AdvancedRocketryCommunity.LOGGER.info("ARCE_N3_RETIREMENT_PAUSED boundary={} occurrence={}", label, occurrence);
             long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(20);
             for (long remaining; (remaining = deadline - System.nanoTime()) > 0; ) {
                 try { TimeUnit.NANOSECONDS.sleep(remaining); } catch (InterruptedException ignored) { }

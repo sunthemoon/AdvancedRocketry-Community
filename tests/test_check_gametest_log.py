@@ -1,9 +1,12 @@
 import contextlib
+import gzip
 import io
 import json
+import os
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 from scripts.check_gametest_log import (
     DEFAULT_MANIFEST,
@@ -373,8 +376,23 @@ class ManifestValidationTests(unittest.TestCase):
         # W90b adds one failed F2 countdown effect after publication (w90b-post-publication-discard-effect-failed).
         # W129a adds one injected detached transaction-journal failure streak (w129a-transaction-journal-unacknowledged).
         self.assertEqual(
-            108, sum(sum(item.counts.values()) for item in expectations if item.level == "ERROR")
+            # W153/R92 adds three exact-version rejection cases in each direction.
+            # W159 adds ten actual backup retries and their single abort, all in one named fixture.
+            # W160F repeats that real filesystem fault in the controlled ordinary-save regression.
+            136, sum(sum(item.counts.values()) for item in expectations if item.level == "ERROR")
         )
+
+    def test_w159_player_save_failures_are_exact_and_batch_scoped(self) -> None:
+        rules = {item.id: item for item in load_manifest(DEFAULT_MANIFEST) if item.id.startswith("w159-")}
+        self.assertEqual({
+            "w159-temporary-player-write-failure": {"rocket_rejoin_temp_failure": 1, "rocket_rejoin_temp_ordinary": 1},
+            "w159-player-backup-delete-failure": {"rocket_rejoin_replace_failure": 10, "rocket_rejoin_replace_ordinary": 10},
+            "w159-player-backup-delete-sequence": {"rocket_rejoin_replace_failure": 10, "rocket_rejoin_replace_ordinary": 10},
+            "w159-player-backup-retries": {"rocket_rejoin_replace_failure": 10, "rocket_rejoin_replace_ordinary": 10},
+            "w159-player-backup-abort": {"rocket_rejoin_replace_failure": 1, "rocket_rejoin_replace_ordinary": 1},
+            "w159-old-root-vehicle-remount-refused": {"rocket_rejoin_vehicle": 1, "rocket_rejoin_vehicle_first": 1},
+        }, {name: rule.counts for name, rule in rules.items()})
+        self.assertTrue(all(rule.maximum is None and not rule.allows_batch("defaultBatch") for rule in rules.values()))
 
     def test_legacy_scalar_recovery_warning_has_one_separate_batch_count(self) -> None:
         rule = next(item for item in load_manifest(DEFAULT_MANIFEST)
@@ -495,6 +513,229 @@ class CommandLineTests(unittest.TestCase):
         self.assertEqual(0, code)
         self.assertIn("   2  ERROR  defaultBatch", output.getvalue())
         self.assertIn("io.github.example.gametest.SaveGameTests.refused", output.getvalue())
+
+
+STAMP = "10Oct2026 18:21:11.206"  # every event time that line() writes
+BEFORE_MIDNIGHT = "10Oct2026 23:59:58.000"
+AFTER_MIDNIGHT = "11Oct2026 00:00:01.000"
+LAST_REFUSAL = line("ERROR", EVENT_LOGGER, REFUSAL)
+CRASHED_RUN = standard_log().split(COMPLETE[0])[0]  # a run that stopped inside its test batch
+
+
+def restamp(text: str, first: str, rest: str | None = None) -> str:
+    """Give the first event of a synthetic log the time `first` and every later event `rest` (default `first`)."""
+    head, marker, tail = text.partition(f"[{STAMP}]")
+    return head + marker.replace(STAMP, first) + tail.replace(f"[{STAMP}]", f"[{rest or first}]")
+
+
+def midnight_split(text: str, before: str = BEFORE_MIDNIGHT, after: str = AFTER_MIDNIGHT) -> tuple[str, str]:
+    """Split a log before its last refusal, inside the test batch, as Forge's midnight roll would."""
+    at = text.rindex(LAST_REFUSAL)
+    return restamp(text[:at], before), restamp(text[at:], after)
+
+
+class LogFolder:
+    """A temporary Forge logs folder: latest.log and the rolled <date>-<n>.log.gz parts beside it."""
+
+    def __init__(self, test: unittest.TestCase) -> None:
+        directory = tempfile.TemporaryDirectory()
+        test.addCleanup(directory.cleanup)
+        self.path = Path(directory.name)
+
+    def write(self, name: str, text: str, newline: str = "\n") -> Path:
+        path = self.path / name
+        if name.endswith(".gz"):
+            path.write_bytes(gzip.compress(text.replace("\n", newline).encode("utf-8")))
+        else:
+            path.write_text(text, encoding="utf-8")
+        return path
+
+
+class MidnightRollTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.manifest = ManifestFile(self, expectation(), config_expectation()).path
+
+    def run_main(self, log: Path) -> tuple[int, str, str]:
+        out, err = io.StringIO(), io.StringIO()
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+            code = main([str(log), "--manifest", str(self.manifest)])
+        return code, out.getvalue().replace(str(log), "<log>"), err.getvalue()
+
+    def assert_checked_as(self, log: Path, text: str) -> str:
+        """Assert that the log is checked exactly as `text` alone in a file of its own; return the source note."""
+        code, out, err = self.run_main(log)
+        expected_code, expected_out, expected_err = self.run_main(LogFolder(self).write("joined.log", text))
+        self.assertEqual(expected_code, code, err)
+        self.assertEqual(expected_err, err)
+        source, *notes = out.splitlines()
+        self.assertIn("continues a run that a midnight roll split", source)
+        expected_notes = expected_out.splitlines()
+        if code == 0:
+            self.assertIn("of the run rebuilt from", notes.pop())
+            expected_notes.pop()
+        self.assertEqual(expected_notes, notes)
+        return source
+
+    def assert_refused(self, folder: LogFolder, fragment: str,
+                       alone: str = "no GameTest userdev launch header") -> None:
+        code, out, err = self.run_main(folder.path / "latest.log")
+        self.assertEqual(1, code)
+        self.assertNotIn("continues a run", out)
+        refusal = err.splitlines()[0]
+        self.assertIn("its run cannot be rebuilt from the rolled parts beside it", refusal)
+        self.assertIn(fragment, refusal)
+        # latest.log is still checked alone, and fails as it did before rebuilding existed.
+        self.assertIn(alone, err)
+
+    def test_split_run_is_checked_exactly_as_the_joined_text(self) -> None:
+        for refusals in (2, 1):
+            with self.subTest(refusals=refusals):
+                head, tail = midnight_split(standard_log(refusals=refusals))
+                folder = LogFolder(self)
+                folder.write("2026-10-10-1.log.gz", head, newline="\r\n")
+                source = self.assert_checked_as(folder.write("latest.log", tail), head + tail)
+                lines = head.count("\n")
+                self.assertIn(f"2026-10-10-1.log.gz (lines 1-{lines}), latest.log (lines {lines + 1}-", source)
+
+    def test_run_across_two_midnights_is_rebuilt_from_three_parts(self) -> None:
+        text = standard_log()
+        first_cut, second_cut = text.index(batch("defaultBatch")), text.rindex(LAST_REFUSAL)
+        first = restamp(text[:first_cut], BEFORE_MIDNIGHT)
+        middle = restamp(text[first_cut:second_cut], AFTER_MIDNIGHT, "11Oct2026 23:59:58.000")
+        last = restamp(text[second_cut:], "12Oct2026 00:00:01.000")
+        folder = LogFolder(self)
+        folder.write("2026-10-10-1.log.gz", first)
+        folder.write("2026-10-11-1.log.gz", middle)
+        source = self.assert_checked_as(folder.write("latest.log", last), first + middle + last)
+        self.assertIn("2026-10-10-1.log.gz (lines 1-2), 2026-10-11-1.log.gz (lines 3-6), latest.log (lines 7-", source)
+
+    def test_previous_runs_part_beside_the_split_run_is_not_used(self) -> None:
+        head, tail = midnight_split(standard_log())
+        for name, previous in (("completed", standard_log()), ("crashed", CRASHED_RUN)):
+            with self.subTest(previous=name):
+                folder = LogFolder(self)
+                # Forge names the current run's first part -1 and the previous run's -2, and writes the
+                # previous one first; swap both so that neither the name nor the time can decide.
+                current = folder.write("2026-10-10-2.log.gz", head)
+                earlier = folder.write("2026-10-10-1.log.gz", restamp(previous, "10Oct2026 23:40:00.000"))
+                os.utime(current, (1_000_000_000, 1_000_000_000))
+                os.utime(earlier, (1_000_000_100, 1_000_000_100))
+                source = self.assert_checked_as(folder.write("latest.log", tail), head + tail)
+                self.assertIn("2026-10-10-2.log.gz (lines 1-", source)
+                self.assertNotIn("2026-10-10-1.log.gz", source)
+
+    def test_missing_first_part_is_refused(self) -> None:
+        _, tail = midnight_split(standard_log())
+        cases = (
+            ("no rolled part", {}, "the first part of the run is missing"),
+            ("only the previous run, completed just before midnight",
+             {"2026-10-10-1.log.gz": restamp(standard_log(), "10Oct2026 23:59:00.000")},
+             "holds a GameTest shutdown, so it belongs to an earlier run"),
+            ("only the previous run, crashed long before midnight",
+             {"2026-10-10-1.log.gz": restamp(CRASHED_RUN, "10Oct2026 23:00:00.000")},
+             "a part is missing or 2026-10-10-1.log.gz belongs to another run"),
+            ("only debug parts", {"debug-1.log.gz": restamp(CRASHED_RUN, BEFORE_MIDNIGHT)},
+             "the first part of the run is missing"),
+        )
+        for name, parts, fragment in cases:
+            with self.subTest(name):
+                folder = LogFolder(self)
+                for part, text in parts.items():
+                    folder.write(part, text)
+                folder.write("latest.log", tail)
+                self.assert_refused(folder, fragment)
+
+    def test_gap_between_parts_is_refused(self) -> None:
+        cases = (
+            ("a missing day", BEFORE_MIDNIGHT, "12Oct2026 00:00:01.000", "1 day, 0:00:03 before latest.log begins"),
+            ("a silent half hour", "10Oct2026 23:30:00.000", AFTER_MIDNIGHT, "0:30:01 before latest.log begins"),
+            ("no midnight", BEFORE_MIDNIGHT, "10Oct2026 23:59:59.000", "so no midnight roll separates them"),
+        )
+        for name, before, after, fragment in cases:
+            with self.subTest(name):
+                head, tail = midnight_split(standard_log(), before, after)
+                folder = LogFolder(self)
+                folder.write("2026-10-10-1.log.gz", head)
+                folder.write("latest.log", tail)
+                self.assert_refused(folder, fragment)
+
+    def test_two_candidate_parts_are_refused(self) -> None:
+        head, tail = midnight_split(standard_log())
+        unstamped = standard_log()[:standard_log().rindex(LAST_REFUSAL)]
+        cases = (
+            ("an identical copy", head, "2026-10-10-1.log.gz and 2026-10-10-2.log.gz both end at"),
+            ("an overlapping part", restamp(unstamped, "10Oct2026 23:59:57.000", "10Oct2026 23:59:59.000"),
+             "2026-10-10-1.log.gz (2026-10-10 23:59:58.000 to 2026-10-10 23:59:58.000) overlaps the rebuilt run"),
+        )
+        for name, other, fragment in cases:
+            with self.subTest(name):
+                folder = LogFolder(self)
+                folder.write("2026-10-10-1.log.gz", head)
+                folder.write("2026-10-10-2.log.gz", other)
+                folder.write("latest.log", tail)
+                self.assert_refused(folder, fragment)
+
+    def test_latest_log_holding_another_launch_is_refused(self) -> None:
+        head, tail = midnight_split(standard_log())
+        folder = LogFolder(self)
+        folder.write("2026-10-10-1.log.gz", head)
+        shutdown = restamp(SHUTDOWN, AFTER_MIDNIGHT)
+        folder.write("latest.log", tail.replace(shutdown, restamp(LAUNCH, AFTER_MIDNIGHT) + "\n" + shutdown))
+        self.assert_refused(folder, "latest.log holds a GameTest launch after its first line",
+                            alone="duplicate or misplaced GameTest launch")
+
+    def test_unsplit_logs_are_checked_alone_as_before(self) -> None:
+        head, tail = midnight_split(standard_log())
+        folder = LogFolder(self)
+        folder.write("2026-10-10-1.log.gz", head)
+        for text in (standard_log(), standard_log(refusals=1), "\n" + standard_log()):
+            with self.subTest(text=text[:20]):
+                alone = self.run_main(LogFolder(self).write("latest.log", text))
+                self.assertEqual(alone, self.run_main(folder.write("latest.log", text)))
+                self.assertEqual(alone, self.run_main(folder.write("run.log", text)))
+        # Only a latest.log is rebuilt: another name is checked alone even when parts lie beside it.
+        code, out, err = self.run_main(folder.write("copy.log", tail))
+        self.assertEqual(1, code)
+        self.assertNotIn("rebuilt", out + err)
+        self.assertIn("no GameTest userdev launch header", err)
+
+    def test_oversized_rolled_parts_are_refused(self) -> None:
+        head, tail = midnight_split(standard_log())
+        size = len(head.encode("utf-8"))
+        folder = LogFolder(self)
+        folder.write("2026-10-10-1.log.gz", head)
+        folder.write("latest.log", tail)
+        with mock.patch("scripts.check_gametest_log.MAX_PART_BYTES", size):
+            self.assertEqual(0, self.run_main(folder.path / "latest.log")[0])
+        with mock.patch("scripts.check_gametest_log.MAX_PART_BYTES", size - 1):
+            self.assert_refused(folder, f"2026-10-10-1.log.gz expands to more than {size - 1:,} bytes")
+        folder.write("2026-10-11-1.log.gz", "\0" * 1_000_000)  # read after the run's part, so the budget refuses it
+        with mock.patch("scripts.check_gametest_log.MAX_ROLLED_BYTES", 1_000_000 + size - 1):
+            self.assert_refused(folder, f"the rolled parts expand to more than {1_000_000 + size - 1:,} bytes")
+        with mock.patch("scripts.check_gametest_log.MAX_ROLLED_PARTS", 1):
+            self.assert_refused(folder, "the folder holds 2 rolled parts, more than 1")
+
+    def test_unreadable_rolled_parts_are_refused(self) -> None:
+        head, tail = midnight_split(standard_log())
+        cases = (
+            ("not gzip", b"plain text"),
+            ("truncated", gzip.compress(head.encode("utf-8"))[:-12]),
+            ("not UTF-8", gzip.compress(b"\xff" + head.encode("utf-8"))),
+        )
+        for name, data in cases:
+            with self.subTest(name):
+                folder = LogFolder(self)
+                folder.write("2026-10-10-1.log.gz", head)
+                (folder.path / "2026-10-09-1.log.gz").write_bytes(data)
+                folder.write("latest.log", tail)
+                self.assert_refused(folder, "cannot read 2026-10-09-1.log.gz")
+
+    def test_part_without_a_timestamped_first_event_is_refused(self) -> None:
+        head, tail = midnight_split(standard_log())
+        folder = LogFolder(self)
+        folder.write("2026-10-10-1.log.gz", "\tat a.continuation.Line.run(Line.java:1)\n" + head)
+        folder.write("latest.log", tail)
+        self.assert_refused(folder, "2026-10-10-1.log.gz does not begin with a timestamped log event")
 
 
 if __name__ == "__main__":

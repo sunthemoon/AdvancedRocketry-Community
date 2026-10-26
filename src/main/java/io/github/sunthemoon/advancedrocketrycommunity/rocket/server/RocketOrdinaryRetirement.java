@@ -18,6 +18,7 @@ import java.util.UUID;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.IntSupplier;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import net.minecraft.nbt.CompoundTag;
@@ -34,7 +35,8 @@ import net.minecraft.server.MinecraftServer;
  * attempt of at most {@link #ATTEMPT_TICKS} (R1); between attempts T stays settled, so launch, refuelling and disassembly
  * refuse L and recovery skips it. Proofs use the shared barrier's ordinary sub-quota and a silent sink (R5). No saved
  * format, ticket type, governed path, lease or replay rule changes. W116 (W98-R10, R12): this class is the state machine
- * only; it reaches the world through a {@link Port}, the guards are {@link RocketRetirementGuards}'s.
+ * only; it reaches the world through a {@link Port}, the guards are {@link RocketRetirementGuards}'s. W130F (W130-R3):
+ * the holds reported once are {@link RocketRetirementHolds}'s, the BEFORE_FILL demand pacing {@link RocketFillRetirementPacing}'s.
  */
 final class RocketOrdinaryRetirement {
     static final int MAX_PENDING = RocketFlightLimits.MAX_ACTIVE_TRANSFERS;
@@ -49,7 +51,10 @@ final class RocketOrdinaryRetirement {
     /** The survivor's slot plus the discarded candidates' slots of both ends. */
     static final int MAX_SLOTS = 1 + 2 * RocketFlightLimits.MAX_TRANSFER_ENTITY_MATCHES;
 
-    enum Site { FAIL_BACK, RECOVERED_SOURCE, RECONNECT, BEFORE_FILL }
+    enum Site {
+        FAIL_BACK, RECOVERED_SOURCE, RECONNECT, BEFORE_FILL, BEFORE_REPLACE;
+        boolean destination() { return this == BEFORE_FILL || this == BEFORE_REPLACE; }
+    }
 
     /** Where the survivor is: loaded, absent from its loaded slot, or not visible because that slot is unloaded. */
     enum Presence { LOADED, GONE, UNLOADED }
@@ -81,13 +86,26 @@ final class RocketOrdinaryRetirement {
         boolean escrowAllows(RocketTransferSavedData journal, RocketTransferRecord record, RocketTransferSavedData.Reservation own);
         /** The survivor's frozen projection, or null unless it is still T's stationary source ({@link RocketRetirementGuards}). */
         CompoundTag projection(RocketTransferRecord record, UUID survivor);
+        /** Pre-ticket authority check; I7 may use its accepted image only to request a cold survivor's load. */
+        default boolean ticketReady(RocketTransferRecord record, UUID survivor) { return projection(record, survivor) != null; }
         /** The ordinary origin tickets the flight held, on every census column that is an end's origin (W90, W98-R3). */
         void keepLoaded(RocketTransferRecord record, List<RocketRetirementProof.Slot> census);
         /** Destination-site scan before freezing; returns a hold reason, or adds every discarded slot. */
         default String prepare(RocketTransferRecord record, UUID survivor, List<RocketRetirementProof.Slot> census) { return null; }
         default void releaseTickets(RocketTransferRecord record) { }
+        /** The slot's Level exists with saving off; read without loading, for the destination site's checks before tickets. */
+        default boolean saveOff(RocketRetirementProof.Slot slot) { return false; }
+        /** Read-only final census recheck; a newly loaded candidate invalidates the attempt, never its old authority. */
+        default String recheck(RocketTransferRecord record, UUID survivor) { return null; }
+        default boolean requestCurrent() { return true; }
+        default io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRegion reservation() { return null; }
         /** One attempt's sink: silent unless a gated release test selects a pause. */
         Consumer<String> sink();
+        /** Owner-thread terminal action under the proof's token. False means no mutation was submitted. */
+        default boolean terminal(RocketTransferSavedData journal, RocketTransferRecord record, CompoundTag frozen,
+                                 RocketTransferSavedData.Reservation own) {
+            journal.remove(record.transferId()); return true;
+        }
         /** Queues T's removal continuation with the attempt's reservation, consuming it. */
         boolean afterAcknowledged(RocketTransferSavedData journal, RocketTransferSavedData.Reservation token,
                                   BooleanSupplier effect, Runnable discarded);
@@ -127,8 +145,9 @@ final class RocketOrdinaryRetirement {
         State state = State.WAITING;
         CompoundTag frozen;
         Consumer<String> sink = label -> { };
-        int attempt, cursor, attempts;
+        int attempt, cursor, attempts, ticketed;
         long created, started, notBefore;
+        long admissionTick = Long.MIN_VALUE;
         String reason;
         Runnable retry = () -> { };
 
@@ -147,20 +166,45 @@ final class RocketOrdinaryRetirement {
     private final Supplier<Set<UUID>> fenced;
     private final Function<MinecraftServer, Port> ports;
     private final Map<UUID, Pending> pending = new LinkedHashMap<>();
-    private final Map<UUID, String> refusals = new LinkedHashMap<>();
-    private final Set<String> warnedLevels = new HashSet<>();
+    private final RocketRetirementHolds holds = new RocketRetirementHolds();
+    private final RocketFillRetirementPacing fills = new RocketFillRetirementPacing();
     private int attemptIds;
-    private long destinationTick = Long.MIN_VALUE;
-    private int destinationStarts;
-    /** Keep the demand spacing through an abandoned/recreated entry, within the existing pending bound. */
-    private final Map<UUID, Long> destinationAttempts = new LinkedHashMap<>();
+    private IntSupplier sealedEntries = () -> 0, sealedAttempts = () -> 0;
+    private boolean capacityShared;
+    private final SealedProofTurns proofTurns = new SealedProofTurns();
 
     RocketOrdinaryRetirement(Set<UUID> live, Set<UUID> settled, Supplier<Set<UUID>> fenced, Function<MinecraftServer, Port> ports) {
         this.live = live; this.settled = settled; this.fenced = fenced; this.ports = ports;
     }
 
+    /** The BEFORE_FILL site's demand queue and pacing (W130F). */
+    RocketFillRetirementPacing fills() { return fills; }
     boolean pending(UUID logical) { return pending.containsKey(logical); }
+    /** W80 preserves this return's remembered deliveries, not the obsolete all-online predicate. */
+    Set<UUID> delivered(UUID transfer, UUID survivor) {
+        return pending.values().stream().filter(p -> p.record.transferId().equals(transfer) && p.survivor.equals(survivor))
+                .findFirst().map(p -> Set.copyOf(p.delivered)).orElse(Set.of());
+    }
+    boolean replacing(UUID logical) {
+        var entry = pending.get(logical); return entry != null && entry.site == Site.BEFORE_REPLACE;
+    }
+    List<io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRegion> reservations(UUID except) {
+        return pending.values().stream().filter(entry -> !entry.logical().equals(except))
+                .map(entry -> entry.port.reservation()).filter(java.util.Objects::nonNull).toList();
+    }
     int size() { return pending.size(); }
+    /** One manager binds its sealed coordinator once. Counts are read on the same owner thread, never cached. */
+    void shareSealedCapacity(IntSupplier entries, IntSupplier attempts) {
+        if (capacityShared) { throw new IllegalStateException("Ordinary capacity already shared"); }
+        sealedEntries = java.util.Objects.requireNonNull(entries);
+        sealedAttempts = java.util.Objects.requireNonNull(attempts);
+        capacityShared = true;
+    }
+    SealedProofTurns shareSealedTurns(BooleanSupplier waiting) { proofTurns.bind(waiting); return proofTurns; }
+    boolean pendingRoom(UUID logical) {
+        return pending.containsKey(logical) || pending.size() + sealedEntries.getAsInt() < MAX_PENDING;
+    }
+    boolean attemptRoom() { return activeAttempts() + sealedAttempts.getAsInt() < MAX_ATTEMPTS; }
     /** Read-only, for tests: the attempts an entry for L has started so far, or -1 without one. */
     int attempts(UUID logical) { var entry = pending.get(logical); return entry == null ? -1 : entry.attempts; }
     /** Read-only, for tests: the last wait or failure reason of the entry for L, or null. */
@@ -172,16 +216,8 @@ final class RocketOrdinaryRetirement {
      */
     boolean admits(RocketTransferRecord record, RocketEntity survivor, List<RocketEntity> sources, List<RocketEntity> destinations) {
         // An existing entry for L is nudged or replaced by begin; only a new one needs room.
-        String reason = !pending.containsKey(record.logicalRocketId()) && pending.size() >= MAX_PENDING ? "PENDING_LIMIT"
-                : RocketRetirementGuards.offColumn(record, survivor, sources, destinations);
-        if (reason == null) { refusals.remove(record.logicalRocketId()); return true; }
-        if (!reason.equals(refusals.get(record.logicalRocketId()))) {
-            if (refusals.size() >= MAX_PENDING) { refusals.remove(refusals.keySet().iterator().next()); }
-            refusals.put(record.logicalRocketId(), reason);
-            AdvancedRocketryCommunity.LOGGER.warn("ARCE_TRANSFER_RETIREMENT_HELD transfer={} logical={} reason={} repair=move-copy-or-offline-whole-world",
-                    record.transferId(), record.logicalRocketId(), reason);
-        }
-        return false;
+        return holds.admitted(record, !pendingRoom(record.logicalRocketId()) ? "PENDING_LIMIT"
+                : RocketRetirementGuards.offColumn(record, survivor, sources, destinations));
     }
 
     /**
@@ -208,7 +244,7 @@ final class RocketOrdinaryRetirement {
         }
         if (existing != null) {
             // A loader retry is demand, not a reconnect: it must never cancel the retirement's backoff.
-            if (site == Site.BEFORE_FILL) { effects.discarded().run(); return; }
+            if (site.destination() || existing.site == Site.BEFORE_REPLACE) { effects.discarded().run(); return; }
             var nudged = existing;
             discarded.forEach(slot -> addSlot(nudged, slot));
             nudged.notBefore = Math.min(nudged.notBefore, now);
@@ -223,8 +259,8 @@ final class RocketOrdinaryRetirement {
         }
         live.remove(record.transferId()); settled.add(record.transferId());
         var entry = new Pending(port, journal, record, survivor, site, offlineAllowed, effects);
-        entry.census.add(RocketRetirementProof.Slot.origin(site == Site.BEFORE_FILL ? record.destinationSnapshot() : record.sourceSnapshot()));
-        if (site == Site.BEFORE_FILL) { addSlot(entry, RocketRetirementProof.Slot.origin(record.sourceSnapshot())); }
+        entry.census.add(RocketRetirementProof.Slot.origin(site.destination() ? record.destinationSnapshot() : record.sourceSnapshot()));
+        if (site.destination()) { addSlot(entry, RocketRetirementProof.Slot.origin(record.sourceSnapshot())); }
         discarded.forEach(slot -> addSlot(entry, slot));
         entry.token = held.take();
         entry.created = now; entry.notBefore = now;
@@ -236,7 +272,8 @@ final class RocketOrdinaryRetirement {
         };
         pending.put(entry.logical(), entry);
         // The first attempt starts at once under the caller's reservation; later steps follow the barrier's callbacks.
-        guarded(entry, now);
+        // I7 admission never loads the old site from a packet callback. The coordinator tick owns its demand.
+        if (site == Site.BEFORE_REPLACE) { entry.releaseToken(); } else { guarded(entry, now); }
     }
 
     private static void addSlot(Pending entry, RocketRetirementProof.Slot slot) {
@@ -279,6 +316,7 @@ final class RocketOrdinaryRetirement {
     /** T no longer belongs to this return: removed or replaced, fenced, claimed by a bay, or reclassified. */
     private String abandoned(Pending entry) {
         var record = entry.record;
+        if (!entry.port.requestCurrent()) { return "REQUEST_CHANGED"; }
         if (!entry.journal.operational() || !entry.journal.logicalAcknowledged(entry.logical())) { return "JOURNAL_STOPPED"; }
         if (entry.journal.find(record.transferId()).orElse(null) != record) { return "RECORD_CHANGED"; }
         if (fenced.get().contains(record.transferId())) { return "FENCED"; }
@@ -290,46 +328,58 @@ final class RocketOrdinaryRetirement {
     }
 
     private void start(Pending entry, long now) {
-        if (entry.censusFull) { fail(entry, "CENSUS_LIMIT", now, RETRY_TICKS, false); return; }
-        if (entry.token == null && attempting() >= MAX_ATTEMPTS) { return; }
+        entry.admissionTick = now;
+        if (entry.censusFull && entry.site != Site.BEFORE_REPLACE) { fail(entry, "CENSUS_LIMIT", now, RETRY_TICKS, false); return; }
+        int own = entry.token != null ? 1 : 0;
+        // Destination demand must not place tickets while another class owns admission.
+        boolean turn = ordinaryTurn(entry);
+        if (entry.site.destination() && (!turn || activeAttempts() + sealedAttempts.getAsInt() - own >= MAX_ATTEMPTS)) {
+            fail(entry, "BUSY", now, 1, false); return;
+        }
         var record = entry.record; var port = entry.port;
         var presence = port.survivor(record, entry.survivor, entry.census.get(0));
+        if (presence == Presence.GONE || presence == Presence.UNLOADED && entry.site != Site.BEFORE_REPLACE) {
+            if (presence == Presence.GONE) { abandon(entry, "SURVIVOR_GONE"); }
+            else { waiting(entry, "SURVIVOR_UNLOADED", now); }
+            return;
+        }
+        if (entry.site.destination()) {
+            // On demand only and paced (RocketFillRetirementPacing); source-return sites keep their loaded-only order below.
+            long next = fills.admit(entry.logical(), now, activeAttempts() + sealedAttempts.getAsInt() > MAX_ATTEMPTS);
+            if (next != now) { entry.notBefore = next; entry.releaseToken(); return; }
+            entry.notBefore = now + RETRY_TICKS;
+            // R89: I7's three opportunities also bound non-ticketable holds; a hold never grants an extra ticket.
+            // BEFORE_FILL retains R59's existing ticket accounting and source returns keep their loaded-only order.
+            if (entry.site == Site.BEFORE_REPLACE) { entry.ticketed++; }
+            if (entry.censusFull) { fail(entry, "CENSUS_LIMIT", now, RETRY_TICKS, false); return; }
+            String held = fills.ticket(port, entry.journal, record, entry.survivor, entry.census, entry.token);
+            if (held != null) { waiting(entry, held, now); return; }
+            if (entry.site != Site.BEFORE_REPLACE) { entry.ticketed++; }
+        }
+        if (entry.censusFull) { fail(entry, "CENSUS_LIMIT", now, RETRY_TICKS, false); return; }
         if (presence != Presence.LOADED) {
             if (presence == Presence.GONE) { abandon(entry, "SURVIVOR_GONE"); }
             else { waiting(entry, "SURVIVOR_UNLOADED", now); }
             return;
         }
-        if (entry.site == Site.BEFORE_FILL) {
-            destinationAttempts.entrySet().removeIf(attempt -> now - attempt.getValue() >= RETRY_TICKS);
-            var last = destinationAttempts.get(entry.logical());
-            if (last != null) { entry.notBefore = last + RETRY_TICKS; entry.releaseToken(); return; }
-            if (destinationTick != now) { destinationTick = now; destinationStarts = 0; }
-            if (destinationStarts >= MAX_ATTEMPTS || attempting() > MAX_ATTEMPTS || destinationAttempts.size() >= MAX_PENDING) {
-                entry.releaseToken(); return;
-            }
-            destinationStarts++;
-            destinationAttempts.put(entry.logical(), now);
-            entry.notBefore = now + RETRY_TICKS;
-            if (!port.escrowAllows(entry.journal, record, entry.token)) { waiting(entry, "BUSY", now); return; }
-            if (port.projection(record, entry.survivor) == null) { waiting(entry, "SURVIVOR_CONFLICT", now); return; }
-            // On demand only; source-return sites retain their original loaded-only ordering below.
-            port.keepLoaded(record, entry.census);
-        }
         if (!port.crewReady(record, entry.survivor, entry.offlineAllowed, entry.delivered)) { waiting(entry, "CREW_WAITING", now); return; }
-        for (var slot : entry.census) {
-            var state = port.slot(slot);
-            if (state == SlotState.UNLOADED) { waiting(entry, "SLOT_UNLOADED", now); return; }
-            if (state == SlotState.SAVE_OFF) { saveOff(entry, slot, now); return; }
-            warnedLevels.remove("SAVE_OFF " + slot.dimension());
+        String slots = holds.slots(port, entry.census);
+        if (slots != null) { waiting(entry, slots, now); return; }
+        // The destination site holds before its tickets instead, with its own WARN (RocketFillRetirementPacing).
+        boolean supported = holds.supported(port, entry.census, !entry.site.destination());
+        if (!supported && entry.site.destination()) { waiting(entry, "UNSUPPORTED_ENTITY_STORAGE", now); return; }
+        if (!port.bayAllows(entry.journal, record, RocketTransferBayRecoveryGate.Action.REMOVE_JOURNAL)) { abandon(entry, "BAY_HELD"); return; }
+        if (!port.escrowAllows(entry.journal, record, entry.token)) {
+            proofTurns.withdraw(entry.logical()); fail(entry, "BUSY", now, 1, false); return;
         }
-        boolean supported = supported(entry);
-        if (!supported && entry.site == Site.BEFORE_FILL) { waiting(entry, "UNSUPPORTED_ENTITY_STORAGE", now); return; }
+        turn = ordinaryTurn(entry);
+        if (!turn || activeAttempts() + sealedAttempts.getAsInt() - own >= MAX_ATTEMPTS) {
+            fail(entry, "BUSY", now, 1, false); return;
+        }
         // W98-R5: an attempt starts only when its first capture can run now, so no reservation waits for capture budget.
         if (supported && !port.captureAvailable(entry.census.get(0), now)) { fail(entry, "BUSY", now, 1, false); return; }
-        if (!port.bayAllows(entry.journal, record, RocketTransferBayRecoveryGate.Action.REMOVE_JOURNAL)) { abandon(entry, "BAY_HELD"); return; }
-        if (!port.escrowAllows(entry.journal, record, entry.token)) { fail(entry, "BUSY", now, 1, false); return; }
         // The destination scan may discard obsolete entities: reserve before that mutation, including on retries.
-        if (entry.site == Site.BEFORE_FILL && entry.token == null) {
+        if (entry.site.destination() && entry.token == null) {
             entry.token = entry.journal.reserve(entry.logical()).orElse(null);
             if (entry.token == null) { fail(entry, "BUSY", now, 1, false); return; }
         }
@@ -342,10 +392,16 @@ final class RocketOrdinaryRetirement {
             if (entry.token == null) { fail(entry, "BUSY", now, 1, false); return; }
         }
         if (!supported) { removeUnproved(entry); return; }
-        if (entry.site != Site.BEFORE_FILL) { port.keepLoaded(record, entry.census); }
+        if (!entry.site.destination()) { port.keepLoaded(record, entry.census); }
         entry.state = State.PROVING; entry.attempt = ++attemptIds; entry.attempts++;
+        proofTurns.ordinaryStarted(entry.logical());
         entry.started = now; entry.frozen = frozen; entry.cursor = 0; entry.sink = port.sink();
         prove(entry, now);
+    }
+
+    private boolean ordinaryTurn(Pending entry) {
+        return proofTurns.ordinaryRoom(entry.logical(), () -> pending.get(entry.logical()) == entry && entry.state == State.WAITING
+                && (entry.port.now() == entry.admissionTick || entry.port.now() + 1L >= entry.notBefore));
     }
 
     private void prove(Pending entry, long now) {
@@ -358,7 +414,10 @@ final class RocketOrdinaryRetirement {
             var state = entry.port.slot(slot);
             if (state == SlotState.UNLOADED) { waiting(entry, "SLOT_UNLOADED", now); return; }
             // W98-R9: a /save-off issued during the attempt holds the next capture too, not only the attempt's start.
-            if (state == SlotState.SAVE_OFF) { saveOff(entry, slot, now); return; }
+            if (state == SlotState.SAVE_OFF) { holds.saveOff(slot); waiting(entry, "SAVE_OFF", now); return; }
+            if (entry.site.destination() && !entry.port.captureSupported(slot)) {
+                waiting(entry, "UNSUPPORTED_ENTITY_STORAGE", now); return;
+            }
             if (!entry.port.captureAvailable(slot, now)) {
                 // W98-R5: before its first capture an attempt releases its reservation and waits; later slots keep it.
                 if (entry.cursor == 0) { fail(entry, "BUSY", now, 1, false); } else { wake(entry); }
@@ -397,6 +456,15 @@ final class RocketOrdinaryRetirement {
     /** The final owner-thread check: identical T, unchanged survivor, crew, token-aware guards and every proof valid. */
     private void finish(Pending entry, long now) {
         var record = entry.record; var port = entry.port;
+        if (entry.site.destination()) {
+            String slots = holds.slots(port, entry.census);
+            if (slots != null) { waiting(entry, slots, now); return; }
+            if (entry.census.stream().anyMatch(slot -> !port.captureSupported(slot))) {
+                waiting(entry, "UNSUPPORTED_ENTITY_STORAGE", now); return;
+            }
+            String changed = port.recheck(record, entry.survivor);
+            if (changed != null) { waiting(entry, changed, now); return; }
+        }
         var current = port.projection(record, entry.survivor);
         if (current == null || !RocketRetirementProof.matches(current, entry.frozen)) { fail(entry, "SURVIVOR_CHANGED", now, 1, false); return; }
         if (!port.crewReady(record, entry.survivor, entry.offlineAllowed, entry.delivered)) { waiting(entry, "CREW_WAITING", now); return; }
@@ -417,11 +485,15 @@ final class RocketOrdinaryRetirement {
     }
 
     private void remove(Pending entry) {
+        if (!entry.port.terminal(entry.journal, entry.record, entry.frozen, entry.token)) {
+            abandon(entry, "TERMINAL_REFUSED"); return;
+        }
         var token = entry.token; entry.token = null;
         entry.releaseProofs(); entry.state = State.REMOVING;
         var record = entry.record;
-        entry.journal.remove(record.transferId());
         boolean submitted = entry.port.afterAcknowledged(entry.journal, token, () -> {
+            if (entry.site == Site.BEFORE_REPLACE && pending.get(entry.logical()) != entry) { return false; }
+            if (entry.site == Site.BEFORE_REPLACE) { entry.sink.accept("I7_ACK_BEFORE_EFFECTS"); }
             drop(entry);
             if (!entry.effects.acknowledged().getAsBoolean()) { return false; }
             live.remove(record.transferId()); settled.remove(record.transferId());
@@ -438,7 +510,9 @@ final class RocketOrdinaryRetirement {
         entry.effects.discarded().run();
     }
 
-    private void drop(Pending entry) { pending.remove(entry.logical(), entry); entry.port.releaseTickets(entry.record); }
+    private void drop(Pending entry) {
+        proofTurns.withdraw(entry.logical()); pending.remove(entry.logical(), entry); entry.port.releaseTickets(entry.record);
+    }
 
     /**
      * T stays with its classification unchanged, as a waiting return's always was; the caller's request is discarded.
@@ -464,11 +538,12 @@ final class RocketOrdinaryRetirement {
      * keeps its own reservation until the next tick, so its request reports JOURNAL_PENDING and completes only once.
      */
     private void fail(Pending entry, String reason, long now, int delay, boolean fault) {
+        if (!reason.equals("BUSY")) { proofTurns.withdraw(entry.logical()); }
         entry.releaseProofs();
         if (entry.site != Site.FAIL_BACK || entry.created != now) { entry.releaseToken(); }
         entry.state = State.WAITING;
-        entry.notBefore = entry.site == Site.BEFORE_FILL ? Math.max(entry.notBefore, now + delay) : now + delay;
-        if (delay == 1 && entry.site != Site.BEFORE_FILL) { wake(entry); }
+        entry.notBefore = entry.site.destination() ? Math.max(entry.notBefore, now + delay) : now + delay;
+        if (delay == 1 && !entry.site.destination()) { wake(entry); }
         if (!reason.equals(entry.reason)) {
             entry.reason = reason;
             if (fault) {
@@ -479,6 +554,8 @@ final class RocketOrdinaryRetirement {
                         entry.record.transferId(), entry.logical(), entry.site, reason);
             }
         }
+        // R59 (W130-R1): after its demand's last ticket step the entry ends, T kept and tickets released, until a new demand.
+        if (entry.site.destination() && entry.ticketed >= RocketFillRetirementPacing.DEMAND_TICKETS) { abandon(entry, "DEMAND_SPENT"); }
     }
 
     /**
@@ -492,36 +569,8 @@ final class RocketOrdinaryRetirement {
         }
     }
 
-    /** R5(d): a save-off Level holds every return there, with one WARN per Level until saving resumes. */
-    private void saveOff(Pending entry, RocketRetirementProof.Slot slot, long now) {
-        if (warnedLevels.add("SAVE_OFF " + slot.dimension())) {
-            AdvancedRocketryCommunity.LOGGER.warn("ARCE_TRANSFER_RETIREMENT_SAVE_OFF level={}; ordinary returns there keep their records until saving resumes",
-                    slot.dimension());
-        }
-        waiting(entry, "SAVE_OFF", now);
-    }
-
-    private boolean supported(Pending entry) {
-        for (var slot : entry.census) {
-            if (!entry.port.captureSupported(slot)) {
-                if (entry.site == Site.BEFORE_FILL) {
-                    if (warnedLevels.add("FILL_STORAGE " + slot.dimension())) {
-                        AdvancedRocketryCommunity.LOGGER.warn("ARCE_TRANSFER_FILL_RETIREMENT_UNSUPPORTED_STORAGE level={}; escrow fills retain the transfer until entity storage supports a checked proof", slot.dimension());
-                    }
-                    return false;
-                }
-                if (warnedLevels.add("STORAGE " + slot.dimension())) {
-                    AdvancedRocketryCommunity.LOGGER.warn("ARCE_TRANSFER_RETIREMENT_UNSUPPORTED_STORAGE level={}; another entity storage replaced "
-                            + "this Level's, so ordinary returns remove their records after the in-memory return (R-035 residual)", slot.dimension());
-                }
-                return false;
-            }
-        }
-        return true;
-    }
-
     /** W98-R5: attempts in progress, and entries that still carry a caller's reservation. */
-    private int attempting() {
+    int activeAttempts() {
         int count = 0;
         for (var entry : pending.values()) { if (entry.state == State.PROVING || entry.token != null) { count++; } }
         return count;
@@ -535,6 +584,6 @@ final class RocketOrdinaryRetirement {
             try { entry.releaseToken(); } catch (RuntimeException stopped) { entry.token = null; }
             if (entry.state != State.REMOVING) { entry.effects.discarded().run(); }
         }
-        pending.clear(); refusals.clear(); warnedLevels.clear(); destinationAttempts.clear(); destinationTick = Long.MIN_VALUE; destinationStarts = 0;
+        pending.clear(); holds.clear(); fills.clear(); proofTurns.clear();
     }
 }

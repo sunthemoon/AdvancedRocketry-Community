@@ -180,6 +180,37 @@ class RocketJournalLeaseTest {
         } finally { data.stop(); }
     }
 
+    @Test void anUnsampledPeerTransferPublicationAndAcknowledgedRemovalRevokesTheOldLease() throws Exception {
+        unsampledPeerTransfer(true);
+    }
+
+    @Test void anUnsavedPeerTransferPublicationAndAcknowledgedRemovalAlsoRevokesTheOldLease() throws Exception {
+        unsampledPeerTransfer(false);
+    }
+
+    private void unsampledPeerTransfer(boolean acknowledgePublication) throws Exception {
+        var data = new RocketTransferSavedData(); var peer = other(1_300, 200);
+        UUID logical = id(1_400);
+        try {
+            acknowledge(data);
+            var emptyPayload = data.save(new net.minecraft.nbt.CompoundTag());
+            var lease = data.logicalLease(logical, peer.transferId(), 0);
+            var unrelated = data.logicalLease(logical, id(1_401), 0);
+            assertTrue(lease.getAsBoolean() && unrelated.getAsBoolean());
+            assertNotEquals(logical, peer.logicalRocketId());
+            data.put(peer);
+            if (acknowledgePublication) { acknowledge(data); }
+            data.remove(peer.transferId()); acknowledge(data);
+            assertEquals(emptyPayload, data.save(new net.minecraft.nbt.CompoundTag()), "History must stay out of the saved format");
+            // Neither lease is sampled during the peer's publication/removal.
+            assertFalse(lease.getAsBoolean(), "Acknowledgement must not erase an intervening use of T");
+            assertFalse(offThread(lease));
+            assertTrue(unrelated.getAsBoolean(), "Unrelated transfers stay independent");
+            assertTrue(offThread(unrelated));
+            assertTrue(data.logicalLease(logical, peer.transferId(), 0).getAsBoolean(), "A fresh acquisition may succeed");
+        } finally { data.stop(); }
+    }
+
     @Test void aFailedRemovalKeepsTheConflictUntilARetryIsAcknowledged() throws Exception {
         var data = new RocketTransferSavedData(); var other = GovernedTransferFixture.create().record();
         long serial = other.nativeTransfer().orElseThrow().armed().serial(); UUID logical = id(995);
@@ -204,7 +235,7 @@ class RocketJournalLeaseTest {
         } finally { data.stop(); }
     }
 
-    @Test void aConflictRefusesALeaseUntilItsRemovalIsAcknowledged() throws Exception {
+    @Test void aConflictPermanentlyRefusesTheOldLeaseAndAcknowledgedRemovalPermitsANewOne() throws Exception {
         var data = new RocketTransferSavedData(); var unrelated = other(1_020, 400);
         UUID logical = id(1_000), transfer = id(1_010);
         try {
@@ -218,8 +249,8 @@ class RocketJournalLeaseTest {
             assertFalse(offThread(lease));
             assertTrue(data.logicalLease(logical, id(1_030), 2).getAsBoolean(), "An unrelated pending removal refused a lease");
             acknowledge(data);
-            assertTrue(lease.getAsBoolean(), "The acknowledged removal did not end the refusal");
-            assertTrue(offThread(lease));
+            assertFalse(lease.getAsBoolean(), "Acknowledged removal must not renew the old transfer-history lease");
+            assertFalse(offThread(lease));
             assertTrue(data.logicalLease(logical, transfer, 2).getAsBoolean());
         } finally { data.stop(); }
     }
@@ -239,6 +270,48 @@ class RocketJournalLeaseTest {
         } finally { data.stop(); }
     }
 
+    @Test void anUnsampledReplacementAlsoRecordsTheIncomingTransferHistory() throws Exception {
+        var data = new RocketTransferSavedData(); var landed = RocketTransferSavedDataTest.committed(other(1_500, 200));
+        var returning = RocketTransferSavedDataTest.record(id(1_510), landed.logicalRocketId(), id(1_512), new RocketPosition(200, 80, 8));
+        UUID logical = id(1_600);
+        try {
+            data.put(landed); acknowledge(data);
+            var lease = data.logicalLease(logical, returning.transferId(), 0);
+            var unrelated = data.logicalLease(logical, id(1_601), 0);
+            assertTrue(lease.getAsBoolean() && unrelated.getAsBoolean());
+            data.replace(landed.transferId(), returning); acknowledge(data);
+            data.remove(returning.transferId()); acknowledge(data);
+            assertFalse(lease.getAsBoolean(), "Replacement is a publication of its new T");
+            assertFalse(offThread(lease));
+            assertTrue(unrelated.getAsBoolean());
+            assertTrue(data.logicalLease(logical, returning.transferId(), 0).getAsBoolean());
+        } finally { data.stop(); }
+    }
+
+    @Test void transferHistoryOverflowCannotReviveAnUnsampledLeaseOrBeClearedByAcknowledgement() throws Exception {
+        var leases = new RocketJournalLeases(); var none = java.util.List.<RocketTransferRecord>of();
+        leases.publish(true, acknowledgement(1), none);
+        var named = leases.lease(id(1), id(10_000), 0, 1);
+        var unrelated = leases.lease(id(1), id(2), 0, 1);
+        var plain = leases.lease(id(1), null, 0, 1);
+        assertTrue(named.getAsBoolean() && unrelated.getAsBoolean() && plain.getAsBoolean());
+        // One peer rocket changes distinct transfers: L-history itself does not overflow.
+        for (int i = 0; i < RocketJournalLeases.MAX_HISTORY; i++) {
+            leases.changed(id(10), id(10_000 + i), 2 + i, null);
+        }
+        leases.publish(true, acknowledgement(2_000), none);
+        assertTrue(unrelated.getAsBoolean(), "History still within its bound must keep unrelated transfers independent");
+        leases.changed(id(10), id(20_000), 5_000, null);
+        leases.publish(true, acknowledgement(5_000), none);
+        assertFalse(named.getAsBoolean(), "Eviction must not forget the unsampled change of T");
+        assertFalse(offThread(named));
+        assertFalse(unrelated.getAsBoolean(), "Unknown history must refuse conservatively after overflow");
+        assertTrue(plain.getAsBoolean(), "A lease with no T does not depend on T history");
+        leases.publish(true, acknowledgement(6_000), none);
+        assertFalse(named.getAsBoolean()); assertFalse(unrelated.getAsBoolean());
+        assertTrue(leases.lease(id(1), id(10_000), 0, 6_000).getAsBoolean(), "A fresh lease starts after forgotten history");
+    }
+
     @Test void unacknowledgedRemovalsBeyondTheBoundFoldIntoAConservativeFloor() {
         var leases = new RocketJournalLeases(); var none = java.util.List.<RocketTransferRecord>of();
         var removed = RocketTransferSavedDataTest.record(); // Names neither T nor a serial of the leases below.
@@ -246,10 +319,10 @@ class RocketJournalLeaseTest {
         var plain = leases.lease(id(1), null, 0, 1); var named = leases.lease(id(1), id(2), 0, 1);
         var serial = leases.lease(id(1), null, 3, 1);
         assertTrue(plain.getAsBoolean() && named.getAsBoolean() && serial.getAsBoolean());
-        for (int i = 0; i < RocketJournalLeases.MAX_HISTORY; i++) { leases.changed(id(10), 2 + i, removed); }
+        for (int i = 0; i < RocketJournalLeases.MAX_HISTORY; i++) { leases.changed(id(10), removed.transferId(), 2 + i, removed); }
         leases.publish(true, acknowledgement(1), none);
         assertTrue(named.getAsBoolean() && serial.getAsBoolean(), "Retained removals that name neither revoked a lease");
-        leases.changed(id(10), 5_000, removed); leases.publish(true, acknowledgement(1), none);
+        leases.changed(id(10), removed.transferId(), 5_000, removed); leases.publish(true, acknowledgement(1), none);
         assertFalse(named.getAsBoolean(), "A dropped removal must be treated as naming every T");
         assertFalse(serial.getAsBoolean(), "A dropped removal must be treated as naming every serial");
         assertTrue(plain.getAsBoolean(), "A lease that checks no T or serial is not a conflict lease");

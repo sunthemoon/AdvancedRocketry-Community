@@ -27,10 +27,10 @@ import net.minecraft.world.level.Level;
 import net.minecraftforge.common.util.FakePlayer;
 
 /**
- * The rocket-binding half of the linker (design section 3). Using it on a loaded loader the player owns selects that
+ * The server-side linker. Using it on a loaded loader the player owns selects that
  * device; using it on a rocket then binds the selected device on the server. Sneak-use on a loader clears its idle
  * binding, and sneak-use in the air clears the selection. Every change starts a 10-tick cooldown, so a player makes at
- * most one change per 10 ticks. The other linker roles belong to W11e.
+ * most one change per 10 ticks. W153 adds monitors and checked, journal-identified station-pad occupants.
  */
 public final class LinkerItem extends Item {
     public static final int CHANGE_TICKS = 10;
@@ -92,10 +92,20 @@ public final class LinkerItem extends Item {
             return level.getBlockState(position).getBlock() instanceof FluidFuelLoaderBlock
                     || level.getBlockState(position).getBlock() instanceof RocketFluidCargoBlock
                     || level.getBlockState(position).getBlock() instanceof RocketItemCargoBlock
+                    || level.getBlockState(position).getBlock() instanceof io.github.sunthemoon.advancedrocketrycommunity.rocket.monitor.RocketMonitorBlock
+                    || level.getBlockState(position).getBlock() instanceof io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadBlock
                     ? InteractionResult.SUCCESS : InteractionResult.PASS;
         }
         Player player = context.getPlayer();
         InteractionHand hand = context.getHand();
+        if (player != null && actor(player, hand) && level.isLoaded(position)) {
+            if (level.getBlockEntity(position) instanceof io.github.sunthemoon.advancedrocketrycommunity.rocket.monitor.RocketMonitorBlockEntity monitor) {
+                return LinkerEndpoints.select(context, monitor);
+            }
+            if (level.getBlockEntity(position) instanceof io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadBlockEntity pad) {
+                return LinkerEndpoints.pad(context, pad);
+            }
+        }
         if (player != null && actor(player, hand) && level.isLoaded(position)
                 && level.getBlockEntity(position) instanceof RocketFluidCargoBlockEntity) {
             return RocketFluidCargoLinker.select(context);
@@ -200,6 +210,9 @@ public final class LinkerItem extends Item {
         }
         if (level.getBlockEntity(selection.pos()) instanceof RocketFluidCargoBlockEntity) {
             return RocketFluidCargoLinker.bindRocket(player, hand, rocket);
+        }
+        if (level.getBlockEntity(selection.pos()) instanceof io.github.sunthemoon.advancedrocketrycommunity.rocket.monitor.RocketMonitorBlockEntity monitor) {
+            return LinkerEndpoints.bind(player, hand, rocket, selection, monitor);
         }
         if (level.getBlockEntity(selection.pos()) instanceof RocketItemCargoBlockEntity) {
             return RocketItemCargoLinker.bindRocket(player, hand, rocket);

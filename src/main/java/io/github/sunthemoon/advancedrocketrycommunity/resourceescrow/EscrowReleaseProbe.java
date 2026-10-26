@@ -35,7 +35,9 @@ final class EscrowReleaseProbe {
     private boolean done;
 
     EscrowReleaseProbe(MinecraftServer server) {
-        EscrowTestEndpoints.requireEnabled(server); this.server = server; level = server.overworld();
+        EscrowTestEndpoints.requireEnabled(server);
+        EscrowTags.require(permitsCase(System.getProperty(EscrowItemCutProbe.CASE)), "Generic escrow probe rejects item cut cases");
+        this.server = server; level = server.overworld();
         cut = System.getProperty("advancedrocketrycommunity.escrowCheckpoint", "none");
         recovery = System.getProperty("advancedrocketrycommunity.escrowScenario").equals("recover");
         EscrowTags.require(cut.equals("none") || cut.equals("G3") || cut.equals("G3L2") || cut.equals("E2") || cut.equals("E2_CAPTURE")
@@ -44,6 +46,10 @@ final class EscrowReleaseProbe {
         ChunkPos chunk = new ChunkPos(POSITION);
         level.getChunkSource().addRegionTicket(TicketType.START, chunk, 2, net.minecraft.util.Unit.INSTANCE);
         level.getChunk(chunk.x, chunk.z); // Explicit fixed test-fixture loading, not endpoint input.
+    }
+    /** Exclusion guard, not a routing allowlist: older runners may supply any non-item case name. */
+    static boolean permitsCase(String name) {
+        return !EscrowItemCutProbe.selected(true, "start", name);
     }
     void checkpoint(String name) {
         if (!injected && (cut.equals("E4L1_FAIL") && name.equals("K1")

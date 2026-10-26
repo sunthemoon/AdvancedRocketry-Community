@@ -78,7 +78,9 @@ public final class EscrowBarrier implements AutoCloseable {
         }
         return begin(store, first, frozen.get(0).frontier(), root -> frozen.stream().allMatch(target -> target.validator().test(root)), tick, result -> {
             if (!result.confirmed()) { callback.accept(new JointResult(Map.of(), result.reason())); return; }
-            callback.accept(new JointResult(splitProof(result.proof(), frozen), EscrowReason.NONE));
+            var proofs = splitProof(result.proof(), frozen);
+            try { callback.accept(new JointResult(proofs, EscrowReason.NONE)); }
+            catch (RuntimeException | Error failure) { proofs.values().forEach(Proof::release); throw failure; }
         });
     }
     static Map<EscrowEndpoint.Key, Proof> splitProof(Proof original, List<Target> targets) {
@@ -103,12 +105,12 @@ public final class EscrowBarrier implements AutoCloseable {
         if (!working.get() || !budget.reserve(endpoint.level(), endpoint.kind() == EscrowEndpoint.Kind.ENTITY, tick)) { return false; }
         EscrowChunkStore.Capture capture;
         long started = System.nanoTime();
-        checkpoint.accept("BARRIER_STORE_BEFORE");
-        try { capture = store.captureAndStore(endpoint, validator); }
+        try { checkpoint.accept("BARRIER_STORE_BEFORE"); capture = store.captureAndStore(endpoint, validator, active); }
         catch (RuntimeException failure) {
             EscrowReason reason = captureReason(failure);
             budget.release(AnvilRecordReader.DECODED_BYTES); count(reason); callback.accept(new Result(null, reason)); return true;
         }
+        catch (Error failure) { budget.release(AnvilRecordReader.DECODED_BYTES); throw failure; }
         finally { timings.sample("capture_main", System.nanoTime() - started); }
         budget.captured(capture.bytes());
         outstanding.add(capture);
@@ -126,13 +128,38 @@ public final class EscrowBarrier implements AutoCloseable {
      */
     public boolean beginOrdinary(EscrowChunkStore store, String level, net.minecraft.world.level.ChunkPos slot,
                                  Predicate<CompoundTag> validator, long tick, Consumer<String> sink, Consumer<Result> callback) {
+        return beginOrdinary(store, level, true, slot, validator, tick, sink, callback);
+    }
+
+    /** Ordinary sealed-terrain proof, charged with entity proofs against the existing ordinary sub-quota. */
+    public boolean beginOrdinaryTerrain(EscrowChunkStore store, String level, net.minecraft.world.level.ChunkPos slot,
+                                 Predicate<CompoundTag> validator, long tick, Consumer<String> sink, Consumer<Result> callback) {
+        return beginOrdinary(store, level, false, slot, validator, tick, sink, callback);
+    }
+
+    private boolean beginOrdinary(EscrowChunkStore store, String level, boolean entity, net.minecraft.world.level.ChunkPos slot,
+                                 Predicate<CompoundTag> validator, long tick, Consumer<String> sink, Consumer<Result> callback) {
         owner();
-        if (!working.get() || !budget.reserveOrdinary(level, tick)) { return false; }
+        if (!working.get() || !budget.availableOrdinary(level, entity, tick) || !store.ordinaryAvailable(level, entity, slot)) { return false; }
         EscrowChunkStore.Capture capture;
-        sink.accept("BARRIER_STORE_BEFORE");
-        try { capture = store.captureEntitySlot(slot, validator); }
+        EscrowSaveMonitor.Handle watch = null;
+        boolean[] reserved = {false};
+        try {
+            // The authoritative check gates the reservation itself, not just serialization.
+            watch = store.ordinaryWatch(level, entity, slot, () -> reserved[0] = budget.reserveOrdinary(level, entity, tick));
+            if (watch == null) { return false; }
+            sink.accept("BARRIER_STORE_BEFORE");
+            capture = entity ? store.captureEntitySlot(slot, validator, watch) : store.captureTerrainSlot(slot, validator, watch);
+        }
         catch (RuntimeException failure) {
+            if (watch != null) { watch.release(); }
+            if (!reserved[0]) { throw failure; }
             budget.releaseOrdinary(AnvilRecordReader.DECODED_BYTES); callback.accept(new Result(null, captureReason(failure))); return true;
+        }
+        catch (Error failure) {
+            if (watch != null) { watch.release(); }
+            if (reserved[0]) { budget.releaseOrdinary(AnvilRecordReader.DECODED_BYTES); }
+            throw failure;
         }
         budget.captured(capture.bytes());
         outstanding.add(capture);
@@ -143,6 +170,15 @@ public final class EscrowBarrier implements AutoCloseable {
 
     /** Read-only hint for {@link #beginOrdinary}; it still reserves atomically. */
     public boolean availableOrdinary(String level, long tick) { owner(); return working.get() && budget.availableOrdinary(level, tick); }
+    /** Slot-aware hint. The ordinary watch rechecks before calling the budget reservation. */
+    public boolean availableOrdinary(EscrowChunkStore store, String level, net.minecraft.world.level.ChunkPos slot, long tick) {
+        return availableOrdinary(level, tick) && store.ordinaryAvailable(level, slot);
+    }
+
+    public boolean availableOrdinaryTerrain(EscrowChunkStore store, String level, net.minecraft.world.level.ChunkPos slot, long tick) {
+        owner();
+        return working.get() && budget.availableOrdinary(level, false, tick) && store.ordinaryAvailable(level, false, slot);
+    }
 
     /** Unit tests: one already captured attempt, reserved and staged as {@link #begin} or {@link #beginOrdinary} would. */
     boolean stageForTests(String level, boolean ordinary, EscrowChunkStore.Capture capture, Predicate<CompoundTag> validator,
@@ -286,7 +322,9 @@ public final class EscrowBarrier implements AutoCloseable {
                 reason = EscrowReason.SUPERSEDING_SAVE;
             }
             if (reason == EscrowReason.NONE) {
-                result.callback().accept(new Result(new Proof(result.frontier(), result.capture(), new AtomicBoolean(true), active), EscrowReason.NONE));
+                var proof = new Proof(result.frontier(), result.capture(), new AtomicBoolean(true), active);
+                try { result.callback().accept(new Result(proof, EscrowReason.NONE)); }
+                catch (RuntimeException | Error failure) { proof.release(); throw failure; }
             } else {
                 result.capture().restoreDirty().run();
                 result.capture().releaseWatch().run();

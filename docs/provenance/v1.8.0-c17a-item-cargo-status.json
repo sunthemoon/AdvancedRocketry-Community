@@ -1,0 +1,55 @@
+{
+  "batch_id": "v1.8.0-c17a-item-cargo-status-w136",
+  "authoring_commit": "2010c1181c29a7c939f9cd592118f66f0c9c7758",
+  "license": "MIT",
+  "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+  "author": "Codex W136 implementer",
+  "reviewer": "Pending Root independent review",
+  "declared_at": "2026-10-22",
+  "entries": [
+    {
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w136",
+      "source_commit": "2010c1181c29a7c939f9cd592118f66f0c9c7758",
+      "authoring_commit": "2010c1181c29a7c939f9cd592118f66f0c9c7758",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ItemCargoStatusLanguage.java",
+      "source_sha256": "26bb17d1e0000805c1bebf071b077d7111e7792b3867eec2dee7bc8f77fba312",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ItemCargoStatusLanguage",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Original item-only wording; deterministic language generation. Existing shared keys and text unchanged."
+      ],
+      "new_keys": [
+        "message.advancedrocketrycommunity.rocket_item_cargo.device_empty",
+        "message.advancedrocketrycommunity.rocket_item_cargo.device_full",
+        "message.advancedrocketrycommunity.rocket_item_cargo.incompatible_cargo"
+      ],
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity_v180/lang/en_us.json",
+      "target_sha256": "eb1536b71046cc3afacb3563824e57f1f746f1531f240a0b31739689bdc45fb6"
+    },
+    {
+      "status": "GENERATED",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w136",
+      "source_commit": "2010c1181c29a7c939f9cd592118f66f0c9c7758",
+      "authoring_commit": "2010c1181c29a7c939f9cd592118f66f0c9c7758",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ItemCargoStatusLanguage.java",
+      "source_sha256": "26bb17d1e0000805c1bebf071b077d7111e7792b3867eec2dee7bc8f77fba312",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ItemCargoStatusLanguage",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Original item-only wording; deterministic language generation. Existing shared keys and text unchanged."
+      ],
+      "new_keys": [
+        "message.advancedrocketrycommunity.rocket_item_cargo.device_empty",
+        "message.advancedrocketrycommunity.rocket_item_cargo.device_full",
+        "message.advancedrocketrycommunity.rocket_item_cargo.incompatible_cargo"
+      ],
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity_v180/lang/zh_cn.json",
+      "target_sha256": "366d2e23f310a8792a7aaa41f9a62cf47436d54634c6170d6e1e43f67d5500c1"
+    }
+  ]
+}

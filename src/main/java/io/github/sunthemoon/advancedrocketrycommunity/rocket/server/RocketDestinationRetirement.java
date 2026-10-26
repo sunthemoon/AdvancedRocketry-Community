@@ -15,7 +15,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
 
 /** R52 (b2): destination adapters for W98's unchanged own-store survivor and exclusion proof. */
-final class RocketDestinationRetirement extends RocketRetirementWorld {
+class RocketDestinationRetirement extends RocketRetirementWorld {
     private final RocketTransferSavedData journal;
     private final RocketTransferFences fences;
     private final Set<UUID> live, settled;
@@ -47,7 +47,7 @@ final class RocketDestinationRetirement extends RocketRetirementWorld {
                 && super.escrowAllows(journal, record, own) && pristine(record);
     }
 
-    private boolean pristine(RocketTransferRecord record) {
+    protected boolean pristine(RocketTransferRecord record) {
         var rocket = rocket(record, record.destinationEntityId().orElse(null));
         return rocket != null && RocketEscrowGate.retirementUnprotected(rocket);
     }
@@ -87,6 +87,8 @@ final class RocketDestinationRetirement extends RocketRetirementWorld {
     }
 
     @Override public void keepLoaded(RocketTransferRecord record, List<RocketRetirementProof.Slot> census) {
+        // W130-R4: gated release tests time the synchronous load of the old site between these two checkpoints.
+        EscrowRuntime.of(server).checkpoint("R52_TICKETING");
         var source = RocketTransferEntities.level(server, record.sourceSnapshot().sourceDimension());
         if (source != null) { RocketTransferEntities.keepLoaded(source, record.sourceSnapshot(), record.transferId()); }
         var destination = RocketTransferEntities.level(server, record.destinationSnapshot().sourceDimension());

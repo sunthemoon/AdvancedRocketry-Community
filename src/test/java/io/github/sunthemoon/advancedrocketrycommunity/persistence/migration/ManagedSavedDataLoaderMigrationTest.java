@@ -65,6 +65,7 @@ final class ManagedSavedDataLoaderMigrationTest {
             case STATIONS -> StationRegistrySavedData.load(payload);
             case SATELLITE_MISSIONS -> SatelliteMissionSavedData.load(payload);
             case ENDGAME -> EndgameSavedData.load(payload);
+            case ROCKET_REJOINS -> io.github.sunthemoon.advancedrocketrycommunity.rocket.rejoin.RocketRejoinSavedData.load(payload);
             case RESOURCE_ESCROW -> io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.ResourceEscrowSavedData.load(payload);
             case CLASSIC_PROGRESSION -> io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent
                     .ClassicProgressionSavedData.load(payload);
@@ -80,6 +81,7 @@ final class ManagedSavedDataLoaderMigrationTest {
             case STATIONS -> ((StationRegistrySavedData) data).operational();
             case SATELLITE_MISSIONS -> ((SatelliteMissionSavedData) data).operational();
             case ENDGAME -> ((EndgameSavedData) data).operational();
+            case ROCKET_REJOINS -> ((io.github.sunthemoon.advancedrocketrycommunity.rocket.rejoin.RocketRejoinSavedData) data).operational();
             case RESOURCE_ESCROW -> ((io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.ResourceEscrowSavedData) data).operational();
             case CLASSIC_PROGRESSION -> ((io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent
                     .ClassicProgressionSavedData) data).operational();
@@ -114,6 +116,7 @@ final class ManagedSavedDataLoaderMigrationTest {
                 assertEquals(0, canonical.getList("zones", CompoundTag.TAG_COMPOUND).size());
             }
             case RESOURCE_ESCROW -> assertEquals(0, canonical.getList("records", CompoundTag.TAG_COMPOUND).size());
+            case ROCKET_REJOINS -> assertEquals(0, canonical.getList("entries", CompoundTag.TAG_COMPOUND).size());
             case CLASSIC_PROGRESSION -> {
                 assertEquals(0, canonical.getCompound("first_moon_landing").getByte("occurred"));
                 assertEquals(0, canonical.getCompound("first_station_warp").getByte("occurred"));

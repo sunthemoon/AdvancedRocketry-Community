@@ -100,7 +100,7 @@ public final class FluidCargoSettlementGameTests {
                     else {
                         // Hold the ordinary executor right after one endpoint (load) or both (unload) published.
                         String label = load ? "C2_SOURCE_AFTER" : "C2_DESTINATION_AFTER"; UUID id = EscrowCargoGameTestWorld.id(device);
-                        runtime.terminalCutForTests(server, value -> {
+                        EscrowGameTestTerminalCut.install(helper, value -> {
                             if (!cut && value.equals(label) && server.isSameThread()) { cut = true; runtime.cargoSwitches.pause(id, true); }
                         });
                         cutInstalled = true;
@@ -175,7 +175,7 @@ public final class FluidCargoSettlementGameTests {
                     check(frozen.observations().equals(preview.observations()) && frozen.observations().stream()
                             .filter(value -> value.endpoint().key().equals(op.source().key())).allMatch(value -> !value.bound()),
                             "O1 did not freeze the neutral unload source");
-                    EscrowRuntime.of(server).terminalCutForTests(server, this::observeNeutralUnload);
+                    EscrowGameTestTerminalCut.install(helper, this::observeNeutralUnload);
                     cutInstalled = true;
                 }
                 if (mode == Mode.LOAD || mode == Mode.UNLOAD_NEUTRAL) {

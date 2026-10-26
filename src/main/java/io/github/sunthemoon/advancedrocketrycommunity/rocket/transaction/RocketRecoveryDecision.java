@@ -5,6 +5,7 @@ import java.util.Objects;
 /** Pure restart-recovery policy. The snapshot remains authoritative if no entity survived. */
 public final class RocketRecoveryDecision {
     public enum Authority {
+        /** Native terrain for legacy records, sealed terrain for SEALED_DISASSEMBLY. */
         BLOCKS,
         ENTITY
     }
@@ -22,15 +23,15 @@ public final class RocketRecoveryDecision {
         if (!matchingEntityPresent) {
             return Authority.BLOCKS;
         }
-        if (type == RocketTransactionType.ASSEMBLY) {
-            return phase == RocketTransactionPhase.SPAWNED
+        return switch (type) {
+            case ASSEMBLY -> phase == RocketTransactionPhase.SPAWNED
                             || phase == RocketTransactionPhase.COMMITTED
                     ? Authority.ENTITY
                     : Authority.BLOCKS;
-        }
-        return phase == RocketTransactionPhase.RESTORED
+            case DISASSEMBLY, SEALED_DISASSEMBLY -> phase == RocketTransactionPhase.RESTORED
                         || phase == RocketTransactionPhase.COMMITTED
                 ? Authority.BLOCKS
                 : Authority.ENTITY;
+        };
     }
 }

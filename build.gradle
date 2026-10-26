@@ -228,6 +228,12 @@ def supersededV140Planets = [
 // ADR-065 (W11c and W11d implementation note; design W11CD section 2.4, leaf C-P): the v1.8 rocket_movable copy holds
 // every sealed v0.5 value plus the pressurized tank and supersedes the v0.5 copy, which stays byte-identical.
 def supersededV050RocketMovable = 'data/advancedrocketrycommunity/tags/blocks/rocket_movable.json'
+// ADR-065 (N3-B2 isolation note; Root decision R93, W152): the v1.8 copies add the sealed carrier block to these
+// tags and supersede the earlier copies, which stay byte-identical.
+def supersededN3B2Tags = [
+        'src/generated/v0.5/resources': ['data/advancedrocketrycommunity/tags/blocks/rocket_forbidden.json'] as Set,
+        'src/generated/v1.7/resources': ['data/minecraft/tags/blocks/wither_immune.json', 'data/minecraft/tags/blocks/dragon_immune.json'] as Set
+]
 
 tasks.named('processResources') {
     eachFile { details ->
@@ -282,6 +288,11 @@ tasks.named('processResources') {
             }
         }
         supersededW49Models.each { root, paths ->
+            if (details.file.toPath().startsWith(file(root).toPath()) && paths.contains(details.path)) {
+                details.exclude()
+            }
+        }
+        supersededN3B2Tags.each { root, paths ->
             if (details.file.toPath().startsWith(file(root).toPath()) && paths.contains(details.path)) {
                 details.exclude()
             }
@@ -355,6 +366,11 @@ tasks.named('sourcesJar') {
             }
         }
         supersededW49Models.each { root, paths ->
+            if (details.file.toPath().startsWith(file(root).toPath()) && paths.contains(details.path)) {
+                details.exclude()
+            }
+        }
+        supersededN3B2Tags.each { root, paths ->
             if (details.file.toPath().startsWith(file(root).toPath()) && paths.contains(details.path)) {
                 details.exclude()
             }

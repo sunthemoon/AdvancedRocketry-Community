@@ -80,7 +80,7 @@ public final class RocketTransactionFaultProbe {
 
             @Override
             public boolean removeBlockNoDrops(RocketPosition position, RocketWorldBlock expected) {
-                return !(checkpoint.type() == RocketTransactionType.DISASSEMBLY && rejectOneRollback())
+                return !(checkpoint.type().isDisassembly() && rejectOneRollback())
                         && delegate.removeBlockNoDrops(position, expected);
             }
 

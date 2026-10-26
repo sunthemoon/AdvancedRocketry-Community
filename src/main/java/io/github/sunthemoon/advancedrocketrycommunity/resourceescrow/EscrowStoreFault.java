@@ -24,7 +24,8 @@ final class EscrowStoreFault {
 
     /** The pure gate, so that a unit test pins every property and the exact slot. */
     static boolean selected(boolean hooks, String testCase, String scenario, String level, ChunkPos chunk) {
-        return hooks && CASE.equals(testCase) && "start".equals(scenario) && "minecraft:overworld".equals(level) && SLOT.equals(chunk);
+        return hooks && (CASE.equals(testCase) || EscrowCargoStorageProbe.E1.equals(testCase))
+                && "start".equals(scenario) && "minecraft:overworld".equals(level) && SLOT.equals(chunk);
     }
 
     /** The terrain own store's future as the barrier must retain it; the same instance whenever the gate is closed. */
@@ -39,7 +40,7 @@ final class EscrowStoreFault {
 
     /** W125 uses the same seam for exactly three E5 source proofs; recovery uses repaired storage. */
     static boolean namedSelected(boolean hooks, String testCase, String scenario, String level, ChunkPos chunk) {
-        return hooks && EscrowLoaderNamedProbe.E5.equals(testCase) && "start".equals(scenario)
+        return hooks && (EscrowLoaderNamedProbe.E5.equals(testCase) || EscrowCargoContentionProbe.E5.equals(testCase)) && "start".equals(scenario)
                 && "minecraft:overworld".equals(level) && SLOT.equals(chunk);
     }
 
@@ -48,14 +49,15 @@ final class EscrowStoreFault {
         int failure = namedFailures.getAndUpdate(value -> Math.min(3, value + 1));
         if (failure == 3) { return stored; }
         AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_MATRIX_STORE_FAULT cut={} chunk={},{} failure={}",
-                EscrowLoaderNamedProbe.E5, chunk.x, chunk.z, failure + 1);
+                System.getProperty("advancedrocketrycommunity.escrowCase", EscrowLoaderNamedProbe.E5), chunk.x, chunk.z, failure + 1);
         return stored.thenCompose(ignored -> CompletableFuture.failedFuture(new java.io.IOException("Release-test named own-store IO failure")));
     }
 
     /** At most one fault per store; the real store has always completed before the retained future fails. */
     CompletableFuture<Void> observed(boolean gate, ChunkPos chunk, CompletableFuture<Void> stored) {
         if (!gate || !spent.compareAndSet(false, true)) { return stored; }
-        AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_MATRIX_STORE_FAULT cut={} chunk={},{}", CASE, chunk.x, chunk.z);
+        AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_MATRIX_STORE_FAULT cut={} chunk={},{}",
+                System.getProperty("advancedrocketrycommunity.escrowCase", CASE), chunk.x, chunk.z);
         return stored.thenCompose(ignored -> CompletableFuture.failedFuture(new java.io.IOException("Release-test own-store IO failure")));
     }
 }

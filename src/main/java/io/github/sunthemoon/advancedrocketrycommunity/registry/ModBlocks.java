@@ -53,6 +53,12 @@ public final class ModBlocks {
             AdvancedRocketryCommunity.MOD_ID
     );
 
+    public static final RegistryObject<io.github.sunthemoon.advancedrocketrycommunity.rocket.sealed.SealedRocketBlock>
+            SEALED_ROCKET_BLOCK = BLOCKS.register("sealed_rocket_block", () ->
+            new io.github.sunthemoon.advancedrocketrycommunity.rocket.sealed.SealedRocketBlock(
+                    BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(-1.0F, 3_600_000.0F)
+                            .sound(SoundType.METAL).noLootTable().pushReaction(PushReaction.BLOCK)));
+
     public static final RegistryObject<io.github.sunthemoon.advancedrocketrycommunity.atmosphere.device.ScrubberBlock> CO2_SCRUBBER =
             BLOCKS.register("co2_scrubber", () -> new io.github.sunthemoon.advancedrocketrycommunity.atmosphere.device.ScrubberBlock(metalProperties().pushReaction(PushReaction.BLOCK)));
     public static final RegistryObject<io.github.sunthemoon.advancedrocketrycommunity.atmosphere.device.PipeSealBlock> PIPE_SEAL =
@@ -226,6 +232,10 @@ public final class ModBlocks {
 
     private ModBlocks() {
     }
+
+    public static final RegistryObject<Block> ROCKET_MONITORING_STATION = BLOCKS.register("rocket_monitoring_station", () ->
+            new io.github.sunthemoon.advancedrocketrycommunity.rocket.monitor.RocketMonitorBlock(
+                    BlockBehaviour.Properties.of().strength(3.0F).requiresCorrectToolForDrops()));
 
     private static RegistryObject<Block> metalBlock(String name) {
         return BLOCKS.register(name, () -> new Block(metalProperties()));

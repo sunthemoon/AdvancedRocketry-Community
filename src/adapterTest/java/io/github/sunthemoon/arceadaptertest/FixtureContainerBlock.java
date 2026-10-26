@@ -21,4 +21,11 @@ final class FixtureContainerBlock extends BaseEntityBlock {
     public RenderShape getRenderShape(BlockState state) {
         return RenderShape.INVISIBLE;
     }
+
+    @Override
+    public void onPlace(BlockState state, net.minecraft.world.level.Level level, BlockPos at,
+            BlockState previous, boolean moving) {
+        SealedStagingProbeFixture.observe("external.onPlace");
+        super.onPlace(state, level, at, previous, moving);
+    }
 }

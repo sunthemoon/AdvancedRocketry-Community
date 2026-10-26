@@ -38,12 +38,12 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: 49d9629c (W133F merged: F3's native launch on the combined tree, with gated launch traces; before it, ab14bc2e merged W134, cargo leaf D-E2, item cargo settlement and the end-to-end cases, admission disabled)
-latest_hosted_regression: run 39700132027 at eeb1fb80 (the W131 merge) passed all required GameTests and the log checker, as did run 39697134585 at 2c1c32f7 (W132 and W133 merged); run 39693516643 at 339dd2a1 (the W132 merge) passed every GameTest but failed the log check because its GameTests crossed midnight UTC and Forge rolled latest.log (QUEUE, W135)
-ledger_planned_units: 19
+latest_code_commit: 20f1859e9 (W161 merged: test-side fixes for the relogin timeout, terminal-cut cleanup after a failed or timed-out fixture, and the boarding CAPTURE_FAILED WARN. Before it, f68b4867e merged W160 with W160F and W160G: the W80 `release-absent` command and `rejoins` view, so all three W80 leaves are in. Before it, W152H and W152I merged at 787c28e52: the W80 and sealed-staging cross-guard, request expiry, proof hand-off and wide-plan refusal, with review finding W152H-R1 open under R114; player admission (N3-B3) stays off until W152J)
+latest_hosted_regression: run 40236794608 at 0e78fd4b (W161 merged) passed on its first attempt: clean build, unit tests, runData with a clean tree, all 1,414 GameTests and the log check, with the boarding WARN logged once as declared. The run before it, 40231943202 at cac55dcc (after the W152H, W152I and W160 merges), also passed on its first attempt. Every completed hosted regression since the failure at 2426f00d on 2026-10-22 is green; W139 stays open until no hosted log shows ARCE_LAUNCH_DISCARD (QUEUE)
+ledger_planned_units: 17
 asset_review_items: 154
 required_gates_approved: none
-last_updated: 2026-10-22
+last_updated: 2026-10-26
 ```
 
 ## Current state
@@ -84,9 +84,9 @@ It does not run:
 
 What is still open:
 
-- **Ledger.** 19 units are still PLANNED: C17a 6 and C17c 1
-  (the monitoring station, the five loader variants and the linker, which wait for the escrow
-  chain and the bay), C18a 1 (the oxygen charger, owner decision D4) and C18d 11 (the ten sounds,
+- **Ledger.** 17 units are still PLANNED: C17a 4 and C17c 1
+  (the five loader variants, which wait for the escrow chain's admission and the bay; W153 delivered
+  the monitoring station and the linker), C18a 1 (the oxygen charger, owner decision D4) and C18d 11 (the ten sounds,
   which wait for the owner's listen, and `modelBakeEvent`, which waits for an OBJ import). The
   backlog is in QUEUE.md.
 - **Assets.** 154 legacy assets are still under REVIEW (ADR-066 section 7.3).
@@ -111,7 +111,7 @@ What is still open:
   retry tests their own batch; the hosted runs at `d9f031d4`, `2e44edcc` and `dcebe3a8` passed them.
 - **S2.** W11b2's crash cuts passed natively as development evidence (the W11b2 records). Of
   W11b3's loader cut families, B3-S1 and B3-S2 (all 21 cuts, two restarts each) have native
-  evidence (W97 and W97B, merged `fe25244b`); B3-S3 matched 22 of its 23 cuts (W105, merged `bd1c78b9`, and W107's D2-C4-before, merged `9f6668aa`); W107 also passed 15 B3-S4 and B3-S5 cuts. C1 then passed with R36's gated fixture save (W107B, merged `d6319f9f`), and W107C (merged `f2df941c`) passed E1, E2, R1's saturated floors and all seven R3 cases natively; E4 is an in-process residual. W107C found **F1**, a production defect that blocks fuel admission: a named fill is held at L1 forever because the transfer fence locks the rocket's own landed record while loader reconciliation waits for it to settle, with no persisted reason; W121's design, amended by Root decision R48 after its review, is implemented by W125 (merged with W125F as `88bcebfc`), and D2 (W130, merged as `3bce8373`) retires a landed rocket's transfer record before its first fill, so a rocket refuelled away from its launch site no longer needs that site loaded to launch (F1b); W130F bounds the retirement's tickets before admission (R59). W125F found **F3**: an assembled rocket filled through escrow keeps `ASSEMBLED`, so its launch returned `INVALID_STATE`; W133 fixed it at the launch boundary (R55; merged as `695f76b0`), and W133F (merged as `49d9629c`) showed natively that an escrow-filled assembled rocket and a landed rocket whose record W130 retired both pass `prepare` and reach a governed COUNTDOWN that survives two restarts. B3-S6 remains.
+  evidence (W97 and W97B, merged `fe25244b`); B3-S3 matched 22 of its 23 cuts (W105, merged `bd1c78b9`, and W107's D2-C4-before, merged `9f6668aa`); W107 also passed 15 B3-S4 and B3-S5 cuts. C1 then passed with R36's gated fixture save (W107B, merged `d6319f9f`), and W107C (merged `f2df941c`) passed E1, E2, R1's saturated floors and all seven R3 cases natively; E4 is an in-process residual. W107C found **F1**, a production defect that blocks fuel admission: a named fill is held at L1 forever because the transfer fence locks the rocket's own landed record while loader reconciliation waits for it to settle, with no persisted reason; W121's design, amended by Root decision R48 after its review, is implemented by W125 (merged with W125F as `88bcebfc`), and D2 (W130, merged as `3bce8373`) retires a landed rocket's transfer record before its first fill, so a rocket refuelled away from its launch site no longer needs that site loaded to launch (F1b); W130F (merged as `6d1230f0`, R59) bounds the retirement's tickets. W125F found **F3**: an assembled rocket filled through escrow keeps `ASSEMBLED`, so its launch returned `INVALID_STATE`; W133 fixed it at the launch boundary (R55; merged as `695f76b0`), and W133F (merged as `49d9629c`) showed natively that an escrow-filled assembled rocket and a landed rocket whose record W130 retired both pass `prepare` and reach a governed COUNTDOWN that survives two restarts. B3-S6 remains.
 - **V1 and V2.** No slice has real-GPU or two-client evidence.
 - **C19.** W58 audited it (`records/W58.md`). Merged since: the validator chain and the G4 fix
   (C19-A), the portable evidence links (W60), correction files in the Markdown check and the
@@ -124,7 +124,16 @@ What is still open:
 - **Risks.** R-021 and the risks the W slices added (R-028 to R-040) stay open. Root registered R-039 (the bay receipt store) before W27c1 and R-040 (the checked transaction journal and its unreadable-root hold) with W123.
 - **Earlier intermittent GameTests.** W73 fixed the landing-pad cancellation test, W74 the
   six-host natural-beds test, W76 the first-Moon-landing and spawn-egg tests, and W78 the sealed
-  sleep-room test. Hosted runs confirm each fix as they accumulate. The open one is the escrow
-  proof timeout above.
+  sleep-room test. Hosted runs confirm each fix as they accumulate. The open ones are the escrow
+  proof timeout above and the relogin timeout below.
+- **Intermittent relogin GameTest (2026-10-25).** The first attempt of hosted run 40152525151 at `32c8ded4` timed out
+  `EscrowGovernedSourceFlightGameTests.logoutDuringAscentAndLoginAfterLandingCompletesHandoffAndCleanup` at 600 ticks:
+  the passenger logged in after landing and the handoff never completed. Two later fixtures then failed with
+  "Terminal cut requires exclusive owner-thread setup", because the first one cleans up only on success. A rerun of
+  the same commit passed, and W158F's local full run passed it. W161 (merged at `20f1859e9`) found the cause in
+  the fixture: it waited for the dispatcher's remount, which also starts F6, and then dismounted, so it invalidated
+  its own terminal capture and paid the 100-tick retry. The fixture now runs the installed F5 executor and dismounts
+  in the same callback, and terminal-cut fixtures clean up on failure or timeout. The 600-tick timeout itself was
+  not reproduced; this stays open until hosted runs show no recurrence.
 
 No v1.8 Required Gate is approved. Only the owner marks a Gate or the version as passed.

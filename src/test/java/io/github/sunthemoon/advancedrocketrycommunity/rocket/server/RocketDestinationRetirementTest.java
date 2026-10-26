@@ -60,7 +60,8 @@ class RocketDestinationRetirementTest {
     @Test void unsupportedStorageKeepsTheRecordAcrossTwoBackoffsWithoutCaptureOrRemoval() {
         var f = new Fixture(); f.port.supported = false; f.begin();
         for (int tick = 0; tick < 401; tick++) { f.port.now++; f.retirements.tick(); }
-        assertEquals(3, f.port.tickets);
+        // W130F (R59, W130-R1): unsupported storage is a hold that no ticket can end, so it is checked before any ticket.
+        assertEquals(0, f.port.tickets);
         assertTrue(f.port.captures.isEmpty());
         assertEquals("UNSUPPORTED_ENTITY_STORAGE", f.retirements.reason(f.logical()));
         assertSame(f.record, f.journal.find(f.record.transferId()).orElseThrow());

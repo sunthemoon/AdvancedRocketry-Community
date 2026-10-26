@@ -10,6 +10,31 @@ import java.util.function.BooleanSupplier;
 final class EscrowFlightJournal {
     private EscrowFlightJournal() { }
 
+    /**
+     * F1 has no assigned serial until the coalesced writer captures ARMED. Another launch may consume nextSerial
+     * while its source proof waits, so retain only L/T absence until capture, then also retain the exact serial lease.
+     * Both leases use immutable published views and are safe for the writer's replacement guard.
+     */
+    static final class PreparationLease implements BooleanSupplier {
+        private final RocketTransferSavedData journal;
+        private final UUID logical, transfer;
+        private final BooleanSupplier absence;
+        private volatile BooleanSupplier assigned = () -> true;
+
+        PreparationLease(RocketTransferSavedData journal, UUID logical, UUID transfer, long nextSerial) {
+            this.journal = journal; this.logical = logical; this.transfer = transfer;
+            absence = noTransfer(journal, logical, transfer, nextSerial).getAsBoolean()
+                    ? journal.logicalLease(logical, transfer, 0) : () -> false;
+        }
+
+        boolean capture(long serial) {
+            assigned = noTransfer(journal, logical, transfer, serial);
+            return getAsBoolean();
+        }
+
+        @Override public boolean getAsBoolean() { return absence.getAsBoolean() && assigned.getAsBoolean(); }
+    }
+
     /** R17 item 3: L's checked lease; another rocket's journal change does not revoke it. A failed write still refuses it. */
     static BooleanSupplier noTransfer(RocketTransferSavedData journal, UUID logical, UUID transfer, long serial) {
         var guard = journal.actionAuthorityAvailable(logical) ? journal.logicalGuard(logical).orElse(null) : null;

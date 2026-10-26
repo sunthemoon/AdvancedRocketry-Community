@@ -78,6 +78,12 @@ public enum ManagedSavedDataType {
             List.of(new RequiredTag("first_moon_landing", Tag.TAG_COMPOUND),
                     new RequiredTag("first_station_warp", Tag.TAG_COMPOUND))
     ),
+    /** W80 section 2: a lazy sidecar, never part of the transfer journal's migration payload. */
+    ROCKET_REJOINS(
+            "v1.8.0", "advancedrocketrycommunity_rocket_rejoins", 1_048_576L,
+            List.of(new RequiredTag("next_sequence", Tag.TAG_LONG), new RequiredTag("batches", Tag.TAG_LIST),
+                    new RequiredTag("entries", Tag.TAG_LIST))
+    ),
     /** W27A-DESIGN section 2: bay deployment receipts, schema 1 from introduction, so there is no legacy migration. */
     BAY_RECEIPTS(
             "v1.8.0", "advancedrocketrycommunity_bay_receipts",
@@ -137,7 +143,7 @@ public enum ManagedSavedDataType {
             case SATELLITE_MISSIONS -> SatelliteLimits.REGISTRY_SCHEMA_VERSION;
             case ENDGAME -> EndgameLimits.ROOT_SCHEMA_VERSION;
             case RESOURCE_ESCROW -> 2;
-            case CLASSIC_PROGRESSION -> 1;
+            case CLASSIC_PROGRESSION, ROCKET_REJOINS -> 1;
             case BAY_RECEIPTS -> io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceiptCodec.SCHEMA;
             case ROCKET_TRANSFERS -> FIRST_MOON_LANDING_JOURNAL_SCHEMA;
             default -> SavedDataSchemaMigrator.CURRENT_SCHEMA_VERSION;
@@ -183,6 +189,7 @@ public enum ManagedSavedDataType {
         if (this == BAY_RECEIPTS) {
             return io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceiptCodec.EPOCH;
         }
+        if (this == ROCKET_REJOINS) { return "v1.8.0-rocket-rejoins"; }
         return SavedDataSchemaMigrator.FORMAT_EPOCH;
     }
 
@@ -196,7 +203,8 @@ public enum ManagedSavedDataType {
 
     /** Whether older roots of this type exist; the endgame root was introduced at its current schema. */
     public boolean hasLegacySchema() {
-        return this != ENDGAME && this != RESOURCE_ESCROW && this != CLASSIC_PROGRESSION && this != BAY_RECEIPTS;
+        return this != ENDGAME && this != RESOURCE_ESCROW && this != CLASSIC_PROGRESSION && this != BAY_RECEIPTS
+                && this != ROCKET_REJOINS;
     }
 
     /**

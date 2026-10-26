@@ -67,13 +67,23 @@ final class EscrowFlightCheckpoint implements AutoCloseable {
             io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord record = null;
             if (arm != null) {
                 var data = ResourceEscrowSavedData.existing(level.getServer());
+                net.minecraft.nbt.CompoundTag observed = null;
                 try {
-                    if (data != null && data.bind(level.getServer()).governedAvailable(arm.logical())
-                            && boundary.test(captured.get())) {
-                        record = prepared.afterArm(data.ledger(), arm, EscrowGovernedEnvelope.capture(rocket), journal);
+                    boolean available = data != null && data.bind(level.getServer()).governedAvailable(arm.logical());
+                    if (available && boundary.test(captured.get())) {
+                        observed = EscrowGovernedEnvelope.capture(rocket);
+                        record = prepared.afterArm(data.ledger(), arm, observed, journal);
+                    } else {
+                        EscrowLaunchDiscard.note("F1_AFTER_ARM", () -> "logical=" + arm.logical() + " transfer=" + arm.transfer()
+                                + " reason=" + (data == null ? "NO_LEDGER" : !available ? "LEDGER_UNAVAILABLE" : "ACTION_BOUNDARY"));
                     }
                 } catch (IllegalArgumentException refused) {
                     // ARMED remains durable and locked; only its checked cancellation/recovery may retire it.
+                    var lastObserved = observed;
+                    EscrowLaunchDiscard.note("F1_AFTER_ARM", () -> "logical=" + arm.logical() + " transfer=" + arm.transfer()
+                            + " reason=" + refused.getClass().getSimpleName() + ": " + refused.getMessage() + " fields="
+                            + EscrowLaunchDiscard.detail(() -> EscrowLaunchDiscard.differences(
+                                    captured.get().nativeTransfer().orElseThrow().sourceEnvelope(captured.get()), lastObserved)));
                 }
             }
             completion.accept(record);
@@ -121,8 +131,12 @@ final class EscrowFlightCheckpoint implements AutoCloseable {
                     "F1 source or journal binding changed");
             EscrowSettlementCapacity.preflight(preparation.capture(coordinator.ledger(), launch,
                     Math.addExact(coordinator.ledger().writerGeneration(), 1)));
-        } catch (IllegalArgumentException | ArithmeticException refused) { observation.sample("f1.refused.BINDING_OR_PREFLIGHT", 0); return false; }
-        var noTransfer = EscrowFlightJournal.noTransfer(journal, launch.logical(), launch.transfer(),
+        } catch (IllegalArgumentException | ArithmeticException refused) {
+            EscrowLaunchDiscard.note("F1_PREFLIGHT", () -> "logical=" + launch.logical() + " transfer=" + launch.transfer()
+                    + " reason=" + refused.getClass().getSimpleName() + ": " + refused.getMessage());
+            observation.sample("f1.refused.BINDING_OR_PREFLIGHT", 0); return false;
+        }
+        var noTransfer = new EscrowFlightJournal.PreparationLease(journal, launch.logical(), launch.transfer(),
                 Math.addExact(coordinator.ledger().issuedLaunchSerial(), 1));
         if (!noTransfer.getAsBoolean() || !frozen.observe()) { observation.sample("f1.refused.SOURCE_OR_JOURNAL_CHANGED", 0); return false; }
         var retry = retries.computeIfAbsent(launch.logical(), key -> new Retry(rocket, new EscrowSuccessorRetry())).schedule();
@@ -150,12 +164,13 @@ final class EscrowFlightCheckpoint implements AutoCloseable {
                         pending.remove(launch.logical(), frozen); finished.accept(null); return;
                     }
                     runtime.checkpoint("F1_READBACK_AFTER"); var proof = result.proof();
-                    boolean queued = coordinator.flightWrite(launch.logical(), (root, generation) -> {
+                    var admission = coordinator.enqueueFlightWrite(launch.logical(), (root, generation) -> {
                         EscrowTags.require(frozen.observe(), "F1 source changed before ARMED capture");
                         runtime.checkpoint("F1_ARM_CAPTURE");
                         var candidate = preparation.capture(root, launch, generation);
                         serial.set(candidate.armedFlights().stream().filter(arm -> arm.logical().equals(launch.logical())
                                 && arm.transfer().equals(launch.transfer())).findFirst().orElseThrow().serial());
+                        EscrowTags.require(noTransfer.capture(serial.get()), "F1 assigned serial conflicts with the checked journal");
                         return candidate;
                     }, () -> proof.valid() && frozen.unchanged.get() && noTransfer.getAsBoolean(), committed -> {
                         proof.release(); pending.remove(launch.logical(), frozen);
@@ -172,7 +187,9 @@ final class EscrowFlightCheckpoint implements AutoCloseable {
                             finished.accept(null);
                         }
                     });
-                    if (!queued) {
+                    if (admission != EscrowFlightWrites.Admission.QUEUED) {
+                        EscrowLaunchDiscard.note("F1_QUEUE_REFUSED", () -> "logical=" + launch.logical()
+                                + " transfer=" + launch.transfer() + " reason=" + admission);
                         observation.sample("f1.stall.LEDGER_QUEUE_WAIT", 0);
                         proof.release(); pending.remove(launch.logical(), frozen);
                         if (!closed) { retry.failed(coordinator.ledger().id(), launch.logical(), launch.transfer(), 0,

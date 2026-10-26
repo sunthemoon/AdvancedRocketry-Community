@@ -9,10 +9,81 @@ import java.util.Set;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 class EscrowFlightBenchmarkMetricsTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
     @TempDir Path temporary;
+
+    static java.util.stream.Stream<String> knownPhases() { return EscrowFlightBenchmarkMetrics.PHASES.stream().sorted(); }
+    @Test void pythonCollectorCatalogExactlyMatchesJavaCollector() throws Exception {
+        String[] phases = new com.google.gson.Gson().fromJson(
+                Files.readString(Path.of("scripts/governed_benchmark_phases.json")), String[].class);
+        assertEquals(phases.length, Set.of(phases).size());
+        assertEquals(EscrowFlightBenchmarkMetrics.PHASES, Set.of(phases));
+    }
+    @ParameterizedTest @MethodSource("knownPhases")
+    void eachKnownPhaseIsCollectedWithoutRenaming(String phase) {
+        var metrics = new EscrowFlightBenchmarkMetrics(); metrics.start(); metrics.sample(phase, 17);
+        assertEquals(List.of(new EscrowFlightBenchmarkMetrics.Sample(phase, -1, 17)), metrics.samples());
+    }
+    @Test void emittingSourcesHaveNoUncataloguedLiteralPhasesOrDynamicFamilies() throws Exception {
+        // Independent source inventory: adding an emitter must update the release-test catalog, not silently pass.
+        var directory = Path.of("src/main/java/io/github/sunthemoon/advancedrocketrycommunity/resourceescrow");
+        var literal = java.util.regex.Pattern.compile("(?:sample|timing)\\(\"([^\"]+)\"\\s*,");
+        var generation = java.util.regex.Pattern.compile("add\\(\"([^\"]+)\"\\s*,");
+        var dynamic = java.util.regex.Pattern.compile("(?:sample|timing)\\(\"([^\"]+)\"\\s*\\+");
+        var prefixes = new java.util.HashSet<String>(); int observations = 0;
+        try (var sources = Files.list(directory)) {
+            for (var file : sources.filter(path -> path.toString().endsWith(".java")).toList()) {
+                // A different collector's private generation labels never reach the governed collector.
+                if (Set.of("EscrowConsumerTimingProbe.java", "EscrowBenchmarkProbe.java").contains(file.getFileName().toString())) { continue; }
+                String source = Files.readString(file);
+                var matcher = literal.matcher(source);
+                while (matcher.find()) {
+                    observations++;
+                    assertTrue(EscrowFlightBenchmarkMetrics.PHASES.contains(matcher.group(1)), file + ": " + matcher.group(1));
+                }
+                if (file.getFileName().toString().equals("EscrowFlightBenchmarkMetrics.java")) {
+                    matcher = generation.matcher(source);
+                    while (matcher.find()) {
+                        observations++;
+                        assertTrue(EscrowFlightBenchmarkMetrics.PHASES.contains(matcher.group(1)), matcher.group(1));
+                    }
+                }
+                matcher = dynamic.matcher(source);
+                while (matcher.find()) { prefixes.add(matcher.group(1)); }
+            }
+        }
+        assertTrue(observations >= 60, "Emitter inventory unexpectedly empty or incomplete");
+        assertEquals(Set.of("f1.stall.", "cancel.stall.", "settlement.stall."), prefixes);
+        for (var reason : EscrowReason.values()) {
+            if (reason.retryableProofFailure()) {
+                for (var prefix : prefixes) { assertTrue(EscrowFlightBenchmarkMetrics.PHASES.contains(prefix + reason.name())); }
+            }
+        }
+    }
+    @Test void unknownNamesAndUnknownDiagnosticSuffixesFailWithoutCollecting() {
+        var metrics = new EscrowFlightBenchmarkMetrics(); metrics.start();
+        for (var phase : List.of("unknown_phase", "settlement.unknown", "settlement.stall.UNKNOWN",
+                "f1.stall.UNKNOWN", "cancel.wait.UNKNOWN", "settlement.attempt.extra", "", "bad,phase")) {
+            assertThrows(IllegalArgumentException.class, () -> metrics.sample(phase, 0), phase);
+        }
+        assertThrows(IllegalArgumentException.class, () -> metrics.sample(null, 0));
+        assertTrue(metrics.samples().isEmpty());
+        // Invalid names do not consume the bounded collector's capacity.
+        for (int i = 0; i < EscrowFlightBenchmarkMetrics.MAX_SAMPLES; i++) { metrics.sample("settlement.attempt", 0); }
+        assertEquals(EscrowFlightBenchmarkMetrics.MAX_SAMPLES, metrics.samples().size());
+    }
+    @Test void knownDiagnosticWithCommaIsQuotedForCsv() throws Exception {
+        var metrics = new EscrowFlightBenchmarkMetrics(); metrics.start();
+        metrics.sample("settlement.stall.Rocket placement, occupancy or stationary state changed", 0);
+        metrics.stop(); metrics.write(temporary.resolve("diagnostic.csv"));
+        assertEquals(List.of("phase,generation,value",
+                "\"settlement.stall.Rocket placement, occupancy or stationary state changed\",-1,0"),
+                Files.readAllLines(temporary.resolve("diagnostic.csv")));
+    }
 
     @Test void inactiveObserverDoesNotCollectAndCannotExportMidMeasurement() throws Exception {
         var metrics = new EscrowFlightBenchmarkMetrics();

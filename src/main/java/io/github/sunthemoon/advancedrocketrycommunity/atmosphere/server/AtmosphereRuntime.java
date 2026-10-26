@@ -14,6 +14,22 @@ public final class AtmosphereRuntime {
     private AtmosphereRuntime() {
     }
 
+    /** Fail-closed, loaded-position landing query, using the same exposure and equipment policy as ticking. */
+    public static boolean rejoinSurvivable(ServerLevel level, BlockPos eye, net.minecraft.server.level.ServerPlayer player) {
+        AtmosphereManager current = manager;
+        if (current == null || !level.getServer().isSameThread() || !level.hasChunkAt(eye)) { return false; }
+        var air = current.breathabilityAt(level, eye);
+        if (air == io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.BreathabilityState.PENDING) { return false; }
+        if (player.isCreative() || player.isSpectator()) { return true; }
+        if (air != io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.BreathabilityState.BREATHABLE
+                && !SuitEquipmentRuntime.hasRejoinAir(player)) { return false; }
+        return io.github.sunthemoon.advancedrocketrycommunity.celestial.environment.EnvironmentalExposure.hazards(
+                current.surfaceExposure(level),
+                io.github.sunthemoon.advancedrocketrycommunity.celestial.environment.EnvironmentalProtection.read(player),
+                current.controlledAt(level, eye),
+                io.github.sunthemoon.advancedrocketrycommunity.celestial.environment.PlayerEnvironmentalService.directSunlight(level, eye)) == 0;
+    }
+
     public static synchronized void install(AtmosphereManager installedManager) {
         manager = Objects.requireNonNull(installedManager, "installedManager");
     }

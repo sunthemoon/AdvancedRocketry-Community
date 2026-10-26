@@ -144,6 +144,10 @@ public final class ModMenuTypes {
     private ModMenuTypes() {
     }
 
+    public static final RegistryObject<MenuType<io.github.sunthemoon.advancedrocketrycommunity.rocket.monitor.RocketMonitorMenu>>
+            ROCKET_MONITORING_STATION = MENUS.register("rocket_monitoring_station", () -> IForgeMenuType.create(
+                    io.github.sunthemoon.advancedrocketrycommunity.rocket.monitor.RocketMonitorMenu::new));
+
     public static void register(IEventBus modBus) {
         MENUS.register(modBus);
     }

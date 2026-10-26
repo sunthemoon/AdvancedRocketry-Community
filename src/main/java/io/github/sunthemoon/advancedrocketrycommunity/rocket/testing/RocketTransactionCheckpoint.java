@@ -16,7 +16,7 @@ public record RocketTransactionCheckpoint(
         if (progress < 0 || progress > RocketLimits.MAX_BLOCKS
                 || (type == RocketTransactionType.ASSEMBLY
                     && (phase == RocketTransactionPhase.RESTORING || phase == RocketTransactionPhase.RESTORED))
-                || (type == RocketTransactionType.DISASSEMBLY
+                || (type.isDisassembly()
                     && (phase == RocketTransactionPhase.EXTRACTING || phase == RocketTransactionPhase.EXTRACTED
                         || phase == RocketTransactionPhase.SPAWNED))) {
             throw new IllegalArgumentException("Invalid transaction checkpoint");

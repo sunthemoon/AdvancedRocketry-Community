@@ -217,7 +217,7 @@ class FlightHarness:
         if exit_code != 0:
             raise SmokeError(f"Server process exited with code {exit_code}")
         findings = [
-            line for line in scan_log(process.lines)
+            line for line in scan_log(process.lines, expected_mod_version=self.expected_version)
             if "ARCE_TRANSFER_RECOVERY" not in line
         ]
         if findings:

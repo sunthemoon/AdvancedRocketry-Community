@@ -14,6 +14,7 @@ import json
 import re
 import shutil
 import sys
+import time
 import uuid
 from pathlib import Path
 
@@ -36,7 +37,9 @@ PACK = "world/datapacks/satellite_payload"
 DEFINITION_FILE = PACK + "/data/arce_adapter_test/satellite_definitions/research_payload.json"
 REGISTERED = f"Registered satellite payload {DEFINITION} (API {recovery.API}, event 1)"
 PROBE = re.compile(r"ARCE_SAT_PAYLOAD (\{.*\})\s*$")
-SCHEDULED = re.compile(r"ARCE_SATELLITE_SCHEDULER completed=1 inspected=1 remaining=0")
+SCHEDULED = re.compile(r"ARCE_SATELLITE_SCHEDULER completed=1 pruned=0 inspected=1 remaining=0\s*$")
+GAME_TIME = re.compile(r"The time is (\d+)\s*$")
+INTENT_INTERVAL_TICKS = 10  # ADR-049 section 10; the smoke uses the default COMMON configuration.
 
 
 def validate_registration(lines: list[str], installed: bool) -> None:
@@ -47,7 +50,7 @@ def validate_registration(lines: list[str], installed: bool) -> None:
 
 def validate_probe(value: dict, action: str, satellite: str | None, code: int) -> str:
     require(value.get("action") == action and value.get("energy") == 9000 and value.get("result") == code
-            and value.get("payload_count") == 1 and value.get("package_empty") is True
+            and value.get("payload_count") == 1 and value.get("package_empty") is (action != "create")
             and value.get("owner") == OWNER and value.get("definition") == DEFINITION, "Terminal payload receipt differs")
     identity = str(uuid.UUID(value["satellite"]))
     require(identity == value["satellite"] and (satellite is None or satellite == identity), "Satellite identity changed")
@@ -61,31 +64,42 @@ def decode_saved(payload: bytes) -> dict:
     root = recovery.NbtReader(raw).read_root()
     require(isinstance(root, dict) and isinstance(root.get("data"), dict), "Missing SavedData root")
     data = root["data"]
-    require(data.get("schema_version") == 2 and len(data.get("satellites", [])) == 1
+    require(data.get("schema_version") == 4 and data.get("format_epoch") == "v1.8.0-ground-surveys"
+            and data.get("instances") == [] and data.get("ground_surveys") == []
+            and isinstance(data.get("save_epoch"), int) and data["save_epoch"] >= 1
+            and len(data.get("satellites", [])) == 1
             and len(data.get("research_accounts", [])) == 1 and 1 <= len(data.get("missions", [])) <= 2,
             "Satellite native schema/counts differ")
     return data
 
 
-def validate_disk(data: dict, terminal: dict, phase: str, satellite: str, missions: list[str], previous: dict | None) -> None:
+def validate_disk(data: dict, terminal: dict, phase: str, satellite: str, missions: list[str], previous: dict | None,
+                  previous_terminal: str | None = None) -> str:
     require(phase in PHASES, "Unknown satellite phase")
     owner = lambda value: recovery.uuid_from_nbt(value["owner_id"]) == OWNER
     state = data["satellites"][0]
-    require(state.get("schema_version") == 1 and state.get("status") == "operational" and state.get("definition_id") == DEFINITION and owner(state)
+    require(state.get("schema_version") == 2 and state.get("status") == "operational" and state.get("definition_id") == DEFINITION and owner(state)
             and recovery.uuid_from_nbt(state["satellite_id"]) == satellite, "Native satellite identity differs")
+    # The legacy data payload has no resource-mission state or consumed blueprint components (ADR-049/050).
+    require(state.get("kind") == "data" and state.get("kind_state") == {} and "orbit_body" not in state
+            and state.get("blueprint") == {"components": [], "legacy": 1, "data": 1000, "rating": 0,
+                                           "power": 4, "battery": 720, "cargo": 0}, "Native data blueprint differs")
     expected_count = 2 if phase == "reinstalled" else 1
     require(len(data["missions"]) == len(missions) == expected_count, "Mission count differs")
     by_id = {recovery.uuid_from_nbt(value["mission_id"]): value for value in data["missions"]}
     require(len(by_id) == expected_count and set(by_id) == set(missions), "Native mission IDs differ")
     for index, identity in enumerate(missions):
         mission = by_id[identity]
-        require(mission.get("schema_version") == 1 and owner(mission) and mission.get("definition_id") == DEFINITION
+        require(mission.get("schema_version") == 2 and owner(mission) and mission.get("definition_id") == DEFINITION
                 and recovery.uuid_from_nbt(mission["satellite_id"]) == satellite
                 and mission.get("target_body_id") == HOST + ":earth" and mission.get("discovery_required") == (1 if index == 0 else 0)
                 and mission["completes_at"] - mission["started_at"] == (400 if index == 0 else 20)
                 and mission.get("research_yield") == (137 if index == 0 else 211)
                 and mission.get("discovery_cost") == 11
                 and mission.get("status") == ("active" if phase == "create" else "claimed"), "Mission snapshot or reward changed")
+        require(mission.get("kind") == "data" and mission.get("seed") == 0 and mission.get("reward_version") == "data-v1"
+                and isinstance(mission.get("start_epoch"), int) and 1 <= mission["start_epoch"] <= data["save_epoch"]
+                and "instance_id" not in mission and "quarantine" not in mission, "Native data mission metadata differs")
         if previous is not None and identity in previous:
             immutable = {key: value for key, value in mission.items() if key not in ("status", "ready_at", "resolved_at")}
             require(immutable == {key: value for key, value in previous[identity].items()
@@ -100,9 +114,12 @@ def validate_disk(data: dict, terminal: dict, phase: str, satellite: str, missio
         require(recovery.uuid_from_nbt(state["current_mission_id"]) == missions[0], "Active mission binding differs")
     else:
         require("current_mission_id" not in state, "Claim left unfinished mission binding")
-    require(terminal.get("schema_version") == 1 and owner(terminal) and terminal.get("energy") == 9000
+    require(terminal.get("schema_version") == 2 and owner(terminal) and terminal.get("energy") == 9000
             and terminal.get("selected_target") == 0 and terminal.get("last_result") == (9 if phase == "reinstalled" else 0),
             "Terminal native scalars differ")
+    require(terminal.get("reward_buffer") == [] and terminal.get("receipts") == [], "Data terminal has resource delivery state")
+    terminal_identity = recovery.uuid_from_nbt(terminal["terminal_id"])
+    require(previous_terminal is None or previous_terminal == terminal_identity, "Terminal delivery identity changed")
     inventory = terminal["inventory"]
     require(inventory.get("Size") == 6 and len(inventory.get("Items", [])) == 2, "Terminal inventory count differs")
     slots = {item["Slot"]: item for item in inventory["Items"]}
@@ -113,6 +130,7 @@ def validate_disk(data: dict, terminal: dict, phase: str, satellite: str, missio
     identity = chip["tag"]["SatelliteIdentity"]
     require(identity.get("schema_version") == 1 and owner(identity) and identity.get("definition_id") == DEFINITION
             and recovery.uuid_from_nbt(identity["satellite_id"]) == satellite, "Native chip binding changed")
+    return terminal_identity
 
 
 class SatelliteRun(recovery.RecoveryRun):
@@ -121,9 +139,29 @@ class SatelliteRun(recovery.RecoveryRun):
         self.satellite = validate_probe(result, action, getattr(self, "satellite", None), code)
         return result
 
+    def wait_intent_interval(self, process) -> dict:
+        """Observe ten world ticks after the last action, before sending the next intent."""
+        deadline = time.monotonic() + 10
+
+        def game_time() -> int:
+            remaining = deadline - time.monotonic()
+            require(remaining > 0, "Satellite intent interval did not advance within 10 seconds")
+            return int(self.query(process, "time query gametime", GAME_TIME, remaining).group(1))
+
+        start = previous = game_time()
+        while True:
+            # Poll pacing only; elapsed wall time never satisfies the server-tick condition.
+            time.sleep(.1)
+            end = game_time()
+            require(end >= previous, "Satellite intent clock moved backwards")
+            if end - start >= INTENT_INTERVAL_TICKS:
+                return {"after_action": start, "before_next_action": end, "elapsed_ticks": end - start}
+            previous = end
+
     def inspect_mission(self, process) -> str:
         result = self.query(process, f"arce satellite inspect {self.satellite}",
-                re.compile(rf"satellite={self.satellite} owner={OWNER} type={DEFINITION} status=OPERATIONAL mission=([0-9a-f-]{{36}})"))
+                re.compile(rf"satellite={self.satellite} owner={OWNER} type={DEFINITION} kind=data "
+                           rf"status=OPERATIONAL mission=([0-9a-f-]{{36}})\s*$"))
         return str(uuid.UUID(result.group(1)))
 
     def _run_phase(self, phase: str, directory: Path, document: dict) -> dict:
@@ -149,6 +187,8 @@ class SatelliteRun(recovery.RecoveryRun):
                 process.command("gamerule doMobSpawning false"); process.command("gamerule randomTickSpeed 0")
                 process.command("setblock 264 101 264 minecraft:air")
                 document["create"] = self.fixture(process, "create", 0)
+                document["create_to_launch_ticks"] = self.wait_intent_interval(process)
+                document["launch"] = self.fixture(process, "launch", 0)
                 self.missions = [self.inspect_mission(process)]
                 self.write_override()
                 self.query(process, "reload", re.compile(r"Accepted satellite catalog generation 2 with 2 definitions"), 60)
@@ -165,6 +205,7 @@ class SatelliteRun(recovery.RecoveryRun):
                 self.missions.append(self.inspect_mission(process))
                 process.wait_for(SCHEDULED, 10)
                 document["claim"] = self.fixture(process, "claim", 0)
+                document["claim_to_replay_ticks"] = self.wait_intent_interval(process)
                 document["replay"] = self.fixture(process, "claim", 9)
             self.query(process, "save-all flush", server.SAVE_MARKER, 60)
             process.command("stop"); require(process.finish() == 0, "Satellite process did not exit cleanly")
@@ -200,7 +241,8 @@ class SatelliteRun(recovery.RecoveryRun):
         terminals = [entry for entry in chunk.get("block_entities", []) if tuple(entry.get(axis) for axis in ("x", "y", "z")) == POSITION]
         require(len(terminals) == 1 and terminals[0].get("id") == HOST + ":satellite_terminal", "Native terminal missing")
         terminal = terminals[0]["SatelliteTerminal"]
-        validate_disk(data, terminal, phase, self.satellite, self.missions, self.baseline)
+        self.terminal_identity = validate_disk(data, terminal, phase, self.satellite, self.missions, self.baseline,
+                                              getattr(self, "terminal_identity", None))
         self.baseline = {recovery.uuid_from_nbt(value["mission_id"]): value for value in data["missions"]}
         write_json(directory / "native-state.json", {"satellites": data, "terminal": terminal})
         document.update(disk_evidence=files, satellite=self.satellite, missions=list(self.missions))

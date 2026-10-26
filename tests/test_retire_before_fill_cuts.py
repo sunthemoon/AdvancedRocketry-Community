@@ -64,6 +64,10 @@ class RetirementCutOracleTest(unittest.TestCase):
             with self.assertRaises(cuts.smoke.SmokeError):
                 cuts.check(state, "K9", 1)
 
+    def test_held_cases_expect_no_ticket_for_a_hold_that_no_ticket_can_end(self):
+        self.assertEqual({"HELD_COLUMN": 3, "HELD_STORAGE": 0}, cuts.HELD_TICKETS)
+        self.assertEqual({c for c in cuts.CUTS if c.startswith("HELD_")}, set(cuts.HELD_TICKETS))
+
     def test_k2_requires_none_guard(self):
         state = fixture(); state["transfers"] = []
         state["ledger"] = fixture(True)["ledger"]

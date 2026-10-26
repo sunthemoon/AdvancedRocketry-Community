@@ -1,0 +1,48 @@
+            if (testCase.equals(EscrowFlightBenchmarkProbe.CASE)) {
+                runtime.flightBenchmark.tick();
+            } else if (EscrowCargoReconciliationProbe.accepts(testCase)) {
+                runtime.cargoReconciliationProbe.tick();
+            } else if (testCase.startsWith("CR_")) {
+                if (runtime.reconciliationProbe == null) { runtime.reconciliationProbe = new EscrowReconciliationProbe(event.getServer()); }
+                runtime.reconciliationProbe.tick();
+            } else if (testCase.startsWith(EscrowLoaderReleaseProbe.PREFIX)) {
+                if (runtime.loaderProbe == null) { runtime.loaderProbe = new EscrowLoaderReleaseProbe(event.getServer()); }
+                runtime.loaderProbe.tick();
+            } else if (testCase.startsWith("FT_")) {
+                if (runtime.terminalProbe == null) { runtime.terminalProbe = new EscrowTerminalProbe(event.getServer()); }
+                runtime.terminalProbe.tick();
+            } else if (testCase.startsWith("RT_")) {
+                if (runtime.returnProbe == null) { runtime.returnProbe = new EscrowReturnProbe(event.getServer()); }
+                runtime.returnProbe.tick();
+            } else if (testCase.startsWith("FP_") || testCase.startsWith("FD_")) {
+                if (runtime.phaseProbe == null) { runtime.phaseProbe = new EscrowPhaseProbe(event.getServer()); }
+                runtime.phaseProbe.tick();
+            } else if (testCase.startsWith("DP_")) {
+                if (runtime.destinationProbe == null) { runtime.destinationProbe = new EscrowDestinationProbe(event.getServer()); }
+                runtime.destinationProbe.tick();
+            } else if (testCase.startsWith("SC_")) {
+                if (runtime.sourceClockProbe == null) { runtime.sourceClockProbe = new EscrowSourceClockProbe(event.getServer()); }
+                runtime.sourceClockProbe.tick();
+            } else if (testCase.startsWith("PF_")) {
+                if (runtime.preF2Probe == null) { runtime.preF2Probe = new EscrowPreF2Probe(event.getServer()); }
+                runtime.preF2Probe.tick();
+            } else if (testCase.startsWith("SR_")) {
+                // This probe runs before settlement recovery so its deliberate veto precedes every O2 attempt.
+            } else if (testCase.startsWith("SO_")) {
+                // The O1 probe observes before recovery above, then follows eventual O2-O4.
+            } else if (testCase.startsWith("RA_")) {
+                if (runtime.rocketAuditProbe == null) { runtime.rocketAuditProbe = new EscrowRocketAuditProbe(event.getServer()); }
+                runtime.rocketAuditProbe.tick();
+            } else if (testCase.equals("BENCH")) {
+                if (runtime.benchmark == null) { runtime.benchmark = new EscrowBenchmarkProbe(event.getServer(), runtime); }
+                runtime.benchmark.tick();
+            } else if (testCase.equals("E5")) {
+                if (runtime.recoveryProbe == null) { runtime.recoveryProbe = new EscrowRecoveryReleaseProbe(event.getServer()); }
+                runtime.recoveryProbe.tick();
+            } else if (testCase.equals("C1") || testCase.equals("C2") || testCase.equals("C3")) {
+                if (runtime.chainProbe == null) { runtime.chainProbe = new EscrowChainReleaseProbe(event.getServer()); }
+                runtime.chainProbe.tick();
+            } else {
+                if (runtime.probe == null) { runtime.probe = new EscrowReleaseProbe(event.getServer()); }
+                runtime.probe.tick();
+            }

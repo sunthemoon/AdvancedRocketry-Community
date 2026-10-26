@@ -297,6 +297,8 @@ public final class ModItems {
     private ModItems() {
     }
 
+    public static final RegistryObject<Item> ROCKET_MONITORING_STATION = blockItem("rocket_monitoring_station", ModBlocks.ROCKET_MONITORING_STATION);
+
     public static final RegistryObject<Item> LANDING_PAD = blockItem("landing_pad", ModBlocks.LANDING_PAD);
 
     private static RegistryObject<Item> component(String name) {
