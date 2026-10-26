@@ -6,6 +6,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.MissionS
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteOperationCode;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteOperationResult;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteMissionSavedData;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteRegistryProof;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -44,6 +45,23 @@ public final class DiscoveryClaimRecovery {
         SatelliteOperationResult finished = missions.finishDiscovery(missionId);
         if (finished.changed()) { saveMissions.accept(missions); }
         return finished;
+    }
+
+    /**
+     * ADR-074 item 6 and ADR-038: a celestial discovery is never durable before its paid receipt. Until a published
+     * acknowledgement covers the receipt's token (fixed when the claim paid) this answers PENDING_DISCOVERY and makes a
+     * request, and the replay queue retries; once covered, {@link #recover} runs and the finished claim is requested.
+     */
+    public static SatelliteOperationResult recoverAcknowledged(SatelliteMissionSavedData missions, CelestialSavedData celestial,
+            UUID missionId, SatelliteRegistryProof.Token receipt, long gameTime, Predicate<ResourceLocation> available,
+            Runnable requestMissions, Consumer<CelestialSavedData> saveCelestial) {
+        if (!missions.covers(receipt)) {
+            requestMissions.run();
+            MissionState mission = missions.mission(missionId).orElse(null);
+            return mission == null ? new SatelliteOperationResult(SatelliteOperationCode.MISSION_NOT_FOUND, false,
+                    Optional.empty(), Optional.empty(), 0) : result(missions, mission, SatelliteOperationCode.PENDING_DISCOVERY);
+        }
+        return recover(missions, celestial, missionId, gameTime, available, data -> requestMissions.run(), saveCelestial);
     }
 
     private static SatelliteOperationResult result(SatelliteMissionSavedData data, MissionState mission,

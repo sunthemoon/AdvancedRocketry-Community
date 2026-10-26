@@ -628,7 +628,8 @@ public final class SatelliteManager {
                     .filter(mission -> mission.status() == MissionStatus.CLAIM_PENDING_DISCOVERY
                             || progress.get(mission.targetBodyId()).isEmpty())
                     .map(MissionState::missionId)
-                    .forEach(pendingDiscoveryReplay::add);
+                    // A loaded receipt is in the file; the token at this sequence asks only for the next commit.
+                    .forEach(id -> pendingDiscoveryReplay.add(id, data.token()));
         }
         replayInitialized = true;
     }
@@ -636,7 +637,9 @@ public final class SatelliteManager {
     private void replayDiscoveries(MinecraftServer server) {
         if (replayBackoffTicks > 0) { replayBackoffTicks--; return; }
         try {
-            pendingDiscoveryReplay.drain(id -> !needsDiscoveryRetry(applyDiscovery(server, id)));
+            // A mission queued without a token waits for the next commit after now.
+            pendingDiscoveryReplay.drain(id -> !needsDiscoveryRetry(applyDiscovery(server, id,
+                    pendingDiscoveryReplay.receipt(id, () -> SatelliteMissionSavedData.get(server).token()))));
             if (pendingDiscoveryReplay.size() == 0) { replayFailureReported = false; }
         } catch (RuntimeException exception) {
             replayBackoffTicks = SatelliteLimits.SCHEDULER_INTERVAL_TICKS;
@@ -647,14 +650,18 @@ public final class SatelliteManager {
         }
     }
 
-    private SatelliteOperationResult applyDiscovery(MinecraftServer server, UUID missionId) {
+    /** ADR-074 item 6: the celestial write waits until a published commit covers the paid receipt's token. */
+    private SatelliteOperationResult applyDiscovery(MinecraftServer server, UUID missionId,
+                                                    io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence
+                                                            .SatelliteRegistryProof.Token receipt) {
         SatelliteMissionSavedData missions = SatelliteMissionSavedData.get(server);
         CelestialSavedData celestial = CelestialSavedData.get(server);
         var before = celestial.entries();
         try {
-            return DiscoveryClaimRecovery.recover(missions, celestial, missionId, server.overworld().getGameTime(),
+            return DiscoveryClaimRecovery.recoverAcknowledged(missions, celestial, missionId, receipt,
+                    server.overworld().getGameTime(),
                     id -> celestialCatalogs.current().flatMap(catalog -> catalog.get(id)).isPresent(),
-                    data -> data.flush(server), data -> data.flush(server));
+                    () -> missions.request(server), data -> data.flush(server));
         } finally {
             // Discovery is already durable even if the final mission acknowledgment fails.
             if (!before.equals(celestial.entries())) { snapshots.accept(server); }
@@ -681,8 +688,9 @@ public final class SatelliteManager {
             if (result.code() == SatelliteOperationCode.PENDING_DISCOVERY
                     || result.code() == SatelliteOperationCode.ALREADY_CLAIMED
                     && result.mission().filter(DiscoveryClaimRecovery::paidReceipt).isPresent()) {
-                pendingDiscoveryReplay.add(missionId);
-                result = applyDiscovery(server, missionId);
+                // The receipt's token is fixed right after the paying claim; the queue keeps the first one.
+                pendingDiscoveryReplay.add(missionId, data.token());
+                result = applyDiscovery(server, missionId, pendingDiscoveryReplay.receipt(missionId, data::token));
                 if (!needsDiscoveryRetry(result)) { pendingDiscoveryReplay.remove(missionId); }
             }
             if (data.isDirty()) {
