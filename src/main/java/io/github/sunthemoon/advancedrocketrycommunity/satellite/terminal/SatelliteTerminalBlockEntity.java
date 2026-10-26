@@ -67,7 +67,7 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
     static final String DATA_KEY = "SatelliteTerminal";
 
     private final SatelliteTerminalInventory inventory = new SatelliteTerminalInventory(() -> blocked() || isRemoved(), this::inventoryChanged);
-    private final TerminalEnergyStorage energyStorage = new TerminalEnergyStorage();
+    private final TerminalEnergyStorage energyStorage = new TerminalEnergyStorage(this::blocked, this::setChanged);
     private TerminalDelivery delivery = TerminalDelivery.create();
     private final TerminalResourceActions resources = new TerminalResourceActions(this);
     private LazyOptional<net.minecraftforge.items.IItemHandler> itemCapability = LazyOptional.empty();
@@ -739,64 +739,5 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
     private void createCapabilities() {
         itemCapability = LazyOptional.of(() -> inventory);
         energyCapability = LazyOptional.of(() -> energyStorage);
-    }
-
-    private final class TerminalEnergyStorage implements IEnergyStorage {
-        private int stored;
-
-        @Override
-        public int receiveEnergy(int maximum, boolean simulate) {
-            if (blocked()) {
-                return 0;
-            }
-            int received = Math.min(Math.max(0, maximum), ENERGY_CAPACITY - stored);
-            if (!simulate && received > 0) {
-                stored += received;
-                setChanged();
-            }
-            return received;
-        }
-
-        @Override
-        public int extractEnergy(int maximum, boolean simulate) {
-            return 0;
-        }
-
-        @Override
-        public int getEnergyStored() {
-            return stored;
-        }
-
-        @Override
-        public int getMaxEnergyStored() {
-            return ENERGY_CAPACITY;
-        }
-
-        @Override
-        public boolean canExtract() {
-            return false;
-        }
-
-        @Override
-        public boolean canReceive() {
-            return !blocked();
-        }
-
-        private void add(int amount) {
-            stored = Math.min(ENERGY_CAPACITY, Math.addExact(stored, amount));
-            setChanged();
-        }
-
-        private void consume(int amount) {
-            if (amount < 0 || amount > stored) {
-                throw new IllegalArgumentException("Invalid terminal energy consumption");
-            }
-            stored -= amount;
-            setChanged();
-        }
-
-        private void set(int value) {
-            stored = value;
-        }
     }
 }
