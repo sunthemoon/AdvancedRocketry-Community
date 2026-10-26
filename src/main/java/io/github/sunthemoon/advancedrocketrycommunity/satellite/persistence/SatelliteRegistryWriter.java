@@ -47,7 +47,7 @@ final class SatelliteRegistryWriter {
     private Path target;
     private Capture flight;
     private RuntimeException lastFailure;
-    private boolean exhaustionReported;
+    private boolean exhaustionReported, failureReported;
 
 
     SatelliteRegistryWriter(SatelliteMissionSavedData data, SatelliteMissionRegistry registry) {
@@ -286,6 +286,22 @@ final class SatelliteRegistryWriter {
                 : Optional.empty(), result != null && result.directoryForceFailed());
         boolean forced = result != null && result.forced();
         tickets.removeIf(ticket -> ticket.answer(capture.sequence(), answer, forced));
+        report(outcome, capture);
+    }
+
+    /** ADR-074 item 12: one ERROR at the first failed or unknown write of a streak, one INFO at the commit ending it. */
+    private void report(Outcome outcome, Capture capture) {
+        if (outcome == Outcome.COMMITTED) {
+            if (failureReported) {
+                failureReported = false;
+                LOGGER.info("ARCE_SATELLITE_REGISTRY_ACKNOWLEDGED sequence={} epoch={} after an unacknowledged write",
+                        capture.sequence(), capture.epoch());
+            }
+        } else if (!failureReported) {
+            failureReported = true;
+            LOGGER.error("ARCE_SATELLITE_REGISTRY_UNACKNOWLEDGED outcome={} sequence={} epoch={} durable={}; retained dirty state",
+                    outcome, capture.sequence(), capture.epoch(), capture.operational() ? registry.saveEpoch() : 0L, lastFailure);
+        }
     }
 
     private Path bind(Path file) {
