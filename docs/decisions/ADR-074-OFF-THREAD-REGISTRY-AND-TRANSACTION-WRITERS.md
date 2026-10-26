@@ -1,15 +1,15 @@
 # ADR-074 - Off-thread checked writers for the satellite registry and the rocket transaction journal
 
 ```yaml
-status: PROPOSED
+status: ACCEPTED
 revision: 2
 date: 2026-10-22
 owner: sunthemoon
-deciders: []
+deciders: [sunthemoon]
 target_version: v1.8.0
 slices: [W129a, W129b, W129c]
 related: [ADR-010, ADR-038, ADR-049, ADR-050, ADR-051, ADR-065]
-supersedes: none
+supersedes: in mechanism only, ADR-049 sections 6 and 7, ADR-050 section 2 and its W119 note, ADR-065's W27c3 note
 ```
 
 This ADR is the follow-up that ADR-050 section 2 requires before an off-thread registry writer. The reasoning, the
@@ -332,4 +332,21 @@ a remedy if item 13 shows capture itself misses the budget.
 
 ## Acceptance
 
-Pending. Root arranges an independent read-only review of this ADR and its design note. Acceptance is the owner's.
+Accepted by the owner (sunthemoon) in the Claude Code Root session on 2026-10-26, answering Root's multiple-choice question with the option "Accept (Recommended)". The question was: "ADR-074 (move the
+save writes for the satellite registry and the rocket transaction journal off the server thread): accept it under
+the W129R review's four conditions?" The acceptance covers revision 2 under the four conditions of the W129R review
+(`D:/GitHub/ARCE-Task-Evidence/root-queue/W129R-review/REVIEW.md`, SHA-256 `3d1a7124…0dc3fa`, APPROVE):
+
+1. This record and the supersession pointers below.
+2. Root registers the new protections and updates R-039 and R-040 before the affected merges. The Q6
+   ground-preflight leaf is queued separately.
+3. B2 and B3a before W129a (both passed under Root decisions R60 and R63, with a re-review APPROVE), and B1 and B3
+   before W129b and W129c, under unchanged budgets. W129b's temporary owner-thread await never reaches production
+   without W129c.
+4. A read-only implementation review of each slice, with real lifecycle and crash tests.
+
+Superseded in mechanism, each with a pointer note: ADR-049 sections 6 and 7 (the synchronous launch and
+decommission barrier), ADR-050 section 2 ("barrier flushes behave as today") and its W119 implementation note (the
+synchronous epoch mechanism; W119's proof rule and its results stay), and ADR-065's W27c3 note ("writes stay
+synchronous"). Each takes effect when the slice that changes it merges. This acceptance approves no Gate and no
+release.

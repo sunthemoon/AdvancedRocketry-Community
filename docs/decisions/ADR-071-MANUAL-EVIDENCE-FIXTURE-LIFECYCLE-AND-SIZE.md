@@ -1,7 +1,7 @@
 # ADR-071 - Manual evidence fixture lifecycle and existing class size
 
 ```yaml
-status: PROPOSED
+status: SUPERSEDED
 date: 2026-10-10
 owner: sunthemoon
 deciders: []
@@ -78,3 +78,10 @@ compliance is inferred. Complete qualification, Main integration and those revie
 limits are recorded in [checkpoint94](../work/v1.8.0-c19-strict-validator/MANUAL-DECOMPOSITION-CHECKPOINT-94.md).
 ADR071 remains PROPOSED; this annotation is not owner acceptance or integration,
 Gate, delivery or release approval.
+
+## Supersession (2026-10-26)
+
+Superseded by the owner in the Claude Code Root session on 2026-10-26, answering Root's multiple-choice question with the option "Approve all three (Recommended)" to the question: "withdraw ADR-068 (the kernel doesn't need
+it), and supersede ADR-070 and ADR-071 (the merged decompositions removed the over-800-line classes they
+would have excused)?" `fix/v1.8.0-manual-scenario-decomposition` (merged) split
+`ManualEvidenceTests` into scenario mixins; on 2026-10-26 the class spans 60 lines, so no size exception is needed.

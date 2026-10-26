@@ -495,3 +495,9 @@ stats, research and quotas, for every kind. For a data package, players see two 
 The F4 matrix pins both. With a blocked registry the terminal and the service both return REGISTRY_BLOCKED
 (W119-review R1, fixed by W119F, merged `1e08b2fe`). This is a development implementation note, not owner
 acceptance or a Gate result.
+
+## Pointer: ADR-074 (accepted 2026-10-26)
+
+The synchronous barrier of sections 6 and 7 is superseded in mechanism by
+[ADR-074](ADR-074-OFF-THREAD-REGISTRY-AND-TRANSACTION-WRITERS.md): launch and decommission become acknowledged
+effects of an off-thread checked write when W129b and W129c merge. The other decisions in sections 6 and 7 stand.

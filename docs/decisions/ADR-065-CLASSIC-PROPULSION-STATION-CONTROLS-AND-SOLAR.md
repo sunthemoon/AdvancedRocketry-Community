@@ -1120,7 +1120,9 @@ This note records mechanics; it changes no decision and accepts no risk. The ris
 
 - **Checked writes.** `ROCKET_TRANSACTIONS` adopts W11b2's checked policy and exact acknowledgement (mutation
   sequence, NC1 root digest, transaction-to-record digests) on a checked-write core now shared with the transfer
-  journal, whose per-attempt results are unchanged. Writes stay synchronous at the journal's existing save cadence.
+  journal, whose per-attempt results are unchanged. Writes stay synchronous at the journal's existing save cadence
+  (superseded in mechanism by ADR-074, accepted 2026-10-26: W129a moves them to an off-thread checked writer, with
+  the results above unchanged).
   A definite failure keeps the old disk proof and dirty RAM; an ambiguous replacement, readback or directory force
   is UNKNOWN until a successful checked write. The acknowledgement is session-local; loading never acknowledges.
 - **B14 for W27d's D0.** A bounded absence query (at most 256 records) refuses a remaining assembly or disassembly

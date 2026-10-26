@@ -1,7 +1,7 @@
 # ADR-068 - Ordinary-player outer operations for classic empty hatches
 
 ```yaml
-status: PROPOSED
+status: WITHDRAWN
 revision: 2
 date: 2026-10-07
 owner: sunthemoon
@@ -162,3 +162,10 @@ v1.9.0, supported-version expansion or target changes. An incompatible leaf
 needs an explicit disable/recovery policy preserving existing IDs and saved
 data, not deletion or a silent fallback. The no-transformation alternative
 remains continued event-only research without activating unproved hatches.
+
+## Withdrawal (2026-10-26)
+
+Withdrawn by the owner in the Claude Code Root session on 2026-10-26, answering Root's multiple-choice question with the option "Approve all three (Recommended)" to the question: "withdraw ADR-068 (the kernel doesn't need
+it), and supersede ADR-070 and ADR-071 (the merged decompositions removed the over-800-line classes they
+would have excused)?" On 2026-10-11 the owner chose to build the machine kernel as the accepted
+ADR-064 describes, with Forge events, so this proposal is not needed.
