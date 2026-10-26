@@ -95,12 +95,15 @@ final class SealedDisassemblyCoordinator {
             public long now() { return server.getTickCount(); }
             public boolean operational() { return data.operational(); }
             public boolean current() { return data.acknowledgedCurrent(); }
-            public CheckedJournalCheckpoint.Outcome checkpoint() {
-                var outcome = data.checkpoint(server);
+            public boolean request() {
+                return data.requestCheckpoint(server) == RocketTransactionSavedData.CheckpointRequest.REQUESTED;
+            }
+            public boolean writePending() { return data.writerBusy(); }
+            public CheckedJournalCheckpoint.Outcome outcome() { return data.writeOutcome(); }
+            public void written(CheckedJournalCheckpoint.Outcome outcome) {
                 if (outcome != CheckedJournalCheckpoint.Outcome.COMMITTED) {
                     work.forEach((id, item) -> diagnostics.hold(id.toString(), item.machine.phase().name(), "JOURNAL_" + outcome));
                 }
-                return outcome;
             }
         });
     }
