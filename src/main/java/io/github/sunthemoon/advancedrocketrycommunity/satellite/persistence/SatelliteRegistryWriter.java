@@ -73,45 +73,35 @@ final class SatelliteRegistryWriter {
         return write(file, policy, force);
     }
 
+    /** The capture of the current RAM; a blocked registry shares its private preserved root by reference. */
+    SatelliteRegistryCapture.Capture capture(long sequence) {
+        return data.operational()
+                ? new SatelliteRegistryCapture.Capture(sequence, 0L, epochToWrite(), registry.sections(), null, null)
+                : new SatelliteRegistryCapture.Capture(sequence, 0L, 0L, null, data.blockedRoot(), null);
+    }
+
     Completion write(Path file, CheckedSavedDataPolicy policy, CheckedSavedDataPolicy.DirectoryForce force) {
         requireOwner();
         if (policy.type() != TYPE) { throw new IllegalArgumentException("Wrong registry write policy"); }
         data.pendingWrite(); // Eligibility is not a registry mutation.
         writeFailure = null;
         long sequence = mutationSequence;
-        boolean[] attempted = {false};
-        CompoundTag candidate = null;
         long epoch = registry.saveEpoch();
         Map<UUID, Identity> identities = Map.of();
         Outcome outcome;
+        boolean directoryForceFailed = false;
         try {
-            candidate = data.save(new CompoundTag());
-            if (data.operational()) {
-                epoch = candidate.getLong("save_epoch");
-                identities = identities();
-            }
-            CompoundTag frozen = candidate;
-            policy.withCommitter((staged, target) -> {
-                attempted[0] = true;
-                policy.committer().commit(staged, target);
-            }).replace(file, () -> frozen);
-            outcome = Outcome.COMMITTED;
+            var capture = capture(sequence);
+            epoch = capture.epoch();
+            var attempt = SatelliteRegistryCapture.write(capture,
+                    new SatelliteRegistryCapture.Attributes(policy, force), file);
+            identities = attempt.payload().identities();
+            directoryForceFailed = attempt.payload().directoryForceFailed();
+            writeFailure = attempt.payload().failure();
+            outcome = Outcome.valueOf(attempt.status().name());
         } catch (RuntimeException failure) {
             writeFailure = failure;
             outcome = Outcome.FAILED;
-            if (attempted[0]) {
-                try {
-                    outcome = policy.read(file).filter(candidate::equals).isPresent() ? Outcome.COMMITTED : Outcome.FAILED;
-                } catch (RuntimeException unreadable) {
-                    failure.addSuppressed(unreadable);
-                    outcome = Outcome.UNKNOWN;
-                }
-            }
-        }
-        boolean directoryForceFailed = false;
-        if (outcome == Outcome.COMMITTED) {
-            try { force.force(file.toAbsolutePath().getParent()); }
-            catch (java.io.IOException | RuntimeException failure) { directoryForceFailed = true; }
         }
         if (outcome == Outcome.UNKNOWN) {
             highestUnknownEpoch = Math.max(highestUnknownEpoch, epoch);

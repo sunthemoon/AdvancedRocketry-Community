@@ -259,6 +259,12 @@ public final class SatelliteMissionSavedData extends SavedData {
                 : Optional.of(preservedBlockedData.copy());
     }
 
+    /** The capture seam only: the private preserved root, set once at load, shared read-only and never exposed. */
+    CompoundTag blockedRoot() { return preservedBlockedData; }
+
+    /** Tests: the capture a write would take now. */
+    SatelliteRegistryCapture.Capture captureForTests() { return writer.capture(writer.sequence()); }
+
     public SatelliteOperationResult launch(
             UUID satelliteId,
             UUID missionId,

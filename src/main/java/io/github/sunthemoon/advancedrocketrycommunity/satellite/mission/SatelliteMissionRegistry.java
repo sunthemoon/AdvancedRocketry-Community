@@ -20,7 +20,8 @@ import net.minecraft.resources.ResourceLocation;
 
 /** In-memory authority for bounded satellite, mission, clock, and research state. */
 public final class SatelliteMissionRegistry {
-    private static final Comparator<UUID> UUID_ORDER = Comparator
+    /** Record order in every encoded section; an off-thread encoder sorts its capture with the same order. */
+    public static final Comparator<UUID> UUID_ORDER = Comparator
             .comparingLong(UUID::getMostSignificantBits)
             .thenComparingLong(UUID::getLeastSignificantBits);
 
@@ -521,6 +522,13 @@ public final class SatelliteMissionRegistry {
 
     public synchronized List<ResearchAccount> accounts() {
         return sorted(accounts);
+    }
+
+    /** ADR-074 item 2: the capture's record references, copied from the live maps on the owner thread. */
+    public synchronized RegistrySections sections() {
+        return new RegistrySections(clock.logicalGameTime(), clock.lastObservedGameTime(), List.copyOf(satellites.values()),
+                List.copyOf(missions.values()), List.copyOf(accounts.values()), List.copyOf(instances.values()),
+                List.copyOf(groundSurveys.records().values()));
     }
 
     public synchronized List<MissionState> pendingDiscoveries() {
