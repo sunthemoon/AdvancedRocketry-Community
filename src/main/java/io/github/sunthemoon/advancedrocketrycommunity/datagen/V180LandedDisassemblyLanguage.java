@@ -12,6 +12,9 @@ public final class V180LandedDisassemblyLanguage {
     public static Map<String, String> entries(boolean chinese) {
         return Map.of("validation.advancedrocketrycommunity.rocket.disassembly_pending", chinese
                 ? "此火箭的拆解请求仍在处理中，请在处理完成后再试。"
-                : "A disassembly request for this rocket is still being processed; try again when it finishes.");
+                : "A disassembly request for this rocket is still being processed; try again when it finishes.",
+                "message.advancedrocketrycommunity.rocket.disassembly_preparing", chinese
+                        ? "正在准备此火箭原发射场的区块。准备完成后，请重新请求拆解并确认燃料处置。"
+                        : "Preparing this rocket's original launch site. Request disassembly again when preparation finishes and confirm fuel disposal again.");
     }
 }

@@ -16,6 +16,15 @@ import org.junit.jupiter.api.Test;
 class V180LandedDisassemblyLanguageTest {
     private static final Path GENERATED = Path.of("src/generated/v1.8/resources/assets/advancedrocketrycommunity_v180/lang");
 
+    @Test void coldPreparationHasItsOwnBilingualFeedback() {
+        String key = "message.advancedrocketrycommunity.rocket.disassembly_preparing";
+        var english = V180LandedDisassemblyLanguage.entries(false).get(key);
+        var chinese = V180LandedDisassemblyLanguage.entries(true).get(key);
+        assertTrue(english != null && !english.isBlank());
+        assertTrue(chinese != null && !chinese.isBlank());
+        assertNotEquals(english, chinese);
+    }
+
     @Test
     void pendingStatusIsGeneratedInBothLanguages() throws Exception {
         String key = RocketValidationCode.DISASSEMBLY_PENDING.translationKey();
