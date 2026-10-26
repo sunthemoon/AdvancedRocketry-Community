@@ -11,6 +11,15 @@ related: [ADR-006, ADR-033, ADR-063]
 supersedes: on acceptance, and for new Moon surface arrivals only, ADR-033's Moon landing exemption (physical admission and landing, lines 75-76) and ADR-063 section 5's Moon landing rule with section 9's y 80 arrival tests
 ```
 
+**Revision 2 (2026-10-26).** This revision answers the independent read-only review
+`D:/GitHub/ARCE-Task-Evidence/root-queue/W165-review/REVIEW.md` (SHA-256
+`b16b3e726bedc18823e5bed0f228e1ac6531940e9a1561934b8c51e45dad3e04`; verdict APPROVE-WITH-CHANGES, findings W165-R1 to
+W165-R8). It describes both failure paths of a recheck (section 3) and completes the list of arrivals that keep y 80
+behaviour (section 4). It states the recheck cost per evaluation, including the governed path (section 5), and the
+terrain refusals (section 7). It adds test cases 11 and 12, sharpens cases 3 and 8 and the native restart case, states
+the dismount consequence, and adds the ADR-033 lines 80-81 pointer note. No decision changes. The finding-by-finding
+disposition is in the [W165 record](../work/v1.8.0-root-queue/records/W165.md).
+
 This ADR is proposed for an independent read-only review and the owner's acceptance. No production or test code
 changes before acceptance. It approves no Gate and accepts no risk. The history of the y 80 floor is in the
 [W156 record](../work/v1.8.0-root-queue/records/W156.md); the implementation plan for W156's resumption is in the
@@ -93,8 +102,18 @@ acknowledgement callback, at an ordinary replacement in `RocketOrdinaryLaunch`, 
 recheck therefore uses the recorded height of the destination's lowest block:
 
 - **Below y 80:** the full recheck for new surfaces, including the support and fluid rule above, as on Mars and Venus.
-  A failed recheck returns the rocket to its recorded source under the existing transfer and fuel policy
-  (`DESTINATION_PAD_BLOCKED`). It never selects another site.
+  A failed recheck returns the rocket to its recorded source through the existing paths, under the existing transfer,
+  fuel and identity policy. It never selects another site.
+  - At the pre-spawn check in `spawnDestination`, the ordinary path calls `failBackToSource` with
+    `DESTINATION_PAD_BLOCKED`.
+  - In the acknowledgement callback of the same step, a failed recheck only drops the live transfer. The record stays
+    at `DESTINATION_SPAWNED` without a destination entity, and recovery resolves it as `KEEP_SOURCE`, because only the
+    source exists.
+  - At the governed boundary, `RocketGovernedSourceDispatcher` requests the return with `DESTINATION_PAD_BLOCKED` both
+    at PREPARED and at the later `DESTINATION_SPAWNED` phase. When the destination step's own boundary read refuses
+    instead, that step holds, and the next visit requests the return if the recheck still fails.
+
+  These are the paths that Mars and Venus already use.
 - **At y 80 or above:** the legacy Moon recheck: build height, world border, chunk bound, inspection budget, air and
   occupancy, with no support check. Every Moon destination recorded under the old rule lies at y 80 or above, so it
   keeps the rule it was selected under.
@@ -121,11 +140,21 @@ support rule of section 1, whatever the candidate's height.
 - **Arrivals that keep y 80 behaviour, exactly:**
   1. Moon destinations recorded before this change (their lowest block is at y 80 or above), through the arrival
      recheck and every recovery path;
-  2. rockets already landed there;
-  3. developer travel.
+  2. new destinations, selected under this ADR's support rule, whose lowest block is at y 80 or above (on the
+     developer platform or on player-built ground): their recheck is the legacy one, without support (section 3);
+  3. rockets already landed there;
+  4. a rocket that landed at y 80 or above before this change and launches afterwards. Its transfer record holds that
+     landed position as its source. A countdown cancel, a `DESTINATION_PAD_BLOCKED` return and every source-side
+     recovery action (`KEEP_SOURCE`, `REMOVE_DESTINATION_KEEP_SOURCE`, `REBUILD_SOURCE`) put it back at that recorded
+     origin, hovering as before, without calling the selector;
+  5. developer travel.
 
-  No new arrival keeps y 80 by rule. A new arrival lands at y 80 only where the highest motion-blocking block in its
-  footprint is at y 79, as on the developer platform.
+  No new arrival is placed at y 80 by rule. A new arrival lands at y 80 only where the highest motion-blocking block
+  in its footprint is at y 79, as on the developer platform.
+
+  Reservations compare whole regions, height included. A new arrival can therefore be selected below an old-rule
+  destination that is still in flight at the same candidate, not only below a landed rocket, when the two regions do
+  not overlap. The in-flight rocket then lands at its recorded origin, above the newer one.
 
 ### 5. Limits
 
@@ -135,10 +164,25 @@ reservations; the pad and footprint exclusions; the entity discovery budget; the
 placement, seating and the dismount position; and W83b's arrival-readiness wait for the entity sections of the
 destination columns, which depends on columns, not height.
 
-The only added work is that the Moon now runs ADR-033's existing support phase. That is at most 2,048 reads of the
-block below each lowest-layer block per candidate at selection, and the same once per recheck of a destination below
-y 80. The blocks read lie in the candidate's own columns, in chunks that the candidate has already loaded, so there are
-no new chunk loads, candidates or constants. Mars and Venus have had this envelope since ADR-033. The rule needs no
+The only added work is that the Moon now runs ADR-033's existing support phase:
+
+- **Selection.** At most 2,048 reads of the block below each lowest-layer block per candidate, so at most
+  8 × 2,048 = 16,384 reads per selection, beside the existing column and occupied-block reads.
+- **Each recheck of a destination below y 80.** At most 2,048 reads per evaluation of `available` or
+  `availableLoaded`. That is no more than the air and block-entity inspection the same evaluation already makes (at
+  most 2,048 blocks), so the support phase at most doubles the block reads of each such evaluation.
+  - The ordinary path evaluates the recheck twice per arrival: before the spawn and in the acknowledgement. It
+    evaluates it once more at an ordinary replacement.
+  - The governed dispatcher visits at most 8 records per tick (`VISITS_PER_TICK`). While a record is due, or at
+    `DESTINATION_SPAWNED` with a live source, each visit evaluates the recheck in its own check before the
+    destination step, and again wherever the destination step reads its boundary. One visit can therefore evaluate it
+    more than once.
+  - The number and placement of these evaluations are set by existing code, and this ADR changes neither. Per tick,
+    the governed path's added reads are at most equal to the reads its Moon rechecks already make.
+- **Chunks.** The blocks read lie in the candidate's own columns, in chunks that the candidate has already loaded; the
+  governed recheck reads loaded chunks only. There are no new chunk loads, candidates or constants.
+
+Mars and Venus run the same evaluations with the same support phase, and have done since ADR-033. The rule needs no
 other inspection.
 
 ### 6. Saved data and protocol
@@ -152,8 +196,14 @@ detail.
 
 - New Moon landings stand on the regolith, and passengers step off onto the ground. Over a crater the rocket rests on
   its highest footprint column and may overhang the bowl.
-- A Moon launch is refused with the existing "landing pad unavailable" answer when no fixed pad has ground under the
-  rocket. Only heavy digging or building can cause that; before, the rocket would have hung at y 80.
+- A Moon pad is refused when the rocket's bottom layer does not reach the highest ground under its footprint. This
+  happens on natural slopes, at crater rims and in crater bowls, not only after digging or building. An example is a
+  rocket whose engines sit under a wider stack of tanks, when the highest column lies only under the tanks. It is the
+  ADR-033 behaviour that Mars and Venus already have, but the Moon has never refused a pad for terrain before.
+- A refused pad falls through to the next fixed pad, which loads that pad's chunks, within the unchanged bound of eight
+  candidates and 16 chunks each. Over rough ground, such a rocket can be refused at all eight pads. The launch then
+  receives the existing "landing pad unavailable" answer, as it does when digging leaves no ground under any pad.
+  Before this change, the rocket would have hung at y 80.
 - Players who built landing platforms at y 79 keep receiving arrivals at y 80 on them. A hangar roof over a pad is
   landed on, not under.
 - In chunks explored before the C15b terrain (flat end stone with its surface at y 4), new arrivals land at y 4.
@@ -178,8 +228,10 @@ GameTests, each shaping the pad areas it uses with `MoonPadArea` first and resto
    that column's height plus one and overhangs the others.
 2. **Empty first pad.** Candidate 0's footprint columns emptied down to the build minimum: the rocket lands on
    candidate 1, supported.
-3. **No ground at any pad.** Every candidate's footprint emptied: `LANDING_PAD_UNAVAILABLE`, no journal entry, unchanged
-   fuel, and the rocket FUELED on its launch site.
+3. **No ground at any pad.** Every candidate's footprint emptied: `LANDING_PAD_UNAVAILABLE` with no translated detail
+   key; the rocket's flight data equal to the value read before the request (so its fuel is unchanged and it stays
+   FUELED on its launch site); no journal entry for the request; and `RocketEscrowGate.idle(rocket)`. These are the
+   checks that `EscrowGovernedMarginGameTests` already makes for a refused launch.
 4. **Developer platform.** The platform prepared on the shaped pad: the rocket lands at y 80 on the platform.
 5. **Occupied pad.** A rocket parked on the ground at candidate 0: the new arrival lands at candidate 1.
 6. **Changed support after selection.** The recorded destination's support removed: the rocket returns to its source
@@ -188,10 +240,24 @@ GameTests, each shaping the pad areas it uses with `MoonPadArea` first and resto
 7. **Passengers.** A seated passenger lands on flat shaped ground, dismounts and stands on the ground within a bounded
    number of ticks, with no damage.
 8. **Recorded y 80 destination.** A PREPARED record whose destination's lowest block is at y 80 over lower ground
-   lands at its recorded origin under the legacy recheck, with exact fuel and one logical rocket.
+   lands at its recorded origin under the legacy recheck, with exact fuel and one logical rocket. The flight is
+   ordinary (not governed). The record is built with `RocketTransferRecord.create` from a destination snapshot
+   relocated to that origin, so that the snapshot, the arrival flight data's origin and the checksum agree. A
+   governed record cannot be replaced this way, because its escrow entry binds the record's checksum.
 9. **Recovery identity.** The recovery rebuild of a recorded Moon destination at y 80, and of one below y 80, places
    each at its recorded origin.
 10. **Unchanged paths.** The existing station-arrival and Earth-arrival cases rerun unchanged.
+11. **Highest column under an upper part.** A rocket whose lowest layer does not cover its whole footprint (for
+    example, a tank one layer above the engine, over a column that no lowest-layer block covers). At candidate 0, the
+    column under that upper block is the highest. Candidate 0 is refused, and the rocket lands, supported, at
+    candidate 1. The selection is also asserted directly on the selector with a hand-built snapshot, so the case does
+    not depend on the structure scan accepting that shape.
+12. **Governed threshold.** Two governed flights, each from a real launch, because a governed record cannot be
+    replaced. In the first, the destination is below y 80 and its support is removed during the flight: the governed
+    boundary refuses and returns the rocket to its source with `DESTINATION_PAD_BLOCKED`, its original fuel and one
+    logical rocket. In the second, the destination is on the developer platform at y 80 and the platform is removed
+    during the flight: the governed boundary applies the legacy recheck, and the rocket lands at its recorded origin
+    without support, as the first residual under Consequences describes.
 
 Unit tests cover the rule without a running server: the surface below, at and above y 80; all columns empty; mixed
 columns; the support decision (no sturdy top, fluid below, one sturdy top with overhang); the recheck threshold at
@@ -200,9 +266,13 @@ y 79, 80 and 81; and unchanged Earth, Space and Mars decisions.
 A native restart case covers recovery identities across an upgrade. The jar from before this change stops one Moon
 flight at PREPARED, with its destination at y 80, and lands another rocket at y 80. The new jar then restarts the same
 world. The in-flight rocket lands at its recorded y 80 origin with exact fuel and one entity; the landed rocket keeps
-its position; a new launch lands on the ground. A second restart leaves all three unchanged.
+its position; a new launch lands on the ground, and its region overlaps neither the landed rocket's region nor the
+in-flight rocket's recorded destination region. A second restart leaves all three unchanged.
 
-Every other GameTest that flies to the Moon runs unchanged in one complete run, with the unchanged log checker.
+Every other GameTest that flies to the Moon runs in one complete run with the unchanged log checker, and no assertion
+is weakened. A test whose result depends on what earlier tests left in the pad area shapes that area first. The W165
+record lists those tests, the fixtures that call the selector directly, the synthetic records below y 80, and the
+native probes and scripts that the GameTest run does not cover.
 
 ## Supersession pointer notes on acceptance
 
@@ -213,6 +283,9 @@ Root adds these notes when the owner accepts this ADR. The decisions they point 
 - **ADR-033, lines 75-76** ("Moon keeps its legacy minimum landing Y=80 and does not acquire this new ground-support
   requirement"): superseded for new Moon arrivals by ADR-075, which applies the heightmap and support rule above to the
   Moon. Destinations recorded at y 80 or above keep the legacy recheck.
+- **ADR-033, lines 80-81** ("Earth/Moon/Station pad compatibility and captured recovery identities are unchanged"):
+  the Moon pads' horizontal positions and the captured recovery identities stay unchanged; the height of new Moon
+  arrivals follows ADR-075.
 - **ADR-063 section 5, lines 249-254** (Moon terrain "bounded below the landing height"): the terrain bound stays and
   now protects the developer platform; Moon landings follow the heightmap (ADR-075).
 - **ADR-063 section 5, lines 255-262** ("Moon landing unchanged (ADR-033)"): superseded for new arrivals by ADR-075.
@@ -227,6 +300,10 @@ Root adds these notes when the owner accepts this ADR. The decisions they point 
 
 ADR-006 gets no note: its server-owned pad list, authority boundary, recovery matrix and landing checks are unchanged.
 ADR-063's alternative A2 stays as a record of the reasoning at the time.
+
+The C15b verification table (`docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md`, line 121) names the two retired test
+methods. It is a historical record and is not edited. The table under "Changed meaning" above maps the old names to
+the new ones, and W156's record repeats that mapping for anyone who follows the C15b evidence.
 
 ## Alternatives
 
@@ -267,18 +344,24 @@ More inspection per column, and a different rule from ADR-033's. Left to a futur
 
 - Positive: Moon landings rest on the ground, passengers no longer fall, and the Moon uses the same landing rule as
   Mars and Venus.
-- Residual: a new destination at y 80 or above (only on player-built ground) whose support is removed during the
-  roughly 160-tick flight still lands unsupported, as every Moon arrival does today.
-- Residual: the dismount position is a fixed offset from the rocket (1.5 blocks along x, at the rocket's height) and
-  is not collision-aware. Over a slope the dismount column can be higher than the rocket's base. Mars and Venus
-  landings have had the same behaviour since ADR-033. Passenger placement is outside this decision.
-- Residual: a new arrival can land below a rocket left hovering at y 80 when their regions do not overlap.
+- Residual: a new destination at y 80 or above (only on player-built ground or the developer platform) whose support
+  is removed during the roughly 160-tick flight still lands unsupported, as every Moon arrival does today.
+- Residual, for the owner to accept explicitly: the dismount position is a fixed offset from the rocket (1.5 blocks
+  along x, at the rocket's base height) with no collision check. Under the old rule's open sky it always lay in air.
+  On the heightmap, over a rising slope, the dismount column can be higher than the rocket's base: the passenger can
+  then be placed inside the higher block and take suffocation damage until they move out. Over a lower column, the
+  passenger drops by as much as the ground falls away there. Mars and Venus landings have had the same behaviour since
+  ADR-033. Passenger placement is outside this decision; a collision-aware dismount stays under "Revisit when", and
+  test case 7 stays on flat ground.
+- Residual: a new arrival can land below a rocket left hovering at y 80, or below a recorded y 80 destination that is
+  still in flight, when their regions do not overlap.
 - Residual: developer travel builds its platform at y 79 regardless of rockets. A rocket landed at the first pad and
   tall enough to reach y 79 (at least 35 blocks over generated terrain, whose highest crater rims reach y 44) could then have
   platform blocks inside its structure region. Developer travel is an operator command.
 - Tests: GameTests that fly to the Moon now land at the terrain height. Anything left in the pad columns, such as the
   developer platform from `BootstrapGameTests` or blocks of a disassembled rocket, changes that height. A test that
-  needs a specific height shapes the pad area first.
+  needs a specific height shapes the pad area first, without weakening any assertion. Synthetic Moon records below
+  y 80 get explicit support (W165 record).
 
 ## Revisit when
 
