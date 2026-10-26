@@ -53,6 +53,13 @@ class SealedJournalEntryTest {
     private void save(RocketTransactionSavedData data) {
         data.save(directory.resolve(io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType
                 .ROCKET_TRANSACTIONS.fileName()).toFile());
+        // W129aM transition (ADR-074 item 9): save(File) only requests the write, so this detached journal pumps the
+        // publication on its owner thread before the caller's next assertion, as W129a's autosave case does.
+        long deadline = System.nanoTime() + java.util.concurrent.TimeUnit.SECONDS.toNanos(30);
+        while (data.writerBusy()) {
+            assertTrue(System.nanoTime() < deadline, "The requested journal write never published");
+            data.pollWriter(); java.util.concurrent.locks.LockSupport.parkNanos(1_000_000);
+        }
     }
     private static RocketPersistedTransaction entry() {
         var snapshot = RocketStructureSnapshot.create(UUID.randomUUID(), ResourceLocation.tryParse("minecraft:overworld"),
