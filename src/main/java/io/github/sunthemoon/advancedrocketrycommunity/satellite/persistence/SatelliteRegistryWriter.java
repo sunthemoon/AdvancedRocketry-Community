@@ -29,6 +29,8 @@ import net.minecraft.server.MinecraftServer;
 final class SatelliteRegistryWriter {
     static final String LABEL = "satellite_registry", THREAD = "ARCE-satellite-registry";
     static final String EPOCH_CAPACITY_EXHAUSTED = "EPOCH_CAPACITY_EXHAUSTED";
+    /** Outstanding checkpoint requests (bay D3); a further request is refused, never queued. */
+    static final int MAX_CHECKPOINTS = 256;
     private static final ManagedSavedDataType TYPE = ManagedSavedDataType.SATELLITE_MISSIONS;
     private static final org.slf4j.Logger LOGGER = com.mojang.logging.LogUtils.getLogger();
 
@@ -37,7 +39,7 @@ final class SatelliteRegistryWriter {
     private final long createdNanos = System.nanoTime();
     private final SatelliteMissionSavedData data;
     private final SatelliteMissionRegistry registry;
-    private final List<Ticket> tickets = new ArrayList<>();
+    private final List<Checkpoint> tickets = new ArrayList<>();
     private long mutationSequence, completedWrites, lastWriterNanos, lastWriterCpuNanos;
     private Acknowledgement acknowledged;
     private CheckedSavedDataPolicy policy = CheckedSavedDataPolicy.atomic(TYPE);
@@ -47,13 +49,6 @@ final class SatelliteRegistryWriter {
     private RuntimeException lastFailure;
     private boolean exhaustionReported;
 
-    /** One checkpoint request: answered by the first published completion whose capture covers sequence m. */
-    private static final class Ticket {
-        private final long sequence;
-        private Completion answer;
-
-        private Ticket(long sequence) { this.sequence = sequence; }
-    }
 
     SatelliteRegistryWriter(SatelliteMissionSavedData data, SatelliteMissionRegistry registry) {
         this.data = data; this.registry = registry;
@@ -73,6 +68,34 @@ final class SatelliteRegistryWriter {
     Watch watch(UUID satellite) {
         requireOwner();
         return new Watch(session, mutationSequence, Identity.of(data.satellite(satellite).orElseThrow()));
+    }
+
+    /** A removal token at the current sequence, for a change that leaves no identity to watch. */
+    Token token() { requireOwner(); return new Token(session, mutationSequence); }
+    boolean covers(Token token) { requireOwner(); return acknowledged != null && acknowledged.covers(token); }
+    boolean proves(Watch watch) { requireOwner(); return acknowledged != null && acknowledged.proves(watch); }
+
+    /**
+     * ADR-074 item 6: the checkpoint as a request that asks for the directory force and returns at once. The fast path
+     * stays: a clean registry whose acknowledgement proves every watch is answered COMMITTED without writing.
+     */
+    Checkpoint requestCheckpoint(Path file, List<Watch> watches, CheckedSavedDataPolicy.DirectoryForce force) {
+        requireOwner();
+        if (proved(watches)) { return Checkpoint.answered(mutationSequence, new Completion(Outcome.COMMITTED, Optional.of(acknowledged), false)); }
+        // m is the newest watched change; an empty request covers the current sequence.
+        long m = watches.stream().mapToLong(Watch::sequence).max().orElse(mutationSequence);
+        var ticket = new Checkpoint(m, true);
+        if (tickets.size() >= MAX_CHECKPOINTS
+                || !request(file, new Attributes(policy, java.util.Objects.requireNonNull(force, "force")))) {
+            ticket.discard();
+            return ticket;
+        }
+        tickets.add(ticket);
+        return ticket;
+    }
+
+    private boolean proved(List<Watch> watches) {
+        return data.operational() && !data.isDirty() && acknowledged != null && watches.stream().allMatch(acknowledged::proves);
     }
 
     /** A clean decoded current root is a disk observation in this session; restored roots need a new write. */
@@ -135,9 +158,7 @@ final class SatelliteRegistryWriter {
                           CheckedSavedDataPolicy.DirectoryForce force) {
         requireOwner();
         var attributes = new Attributes(policy, force);
-        if (data.operational() && !data.isDirty() && acknowledged != null && watches.stream().allMatch(acknowledged::proves)) {
-            return new Completion(Outcome.COMMITTED, Optional.of(acknowledged), false);
-        }
+        if (proved(watches)) { return new Completion(Outcome.COMMITTED, Optional.of(acknowledged), false); }
         return awaited(file, attributes);
     }
 
@@ -158,13 +179,19 @@ final class SatelliteRegistryWriter {
     void latch() {
         requireOwner();
         if (writer != null) { writer.latchShutdown(); }
+        discardTickets();
+    }
+
+    /** Waiting checkpoint requests are discarded without an answer; the stop path executes no effect. */
+    private void discardTickets() {
+        tickets.forEach(Checkpoint::discard);
         tickets.clear();
     }
 
     /** Overworld unload, before storage closes: resume the same drain (or start a skipped one), then always join. */
     void close() {
         requireOwner();
-        tickets.clear();
+        discardTickets();
         if (writer == null) {
             if (!data.isDirty() || data.server() == null && target == null) { return; }
             writer(bind(target != null ? target : SatelliteMissionSavedData.file(data.server())));
@@ -175,7 +202,7 @@ final class SatelliteRegistryWriter {
     /** {@code ServerStoppedEvent} and exceptional cleanup: join without publishing; it never reports success. */
     void abort() {
         requireOwner();
-        tickets.clear();
+        discardTickets();
         if (writer != null) { writer.abort(); }
     }
 
@@ -197,11 +224,11 @@ final class SatelliteRegistryWriter {
 
     /** Request, await, and answer with the first published completion that covers the request's sequence. */
     private Completion awaited(Path file, Attributes attributes) {
-        var ticket = new Ticket(mutationSequence);
+        var ticket = new Checkpoint(mutationSequence, attributes.force() != null);
         tickets.add(ticket);
         try {
             if (request(file, attributes)) { await(); }
-            return ticket.answer != null ? ticket.answer : new Completion(Outcome.FAILED, Optional.empty(), false);
+            return ticket.answer().orElseGet(() -> new Completion(Outcome.FAILED, Optional.empty(), false));
         } finally {
             tickets.remove(ticket);
         }
@@ -209,7 +236,7 @@ final class SatelliteRegistryWriter {
 
     private void stopSave(Path file) {
         Path normalized = bind(file);
-        tickets.clear();
+        discardTickets();
         if (writer == null && !data.isDirty()) { return; }
         writer(normalized).drain(new Attributes(policy, null), System::nanoTime, TimeUnit.NANOSECONDS::sleep);
     }
@@ -257,9 +284,8 @@ final class SatelliteRegistryWriter {
         }
         var answer = new Completion(outcome, outcome == Outcome.COMMITTED ? Optional.ofNullable(acknowledged)
                 : Optional.empty(), result != null && result.directoryForceFailed());
-        for (var ticket : tickets) {
-            if (ticket.answer == null && ticket.sequence <= capture.sequence()) { ticket.answer = answer; }
-        }
+        boolean forced = result != null && result.forced();
+        tickets.removeIf(ticket -> ticket.answer(capture.sequence(), answer, forced));
     }
 
     private Path bind(Path file) {

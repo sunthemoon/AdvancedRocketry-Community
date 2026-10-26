@@ -162,10 +162,21 @@ public final class SatelliteMissionSavedData extends SavedData {
     public void close() { writer.close(); }
     public void abort() { writer.abort(); }
 
-    public SatelliteRegistryProof.Completion checkpoint(MinecraftServer server, List<SatelliteRegistryProof.Watch> watches) {
-        if (!server.isSameThread()) { throw new IllegalStateException("Registry checkpoint requires the server thread"); }
-        return checkpoint(file(server), watches, writer.policy(), CheckedSavedDataPolicy.DirectoryForce.PLATFORM);
+    /** ADR-074 item 6: the directory-forcing checkpoint as a request; its answer is published on a later tick. */
+    public SatelliteRegistryProof.Checkpoint requestCheckpoint(MinecraftServer server, List<SatelliteRegistryProof.Watch> watches) {
+        if (ownerServer != server || !server.isSameThread()) {
+            throw new IllegalStateException("Registry checkpoint requires its owning server thread");
+        }
+        return writer.requestCheckpoint(file(server), List.copyOf(watches), CheckedSavedDataPolicy.DirectoryForce.PLATFORM);
     }
+    SatelliteRegistryProof.Checkpoint requestCheckpoint(java.nio.file.Path file, List<SatelliteRegistryProof.Watch> watches,
+            CheckedSavedDataPolicy.DirectoryForce force) {
+        return writer.requestCheckpoint(file, List.copyOf(watches), force);
+    }
+    /** A removal token at the current sequence (decommission, data actions), covered by a later commit. */
+    public SatelliteRegistryProof.Token token() { return writer.token(); }
+    public boolean covers(SatelliteRegistryProof.Token token) { return writer.covers(token); }
+    public boolean proves(SatelliteRegistryProof.Watch watch) { return writer.proves(watch); }
 
     SatelliteRegistryProof.Completion checkpoint(java.nio.file.Path file, List<SatelliteRegistryProof.Watch> watches,
             CheckedSavedDataPolicy policy, CheckedSavedDataPolicy.DirectoryForce force) {

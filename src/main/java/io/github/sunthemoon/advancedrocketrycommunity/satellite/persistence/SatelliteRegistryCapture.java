@@ -70,8 +70,11 @@ final class SatelliteRegistryCapture {
         boolean operational() { return blocked == null; }
     }
 
-    /** The identities that a committed capture acknowledges, built on the IO side, and the directory force's result. */
-    record Result(Map<UUID, SatelliteRegistryProof.Identity> identities, boolean directoryForceFailed,
+    /**
+     * The identities that a committed capture acknowledges, built on the IO side, whether the attempt was asked to
+     * force the directory and whether that force failed.
+     */
+    record Result(Map<UUID, SatelliteRegistryProof.Identity> identities, boolean forced, boolean directoryForceFailed,
                   RuntimeException failure) { }
 
     /** Byte-identical to {@code save(CompoundTag)} at the captured state; a root over 16 MiB is refused here. */
@@ -95,14 +98,15 @@ final class SatelliteRegistryCapture {
      * UNKNOWN. A failed directory force is reported and leaves COMMITTED.
      */
     static CheckedRootWriter.Attempt<Result> write(Capture capture, Attributes attributes, Path file) {
-        if (capture.cut() != null) { capture.cut().run(); }
         Map<UUID, SatelliteRegistryProof.Identity> identities = identities(capture);
+        boolean forced = attributes.force() != null;
         CompoundTag candidate;
         try {
+            if (capture.cut() != null) { capture.cut().run(); }
             candidate = encode(capture);
         } catch (RuntimeException beforeReplacement) {
             return new CheckedRootWriter.Attempt<>(CheckedRootWriter.Status.FAILED,
-                    new Result(identities, false, beforeReplacement));
+                    new Result(identities, forced, false, beforeReplacement));
         }
         CheckedSavedDataPolicy policy = attributes.policy();
         boolean[] attempted = {false};
@@ -132,7 +136,7 @@ final class SatelliteRegistryCapture {
             try { attributes.force().force(file.toAbsolutePath().getParent()); }
             catch (IOException | RuntimeException forceFailure) { forceFailed = true; }
         }
-        return new CheckedRootWriter.Attempt<>(status, new Result(identities, forceFailed, failure));
+        return new CheckedRootWriter.Attempt<>(status, new Result(identities, forced, forceFailed, failure));
     }
 
     private static Map<UUID, SatelliteRegistryProof.Identity> identities(Capture capture) {
