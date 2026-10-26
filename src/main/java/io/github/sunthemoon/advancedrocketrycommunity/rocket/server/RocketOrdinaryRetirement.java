@@ -207,7 +207,16 @@ final class RocketOrdinaryRetirement {
     boolean attemptRoom() { return activeAttempts() + sealedAttempts.getAsInt() < MAX_ATTEMPTS; }
     /** Fail-back arrivals and nudges must win admission before reserving and changing the source (N2). */
     Held holdFailBack(RocketTransferSavedData journal, UUID logical) {
-        return attemptRoom() && proofTurns.ordinaryReservationRoom(logical) ? hold(journal, logical) : new Held(null);
+        if (!attemptRoom()) {
+            if (sealedAttempts.getAsInt() > 0 && !pending(logical) && pendingRoom(logical) && journal.actionable(logical)) {
+                proofTurns.reservationRefused();
+            }
+            return new Held(null);
+        }
+        if (!proofTurns.ordinaryReservationRoom(logical)) { return new Held(null); }
+        var held = hold(journal, logical);
+        if (held.token() != null) { proofTurns.reservationAdmitted(); }
+        return held;
     }
     /** Recovery or reconnect may nudge an existing fail-back and renew its creation-tick token too. */
     Held holdReturn(RocketTransferSavedData journal, UUID logical) {
@@ -294,6 +303,7 @@ final class RocketOrdinaryRetirement {
     }
 
     void tick() {
+        proofTurns.tick();
         if (pending.isEmpty()) { return; }
         for (var entry : List.copyOf(pending.values())) {
             if (pending.get(entry.logical()) != entry || entry.state == State.REMOVING) { continue; }
@@ -386,7 +396,7 @@ final class RocketOrdinaryRetirement {
             fail(entry, "BUSY", now, 1, false); return;
         }
         // W98-R5: an attempt starts only when its first capture can run now, so no reservation waits for capture budget.
-        if (supported && !port.captureAvailable(entry.census.get(0), now)) { fail(entry, "BUSY", now, 1, false); return; }
+        if (supported && !port.captureAvailable(entry.census.get(0), now)) { captureBusy(entry, now); return; }
         // The destination scan may discard obsolete entities: reserve before that mutation, including on retries.
         if (entry.site.destination() && entry.token == null) {
             entry.token = entry.journal.reserve(entry.logical()).orElse(null);
@@ -400,10 +410,9 @@ final class RocketOrdinaryRetirement {
             entry.token = entry.journal.reserve(entry.logical()).orElse(null);
             if (entry.token == null) { fail(entry, "BUSY", now, 1, false); return; }
         }
-        if (!supported) { removeUnproved(entry); return; }
+        if (!supported) { proofTurns.ordinaryStarted(entry.logical()); removeUnproved(entry); return; }
         if (!entry.site.destination()) { port.keepLoaded(record, entry.census); }
         entry.state = State.PROVING; entry.attempt = ++attemptIds; entry.attempts++;
-        proofTurns.ordinaryStarted(entry.logical());
         entry.started = now; entry.frozen = frozen; entry.cursor = 0; entry.sink = port.sink();
         prove(entry, now);
     }
@@ -429,7 +438,7 @@ final class RocketOrdinaryRetirement {
             }
             if (!entry.port.captureAvailable(slot, now)) {
                 // W98-R5: before its first capture an attempt releases its reservation and waits; later slots keep it.
-                if (entry.cursor == 0) { fail(entry, "BUSY", now, 1, false); } else { wake(entry); }
+                if (entry.cursor == 0) { captureBusy(entry, now); } else { wake(entry); }
                 return;
             }
             int attempt = entry.attempt;
@@ -439,6 +448,7 @@ final class RocketOrdinaryRetirement {
             if (entry.port.capture(slot,
                     root -> own ? RocketRetirementProof.survivorSlot(root, logical, frozen) : RocketRetirementProof.absentSlot(root, logical, survivor),
                     now, entry.sink, result -> proved(entry, attempt, slot, result))) {
+                if (own) { proofTurns.ordinaryStarted(entry.logical()); }
                 entry.cursor++;
             }
             return;
@@ -542,15 +552,21 @@ final class RocketOrdinaryRetirement {
 
     private void waiting(Pending entry, String reason, long now) { fail(entry, reason, now, POLL_TICKS, false); }
 
+    private void captureBusy(Pending entry, long now) { fail(entry, "BUSY", now, 1, false, true); }
+
     /**
      * R1: any failure or wait releases the reservation and the proofs; T stays as the per-rocket interlock. A fail-back
      * keeps its own reservation until the next tick, so its request reports JOURNAL_PENDING and completes only once.
      */
     private void fail(Pending entry, String reason, long now, int delay, boolean fault) {
+        fail(entry, reason, now, delay, fault, false);
+    }
+
+    private void fail(Pending entry, String reason, long now, int delay, boolean fault, boolean captureBusy) {
         if (!reason.equals("BUSY")) { proofTurns.withdraw(entry.logical()); }
         entry.releaseProofs();
         if (entry.site != Site.FAIL_BACK || entry.created != now) { entry.releaseToken(); }
-        else if (entry.token != null) { proofTurns.ordinaryReservationHeld(); }
+        else if (entry.token != null && !captureBusy) { proofTurns.ordinaryReservationHeld(); }
         entry.state = State.WAITING;
         entry.notBefore = entry.site.destination() ? Math.max(entry.notBefore, now + delay) : now + delay;
         if (delay == 1 && !entry.site.destination()) { wake(entry); }
