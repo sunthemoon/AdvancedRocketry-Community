@@ -67,7 +67,7 @@ def request(site, process, dimension, entity, fuel, evidence):
 
 def command_for(site, args, mode, cut, restart):
     command = predecessor.command_for(args, mode, cut, restart)
-    if not restart and site == "I6a": command.insert(1, "-Darce.releaseTest.firstEventCut=FM12A")
+    if not restart and site == "I6a": command.insert(1, "-Darce.releaseTest.firstEventCut=FM12a")
     return command
 
 
