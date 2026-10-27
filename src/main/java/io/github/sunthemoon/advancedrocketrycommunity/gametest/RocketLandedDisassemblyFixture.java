@@ -126,6 +126,7 @@ final class RocketLandedDisassemblyFixture {
         final ServerLevel moon;
         final UUID owner = UUID.randomUUID();
         RocketTransferRecord record;
+        MoonPadArea.Changes ground;
         RocketEntity rocket;
         RocketTransferRecord landed;
         RocketLandedDisassemblyGameTestSupport support;
@@ -152,6 +153,9 @@ final class RocketLandedDisassemblyFixture {
             var destination = snapshot.relocated(UUID.randomUUID(), moon.dimension().location(), destinationOrigin,
                     earth.getGameTime());
             clearSnapshotBlocks(moon, destination);
+            // ADR-075: a Moon destination below y 80 is rechecked for support, so it gets ground of its own.
+            ground = new MoonPadArea.Changes(moon);
+            ground.support(destination);
             var fuel = RocketFuelState.empty(snapshot.propulsion().orElseThrow()).withFluidBank(false,
                     ModIdentity.id("rocket_fuel"), null, 3_000);
             UUID logical = UUID.randomUUID();
@@ -309,6 +313,7 @@ final class RocketLandedDisassemblyFixture {
         void close() {
             if (rocket != null && !rocket.isRemoved()) { rocket.discard(); }
             clearSnapshotBlocks(moon, record.destinationSnapshot());
+            ground.restore();
             clearSnapshotBlocks(earth, record.sourceSnapshot());
             if (detached != null) {
                 detached.stop();

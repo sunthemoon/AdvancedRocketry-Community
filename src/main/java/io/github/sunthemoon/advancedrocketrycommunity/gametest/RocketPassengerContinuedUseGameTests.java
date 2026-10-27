@@ -211,7 +211,7 @@ public final class RocketPassengerContinuedUseGameTests {
                 RocketFlightState.LANDED, 270, () -> {
             var journal = RocketTransferSavedData.get(earth.getServer());
             var record = journal.find(transfer).orElseThrow();
-            var rocket = (RocketEntity) moon.getEntity(record.destinationEntityId().orElseThrow());
+            var rocket = (RocketEntity) moon.getEntity(RocketFlightGameTestFixtures.landedDestinationId(helper, record));
             try {
                 helper.assertTrue(rocket != null && rocket.flightData().orElseThrow().state() == RocketFlightState.LANDED,
                         "Fixture did not land");

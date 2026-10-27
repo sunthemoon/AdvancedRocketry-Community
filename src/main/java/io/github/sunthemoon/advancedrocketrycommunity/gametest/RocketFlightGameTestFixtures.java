@@ -6,6 +6,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.RocketLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightState;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.RocketBlockEntityAdapters;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.ServerLevelRocketScanWorld;
@@ -14,6 +15,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPositio
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.scan.RocketScanResult;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.scan.RocketStructureScanTask;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketAssemblyTransaction;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketOperationLedger;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRegion;
@@ -22,10 +24,13 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketT
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionResult;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketWorldBlock;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.UUID;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
@@ -38,6 +43,8 @@ import net.minecraft.world.level.block.Blocks;
 /** Shared world setup and assertion helpers for rocket-flight GameTests. */
 final class RocketFlightGameTestFixtures {
     static final int ASSEMBLY_WAIT_TICKS = 20;
+    /** W166: the usual paced bound for the primed pads' entity sections, which load from disk within a few ticks. */
+    static final int PAD_LOAD_TICKS = 100;
     private static final int PAD_SPACING = 64;
     private static final int[][] PAD_OFFSETS = {
             {0, 0},
@@ -74,6 +81,13 @@ final class RocketFlightGameTestFixtures {
 
     static void assembleFueledRocket(GameTestHelper helper, GameTestTickDriver driver, BlockPos origin, UUID owner,
             Runnable cleanupOnFailure, long deadline, Consumer<RocketEntity> ready) {
+        assembleShapedFueledRocket(helper, driver, origin, owner, at -> placeDefaultRocket(helper, at),
+                cleanupOnFailure, deadline, ready);
+    }
+
+    /** As {@link #assembleFueledRocket}, with {@code shape} placing the rocket's blocks around {@code origin}. */
+    static void assembleShapedFueledRocket(GameTestHelper helper, GameTestTickDriver driver, BlockPos origin, UUID owner,
+            Consumer<BlockPos> shape, Runnable cleanupOnFailure, long deadline, Consumer<RocketEntity> ready) {
         ServerLevel level = helper.getLevel();
         ChunkPos chunk = new ChunkPos(helper.absolutePos(origin));
         // One shared budget for origin readiness and visibility, inside even the 40-tick callers.
@@ -81,7 +95,7 @@ final class RocketFlightGameTestFixtures {
             UUID entityId;
             try {
                 helper.assertTrue(level.areEntitiesLoaded(chunk.toLong()), "Flight test origin entities did not load");
-                entityId = assembleRocket(helper, origin, owner);
+                entityId = assembleRocket(helper, origin, owner, shape);
             } catch (RuntimeException | Error failure) {
                 cleanupOnFailure.run();
                 throw failure;
@@ -103,9 +117,13 @@ final class RocketFlightGameTestFixtures {
         }));
     }
 
-    private static UUID assembleRocket(GameTestHelper helper, BlockPos origin, UUID owner) {
+    private static void placeDefaultRocket(GameTestHelper helper, BlockPos origin) {
         placeLegalRocket(helper, origin);
         helper.setBlock(origin.west(), ModBlocks.ROCKET_FUEL_TANK.get());
+    }
+
+    private static UUID assembleRocket(GameTestHelper helper, BlockPos origin, UUID owner, Consumer<BlockPos> shape) {
+        shape.accept(origin);
         RocketStructureSnapshot snapshot = successfulSnapshot(helper, origin);
         ServerLevel level = helper.getLevel();
         RocketTransactionResult assembled = new RocketAssemblyTransaction(
@@ -153,6 +171,22 @@ final class RocketFlightGameTestFixtures {
             int ticks, Runnable assertions) {
         awaitPaced(helper, driver, helper.getTick() + ticks, () -> hasFlightState(source, logical, RocketFlightState.FUELED)
                 && sourceRetired(source.getServer(), logical), assertions);
+    }
+
+    /**
+     * W166: the destination identity of a record the fixture expects to have landed. A fail-back before the destination
+     * spawned, such as a DESTINATION_PAD_BLOCKED return to the source, never names one, so instead of "No value present"
+     * the failure names the record's phase and the transfer service's last branch for it.
+     */
+    static UUID landedDestinationId(GameTestHelper helper, RocketTransferRecord record) {
+        if (record.destinationEntityId().isEmpty()) {
+            Matcher branch = Pattern.compile("target_branch=(\\S+)")
+                    .matcher(RocketRuntime.transferFailureDiagnostics(record.transferId()));
+            helper.fail("The fixture flight did not land: transfer " + record.transferId() + " is " + record.phase()
+                    + " with no destination identity, last service branch " + (branch.find() ? branch.group(1) : "UNOBSERVED")
+                    + " (DESTINATION_UNAVAILABLE is a DESTINATION_PAD_BLOCKED fail-back)");
+        }
+        return record.destinationEntityId().orElseThrow();
     }
 
     /** No record names {@code logical}, its removal is acknowledged and no continuation for it is pending. */
@@ -224,15 +258,57 @@ final class RocketFlightGameTestFixtures {
     }
 
     static void primePadChunks(ServerLevel level) {
-        BlockPos base = level.dimension().equals(CelestialIds.MOON_LEVEL)
-                ? SafeCelestialTravel.FIXED_FEET_POSITION
-                : level.getSharedSpawnPos();
+        BlockPos base = padBase(level);
         for (int[] offset : PAD_OFFSETS) {
             BlockPos pad = base.offset(offset[0], 0, offset[1]);
             ChunkPos chunk = new ChunkPos(pad);
             level.getChunkSource().addRegionTicket(PAD_CLEANUP_TICKET, chunk, 2, chunk);
             level.getChunkAt(pad);
         }
+    }
+
+    /**
+     * W166: {@link #primePadChunks} only queues the pads' entity sections, which load asynchronously, so a
+     * {@link #clearPadRockets} straight after it missed a rocket still on disk, and that rocket later blocked a pad. This
+     * primes the pads of {@code levels}, waits paced for at most {@code ticks} until every pad chunk and its neighbours
+     * have their entity sections loaded, discards every loaded rocket in those Levels and then runs {@code then}. When
+     * the wait expires it fails instead of continuing on pads it could not clear.
+     */
+    static void clearPadRocketsWhenLoaded(GameTestHelper helper, GameTestTickDriver driver, int ticks, Runnable then,
+            ServerLevel... levels) {
+        for (ServerLevel level : levels) {
+            primePadChunks(level);
+        }
+        BooleanSupplier loaded = () -> Arrays.stream(levels).allMatch(RocketFlightGameTestFixtures::padEntitiesLoaded);
+        awaitPaced(helper, driver, helper.getTick() + ticks, loaded, () -> {
+            for (ServerLevel level : levels) {
+                helper.assertTrue(padEntitiesLoaded(level), "The fixed pads' entity sections did not load within "
+                        + ticks + " ticks in " + level.dimension().location());
+                clearPadRockets(level);
+            }
+            then.run();
+        });
+    }
+
+    /** Every fixed pad's chunk and its eight neighbours have loaded entity sections, so no rocket there is still on disk. */
+    static boolean padEntitiesLoaded(ServerLevel level) {
+        for (int[] offset : PAD_OFFSETS) {
+            ChunkPos chunk = new ChunkPos(padBase(level).offset(offset[0], 0, offset[1]));
+            for (int dx = -1; dx <= 1; dx++) {
+                for (int dz = -1; dz <= 1; dz++) {
+                    if (!level.areEntitiesLoaded(ChunkPos.asLong(chunk.x + dx, chunk.z + dz))) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    private static BlockPos padBase(ServerLevel level) {
+        return level.dimension().equals(CelestialIds.MOON_LEVEL)
+                ? SafeCelestialTravel.FIXED_FEET_POSITION
+                : level.getSharedSpawnPos();
     }
 
     static void clearPadRockets(ServerLevel level) {

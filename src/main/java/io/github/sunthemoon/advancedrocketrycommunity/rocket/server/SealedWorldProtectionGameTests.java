@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.RocketBlockStateAdapter;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.VanillaContainerRocketAdapter;
@@ -65,8 +66,12 @@ public final class SealedWorldProtectionGameTests {
         level.setBlock(at.west(), Blocks.PISTON.defaultBlockState().setValue(PistonBaseBlock.FACING, Direction.EAST), 3);
         level.setBlock(at.west(2), Blocks.REDSTONE_BLOCK.defaultBlockState(), 3);
         var began = level.getGameTime(); var done = new boolean[1];
+        // W166 (R123): the fence vetoes the first proof, so the second runs after the 200-tick retry. Its store, force and
+        // readback, and the journal writes, take wall-clock time, so each tick lasts a 20 TPS server tick.
+        var pacer = new GameTestTickPacer(level.getServer());
         helper.onEachTick(() -> {
             if (done[0]) { return; }
+            pacer.pace();
             long age = level.getGameTime() - began;
             if (age == 10) {
                 helper.assertTrue(!level.getBlockState(at.west()).getValue(PistonBaseBlock.EXTENDED), "Powered piston moved the carrier");
