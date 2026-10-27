@@ -1,5 +1,6 @@
 package io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence;
 
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.model.BoundedCelestialCodecs;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.AsteroidInstance;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.InstanceState;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.MissionKind;
@@ -19,12 +20,15 @@ import net.minecraft.resources.ResourceLocation;
 
 /**
  * ADR-050 section 3 / ADR-052 section 2 record-fit check: the largest record a table can produce, encoded
- * with its real item IDs and 128-character values for every field the table does not decide. A table whose
- * worst case exceeds a record bound is rejected when it loads, so no save can fail on size.
+ * with its real item IDs and 128-character values for every field the table does not decide. Identifiers count
+ * in their canonical form, which the content parsers and the registry decoder bound at 128 characters, so a
+ * definition, target or terminal level ID can never be longer than its filler. A table whose worst case
+ * exceeds a record bound is rejected when it loads, so no save can fail on size.
  */
 public final class SatelliteRecordFit {
     /** Returned when the encoder itself refuses the record because it exceeds its bound. */
     public static final int DOES_NOT_FIT = Integer.MAX_VALUE;
+    private static final int MAX_ID_CHARS = BoundedCelestialCodecs.MAX_RESOURCE_LOCATION_CHARS;
     private static final UUID ANY = new UUID(-1L, -1L);
     private static final String HEX16 = "0123456789abcdef";
     private static final String LONGEST_REASON = "MISSING_SATELLITE_AND_A_LONGER_REASON_CODE_12345";
@@ -47,6 +51,10 @@ public final class SatelliteRecordFit {
 
     /** The worst-case encoded asteroid or gas mission with this reward and reward version. */
     public static int resourceMissionBytes(MissionKind kind, String rewardVersion, List<ResourceLocation> rewardItems) {
+        // The encoder writes an item's canonical form, and the registry decoder refuses it over the bound.
+        if (rewardItems.stream().anyMatch(item -> item.toString().length() > MAX_ID_CHARS)) {
+            return DOES_NOT_FIT;
+        }
         MissionState mission = new MissionState(SatelliteLimits.MISSION_SCHEMA_VERSION, ANY, ANY, ANY, filler('d'),
                 kind, filler('t'), kind == MissionKind.ASTEROID ? Optional.of(ANY) : Optional.empty(),
                 Long.MIN_VALUE, 0L, Long.MAX_VALUE - 1, Long.MAX_VALUE, MissionStatus.QUARANTINED,
@@ -71,7 +79,8 @@ public final class SatelliteRecordFit {
         return entries;
     }
 
+    /** The longest canonical identifier, distinct per {@code tag}. */
     private static ResourceLocation filler(char tag) {
-        return ResourceLocation.tryParse("f:" + tag + "x".repeat(125));
+        return ResourceLocation.tryParse("f:" + tag + "x".repeat(MAX_ID_CHARS - 3));
     }
 }
