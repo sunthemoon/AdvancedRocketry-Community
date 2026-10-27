@@ -74,6 +74,13 @@ final class RocketFlightGameTestFixtures {
 
     static void assembleFueledRocket(GameTestHelper helper, GameTestTickDriver driver, BlockPos origin, UUID owner,
             Runnable cleanupOnFailure, long deadline, Consumer<RocketEntity> ready) {
+        assembleShapedFueledRocket(helper, driver, origin, owner, at -> placeDefaultRocket(helper, at),
+                cleanupOnFailure, deadline, ready);
+    }
+
+    /** As {@link #assembleFueledRocket}, with {@code shape} placing the rocket's blocks around {@code origin}. */
+    static void assembleShapedFueledRocket(GameTestHelper helper, GameTestTickDriver driver, BlockPos origin, UUID owner,
+            Consumer<BlockPos> shape, Runnable cleanupOnFailure, long deadline, Consumer<RocketEntity> ready) {
         ServerLevel level = helper.getLevel();
         ChunkPos chunk = new ChunkPos(helper.absolutePos(origin));
         // One shared budget for origin readiness and visibility, inside even the 40-tick callers.
@@ -81,7 +88,7 @@ final class RocketFlightGameTestFixtures {
             UUID entityId;
             try {
                 helper.assertTrue(level.areEntitiesLoaded(chunk.toLong()), "Flight test origin entities did not load");
-                entityId = assembleRocket(helper, origin, owner);
+                entityId = assembleRocket(helper, origin, owner, shape);
             } catch (RuntimeException | Error failure) {
                 cleanupOnFailure.run();
                 throw failure;
@@ -103,9 +110,13 @@ final class RocketFlightGameTestFixtures {
         }));
     }
 
-    private static UUID assembleRocket(GameTestHelper helper, BlockPos origin, UUID owner) {
+    private static void placeDefaultRocket(GameTestHelper helper, BlockPos origin) {
         placeLegalRocket(helper, origin);
         helper.setBlock(origin.west(), ModBlocks.ROCKET_FUEL_TANK.get());
+    }
+
+    private static UUID assembleRocket(GameTestHelper helper, BlockPos origin, UUID owner, Consumer<BlockPos> shape) {
+        shape.accept(origin);
         RocketStructureSnapshot snapshot = successfulSnapshot(helper, origin);
         ServerLevel level = helper.getLevel();
         RocketTransactionResult assembled = new RocketAssemblyTransaction(
