@@ -316,28 +316,28 @@ public final class RocketResourceRecoveryGameTests {
         void whenReady(Runnable action) {
             var pacer = new GameTestTickPacer(earth.getServer());
             helper.startSequence().thenWaitUntil(() -> {
-                keepFixtureRegionLoaded(earth, record.sourceSnapshot());
-                keepFixtureRegionLoaded(moon, record.destinationSnapshot());
-                var origin = record.sourceSnapshot().sourceOrigin();
-                long chunk = ChunkPos.asLong(origin.x() >> 4, origin.z() >> 4);
-                boolean ready = earth.areEntitiesLoaded(chunk) && moon.areEntitiesLoaded(chunk);
+                boolean sourceReady = keepFixtureRegionLoaded(earth, record.sourceSnapshot());
+                boolean destinationReady = keepFixtureRegionLoaded(moon, record.destinationSnapshot());
+                boolean ready = sourceReady && destinationReady;
                 if (!ready) { pacer.pace(); }
-                helper.assertTrue(ready, "Resource recovery fixture entity chunks not ready");
+                helper.assertTrue(ready, "Resource recovery fixture discovery columns not ready");
             }).thenExecute(action);
         }
 
-        private static void keepFixtureRegionLoaded(ServerLevel level,
+        private boolean keepFixtureRegionLoaded(ServerLevel level,
                 io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot snapshot) {
-            var chunks = new java.util.HashSet<ChunkPos>();
-            for (var block : snapshot.blocks()) {
-                var absolute = snapshot.sourceOrigin().add(block.position());
-                var at = new BlockPos(absolute.x(), absolute.y(), absolute.z());
-                var chunk = new ChunkPos(at);
-                if (chunks.add(chunk)) {
-                    level.getChunkSource().addRegionTicket(FIXTURE_TICKET, chunk, 2, chunk);
-                    level.getChunkAt(at);
-                }
+            // This is a ready-arrival fixture, not the separate cold-preparation scenario. Its checked
+            // discovery margin can cross a column boundary when the batch runner relocates the template.
+            var columns = io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.RocketDiscoveryColumns.of(snapshot);
+            helper.assertTrue(columns.admissible(), "Invalid resource recovery fixture columns");
+            boolean ready = true;
+            for (var chunk : columns.columns()) {
+                level.getChunkSource().addRegionTicket(FIXTURE_TICKET, chunk, 2, chunk);
+                level.getChunk(chunk.x, chunk.z);
+                ready &= level.areEntitiesLoaded(chunk.toLong()) && level.isPositionEntityTicking(
+                        new BlockPos(chunk.x << 4, snapshot.sourceOrigin().y(), chunk.z << 4));
             }
+            return ready;
         }
 
         void land() {
