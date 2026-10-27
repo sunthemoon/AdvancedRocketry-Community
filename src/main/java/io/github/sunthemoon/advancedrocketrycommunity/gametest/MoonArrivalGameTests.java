@@ -115,9 +115,9 @@ public final class MoonArrivalGameTests {
         BlockPos pad = SafeCelestialTravel.FIXED_FEET_POSITION;
         int ground = moon.getHeight(Heightmap.Types.WORLD_SURFACE, pad.getX(), pad.getZ()) - 1;
         helper.assertTrue(ground <= highestGround, "The shaped ground is higher than the terrain bound: " + ground);
-        driver.after(80, () -> {
-            clearPadRockets(earth);
-            clearPadRockets(moon);
+        // W166: the second clear waits until the pads' entity sections have loaded, so no rocket on disk is missed.
+        driver.after(80, () -> RocketFlightGameTestFixtures.clearPadRocketsWhenLoaded(helper, driver,
+                RocketFlightGameTestFixtures.PAD_LOAD_TICKS, () -> {
             assembleFueledRocket(helper, driver, new BlockPos(3, 2, 3), UUID.randomUUID(), rocket -> {
                 UUID logical = rocket.assemblyTransactionId().orElseThrow();
                 RocketFlightRequestResult result = RocketRuntime.requestAdminFlight(rocket, RocketDestination.MOON,
@@ -142,6 +142,6 @@ public final class MoonArrivalGameTests {
                     helper.succeed();
                 });
             });
-        });
+        }, earth, moon));
     }
 }

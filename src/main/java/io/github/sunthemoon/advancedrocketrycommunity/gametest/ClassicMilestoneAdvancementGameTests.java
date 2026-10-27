@@ -251,8 +251,13 @@ public final class ClassicMilestoneAdvancementGameTests {
         // W44: an explicit non-electing state; the world-first positives are the isolated A1 batch.
         io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport
                 .occupyFirstMoonLanding(helper);
-        RocketFlightGameTestFixtures.primePadChunks(moon);
-        RocketFlightGameTestFixtures.clearPadRockets(moon);
+        // W166: the pads are cleared once their entity sections have loaded; 60 paced ticks fit the 800-tick budget.
+        RocketFlightGameTestFixtures.clearPadRocketsWhenLoaded(helper, driver, 60,
+                () -> landWithPassenger(helper, driver, earth, moon), moon);
+    }
+
+    private static void landWithPassenger(GameTestHelper helper, GameTestTickDriver driver, ServerLevel earth,
+                                          ServerLevel moon) {
         List<ServerPlayer> joined = new ArrayList<>();
         ServerPlayer passenger = join(helper, earth, helper.absolutePos(new BlockPos(2, 3, 2)), "classicPassenger",
                 joined);

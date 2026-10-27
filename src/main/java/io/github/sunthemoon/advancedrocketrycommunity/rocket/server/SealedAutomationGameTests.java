@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.RocketBlockStateAdapter;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.VanillaContainerRocketAdapter;
@@ -83,8 +84,12 @@ public final class SealedAutomationGameTests {
         var began = level.getGameTime(); var released = new long[] {-1}; var done = new boolean[1];
         var pipeForeign = new ItemStack[] {item(Items.LAPIS_LAZULI, 3, "pipe"), item(Items.LAPIS_LAZULI, 3, "pipe")};
         var pipeUsed = new boolean[2]; var bounds = new AABB(origin.offset(-2, -3, -3), origin.offset(7, 3, 5));
+        // W166: the proofs' store, force and readback, and the journal writes, take wall-clock time. Unpaced ticks of
+        // about 2 ms let the second proof's 100-tick deadline expire first, so each tick lasts a 20 TPS server tick.
+        var pacer = new GameTestTickPacer(level.getServer());
         helper.onEachTick(() -> {
             if (done[0]) { return; }
+            pacer.pace();
             long age = level.getGameTime() - began;
             for (int index = 0; index < targets.size(); index++) {
                 var at = targets.get(index); var live = level.getBlockEntity(at);

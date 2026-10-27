@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.SatelliteBayRoot;
@@ -94,8 +95,12 @@ public final class SealedSpecialHostAutomationGameTests {
         var cachedOutside = resourceHosts ? null : level.getBlockEntity(outside).getCapability(ForgeCapabilities.ITEM_HANDLER).orElseThrow(IllegalStateException::new);
         var bounds = new AABB(origin.offset(-2, -3, -3), origin.offset(7, 3, 5)); var began = level.getGameTime();
         var used = new boolean[2]; var done = new boolean[1]; var published = new long[] {-1};
+        // W166 (R123): the proofs' store, force and readback, and the journal writes, take wall-clock time. Unpaced ticks
+        // let the second proof finish only at about tick 400 of the 400-tick budget, so each tick lasts a 20 TPS server tick.
+        var pacer = new GameTestTickPacer(level.getServer());
         helper.onEachTick(() -> {
             if (done[0]) { return; }
+            pacer.pace();
             long age = level.getGameTime() - began;
             if (age == 399) {
                 io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity.LOGGER.info(

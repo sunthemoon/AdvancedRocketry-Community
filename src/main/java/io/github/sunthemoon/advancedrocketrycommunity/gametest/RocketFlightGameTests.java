@@ -160,19 +160,9 @@ public final class RocketFlightGameTests {
         primePadChunks(moon);
         clearPadRockets(earth);
         clearPadRockets(moon);
-        helper.runAfterDelay(20, () -> {
-            clearPadRockets(earth);
-            clearPadRockets(moon);
-        });
-        helper.runAfterDelay(50, () -> {
-            clearPadRockets(earth);
-            clearPadRockets(moon);
-        });
-        driver.after(80, () -> {
-            clearPadRockets(earth);
-            clearPadRockets(moon);
-            startRoundTrip(helper, driver, earth, moon);
-        });
+        // W166: one clear once the pads' entity sections have loaded replaces the repeated clears that raced them.
+        driver.after(80, () -> clearPadRocketsWhenLoaded(helper, driver, PAD_LOAD_TICKS,
+                () -> startRoundTrip(helper, driver, earth, moon), earth, moon));
     }
 
     @GameTest(template = TEMPLATE, batch = "flight_concurrency", timeoutTicks = 500)
@@ -184,9 +174,7 @@ public final class RocketFlightGameTests {
         clearTransferJournal(earth);
         primePadChunks(earth);
         primePadChunks(moon);
-        driver.after(40, () -> {
-            clearPadRockets(earth);
-            clearPadRockets(moon);
+        driver.after(40, () -> clearPadRocketsWhenLoaded(helper, driver, PAD_LOAD_TICKS, () -> {
             assembleFueledRocket(helper, driver, new BlockPos(3, 2, 3), UUID.randomUUID(), first -> {
                 assembleFueledRocket(helper, driver, new BlockPos(12, 2, 3), UUID.randomUUID(), second -> {
                     UUID firstLogical = first.assemblyTransactionId().orElseThrow();
@@ -252,7 +240,7 @@ public final class RocketFlightGameTests {
                     });
                 });
             });
-        });
+        }, earth, moon));
     }
 
     private static void startRoundTrip(

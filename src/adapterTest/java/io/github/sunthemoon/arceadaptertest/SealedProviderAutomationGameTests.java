@@ -46,8 +46,12 @@ public final class SealedProviderAutomationGameTests {
         var positions = List.of(at, at.below(), at.west(), at.north()); var recipient = new SimpleContainer(2);
         var bounds = new AABB(at.offset(-2, -2, -3), at.offset(3, 3, 5)); var began = level.getGameTime();
         var consumed = new boolean[1]; var done = new boolean[1]; var release = new long[] {-1};
+        // W166 (R123): the fence vetoes the first proof, so the second runs after the 200-tick retry. Its store, force and
+        // readback, and the journal writes, take wall-clock time, so each tick lasts a 20 TPS server tick.
+        var pacer = new FixtureTickPacer(level.getServer());
         helper.onEachTick(() -> {
             if (done[0]) { return; }
+            pacer.pace();
             long age = level.getGameTime() - began; var live = level.getBlockEntity(at);
             if (age == 399) {
                 com.mojang.logging.LogUtils.getLogger().info("W152_PROVIDER_AUTOMATION_PENDING {} live={} consumed={} releaseAge={}",
