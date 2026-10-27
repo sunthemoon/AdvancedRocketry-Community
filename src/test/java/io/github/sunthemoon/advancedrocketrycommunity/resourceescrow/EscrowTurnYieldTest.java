@@ -6,6 +6,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.Rocket
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketFluidCargoBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderStatus;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.LoaderFixtureData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.LoaderRoot;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.UnstartedServer;
