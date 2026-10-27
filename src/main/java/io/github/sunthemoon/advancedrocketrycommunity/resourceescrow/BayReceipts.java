@@ -131,16 +131,19 @@ public final class BayReceipts {
      * classification supersedes it.
      */
     public boolean holds(MinecraftServer server, UUID logical) {
+        return holds(logical, () -> RocketTransferSavedData.get(server));
+    }
+    /** The same part over a given transfer journal; unit tests drive it with real receipt files and a real journal. */
+    boolean holds(UUID logical, java.util.function.Supplier<RocketTransferSavedData> journal) {
         if (!started) { return false; }
         if (session != null && session.claimed(logical)) { return true; }
         return switch (bay.state()) {
-            case NOT_LOADED -> preparedTransfer(server, logical);
+            case NOT_LOADED -> preparedTransfer(journal.get(), logical);
             case NO_FILE -> false;
             case LOADED -> store == null || store.holdsRocket(logical);
         };
     }
-    private static boolean preparedTransfer(MinecraftServer server, UUID logical) {
-        var journal = RocketTransferSavedData.get(server);
+    private static boolean preparedTransfer(RocketTransferSavedData journal, UUID logical) {
         if (!journal.operational()) { return true; }
         for (var record : journal.entries()) {
             if (record.logicalRocketId().equals(logical)
