@@ -95,6 +95,13 @@ not complete. The [implementation log](docs/work/v1.8.0-implementation-log.md)
 records implemented slices, independent reviews and outstanding acceptance;
 this build is not a stable release or complete classic-content parity.
 
+[![v1.8 machine progress atlas: 66 main machines, each drawn in colour up to its estimated implemented share and black above it](docs/images/v1.8-machine-atlas-20261026.png)](https://arcommunity-machine-atlas.proudfly11.chatgpt.site/)
+
+*v1.8 machine progress atlas: an unofficial manual estimate at source snapshot `63931cfb` (2026-10-26).* Each
+machine is drawn in colour up to its estimated implemented share and black above it. 100% means the card's limited
+function is implemented; it is not release acceptance, survival-progression or multiplayer verification. The
+[interactive atlas](https://arcommunity-machine-atlas.proudfly11.chatgpt.site/) lists the evidence behind each card
+and 56 further support components.
 Craft one unpowered Small Plate Press with a vanilla piston centered above three
 iron ingots. It requires neither steel nor a motor. Place the material beneath
 the press with obsidian below it, then apply a redstone pulse to process it.
