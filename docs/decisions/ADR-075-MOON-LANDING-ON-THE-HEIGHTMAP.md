@@ -366,6 +366,23 @@ More inspection per column, and a different rule from ADR-033's. Left to a futur
   needs a specific height shapes the pad area first, without weakening any assertion. Synthetic Moon records below
   y 80 get explicit support (W165 record).
 
+## Implementation note: W156 (merged 2026-10-27)
+
+W156 implemented this decision and merged at `5586e19e6`.
+
+- `SurfaceLandingRule` holds the surface, support and threshold decisions. `MOON_LEGACY_RECHECK_Y` is 80.
+- `RocketLandingPadSelector` no longer raises a Moon destination to the old floor.
+- Batch `moon_landing_rule` covers new cases 1 to 9 and 11, and `EscrowMoonLandingRuleGameTests` covers case 12.
+  The unit tests cover the rule, including y 79, 80 and 81.
+- **The native restart case, as implemented.** Recovery keeps an ordinary flight that was PREPARED at the restart
+  at its source (`KEEP_SOURCE`). This ADR leaves that rule unchanged, so the PREPARED upgrade case asserts it. A
+  separate DESCENT upgrade case covers the in-flight landing at the recorded y 80 origin, with exact fuel and one
+  entity, and both cases pass two restarts.
+- GameTest cases 8 and 12 cover the y 80 recheck on the ordinary and governed paths.
+- The predecessor smoke and all 29 cases of the predecessor matrix pass on the new jar.
+
+This note approves no Gate.
+
 ## Revisit when
 
 - the owner wants landings under roofs or into hangars;
