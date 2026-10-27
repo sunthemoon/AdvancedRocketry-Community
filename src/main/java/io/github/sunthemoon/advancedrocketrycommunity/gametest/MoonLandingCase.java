@@ -1,8 +1,9 @@
 package io.github.sunthemoon.advancedrocketrycommunity.gametest;
 
 import static io.github.sunthemoon.advancedrocketrycommunity.gametest.RocketFlightGameTestFixtures.ASSEMBLY_WAIT_TICKS;
+import static io.github.sunthemoon.advancedrocketrycommunity.gametest.RocketFlightGameTestFixtures.PAD_LOAD_TICKS;
 import static io.github.sunthemoon.advancedrocketrycommunity.gametest.RocketFlightGameTestFixtures.assembleShapedFueledRocket;
-import static io.github.sunthemoon.advancedrocketrycommunity.gametest.RocketFlightGameTestFixtures.clearPadRockets;
+import static io.github.sunthemoon.advancedrocketrycommunity.gametest.RocketFlightGameTestFixtures.clearPadRocketsWhenLoaded;
 import static io.github.sunthemoon.advancedrocketrycommunity.gametest.RocketFlightGameTestFixtures.clearTransferJournal;
 import static io.github.sunthemoon.advancedrocketrycommunity.gametest.RocketFlightGameTestFixtures.findLogicalRocket;
 import static io.github.sunthemoon.advancedrocketrycommunity.gametest.RocketFlightGameTestFixtures.placeLegalRocket;
@@ -74,9 +75,8 @@ final class MoonLandingCase {
             }
             clearTransferJournal(earth);
             primePadChunks(earth);
-            primePadChunks(moon);
-            clearPadRockets(moon);
-            body.run();
+            // W166: the Moon pads are cleared once their entity sections have loaded, so no rocket on disk is missed.
+            clearPadRocketsWhenLoaded(helper, driver, PAD_LOAD_TICKS, body, moon);
         });
     }
 

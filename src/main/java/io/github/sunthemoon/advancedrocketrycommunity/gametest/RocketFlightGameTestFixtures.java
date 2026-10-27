@@ -22,6 +22,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketT
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionResult;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketWorldBlock;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.UUID;
 import java.util.function.BooleanSupplier;
@@ -38,6 +39,8 @@ import net.minecraft.world.level.block.Blocks;
 /** Shared world setup and assertion helpers for rocket-flight GameTests. */
 final class RocketFlightGameTestFixtures {
     static final int ASSEMBLY_WAIT_TICKS = 20;
+    /** W166: the usual paced bound for the primed pads' entity sections, which load from disk within a few ticks. */
+    static final int PAD_LOAD_TICKS = 100;
     private static final int PAD_SPACING = 64;
     private static final int[][] PAD_OFFSETS = {
             {0, 0},
@@ -235,15 +238,57 @@ final class RocketFlightGameTestFixtures {
     }
 
     static void primePadChunks(ServerLevel level) {
-        BlockPos base = level.dimension().equals(CelestialIds.MOON_LEVEL)
-                ? SafeCelestialTravel.FIXED_FEET_POSITION
-                : level.getSharedSpawnPos();
+        BlockPos base = padBase(level);
         for (int[] offset : PAD_OFFSETS) {
             BlockPos pad = base.offset(offset[0], 0, offset[1]);
             ChunkPos chunk = new ChunkPos(pad);
             level.getChunkSource().addRegionTicket(PAD_CLEANUP_TICKET, chunk, 2, chunk);
             level.getChunkAt(pad);
         }
+    }
+
+    /**
+     * W166: {@link #primePadChunks} only queues the pads' entity sections, which load asynchronously, so a
+     * {@link #clearPadRockets} straight after it missed a rocket still on disk, and that rocket later blocked a pad. This
+     * primes the pads of {@code levels}, waits paced for at most {@code ticks} until every pad chunk and its neighbours
+     * have their entity sections loaded, discards every loaded rocket in those Levels and then runs {@code then}. When
+     * the wait expires it fails instead of continuing on pads it could not clear.
+     */
+    static void clearPadRocketsWhenLoaded(GameTestHelper helper, GameTestTickDriver driver, int ticks, Runnable then,
+            ServerLevel... levels) {
+        for (ServerLevel level : levels) {
+            primePadChunks(level);
+        }
+        BooleanSupplier loaded = () -> Arrays.stream(levels).allMatch(RocketFlightGameTestFixtures::padEntitiesLoaded);
+        awaitPaced(helper, driver, helper.getTick() + ticks, loaded, () -> {
+            for (ServerLevel level : levels) {
+                helper.assertTrue(padEntitiesLoaded(level), "The fixed pads' entity sections did not load within "
+                        + ticks + " ticks in " + level.dimension().location());
+                clearPadRockets(level);
+            }
+            then.run();
+        });
+    }
+
+    /** Every fixed pad's chunk and its eight neighbours have loaded entity sections, so no rocket there is still on disk. */
+    static boolean padEntitiesLoaded(ServerLevel level) {
+        for (int[] offset : PAD_OFFSETS) {
+            ChunkPos chunk = new ChunkPos(padBase(level).offset(offset[0], 0, offset[1]));
+            for (int dx = -1; dx <= 1; dx++) {
+                for (int dz = -1; dz <= 1; dz++) {
+                    if (!level.areEntitiesLoaded(ChunkPos.asLong(chunk.x + dx, chunk.z + dz))) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    private static BlockPos padBase(ServerLevel level) {
+        return level.dimension().equals(CelestialIds.MOON_LEVEL)
+                ? SafeCelestialTravel.FIXED_FEET_POSITION
+                : level.getSharedSpawnPos();
     }
 
     static void clearPadRockets(ServerLevel level) {

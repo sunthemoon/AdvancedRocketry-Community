@@ -43,9 +43,8 @@ public final class RocketFlightSecurityGameTests {
         helper.assertTrue(moon != null, "Moon Level is unavailable");
         clearTransferJournal(earth);
         primePadChunks(moon);
-        driver.after(40, () -> {
-            clearPadRockets(earth);
-            clearPadRockets(moon);
+        // W166: within the 200-tick budget, a shorter paced bound for the pads primed 40 ticks earlier.
+        driver.after(40, () -> clearPadRocketsWhenLoaded(helper, driver, 40, () -> {
             ServerPlayer owner = new FlightFakePlayer(earth);
             assembleFueledRocket(helper, driver,
                     new BlockPos(3, 2, 3),
@@ -177,7 +176,7 @@ public final class RocketFlightSecurityGameTests {
                     });
                 });
             });
-        });
+        }, earth, moon));
     }
 
     /** Network-free server actor for authority and hostile-intent validation. */
