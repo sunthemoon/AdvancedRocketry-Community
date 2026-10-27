@@ -63,5 +63,33 @@ class W164NativePreTests(unittest.TestCase):
             with zipfile.ZipFile(evidence / result["file"]) as archive:
                 for name, raw in samples.items(): self.assertEqual(raw, archive.read(name))
 
+    def test_bounded_archive_keeps_complete_census_files_and_external_chunks(self):
+        from w164_native_inputs import preserve_bounded
+        import json
+        import tarfile
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory); world = root / "world"; evidence = root / "evidence"
+            evidence.mkdir()
+            snapshot = dict(source_origin=[512, 100, 512], bounding_box=[-1, 0, -1, 1, 2, 1])
+            old = dict(source_snapshot=dict(snapshot, source_dimension="minecraft:overworld"),
+                       destination_snapshot=dict(snapshot, source_dimension="advancedrocketrycommunity:moon"))
+            (evidence / "predecessor.json").write_text(json.dumps(old), encoding="utf-8")
+            samples = {}
+            for prefix in ("", "dimensions/advancedrocketrycommunity/moon/"):
+                for kind in ("region", "poi"):
+                    for x in (0, 1):
+                        for z in (0, 1): samples[f"{prefix}{kind}/r.{x}.{z}.mca"] = bytes(range(256)) * 33
+            samples.update({"entities/r.9.9.mca": b"off-origin entity census",
+                            "entities/c.288.288.mcc": b"external entity section",
+                            "region/c.32.32.mcc": b"external terrain section",
+                            "data/journal.dat": b"exact saved journal",
+                            "playerdata/player.dat": b"exact player image", "level.dat_old": b"metadata"})
+            for name, raw in dict(samples, **{"region/r.9.9.mca": b"unobserved terrain"}).items():
+                path = world / name; path.parent.mkdir(parents=True, exist_ok=True); path.write_bytes(raw)
+            result = preserve_bounded(world, evidence, 0)
+            with tarfile.open(evidence / result["file"], "r:xz") as archive:
+                self.assertEqual(set(samples), set(archive.getnames()))
+                for name, raw in samples.items(): self.assertEqual(raw, archive.extractfile(name).read())
+
 
 if __name__ == "__main__": unittest.main()

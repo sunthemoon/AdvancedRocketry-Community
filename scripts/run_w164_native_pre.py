@@ -19,6 +19,7 @@ import run_v180_predecessor_matrix as predecessor
 from run_v180_predecessor_smoke import require
 from run_v180_rocket_settlement_completion import require_lock
 from w152_native_inputs import compact_trace
+from w164_native_inputs import preserve_bounded
 
 STARTS_PER_CASE = 3
 MAX_STARTS = 66
@@ -114,7 +115,7 @@ def main():
     def command_builder(args, mode, cut, restart):
         return command_for(site, args, mode, cut, restart)
 
-    row = predecessor.run_case(args, case, evidence, prefix="W164-B-PRE", preserve=preserve, started=started,
+    row = predecessor.run_case(args, case, evidence, prefix="W164-B-PRE", preserve=preserve_bounded, started=started,
             command_builder=command_builder,
             demand=lambda process, dimension, entity, fuel: request(site, process, dimension, entity, fuel, evidence))
     row["site"] = site; row["case"] = args.case; row["attempt"] = args.attempt
