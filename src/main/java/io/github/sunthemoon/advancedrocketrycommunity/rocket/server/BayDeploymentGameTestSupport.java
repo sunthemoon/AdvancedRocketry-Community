@@ -86,6 +86,32 @@ final class BayDeploymentGameTestSupport {
         return payloads;
     }
 
+    /** An INTENT for {@code pkg}, the package of T's bay {@code index}, matching T, its owner, its hashes and its captured body. */
+    static io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceipt intent(net.minecraft.server.MinecraftServer server,
+            RocketTransferRecord record, ItemStack pkg, int index) {
+        CompoundTag tag = pkg.copyWithCount(1).serializeNBT();
+        var identity = SatelliteBayPackage.decode(tag).identity().orElseThrow();
+        long tick = server.getTickCount();
+        return new io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceipt(UUID.randomUUID(),
+                io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceiptTestHooks.nextSequence(server),
+                record.logicalRocketId(), new RocketPosition(0, index + 1, 0), identity.satelliteId(), identity.ownerId(),
+                identity.definitionId().toString(), identity.kind(), record.sourceFlightData().plan().orElseThrow().sourceBody().toString(),
+                RocketNativeResources.signature(tag), record.transferId(), record.sourceSnapshot().contentHash(), null,
+                record.destinationSnapshot().contentHash(), null,
+                io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceipt.Phase.INTENT, "NONE", false, false, 0, tick, tick, 0);
+    }
+
+    /** The receipt store has no queued, captured or unknown write. */
+    static boolean storeIdle(net.minecraft.server.MinecraftServer server) {
+        return !io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceiptTestHooks.store(server)
+                .map(io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceiptStore::holdsWork).orElse(false);
+    }
+
+    /** The installed transfer service's bay dispatch: the claimed set that classification and final boundaries fill. */
+    static RocketTransferBayDispatch dispatch() {
+        return RocketSourceRetirementFixtures.recovery(RocketRuntime.installedTransfers()).bays();
+    }
+
     static BayTransferRecovery bays(GameTestHelper helper) {
         var bays = RocketRuntime.installedBays();
         helper.assertTrue(bays.isPresent(), "The installed manager has no bay coordinator for this session");
@@ -99,6 +125,16 @@ final class BayDeploymentGameTestSupport {
 
     static Flight transit(GameTestHelper helper, BlockPos origin, BlockPos target, UUID owner, List<ItemStack> packages,
             RocketEscrowSectionPatch wrapper) {
+        return transit(helper, origin, helper.getLevel().dimension().location(), position(target), owner, packages, wrapper,
+                RocketFlightPlanner.EARTH.bodyId(), null);
+    }
+
+    /**
+     * The same flight with the plan's captured source body, the destination in {@code targetDimension} (which need not be
+     * this Level), and an optional passenger whose seat the manifest of T and of the source assigns.
+     */
+    static Flight transit(GameTestHelper helper, BlockPos origin, ResourceLocation targetDimension, RocketPosition target, UUID owner,
+            List<ItemStack> packages, RocketEscrowSectionPatch wrapper, ResourceLocation sourceBody, @javax.annotation.Nullable UUID passenger) {
         var level = helper.getLevel();
         long now = level.getGameTime();
         var blocks = new ArrayList<RocketBlock>();
@@ -112,15 +148,16 @@ final class BayDeploymentGameTestSupport {
         var propulsion = new RocketPropulsion(RocketPropulsion.Mode.ABSTRACT, 1_000, 0, 1, 1, RocketPropulsion.Settings.DEFAULTS);
         var snapshot = RocketStructureSnapshot.create(UUID.randomUUID(), level.dimension().location(), position(origin), blocks,
                 List.of(new RocketPosition(0, 0, 0)), stats, now, propulsion);
-        var destination = snapshot.relocated(UUID.randomUUID(), level.dimension().location(), position(target), now);
+        var destination = snapshot.relocated(UUID.randomUUID(), targetDimension, target, now);
         UUID logical = UUID.randomUUID(), transfer = UUID.randomUUID();
         var fuel = RocketFuelState.empty(propulsion).fill(1_000).state();
-        var plan = new RocketFlightPlan(3, transfer, RocketFlightPlanner.EARTH.bodyId(), RocketFlightPlanner.MOON.bodyId(),
-                level.dimension().location(), level.dimension().location(), 500, now);
-        var flight = RocketFlightData.initial(logical, 1_000, 1, plan.sourceBody(), plan.sourceDimension(), position(origin), now)
-                .withFuel(fuel, now).withPlan(plan).startCountdown(now).completeCountdown(now).beginTransit(transfer, now);
+        var plan = new RocketFlightPlan(3, transfer, sourceBody, RocketFlightPlanner.MOON.bodyId(),
+                level.dimension().location(), targetDimension, 500, now);
+        var idle = RocketFlightData.initial(logical, 1_000, 1, plan.sourceBody(), plan.sourceDimension(), position(origin), now);
+        if (passenger != null) { idle = idle.withPassengers(idle.passengers().assign(passenger).orElseThrow()); }
+        var flight = idle.withFuel(fuel, now).withPlan(plan).startCountdown(now).completeCountdown(now).beginTransit(transfer, now);
         var arrival = flight.arriveAtDestination(fuel.debit(plan).state(), plan.destinationBody(), plan.destinationDimension(),
-                position(target), now);
+                target, now);
         RocketEntity source = ModEntities.ROCKET.get().create(level);
         helper.assertTrue(source != null, "No source entity");
         var record = RocketTransferRecord.create(transfer, logical, owner, source.getUUID(), snapshot, destination, flight, arrival,

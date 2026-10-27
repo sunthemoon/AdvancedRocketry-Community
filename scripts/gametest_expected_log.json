@@ -1778,6 +1778,33 @@
       "counts": {"bay_deployment": 1},
       "test": "BayDeploymentGameTests.releasedToOrdinaryGivesTheOrdinaryStationaryRecovery",
       "reason": "W27d1 (section 8.1 test 8): the claim ends RELEASED_TO_ORDINARY before any receipt, so exact ordinary source recovery restores and acknowledges the stationary source."
+    },
+    {
+      "id": "w128r-r126-bay-hold-registry-blocked",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.server.BayTransferRecovery/",
+      "message": "ARCE_BAY_CLAIM transfer=[0-9a-f-]{36} logical=[0-9a-f-]{36} state=REPAIR reason=REGISTRY_BLOCKED",
+      "counts": {"bay_deployment_hold": 1, "bay_deployment_hook81": 1},
+      "test": "BayDeploymentHoldGameTests.aRestartIntentWithABlockedRegistryHoldsUnchangedWithoutAWrite and aHeldClaimWithARealBayFollowsSection81Tests6123",
+      "reason": "W128R-R2: a restart INTENT row meets the coordinator's gated blocked-registry view, so its claim holds for offline repair; the one transition is a WARN by design."
+    },
+    {
+      "id": "w128r-r126-bay-hold-signature-conflict",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.server.BayTransferRecovery/",
+      "message": "ARCE_BAY_CLAIM transfer=[0-9a-f-]{36} logical=[0-9a-f-]{36} state=REPAIR reason=REGISTRY_SIGNATURE_CONFLICT",
+      "counts": {"bay_deployment_hold": 1},
+      "test": "BayDeploymentHoldGameTests.aRestartIntentWhoseSatelliteDiffersWritesRepairWithItsExactAcknowledgement",
+      "reason": "W128R-R2: a restart INTENT whose satellite is registered with a different owner gets its durable REPAIR, and the claim holds for offline repair."
+    },
+    {
+      "id": "w128r-r126-bay-hook-unclaimed-record-recovery",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RECOVERY transfer=[0-9a-f-]{36} phase=PREPARED source_count=1 destination_count=0 action=KEEP_SOURCE status=RECOVERED",
+      "counts": {"bay_deployment_hook81": 1},
+      "test": "BayDeploymentHoldGameTests.aHeldClaimWithARealBayFollowsSection81Tests6123",
+      "reason": "W128R-R2 (section 8.1 test 2): a second, unclaimed record gets the ordinary stationary recovery while the bay claim holds T."
     }
   ]
 }
