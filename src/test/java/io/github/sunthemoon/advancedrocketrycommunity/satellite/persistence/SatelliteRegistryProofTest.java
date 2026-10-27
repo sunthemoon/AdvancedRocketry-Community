@@ -117,24 +117,48 @@ final class SatelliteRegistryProofTest {
         assertEquals(data.save(new CompoundTag()), CheckedSavedDataFile.readPayload(file(), TYPE).orElseThrow());
     }
 
-    @Test void mutationInsideCommitCannotAdvanceEpochOrClearDirtyOrPending() {
+    /**
+     * ADR-074 item 5 (W129-R3): the reviewed semantic transition of the former
+     * mutationInsideCommitCannotAdvanceEpochOrClearDirtyOrPending. The later launch moves from inside the committer to
+     * the owner thread while IO waits after capture w; the IO thread itself may not mutate the registry. E now becomes
+     * w at the first completion instead of staying at its old value; every proof and conservation assertion is kept.
+     */
+    @Test void ownerMutationDuringAPausedCommitStampsWAndStaysUnprovedUntilTheNextCapture() throws Exception {
         var data = SatelliteMissionSavedData.create(0);
         UUID first = launch(data);
         var watch = data.watch(first);
         long epoch = data.saveEpoch();
-        UUID[] later = {null};
+        int satellites = data.satellites().size();
+        var entered = new java.util.concurrent.CountDownLatch(1);
+        var release = new java.util.concurrent.CountDownLatch(1);
+        var ioMutation = new java.util.concurrent.atomic.AtomicReference<Throwable>();
         var policy = new CheckedSavedDataPolicy(TYPE, (staged, target) -> {
-            later[0] = launch(data);
+            try { launch(data); } catch (Throwable refused) { ioMutation.set(refused); }
+            entered.countDown();
+            RegistryWriterHarness.await(release);
             CheckedSavedDataFile.atomicMove(staged, target);
         });
-        assertTrue(checkpoint(data, policy, watch).proves(watch));
-        assertEquals(epoch, data.saveEpoch());
+        assertTrue(data.requestWrite(file(), policy));
+        assertTrue(entered.await(20, java.util.concurrent.TimeUnit.SECONDS));
+        assertInstanceOf(IllegalStateException.class, ioMutation.get(), "The IO thread mutated the registry");
+        assertEquals(satellites, data.satellites().size(), "A refused IO-thread mutation changed RAM");
+        UUID later = launch(data);
+        var laterWatch = data.watch(later);
+        release.countDown();
+        data.writerForTests().await();
+        assertTrue(data.acknowledgement().orElseThrow().proves(watch));
+        assertEquals(epoch + 1, data.saveEpoch(), "E becomes w at publication (was: unchanged)");
+        assertEquals(epoch + 1, data.mission(SatelliteManager.initialMissionId(later)).orElseThrow().startEpoch(),
+                "The later launch stamps w");
         assertTrue(data.isDirty()); assertTrue(data.flushPending());
-        assertFalse(data.acknowledgement().orElseThrow().proves(data.watch(later[0])));
-        assertTrue(reload().satellite(later[0]).isEmpty());
+        assertFalse(data.acknowledgement().orElseThrow().proves(laterWatch));
+        assertFalse(data.acknowledgement().orElseThrow().proves(data.watch(later)));
+        assertTrue(reload().satellite(later).isEmpty());
         data.flush(file());
         assertEquals(epoch + 2, data.saveEpoch());
-        assertTrue(reload().satellite(later[0]).isPresent());
+        assertTrue(reload().satellite(later).isPresent());
+        assertTrue(data.acknowledgement().orElseThrow().proves(laterWatch));
+        assertFalse(data.isDirty()); assertFalse(data.flushPending());
     }
 
     @Test void failedCheckpointThenEveryOtherEntryCanProveDescendantAfterMissionProgress() {

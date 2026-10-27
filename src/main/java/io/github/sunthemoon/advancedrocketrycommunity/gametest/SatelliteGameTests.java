@@ -78,6 +78,11 @@ public final class SatelliteGameTests {
 
         helper.assertTrue(terminal.handleButton(owner, SatelliteTerminalMenu.BUTTON_LAUNCH),
                 "Server rejected a nearby owner's launch intent");
+        // ADR-074 item 6: the package stays, locked, until a published acknowledgement proves the registration.
+        helper.assertTrue(!inventory.getStackInSlot(SatelliteTerminalBlockEntity.SLOT_PACKAGE).isEmpty()
+                        && inventory.extractItem(SatelliteTerminalBlockEntity.SLOT_PACKAGE, 1, true).isEmpty(),
+                "The package left or unlocked before the registry acknowledged the launch");
+        SatelliteRegistrySettle.settle(helper.getLevel().getServer());
         helper.assertTrue(inventory.getStackInSlot(SatelliteTerminalBlockEntity.SLOT_PACKAGE).isEmpty(),
                 "Successful launch did not consume the bound package");
         SatelliteMissionSavedData data = SatelliteMissionSavedData.get(helper.getLevel().getServer());
@@ -100,6 +105,9 @@ public final class SatelliteGameTests {
                     "Deadline scheduler did not finish an unloaded logical mission");
             helper.assertTrue(terminal.handleButton(owner, SatelliteTerminalMenu.BUTTON_CLAIM),
                     "Server rejected the owner's ready claim");
+            helper.assertTrue(CelestialSavedData.get(helper.getLevel().getServer()).get(active.targetBodyId()).isEmpty()
+                            || !active.discoveryRequired(), "The discovery ran ahead of its paid receipt's commit");
+            SatelliteRegistrySettle.settle(helper.getLevel().getServer());
             helper.assertTrue(data.mission(missionId).orElseThrow().status() == MissionStatus.CLAIMED,
                     "Claim did not reach its durable terminal phase");
             helper.assertTrue(data.account(owner.getUUID()).balance() == researchBefore + expectedResearch,

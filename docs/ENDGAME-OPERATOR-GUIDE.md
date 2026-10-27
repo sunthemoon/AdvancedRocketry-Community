@@ -195,6 +195,26 @@ while that owner is online with operator permissions.
 
   Restore the endgame file together with the region files it belongs to,
   never alone.
+- **Backups while the server runs.** Autosave, `/save-all` and `/save-all flush`
+  only request the writes of the satellite registry and the rocket transaction
+  journal, and return at once. Each write finishes on its own thread and is
+  published on a later tick, so after `/save-all flush` returns these two files
+  may still be the previous versions. Atomic replacement keeps each file whole,
+  but a live copy can still pair an older registry or journal with newer
+  chunks.
+  - For a consistent backup, stop the server normally and wait for
+    `ARCE_CHECKED_WRITER_DRAINED root=satellite_registry` and
+    `ARCE_CHECKED_WRITER_DRAINED root=rocket_transactions` in the log. Copy
+    the world after that.
+  - A stop that logs `ARCE_CHECKED_WRITER_DRAIN_INCOMPLETE`, or one ended by
+    the watchdog or a kill, gives no such guarantee. The files are then the
+    last committed or unknown versions, and later changes are lost.
+  - If the writer's thread is stuck on storage, the stop can wait without
+    limit. End the process before copying or reopening the world, then
+    rely on restart recovery or a known-good backup.
+
+  There is no command that drains these writers while the server keeps
+  running (ADR-074 item 9).
 - **Downgrades.** A v1.6 server that loads a v1.7 world drops the endgame
   blocks, which become air, and ignores the root. Escrowed and in-flight cargo
   is lost. Downgrades are not supported.

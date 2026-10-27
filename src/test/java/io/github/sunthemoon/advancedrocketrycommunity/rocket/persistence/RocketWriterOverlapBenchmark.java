@@ -15,6 +15,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketT
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionRecord;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionType;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteRegistryBenchmark;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteRegistryOverlapAccess;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteRegistryResidentFixture;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
 import java.io.IOException;
@@ -41,6 +42,12 @@ import net.minecraft.server.dedicated.DedicatedServer;
  * and a deadline that passes during work is counted as missed instead of being diluted by an immediate catch-up tick.
  * Some rounds take the readback path (the committer replaces, then throws) and some definitely fail before replacement.
  * Standalone, Xmx4G, heavy-JVM lock.
+ *
+ * <p>W129bc B3 (modes {@code three-writers} and {@code three-writers-permit}): the same workload with W128's 16 MiB
+ * registry written too, through its own off-thread writer, each round after one ordinary state change, so the
+ * registry, transaction and transfer writers all write their whole roots at their bounds. The permit mode wraps the
+ * three writers' IO executors in one fair server-lifetime IO-side write permit (Q8, R60, R63), acquired only on IO
+ * threads; the unpermitted mode lets them overlap.
  */
 public final class RocketWriterOverlapBenchmark {
     static final int ROUNDS = 50, SMOKE_ROUNDS = 13;
@@ -50,6 +57,9 @@ public final class RocketWriterOverlapBenchmark {
     private static boolean smoke;
     /** {@code transfer-only}: the same resident roots, but only the existing transfer writer writes (comparison). */
     private static boolean transferOnly;
+    /** {@code three-writers}: the registry writes too (B3); {@code permit}: one fair IO-side permit for all three. */
+    private static boolean threeWriters, permitted;
+    private static final ManagedSavedDataType REGISTRY = ManagedSavedDataType.SATELLITE_MISSIONS;
     static final long PERIOD_NANOS = TimeUnit.MILLISECONDS.toNanos(50);
     private static final ManagedSavedDataType TRANSACTIONS = ManagedSavedDataType.ROCKET_TRANSACTIONS;
     private static final ManagedSavedDataType TRANSFERS = ManagedSavedDataType.ROCKET_TRANSFERS;
@@ -64,8 +74,11 @@ public final class RocketWriterOverlapBenchmark {
         if (Runtime.getRuntime().maxMemory() > 4L * 1024 * 1024 * 1024) { throw new IllegalStateException("Heap exceeds Xmx4G"); }
         smoke = args.length > 3 && args[3].contains("smoke");
         transferOnly = args.length > 3 && args[3].contains("transfer-only");
+        threeWriters = args.length > 3 && args[3].contains("three-writers");
+        permitted = threeWriters && args[3].contains("permit");
         Files.createDirectory(directory);
         Path transactionFile = directory.resolve(TRANSACTIONS.fileName()), transferFile = directory.resolve(TRANSFERS.fileName());
+        Path registryFile = directory.resolve(REGISTRY.fileName());
         var report = new LinkedHashMap<String, Object>();
         report.put("status", "IN_PROGRESS"); report.put("source_commit", args.length > 2 ? args[2] : "unknown");
         report.put("scope", "One owner thread runs a monotonic 50 ms surrogate tick that polls both writers at tick START, "
@@ -82,19 +95,30 @@ public final class RocketWriterOverlapBenchmark {
                 + "its existing checked writer on its own IO thread and published on a later owner tick, and every "
                 + "tenth write of each takes the readback path. Mode transfer-only keeps the same resident roots and "
                 + "the escrow and receipt traffic but writes only the transfer journal, as the existing traffic "
-                + "alone, for comparison.");
+                + "alone, for comparison." + (threeWriters ? " B3 (W129bc): the 16 MiB registry is written too, through "
+                + "its off-thread writer, after one ordinary owner-thread state change per round (an idle satellite "
+                + "registered, then removed); registry rounds 2, 12, ... take the readback path and rounds 6, 16, ... fail "
+                + "before replacement. A round ends when all three writers have published. "
+                + (permitted ? "The three writers' IO executors share one fair IO-side write permit, acquired only on "
+                + "their IO threads." : "The three writers overlap without a permit.") : ""));
         report.put("budgets", Map.of("mean_ms", RocketWriterOverlapVerdict.MEAN_MS, "p95_ms", WriterBenchmarkEnvironment.P95_MS,
                 "p99_ms", WriterBenchmarkEnvironment.P99_MS, "spike_ms", RocketWriterOverlapVerdict.SPIKE_MS,
                 "rss_bytes", RocketWriterOverlapVerdict.RSS_BUDGET_BYTES, "heap", "Xmx4G, no OutOfMemoryError"));
         report.put("environment", WriterBenchmarkEnvironment.describe());
         report.put("mode", smoke ? "SMOKE_NOT_EVIDENCE" : transferOnly ? "TRANSFER_ONLY_COMPARISON" : "MEASUREMENT");
         report.put("transfer_only", transferOnly);
+        report.put("configuration", !threeWriters ? "B3A_TWO_WRITERS"
+                : permitted ? "B3_THREE_WRITERS_FAIR_IO_PERMIT" : "B3_THREE_WRITERS_UNPERMITTED");
         EscrowWriterBenchmarkAccess escrow = null;
+        SatelliteRegistryOverlapAccess written = null;
         try (var environment = new WriterBenchmarkEnvironment()) {
             MinecraftBootstrap.initialize();
             long baseline = WriterBenchmarkEnvironment.retainedAfterGc();
-            var registry = smoke ? null : SatelliteRegistryResidentFixture.resident();
             DedicatedServer server = RocketTransactionWriterBenchmark.live();
+            var registry = smoke || threeWriters ? null : SatelliteRegistryResidentFixture.resident();
+            if (threeWriters) {
+                written = smoke ? SatelliteRegistryOverlapAccess.small(server) : SatelliteRegistryOverlapAccess.resident(server);
+            }
             var transactions = new RocketTransactionSavedData(); transactions.bindServerForTests(server);
             var records = new ArrayList<RocketTransactionRecord>(); var journals = new ArrayList<RocketTransactionJournal>();
             int padding = smoke ? 0 : RocketTransactionCheckpointBenchmark.padding();
@@ -108,7 +132,9 @@ public final class RocketWriterOverlapBenchmark {
             }
             var transfers = smoke ? TransferWriterBenchmarkAccess.small(2) : TransferWriterBenchmarkAccess.maximum();
             var fixtures = new LinkedHashMap<String, Object>();
-            fixtures.put("registry", registry == null ? Map.of("resident", false) : Map.of(
+            fixtures.put("registry", written != null ? Map.of("root_bytes", written.rootBytes(), "missions", written.missions(),
+                    "bound_bytes", REGISTRY.maxUncompressedBytes(), "written", true)
+                    : registry == null ? Map.of("resident", false) : Map.of(
                     "root_bytes", SatelliteRegistryResidentFixture.rootBytes(registry),
                     "missions", SatelliteRegistryResidentFixture.missions(registry), "written", false));
             fixtures.put("transactions", Map.of("records", records.size(), "padding_bytes_per_record", padding,
@@ -132,14 +158,25 @@ public final class RocketWriterOverlapBenchmark {
             int tick = (int) escrow.now();
             RocketTransactionWriterBenchmark.at(server, tick);
             if (!transactions.requestWrite(transactionFile, CheckedSavedDataPolicy.atomic(TRANSACTIONS))
-                    || !TransferWriterBenchmarkAccess.request(transfers, transferFile, CheckedSavedDataPolicy.atomic(TRANSFERS))) {
+                    || !TransferWriterBenchmarkAccess.request(transfers, transferFile, CheckedSavedDataPolicy.atomic(TRANSFERS))
+                    || written != null && !written.request(registryFile, CheckedSavedDataPolicy.atomic(REGISTRY))) {
                 throw new IllegalStateException("Baseline requests refused");
             }
             long deadline = System.nanoTime() + TimeUnit.MINUTES.toNanos(5);
-            while (!transactions.acknowledgedCurrent() || !transfers.acknowledgedCurrent()) {
+            while (!transactions.acknowledgedCurrent() || !transfers.acknowledgedCurrent()
+                    || written != null && !written.acknowledgedCurrent()) {
                 if (System.nanoTime() > deadline) { throw new IllegalStateException("Baseline writes did not complete"); }
                 Thread.sleep(5); RocketTransactionWriterBenchmark.at(server, ++tick);
                 transactions.pollWriter(); transfers.pollWriter(tick); escrow.tick(tick);
+                if (written != null) { written.poll(); }
+            }
+            WriterIoPermit permit = null;
+            if (permitted) {
+                // Installed after the baselines created each writer; production writers carry no permit.
+                permit = new WriterIoPermit();
+                permit.install("registry", written.writerHolder(), "writer", "io");
+                permit.install("transactions", transactions, "writer", "io");
+                permit.install("transfers", transfers, "writer", "io");
             }
 
             var threads = (com.sun.management.ThreadMXBean) ManagementFactory.getThreadMXBean();
@@ -149,9 +186,11 @@ public final class RocketWriterOverlapBenchmark {
             var transfersThreadBefore = WriterBenchmarkEnvironment.thread("ARCE-rocket-journal");
             var ledgerThreadBefore = WriterBenchmarkEnvironment.thread(EscrowWriterBenchmarkAccess.LEDGER_THREAD);
             var receiptThreadBefore = WriterBenchmarkEnvironment.thread(EscrowWriterBenchmarkAccess.RECEIPT_THREAD);
+            var registryThreadBefore = WriterBenchmarkEnvironment.thread(SatelliteRegistryOverlapAccess.THREAD);
             environment.resetPoolPeaks();
             int pauseStart = environment.pauseCount(); long gcStart = environment.gcMillis();
-            var run = run(server, tick + 20, transactions, records, journals, transactionFile, transfers, transferFile, escrow);
+            var run = run(server, tick + 20, transactions, records, journals, transactionFile, transfers, transferFile, escrow,
+                    written, registryFile);
             report.put("rounds", run.get("rounds")); report.put("ticks", run.get("ticks"));
             var results = new LinkedHashMap<String, Object>();
             results.put("tick_duration", run.get("duration")); results.put("tick_lateness", run.get("lateness"));
@@ -159,6 +198,12 @@ public final class RocketWriterOverlapBenchmark {
             results.put("ticks_over_50_ms", run.get("over_50"));
             results.put("transaction_writer", run.get("transaction_writer"));
             results.put("transfer_writer", run.get("transfer_writer"));
+            if (written != null) {
+                results.put("registry_writer", run.get("registry_writer"));
+                results.put("registry_io_thread_before_and_after", List.of(registryThreadBefore,
+                        WriterBenchmarkEnvironment.thread(SatelliteRegistryOverlapAccess.THREAD)));
+            }
+            if (permit != null) { results.put("io_permit", permit.results()); }
             results.put("gc", environment.pauses(pauseStart));
             results.put("gc_collection_time_ms", environment.gcMillis() - gcStart);
             results.put("heap", environment.heap());
@@ -185,6 +230,7 @@ public final class RocketWriterOverlapBenchmark {
             report.put("rss_measured", "MEASURED".equals(workingSet.get("status")));
             report.put("status", verdict.status()); report.put("verdict_reasons", verdict.reasons());
             if (registry != null) { report.put("registry_still_operational", registry.operational()); }
+            if (written != null) { report.put("registry_still_operational", written.operational()); }
             report.put("escrow_roots_still_operational", escrow.operational());
             transfers.stop();
         } catch (Throwable failure) {
@@ -193,9 +239,10 @@ public final class RocketWriterOverlapBenchmark {
         } finally {
             try {
                 if (escrow != null) { escrow.close(); } // Drains and joins both escrow writers before their files go.
+                if (written != null) { written.close(); } // and the registry's writer
             } finally {
                 SatelliteRegistryBenchmark.persist(output, report);
-                for (Path file : List.of(transactionFile, transferFile)) {
+                for (Path file : List.of(transactionFile, transferFile, registryFile)) {
                     Files.deleteIfExists(file); Files.deleteIfExists(Path.of(file + ".arce-pending"));
                 }
                 try (var left = Files.list(directory)) { for (Path path : left.toList()) { Files.deleteIfExists(path); } }
@@ -206,8 +253,13 @@ public final class RocketWriterOverlapBenchmark {
 
     private static Map<String, Object> run(DedicatedServer server, int firstTick, RocketTransactionSavedData transactions,
             List<RocketTransactionRecord> records, List<RocketTransactionJournal> journals, Path transactionFile,
-            RocketTransferSavedData transfers, Path transferFile, EscrowWriterBenchmarkAccess escrow) throws IOException {
+            RocketTransferSavedData transfers, Path transferFile, EscrowWriterBenchmarkAccess escrow,
+            SatelliteRegistryOverlapAccess registry, Path registryFile) throws IOException {
         var ticks = new ArrayList<long[]>(); var rounds = new ArrayList<Map<String, Object>>();
+        var registryWall = new ArrayList<Double>(); var registryCpu = new ArrayList<Double>();
+        var registryLatencyTicks = new ArrayList<Double>();
+        boolean registryWaiting = false;
+        long registryCount = registry == null ? 0 : registry.completedWrites();
         var transactionWall = new ArrayList<Double>(); var transactionCpu = new ArrayList<Double>();
         var transactionLatencyTicks = new ArrayList<Double>(); var transferWall = new ArrayList<Double>();
         var transferLatencyTicks = new ArrayList<Double>();
@@ -225,6 +277,7 @@ public final class RocketWriterOverlapBenchmark {
             RocketTransactionWriterBenchmark.at(server, tick);
             transactions.pollWriter();
             transfers.pollWriter(tick);
+            if (registry != null) { registry.poll(); }
             escrow.tick(tick);
             // Paced on the schedule, not on the rounds; a slot skipped by a missed deadline fires on the next tick.
             if (k >= ledgerDue) { escrow.mutateLedger(); ledgerDue = k + ESCROW_PERIOD_TICKS; }
@@ -235,6 +288,12 @@ public final class RocketWriterOverlapBenchmark {
                 transactionWall.add(transactions.lastWriterNanos() / 1e6); transactionCpu.add(transactions.lastWriterCpuNanos() / 1e6);
                 transactionLatencyTicks.add((double) (tick - (int) current.get("request_tick")));
             }
+            if (registryWaiting && registry.completedWrites() > registryCount) {
+                registryWaiting = false;
+                current.put("registry_published_tick", tick); current.put("registry_outcome", registry.lastOutcome());
+                registryWall.add(registry.lastWriterMillis()); registryCpu.add(registry.lastWriterCpuMillis());
+                registryLatencyTicks.add((double) (tick - (int) current.get("request_tick")));
+            }
             long transfersNow = TransferWriterBenchmarkAccess.completedWriteCount(transfers);
             if (transferWaiting && transfersNow > transferCount) {
                 transferWall.add(TransferWriterBenchmarkAccess.lastWriterNanos(transfers) / 1e6); transferCount = transfersNow;
@@ -243,7 +302,7 @@ public final class RocketWriterOverlapBenchmark {
                     transferLatencyTicks.add((double) (tick - (int) current.get("request_tick")));
                 }
             }
-            if (!transactionWaiting && !transferWaiting) {
+            if (!transactionWaiting && !transferWaiting && !registryWaiting) {
                 if (current != null) { rounds.add(current); }
                 round++;
                 if (round < planned) {
@@ -269,11 +328,23 @@ public final class RocketWriterOverlapBenchmark {
                     if (!TransferWriterBenchmarkAccess.request(transfers, transferFile, policy(TRANSFERS, transferKind))) {
                         throw new IllegalStateException("Transfer request refused");
                     }
-                    transactionWaiting = !transferOnly; transferWaiting = true;
+                    Kind registryKind = round % 10 == 2 ? Kind.READBACK : round % 10 == 6 ? Kind.FAIL : Kind.ATOMIC;
+                    if (registry != null) {
+                        registry.mutate();
+                        registryCount = registry.completedWrites();
+                        if (!registry.request(registryFile, policy(REGISTRY, registryKind))) {
+                            throw new IllegalStateException("Registry request refused");
+                        }
+                    }
+                    transactionWaiting = !transferOnly; transferWaiting = true; registryWaiting = registry != null;
                     current = new LinkedHashMap<>();
                     current.put("round", round); current.put("request_tick", tick);
                     current.put("transaction_kind", transactionKind.name()); current.put("transfer_kind", transferKind.name());
                     current.put("transaction_started_at_request", transactions.writerInFlight());
+                    if (registry != null) {
+                        current.put("registry_kind", registryKind.name());
+                        current.put("registry_started_at_request", registry.inFlight());
+                    }
                 }
             }
             long end = System.nanoTime();
@@ -297,6 +368,9 @@ public final class RocketWriterOverlapBenchmark {
                 "request_to_publication_ticks", RocketTransactionWriterBenchmark.plain(transactionLatencyTicks)));
         result.put("transfer_writer", Map.of("wall", RocketTransactionWriterBenchmark.plain(transferWall),
                 "request_to_acknowledgement_ticks", RocketTransactionWriterBenchmark.plain(transferLatencyTicks)));
+        result.put("registry_writer", Map.of("wall", RocketTransactionWriterBenchmark.plain(registryWall),
+                "cpu", RocketTransactionWriterBenchmark.plain(registryCpu),
+                "request_to_publication_ticks", RocketTransactionWriterBenchmark.plain(registryLatencyTicks)));
         return result;
     }
 

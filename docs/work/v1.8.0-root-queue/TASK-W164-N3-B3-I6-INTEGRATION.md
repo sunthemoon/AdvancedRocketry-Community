@@ -160,6 +160,54 @@ So:
    their favour where they own the line, and record each conflict. W129aM makes the N3-B2 sealed journal port wait on `WRITE_PENDING`; keep that rule.
 7. **Then R115's native tranche 1:** B-PRE, 20 cases, 60 starts.
 
+## Continuation under Root decision R124 (2026-10-27)
+
+The R118 session (11:06 to 20:05) stopped at `769e8bfab`, not merge-ready. Its results:
+- Items 1 to 6 are done. The shared-head merge `83a904bd3` had no conflicts, and three fixture corrections were
+  needed.
+- At `74d1f7775`, all 5,222 unit tests, all 1,424 GameTests with the unchanged checker, and runData with a clean tree
+  pass.
+- B-PRE stopped at 9 of 20 cases after 29 counted starts:
+  - `I6a_UNSAVED_STORE_D` failed on a cut-name spelling, which the launcher now fixes;
+  - `I6b_UNSAVED_STORE_D` never reached its cut, because the preparation never became ready.
+
+The record names a candidate cause. The inherited native fixture's source footprint crosses a chunk border, so
+`RocketI6Retirement.preparationReady()` waits for discovery-margin columns that `RocketDestinationRetirement.keepLoaded()`
+never tickets. Root decision R124 sets the order:
+
+1. **Merge the shared head first** (`codex/v1.8.0-classic-content`, local). It now contains W152K (`e1e7b1799`), which
+   R119 requires before W164. The W152K review found no textual conflict with this branch. Record any conflict and keep
+   W152K's reservation guard and server-tick binding.
+2. **Diagnose the cold readiness.**
+   - Record the exact columns `preparationReady` waits for, and which are ticketed, loaded and entity-ticking at each
+     step.
+   - Explain `SLOT_UNLOADED` and `DEMAND_SPENT`.
+   - Then add a GameTest with a cold source whose footprint crosses a chunk border. It must fail first if the
+     production path cannot become ready.
+3. **One of two fixes, decided by the diagnosis:**
+   - **Production cannot become ready.** A landed rocket that crosses a chunk border is a normal case, so this is a
+     production defect. R124 allows `keepLoaded` to ticket exactly the columns `preparationReady` requires. It must
+     use the existing ticket type, lifetime and refresh, stay within the existing discovery-margin bound, and never
+     load from a client-supplied position.
+     - Write a short design paragraph in the record before the code.
+     - State the largest column count.
+     - Do not relax readiness or lengthen any wait.
+   - **Only the fixture is outside the supported contract.** Move the native fixture to a supported position and
+     cite the contract.
+   - **Prior art (Root note, 20:25):** [W90](records/W90-DESIGN.md) found the same mismatch for governed flights.
+     Root decisions R21 and R22 adopted one checked column set with the origin column inside it, and an
+     `arce_rocket_flight` ticket on every discovery-margin column of each end (at most 16 per end), as an explicit
+     budget change. W90a implemented it. Reuse that column set and ticket rule, with its bound, rather than a new one.
+4. **B-PRE again, all 20 cases**, on the final committed source after the merge, two restarts each.
+   - The counted limit for this tranche is 66 starts. The R118 ledger stays as it is; this is a new tranche.
+   - Stop and report if a case fails twice.
+5. **Then tranche 2:** B-PLAIN, B-M and the combined terrain matrix (W148 section 6), with the worst-case tick cost.
+   - Count the starts first. If they exceed 66, run B-PLAIN and B-M and report the count for the rest.
+   - No case is dropped or folded into another.
+
+Before the native runs: the whole unit suite, one complete GameTest with the unchanged checker, and runData if data
+changes. The heavy-JVM lock and hand-off rules above apply.
+
 ## Not in this task
 
 - N3-B4 (the combined cut evidence), W98-R1 and governed admission.

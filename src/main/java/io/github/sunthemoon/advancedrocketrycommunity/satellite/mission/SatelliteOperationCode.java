@@ -48,7 +48,11 @@ public enum SatelliteOperationCode {
     OFFLINE_REPAIR_REQUIRED,
     // W27 section 3: append only; older persisted ordinals keep their meaning.
     DEPLOYMENT_PENDING,
-    REGISTRY_BLOCKED;
+    REGISTRY_BLOCKED,
+    // W129c (ADR-074 items 6 and 7): a change made in RAM whose dependent effect waits for a registry commit, and a
+    // full pending-action table that refused before any mutation. Append only.
+    REGISTRY_PENDING,
+    REGISTRY_BUSY;
 
     public String translationKey() {
         return "status.advancedrocketrycommunity.satellite."

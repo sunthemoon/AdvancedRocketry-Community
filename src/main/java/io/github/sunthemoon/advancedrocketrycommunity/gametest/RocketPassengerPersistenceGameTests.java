@@ -97,7 +97,7 @@ public final class RocketPassengerPersistenceGameTests {
                 RocketFlightState.LANDED, 270, () -> {
             var journal = RocketTransferSavedData.get(earth.getServer());
             var record = journal.find(transfer).orElseThrow();
-            var authority = (RocketEntity) moon.getEntity(record.destinationEntityId().orElseThrow());
+            var authority = (RocketEntity) moon.getEntity(RocketFlightGameTestFixtures.landedDestinationId(helper, record));
             helper.assertTrue(authority != null && authority.flightData().orElseThrow().state() == RocketFlightState.LANDED,
                     "Fixture did not land");
             var player = new FakePlayer(moon, new GameProfile(owner, "ARCELegacyRider"));

@@ -62,6 +62,8 @@ public final class SatelliteManager {
     private final long[] postTickNanos = new long[100];
     private boolean coalescedFailureReported;
     private final DiscoveryReplayQueue pendingDiscoveryReplay = new DiscoveryReplayQueue();
+    /** ADR-074 item 7: terminal effects waiting for a registry acknowledgement, for one server lifetime. */
+    private final TerminalActionTable terminalActions = new TerminalActionTable();
     private boolean replayInitialized;
     private int replayBackoffTicks;
     private boolean replayFailureReported;
@@ -147,8 +149,9 @@ public final class SatelliteManager {
     }
 
     /**
-     * ADR-050 section 2: while a state change is pending, one flush runs at most every 100 ticks, on top of the
-     * barrier flushes. A failing flush keeps the change pending and is reported once until a flush succeeds.
+     * ADR-050 section 2 and ADR-074 item 6: while a state change is pending, one request is made at most every 100
+     * ticks, on top of the prompt requests. The write runs off-thread; its failures are reported once per streak by
+     * the registry writer, and the change stays pending until a commit covers it.
      */
     private void coalescedFlush(MinecraftServer server, SatelliteMissionSavedData data) {
         int now = server.getTickCount();
@@ -158,7 +161,7 @@ public final class SatelliteManager {
         lastCoalescedFlush = now;
         try {
             long started = System.nanoTime();
-            data.flush(server);
+            data.request(server);
             long elapsed = System.nanoTime() - started;
             coalescedFlushNanos += elapsed;
             coalescedFlushMaxNanos = Math.max(coalescedFlushMaxNanos, elapsed);
@@ -177,11 +180,14 @@ public final class SatelliteManager {
         return coalescedFlushes;
     }
 
-    /** Mean and maximum coalesced flush time in milliseconds since the server started (C9 cost measurement). */
-    public String coalescedFlushTimes() {
-        return String.format(java.util.Locale.ROOT, "coalesced_flush_mean_ms=%.3f coalesced_flush_max_ms=%.3f",
+    /**
+     * C9 cost measurement, split by ADR-074: the coalesced request's server-thread time (which takes the capture), mean
+     * and maximum in milliseconds, then the registry writer's own IO-thread times.
+     */
+    public String coalescedFlushTimes(MinecraftServer server) {
+        return String.format(java.util.Locale.ROOT, "coalesced_request_mean_ms=%.3f coalesced_request_max_ms=%.3f %s",
                 coalescedFlushes == 0 ? 0.0D : coalescedFlushNanos / 1_000_000.0D / coalescedFlushes,
-                coalescedFlushMaxNanos / 1_000_000.0D);
+                coalescedFlushMaxNanos / 1_000_000.0D, SatelliteMissionSavedData.get(server).writerDiagnostics());
     }
 
     /**
@@ -218,8 +224,10 @@ public final class SatelliteManager {
             if (validation.request().isEmpty()) { return validation.result(); }
             SatelliteOperationResult result = launches.register(server, validation.request().orElseThrow(),
                     server.overworld().getGameTime());
+            // ADR-074 item 6: the launch is a RAM change and a prompt request; the terminal extracts the package
+            // only once a published acknowledgement proves the registration.
             if (result.success() && (result.changed() || data.isDirty())) {
-                data.flush(server);
+                data.request(server);
             }
             return result;
         } catch (RuntimeException exception) {
@@ -261,8 +269,9 @@ public final class SatelliteManager {
                     server.overworld().getGameTime(),
                     discoveryRequired(server, targetBodyId)
             );
+            // ADR-074 item 6: a prompt request; the terminal shows the stored result once a commit covers it.
             if (result.changed() || data.isDirty()) {
-                data.flush(server);
+                data.request(server);
             }
             return result;
         } catch (RuntimeException exception) {
@@ -322,6 +331,7 @@ public final class SatelliteManager {
                     server.overworld().getGameTime(),
                     discoveryRequired(server, targetBodyId)
             );
+            // Release-test only: the hook waits for the commit, as its native harnesses expect (ADR-074 item 6).
             if (result.changed() || data.isDirty()) {
                 data.flush(server);
             }
@@ -337,10 +347,25 @@ public final class SatelliteManager {
         if (!Boolean.getBoolean(RELEASE_TEST_HOOK_PROPERTY)) {
             return failure(SatelliteOperationCode.UNAUTHORIZED);
         }
-        MissionState mission = SatelliteMissionSavedData.get(server).mission(missionId).orElse(null);
-        return mission == null
-                ? failure(SatelliteOperationCode.MISSION_NOT_FOUND)
-                : claimMission(server, missionId, mission.ownerId());
+        SatelliteMissionSavedData data = SatelliteMissionSavedData.get(server);
+        MissionState mission = data.mission(missionId).orElse(null);
+        if (mission == null) {
+            return failure(SatelliteOperationCode.MISSION_NOT_FOUND);
+        }
+        SatelliteOperationResult result = claimMission(server, missionId, mission.ownerId());
+        try {
+            // Release-test only: wait for the paid receipt's commit, then for the discovery and the finished claim.
+            data.flush(server);
+            if (needsDiscoveryRetry(result)) {
+                result = applyDiscovery(server, missionId, pendingDiscoveryReplay.receipt(missionId, data::token));
+                if (!needsDiscoveryRetry(result)) { pendingDiscoveryReplay.remove(missionId); }
+                data.flush(server);
+            }
+        } catch (RuntimeException exception) {
+            logOperationFailure("release-test claim", exception);
+            return failure(SatelliteOperationCode.UNSUPPORTED_DATA);
+        }
+        return result;
     }
 
     /** Bounded packaged-server stress hook using the production registry and scheduler. */
@@ -392,7 +417,7 @@ public final class SatelliteManager {
                 }
             }
             if (created > 0) {
-                data.flush(server);
+                data.flush(server); // Release-test only, as above.
             }
             return new ReleaseTestBatchResult(
                     created == requested
@@ -442,7 +467,7 @@ public final class SatelliteManager {
                     server.overworld().getGameTime()
             );
             if (dataMission(result) && (result.changed() || data.isDirty())) {
-                data.flush(server);
+                data.request(server);
             }
             return result;
         } catch (RuntimeException exception) {
@@ -464,8 +489,9 @@ public final class SatelliteManager {
                     true,
                     server.overworld().getGameTime()
             );
+            // The command reports this RAM result; the cancel is durable once a later commit covers it.
             if (dataMission(result) && (result.changed() || data.isDirty())) {
-                data.flush(server);
+                data.request(server);
             }
             return result;
         } catch (RuntimeException exception) {
@@ -584,7 +610,22 @@ public final class SatelliteManager {
         return celestialCatalogs.current();
     }
 
+    /** GameTest and release-test servers only: one discovery replay pass now, as the END tick would run it. */
+    public void replayDiscoveriesForTests(MinecraftServer server) {
+        if (!io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteRegistryTestAwait.allowed(server)) {
+            throw new IllegalStateException("Discovery replay is driven by the server tick on a normal server");
+        }
+        replayBackoffTicks = 0;
+        replayDiscoveries(server);
+    }
+
+    /** ADR-074 item 7: the server-lifetime table of terminal actions waiting for an acknowledgement. */
+    public TerminalActionTable terminalActions() {
+        return terminalActions;
+    }
+
     public void clear() {
+        terminalActions.discard();
         scans.clear();
         intents.clear();
         lastCoalescedFlush = Integer.MIN_VALUE / 2;
@@ -616,15 +657,21 @@ public final class SatelliteManager {
                     .filter(mission -> mission.status() == MissionStatus.CLAIM_PENDING_DISCOVERY
                             || progress.get(mission.targetBodyId()).isEmpty())
                     .map(MissionState::missionId)
-                    .forEach(pendingDiscoveryReplay::add);
+                    // A loaded receipt is in the file; the token at this sequence asks only for the next commit.
+                    .forEach(id -> pendingDiscoveryReplay.add(id, data.token()));
         }
         replayInitialized = true;
     }
 
     private void replayDiscoveries(MinecraftServer server) {
         if (replayBackoffTicks > 0) { replayBackoffTicks--; return; }
+        if (pendingDiscoveryReplay.size() > 0 && SatelliteMissionSavedData.get(server).cuts().discoveryHeld()) {
+            return; // W129bc release-test cut only
+        }
         try {
-            pendingDiscoveryReplay.drain(id -> !needsDiscoveryRetry(applyDiscovery(server, id)));
+            // A mission queued without a token waits for the next commit after now.
+            pendingDiscoveryReplay.drain(id -> !needsDiscoveryRetry(applyDiscovery(server, id,
+                    pendingDiscoveryReplay.receipt(id, () -> SatelliteMissionSavedData.get(server).token()))));
             if (pendingDiscoveryReplay.size() == 0) { replayFailureReported = false; }
         } catch (RuntimeException exception) {
             replayBackoffTicks = SatelliteLimits.SCHEDULER_INTERVAL_TICKS;
@@ -635,14 +682,18 @@ public final class SatelliteManager {
         }
     }
 
-    private SatelliteOperationResult applyDiscovery(MinecraftServer server, UUID missionId) {
+    /** ADR-074 item 6: the celestial write waits until a published commit covers the paid receipt's token. */
+    private SatelliteOperationResult applyDiscovery(MinecraftServer server, UUID missionId,
+                                                    io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence
+                                                            .SatelliteRegistryProof.Token receipt) {
         SatelliteMissionSavedData missions = SatelliteMissionSavedData.get(server);
         CelestialSavedData celestial = CelestialSavedData.get(server);
         var before = celestial.entries();
         try {
-            return DiscoveryClaimRecovery.recover(missions, celestial, missionId, server.overworld().getGameTime(),
+            return DiscoveryClaimRecovery.recoverAcknowledged(missions, celestial, missionId, receipt,
+                    server.overworld().getGameTime(),
                     id -> celestialCatalogs.current().flatMap(catalog -> catalog.get(id)).isPresent(),
-                    data -> data.flush(server), data -> data.flush(server));
+                    () -> missions.request(server), data -> data.flush(server));
         } finally {
             // Discovery is already durable even if the final mission acknowledgment fails.
             if (!before.equals(celestial.entries())) { snapshots.accept(server); }
@@ -669,12 +720,16 @@ public final class SatelliteManager {
             if (result.code() == SatelliteOperationCode.PENDING_DISCOVERY
                     || result.code() == SatelliteOperationCode.ALREADY_CLAIMED
                     && result.mission().filter(DiscoveryClaimRecovery::paidReceipt).isPresent()) {
-                pendingDiscoveryReplay.add(missionId);
-                result = applyDiscovery(server, missionId);
+                // The receipt's token is fixed right after the paying claim; the queue keeps the first one.
+                pendingDiscoveryReplay.add(missionId, data.token());
+                var recovery = applyDiscovery(server, missionId, pendingDiscoveryReplay.receipt(missionId, data::token));
+                // Recovery may only request the receipt's write; it must not erase the paying claim's RAM mutation.
+                result = new SatelliteOperationResult(recovery.code(), result.changed() || recovery.changed(),
+                        recovery.satellite(), recovery.mission(), recovery.researchBalance());
                 if (!needsDiscoveryRetry(result)) { pendingDiscoveryReplay.remove(missionId); }
             }
             if (data.isDirty()) {
-                data.flush(server);
+                data.request(server);
             }
             return result;
         } catch (RuntimeException exception) {
@@ -715,7 +770,7 @@ public final class SatelliteManager {
         return null;
     }
 
-    /** ADR-050 section 2: only the existing {@code data} paths keep their barrier; v1.6 kinds wait for the coalesced flush. */
+    /** ADR-050 section 2: only the {@code data} paths request at once; v1.6 kinds wait for the coalesced request. */
     private static boolean dataMission(SatelliteOperationResult result) {
         return result.mission().map(mission -> mission.kind() == MissionKind.DATA).orElse(true);
     }

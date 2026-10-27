@@ -103,6 +103,7 @@ public final class RocketResourceRecoveryGameTests {
                         .status() == RocketTransferRecoveryReport.Status.NOT_FOUND, "Retired arrival recovered again");
                 fixture.assertBalances(0, 0, 2_000, 0);
                 clearSnapshotBlocks(fixture.moon, fixture.record.destinationSnapshot());
+                fixture.support.restore();
                 helper.succeed();
             };
             driver.after(1, completed[0]);
@@ -153,6 +154,7 @@ public final class RocketResourceRecoveryGameTests {
                 fixture.earth.getServer().getPlayerList().remove(passenger);
                 fixture.rocket.discard();
                 clearTransferJournal(fixture.earth);
+                fixture.support.restore();
             };
             try {
                 fixture.manager.onInstalled();
@@ -224,6 +226,7 @@ public final class RocketResourceRecoveryGameTests {
             } finally {
                 fixture.rocket.discard();
                 clearTransferJournal(fixture.earth);
+                fixture.support.restore();
             }
             helper.succeed();
         });
@@ -245,6 +248,7 @@ public final class RocketResourceRecoveryGameTests {
         final UUID owner = UUID.randomUUID();
         final UUID offline = UUID.randomUUID();
         final RocketTransferRecord record;
+        final MoonPadArea.Changes support;
         RocketManager manager = new RocketManager();
         RocketEntity rocket;
         ResourcePlayer player;
@@ -277,6 +281,9 @@ public final class RocketResourceRecoveryGameTests {
             var destination = snapshot.relocated(UUID.randomUUID(), moon.dimension().location(),
                     destinationOrigin, earth.getGameTime());
             clearSnapshotBlocks(moon, destination);
+            // ADR-075: a Moon destination below y 80 is rechecked for support, so it gets ground of its own.
+            support = new MoonPadArea.Changes(moon);
+            support.support(destination);
             var fuel = RocketFuelState.empty(snapshot.propulsion().orElseThrow()).withFluidBank(false,
                     ModIdentity.id(bipropellant ? "hydrogen" : "rocket_fuel"), null, bipropellant ? 2_000 : 3_000);
             if (bipropellant) { fuel = fuel.withFluidBank(true, ModIdentity.id("oxygen"), null, 1_000); }

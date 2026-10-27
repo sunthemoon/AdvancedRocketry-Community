@@ -11,7 +11,8 @@ import net.minecraftforge.gametest.GameTestHolder;
 /**
  * Serial, batch-owned satellite registries: a fresh one for the flush-failure and resource batches and a blocked one
  * (a future root, ADR-050 section 9) for the fail-closed batch. The original registry is restored and saved afterwards,
- * even after a failed test.
+ * even after a failed test. ADR-074 item 6: both registries write the same target, so the original's write finishes
+ * before the fixture is installed and the fixture's writer finishes and stops before the original is restored.
  */
 @GameTestHolder(AdvancedRocketryCommunity.MOD_ID)
 public final class SatelliteRegistryFixture {
@@ -42,6 +43,7 @@ public final class SatelliteRegistryFixture {
         }
         var storage = level.getServer().overworld().getDataStorage();
         original = SatelliteMissionSavedData.get(level.getServer());
+        original.awaitForTests(level.getServer());
         storage.set(SatelliteMissionSavedData.DATA_NAME, fixture);
     }
 
@@ -50,6 +52,11 @@ public final class SatelliteRegistryFixture {
             throw new IllegalStateException("Satellite registry fixture lifecycle mismatch");
         }
         try {
+            var fixture = SatelliteMissionSavedData.get(level.getServer());
+            if (fixture != original) {
+                fixture.awaitForTests(level.getServer());
+                fixture.close();
+            }
             var storage = level.getServer().overworld().getDataStorage();
             storage.set(SatelliteMissionSavedData.DATA_NAME, original);
             original.setDirty();

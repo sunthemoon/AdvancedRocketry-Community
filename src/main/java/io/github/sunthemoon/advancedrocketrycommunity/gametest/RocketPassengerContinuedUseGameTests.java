@@ -254,7 +254,7 @@ public final class RocketPassengerContinuedUseGameTests {
                 RocketFlightState.LANDED, 270, () -> {
             var journal = RocketTransferSavedData.get(earth.getServer());
             var record = journal.find(transfer).orElseThrow();
-            var rocket = (RocketEntity) moon.getEntity(record.destinationEntityId().orElseThrow());
+            var rocket = (RocketEntity) moon.getEntity(RocketFlightGameTestFixtures.landedDestinationId(helper, record));
             var chunk = new net.minecraft.world.level.ChunkPos(new net.minecraft.core.BlockPos(
                     record.destinationSnapshot().sourceOrigin().x(), record.destinationSnapshot().sourceOrigin().y(),
                     record.destinationSnapshot().sourceOrigin().z()));

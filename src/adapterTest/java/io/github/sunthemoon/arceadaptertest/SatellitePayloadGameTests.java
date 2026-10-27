@@ -50,11 +50,14 @@ public final class SatellitePayloadGameTests {
         int expectedReward = research.targetDiscovered() ? 137 : 126;
         // ADR-049 section 10 (C8a): a player's state-changing intents are spaced by 10 ticks.
         helper.runAfterDelay(10, () -> {
-            helper.assertTrue(menu.clickMenuButton(player, 3) && inventory.getStackInSlot(4).isEmpty(), "Actual launch did not consume package");
+            // ADR-074 item 6: the launch changes RAM at once; the package leaves on a tick after the registration's commit.
+            helper.assertTrue(menu.clickMenuButton(player, 3) && !inventory.getStackInSlot(4).isEmpty(),
+                    "Actual launch was refused, or its package left before the registration's commit");
             int before = research.balance();
             var intruder = SatellitePayloadFixture.player(terminal, UUID.randomUUID());
             helper.assertTrue(!menu.clickMenuButton(intruder, 4), "Wrong owner could use menu");
             helper.runAtTickTime(430, () -> {
+                helper.assertTrue(inventory.getStackInSlot(4).isEmpty(), "Actual launch did not consume package");
                 helper.assertTrue(menu.clickMenuButton(player, 4), "Claim intent rejected");
                 helper.assertTrue(research.balance() == before + expectedReward, "Registered research reward differs");
                 helper.runAtTickTime(441, () -> {

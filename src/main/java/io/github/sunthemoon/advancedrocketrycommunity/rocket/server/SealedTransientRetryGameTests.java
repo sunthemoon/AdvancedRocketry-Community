@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.sealed.SealedRocketBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.sealed.SealedRocketMember;
 import java.util.UUID;
@@ -32,8 +33,13 @@ public final class SealedTransientRetryGameTests {
             installed[0] = SealedUnsealGameTests.install(level, at, member);
             level.noSave = true;
         });
+        // W166 (R123): the journal acknowledgement before installation takes wall-clock time, and the deliberate hold then
+        // waits out the 200-tick retry inside the 350-tick budget, so each tick lasts a 20 TPS server tick.
+        var pacer = new GameTestTickPacer(server);
         helper.onEachTick(() -> {
-            if (finished[0] || installed[0] == null) { return; }
+            if (finished[0]) { return; }
+            pacer.pace();
+            if (installed[0] == null) { return; }
             var carrier = installed[0];
             try {
                 long now = server.getTickCount();

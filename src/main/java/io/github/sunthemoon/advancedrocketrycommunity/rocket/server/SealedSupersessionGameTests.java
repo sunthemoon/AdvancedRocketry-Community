@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModEntities;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.RocketBlockStateAdapter;
@@ -38,7 +39,11 @@ public final class SealedSupersessionGameTests {
         helper.assertTrue(level.addFreshEntity(rocket), "Fixture D was not installed");
         var id = new UUID[1]; var original = new CompoundTag[1]; var changedAt = new long[] {-1};
         var repaired = new boolean[1]; var completed = new SealedDisassembly.Result[1];
+        // W166 (R123): the changed carrier vetoes the sealed proof, so the repaired proof runs after the 200-tick retry. Its
+        // store, force and readback, and the journal writes, take wall-clock time, so each tick lasts a 20 TPS server tick.
+        var pacer = new GameTestTickPacer(server);
         helper.onEachTick(() -> {
+            pacer.pace();
             if (id[0] == null) {
                 if (!level.areEntitiesLoaded(new ChunkPos(at).toLong())) { return; }
                 id[0] = RocketRuntime.beginSealedForReleaseTest(rocket, result -> completed[0] = result);

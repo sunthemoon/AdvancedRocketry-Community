@@ -4,6 +4,7 @@ import com.mojang.authlib.GameProfile;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.FirstEventGameTestPlayers;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestAutosave;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedRootSupplier;
@@ -46,6 +47,11 @@ public final class RocketReleaseBoardingGameTests {
 
     private static final class Boarding {
         private static final TicketType<UUID> TICKET = TicketType.create("arce_w158_boarding", java.util.Comparator.<UUID>naturalOrder());
+        /**
+         * W166: a native capture here completes with its Level's next 20-tick force, so B0 and each fixture save end
+         * about 20 paced ticks after they start. Three force batches bound that; at most one wait of this length per run.
+         */
+        private static final int CAPTURE_WINDOW_TICKS = 60;
         final GameTestHelper helper;
         final ServerLevel level;
         final MinecraftServer server;
@@ -151,6 +157,9 @@ public final class RocketReleaseBoardingGameTests {
         }
         void admit() {
             if (!journal.actionable(record.logicalRocketId())) { return; }
+            // W166: a periodic autosave supersedes B0's capture, and W80 then drops the admission (B0_FAILED). Admit
+            // only when the next autosave falls after B0's window. B1's deliberate supersession below is unchanged.
+            if (GameTestAutosave.within(server, CAPTURE_WINDOW_TICKS)) { return; }
             EscrowRuntime.of(server).monitor().observerForTests(server, observation -> {
                 if (observation.slot().entities() && observation.slot().chunk() == originSlot.toLong()) {
                     if (!b1Captured && observation.cause().equals("CAPTURE") && release != null
@@ -197,6 +206,9 @@ public final class RocketReleaseBoardingGameTests {
             var work = ((java.util.Map<?, ?>) RocketSourceRetirementFixtures.field(transfers.releaseOwner(server).coordinator, "work")).get(release);
             if (work != null && "CAPTURE_FAILED".equals(RocketSourceRetirementFixtures.field(work, "notice"))) { captureFailed = true; }
             if (RocketRuntime.releaseFenced(rocket)) { return; }
+            // W166: a dropped admission also lifts the fence. It never reaches B1 or publishes its S1 batch.
+            helper.assertTrue(b1Captured || !"NONE".equals(transfers.releaseOwner(server).coordinator.stage(release)),
+                    "B0 dropped the admission before S1 (B0_FAILED): a native save superseded the B0 capture, so S2 never ran");
             helper.assertTrue(departed, "S2 completed before the retained-rider departure was exercised");
             helper.assertTrue(captureFailed, "The superseded B1 capture was not rejected before retrying");
             helper.assertTrue(sidecar.acknowledgedCurrent() && sidecar.acknowledgedRoot().entries().stream()
@@ -299,6 +311,8 @@ public final class RocketReleaseBoardingGameTests {
         }
         void saveSlot(ChunkPos slot, UUID entity) {
             if (savedSlots.contains(slot) || savingSlots.contains(slot)) { return; }
+            // W166: an autosave would supersede this capture too, and the fixture treats that as a failed save.
+            if (GameTestAutosave.within(server, CAPTURE_WINDOW_TICKS)) { return; }
             var runtime = EscrowRuntime.of(server); var store = runtime.store(level);
             if (!runtime.barrier().availableOrdinary(store, level.dimension().location().toString(), slot, server.getTickCount())) { return; }
             savingSlots.add(slot);

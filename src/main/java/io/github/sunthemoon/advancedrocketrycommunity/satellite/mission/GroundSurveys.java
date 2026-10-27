@@ -122,7 +122,7 @@ public final class GroundSurveys {
             }
             GroundSurveyJob job = new GroundSurveyJob(SatelliteLimits.GROUND_SURVEY_SCHEMA_VERSION, start.jobId(),
                     start.ownerId(), instance.instanceId(), start.source(), GroundSurveyJob.Snapshot.from(instance),
-                    start.surveyTicks(), start.surveyEnergy(), 0, now, registry.saveEpoch(), Phase.ACTIVE,
+                    start.surveyTicks(), start.surveyEnergy(), 0, now, registry.stampEpoch(), Phase.ACTIVE,
                     OptionalLong.empty(), OptionalLong.empty(), new Analysis(AnalysisState.WAITING,
                     start.analysisTicks(), start.analysisEnergy(), start.credit(), 0, Optional.empty()), Optional.empty());
             ResearchAccount account = registry.account(start.ownerId());
@@ -211,7 +211,7 @@ public final class GroundSurveys {
             if (job.phase() != Phase.READY) { return result(Code.NOT_READY, false, job); }
             if (ledger.processorBusy(processor.id(), id)) { return result(Code.PROCESSOR_BUSY, false, job); }
             Analysis next = job.analysis().with(AnalysisState.RUNNING, 0,
-                    Optional.of(new Claim(registry.saveEpoch(), processor)));
+                    Optional.of(new Claim(registry.stampEpoch(), processor)));
             return mutate(job.analyzed(next, registry.clock.preview(observedTime)), observedTime);
         }
     }
@@ -229,7 +229,7 @@ public final class GroundSurveys {
             }
             if (ledger.processorBusy(target.id(), id)) { return result(Code.PROCESSOR_BUSY, false, job); }
             Analysis next = job.analysis().with(AnalysisState.RUNNING, job.analysis().progress(),
-                    Optional.of(new Claim(registry.saveEpoch(), target)));
+                    Optional.of(new Claim(registry.stampEpoch(), target)));
             return mutate(job.analyzed(next, registry.clock.preview(observedTime)), observedTime);
         }
     }
@@ -311,7 +311,7 @@ public final class GroundSurveys {
 
     /** Existing scheduler pass; no live job is removed to admit another. */
     int prune(long now) {
-        if (registry.saveEpoch() == Long.MAX_VALUE) { return 0; }
+        if (!registry.epochs().admitsChange()) { return 0; }
         int removed = 0;
         int inspected = 0;
         while (removed < 16 && inspected < 32 && !ledger.queue.isEmpty()) {
@@ -365,7 +365,7 @@ public final class GroundSurveys {
         if (problem == null) { problem = touchedProblem(next, after); }
         if (problem != null) { return new Result(Code.INVARIANT_FAILED, false, Optional.ofNullable(current), problem); }
         try {
-            Math.addExact(registry.saveEpoch(), 1L);
+            Math.addExact(registry.epochs().ceiling(), 1L);
             // START and account creation add records and keep the whole-root preflight. Other changes stay
             // inside their records' lifecycle reservations, which bound the root without encoding it.
             boolean adds = current == null || newAccount;

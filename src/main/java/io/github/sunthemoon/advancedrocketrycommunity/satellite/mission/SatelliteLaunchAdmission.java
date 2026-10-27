@@ -32,7 +32,7 @@ final class SatelliteLaunchAdmission {
         MissionState mission;
         try {
             mission = MissionState.start(missionId, satelliteId, ownerId, SatelliteDefinitionSnapshot.from(definition),
-                    targetBodyId, logicalTime, discoveryRequired, registry.saveEpoch());
+                    targetBodyId, logicalTime, discoveryRequired, registry.stampEpoch());
         } catch (ArithmeticException exception) {
             return registry.result(SatelliteOperationCode.CAPACITY_REACHED, false, null, null);
         }

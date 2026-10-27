@@ -12,7 +12,8 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 
 /**
- * Removal of the non-data kinds (ADR-049 section 7), with the terminal's registry barrier.
+ * Removal of the non-data kinds (ADR-049 section 7). The removal is a RAM change and a prompt request; the terminal
+ * blanks the chip only once a published acknowledgement covers its removal token (ADR-074 item 6).
  */
 final class SatelliteKindLifecycle {
     private final SolarLinks links;
@@ -22,8 +23,8 @@ final class SatelliteKindLifecycle {
     }
 
     /**
-     * ADR-049 section 7: removes an idle satellite with a registry barrier flush before the terminal blanks
-     * the chip. A crash between the two leaves an inert chip, never a duplicate.
+     * ADR-049 section 7: removes an idle satellite in RAM and requests a write; the terminal blanks the chip after the
+     * covering acknowledgement. A crash between the two leaves an inert chip, never a duplicate.
      */
     SatelliteOperationResult decommission(ServerPlayer player, SatelliteIdentity identity, boolean operator) {
         if (!operator && !identity.ownerId().equals(player.getUUID())) {
@@ -37,9 +38,9 @@ final class SatelliteKindLifecycle {
             SatelliteMissionSavedData data = SatelliteMissionSavedData.get(server);
             SatelliteOperationResult result = data.decommission(
                     identity.satelliteId(), player.getUUID(), operator, receiverMissing(server, identity.satelliteId()));
-            // C7-L5: only a removal needs the barrier; a refusal writes nothing.
+            // C7-L5: only a removal requests a write; a refusal writes nothing.
             if (result.changed()) {
-                data.flush(server);
+                data.request(server);
             }
             if (result.changed()) {
                 AdvancedRocketryCommunity.LOGGER.info(
