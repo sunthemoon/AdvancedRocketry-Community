@@ -1,15 +1,20 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader;
 
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.SatelliteBayRoot;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.event.level.BlockEvent;
+import net.minecraftforge.event.level.ChunkDataEvent;
 import net.minecraftforge.event.level.ExplosionEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 /**
  * As R-038 for the satellite bay: a protected loader refuses player break before loot and leaves the explosion's
- * block list. No save is refused here; {@code /setblock}, {@code /fill} and raw replacement stay detectable residuals.
+ * block list. Only observed native incompatibility denies terrain saves; {@code /setblock}, {@code /fill} and raw
+ * replacement stay detectable residuals. W176 follows the existing W109 rule and guard capacity.
  */
 @Mod.EventBusSubscriber(modid = ModIdentity.MOD_ID)
 public final class FluidFuelLoaderProtection {
@@ -36,5 +41,23 @@ public final class FluidFuelLoaderProtection {
         event.getAffectedBlocks().removeIf(position -> event.getLevel().hasChunkAt(position)
                 && event.getLevel().getBlockState(position).getBlock() instanceof FluidFuelLoaderBlock
                 && FluidFuelLoaderBlock.protectedAt(event.getLevel(), position));
+    }
+
+    /** Inspect serialized roots, including unloaded block entities, independently of the live observation. */
+    @SubscribeEvent
+    public static void chunkSave(ChunkDataEvent.Save event) {
+        GuardedChunkSaves.beforeSave(event);
+        var entities = event.getData().getList("block_entities", Tag.TAG_COMPOUND);
+        if (entities.size() > 256 * event.getChunk().getHeight()) {
+            GuardedChunkSaves.refuse(event, "Chunk block-entity count exceeds its physical bound");
+        }
+        for (int index = 0; index < entities.size(); index++) {
+            var entity = entities.getCompound(index);
+            if (entity.getString("id").equals(ModIdentity.id("fluid_fuel_loader").toString())
+                    && entity.contains(LoaderRoot.KEY)
+                    && !SatelliteBayRoot.nativelyKeepable(entity.get(LoaderRoot.KEY))) {
+                GuardedChunkSaves.refuse(event, FluidFuelLoaderBlockEntity.SAVE_REFUSAL);
+            }
+        }
     }
 }

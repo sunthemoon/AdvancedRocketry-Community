@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader;
 
 import com.mojang.logging.LogUtils;
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlockEntities;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowLoaderAdmission;
@@ -23,6 +24,7 @@ import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.capabilities.Capability;
@@ -42,6 +44,8 @@ import org.slf4j.Logger;
  */
 public final class FluidFuelLoaderBlockEntity extends BlockEntity implements MenuProvider {
     public static final double MAX_ACTOR_DISTANCE = 8.0D;
+    public static final String SAVE_REFUSAL =
+            "Refusing chunk save with a fluid fuel loader root that native serialization cannot keep; back up and repair offline";
     private static final Logger LOGGER = LogUtils.getLogger();
 
     private final LoaderRetainedRoot data = new LoaderRetainedRoot();
@@ -97,6 +101,8 @@ public final class FluidFuelLoaderBlockEntity extends BlockEntity implements Men
     public boolean unsupportedRoot() {
         return !data.status.supported();
     }
+
+    public boolean unkeepable() { return data.unkeepable; }
 
     /** A second loaded loader with this device's UUID in the same Level; it stays disabled while the first is loaded. */
     public boolean duplicate() {
@@ -436,6 +442,7 @@ public final class FluidFuelLoaderBlockEntity extends BlockEntity implements Men
         if (unsupportedRoot()) {
             LOGGER.warn("ARCE_FLUID_FUEL_LOADER_UNSUPPORTED pos={} status={}", worldPosition.toShortString(), data.status);
         }
+        recordDenial();
         createCap();
         claimDevice();
     }
@@ -443,6 +450,7 @@ public final class FluidFuelLoaderBlockEntity extends BlockEntity implements Men
     @Override
     public void onLoad() {
         super.onLoad();
+        recordDenial();
         refreshTurns();
         if (level instanceof ServerLevel server) {
             pacer = RefillPacer.loadedAt(server.getGameTime());
@@ -455,6 +463,12 @@ public final class FluidFuelLoaderBlockEntity extends BlockEntity implements Men
     private void claimDevice() {
         if (data.root != null && !isRemoved() && level instanceof ServerLevel server) {
             FluidFuelLoaderIndex.claim(server, data.root.device(), this);
+        }
+    }
+
+    private void recordDenial() {
+        if (data.unkeepable && level instanceof ServerLevel server) {
+            GuardedChunkSaves.recordObservedDenial(server, new ChunkPos(worldPosition), SAVE_REFUSAL);
         }
     }
 
