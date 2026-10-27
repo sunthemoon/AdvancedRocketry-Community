@@ -28,11 +28,13 @@ public final class SealedTerrainProofGameTests {
         ((ChestBlockEntity) level.getBlockEntity(pos)).setItem(0, new ItemStack(Items.DIAMOND, 7));
         var runtime = EscrowRuntime.of(server); var barrier = runtime.barrier(); var store = runtime.store(level);
         String dimension = level.dimension().location().toString();
-        var result = new EscrowBarrier.Result[1]; var submitted = new boolean[1];
+        var result = new EscrowBarrier.Result[1]; var submitted = new boolean[1]; var completed = new boolean[1];
         var labels = new java.util.ArrayList<String>();
         helper.assertTrue(!barrier.availableOrdinaryTerrain(store, "w152:wrong_level", chunk, server.getTickCount()),
                 "Terrain facade accepted a different Level identity");
         helper.onEachTick(() -> {
+            // Scheduled observations may run again after success, when the deliberately invalidated proof is stale.
+            if (completed[0]) { return; }
             if (!submitted[0]) {
                 submitted[0] = barrier.beginOrdinaryTerrain(store, dimension, chunk,
                         root -> containsChest(root, pos), server.getTickCount(), labels::add, value -> result[0] = value);
@@ -53,6 +55,7 @@ public final class SealedTerrainProofGameTests {
                 helper.assertTrue(labels.contains("BARRIER_STORE_BEFORE"), "Ordinary capture omitted its own diagnostic sink");
                 runtime.monitor().observed(dimension, false, chunk);
                 helper.assertTrue(!proof.valid(), "A later terrain store did not invalidate the proof generation");
+                completed[0] = true;
                 helper.succeed();
             } catch (java.io.IOException failed) { helper.fail("Native terrain readback failed: " + failed.getClass().getSimpleName()); }
             finally { proof.release(); }
