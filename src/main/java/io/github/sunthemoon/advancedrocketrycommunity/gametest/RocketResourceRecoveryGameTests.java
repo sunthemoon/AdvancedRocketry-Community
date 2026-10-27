@@ -72,7 +72,9 @@ public final class RocketResourceRecoveryGameTests {
             RocketRuntime.requestDisassembly(fixture.player, fixture.rocket);
             helper.assertTrue(fixture.rocket.isAlive() && fixture.player.refusal != null
                     && fixture.player.refusal.getContents() instanceof net.minecraft.network.chat.contents.TranslatableContents pending
-                    && pending.getKey().endsWith("disassembly_pending"), "Unacknowledged retirement disassembled an arrival");
+                    && pending.getKey().endsWith("disassembly_pending"),
+                    "Unacknowledged retirement disassembled an arrival: alive=" + fixture.rocket.isAlive()
+                            + " refusal=" + fixture.player.refusal);
             io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport.acknowledgeFixture(helper);
             var pacer = new GameTestTickPacer(helper.getLevel().getServer());
             Runnable[] completed = new Runnable[1];
