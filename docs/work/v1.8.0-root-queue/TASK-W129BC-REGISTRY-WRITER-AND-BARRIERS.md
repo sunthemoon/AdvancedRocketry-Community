@@ -71,3 +71,55 @@ slice: a fresh read-only review follows before merge.
 - The Q6 ground-preflight leaf.
 - ADRs and the risk register: Root registers the new registry-writer row (R-041) and the R-039 change before merge.
 - `build.gradle`, workflows, status files and the ledger.
+
+## Continuation under Root decisions R120 and R122 (2026-10-27)
+
+W129bc delivered `bb8e87b8d`. The fresh Codex review
+(`D:/GitHub/ARCE-Task-Evidence/root-queue/W129bc-review/REVIEW.md`, SHA-256 `077920e0…405d`) returned **BLOCK** on two
+Medium findings. It found no duplicated satellite and no celestial write ahead of its paid receipt, and it verified
+the writer, the capture, the lifecycle, B1, B3 and the eleven native cuts. W129aM has since merged at `bb0eda86f`
+(review W129aM-R1 assigned here under R120). A fresh session continues on the same branch:
+
+1. **Merge the shared head first** (a merge, not a rebase): `git merge codex/v1.8.0-classic-content`. The branch then
+   compiles on its own, without W129aM's unmerged commits. Resolve conflicts in your own commit and list them in the
+   record.
+2. **W129bc-R1.** A first discovery-paying claim pays the account and moves the mission to `CLAIM_PENDING_DISCOVERY`,
+   but `SatelliteManager.claimMission` replaces that mutated result with `applyDiscovery`'s `PENDING_DISCOVERY` and
+   `changed=false`, so the terminal records no DATA entry or token.
+   - Keep the original claim's mutation and token whatever the discovery recovery returns.
+   - Record the terminal DATA action whenever that claim changed RAM.
+   - Keep the paid-receipt gate and the missing-mission no-request rule.
+   - Regressions: the reviewer's probe (`review-tests/.../ReviewDiscoveryClaimBarrierTest.java` in the review
+     folder), and an end-to-end terminal test of a first discovery-paying claim with the writer paused, then failed.
+     Check the stable pending entry, the conflicting-button refusal and delivery after coverage.
+3. **W129bc-R2.** `SatelliteTerminalBlockEntity`'s no-package, non-DATA start branch calls `resources.start` before
+   `TerminalRegistryActions.admit`. A second terminal can then start a survey while the first terminal's
+   cancellation of that satellite is still pending.
+   - Apply the by-satellite pending admission before resource starts.
+   - Audit every other state-changing branch that bypasses `dataAction` (resource claim and cancel, unlink) and list
+     each in the record with its admission.
+   - Keep the separate resource-delivery behaviour; do not add a durability barrier to every resource operation.
+   - Regression: a two-terminal survey cancel, chip move and start with the cancellation write held, which returns
+     `REGISTRY_BUSY` until the cancellation is acknowledged.
+4. **W129aM-R1 (R120).** The transaction writer has the post-await clock defect that `79f2653a` fixed for the
+   registry. After `awaitWriter`, the bound journal again supplies the unadjusted server tick, so a failure published
+   late in an await waits longer than 200 later server ticks.
+   - Compensate the bound transaction clock for time spent awaiting, including exceptional exits, as the registry
+     adapter does. Production cadence and shutdown's own clock stay unchanged; the release-only gate stays.
+   - Regression: a bound-journal test of success and cadence, then failure and backoff, each followed by real
+     server-tick advancement. The reviewer's `AwaitClockRepro.java`
+     (`D:/GitHub/ARCE-Task-Evidence/root-queue/W129aM-review/`) shows the sequence.
+   - Do not enlarge any timeout or shorten the backoff.
+5. **No change** to schemas, saved formats, bounds, budgets, deadlines, quotas or the log checker.
+
+### Verification
+
+- The new tests alone, failing first on the merged branch before each fix.
+- The 19 new or changed unit classes, the W119 matrices, `SatelliteRegistryEpochTest`, `SatelliteRegistryProofTest`,
+  the W129a classes, then the satellite, mission and rocket persistence packages and the whole unit suite.
+- runData with a clean tree and one complete GameTest with the unchanged log checker, on the merged tree.
+- Native: the R3, R4 and DISCOVERY cuts again with two restarts each (9 starts), since R1 and R2 change their paths.
+  B1 and B3 are not rerun: the writers do not change.
+
+The heavy-JVM lock rules above apply; W164, W152K and W156 share the lock. A fresh Claude session re-reviews after
+delivery. Root registers R-041 and the R-039 change before the merge.
