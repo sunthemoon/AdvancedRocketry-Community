@@ -193,6 +193,15 @@ public final class RocketEntity extends Entity implements MenuProvider {
                 .snapshotChanged(this, oldSnapshot);
     }
 
+    /** W170 D5: the bay coordinator's one-use permit replaces only the snapshot with its consumed version S'. */
+    public void applyBayConsumption(io.github.sunthemoon.advancedrocketrycommunity.rocket.server.BaySourceConsumption permit) {
+        var next = Objects.requireNonNull(permit).consume(this);
+        var old = snapshot; snapshot = next;
+        try { validateBindings(); } catch (RuntimeException failure) { snapshot = old; throw failure; }
+        refreshSyncedData();
+        io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketVisualSynchronizer.snapshotChanged(this, old);
+    }
+
     /** Only F4's checked, one-use permit can initialize a new bound destination. */
     public void initializeGovernedDestination(io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGovernedDestinationAction.Permit permit) {
         var record = Objects.requireNonNull(permit).consume(this);

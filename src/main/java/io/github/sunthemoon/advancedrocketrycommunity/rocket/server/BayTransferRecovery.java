@@ -53,6 +53,9 @@ final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
     private final BayDeploymentChecks checks = new BayDeploymentChecks();
     private final BayRegistrationSteps registration;
     private final BayGroupPublication publication;
+    private final BayConsumptionSteps consumption;
+    private final BaySourceProof proof;
+    private final BaySourceResume resume;
     private final Map<UUID, String> audited = new HashMap<>();
     // Gated seams (W128R-R2): GameTests name single rockets; the native B10 case blocks the registry view for the session.
     private final java.util.Set<UUID> registryBlockedForTests = new java.util.HashSet<>();
@@ -64,6 +67,9 @@ final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
         this.server = server; this.session = session;
         registration = new BayRegistrationSteps(server, session, checks);
         publication = new BayGroupPublication(server, session, registration, this::offer);
+        consumption = new BayConsumptionSteps(server, publication);
+        proof = new BaySourceProof(server, session, this::offer);
+        resume = new BaySourceResume(server);
     }
 
     private void offer(UUID logical) { if (!stopping) { queue.offer(logical); } }
@@ -164,7 +170,7 @@ final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
     void stop() {
         if (stopping) { return; }
         stopping = true; queue.close(); checks.clear();
-        registration.clear(); publication.clear();
+        registration.clear(); publication.clear(); consumption.clear(); proof.clear();
         LOGGER.info("ARCE_BAY_STOPPED claims={} unresolved={}", claims.size(),
                 claims.claims().stream().filter(claim -> claim.stage() != BayClaim.Stage.ENDED).count());
     }
@@ -178,7 +184,11 @@ final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
         for (BayClaim claim : claims.claims()) {
             RocketTransferRecord record = journal.find(claim.transfer()).orElse(null);
             if (record == null) { continue; }
-            if (claim.origin() != BayClaim.Origin.CHECKPOINT) { continue; }
+            if (claim.origin() != BayClaim.Origin.CHECKPOINT) {
+                if (claim.group().isPresent() && claim.hold() != BayClaim.Hold.REPAIR && claim.stage() != BayClaim.Stage.ENDED
+                        && claim.stage() != BayClaim.Stage.PUBLISH) { resume.renew(record); }
+                continue;
+            }
             var source = RocketTransferEntities.level(server, record.sourceSnapshot().sourceDimension());
             if (source != null) { RocketTransferEntities.refreshOriginTicket(source, record.sourceSnapshot(), record.transferId()); }
             var destination = RocketTransferEntities.level(server, record.destinationSnapshot().sourceDimension());
@@ -196,7 +206,10 @@ final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
             case BAYS -> bayStep(claim);
             case OUTCOMES -> outcomeStep(claim);
             case PUBLISH -> publication.publish(claim);
-            case RESUME, CONSUME, PROVE, RETIRE -> BayStepQueue.Result.IDLE; // the entity and journal half (D5 to D7, R1 to R3)
+            case RESUME -> resume.resume(claim);
+            case CONSUME -> consumption.consume(claim);
+            case PROVE -> proof.prove(claim);
+            case RETIRE -> proof.retire(claim);
             case ENDED -> BayStepQueue.Result.IDLE;
         };
         audit(claim);
@@ -429,7 +442,8 @@ final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
 
     /** The ended (or forgotten) claim's RAM proof state in every step class. */
     private void forgetState(BayClaim claim) {
-        registration.forget(claim); publication.forget(claim.logical());
+        registration.forget(claim); publication.forget(claim.logical()); consumption.forget(claim.logical());
+        proof.forget(claim.logical());
     }
 
     /** The loaded registry, unless a gated seam blocks this coordinator's view of it for the session or for L. */
