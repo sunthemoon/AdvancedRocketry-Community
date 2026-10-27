@@ -942,6 +942,24 @@
       "reason": "The destination-spawned transfer with neither entity must rebuild its destination."
     },
     {
+      "id": "w156-moon-recovery-rebuild-destination",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RECOVERY transfer=[0-9a-f-]{36} phase=DESTINATION_SPAWNED source_count=0 destination_count=0 action=REBUILD_DESTINATION status=RECOVERED",
+      "counts": {"moon_landing_rule": 2},
+      "test": "MoonLandingRuleGameTests.recoveryRebuildsRecordedMoonDestinationsAtTheirOrigins",
+      "reason": "ADR-075 case 9: recovery rebuilds one recorded Moon destination below y 80 and one at y 80, each at its recorded origin."
+    },
+    {
+      "id": "w156-moon-blocked-pad-return",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RETURNED_TO_SOURCE transfer=[0-9a-f-]{36} logical=[0-9a-f-]{36} reason=destination_pad_blocked fuel=\\d+",
+      "counts": {"moon_landing_rule": 1},
+      "test": "MoonLandingRuleGameTests.removedMoonSupportReturnsOneRocketWithItsOriginalFuel",
+      "reason": "ADR-075 case 6: the support of a recorded Moon destination below y 80 is removed, and the pre-spawn recheck returns the rocket to its source."
+    },
+    {
       "id": "transfer-login-reconciled",
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
