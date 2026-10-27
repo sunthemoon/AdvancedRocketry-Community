@@ -253,7 +253,7 @@ public final class BayDeploymentGameTests {
             helper.assertTrue(BayRestartRows.row(server, intent(record, absent, owner, "solar_satellite"))
                     == BayRestartRows.Row.REJECT_INTERRUPTED, "X absent with matching T must become REJECTED (INTERRUPTED)");
             helper.assertTrue(BayRestartRows.row(server, intent(record, equal, owner, "solar_satellite"))
-                    == BayRestartRows.Row.HOLD_EQUAL, "An equal X waits unchanged for W27d2");
+                    == BayRestartRows.Row.PROMOTE, "An equal X promotes (W170; the interim wait of R49 Q4 is gone)");
             helper.assertTrue(BayRestartRows.row(server, intent(record, differs, owner, "data_satellite"))
                     == BayRestartRows.Row.REPAIR_SIGNATURE, "A different tuple becomes REPAIR");
             var otherOwner = intent(record, absent, UUID.randomUUID(), "solar_satellite");

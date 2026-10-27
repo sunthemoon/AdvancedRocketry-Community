@@ -12,7 +12,6 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.content.SatelliteIdentity;
-import io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteMissionSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteRuntime;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -102,16 +101,17 @@ final class BayDeploymentChecks {
         return definition.isPresent() && definition.get().capabilities().orbitable() ? Optional.empty() : Optional.of("TARGET_NOT_ALLOWED");
     }
 
-    /** The per-bay checks before the receipt: package availability, bay/package/T owner agreement, an existing X (Q4). */
-    static Optional<String> bayRefusal(Bay bay, RocketTransferRecord record, SatelliteMissionSavedData registry) {
+    /**
+     * The per-bay checks before the receipt: package availability and bay/package/T owner agreement. An existing X is no
+     * longer refused (W170 removes R49 Q4's interim refusal): D2 replays it as IDEMPOTENT and the bay is consumed.
+     */
+    static Optional<String> bayRefusal(Bay bay, RocketTransferRecord record) {
         if (!bay.decoded().available()) { return Optional.of(bay.decoded().availability().name()); }
         SatelliteIdentity identity = bay.identity().orElse(null);
         if (identity == null) { return Optional.of("INVALID_PACKAGE"); }
         if (!bay.bayOwner().equals(identity.ownerId()) || !identity.ownerId().equals(record.ownerId())) {
             return Optional.of("BAY_OWNER_MISMATCH");
         }
-        // R49 Q4: an existing X's restart promotion belongs to W27d2, so W27d1 refuses it at runtime.
-        if (registry.satellite(identity.satelliteId()).isPresent()) { return Optional.of("DEPLOYMENT_UNAVAILABLE"); }
         return Optional.empty();
     }
 }

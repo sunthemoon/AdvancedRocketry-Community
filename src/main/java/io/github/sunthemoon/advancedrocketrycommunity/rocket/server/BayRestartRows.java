@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceipt;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.deployment.BayClaim;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.deployment.BayGroup;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.deployment.BayMember;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferPhase;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
@@ -14,9 +15,10 @@ import java.util.UUID;
 import net.minecraft.server.MinecraftServer;
 
 /**
- * W27d1's restart rows (W27A-DESIGN section 4's restart classification for INTENT; W128's one-page design). Claims are
- * built at ServerStartingEvent, before the first tick, from the loaded receipts; each INTENT row is decided and written
- * by a queued step. REJECTED receipts claim nothing.
+ * The restart rows (W27A-DESIGN section 4's restart classification; W128's one-page design, and W170's for one copy).
+ * Claims are built at ServerStartingEvent, before the first tick, from the loaded receipts; each INTENT row is decided
+ * and written by a queued step. A rocket whose pending receipts are all REGISTERED for one T, with the same hashes,
+ * resumes as a frozen group (R1 to R3, then D6 and D7); any other mix holds for repair. REJECTED receipts claim nothing.
  */
 final class BayRestartRows {
     /** What one durable INTENT becomes in this session. */
@@ -25,8 +27,8 @@ final class BayRestartRows {
         REJECT_INTERRUPTED,
         /** X present with a different identity: durable REPAIR (REGISTRY_SIGNATURE_CONFLICT). */
         REPAIR_SIGNATURE,
-        /** X present and equal: W27d2 promotes it; here it waits unchanged at runtime. */
-        HOLD_EQUAL,
+        /** X present and equal: the loaded identity is proved (D3), then REGISTERED through D4 (W170). */
+        PROMOTE,
         /** The registry is blocked: runtime REGISTRY_BLOCKED, treated like REPAIR for the wait. */
         HOLD_BLOCKED,
         /** T missing or different: runtime REPAIR (TRANSFER_AUTHORITY_CONFLICT), no write. */
@@ -56,13 +58,21 @@ final class BayRestartRows {
                     members.add(oneTransfer ? BayMember.restartIntent(receipt)
                             : BayMember.restartHeld(receipt, "TRANSFER_AUTHORITY_CONFLICT"));
                 } else if (receipt.phase() == BayReceipt.Phase.REGISTERED) {
-                    members.add(BayMember.restartHeld(receipt, "DEPLOYMENT_PENDING")); // W27d2 resumes it
+                    members.add(oneTransfer ? BayMember.restartRegistered(receipt)
+                            : BayMember.restartHeld(receipt, "TRANSFER_AUTHORITY_CONFLICT"));
                 } else {
                     members.add(BayMember.restartHeld(receipt, receipt.reason()));
                     if (repair == null) { repair = receipt.reason(); }
                 }
             }
             var claim = BayClaim.restart(entry.getKey(), transfer, members);
+            var registered = members.stream().filter(member -> member.state() == BayMember.State.REGISTERED).toList();
+            if (repair == null && !registered.isEmpty()) {
+                // A group retires in one generation, so REGISTERED never shares L with INTENT, and its hashes agree.
+                var frozen = registered.size() == members.size() ? BayGroup.resumed(entry.getKey(), transfer, registered)
+                        : java.util.Optional.<BayGroup>empty();
+                if (frozen.isPresent()) { claim.freeze(frozen.get()); } else { repair = "TRANSFER_AUTHORITY_CONFLICT"; }
+            }
             if (repair != null) { claim.repair(repair); }
             claims.add(claim);
         }
@@ -90,6 +100,6 @@ final class BayRestartRows {
         if (existing == null) { return Row.REJECT_INTERRUPTED; }
         boolean equal = existing.ownerId().equals(intent.owner()) && existing.kind() == intent.kind()
                 && existing.definitionId().toString().equals(intent.definition());
-        return equal ? Row.HOLD_EQUAL : Row.REPAIR_SIGNATURE;
+        return equal ? Row.PROMOTE : Row.REPAIR_SIGNATURE;
     }
 }
