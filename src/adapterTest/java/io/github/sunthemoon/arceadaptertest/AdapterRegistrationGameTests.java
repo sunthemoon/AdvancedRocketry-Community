@@ -62,7 +62,7 @@ public final class AdapterRegistrationGameTests {
         helper.succeed();
     }
 
-    @GameTest(templateNamespace = HOST_ID, template = "rocket_test", timeoutTicks = 40)
+    @GameTest(templateNamespace = HOST_ID, template = "rocket_test", batch = "w164_adapter_success", timeoutTicks = 40)
     public static void externalAdapterProductionAssemblyPreservesInventory(GameTestHelper helper) {
         helper.assertTrue(AdapterTestMod.registrationEvents() == 1,
                 "Production test started without exactly one external registration event");
@@ -97,12 +97,14 @@ public final class AdapterRegistrationGameTests {
         }
 
         AABB region = new AABB(absoluteOrigin).inflate(3.0D);
+        Entity[] authority = new Entity[1];
         helper.startSequence()
                 .thenWaitUntil(() -> helper.assertTrue(rockets(helper, region).size() == 1,
                         "Production tick did not assemble one fixture rocket; assembler="
                                 + helper.getBlockEntity(origin.below()).saveWithoutMetadata()))
                 .thenExecute(() -> {
                     Entity rocket = rockets(helper, region).get(0);
+                    authority[0] = rocket;
                     for (BlockPos position : List.of(origin, origin.above(), origin.above(2), cargoPosition)) {
                         helper.assertTrue(helper.getBlockState(position).isAir(),
                                 "Assembly left a duplicate world block at " + position);
@@ -121,6 +123,12 @@ public final class AdapterRegistrationGameTests {
                     } finally {
                         owner.setShiftKeyDown(false);
                     }
+                })
+                // DISASSEMBLY_PENDING -> BLOCKS_PUBLISHED; no same-call completion promise.
+                .thenWaitUntil(() -> helper.assertTrue(helper.getBlockState(cargoPosition).is(AdapterTestMod.CONTAINER.get()),
+                        "Production disassembly has not published the inventory"))
+                .thenExecute(() -> {
+                    Entity rocket = authority[0];
                     helper.assertTrue(rocket.isRemoved() && rockets(helper, region).isEmpty(),
                             "Owner interaction did not remove the assembled rocket exactly once");
                     helper.assertTrue(helper.getBlockState(origin).is(hostBlock("rocket_motor"))

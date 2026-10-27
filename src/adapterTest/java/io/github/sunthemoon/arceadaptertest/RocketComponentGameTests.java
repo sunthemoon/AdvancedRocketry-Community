@@ -49,7 +49,7 @@ public final class RocketComponentGameTests {
         helper.succeed();
     }
 
-    @GameTest(templateNamespace = HOST, template = "rocket_test", timeoutTicks = 40)
+    @GameTest(templateNamespace = HOST, template = "rocket_test", batch = "w164_adapter_success", timeoutTicks = 40)
     public static void externalComponentsDriveActualAssemblyAndZeroFuelDisassembly(GameTestHelper helper) {
         BlockPos origin = new BlockPos(3, 2, 3);
         Map<BlockPos, Block> blocks = Map.of(origin, Blocks.DIAMOND_BLOCK, origin.west(), Blocks.EMERALD_BLOCK,
@@ -69,10 +69,12 @@ public final class RocketComponentGameTests {
             throw new IllegalStateException(exception);
         }
         AABB region = new AABB(absolute).inflate(3);
+        Entity[] authority = new Entity[1];
         helper.startSequence().thenWaitUntil(() -> helper.assertTrue(rockets(helper, region).size() == 1,
                 "Production component assembly did not create exactly one rocket"))
                 .thenExecute(() -> {
                     Entity rocket = rockets(helper, region).get(0);
+                    authority[0] = rocket;
                     CompoundTag saved = new CompoundTag();
                     helper.assertTrue(rocket.save(saved), "Component rocket did not serialize");
                     CompoundTag data = saved.getCompound("RocketEntityData");
@@ -92,6 +94,12 @@ public final class RocketComponentGameTests {
                     owner.setPos(rocket.getX(), rocket.getY(), rocket.getZ());
                     owner.setShiftKeyDown(true);
                     try { rocket.interact(owner, InteractionHand.MAIN_HAND); } finally { owner.setShiftKeyDown(false); }
+                })
+                // DISASSEMBLY_PENDING -> BLOCKS_PUBLISHED, including every non-container member.
+                .thenWaitUntil(() -> blocks.forEach((pos, block) -> helper.assertTrue(helper.getBlockState(pos).is(block),
+                        "Original component block not yet published")))
+                .thenExecute(() -> {
+                    Entity rocket = authority[0];
                     helper.assertTrue(rocket.isRemoved() && rockets(helper, region).isEmpty(), "Zero-fuel disassembly failed");
                     blocks.forEach((pos, block) -> helper.assertTrue(helper.getBlockState(pos).is(block), "Original component block not restored"));
                     helper.assertTrue(helper.getLevel().getEntitiesOfClass(ItemEntity.class, region).isEmpty(), "Component operation dropped duplicates");

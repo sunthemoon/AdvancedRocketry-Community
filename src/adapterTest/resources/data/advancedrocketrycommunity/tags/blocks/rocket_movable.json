@@ -2,6 +2,8 @@
   "replace": false,
   "values": [
     "arce_adapter_test:cargo_container",
+    "arce_adapter_test:slow_move_container",
+    "arce_adapter_test:slow_capture_container",
     "arce_adapter_test:sealed_cargo_container",
     "minecraft:diamond_block",
     "minecraft:emerald_block",

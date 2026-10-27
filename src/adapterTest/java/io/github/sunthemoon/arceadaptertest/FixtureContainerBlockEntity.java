@@ -29,6 +29,8 @@ final class FixtureContainerBlockEntity extends BlockEntity implements Container
 
     FixtureContainerBlockEntity(BlockPos position, BlockState state) {
         super(state.is(AdapterTestMod.SEALED_CONTAINER.get()) ? AdapterTestMod.SEALED_CONTAINER_TYPE.get()
+                : state.is(AdapterTestMod.SLOW_MOVE_CONTAINER.get()) ? AdapterTestMod.SLOW_MOVE_TYPE.get()
+                : state.is(AdapterTestMod.SLOW_CAPTURE_CONTAINER.get()) ? AdapterTestMod.SLOW_CAPTURE_TYPE.get()
                 : state.is(AdapterTestMod.LATCH_CONTAINER.get()) ? AdapterTestMod.LATCH_CONTAINER_TYPE.get()
                 : AdapterTestMod.CONTAINER_TYPE.get(), position, state);
         SealedStagingProbeFixture.observe("external.constructor.return");
