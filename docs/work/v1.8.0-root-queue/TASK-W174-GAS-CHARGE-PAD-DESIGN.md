@@ -64,6 +64,38 @@ Give each leaf a scope, tests and a size.
 `python -B scripts/validate_repository.py --require-approved-identity` on the record commit. No Gradle, GameTest or
 server is needed. Unit-level probes, if any, stay in the evidence folder.
 
+## Revision 2 under Root decision R134 (2026-10-28)
+
+Revision 1 (`f9dbf78e5`) was reviewed. The review, `D:/GitHub/ARCE-Task-Evidence/root-queue/W174-review/REVIEW.md`
+(SHA-256 `f390b483…913c`), returned BLOCK. Read the whole review and its design-model tests first. A fresh session
+revises `records/W174-DESIGN.md` on `codex/v1.8.0-w174` as revision 2. Keep revision 1's text where it still holds,
+and mark each change with the finding it answers:
+
+- **W174-R1 (Critical).** Breaking a pad after its last outbox is removed in RAM, but before PS2 stores that, lets the
+  no-pad reconciliation prune the receipt without a durable proof. A crash then credits the charge twice. Protect the
+  source until its acknowledgement is durable, not only while it holds an outbox. Every orphan prune, including for an
+  absent or replaced pad, needs positive durable evidence. Define:
+  - what keeps an acknowledgement's identity across unload and removal;
+  - how late proof callbacks are rejected;
+  - the native cuts that pin it.
+
+  Do not repair it by refunding or discarding an outbox.
+- **W174-R2 (High).** Pad proofs must take part in the existing sealed and ordinary turn policy (`SealedProofAdmission`,
+  `SealedProofTurns`; ADR-065's proof admission reserves all four ordinary captures for an active sealed attempt),
+  and must yield the whole Level window while a sealed attempt needs it. Specify the ordering with waiting rocket
+  demand, and the fairness tests, without raising any quota or deadline.
+- **W174-R3 to R8 (Medium):**
+  - R3: a pad-owned attempt lifecycle and deadline, with late-completion handling and an honest IO-failure duration;
+  - R4: credit catch-up within 100 per 20 ticks and one eligible player per pass;
+  - R5: an eligibility predicate that accepts enchanted chests;
+  - R6: state the integrated-host unreachability as an enforced check, not an observation;
+  - R7: order the leaves so that the risk registration and review come before the first persistence leaf;
+  - R8: correct L4's sum.
+
+If a finding cannot be closed without a new hook, an Access Transformer or a Mixin, say so. Then strengthen the owner
+alternative (O1, canister filling) instead. Verification as before: the validator on the record commit, and any probes
+kept in the evidence folder. A fresh read-only review follows.
+
 ## Not in this task
 
 Any production code, ADR changes (Root proposes them from your note), the risk register, status files and the ledger.
