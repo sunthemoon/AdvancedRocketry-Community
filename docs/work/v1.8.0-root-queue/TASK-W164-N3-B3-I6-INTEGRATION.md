@@ -194,6 +194,10 @@ never tickets. Root decision R124 sets the order:
      - Do not relax readiness or lengthen any wait.
    - **Only the fixture is outside the supported contract.** Move the native fixture to a supported position and
      cite the contract.
+   - **Prior art (Root note, 20:25):** [W90](records/W90-DESIGN.md) found the same mismatch for governed flights.
+     Root decisions R21 and R22 adopted one checked column set with the origin column inside it, and an
+     `arce_rocket_flight` ticket on every discovery-margin column of each end (at most 16 per end), as an explicit
+     budget change. W90a implemented it. Reuse that column set and ticket rule, with its bound, rather than a new one.
 4. **B-PRE again, all 20 cases**, on the final committed source after the merge, two restarts each.
    - The counted limit for this tranche is 66 starts. The R118 ledger stays as it is; this is a new tranche.
    - Stop and report if a case fails twice.
