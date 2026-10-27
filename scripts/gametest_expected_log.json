@@ -1816,6 +1816,15 @@
       "reason": "W128R-R2: a restart INTENT whose satellite is registered with a different owner gets its durable REPAIR, and the claim holds for offline repair."
     },
     {
+      "id": "w170-bay-protected-duplicate",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.server.BayTransferRecovery/",
+      "message": "ARCE_BAY_CLAIM transfer=[0-9a-f-]{36} logical=[0-9a-f-]{36} state=REPAIR reason=PROTECTED_DUPLICATE",
+      "counts": {"bay_registered": 1},
+      "test": "BayRegisteredGameTests.aProtectedSecondCopyHoldsTheRestartForRepairWithNoRecordChange",
+      "reason": "W170 (B6's protected-copy refusal): a restarted REGISTERED group finds a second recognized copy whose escrow wrapper is bound, so its claim holds for offline repair with no record change; the one transition is a WARN by design."
+    },
+    {
       "id": "w128r-r126-bay-hook-unclaimed-record-recovery",
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",

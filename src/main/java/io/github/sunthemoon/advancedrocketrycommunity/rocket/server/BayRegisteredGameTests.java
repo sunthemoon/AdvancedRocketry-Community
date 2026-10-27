@@ -42,7 +42,7 @@ public final class BayRegisteredGameTests {
     static final String REGISTERED = "bay_registered";
     private BayRegisteredGameTests() { }
 
-    private enum Kind { DECOMMISSION, PRESENT, ABSENT, MIXED_SOURCE_CONSUMED, MIXED_JOURNAL_CONSUMED, PROMOTE, DUPLICATE }
+    private enum Kind { DECOMMISSION, PRESENT, ABSENT, MIXED_SOURCE_CONSUMED, MIXED_JOURNAL_CONSUMED, PROMOTE, DUPLICATE, PROTECTED }
 
     @GameTest(template = TEMPLATE, batch = REGISTERED, timeoutTicks = 1_200)
     public static void decommissionAfterRegistrationLeavesOneSatelliteLiveOneAbsentAndBothBaysConsumed(GameTestHelper helper) {
@@ -77,6 +77,12 @@ public final class BayRegisteredGameTests {
     @GameTest(template = TEMPLATE, batch = REGISTERED, timeoutTicks = 1_200)
     public static void aSecondRecognizedCopyHoldsTheRestartAsDuplicatePendingWithNoRecordChange(GameTestHelper helper) {
         new Case(helper, Kind.DUPLICATE).start();
+    }
+
+    /** B6's protected-copy refusal: a second recognized copy with a bound escrow wrapper holds the claim for repair. */
+    @GameTest(template = TEMPLATE, batch = REGISTERED, timeoutTicks = 1_200)
+    public static void aProtectedSecondCopyHoldsTheRestartForRepairWithNoRecordChange(GameTestHelper helper) {
+        new Case(helper, Kind.PROTECTED).start();
     }
 
     private static final class Case {
@@ -147,9 +153,10 @@ public final class BayRegisteredGameTests {
                 journal.flush(server);
             } else if (kind == Kind.ABSENT) {
                 flight.source().discard();
-            } else if (kind == Kind.DUPLICATE) {
+            } else if (kind == Kind.DUPLICATE || kind == Kind.PROTECTED) {
                 copy = ModEntities.ROCKET.get().create(helper.getLevel());
                 copy.initializeTransferred(flight.record().sourceSnapshot(), logical(), owner, flight.record().sourceFlightData());
+                if (kind == Kind.PROTECTED) { copy = RocketEscrowSectionPatch.BOUND.apply(helper.getLevel(), copy); }
                 helper.assertTrue(helper.getLevel().addFreshEntity(copy), "Copy not published");
             }
             stage = 1;
@@ -189,6 +196,17 @@ public final class BayRegisteredGameTests {
                                 "An acknowledged REGISTERED receipt must lift the decommission fence");
                         decommissioned = true;
                     }
+                }
+                if (kind == Kind.PROTECTED) {
+                    if (claim.hold() != BayClaim.Hold.REPAIR) { return; }
+                    helper.assertTrue(claim.reason().equals("PROTECTED_DUPLICATE") && claim.stage() == BayClaim.Stage.RESUME,
+                            "A protected copy must hold the claim for repair: " + describe());
+                    helper.assertTrue(record().checksum().equals(checksum) && flight.source().snapshot().orElseThrow().contentHash()
+                            .equals(flight.record().sourceSnapshot().contentHash()) && receipts.stream().allMatch(receipt ->
+                            session.acknowledged(receipt.op()) && session.current(receipt.op()).orElseThrow().equals(receipt)),
+                            "The repair hold changed a record or the source");
+                    if (++held >= 20) { close(); helper.succeed(); }
+                    return;
                 }
                 if (kind == Kind.DUPLICATE && copy != null) {
                     if (!claim.reason().equals("DUPLICATE_PENDING")) {
