@@ -150,7 +150,7 @@ public final class BayDeploymentMatrixGameTests {
             var dataMember = member(satellite(data)); var solarMember = member(satellite(solar));
             var registry = SatelliteMissionSavedData.get(server);
             helper.assertTrue(registry.satellite(satellite(data)).isEmpty() && registry.satellite(satellite(solar)).isEmpty(), "W27d1 registered X");
-            helper.assertTrue(before.equals(BayDeploymentGameTests.signatures(flight.record().sourceSnapshot())), "The packages in T changed");
+            assertPackagesUnchanged();
             if (expect == Expect.CAPTURED) {
                 var rejected = session.find(satellite(data)).orElseThrow();
                 helper.assertTrue(sawIntent && dataMember.state() == BayMember.State.REJECTED
@@ -178,6 +178,29 @@ public final class BayDeploymentMatrixGameTests {
 
         BayMember member(UUID satellite) {
             return claim.members().stream().filter(member -> member.satellite().orElseThrow().equals(satellite)).findFirst().orElseThrow();
+        }
+
+        void assertPackagesUnchanged() {
+            var server = helper.getLevel().getServer();
+            var current = RocketTransferSavedData.get(server).find(flight.record().transferId()).orElseThrow();
+            helper.assertTrue(before.equals(BayDeploymentGameTests.signatures(current.sourceSnapshot())),
+                    "The packages in T's current source snapshot changed");
+            helper.assertTrue(before.equals(BayDeploymentGameTests.signatures(current.destinationSnapshot())),
+                    "The packages in T's current destination snapshot changed");
+            var destination = RocketTransferEntities.findDestination(server, current);
+            helper.assertTrue(flight.source().isAlive() && !flight.source().isRemoved() || destination != null,
+                    "Neither source nor published destination survives the handoff");
+            if (!flight.source().isRemoved()) {
+                helper.assertTrue(before.equals(BayDeploymentGameTests.signatures(flight.source().snapshot().orElseThrow())),
+                        "The packages in the live source changed");
+            }
+            if (current.destinationEntityId().isPresent()) {
+                helper.assertTrue(destination != null, "The published destination is missing from the loaded fixture");
+            }
+            if (destination != null) {
+                helper.assertTrue(before.equals(BayDeploymentGameTests.signatures(destination.snapshot().orElseThrow())),
+                        "The packages in the published destination changed");
+            }
         }
 
         void close() {

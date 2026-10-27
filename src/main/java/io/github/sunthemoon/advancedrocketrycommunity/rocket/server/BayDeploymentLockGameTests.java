@@ -4,9 +4,11 @@ import static io.github.sunthemoon.advancedrocketrycommunity.rocket.server.BayDe
 
 import com.mojang.authlib.GameProfile;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
+import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModEntities;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceipt;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceiptTestHooks;
+import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketDestination;
@@ -17,12 +19,21 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlight
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightState;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderBlockEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderStatus;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.LoaderBinding;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.LoaderEscrowSection;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.LoaderRoot;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.LoaderTank;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketTransactionSavedData;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.validation.RocketValidationCode;
 import java.util.List;
 import java.util.UUID;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.FakePlayer;
@@ -47,7 +58,7 @@ public final class BayDeploymentLockGameTests {
         var server = level.getServer();
         UUID owner = UUID.randomUUID();
         ItemStack pkg = dataPackage(owner);
-        var player = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "ARCEBayTransit"));
+        var player = new RocketLandedDisassemblyGameTestSupport.Requester(level, owner);
         var operator = server.createCommandSourceStack().withPermission(4).withSuppressedOutput();
         Object[] state = new Object[2]; // the flight and the INTENT
         int[] step = {0, 0};
@@ -79,6 +90,7 @@ public final class BayDeploymentLockGameTests {
                     helper.assertTrue(RocketTransferSavedData.get(server).find(flight.record().transferId()).orElseThrow().checksum()
                                     .equals(flight.record().checksum()),
                             "T changed while held");
+                    assertNoDisassembly(helper, rocket, player);
                     helper.assertTrue(BayReceiptTestHooks.remove(server, ((BayReceipt) state[1]).op(), outcome -> { }).queued(), "Removal refused");
                     helper.assertTrue(RocketEscrowGate.bayHeld(rocket), "The lock ended before the removal's acknowledgement");
                     step[0] = 2;
@@ -93,7 +105,8 @@ public final class BayDeploymentLockGameTests {
         });
     }
 
-    private static void transitRows(GameTestHelper helper, RocketEntity rocket, RocketTransferRecord record, FakePlayer player,
+    private static void transitRows(GameTestHelper helper, RocketEntity rocket, RocketTransferRecord record,
+                                    RocketLandedDisassemblyGameTestSupport.Requester player,
                                     CommandSourceStack operator) {
         var server = helper.getLevel().getServer();
         helper.assertTrue(RocketEscrowGate.bayHeld(rocket) && !RocketEscrowGate.idle(rocket) && !RocketEscrowGate.resourcesIdle(rocket)
@@ -114,12 +127,22 @@ public final class BayDeploymentLockGameTests {
         server.getCommands().performPrefixedCommand(operator, "tp " + rocket.getStringUUID() + " ~ ~5 ~");
         server.getCommands().performPrefixedCommand(operator, "data merge entity " + rocket.getStringUUID() + " {RocketEntityData:{}}");
         server.getCommands().performPrefixedCommand(operator, "kill " + rocket.getStringUUID());
-        // In TRANSIT a native fuel change cannot even be built (RocketFlightData drops the plan, which an active state needs),
-        // so the resource row is the gate every resource-changing path reads: the entity's resource guard, the loaders, the
-        // cargo linkers and disassembly.
+        // Keep the direct resource guards beside the real loader and player-disassembly requests below.
         helper.assertTrue(!RocketEscrowGate.resourcesIdle(rocket), "The entity's resource guard admitted a held rocket in TRANSIT");
         helper.assertTrue(!RocketRuntime.resourceMutationAllowed(rocket), "Loaders and disassembly were admitted in TRANSIT");
+        loaderRefusesTransit(helper, rocket);
+        player.setPos(rocket.getX() + 2, rocket.getY(), rocket.getZ());
+        helper.assertTrue(player.isAlive() && !player.isSpectator() && player.level() == rocket.level()
+                        && rocket.ownerId().filter(player.getUUID()::equals).isPresent()
+                        && RocketInteraction.withinRange(player, rocket.getX(), rocket.getY(), rocket.getZ()),
+                "The disassembly requester is not the eligible owner in range");
+        helper.assertTrue(rocket.flightData().orElseThrow().fuel().totalAmount() > 0,
+                "The fixture must distinguish refusal from a fueled confirmation offer");
+        assertNoDisassembly(helper, rocket, player);
         RocketRuntime.requestDisassembly(player, rocket);
+        helper.assertTrue(player.actionBar.equals(List.of(RocketValidationCode.REGION_BUSY.translationKey())),
+                "Held TRANSIT disassembly did not report REGION_BUSY: " + player.actionBar);
+        assertNoDisassembly(helper, rocket, player);
         UUID launch = UUID.randomUUID();
         var launched = RocketRuntime.requestAdminFlight(rocket, RocketDestination.MOON, launch);
         helper.assertTrue(launched.code() != RocketFlightRequestCode.SUCCESS && RocketTransferSavedData.get(server).find(launch).isEmpty(),
@@ -127,6 +150,62 @@ public final class BayDeploymentLockGameTests {
         helper.assertTrue(rocket.isAlive() && rocket.position().equals(position) && !rocket.isPassenger(),
                 "kill or teleport moved or removed the held rocket");
         helper.assertTrue(rocket.flightData().orElseThrow().equals(before), "A held rocket's flight data changed in TRANSIT");
+    }
+
+    private static void loaderRefusesTransit(GameTestHelper helper, RocketEntity rocket) {
+        var level = helper.getLevel();
+        var server = level.getServer();
+        var flight = rocket.flightData().orElseThrow();
+        var origin = flight.currentOrigin();
+        BlockPos at = rocket.blockPosition().offset(2, 0, 0);
+        UUID device = UUID.randomUUID();
+        var binding = new LoaderBinding(flight.logicalRocketId(), level.dimension().location(), rocket.getUUID(),
+                new BlockPos(origin.x(), origin.y(), origin.z()), null);
+        var root = new LoaderRoot(rocket.ownerId().orElseThrow(), device, binding,
+                LoaderTank.of(ModIdentity.id("rocket_fuel"), null, 1_000), LoaderEscrowSection.neutral());
+        level.setBlockAndUpdate(at, ModBlocks.FLUID_FUEL_LOADER.get().defaultBlockState());
+        var loader = (FluidFuelLoaderBlockEntity) level.getBlockEntity(at);
+        helper.assertTrue(loader != null, "The TRANSIT loader was not placed");
+        var tag = new CompoundTag(); tag.put(LoaderRoot.KEY, root.encode()); loader.load(tag);
+        var runtime = EscrowRuntime.of(server);
+        try {
+            runtime.loaderAdmissionForTests(server, device, true);
+            helper.assertTrue(loader.live() && loader.root().orElseThrow().binding().equals(binding)
+                            && rocket.getBoundingBox().distanceToSqr(Vec3.atCenterOf(at)) <= 36,
+                    "The live loader is not correctly bound nearby");
+            var deviceBefore = loader.saveWithFullMetadata();
+            var rocketBefore = rocket.saveWithoutId(new CompoundTag());
+            var authority = BayReceiptTestHooks.authority(server);
+            int pending = authority.pendingCount();
+            long forRocket = authority.pendingFor(flight.logicalRocketId());
+            long retained = authority.retainedFor(root.owner());
+            helper.assertTrue(loader.attempt() == FluidFuelLoaderStatus.ROCKET_BUSY,
+                    "The TRANSIT loader attempt did not refuse the busy rocket");
+            boolean captured = loader.admitFromQueue();
+            helper.assertTrue(!captured && loader.lastAttempt() == FluidFuelLoaderStatus.ROCKET_BUSY,
+                    "The TRANSIT loader queue visit was not refused: captured=" + captured + " status=" + loader.lastAttempt());
+            helper.assertTrue(deviceBefore.equals(loader.saveWithFullMetadata())
+                            && rocketBefore.equals(rocket.saveWithoutId(new CompoundTag())),
+                    "The refused TRANSIT loader changed device or rocket resources");
+            helper.assertTrue(authority.pendingCount() == pending && authority.pendingFor(flight.logicalRocketId()) == forRocket
+                            && authority.retainedFor(root.owner()) == retained && !loader.escrowLocked(),
+                    "The refused TRANSIT loader changed reservations or locked the device");
+        } finally {
+            runtime.loaderAdmissionForTests(server, device, false);
+            clearBay(level, at);
+        }
+    }
+
+    private static void assertNoDisassembly(GameTestHelper helper, RocketEntity rocket,
+            RocketLandedDisassemblyGameTestSupport.Requester player) {
+        helper.assertTrue(player.offers == 0 && player.token == null && player.command == null && player.messages.isEmpty(),
+                "The refused disassembly offered a confirmation or reported disposal: " + player.messages);
+        helper.assertTrue(!RocketRuntime.installedTransfers().landedDisassemblyPending(rocket)
+                        && RocketRuntime.installedTransfers().landedDisassemblies().find(rocket.assemblyTransactionId().orElseThrow()) == null,
+                "The refused disassembly created a pending operation");
+        helper.assertTrue(RocketTransactionSavedData.get(helper.getLevel().getServer()).entries().stream()
+                        .noneMatch(entry -> entry.snapshot().snapshotId().equals(rocket.snapshot().orElseThrow().snapshotId())),
+                "The refused disassembly created a block transaction");
     }
 
     private static void close(net.minecraft.server.MinecraftServer server, Flight flight, FakePlayer player) {
