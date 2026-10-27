@@ -299,7 +299,7 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
             return;
         }
         if (inventory.getStackInSlot(SLOT_PACKAGE).isEmpty() && chip.kind() != SatelliteKind.DATA) {
-            updateResult(player, resources.start(player, chip));
+            updateResult(player, TerminalRegistryActions.admitted(this, chip, () -> resources.start(player, chip)));
             return;
         }
         ResourceLocation target = selectedTarget();
@@ -343,7 +343,7 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
             return;
         }
         updateResult(player, chip.kind() == SatelliteKind.DATA ? dataAction(player, chip, () -> SatelliteRuntime.claim(player, chip))
-                : resources.claim(player, chip));
+                : TerminalRegistryActions.admitted(this, chip, () -> resources.claim(player, chip)));
     }
 
     /** ADR-074 item 6: an admitted data action whose changed result waits for a covering commit. */
@@ -359,7 +359,7 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
             return;
         }
         boolean delivered = chip.kind() == SatelliteKind.ASTEROID_MINER || chip.kind() == SatelliteKind.GAS_HARVESTER;
-        updateResult(player, delivered ? resources.cancel(player, chip)
+        updateResult(player, delivered ? TerminalRegistryActions.admitted(this, chip, () -> resources.cancel(player, chip))
                 : dataAction(player, chip, () -> SatelliteRuntime.cancel(player, chip)));
     }
 
@@ -402,7 +402,7 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
     private void unlink(ServerPlayer player) {
         SatelliteIdentity chip = chipFor(player).orElse(null);
         if (chip != null) {
-            updateResult(player, SatelliteRuntime.unlink(player, chip).code());
+            updateResult(player, TerminalRegistryActions.admitted(this, chip, () -> SatelliteRuntime.unlink(player, chip).code()));
         }
     }
 

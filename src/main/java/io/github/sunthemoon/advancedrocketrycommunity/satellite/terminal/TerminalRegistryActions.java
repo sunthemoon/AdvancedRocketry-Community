@@ -31,6 +31,13 @@ final class TerminalRegistryActions {
         return table().map(actions -> actions.admission(key(terminal), satellite)).orElse(null);
     }
 
+    /** Resource delivery and unlink keep their own persistence semantics, but cannot bypass a pending satellite. */
+    static SatelliteOperationCode admitted(SatelliteTerminalBlockEntity terminal, SatelliteIdentity chip,
+                                           java.util.function.Supplier<SatelliteOperationCode> action) {
+        SatelliteOperationCode refused = admit(terminal, chip.satelliteId());
+        return refused != null ? refused : action.get();
+    }
+
     /** Whether any action of this terminal waits; its state-changing buttons are refused meanwhile. */
     static boolean pending(SatelliteTerminalBlockEntity terminal) {
         return server(terminal) && table().flatMap(actions -> actions.at(key(terminal))).isPresent();
