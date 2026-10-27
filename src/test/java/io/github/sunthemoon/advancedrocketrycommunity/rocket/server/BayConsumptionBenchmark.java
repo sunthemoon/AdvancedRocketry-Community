@@ -117,12 +117,25 @@ public final class BayConsumptionBenchmark {
         return SatelliteRegistryBenchmark.percentile(sorted, 0.95) <= 50 && SatelliteRegistryBenchmark.percentile(sorted, 0.99) <= 100;
     }
 
-    /** 2,048 blocks in a 16 x 16 x 8 box; the first 128 carry payloads: eight bays, then 120 large opaque payloads. */
+    /**
+     * 2,048 blocks in a 16 x 16 x 8 box; the first 128 carry payloads: eight bays, then 120 large opaque payloads whose
+     * size is the largest (in 256-byte steps) at which the snapshot still encodes within the codec's 1 MiB bound.
+     */
     static RocketStructureSnapshot source() {
+        for (int filler = (int) (RocketLimits.MAX_TOTAL_NBT_BYTES / (PAYLOADS - BAYS)); filler > 0; filler -= 256) {
+            var snapshot = source(filler);
+            try {
+                io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketSnapshotNbtCodec.encode(snapshot);
+                return snapshot;
+            } catch (io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketSnapshotException tooLarge) { /* shrink */ }
+        }
+        throw new IllegalStateException("No bounded fixture");
+    }
+
+    static RocketStructureSnapshot source(int filler) {
         ResourceLocation iron = ResourceLocation.tryParse("minecraft:iron_block");
         ResourceLocation bay = ModIdentity.id("rocket_satellite_bay"), chest = ResourceLocation.tryParse("minecraft:chest");
         var blocks = new ArrayList<RocketBlock>();
-        int filler = (int) ((RocketLimits.MAX_TOTAL_NBT_BYTES - BAYS * 600L) / (PAYLOADS - BAYS)) - 96;
         for (int index = 0; index < RocketLimits.MAX_BLOCKS; index++) {
             var at = new RocketPosition(index % 16, index / 256, (index / 16) % 16);
             if (index < BAYS) {
