@@ -2,10 +2,10 @@
 """ADR-075 native upgrade restart case; called by the owner of the heavy-JVM lock.
 
 The jar from before ADR-075 (the old rule) lands rocket L on the Moon at y 80 and stops rocket X, whose destination
-is recorded at y 80, at one release checkpoint (one per server): TRANSIT_PREPARED (PREPARED, ADR-075's case) or
-DESTINATION_SPAWNED. The W156 jar then restarts the same world. Recovery keeps X's recorded identity: at PREPARED its
-source is kept at its recorded origin with its fuel (KEEP_SOURCE); at DESTINATION_SPAWNED it lands at its recorded
-y 80 origin with exact fuel. L keeps its position; a new launch N lands on the ground, and its region overlaps neither
+is recorded at y 80, at one release checkpoint (one per server): TRANSIT_PREPARED (PREPARED, ADR-075's case) or DESCENT
+(COMMITTED, the destination descending above its recorded origin). The W156 jar then restarts the same world. Recovery keeps X's recorded identity: at PREPARED its
+source is kept at its recorded origin with its fuel (KEEP_SOURCE); at DESCENT the destination is kept
+(KEEP_DESTINATION) and lands at its recorded y 80 origin with exact fuel. L keeps its position; a new launch N lands on the ground, and its region overlaps neither
 L's region nor X's recorded destination region. A second restart leaves all three unchanged.
 """
 from __future__ import annotations
@@ -205,7 +205,7 @@ def run(args) -> dict:
         require(landed_l["state"] == "LANDED" and landed_l["origin"][1] == OLD_FLOOR, "The old rule did not land L at y 80")
         start = len(process.lines)
         flights["X"] = upgrade.launch(process, rockets["X"]["entity"], args.checkpoint)
-        require(flights["X"]["phase"] == ("PREPARED" if prepared else "DESTINATION_SPAWNED"), "X did not stop at its checkpoint")
+        require(flights["X"]["phase"] == ("PREPARED" if prepared else "COMMITTED"), "X did not stop at its checkpoint")
         if prepared:
             # The PREPARED record is not reported; L occupies candidate 0 at y 80, so the old rule took candidate 1.
             prepare = re.compile(rf"ARCE_TRANSFER_PREPARE transfer={re.escape(flights['X']['transfer'])} .*code=SUCCESS candidates=2 ")
@@ -220,7 +220,7 @@ def run(args) -> dict:
         # The W156 jar: recovery keeps the recorded identities; a new launch lands on the ground.
         process = upgrade.start("recover1", args.jar)
         recovery_x = upgrade.recovery(process, flights["X"]["transfer"])
-        expected = "KEEP_SOURCE" if prepared else "REMOVE_SOURCE_KEEP_DESTINATION"
+        expected = "KEEP_SOURCE" if prepared else "KEEP_DESTINATION"
         require(recovery_x["status"] == "RECOVERED" and recovery_x["action"] == expected, f"X recovered as {recovery_x}")
         if prepared:
             after_x = FlightHarness.report(process, EARTH, rockets["X"]["entity"])
@@ -278,7 +278,7 @@ def main() -> int:
         parser.add_argument("--" + name, type=Path, required=True)
     for name in ("java", "source-commit", "old-commit"):
         parser.add_argument("--" + name, required=True)
-    parser.add_argument("--checkpoint", choices=("TRANSIT_PREPARED", "DESTINATION_SPAWNED"), required=True)
+    parser.add_argument("--checkpoint", choices=("TRANSIT_PREPARED", "DESCENT"), required=True)
     result = run(parser.parse_args())
     print(json.dumps({key: result.get(key) for key in ("status", "error", "temporary_removed")}, indent=2))
     return 0 if result["status"] == "PASS" else 1
