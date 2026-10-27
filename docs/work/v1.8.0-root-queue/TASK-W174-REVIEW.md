@@ -49,3 +49,24 @@ folder.
 A verdict (APPROVE, APPROVE-WITH-CHANGES or BLOCK); findings with an ID (W174-R1, ...), severity, file and line or
 section, problem and suggested change; the commands you ran and their results; the SHA-256 of REVIEW.md on the last
 line.
+
+## Second review, of revision 2 (2026-10-28)
+
+A new session reviews revision 2 of `records/W174-DESIGN.md`, on `codex/v1.8.0-w174` at `cf656dfe8` (changes
+`f9dbf78e5..cf656dfe8`). Use the review worktree `D:/GitHub/arce-v180-w174-review2`, a detached checkout of
+`cf656dfe8`, and write `D:/GitHub/ARCE-Task-Evidence/root-queue/W174-review2/REVIEW.md`. The first review is
+`D:/GitHub/ARCE-Task-Evidence/root-queue/W174-review/REVIEW.md` (SHA-256 `f390b483…913c`). Revision 2's probes are in
+`D:/GitHub/ARCE-Task-Evidence/root-queue/W174/revision-2/`.
+
+1. **W174-R1 is closed.**
+   - Rerun the first review's design-model trace (break the pad between A and PS2, prune, save the player only, kill):
+     no charge may be credited twice.
+   - Check that every receipt prune, including for an absent or replaced pad, needs durable evidence.
+   - Check that acknowledgement identity survives unload and removal, and that late callbacks are rejected.
+2. **W174-R2 is closed.** Pad proofs must go through the sealed and ordinary turn policy and yield the whole Level
+   window to an active sealed attempt. Rerun the first review's 21-slot probe with pads.
+3. **R3 to R8.** Check each against its finding.
+4. **New gaps.** Look for any the revision introduced, especially indefinite holds and cross-store losses, and check
+   that the risk text states them honestly.
+
+Use the same rules and output format as above, with findings numbered from W174-R9.
