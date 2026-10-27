@@ -6,6 +6,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.RocketLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightState;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.RocketBlockEntityAdapters;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.ServerLevelRocketScanWorld;
@@ -14,6 +15,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPositio
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.scan.RocketScanResult;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.scan.RocketStructureScanTask;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketAssemblyTransaction;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketOperationLedger;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRegion;
@@ -27,6 +29,8 @@ import java.util.Comparator;
 import java.util.UUID;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
@@ -167,6 +171,22 @@ final class RocketFlightGameTestFixtures {
             int ticks, Runnable assertions) {
         awaitPaced(helper, driver, helper.getTick() + ticks, () -> hasFlightState(source, logical, RocketFlightState.FUELED)
                 && sourceRetired(source.getServer(), logical), assertions);
+    }
+
+    /**
+     * W166: the destination identity of a record the fixture expects to have landed. A fail-back before the destination
+     * spawned, such as a DESTINATION_PAD_BLOCKED return to the source, never names one, so instead of "No value present"
+     * the failure names the record's phase and the transfer service's last branch for it.
+     */
+    static UUID landedDestinationId(GameTestHelper helper, RocketTransferRecord record) {
+        if (record.destinationEntityId().isEmpty()) {
+            Matcher branch = Pattern.compile("target_branch=(\\S+)")
+                    .matcher(RocketRuntime.transferFailureDiagnostics(record.transferId()));
+            helper.fail("The fixture flight did not land: transfer " + record.transferId() + " is " + record.phase()
+                    + " with no destination identity, last service branch " + (branch.find() ? branch.group(1) : "UNOBSERVED")
+                    + " (DESTINATION_UNAVAILABLE is a DESTINATION_PAD_BLOCKED fail-back)");
+        }
+        return record.destinationEntityId().orElseThrow();
     }
 
     /** No record names {@code logical}, its removal is acknowledged and no continuation for it is pending. */
