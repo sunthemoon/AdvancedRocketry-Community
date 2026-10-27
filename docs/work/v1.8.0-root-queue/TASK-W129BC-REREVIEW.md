@@ -49,9 +49,9 @@ In your review worktree only, with JDK 17.0.7 and `gradlew.bat --offline`:
 - the W119 matrices, `SatelliteRegistryEpochTest`, `SatelliteRegistryProofTest` and the W129a group;
 - the satellite, mission and rocket persistence packages.
 
-**Take the heavy-JVM lock for every Gradle run**, with the atomic pattern and the 90-second hand-off; other workers
-share it. No GameTest or server of your own. Check 6 GiB free memory first. Delete the worktree's `build`, `.gradle`
-and `logs` afterwards.
+Targeted unit-test runs need no heavy-JVM lock (WORKER-RULES; corrected by Root at 19:55, after another review waited
+three hours for it). Check 6 GiB free memory before each run. No GameTest, runData, full build or server of your own.
+Delete the worktree's `build`, `.gradle` and `logs` afterwards.
 
 ## Output format
 
