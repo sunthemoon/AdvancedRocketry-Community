@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 final class BayDeploymentCuts {
     static final String PROPERTY = "advancedrocketrycommunity.bayCheckpoint";
     static final String FIRST_TICK = "advancedrocketrycommunity.bayFirstTick";
+    static final String REGISTRY_BLOCKED = "advancedrocketrycommunity.bayRegistryBlocked";
     private static final String HOOKS = "advancedrocketrycommunity.releaseTestHooks";
     private static final Logger LOGGER = LogUtils.getLogger();
 
@@ -91,6 +92,21 @@ final class BayDeploymentCuts {
                 .orElse("NO_SERVICE");
         LOGGER.info("ARCE_RELEASE_BAY_FIRST_TICK satellite={} tick={} decommission={} launch={}", satellite, server.getTickCount(),
                 decommission, launch);
+    }
+
+    /**
+     * B10's hold half (W128R-R2): with {@code bayRegistryBlocked=true} on a gated release-test dedicated server, the
+     * coordinator sees the registry as blocked for the whole session, from ServerStartingEvent, before the first tick.
+     * It changes only the coordinator's view: the registry, its fences and its file are untouched.
+     */
+    static boolean registryBlocked(MinecraftServer server) {
+        if (!Boolean.getBoolean(REGISTRY_BLOCKED) || !Boolean.getBoolean(HOOKS) || !server.isDedicatedServer()) { return false; }
+        if (!EscrowTestEndpoints.enabled(server)) {
+            LOGGER.warn("ARCE_RELEASE_BAY_REGISTRY_BLOCKED refused: the release-test gate is closed");
+            return false;
+        }
+        LOGGER.info("ARCE_RELEASE_BAY_REGISTRY_BLOCKED session=true");
+        return true;
     }
 
     /** Before an in-session claim's receipt write: the first write of the cut's phase arms the one-shot committer cut. */

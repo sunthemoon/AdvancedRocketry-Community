@@ -77,6 +77,18 @@ final class BayReleaseTestGateTest {
         assertTrue(registry.satellite(satellite).isEmpty(), "with no receipt, the operator decommission removes the satellite");
     }
 
+    @Test void theBlockedRegistrySeamNeedsTheFullGate() throws Exception {
+        property(HOOKS, "true"); property(BayDeploymentCuts.REGISTRY_BLOCKED, "true");
+        MinecraftServer rcon = servers.server(directory, true);
+        MinecraftServer foreign = servers.server(directory, false);
+        servers.join(foreign, UUID.randomUUID());
+        assertFalse(BayDeploymentCuts.registryBlocked(rcon), "RCON enabled the seam");
+        assertFalse(BayDeploymentCuts.registryBlocked(foreign), "a foreign connection enabled the seam");
+        assertTrue(BayDeploymentCuts.registryBlocked(servers.server(directory, false)), "the open gate's control");
+        property(BayDeploymentCuts.REGISTRY_BLOCKED, "false");
+        assertFalse(BayDeploymentCuts.registryBlocked(servers.server(directory, false)), "the seam is off without its property");
+    }
+
     @Test void everyReleaseTestCommandIsRefusedByTheGateBeforeItsFirstEffect() throws Exception {
         property(HOOKS, "true");
         var dispatcher = new CommandDispatcher<CommandSourceStack>();

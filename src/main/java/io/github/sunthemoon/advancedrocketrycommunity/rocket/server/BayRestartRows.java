@@ -71,8 +71,13 @@ final class BayRestartRows {
 
     /** The row of one durable INTENT, read from the loaded registry and transfer journal. */
     static Row row(MinecraftServer server, BayReceipt intent) {
+        return row(server, intent, SatelliteMissionSavedData.get(server).operational());
+    }
+
+    /** The same row, with the coordinator's view of the registry's availability (its gated blocked-registry seam). */
+    static Row row(MinecraftServer server, BayReceipt intent, boolean registryOperational) {
         var registry = SatelliteMissionSavedData.get(server);
-        if (!registry.operational()) { return Row.HOLD_BLOCKED; }
+        if (!registryOperational || !registry.operational()) { return Row.HOLD_BLOCKED; }
         var journal = RocketTransferSavedData.get(server);
         var record = journal.operational() ? journal.find(intent.transfer()).orElse(null) : null;
         if (record == null || record.phase() != RocketTransferPhase.PREPARED || !record.logicalRocketId().equals(intent.rocket())

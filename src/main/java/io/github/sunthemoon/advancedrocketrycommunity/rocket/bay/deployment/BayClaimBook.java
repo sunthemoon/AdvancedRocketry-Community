@@ -37,6 +37,9 @@ public final class BayClaimBook {
         return claim.handoff();
     }
 
+    /** Gated test cleanup only: drops L's claim, ended or not, without a handoff. */
+    public void remove(UUID logical) { claims.remove(logical); }
+
     public Collection<BayClaim> claims() { return List.copyOf(claims.values()); }
     public int size() { return claims.size(); }
     public void clear() { claims.clear(); }
