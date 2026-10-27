@@ -34,19 +34,25 @@ public final class RocketI6DisassemblyGameTests {
     public static void coldDemandOnlyPreparesAndNeedsANewFuelOffer(GameTestHelper helper) {
         var scenario = new Scenario(helper, true, true); RUNNING.add(scenario); helper.onEachTick(scenario::tick);
     }
+    @GameTest(template = "rocket_test", batch = "w164_cold_border", timeoutTicks = 1200)
+    public static void coldBorderFootprintPreparesAllDiscoveryColumns(GameTestHelper helper) {
+        var scenario = new Scenario(helper, true, true, true); RUNNING.add(scenario); helper.onEachTick(scenario::tick);
+    }
     private static void start(GameTestHelper helper, boolean predecessor) {
         var scenario = new Scenario(helper, predecessor); RUNNING.add(scenario); helper.onEachTick(scenario::tick);
     }
     @AfterBatch(batch = "w164_m0") public static void cleanup(ServerLevel level) { RUNNING.forEach(Scenario::close); RUNNING.clear(); }
     @AfterBatch(batch = "w164_no_t") public static void cleanupStandalone(ServerLevel level) { cleanup(level); }
     @AfterBatch(batch = "w164_cold") public static void cleanupCold(ServerLevel level) { cleanup(level); }
+    @AfterBatch(batch = "w164_cold_border") public static void cleanupColdBorder(ServerLevel level) { cleanup(level); }
 
     private static final class Scenario {
         final GameTestHelper helper;
         final ServerLevel source, destination;
         final GameTestTickPacer pacer;
-        final boolean predecessor, cold;
+        final boolean predecessor, cold, border;
         final BlockPos at;
+        final RocketI6ColdColumns observation = new RocketI6ColdColumns();
         RocketSourceRetirementFixtures.Flight fixture;
         RocketTransferRecord record;
         RocketEntity rocket;
@@ -57,9 +63,12 @@ public final class RocketI6DisassemblyGameTests {
             this(helper, predecessor, false);
         }
         Scenario(GameTestHelper helper, boolean predecessor, boolean cold) {
-            this.helper = helper; this.predecessor = predecessor; this.cold = cold; source = helper.getLevel();
+            this(helper, predecessor, cold, false);
+        }
+        Scenario(GameTestHelper helper, boolean predecessor, boolean cold, boolean border) {
+            this.helper = helper; this.predecessor = predecessor; this.cold = cold; this.border = border; source = helper.getLevel();
             destination = source.getServer().getLevel(CelestialIds.MOON_LEVEL);
-            at = new BlockPos(cold ? 890520 : predecessor ? 890264 : 890392, 100, 890008);
+            at = new BlockPos(border ? 891272 : cold ? 890520 : predecessor ? 890264 : 890392, 100, 890008);
             pacer = new GameTestTickPacer(source.getServer());
         }
         void tick() {
@@ -68,8 +77,10 @@ public final class RocketI6DisassemblyGameTests {
             if (step == 0) {
                 if (!journal.retryChecked(server)) { return; }
                 fixture = RocketSourceRetirementFixtures.countdown(source,
-                        cold ? new BlockPos(890648, 100, 890008) : helper.absolutePos(new BlockPos(3, 2, 3)),
+                        border ? new BlockPos(891008, 100, 890000)
+                                : cold ? new BlockPos(890648, 100, 890008) : helper.absolutePos(new BlockPos(3, 2, 3)),
                         destination, at, List.of(), 0);
+                if (border) { fixture = RocketI6ColdColumns.crossingFootprint(fixture); }
                 if (!cold) { RocketTransferEntities.keepLoaded(source, fixture.record().sourceSnapshot(), fixture.record().transferId()); }
                 RocketTransferEntities.keepLoaded(destination, fixture.record().destinationSnapshot(), fixture.record().transferId());
                 forced = !destination.getForcedChunks().contains(fixture.destinationSlot().toLong());
@@ -99,6 +110,7 @@ public final class RocketI6DisassemblyGameTests {
                 if (!RocketRuntime.resourceMutationAllowed(rocket)) { return; }
                 if (cold) {
                     helper.assertTrue(!source.areEntitiesLoaded(fixture.originSlot().toLong()), "Cold fixture origin was already loaded");
+                    if (border) { observation.observe(helper, fixture.record(), "before-demand"); }
                 }
                 RocketRuntime.requestDisassembly(player, rocket);
                 if (cold) {
@@ -113,10 +125,12 @@ public final class RocketI6DisassemblyGameTests {
                 step++; return;
             }
             if (step == 20) {
+                if (border) { observation.observe(helper, record, "preparing"); }
                 helper.assertTrue(journal.find(record.transferId()).orElse(null) == record && rocket.isAlive()
                         && player.token == null && player.discarded == 0, "Preparation consumed a destructive request");
                 if (!RocketRuntime.resourceMutationAllowed(rocket)) { return; }
                 helper.assertTrue(RocketTransferEntities.recoveryEndsAlreadyLoaded(server, record), "Preparation did not ready both ends");
+                if (border) { observation.observe(helper, record, "ready"); }
                 RocketRuntime.requestDisassembly(player, rocket);
                 helper.assertTrue(player.token != null && player.offers == 1, "Fresh request did not offer fresh consent");
                 step = 3; return;
@@ -130,7 +144,10 @@ public final class RocketI6DisassemblyGameTests {
                 step++; return;
             }
             if (rocket.isAlive()) { helper.assertTrue(player.discarded == 0, "Live D published fuel disposal"); return; }
-            if (!destination.getBlockState(at).is(Blocks.IRON_BLOCK)) { return; }
+            for (var block : fixture.record().destinationSnapshot().blocks()) {
+                if (!destination.getBlockState(at.offset(block.position().x(), block.position().y(), block.position().z()))
+                        .is(Blocks.IRON_BLOCK)) { return; }
+            }
             helper.assertTrue(journal.findByLogicalRocket(record.logicalRocketId()).isEmpty(), "Completed request retained T");
             var data = RocketTransactionSavedData.get(server);
             helper.assertTrue(data.acknowledgedCurrent() && data.entries().stream().noneMatch(entry ->
@@ -148,7 +165,12 @@ public final class RocketI6DisassemblyGameTests {
             if (record != null) {
                 var journal = RocketTransferSavedData.get(source.getServer()); journal.remove(record.transferId()); journal.flushChecked(source.getServer());
             }
-            if (destination.getBlockState(at).is(Blocks.IRON_BLOCK)) { destination.removeBlock(at, false); }
+            if (fixture != null) {
+                for (var block : fixture.record().destinationSnapshot().blocks()) {
+                    var pos = at.offset(block.position().x(), block.position().y(), block.position().z());
+                    if (destination.getBlockState(pos).is(Blocks.IRON_BLOCK)) { destination.removeBlock(pos, false); }
+                }
+            }
         }
     }
 }
