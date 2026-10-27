@@ -342,6 +342,9 @@ public final class AdvancedRocketryCommunity {
                     initializeRocketComponents());
             RocketRuntime.install(manager);
             MinecraftForge.EVENT_BUS.addListener(manager::onServerTick);
+            // W27d1: after EscrowRuntime.starting (NORMAL) indexed the receipts, before the first tick.
+            MinecraftForge.EVENT_BUS.addListener(net.minecraftforge.eventbus.api.EventPriority.LOW, manager::onServerStarting);
+            MinecraftForge.EVENT_BUS.addListener(manager::onServerStopping);
             MinecraftForge.EVENT_BUS.addListener(manager::onPlayerLoggedIn);
             MinecraftForge.EVENT_BUS.addListener(manager::onPlayerLoggedOut);
             MinecraftForge.EVENT_BUS.addListener(new RocketCommands(manager)::register);

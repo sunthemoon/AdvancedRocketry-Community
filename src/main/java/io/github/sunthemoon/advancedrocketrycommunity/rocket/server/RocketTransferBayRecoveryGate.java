@@ -53,6 +53,12 @@ public interface RocketTransferBayRecoveryGate {
     default void endpointChanged(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record) { }
     /** A bay permit never overrides an escrow conflict. W27d persists/owns the resulting REPAIR state. */
     default void escrowConflict(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record) { }
+    /**
+     * W27d1's D0 enqueue at the ascent-complete checkpoint of {@code tickSource}, with the in-session live source, just
+     * before the transfer service reclassifies. It may start a claim; it writes nothing and loads nothing.
+     */
+    default void ascentComplete(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity source) { }
 
     RocketTransferBayRecoveryGate UNCLAIMED = new RocketTransferBayRecoveryGate() {
         @Override public Claim claim(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record) {
