@@ -89,6 +89,39 @@ Verification: the new tests alone, failing first; the `satellite` packages and t
 lock is free within an hour, run one complete GameTest with the unchanged checker; otherwise report it, and the hosted
 regression after merge stands in. A fresh read-only review follows.
 
+## Continuation under Root decision R132 (2026-10-28)
+
+The R129 continuation (`ac6af2e5b`) closed W168-R1 for missions. Its re-review,
+`D:/GitHub/ARCE-Task-Evidence/root-queue/W168-rereview/REVIEW.md` (SHA-256 `b112ec0a…5886`), returned BLOCK. Read it
+and its `probes/DecoderReviewTest.java` first.
+
+- **W168-R3 (High).** The decoder accepts an unqualified name of up to 128 characters, which normalization lengthens
+  (`minecraft:` is added). A raw GAS mission that decodes at 4,090 bytes needs 4,280 bytes once normalized. Its
+  encoder correctly throws at the unchanged 4,096-byte record limit. `CodecRecordSizer.bounded` turns that exception
+  into a 4,096-byte reservation, and the fast path trusts it. On a loaded root, W168 admits a START, an account
+  creation and a final analysis that the whole-root check refuses. The ordinary-change fast path, which is older,
+  does the same.
+- **W168-R4 (Low).** The capacity wording ignores the 4,096-byte cap. The increase is 0 to 40 bytes, and capacity is
+  `min(3072, floor(6291456 / reservation))` for a population of one mission shape.
+
+A fresh session continues on `codex/v1.8.0-w168` and appends a "Continuation (R132)" section to the record:
+
+1. **A failed sizing never proves a fit.**
+   - Distinguish a reservation proven from the record's canonical encoding from one capped after an encoder failure.
+   - While any record in the root has an unproven reservation, every ground change takes the whole-root check: START,
+     account creation, final analysis, and the older ordinary-change path. With no such record, the fast path stays.
+   - The whole-root check and every refusal must stay exactly as they are.
+2. **Regressions on raw saved data.**
+   - The review's decoder probes, which must now answer exactly as the baseline.
+   - A record at the normalization boundary, and records whose valid reservation is capped at exactly 4,096.
+   - Refusals must leave nothing changed.
+3. **W168-R4:** correct the capacity text in the record, and add saturation cases to `ReservationCoverageTest`.
+4. **Do not change the decoder or refuse any root at load.** That loaded roots can be unencodable is older than W168,
+   and it is W173's subject.
+
+Verification: the new tests alone, failing first; the `satellite` packages; the whole unit suite. No GameTest is needed
+unless a production path outside `satellite` changes. A fresh read-only review follows.
+
 ## Not in this task
 
 The registry writer (W129), the bay slices, ADRs, the risk register, status files and the ledger (Root).
