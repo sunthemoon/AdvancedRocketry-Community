@@ -1,6 +1,9 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.sealed;
 
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.EscrowGameTestProof;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestAutosave;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.AnvilRecordReader;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowBarrier;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowRuntime;
@@ -20,6 +23,8 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 @GameTestHolder(ModIdentity.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class SealedTerrainProofGameTests {
+    // As in W166, three native force batches fit inside the unchanged 200-tick fixture.
+    private static final int CAPTURE_WINDOW_TICKS = 60;
     @GameTest(template = "empty", batch = "w152_terrain", timeoutTicks = 200)
     public static void ordinaryTerrainUsesOriginalWorkerAndKeepsUnrelatedContents(GameTestHelper helper) {
         readback(helper, false);
@@ -37,18 +42,21 @@ public final class SealedTerrainProofGameTests {
         ((ChestBlockEntity) level.getBlockEntity(pos)).setItem(0, new ItemStack(Items.DIAMOND, 7));
         var runtime = EscrowRuntime.of(server); var barrier = runtime.barrier(); var store = runtime.store(level);
         String dimension = level.dimension().location().toString();
-        var result = new EscrowBarrier.Result[1]; var submitted = new boolean[1]; var completed = new boolean[1];
+        var result = new EscrowBarrier.Result[1]; var completed = new boolean[1];
         var labels = new java.util.ArrayList<String>();
         boolean[] saved = {false};
+        var pacer = new GameTestTickPacer(server);
         helper.assertTrue(!barrier.availableOrdinaryTerrain(store, "w152:wrong_level", chunk, server.getTickCount()),
                 "Terrain facade accepted a different Level identity");
-        helper.onEachTick(() -> {
-            // Scheduled observations may run again after success, when the deliberately invalidated proof is stale.
-            if (completed[0]) { return; }
-            if (!submitted[0]) {
-                submitted[0] = barrier.beginOrdinaryTerrain(store, dimension, chunk,
-                        root -> containsChest(root, pos), server.getTickCount(), labels::add, value -> result[0] = value);
-                if (submitted[0]) {
+        // Reuse W94's exact-result retry and product backoff, capped at two accepted captures here.
+        var request = new EscrowGameTestProof<EscrowBarrier.Result>(server::getTickCount,
+                (tick, callback) -> {
+                if (GameTestAutosave.within(server, CAPTURE_WINDOW_TICKS)
+                        || !EscrowGameTestProof.freshTerrainSave(level, chunk)) { return false; }
+                labels.clear();
+                boolean submitted = barrier.beginOrdinaryTerrain(store, dimension, chunk,
+                        root -> containsChest(root, pos), tick, labels::add, callback);
+                if (submitted) {
                     helper.assertTrue(!barrier.beginOrdinary(store, dimension, chunk, root -> true, server.getTickCount(),
                             label -> { }, value -> { }), "Terrain and entity captures used separate per-tick capacity");
                     if (supersedeFirst && !saved[0]) {
@@ -58,11 +66,18 @@ public final class SealedTerrainProofGameTests {
                         server.saveEverything(true, true, true);
                     }
                 }
-            }
+                return submitted;
+            }, EscrowBarrier.Result::confirmed, EscrowBarrier.Result::reason, value -> result[0] = value, 2);
+        helper.onEachTick(() -> {
+            // Scheduled observations may run again after success, when the deliberately invalidated proof is stale.
+            if (completed[0]) { return; }
+            pacer.pace(); request.tick();
             if (result[0] == null) { return; }
             helper.assertTrue(result[0].confirmed(), "Ordinary terrain readback failed: " + result[0].reason());
             var proof = result[0].proof();
             try {
+                helper.assertTrue(!supersedeFirst || saved[0] && request.attempts() == 2,
+                        "The forced vanilla save did not invalidate the first capture");
                 helper.assertTrue(proof.frontier() == null, "Ordinary proof fabricated a governed frontier");
                 helper.assertTrue(proof.capture().worker() == level.getChunkSource().chunkMap.worker, "Not the original terrain worker");
                 helper.assertTrue(proof.capture().directory().getFileName().toString().equals("region"), "Captured entity storage, not terrain");
