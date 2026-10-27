@@ -294,7 +294,8 @@ public final class SealedStagingProbeGameTests {
     private static CompoundTag payload(Block block) {
         var result = new CompoundTag();
         if (block == Blocks.CHEST || block == Blocks.BARREL || block == AdapterTestMod.CONTAINER.get()
-                || block == AdapterTestMod.SEALED_CONTAINER.get()) {
+                || block == AdapterTestMod.SEALED_CONTAINER.get() || block == AdapterTestMod.SLOW_MOVE_CONTAINER.get()
+                || block == AdapterTestMod.SLOW_CAPTURE_CONTAINER.get()) {
             var items = new ListTag();
             var item = new ItemStack(Items.DIAMOND, 7).save(new CompoundTag());
             item.putByte("Slot", (byte) 0);
