@@ -26,6 +26,7 @@ import net.minecraft.gametest.framework.AfterBatch;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.phys.AABB;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
@@ -62,11 +63,14 @@ public final class EscrowRetireBeforeFillGameTests {
         final GameTestTickPacer pacer;
         final boolean stale;
         RocketEntity rocket, oldCopy, arrival;
+        /** W166: the Moon arrival's identity, and its column, which this fixture holds from landing until removal. */
+        UUID arrivalId;
+        Area arrivalColumn;
         FluidFuelLoaderBlockEntity loader;
         RocketTransferRecord record, next;
         UUID request;
         RocketRetiredPadGameTestProbe occupiedPad;
-        int step, fills;
+        int step, fills, removalTicks;
         boolean refused, sawCountdown, finished, launchPending;
 
         Scenario(GameTestHelper helper, boolean cross, boolean stale, int chunk) {
@@ -173,15 +177,53 @@ public final class EscrowRetireBeforeFillGameTests {
                 if (current != null) {
                     current.destinationEntityId().ifPresent(id -> {
                         var moon = server.getLevel(CelestialIds.MOON_LEVEL);
-                        if (moon.getEntity(id) instanceof RocketEntity found) { arrival = found; }
+                        if (moon.getEntity(id) instanceof RocketEntity found) {
+                            arrival = found;
+                            if (arrivalColumn == null) {
+                                // The flight's tickets still hold the column. F8 releases them before this fixture is
+                                // done, and an unloaded chunk would leave the cached instance stale and its copy on disk.
+                                arrivalId = id;
+                                arrivalColumn = new Area(moon, found.chunkPosition().x, found.chunkPosition().z);
+                                arrivalColumn.hold();
+                            }
+                        }
                     });
                     return;
                 }
                 if (arrival == null || !RocketEscrowGate.resourcesIdle(arrival)) { return; }
                 helper.assertTrue(sawCountdown && arrival.flightData().orElseThrow().state() == RocketFlightState.LANDED,
                         "Governed launch did not complete");
-                finished = true; cleanup(); helper.succeed();
+                step = 10;
             }
+            if (step >= 10) { removeArrival(); }
+        }
+        /**
+         * W166: discards the arrival by its UUID while its held column has its entity sections loaded, then lets the
+         * column unload, loads it again from disk and checks that no copy of the arrival came back. Discarding a cached
+         * instance after its chunk had unloaded removed nothing on disk, and the copy later blocked other batches' pads.
+         */
+        void removeArrival() {
+            var moon = arrivalColumn.level;
+            helper.assertTrue(++removalTicks < 200, "The Moon arrival's removal check stalled at step " + step);
+            if (step == 10) {
+                if (!arrivalColumn.ticking()) { return; }
+                var live = moon.getEntity(arrivalId);
+                helper.assertTrue(live instanceof RocketEntity, "The held arrival column lost its landed rocket " + arrivalId);
+                live.discard(); step = 11; return;
+            }
+            if (step == 11) {
+                arrivalColumn.release();
+                if (moon.areEntitiesLoaded(arrivalColumn.chunk.toLong())) { return; }
+                arrivalColumn.hold(); step = 12; return;
+            }
+            if (!arrivalColumn.ticking()) { return; }
+            var chunk = arrivalColumn.chunk;
+            var copies = moon.getEntitiesOfClass(RocketEntity.class, new AABB(chunk.getMinBlockX(), moon.getMinBuildHeight(),
+                    chunk.getMinBlockZ(), chunk.getMaxBlockX() + 1, moon.getMaxBuildHeight(), chunk.getMaxBlockZ() + 1),
+                    found -> found.assemblyTransactionId().filter(next.logicalRocketId()::equals).isPresent());
+            helper.assertTrue(moon.getEntity(arrivalId) == null && copies.isEmpty(),
+                    "The discarded Moon arrival " + arrivalId + " came back from disk (" + copies.size() + " copies in " + chunk + ")");
+            finished = true; cleanup(); helper.succeed();
         }
         void attempt() {
             var runtime = EscrowRuntime.of(level.getServer());
@@ -201,7 +243,11 @@ public final class EscrowRetireBeforeFillGameTests {
                 clear(level, loader.getBlockPos()); loader = null;
             }
             if (rocket != null) { rocket.discard(); }
-            if (arrival != null) { arrival.discard(); }
+            if (arrivalColumn != null) {
+                // After a failure too: the held column keeps the live instance, never a stale cached one.
+                if (arrivalColumn.level.getEntity(arrivalId) instanceof RocketEntity live) { live.discard(); }
+                arrivalColumn.release();
+            }
             if (oldCopy != null) { oldCopy.discard(); }
             destination.release();
         }
