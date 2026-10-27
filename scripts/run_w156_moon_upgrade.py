@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """ADR-075 native upgrade restart case; called by the owner of the heavy-JVM lock.
 
-The jar from before ADR-075 (the old rule) lands rocket L on the Moon at y 80, stops rocket P at PREPARED (TRANSIT)
-and rocket D at DESTINATION_SPAWNED, both with destinations recorded at y 80. The W156 jar then restarts the same
-world: recovery keeps P at its recorded source and lands D at its recorded y 80 origin, each with exact fuel and one
-entity; L keeps its position; a new launch N lands on the ground, and its region overlaps neither L's region nor D's
-recorded destination region. A second restart leaves all four unchanged.
+The jar from before ADR-075 (the old rule) lands rocket L on the Moon at y 80 and stops rocket X, whose destination
+is recorded at y 80, at one release checkpoint (one per server): TRANSIT_PREPARED (PREPARED, ADR-075's case) or
+DESTINATION_SPAWNED. The W156 jar then restarts the same world. Recovery keeps X's recorded identity: at PREPARED its
+source is kept at its recorded origin with its fuel (KEEP_SOURCE); at DESTINATION_SPAWNED it lands at its recorded
+y 80 origin with exact fuel. L keeps its position; a new launch N lands on the ground, and its region overlaps neither
+L's region nor X's recorded destination region. A second restart leaves all three unchanged.
 """
 from __future__ import annotations
 
@@ -36,7 +37,7 @@ OLD_FLOOR = 80
 Y = 100
 BLOCKS = 4
 # Earth sites of the four rockets; each has a rocket assembler at (x, Y, z) and the rocket above it.
-SITES = {"L": (384, 384), "P": (416, 384), "D": (448, 384), "N": (480, 384)}
+SITES = {"L": (384, 384), "X": (416, 384), "N": (480, 384)}
 # The selector's first fixed Moon pads around (8, 80, 8), 64 blocks apart.
 MOON_PADS = ((8, 8), (72, 8), (-56, 8), (8, 72))
 LOCK = Path("D:/GitHub/ARCE-Task-Evidence/locks/heavy-jvm/owner.txt")
@@ -195,40 +196,45 @@ def run(args) -> dict:
         (session / "server.properties").write_text("".join(f"{k}={v}\n" for k, v in sorted(props.items())), encoding="ascii")
         upgrade = Upgrade(args.java, session, port, evidence)
 
-        # The old rule: L lands at y 80; P and D record y 80 destinations and stop.
+        # The old rule: L lands at y 80; X records a y 80 destination and stops at the checkpoint (one per server).
+        prepared = args.checkpoint == "TRANSIT_PREPARED"
         process = upgrade.start("old", args.old_jar)
-        rockets = {name: upgrade.assemble(process, name) for name in ("L", "P", "D")}
-        flights = {"L": upgrade.launch(process, rockets["L"]["entity"]),
-                   "P": upgrade.launch(process, rockets["P"]["entity"], "TRANSIT_PREPARED"),
-                   "D": upgrade.launch(process, rockets["D"]["entity"], "DESTINATION_SPAWNED")}
+        rockets = {name: upgrade.assemble(process, name) for name in ("L", "X")}
+        flights = {"L": upgrade.launch(process, rockets["L"]["entity"])}
         landed_l = flights["L"]["report"]
         require(landed_l["state"] == "LANDED" and landed_l["origin"][1] == OLD_FLOOR, "The old rule did not land L at y 80")
-        require(flights["P"]["phase"] == "PREPARED" and flights["P"]["state"] == "TRANSIT", "P did not stop at PREPARED")
-        spawned_d = FlightHarness.report(process, MOON, flights["D"]["paused_entity"])
-        require(flights["D"]["phase"] == "DESTINATION_SPAWNED" and spawned_d["origin"][1] == OLD_FLOOR,
-                "D's recorded destination is not at y 80")
+        start = len(process.lines)
+        flights["X"] = upgrade.launch(process, rockets["X"]["entity"], args.checkpoint)
+        require(flights["X"]["phase"] == ("PREPARED" if prepared else "DESTINATION_SPAWNED"), "X did not stop at its checkpoint")
+        if prepared:
+            # The PREPARED record is not reported; L occupies candidate 0 at y 80, so the old rule took candidate 1.
+            prepare = re.compile(rf"ARCE_TRANSFER_PREPARE transfer={re.escape(flights['X']['transfer'])} .*code=SUCCESS candidates=2 ")
+            process.wait_for(prepare, 30.0, start_at=start)
+            recorded = [landed_l["origin"][0] + 64, OLD_FLOOR, landed_l["origin"][2]]
+        else:
+            recorded = FlightHarness.report(process, MOON, flights["X"]["paused_entity"])["origin"]
+        require(recorded[1] == OLD_FLOOR, "X's recorded destination is not at y 80")
         upgrade.stop(process)
-        result.update(rockets=rockets, flights=flights, spawned_d=spawned_d)
+        result.update(checkpoint=args.checkpoint, rockets=rockets, flights=flights, recorded_x=recorded)
 
         # The W156 jar: recovery keeps the recorded identities; a new launch lands on the ground.
         process = upgrade.start("recover1", args.jar)
-        recovery_p = upgrade.recovery(process, flights["P"]["transfer"])
-        recovery_d = upgrade.recovery(process, flights["D"]["transfer"])
-        require(recovery_p["status"] == "RECOVERED" and recovery_p["action"] == "KEEP_SOURCE",
-                f"P's PREPARED record recovered as {recovery_p}")
-        require(recovery_d["status"] == "RECOVERED" and recovery_d["action"] == "REMOVE_SOURCE_KEEP_DESTINATION",
-                f"D's DESTINATION_SPAWNED record recovered as {recovery_d}")
-        landing = re.compile(rf"ARCE_TRANSFER_PHASE transfer={re.escape(flights['D']['transfer'])} .*event=landing_complete ")
-        landed_d_entity = PHASE_LOG.search(process.lines[process.wait_for(landing, 120.0)]).group(5)
-        landed_d = FlightHarness.report(process, MOON, landed_d_entity)
-        source_p = FlightHarness.report(process, EARTH, rockets["P"]["entity"])
+        recovery_x = upgrade.recovery(process, flights["X"]["transfer"])
+        expected = "KEEP_SOURCE" if prepared else "REMOVE_SOURCE_KEEP_DESTINATION"
+        require(recovery_x["status"] == "RECOVERED" and recovery_x["action"] == expected, f"X recovered as {recovery_x}")
+        if prepared:
+            after_x = FlightHarness.report(process, EARTH, rockets["X"]["entity"])
+            require(after_x["state"] == "FUELED" and after_x["origin"] == rockets["X"]["origin"]
+                    and after_x["fuel"] == flights["X"]["fuel_before"] and after_x["logical"] == flights["X"]["logical"],
+                    "X was not kept at its recorded source with its fuel")
+        else:
+            landing = re.compile(rf"ARCE_TRANSFER_PHASE transfer={re.escape(flights['X']['transfer'])} .*event=landing_complete ")
+            landed = PHASE_LOG.search(process.lines[process.wait_for(landing, 120.0)]).group(5)
+            after_x = FlightHarness.report(process, MOON, landed)
+            require(after_x["state"] == "LANDED" and after_x["origin"] == recorded
+                    and after_x["fuel"] == flights["X"]["fuel_before"] - flights["X"]["required"]
+                    and after_x["logical"] == flights["X"]["logical"], "X did not land at its recorded y 80 origin with exact fuel")
         after_l = FlightHarness.report(process, MOON, landed_l["entity"])
-        require(landed_d["state"] == "LANDED" and landed_d["origin"] == spawned_d["origin"]
-                and landed_d["fuel"] == flights["D"]["fuel_before"] - flights["D"]["required"]
-                and landed_d["logical"] == flights["D"]["logical"], "D did not land at its recorded y 80 origin with exact fuel")
-        require(source_p["state"] == "FUELED" and source_p["origin"] == rockets["P"]["origin"]
-                and source_p["fuel"] == flights["P"]["fuel_before"] and source_p["logical"] == flights["P"]["logical"],
-                "P was not kept at its recorded source with its fuel")
         require(same(landed_l, after_l), "The upgrade moved or changed the rocket landed at y 80")
         rockets["N"] = upgrade.assemble(process, "N")
         flights["N"] = upgrade.launch(process, rockets["N"]["entity"])
@@ -237,17 +243,16 @@ def run(args) -> dict:
         require(landed_n["state"] == "LANDED" and landed_n["origin"][1] < OLD_FLOOR and supported >= 1,
                 f"The new launch did not land on the ground: {landed_n['origin']}, {supported} supported blocks")
         require(not overlaps(region(landed_n["origin"]), region(after_l["origin"]))
-                and not overlaps(region(landed_n["origin"]), region(spawned_d["origin"])),
-                "The new arrival's region overlaps the landed rocket or D's recorded destination")
+                and not overlaps(region(landed_n["origin"]), region(recorded)),
+                "The new arrival's region overlaps the landed rocket or X's recorded destination")
         upgrade.stop(process)
-        first = dict(L=after_l, D=landed_d, P=source_p, N=landed_n)
-        result.update(recovery_p=recovery_p, recovery_d=recovery_d, after_first_restart=first, n_supported_blocks=supported)
+        first = dict(L=after_l, X=after_x, N=landed_n)
+        result.update(recovery_x=recovery_x, after_first_restart=first, n_supported_blocks=supported)
 
-        # A second restart leaves all four unchanged.
+        # A second restart leaves all three unchanged.
         process = upgrade.start("recover2", args.jar)
         second = {"L": FlightHarness.report(process, MOON, after_l["entity"]),
-                  "D": FlightHarness.report(process, MOON, landed_d["entity"]),
-                  "P": FlightHarness.report(process, EARTH, source_p["entity"]),
+                  "X": FlightHarness.report(process, EARTH if prepared else MOON, after_x["entity"]),
                   "N": FlightHarness.report(process, MOON, landed_n["entity"])}
         upgrade.stop(process)
         process = None
@@ -273,6 +278,7 @@ def main() -> int:
         parser.add_argument("--" + name, type=Path, required=True)
     for name in ("java", "source-commit", "old-commit"):
         parser.add_argument("--" + name, required=True)
+    parser.add_argument("--checkpoint", choices=("TRANSIT_PREPARED", "DESTINATION_SPAWNED"), required=True)
     result = run(parser.parse_args())
     print(json.dumps({key: result.get(key) for key in ("status", "error", "temporary_removed")}, indent=2))
     return 0 if result["status"] == "PASS" else 1
