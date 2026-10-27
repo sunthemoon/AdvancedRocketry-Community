@@ -10,6 +10,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderStatus;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.LoaderRoot;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketSnapshotNbtCodec;
 import java.util.List;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
@@ -64,7 +65,8 @@ final class FuelLoaderS1Interlocks {
             rocket.setPos(home.add(20, 0, 0));
             require(device.attempt() == FluidFuelLoaderStatus.OUT_OF_RANGE, "G2 bypass movement admitted a remote fill");
             require(expected.equals(device.saveWithoutMetadata().get(LoaderRoot.KEY))
-                    && snapshot.equals(rocket.snapshot().orElseThrow()) && flight.fuel().equals(rocket.flightData().orElseThrow().fuel()),
+                    && RocketSnapshotNbtCodec.encode(snapshot).equals(RocketSnapshotNbtCodec.encode(rocket.snapshot().orElseThrow()))
+                    && flight.fuel().equals(rocket.flightData().orElseThrow().fuel()),
                     "G2 changed resources or snapshot");
         } finally {
             if (rocket != null) { rocket.discard(); }
