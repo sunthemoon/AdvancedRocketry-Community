@@ -3,7 +3,8 @@
 
 The caller owns the heavy-JVM lock and the 90-second hand-off between cases.
 I6a drives the gated FM12a hook; I6b drives the release-test disassembly adapter,
-not a player client. No native start may exceed the tranche's 60-start ceiling.
+not a player client. R124 permits 66 counted starts in its new tranche, including
+failed launches, and at most two attempts of a case. Earlier ledgers are not reset.
 """
 from __future__ import annotations
 
@@ -20,9 +21,16 @@ from run_v180_rocket_settlement_completion import require_lock
 from w152_native_inputs import compact_trace
 
 STARTS_PER_CASE = 3
-MAX_STARTS = 60
+MAX_STARTS = 66
 CASES = {f"{site}_{image}_{cut}": (site, f"{image}_{cut}")
          for site in ("I6a", "I6b") for image in ("UNSAVED", "DESCENT") for cut in predecessor.PRE}
+
+
+def check_attempt(rows, case, attempt):
+    require(case in CASES and attempt in (1, 2), "Unknown case or attempt outside R124's two-attempt limit")
+    require(len(rows) + STARTS_PER_CASE <= MAX_STARTS, "This case would exceed the 66-start tranche")
+    previous = {row.get("attempt", 1) for row in rows if row["case"] == case}
+    require(previous == set(range(1, attempt)), "Missing prior attempt or case already has counted starts")
 
 
 def preserve(world: Path, evidence: Path, restart: int) -> dict:
@@ -79,23 +87,26 @@ def main():
     parser.add_argument("--evidence-dir", type=Path, required=True)
     parser.add_argument("--java", required=True)
     parser.add_argument("--case", choices=CASES, required=True)
+    parser.add_argument("--attempt", type=int, choices=(1, 2), default=1)
     parser.add_argument("--lock-owner", required=True)
     parser.add_argument("--startup-timeout", type=float, default=240)
     args = parser.parse_args()
     require_lock(args.lock_owner); predecessor.assert_pin(args.source_commit)
     site, case = CASES[args.case]
     root = args.evidence_dir.resolve(); root.mkdir(parents=True, exist_ok=True)
-    evidence = root / args.case
+    evidence = root / (args.case if args.attempt == 1 else args.case + "-attempt-2")
     require(not evidence.exists(), "Do not overwrite or silently rerun a counted case")
     ledger = root / "starts.json"
     rows = json.loads(ledger.read_text(encoding="utf-8")) if ledger.exists() else []
-    require(len(rows) + STARTS_PER_CASE <= MAX_STARTS, "This case would exceed the 60-start tranche")
-    require(not any(row["case"] == args.case for row in rows), "Case already has counted starts")
+    check_attempt(rows, args.case, args.attempt)
+    if args.attempt == 2:
+        previous = json.loads((root / args.case / "result.json").read_text(encoding="utf-8"))
+        require(previous["status"] == "FAIL", "Only a completed failed case may be retried")
 
     def started(name, restart, entry):
         require_lock(args.lock_owner)
         require(len(rows) < MAX_STARTS, "Native start ceiling reached")
-        rows.append(dict(case=args.case, restart=restart, source=args.source_commit, command=entry["command"],
+        rows.append(dict(case=args.case, attempt=args.attempt, restart=restart, source=args.source_commit, command=entry["command"],
                          status="LAUNCH_ATTEMPT"))
         # Record before launching, so an interrupted launcher cannot silently evade the count.
         ledger.write_text(json.dumps(rows, indent=2), encoding="utf-8")
@@ -106,7 +117,7 @@ def main():
     row = predecessor.run_case(args, case, evidence, prefix="W164-B-PRE", preserve=preserve, started=started,
             command_builder=command_builder,
             demand=lambda process, dimension, entity, fuel: request(site, process, dimension, entity, fuel, evidence))
-    row["site"] = site; row["case"] = args.case
+    row["site"] = site; row["case"] = args.case; row["attempt"] = args.attempt
     row["traces"] = [compact_trace(path) for path in sorted(evidence.glob("start-*.log"))]
     (evidence / "result.json").write_text(json.dumps(row, indent=2), encoding="utf-8")
     require(sum(path.stat().st_size for path in root.parent.rglob("*") if path.is_file()) < 100_000_000,

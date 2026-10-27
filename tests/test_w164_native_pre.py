@@ -24,6 +24,17 @@ class W164NativePreTests(unittest.TestCase):
         self.assertEqual({"I6a", "I6b"}, {name.split("_", 1)[0] for name in native.CASES})
         self.assertEqual(60, sum(native.STARTS_PER_CASE for _ in native.CASES))
 
+    def test_r124_budget_counts_failed_launches_and_allows_only_one_retry(self):
+        import run_w164_native_pre as native
+        self.assertEqual(66, native.MAX_STARTS)
+        native.check_attempt([], "I6b_UNSAVED_STORE_D", 1)
+        rows = [dict(case="I6b_UNSAVED_STORE_D", attempt=1, restart=0)]
+        native.check_attempt(rows, "I6b_UNSAVED_STORE_D", 2)
+        for attempt in (1, 3):
+            with self.assertRaises(Exception): native.check_attempt(rows, "I6b_UNSAVED_STORE_D", attempt)
+        with self.assertRaises(Exception): native.check_attempt([], "I6b_UNSAVED_STORE_D", 2)
+        with self.assertRaises(Exception): native.check_attempt(rows * 64, "I6a_DESCENT_TERMINAL", 1)
+
     def test_plain_launch_uses_registered_cut_spelling_only_before_restart(self):
         import run_w164_native_pre as native
         from run_v180_first_event_moon_cuts import CASES as first_event_cases
