@@ -66,3 +66,47 @@ def preserve_bounded(world: Path, evidence: Path, restart: int) -> dict:
     with manifest_path.open("x", encoding="utf-8") as stream: json.dump(manifest, stream, indent=2)
     return dict(file=archive.name, sha256=digest(archive), files=len(hashes), bytes=archive.stat().st_size,
                 manifest=manifest_path.name, manifest_sha256=digest(manifest_path), format="w164-exact-native-files-1")
+
+
+def compact_case(row: dict, evidence: Path) -> None:
+    """One solid archive, with separate namespaces and native hashes for every observed start.
+
+    Called before the final case result is published. Only this case's newly
+    created intermediate archives are removed, after all native bytes verify.
+    """
+    starts = [start for start in row["starts"] if "native_inputs" in start]
+    if not starts: return
+    target = evidence / "native-inputs.tar.xz"
+    require(not target.exists(), "Do not overwrite a retained case archive")
+    expected = {}; originals = []
+    with tarfile.open(target, "x:xz", preset=6) as output:
+        for start in starts:
+            inputs = start["native_inputs"]; source = evidence / inputs["file"]
+            require(source.resolve().parent == evidence.resolve() and digest(source) == inputs["sha256"],
+                    "Intermediate native input changed")
+            hashes = json.loads((evidence / inputs["manifest"]).read_text(encoding="utf-8"))["files"]
+            prefix = f"restart-{start['restart']}/"
+            with tarfile.open(source, "r:xz") as archive:
+                require(set(archive.getnames()) == set(hashes), "Intermediate native input list changed")
+                for member in archive.getmembers():
+                    require(member.isfile(), "Unexpected non-file native input")
+                    name = prefix + member.name
+                    require(name not in expected, "Repeated native restart image")
+                    expected[name] = hashes[member.name]
+                    info = tarfile.TarInfo(name); info.size = member.size
+                    with archive.extractfile(member) as stream: output.addfile(info, stream)
+            originals.append((source, inputs["sha256"]))
+    with tarfile.open(target, "r:xz") as archive:
+        require(set(archive.getnames()) == set(expected), "Solid archive changed the native input list")
+        for name, checksum in expected.items():
+            with archive.extractfile(name) as stream:
+                require(hashlib.file_digest(stream, "sha256").hexdigest() == checksum, "Solid archive changed native bytes")
+    common = dict(file=target.name, sha256=digest(target), bytes=target.stat().st_size)
+    row["native_archive"] = common
+    for start in starts:
+        inputs = start["native_inputs"]
+        inputs.update(common, member_prefix=f"restart-{start['restart']}/", shared_archive=True)
+    for source, checksum in originals:
+        require(source.resolve().parent == evidence.resolve() and digest(source) == checksum,
+                "Intermediate archive cleanup ownership changed")
+        source.unlink()

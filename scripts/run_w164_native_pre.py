@@ -19,7 +19,7 @@ import run_v180_predecessor_matrix as predecessor
 from run_v180_predecessor_smoke import require
 from run_v180_rocket_settlement_completion import require_lock
 from w152_native_inputs import compact_trace
-from w164_native_inputs import preserve_bounded
+from w164_native_inputs import compact_case, preserve_bounded
 
 STARTS_PER_CASE = 3
 MAX_STARTS = 66
@@ -119,6 +119,7 @@ def main():
             command_builder=command_builder,
             demand=lambda process, dimension, entity, fuel: request(site, process, dimension, entity, fuel, evidence))
     row["site"] = site; row["case"] = args.case; row["attempt"] = args.attempt
+    compact_case(row, evidence)
     row["traces"] = [compact_trace(path) for path in sorted(evidence.glob("start-*.log"))]
     (evidence / "result.json").write_text(json.dumps(row, indent=2), encoding="utf-8")
     require(sum(path.stat().st_size for path in root.parent.rglob("*") if path.is_file()) < 100_000_000,

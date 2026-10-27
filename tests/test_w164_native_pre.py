@@ -91,5 +91,26 @@ class W164NativePreTests(unittest.TestCase):
                 self.assertEqual(set(samples), set(archive.getnames()))
                 for name, raw in samples.items(): self.assertEqual(raw, archive.extractfile(name).read())
 
+    def test_case_compaction_retains_each_restart_as_a_distinct_exact_image(self):
+        from w164_native_inputs import compact_case, preserve_bounded
+        import json
+        import tarfile
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory); world = root / "world"; evidence = root / "evidence"
+            (world / "entities").mkdir(parents=True); evidence.mkdir()
+            snapshot = dict(source_origin=[8, 100, 8], bounding_box=[-1, 0, 0, 1, 2, 0], source_dimension="minecraft:overworld")
+            (evidence / "predecessor.json").write_text(json.dumps(dict(source_snapshot=snapshot, destination_snapshot=snapshot)))
+            row = dict(starts=[])
+            for stage in range(3):
+                (world / "entities/r.0.0.mca").write_bytes(b"native " + bytes([stage]) * 8192)
+                row["starts"].append(dict(restart=stage, native_inputs=preserve_bounded(world, evidence, stage)))
+            compact_case(row, evidence)
+            with tarfile.open(evidence / row["native_archive"]["file"], "r:xz") as archive:
+                self.assertEqual(3, len(archive.getnames()))
+                for stage, start in enumerate(row["starts"]):
+                    self.assertEqual(b"native " + bytes([stage]) * 8192,
+                                     archive.extractfile(start["native_inputs"]["member_prefix"] + "entities/r.0.0.mca").read())
+                    self.assertFalse((evidence / f"raw-{stage}.tar.xz").exists())
+
 
 if __name__ == "__main__": unittest.main()
