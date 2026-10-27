@@ -55,6 +55,7 @@ public final class RocketTransactionSavedData extends SavedData {
     private MinecraftServer ownerServer;
     private boolean unreadable;
     private long completedWriteCount, lastWriterNanos, lastWriterCpuNanos;
+    private long awaitedMillis; // Release-only awaits advance the writer while the bound server tick stands still.
     private boolean failureReported;
     private RocketTransactionWriterCuts cuts; // the release-test native cut seam; null in production
 
@@ -250,7 +251,10 @@ public final class RocketTransactionSavedData extends SavedData {
         if (ownerServer != null && !RocketTransactionWriterCuts.enabled(ownerServer)) {
             throw new IllegalStateException("A live transaction journal never awaits IO");
         }
-        if (writer != null) { writer.await(System::nanoTime, TimeUnit.NANOSECONDS::sleep); }
+        if (writer == null) { return; }
+        long started = System.nanoTime();
+        try { writer.await(System::nanoTime, TimeUnit.NANOSECONDS::sleep); }
+        finally { awaitedMillis += TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - started) + 1; }
     }
 
     boolean writerCompletionReady() { requireOwner(); return writer != null && writer.completionReady(); }
@@ -341,7 +345,8 @@ public final class RocketTransactionSavedData extends SavedData {
 
     /** The server tick; a detached journal counts one tick per monotonic millisecond, as the drain clock does. */
     private long tick() {
-        return ownerServer == null ? TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - createdNanos) : ownerServer.getTickCount();
+        return ownerServer == null ? TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - createdNanos)
+                : ownerServer.getTickCount() + awaitedMillis;
     }
 
     /** Unit tests and benchmarks: a real but unstarted server supplies the tick and both shutdown flags. */

@@ -69,7 +69,11 @@ public final class SatelliteReviewGameTests {
     private SatelliteReviewGameTests() {
     }
 
-    /** C7-H1: a replay after a failed barrier flush keeps the package until the registry is durable. */
+    /**
+     * C7-H1: a launch whose registry write fails keeps the package until the registry is durable. ADR-074 item 6: the
+     * launch is a RAM change whose package stays locked in its slot through the failed write; a second press is refused
+     * while it waits, and the package leaves only after the retried write commits.
+     */
     @GameTest(template = "empty", batch = SatelliteRegistryFixture.FLUSH_FAILURE_BATCH, timeoutTicks = 30)
     public static void aFailedLaunchFlushKeepsThePackageUntilTheReplayIsDurable(GameTestHelper helper) {
         MinecraftServer server = helper.getLevel().getServer();
@@ -86,18 +90,22 @@ public final class SatelliteReviewGameTests {
             Files.createDirectory(obstacle);
             try {
                 AdvancedRocketryCommunity.LOGGER.info("ARCE_SATELLITE_EXPECTED_SAVE_FAILURE testing the idle-launch barrier");
-                press(helper, terminal, owner, SatelliteTerminalMenu.BUTTON_LAUNCH, SatelliteOperationCode.UNSUPPORTED_DATA);
-                helper.assertTrue(!slots.getStackInSlot(SatelliteTerminalBlockEntity.SLOT_PACKAGE).isEmpty(),
-                        "A launch whose flush failed consumed the package");
-                press(helper, terminal, owner, SatelliteTerminalMenu.BUTTON_LAUNCH, SatelliteOperationCode.UNSUPPORTED_DATA);
-                helper.assertTrue(!slots.getStackInSlot(SatelliteTerminalBlockEntity.SLOT_PACKAGE).isEmpty(),
-                        "A replay consumed the package before the registry was durable");
+                helper.assertTrue(terminal.handleButton(owner, SatelliteTerminalMenu.BUTTON_LAUNCH), "The launch was refused");
+                SatelliteRegistrySettle.settle(server);
+                helper.assertTrue(!slots.getStackInSlot(SatelliteTerminalBlockEntity.SLOT_PACKAGE).isEmpty()
+                                && slots.extractItem(SatelliteTerminalBlockEntity.SLOT_PACKAGE, 1, true).isEmpty(),
+                        "A launch whose write failed consumed or unlocked the package");
+                helper.assertTrue(!terminal.handleButton(owner, SatelliteTerminalMenu.BUTTON_LAUNCH)
+                                && !slots.getStackInSlot(SatelliteTerminalBlockEntity.SLOT_PACKAGE).isEmpty(),
+                        "A second press consumed the package before the registry was durable");
             } finally {
                 Files.delete(obstacle);
             }
-            press(helper, terminal, owner, SatelliteTerminalMenu.BUTTON_LAUNCH, SatelliteOperationCode.IDEMPOTENT);
+            SatelliteRegistrySettle.settle(server);
+            helper.assertTrue(SatelliteOperationCode.values()[terminal.saveWithoutMetadata().getCompound("SatelliteTerminal")
+                            .getInt("last_result")] == SatelliteOperationCode.SUCCESS, "The durable launch did not report SUCCESS");
             helper.assertTrue(slots.getStackInSlot(SatelliteTerminalBlockEntity.SLOT_PACKAGE).isEmpty(),
-                    "The durable replay did not consume the package");
+                    "The durable launch did not consume the package");
             CompoundTag disk = NbtIo.readCompressed(data.resolve(SatelliteMissionSavedData.DATA_NAME + ".dat").toFile())
                     .getCompound("data");
             helper.assertTrue(SatelliteMissionSavedData.load(disk).satellite(identity.satelliteId()).isPresent(),

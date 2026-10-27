@@ -375,11 +375,14 @@ class ManifestValidationTests(unittest.TestCase):
         # W92 adds four injected failures of isolated landed-disassembly journals (w92-isolated-landed-journal-unacknowledged).
         # W90b adds one failed F2 countdown effect after publication (w90b-post-publication-discard-effect-failed).
         # W129a adds one injected detached transaction-journal failure streak (w129a-transaction-journal-unacknowledged).
+        # W129c removes the two failed idle-launch flushes and the failed discovery-launch flush (a launch only
+        # requests its write now) and adds one registry failure streak in each of those two batches
+        # (w129c-satellite-registry-unacknowledged): 136 - 3 + 2.
         self.assertEqual(
             # W153/R92 adds three exact-version rejection cases in each direction.
             # W159 adds ten actual backup retries and their single abort, all in one named fixture.
             # W160F repeats that real filesystem fault in the controlled ordinary-save regression.
-            136, sum(sum(item.counts.values()) for item in expectations if item.level == "ERROR")
+            135, sum(sum(item.counts.values()) for item in expectations if item.level == "ERROR")
         )
 
     def test_w159_player_save_failures_are_exact_and_batch_scoped(self) -> None:

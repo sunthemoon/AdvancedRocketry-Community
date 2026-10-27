@@ -2,42 +2,65 @@ package io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence;
 
 import static io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteRegistryProof.*;
 
-import com.mojang.logging.LogUtils;
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.CheckedRootWriter;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataPolicy;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteMissionRegistry;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteRegistryCapture.Attributes;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteRegistryCapture.Capture;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteRegistryCapture.Result;
 import java.io.File;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import net.minecraft.nbt.CompoundTag;
+import java.util.concurrent.TimeUnit;
+import net.minecraft.server.MinecraftServer;
 
-/** W27 section 3: synchronous fresh captures; no retained candidate or delayed readback. */
+/**
+ * ADR-074 items 4 to 6, 9 and 10: the satellite registry's checked writer. The owner thread captures
+ * ({@link SatelliteRegistryCapture}) and publishes at tick START; one daemon IO thread, {@value #THREAD}, encodes,
+ * checks and replaces. The epoch rules are {@code RegistryEpochs}'; this class holds the session, the mutation
+ * sequence, the acknowledgement, the bounded checkpoint tickets and the stop path. W119's proof rule is unchanged.
+ */
 final class SatelliteRegistryWriter {
+    static final String LABEL = "satellite_registry", THREAD = "ARCE-satellite-registry";
+    static final String EPOCH_CAPACITY_EXHAUSTED = "EPOCH_CAPACITY_EXHAUSTED";
+    /** Outstanding checkpoint requests (bay D3); a further request is refused, never queued. */
+    static final int MAX_CHECKPOINTS = 256;
     private static final ManagedSavedDataType TYPE = ManagedSavedDataType.SATELLITE_MISSIONS;
+    private static final org.slf4j.Logger LOGGER = com.mojang.logging.LogUtils.getLogger();
+
     private final Thread owner = Thread.currentThread();
     private final Object session = new Object();
+    private final long createdNanos = System.nanoTime();
     private final SatelliteMissionSavedData data;
     private final SatelliteMissionRegistry registry;
-    private long mutationSequence, highestUnknownEpoch;
+    private final List<Checkpoint> tickets = new ArrayList<>();
+    private final SatelliteRegistryWriterCuts cuts = new SatelliteRegistryWriterCuts();
+    private long mutationSequence, completedWrites, lastWriterNanos, lastWriterCpuNanos, maxWriterNanos;
+    /** Milliseconds spent in awaits: the await's cadence clock ran ahead of the server's tick count by at most this. */
+    private long awaitedMillis;
     private Acknowledgement acknowledged;
-    private boolean saveFailureReported;
-    private RuntimeException writeFailure;
     private CheckedSavedDataPolicy policy = CheckedSavedDataPolicy.atomic(TYPE);
+    private CheckedRootWriter<Capture, Attributes, Result> writer;
+    private Path target;
+    private Capture flight;
+    private Outcome lastOutcome;
+    private RuntimeException lastFailure;
+    private boolean exhaustionReported, failureReported;
+
 
     SatelliteRegistryWriter(SatelliteMissionSavedData data, SatelliteMissionRegistry registry) {
-        this.data = data; this.registry = registry; highestUnknownEpoch = registry.saveEpoch();
+        this.data = data; this.registry = registry;
     }
 
     void mutated() { requireOwner(); mutationSequence = Math.addExact(mutationSequence, 1L); }
     long sequence() { return mutationSequence; }
-    long epochToWrite() {
-        long epoch = registry.saveEpoch();
-        return registry.epochToWrite() == epoch ? epoch : Math.addExact(Math.max(epoch, highestUnknownEpoch), 1L);
-    }
+    long epochToWrite() { return registry.epochToWrite(); }
     Optional<Acknowledgement> acknowledgement() { requireOwner(); return Optional.ofNullable(acknowledged); }
     void policy(CheckedSavedDataPolicy policy) {
         requireOwner();
@@ -45,115 +68,356 @@ final class SatelliteRegistryWriter {
         this.policy = policy;
     }
     CheckedSavedDataPolicy policy() { return policy; }
+    SatelliteRegistryWriterCuts cuts() { return cuts; }
 
     Watch watch(UUID satellite) {
         requireOwner();
         return new Watch(session, mutationSequence, Identity.of(data.satellite(satellite).orElseThrow()));
     }
+
+    /** A removal token at the current sequence, for a change that leaves no identity to watch. */
+    Token token() { requireOwner(); return new Token(session, mutationSequence); }
+    boolean covers(Token token) { requireOwner(); return acknowledged != null && acknowledged.covers(token); }
+    boolean proves(Watch watch) { requireOwner(); return acknowledged != null && acknowledged.proves(watch); }
+
+    /**
+     * ADR-074 item 6: the checkpoint as a request that asks for the directory force and returns at once. The fast path
+     * stays: a clean registry whose acknowledgement proves every watch is answered COMMITTED without writing.
+     */
+    Checkpoint requestCheckpoint(Path file, List<Watch> watches, CheckedSavedDataPolicy.DirectoryForce force) {
+        requireOwner();
+        if (proved(watches)) { return Checkpoint.answered(mutationSequence, new Completion(Outcome.COMMITTED, Optional.of(acknowledged), false)); }
+        // m is the newest watched change; an empty request covers the current sequence.
+        long m = watches.stream().mapToLong(Watch::sequence).max().orElse(mutationSequence);
+        var ticket = new Checkpoint(m, true);
+        if (tickets.size() >= MAX_CHECKPOINTS
+                || !request(file, new Attributes(policy, java.util.Objects.requireNonNull(force, "force")))) {
+            ticket.discard();
+            return ticket;
+        }
+        tickets.add(ticket);
+        return ticket;
+    }
+
+    private boolean proved(List<Watch> watches) {
+        return data.operational() && !data.isDirty() && acknowledged != null && watches.stream().allMatch(acknowledged::proves);
+    }
+
     /** A clean decoded current root is a disk observation in this session; restored roots need a new write. */
     void loaded() {
         requireOwner();
         if (data.operational() && !data.isDirty()) {
-            acknowledged = new Acknowledgement(session, mutationSequence, registry.saveEpoch(), identities());
+            var identities = new LinkedHashMap<UUID, Identity>();
+            registry.satellites().forEach(state -> identities.put(state.satelliteId(), Identity.of(state)));
+            acknowledged = new Acknowledgement(session, mutationSequence, registry.saveEpoch(), identities);
         }
     }
-    private Map<UUID, Identity> identities() {
-        var identities = new LinkedHashMap<UUID, Identity>();
-        registry.satellites().forEach(state -> identities.put(state.satelliteId(), Identity.of(state)));
-        return identities;
+
+    /** The capture a write would take now, without putting it in flight (tests and the capture's own path). */
+    Capture capture(long sequence) {
+        if (!data.operational()) { return new Capture(sequence, 0L, 0L, null, data.blockedRoot(), null); }
+        var epochs = registry.epochs();
+        return new Capture(sequence, epochs.stateChanges(), epochs.toCarry(), registry.sections(), null,
+                cuts.beforeEncode(sequence));
     }
 
+    /** A plain request with the write policy: autosave, the coalesced flush and prompt barrier requests. */
+    boolean request(Path file) { return request(file, new Attributes(policy, null)); }
+
+    /** Refused while stopping or closed, and when no epoch is representable. Never waits. */
+    boolean request(Path file, Attributes attributes) {
+        requireOwner();
+        Path normalized = bind(file);
+        if (shuttingDown()) { latch(); return false; }
+        try {
+            return writer(normalized).request(attributes, tick());
+        } catch (CheckedRootWriter.CaptureRefused refused) {
+            return false;
+        }
+    }
+
+    /** Tick START: publish at most one completion, then start a pending request when the cadence allows. */
+    void poll() {
+        requireOwner();
+        if (writer == null) { return; }
+        if (shuttingDown()) { latch(); return; }
+        try { writer.poll(tick()); } catch (CheckedRootWriter.CaptureRefused refused) { /* reported at capture */ }
+    }
+
+    boolean busy() { requireOwner(); return writer != null && writer.busy(); }
+    boolean inFlight() { requireOwner(); return writer != null && writer.inFlight(); }
+    boolean completionReady() { requireOwner(); return writer != null && writer.completionReady(); }
+    long completedWrites() { return completedWrites; }
+    String diagnostics() {
+        return String.format(java.util.Locale.ROOT, "registry_writes=%d writer_last_ms=%.3f writer_cpu_last_ms=%.3f writer_max_ms=%.3f",
+                completedWrites, lastWriterNanos / 1e6, lastWriterCpuNanos / 1e6, maxWriterNanos / 1e6);
+    }
+    long lastWriterNanos() { return lastWriterNanos; }
+    Optional<Outcome> lastOutcome() { requireOwner(); return Optional.ofNullable(lastOutcome); }
+
+    /** The release-test status line's writer fields (W129bc native cuts). */
+    String releaseTestStatus() {
+        requireOwner();
+        return String.format(java.util.Locale.ROOT, "sequence=%d acknowledged=%s outcome=%s busy=%s dirty=%s epoch=%d",
+                mutationSequence, acknowledged == null ? "none" : String.valueOf(acknowledged.sequence()),
+                lastOutcome == null ? "NONE" : lastOutcome, busy(), data.isDirty(),
+                data.operational() ? registry.saveEpoch() : -1L);
+    }
+    long lastWriterCpuNanos() { return lastWriterCpuNanos; }
+
+    /** Detached (unit tests and diagnostics): request one write, await its publication and throw unless it covers RAM. */
+    void flush(Path file) {
+        Completion completion = awaited(file, new Attributes(policy, null));
+        if (completion.outcome() != Outcome.COMMITTED || data.isDirty()) {
+            throw new IllegalStateException("Satellite registry write was not acknowledged: " + completion.outcome(), lastFailure);
+        }
+    }
+
+    /** The checkpoint's fast path stays: a clean registry whose acknowledgement proves every watch writes nothing. */
     Completion checkpoint(Path file, List<Watch> watches, CheckedSavedDataPolicy policy,
                           CheckedSavedDataPolicy.DirectoryForce force) {
         requireOwner();
-        if (data.operational() && !data.isDirty() && acknowledged != null
-                && watches.stream().allMatch(acknowledged::proves)) {
-            return new Completion(Outcome.COMMITTED, Optional.of(acknowledged), false);
-        }
-        return write(file, policy, force);
+        var attributes = new Attributes(policy, force);
+        if (proved(watches)) { return new Completion(Outcome.COMMITTED, Optional.of(acknowledged), false); }
+        return awaited(file, attributes);
     }
 
-    Completion write(Path file, CheckedSavedDataPolicy policy, CheckedSavedDataPolicy.DirectoryForce force) {
-        requireOwner();
-        if (policy.type() != TYPE) { throw new IllegalArgumentException("Wrong registry write policy"); }
-        data.pendingWrite(); // Eligibility is not a registry mutation.
-        writeFailure = null;
-        long sequence = mutationSequence;
-        boolean[] attempted = {false};
-        CompoundTag candidate = null;
-        long epoch = registry.saveEpoch();
-        Map<UUID, Identity> identities = Map.of();
-        Outcome outcome;
-        try {
-            candidate = data.save(new CompoundTag());
-            if (data.operational()) {
-                epoch = candidate.getLong("save_epoch");
-                identities = identities();
-            }
-            CompoundTag frozen = candidate;
-            policy.withCommitter((staged, target) -> {
-                attempted[0] = true;
-                policy.committer().commit(staged, target);
-            }).replace(file, () -> frozen);
-            outcome = Outcome.COMMITTED;
-        } catch (RuntimeException failure) {
-            writeFailure = failure;
-            outcome = Outcome.FAILED;
-            if (attempted[0]) {
-                try {
-                    outcome = policy.read(file).filter(candidate::equals).isPresent() ? Outcome.COMMITTED : Outcome.FAILED;
-                } catch (RuntimeException unreadable) {
-                    failure.addSuppressed(unreadable);
-                    outcome = Outcome.UNKNOWN;
-                }
-            }
-        }
-        boolean directoryForceFailed = false;
-        if (outcome == Outcome.COMMITTED) {
-            try { force.force(file.toAbsolutePath().getParent()); }
-            catch (java.io.IOException | RuntimeException failure) { directoryForceFailed = true; }
-        }
-        if (outcome == Outcome.UNKNOWN) {
-            highestUnknownEpoch = Math.max(highestUnknownEpoch, epoch);
-            acknowledged = null;
-        } else if (outcome == Outcome.COMMITTED) {
-            if (data.operational()) {
-                acknowledged = new Acknowledgement(session, sequence, epoch, identities);
-                if (sequence == mutationSequence) {
-                    registry.markPersisted(epoch);
-                    highestUnknownEpoch = epoch;
-                    data.persisted();
-                } else {
-                    // Defensive only: production captures and resolves on the same server-thread call stack.
-                    highestUnknownEpoch = Math.max(highestUnknownEpoch, epoch);
-                }
-            } else {
-                data.persisted(); // Raw blocked roots retain their exact payload, never a registration proof.
-            }
-            saveFailureReported = false;
-            writeFailure = null;
-        }
-        return new Completion(outcome, outcome == Outcome.COMMITTED ? Optional.ofNullable(acknowledged) : Optional.empty(), directoryForceFailed);
-    }
-
-    void flush(Path file) {
-        Completion completion = write(file, policy, directory -> { });
-        if (completion.outcome() != Outcome.COMMITTED || data.isDirty()) {
-            throw new IllegalStateException("Satellite registry write was not acknowledged: " + completion.outcome(), writeFailure);
-        }
-    }
+    /**
+     * ADR-074 item 9. A running server's autosave and {@code /save-all} only request and never wait. A detached
+     * registry has no server and awaits its write here, so its synchronous callers keep W119's results. A stopping
+     * server drains to the final target (item 10).
+     */
     void save(File file) {
+        requireOwner();
+        if (shuttingDown()) { stopSave(file.toPath()); return; }
         if (!data.isDirty()) { return; }
+        if (data.server() == null) { awaited(file.toPath(), new Attributes(policy, null)); }
+        else { request(file.toPath()); }
+    }
+
+    /** {@code ServerStoppingEvent} or the first observed shutdown flag: refuse requests and starts, discard tickets. */
+    void latch() {
+        requireOwner();
+        if (writer != null) { writer.latchShutdown(); }
+        discardTickets();
+    }
+
+    /** Waiting checkpoint requests are discarded without an answer; the stop path executes no effect. */
+    private void discardTickets() {
+        tickets.forEach(Checkpoint::discard);
+        tickets.clear();
+    }
+
+    /** Overworld unload, before storage closes: resume the same drain (or start a skipped one), then always join. */
+    void close() {
+        requireOwner();
+        discardTickets();
+        if (writer == null) {
+            if (!data.isDirty() || data.server() == null && target == null) { return; }
+            writer(bind(target != null ? target : SatelliteMissionSavedData.file(data.server())));
+        }
+        writer.close(new Attributes(policy, null), System::nanoTime, TimeUnit.NANOSECONDS::sleep);
+    }
+
+    /** {@code ServerStoppedEvent} and exceptional cleanup: join without publishing; it never reports success. */
+    void abort() {
+        requireOwner();
+        discardTickets();
+        if (writer != null) { writer.abort(); }
+    }
+
+    Optional<CheckedRootWriter.DrainReport> drainReport() {
+        requireOwner();
+        return writer == null ? Optional.empty() : Optional.ofNullable(writer.lastReport());
+    }
+
+    /**
+     * Pumps publication on the calling thread until the writer is idle: detached registries, and the GameTest and
+     * release-test servers that {@link SatelliteRegistryTestAwait} admits. A live production server never awaits.
+     */
+    void await() {
+        requireOwner();
+        SatelliteRegistryTestAwait.require(data.server());
+        if (writer == null) { return; }
+        long started = System.nanoTime();
+        try { writer.await(System::nanoTime, TimeUnit.NANOSECONDS::sleep); }
+        catch (CheckedRootWriter.CaptureRefused refused) { /* reported at capture */ }
+        finally { awaitedMillis += TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - started) + 1; }
+    }
+
+    /** One awaited write on the bound target whose committer fails before replacement; nothing else changes. */
+    Outcome failOnce(Path file) {
+        var failing = policy.withCommitter((staged, target) -> { throw new SatelliteRegistryTestAwait.InjectedFailure(); });
+        return awaited(file, new Attributes(failing, null)).outcome();
+    }
+
+    /** Request, await, and answer with the first published completion that covers the request's sequence. */
+    private Completion awaited(Path file, Attributes attributes) {
+        var ticket = new Checkpoint(mutationSequence, attributes.force() != null);
+        tickets.add(ticket);
         try {
-            flush(file.toPath());
-        } catch (RuntimeException exception) {
-            if (!saveFailureReported) {
-                LogUtils.getLogger().error("Atomic SavedData save failed for {}; retained dirty state", TYPE.dataName(), exception);
-                saveFailureReported = true;
-            }
+            if (request(file, attributes)) { await(); }
+            return ticket.answer().orElseGet(() -> new Completion(Outcome.FAILED, Optional.empty(), false));
+        } finally {
+            tickets.remove(ticket);
         }
     }
+
+    private void stopSave(Path file) {
+        Path normalized = bind(file);
+        discardTickets();
+        if (writer == null && !data.isDirty()) { return; }
+        writer(normalized).drain(new Attributes(policy, null), System::nanoTime, TimeUnit.NANOSECONDS::sleep);
+    }
+
+    /** Owner thread: take the capture (rule 1). An unrepresentable epoch refuses it, so nothing retries. */
+    private Capture take(long sequence) {
+        if (flight != null) { throw new IllegalStateException("A registry capture is already in flight"); }
+        Capture capture;
+        try { capture = capture(sequence); }
+        catch (ArithmeticException unrepresentable) {
+            exhausted();
+            throw new CheckedRootWriter.CaptureRefused(EPOCH_CAPACITY_EXHAUSTED);
+        }
+        if (capture.operational()) { registry.epochs().captured(capture.epoch()); }
+        flight = capture;
+        return capture;
+    }
+
+    /** Owner thread, tick START: rules 3 to 7 for the capture in flight, then the tickets it answers. */
+    private void publish(CheckedRootWriter.Completion<Result> completion) {
+        Capture capture = flight;
+        if (capture == null || capture.sequence() != completion.sequence()) {
+            throw new IllegalStateException("Foreign satellite registry completion");
+        }
+        flight = null;
+        completedWrites++; lastWriterNanos = completion.writerNanos(); lastWriterCpuNanos = completion.writerCpuNanos();
+        maxWriterNanos = Math.max(maxWriterNanos, lastWriterNanos);
+        Result result = completion.payload();
+        lastFailure = result == null ? null : result.failure();
+        Outcome outcome = Outcome.valueOf(completion.status().name());
+        lastOutcome = outcome;
+        boolean mutatedInFlight = mutationSequence != capture.sequence();
+        if (capture.operational()) {
+            switch (outcome) {
+                case COMMITTED -> {
+                    acknowledged = new Acknowledgement(session, capture.sequence(), capture.epoch(), result.identities());
+                    registry.committed(capture.stateSequence());
+                }
+                case FAILED -> registry.epochs().failed(mutatedInFlight);
+                case UNKNOWN -> { registry.epochs().unknown(); acknowledged = null; }
+            }
+        }
+        if (outcome == Outcome.COMMITTED) {
+            // Rule 7: a blocked root's commit only clears dirty; it never acknowledges a registration.
+            data.published(!mutatedInFlight, !capture.operational()
+                    || registry.epochs().stateChanges() == capture.stateSequence());
+        }
+        var answer = new Completion(outcome, outcome == Outcome.COMMITTED ? Optional.ofNullable(acknowledged)
+                : Optional.empty(), result != null && result.directoryForceFailed());
+        boolean forced = result != null && result.forced();
+        tickets.removeIf(ticket -> ticket.answer(capture.sequence(), answer, forced));
+        report(outcome, capture);
+    }
+
+    /** ADR-074 item 12: one ERROR at the first failed or unknown write of a streak, one INFO at the commit ending it. */
+    private void report(Outcome outcome, Capture capture) {
+        if (outcome != Outcome.COMMITTED && injected(lastFailure)) {
+            // The release-test and GameTest seam's own failure: reported, but no failure streak starts.
+            LOGGER.info("ARCE_SATELLITE_REGISTRY_INJECTED_FAILURE outcome={} sequence={} epoch={}", outcome,
+                    capture.sequence(), capture.epoch());
+        } else if (outcome == Outcome.COMMITTED) {
+            if (failureReported) {
+                failureReported = false;
+                LOGGER.info("ARCE_SATELLITE_REGISTRY_ACKNOWLEDGED sequence={} epoch={} after an unacknowledged write",
+                        capture.sequence(), capture.epoch());
+            }
+        } else if (!failureReported) {
+            failureReported = true;
+            LOGGER.error("ARCE_SATELLITE_REGISTRY_UNACKNOWLEDGED outcome={} sequence={} epoch={} durable={}; retained dirty state",
+                    outcome, capture.sequence(), capture.epoch(), capture.operational() ? registry.saveEpoch() : 0L, lastFailure);
+        }
+    }
+
+    private Path bind(Path file) {
+        Path normalized = file.toAbsolutePath().normalize();
+        if (target != null && !target.equals(normalized)) {
+            throw new IllegalArgumentException("Satellite registry writer cannot rebind its target");
+        }
+        target = normalized;
+        return normalized;
+    }
+
+    private CheckedRootWriter<Capture, Attributes, Result> writer(Path file) {
+        if (writer == null) { writer = new CheckedRootWriter<>(LABEL, THREAD, new Root(file)); }
+        return writer;
+    }
+
+    private boolean shuttingDown() {
+        MinecraftServer server = data.server();
+        return server != null && (server.isStopped() || !server.isRunning());
+    }
+
+    /** The server tick; a detached registry counts one tick per monotonic millisecond, as the drain clock does. */
+    private long tick() {
+        MinecraftServer server = data.server();
+        // A bound registry's later ticks advance the cadence one each even after an await ran its clock ahead.
+        return server == null ? TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - createdNanos)
+                : server.getTickCount() + awaitedMillis;
+    }
+
+    /**
+     * ADR-074 item 5, design section 4.3: a mutation needing a new epoch is admitted only while a successor of the
+     * ceiling r = max(E, h, w) is representable; every stamp t is at most r. Checked before RAM, items or FE change.
+     */
+    boolean admitsChange() {
+        requireOwner();
+        if (registry.epochs().admitsChange()) { exhaustionReported = false; return true; }
+        exhausted();
+        return false;
+    }
+
+    /** One diagnostic per exhaustion streak, never per refused poll; the work stays dirty and unproved. */
+    private void exhausted() {
+        if (exhaustionReported) { return; }
+        exhaustionReported = true;
+        var epochs = registry.epochs();
+        LOGGER.error("ARCE_SATELLITE_REGISTRY_EPOCH_EXHAUSTED durable={} reserved={} in_flight={} sequence={} dirty={}",
+                epochs.durable(), epochs.reserved(), epochs.inFlight(), mutationSequence, data.isDirty());
+    }
+
+    private static boolean injected(Throwable failure) {
+        for (Throwable cause = failure; cause != null; cause = cause.getCause()) {
+            if (cause instanceof SatelliteRegistryTestAwait.InjectedFailure) { return true; }
+        }
+        return false;
+    }
+
+    /** Every registry mutation runs on the owner thread, never inside an IO callback (ADR-074 item 2). */
+    void requireOwnerThread() { requireOwner(); }
+
     private void requireOwner() {
         if (Thread.currentThread() != owner) { throw new IllegalStateException("Registry writes require the owner thread"); }
+    }
+
+    /** The writer's view of this root. Only {@code write} runs on IO, and it reads the capture and its own file. */
+    private final class Root implements CheckedRootWriter.Root<Capture, Attributes, Result> {
+        private final Path file;
+
+        private Root(Path file) { this.file = file; }
+
+        @Override public long mutationSequence() { return mutationSequence; }
+        @Override public Capture capture(long sequence) { return take(sequence); }
+        @Override public CheckedRootWriter.Attempt<Result> write(Capture capture, Attributes attributes) {
+            // The release-test cut wraps the committer only while a cut is armed (W129bc native cuts).
+            return SatelliteRegistryCapture.write(capture, new Attributes(cuts.policy(attributes.policy()),
+                    attributes.force()), file);
+        }
+        @Override public void publish(CheckedRootWriter.Completion<Result> completion) {
+            SatelliteRegistryWriter.this.publish(completion);
+        }
+        @Override public boolean needsWrite() { return data.isDirty(); }
+        @Override public Attributes merge(Attributes pending, Attributes later) { return pending.merge(later); }
+        @Override public boolean serviced(Attributes attempted, Attributes requested) { return attempted.services(requested); }
     }
 }

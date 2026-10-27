@@ -102,13 +102,16 @@ public sealed interface MissionPayload {
         }
     }
 
-    /** Display-only position of a bound terminal; the level ID is bounded like every stored ID (C9-M3). */
+    /**
+     * Display-only position of a bound terminal; the level ID is bounded like every stored ID (C9-M3). The position is
+     * frozen at construction, so an off-thread registry capture never aliases a caller's mutable position (ADR-074).
+     */
     record TerminalLocation(ResourceLocation level, BlockPos pos) {
         public static final int MAX_LEVEL_CHARS = 128;
 
         public TerminalLocation {
             Objects.requireNonNull(level, "level");
-            Objects.requireNonNull(pos, "pos");
+            pos = Objects.requireNonNull(pos, "pos").immutable();
             if (level.toString().length() > MAX_LEVEL_CHARS) {
                 throw new IllegalArgumentException("Terminal level ID exceeds " + MAX_LEVEL_CHARS + " characters");
             }

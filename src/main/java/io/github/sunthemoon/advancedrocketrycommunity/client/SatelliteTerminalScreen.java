@@ -335,7 +335,7 @@ public final class SatelliteTerminalScreen extends AbstractContainerScreen<Satel
 
     private static boolean isError(SatelliteOperationCode code) {
         return switch (code) {
-            case SUCCESS, IDEMPOTENT, PENDING_DISCOVERY, ALREADY_CLAIMED -> false;
+            case SUCCESS, IDEMPOTENT, PENDING_DISCOVERY, ALREADY_CLAIMED, REGISTRY_PENDING -> false;
             default -> true;
         };
     }

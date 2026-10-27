@@ -111,7 +111,7 @@ public final class CodecRecordSizer implements RecordSizer {
             var root = SatelliteRegistryPayload.encodeUnchecked(registry, new net.minecraft.nbt.CompoundTag());
             root.getCompound("clock").putLong("logical_game_time", now);
             root.getCompound("clock").putLong("last_observed_game_time", observedTime);
-            root.putLong("save_epoch", Math.addExact(registry.saveEpoch(), 1L));
+            root.putLong("save_epoch", Math.addExact(registry.epochs().ceiling(), 1L));
             replace(root, "ground_surveys", "job_id", job.jobId(), GroundSurveyCodec.encode(job));
             if (instance != null) {
                 replace(root, "instances", "instance_id", instance.instanceId(),
