@@ -56,7 +56,11 @@ public final class BayReleaseTestCommands {
         event.getDispatcher().register(Commands.literal("arce").then(Commands.literal("bay").then(Commands.literal("release-test")
                 .requires(source -> source.hasPermission(2))
                 .then(Commands.literal("fixture").then(Commands.argument("pos", BlockPosArgument.blockPos())
-                        .executes(context -> fixture(context.getSource(), BlockPosArgument.getLoadedBlockPos(context, "pos")))))
+                        .executes(context -> {
+                            // The gate decides before the position is resolved against a Level (W128R-R1).
+                            EscrowTestEndpoints.requireEnabled(context.getSource().getServer());
+                            return fixture(context.getSource(), BlockPosArgument.getLoadedBlockPos(context, "pos"));
+                        })))
                 .then(Commands.literal("status").then(Commands.argument("logical", UuidArgument.uuid())
                         .executes(context -> status(context.getSource(), UuidArgument.getUuid(context, "logical")))))
                 .then(Commands.literal("fill").then(Commands.argument("count", IntegerArgumentType.integer(1, 64))

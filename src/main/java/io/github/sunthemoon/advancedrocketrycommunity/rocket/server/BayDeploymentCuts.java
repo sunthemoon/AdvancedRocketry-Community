@@ -4,7 +4,10 @@ import com.mojang.logging.LogUtils;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceipt;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceiptCommitCut;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowRuntime;
+import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowTestEndpoints;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.deployment.BayClaim;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteMissionSavedData;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.server.MinecraftServer;
 import org.slf4j.Logger;
@@ -17,6 +20,7 @@ import org.slf4j.Logger;
  */
 final class BayDeploymentCuts {
     static final String PROPERTY = "advancedrocketrycommunity.bayCheckpoint";
+    static final String FIRST_TICK = "advancedrocketrycommunity.bayFirstTick";
     private static final String HOOKS = "advancedrocketrycommunity.releaseTestHooks";
     private static final Logger LOGGER = LogUtils.getLogger();
 
@@ -61,10 +65,23 @@ final class BayDeploymentCuts {
      * refuse both with DEPLOYMENT_PENDING, because the receipt index was loaded at ServerStartingEvent (N6).
      */
     static void firstTick(MinecraftServer server) {
-        String value = System.getProperty("advancedrocketrycommunity.bayFirstTick", "");
+        firstTick(server, () -> SatelliteMissionSavedData.get(server));
+    }
+
+    /**
+     * The operator decommission below can remove any idle satellite, so the complete release-test gate
+     * ({@link EscrowTestEndpoints#enabled}: the owner thread, no RCON and only test-owned connections) decides before the
+     * UUID is parsed or the registry is reached (W128R-R1).
+     */
+    static void firstTick(MinecraftServer server, Supplier<SatelliteMissionSavedData> registries) {
+        String value = System.getProperty(FIRST_TICK, "");
         if (value.isEmpty() || !Boolean.getBoolean(HOOKS) || !server.isDedicatedServer()) { return; }
+        if (!EscrowTestEndpoints.enabled(server)) {
+            LOGGER.warn("ARCE_RELEASE_BAY_FIRST_TICK refused: the release-test gate is closed");
+            return;
+        }
         java.util.UUID satellite = java.util.UUID.fromString(value);
-        var registry = io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteMissionSavedData.get(server);
+        var registry = registries.get();
         var decommission = registry.decommission(satellite, BayReleaseTestCommands.OWNER, true, true).code();
         var identity = new io.github.sunthemoon.advancedrocketrycommunity.satellite.content.SatelliteIdentity(satellite,
                 BayReleaseTestCommands.OWNER, io.github.sunthemoon.advancedrocketrycommunity.ModIdentity.id("data_satellite"));
