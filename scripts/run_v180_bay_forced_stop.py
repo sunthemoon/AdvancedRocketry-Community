@@ -1,22 +1,25 @@
 #!/usr/bin/env python3
-"""W27d1 native forced-stop cuts of the bay deployment coordinator (W27A-DESIGN section 9; W128 and its resumption).
+"""W27d1 and W27d2 native forced-stop cuts of the bay deployment coordinator (W27A-DESIGN section 9; W128, W170).
 
 Each case starts a fresh flat world, launches the gated fixture (a neutral, hand-fuelled Earth-to-Moon rocket with one
-data bay and one solar bay whose owner lacks the solar research), cuts it, ends the first start by a kill, a normal stop,
-a thrown tick exception or a landing, and restarts twice. The probe only pauses the receipt committer (staged-only or
-replaced-before-callback), injects an unknown outcome, or pauses the transaction writer during D0's B14 request; it
-never launches or registers anything itself. Expected outcomes (W27A section 4's restart rows for INTENT):
+data bay and a second bay: a solar package whose owner lacks its research, or for B4 a survey package), cuts it, ends
+the first start by a kill, a normal stop, a thrown tick exception or a landing, and restarts twice. The probe only
+pauses the receipt committer (staged-only or replaced-before-callback), injects an unknown outcome before or after the
+move, pauses the transaction or registry writer, stalls the claim after D5, or makes D2 refuse (B9); it never launches
+or registers anything itself. Expected outcomes (W27A section 4's restart rows, W170's one-copy resume):
 
 * nothing durable: T is unclaimed at restart and ordinary recovery leaves a stationary source on Earth;
-* a durable INTENT: the first tick refuses decommission and terminal launch (B13), the restart row writes REJECTED
-  (INTERRUPTED), the claim hands T to ordinary recovery, and B1_MOVED's relaunch re-arms the same operation;
+* a durable INTENT with X absent: the first tick refuses decommission and terminal launch (B13), the restart row
+  writes REJECTED (INTERRUPTED), the claim hands T to ordinary recovery, and B1_MOVED's relaunch re-arms the same
+  operation, which then registers and consumes the bay;
+* a durable INTENT with X present (the registry committed): the restart promotes it, publishes REGISTERED, resumes
+  the source at altitude and consumes, proves and retires; the rocket lands with the data bay consumed;
+* a durable REGISTERED group: the restart resumes the source (present, or rebuilt with T's source UUID) and lands;
+* a retired group (no receipt, T' durable): ordinary recovery leaves the consumed source stationary on Earth;
 * a durable REJECTED: no claim, ordinary recovery;
-* a durable INTENT whose restarts see a blocked registry (B10's hold half, through the gated startup seam
-  ``bayRegistryBlocked``): the claim holds for offline repair with REGISTRY_BLOCKED, the receipt file is not written,
-  the pending charge stays and the rocket stays locked in TRANSIT at altitude;
-* a clean stop while D0 waits for its B14 request (B14_STOP): the coordinator latches with the claim unresolved, no
-  receipt is ever written, and the restarts give the ordinary recovery;
-* every case: both packages byte-equal, no satellite registered, no ERROR or FATAL at a restart.
+* a durable INTENT whose restarts see a blocked registry (B10's hold half): the claim holds for offline repair;
+* a clean stop while D0 waits for its B14 request (B14_STOP): no receipt is ever written, ordinary recovery;
+* every case: the solar package byte-equal, each satellite registered at most once, no ERROR or FATAL at a restart.
 """
 from __future__ import annotations
 
@@ -40,7 +43,8 @@ ORIGIN = (8, 2, 8)
 FIXTURE = re.compile(r"ARCE_RELEASE_BAY_FIXTURE logical=(\S+) transfer=(\S+) rocket=(\S+) data=(\S+) solar=(\S+) "
                      r"launch=(\w+) packages=(\S+)")
 STATUS = re.compile(r"ARCE_RELEASE_BAY_STATUS logical=(\S+) claim=(\w+) hold=(\w+) reason=(\w+) receipts=\[([^\]]*)\] "
-                    r"transfer=(\w+) rocket=(\S+) state=(\w+) y=(\S+) packages=(\S+) locked=(true|false)")
+                    r"transfer=(\w+) rocket=(\S+) state=(\w+) y=(\S+) packages=(\S+) locked=(true|false) consumed=(\S+) "
+                    r"owned=(-?\d+)")
 PENDING = re.compile(r"ARCE_RELEASE_BAY_PENDING pending=(\d+) retained=(\d+) work=(true|false)")
 FILLED = re.compile(r"ARCE_RELEASE_BAY_FILLED requested=(\d+) queued=(\d+)")
 FIRST_TICK = re.compile(r"ARCE_RELEASE_BAY_FIRST_TICK satellite=(\S+) tick=(\d+) decommission=(\w+) launch=(\w+)")
@@ -50,29 +54,72 @@ REGISTRY_BLOCKED = "ARCE_RELEASE_BAY_REGISTRY_BLOCKED session=true"
 ALTITUDE = 48
 TXW_PAUSED = re.compile(r"ARCE_RELEASE_TXW_PAUSED point=STAGED")
 TXW_DONE = re.compile(r"Transaction writer cut command done|ARCE_RELEASE_TXW_(ARMED|MUTATED)")
+SRW_DONE = re.compile(r"Registry writer cut command done|ARCE_RELEASE_SRW_ARMED")
+SAVED = re.compile(r"Saved the game|saved the game|Saving the game", re.IGNORECASE)
 
-# durable: the data satellite's receipt on disk after the first start; end: how the first start ends.
+# durable: the data satellite's state on disk after the first start; end: how the first start ends; outcomes: the
+# settled state of the first start (when it lands) and of each restart (W170). Outcome names are OUTCOMES' keys.
 CASES = {
-    "B1_STAGED": dict(cut="B1_STAGED", end="kill", durable="NONE"),
-    "B1_MOVED": dict(cut="B1_MOVED", end="kill", durable="INTENT", relaunch=True),
-    "B9_STAGED": dict(cut="B9_STAGED", end="kill", durable="INTENT"),
-    "B9_MOVED": dict(cut="B9_MOVED", end="kill", durable="REJECTED"),
-    "B12_UNKNOWN": dict(cut="B12_UNKNOWN", end="land", durable="REJECTED"),
-    "B12_FAILED": dict(cut=None, end="land", durable="NONE", staging=True),
-    "B14_T1": dict(cut=None, end="kill", durable="NONE", journal=True),
-    "B18_INTENT": dict(cut="B18_INTENT", end="stop", durable="INTENT"),
-    "B18_REJECTED": dict(cut="B18_REJECTED", end="stop", durable="REJECTED"),
-    "B18_CRASH": dict(cut="B18_INTENT", end="crash", durable="INTENT"),
-    "B11_FULL": dict(cut=None, end="land", durable="NONE", fill=64),
-    "B17_FAIR": dict(cut=None, end="stop", durable="NONE", fill=56, fixture_restart=1),
+    "B1_STAGED": dict(cut="B1_STAGED", end="kill", durable="NONE", restarts=("ORDINARY", "ORDINARY")),
+    "B1_MOVED": dict(cut="B1_MOVED", end="kill", durable="INTENT", relaunch=True, restarts=("INTERRUPTED", "INTERRUPTED")),
+    "B9_STAGED": dict(cut="B9_STAGED", end="kill", durable="INTENT", refuse=True, restarts=("INTERRUPTED", "INTERRUPTED")),
+    "B9_MOVED": dict(cut="B9_MOVED", end="kill", durable="REJECTED", refuse=True, restarts=("REFUSED", "REFUSED")),
+    "B12_UNKNOWN": dict(cut="B12_UNKNOWN", end="land", durable="NONE", first="LANDED", restarts=("LANDED", "LANDED")),
+    "B12_FAILED": dict(cut=None, end="land", durable="NONE", staging=True, first="LANDED_UNCONSUMED",
+                       restarts=("LANDED_UNCONSUMED", "LANDED_UNCONSUMED")),
+    "B14_T1": dict(cut=None, end="kill", durable="NONE", journal=True, restarts=("ORDINARY", "ORDINARY")),
+    "B18_INTENT": dict(cut="B18_INTENT", end="stop", durable="INTENT", restarts=("INTERRUPTED", "INTERRUPTED")),
+    "B18_REJECTED": dict(cut="B18_REJECTED", end="stop", durable="REJECTED", refuse=True, restarts=("REFUSED", "REFUSED")),
+    "B18_CRASH": dict(cut="B18_INTENT", end="crash", durable="INTENT", restarts=("INTERRUPTED", "INTERRUPTED")),
+    "B11_FULL": dict(cut=None, end="land", durable="NONE", fill=64, first="LANDED_UNCONSUMED",
+                     restarts=("LANDED_UNCONSUMED", "LANDED_UNCONSUMED")),
+    "B17_FAIR": dict(cut=None, end="stop", durable="NONE", fill=56, fixture_restart=1, restarts=("LANDED", "LANDED")),
     # W128R-R2: B10's INTENT hold half, and a clean stop while D0 waits for its B14 request.
     # A clean stop drains the paused INTENT and saves the source at altitude, so each restart can show it locked there.
-    "B10_BLOCKED": dict(cut="B18_INTENT", end="stop", durable="INTENT", hold="REGISTRY_BLOCKED"),
-    "B14_STOP": dict(cut=None, end="stop", durable="NONE", journal=True, at_stop=True),
+    "B10_BLOCKED": dict(cut="B18_INTENT", end="stop", durable="INTENT", hold="REGISTRY_BLOCKED", restarts=("HELD", "HELD")),
+    "B14_STOP": dict(cut=None, end="stop", durable="NONE", journal=True, at_stop=True, restarts=("ORDINARY", "ORDINARY")),
+    # W170: the registry checkpoint (B2, B13), D4's REGISTERED generation (B3, B12, B15, B18), decommission after
+    # registration (B4), the stall after D5 (B6), and D7's guarded removal (B8, B12, B15, B18).
+    "B2_STAGED": dict(registry="STAGED PAUSE", end="kill", durable="INTENT", restarts=("INTERRUPTED", "INTERRUPTED")),
+    "B2_MOVED": dict(registry="MOVED PAUSE", end="kill", durable="INTENT", restarts=("LANDED", "LANDED")),
+    "B3_STAGED": dict(cut="B3_STAGED", end="kill", durable="INTENT", restarts=("LANDED", "LANDED")),
+    "B3_MOVED": dict(cut="B3_MOVED", end="kill", durable="REGISTERED", restarts=("LANDED", "LANDED")),
+    "B3_SAVED": dict(cut="B3_MOVED", end="kill", durable="REGISTERED", save=True, restarts=("LANDED", "LANDED")),
+    "B4_DECOMMISSION": dict(cut="B3_MOVED", end="kill", durable="REGISTERED", survey=True, decommission=True,
+                            restarts=("LANDED", "LANDED")),
+    "B6_D5": dict(cut="B6_D5", end="kill", durable="REGISTERED", restarts=("LANDED", "LANDED")),
+    "B6_SAVED": dict(cut="B6_D5", end="kill", durable="REGISTERED", save=True, restarts=("LANDED", "LANDED")),
+    "B8_STAGED": dict(cut="B8_STAGED", end="kill", durable="REGISTERED", restarts=("LANDED", "LANDED")),
+    "B8_MOVED": dict(cut="B8_MOVED", end="kill", durable="RETIRED", restarts=("CONSUMED_REST", "CONSUMED_REST")),
+    "B12_D4": dict(cut="B12_D4", end="land", durable="NONE", first="LANDED", restarts=("LANDED", "LANDED")),
+    "B12_D7": dict(cut="B12_D7", end="land", durable="NONE", first="LANDED", restarts=("LANDED", "LANDED")),
+    "B13_FAILED": dict(registry="STAGED FAIL", end="land", durable="NONE", first="LANDED", unproved=True,
+                       restarts=("LANDED", "LANDED")),
+    "B13_UNKNOWN": dict(registry="MOVED UNKNOWN", end="land", durable="NONE", first="LANDED", unproved=True,
+                        restarts=("LANDED", "LANDED")),
+    "B15_D4": dict(cut="B15_D4", end="land", durable="NONE", first="LANDED", restarts=("LANDED", "LANDED")),
+    "B15_D7": dict(cut="B15_D7", end="land", durable="NONE", first="LANDED", restarts=("LANDED", "LANDED")),
+    "B18_D4": dict(cut="B3_MOVED", end="stop", durable="REGISTERED", restarts=("LANDED", "LANDED")),
+    "B18_D7": dict(cut="B8_MOVED", end="stop", durable="RETIRED", restarts=("CONSUMED_REST", "CONSUMED_REST")),
 }
+# W170's second tranche; the first is W27d1's fourteen cases with their W27d2 outcomes (at most 60 starts each).
+TRANCHES = {"A": ["B1_STAGED", "B1_MOVED", "B9_STAGED", "B9_MOVED", "B12_UNKNOWN", "B12_FAILED", "B14_T1", "B18_INTENT",
+                  "B18_REJECTED", "B18_CRASH", "B11_FULL", "B17_FAIR", "B10_BLOCKED", "B14_STOP"],
+            "B": ["B2_STAGED", "B2_MOVED", "B3_STAGED", "B3_MOVED", "B3_SAVED", "B4_DECOMMISSION", "B6_D5", "B6_SAVED",
+                  "B8_STAGED", "B8_MOVED", "B12_D4", "B12_D7", "B13_FAILED", "B13_UNKNOWN", "B15_D4", "B15_D7", "B18_D4",
+                  "B18_D7"]}
 INTERRUPTED = ("REJECTED", "INTERRUPTED")
-UNAVAILABLE = ("REJECTED", "DEPLOYMENT_UNAVAILABLE")
+REFUSED = ("REJECTED", "SERVER_ERROR")
 HELD_INTENT = ("INTENT", "NONE")
+# outcome: (data receipt, rest: ORIGIN or LANDED, data bay consumed, satellites the fixture owner holds)
+OUTCOMES = {
+    "ORDINARY": (None, "ORIGIN", False, 0),
+    "INTERRUPTED": (INTERRUPTED, "ORIGIN", False, 0),
+    "REFUSED": (REFUSED, "ORIGIN", False, 0),
+    "LANDED": (None, "LANDED", True, 1),
+    "LANDED_UNCONSUMED": (None, "LANDED", False, 0),
+    "CONSUMED_REST": (None, "ORIGIN", True, 1),
+}
 
 
 def parse_fixture(line: str) -> dict:
@@ -98,73 +145,95 @@ def parse_status(line: str) -> dict:
     match = STATUS.search(line)
     if match is None:
         raise smoke.SmokeError(f"Not a status line: {line!r}")
-    keys = ("logical", "claim", "hold", "reason", "receipts", "transfer", "rocket", "state", "y", "packages", "locked")
+    keys = ("logical", "claim", "hold", "reason", "receipts", "transfer", "rocket", "state", "y", "packages", "locked",
+            "consumed", "owned")
     status = dict(zip(keys, match.groups()))
     status["receipts"] = parse_receipts(status["receipts"])
+    status["consumed"] = [None if value == "-" else value for value in status["consumed"].split("+")] \
+        if status["consumed"] != "NONE" else []
+    status["owned"] = int(status["owned"])
     return status
+
+
+def outcome(case: str, restart: int, relaunched: bool = False) -> str:
+    """The settled outcome after this start (0 is the first start of a landing case)."""
+    spec = CASES[case]
+    if relaunched:
+        return "LANDED"
+    if spec.get("fixture_restart") == 1 and restart == 0:
+        return "ORDINARY"
+    return spec["first"] if restart == 0 else spec["restarts"][restart - 1]
 
 
 def expected_receipt(case: str, restart: int, relaunched: bool = False) -> tuple[str, str] | None:
     """The data satellite's settled receipt (phase, reason) after this start, or None for no receipt."""
-    spec = CASES[case]
-    if relaunched:
-        return UNAVAILABLE
-    if spec.get("fixture_restart") == 1:
-        return UNAVAILABLE if restart >= 1 else None
-    if spec.get("hold"):
-        return HELD_INTENT
-    durable = spec["durable"]
-    if durable == "INTENT":
-        return INTERRUPTED
-    if durable == "REJECTED":
-        return UNAVAILABLE
-    return None
+    name = outcome(case, restart, relaunched)
+    return HELD_INTENT if name == "HELD" else OUTCOMES[name][0]
 
 
 def settled(case: str, restart: int, status: dict, fixture: dict, relaunched: bool = False) -> bool:
-    """No claim, the receipt resolved as expected, and the rocket at rest (landed, or stationary at its origin); for a
-    hold case, the claim held for offline repair, the INTENT unchanged and the rocket locked in TRANSIT at altitude."""
-    hold = CASES[case].get("hold")
-    if hold:
+    """No claim, the receipt resolved as expected, the rocket at rest (landed, or stationary at its origin) with the data
+    bay consumed or not as expected; for a hold case, the claim held for offline repair, the INTENT unchanged and the
+    rocket locked in TRANSIT at altitude."""
+    name = outcome(case, restart, relaunched)
+    if name == "HELD":
         data = [receipt for receipt in status["receipts"] if receipt["satellite"] == fixture["data"]]
-        return (status["claim"] == "OUTCOMES" and status["hold"] == "REPAIR" and status["reason"] == hold
+        return (status["claim"] == "OUTCOMES" and status["hold"] == "REPAIR" and status["reason"] == CASES[case]["hold"]
                 and status["locked"] == "true" and len(data) == 1 and (data[0]["phase"], data[0]["reason"]) == HELD_INTENT
                 and data[0]["acknowledged"] and status["transfer"] == "PREPARED" and status["state"] == "TRANSIT"
                 and float(status["y"]) == float(ORIGIN[1] + ALTITUDE))
     if status["claim"] != "NONE":
         return False
-    expected = expected_receipt(case, restart, relaunched)
+    expected, rest, consumed, _ = OUTCOMES[name]
     data = [receipt for receipt in status["receipts"] if receipt["satellite"] == fixture["data"]]
     if expected is None:
         if data:
             return False
     elif len(data) != 1 or (data[0]["phase"], data[0]["reason"]) != expected or not data[0]["acknowledged"]:
         return False
-    landed = CASES[case]["end"] == "land" or relaunched or CASES[case].get("fixture_restart") == 1
-    if landed:
+    if len(status["consumed"]) != 2 or (status["consumed"][0] is not None) != consumed:
+        return False
+    if rest == "LANDED":
         return status["state"] == "LANDED"
     return status["state"] == "FUELED" and status["transfer"] == "NONE" and float(status["y"]) == float(ORIGIN[1])
 
 
-def check_settled(case: str, restart: int, status: dict, fixture: dict) -> None:
-    """The invariants of every settled start: packages byte-equal, no registration, only the fixture's satellites."""
-    if status["packages"] != fixture["packages"]:
-        raise smoke.SmokeError(f"{case}/{restart}: the rocket's packages changed: {status['packages']}")
+def check_settled(case: str, restart: int, status: dict, fixture: dict, relaunched: bool = False) -> None:
+    """The invariants of every settled start: the second package byte-equal (consumed with its own op for B4), each
+    satellite registered at most once by the bay, and only the fixture's satellites named."""
+    name = outcome(case, restart, relaunched)
+    expected = fixture["packages"].split("+")
+    actual = status["packages"].split("+")
+    consumed = name != "HELD" and OUTCOMES[name][2]
+    if len(actual) != 2 or (actual[0] == expected[0]) == consumed:
+        raise smoke.SmokeError(f"{case}/{restart}: the data package is {'not ' if consumed else ''}consumed: {status['packages']}")
+    survey = CASES[case].get("survey", False)
+    if survey:
+        if consumed and (status["consumed"][1] is None or actual[1] == expected[1]):
+            raise smoke.SmokeError(f"{case}/{restart}: the survey bay was not consumed: {status}")
+    elif actual[1] != expected[1] or (status["consumed"] and status["consumed"][1] is not None):
+        raise smoke.SmokeError(f"{case}/{restart}: the research-locked solar package changed: {status['packages']}")
+    owned = 0 if name == "HELD" else OUTCOMES[name][3]
+    if status["owned"] != owned:
+        raise smoke.SmokeError(f"{case}/{restart}: the fixture owner holds {status['owned']} satellites, expected {owned}")
     for receipt in status["receipts"]:
-        if receipt["registered"]:
-            raise smoke.SmokeError(f"{case}/{restart}: W27d1 registered a satellite: {receipt}")
         if receipt["satellite"] not in (fixture["data"], fixture["solar"]):
             raise smoke.SmokeError(f"{case}/{restart}: a foreign receipt names the fixture rocket: {receipt}")
-    if any(receipt["satellite"] == fixture["solar"] for receipt in status["receipts"]):
+    if not survey and any(receipt["satellite"] == fixture["solar"] for receipt in status["receipts"]):
         raise smoke.SmokeError(f"{case}/{restart}: the research-locked solar bay got a receipt")
 
 
 def check_first_tick(case: str, lines: list[str], fixture: dict) -> dict | None:
-    if CASES[case]["durable"] != "INTENT":
+    """A durable INTENT refuses decommission and launch on the first tick (B13); B4 decommissions its REGISTERED survey
+    satellite there, which the acknowledged REGISTERED receipt allows while its launch fence stays."""
+    spec = CASES[case]
+    if spec["durable"] != "INTENT" and not spec.get("decommission"):
         return None
+    satellite = fixture["solar"] if spec.get("decommission") else fixture["data"]
+    expected = ("SUCCESS", "DEPLOYMENT_PENDING") if spec.get("decommission") else ("DEPLOYMENT_PENDING", "DEPLOYMENT_PENDING")
     found = [match.groups() for line in lines for match in [FIRST_TICK.search(line)] if match]
-    if len(found) != 1 or found[0][0] != fixture["data"] or found[0][2:] != ("DEPLOYMENT_PENDING", "DEPLOYMENT_PENDING"):
-        raise smoke.SmokeError(f"{case}: the first tick did not refuse decommission and launch of a durable INTENT: {found}")
+    if len(found) != 1 or found[0][0] != satellite or found[0][2:] != expected:
+        raise smoke.SmokeError(f"{case}: the first tick did not answer {expected} for {satellite}: {found}")
     return dict(satellite=found[0][0], tick=int(found[0][1]), decommission=found[0][2], launch=found[0][3])
 
 
@@ -209,7 +278,7 @@ class Session:
         while True:
             status = self.status(fixture["logical"])
             if settled(case, restart, status, fixture, relaunched):
-                check_settled(case, restart, status, fixture)
+                check_settled(case, restart, status, fixture, relaunched)
                 return status
             if time.monotonic() > deadline:
                 raise smoke.SmokeError(f"{case}/{restart}: never settled: {status}")
@@ -238,9 +307,10 @@ class Session:
         return process.finish(timeout)
 
 
-def launch_fixture(run: Session) -> dict:
+def launch_fixture(run: Session, survey: bool = False) -> dict:
     run.send(f"forceload add {ORIGIN[0]} {ORIGIN[2]}", re.compile(r"[Mm]arked|already|forceload|chunk"))
-    fixture = parse_fixture(run.send(f"arce bay release-test fixture {ORIGIN[0]} {ORIGIN[1]} {ORIGIN[2]}", FIXTURE))
+    variant = " survey" if survey else ""
+    fixture = parse_fixture(run.send(f"arce bay release-test fixture {ORIGIN[0]} {ORIGIN[1]} {ORIGIN[2]}{variant}", FIXTURE))
     if fixture["launch"] not in ("SUCCESS", "JOURNAL_PENDING") or fixture["packages"].count("+") != 1:
         raise smoke.SmokeError(f"The fixture did not launch with two packaged bays: {fixture}")
     return fixture
@@ -248,7 +318,9 @@ def launch_fixture(run: Session) -> dict:
 
 def first_start(run: Session, case: str, world: Path) -> tuple[dict | None, dict]:
     spec = CASES[case]
-    properties = {"bayCheckpoint": spec["cut"]} if spec["cut"] else {}
+    properties = {"bayCheckpoint": spec["cut"]} if spec.get("cut") else {}
+    if spec.get("refuse"):
+        properties["bayRefuseRegistration"] = "true"
     process = run.start(case, 0, properties)
     observed: dict = {}
     if spec.get("staging"):
@@ -260,12 +332,24 @@ def first_start(run: Session, case: str, world: Path) -> tuple[dict | None, dict
     if spec.get("fixture_restart") is None:
         if spec.get("journal"):
             run.send("arce rocket release-test transaction-writer arm STAGED PAUSE", TXW_DONE)
-        fixture = launch_fixture(run)
+        if spec.get("registry"):
+            run.send(f"arce satellite release-test registry-writer arm {spec['registry']}", SRW_DONE)
+        fixture = launch_fixture(run, spec.get("survey", False))
         if spec.get("journal"):
             run.send("arce rocket release-test transaction-writer add", TXW_DONE)
             run.wait(TXW_PAUSED, run.args.flight_timeout)
             run.wait(re.compile(rf"ARCE_BAY_CLAIM transfer={fixture['transfer']} .* reason=ASSEMBLY_JOURNAL_CHECKPOINT"), 30)
-        elif spec["cut"]:
+        elif spec.get("unproved"):
+            # B13: the failing or unknown checkpoint repeats until the third failure's REGISTRY_UNPROVED; then a later
+            # write succeeds (a one-shot pause replaces the failing cut and is released) and the group proceeds.
+            run.wait(re.compile(rf"ARCE_BAY_CLAIM transfer={fixture['transfer']} .* reason=REGISTRY_UNPROVED"),
+                     run.args.flight_timeout + 60)
+            run.send("arce satellite release-test registry-writer arm STAGED PAUSE", SRW_DONE)
+            run.wait(re.compile(r"ARCE_RELEASE_SRW_PAUSED point=STAGED"), 60)
+            run.send("arce satellite release-test registry-writer release", SRW_DONE)
+        elif spec.get("registry"):
+            run.wait(re.compile(rf"ARCE_RELEASE_SRW_PAUSED point={spec['registry'].split()[0]}"), run.args.flight_timeout)
+        elif spec.get("cut"):
             run.wait(re.compile(rf"ARCE_RELEASE_BAY_(PAUSED|INJECTED) cut={spec['cut']} op="), run.args.flight_timeout)
         if spec["end"] == "land" or spec.get("staging"):
             observed["settled"] = run.await_settled(case, 0, fixture)
@@ -273,6 +357,9 @@ def first_start(run: Session, case: str, world: Path) -> tuple[dict | None, dict
             observed["at_cut"] = run.status(fixture["logical"])
             if observed["at_cut"]["claim"] == "NONE" or observed["at_cut"]["state"] != "TRANSIT":
                 raise smoke.SmokeError(f"{case}: the cut did not hold T in TRANSIT: {observed['at_cut']}")
+            if spec.get("save"):
+                # The source entity is on disk at its current image before the end (B3 and B6 with S present).
+                observed["saved"] = run.send("save-all flush", SAVED, 120)
     if spec.get("staging"):
         (world / "data" / STAGING).rmdir()
     if spec["end"] == "crash":
@@ -285,12 +372,24 @@ def first_start(run: Session, case: str, world: Path) -> tuple[dict | None, dict
     text = "".join(process.lines)
     if spec["end"] in ("stop", "land") and code != 0:
         raise smoke.SmokeError(f"{case}: the normal stop exited {code}")
-    if spec["end"] == "stop" and spec["cut"] and "ARCE_RELEASE_BAY_RELEASED" not in text:
+    if spec["end"] == "stop" and spec.get("cut") and "ARCE_RELEASE_BAY_RELEASED" not in text:
         raise smoke.SmokeError(f"{case}: the clean stop did not release and drain the paused receipt write")
     observed.update(exit_code=code, claims=[match.groups() for match in CLAIM.finditer(text)])
+    if spec.get("unproved"):
+        observed["unproved"] = check_unproved(case, process.lines, fixture)
     if spec.get("at_stop"):
         observed["stopped"] = check_stopped_while_waiting(case, process.lines, fixture)
     return fixture, observed
+
+
+def check_unproved(case: str, lines: list[str], fixture: dict) -> dict:
+    """B13: the claim reported REGISTRY_UNPROVED while it waited, then retired its group: never a rejection."""
+    reasons = [match.group(4) for line in lines for match in [CLAIM.search(line)] if match and match.group(2) == fixture["logical"]]
+    if "REGISTRY_UNPROVED" not in reasons or reasons[-1] != "READY_SOURCE":
+        raise smoke.SmokeError(f"{case}: expected REGISTRY_UNPROVED, then READY_SOURCE: {reasons}")
+    if any("REJECTED" in line and fixture["data"] in line for line in lines):
+        raise smoke.SmokeError(f"{case}: a RAM registration was rejected")
+    return dict(reasons=reasons)
 
 
 def check_stopped_while_waiting(case: str, lines: list[str], fixture: dict) -> dict:
@@ -327,6 +426,13 @@ def check_held_restart(case: str, restart: int, lines: list[str], fixture: dict,
     return dict(transitions=len(holds))
 
 
+def first_tick_satellite(case: str, fixture: dict) -> str | None:
+    spec = CASES[case]
+    if spec.get("decommission"):
+        return fixture["solar"]
+    return fixture["data"] if spec["durable"] == "INTENT" else None
+
+
 def run_case(run: Session, case: str) -> dict:
     spec = CASES[case]
     world = run.session / ("world-" + case)
@@ -343,8 +449,8 @@ def run_case(run: Session, case: str) -> dict:
                            staging=(world / "data" / STAGING).exists())
     row["restarts"] = []
     for restart in (1, 2):
-        intent = fixture is not None and spec["durable"] == "INTENT" and restart == 1
-        properties = {"bayFirstTick": fixture["data"]} if intent else {}
+        hooked = first_tick_satellite(case, fixture) if fixture is not None and restart == 1 else None
+        properties = {"bayFirstTick": hooked} if hooked else {}
         if spec.get("hold") == "REGISTRY_BLOCKED":
             properties["bayRegistryBlocked"] = "true"
         process = run.start(case, restart, properties)
@@ -353,15 +459,15 @@ def run_case(run: Session, case: str) -> dict:
             fixture = launch_fixture(run)
         if fixture is not None:
             entry["settled"] = run.await_settled(case, restart, fixture)
-            if intent:
+            if hooked:
                 entry["first_tick"] = check_first_tick(case, process.lines, fixture)
             if restart == 2 and spec.get("relaunch"):
                 op = [receipt["op"] for receipt in entry["settled"]["receipts"] if receipt["satellite"] == fixture["data"]]
                 run.send(f"arce rocket release-test launch {entry['settled']['rocket']} moon", re.compile(r"\S"))
                 relaunched = run.await_settled(case, restart, fixture, relaunched=True)
-                again = [receipt["op"] for receipt in relaunched["receipts"] if receipt["satellite"] == fixture["data"]]
-                if op != again:
-                    raise smoke.SmokeError(f"{case}: the relaunch did not re-arm the same operation: {op} {again}")
+                if len(op) != 1 or relaunched["consumed"][0] != op[0]:
+                    raise smoke.SmokeError(f"{case}: the relaunch did not re-arm and consume with the same operation: "
+                                           f"{op} {relaunched['consumed']}")
                 entry["relaunched"] = relaunched
         entry["pending"] = run.pending()
         if spec.get("fill") and entry["pending"]["pending"] != spec["fill"]:
@@ -393,17 +499,17 @@ def run(args) -> dict:
         raise smoke.SmokeError("Unsafe or missing Forge libraries")
     session.mkdir(); evidence.mkdir(parents=True)
     token = uuid.uuid4().hex
-    marker = session / ".arce-w128r-bay-cuts-owned"
+    marker = session / ".arce-w170-bay-cuts-owned"
     marker.write_text(token, encoding="ascii")
     report = dict(status="IN_PROGRESS", source_commit=args.source_commit, jar_sha256=digest(args.jar), cases=[],
-                  lock_owner=args.lock_owner)
+                  lock_owner=args.lock_owner, tranche=args.tranche)
     runner = Session(args, session, evidence)
     try:
         shutil.copytree(libraries, session / "libraries")
         (session / "mods").mkdir(); shutil.copy2(args.jar, session / "mods" / args.jar.name)
         runner.port = smoke.allocate_port()
         smoke.write_server_configuration(session, runner.port, True)
-        for case in args.case or list(CASES):
+        for case in args.case or (TRANCHES[args.tranche] if args.tranche else list(CASES)):
             report["in_progress"] = case
             try:
                 report["cases"].append(run_case(runner, case))
@@ -438,6 +544,7 @@ def main() -> int:
     parser.add_argument("--java", required=True)
     parser.add_argument("--lock-owner", required=True)
     parser.add_argument("--case", action="append", choices=list(CASES))
+    parser.add_argument("--tranche", choices=sorted(TRANCHES))
     parser.add_argument("--startup-timeout", type=float, default=240)
     parser.add_argument("--exit-timeout", type=float, default=180)
     parser.add_argument("--flight-timeout", type=float, default=120)
