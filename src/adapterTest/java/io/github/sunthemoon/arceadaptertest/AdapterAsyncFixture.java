@@ -42,15 +42,24 @@ final class AdapterAsyncFixture {
         }
     }
 
-    /** A refused request has not started B2. Never reissue one already acknowledged as pending. */
+    /** Never reissue pending work; only an actual refusal or terminal result permits a fresh request. */
     static final class Submission {
         final Player player;
         final Entity rocket;
         boolean admitted;
         long nextAttempt;
+        CompoundTag acceptedAuthority;
         Submission(FakePlayer player, Entity rocket) { this.player = (Player) player; this.rocket = rocket; }
         boolean advance(GameTestHelper helper) {
-            if (admitted) { return true; }
+            if (admitted) {
+                if (!"validation.advancedrocketrycommunity.rocket.region_busy".equals(player.reply)) { return true; }
+                helper.assertTrue(!rocket.isRemoved() && acceptedAuthority.equals(save(helper)),
+                        "Rejected pending request changed D authority");
+                LogUtils.getLogger().info("ARCE_ADAPTER_ADMISSION entity={} transition=PENDING_REJECTED tick={}",
+                        rocket.getUUID(), helper.getTick());
+                admitted = false;
+                nextAttempt = helper.getTick() + (int) invoke("intentWindowTicks", new Class<?>[0]);
+            }
             if (helper.getTick() < nextAttempt) { return false; }
             CompoundTag before = save(helper);
             player.reply = null; player.setPos(rocket.position()); player.setShiftKeyDown(true);
@@ -58,6 +67,7 @@ final class AdapterAsyncFixture {
             finally { player.setShiftKeyDown(false); }
             LogUtils.getLogger().info("ARCE_ADAPTER_ADMISSION entity={} reply={} tick={}", rocket.getUUID(), player.reply, helper.getTick());
             if ("validation.advancedrocketrycommunity.rocket.disassembly_pending".equals(player.reply)) {
+                acceptedAuthority = before;
                 admitted = true; return true;
             }
             helper.assertTrue("validation.advancedrocketrycommunity.rocket.region_busy".equals(player.reply),

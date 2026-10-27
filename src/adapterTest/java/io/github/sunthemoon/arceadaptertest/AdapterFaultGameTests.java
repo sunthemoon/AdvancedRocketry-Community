@@ -134,8 +134,11 @@ public final class AdapterFaultGameTests {
                 .thenWaitUntil(() -> helper.assertTrue(rockets(helper).size() == 1, "Healthy scan retry failed"))
                 .thenExecute(() -> disassembly[0] = new AdapterAsyncFixture.Submission(fixture.owner, rockets(helper).get(0)))
                 .thenWaitUntil(() -> helper.assertTrue(disassembly[0].advance(helper), "Healthy disassembly admission is busy"))
-                // DISASSEMBLY_PENDING -> BLOCKS_PUBLISHED, through the installed B2 executor.
-                .thenWaitUntil(() -> assertRestored(helper, fixture)).thenSucceed();
+                // Observe terminal rejection before a fresh request; never refresh an accepted pending operation.
+                .thenWaitUntil(() -> {
+                    if (!rockets(helper).isEmpty()) { disassembly[0].advance(helper); }
+                    assertRestored(helper, fixture);
+                }).thenSucceed();
     }
 
     private static void restoreFailure(GameTestHelper helper, FixtureAdapterFaults.Mode mode) {
