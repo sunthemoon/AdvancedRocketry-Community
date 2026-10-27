@@ -156,7 +156,7 @@ public final class RocketJournalBenchmark {
         return new Timing(mutationNanos / 1_000_000D, main / 1_000_000D, data.lastWriterNanos() / 1_000_000D,
                 (System.nanoTime() - start + mutationNanos) / 1_000_000D);
     }
-    private static RocketStructureSnapshot snapshot(int padding) {
+    static RocketStructureSnapshot snapshot(int padding) {
         byte[] entropy = new byte[RocketLimits.MAX_BLOCK_ENTITY_NBT_BYTES]; new Random(20261013).nextBytes(entropy);
         var blocks = new ArrayList<RocketBlock>();
         for (int i = 0; i < RocketLimits.MAX_BLOCKS; i++) {
@@ -171,7 +171,7 @@ public final class RocketJournalBenchmark {
         return RocketStructureSnapshot.create(new UUID(1, 1), RocketFlightPlanner.EARTH.dimensionId(), new RocketPosition(0, 80, 0), blocks,
                 List.of(new RocketPosition(0, 1, 0)), new RocketStats(RocketLimits.MAX_BLOCKS, 1_000, 2_000, 1_000, 1, 1, 1, padding == 0 ? 0 : 4), 0);
     }
-    private static RocketTransferRecord record(RocketStructureSnapshot source, int i) {
+    static RocketTransferRecord record(RocketStructureSnapshot source, int i) {
         // Disjoint source and landing regions; no relaxed journal authority-conflict check.
         source = source.relocated(new UUID(2, i + 1), RocketFlightPlanner.EARTH.dimensionId(), new RocketPosition(i * 64, 80, 0), 0);
         var destination = source.relocated(new UUID(3, i + 1), RocketFlightPlanner.MOON.dimensionId(), new RocketPosition(i * 64, 80, 0), 160);

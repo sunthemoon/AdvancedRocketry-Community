@@ -27,6 +27,13 @@ public final class CheckedJournalCheckpoint {
         this.maxDepth = maxDepth;
     }
 
+    /** ADR-074 item 3: one IO-thread attempt, classified against the acknowledgement its capture carried. */
+    public CheckedJournalCheckpoint(CheckedSavedDataPolicy.DirectoryForce directoryForce, int maxDepth,
+                                    Acknowledgement previous) {
+        this(directoryForce, maxDepth);
+        acknowledged = previous;
+    }
+
     public Outcome outcome() { return outcome; }
     public Optional<Acknowledgement> acknowledged() { return Optional.ofNullable(acknowledged); }
     public boolean current(long sequence) { return acknowledged != null && acknowledged.sequence() == sequence; }

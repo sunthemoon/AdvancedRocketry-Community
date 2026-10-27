@@ -37,63 +37,72 @@ public final class SealedProductionProviderGameTests {
         helper.succeed();
     }
 
+    // W129aM transition (ADR-074 item 8): staging and its same-tick unseal run once the journal is acknowledged, which
+    // the former synchronous checkpoint inside the staging bridge guaranteed. Staging changes no journal entry.
     @GameTest(templateNamespace = "advancedrocketrycommunity", template = "rocket_test", batch = "w152_provider", timeoutTicks = 100)
     public static void failedProductionPreparationRetainsCAndRejectsRemovedReferenceAccess(GameTestHelper helper) {
         var at = helper.absolutePos(new BlockPos(4, 2, 4));
-        for (var mode : List.of(FixtureAdapterFaults.Mode.RESTORE_FALSE, FixtureAdapterFaults.Mode.RESTORE_THROW,
-                FixtureAdapterFaults.Mode.RESTORE_SLOW, FixtureAdapterFaults.Mode.RESTORE_MISMATCH,
-                FixtureAdapterFaults.Mode.RESTORE_NEEDS_LEVEL, FixtureAdapterFaults.Mode.RESTORE_NEEDS_INSTALLED)) {
-            var carrier = stage(helper.getLevel(), at); var saved = carrier.saveWithoutMetadata();
-            var observation = new Observation(helper, at, carrier, "never", false);
-            ACTIVE.set(observation);
-            try {
-                FixtureAdapterFaults.duringRestore(new FixtureAdapterFaults.Probe(mode),
-                        () -> helper.assertTrue(!unseal(carrier), "Failed provider published: " + mode));
-                helper.assertTrue(helper.getLevel().getBlockEntity(at) == carrier && saved.equals(carrier.saveWithoutMetadata()),
-                        "Failed preparation changed the original C");
-                helper.assertTrue(observation.target != null && observation.target.isRemoved(), "Failed target survived");
-                var raw = (Container) observation.target;
-                helper.assertTrue(raw.getItem(0).isEmpty() && raw.removeItemNoUpdate(0).isEmpty(), "Removed target exposed owned items");
-                helper.assertTrue(observation.retained.extractItem(0, 64, false).isEmpty(), "Cached handler exposed removed items");
-                var refused = observation.retained.insertItem(1, observation.foreign.copy(), false);
-                helper.assertTrue(refused.getCount() == 3 && raw.getItem(1).isEmpty(), "Removed target consumed foreign items");
-                helper.assertTrue(observation.recipient.isEmpty() && observation.foreign.getCount() == 3,
-                        "Failed preparation moved original or foreign resources");
-            } finally { ACTIVE.remove(); helper.getLevel().setBlock(at, Blocks.AIR.defaultBlockState(), 2); }
-        }
-        helper.succeed();
+        afterJournalAcknowledged(helper, () -> {
+            for (var mode : List.of(FixtureAdapterFaults.Mode.RESTORE_FALSE, FixtureAdapterFaults.Mode.RESTORE_THROW,
+                    FixtureAdapterFaults.Mode.RESTORE_SLOW, FixtureAdapterFaults.Mode.RESTORE_MISMATCH,
+                    FixtureAdapterFaults.Mode.RESTORE_NEEDS_LEVEL, FixtureAdapterFaults.Mode.RESTORE_NEEDS_INSTALLED)) {
+                var carrier = stage(helper.getLevel(), at); var saved = carrier.saveWithoutMetadata();
+                var observation = new Observation(helper, at, carrier, "never", false);
+                ACTIVE.set(observation);
+                try {
+                    FixtureAdapterFaults.duringRestore(new FixtureAdapterFaults.Probe(mode),
+                            () -> helper.assertTrue(!unseal(carrier), "Failed provider published: " + mode));
+                    helper.assertTrue(helper.getLevel().getBlockEntity(at) == carrier && saved.equals(carrier.saveWithoutMetadata()),
+                            "Failed preparation changed the original C");
+                    helper.assertTrue(observation.target != null && observation.target.isRemoved(), "Failed target survived");
+                    var raw = (Container) observation.target;
+                    helper.assertTrue(raw.getItem(0).isEmpty() && raw.removeItemNoUpdate(0).isEmpty(), "Removed target exposed owned items");
+                    helper.assertTrue(observation.retained.extractItem(0, 64, false).isEmpty(), "Cached handler exposed removed items");
+                    var refused = observation.retained.insertItem(1, observation.foreign.copy(), false);
+                    helper.assertTrue(refused.getCount() == 3 && raw.getItem(1).isEmpty(), "Removed target consumed foreign items");
+                    helper.assertTrue(observation.recipient.isEmpty() && observation.foreign.getCount() == 3,
+                            "Failed preparation moved original or foreign resources");
+                } finally { ACTIVE.remove(); helper.getLevel().setBlock(at, Blocks.AIR.defaultBlockState(), 2); }
+            }
+            helper.succeed();
+        });
     }
 
     @GameTest(templateNamespace = "advancedrocketrycommunity", template = "rocket_test", batch = "w152_provider", timeoutTicks = 100)
     public static void productionPublicationPreservesOnLoadOnPlaceAndNeighborTransfers(GameTestHelper helper) {
         var at = helper.absolutePos(new BlockPos(4, 2, 4));
-        helper.getLevel().setBlock(at.east(), SealedStagingProbeFixture.OBSERVER.get().defaultBlockState(), 2);
-        for (String phase : List.of("external.onPlace", "external.onLoad", "observer.onNeighborChange", "observer.neighborChanged")) {
-            var carrier = stage(helper.getLevel(), at);
-            var observation = new Observation(helper, at, carrier, phase, false); ACTIVE.set(observation);
-            try {
-                helper.assertTrue(unseal(carrier), "Production publication failed at " + phase);
-                helper.getLevel().updateNeighborsAt(at, AdapterTestMod.CONTAINER.get());
-                helper.getLevel().updateNeighbourForOutputSignal(at, AdapterTestMod.CONTAINER.get());
-                observation.assertTransferred();
-                helper.assertTrue(!unseal(carrier), "Stale C was published twice");
-                observation.assertTransferred();
-            } finally { ACTIVE.remove(); helper.getLevel().setBlock(at, Blocks.AIR.defaultBlockState(), 2); }
-        }
-        helper.succeed();
+        afterJournalAcknowledged(helper, () -> {
+            helper.getLevel().setBlock(at.east(), SealedStagingProbeFixture.OBSERVER.get().defaultBlockState(), 2);
+            for (String phase : List.of("external.onPlace", "external.onLoad", "observer.onNeighborChange", "observer.neighborChanged")) {
+                var carrier = stage(helper.getLevel(), at);
+                var observation = new Observation(helper, at, carrier, phase, false); ACTIVE.set(observation);
+                try {
+                    helper.assertTrue(unseal(carrier), "Production publication failed at " + phase);
+                    helper.getLevel().updateNeighborsAt(at, AdapterTestMod.CONTAINER.get());
+                    helper.getLevel().updateNeighbourForOutputSignal(at, AdapterTestMod.CONTAINER.get());
+                    observation.assertTransferred();
+                    helper.assertTrue(!unseal(carrier), "Stale C was published twice");
+                    observation.assertTransferred();
+                } finally { ACTIVE.remove(); helper.getLevel().setBlock(at, Blocks.AIR.defaultBlockState(), 2); }
+            }
+            helper.succeed();
+        });
     }
 
     @GameTest(templateNamespace = "advancedrocketrycommunity", template = "rocket_test", batch = "w152_provider", timeoutTicks = 100)
     public static void failureAfterPublicationDoesNotRestoreCOrWipeForeignContents(GameTestHelper helper) {
-        var at = helper.absolutePos(new BlockPos(4, 2, 4)); var carrier = stage(helper.getLevel(), at);
-        var observation = new Observation(helper, at, carrier, "external.onPlace", true); ACTIVE.set(observation);
-        boolean threw = false;
-        try {
-            try { unseal(carrier); } catch (IllegalStateException failure) { threw = true; }
-            helper.assertTrue(threw, "Fixture callback did not fail"); observation.assertTransferred();
-            helper.assertTrue(!unseal(carrier), "Callback failure replayed the old carrier"); observation.assertTransferred();
-            helper.succeed();
-        } finally { ACTIVE.remove(); helper.getLevel().setBlock(at, Blocks.AIR.defaultBlockState(), 2); }
+        var at = helper.absolutePos(new BlockPos(4, 2, 4));
+        afterJournalAcknowledged(helper, () -> {
+            var carrier = stage(helper.getLevel(), at);
+            var observation = new Observation(helper, at, carrier, "external.onPlace", true); ACTIVE.set(observation);
+            boolean threw = false;
+            try {
+                try { unseal(carrier); } catch (IllegalStateException failure) { threw = true; }
+                helper.assertTrue(threw, "Fixture callback did not fail"); observation.assertTransferred();
+                helper.assertTrue(!unseal(carrier), "Callback failure replayed the old carrier"); observation.assertTransferred();
+                helper.succeed();
+            } finally { ACTIVE.remove(); helper.getLevel().setBlock(at, Blocks.AIR.defaultBlockState(), 2); }
+        });
     }
 
     static void attached(BlockEntity target) {
@@ -150,6 +159,15 @@ public final class SealedProductionProviderGameTests {
                 ResourceLocation.class, RocketBlockEntityAdapter.class).invoke(null, level, source,
                         latch ? AdapterTestMod.LATCH_ADAPTER_ID : AdapterTestMod.SEALED_ADAPTER_ID, new FixtureInventoryAdapter()); }
         catch (ReflectiveOperationException failure) { throw new IllegalStateException("Production staging fixture unavailable", failure); }
+    }
+    /** The platform bridge's afterJournalAcknowledged; a step's own failure is rethrown unwrapped. */
+    static void afterJournalAcknowledged(GameTestHelper helper, Runnable... steps) {
+        try { Class.forName(ACCESS).getMethod("afterJournalAcknowledged", GameTestHelper.class, Runnable[].class).invoke(null, helper, steps); }
+        catch (java.lang.reflect.InvocationTargetException failure) {
+            if (failure.getCause() instanceof RuntimeException unchecked) { throw unchecked; }
+            if (failure.getCause() instanceof Error error) { throw error; }
+            throw new IllegalStateException("Production journal fixture failed", failure);
+        } catch (ReflectiveOperationException failure) { throw new IllegalStateException("Production journal fixture unavailable", failure); }
     }
     static boolean unseal(BlockEntity carrier) {
         try { return (boolean) Class.forName(ACCESS).getMethod("unseal", BlockEntity.class).invoke(null, carrier); }

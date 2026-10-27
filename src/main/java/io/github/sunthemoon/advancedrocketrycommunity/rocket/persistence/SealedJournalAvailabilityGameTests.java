@@ -64,12 +64,15 @@ public final class SealedJournalAvailabilityGameTests {
             }
         } finally {
             // No tick or save occurs while an injected state is installed. Restore the actual owner even on failure.
-            storage.set(RocketTransactionSavedData.DATA_NAME, original); original.checkpoint(server);
+            storage.set(RocketTransactionSavedData.DATA_NAME, original);
         }
-        helper.assertTrue(original.acknowledgedCurrent() && RocketRuntime.unsealForReleaseTest(level, carrier), "Recovered checked authority did not release C");
-        var published = (ChestBlockEntity) level.getBlockEntity(at);
-        helper.assertTrue(published.getItem(0).is(Items.DIAMOND) && published.getItem(0).getCount() == 7, "Authority recovery changed the original resource");
-        helper.succeed();
+        // W129aM transition (ADR-074 item 8): the former synchronous checkpoint is awaited; this tick if already current.
+        io.github.sunthemoon.advancedrocketrycommunity.rocket.server.SealedProductionTestAccess.afterJournalAcknowledged(helper, () -> {
+            helper.assertTrue(original.acknowledgedCurrent() && RocketRuntime.unsealForReleaseTest(level, carrier), "Recovered checked authority did not release C");
+            var published = (ChestBlockEntity) level.getBlockEntity(at);
+            helper.assertTrue(published.getItem(0).is(Items.DIAMOND) && published.getItem(0).getCount() == 7, "Authority recovery changed the original resource");
+            helper.succeed();
+        });
     }
     private SealedJournalAvailabilityGameTests() { }
 }

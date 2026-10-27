@@ -67,7 +67,8 @@ public final class SealedSpecialHostAutomationGameTests {
         var id = UUID.randomUUID(); var entity = UUID.randomUUID(); var data = RocketTransactionSavedData.get(level.getServer());
         data.journalFor(snapshot, owner).write(new RocketTransactionRecord(id, RocketTransactionType.SEALED_DISASSEMBLY, RocketTransactionPhase.RESTORED,
                 snapshot.snapshotId(), snapshot.contentHash(), RocketRegion.fromSnapshot(snapshot), 2, entity));
-        data.checkpoint(level.getServer()); level.setBlock(fence, Blocks.BEDROCK.defaultBlockState(), 2);
+        // W129aM transition (ADR-074 item 8): a request; the held recovery waits for its acknowledgement by itself.
+        data.requestCheckpoint(level.getServer()); level.setBlock(fence, Blocks.BEDROCK.defaultBlockState(), 2);
         var carriers = new ArrayList<SealedRocketBlockEntity>(); var roots = new ArrayList<CompoundTag>();
         var inventoryPositions = new ArrayList<BlockPos>(); var recipient = new SimpleContainer(2);
         for (int i = 0; i < 2; i++) {

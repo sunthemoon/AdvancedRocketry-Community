@@ -19,6 +19,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -176,12 +178,17 @@ class RocketTransactionProofTest {
         assertTrue(forceFailed.isDirty());
     }
 
-    @Test void mutationDuringReplacementCannotAcknowledgeNewerRamOrClearDirty() {
+    @Test void mutationDuringReplacementCannotAcknowledgeNewerRamOrClearDirty() throws Exception {
         var data = new RocketTransactionSavedData();
         long captured = data.mutationSequence();
-        assertEquals(COMMITTED, data.saveChecked(target(), ATOMIC.withCommitter((staged, file) -> {
-            data.setDirty(); CheckedSavedDataFile.atomicMove(staged, file);
+        // ADR-074: IO never touches live RAM, so the owner mutates while the replacement is paused.
+        var entered = new CountDownLatch(1); var release = new CountDownLatch(1);
+        assertTrue(data.requestWrite(target(), ATOMIC.withCommitter((staged, file) -> {
+            entered.countDown(); await(release); CheckedSavedDataFile.atomicMove(staged, file);
         })));
+        assertTrue(entered.await(10, TimeUnit.SECONDS));
+        data.setDirty(); release.countDown(); data.awaitWriter();
+        assertEquals(COMMITTED, data.writeOutcome());
         assertEquals(captured, data.acknowledgement().orElseThrow().sequence());
         assertEquals(captured + 1, data.mutationSequence());
         assertTrue(data.isDirty()); assertEquals(WRITE_REQUIRED, status(data));
@@ -205,6 +212,7 @@ class RocketTransactionProofTest {
         var data = new RocketTransactionSavedData(); data.save(target().toFile());
         assertFalse(Files.exists(target())); assertEquals(WRITE_REQUIRED, status(data));
         data.setDirty(); data.save(target().toFile());
+        data.awaitWriter(); // ADR-074 item 9: autosave only requests; publication follows on the owner thread.
         assertEquals(PROVED, status(data));
         data.setDirty(); data.setDirty(false);
         assertEquals(WRITE_REQUIRED, status(data));
@@ -238,7 +246,96 @@ class RocketTransactionProofTest {
         assertArrayEquals(new byte[]{1, 2, 3}, Files.readAllBytes(target()));
     }
 
+    @Test void writePendingMasksAStaleNotCommittedOrUnknownUntilAFreshCaptureIsPublished() {
+        for (var stale : List.of(failing(), unreadable())) {
+            var data = new RocketTransactionSavedData();
+            assertEquals(stale == failing() ? NOT_COMMITTED : UNKNOWN, data.saveChecked(target(), stale));
+            assertEquals(ASSEMBLY_JOURNAL_UNPROVED, status(data));
+            assertTrue(data.requestWrite(target(), ATOMIC));
+            assertEquals(WRITE_PENDING, status(data), "A pending or in-flight write masks the stale outcome");
+            assertFalse(data.acknowledgedCurrent());
+            data.awaitWriter();
+            assertEquals(COMMITTED, data.writeOutcome()); assertEquals(PROVED, status(data));
+        }
+    }
+
+    @Test void neitherARequestNorAStaleCompletionProvesAbsenceAndAMutationInFlightKeepsTheJournalDirty() throws Exception {
+        var data = new RocketTransactionSavedData();
+        assertEquals(COMMITTED, data.saveChecked(target(), ATOMIC)); assertEquals(PROVED, status(data));
+        data.setDirty();
+        long captured = data.mutationSequence();
+        var entered = new CountDownLatch(1); var release = new CountDownLatch(1);
+        assertTrue(data.requestWrite(target(), ATOMIC.withCommitter((staged, file) -> {
+            entered.countDown(); await(release); CheckedSavedDataFile.atomicMove(staged, file);
+        })));
+        startNow(data); assertTrue(entered.await(10, TimeUnit.SECONDS));
+        assertEquals(WRITE_PENDING, status(data), "A write in flight is not proof");
+        data.setDirty();
+        release.countDown(); data.awaitWriter();
+        assertEquals(COMMITTED, data.writeOutcome());
+        assertEquals(captured, data.acknowledgement().orElseThrow().sequence());
+        assertTrue(data.isDirty()); assertFalse(data.writerBusy());
+        assertEquals(WRITE_REQUIRED, status(data), "A completion older than the current sequence is not proof");
+    }
+
+    @Test void stickyUnknownSurvivesALaterPreReplacementFailureBehindWritePending() throws Exception {
+        var data = new RocketTransactionSavedData();
+        assertEquals(UNKNOWN, data.saveChecked(target(), unreadable()));
+        Path pending = directory.resolve(TYPE.fileName() + ".arce-pending");
+        Files.createDirectory(pending);
+        assertTrue(data.requestWrite(target(), ATOMIC));
+        assertEquals(WRITE_PENDING, status(data));
+        data.awaitWriter();
+        assertEquals(UNKNOWN, data.writeOutcome(), "A staging failure cannot turn UNKNOWN into NOT_COMMITTED");
+        assertTrue(data.acknowledgement().isEmpty()); assertEquals(ASSEMBLY_JOURNAL_UNPROVED, status(data));
+        Files.delete(pending);
+        assertEquals(COMMITTED, data.saveChecked(target(), ATOMIC)); assertEquals(PROVED, status(data));
+    }
+
+    @Test void recordsAndNonOperationalJournalsAnswerFirstAndRefusedRequestsStageNothing() throws Exception {
+        var data = new RocketTransactionSavedData();
+        insert(data, LOGICAL, SNAPSHOT, ENTITY, RocketTransactionType.ASSEMBLY);
+        var entered = new CountDownLatch(1); var release = new CountDownLatch(1);
+        assertTrue(data.requestWrite(target(), ATOMIC.withCommitter((staged, file) -> {
+            entered.countDown(); await(release); CheckedSavedDataFile.atomicMove(staged, file);
+        })));
+        assertTrue(entered.await(10, TimeUnit.SECONDS));
+        assertEquals(ASSEMBLY_JOURNAL_PENDING, status(data), "A matching RAM record answers before a pending write");
+        release.countDown(); data.awaitWriter();
+        assertEquals(ASSEMBLY_JOURNAL_PENDING, status(data));
+        byte[] before = Files.readAllBytes(target());
+        var future = new RocketTransactionSavedData().save(new CompoundTag()); future.putInt("schema_version", 999);
+        var blocked = RocketTransactionSavedData.load(future); blocked.setDirty();
+        var unreadable = RocketTransactionSavedData.created(
+                io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedRootPresence.UNREADABLE);
+        for (var refused : List.of(blocked, unreadable)) {
+            assertFalse(refused.requestWrite(target(), ATOMIC));
+            assertFalse(refused.writerBusy()); assertEquals(NOT_COMMITTED, refused.writeOutcome());
+            assertEquals(ASSEMBLY_JOURNAL_UNPROVED, status(refused)); assertTrue(refused.isDirty());
+        }
+        assertArrayEquals(before, Files.readAllBytes(target()));
+        assertFalse(Files.exists(directory.resolve(TYPE.fileName() + ".arce-pending")));
+    }
+
     private Path target() { return directory.resolve(TYPE.fileName()); }
+    private static final CheckedSavedDataPolicy FAILING = ATOMIC.withCommitter((staged, file) -> {
+        throw new IOException("before replacement");
+    });
+    private static final CheckedSavedDataPolicy UNREADABLE = new CheckedSavedDataPolicy(TYPE, (staged, file) -> {
+        CheckedSavedDataFile.atomicMove(staged, file); throw new IOException("after replacement");
+    }, (file, type) -> { throw new IllegalStateException("unreadable"); });
+    private static CheckedSavedDataPolicy unreadable() { return UNREADABLE; }
+    /** A detached journal's tick is its monotonic millisecond: poll until the 10-tick cadence lets the request start. */
+    private static void startNow(RocketTransactionSavedData data) throws InterruptedException {
+        long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10);
+        while (!data.writerInFlight()) {
+            assertTrue(System.nanoTime() < deadline, "The pending request never started"); data.pollWriter(); Thread.sleep(1);
+        }
+    }
+    static void await(CountDownLatch latch) throws IOException {
+        try { if (!latch.await(10, TimeUnit.SECONDS)) { throw new IOException("Test release timed out"); } }
+        catch (InterruptedException interrupted) { Thread.currentThread().interrupt(); throw new IOException(interrupted); }
+    }
     private CompoundTag read() { return CheckedSavedDataFile.readPayload(target(), TYPE).orElseThrow(); }
     private static String digest(CompoundTag tag) {
         return CanonicalNbtDigest.of(tag, Math.toIntExact(TYPE.maxUncompressedBytes()), 35);
@@ -246,9 +343,7 @@ class RocketTransactionProofTest {
     private static RocketTransactionSavedData.AbsenceStatus status(RocketTransactionSavedData data) {
         return data.absenceStatus(LOGICAL, SNAPSHOT, ENTITY);
     }
-    private static CheckedSavedDataPolicy failing() {
-        return ATOMIC.withCommitter((staged, file) -> { throw new IOException("before replacement"); });
-    }
+    private static CheckedSavedDataPolicy failing() { return FAILING; }
     private static RocketTransactionJournal insert(RocketTransactionSavedData data, UUID transaction, UUID snapshotId,
                                                   UUID entity, RocketTransactionType type) {
         var snapshot = RocketStructureSnapshot.create(snapshotId, new ResourceLocation("minecraft:overworld"),

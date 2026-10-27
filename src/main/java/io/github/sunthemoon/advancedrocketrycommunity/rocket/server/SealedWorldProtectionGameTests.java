@@ -45,7 +45,8 @@ public final class SealedWorldProtectionGameTests {
         var id = UUID.randomUUID(); var entity = UUID.randomUUID(); var data = RocketTransactionSavedData.get(level.getServer());
         data.journalFor(snapshot, UUID.randomUUID()).write(new RocketTransactionRecord(id, RocketTransactionType.SEALED_DISASSEMBLY,
                 RocketTransactionPhase.RESTORED, snapshot.snapshotId(), snapshot.contentHash(), RocketRegion.fromSnapshot(snapshot), 1, entity));
-        data.checkpoint(level.getServer()); level.setBlock(fence, Blocks.BEDROCK.defaultBlockState(), 3);
+        // W129aM transition (ADR-074 item 8): a request; the held recovery waits for its acknowledgement by itself.
+        data.requestCheckpoint(level.getServer()); level.setBlock(fence, Blocks.BEDROCK.defaultBlockState(), 3);
         var carrier = SealedUnsealGameTests.install(level, at, new SealedRocketMember(id, snapshot.snapshotId(), entity, snapshot.contentHash(),
                 snapshot.sourceDimension(), SealedUnsealGameTests.position(at), 0, snapshot.blocks().get(0).state(), payload));
         var held = carrier.saveWithoutMetadata();
