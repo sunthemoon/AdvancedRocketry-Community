@@ -4,21 +4,29 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.BooleanSupplier;
+import java.util.function.LongSupplier;
 
 /** Owner-thread admission turns only. Running proofs, native quotas and their deadlines remain with their owners. */
 final class SealedProofTurns {
+    private static final long NONE = Long.MIN_VALUE;
     private final Map<UUID, BooleanSupplier> ordinary = new LinkedHashMap<>();
     private BooleanSupplier sealedWaiting = () -> false;
+    // W152J-R5: the sealed owner binds its server tick. A unit composition without one counts ordinary service ticks.
+    private long serviceTicks;
+    private LongSupplier now = () -> serviceTicks;
     private boolean ordinaryTurn;
-    // One class-level retry opportunity, never a retained caller, callback, token or pending entry.
-    private int refusedTicks;
+    // One class-level retry opportunity, never a retained caller, callback, token or pending entry: its absolute expiry.
+    private long refusedUntil = NONE;
 
     void bind(BooleanSupplier waiting) { sealedWaiting = java.util.Objects.requireNonNull(waiting); }
+    /** The server tick both services already read, so the window also expires while ordinary service is stopped. */
+    void bindServerTick(LongSupplier tick) { now = java.util.Objects.requireNonNull(tick); }
+    private boolean refusedOpen() { return refusedUntil != NONE && now.getAsLong() < refusedUntil; }
     private UUID nextOrdinary() {
         return ordinary.entrySet().stream().filter(entry -> entry.getValue().getAsBoolean())
                 .map(Map.Entry::getKey).findFirst().orElse(null);
     }
-    boolean sealedRoom() { return !ordinaryTurn || nextOrdinary() == null && refusedTicks == 0; }
+    boolean sealedRoom() { return !ordinaryTurn || nextOrdinary() == null && !refusedOpen(); }
     boolean ordinaryRoom(UUID id) { return ordinaryRoom(id, () -> true); }
     boolean ordinaryRoom(UUID id, BooleanSupplier due) {
         ordinary.putIfAbsent(id, due);
@@ -31,14 +39,17 @@ final class SealedProofTurns {
         return ordinaryTurn && (next == null || id.equals(next));
     }
     /** Only refusals behind an active sealed attempt announce this bounded, anonymous opportunity. */
-    void reservationRefused() { refusedTicks = RocketOrdinaryRetirement.ATTEMPT_TICKS + 2; }
-    void reservationAdmitted() { refusedTicks = 0; }
-    /** Called even with no pending returns, once per ordinary service tick. */
-    void tick() { if (refusedTicks > 0) { refusedTicks--; } }
+    void reservationRefused() { refusedUntil = now.getAsLong() + RocketOrdinaryRetirement.ATTEMPT_TICKS + 2; }
+    void reservationAdmitted() { refusedUntil = NONE; }
+    /** Called even with no pending returns, once per ordinary service tick; the clock only without a server tick. */
+    void tick() { serviceTicks++; }
     void ordinaryStarted(UUID id) { ordinary.remove(id); ordinaryReservationHeld(); }
     /** Ineligible holds yield admission; an unavailable native window alone does not spend the capture turn. */
-    void ordinaryReservationHeld() { ordinaryTurn = false; refusedTicks = 0; }
+    void ordinaryReservationHeld() { ordinaryTurn = false; refusedUntil = NONE; }
     void withdraw(UUID id) { ordinary.remove(id); }
-    void sealedEnded() { ordinaryTurn = true; refusedTicks = Math.min(refusedTicks, 2); }
-    void clear() { ordinary.clear(); ordinaryTurn = false; refusedTicks = 0; }
+    void sealedEnded() {
+        ordinaryTurn = true;
+        if (refusedUntil != NONE) { refusedUntil = Math.min(refusedUntil, now.getAsLong() + 2); }
+    }
+    void clear() { ordinary.clear(); ordinaryTurn = false; refusedUntil = NONE; }
 }
