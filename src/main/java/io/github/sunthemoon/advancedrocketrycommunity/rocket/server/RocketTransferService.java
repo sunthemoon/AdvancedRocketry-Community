@@ -631,6 +631,7 @@ final class RocketTransferService {
                 flight = source.flightData().orElseThrow();
                 RocketFlightFeedback.transitStarted(source);
                 auditPhase(record, "ascent_complete", source.getUUID());
+                recovery.bays().checkpoint(server, journal, record, source);
                 recovery.classify(server, journal);
             }
         }

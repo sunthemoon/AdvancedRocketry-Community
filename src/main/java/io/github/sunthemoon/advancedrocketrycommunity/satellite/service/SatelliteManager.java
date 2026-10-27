@@ -610,6 +610,11 @@ public final class SatelliteManager {
         return celestialCatalogs.current();
     }
 
+    /** The terminal's own launch service, shared with the bay coordinator (W27A-DESIGN section 7). */
+    SatelliteLaunchService launchService() {
+        return launches;
+    }
+
     /** GameTest and release-test servers only: one discovery replay pass now, as the END tick would run it. */
     public void replayDiscoveriesForTests(MinecraftServer server) {
         if (!io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteRegistryTestAwait.allowed(server)) {

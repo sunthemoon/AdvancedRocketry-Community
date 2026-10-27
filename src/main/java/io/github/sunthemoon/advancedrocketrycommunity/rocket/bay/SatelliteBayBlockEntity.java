@@ -138,13 +138,24 @@ public final class SatelliteBayBlockEntity extends BlockEntity implements MenuPr
                 new RocketPosition(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()));
     }
 
-    /** The phase and reason menu slots; with deployment disabled they are fixed. */
+    /**
+     * The phase and reason menu slots (W27d1): the package's receipt, else its runtime rejection (phase NONE), else NONE
+     * with DEPLOYMENT_UNAVAILABLE. Server thread only; elsewhere the fixed pair.
+     */
     public SatelliteBayStatus.Phase phase() {
-        return SatelliteBayStatus.Phase.NONE;
+        return status().map(status -> SatelliteBayStatus.Phase.fromName(status.phase())).orElse(SatelliteBayStatus.Phase.NONE);
     }
 
     public SatelliteBayStatus.Reason reason() {
-        return SatelliteBayStatus.Reason.DEPLOYMENT_UNAVAILABLE;
+        return status().map(status -> SatelliteBayStatus.Reason.fromName(status.reason()))
+                .orElse(SatelliteBayStatus.Reason.DEPLOYMENT_UNAVAILABLE);
+    }
+
+    private Optional<io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayDeploymentSession.Status> status() {
+        if (!(level instanceof ServerLevel server) || packageState == null) {
+            return Optional.empty();
+        }
+        return packageState.identity().flatMap(identity -> BayReceipts.deploymentStatus(server.getServer(), identity.satelliteId()));
     }
 
     /** This exact instance is the loaded, server-thread block entity of a bay block. */

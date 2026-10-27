@@ -235,8 +235,11 @@ public final class EscrowRuntime {
             EscrowTags.require(server.isSameThread(), "Escrow admission registers on the server thread");
             admission = new EscrowAdmissionAuthority();
             propulsion = admission.register(EscrowAdmissionAuthority.Consumer.PROPULSION);
-            bay = new BayReceipts(admission.register(EscrowAdmissionAuthority.Consumer.BAY),
-                    io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile::atomicMove);
+            // W27d1: only a GameTestServer or a gated release-test server gets the receipt committer's cut seam.
+            var cut = EscrowTestEndpoints.enabled(server) ? new BayReceiptCommitCut() : null;
+            bay = new BayReceipts(admission.register(EscrowAdmissionAuthority.Consumer.BAY), cut != null ? cut
+                    : io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile::atomicMove);
+            bay.commitCut(cut);
         }
         return propulsion;
     }
