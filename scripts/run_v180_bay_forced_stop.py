@@ -66,7 +66,8 @@ CASES = {
     "B11_FULL": dict(cut=None, end="land", durable="NONE", fill=64),
     "B17_FAIR": dict(cut=None, end="stop", durable="NONE", fill=56, fixture_restart=1),
     # W128R-R2: B10's INTENT hold half, and a clean stop while D0 waits for its B14 request.
-    "B10_BLOCKED": dict(cut="B1_MOVED", end="kill", durable="INTENT", hold="REGISTRY_BLOCKED"),
+    # A clean stop drains the paused INTENT and saves the source at altitude, so each restart can show it locked there.
+    "B10_BLOCKED": dict(cut="B18_INTENT", end="stop", durable="INTENT", hold="REGISTRY_BLOCKED"),
     "B14_STOP": dict(cut=None, end="stop", durable="NONE", journal=True, at_stop=True),
 }
 INTERRUPTED = ("REJECTED", "INTERRUPTED")
