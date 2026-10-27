@@ -1057,9 +1057,36 @@
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.compat.rocket.ExternalRocketBlockEntityAdapter/",
       "message": "Rocket adapter arce_adapter_test:cargo_inventory exceeded returned-time budget in restore",
-      "counts": {"defaultBatch": 1},
+      "counts": {"w164_adapter_fault": 1},
       "test": "AdapterFaultGameTests (adapterTest source set, mode RESTORE_SLOW)",
       "reason": "The fixture adapter sleeps past the 5 ms callback budget in restore and must be rejected once with a warning."
+    },
+    {
+      "id": "w164-adapter-canmove-slow",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.compat.rocket.ExternalRocketBlockEntityAdapter/",
+      "message": "Rocket adapter arce_adapter_test:slow_move_container exceeded returned-time budget in canMove",
+      "counts": {"w164_adapter_success": 1},
+      "test": "AdapterFaultGameTests.slowEligibilityPreservesSource",
+      "reason": "The deliberate 20 ms scan-eligibility callback has its own provider wrapper so it cannot consume the restore fault's once-per-wrapper warning."
+    },
+    {
+      "id": "w164-adapter-capture-slow",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.compat.rocket.ExternalRocketBlockEntityAdapter/",
+      "message": "Rocket adapter arce_adapter_test:slow_capture_container exceeded returned-time budget in capture",
+      "counts": {"w164_adapter_success": 1},
+      "test": "AdapterFaultGameTests.slowCapturePreservesSource",
+      "reason": "The deliberate 20 ms scan-capture fault exceeded the unchanged 5 ms provider-only timer in the prior full log; an independent provider identity makes that intentional warning deterministic."
+    },
+    {
+      "id": "w164-adapter-r107-holds",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.sealed.SealedRocketBlockEntity/",
+      "message": "ARCE_SEALED_MEMBER_HELD position=-?[0-9]+ reason=preparation-failed repair=offline-whole-world",
+      "counts": {"w164_adapter_fault": 4},
+      "test": "AdapterFaultGameTests restore throw/false/slow/mismatch transitions",
+      "reason": "Each failed detached target leaves its original carrier held once per load; after byte-preserving reload with the healthy provider it publishes without another failure."
     },
     {
       "id": "forge-config-key-defaulted",
