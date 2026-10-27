@@ -58,6 +58,21 @@ final class ReservationCoverageTest {
         assertTrue(SIZER.missionBytes(held) >= 1_389, "reserved " + SIZER.missionBytes(held));
     }
 
+    /** W168-R5: RecordSizer's defaults prove by contract; the persisted sizer must decide every proof itself. */
+    @Test void theCodecSizerDeclaresEveryReservationMethodItself() {
+        List<String> reservations = new ArrayList<>();
+        for (java.lang.reflect.Method method : RecordSizer.class.getMethods()) {
+            if (method.getReturnType() == RecordSizer.Reservation.class) {
+                reservations.add(method.getName());
+                assertDoesNotThrow(() -> CodecRecordSizer.class.getDeclaredMethod(method.getName(), method.getParameterTypes()),
+                        method.getName());
+            }
+        }
+        reservations.sort(Comparator.naturalOrder());
+        assertEquals(List.of("groundSurveyReservation", "instanceReservation", "missionReservation", "satelliteReservation"),
+                reservations);
+    }
+
     @Test void everySatelliteStateFitsItsReservation() {
         for (SatelliteKind kind : SatelliteKind.values()) {
             covered("satellite " + kind.id(), satelliteStates(kind),
