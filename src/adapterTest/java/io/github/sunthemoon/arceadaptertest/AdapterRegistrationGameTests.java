@@ -33,7 +33,7 @@ public final class AdapterRegistrationGameTests {
     public static java.util.Collection<net.minecraft.gametest.framework.TestFunction> asynchronousTransitions() {
         return java.util.List.of(
                 AdapterAsyncFixture.test("w164_adapter_success", "AdapterRegistrationGameTests.externalAdapterProductionAssemblyPreservesInventory",
-                        4, 1, false, AdapterRegistrationGameTests::externalAdapterProductionAssemblyPreservesInventory) );
+                        4, 1, false, AdapterRegistrationGameTests::externalAdapterProductionAssemblyPreservesInventory));
     }
     private static final String HOST_ID = "advancedrocketrycommunity";
     private static final ResourceLocation ROCKET_TYPE = ResourceLocation.tryParse(HOST_ID + ":rocket");

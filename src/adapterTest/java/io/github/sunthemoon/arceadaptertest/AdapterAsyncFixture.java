@@ -5,6 +5,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.gametest.framework.TestFunction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.entity.BlockEntity;
 
 /** Only timing facts/pacing cross the test bridge; requests, inventories and recovery remain native/public. */
 final class AdapterAsyncFixture {
@@ -24,6 +25,13 @@ final class AdapterAsyncFixture {
         return (int) invoke("completionTicks", new Class<?>[] {int.class, int.class, boolean.class}, members, operations, reload);
     }
     static int retryTicks() { return (int) invoke("retryTicks", new Class<?>[0]); }
+
+    static boolean checkedAbsent(BlockEntity carrier) {
+        try {
+            return (boolean) Class.forName("io.github.sunthemoon.advancedrocketrycommunity.rocket.server.SealedProductionTestAccess")
+                    .getMethod("checkedAbsent", BlockEntity.class).invoke(null, carrier);
+        } catch (ReflectiveOperationException failure) { throw new IllegalStateException("Carrier absence observation unavailable", failure); }
+    }
 
     private static Object invoke(String name, Class<?>[] signature, Object... args) {
         try { return Class.forName(ACCESS).getMethod(name, signature).invoke(null, args); }

@@ -2,9 +2,12 @@ package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
 import static org.junit.jupiter.api.Assertions.*;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.RocketLimits;
+import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 class SealedAdapterTestAccessTest {
+    @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
     @Test void completionBudgetIncludesEachNativeProofAndOneRetry() {
         int one = Math.toIntExact(RocketDisassemblyConfirmations.LIFETIME_TICKS)
                 + 3 * (2 * RocketOrdinaryRetirement.ATTEMPT_TICKS + RocketOrdinaryRetirement.RETRY_TICKS) + 1;

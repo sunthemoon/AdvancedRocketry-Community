@@ -32,7 +32,7 @@ public final class RocketComponentGameTests {
     public static java.util.Collection<net.minecraft.gametest.framework.TestFunction> asynchronousTransitions() {
         return java.util.List.of(
                 AdapterAsyncFixture.test("w164_adapter_success", "RocketComponentGameTests.externalComponentsDriveActualAssemblyAndZeroFuelDisassembly",
-                        5, 1, false, RocketComponentGameTests::externalComponentsDriveActualAssemblyAndZeroFuelDisassembly) );
+                        5, 1, false, RocketComponentGameTests::externalComponentsDriveActualAssemblyAndZeroFuelDisassembly));
     }
     private static final String HOST = "advancedrocketrycommunity";
     private static final ResourceLocation ROCKET = ResourceLocation.tryParse(HOST + ":rocket");

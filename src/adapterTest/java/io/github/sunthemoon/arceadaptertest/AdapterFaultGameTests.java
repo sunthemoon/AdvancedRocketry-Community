@@ -48,7 +48,7 @@ public final class AdapterFaultGameTests {
                 AdapterAsyncFixture.test("w164_adapter_fault", "AdapterFaultGameTests.slowRestoreCleansPartialInventoryAndRetries",
                         4, 2, true, AdapterFaultGameTests::slowRestoreCleansPartialInventoryAndRetries),
                 AdapterAsyncFixture.test("w164_adapter_fault", "AdapterFaultGameTests.mismatchedRestoreCleansPartialInventoryAndRetries",
-                        4, 2, true, AdapterFaultGameTests::mismatchedRestoreCleansPartialInventoryAndRetries) );
+                        4, 2, true, AdapterFaultGameTests::mismatchedRestoreCleansPartialInventoryAndRetries));
     }
     private static final String HOST = "advancedrocketrycommunity";
     private static final BlockPos ORIGIN = new BlockPos(3, 2, 3);
@@ -228,6 +228,7 @@ public final class AdapterFaultGameTests {
             helper.assertTrue(rocket.isRemoved() && rockets(helper).isEmpty(), "Held carrier coexists with D");
             helper.assertTrue(carrier != null && carrier == helper.getBlockEntity(CARGO)
                     && retained.equals(carrier.saveWithFullMetadata()), "Failed restoration changed carrier authority");
+            helper.assertTrue(AdapterAsyncFixture.checkedAbsent(carrier), "Materialization preceded checked U absence");
             var member = retained.getCompound("arce_sealed_rocket_member");
             helper.assertTrue(member.getUUID("rocket_entity_id").equals(rocket.getUUID())
                     && member.getCompound("block_entity").getCompound("data").getCompound("data").equals(fixture.inventory),
