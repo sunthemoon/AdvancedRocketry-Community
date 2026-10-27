@@ -83,25 +83,53 @@ each with permission, protection, rate, energy and audit bounds. The
 [development handoff](docs/releases/v1.7.0/RELEASE-EVIDENCE.md) lists its
 evidence and open acceptance.
 
-**v1.8 Classic Content Completion is in development** (`1.20.1-1.8.0-dev`).
-The development build includes classic metals and ores, the small plate press and combustion generator,
-five classic fluids and whole-unit gas canisters, a pressurized tank and pump,
-four craftable motor tiers,
-rebuilt Moon, Mars and Venus surfaces, and the Tau Ceti f and g worlds. Every
-legacy content unit has a recorded disposition, and imported legacy art must
-pass the vanilla-derivation and provenance checks. Classic machines, rocket
-and station components, life support, progression and the remaining assets are
-not complete. The [implementation log](docs/work/v1.8.0-implementation-log.md)
-records implemented slices, independent reviews and outstanding acceptance;
-this build is not a stable release or complete classic-content parity.
+**v1.8 Classic Content Completion is in development** (`1.20.1-1.8.0-dev`, branch
+`codex/v1.8.0-classic-content`). It ports the classic Advanced Rocketry content onto this rewrite's architecture.
+Development builds now include:
+
+- **Materials and worlds:** classic metals and ores, five classic fluids with whole-unit gas canisters, rebuilt Moon,
+  Mars and Venus surfaces, and the Tau Ceti f and g worlds.
+- **Machines:** the classic processing, energy, research and endgame machines on a shared multiblock kernel, from the
+  small plate press and arc furnace to the chemical reactor, which makes rocket fuel, the black-hole generator, the
+  orbital laser drill and the railgun.
+- **Rockets and stations:** four motor tiers and the propulsion parts, the rocket assembler, guidance computer and
+  flight console, landing pads and beacons, the station gravity, altitude and orientation controllers, the force
+  field, the space elevator and the warp core.
+- **Life support and equipment:** oxygen vents, CO2 scrubbers, airlocks, atmosphere detectors, the suit workstation,
+  the laser gun and jackhammer, the HUD and client settings, and 17 advancements.
+- **Satellites:** the satellite builder and terminal, five satellite kinds and the microwave receiver.
+
+An automated check proves that every item can be obtained through the packaged recipes. Every legacy content unit
+has a recorded disposition, and imported legacy art must pass the vanilla-derivation and provenance checks.
 
 [![v1.8 machine progress atlas: 66 main machines, each drawn in colour up to its estimated implemented share and black above it](docs/images/v1.8-machine-atlas-20261026.png)](https://arcommunity-machine-atlas.proudfly11.chatgpt.site/)
 
 *v1.8 machine progress atlas: an unofficial manual estimate at source snapshot `63931cfb` (2026-10-26).* Each
-machine is drawn in colour up to its estimated implemented share and black above it. 100% means the card's limited
-function is implemented; it is not release acceptance, survival-progression or multiplayer verification. The
-[interactive atlas](https://arcommunity-machine-atlas.proudfly11.chatgpt.site/) lists the evidence behind each card
-and 56 further support components.
+machine is drawn in colour up to its estimated implemented share and black above it. 58 of the 66 main machines and
+52 of the 56 support components have their card's limited function implemented. 100% is not release acceptance,
+survival-progression or multiplayer verification. The [interactive atlas](https://arcommunity-machine-atlas.proudfly11.chatgpt.site/) lists the evidence behind each
+card.
+
+**Not yet available to players:**
+
+- **Automated rocket fuel and cargo transfer.** The five rocket loaders and unloaders are built, but their production
+  switch stays off until the resource-escrow chain is admitted.
+- **Satellite deployment from a rocket's satellite bay.** It stays disabled while its deployment coordinator is
+  built.
+- **The gas charge pad.** It waits for an owner decision. Until it is added, new pressure tanks start empty, and
+  survival play has no regular oxygen or hydrogen refill for them or the jetpack.
+- **Sounds and assets.** Ten classic sounds await a listening review, and 154 imported legacy assets are still under
+  review.
+
+No v1.8 Required Gate is approved. Dedicated-server, real-GPU and two-client acceptance, and a full new-world
+survival playthrough, have not run yet. The [implementation log](docs/work/v1.8.0-implementation-log.md) and the
+[task queue](docs/work/v1.8.0-root-queue/QUEUE.md) record each slice, its independent review and the open work. This
+is a development build, not a stable release or complete classic-content parity; test it only on copies of
+backed-up worlds.
+
+<details>
+<summary>Notes on the first v1.8 machines and fluids</summary>
+
 Craft one unpowered Small Plate Press with a vanilla piston centered above three
 iron ingots. It requires neither steel nor a motor. Place the material beneath
 the press with obsidian below it, then apply a redstone pulse to process it.
@@ -112,8 +140,8 @@ Compatible fluid integrations detach one unit and retain its returned item;
 partial transfers and direct stacked fill/drain refuse. The discovered gas
 giant offers nitrogen as well as unchanged hydrogen. Rocket fuel and enriched
 lava have world blocks and buckets; newly generated Venus volcanoes contain
-enriched lava without rewriting explored lava. Fuel-producing machine families
-are still unfinished.
+enriched lava without rewriting explored lava. The chemical reactor makes rocket
+fuel from oxygen and hydrogen.
 
 A Pressurized Tank holds 64,000 mB by default. The COMMON setting
 `machines.tankCapacityMultiplier` allows 0.25–4.0; reducing it keeps existing
@@ -133,15 +161,13 @@ Unsupported tank/pump saves refuse ordinary removal. Oversized retained data
 prevents saving its entire chunk until backup/offline repair; unrelated changes
 in that chunk are not durable during refusal. Ordinary fluid integration and
 clean restarts do not guarantee atomic transfers across independently saved
-chunks. Some steel/component production routes still await the remaining
-machine families; a complete new-world survival progression is not yet available.
+chunks.
 
 Motor, Advanced Motor, Enhanced Motor and Elite Motor are crafting/structure
 components, not powered machines. Craft the first from a copper coil, two steel
 plates, two iron rods and a steel ingot; each upgrade uses the previous tier,
 one coil and two plates of gold, titanium or iridium. The existing Endgame
 Casing now displays as Advanced Machine Casing without changing its saved ID.
-Classic machine structures using these parts are still incomplete.
 
 Craft a Combustion Generator with six iron ingots, a copper coil, a furnace and
 redstone. It burns furnace fuel at 40 FE/t, stores 20,000 FE and exports at most
@@ -154,6 +180,8 @@ its container; energy and consumed burn credit are lost. Unsupported resource
 saves are protected from ordinary removal and need backup/offline repair.
 Oversized generator data prevents saving its entire chunk until repaired;
 other changes in that chunk are not durable during that refusal.
+
+</details>
 
 ## What this project is
 
