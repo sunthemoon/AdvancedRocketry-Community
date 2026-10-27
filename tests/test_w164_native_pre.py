@@ -3,6 +3,7 @@ import inspect
 from pathlib import Path
 import sys
 import tempfile
+from types import SimpleNamespace
 import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
@@ -22,6 +23,21 @@ class W164NativePreTests(unittest.TestCase):
         self.assertEqual(20, len(native.CASES))
         self.assertEqual({"I6a", "I6b"}, {name.split("_", 1)[0] for name in native.CASES})
         self.assertEqual(60, sum(native.STARTS_PER_CASE for _ in native.CASES))
+
+    def test_plain_launch_uses_registered_cut_spelling_only_before_restart(self):
+        import run_w164_native_pre as native
+        from run_v180_first_event_moon_cuts import CASES as first_event_cases
+        prefix = "-Darce.releaseTest.firstEventCut="
+        for site in ("I6a", "I6b"):
+            for restart in range(3):
+                command = native.command_for(site, SimpleNamespace(java="java"), "UNSAVED", "STORE_D", restart)
+                cuts = [argument.removeprefix(prefix) for argument in command if argument.startswith(prefix)]
+                if site == "I6a" and restart == 0:
+                    self.assertEqual(1, len(cuts))
+                    self.assertIn(cuts[0], first_event_cases)
+                    self.assertEqual("FM12a", cuts[0])
+                else:
+                    self.assertEqual([], cuts)
 
     def test_native_archive_round_trips_all_observed_bytes(self):
         import run_w164_native_pre as native

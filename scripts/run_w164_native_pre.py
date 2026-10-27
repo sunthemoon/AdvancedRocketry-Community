@@ -65,6 +65,12 @@ def request(site, process, dimension, entity, fuel, evidence):
         (evidence / "requests.json").write_text(json.dumps(sent, indent=2), encoding="utf-8")
 
 
+def command_for(site, args, mode, cut, restart):
+    command = predecessor.command_for(args, mode, cut, restart)
+    if not restart and site == "I6a": command.insert(1, "-Darce.releaseTest.firstEventCut=FM12A")
+    return command
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("source_server", type=Path)
@@ -95,9 +101,7 @@ def main():
         ledger.write_text(json.dumps(rows, indent=2), encoding="utf-8")
 
     def command_builder(args, mode, cut, restart):
-        command = predecessor.command_for(args, mode, cut, restart)
-        if not restart and site == "I6a": command.insert(1, "-Darce.releaseTest.firstEventCut=FM12A")
-        return command
+        return command_for(site, args, mode, cut, restart)
 
     row = predecessor.run_case(args, case, evidence, prefix="W164-B-PRE", preserve=preserve, started=started,
             command_builder=command_builder,
