@@ -225,7 +225,10 @@ final class RocketOrdinaryRetirement {
         return pending.containsKey(logical) || landedOwners.get().contains(logical) || totalPending() < MAX_PENDING;
     }
     boolean attemptRoom() { return activeAttempts() + sealedAttempts.getAsInt() < MAX_ATTEMPTS; }
-    /** Fail-back arrivals and nudges must win admission before reserving and changing the source (N2). */
+    /**
+     * Fail-back arrivals and nudges must win admission before reserving and changing the source (N2). Admission alone
+     * does not use up a refused caller's window; only an eligible claim does (W152J-R3).
+     */
     Held holdFailBack(RocketTransferSavedData journal, UUID logical) {
         if (!attemptRoom()) {
             if (sealedAttempts.getAsInt() > 0 && !pending(logical) && pendingRoom(logical) && journal.actionable(logical)) {
@@ -233,10 +236,8 @@ final class RocketOrdinaryRetirement {
             }
             return new Held(null);
         }
-        if (!proofTurns.ordinaryReservationRoom(logical)) { return new Held(null); }
-        var held = hold(journal, logical);
-        if (held.token() != null) { proofTurns.reservationAdmitted(); }
-        return held;
+        if (!proofTurns.ordinaryReservationRoom(logical, pending(logical))) { return new Held(null); }
+        return hold(journal, logical);
     }
     /** Recovery or reconnect may nudge an existing fail-back and renew its creation-tick token too. */
     Held holdReturn(RocketTransferSavedData journal, UUID logical) {
@@ -580,7 +581,8 @@ final class RocketOrdinaryRetirement {
 
     private void waiting(Pending entry, String reason, long now) { fail(entry, reason, now, POLL_TICKS, false); }
 
-    private void captureBusy(Pending entry, long now) { fail(entry, "BUSY", now, 1, false, true); }
+    /** A native-window BUSY is an eligible claim: it keeps its queue place and uses up a refused caller's window. */
+    private void captureBusy(Pending entry, long now) { proofTurns.reservationAdmitted(); fail(entry, "BUSY", now, 1, false, true); }
 
     /**
      * R1: any failure or wait releases the reservation and the proofs; T stays as the per-rocket interlock. A fail-back

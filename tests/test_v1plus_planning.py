@@ -34,6 +34,11 @@ class PlanningValidationTests(unittest.TestCase):
             target = self.root / relative
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(ROOT / relative, target)
+        # The README shows images kept under docs/images.
+        for source in (ROOT / "docs/images").glob("*"):
+            target = self.root / source.relative_to(ROOT)
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(source, target)
         (self.root / "scripts/validate_v1plus_planning.py").touch()
         # Mutations below use a synthetic draft, independent of the active milestone.
         version = self.root / "docs/versions" / VERSION_DOCS[0]

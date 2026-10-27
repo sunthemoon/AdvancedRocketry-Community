@@ -66,3 +66,42 @@ committed source; then the native cases, all under the heavy-JVM lock, releasing
 ## Not in this task
 
 W27d2 to W27d4, W27e, ADRs, the risk register (Root registers entry C before merge), status files and the ledger (Root).
+
+## Resumption under ADR-074 (Root decision R121, 2026-10-27)
+
+The first session stopped at the Q6 benchmark rule (record and benchmarks merged; R51). The owner accepted ADR-074 on
+2026-10-26, and its slice 1, the off-thread transaction journal writer, merged with W129aM at `bb0eda86f` after B2,
+B3a and a fresh review. W27d1 writes no registry file, so it resumes now ([W129-DESIGN](records/W129-DESIGN.md)
+section 5.1; ADR-074 item 11). A fresh session continues:
+
+| Item | Value |
+|---|---|
+| Worktree | `D:/GitHub/arce-v180-w128r` (new; from the shared head named in your prompt) |
+| Branch | `codex/v1.8.0-w128r` (local commits only; Root merges) |
+| Record | append a "Resumption" section to `docs/work/v1.8.0-root-queue/records/W128.md` |
+| Evidence | `D:/GitHub/ARCE-Task-Evidence/root-queue/W128R/` |
+
+1. **The design change, committed before code.** In the one-page design, D0's "one timed checked `checkpoint`"
+   becomes ADR-074 item 11's request and wait:
+   - the first UNPROVED or WRITE_REQUIRED answer sends `requestCheckpoint`;
+   - WRITE_PENDING waits with L's claim HELD, its tickets renewed and no time limit;
+   - PROVED continues;
+   - UNPROVED after the request rejects every bay with ASSEMBLY_JOURNAL_UNPROVED;
+   - WRITE_REQUIRED (mutated since) requests again;
+   - the writer's availability joins D0's existing checks;
+   - at server stopping, a waiting D0 is discarded without running any effect (W129-DESIGN section 4.6).
+
+   Every other B14 answer keeps its meaning. State any difference from the design's B14 sentence in the record.
+2. **Q6 is answered.** The registry benchmarks gate only W27d2's registry writes, which W129b and W129c cover. Do not
+   rerun them. W129a's B2 measured the transaction request on the server thread (P99 0.22 ms at the bound); the IO
+   write itself is not a server-thread cost. Do not measure again.
+3. **Then the original scope, unchanged:** R49's decisions and the "What to do", "Tests" and "Verification" sections
+   above, from the coordinator on.
+4. **Extra tests:**
+   - unit or GameTest: D0 on WRITE_PENDING holds and runs nothing; PROVED after a pending wait continues; UNPROVED
+     after the request rejects every bay; WRITE_REQUIRED requests again; a stop while D0 waits runs nothing;
+   - native: W129-DESIGN's T1 for the bay, a D0 request in flight and then a kill, with two restarts. The new session
+     has no proof and W27A's restart rows apply.
+
+Deployment admission stays off outside the GameTest server and the gated release-test hooks. W27d2 starts after
+W129b and W129c merge. Root registers risk entry C before this slice merges. A fresh read-only review follows.

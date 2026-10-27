@@ -87,6 +87,8 @@ final class SealedDisassemblyCoordinator {
         }
         if (this.server != null) { return; }
         this.server = server; budget = new SealedWorkBudget(); placement = new SealedCarrierPlacement();
+        // W152J-R5: the refused-caller window expires on this server's tick, which the ordinary port also reports.
+        proofTurns.bindServerTick(server::getTickCount);
         diagnostics = new SealedDiagnostics((warning, line) -> {
             if (warning) { io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity.LOGGER.warn(line); }
             else { io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity.LOGGER.info(line); }
