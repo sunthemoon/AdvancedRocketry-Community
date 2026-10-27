@@ -38,11 +38,13 @@ import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
 /**
- * W27d1 A1 on the real installed services: a hand-fuelled rocket with a data bay and a solar bay launches from Earth.
- * At ascent_complete its claim holds T in TRANSIT; the data bay's INTENT is durable, decommission of its satellite is
- * fenced, operator recovery answers RETRY_LATER, then D2 writes REJECTED (DEPLOYMENT_UNAVAILABLE). The solar package's
- * owner lacks its research, so D0 refuses it at runtime with validation's own code. After the last REJECTED acknowledgement the
- * claim hands READY_SOURCE and T continues to the Moon with both packages byte-equal; nothing is registered.
+ * W27d1 and W170 A1 on the real installed services: a hand-fuelled rocket with a data bay and a solar bay launches from
+ * Earth. At ascent_complete its claim holds T in TRANSIT; the data bay's INTENT is durable, decommission of its satellite
+ * is fenced and operator recovery answers RETRY_LATER. D2 registers the data satellite fresh, with its initial mission, and
+ * replays the solar satellite, which an earlier launch registered (a GameTest cannot grant the 120 lifetime research a
+ * fresh solar launch needs). Both are REGISTERED in one generation, consumed (S' and T'), proved and retired; the claim
+ * hands READY_SOURCE and T' continues to the Moon (section 8.1 test 7 with consumption). Each satellite is registered
+ * once and each bay consumed once by its own operation.
  */
 @GameTestHolder(ModIdentity.MOD_ID)
 @PrefixGameTestTemplate(false)
@@ -50,7 +52,7 @@ public final class BayDeploymentFlightGameTests {
     private BayDeploymentFlightGameTests() { }
 
     @GameTest(template = TEMPLATE, batch = BATCH, timeoutTicks = 1_000)
-    public static void aDataAndSolarBayRocketWaitsInTransitIsRefusedAndLandsWithBothPackages(GameTestHelper helper) {
+    public static void aDataAndSolarBayRocketRegistersBothOnceAndLandsWithBothBaysConsumed(GameTestHelper helper) {
         new Flight(helper).start();
     }
 
@@ -63,9 +65,8 @@ public final class BayDeploymentFlightGameTests {
         RocketEntity source;
         BayClaim claim;
         List<String> before;
-        String solarRefusal;
-        int stage, waits;
-        boolean sawIntent, probedRecovery, closed;
+        int stage, waits, ownerSatellites;
+        boolean sawIntent, sawRegistered, probedRecovery, closed;
 
         Flight(GameTestHelper helper) { this.helper = helper; }
         void start() { helper.onEachTick(this::tick); }
@@ -104,13 +105,9 @@ public final class BayDeploymentFlightGameTests {
             helper.assertTrue(level.addFreshEntity(source), "Rocket spawn failed");
             var flight = source.flightData().orElseThrow();
             source.updateFlightData(flight.withFuel(flight.fuel().fill(flight.fuel().capacity()).state(), level.getGameTime()));
-            // The solar package's owner has no lifetime research: validation refuses it, and D0 must keep that code.
-            var identity = io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.SatelliteBayPackage.decode(
-                    solar.copyWithCount(1).serializeNBT()).identity().orElseThrow();
-            var validation = io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteRuntime.launchService().orElseThrow()
-                    .validate(level.getServer(), owner, identity, io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds.EARTH_ID);
-            helper.assertTrue(validation.request().isEmpty(), "The solar fixture must be refused by validation");
-            solarRefusal = validation.result().code().name();
+            registerSolar(level.getServer(), solar, owner); // the bay replays it as IDEMPOTENT
+            ownerSatellites = SatelliteMissionSavedData.get(level.getServer()).ownerSatellites(owner);
+            helper.assertTrue(ownerSatellites == 1, "The solar fixture was not registered once");
             var launched = RocketRuntime.requestAdminFlight(source, RocketDestination.MOON, transfer);
             RocketJournalGameTestSupport.assertPendingLaunch(helper, launched, source);
             stage = 1;
@@ -151,25 +148,31 @@ public final class BayDeploymentFlightGameTests {
                             == SatelliteOperationCode.DEPLOYMENT_PENDING, "Decommission was not fenced from INTENT");
                     helper.assertTrue(bay(origin().east()).phase() == SatelliteBayStatus.Phase.INTENT, "The menu does not show INTENT");
                 }
+                if (intent != null && intent.phase() == BayReceipt.Phase.REGISTERED && session.acknowledged(intent.op())) {
+                    sawRegistered = true;
+                    var solarReceipt = session.find(satellite(solar)).orElseThrow();
+                    helper.assertTrue(solarReceipt.phase() == BayReceipt.Phase.REGISTERED && solarReceipt.preexisting()
+                            && !intent.preexisting() && solarReceipt.srcAfter().equals(intent.srcAfter())
+                            && solarReceipt.dstAfter().equals(intent.dstAfter()), "The group's REGISTERED receipts disagree");
+                }
                 return;
             }
             helper.assertTrue(claim.stage() == BayClaim.Stage.ENDED && claim.handoff().orElseThrow() == BayClaim.Handoff.READY_SOURCE,
-                    "The claim did not end with READY_SOURCE");
-            var dataMember = claim.members().stream().filter(member -> member.satellite().orElseThrow().equals(satellite(data))).findFirst().orElseThrow();
-            var solarMember = claim.members().stream().filter(member -> member.satellite().orElseThrow().equals(satellite(solar))).findFirst().orElseThrow();
-            helper.assertTrue(dataMember.state() == BayMember.State.REJECTED && dataMember.reason().equals("DEPLOYMENT_UNAVAILABLE"),
-                    "The data bay was not REJECTED with DEPLOYMENT_UNAVAILABLE: " + dataMember.state() + " " + dataMember.reason());
-            helper.assertTrue(sawIntent, "The data bay's INTENT was never observed before its outcome");
-            helper.assertTrue(solarMember.state() == BayMember.State.REFUSED && solarMember.reason().equals(solarRefusal),
-                    "The solar bay was not refused at D0 with its validation code: " + solarMember.state() + " " + solarMember.reason());
-            var rejected = session.find(satellite(data)).orElseThrow();
-            helper.assertTrue(rejected.phase() == BayReceipt.Phase.REJECTED && session.acknowledged(rejected.op())
-                    && rejected.transfer().equals(transfer) && rejected.rocket().equals(logical), "The REJECTED receipt is not exact");
-            helper.assertTrue(session.find(satellite(solar)).isEmpty(), "A runtime refusal wrote a receipt");
-            helper.assertTrue(bay(origin().east()).phase() == SatelliteBayStatus.Phase.REJECTED
-                    && bay(origin().east()).reason() == SatelliteBayStatus.Reason.DEPLOYMENT_UNAVAILABLE, "Data bay menu status");
-            helper.assertTrue(bay(origin().east().above()).phase() == SatelliteBayStatus.Phase.NONE
-                    && bay(origin().east().above()).reason() == SatelliteBayStatus.Reason.fromName(solarRefusal), "Solar bay menu status");
+                    "The claim did not end with READY_SOURCE: " + claim.stage() + " " + claim.reason());
+            helper.assertTrue(sawIntent && sawRegistered, "INTENT and the acknowledged REGISTERED group were not both observed");
+            var ops = claim.members().stream().map(member -> member.receipt().orElseThrow().op()).toList();
+            helper.assertTrue(claim.members().stream().allMatch(member -> member.state() == BayMember.State.RETIRED),
+                    "Both members must retire");
+            helper.assertTrue(session.find(satellite(data)).isEmpty() && session.find(satellite(solar)).isEmpty(),
+                    "The receipts were not retired");
+            var registry = SatelliteMissionSavedData.get(server);
+            var missionId = io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteManager.initialMissionId(satellite(data));
+            helper.assertTrue(registry.satellite(satellite(data)).isPresent() && registry.mission(missionId)
+                    .filter(mission -> mission.satelliteId().equals(satellite(data))).isPresent(), "The data satellite and its initial mission");
+            helper.assertTrue(registry.satellite(satellite(solar)).isPresent() && registry.ownerSatellites(owner) == ownerSatellites + 1,
+                    "Each satellite must be registered exactly once");
+            helper.assertTrue(ops.containsAll(consumedOps(transferRecord().sourceSnapshot())) && consumedOps(transferRecord()
+                    .sourceSnapshot()).containsAll(ops), "T' must carry both bays consumed by their own operations");
             stage = 3;
         }
 
@@ -180,11 +183,13 @@ public final class BayDeploymentFlightGameTests {
             var moon = server.getLevel(CelestialIds.MOON_LEVEL);
             var destination = moon == null ? null : (RocketEntity) moon.getEntity(record.destinationEntityId().orElseThrow());
             if (destination == null || destination.flightData().orElseThrow().state() != RocketFlightState.LANDED) { return; }
-            helper.assertTrue(before.equals(BayDeploymentGameTests.signatures(destination.snapshot().orElseThrow())),
-                    "The landed rocket's packages are not byte-equal to the launch");
-            var registry = SatelliteMissionSavedData.get(server);
-            helper.assertTrue(registry.satellite(satellite(data)).isEmpty() && registry.satellite(satellite(solar)).isEmpty(),
-                    "W27d1 registered a satellite");
+            var landed = consumedOps(destination.snapshot().orElseThrow());
+            helper.assertTrue(landed.size() == 2 && landed.stream().allMatch(java.util.Objects::nonNull)
+                    && claim.members().stream().allMatch(member -> landed.contains(member.receipt().orElseThrow().op())),
+                    "The landed rocket must carry both bays consumed, never a package: " + landed);
+            helper.assertTrue(!before.equals(BayDeploymentGameTests.signatures(destination.snapshot().orElseThrow())), "No package came back");
+            helper.assertTrue(SatelliteMissionSavedData.get(server).ownerSatellites(owner) == ownerSatellites + 1,
+                    "The landing registered nothing more");
             close();
             helper.succeed();
         }
@@ -210,8 +215,12 @@ public final class BayDeploymentFlightGameTests {
             });
             if (source != null) { source.discard(); }
             var session = bays(helper).sessionForTests();
-            session.find(satellite(data)).ifPresent(receipt -> BayReceiptTestHooks.remove(server, receipt.op(), outcome -> { }));
-            session.rejections().remove(satellite(solar));
+            for (var pkg : List.of(data, solar)) {
+                session.find(satellite(pkg)).ifPresent(receipt -> BayReceiptTestHooks.remove(server, receipt.op(), outcome -> { }));
+                session.rejections().remove(satellite(pkg));
+            }
+            var registry = SatelliteMissionSavedData.get(server);
+            registry.satellite(satellite(solar)).ifPresent(state -> registry.decommission(state.satelliteId(), owner, true, true));
             for (BlockPos relative : blocks) { clearBay(helper.getLevel(), helper.absolutePos(relative)); }
         }
     }

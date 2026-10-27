@@ -149,17 +149,24 @@ public final class BayDeploymentMatrixGameTests {
                     "The claim did not end with READY_SOURCE: " + claim.handoff());
             var dataMember = member(satellite(data)); var solarMember = member(satellite(solar));
             var registry = SatelliteMissionSavedData.get(server);
-            helper.assertTrue(registry.satellite(satellite(data)).isEmpty() && registry.satellite(satellite(solar)).isEmpty(), "W27d1 registered X");
-            helper.assertTrue(before.equals(BayDeploymentGameTests.signatures(flight.record().sourceSnapshot())), "The packages in T changed");
+            helper.assertTrue(registry.satellite(satellite(solar)).isEmpty(), "A refused solar bay registered X");
             if (expect == Expect.CAPTURED) {
-                var rejected = session.find(satellite(data)).orElseThrow();
-                helper.assertTrue(sawIntent && dataMember.state() == BayMember.State.REJECTED
-                        && rejected.phase() == BayReceipt.Phase.REJECTED && rejected.reason().equals("DEPLOYMENT_UNAVAILABLE")
-                        && session.acknowledged(rejected.op()) && rejected.orbit().equals(body.toString()),
-                        "The DATA bay did not go INTENT to REJECTED on the captured body: " + rejected);
+                // W170: the data bay registers on the captured body (F2: its initial mission targets Mars) and is consumed.
+                var mission = registry.mission(io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteManager
+                        .initialMissionId(satellite(data))).orElse(null);
+                helper.assertTrue(sawIntent && dataMember.state() == BayMember.State.RETIRED && session.find(satellite(data)).isEmpty()
+                        && registry.satellite(satellite(data)).isPresent() && mission != null && mission.targetBodyId().equals(body),
+                        "The DATA bay did not register on the captured body and retire: " + dataMember.state() + " " + mission);
+                var consumedRecord = RocketTransferSavedData.get(server).find(flight.record().transferId()).orElseThrow();
+                var ops = consumedOps(consumedRecord.sourceSnapshot());
+                helper.assertTrue(ops.get(0) != null && ops.get(0).equals(dataMember.receipt().orElseThrow().op()) && ops.get(1) == null
+                        && BayDeploymentGameTests.signatures(consumedRecord).get(1).equals(before.get(1)),
+                        "T' must consume the data bay and keep the refused solar package byte-equal: " + ops);
                 helper.assertTrue(solarMember.state() == BayMember.State.REFUSED && solarMember.reason().equals(solarCode)
                         && session.find(satellite(solar)).isEmpty(), "The solar bay was not refused by its own validation");
             } else {
+                helper.assertTrue(registry.satellite(satellite(data)).isEmpty(), "A refused data bay registered X");
+                helper.assertTrue(before.equals(BayDeploymentGameTests.signatures(flight.record().sourceSnapshot())), "The packages in T changed");
                 String reason = expect == Expect.F5 ? "TARGET_NOT_ALLOWED" : "ASSEMBLY_JOURNAL_UNPROVED";
                 for (var member : List.of(dataMember, solarMember)) {
                     helper.assertTrue(member.state() == BayMember.State.REFUSED && member.reason().equals(reason),
