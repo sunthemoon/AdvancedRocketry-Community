@@ -3,6 +3,8 @@ package io.github.sunthemoon.advancedrocketrycommunity.resourceescrow;
 import com.mojang.logging.LogUtils;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferPhase;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
 import java.nio.file.Path;
 import java.util.UUID;
 import javax.annotation.Nullable;
@@ -22,6 +24,9 @@ public final class BayReceipts {
     private BayReceiptStore store;
     @Nullable private EscrowAdmissionAuthority.Store substitute; // W95's synthetic index while its fixture holds it
     private EscrowAdmissionAuthority.Delegate.State firstTick;
+    @Nullable private BayDeploymentSession session;
+    @Nullable private BayReceiptCommitCut commitCut; // only on a GameTestServer or a gated release-test server
+    private boolean started;
 
     BayReceipts(EscrowAdmissionAuthority.Delegate bay, CheckedSavedDataFile.Committer committer) { this(bay, committer, null); }
     BayReceipts(EscrowAdmissionAuthority.Delegate bay, CheckedSavedDataFile.Committer committer,
@@ -41,6 +46,7 @@ public final class BayReceipts {
     }
     /** The startup sequence on a looked-up root and the file's presence; unit tests drive it with real files. */
     void start(@Nullable BayReceiptSavedData existing, CheckedSavedDataFile.Presence presence, Path file, long tick) {
+        started = true;
         if (bay.state() != EscrowAdmissionAuthority.Delegate.State.NOT_LOADED) { return; }
         if (existing != null) {
             bind(existing, file, tick);
@@ -117,6 +123,66 @@ public final class BayReceipts {
             return decommission ? receipts.blocksDecommission(satellite) : receipts.blocksInsertion(satellite);
         }).orElse(true);
     }
+    /**
+     * W27A-DESIGN section 8's bay part of the gate lock (R49 Q3 and Q8), on the server thread: a coordinator claim on L
+     * (including a pending handoff), or a blocking or released receipt naming L in any state. While the index is
+     * NOT_LOADED after startup, every PREPARED transfer record of L holds it, and every L while the transfer journal is
+     * not operational. Before ServerStartingEvent it is false: no login, command or tick runs then, and the startup
+     * classification supersedes it.
+     */
+    public boolean holds(MinecraftServer server, UUID logical) {
+        if (!started) { return false; }
+        if (session != null && session.claimed(logical)) { return true; }
+        return switch (bay.state()) {
+            case NOT_LOADED -> preparedTransfer(server, logical);
+            case NO_FILE -> false;
+            case LOADED -> store == null || store.holdsRocket(logical);
+        };
+    }
+    private static boolean preparedTransfer(MinecraftServer server, UUID logical) {
+        var journal = RocketTransferSavedData.get(server);
+        if (!journal.operational()) { return true; }
+        for (var record : journal.entries()) {
+            if (record.logicalRocketId().equals(logical)
+                    && record.phase() == RocketTransferPhase.PREPARED) {
+                return true;
+            }
+        }
+        return false;
+    }
+    /** The bay part of the gate lock for any caller; off the server thread it fails closed. */
+    public static boolean holdsRocket(MinecraftServer server, UUID logical) {
+        if (!server.isSameThread()) { return true; }
+        if (server.overworld() == null) { return false; }
+        return server.overworld().getCapability(EscrowRuntime.CAPABILITY).resolve()
+                .map(runtime -> runtime.bayReceipts(server).holds(server, logical)).orElse(false);
+    }
+
+    /** The coordinator's one session handle for this server lifetime; a second request throws. */
+    public BayDeploymentSession session(MinecraftServer server) {
+        EscrowTags.require(server.isSameThread(), "Bay receipts live on the server thread");
+        if (session != null) { throw new IllegalStateException("The bay deployment session was already issued"); }
+        session = new BayDeploymentSession(this, server);
+        return session;
+    }
+    /** A bay's menu status from its package's satellite: the receipt, else this session's runtime rejection. */
+    public static java.util.Optional<BayDeploymentSession.Status> deploymentStatus(MinecraftServer server, UUID satellite) {
+        if (!server.isSameThread() || server.overworld() == null) { return java.util.Optional.empty(); }
+        return server.overworld().getCapability(EscrowRuntime.CAPABILITY).resolve().flatMap(runtime -> {
+            BayReceipts receipts = runtime.bayReceipts(server);
+            if (receipts.session != null) { return receipts.session.status(satellite); }
+            return java.util.Optional.ofNullable(receipts.store).flatMap(bound -> bound.find(satellite))
+                    .map(receipt -> new BayDeploymentSession.Status(receipt.phase().name(), receipt.reason()));
+        });
+    }
+
+    void commitCut(@Nullable BayReceiptCommitCut cut) { commitCut = cut; }
+    /** The receipt committer's cut seam; refused outside a GameTestServer or a gated release-test server. */
+    public java.util.Optional<BayReceiptCommitCut> commitCutForTests(MinecraftServer server) {
+        EscrowTestEndpoints.requireEnabled(server);
+        return java.util.Optional.ofNullable(commitCut);
+    }
+
     public EscrowAdmissionAuthority.Delegate.State state() { return bay.state(); }
     @Nullable public BayReceiptStore store() { return store; }
     EscrowAdmissionAuthority.Delegate delegate() { return bay; }
@@ -138,6 +204,15 @@ public final class BayReceipts {
     }
 
     void tick(long now) { if (store != null) { store.tick(now); } }
-    void stop() { if (store != null) { store.close(); } }
-    void abort() { if (store != null) { store.abort(); } }
+    /** A paused native cut is released first, so the drain (or the crash path's join) can finish its write. */
+    void stop() {
+        if (commitCut != null) { commitCut.release(); }
+        if (session != null) { session.close(); }
+        if (store != null) { store.close(); }
+    }
+    void abort() {
+        if (commitCut != null) { commitCut.release(); }
+        if (session != null) { session.close(); }
+        if (store != null) { store.abort(); }
+    }
 }

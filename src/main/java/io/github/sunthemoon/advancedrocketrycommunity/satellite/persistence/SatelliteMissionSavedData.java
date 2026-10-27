@@ -33,6 +33,7 @@ public final class SatelliteMissionSavedData extends SavedData {
     // Detached codec/domain fixtures have no world. Every production get binds its server's live receipt index.
     private java.util.function.BiPredicate<UUID, Boolean> deploymentFence = (satellite, removal) -> false;
     private MinecraftServer ownerServer;
+    private io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayRegistryPermit scopedPermit;
     private CompoundTag preservedBlockedData;
     /** ADR-050 section 2: a state change waits here for the next coalesced flush (at most one per 100 ticks). */
     private boolean flushPending;
@@ -127,7 +128,27 @@ public final class SatelliteMissionSavedData extends SavedData {
     public Optional<SatelliteRegistryProof.Acknowledgement> acknowledgement() { return writer.acknowledgement(); }
     void writePolicy(CheckedSavedDataPolicy policy) { writer.policy(policy); }
     void deploymentFence(java.util.function.BiPredicate<UUID, Boolean> fence) { deploymentFence = Objects.requireNonNull(fence); }
-    public boolean deploymentPending(UUID satellite) { return deploymentFence.test(satellite, false); }
+    /** Validation and its previews: the receipt fence, except for the one satellite a scoped coordinator permit covers. */
+    public boolean deploymentPending(UUID satellite) {
+        if (scopedPermit != null && scopedPermit.covers(satellite)) { return false; }
+        return deploymentFence.test(satellite, false);
+    }
+    /** Launch and registration never honour a permit (W128: D2 only revalidates). */
+    private boolean launchFenced(UUID satellite) { return deploymentFence.test(satellite, false); }
+
+    /**
+     * W128 D2: runs one validation with the coordinator's permit in scope, on the owner thread. Only {@link
+     * #deploymentPending} (the validation check and the two previews) honours it; {@code launch}, {@code launchIdle}
+     * and {@code decommission} ignore it, and the scope ends when the call returns or throws. Scopes do not nest.
+     */
+    public <T> T validateWithPermit(io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayRegistryPermit permit,
+            java.util.function.Supplier<T> validation) {
+        Objects.requireNonNull(permit, "permit"); Objects.requireNonNull(validation, "validation");
+        if (ownerServer != null && !ownerServer.isSameThread()) { throw new IllegalStateException("Permit scope requires the server thread"); }
+        if (scopedPermit != null) { throw new IllegalStateException("Registry permit scopes do not nest"); }
+        scopedPermit = permit;
+        try { return validation.get(); } finally { scopedPermit = null; }
+    }
     private static SatelliteOperationResult deploymentPendingResult() {
         return new SatelliteOperationResult(
                 io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteOperationCode.DEPLOYMENT_PENDING,
@@ -269,7 +290,7 @@ public final class SatelliteMissionSavedData extends SavedData {
             boolean discoveryRequired
     ) {
         requireOperational();
-        if (deploymentPending(satelliteId)) { return deploymentPendingResult(); }
+        if (launchFenced(satelliteId)) { return deploymentPendingResult(); }
         SatelliteOperationResult result = observeClock(() -> registry.launch(
                 satelliteId,
                 missionId,
@@ -290,7 +311,7 @@ public final class SatelliteMissionSavedData extends SavedData {
             long observedGameTime
     ) {
         requireOperational();
-        SatelliteOperationResult result = observeClock(() -> registry.launchIdle(factory, observedGameTime, this::deploymentPending));
+        SatelliteOperationResult result = observeClock(() -> registry.launchIdle(factory, observedGameTime, this::launchFenced));
         if (result.changed()) {
             changed();
         }

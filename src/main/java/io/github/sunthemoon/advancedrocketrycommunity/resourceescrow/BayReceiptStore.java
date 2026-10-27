@@ -190,6 +190,8 @@ public final class BayReceiptStore implements EscrowAdmissionAuthority.Store {
     public boolean holdsRocket(UUID rocket) { owner(); return view().heldRockets().contains(rocket); }
     public BayReceiptRoot durable() { owner(); return durable; }
     public List<BayReceipt> receipts() { owner(); return List.copyOf(current.values()); }
+    /** The operation's receipt in RAM: the queued or captured change if there is one, else the acknowledged receipt. */
+    public Optional<BayReceipt> current(UUID op) { owner(); return Optional.ofNullable(current.get(op)); }
     long issuedThrough() { owner(); return issuedThrough; }
     BayReceiptWriter writer() { owner(); return writer; }
     /** The receipt naming {@code satellite} in any state, newest first. */

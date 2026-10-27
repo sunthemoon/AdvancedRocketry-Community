@@ -127,6 +127,12 @@ public final class SatelliteRuntime {
         return current != null && current.scanRunning(playerId);
     }
 
+    /** The shared launch service (W27c2), for the bay coordinator's replay-first validation; empty without a service. */
+    public static Optional<SatelliteLaunchService> launchService() {
+        SatelliteManager current = manager;
+        return current == null ? Optional.empty() : Optional.of(current.launchService());
+    }
+
     public static Optional<io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalog> celestialCatalog() {
         SatelliteManager current = manager;
         return current == null ? Optional.empty() : current.celestialCatalog();

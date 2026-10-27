@@ -8,13 +8,21 @@ import net.minecraft.server.level.ServerLevel;
 public final class RocketEscrowGate {
     private RocketEscrowGate() { }
 
+    /** W27A-DESIGN section 8 (R49 Q8): the escrow part and the bay part; permitted boundaries use {@link #escrowIdle}. */
     public static boolean idle(RocketEntity rocket) {
-        return escrowIdle(rocket);
+        return escrowIdle(rocket) && !bayHeld(rocket);
     }
 
     public static boolean resourcesIdle(RocketEntity rocket) {
         return !io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime.cargoPreparing(rocket)
-                && (escrowIdle(rocket) || terminalSuccessor(rocket));
+                && !bayHeld(rocket) && (escrowIdle(rocket) || terminalSuccessor(rocket));
+    }
+
+    /** The bay part of the lock: a bay claim or a blocking or released receipt names the rocket's logical ID. */
+    public static boolean bayHeld(RocketEntity rocket) {
+        if (!(rocket.level() instanceof ServerLevel level)) { return false; }
+        UUID logical = rocket.assemblyTransactionId().orElse(null);
+        return logical != null && BayReceipts.holdsRocket(level.getServer(), logical);
     }
 
     /** R52: an ordinary landed record may retire before a fill only without any protected escrow history. */
@@ -25,6 +33,28 @@ public final class RocketEscrowGate {
         var logical = rocket.assemblyTransactionId().orElseThrow(); var ledger = data.ledger();
         return data.operational() && ledger.records().stream().noneMatch(op -> op.guard().rocket().equals(logical))
                 && ledger.floors().stream().noneMatch(floor -> logical.equals(floor.getUUID("rocket_id")))
+                && ledger.armedFlights().stream().noneMatch(arm -> arm.logical().equals(logical))
+                && ledger.rocketAuthorities().stream().noneMatch(head -> head.logical().equals(logical))
+                && !EscrowSettlementTombstones.history(ledger, logical);
+    }
+
+    /**
+     * W27A-DESIGN section 4.1's neutral wrapper for a bay source (D0): epoch 0, no markers, no ledger binding, escrow
+     * idle, and no escrow logical lock, ledger record, armed flight, authority head, floor or tombstone for L or T.
+     */
+    public static boolean bayNeutral(RocketEntity rocket, UUID transfer) {
+        var section = rocket.escrowSection();
+        if (section.ledger() != null || section.epoch() != 0 || !section.markers().isEmpty() || !escrowIdle(rocket)) { return false; }
+        var server = ((ServerLevel) rocket.level()).getServer();
+        UUID logical = rocket.assemblyTransactionId().orElse(null);
+        if (logical == null || escrowLogicalLocked(server, logical)) { return false; }
+        var data = ResourceEscrowSavedData.existing(server);
+        if (data == null) { return true; }
+        if (!data.operational()) { return false; }
+        var ledger = data.ledger();
+        return ledger.records().stream().noneMatch(op -> op.guard().rocket().equals(logical))
+                && ledger.floors().stream().noneMatch(floor -> logical.equals(floor.getUUID("rocket_id"))
+                        || floor.hasUUID("transfer_id") && transfer.equals(floor.getUUID("transfer_id")))
                 && ledger.armedFlights().stream().noneMatch(arm -> arm.logical().equals(logical))
                 && ledger.rocketAuthorities().stream().noneMatch(head -> head.logical().equals(logical))
                 && !EscrowSettlementTombstones.history(ledger, logical);
@@ -80,7 +110,7 @@ public final class RocketEscrowGate {
     }
 
     public static boolean logicalLocked(net.minecraft.server.MinecraftServer server, UUID logical) {
-        return escrowLogicalLocked(server, logical);
+        return escrowLogicalLocked(server, logical) || BayReceipts.holdsRocket(server, logical);
     }
 
     public static boolean escrowLogicalLocked(net.minecraft.server.MinecraftServer server, UUID logical) {
