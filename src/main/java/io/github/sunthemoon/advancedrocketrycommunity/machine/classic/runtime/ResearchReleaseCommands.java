@@ -8,14 +8,12 @@ import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.GroundSu
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.GroundSurveyJob.Phase;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteMissionSavedData;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.UUID;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.level.storage.LevelResource;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -57,11 +55,10 @@ public final class ResearchReleaseCommands {
                 var controller = controller(server, 0);
                 if (!service.intent(controller, OWNER, 0)) { throw new IllegalStateException("Native START: " + controller.researchStatus()); }
                 long epoch = data.saveEpoch(); int before = controller.storedEnergy();
-                var blocker = Files.createTempFile(server.getWorldPath(LevelResource.ROOT), "w21c-flush-blocker-", ".tmp");
-                boolean failed = false;
-                try { data.flush(blocker.resolve(SatelliteMissionSavedData.DATA_NAME + ".dat")); }
-                catch (RuntimeException expected) { failed = true; }
-                finally { Files.delete(blocker); }
+                // ADR-074 item 6: the failure is injected on the bound target by a same-target policy seam and awaited;
+                // the live writer is never bound to another path.
+                boolean failed = data.failOneWriteForTests(server)
+                        != io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteRegistryProof.Outcome.COMMITTED;
                 if (!failed || data.saveEpoch() != epoch || service.advance(controller)
                         || controller.researchStatus() != ResearchStatus.WAITING_SAVE || controller.storedEnergy() != before) {
                     throw new IllegalStateException("Failed flush did not keep WAITING_SAVE without payment");

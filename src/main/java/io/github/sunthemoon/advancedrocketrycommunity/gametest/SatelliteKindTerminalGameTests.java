@@ -64,8 +64,19 @@ public final class SatelliteKindTerminalGameTests {
         insert(helper, slots, SatelliteTerminalBlockEntity.SLOT_PACKAGE, bound(ModItems.SATELLITE_PACKAGE.get(), identity));
         power(terminal);
 
-        // Launch targets start with Earth, which needs no discovery.
-        press(helper, terminal, owner, SatelliteTerminalMenu.BUTTON_LAUNCH, SatelliteOperationCode.SUCCESS);
+        // Launch targets start with Earth, which needs no discovery. ADR-074 item 6: until the registration's commit
+        // is published the package stays in its slot, locked against menus, hoppers and droppers.
+        terminal.handleButton(owner, SatelliteTerminalMenu.BUTTON_LAUNCH);
+        helper.assertTrue(!slots.getStackInSlot(SatelliteTerminalBlockEntity.SLOT_PACKAGE).isEmpty()
+                        && slots.extractItem(SatelliteTerminalBlockEntity.SLOT_PACKAGE, 1, true).isEmpty()
+                        && !slots.insertItem(SatelliteTerminalBlockEntity.SLOT_CONTROL_CHIP,
+                                new ItemStack(ModItems.SATELLITE_CONTROL_CHIP.get()), true).isEmpty(),
+                "The package left or its slots unlocked before the launch's commit");
+        press(helper, terminal, owner, SatelliteTerminalMenu.BUTTON_DECOMMISSION, SatelliteOperationCode.SUCCESS,
+                SatelliteOperationCode.REGISTRY_PENDING);
+        SatelliteRegistrySettle.settle(helper.getLevel().getServer());
+        helper.assertTrue(terminal.saveWithoutMetadata().getCompound(KEY).getInt("last_result")
+                == SatelliteOperationCode.SUCCESS.ordinal(), "The launch's stored result was not shown after its commit");
         helper.assertTrue(slots.getStackInSlot(SatelliteTerminalBlockEntity.SLOT_PACKAGE).isEmpty(),
                 "A successful launch kept the package");
         SatelliteMissionSavedData data = SatelliteMissionSavedData.get(helper.getLevel().getServer());
@@ -243,12 +254,26 @@ public final class SatelliteKindTerminalGameTests {
         }
     }
 
+    /** Presses, waits for the registry's acknowledgement and its terminal effect (ADR-074 item 6), then checks. */
     private static void press(GameTestHelper helper, SatelliteTerminalBlockEntity terminal, FakePlayer player,
                               int button, SatelliteOperationCode expected) {
         terminal.handleButton(player, button);
+        SatelliteRegistrySettle.settle(helper.getLevel().getServer());
         int actual = terminal.saveWithoutMetadata().getCompound(KEY).getInt("last_result");
         helper.assertTrue(actual == expected.ordinal(), "Button " + button + ": expected " + expected + " but got "
                 + SatelliteOperationCode.values()[actual]);
+    }
+
+    /** A press refused while another action of this terminal waits: it changes nothing and reports {@code refused}. */
+    private static void press(GameTestHelper helper, SatelliteTerminalBlockEntity terminal, FakePlayer player,
+                              int button, SatelliteOperationCode stored, SatelliteOperationCode refused) {
+        var before = SatelliteMissionSavedData.get(helper.getLevel().getServer()).mutationSequence();
+        helper.assertTrue(!terminal.handleButton(player, button), "A conflicting button was handled while pending");
+        helper.assertTrue(SatelliteMissionSavedData.get(helper.getLevel().getServer()).mutationSequence() == before,
+                "A refused conflicting action mutated the registry");
+        helper.assertTrue(terminal.saveWithoutMetadata().getCompound(KEY).getInt("last_result") == stored.ordinal(),
+                "A saved terminal root showed the wait itself instead of the stored result");
+        helper.assertTrue(refused == SatelliteOperationCode.REGISTRY_PENDING, "Only the pending refusal is expected here");
     }
 
     private static ResourceLocation id(Item item) {

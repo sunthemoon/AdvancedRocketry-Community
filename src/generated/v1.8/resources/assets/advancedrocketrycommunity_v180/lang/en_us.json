@@ -876,6 +876,8 @@
   "status.advancedrocketrycommunity.satellite.deployment_pending": "Satellite deployment is pending or temporarily unavailable",
   "status.advancedrocketrycommunity.satellite.offline_repair_required": "Offline repair required; back up the world and ask an administrator",
   "status.advancedrocketrycommunity.satellite.registry_blocked": "Satellite registry is blocked; check its saved data",
+  "status.advancedrocketrycommunity.satellite.registry_busy": "Too many satellite actions are waiting to save; try again later",
+  "status.advancedrocketrycommunity.satellite.registry_pending": "Waiting for the satellite registry to save; the result follows",
   "subtitle.advancedrocketrycommunity.air_hiss_loop": "Air hisses",
   "subtitle.advancedrocketrycommunity.basic_laser_gun": "Laser fires",
   "subtitle.advancedrocketrycommunity.combustion_rocket": "Rocket engine roars",

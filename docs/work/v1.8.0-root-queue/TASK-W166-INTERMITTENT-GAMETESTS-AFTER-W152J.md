@@ -69,6 +69,21 @@ elsewhere, say so in the record and fix what you find instead.
 Run heavy work under the heavy-JVM lock, with the atomic pattern and the 90-second hand-off rule. Before starting,
 check that C: and D: each have more than 10 GiB free and that 6 GiB of memory is free.
 
+## Follow-up under Root decision R123 (2026-10-27)
+
+W128R's three full GameTests each timed out in
+`SealedSpecialHostAutomationGameTests.tankAndBayStaySealedUnderTickingAutomation`. Its batch reached SEALED at about
+the same wall time as in green runs on other branches (2.0 to 2.3 s against 1.6 to 2.6 s), but at about tick 400
+instead of 300 to 340. That is cause 1 again, in a sibling fixture with the same veto, 200-tick retry and 400-tick
+budget.
+
+- Pace both of its tests (`w152_special_resources` and `w152_special_containers`) as `a859acaca` paced the hopper
+  fixture.
+- Keep the budget, the deadline, the retry and every assertion.
+- Run each batch three times.
+- Look for other fixtures that wait out a deliberate veto and its 200-tick retry inside a fixed tick budget without
+  pacing. List them in the record and pace the ones that do.
+
 ## Not in this task
 
 - Any other flaky test you notice: list it in the record instead.

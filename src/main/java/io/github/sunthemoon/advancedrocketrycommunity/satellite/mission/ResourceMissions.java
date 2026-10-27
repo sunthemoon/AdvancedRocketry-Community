@@ -104,7 +104,7 @@ public final class ResourceMissions {
                 mission = new MissionState(SatelliteLimits.MISSION_SCHEMA_VERSION, start.missionId(),
                         start.satelliteId(), start.ownerId(), satellite.definitionId(), MissionKind.SURVEY,
                         start.system(), Optional.empty(), start.seed(), now, Math.addExact(now, start.durationTicks()),
-                        registry.saveEpoch(), MissionStatus.ACTIVE, OptionalLong.empty(), OptionalLong.empty(),
+                        registry.stampEpoch(), MissionStatus.ACTIVE, OptionalLong.empty(), OptionalLong.empty(),
                         SURVEY_REWARD_VERSION, Optional.empty(),
                         new MissionPayload.Survey(ids, start.candidateFingerprint()));
             } catch (ArithmeticException exception) {
@@ -150,7 +150,7 @@ public final class ResourceMissions {
                 mission = new MissionState(SatelliteLimits.MISSION_SCHEMA_VERSION, start.missionId(),
                         start.satelliteId(), start.ownerId(), satellite.definitionId(), start.kind(),
                         start.targetBody(), start.instanceId(), start.seed(), now,
-                        Math.addExact(now, start.durationTicks()), registry.saveEpoch(), MissionStatus.ACTIVE,
+                        Math.addExact(now, start.durationTicks()), registry.stampEpoch(), MissionStatus.ACTIVE,
                         OptionalLong.empty(), OptionalLong.empty(), start.rewardVersion(), Optional.empty(),
                         new MissionPayload.Resource(start.kind(), start.reward(), start.terminal(), start.display(),
                                 false, Optional.empty(), false, OptionalLong.empty()));
@@ -287,6 +287,7 @@ public final class ResourceMissions {
         synchronized (registry) {
             long now = registry.advanceClock(observedGameTime);
             MissionState mission = registry.missionRecord(missionId);
+            // ADR-074 design section 4.3: the view checks durability against E; the acknowledgement stamps the snapshot epoch.
             long epoch = registry.saveEpoch();
             DeliveryReconciliation.Action action = DeliveryReconciliation.decide(
                     DeliveryReconciliation.view(true, Optional.ofNullable(mission), terminal, epoch), receipt);
@@ -295,7 +296,7 @@ public final class ResourceMissions {
                 case SET_CLAIMED_PAID_HERE_BIND_BACK -> settle(mission,
                         resource(mission).boundTo(terminal, display, resource(mission).rebound()).paidAt(terminal), now);
                 case ACKNOWLEDGE -> {
-                    MissionState acknowledged = mission.withPayload(resource(mission).acknowledgedAt(epoch));
+                    MissionState acknowledged = mission.withPayload(resource(mission).acknowledgedAt(registry.stampEpoch()));
                     registry.putMission(acknowledged);
                     acknowledging.add(missionId);
                     yield acknowledged;
@@ -392,7 +393,7 @@ public final class ResourceMissions {
                 next = instance.transition(expiresAt.getAsLong() > now ? InstanceState.AVAILABLE
                         : InstanceState.EXPIRED, expiresAt, Optional.empty());
                 if (instance.origin().kind() == InstanceOrigin.Kind.GROUND_SURVEY) {
-                    Math.addExact(registry.saveEpoch(), 1L);
+                    Math.addExact(registry.epochs().ceiling(), 1L);
                     GroundSurveyJob job = registry.groundSurveys().job(instance.origin().id()).orElseThrow();
                     int reserved = registry.sizer.instanceBytes(next);
                     if (reserved < 0 || reserved > SatelliteLimits.MAX_INSTANCE_RECORD_NBT_BYTES

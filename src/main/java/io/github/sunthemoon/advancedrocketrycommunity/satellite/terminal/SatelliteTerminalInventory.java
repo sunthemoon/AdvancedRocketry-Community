@@ -17,24 +17,38 @@ import net.minecraft.world.item.Items;
 import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.registries.ForgeRegistries;
 
-/** Six-slot input policy and preflight before native item decoding. */
+/**
+ * Six-slot input policy and preflight before native item decoding. While a launch or decommission waits for its
+ * registry acknowledgement (ADR-074 item 7), the package and chip slots refuse insertion and extraction, simulated or
+ * actual, so menus, hoppers and droppers cannot move them; only the terminal's own completion extracts the package.
+ */
 public final class SatelliteTerminalInventory extends ItemStackHandler {
     private final BooleanSupplier blocked;
     private final java.util.function.IntConsumer changed;
+    private final java.util.function.IntPredicate locked;
 
-    SatelliteTerminalInventory(BooleanSupplier blocked, java.util.function.IntConsumer changed) {
+    SatelliteTerminalInventory(BooleanSupplier blocked, java.util.function.IntConsumer changed,
+                               java.util.function.IntPredicate locked) {
         super(6);
         this.blocked = blocked;
         this.changed = changed;
+        this.locked = locked;
     }
 
     @Override public boolean isItemValid(int slot, ItemStack stack) {
-        return !blocked.getAsBoolean() && validItemForSlot(slot, stack);
+        return !blocked.getAsBoolean() && !locked.test(slot) && validItemForSlot(slot, stack);
+    }
+
+    @Override public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
+        return locked.test(slot) ? stack : super.insertItem(slot, stack, simulate);
     }
 
     @Override public ItemStack extractItem(int slot, int amount, boolean simulate) {
-        return blocked.getAsBoolean() ? ItemStack.EMPTY : super.extractItem(slot, amount, simulate);
+        return blocked.getAsBoolean() || locked.test(slot) ? ItemStack.EMPTY : super.extractItem(slot, amount, simulate);
     }
+
+    /** The terminal's own extraction once a covering acknowledgement completed its launch; bypasses the lock. */
+    ItemStack extractOwned(int slot) { return super.extractItem(slot, 1, false); }
 
     @Override protected void onContentsChanged(int slot) { changed.accept(slot); }
 

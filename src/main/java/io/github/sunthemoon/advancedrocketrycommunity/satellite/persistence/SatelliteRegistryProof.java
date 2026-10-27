@@ -47,6 +47,57 @@ public final class SatelliteRegistryProof {
             return watch != null && session == watch.session && sequence >= watch.sequence
                     && watch.identity.equals(identities.get(watch.identity.satellite()));
         }
+
+        /** ADR-074 item 6: an acknowledgement of the same session with s >= m covers a removal token. */
+        public boolean covers(Token token) {
+            return token != null && session == token.session && sequence >= token.sequence;
+        }
+    }
+
+    /**
+     * A removal token (session, m) for a change that leaves no identity to watch: decommission and the data actions.
+     * The sequence is fixed when the change is made; a later poll never replaces it with a moving current sequence.
+     */
+    public static final class Token {
+        private final Object session;
+        private final long sequence;
+
+        Token(Object session, long sequence) { this.session = session; this.sequence = sequence; }
+        public long sequence() { return sequence; }
+    }
+
+    /**
+     * ADR-074 item 6: a checkpoint request at sequence m that asks for the directory force (W119-4). It is answered by
+     * the first published completion with s >= m that either forced the directory or did not commit; the fast path
+     * answers at once. A request refused or discarded at shutdown is never answered. Owner thread only.
+     */
+    public static final class Checkpoint {
+        private final long sequence;
+        private final boolean force;
+        private Completion answer;
+        private boolean discarded;
+
+        Checkpoint(long sequence, boolean force) { this.sequence = sequence; this.force = force; }
+
+        static Checkpoint answered(long sequence, Completion completion) {
+            var checkpoint = new Checkpoint(sequence, false);
+            checkpoint.answer = completion;
+            return checkpoint;
+        }
+
+        public long sequence() { return sequence; }
+        public Optional<Completion> answer() { return Optional.ofNullable(answer); }
+        public boolean discarded() { return discarded; }
+
+        /** Whether this publication answered the request; a commit without the asked directory force does not. */
+        boolean answer(long captured, Completion completion, boolean forced) {
+            if (answer != null || discarded || captured < sequence
+                    || force && !forced && completion.outcome() == Outcome.COMMITTED) { return false; }
+            answer = completion;
+            return true;
+        }
+
+        void discard() { if (answer == null) { discarded = true; } }
     }
 
     /** A directory-force failure is visible but cannot undo an S2-proven replacement. */

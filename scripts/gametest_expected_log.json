@@ -12,6 +12,15 @@
       "reason": "W129a (R-040): the isolated journal's injected definite failure starts one failure streak; its later injected UNKNOWN belongs to the same streak and the blocked root's refusal does not log."
     },
     {
+      "id": "w129c-satellite-registry-unacknowledged",
+      "level": "ERROR",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteRegistryWriter/",
+      "message": "ARCE_SATELLITE_REGISTRY_UNACKNOWLEDGED outcome=FAILED sequence=\\d+ epoch=\\d+ durable=\\d+; retained dirty state",
+      "counts": {"satellite_flush_failure": 1, "planetary_discovery_recovery": 1},
+      "test": "SatelliteReviewGameTests.aFailedLaunchFlushKeepsThePackageUntilTheReplayIsDurable and DiscoveryRecoveryGameTests.oldPaidReceiptAndNewRemovedTargetRecoverWithoutAnotherClaim",
+      "reason": "W129c (ADR-074 item 6): each test puts a directory at the registry's staging path, so the requested launch write fails; the registry logs its failure streak once, keeps the change dirty and unacknowledged, and the retried write after the obstacle is removed commits and ends the streak."
+    },
+    {
       "id": "w160-command-escrow-refusal-endpoint",
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
@@ -864,19 +873,9 @@
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
       "message": "Satellite idle launch operation failed",
       "stack_contains": "SatelliteReviewGameTests.",
-      "counts": {"satellite_flush_failure": 2, "satellite_blocked": 1},
-      "test": "SatelliteReviewGameTests",
-      "reason": "The tests make the satellite registry flush fail or block it; the launch must fail closed and keep the package."
-    },
-    {
-      "id": "satellite-discovery-launch-flush-failed",
-      "level": "ERROR",
-      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
-      "message": "Satellite launch operation failed",
-      "stack_contains": "DiscoveryRecoveryGameTests.",
-      "counts": {"planetary_discovery_recovery": 1},
-      "test": "DiscoveryRecoveryGameTests",
-      "reason": "The test makes the launch acknowledgment flush fail to prove the paid receipt recovers without a second claim."
+      "counts": {"satellite_blocked": 1},
+      "test": "SatelliteReviewGameTests.aBlockedRegistryFailsClosedWithoutCrashing",
+      "reason": "The test blocks the satellite registry; the launch must fail closed and keep the package. W129c: a failed registry write no longer fails the launch itself (ADR-074 item 6), so the flush-failure batch logs w129c-satellite-registry-unacknowledged instead."
     },
     {
       "id": "rolling-recipe-disabled-unbound-tag",

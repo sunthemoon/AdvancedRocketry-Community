@@ -330,6 +330,24 @@ a remedy if item 13 shows capture itself misses the budget.
 - a third root needs the same writer;
 - Forge or Minecraft changes the stop sequence that item 10 relies on.
 
+## Implementation notes
+
+- **Slice 1 (W129a, the transaction journal writer):** merged with W129aM at `bb0eda86f` on 2026-10-27, after B2,
+  B3a and a fresh read-only review. The risk text is R-040.
+- **Slices 2 and 3 (W129b and W129c):** merged with W129bc at `a03fdd048` on 2026-10-27.
+  - These slices are the satellite registry writer and the barrier callers.
+  - B1 and the full B3 met docs/17 in both modes. The fair IO-side permit therefore stays off and exists only in
+    test sources.
+  - The first review (BLOCK) found W129bc-R1 and R2. A continuation fixed both, and W129aM-R1 as well.
+  - A fresh re-review (APPROVE-WITH-CHANGES, SHA-256 `4d271edf…9f70`) found one Low issue, W129bc-R3. While the
+    256-entry terminal table is full, resource start, claim, cancel and unlink are refused with REGISTRY_BUSY before
+    any change, although they add no entry. Root decision R125 keeps this as a deliberate conservative choice.
+  - The risk text is R-041, with the R-039 and R-040 updates. Item 9's operator backup guidance is in
+    `docs/ENDGAME-OPERATOR-GUIDE.md`.
+  - The supersession pointers in ADR-049, ADR-050 and ADR-065 take effect with this merge.
+
+These notes approve no Gate.
+
 ## Acceptance
 
 Accepted by the owner (sunthemoon) in the Claude Code Root session on 2026-10-26, answering Root's multiple-choice question with the option "Accept (Recommended)". The question was: "ADR-074 (move the

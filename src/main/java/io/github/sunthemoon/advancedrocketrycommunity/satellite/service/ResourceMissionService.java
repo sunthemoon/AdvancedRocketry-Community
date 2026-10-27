@@ -255,19 +255,15 @@ public final class ResourceMissionService {
         });
     }
 
-    /** One ADR-051 section 7 row; the bind-back of REBIND_CONFLICT is flushed before it returns. */
+    /** One ADR-051 section 7 row; the bind-back of REBIND_CONFLICT makes a prompt request (ADR-074 item 6). */
     public ResourceMissions.Reconciled reconcile(MinecraftServer server, DeliveryTerminal terminal, UUID missionId,
                                                  DeliveryReconciliation.ReceiptView receipt) {
         SatelliteMissionSavedData data = SatelliteMissionSavedData.get(server);
         ResourceMissions.Reconciled reconciled = data.reconcile(terminal.id(), missionId, receipt, terminal.display(),
                 gameTime(server));
         if (reconciled.barrier()) {
-            try {
-                data.flush(server);
-            } catch (RuntimeException exception) {
-                // C9-L2: the bind-back stays pending, so the coalesced flush retries it; the terminal keeps ticking.
-                SatelliteManager.logOperationFailure("REBIND_CONFLICT barrier flush (kept pending)", exception);
-            }
+            // C9-L2: the bind-back stays pending until a commit covers it; its consumers already use the epoch rule.
+            data.request(server);
         }
         lastReconciliation.put(missionId, reconciled.action().name().toLowerCase(java.util.Locale.ROOT));
         String event = switch (reconciled.action()) {

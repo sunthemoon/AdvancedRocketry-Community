@@ -3,8 +3,14 @@ package io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.SavedDataSchemaMigrator;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.BoundedSavedDataIo;
+import io.github.sunthemoon.advancedrocketrycommunity.progression.ResearchAccount;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.AsteroidInstance;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.GroundSurveyJob;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.MissionState;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteMissionRegistry;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteLimits;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteState;
+import java.util.List;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -85,28 +91,40 @@ public final class SatelliteRegistryPayload {
 
     /** The current encoding before its root bound is checked; a caller that edits the root checks it after. */
     static CompoundTag encodeUnchecked(SatelliteMissionRegistry registry, CompoundTag target) {
+        // ADR-050 section 2: the epoch advances only after a changed write succeeds.
+        return encodeSorted(registry.logicalGameTime(), registry.lastObservedGameTime(), registry.epochToWrite(),
+                registry.satellites(), registry.missions(), registry.accounts(), registry.instances(),
+                registry.groundSurveys().all(), target);
+    }
+
+    /**
+     * The one current-root encoder, shared by the live view and the off-thread capture (ADR-074 item 3): the same
+     * insertion order and the same records in the same order give the same bytes. Every list is sorted by ID.
+     */
+    static CompoundTag encodeSorted(long logicalGameTime, long lastObservedGameTime, long epoch,
+            List<SatelliteState> satellites, List<MissionState> missions, List<ResearchAccount> accounts,
+            List<AsteroidInstance> instances, List<GroundSurveyJob> jobs, CompoundTag target) {
         SavedDataSchemaMigrator.stampCurrent(ManagedSavedDataType.SATELLITE_MISSIONS, target);
         CompoundTag clock = new CompoundTag();
-        clock.putLong("logical_game_time", registry.logicalGameTime());
-        clock.putLong("last_observed_game_time", registry.lastObservedGameTime());
+        clock.putLong("logical_game_time", logicalGameTime);
+        clock.putLong("last_observed_game_time", lastObservedGameTime);
         target.put("clock", clock);
-        // ADR-050 section 2: the epoch advances only after a changed write succeeds.
-        target.putLong(SAVE_EPOCH, registry.epochToWrite());
-        ListTag satellites = new ListTag();
-        registry.satellites().forEach(state -> satellites.add(SatelliteNbtCodec.encodeSatellite(state)));
-        target.put("satellites", satellites);
-        ListTag missions = new ListTag();
-        registry.missions().forEach(state -> missions.add(SatelliteNbtCodec.encodeMission(state)));
-        target.put("missions", missions);
-        ListTag accounts = new ListTag();
-        registry.accounts().forEach(account -> accounts.add(SatelliteNbtCodec.encodeAccount(account)));
-        target.put("research_accounts", accounts);
-        ListTag instances = new ListTag();
-        registry.instances().forEach(instance -> instances.add(SatelliteNbtCodec.encodeInstance(instance)));
-        target.put(INSTANCES, instances);
-        ListTag jobs = new ListTag();
-        registry.groundSurveys().all().forEach(job -> jobs.add(GroundSurveyCodec.encode(job)));
-        target.put(GROUND_SURVEYS, jobs);
+        target.putLong(SAVE_EPOCH, epoch);
+        ListTag satelliteList = new ListTag();
+        satellites.forEach(state -> satelliteList.add(SatelliteNbtCodec.encodeSatellite(state)));
+        target.put("satellites", satelliteList);
+        ListTag missionList = new ListTag();
+        missions.forEach(state -> missionList.add(SatelliteNbtCodec.encodeMission(state)));
+        target.put("missions", missionList);
+        ListTag accountList = new ListTag();
+        accounts.forEach(account -> accountList.add(SatelliteNbtCodec.encodeAccount(account)));
+        target.put("research_accounts", accountList);
+        ListTag instanceList = new ListTag();
+        instances.forEach(instance -> instanceList.add(SatelliteNbtCodec.encodeInstance(instance)));
+        target.put(INSTANCES, instanceList);
+        ListTag jobList = new ListTag();
+        jobs.forEach(job -> jobList.add(GroundSurveyCodec.encode(job)));
+        target.put(GROUND_SURVEYS, jobList);
         return target;
     }
 

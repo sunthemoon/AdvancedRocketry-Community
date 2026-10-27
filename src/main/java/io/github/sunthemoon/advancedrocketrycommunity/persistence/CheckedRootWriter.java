@@ -56,6 +56,21 @@ public final class CheckedRootWriter<C, A, P> {
     @FunctionalInterface
     public interface DrainWait { void sleep(long nanos) throws InterruptedException; }
 
+    /**
+     * A root that cannot take a capture now throws this from {@link Root#capture} (W129b: no representable epoch). The
+     * pending request is dropped rather than retried, and a drain reports the reason as incomplete persistence.
+     */
+    public static final class CaptureRefused extends RuntimeException {
+        private final String reason;
+
+        public CaptureRefused(String reason) {
+            super(Objects.requireNonNull(reason, "reason"), null, false, false);
+            this.reason = reason;
+        }
+
+        public String reason() { return reason; }
+    }
+
     private record Active<A>(long attempt, long sequence, A attributes) { }
 
     private final Thread owner = Thread.currentThread();
@@ -173,7 +188,8 @@ public final class CheckedRootWriter<C, A, P> {
                         pending = pending == null ? attributes : root.merge(pending, attributes);
                         pendingSequence = root.mutationSequence();
                         shutdownAttempts++;
-                        start();
+                        // A refused capture is not an IO attempt and consumes no slot of the budget.
+                        try { start(); } catch (CaptureRefused refused) { shutdownAttempts--; throw refused; }
                         continue;
                     }
                 }
@@ -181,7 +197,7 @@ public final class CheckedRootWriter<C, A, P> {
                 catch (InterruptedException interruption) { interrupted = true; return finish(false, "INTERRUPTED"); }
             }
         } catch (RuntimeException failure) {
-            return finish(false, failure.getClass().getSimpleName());
+            return finish(false, failure instanceof CaptureRefused refused ? refused.reason() : failure.getClass().getSimpleName());
         } finally {
             if (interrupted) { Thread.currentThread().interrupt(); }
         }
@@ -215,7 +231,9 @@ public final class CheckedRootWriter<C, A, P> {
 
     private void start() {
         A attributes = pending; long requested = pendingSequence, sequence = root.mutationSequence();
-        C capture = root.capture(sequence);
+        C capture;
+        try { capture = root.capture(sequence); }
+        catch (CaptureRefused refused) { pending = null; throw refused; }
         long attempt = ++attempts;
         pending = null; active = new Active<>(attempt, sequence, attributes); lastStart = now;
         try {

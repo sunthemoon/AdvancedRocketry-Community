@@ -126,6 +126,8 @@ public final class TauCetiPathGameTests {
                         landed(helper, fixture.space, logical[0], "the station", observerJournal);
                         helper.assertTrue(SatelliteRuntime.claim(fixture.server.getPlayerList().getPlayer(fixture.ownerId),
                                 satellite).success(), "The Tau Ceti f research claim failed");
+                        // ADR-074 item 6: the discovery follows the commit of the paid receipt.
+                        SatelliteRegistrySettle.settle(fixture.server);
                         helper.assertTrue(SatelliteRuntime.discovered(fixture.server, ExoplanetContent.TAU_CETI_F),
                                 "The data satellite did not discover Tau Ceti f");
                         fixture.look(fixture.ownerId, fixture.pad.east(2));

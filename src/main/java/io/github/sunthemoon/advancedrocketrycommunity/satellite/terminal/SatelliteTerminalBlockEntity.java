@@ -66,8 +66,11 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
     private static final int MAX_TERMINAL_NBT_BYTES = 64 * 1024;
     static final String DATA_KEY = "SatelliteTerminal";
 
-    private final SatelliteTerminalInventory inventory = new SatelliteTerminalInventory(() -> blocked() || isRemoved(), this::inventoryChanged);
-    private final TerminalEnergyStorage energyStorage = new TerminalEnergyStorage();
+    // ADR-074 item 7: a waiting launch or decommission locks the package and chip slots.
+    private final SatelliteTerminalInventory inventory = new SatelliteTerminalInventory(() -> blocked() || isRemoved(),
+            this::inventoryChanged, slot -> (slot == SLOT_PACKAGE || slot == SLOT_CONTROL_CHIP)
+                    && TerminalRegistryActions.locked(this));
+    private final TerminalEnergyStorage energyStorage = new TerminalEnergyStorage(this::blocked, this::setChanged);
     private TerminalDelivery delivery = TerminalDelivery.create();
     private final TerminalResourceActions resources = new TerminalResourceActions(this);
     private LazyOptional<net.minecraftforge.items.IItemHandler> itemCapability = LazyOptional.empty();
@@ -182,6 +185,11 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
             updateResult(player, SatelliteOperationCode.UNAUTHORIZED);
             return false;
         }
+        // ADR-074 item 7: one waiting action per terminal; every other state change is refused before it mutates.
+        if (changesState(buttonId) && TerminalRegistryActions.pending(this)) {
+            updateResult(player, SatelliteOperationCode.REGISTRY_PENDING);
+            return false;
+        }
         switch (buttonId) {
             case SatelliteTerminalMenu.BUTTON_PREVIOUS -> selectTarget(-1);
             case SatelliteTerminalMenu.BUTTON_NEXT -> selectTarget(1);
@@ -201,6 +209,12 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
             }
         }
         return true;
+    }
+
+    private static boolean changesState(int buttonId) {
+        return buttonId == SatelliteTerminalMenu.BUTTON_ASSEMBLE || buttonId == SatelliteTerminalMenu.BUTTON_LAUNCH
+                || buttonId == SatelliteTerminalMenu.BUTTON_CLAIM || buttonId == SatelliteTerminalMenu.BUTTON_CANCEL
+                || buttonId == SatelliteTerminalMenu.BUTTON_DECOMMISSION || buttonId == SatelliteTerminalMenu.BUTTON_UNLINK;
     }
 
     /** ADR-049 section 10: an intent that arrived too soon after the last one changes nothing. */
@@ -285,13 +299,12 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
             return;
         }
         if (inventory.getStackInSlot(SLOT_PACKAGE).isEmpty() && chip.kind() != SatelliteKind.DATA) {
-            updateResult(player, resources.start(player, chip));
+            updateResult(player, TerminalRegistryActions.admitted(this, chip, () -> resources.start(player, chip)));
             return;
         }
         ResourceLocation target = selectedTarget();
 
         ItemStack packageStack = inventory.getStackInSlot(SLOT_PACKAGE);
-        SatelliteOperationResult result;
         if (!packageStack.isEmpty()) {
             if (!SatelliteTerminalInventory.validPackage(packageStack)) {
                 updateResult(player, SatelliteOperationCode.RECEIVER_REQUIRED);
@@ -306,18 +319,22 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
                 updateResult(player, SatelliteOperationCode.RECEIVER_REQUIRED);
                 return;
             }
-            result = SatelliteRuntime.launch(player, chip, target);
-            if (result.success()) {
-                inventory.extractItem(SLOT_PACKAGE, 1, false);
+            SatelliteOperationCode refused = TerminalRegistryActions.admit(this, chip.satelliteId());
+            if (refused != null) {
+                updateResult(player, refused);
+                return;
             }
+            // ADR-074 item 6: the package leaves only after a published acknowledgement proves the registration.
+            updateResult(player, TerminalRegistryActions.launched(this, player, satellitePackage,
+                    SatelliteRuntime.launch(player, chip, target)));
+            return;
         } else {
             if (target == null) {
                 updateResult(player, SatelliteOperationCode.TARGET_NOT_ALLOWED);
                 return;
             }
-            result = SatelliteRuntime.startMission(player, chip, target);
+            updateResult(player, dataAction(player, chip, () -> SatelliteRuntime.startMission(player, chip, target)));
         }
-        updateResult(player, result.code());
     }
 
     private void claim(ServerPlayer player) {
@@ -325,8 +342,15 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
         if (chip == null) {
             return;
         }
-        updateResult(player, chip.kind() == SatelliteKind.DATA ? SatelliteRuntime.claim(player, chip).code()
-                : resources.claim(player, chip));
+        updateResult(player, chip.kind() == SatelliteKind.DATA ? dataAction(player, chip, () -> SatelliteRuntime.claim(player, chip))
+                : TerminalRegistryActions.admitted(this, chip, () -> resources.claim(player, chip)));
+    }
+
+    /** ADR-074 item 6: an admitted data action whose changed result waits for a covering commit. */
+    private SatelliteOperationCode dataAction(ServerPlayer player, SatelliteIdentity chip,
+                                              java.util.function.Supplier<SatelliteOperationResult> action) {
+        SatelliteOperationCode refused = TerminalRegistryActions.admit(this, chip.satelliteId());
+        return refused != null ? refused : TerminalRegistryActions.dataAction(this, player, chip, action.get());
     }
 
     private void cancel(ServerPlayer player) {
@@ -335,29 +359,50 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
             return;
         }
         boolean delivered = chip.kind() == SatelliteKind.ASTEROID_MINER || chip.kind() == SatelliteKind.GAS_HARVESTER;
-        updateResult(player, delivered ? resources.cancel(player, chip) : SatelliteRuntime.cancel(player, chip).code());
+        updateResult(player, delivered ? TerminalRegistryActions.admitted(this, chip, () -> resources.cancel(player, chip))
+                : dataAction(player, chip, () -> SatelliteRuntime.cancel(player, chip)));
     }
 
     /**
-     * ADR-049 section 7: the registry removes the idle satellite with a barrier flush, and only then is
-     * the chip blanked. A crash in between leaves an inert chip, never a second satellite.
+     * ADR-049 section 7 and ADR-074 item 6: the registry removes the idle satellite in RAM, and the chip is blanked only
+     * once a published acknowledgement covers the removal. A crash in between leaves an inert chip, never a second
+     * satellite.
      */
     private void decommission(ServerPlayer player) {
         SatelliteIdentity chip = chipFor(player).orElse(null);
         if (chip == null) {
             return;
         }
-        SatelliteOperationResult result = SatelliteRuntime.decommission(player, chip);
-        if (result.success()) {
-            inventory.setStackInSlot(SLOT_CONTROL_CHIP, new ItemStack(ModItems.SATELLITE_CONTROL_CHIP.get()));
+        SatelliteOperationCode refused = TerminalRegistryActions.admit(this, chip.satelliteId());
+        if (refused != null) {
+            updateResult(player, refused);
+            return;
         }
-        updateResult(player, result.code());
+        updateResult(player, TerminalRegistryActions.decommissioned(this, player, chip,
+                SatelliteRuntime.decommission(player, chip)));
+    }
+
+    /** A clean replay whose registration the acknowledgement already proves takes its package at once. */
+    void extractLaunchedPackage() {
+        inventory.extractOwned(SLOT_PACKAGE);
+    }
+
+    SatelliteTerminalInventory inventory() { return inventory; }
+
+    /** A covered entry's stored RAM result, shown on the terminal and to its player if online. */
+    void delivered(SatelliteOperationCode code, UUID player) {
+        lastResult = code;
+        setChanged();
+        if (level != null && level.getServer() != null) {
+            ServerPlayer online = level.getServer().getPlayerList().getPlayer(player);
+            if (online != null) { online.displayClientMessage(Component.translatable(code.translationKey()), true); }
+        }
     }
 
     private void unlink(ServerPlayer player) {
         SatelliteIdentity chip = chipFor(player).orElse(null);
         if (chip != null) {
-            updateResult(player, SatelliteRuntime.unlink(player, chip).code());
+            updateResult(player, TerminalRegistryActions.admitted(this, chip, () -> SatelliteRuntime.unlink(player, chip).code()));
         }
     }
 
@@ -587,7 +632,10 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
         // Persist the raw bounded choice. Runtime catalogs are deliberately
         // unavailable during part of integrated-server shutdown.
         data.putInt("selected_target", selectedTargetIndex);
-        data.putInt("last_result", lastResult.ordinal());
+        // A wait is session-local (ADR-074 item 7): a saved root keeps the stored RAM result, never REGISTRY_PENDING.
+        SatelliteOperationCode persisted = lastResult == SatelliteOperationCode.REGISTRY_PENDING
+                ? TerminalRegistryActions.pendingResult(this).orElse(SatelliteOperationCode.SUCCESS) : lastResult;
+        data.putInt("last_result", persisted.ordinal());
         if (ownerId != null) {
             data.putUUID("owner_id", ownerId);
         }
@@ -739,64 +787,5 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
     private void createCapabilities() {
         itemCapability = LazyOptional.of(() -> inventory);
         energyCapability = LazyOptional.of(() -> energyStorage);
-    }
-
-    private final class TerminalEnergyStorage implements IEnergyStorage {
-        private int stored;
-
-        @Override
-        public int receiveEnergy(int maximum, boolean simulate) {
-            if (blocked()) {
-                return 0;
-            }
-            int received = Math.min(Math.max(0, maximum), ENERGY_CAPACITY - stored);
-            if (!simulate && received > 0) {
-                stored += received;
-                setChanged();
-            }
-            return received;
-        }
-
-        @Override
-        public int extractEnergy(int maximum, boolean simulate) {
-            return 0;
-        }
-
-        @Override
-        public int getEnergyStored() {
-            return stored;
-        }
-
-        @Override
-        public int getMaxEnergyStored() {
-            return ENERGY_CAPACITY;
-        }
-
-        @Override
-        public boolean canExtract() {
-            return false;
-        }
-
-        @Override
-        public boolean canReceive() {
-            return !blocked();
-        }
-
-        private void add(int amount) {
-            stored = Math.min(ENERGY_CAPACITY, Math.addExact(stored, amount));
-            setChanged();
-        }
-
-        private void consume(int amount) {
-            if (amount < 0 || amount > stored) {
-                throw new IllegalArgumentException("Invalid terminal energy consumption");
-            }
-            stored -= amount;
-            setChanged();
-        }
-
-        private void set(int value) {
-            stored = value;
-        }
     }
 }

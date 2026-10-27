@@ -169,6 +169,18 @@ public final class SatelliteRuntime {
         return current == null ? unavailable() : current.unlink(player, identity, player.hasPermissions(2));
     }
 
+    /** GameTest and release-test servers only: one discovery replay pass now. */
+    public static void replayDiscoveriesForTests(MinecraftServer server) {
+        SatelliteManager current = manager;
+        if (current != null) { current.replayDiscoveriesForTests(server); }
+    }
+
+    /** ADR-074 item 7: the pending terminal actions; empty when the satellite service is not running. */
+    public static Optional<TerminalActionTable> terminalActions() {
+        SatelliteManager current = manager;
+        return current == null ? Optional.empty() : Optional.of(current.terminalActions());
+    }
+
     public static void clear() {
         manager = null;
     }
