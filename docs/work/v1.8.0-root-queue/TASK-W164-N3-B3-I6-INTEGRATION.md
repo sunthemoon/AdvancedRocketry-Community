@@ -54,7 +54,9 @@ N3-B3 as the W148 section 7 row states it, with N3-B1 and N3-B2 on committed cod
 and `RocketTransferRecoveryService` (the fail-back reservation turn). Avoid editing those four classes. If the plan
 needs them, keep those edits small and in their own commits; Root merges W152J first and resolves any conflict.
 Player admission stays off on the shared branch until W152J merges after its review (R114), so this slice merges
-after W152J.
+after W152J. W152J merged at `0e2cd5645` (2026-10-27). Under R119, this slice also merges only after W152K, which fixes
+W152J-R3 and R5 in `SealedProofTurns` and `RocketOrdinaryRetirement`; Root merges W152K first and resolves any
+conflict.
 
 This is a persistence slice: an independent read-only review by a fresh Codex session follows before merge.
 
