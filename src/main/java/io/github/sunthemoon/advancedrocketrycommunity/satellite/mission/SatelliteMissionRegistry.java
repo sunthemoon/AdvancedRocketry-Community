@@ -108,7 +108,7 @@ public final class SatelliteMissionRegistry {
         }
         satellitesByOwner.merge(state.ownerId(), 1, Integer::sum);
         receiverLinks.update(null, state);
-        budget.reserve(StorageBudget.Section.SATELLITES, state.satelliteId(), sizer.satelliteBytes(state));
+        budget.reserve(StorageBudget.Section.SATELLITES, state.satelliteId(), sizer.satelliteReservation(state));
     }
 
     public synchronized void restoreMission(MissionState state) {
@@ -120,7 +120,7 @@ public final class SatelliteMissionRegistry {
             throw new IllegalArgumentException("Duplicate mission id " + state.missionId());
         }
         putMission(state);
-        budget.reserve(StorageBudget.Section.MISSIONS, state.missionId(), sizer.missionBytes(state));
+        budget.reserve(StorageBudget.Section.MISSIONS, state.missionId(), sizer.missionReservation(state));
         resources.restored(state);
     }
 
@@ -143,7 +143,7 @@ public final class SatelliteMissionRegistry {
         if (instances.putIfAbsent(instance.instanceId(), instance) != null) {
             throw new IllegalArgumentException("Duplicate asteroid instance " + instance.instanceId());
         }
-        budget.reserve(StorageBudget.Section.INSTANCES, instance.instanceId(), sizer.instanceBytes(instance));
+        budget.reserve(StorageBudget.Section.INSTANCES, instance.instanceId(), sizer.instanceReservation(instance));
         ledger.changed(null, instance);
     }
 
@@ -215,7 +215,7 @@ public final class SatelliteMissionRegistry {
     void admitSatellite(SatelliteState satellite) {
         satellitesByOwner.merge(satellite.ownerId(), 1, Integer::sum);
         storeSatellite(satellite);
-        budget.reserve(StorageBudget.Section.SATELLITES, satellite.satelliteId(), sizer.satelliteBytes(satellite));
+        budget.reserve(StorageBudget.Section.SATELLITES, satellite.satelliteId(), sizer.satelliteReservation(satellite));
         admitAccount(satellite.ownerId());
     }
 
@@ -359,7 +359,7 @@ public final class SatelliteMissionRegistry {
         SatelliteState updated = satellite.startMission(missionId);
         satellites.put(satelliteId, updated);
         putMission(mission);
-        budget.reserve(StorageBudget.Section.MISSIONS, missionId, sizer.missionBytes(mission));
+        budget.reserve(StorageBudget.Section.MISSIONS, missionId, sizer.missionReservation(mission));
         scheduler.schedule(mission);
         return result(SatelliteOperationCode.SUCCESS, true, updated, mission);
     }
@@ -705,10 +705,10 @@ public final class SatelliteMissionRegistry {
     void admit(MissionState mission, List<AsteroidInstance> created) {
         created.forEach(instance -> {
             storeInstance(instance);
-            budget.reserve(StorageBudget.Section.INSTANCES, instance.instanceId(), sizer.instanceBytes(instance));
+            budget.reserve(StorageBudget.Section.INSTANCES, instance.instanceId(), sizer.instanceReservation(instance));
         });
         putMission(mission);
-        budget.reserve(StorageBudget.Section.MISSIONS, mission.missionId(), sizer.missionBytes(mission));
+        budget.reserve(StorageBudget.Section.MISSIONS, mission.missionId(), sizer.missionReservation(mission));
         scheduler.schedule(mission);
     }
 

@@ -9,6 +9,9 @@ import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteS
  * {@link #BOUNDS} reserves each record's fixed bound and serves registries that are never saved.
  */
 public interface RecordSizer {
+    /** Accounting bytes are retained even when sizing cannot prove the canonical lifecycle encoding fits. */
+    record Reservation(int bytes, boolean proven) { }
+
     int ACCOUNT_BYTES = 128;
     /**
      * Upper bound of the root's fixed fields and list headers. A record inside a list encodes without the
@@ -26,9 +29,27 @@ public interface RecordSizer {
         return SatelliteLimits.MAX_GROUND_SURVEY_RECORD_NBT_BYTES;
     }
 
+    // Fixed-bound/domain sizers supply a proof by contract. Codec sizers must retain sizing failures instead
+    // of returning a capped byte count as if the encoding had succeeded.
+    default Reservation satelliteReservation(SatelliteState satellite) {
+        return new Reservation(satelliteBytes(satellite), true);
+    }
+
+    default Reservation missionReservation(MissionState mission) {
+        return new Reservation(missionBytes(mission), true);
+    }
+
+    default Reservation instanceReservation(AsteroidInstance instance) {
+        return new Reservation(instanceBytes(instance), true);
+    }
+
+    default Reservation groundSurveyReservation(GroundSurveyJob job) {
+        return new Reservation(groundSurveyBytes(job), true);
+    }
+
     /**
      * Detached full-root/read preflight; the persisted implementation uses the same disk codec. Ground
-     * operations call it when they add a record, or when the reservations cannot bound the root.
+     * operations call it when the existing reservations plus any candidate additions cannot bound the root.
      */
     default boolean groundMutationFits(SatelliteMissionRegistry registry, GroundSurveyJob job,
             AsteroidInstance instance, boolean removeInstance,
