@@ -162,3 +162,34 @@ W128R delivered `b8d38e275`. Its review, `D:/GitHub/ARCE-Task-Evidence/root-queu
 
 Not in this continuation: W27d2, admission, ADRs, the risk register (Root corrects and registers R-042 from the
 review's audit), status files and the ledger. A fresh read-only review follows.
+
+## Test fixes under Root decision R130 (2026-10-28)
+
+The R126 continuation (`660b0e468`) was re-reviewed. The review is
+`D:/GitHub/ARCE-Task-Evidence/root-queue/W128R-rereview/REVIEW.md` (SHA-256 `dc6d1914…bef5`): BLOCK. R1 and R4 are
+closed. Read W128R-R5, R6 and R8 there. A fresh session works on `codex/v1.8.0-w128r` at `36d568db0`, Root's merge of
+shared head `dd080faa3`, and appends a "Test fixes (R130)" section to the record:
+
+1. **W128R-R5.** `BayDeploymentMatrixGameTests` (around line 153) compares the package signatures of the immutable
+   `flight.record()` with themselves.
+   - Compare the baseline with the live source rocket's snapshot and a fresh journal lookup of T before cleanup, and
+     with a published destination if there is one. `BayDeploymentGameTests` (around lines 107 and 128) shows the
+     pattern.
+   - Keep every receipt, claim and registry assertion.
+2. **W128R-R6.** `BayDeploymentLockGameTests` (around lines 117-122) checks only predicates for the held TRANSIT
+   rocket.
+   - Run a real loader, correctly bound to that rocket, and assert the refusal with unchanged device and rocket
+     resources and reservation counts.
+   - Run disassembly as the eligible owner in range, and assert the refusal with no confirmation and no pending
+     operation.
+   - Keep the mount, dismount, command, launch and receipt-removal checks.
+3. **W128R-R8.** Correct the record's batch order. Batches run in their own order; the filter selects and does not
+   reorder. Describe the comparison as matrix-included, with a limited causal conclusion.
+
+Each changed test must fail first against a deliberately broken check, for example a loader that ignores the lock,
+in a local experiment that is not committed. Record how. Then run:
+- the bay batches three times;
+- the whole unit suite.
+
+No full GameTest is needed: the branch's hosted regression covers it, and Root pushes again. Change no production
+code. If a test reveals a production gap, stop and report it. Root reviews the diff.

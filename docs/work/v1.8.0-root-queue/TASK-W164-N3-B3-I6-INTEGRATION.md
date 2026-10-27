@@ -208,6 +208,40 @@ never tickets. Root decision R124 sets the order:
 Before the native runs: the whole unit suite, one complete GameTest with the unchanged checker, and runData if data
 changes. The heavy-JVM lock and hand-off rules above apply.
 
+## Continuation under Root decision R131 (2026-10-28)
+
+The R124 session (19:59 to 03:00) merged W152K and fixed the cold-border preparation at `b43d15614`:
+- preparation now tickets the checked discovery columns it waits for, at most 16 per end;
+- a cold-border regression covers it;
+- 5,264 unit tests pass.
+
+It stopped before B-PRE (0 of 20 cases, 0 starts) because both local full GameTests failed the checker on host lag:
+- 1,425 of 1,425 tests passed, with 24 overload WARNs against the limit of 8;
+- the repeat passed 1,424 of 1,425, with 22 overload WARNs.
+
+The repeat's one failure is `ordinaryTerrainUsesOriginalWorkerAndKeepsUnrelatedContents` (batch
+`w152_legacy_manager`): "Ordinary terrain readback failed: SUPERSEDING_SAVE".
+
+The same pattern occurred on W128R, whose hosted regression then passed every test and the checker. Root decision R131
+(WORKER-RULES, "Host lag on this machine") applies. A fresh Codex session continues on this branch:
+
+1. **Merge the shared head named in your prompt.** It contains W156, W152L, W166 with W166b, W129bc and W169.
+   - Expect conflicts in `RocketPassengerContinuedUseGameTests` and `RocketResourceRecoveryGameTests`. Combine both
+     sides: the shared head's `landedDestinationId` lookup and pad cleanup, and your forced-chunk, arrival-cleanup and
+     asynchronous-completion handling. Keep every assertion.
+   - Expect a conflict in `RocketManager.tick` only if W128R has merged by then; keep both ticks.
+   - Record each conflict.
+2. **Classify the SUPERSEDING_SAVE failure.**
+   - Run batch `w152_legacy_manager` alone three times on the merged branch.
+   - Check whether the fixture waits on a native readback that a periodic autosave can supersede. W166's
+     `GameTestAutosave` shows the 1.20.1 rule.
+   - If it is that, fix the fixture as W166 fixed the boarding test, failing first where you can reproduce it.
+   - If it points at W164's production change, stop and report.
+3. **Run the unit suite and one complete GameTest.** Apply R131: a checker failure only on the overload count does not
+   block, and Root pushes the branch for the hosted regression.
+4. **Then B-PRE, all 20 cases**, on the final committed source, with two restarts each and the 66-start limit from
+   R124. After that, tranche 2 as R124 describes.
+
 ## Not in this task
 
 - N3-B4 (the combined cut evidence), W98-R1 and governed admission.

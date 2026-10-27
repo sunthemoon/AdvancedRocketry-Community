@@ -13,6 +13,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.deployment.BayM
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightPlanner;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketTransactionSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteMissionSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteRuntime;
@@ -157,16 +158,12 @@ public final class BayDeploymentMatrixGameTests {
                 helper.assertTrue(sawIntent && dataMember.state() == BayMember.State.RETIRED && session.find(satellite(data)).isEmpty()
                         && registry.satellite(satellite(data)).isPresent() && mission != null && mission.targetBodyId().equals(body),
                         "The DATA bay did not register on the captured body and retire: " + dataMember.state() + " " + mission);
-                var consumedRecord = RocketTransferSavedData.get(server).find(flight.record().transferId()).orElseThrow();
-                var ops = consumedOps(consumedRecord.sourceSnapshot());
-                helper.assertTrue(ops.get(0) != null && ops.get(0).equals(dataMember.receipt().orElseThrow().op()) && ops.get(1) == null
-                        && BayDeploymentGameTests.signatures(consumedRecord).get(1).equals(before.get(1)),
-                        "T' must consume the data bay and keep the refused solar package byte-equal: " + ops);
+                assertDataBayConsumed(dataMember.receipt().orElseThrow().op());
                 helper.assertTrue(solarMember.state() == BayMember.State.REFUSED && solarMember.reason().equals(solarCode)
                         && session.find(satellite(solar)).isEmpty(), "The solar bay was not refused by its own validation");
             } else {
                 helper.assertTrue(registry.satellite(satellite(data)).isEmpty(), "A refused data bay registered X");
-                helper.assertTrue(before.equals(BayDeploymentGameTests.signatures(flight.record().sourceSnapshot())), "The packages in T changed");
+                assertPackagesUnchanged();
                 String reason = expect == Expect.F5 ? "TARGET_NOT_ALLOWED" : "ASSEMBLY_JOURNAL_UNPROVED";
                 for (var member : List.of(dataMember, solarMember)) {
                     helper.assertTrue(member.state() == BayMember.State.REFUSED && member.reason().equals(reason),
@@ -185,6 +182,56 @@ public final class BayDeploymentMatrixGameTests {
 
         BayMember member(UUID satellite) {
             return claim.members().stream().filter(member -> member.satellite().orElseThrow().equals(satellite)).findFirst().orElseThrow();
+        }
+
+        void assertPackagesUnchanged() {
+            var server = helper.getLevel().getServer();
+            var current = RocketTransferSavedData.get(server).find(flight.record().transferId()).orElseThrow();
+            helper.assertTrue(before.equals(BayDeploymentGameTests.signatures(current.sourceSnapshot())),
+                    "The packages in T's current source snapshot changed");
+            helper.assertTrue(before.equals(BayDeploymentGameTests.signatures(current.destinationSnapshot())),
+                    "The packages in T's current destination snapshot changed");
+            var destination = RocketTransferEntities.findDestination(server, current);
+            helper.assertTrue(flight.source().isAlive() && !flight.source().isRemoved() || destination != null,
+                    "Neither source nor published destination survives the handoff");
+            if (!flight.source().isRemoved()) {
+                helper.assertTrue(before.equals(BayDeploymentGameTests.signatures(flight.source().snapshot().orElseThrow())),
+                        "The packages in the live source changed");
+            }
+            if (current.destinationEntityId().isPresent()) {
+                helper.assertTrue(destination != null, "The published destination is missing from the loaded fixture");
+            }
+            if (destination != null) {
+                helper.assertTrue(before.equals(BayDeploymentGameTests.signatures(destination.snapshot().orElseThrow())),
+                        "The packages in the published destination changed");
+            }
+        }
+
+        /** W170: the consumed counterpart of {@link #assertPackagesUnchanged()}, for the same live state. */
+        void assertDataBayConsumed(UUID op) {
+            var server = helper.getLevel().getServer();
+            var current = RocketTransferSavedData.get(server).find(flight.record().transferId()).orElseThrow();
+            assertDataBayConsumed(op, current.sourceSnapshot(), "T's current source snapshot");
+            assertDataBayConsumed(op, current.destinationSnapshot(), "T's current destination snapshot");
+            var destination = RocketTransferEntities.findDestination(server, current);
+            helper.assertTrue(flight.source().isAlive() && !flight.source().isRemoved() || destination != null,
+                    "Neither source nor published destination survives the handoff");
+            if (!flight.source().isRemoved()) {
+                assertDataBayConsumed(op, flight.source().snapshot().orElseThrow(), "the live source");
+            }
+            if (current.destinationEntityId().isPresent()) {
+                helper.assertTrue(destination != null, "The published destination is missing from the loaded fixture");
+            }
+            if (destination != null) {
+                assertDataBayConsumed(op, destination.snapshot().orElseThrow(), "the published destination");
+            }
+        }
+
+        void assertDataBayConsumed(UUID op, RocketStructureSnapshot snapshot, String where) {
+            var ops = consumedOps(snapshot);
+            var signatures = BayDeploymentGameTests.signatures(snapshot);
+            helper.assertTrue(ops.size() == 2 && op.equals(ops.get(0)) && ops.get(1) == null && signatures.get(1).equals(before.get(1)),
+                    "The data bay must be consumed by its own op and the refused solar package kept byte-equal in " + where + ": " + ops);
         }
 
         void close() {

@@ -8,9 +8,10 @@
   inheritance rule: a file related to a file with a HIT, SUSPECT or UNSUPPORTED verdict, a REVIEW handling or an
   EXCLUDED origin finding is at most REVIEW, unless that file has a CLEARED finding.
 * History (ADR-061 section 4.9, ``upstream_history``): every commit that touched a source file, read from a full
-  (not shallow) clone at the pinned commit, following renames, plus the first-parent merges that brought each
-  change in. A message that names the AR 16x texture set's pull requests, or brings in material from an issue, an
-  unmerged pull request or another project, is a review trigger.
+  (not shallow) clone at the pinned commit, following renames into each parent of a merge separately, plus the
+  first-parent merges that brought each change in. The tool walks the commit graph itself; ``git log --follow``
+  gives a different answer on git 2.55 and 2.56 (W169). A message that names the AR 16x texture set's pull
+  requests, or brings in material from an issue, an unmerged pull request or another project, is a review trigger.
 """
 
 from __future__ import annotations
@@ -41,6 +42,9 @@ LEGACY_ASSET_ROOT = "src/main/resources/assets/advancedrocketry/"
 TAINTING_VERDICTS = ("HIT", "SUSPECT", "UNSUPPORTED")
 GIT_TIMEOUT_SECONDS = 300
 MAX_HISTORY = 1000
+MAX_COMMITS = 100_000
+MAX_FOLLOWED_PATHS = 64
+RENAME_LIMIT = 1000
 MAX_INPUT_BYTES = 64 * 1024 * 1024
 
 # ADR-061 section 4.9: the AR 16x texture set entered through these pull requests and commits (C14 history).
@@ -240,8 +244,8 @@ def review_reasons(inputs: Inputs, verdicts: dict[str, str], related: set[str]) 
     return reasons
 
 
-def _git(repository: Path, *args: str) -> bytes:
-    result = subprocess.run(["git", "-C", str(repository), *args], check=False, stdout=subprocess.PIPE,
+def _git(repository: Path, *args: str, stdin: bytes | None = None) -> bytes:
+    result = subprocess.run(["git", "-C", str(repository), *args], check=False, input=stdin, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE, timeout=GIT_TIMEOUT_SECONDS)
     if result.returncode:
         detail = result.stderr.decode("utf-8", errors="replace").strip()
@@ -265,25 +269,186 @@ def first_parent(repository: Path, commit: str) -> str:
     return _git(repository, "rev-parse", "--verify", f"{commit}^1^{{commit}}").decode("ascii").strip()
 
 
+class _Blobs:
+    """The blob of a path at a commit (None where the commit has no file there), read through one
+    ``git cat-file --batch-check`` session and remembered."""
+
+    def __init__(self, repository: Path):
+        self.process = subprocess.Popen(
+            ["git", "-C", str(repository), "cat-file", "--batch-check=%(objectname) %(objecttype)"],
+            stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+        self.known: dict[tuple[str, str], str | None] = {}
+
+    def __enter__(self) -> "_Blobs":
+        return self
+
+    def __exit__(self, failure, *_) -> None:
+        assert self.process.stdin is not None and self.process.stdout is not None
+        try:
+            self.process.stdin.close()
+            code = self.process.wait(timeout=GIT_TIMEOUT_SECONDS)
+        except (OSError, subprocess.TimeoutExpired):
+            self.process.kill()
+            code = self.process.wait()
+        finally:
+            self.process.stdout.close()
+        if code and failure is None:
+            raise ValueError(f"git cat-file --batch-check failed with exit code {code}")
+
+    def __call__(self, commit: str, path: str) -> str | None:
+        key = (commit, path)
+        if key not in self.known:
+            if "\n" in path or "\r" in path:
+                raise ValueError(f"the history check cannot name the path {path!r}")
+            assert self.process.stdin is not None and self.process.stdout is not None
+            self.process.stdin.write(f"{commit}:{path}\n".encode("utf-8"))
+            self.process.stdin.flush()
+            line = self.process.stdout.readline().decode("utf-8", errors="replace").rstrip("\n")
+            fields = line.split(" ")
+            if line.endswith(" missing"):
+                self.known[key] = None
+            elif len(fields) == 2 and re.fullmatch(r"[0-9a-f]{40}", fields[0]):
+                self.known[key] = fields[0] if fields[1] == "blob" else None
+            else:
+                raise ValueError(f"git cat-file returned a malformed answer for {commit[:12]}:{path}")
+        return self.known[key]
+
+
+def _graph(repository: Path, commit: str) -> tuple[list[str], dict[str, list[str]]]:
+    """Every commit up to ``commit``, children before their parents, and each commit's parents."""
+    order: list[str] = []
+    parents: dict[str, list[str]] = {}
+    for line in _git(repository, "rev-list", "--topo-order", "--parents", commit).decode("ascii").splitlines():
+        identifiers = line.split()
+        if not identifiers or not all(re.fullmatch(r"[0-9a-f]{40}", item) for item in identifiers):
+            raise ValueError("git rev-list returned a malformed commit line")
+        order.append(identifiers[0])
+        parents[identifiers[0]] = identifiers[1:]
+    if not order or len(order) > MAX_COMMITS:
+        raise ValueError(f"the upstream history has {len(order)} commits, outside 1..{MAX_COMMITS}")
+    return order, parents
+
+
+def _changes(repository: Path, parent: str, commit: str, *options: str) -> list[tuple[str, str, str, list[str]]]:
+    """(status, old blob, new blob, paths) of each file ``commit`` changes against ``parent``."""
+    fields = _git(repository, "diff-tree", "-r", "--raw", "-z", "--no-abbrev", *options, parent, commit).split(b"\0")
+    rows: list[tuple[str, str, str, list[str]]] = []
+    index = 0
+    while index < len(fields) and fields[index]:
+        meta = fields[index].decode("ascii").split(" ")
+        count = 2 if len(meta) == 5 and meta[4][:1] in ("R", "C") else 1
+        paths = [field.decode("utf-8") for field in fields[index + 1:index + 1 + count]]
+        if len(meta) != 5 or not meta[0].startswith(":") or len(paths) != count or not all(paths):
+            raise ValueError(f"git diff-tree returned a malformed change between {parent[:12]} and {commit[:12]}")
+        rows.append((meta[4], meta[2], meta[3], paths))
+        index += 1 + count
+    return rows
+
+
+def _rename_source(repository: Path, commit: str, parent: str, path: str, blob: str) -> str | None:
+    """The path that ``path`` had in ``parent`` when ``commit`` renamed it, or None when the commit adds a new file.
+
+    A rename deletes its source. Deleted and added paths with the same bytes pair by the same path ignoring case, then
+    the same file name ignoring case, then a single pair left; a choice between several fails. Only when no unpaired
+    deleted path has the same bytes is git's own pairing (``-M``, default similarity) asked for a rename that changed
+    the bytes. A file with the same bytes that the commit keeps is a copy and is not followed."""
+    rows = _changes(repository, parent, commit, "--no-renames")
+    deleted = sorted(paths[0] for status, old, _, paths in rows if status == "D" and old == blob)
+    added = sorted(paths[0] for status, _, new, paths in rows if status == "A" and new == blob)
+    if path not in added:
+        raise ValueError(f"git diff-tree does not show {commit[:12]} adding {path} against {parent[:12]}")
+    pairs: dict[str, str] = {}
+    for key in (str.casefold, lambda name: name.rsplit("/", 1)[-1].casefold()):
+        sources = [source for source in deleted if source not in pairs.values()]
+        targets = [target for target in added if target not in pairs]
+        for target in targets:
+            matches = [source for source in sources if key(source) == key(target)]
+            if len(matches) == 1 and sum(key(other) == key(target) for other in targets) == 1:
+                pairs[target] = matches[0]
+    if path in pairs:
+        return pairs[path]
+    sources = [source for source in deleted if source not in pairs.values()]
+    targets = [target for target in added if target not in pairs]
+    if len(sources) == 1 and targets == [path]:
+        return sources[0]
+    if sources:
+        raise ValueError(f"{commit[:12]} adds {path} with the bytes of the deleted {sources[:4]}; the rename "
+                         f"source is ambiguous")
+    for status, _, _, paths in _changes(repository, parent, commit, "-M", f"-l{RENAME_LIMIT}"):
+        if status[:1] == "R" and paths[1] == path and status[1:].isdigit() and int(status[1:]) < 100:
+            return paths[0]
+    return None
+
+
+def _touching(repository: Path, commit: str, path: str, graph: tuple[list[str], dict[str, list[str]]],
+              blobs: _Blobs, first_parent: bool) -> list[str]:
+    """The commits that changed the file now at ``path``, following renames into each parent separately (only the
+    first parent with ``first_parent``). Without ``first_parent`` a merge is not listed: the commits on its sides
+    are; with it, a merge that changed the file against its first parent is."""
+    order, parents = graph
+    followed: dict[str, set[str]] = {commit: {path}}
+    names = {path}
+    touched: list[str] = []
+    for identifier in order:
+        paths = followed.pop(identifier, None)
+        if not paths:
+            continue
+        own = parents[identifier]
+        listed = not own
+        for current in sorted(paths):
+            blob = blobs(identifier, current)
+            if blob is None:
+                raise ValueError(f"{identifier[:12]} has no file {current} to follow")
+            for parent in own[:1] if first_parent else own:
+                before = blobs(parent, current)
+                earlier = current if before is not None else _rename_source(repository, identifier, parent,
+                                                                             current, blob)
+                if earlier is not None:
+                    followed.setdefault(parent, set()).add(earlier)
+                    names.add(earlier)
+                if before != blob and (first_parent or len(own) == 1):
+                    listed = True
+        if len(names) > MAX_FOLLOWED_PATHS:
+            raise ValueError(f"the history of {path} follows more than {MAX_FOLLOWED_PATHS} paths")
+        if listed:
+            touched.append(identifier)
+    return touched
+
+
 def upstream_history(repository: Path, commit: str, path: str) -> tuple[list[dict[str, str]], list[str]]:
-    """The commits that touched ``path`` up to ``commit`` (newest first), and the review triggers among them."""
+    """The commits that touched ``path`` up to ``commit`` (newest commit date first), then the first-parent merges
+    that brought them in, and the review triggers among them.
+
+    The walk is this tool's own, not ``git log --follow``: that one kept one followed path for the whole walk until
+    git 2.55, so its result on non-linear history depended on the walk order, and from git 2.56 it follows a copy
+    into a merge's side. The same upstream gave two different K6 records on the two versions (W169)."""
+    graph = _graph(repository, commit)
+    with _Blobs(repository) as blobs:
+        passes = [_touching(repository, commit, path, graph, blobs, first_parent) for first_parent in (False, True)]
+    found = sorted({identifier for touched in passes for identifier in touched})
+    if not found or len(found) > MAX_HISTORY:
+        raise ValueError(f"the history of {path} has {len(found)} commits, outside 1..{MAX_HISTORY}")
+    output = _git(repository, "-c", "i18n.logOutputEncoding=UTF-8", "log", "--no-walk=unsorted", "--stdin",
+                  "--format=%H%x1f%ct%x1f%aI%x1f%an%x1f%s%x1f%b%x1e", stdin="".join(
+                      identifier + "\n" for identifier in found).encode("ascii"))
+    details: dict[str, list[str]] = {}
+    for record in output.decode("utf-8", errors="replace").split("\x1e"):
+        record = record.lstrip("\n")
+        if not record:
+            continue
+        fields = record.split("\x1f")
+        if len(fields) != 6 or fields[0] not in found or not fields[1].isdigit():
+            raise ValueError(f"git log returned a malformed history record for {path}")
+        details[fields[0]] = fields[1:]
+    if sorted(details) != found:
+        raise ValueError(f"git log did not describe every commit in the history of {path}")
     history: list[dict[str, str]] = []
     triggers: list[str] = []
     seen: set[str] = set()
-    for extra in ((), ("--first-parent",)):
-        output = _git(repository, "-c", "i18n.logOutputEncoding=UTF-8", "log", "--follow", *extra,
-                      "--format=%H%x1f%aI%x1f%an%x1f%s%x1f%b%x1e", commit, "--", path)
-        for record in output.decode("utf-8", errors="replace").split("\x1e"):
-            record = record.lstrip("\n")
-            if not record:
-                continue
-            fields = record.split("\x1f")
-            if len(fields) != 5 or not re.fullmatch(r"[0-9a-f]{40}", fields[0]):
-                raise ValueError(f"git log returned a malformed history record for {path}")
-            identifier, authored, author, subject, body = fields
-            if identifier in seen:
-                continue
+    for touched in passes:
+        for identifier in sorted(set(touched) - seen, key=lambda item: (-int(details[item][0]), item)):
             seen.add(identifier)
+            _, authored, author, subject, body = details[identifier]
             history.append({"commit": identifier, "authored_at": authored, "author": author, "subject": subject})
             message = subject + "\n" + body
             where = f"{identifier[:12]} ({subject.strip()[:80]!r})"
@@ -292,6 +457,4 @@ def upstream_history(repository: Path, commit: str, path: str) -> tuple[list[dic
             for reason, pattern in THIRD_PARTY_MESSAGES:
                 if pattern.search(message):
                     triggers.append(f"history {where} may bring in {reason} (ADR-061 section 4.9)")
-    if not history or len(history) > MAX_HISTORY:
-        raise ValueError(f"the history of {path} has {len(history)} commits, outside 1..{MAX_HISTORY}")
     return history, triggers

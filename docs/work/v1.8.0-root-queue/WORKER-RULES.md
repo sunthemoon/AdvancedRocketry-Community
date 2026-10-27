@@ -113,6 +113,13 @@ Run Gradle with `--offline` from your worktree, using `gradlew.bat` in PowerShel
     `src/test/resources/network-protocols.txt`.
 - **GameTest:** this runs every test (about 700). Run it once at the end, under the lock.
   Then run `python -B scripts/check_gametest_log.py build/gametest/logs/latest.log`.
+  - **Host lag on this machine (Root decision R131, 2026-10-28).** With several workers running, a local
+    full run can pass every test and still fail the checker only on the `server-overloaded` count ("Can't keep up").
+    That alone does not block your later steps, such as native cases.
+    - Record the count, and say so in your record.
+    - Root pushes your branch, and the hosted regression decides.
+    - Every other checker failure, and every test failure, still has to be explained. Never change the checker or
+      its limits.
   - If you add a test that deliberately logs ERROR or WARN, add an expectation to
     `scripts/gametest_expected_log.json`, with the test and the reason.
   - If the checker fails on an entry that has nothing to do with your work, record it and

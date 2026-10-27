@@ -4,6 +4,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord;
 import java.lang.reflect.Field;
 import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.LongSupplier;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.MinecraftServer;
 
@@ -25,12 +27,56 @@ final class EscrowTerminalRetryCut {
         helper.assertTrue(!source.unchanged.get(), "Departure did not invalidate the F6/F7 lease synchronously");
     }
 
-    static void assertWriteFailure(GameTestHelper helper, MinecraftServer server, RocketTransferRecord record) {
+    static WriteFailure observeWriteFailure(MinecraftServer server, RocketTransferRecord record) {
+        EscrowTestEndpoints.requireEnabled(server);
+        var histories = (EscrowTerminalRetries) field(EscrowRuntime.of(server).terminal(), "retries");
+        return new WriteFailure(histories.history(record.logicalRocketId()), server::getTickCount);
+    }
+
+    static void assertWriteFailure(GameTestHelper helper, MinecraftServer server, RocketTransferRecord record,
+                                   WriteFailure failure) {
         EscrowTestEndpoints.requireEnabled(server);
         var histories = (EscrowTerminalRetries) field(EscrowRuntime.of(server).terminal(), "retries");
         var history = histories.history(record.logicalRocketId());
-        helper.assertTrue(history.failures() == 1 && history.nextTick() == server.getTickCount() + 100,
-                "Definite F7 callback lost the first retry backoff");
+        helper.assertTrue(failure.matches(history),
+                "Definite F7 callback lost the first retry backoff: failures=" + history.failures()
+                        + ", next=" + history.nextTick() + ", recorded=" + failure.tick
+                        + ", observed=" + server.getTickCount() + ", callbacks=" + failure.callbacks);
+    }
+
+    /** Records the owner tick inside failed(), without replacing its history or changing its logging. */
+    static final class WriteFailure implements AutoCloseable {
+        private final EscrowSuccessorRetry history;
+        private final Field logger;
+        private final Consumer<EscrowSuccessorRetry.Hold> original, observer;
+        private long tick = -1;
+        private int callbacks;
+
+        @SuppressWarnings("unchecked")
+        WriteFailure(EscrowSuccessorRetry history, LongSupplier clock) {
+            this.history = history;
+            try {
+                logger = EscrowSuccessorRetry.class.getDeclaredField("logger"); logger.setAccessible(true);
+                original = (Consumer<EscrowSuccessorRetry.Hold>) logger.get(history);
+                observer = hold -> {
+                    if (hold.phase().equals("F7_WRITE") && hold.reason().equals("LEDGER_WRITE_FAILED")) {
+                        tick = clock.getAsLong(); callbacks++;
+                    }
+                    original.accept(hold);
+                };
+                logger.set(history, observer);
+            } catch (ReflectiveOperationException failure) { throw new IllegalStateException(failure); }
+        }
+
+        boolean matches(EscrowSuccessorRetry observed) {
+            return observed == history && callbacks == 1 && tick >= 0 && history.failures() == 1
+                    && history.nextTick() == tick + EscrowReason.backoff(1);
+        }
+
+        @Override public void close() {
+            try { if (logger.get(history) == observer) { logger.set(history, original); } }
+            catch (IllegalAccessException failure) { throw new IllegalStateException(failure); }
+        }
     }
 
     boolean tick(GameTestHelper helper, MinecraftServer server, RocketTransferRecord record, RocketEntity survivor) {
