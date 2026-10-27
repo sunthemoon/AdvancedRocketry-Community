@@ -106,13 +106,15 @@ final class GroundSurveyBoundsTest {
         assertTrue(registry.instances().isEmpty()); assertTrue(registry.accounts().isEmpty());
         assertEquals(0, registry.reservedBytes("GROUND_SURVEYS"));
         var rootRefuser = new RecordSizer() {
-            public int satelliteBytes(SatelliteState state) { return 1; }
+            public int satelliteBytes(SatelliteState state) { return SatelliteLimits.MAX_REGISTRY_NBT_BYTES; }
             public int missionBytes(MissionState state) { return 1; }
             public int instanceBytes(AsteroidInstance instance) { return 4_096; }
             public boolean groundMutationFits(SatelliteMissionRegistry r, GroundSurveyJob j, AsteroidInstance i,
                     boolean remove, ResearchAccount account, long now, long observedTime) { return false; }
         };
         registry = SatelliteMissionRegistry.create(0, rootRefuser);
+        // Force the fallback: a reservation-provable START no longer invokes a whole-root check.
+        registry.restoreSatellite(SatelliteState.launch(id(900), TYPE, OWNER, 0));
         assertEquals(GroundSurveys.Code.STORAGE_BUDGET, registry.groundSurveys().start(start, 0).code());
         assertTrue(registry.instances().isEmpty()); assertTrue(registry.accounts().isEmpty());
         assertEquals(0, registry.reservedBytes("GROUND_SURVEYS"));

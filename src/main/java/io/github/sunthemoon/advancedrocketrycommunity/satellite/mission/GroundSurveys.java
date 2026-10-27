@@ -366,10 +366,11 @@ public final class GroundSurveys {
         if (problem != null) { return new Result(Code.INVARIANT_FAILED, false, Optional.ofNullable(current), problem); }
         try {
             Math.addExact(registry.epochs().ceiling(), 1L);
-            // START and account creation add records and keep the whole-root preflight. Other changes stay
-            // inside their records' lifecycle reservations, which bound the root without encoding it.
-            boolean adds = current == null || newAccount;
-            if ((adds || !reservationsBoundRoot())
+            // Existing records stay inside their lifecycle reservations. START has not reserved its job or
+            // instance yet; account creation likewise needs its own additional reservation in the proof.
+            long addedBytes = (current == null ? (long) jobBytes + instanceBytes : 0L)
+                    + (newAccount ? RecordSizer.ACCOUNT_BYTES : 0L);
+            if (!reservationsBoundRoot(addedBytes)
                     && !registry.sizer.groundMutationFits(registry, next, instance, remove, account, now, observedTime)) {
                 return result(Code.STORAGE_BUDGET, false, current);
             }
@@ -379,7 +380,7 @@ public final class GroundSurveys {
 
     /** A change that adds no record fits when the reservations bound the root; otherwise the root is encoded. */
     boolean fitsWithoutNewRecord(GroundSurveyJob job, AsteroidInstance instance, long now, long observedTime) {
-        return reservationsBoundRoot()
+        return reservationsBoundRoot(0L)
                 || registry.sizer.groundMutationFits(registry, job, instance, false, null, now, observedTime);
     }
 
@@ -387,9 +388,11 @@ public final class GroundSurveys {
      * Each reservation is the largest encoding its record can reach and an account encodes in at most
      * {@link RecordSizer#ACCOUNT_BYTES}, so their sum plus the root framing bounds the encoded root. Only a
      * restored root above its section budgets can fail this; its changes then take the whole-root preflight.
+     * Candidate additions are counted before publication reserves them; existing reservations are not subtracted.
      */
-    private boolean reservationsBoundRoot() {
-        long bound = RecordSizer.ROOT_FRAMING_BYTES + (long) registry.accounts.size() * RecordSizer.ACCOUNT_BYTES;
+    private boolean reservationsBoundRoot(long addedBytes) {
+        long bound = RecordSizer.ROOT_FRAMING_BYTES + (long) registry.accounts.size() * RecordSizer.ACCOUNT_BYTES
+                + addedBytes;
         for (StorageBudget.Section section : List.of(StorageBudget.Section.SATELLITES, StorageBudget.Section.MISSIONS,
                 StorageBudget.Section.INSTANCES, StorageBudget.Section.GROUND_SURVEYS)) {
             bound += registry.budget.reserved(section);

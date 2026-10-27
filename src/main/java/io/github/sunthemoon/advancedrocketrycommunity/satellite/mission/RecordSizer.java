@@ -28,7 +28,7 @@ public interface RecordSizer {
 
     /**
      * Detached full-root/read preflight; the persisted implementation uses the same disk codec. Ground
-     * operations call it when they add a record, or when the reservations cannot bound the root.
+     * operations call it when the existing reservations plus any candidate additions cannot bound the root.
      */
     default boolean groundMutationFits(SatelliteMissionRegistry registry, GroundSurveyJob job,
             AsteroidInstance instance, boolean removeInstance,

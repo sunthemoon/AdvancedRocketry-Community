@@ -98,6 +98,44 @@ final class GroundPreflightTest {
         assertEquals(sequence, registry.epochs().stateChanges());
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {"START", "ACCOUNT"})
+    void realCodecStillRefusesAdditionsThatExceedTheEncodedRootBound(String operation) {
+        var sizer = new GroundPreflightBenchmark.CountingSizer();
+        var registry = SatelliteMissionRegistry.restore(0, 0, 2, sizer);
+        GroundSurveyJob job = lastAnalysis();
+        if (operation.equals("ACCOUNT")) {
+            registry.restoreInstance(instance(job, InstanceState.AVAILABLE));
+            registry.groundSurveys().restore(job);
+        } else { registry.restoreAccount(ResearchAccount.empty(OWNER)); }
+        int rootBytes = SatelliteNbtSize.uncompressedBytes(encoded(registry));
+        int missionBytes = SatelliteNbtSize.uncompressedBytes(SatelliteNbtCodec.encodeMission(GroundPreflightBenchmark.claimed(0))) - 3;
+        for (int index = 0; rootBytes + missionBytes <= SatelliteLimits.MAX_REGISTRY_NBT_BYTES; index++) {
+            registry.restoreMission(GroundPreflightBenchmark.claimed(index));
+            rootBytes += missionBytes;
+        }
+        int accountBytes = SatelliteNbtSize.uncompressedBytes(SatelliteNbtCodec.encodeAccount(ResearchAccount.empty(id(10_000)))) - 3;
+        for (int index = 0; rootBytes + accountBytes <= SatelliteLimits.MAX_REGISTRY_NBT_BYTES; index++) {
+            registry.restoreAccount(ResearchAccount.empty(id(10_000 + index)));
+            rootBytes += accountBytes;
+        }
+        CompoundTag before = encoded(registry);
+        assertEquals(rootBytes, SatelliteNbtSize.uncompressedBytes(before));
+        assertTrue(SatelliteLimits.MAX_REGISTRY_NBT_BYTES - rootBytes < accountBytes);
+        assertTrue(GroundPreflightBenchmark.reservationBound(registry) > SatelliteLimits.MAX_REGISTRY_NBT_BYTES);
+        long reserved = GroundPreflightBenchmark.reservationBound(registry);
+        long sequence = registry.epochs().stateChanges();
+        GroundSurveys.Result result = operation.equals("START")
+                ? registry.groundSurveys().start(GroundPreflightBenchmark.start(), 0)
+                : registry.groundSurveys().advanceAnalysis(job.jobId(), device(300), 30);
+        assertEquals(GroundSurveys.Code.STORAGE_BUDGET, result.code());
+        assertFalse(result.changed());
+        assertEquals(1, sizer.rootChecks);
+        assertEquals(before, encoded(registry));
+        assertEquals(reserved, GroundPreflightBenchmark.reservationBound(registry));
+        assertEquals(sequence, registry.epochs().stateChanges());
+    }
+
     private static GroundSurveyJob lastAnalysis() {
         GroundSurveyJob job = running(0, OWNER, device(300));
         return job.analyzed(job.analysis().with(GroundSurveyJob.AnalysisState.RUNNING, 1, job.analysis().claim()), 20);
