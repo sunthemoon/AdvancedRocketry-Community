@@ -122,7 +122,8 @@ class Upgrade:
         index = process.wait_for(LAUNCH_LOG, 30.0, start_at=start)
         transfer, _entity, logical, _source, destination, _checkpoint, code, required, fuel_before = \
             LAUNCH_LOG.search(process.lines[index]).groups()
-        if code != "SUCCESS" or destination != MOON:
+        # v1.8 launches are asynchronous: the receipt answers JOURNAL_PENDING (as run_v180_predecessor_smoke.py expects).
+        if code != "JOURNAL_PENDING" or destination != MOON:
             raise smoke.SmokeError(f"Launch of {entity} answered {code} to {destination}")
         flight = dict(transfer=transfer, logical=logical, required=int(required), fuel_before=int(fuel_before))
         if checkpoint:
