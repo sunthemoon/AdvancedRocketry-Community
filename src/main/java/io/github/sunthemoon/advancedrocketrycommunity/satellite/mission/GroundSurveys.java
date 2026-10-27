@@ -447,7 +447,7 @@ public final class GroundSurveys {
         }
         if (account != null) {
             registry.accounts.put(account.ownerId(), account);
-            registry.budget.reserve(StorageBudget.Section.ACCOUNTS, account.ownerId(), RecordSizer.ACCOUNT_BYTES);
+            registry.budget.reserveAccount(account.ownerId());
         }
         put(job);
         registry.advanceClock(observedTime);

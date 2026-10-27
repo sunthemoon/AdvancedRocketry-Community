@@ -34,8 +34,20 @@ final class StorageBudgetTest {
         budget.reserve(StorageBudget.Section.INSTANCES, ID, new RecordSizer.Reservation(4096, false));
         budget.release(StorageBudget.Section.MISSIONS, ID);
         assertFalse(budget.allProven());
-        budget.reserve(StorageBudget.Section.INSTANCES, ID, 4096);
+        budget.reserve(StorageBudget.Section.INSTANCES, ID, new RecordSizer.Reservation(4096, true));
         assertTrue(budget.allProven());
         assertEquals(4096, budget.reserved(StorageBudget.Section.INSTANCES));
+    }
+
+    @Test void anAccountReservesItsFixedSizeInTheAccountSectionOnly() {
+        var budget = new StorageBudget();
+        budget.reserveAccount(ID);
+        budget.reserveAccount(ID);
+        assertTrue(budget.allProven());
+        assertTrue(budget.reservedFor(StorageBudget.Section.ACCOUNTS, ID));
+        assertEquals(RecordSizer.ACCOUNT_BYTES, budget.reserved(StorageBudget.Section.ACCOUNTS));
+        for (StorageBudget.Section section : StorageBudget.Section.values()) {
+            if (section != StorageBudget.Section.ACCOUNTS) { assertEquals(0, budget.reserved(section), section.name()); }
+        }
     }
 }

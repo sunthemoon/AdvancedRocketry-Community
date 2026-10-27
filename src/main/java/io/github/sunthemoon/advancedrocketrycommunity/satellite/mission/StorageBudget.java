@@ -42,8 +42,9 @@ final class StorageBudget {
         return reserved.get(section) + bytes <= section.bytes;
     }
 
-    void reserve(Section section, UUID id, int bytes) {
-        reserve(section, id, new RecordSizer.Reservation(bytes, true));
+    /** An account's fixed reservation, proven by contract: every account field has a fixed width (W168-R5). */
+    void reserveAccount(UUID owner) {
+        reserve(Section.ACCOUNTS, owner, new RecordSizer.Reservation(RecordSizer.ACCOUNT_BYTES, true));
     }
 
     void reserve(Section section, UUID id, RecordSizer.Reservation reservation) {
