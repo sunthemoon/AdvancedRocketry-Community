@@ -28,6 +28,28 @@ import net.minecraftforge.registries.ForgeRegistries;
 @GameTestHolder(AdapterTestMod.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class AdapterFaultGameTests {
+    @net.minecraft.gametest.framework.GameTestGenerator
+    public static java.util.Collection<net.minecraft.gametest.framework.TestFunction> asynchronousTransitions() {
+        return java.util.List.of(
+                AdapterAsyncFixture.test("w164_adapter_success", "AdapterFaultGameTests.throwingEligibilityPreservesSource",
+                        4, 1, false, AdapterFaultGameTests::throwingEligibilityPreservesSource),
+                AdapterAsyncFixture.test("w164_adapter_success", "AdapterFaultGameTests.slowEligibilityPreservesSource",
+                        4, 1, false, AdapterFaultGameTests::slowEligibilityPreservesSource),
+                AdapterAsyncFixture.test("w164_adapter_success", "AdapterFaultGameTests.throwingCapturePreservesSource",
+                        4, 1, false, AdapterFaultGameTests::throwingCapturePreservesSource),
+                AdapterAsyncFixture.test("w164_adapter_success", "AdapterFaultGameTests.oversizedCapturePreservesSource",
+                        4, 1, false, AdapterFaultGameTests::oversizedCapturePreservesSource),
+                AdapterAsyncFixture.test("w164_adapter_success", "AdapterFaultGameTests.slowCapturePreservesSource",
+                        4, 1, false, AdapterFaultGameTests::slowCapturePreservesSource),
+                AdapterAsyncFixture.test("w164_adapter_fault", "AdapterFaultGameTests.throwingRestoreCleansPartialInventoryAndRetries",
+                        4, 2, true, AdapterFaultGameTests::throwingRestoreCleansPartialInventoryAndRetries),
+                AdapterAsyncFixture.test("w164_adapter_fault", "AdapterFaultGameTests.falseRestoreCleansPartialInventoryAndRetries",
+                        4, 2, true, AdapterFaultGameTests::falseRestoreCleansPartialInventoryAndRetries),
+                AdapterAsyncFixture.test("w164_adapter_fault", "AdapterFaultGameTests.slowRestoreCleansPartialInventoryAndRetries",
+                        4, 2, true, AdapterFaultGameTests::slowRestoreCleansPartialInventoryAndRetries),
+                AdapterAsyncFixture.test("w164_adapter_fault", "AdapterFaultGameTests.mismatchedRestoreCleansPartialInventoryAndRetries",
+                        4, 2, true, AdapterFaultGameTests::mismatchedRestoreCleansPartialInventoryAndRetries) );
+    }
     private static final String HOST = "advancedrocketrycommunity";
     private static final BlockPos ORIGIN = new BlockPos(3, 2, 3);
     private static final BlockPos CARGO = ORIGIN.east();
@@ -35,47 +57,38 @@ public final class AdapterFaultGameTests {
 
     private AdapterFaultGameTests() { }
 
-    @GameTest(templateNamespace = HOST, template = "rocket_test", batch = "w164_adapter_success", timeoutTicks = 60)
     public static void throwingEligibilityPreservesSource(GameTestHelper helper) {
         scanFailure(helper, FixtureAdapterFaults.Mode.CAN_MOVE_THROW);
     }
 
-    @GameTest(templateNamespace = HOST, template = "rocket_test", batch = "w164_adapter_success", timeoutTicks = 60)
     public static void slowEligibilityPreservesSource(GameTestHelper helper) {
         scanFailure(helper, FixtureAdapterFaults.Mode.CAN_MOVE_SLOW);
     }
 
-    @GameTest(templateNamespace = HOST, template = "rocket_test", batch = "w164_adapter_success", timeoutTicks = 60)
     public static void throwingCapturePreservesSource(GameTestHelper helper) {
         scanFailure(helper, FixtureAdapterFaults.Mode.CAPTURE_THROW);
     }
 
-    @GameTest(templateNamespace = HOST, template = "rocket_test", batch = "w164_adapter_success", timeoutTicks = 60)
     public static void oversizedCapturePreservesSource(GameTestHelper helper) {
         scanFailure(helper, FixtureAdapterFaults.Mode.CAPTURE_OVERSIZED);
     }
 
-    @GameTest(templateNamespace = HOST, template = "rocket_test", batch = "w164_adapter_success", timeoutTicks = 60)
     public static void slowCapturePreservesSource(GameTestHelper helper) {
         scanFailure(helper, FixtureAdapterFaults.Mode.CAPTURE_SLOW);
     }
 
-    @GameTest(templateNamespace = HOST, template = "rocket_test", batch = "w164_adapter_fault", timeoutTicks = 60)
     public static void throwingRestoreCleansPartialInventoryAndRetries(GameTestHelper helper) {
         restoreFailure(helper, FixtureAdapterFaults.Mode.RESTORE_THROW);
     }
 
-    @GameTest(templateNamespace = HOST, template = "rocket_test", batch = "w164_adapter_fault", timeoutTicks = 60)
     public static void falseRestoreCleansPartialInventoryAndRetries(GameTestHelper helper) {
         restoreFailure(helper, FixtureAdapterFaults.Mode.RESTORE_FALSE);
     }
 
-    @GameTest(templateNamespace = HOST, template = "rocket_test", batch = "w164_adapter_fault", timeoutTicks = 60)
     public static void slowRestoreCleansPartialInventoryAndRetries(GameTestHelper helper) {
         restoreFailure(helper, FixtureAdapterFaults.Mode.RESTORE_SLOW);
     }
 
-    @GameTest(templateNamespace = HOST, template = "rocket_test", batch = "w164_adapter_fault", timeoutTicks = 60)
     public static void mismatchedRestoreCleansPartialInventoryAndRetries(GameTestHelper helper) {
         restoreFailure(helper, FixtureAdapterFaults.Mode.RESTORE_MISMATCH);
     }
@@ -126,7 +139,9 @@ public final class AdapterFaultGameTests {
 
     private static void restoreFailure(GameTestHelper helper, FixtureAdapterFaults.Mode mode) {
         var trial = new RestoreTrial(helper, mode);
-        helper.runAtTickTime(59, trial::close);
+        helper.runAtTickTime(AdapterAsyncFixture.ticks(POSITIONS.size(), 2, true) - 1, () -> {
+            if (!trial.closed) { trial.close(); helper.fail("Unfinished adapter transition: " + trial.step); }
+        });
         helper.onEachTick(() -> {
             if (trial.closed) { return; }
             try { trial.tick(); }
@@ -164,7 +179,7 @@ public final class AdapterFaultGameTests {
                     interact(fixture.owner, rocket);
                     helper.assertTrue(!rocket.isRemoved() && authority.equals(saveRocket(helper, rocket)),
                             "Pending disassembly changed persisted rocket authority");
-                    step = RestoreStep.DISASSEMBLY_PENDING;
+                    advance(RestoreStep.DISASSEMBLY_PENDING);
                 }
                 case DISASSEMBLY_PENDING -> {
                     if (!rocket.isRemoved()) {
@@ -178,12 +193,11 @@ public final class AdapterFaultGameTests {
                     helper.assertTrue(FixtureAdapterFaults.restoring() == null, "Restore fault scope leaked");
                     carrier = helper.getBlockEntity(CARGO);
                     retained = carrier.saveWithFullMetadata();
-                    assertHeld(); heldAt = helper.getTick(); step = RestoreStep.PREPARATION_HELD;
+                    assertHeld(); heldAt = helper.getTick(); advance(RestoreStep.PREPARATION_HELD);
                 }
                 case PREPARATION_HELD -> {
                     assertHeld();
-                    // Keep the original limit for the first regression run; R118 permits a derived limit if needed.
-                    if (helper.getTick() - heldAt < 2) { return; }
+                    if (helper.getTick() - heldAt < AdapterAsyncFixture.retryTicks()) { return; }
                     clearFault();
                     var at = helper.absolutePos(CARGO); var state = carrier.getBlockState();
                     carrier.onChunkUnloaded(); helper.getLevel().removeBlockEntity(at);
@@ -191,18 +205,18 @@ public final class AdapterFaultGameTests {
                     helper.assertTrue(reloaded != null && reloaded != carrier && carrier.isRemoved(), "Carrier was not reconstructed");
                     helper.getLevel().setBlockEntity(reloaded); reloaded.onLoad();
                     helper.assertTrue(retained.equals(reloaded.saveWithFullMetadata()), "Reload changed retained resources");
-                    step = RestoreStep.CARRIER_RELOADED;
+                    advance(RestoreStep.CARRIER_RELOADED);
                 }
                 case CARRIER_RELOADED -> {
                     if (!(helper.getBlockEntity(CARGO) instanceof FixtureContainerBlockEntity)) { return; }
                     assertRestored(helper, fixture);
                     helper.assertTrue(helper.getBlockEntity(CARGO) != fixture.source, "Restoration reused the detached source");
                     helper.assertTrue(probe.calls == 1, "Healthy reload retriggered the removed fault");
-                    queue(helper, fixture.owner); step = RestoreStep.HEALTHY_REASSEMBLY;
+                    queue(helper, fixture.owner); advance(RestoreStep.HEALTHY_REASSEMBLY);
                 }
                 case HEALTHY_REASSEMBLY -> {
                     if (rockets(helper).size() != 1) { return; }
-                    interact(fixture.owner, rockets(helper).get(0)); step = RestoreStep.HEALTHY_DISASSEMBLY;
+                    interact(fixture.owner, rockets(helper).get(0)); advance(RestoreStep.HEALTHY_DISASSEMBLY);
                 }
                 case HEALTHY_DISASSEMBLY -> {
                     if (!(helper.getBlockEntity(CARGO) instanceof FixtureContainerBlockEntity)) { return; }
@@ -224,6 +238,11 @@ public final class AdapterFaultGameTests {
             helper.assertTrue(probe.calls == 1 && probe.target != null && probe.target.isRemoved()
                     && ((net.minecraft.world.Container) probe.target).isEmpty(), "Failed detached target retained usable cargo");
             noDrops(helper);
+        }
+        private void advance(RestoreStep next) {
+            LogUtils.getLogger().info("ARCE_ADAPTER_TRANSITION mode={} from={} to={} tick={}",
+                    probe.mode, step, next, helper.getTick());
+            step = next;
         }
         private void clearFault() {
             if (fault == null) { return; }

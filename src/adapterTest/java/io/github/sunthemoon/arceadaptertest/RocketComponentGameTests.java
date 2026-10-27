@@ -28,6 +28,12 @@ import net.minecraftforge.registries.ForgeRegistries;
 @GameTestHolder(AdapterTestMod.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class RocketComponentGameTests {
+    @net.minecraft.gametest.framework.GameTestGenerator
+    public static java.util.Collection<net.minecraft.gametest.framework.TestFunction> asynchronousTransitions() {
+        return java.util.List.of(
+                AdapterAsyncFixture.test("w164_adapter_success", "RocketComponentGameTests.externalComponentsDriveActualAssemblyAndZeroFuelDisassembly",
+                        5, 1, false, RocketComponentGameTests::externalComponentsDriveActualAssemblyAndZeroFuelDisassembly) );
+    }
     private static final String HOST = "advancedrocketrycommunity";
     private static final ResourceLocation ROCKET = ResourceLocation.tryParse(HOST + ":rocket");
 
@@ -49,7 +55,6 @@ public final class RocketComponentGameTests {
         helper.succeed();
     }
 
-    @GameTest(templateNamespace = HOST, template = "rocket_test", batch = "w164_adapter_success", timeoutTicks = 40)
     public static void externalComponentsDriveActualAssemblyAndZeroFuelDisassembly(GameTestHelper helper) {
         BlockPos origin = new BlockPos(3, 2, 3);
         Map<BlockPos, Block> blocks = Map.of(origin, Blocks.DIAMOND_BLOCK, origin.west(), Blocks.EMERALD_BLOCK,

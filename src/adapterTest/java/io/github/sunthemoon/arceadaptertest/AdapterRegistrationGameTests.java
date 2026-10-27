@@ -29,6 +29,12 @@ import net.minecraftforge.registries.ForgeRegistries;
 @GameTestHolder(AdapterTestMod.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class AdapterRegistrationGameTests {
+    @net.minecraft.gametest.framework.GameTestGenerator
+    public static java.util.Collection<net.minecraft.gametest.framework.TestFunction> asynchronousTransitions() {
+        return java.util.List.of(
+                AdapterAsyncFixture.test("w164_adapter_success", "AdapterRegistrationGameTests.externalAdapterProductionAssemblyPreservesInventory",
+                        4, 1, false, AdapterRegistrationGameTests::externalAdapterProductionAssemblyPreservesInventory) );
+    }
     private static final String HOST_ID = "advancedrocketrycommunity";
     private static final ResourceLocation ROCKET_TYPE = ResourceLocation.tryParse(HOST_ID + ":rocket");
 
@@ -62,7 +68,6 @@ public final class AdapterRegistrationGameTests {
         helper.succeed();
     }
 
-    @GameTest(templateNamespace = HOST_ID, template = "rocket_test", batch = "w164_adapter_success", timeoutTicks = 40)
     public static void externalAdapterProductionAssemblyPreservesInventory(GameTestHelper helper) {
         helper.assertTrue(AdapterTestMod.registrationEvents() == 1,
                 "Production test started without exactly one external registration event");
