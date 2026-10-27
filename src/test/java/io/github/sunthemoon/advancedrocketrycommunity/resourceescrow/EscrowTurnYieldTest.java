@@ -46,7 +46,7 @@ class EscrowTurnYieldTest {
         try (var fixture = new Turns(temp)) {
             var device = UnstartedServer.allocate(FluidFuelLoaderBlockEntity.class);
             UnstartedServer.set(FluidFuelLoaderBlockEntity.class, device, "turns", fixture.first);
-            UnstartedServer.set(FluidFuelLoaderBlockEntity.class, device, "status", LoaderRoot.Status.INVALID);
+            LoaderFixtureData.install(device, null, LoaderRoot.Status.INVALID);
             fixture.first.blocked();
             assertEquals(FluidFuelLoaderStatus.INVALID_DATA, device.attempt());
             assertTrue(fixture.second.claim()); fixture.second.release();
