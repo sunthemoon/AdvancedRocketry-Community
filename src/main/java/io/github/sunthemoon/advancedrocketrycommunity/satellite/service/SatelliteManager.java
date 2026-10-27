@@ -722,7 +722,10 @@ public final class SatelliteManager {
                     && result.mission().filter(DiscoveryClaimRecovery::paidReceipt).isPresent()) {
                 // The receipt's token is fixed right after the paying claim; the queue keeps the first one.
                 pendingDiscoveryReplay.add(missionId, data.token());
-                result = applyDiscovery(server, missionId, pendingDiscoveryReplay.receipt(missionId, data::token));
+                var recovery = applyDiscovery(server, missionId, pendingDiscoveryReplay.receipt(missionId, data::token));
+                // Recovery may only request the receipt's write; it must not erase the paying claim's RAM mutation.
+                result = new SatelliteOperationResult(recovery.code(), result.changed() || recovery.changed(),
+                        recovery.satellite(), recovery.mission(), recovery.researchBalance());
                 if (!needsDiscoveryRetry(result)) { pendingDiscoveryReplay.remove(missionId); }
             }
             if (data.isDirty()) {
