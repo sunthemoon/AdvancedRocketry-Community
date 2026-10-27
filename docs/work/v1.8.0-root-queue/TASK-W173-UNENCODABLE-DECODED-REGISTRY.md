@@ -42,6 +42,21 @@ The mod never writes unqualified names. Only an edited, foreign or older file ca
    (AGENTS 3.3: scope, duration, log volume, recovery) and whether an ADR is needed.
 4. **Recommend one option.** Measure nothing that needs a server; unit-level probes with the real codec are fine.
 
+## Added scope (Root, 2026-10-28, from W168's second re-review)
+
+Read `D:/GitHub/ARCE-Task-Evidence/root-queue/W168-rereview2/REVIEW.md` (SHA-256 `56999b90…8005`). Cover these in
+the same note, with options and a recommendation:
+
+- **W168-R5 (hardening).** Two paths mark a reservation proven without encoding anything: the `int` overload at
+  `StorageBudget.java:45-47` (today only the 128-byte account size) and the default reservation methods of
+  `RecordSizer` (today the codec sizer overrides all four). Propose the smallest guard, for example an accounts-only
+  overload and a test that the codec sizer overrides all four methods.
+- **Runtime mission admission.** A mission whose largest state exceeds 4,096 bytes can still be admitted while the
+  server runs, because admission checks only the capped section bytes. Is this the same root cause as the decoded
+  case, and does the same option close both?
+
+W168 merges first, so base your note on the shared head that contains it.
+
 ## Verification
 
 Any probe runs with the real codec as a unit test, kept in the evidence folder and not committed. Run
