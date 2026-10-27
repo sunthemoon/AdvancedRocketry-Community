@@ -122,6 +122,11 @@ public final class RocketRuntime {
         }
     }
 
+    /** W27d1 GameTest support only: the installed manager's bay coordinator for this server session. */
+    static Optional<BayTransferRecovery> installedBays() {
+        return service instanceof RocketManager manager ? manager.baysForTests() : Optional.empty();
+    }
+
     /** W90b GameTest support only: the installed manager's transfer service, or null without a manager. */
     static RocketTransferService installedTransfers() {
         return service instanceof RocketManager manager ? manager.transfers() : null;
