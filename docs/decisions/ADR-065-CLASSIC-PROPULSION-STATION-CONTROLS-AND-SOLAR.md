@@ -1120,7 +1120,9 @@ This note records mechanics; it changes no decision and accepts no risk. The ris
 
 - **Checked writes.** `ROCKET_TRANSACTIONS` adopts W11b2's checked policy and exact acknowledgement (mutation
   sequence, NC1 root digest, transaction-to-record digests) on a checked-write core now shared with the transfer
-  journal, whose per-attempt results are unchanged. Writes stay synchronous at the journal's existing save cadence.
+  journal, whose per-attempt results are unchanged. Writes stay synchronous at the journal's existing save cadence
+  (superseded in mechanism by ADR-074, accepted 2026-10-26: W129a moves them to an off-thread checked writer, with
+  the results above unchanged).
   A definite failure keeps the old disk proof and dirty RAM; an ambiguous replacement, readback or directory force
   is UNKNOWN until a successful checked write. The acknowledgement is session-local; loading never acknowledges.
 - **B14 for W27d's D0.** A bounded absence query (at most 256 records) refuses a remaining assembly or disassembly
@@ -1783,7 +1785,7 @@ changes no decision status and accepts no risk. The risk is R-035.
   Leaves N3-B1 to N3-B4 follow W148 section 7; N3-B2 needs an independent persistence review before integration.
 - **N3-B2 isolation (W154 design revisions 1 and 2, `records/W154-DESIGN.md`; review W154-review BLOCK, SHA-256
   `6facedc6…`, and its re-review, SHA-256 `c67bfebd…`; Root decisions R91, R93 to R98 and R100, 2026-10-24, and R107,
-  2026-10-25; implemented by W152, W152F and W152G and merged at `6f00cbf5e`; W152H and W152I merged at `787c28e52` under R110, R112 and R114; W152J follows).** W152 showed that vanilla container access (hoppers, the item capability, menus, breaking) bypasses
+  2026-10-25; implemented by W152, W152F and W152G and merged at `6f00cbf5e`; W152H and W152I merged at `787c28e52` under R110, R112 and R114; W152J merged at `0e2cd5645`; W152K follows under R119).** W152 showed that vanilla container access (hoppers, the item capability, menus, breaking) bypasses
   the region locks while U is retained, so a rollback could restore items that had already left. Sealed staging closes
   that window. While U is retained, every member of the footprint is an inert carrier C: no inventory, capability,
   menu, ticker, drops or item form; unbreakable, and immune to explosions and pistons. C holds the member's original
@@ -1822,7 +1824,7 @@ changes no decision status and accepts no risk. The risk is R-035.
     root that fails validation keeps the member sealed and held, and is written back exactly as loaded on every save,
     with one bounded WARN per carrier per load.
   - **Limits:** no bound, lease, budget, timeout or protocol change.
-  - **Proof admission (R109 and R110, 2026-10-25; R112 and R114, 2026-10-26):** an active proof attempt is served every tick, and a sealed
+  - **Proof admission (R109 and R110, 2026-10-25; R112 and R114, 2026-10-26; R119, 2026-10-27):** an active proof attempt is served every tick, and a sealed
     attempt reserves the four ordinary capture slots of its Level until it ends. A plan wider than 21 slots is never
     started: that is a conservative admission policy within the unchanged quotas and 100-tick deadline, not an
     absolute native limit (a window opened earlier can fit 24). Supported assemblies can reach the planner's 129-slot
@@ -1833,9 +1835,15 @@ changes no decision status and accepts no risk. The risk is R-035.
     running during proof backoff. The hand-off bound is relative to native capture availability (R112): the
     waiting class gets its Level's first native capture opportunity at or after the other class's attempt ends,
     plus the 2-tick service lag; with the unchanged quota that can be 16 ticks after a sealed attempt. W152H and
-    W152I merged at `787c28e52` with review finding W152H-R1 open (R114): ordinary fail-back reservations can
-    still delay sealed admission without bound. Player admission (N3-B3) stays off until W152J fixes that and is
-    merged after a fresh review.
+    W152I merged at `787c28e52` with review finding W152H-R1 open (R114): ordinary fail-back reservations could
+    still delay sealed admission without bound. W152J fixed that and merged at `0e2cd5645` after a fresh review. A
+    refused new fail-back announces a RAM-only demand, and a caller that retries within two service ticks of the
+    sealed completion gets the turn. Under R119 (2026-10-27) the hand-off covers only such callers. A player's
+    refused one-shot countdown cancel gets `TRANSFER_JOURNAL_BLOCKED`, the countdown continues and the player can
+    cancel again. While sealed work runs back to back in the same Level, such a cancel has no bound. That is an
+    availability residual, recorded in R-035, and it is revisited if native or play evidence shows such load. Player
+    admission (N3-B3) stays off until W152K merges after a fresh review. W152K keeps ineligible holds from spending
+    a refused caller's window and makes the window's expiry an absolute tick.
   - **Stop condition:** W152's first commit probes the publication sequence, including an attachment listener that
     keeps the raw target, and stops if no one-step publication exists without a Mixin.
 

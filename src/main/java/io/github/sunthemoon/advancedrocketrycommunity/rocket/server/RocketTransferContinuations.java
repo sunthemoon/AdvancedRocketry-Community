@@ -36,7 +36,7 @@ final class RocketTransferContinuations {
         if (current == null || current.phase() != RocketTransferPhase.PREPARED && current.phase() != RocketTransferPhase.DESTINATION_SPAWNED
                 || !current.sourceEntityId().equals(source.getUUID()) || RocketRetirementGuards.destinationAdmitted(server, current)
                 || !retirements.admits(current, source, List.of(), List.of())) { return false; }
-        try (var held = RocketOrdinaryRetirement.hold(journal, current.logicalRocketId())) {
+        try (var held = retirements.holdFailBack(journal, current.logicalRocketId())) {
             if (held.token() == null) { return false; }
             io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowLaunchDiscard.note("FAIL_BACK",
                     () -> "logical=" + current.logicalRocketId() + " transfer=" + current.transferId() + " reason=" + reason.name());

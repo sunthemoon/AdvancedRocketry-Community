@@ -51,14 +51,18 @@ public final class SealedPreparationLatchGameTests {
     private static void run(GameTestHelper helper, FixtureAdapterFaults.Mode mode) {
         var at = helper.absolutePos(new BlockPos(4, 2, 4));
         var trial = new Trial(helper, at, mode);
-        // Source capture happens outside the fault scope; only coordinator-created detached targets are counted.
-        trial.carrier = SealedProductionProviderGameTests.stageForLatch(helper.getLevel(), at);
-        trial.saved = trial.carrier.saveWithFullMetadata();
-        trial.root = trial.carrier.saveWithoutMetadata();
-        ACTIVE.put(at, trial);
         helper.runAtTickTime(699, trial::close);
+        // W129aM transition (ADR-074 item 8): staging waits for the journal's acknowledgement, which the former
+        // synchronous checkpoint inside the staging bridge guaranteed. Staging changes no journal entry.
+        SealedProductionProviderGameTests.afterJournalAcknowledged(helper, () -> {
+            // Source capture happens outside the fault scope; only coordinator-created detached targets are counted.
+            trial.carrier = SealedProductionProviderGameTests.stageForLatch(helper.getLevel(), at);
+            trial.saved = trial.carrier.saveWithFullMetadata();
+            trial.root = trial.carrier.saveWithoutMetadata();
+            ACTIVE.put(at, trial);
+        });
         helper.onEachTick(() -> {
-            if (trial.closed) { return; }
+            if (trial.closed || trial.carrier == null) { return; }
             try { trial.tick(); }
             catch (RuntimeException | Error failure) { trial.close(); throw failure; }
         });

@@ -1,7 +1,7 @@
 # ADR-070 - Bootstrap test fixture lifecycle and existing class size
 
 ```yaml
-status: PROPOSED
+status: SUPERSEDED
 date: 2026-10-10
 owner: sunthemoon
 deciders: []
@@ -50,3 +50,11 @@ under its unchanged limit; old and new failed evidence stays unchanged. Ordinary
 failure-path cleanup is assessed from installed unittest source, not injected
 runtime failures. Cross-platform copying/ACL/abnormal-termination and whole
 qualification are open. No accepted ADR, budget or Gate is modified here.
+
+## Supersession (2026-10-26)
+
+Superseded by the owner in the Claude Code Root session on 2026-10-26, answering Root's multiple-choice question with the option "Approve all three (Recommended)" to the question: "withdraw ADR-068 (the kernel doesn't need
+it), and supersede ADR-070 and ADR-071 (the merged decompositions removed the over-800-line classes they
+would have excused)?" `fix/v1.8.0-bootstrap-scenario-organization` (merged) split the
+scenario class into mixins; on 2026-10-26 no class in `tests/test_validate_bootstrap_provenance.py` spans more than
+300 lines, so no size exception is needed.

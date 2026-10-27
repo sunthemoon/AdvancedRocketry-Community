@@ -98,7 +98,7 @@ public final class RocketTransactionCheckpointBenchmark {
     }
 
     /** The largest equal per-record padding whose 256 records fit the checked bound, found by bisection. */
-    private static int padding() {
+    static int padding() {
         int low = 0, high = RocketLimits.MAX_TOTAL_NBT_BYTES;
         long bound = TYPE.maxUncompressedBytes() - 64 * 1024;
         int empty = entryBytes(0);
@@ -120,7 +120,7 @@ public final class RocketTransactionCheckpointBenchmark {
     }
 
     /** RocketJournalBenchmark's 2,048-block snapshot, with its padding split over four block-entity payloads. */
-    private static RocketStructureSnapshot snapshot(int padding, int index) {
+    static RocketStructureSnapshot snapshot(int padding, int index) {
         byte[] entropy = new byte[RocketLimits.MAX_BLOCK_ENTITY_NBT_BYTES]; new Random(20261021L + index).nextBytes(entropy);
         var blocks = new ArrayList<RocketBlock>();
         for (int i = 0; i < RocketLimits.MAX_BLOCKS; i++) {

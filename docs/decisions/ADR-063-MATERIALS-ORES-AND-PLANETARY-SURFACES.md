@@ -750,3 +750,16 @@ need a new revision and review.
   static pattern cases. Existing source/processing/protection and other recipe
   identities do not change; actual implementation/DataGen/Forge/package checks
   are separate obligations, not results inferred from contract adoption.
+
+## Pointer: ADR-075 (accepted 2026-10-27)
+
+[ADR-075](ADR-075-MOON-LANDING-ON-THE-HEIGHTMAP.md) lands new Moon arrivals on the heightmap. These passages stay
+as written, for history:
+
+- Section 5, lines 249-254 (Moon terrain bounded below the landing height): the bound stays and now protects the
+  developer platform.
+- Section 5, lines 255-262 (Moon landing unchanged under ADR-033), lines 309-310 (the fixed y 80 rule over lower
+  terrain) and lines 314-325 ("v1.8 does not make that change"): superseded for new arrivals; ADR-075 makes the
+  change in v1.8 after the owner's decisions of 2026-10-26 and 2026-10-27. Recorded destinations and pads stay.
+- Section 9, lines 637-639 (Moon landing at y 80 or above): replaced by ADR-075's named test transitions.
+- Revisit when, lines 692-693 (a landing-rule ADR for the heightmap): met by ADR-075.

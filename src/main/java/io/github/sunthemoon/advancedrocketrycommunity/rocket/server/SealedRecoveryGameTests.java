@@ -90,7 +90,8 @@ public final class SealedRecoveryGameTests {
         var record = new RocketTransactionRecord(id, RocketTransactionType.SEALED_DISASSEMBLY,
                 elected ? RocketTransactionPhase.RESTORED : RocketTransactionPhase.LOCKED,
                 snapshot.snapshotId(), snapshot.contentHash(), RocketRegion.fromSnapshot(snapshot), 1, rocket.getUUID());
-        data.journalFor(snapshot, owner).write(record); data.checkpoint(server);
+        // W129aM transition (ADR-074 item 8): a request; the polled recovery waits for its acknowledgement by itself.
+        data.journalFor(snapshot, owner).write(record); data.requestCheckpoint(server);
         var carrierState = ModBlocks.SEALED_ROCKET_BLOCK.get().defaultBlockState();
         level.setBlock(origin, carrierState, 2);
         var carrier = new SealedRocketBlockEntity(origin, carrierState);

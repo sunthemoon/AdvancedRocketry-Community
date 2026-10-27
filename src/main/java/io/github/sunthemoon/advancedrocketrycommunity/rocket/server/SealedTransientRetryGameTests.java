@@ -1,7 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketTransactionSavedData;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.sealed.SealedRocketBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.sealed.SealedRocketMember;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
@@ -21,14 +21,20 @@ public final class SealedTransientRetryGameTests {
         var snapshot = SealedUnsealGameTests.snapshot(level, at, Blocks.IRON_BLOCK.defaultBlockState(), null);
         var member = new SealedRocketMember(UUID.randomUUID(), snapshot.snapshotId(), UUID.randomUUID(), snapshot.contentHash(),
                 level.dimension().location(), SealedUnsealGameTests.position(at), 0, snapshot.blocks().get(0).state(), null);
-        var carrier = SealedUnsealGameTests.install(level, at, member);
-        RocketTransactionSavedData.get(server).checkpoint(server);
-        boolean wasOff = level.noSave; level.noSave = true;
+        boolean wasOff = level.noSave;
+        var installed = new SealedRocketBlockEntity[1];
         long[] deadline = {-1}; boolean[] finished = {false};
         Runnable cleanup = () -> { level.noSave = wasOff; level.setBlock(at, Blocks.AIR.defaultBlockState(), 2); finished[0] = true; };
         helper.runAtTickTime(349, cleanup);
+        // W129aM transition (ADR-074 item 8): the former checkpoint after installation is awaited before it, so the
+        // first attempt is held by readiness, not by the pending write; the installation changes no journal entry.
+        SealedProductionTestAccess.afterJournalAcknowledged(helper, () -> {
+            installed[0] = SealedUnsealGameTests.install(level, at, member);
+            level.noSave = true;
+        });
         helper.onEachTick(() -> {
-            if (finished[0]) { return; }
+            if (finished[0] || installed[0] == null) { return; }
+            var carrier = installed[0];
             try {
                 long now = server.getTickCount();
                 helper.assertTrue(!carrier.preparationFailed(), "Readiness was treated as terminal preparation failure");

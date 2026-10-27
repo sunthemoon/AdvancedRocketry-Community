@@ -54,7 +54,9 @@ N3-B3 as the W148 section 7 row states it, with N3-B1 and N3-B2 on committed cod
 and `RocketTransferRecoveryService` (the fail-back reservation turn). Avoid editing those four classes. If the plan
 needs them, keep those edits small and in their own commits; Root merges W152J first and resolves any conflict.
 Player admission stays off on the shared branch until W152J merges after its review (R114), so this slice merges
-after W152J.
+after W152J. W152J merged at `0e2cd5645` (2026-10-27). Under R119, this slice also merges only after W152K, which fixes
+W152J-R3 and R5 in `SealedProofTurns` and `RocketOrdinaryRetirement`; Root merges W152K first and resolves any
+conflict.
 
 This is a persistence slice: an independent read-only review by a fresh Codex session follows before merge.
 
@@ -71,6 +73,92 @@ This is a persistence slice: an independent read-only review by a fresh Codex se
 Run heavy work under the heavy-JVM lock with the atomic pattern and the 90-second hand-off rule; W152J shares the
 lock. Before starting, check that C: and D: each have more than 10 GiB free and that 6 GiB of memory is free. Keep the
 evidence under 100,000,000 bytes and delete only the server and export copies you create.
+
+## Continuation under Root decision R115 (2026-10-26)
+
+The first session stopped at checkpoint `be1b01062` (05:48 to 07:20), not merge-ready.
+
+- **Done:**
+  - the bounded `BEFORE_RELEASE` site;
+  - the plain hook through the current-D and predecessor proof;
+  - the predecessor-U guards;
+  - the asynchronous completion, rollback-certificate and original-age seams.
+- **Results:** 5,130 unit tests pass. The complete GameTest had 1,415 of 1,416 pass:
+  `RocketI6PlainGameTests.plainHookKeepsTUntilCurrentDAndOldOriginAreProved` fails only in the complete run ("Plain
+  hook restored or removed D").
+- **Native count:** the record corrects the count. B-PRE alone is 20 cases and 60 counted starts, so B-PLAIN, B-M and
+  the combined terrain matrix cannot fit the 60-start limit above.
+
+A fresh Codex session continues on the same branch. It starts from the record and
+`D:/GitHub/ARCE-Task-Evidence/root-queue/W164/verification-9336b0fd4/INTEGRATION-NOTES.md`, in this order:
+
+1. **Diagnose the complete-run failure first.** Tell fixture timing from production behaviour, then fix the cause with
+   a regression. Do not raise a timeout or change the assertion.
+2. **Keep `RocketTransferService` under 800 lines** by extracting the I6 entry point. Do not add logic to it.
+3. **Finish items 3 to 5 above:**
+   - M0 and M1 with the proved P hand-off;
+   - cold preparation with a fresh request;
+   - B2 delegation using B2's actual result, shared capacity and original request age;
+   - M3 only on `ROLLBACK_PROVED`;
+   - no-T routing;
+   - the pending-preparation feedback.
+4. **Run native verification in tranches of at most 60 counted starts.**
+   - Tranche 1 is B-PRE (20 cases, 60 starts), after the implementation is complete. Then stop and report the count.
+   - B-PLAIN, B-M and the combined terrain matrix are tranche 2, in a later continuation before merge.
+   - No case is dropped or folded into another.
+
+Stage temporary source archives under `build/`, not in the evidence directory. The `W152J` notes above still apply:
+your small edits to `RocketOrdinaryRetirement` and `RocketTransferRecoveryService` stay in their own commits, and
+Root reconciles them after W152J merges.
+
+## Continuation under Root decision R118 (2026-10-27)
+
+The second session stopped at checkpoint `67a85eb90` (tested `6ac199d6b`), not merge-ready.
+
+- **Done:**
+  - the plain-hook fixture failure is fixed;
+  - M0 and M1, cold preparation, B2 delegation and no-T routing are implemented, with the feedback;
+  - clean build, 5,141 unit tests and runData pass.
+- **Open:** the complete GameTest had 1,411 of 1,423 pass, and the log checker failed.
+  - Eleven failures are in the unchanged public-consumer tests under `src/adapterTest`. They expect a disassembly
+    restore failure to roll D back and allow a retry within the same call, but B2 materializes later.
+  - One is `SealedSupersessionGameTests.changedCarrierInvalidatesItsPendingNativeProofBeforeElection`, which fails
+    only in the complete run.
+  - The checker also reports an unexpected returned-time WARN for `arce_adapter_test:cargo_inventory`, and two missing
+    expected WARNs.
+
+**R118, the compatibility answer.** [ADR-022](../../decisions/ADR-022-ROCKET-ADAPTER-REGISTRATION.md) promises
+outcomes, not same-call timing:
+
+- a restore failure rejects the operation and keeps entity and journal authority;
+- a missing or mismatched adapter blocks restoration until the same provider is reinstalled.
+
+So:
+
+1. **Classify the eleven tests** by what B2 does with each failure, citing the source: certified rollback before D3 (DR,
+   then M3), or an uncertified hold under R107 (a failed carrier kept until reload).
+2. **Named asynchronous-result transitions.** Each test may wait for B2's result instead of the same call. Keep every
+   outcome assertion:
+   - no lost or duplicated item, fluid or fuel;
+   - D retained or rolled back exactly;
+   - the failing callback counted;
+   - the later healthy disassembly succeeds.
+
+   For a DR case, the retry succeeds in the same session after DR completes. For an R107 hold, the test drives the
+   documented recovery (the carrier's reload) before the retry. List each transition in the record, as W129aM did.
+   Root adds the R107 hold for external adapters to ADR-022 and R-035 at merge.
+3. **Tick limits.** A transition that needs more than its 60-tick limit derives the new limit in the test from
+   production constants: the proof deadline, retry and phase budgets. W94B did the same. Never use a bare larger
+   number, and never change a test that passes on the synchronous path.
+4. **The returned-time WARN.** Find which callback B2 now times, and whether it is a real overrun or a change in what
+   is measured. Do not declare it in the manifest without that cause.
+5. **The supersession failure.** Diagnose it after merging the current shared head (item 6), because W152J's R117 fix
+   changes admission arbitration. No timeout change.
+6. **Merge the shared branch** (`codex/v1.8.0-classic-content`, local) into this branch before the complete GameTest,
+   once it contains W152J and W129aM. Check `git log codex/v1.8.0-classic-content` for the commits
+   `merge(v1.8.0): W152J` and `merge(v1.8.0): W129aM`; until both exist, work on items 1 to 4. Resolve conflicts in
+   their favour where they own the line, and record each conflict. W129aM makes the N3-B2 sealed journal port wait on `WRITE_PENDING`; keep that rule.
+7. **Then R115's native tranche 1:** B-PRE, 20 cases, 60 starts.
 
 ## Not in this task
 

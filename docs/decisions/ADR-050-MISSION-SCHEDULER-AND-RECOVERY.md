@@ -384,3 +384,10 @@ and no mutation is refused while an outcome is unknown. Write policy, synchronou
 epoch, tagged origins, ground surveys and limits are unchanged. The replay tuple contains satellite UUID, owner,
 definition and kind, never the current or retained initial mission; a fresh data launch still atomically creates
 its initial mission. This is a development implementation note, not owner acceptance or a Gate result.
+
+## Pointer: ADR-074 (accepted 2026-10-26)
+
+Section 2's "barrier flushes behave as today" and the synchronous epoch mechanism in the W119 implementation note
+are superseded in mechanism by [ADR-074](ADR-074-OFF-THREAD-REGISTRY-AND-TRANSACTION-WRITERS.md) when W129b and
+W129c merge. W119's proof rule stays, and its results are unchanged when nothing changes during a write; ADR-074
+item 5 names the one proof-test transition.

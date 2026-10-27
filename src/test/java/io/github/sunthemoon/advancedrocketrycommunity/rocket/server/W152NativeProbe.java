@@ -4,6 +4,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.CheckedJournalCheckpoint;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataPolicy;
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedRootSupplier;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModEntities;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowTestEndpoints;
@@ -54,6 +55,7 @@ public final class W152NativeProbe {
     private final AtomicBoolean paused = new AtomicBoolean();
     private volatile int age;
     private volatile String writerPhase = "INITIAL";
+    private String requestedPhase = "INITIAL";
     private volatile boolean done;
     private RocketEntity rocket;
     private UUID transaction;
@@ -140,7 +142,7 @@ public final class W152NativeProbe {
                     else { observe("C0_D_NEVER_SAVED"); }
                     if (consumers.vanilla()) {
                         var data = RocketTransactionSavedData.get(server);
-                        if (!data.acknowledgedCurrent()) { data.checkpoint(server); }
+                        if (!data.acknowledgedCurrent()) { data.requestCheckpoint(server); }
                     } else {
                         transaction = RocketRuntime.beginSealedForReleaseTest(rocket, result -> {
                             completion = result.name(); observe("COMPLETE_" + result);
@@ -149,7 +151,8 @@ public final class W152NativeProbe {
                     }
                 } else {
                     var data = RocketTransactionSavedData.get(server);
-                    if (data.entries().isEmpty() && !data.acknowledgedCurrent()) { data.checkpoint(server); }
+                    // W129aM (ADR-074): a request; stable() still waits for the acknowledgement it publishes later.
+                    if (data.entries().isEmpty() && !data.acknowledgedCurrent()) { data.requestCheckpoint(server); }
                     observe("RECOVERY_LOADED");
                 }
             }
@@ -246,11 +249,18 @@ public final class W152NativeProbe {
                 public long now() { return original.now(); }
                 public boolean operational() { return original.operational(); }
                 public boolean current() { return original.current(); }
-                public CheckedJournalCheckpoint.Outcome checkpoint() { return checkedWrite(); }
+                public boolean request() { return requestCheckedWrite(); }
+                public boolean writePending() { return original.writePending(); }
+                public CheckedJournalCheckpoint.Outcome outcome() { return original.outcome(); }
+                public void written(CheckedJournalCheckpoint.Outcome outcome) { checkedWritten(outcome); original.written(outcome); }
             });
         } catch (ReflectiveOperationException failure) { throw new IllegalStateException(failure); }
     }
-    private CheckedJournalCheckpoint.Outcome checkedWrite() {
+    /**
+     * W129aM (ADR-074): the journal writes off-thread, so the cut policy's committer and reader run on its IO thread and
+     * the _MOVE_ cuts pause there. The outcome is published on a later owner tick, where the _UNKNOWN cut pauses.
+     */
+    private boolean requestCheckedWrite() {
         var type = ManagedSavedDataType.ROCKET_TRANSACTIONS; var atomic = CheckedSavedDataPolicy.atomic(type);
         String phase = writerPhase;
         boolean unknown = boundary.equals(phase + "_UNKNOWN");
@@ -262,14 +272,19 @@ public final class W152NativeProbe {
             return atomic.reader().read(file, kind);
         });
         try {
-            var method = RocketTransactionSavedData.class.getDeclaredMethod("saveChecked", java.nio.file.Path.class, CheckedSavedDataPolicy.class);
+            var method = RocketTransactionSavedData.class.getDeclaredMethod("requestWrite", java.nio.file.Path.class, CheckedSavedDataPolicy.class);
             method.setAccessible(true);
-            var result = (CheckedJournalCheckpoint.Outcome) method.invoke(RocketTransactionSavedData.get(server),
-                    server.getWorldPath(LevelResource.ROOT).resolve("data").resolve(type.fileName()), policy);
-            observe(phase + "_WRITE_" + result);
-            if (unknown) { require(result == CheckedJournalCheckpoint.Outcome.UNKNOWN, "Fault did not produce UNKNOWN"); pause(phase + "_UNKNOWN"); }
-            return result;
+            boolean accepted = (boolean) method.invoke(RocketTransactionSavedData.get(server), ManagedRootSupplier.dataFile(server, type), policy);
+            if (accepted) { requestedPhase = phase; }
+            return accepted;
         } catch (ReflectiveOperationException failure) { throw new IllegalStateException(failure); }
+    }
+    private void checkedWritten(CheckedJournalCheckpoint.Outcome result) {
+        String phase = requestedPhase;
+        observe(phase + "_WRITE_" + result);
+        if (boundary.equals(phase + "_UNKNOWN")) {
+            require(result == CheckedJournalCheckpoint.Outcome.UNKNOWN, "Fault did not produce UNKNOWN"); pause(phase + "_UNKNOWN");
+        }
     }
     static java.lang.reflect.Field field(Class<?> type, String name) throws NoSuchFieldException {
         var result = type.getDeclaredField(name); result.setAccessible(true); return result;
