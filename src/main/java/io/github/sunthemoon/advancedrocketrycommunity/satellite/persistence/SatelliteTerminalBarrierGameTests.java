@@ -24,7 +24,6 @@ import io.github.sunthemoon.advancedrocketrycommunity.satellite.terminal.Termina
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.AfterBatch;
 import net.minecraft.gametest.framework.BeforeBatch;
@@ -113,49 +112,49 @@ public final class SatelliteTerminalBarrierGameTests {
         keys.add(key);
         var failed = new HeldWrite(true);
         holds.add(failed);
-            data.writePolicy(failed.policy);
-            terminal.handleButton(player, SatelliteTerminalMenu.BUTTON_CLAIM);
-            var paid = data.token();
-            helper.assertTrue(data.account(player.getUUID()).balance() == 20
-                    && data.mission(mission).orElseThrow().status() == MissionStatus.CLAIM_PENDING_DISCOVERY,
-                    "The first claim did not pay and retain its receipt");
-            helper.assertTrue(menu.status() == SatelliteOperationCode.REGISTRY_PENDING && table.at(key).isPresent(),
-                    "The paying claim lost its pending terminal DATA entry");
-            var entry = table.at(key).orElseThrow();
-            helper.assertTrue(entry.kind() == TerminalActionTable.Kind.DATA
-                    && entry.result() == SatelliteOperationCode.PENDING_DISCOVERY, "The original RAM result was lost");
-            helper.startSequence().thenWaitUntil(() -> helper.assertTrue(failed.entered.getCount() == 0,
+        data.writePolicy(failed.policy);
+        terminal.handleButton(player, SatelliteTerminalMenu.BUTTON_CLAIM);
+        var paid = data.token();
+        helper.assertTrue(data.account(player.getUUID()).balance() == 20
+                && data.mission(mission).orElseThrow().status() == MissionStatus.CLAIM_PENDING_DISCOVERY,
+                "The first claim did not pay and retain its receipt");
+        helper.assertTrue(menu.status() == SatelliteOperationCode.REGISTRY_PENDING && table.at(key).isPresent(),
+                "The paying claim lost its pending terminal DATA entry");
+        var entry = table.at(key).orElseThrow();
+        helper.assertTrue(entry.kind() == TerminalActionTable.Kind.DATA
+                && entry.result() == SatelliteOperationCode.PENDING_DISCOVERY, "The original RAM result was lost");
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(failed.entered.getCount() == 0,
                     "Writer has not reached the held committer"))
                 .thenExecute(() -> {
-            helper.assertTrue(!entry.covered(data) && celestial.get(PlanetaryContent.MARS).isEmpty(),
-                    "Discovery or the terminal completed before the paid receipt was covered");
-            long before = data.mutationSequence();
-            helper.assertTrue(!terminal.handleButton(player, SatelliteTerminalMenu.BUTTON_CANCEL)
-                    && data.mutationSequence() == before, "A conflicting button mutated the pending claim");
-            failed.release.countDown();
+                    helper.assertTrue(!entry.covered(data) && celestial.get(PlanetaryContent.MARS).isEmpty(),
+                            "Discovery or the terminal completed before the paid receipt was covered");
+                    long before = data.mutationSequence();
+                    helper.assertTrue(!terminal.handleButton(player, SatelliteTerminalMenu.BUTTON_CANCEL)
+                            && data.mutationSequence() == before, "A conflicting button mutated the pending claim");
+                    failed.release.countDown();
                 })
                 .thenWaitUntil(() -> helper.assertTrue(data.writerForTests().lastOutcome()
                         .filter(outcome -> outcome == SatelliteRegistryProof.Outcome.FAILED).isPresent(),
                         "The held attempt has not failed"))
                 .thenExecute(() -> {
-            TerminalPendingEffects.complete(server);
-            helper.assertTrue(table.at(key).orElseThrow() == entry && !data.covers(paid)
-                    && celestial.get(PlanetaryContent.MARS).isEmpty(), "Failure lost the stable pending entry or paid-receipt gate");
-            data.completeDue(now + 401); // A later clock mutation must not replace the entry's original token.
-            var later = data.token();
-            helper.assertTrue(later.sequence() > paid.sequence(), "The fixture did not advance the registry sequence");
-            helper.assertTrue(table.at(key).orElseThrow() == entry, "A later mutation replaced the original entry");
-            data.writePolicy(ATOMIC);
-            data.request(server);
+                    TerminalPendingEffects.complete(server);
+                    helper.assertTrue(table.at(key).orElseThrow() == entry && !data.covers(paid)
+                            && celestial.get(PlanetaryContent.MARS).isEmpty(), "Failure lost the stable pending entry or paid-receipt gate");
+                    data.completeDue(now + 401); // A later clock mutation must not replace the entry's original token.
+                    var later = data.token();
+                    helper.assertTrue(later.sequence() > paid.sequence(), "The fixture did not advance the registry sequence");
+                    helper.assertTrue(table.at(key).orElseThrow() == entry, "A later mutation replaced the original entry");
+                    data.writePolicy(ATOMIC);
+                    data.request(server);
                 })
                 .thenWaitUntil(() -> helper.assertTrue(table.at(key).isEmpty(), "The pending result has not been delivered"))
                 .thenExecute(() -> {
-            helper.assertTrue(data.covers(paid) && entry.covered(data), "Delivery ran before the original claim was covered");
-            helper.assertTrue(table.at(key).isEmpty() && menu.status() == SatelliteOperationCode.PENDING_DISCOVERY,
-                    "Coverage did not deliver the stored RAM result");
-            SatelliteRuntime.replayDiscoveriesForTests(server);
-            helper.assertTrue(celestial.get(PlanetaryContent.MARS).isPresent() && data.account(player.getUUID()).balance() == 20,
-                    "Covered discovery did not recover once without another payment");
+                    helper.assertTrue(data.covers(paid) && entry.covered(data), "Delivery ran before the original claim was covered");
+                    helper.assertTrue(table.at(key).isEmpty() && menu.status() == SatelliteOperationCode.PENDING_DISCOVERY,
+                            "Coverage did not deliver the stored RAM result");
+                    SatelliteRuntime.replayDiscoveriesForTests(server);
+                    helper.assertTrue(celestial.get(PlanetaryContent.MARS).isPresent() && data.account(player.getUUID()).balance() == 20,
+                            "Covered discovery did not recover once without another payment");
                 }).thenSucceed();
     }
 
@@ -178,43 +177,43 @@ public final class SatelliteTerminalBarrierGameTests {
         keys.add(key);
         var held = new HeldWrite(false);
         holds.add(held);
-            first.handleButton(player, SatelliteTerminalMenu.BUTTON_LAUNCH);
-            data.awaitForTests(server);
-            TerminalPendingEffects.complete(server);
-            helper.assertTrue(firstMenu.status() == SatelliteOperationCode.SUCCESS, "Survey fixture launch failed");
-            first.handleButton(player, SatelliteTerminalMenu.BUTTON_LAUNCH);
-            helper.assertTrue(firstMenu.status() == SatelliteOperationCode.SUCCESS, "Survey fixture start failed");
-            UUID mission = data.satellite(chip.satelliteId()).orElseThrow().currentMissionId().orElseThrow();
-            data.flush(server);
-            data.writePolicy(held.policy);
-            first.handleButton(player, SatelliteTerminalMenu.BUTTON_CANCEL);
-            var cancelled = data.token();
-            helper.startSequence().thenWaitUntil(() -> helper.assertTrue(held.entered.getCount() == 0,
+        first.handleButton(player, SatelliteTerminalMenu.BUTTON_LAUNCH);
+        data.awaitForTests(server);
+        TerminalPendingEffects.complete(server);
+        helper.assertTrue(firstMenu.status() == SatelliteOperationCode.SUCCESS, "Survey fixture launch failed");
+        first.handleButton(player, SatelliteTerminalMenu.BUTTON_LAUNCH);
+        helper.assertTrue(firstMenu.status() == SatelliteOperationCode.SUCCESS, "Survey fixture start failed");
+        UUID mission = data.satellite(chip.satelliteId()).orElseThrow().currentMissionId().orElseThrow();
+        data.flush(server);
+        data.writePolicy(held.policy);
+        first.handleButton(player, SatelliteTerminalMenu.BUTTON_CANCEL);
+        var cancelled = data.token();
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(held.entered.getCount() == 0,
                     "Cancellation write has not reached the held committer"))
                 .thenExecute(() -> {
-            helper.assertTrue(firstMenu.status() == SatelliteOperationCode.REGISTRY_PENDING
-                    && data.mission(mission).orElseThrow().status() == MissionStatus.CANCELLED, "Cancel did not enter its DATA barrier");
-            var moved = first.menuInventory().extractItem(SatelliteTerminalBlockEntity.SLOT_CONTROL_CHIP, 1, false);
-            helper.assertTrue(!moved.isEmpty(), "A DATA barrier incorrectly locked the chip");
-            insert(helper, second, SatelliteTerminalBlockEntity.SLOT_CONTROL_CHIP, moved);
-            long before = data.mutationSequence();
-            for (int button : new int[] {SatelliteTerminalMenu.BUTTON_LAUNCH, SatelliteTerminalMenu.BUTTON_CLAIM,
-                    SatelliteTerminalMenu.BUTTON_CANCEL, SatelliteTerminalMenu.BUTTON_UNLINK}) {
-                second.handleButton(player, button);
-                helper.assertTrue(secondMenu.status() == SatelliteOperationCode.REGISTRY_BUSY
-                        && data.mutationSequence() == before, "A second terminal bypassed pending admission for button " + button);
-            }
-            helper.assertTrue(!data.covers(cancelled) && data.satellite(chip.satelliteId()).orElseThrow().currentMissionId().isEmpty(),
-                    "A held cancellation admitted a successor survey");
-            held.release.countDown();
+                    helper.assertTrue(firstMenu.status() == SatelliteOperationCode.REGISTRY_PENDING
+                            && data.mission(mission).orElseThrow().status() == MissionStatus.CANCELLED, "Cancel did not enter its DATA barrier");
+                    var moved = first.menuInventory().extractItem(SatelliteTerminalBlockEntity.SLOT_CONTROL_CHIP, 1, false);
+                    helper.assertTrue(!moved.isEmpty(), "A DATA barrier incorrectly locked the chip");
+                    insert(helper, second, SatelliteTerminalBlockEntity.SLOT_CONTROL_CHIP, moved);
+                    long before = data.mutationSequence();
+                    for (int button : new int[] {SatelliteTerminalMenu.BUTTON_LAUNCH, SatelliteTerminalMenu.BUTTON_CLAIM,
+                            SatelliteTerminalMenu.BUTTON_CANCEL, SatelliteTerminalMenu.BUTTON_UNLINK}) {
+                        second.handleButton(player, button);
+                        helper.assertTrue(secondMenu.status() == SatelliteOperationCode.REGISTRY_BUSY
+                                && data.mutationSequence() == before, "A second terminal bypassed pending admission for button " + button);
+                    }
+                    helper.assertTrue(!data.covers(cancelled) && data.satellite(chip.satelliteId()).orElseThrow().currentMissionId().isEmpty(),
+                            "A held cancellation admitted a successor survey");
+                    held.release.countDown();
                 })
                 .thenWaitUntil(() -> helper.assertTrue(table.at(key).isEmpty(), "Cancellation result has not been delivered"))
                 .thenExecute(() -> {
-            helper.assertTrue(data.covers(cancelled) && table.at(key).isEmpty(), "Cancellation did not acknowledge and deliver");
-            second.handleButton(player, SatelliteTerminalMenu.BUTTON_LAUNCH);
-            helper.assertTrue(secondMenu.status() == SatelliteOperationCode.SUCCESS
-                    && data.satellite(chip.satelliteId()).orElseThrow().currentMissionId().isPresent(),
-                    "The second terminal could not start after cancellation coverage");
+                    helper.assertTrue(data.covers(cancelled) && table.at(key).isEmpty(), "Cancellation did not acknowledge and deliver");
+                    second.handleButton(player, SatelliteTerminalMenu.BUTTON_LAUNCH);
+                    helper.assertTrue(secondMenu.status() == SatelliteOperationCode.SUCCESS
+                            && data.satellite(chip.satelliteId()).orElseThrow().currentMissionId().isPresent(),
+                            "The second terminal could not start after cancellation coverage");
                 }).thenSucceed();
     }
 
