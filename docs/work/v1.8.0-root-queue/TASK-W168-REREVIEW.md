@@ -49,3 +49,26 @@ or server. Delete the worktree's `build`, `.gradle` and `logs` afterwards.
 
 A verdict (APPROVE, APPROVE-WITH-CHANGES or BLOCK); findings with an ID (W168-R3, ...), severity, file and line,
 problem and suggested change; the commands you ran and their results; the SHA-256 of REVIEW.md on the last line.
+
+## Second re-review, of the R132 continuation (2026-10-28)
+
+A new session reviews `ac6af2e5b..e29e0b843` (implementation `eb1c2e22b`, tests `09a47f0c8`). Use the review worktree
+`D:/GitHub/arce-v180-w168-rereview2`, a detached checkout of `e29e0b843`. Write
+`D:/GitHub/ARCE-Task-Evidence/root-queue/W168-rereview2/REVIEW.md`. The previous re-review is
+`D:/GitHub/ARCE-Task-Evidence/root-queue/W168-rereview/REVIEW.md` (SHA-256 `b112ec0a…5886`).
+
+1. **W168-R3 is closed.**
+   - Rerun that review's `probes/DecoderReviewTest.java`. Every case must answer exactly as the baseline does.
+   - A reservation's proof status must be set only by a successful canonical encoding, and it must survive restore,
+     transitions, removal and replacement.
+   - While any record is unproven, every ground fast path, including the older ordinary-change path, must take the
+     unchanged whole-root check.
+   - Look for any path that marks a record proven without encoding it, or that clears an unproven mark too early.
+2. **W168-R4:** check the capacity text and the saturation cases.
+3. **Nothing else changed:** the decoder, load acceptance, formats, bounds, section budgets, quotas and the protocol.
+4. **The whole slice** `67cc6e01e..e29e0b843`: is any operation now admitted that the whole-root check refuses?
+
+Rerun the targeted classes (`DecoderPreflightTest`, `ReservationCoverageTest`, `StorageBudgetTest`,
+`GroundPreflightTest`, `GroundSurveyScaleTest`, `GroundSurveyBoundsTest`) and the `satellite` packages. The same rules
+apply: no lock for unit runs, 6 GiB free memory, no GameTest, benchmark or server. Use the same output format, with
+findings numbered from W168-R5.
