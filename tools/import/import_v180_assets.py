@@ -31,6 +31,7 @@ from __future__ import annotations
 import argparse
 import csv
 import importlib
+import itertools
 import json
 import os
 import re
@@ -75,6 +76,10 @@ MAX_ENTRIES = 512
 MAX_SOURCES = 8
 MAX_UNITS = 16
 MAX_PLAN_BYTES = 4 * 1024 * 1024
+# A record that does not reproduce names its first differing value, each side cut to this many characters.
+MAX_SHOWN = 300
+MAX_COUNTED_DIFFERENCES = 1000
+_ABSENT = object()
 SHA256 = re.compile(r"[0-9a-f]{64}")
 COMMIT = re.compile(r"[0-9a-f]{40}")
 MODERN_KEY = re.compile(r"[A-Za-z0-9_.-]{1,256}")
@@ -514,12 +519,55 @@ def generate(root: Path, upstream: Path, plan_path: Path, record_path: Path, van
     return record
 
 
+def _shown(value: object) -> str:
+    text = "<absent>" if value is _ABSENT else json.dumps(value, ensure_ascii=False, sort_keys=True)
+    return text if len(text) <= MAX_SHOWN else text[:MAX_SHOWN] + f"... ({len(text)} characters)"
+
+
+def _differences(recorded: object, regenerated: object, path: str):
+    """The differing JSON paths in file order (sorted keys), the top-level review last: a changed core also changes
+    the review's content digest, which is not the cause."""
+    if isinstance(recorded, dict) and isinstance(regenerated, dict):
+        keys = sorted(set(recorded) | set(regenerated), key=lambda key: (path == "$" and key == "review", key))
+        for key in keys:
+            yield from _differences(recorded.get(key, _ABSENT), regenerated.get(key, _ABSENT), f"{path}.{key}")
+    elif isinstance(recorded, list) and isinstance(regenerated, list):
+        for index in range(max(len(recorded), len(regenerated))):
+            yield from _differences(recorded[index] if index < len(recorded) else _ABSENT,
+                                    regenerated[index] if index < len(regenerated) else _ABSENT, f"{path}[{index}]")
+    elif type(recorded) is not type(regenerated) or recorded != regenerated:
+        yield path, recorded, regenerated
+
+
+def describe_difference(recorded: bytes, regenerated: bytes) -> str:
+    """Where a record that does not reproduce first differs, with both values cut to a bounded size."""
+    try:
+        values = json.loads(recorded.decode("utf-8")), json.loads(regenerated.decode("utf-8"))
+    except (UnicodeError, json.JSONDecodeError):
+        values = None
+    if values is not None:
+        differences = list(itertools.islice(_differences(*values, "$"), MAX_COUNTED_DIFFERENCES + 1))
+        if differences:
+            path, old, new = differences[0]
+            count = (f"more than {MAX_COUNTED_DIFFERENCES}" if len(differences) > MAX_COUNTED_DIFFERENCES
+                     else str(len(differences)))
+            return (f"first differs at {path[:MAX_SHOWN]}: recorded {_shown(old)}, regenerated {_shown(new)} "
+                    f"({count} differing values)")
+    offset = next((index for index, (old, new) in enumerate(zip(recorded, regenerated)) if old != new),
+                  min(len(recorded), len(regenerated)))
+    line = recorded[:offset].count(b"\n") + 1
+    return (f"has equal or unreadable JSON values; the bytes first differ at byte {offset} (line {line}): "
+            f"recorded {recorded[offset:offset + 40]!r}, regenerated {regenerated[offset:offset + 40]!r}")
+
+
 def verify(root: Path, upstream: Path, plan_path: Path, record_path: Path, vanilla_specs: list[str]) -> list[str]:
     core, rendered = build(root, upstream, plan_path, vanilla_specs)
     errors = check_targets(root, rendered, record_path)
     recorded = checks.read_input(record_path, MAX_PLAN_BYTES)
-    if recorded != v010.pretty_json(v010.record_for(core, json.loads(recorded))):
+    regenerated = v010.pretty_json(v010.record_for(core, json.loads(recorded)))
+    if recorded != regenerated:
         errors.append("provenance record does not reproduce byte for byte from the plan, upstream and targets")
+        errors.append("provenance record " + describe_difference(recorded, regenerated))
     for target, data in sorted(rendered.items()):
         path = root / target
         if path.is_symlink() or not path.is_file():

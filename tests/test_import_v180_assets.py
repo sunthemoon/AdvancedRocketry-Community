@@ -546,6 +546,32 @@ class ImportV180AssetsTests(unittest.TestCase):
         self.assertIn("provenance record does not reproduce byte for byte from the plan, upstream and targets",
                       self.verify())
 
+    def test_verify_names_the_first_difference_of_the_record(self) -> None:
+        record = self.generate()
+        record["entries"][0]["upstream_history"][0]["subject"] = "tampered"
+        record["schema_version"] = 3
+        self.record.write_bytes(V010.pretty_json(record))
+        errors = self.verify()
+        self.assertIn("provenance record does not reproduce byte for byte from the plan, upstream and targets", errors)
+        self.assertIn('provenance record first differs at $.entries[0].upstream_history[0].subject: recorded '
+                      '"tampered", regenerated "Add the widget model, textures and translations" '
+                      '(2 differing values)', errors)
+        self.assertEqual(2, len(errors))
+
+    def test_record_difference_is_bounded_and_covers_formatting(self) -> None:
+        long = {"entries": [{"note": "x" * 10_000}], "review": {"content_digest": "a"}}
+        other = {"entries": [{"note": "y"}], "review": {"content_digest": "b"}}
+        message = MODULE.describe_difference(V010.pretty_json(long), V010.pretty_json(other))
+        self.assertTrue(message.startswith("first differs at $.entries[0].note: recorded \"xxx"), message)
+        self.assertIn("... (10002 characters), regenerated \"y\" (2 differing values)", message)
+        self.assertLess(len(message), 2 * MODULE.MAX_SHOWN + 200)
+        self.assertIn("first differs at $.extra: recorded <absent>, regenerated 1",
+                      MODULE.describe_difference(b"{}\n", b'{"extra": 1}\n'))
+        self.assertIn("first differs at $.flag: recorded 1, regenerated true",
+                      MODULE.describe_difference(b'{"flag": 1}\n', b'{"flag": true}\n'))
+        spaced = MODULE.describe_difference(b'{"a":  1}\n', b'{"a": 1}\n')
+        self.assertIn("equal or unreadable JSON values; the bytes first differ at byte 6 (line 1)", spaced)
+
     def test_approved_review_survives_only_an_unchanged_record(self) -> None:
         record = self.generate()
         record["review"].update(status="APPROVED", reviewer="reviewer", reviewed_at="2026-10-14")
