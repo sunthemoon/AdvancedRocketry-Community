@@ -152,7 +152,8 @@ final class ReservationCoverageTest {
             int after = SIZER.missionBytes(mission);
             System.out.println("ARCE_R129_CAPACITY mission " + mission.kind().id() + " encoded=" + bytes(
                     SatelliteNbtCodec.encodeMission(mission)) + " reservation_before=" + before + " reservation_after="
-                    + after + " fit_before=" + MISSION_BUDGET / before + " fit_after=" + MISSION_BUDGET / after);
+                    + after + " fit_before=" + Math.min(3072, MISSION_BUDGET / before)
+                    + " fit_after=" + Math.min(3072, MISSION_BUDGET / after));
             assertEquals(before + 40, after, "Every mission gains resolved_at and the longer previous status");
         }
         for (AsteroidInstance instance : List.of(pending(0, OWNER, InstanceOrigin.ground(id(100))),
@@ -163,6 +164,24 @@ final class ReservationCoverageTest {
         for (GroundSurveyJob job : List.of(active(0, OWNER), groundStates().get(0))) {
             System.out.println("ARCE_R129_CAPACITY ground_job reservation=" + SIZER.groundSurveyBytes(job)
                     + " fit=" + 1024L * 1024 / SIZER.groundSurveyBytes(job));
+        }
+    }
+
+    /** R132/W168-R4: +40 applies only before saturation; capped reservations may grow by 6 or 0 bytes. */
+    @Test void missionReservationCapacitySaturatesAtTheUnchangedRecordCap() {
+        for (int oldBytes : List.of(4056, 4090, 4096)) {
+            CompoundTag raw = DecoderPreflightTest.rawMission(4096, false);
+            raw.getCompound("quarantine").putString("previous_status", "ready");
+            raw.remove("resolved_at");
+            DecoderPreflightTest.resizeVersion(raw, oldBytes);
+            MissionState mission = SatelliteNbtCodec.decodeMission(raw);
+            assertEquals(raw, SatelliteNbtCodec.encodeMission(mission));
+            assertEquals(oldBytes, previousMissionReservation(mission));
+            assertEquals(4096, SIZER.missionBytes(mission));
+            assertEquals(Math.min(40, 4096 - oldBytes), SIZER.missionBytes(mission) - oldBytes);
+            assertEquals(oldBytes == 4056, SIZER.missionReservation(mission).proven(),
+                    "Only the variant that actually encodes at 4096 proves the lifecycle bound");
+            assertEquals(1536, Math.min(3072, MISSION_BUDGET / SIZER.missionBytes(mission)));
         }
     }
 

@@ -26,8 +26,9 @@ final class StorageBudget {
         }
     }
 
-    private final Map<Section, Map<UUID, Integer>> reservations = new EnumMap<>(Section.class);
+    private final Map<Section, Map<UUID, RecordSizer.Reservation>> reservations = new EnumMap<>(Section.class);
     private final Map<Section, Long> reserved = new EnumMap<>(Section.class);
+    private int unproven;
 
     StorageBudget() {
         for (Section section : Section.values()) {
@@ -42,19 +43,31 @@ final class StorageBudget {
     }
 
     void reserve(Section section, UUID id, int bytes) {
+        reserve(section, id, new RecordSizer.Reservation(bytes, true));
+    }
+
+    void reserve(Section section, UUID id, RecordSizer.Reservation reservation) {
         Objects.requireNonNull(id, "id");
-        if (bytes < 0) {
+        if (reservation.bytes() < 0) {
             throw new IllegalArgumentException("A reservation cannot be negative");
         }
-        Integer previous = reservations.get(section).put(id, bytes);
-        reserved.merge(section, (long) bytes - (previous == null ? 0 : previous), Long::sum);
+        RecordSizer.Reservation previous = reservations.get(section).put(id, reservation);
+        reserved.merge(section, (long) reservation.bytes() - (previous == null ? 0 : previous.bytes()), Long::sum);
+        if (previous != null && !previous.proven()) { unproven--; }
+        if (!reservation.proven()) { unproven++; }
     }
 
     void release(Section section, UUID id) {
-        Integer previous = reservations.get(section).remove(id);
+        RecordSizer.Reservation previous = reservations.get(section).remove(id);
         if (previous != null) {
-            reserved.merge(section, (long) -previous, Long::sum);
+            reserved.merge(section, (long) -previous.bytes(), Long::sum);
+            if (!previous.proven()) { unproven--; }
         }
+    }
+
+    /** Constant-time eligibility check; flags live until their reservation is replaced or released. */
+    boolean allProven() {
+        return unproven == 0;
     }
 
     boolean reservedFor(Section section, UUID id) {

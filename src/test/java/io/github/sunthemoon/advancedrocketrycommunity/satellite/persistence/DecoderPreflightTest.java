@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import io.github.sunthemoon.advancedrocketrycommunity.progression.ResearchAccount;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.*;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteState;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
 import java.util.List;
 import java.util.UUID;
@@ -160,6 +161,100 @@ final class DecoderPreflightTest {
                 request.instance(), false, registry.account(OWNER), 0, 0));
         if (fits) { assertEquals(GroundSurveys.Code.SUCCESS, registry.groundSurveys().start(request, 0).code()); }
         else { refusesUnchanged(registry, () -> registry.groundSurveys().start(request, 0)); }
+    }
+
+    @ParameterizedTest @ValueSource(booleans = {false, true})
+    void provenReservationExactlyAtTheCapKeepsTheFastPath(boolean normalize) {
+        MissionState mission = SatelliteNbtCodec.decodeMission(rawMission(normalize ? 3906 : 4096, normalize));
+        var reservation = CodecRecordSizer.INSTANCE.missionReservation(mission);
+        assertEquals(4096, reservation.bytes());
+        assertTrue(reservation.proven());
+        var sizer = new ProofCountingSizer();
+        var registry = SatelliteMissionRegistry.restore(0, 0, 2, sizer);
+        registry.restoreMission(mission);
+        assertEquals(GroundSurveys.Code.SUCCESS, registry.groundSurveys().start(GroundPreflightBenchmark.start(), 0).code());
+        assertEquals(0, sizer.rootChecks);
+    }
+
+    @ParameterizedTest @ValueSource(ints = {4090, 4096})
+    void validRecordWithFailedLifecycleSizingUsesFallbackWithoutChangingTheAnswer(int oldBytes) {
+        CompoundTag raw = rawMission(4096, false);
+        raw.getCompound("quarantine").putString("previous_status", "ready");
+        raw.remove("resolved_at");
+        resizeVersion(raw, oldBytes);
+        MissionState mission = SatelliteNbtCodec.decodeMission(raw);
+        assertEquals(raw, SatelliteNbtCodec.encodeMission(mission));
+        assertEquals(new RecordSizer.Reservation(4096, false), CodecRecordSizer.INSTANCE.missionReservation(mission));
+        var sizer = new ProofCountingSizer();
+        var registry = SatelliteMissionRegistry.restore(0, 0, 2, sizer);
+        registry.restoreMission(mission);
+        var root = SatelliteRegistryPayload.encodeCurrent(registry, new CompoundTag());
+        assertFalse(SatelliteRegistryPayload.decodeCurrent(root).restoreReport().changed());
+        var request = GroundPreflightBenchmark.start();
+        assertTrue(CodecRecordSizer.INSTANCE.groundMutationFits(registry, active(0, OWNER), request.instance(),
+                false, registry.account(OWNER), 0, 0));
+        assertEquals(GroundSurveys.Code.SUCCESS, registry.groundSurveys().start(request, 0).code());
+        assertEquals(1, sizer.rootChecks);
+        registry.markPersisted();
+        assertEquals(GroundSurveys.Code.SUCCESS, registry.groundSurveys().advanceSurvey(id(100), device(200), 24_000, 1).code());
+        assertEquals(2, sizer.rootChecks);
+    }
+
+    @Test void purgingTheLastUnprovenReservationRestoresTheFastPath() {
+        CompoundTag raw = rawMission(4096, false);
+        raw.putString("status", "claimed");
+        raw.remove("quarantine");
+        raw.putBoolean("acknowledged", false);
+        raw.remove("ack_epoch");
+        // Current CLAIMED encoding fits; restoring the longest quarantine/acknowledgement would need 4097 bytes.
+        resizeVersion(raw, SatelliteNbtSize.uncompressedBytes(raw) + 1);
+        MissionState mission = SatelliteNbtCodec.decodeMission(raw);
+        assertFalse(CodecRecordSizer.INSTANCE.missionReservation(mission).proven());
+        var sizer = new ProofCountingSizer();
+        var registry = SatelliteMissionRegistry.restore(0, 0, 2, sizer);
+        registry.restoreMission(mission);
+        assertEquals(GroundSurveys.Code.SUCCESS, registry.groundSurveys().start(GroundPreflightBenchmark.start(), 0).code());
+        assertEquals(1, sizer.rootChecks);
+        registry.markPersisted();
+        assertEquals(SatelliteOperationCode.SUCCESS, registry.resources().purge(mission.missionId()).code());
+        assertEquals(0, registry.reservedBytes("MISSIONS"));
+        assertEquals(GroundSurveys.Code.SUCCESS, registry.groundSurveys().advanceSurvey(id(100), device(200), 24_000, 1).code());
+        assertEquals(1, sizer.rootChecks, "The removal releases the proof flag as well as the bytes");
+    }
+
+    @ParameterizedTest @ValueSource(strings = {"JOB", "INSTANCE"})
+    void unprovenCandidateUsesFallbackBeforeAnyReservationIsPublished(String candidate) {
+        var sizer = new ProofCountingSizer() {
+            @Override public Reservation groundSurveyReservation(GroundSurveyJob value) {
+                return new Reservation(super.groundSurveyReservation(value).bytes(), !candidate.equals("JOB"));
+            }
+            @Override public Reservation instanceReservation(AsteroidInstance value) {
+                return new Reservation(super.instanceReservation(value).bytes(), !candidate.equals("INSTANCE"));
+            }
+            @Override public boolean groundMutationFits(SatelliteMissionRegistry registry, GroundSurveyJob job,
+                    AsteroidInstance instance, boolean remove, ResearchAccount account, long now, long observed) {
+                rootChecks++;
+                return false;
+            }
+        };
+        var registry = SatelliteMissionRegistry.restore(0, 0, 2, sizer);
+        refusesUnchanged(registry, () -> registry.groundSurveys().start(GroundPreflightBenchmark.start(), 0));
+        assertEquals(2, sizer.rootChecks);
+    }
+
+    private static class ProofCountingSizer extends GroundPreflightBenchmark.CountingSizer {
+        @Override public Reservation satelliteReservation(SatelliteState value) {
+            return CodecRecordSizer.INSTANCE.satelliteReservation(value);
+        }
+        @Override public Reservation missionReservation(MissionState value) {
+            return CodecRecordSizer.INSTANCE.missionReservation(value);
+        }
+        @Override public Reservation instanceReservation(AsteroidInstance value) {
+            return CodecRecordSizer.INSTANCE.instanceReservation(value);
+        }
+        @Override public Reservation groundSurveyReservation(GroundSurveyJob value) {
+            return CodecRecordSizer.INSTANCE.groundSurveyReservation(value);
+        }
     }
 
     private static void refusesUnchanged(SatelliteMissionRegistry registry, Supplier<GroundSurveys.Result> action) {

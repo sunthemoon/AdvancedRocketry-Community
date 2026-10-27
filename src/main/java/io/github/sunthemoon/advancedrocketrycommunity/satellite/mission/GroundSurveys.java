@@ -71,7 +71,7 @@ public final class GroundSurveys {
             }
             put(job);
             registry.budget.reserve(StorageBudget.Section.GROUND_SURVEYS, job.jobId(),
-                    registry.sizer.groundSurveyBytes(job));
+                    registry.sizer.groundSurveyReservation(job));
         }
     }
 
@@ -126,8 +126,10 @@ public final class GroundSurveys {
                     OptionalLong.empty(), OptionalLong.empty(), new Analysis(AnalysisState.WAITING,
                     start.analysisTicks(), start.analysisEnergy(), start.credit(), 0, Optional.empty()), Optional.empty());
             ResearchAccount account = registry.account(start.ownerId());
-            int jobBytes = registry.sizer.groundSurveyBytes(job);
-            int instanceBytes = registry.sizer.instanceBytes(instance);
+            var jobReservation = registry.sizer.groundSurveyReservation(job);
+            var instanceReservation = registry.sizer.instanceReservation(instance);
+            int jobBytes = jobReservation.bytes();
+            int instanceBytes = instanceReservation.bytes();
             if (jobBytes < 0 || jobBytes > SatelliteLimits.MAX_GROUND_SURVEY_RECORD_NBT_BYTES
                     || instanceBytes < 0 || instanceBytes > SatelliteLimits.MAX_INSTANCE_RECORD_NBT_BYTES
                     || !registry.budget.fits(StorageBudget.Section.GROUND_SURVEYS, jobBytes)
@@ -138,8 +140,8 @@ public final class GroundSurveys {
             }
             Result check = preflight(job, instance, false, account, now, observedTime);
             if (check != null) { return check; }
-            registry.budget.reserve(StorageBudget.Section.GROUND_SURVEYS, job.jobId(), jobBytes);
-            registry.budget.reserve(StorageBudget.Section.INSTANCES, instance.instanceId(), instanceBytes);
+            registry.budget.reserve(StorageBudget.Section.GROUND_SURVEYS, job.jobId(), jobReservation);
+            registry.budget.reserve(StorageBudget.Section.INSTANCES, instance.instanceId(), instanceReservation);
             publish(job, instance, false, account, observedTime);
             return result(Code.SUCCESS, true, job);
         }
@@ -352,8 +354,11 @@ public final class GroundSurveys {
                 return result(Code.STORAGE_BUDGET, false, jobs.get(next.jobId()));
             }
         }
-        int jobBytes = registry.sizer.groundSurveyBytes(next);
-        int instanceBytes = instance == null || remove ? 0 : registry.sizer.instanceBytes(instance);
+        var jobReservation = registry.sizer.groundSurveyReservation(next);
+        var instanceReservation = instance == null || remove ? new RecordSizer.Reservation(0, true)
+                : registry.sizer.instanceReservation(instance);
+        int jobBytes = jobReservation.bytes();
+        int instanceBytes = instanceReservation.bytes();
         if (jobBytes < 0 || jobBytes > SatelliteLimits.MAX_GROUND_SURVEY_RECORD_NBT_BYTES
                 || instanceBytes < 0 || instanceBytes > SatelliteLimits.MAX_INSTANCE_RECORD_NBT_BYTES) {
             return result(Code.STORAGE_BUDGET, false, jobs.get(next.jobId()));
@@ -370,7 +375,7 @@ public final class GroundSurveys {
             // instance yet; account creation likewise needs its own additional reservation in the proof.
             long addedBytes = (current == null ? (long) jobBytes + instanceBytes : 0L)
                     + (newAccount ? RecordSizer.ACCOUNT_BYTES : 0L);
-            if (!reservationsBoundRoot(addedBytes)
+            if (!(jobReservation.proven() && instanceReservation.proven() && reservationsBoundRoot(addedBytes))
                     && !registry.sizer.groundMutationFits(registry, next, instance, remove, account, now, observedTime)) {
                 return result(Code.STORAGE_BUDGET, false, current);
             }
@@ -385,12 +390,14 @@ public final class GroundSurveys {
     }
 
     /**
-     * Each reservation is the largest encoding its record can reach and an account encodes in at most
-     * {@link RecordSizer#ACCOUNT_BYTES}, so their sum plus the root framing bounds the encoded root. Only a
-     * restored root above its section budgets can fail this; its changes then take the whole-root preflight.
+     * Proven reservations cover the largest encoding their records can reach; an account encodes in at most
+     * {@link RecordSizer#ACCOUNT_BYTES}. Their sum plus framing bounds the encoded root, but a restored root
+     * above its section budgets can exceed the root byte limit. Failed sizing also invalidates the proof,
+     * even if its capped accounting bytes fit; both cases take the unchanged whole-root preflight.
      * Candidate additions are counted before publication reserves them; existing reservations are not subtracted.
      */
     private boolean reservationsBoundRoot(long addedBytes) {
+        if (!registry.budget.allProven()) { return false; }
         long bound = RecordSizer.ROOT_FRAMING_BYTES + (long) registry.accounts.size() * RecordSizer.ACCOUNT_BYTES
                 + addedBytes;
         for (StorageBudget.Section section : List.of(StorageBudget.Section.SATELLITES, StorageBudget.Section.MISSIONS,

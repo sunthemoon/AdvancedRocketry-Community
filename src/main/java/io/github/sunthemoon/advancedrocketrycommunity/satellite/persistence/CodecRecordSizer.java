@@ -45,6 +45,11 @@ public final class CodecRecordSizer implements RecordSizer {
 
     @Override
     public int satelliteBytes(SatelliteState satellite) {
+        return satelliteReservation(satellite).bytes();
+    }
+
+    @Override
+    public Reservation satelliteReservation(SatelliteState satellite) {
         SatelliteKindState state = satellite.kindState() instanceof SatelliteKindState.Solar solar
                 ? new SatelliteKindState.Solar(solar.outputMultiplierPercent(), Optional.of(ANY))
                 : satellite.kindState() instanceof SatelliteKindState.Survey survey
@@ -65,6 +70,11 @@ public final class CodecRecordSizer implements RecordSizer {
 
     @Override
     public int missionBytes(MissionState mission) {
+        return missionReservation(mission).bytes();
+    }
+
+    @Override
+    public Reservation missionReservation(MissionState mission) {
         MissionPayload payload = mission.payload() instanceof MissionPayload.Resource resource
                 ? new MissionPayload.Resource(resource.kind(), resource.reward(), ANY,
                         Optional.of(new MissionPayload.TerminalLocation(LONGEST_LEVEL, FAR)), true, Optional.of(ANY),
@@ -84,6 +94,11 @@ public final class CodecRecordSizer implements RecordSizer {
 
     @Override
     public int instanceBytes(AsteroidInstance instance) {
+        return instanceReservation(instance).bytes();
+    }
+
+    @Override
+    public Reservation instanceReservation(AsteroidInstance instance) {
         AsteroidInstance allocated = new AsteroidInstance(instance.schemaVersion(), instance.instanceId(),
                 instance.ownerId(), instance.system(), instance.asteroidType(), instance.tableVersion(),
                 instance.candidateFingerprint(), instance.seed(), instance.yield(), instance.createdAt(),
@@ -95,6 +110,11 @@ public final class CodecRecordSizer implements RecordSizer {
 
     @Override
     public int groundSurveyBytes(GroundSurveyJob job) {
+        return groundSurveyReservation(job).bytes();
+    }
+
+    @Override
+    public Reservation groundSurveyReservation(GroundSurveyJob job) {
         var source = new GroundSurveyJob.Device(ANY, LONGEST_LEVEL, Long.MAX_VALUE);
         var analysis = new GroundSurveyJob.Analysis(GroundSurveyJob.AnalysisState.CREDITED,
                 job.analysis().ticks(), job.analysis().energy(), job.analysis().credit(), job.analysis().ticks(),
@@ -159,12 +179,12 @@ public final class CodecRecordSizer implements RecordSizer {
         return SatelliteNbtSize.uncompressedBytes(tag);
     }
 
-    /** A variant the encoder refuses is reserved at the record bound it exceeded. */
-    private static int bounded(java.util.function.IntSupplier size, int bound) {
+    /** A refused variant keeps its accounting cap, but cannot authorize a whole-root preflight bypass. */
+    private static Reservation bounded(java.util.function.IntSupplier size, int bound) {
         try {
-            return size.getAsInt();
+            return new Reservation(size.getAsInt(), true);
         } catch (IllegalArgumentException overBound) {
-            return bound;
+            return new Reservation(bound, false);
         }
     }
 }
