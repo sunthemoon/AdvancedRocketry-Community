@@ -100,7 +100,8 @@ public record SatelliteComponentDefinition(
     static ResourceLocation location(JsonObject object, String key) {
         String raw = string(object, key);
         ResourceLocation parsed = raw.length() > 128 ? null : ResourceLocation.tryParse(raw);
-        if (parsed == null) {
+        // A bare name gains "minecraft:"; blueprints store the canonical form, which the registry decoder bounds.
+        if (parsed == null || parsed.toString().length() > 128) {
             throw new IllegalArgumentException("Field " + key + " is not a valid identifier");
         }
         return parsed;
