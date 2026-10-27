@@ -24,7 +24,8 @@ import net.minecraft.resources.ResourceLocation;
 
 /**
  * ADR-050 section 7 lifecycle reservation for the persisted registry: the largest encoding of a record over
- * every state it can still reach. The fields that never change (IDs, kind, reward, blueprint) are the record's
+ * every state it can still reach or be loaded in, since the reservation is computed once from whichever state
+ * admitted or restored it. The fields that never change (IDs, kind, reward, blueprint) are the record's
  * own; the fields a later transition adds (a current mission, a receiver link, times, a quarantine, a paying or
  * rebound terminal, an acknowledgement) take their largest value.
  */
@@ -72,9 +73,11 @@ public final class CodecRecordSizer implements RecordSizer {
         long ready = Math.max(mission.completesAtLogicalTime(), Long.MAX_VALUE - 1);
         MissionState claimed = variant(mission, MissionStatus.CLAIMED, OptionalLong.of(ready),
                 OptionalLong.of(Long.MAX_VALUE), Optional.empty(), payload);
+        // Held from CLAIM_PENDING_DISCOVERY: the longest previous status and the only one that keeps both times.
+        // The constructor accepts it for every kind, so a loaded file can hold it even where no transition leads.
         MissionState quarantined = variant(mission, MissionStatus.QUARANTINED, OptionalLong.of(ready),
-                OptionalLong.empty(), Optional.of(new MissionQuarantine(LONGEST_REASON, MissionStatus.READY, true)),
-                payload);
+                OptionalLong.of(Long.MAX_VALUE), Optional.of(new MissionQuarantine(LONGEST_REASON,
+                        MissionStatus.CLAIM_PENDING_DISCOVERY, true)), payload);
         return bounded(() -> Math.max(bytes(SatelliteNbtCodec.encodeMission(claimed)),
                 bytes(SatelliteNbtCodec.encodeMission(quarantined))), SatelliteLimits.MAX_MISSION_RECORD_NBT_BYTES);
     }
