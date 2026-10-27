@@ -10,6 +10,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowRunti
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.deployment.BayClaim;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.deployment.BayClaimBook;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.deployment.BayJournalCheckpoint;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.deployment.BayMember;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.deployment.BayStepQueue;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
@@ -133,7 +134,7 @@ final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
     /** ServerStoppingEvent, or the first observed shutdown: discard every waiting step and run no further effect. */
     void stop() {
         if (stopping) { return; }
-        stopping = true; queue.clear(); checks.clear();
+        stopping = true; queue.close(); checks.clear();
     }
 
     /** While held, an in-session claim renews only T's recorded flight tickets on both ends, without a load. */
@@ -211,20 +212,20 @@ final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
     private BayStepQueue.Result assemblyJournal(BayClaim claim, RocketTransferRecord record) {
         var transactions = RocketTransactionSavedData.get(server);
         var status = transactions.absenceStatus(claim.logical(), record.sourceSnapshot().snapshotId(), record.sourceEntityId());
-        switch (status) {
-            case PROVED -> { claim.groupPassed(GROUP_STEPS); return BayStepQueue.Result.AGAIN; }
-            case ASSEMBLY_JOURNAL_PENDING -> { return reject(claim, "ASSEMBLY_JOURNAL_PENDING", true); }
-            case WRITE_PENDING -> { return BayStepQueue.Result.NEXT_TICK; }
-            case ASSEMBLY_JOURNAL_UNPROVED -> {
-                if (claim.checkpointRequested()) { return reject(claim, "ASSEMBLY_JOURNAL_UNPROVED", true); }
+        switch (BayJournalCheckpoint.decide(BayJournalCheckpoint.Answer.valueOf(status.name()), claim.checkpointRequested())) {
+            case CONTINUE -> { claim.groupPassed(GROUP_STEPS); return BayStepQueue.Result.AGAIN; }
+            case REJECT_PENDING -> { return reject(claim, "ASSEMBLY_JOURNAL_PENDING", true); }
+            case REJECT_UNPROVED -> { return reject(claim, "ASSEMBLY_JOURNAL_UNPROVED", true); }
+            case WAIT -> { return BayStepQueue.Result.NEXT_TICK; }
+            case REQUEST -> {
+                if (transactions.requestCheckpoint(server) == RocketTransactionSavedData.CheckpointRequest.REFUSED) {
+                    return reject(claim, "ASSEMBLY_JOURNAL_UNPROVED", true); // the writer is unavailable
+                }
+                claim.markCheckpointRequested();
+                return BayStepQueue.Result.NEXT_TICK;
             }
-            case WRITE_REQUIRED -> { }
         }
-        if (transactions.requestCheckpoint(server) == RocketTransactionSavedData.CheckpointRequest.REFUSED) {
-            return reject(claim, "ASSEMBLY_JOURNAL_UNPROVED", true);
-        }
-        claim.markCheckpointRequested();
-        return BayStepQueue.Result.NEXT_TICK;
+        throw new IllegalStateException("Unreachable B14 action");
     }
 
     /** One bay per step, in position order: its package and owners, X, its receipt, replay-first validation, then D1. */

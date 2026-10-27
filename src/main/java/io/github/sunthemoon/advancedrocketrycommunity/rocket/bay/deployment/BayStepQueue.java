@@ -21,11 +21,12 @@ public final class BayStepQueue {
 
     private final ArrayDeque<UUID> order = new ArrayDeque<>();
     private final Set<UUID> queued = new HashSet<>();
+    private boolean closed;
 
-    /** Queues the key once; a key already queued keeps its place. */
+    /** Queues the key once; a key already queued keeps its place. A closed queue ignores it. */
     public void offer(UUID key) {
         Objects.requireNonNull(key, "key");
-        if (queued.add(key)) { order.addLast(key); }
+        if (!closed && queued.add(key)) { order.addLast(key); }
     }
 
     public boolean queued(UUID key) { return queued.contains(key); }
@@ -37,6 +38,7 @@ public final class BayStepQueue {
     }
 
     int run(int budget, Function<UUID, Result> step) {
+        if (closed) { return 0; }
         List<UUID> nextTick = new ArrayList<>();
         int steps = 0;
         while (steps < budget && !order.isEmpty()) {
@@ -56,4 +58,8 @@ public final class BayStepQueue {
     }
 
     public void clear() { order.clear(); queued.clear(); }
+
+    /** Server stopping (W129-DESIGN section 4.6): every waiting step is discarded and nothing runs again. */
+    public void close() { closed = true; clear(); }
+    public boolean closed() { return closed; }
 }
