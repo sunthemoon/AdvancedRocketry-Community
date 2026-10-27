@@ -5,13 +5,26 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import io.github.sunthemoon.advancedrocketrycommunity.progression.ResearchAccount;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.*;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteBlueprint;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteKind;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteKindState;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteLimits;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteState;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteStats;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteStatus;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.UUID;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -134,6 +147,96 @@ final class GroundPreflightTest {
         assertEquals(before, encoded(registry));
         assertEquals(reserved, GroundPreflightBenchmark.reservationBound(registry));
         assertEquals(sequence, registry.epochs().stateChanges());
+    }
+
+    /**
+     * W168-R1, the review's probe: restored DATA missions held from CLAIM_PENDING_DISCOVERY, then satellites and
+     * accounts, fill a loadable root to just below the bound. START must refuse exactly as the whole-root preflight
+     * does and leave the root, accounts, reservations, clock and mutation sequence unchanged.
+     */
+    @Test
+    void startOnARootOfHeldDiscoveryMissionsRefusesAsTheWholeRootPreflightDoes() {
+        var registry = SatelliteMissionRegistry.restore(0, 0, 2, CodecRecordSizer.INSTANCE);
+        registry.restoreAccount(ResearchAccount.empty(OWNER));
+        int rootBytes = SatelliteNbtSize.uncompressedBytes(encoded(registry));
+        int missionBytes = SatelliteNbtSize.uncompressedBytes(SatelliteNbtCodec.encodeMission(held(0))) - 3;
+        for (int index = 0; index < SatelliteLimits.MAX_MISSIONS; index++) {
+            registry.restoreMission(held(index));
+            rootBytes += missionBytes;
+        }
+        int satelliteBytes = SatelliteNbtSize.uncompressedBytes(SatelliteNbtCodec.encodeSatellite(heldSatellite(0))) - 3;
+        for (int index = 0; rootBytes + satelliteBytes <= SatelliteLimits.MAX_REGISTRY_NBT_BYTES
+                && index < SatelliteLimits.MAX_SATELLITES; index++) {
+            registry.restoreSatellite(heldSatellite(index));
+            rootBytes += satelliteBytes;
+        }
+        int accountBytes = SatelliteNbtSize.uncompressedBytes(SatelliteNbtCodec.encodeAccount(ResearchAccount.empty(id(10_000)))) - 3;
+        for (int index = 0; rootBytes + accountBytes <= SatelliteLimits.MAX_REGISTRY_NBT_BYTES; index++) {
+            registry.restoreAccount(ResearchAccount.empty(id(10_000 + index)));
+            rootBytes += accountBytes;
+        }
+        CompoundTag root = encoded(registry);
+        assertEquals(rootBytes, SatelliteNbtSize.uncompressedBytes(root));
+        registry = SatelliteRegistryPayload.decodeCurrent(root);
+        assertEquals(root, encoded(registry), "Loadable without repairs");
+
+        var request = GroundPreflightBenchmark.start();
+        GroundSurveyJob candidate = active(0, OWNER);
+        long added = CodecRecordSizer.INSTANCE.groundSurveyBytes(candidate)
+                + CodecRecordSizer.INSTANCE.instanceBytes(request.instance());
+        assertTrue(GroundPreflightBenchmark.reservationBound(registry) + added > SatelliteLimits.MAX_REGISTRY_NBT_BYTES,
+                "Reservations that cover the held missions cannot prove this START fits");
+        assertFalse(CodecRecordSizer.INSTANCE.groundMutationFits(registry, candidate, request.instance(), false,
+                registry.account(OWNER), 0, 0), "The whole-root preflight refuses the same START");
+        CompoundTag before = encoded(registry);
+        var accounts = registry.accounts();
+        var reserved = sections(registry);
+        long logical = registry.logicalGameTime();
+        long observed = registry.lastObservedGameTime();
+        long sequence = registry.epochs().stateChanges();
+
+        GroundSurveys.Result result = registry.groundSurveys().start(request, 0);
+        assertEquals(GroundSurveys.Code.STORAGE_BUDGET, result.code());
+        assertFalse(result.changed());
+        assertEquals(before, encoded(registry));
+        assertEquals(accounts, registry.accounts());
+        assertEquals(reserved, sections(registry));
+        assertEquals(logical, registry.logicalGameTime());
+        assertEquals(observed, registry.lastObservedGameTime());
+        assertEquals(sequence, registry.epochs().stateChanges());
+        assertTrue(registry.groundSurveys().all().isEmpty());
+        assertTrue(registry.instance(request.instance().instanceId()).isEmpty());
+    }
+
+    /** The review's held record: 128-character IDs, a 600-byte reward version and the longest quarantine reason. */
+    static MissionState held(int index) {
+        return new MissionState(2, new UUID(50, index), new UUID(51, index), OWNER, longId(1), MissionKind.DATA,
+                longId(2), Optional.empty(), 0, 0, 20, 1, MissionStatus.QUARANTINED, OptionalLong.of(20),
+                OptionalLong.of(20), "ࠀ".repeat(200),
+                Optional.of(new MissionQuarantine("Q".repeat(48), MissionStatus.CLAIM_PENDING_DISCOVERY, true)),
+                new MissionPayload.Data(1, 1, true));
+    }
+
+    /** An operational data satellite bound to {@link #held(int)} with eight 128-character components. */
+    static SatelliteState heldSatellite(int index) {
+        var components = new ArrayList<ResourceLocation>();
+        for (int component = 0; component < 8; component++) { components.add(longId(100 + component)); }
+        return new SatelliteState(2, new UUID(51, index), longId(1), OWNER, 0, SatelliteStatus.OPERATIONAL,
+                Optional.of(new UUID(50, index)), SatelliteKind.DATA, Optional.empty(),
+                new SatelliteBlueprint(components, false, new SatelliteStats(4, 10_720, 1_000, 1, 10)),
+                new SatelliteKindState.Plain(SatelliteKind.DATA));
+    }
+
+    private static ResourceLocation longId(int index) {
+        return ResourceLocation.tryParse("x:" + String.format(Locale.ROOT, "%06d", index) + "a".repeat(120));
+    }
+
+    private static Map<String, Long> sections(SatelliteMissionRegistry registry) {
+        var reserved = new LinkedHashMap<String, Long>();
+        for (String section : List.of("SATELLITES", "MISSIONS", "INSTANCES", "ACCOUNTS", "GROUND_SURVEYS")) {
+            reserved.put(section, registry.reservedBytes(section));
+        }
+        return reserved;
     }
 
     private static GroundSurveyJob lastAnalysis() {
