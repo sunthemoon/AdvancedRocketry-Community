@@ -107,10 +107,11 @@ final class BayDeploymentGameTestSupport {
             blocks.add(new RocketBlock(new RocketPosition(0, i + 1, 0), state("advancedrocketrycommunity:rocket_satellite_bay"),
                     new RocketBlockEntityPayload(SatelliteBayRocketAdapter.ID, root(owner, packages.get(i)))));
         }
-        var stats = new RocketStats(blocks.size(), 100, 1_000, 1_000, 1, 1, 1, 0);
+        // Counts match the blocks: one seat anchor on the base block and one block entity per bay.
+        var stats = new RocketStats(blocks.size(), 100, 1_000, 1_000, 1, 1, 1, packages.size());
         var propulsion = new RocketPropulsion(RocketPropulsion.Mode.ABSTRACT, 1_000, 0, 1, 1, RocketPropulsion.Settings.DEFAULTS);
         var snapshot = RocketStructureSnapshot.create(UUID.randomUUID(), level.dimension().location(), position(origin), blocks,
-                List.of(new RocketPosition(0, 1, 0)), stats, now, propulsion);
+                List.of(new RocketPosition(0, 0, 0)), stats, now, propulsion);
         var destination = snapshot.relocated(UUID.randomUUID(), level.dimension().location(), position(target), now);
         UUID logical = UUID.randomUUID(), transfer = UUID.randomUUID();
         var fuel = RocketFuelState.empty(propulsion).fill(1_000).state();

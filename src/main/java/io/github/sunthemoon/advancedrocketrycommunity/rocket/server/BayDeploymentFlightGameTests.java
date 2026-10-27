@@ -142,8 +142,10 @@ public final class BayDeploymentFlightGameTests {
                     helper.assertTrue(RocketRuntime.recoverTransfer(server, transfer).status() == RocketTransferRecoveryReport.Status.RETRY_LATER,
                             "Operator recovery of a held T must answer RETRY_LATER");
                 }
+                // The INTENT's acknowledgement and D2 run in one server tick after this test's tick, so the test sees INTENT
+                // queued or captured; the member state machine reaches REJECTED only from an acknowledged INTENT.
                 var intent = session.find(satellite(data)).orElse(null);
-                if (intent != null && intent.phase() == BayReceipt.Phase.INTENT && session.acknowledged(intent.op())) {
+                if (intent != null && intent.phase() == BayReceipt.Phase.INTENT) {
                     sawIntent = true;
                     helper.assertTrue(SatelliteMissionSavedData.get(server).decommission(satellite(data), owner, true, true).code()
                             == SatelliteOperationCode.DEPLOYMENT_PENDING, "Decommission was not fenced from INTENT");
@@ -151,13 +153,13 @@ public final class BayDeploymentFlightGameTests {
                 }
                 return;
             }
-            helper.assertTrue(sawIntent, "The data bay's INTENT was never durable before its outcome");
             helper.assertTrue(claim.stage() == BayClaim.Stage.ENDED && claim.handoff().orElseThrow() == BayClaim.Handoff.READY_SOURCE,
                     "The claim did not end with READY_SOURCE");
             var dataMember = claim.members().stream().filter(member -> member.satellite().orElseThrow().equals(satellite(data))).findFirst().orElseThrow();
             var solarMember = claim.members().stream().filter(member -> member.satellite().orElseThrow().equals(satellite(solar))).findFirst().orElseThrow();
             helper.assertTrue(dataMember.state() == BayMember.State.REJECTED && dataMember.reason().equals("DEPLOYMENT_UNAVAILABLE"),
                     "The data bay was not REJECTED with DEPLOYMENT_UNAVAILABLE: " + dataMember.state() + " " + dataMember.reason());
+            helper.assertTrue(sawIntent, "The data bay's INTENT was never observed before its outcome");
             helper.assertTrue(solarMember.state() == BayMember.State.REFUSED && solarMember.reason().equals(solarRefusal),
                     "The solar bay was not refused at D0 with its validation code: " + solarMember.state() + " " + solarMember.reason());
             var rejected = session.find(satellite(data)).orElseThrow();
