@@ -13,7 +13,9 @@ import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationLimit
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationRegion;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState;
 import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -138,7 +140,8 @@ public final class RocketLandingPadSelector {
             if (reservations.stream().anyMatch(region::overlaps)) {
                 continue;
             }
-            String refusal = unavailable(target, relocated, null, false);
+            // A new candidate always meets the support rule; the Moon's recheck threshold never applies here (ADR-075).
+            String refusal = unavailable(target, relocated, null, false, true, true);
             if (NamedLandingPadOccupancy.ENTITY_BUDGET.equals(refusal)) {
                 // The fixed pads share almost the same discovery box, so a later candidate cannot do better.
                 return RocketLandingPadSelection.failure(candidates, chunksLoaded, refusal);
@@ -255,16 +258,17 @@ public final class RocketLandingPadSelector {
             UUID allowedRocketId,
             boolean allowMatchingRocket
     ) {
-        return unavailable(target, destination, allowedRocketId, allowMatchingRocket, true);
+        return unavailable(target, destination, allowedRocketId, allowMatchingRocket, true, false);
     }
 
     /** Governed final boundaries cannot load terrain while checking their recorded destination. */
     public boolean availableLoaded(ServerLevel target, RocketStructureSnapshot destination) {
-        return unavailable(target, destination, null, false, false) == null;
+        return unavailable(target, destination, null, false, false, false) == null;
     }
 
+    /** {@code selection}: a new candidate, which always checks support where the surface needs it (ADR-075). */
     private String unavailable(ServerLevel target, RocketStructureSnapshot destination, UUID allowedRocketId,
-                               boolean allowMatchingRocket, boolean load) {
+                               boolean allowMatchingRocket, boolean load, boolean selection) {
         Objects.requireNonNull(target, "target");
         Objects.requireNonNull(destination, "destination");
         if (!target.dimension().location().equals(destination.sourceDimension())) {
@@ -303,8 +307,9 @@ public final class RocketLandingPadSelector {
                 return UNSAFE;
             }
         }
-        if (!legacySurface(target) && !target.dimension().equals(CelestialIds.SPACE_LEVEL)
-                && !supported(target, destination)) {
+        boolean support = selection ? SurfaceLandingRule.supportAtSelection(target.dimension())
+                : SurfaceLandingRule.supportAtRecheck(target.dimension(), region.minimum().y());
+        if (support && !supported(target, destination)) {
             return UNSAFE;
         }
         AABB box = new AABB(
@@ -405,26 +410,21 @@ public final class RocketLandingPadSelector {
                     centerZ,
                     Math.floorDiv(Math.addExact(bounds.minimum().z(), bounds.maximum().z()), 2)
             );
-            int surface = target.getMinBuildHeight() + 1;
             Set<Long> columns = new HashSet<>();
-            int inspected = 0;
+            IntArrayList heights = new IntArrayList();
             for (RocketBlock block : source.blocks()) {
                 int x = Math.addExact(originX, block.position().x());
                 int z = Math.addExact(originZ, block.position().z());
                 long column = BlockPos.asLong(x, 0, z);
                 if (columns.add(column)) {
-                    if (++inspected > RocketFlightLimits.MAX_LANDING_BLOCK_INSPECTIONS) {
+                    if (heights.size() >= RocketFlightLimits.MAX_LANDING_BLOCK_INSPECTIONS) {
                         return null;
                     }
-                    surface = Math.max(
-                            surface,
-                            target.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z)
-                    );
+                    heights.add(target.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z));
                 }
             }
-            if (target.dimension().equals(CelestialIds.MOON_LEVEL)) {
-                surface = Math.max(surface, SafeCelestialTravel.FIXED_FEET_POSITION.getY());
-            }
+            // ADR-075: no Moon floor; every surface lands on its highest footprint column.
+            int surface = SurfaceLandingRule.surface(target.getMinBuildHeight(), heights.toIntArray());
             int originY = Math.subtractExact(surface, bounds.minimum().y());
             RocketPosition origin = new RocketPosition(originX, originY, originZ);
             RocketPosition minimum = origin.add(bounds.minimum());
@@ -463,34 +463,32 @@ public final class RocketLandingPadSelector {
         return chunks.size();
     }
 
-    private static boolean legacySurface(ServerLevel target) {
-        return target.dimension() == Level.OVERWORLD || target.dimension().equals(CelestialIds.MOON_LEVEL);
-    }
-
     private static boolean withinBorder(ServerLevel target, RocketRegion region) {
         return target.getWorldBorder().isWithinBounds(new BlockPos(region.minimum().x(), 0, region.minimum().z()))
                 && target.getWorldBorder().isWithinBounds(new BlockPos(region.maximum().x(), 0, region.maximum().z()));
     }
 
     private static boolean supported(ServerLevel target, RocketStructureSnapshot snapshot) {
-        boolean supported = false;
-        int inspected = 0;
+        List<SurfaceLandingRule.Below> facts = new ArrayList<>();
         for (RocketBlock block : snapshot.blocks()) {
             if (block.position().y() != snapshot.bounds().minimum().y()) {
                 continue;
             }
-            if (++inspected > RocketFlightLimits.MAX_LANDING_BLOCK_INSPECTIONS) {
+            if (facts.size() >= RocketFlightLimits.MAX_LANDING_BLOCK_INSPECTIONS) {
                 return false;
             }
             var absolute = snapshot.sourceOrigin().add(block.position());
             var below = new BlockPos(absolute.x(), absolute.y() - 1, absolute.z());
             var state = target.getBlockState(below);
             if (!state.getFluidState().isEmpty()) {
-                return false;
+                // One fluid fact decides; the remaining blocks are not read.
+                facts.add(SurfaceLandingRule.Below.FLUID);
+                break;
             }
-            supported |= state.isFaceSturdy(target, below, Direction.UP);
+            facts.add(state.isFaceSturdy(target, below, Direction.UP)
+                    ? SurfaceLandingRule.Below.STURDY : SurfaceLandingRule.Below.OPEN);
         }
-        return supported;
+        return SurfaceLandingRule.supported(facts);
     }
 
     private record Candidate(int centerX, int centerZ, int originX, int originZ, Set<ChunkPos> chunks) {
