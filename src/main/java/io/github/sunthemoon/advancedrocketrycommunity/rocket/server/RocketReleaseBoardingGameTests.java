@@ -197,6 +197,9 @@ public final class RocketReleaseBoardingGameTests {
             var work = ((java.util.Map<?, ?>) RocketSourceRetirementFixtures.field(transfers.releaseOwner(server).coordinator, "work")).get(release);
             if (work != null && "CAPTURE_FAILED".equals(RocketSourceRetirementFixtures.field(work, "notice"))) { captureFailed = true; }
             if (RocketRuntime.releaseFenced(rocket)) { return; }
+            // W166: a dropped admission also lifts the fence. It never reaches B1 or publishes its S1 batch.
+            helper.assertTrue(b1Captured || !"NONE".equals(transfers.releaseOwner(server).coordinator.stage(release)),
+                    "B0 dropped the admission before S1 (B0_FAILED): a native save superseded the B0 capture, so S2 never ran");
             helper.assertTrue(departed, "S2 completed before the retained-rider departure was exercised");
             helper.assertTrue(captureFailed, "The superseded B1 capture was not rejected before retrying");
             helper.assertTrue(sidecar.acknowledgedCurrent() && sidecar.acknowledgedRoot().entries().stream()
