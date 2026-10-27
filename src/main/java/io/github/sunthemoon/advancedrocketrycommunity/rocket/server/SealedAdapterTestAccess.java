@@ -9,6 +9,9 @@ import net.minecraft.server.level.ServerLevel;
 /** Test-only pacing and budget facts; consumer code still compiles against the public API alone. */
 public final class SealedAdapterTestAccess {
     public static int retryTicks() { return RocketOrdinaryRetirement.RETRY_TICKS; }
+    public static int intentWindowTicks() {
+        return io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightLimits.INTENT_WINDOW_TICKS;
+    }
 
     public static int completionTicks(int members, int operations, boolean reload) {
         if (members < 1 || members > RocketLimits.MAX_BLOCKS || operations < 1 || operations > 2) {

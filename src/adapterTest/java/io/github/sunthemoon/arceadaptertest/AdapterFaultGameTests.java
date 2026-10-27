@@ -11,7 +11,6 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
@@ -111,6 +110,7 @@ public final class AdapterFaultGameTests {
         Fixture fixture = create(helper, mode == FixtureAdapterFaults.Mode.CAN_MOVE_SLOW ? AdapterTestMod.SLOW_MOVE_CONTAINER.get()
                 : mode == FixtureAdapterFaults.Mode.CAPTURE_SLOW ? AdapterTestMod.SLOW_CAPTURE_CONTAINER.get() : AdapterTestMod.CONTAINER.get());
         var probe = new FixtureAdapterFaults.Probe(mode);
+        AdapterAsyncFixture.Submission[] disassembly = new AdapterAsyncFixture.Submission[1];
         fixture.source.fault = probe;
         queue(helper, fixture.owner);
         helper.startSequence()
@@ -132,7 +132,8 @@ public final class AdapterFaultGameTests {
                     queue(helper, fixture.owner);
                 })
                 .thenWaitUntil(() -> helper.assertTrue(rockets(helper).size() == 1, "Healthy scan retry failed"))
-                .thenExecute(() -> interact(fixture.owner, rockets(helper).get(0)))
+                .thenExecute(() -> disassembly[0] = new AdapterAsyncFixture.Submission(fixture.owner, rockets(helper).get(0)))
+                .thenWaitUntil(() -> helper.assertTrue(disassembly[0].advance(helper), "Healthy disassembly admission is busy"))
                 // DISASSEMBLY_PENDING -> BLOCKS_PUBLISHED, through the installed B2 executor.
                 .thenWaitUntil(() -> assertRestored(helper, fixture)).thenSucceed();
     }
@@ -162,6 +163,7 @@ public final class AdapterFaultGameTests {
         CompoundTag authority, retained;
         BlockEntity carrier;
         AutoCloseable fault;
+        AdapterAsyncFixture.Submission submission;
         long heldAt;
         boolean closed;
 
@@ -174,9 +176,12 @@ public final class AdapterFaultGameTests {
             switch (step) {
                 case ASSEMBLY -> {
                     if (rockets(helper).size() != 1) { return; }
-                    rocket = rockets(helper).get(0); authority = saveRocket(helper, rocket);
-                    fault = FixtureAdapterFaults.detachedRestore(helper.absolutePos(CARGO), probe);
-                    interact(fixture.owner, rocket);
+                    if (rocket == null) {
+                        rocket = rockets(helper).get(0); authority = saveRocket(helper, rocket);
+                        fault = FixtureAdapterFaults.detachedRestore(helper.absolutePos(CARGO), probe);
+                        submission = new AdapterAsyncFixture.Submission(fixture.owner, rocket);
+                    }
+                    if (!submission.advance(helper)) { return; }
                     helper.assertTrue(!rocket.isRemoved() && authority.equals(saveRocket(helper, rocket)),
                             "Pending disassembly changed persisted rocket authority");
                     advance(RestoreStep.DISASSEMBLY_PENDING);
@@ -198,6 +203,9 @@ public final class AdapterFaultGameTests {
                 case PREPARATION_HELD -> {
                     assertHeld();
                     if (helper.getTick() - heldAt < AdapterAsyncFixture.retryTicks()) { return; }
+                    // Other U writers can make the whole-root acknowledgement temporarily stale.
+                    // Observe a current checked absence before reload, not at an arbitrary later sample.
+                    if (!AdapterAsyncFixture.checkedAbsent(carrier)) { return; }
                     clearFault();
                     var at = helper.absolutePos(CARGO); var state = carrier.getBlockState();
                     carrier.onChunkUnloaded(); helper.getLevel().removeBlockEntity(at);
@@ -212,11 +220,12 @@ public final class AdapterFaultGameTests {
                     assertRestored(helper, fixture);
                     helper.assertTrue(helper.getBlockEntity(CARGO) != fixture.source, "Restoration reused the detached source");
                     helper.assertTrue(probe.calls == 1, "Healthy reload retriggered the removed fault");
-                    queue(helper, fixture.owner); advance(RestoreStep.HEALTHY_REASSEMBLY);
+                    queue(helper, fixture.owner); submission = null; advance(RestoreStep.HEALTHY_REASSEMBLY);
                 }
                 case HEALTHY_REASSEMBLY -> {
                     if (rockets(helper).size() != 1) { return; }
-                    interact(fixture.owner, rockets(helper).get(0)); advance(RestoreStep.HEALTHY_DISASSEMBLY);
+                    if (submission == null) { submission = new AdapterAsyncFixture.Submission(fixture.owner, rockets(helper).get(0)); }
+                    if (submission.advance(helper)) { advance(RestoreStep.HEALTHY_DISASSEMBLY); }
                 }
                 case HEALTHY_DISASSEMBLY -> {
                     if (!(helper.getBlockEntity(CARGO) instanceof FixtureContainerBlockEntity)) { return; }
@@ -228,7 +237,6 @@ public final class AdapterFaultGameTests {
             helper.assertTrue(rocket.isRemoved() && rockets(helper).isEmpty(), "Held carrier coexists with D");
             helper.assertTrue(carrier != null && carrier == helper.getBlockEntity(CARGO)
                     && retained.equals(carrier.saveWithFullMetadata()), "Failed restoration changed carrier authority");
-            helper.assertTrue(AdapterAsyncFixture.checkedAbsent(carrier), "Materialization preceded checked U absence");
             var member = retained.getCompound("arce_sealed_rocket_member");
             helper.assertTrue(member.getUUID("rocket_entity_id").equals(rocket.getUUID())
                     && member.getCompound("block_entity").getCompound("data").getCompound("data").equals(fixture.inventory),
@@ -276,7 +284,7 @@ public final class AdapterFaultGameTests {
         diamonds.setHoverName(Component.literal("Fault fixture cargo"));
         container.setItem(0, diamonds);
         container.setItem(1, new ItemStack(Items.IRON_INGOT, 64));
-        var owner = new FakePlayer(helper.getLevel(), new GameProfile(UUID.randomUUID(), "AdapterFault"));
+        var owner = new AdapterAsyncFixture.Player(helper.getLevel(), new GameProfile(UUID.randomUUID(), "AdapterFault"));
         BlockPos absolute = helper.absolutePos(ORIGIN);
         owner.setPos(absolute.getX() + 0.5D, absolute.getY(), absolute.getZ() + 0.5D);
         return new Fixture(owner, container, container.captureInventory());
@@ -305,12 +313,6 @@ public final class AdapterFaultGameTests {
         // Log outside the timed provider callback so receipt I/O cannot select a different failure branch.
         LogUtils.getLogger().info("ARCE_ADAPTER_FAULT mode={} calls={} delayed_ns={} readbacks={}",
                 probe.mode, probe.calls, probe.delayedNanos, probe.readbacks);
-    }
-
-    private static void interact(FakePlayer owner, Entity rocket) {
-        owner.setPos(rocket.getX(), rocket.getY(), rocket.getZ());
-        owner.setShiftKeyDown(true);
-        try { rocket.interact(owner, InteractionHand.MAIN_HAND); } finally { owner.setShiftKeyDown(false); }
     }
 
     private static CompoundTag saveRocket(GameTestHelper helper, Entity rocket) {

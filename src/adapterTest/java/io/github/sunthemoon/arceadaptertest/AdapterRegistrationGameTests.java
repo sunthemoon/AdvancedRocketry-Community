@@ -13,7 +13,6 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
@@ -86,7 +85,7 @@ public final class AdapterRegistrationGameTests {
         CompoundTag expectedInventory = original.captureInventory();
 
         // A per-test owner avoids the global fake-player cache and needs no login or test hook.
-        FakePlayer owner = new FakePlayer(helper.getLevel(),
+        FakePlayer owner = new AdapterAsyncFixture.Player(helper.getLevel(),
                 new GameProfile(UUID.randomUUID(), "AdapterFixture"));
         BlockPos absoluteOrigin = helper.absolutePos(origin);
         owner.setPos(absoluteOrigin.getX() + 0.5D, absoluteOrigin.getY(), absoluteOrigin.getZ() + 0.5D);
@@ -103,6 +102,7 @@ public final class AdapterRegistrationGameTests {
 
         AABB region = new AABB(absoluteOrigin).inflate(3.0D);
         Entity[] authority = new Entity[1];
+        AdapterAsyncFixture.Submission[] disassembly = new AdapterAsyncFixture.Submission[1];
         helper.startSequence()
                 .thenWaitUntil(() -> helper.assertTrue(rockets(helper, region).size() == 1,
                         "Production tick did not assemble one fixture rocket; assembler="
@@ -121,14 +121,9 @@ public final class AdapterRegistrationGameTests {
                             "Assembly dropped duplicate inventory items");
 
                     // Normal player interaction dispatches into the installed production RocketRuntime.
-                    owner.setPos(rocket.getX(), rocket.getY(), rocket.getZ());
-                    owner.setShiftKeyDown(true);
-                    try {
-                        rocket.interact(owner, InteractionHand.MAIN_HAND);
-                    } finally {
-                        owner.setShiftKeyDown(false);
-                    }
+                    disassembly[0] = new AdapterAsyncFixture.Submission(owner, rocket);
                 })
+                .thenWaitUntil(() -> helper.assertTrue(disassembly[0].advance(helper), "Production disassembly admission is busy"))
                 // DISASSEMBLY_PENDING -> BLOCKS_PUBLISHED; no same-call completion promise.
                 .thenWaitUntil(() -> helper.assertTrue(helper.getBlockState(cargoPosition).is(AdapterTestMod.CONTAINER.get()),
                         "Production disassembly has not published the inventory"))
