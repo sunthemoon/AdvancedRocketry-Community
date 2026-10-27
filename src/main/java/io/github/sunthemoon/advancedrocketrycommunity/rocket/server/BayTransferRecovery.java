@@ -61,14 +61,16 @@ final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
     private final java.util.Set<UUID> registryBlockedForTests = new java.util.HashSet<>();
     private final java.util.Set<UUID> checkpointRefusedForTests = new java.util.HashSet<>();
     @Nullable private BayDeploymentCuts cuts;
-    private boolean stopping, ticked, registryBlockedSession;
+    private boolean stopping, ticked, registryBlockedSession, refuseRegistration;
 
     private BayTransferRecovery(MinecraftServer server, BayDeploymentSession session) {
         this.server = server; this.session = session;
-        registration = new BayRegistrationSteps(server, session, checks);
-        publication = new BayGroupPublication(server, session, registration, this::offer);
+        registration = new BayRegistrationSteps(server, session, checks, () -> refuseRegistration);
+        publication = new BayGroupPublication(server, session, registration, this::offer,
+                (claim, receipt) -> { if (cuts != null) { cuts.writing(claim, receipt); } });
         consumption = new BayConsumptionSteps(server, publication);
-        proof = new BaySourceProof(server, session, this::offer);
+        proof = new BaySourceProof(server, session, this::offer, (claim, op) -> { if (cuts != null) { cuts.removing(claim, op); } },
+                claim -> cuts != null && cuts.stallAfterConsumption(claim));
         resume = new BaySourceResume(server);
     }
 
@@ -82,6 +84,7 @@ final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
         coordinator.beginRestart(session.receipts());
         coordinator.cuts = BayDeploymentCuts.configured(server);
         coordinator.registryBlockedSession = BayDeploymentCuts.registryBlocked(server);
+        coordinator.refuseRegistration = BayDeploymentCuts.refuseRegistration(server);
         return coordinator;
     }
 
@@ -200,7 +203,8 @@ final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
 
     private BayStepQueue.Result step(UUID logical) {
         BayClaim claim = claims.get(logical).orElse(null);
-        if (claim == null || claim.stage() == BayClaim.Stage.ENDED || shuttingDown()) { return BayStepQueue.Result.IDLE; }
+        if (claim == null || shuttingDown()) { return BayStepQueue.Result.IDLE; }
+        if (claim.stage() == BayClaim.Stage.ENDED) { audit(claim); return BayStepQueue.Result.IDLE; } // D7 ends it in a completion
         BayStepQueue.Result result = switch (claim.stage()) {
             case GROUP -> groupStep(claim);
             case BAYS -> bayStep(claim);

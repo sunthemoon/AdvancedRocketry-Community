@@ -37,12 +37,14 @@ final class BayRegistrationSteps {
     private final MinecraftServer server;
     private final BayDeploymentSession session;
     private final BayDeploymentChecks checks;
+    private final java.util.function.BooleanSupplier refuse;
     private final Map<UUID, SatelliteRegistryProof.Watch> watches = new HashMap<>();
     private final Map<UUID, Long> epochs = new HashMap<>();
     private final Map<UUID, SatelliteRegistryProof.Checkpoint> tickets = new HashMap<>();
 
-    BayRegistrationSteps(MinecraftServer server, BayDeploymentSession session, BayDeploymentChecks checks) {
-        this.server = server; this.session = session; this.checks = checks;
+    /** {@code refuse} is the gated native B9 seam: true only on a release-test server that asks D2 to refuse. */
+    BayRegistrationSteps(MinecraftServer server, BayDeploymentSession session, BayDeploymentChecks checks, java.util.function.BooleanSupplier refuse) {
+        this.server = server; this.session = session; this.checks = checks; this.refuse = refuse;
     }
 
     /**
@@ -56,7 +58,7 @@ final class BayRegistrationSteps {
         SatelliteIdentity identity = bay == null ? null : bay.identity().orElse(null);
         if (identity == null || !identity.satelliteId().equals(intent.satellite())) { return Optional.of("INVALID_PACKAGE"); }
         SatelliteLaunchService service = SatelliteRuntime.launchService().orElse(null);
-        if (service == null) { return Optional.of("SERVER_ERROR"); }
+        if (service == null || refuse.getAsBoolean()) { return Optional.of("SERVER_ERROR"); }
         var registry = SatelliteMissionSavedData.get(server);
         if (!registry.operational()) { return Optional.of("REGISTRY_BLOCKED"); }
         ResourceLocation body = ResourceLocation.tryParse(intent.orbit());

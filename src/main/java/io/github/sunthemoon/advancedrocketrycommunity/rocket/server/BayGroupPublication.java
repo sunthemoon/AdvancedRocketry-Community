@@ -36,11 +36,14 @@ final class BayGroupPublication {
     private final BayDeploymentSession session;
     private final BayRegistrationSteps registration;
     private final Consumer<UUID> offer;
+    private final java.util.function.BiConsumer<BayClaim, BayReceipt> beforeWrite;
     private final Map<UUID, BayConsumedSnapshots.Job> jobs = new HashMap<>();
     private final Map<UUID, Prepared> prepared = new HashMap<>();
 
-    BayGroupPublication(MinecraftServer server, BayDeploymentSession session, BayRegistrationSteps registration, Consumer<UUID> offer) {
-        this.server = server; this.session = session; this.registration = registration; this.offer = offer;
+    /** {@code beforeWrite} is the gated native cut seam (a no-op outside release tests). */
+    BayGroupPublication(MinecraftServer server, BayDeploymentSession session, BayRegistrationSteps registration, Consumer<UUID> offer,
+                        java.util.function.BiConsumer<BayClaim, BayReceipt> beforeWrite) {
+        this.server = server; this.session = session; this.registration = registration; this.offer = offer; this.beforeWrite = beforeWrite;
     }
 
     /** Whether the claim is ready to freeze: every member resolved or proved, and at least one proved. */
@@ -100,6 +103,7 @@ final class BayGroupPublication {
                     group.srcAfter(), group.dstBefore(), group.dstAfter(), BayReceipt.Phase.REGISTERED, "NONE", intent.preexisting(),
                     false, registration.epoch(intent.op()), intent.createdTick(), now, intent.attempts()));
         }
+        beforeWrite.accept(claim, receipts.get(0));
         var admission = session.putGroup(receipts, outcome -> completed(claim, group, outcome));
         if (!admission.queued()) { return BayStepQueue.Result.NEXT_TICK; } // BUSY or unavailable: no time limit
         for (int i = 0; i < receipts.size(); i++) { group.members().get(i).groupQueued(receipts.get(i)); }

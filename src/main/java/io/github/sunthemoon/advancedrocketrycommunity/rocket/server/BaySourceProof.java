@@ -41,21 +41,26 @@ final class BaySourceProof {
     private final MinecraftServer server;
     private final BayDeploymentSession session;
     private final Consumer<UUID> offer;
+    private final java.util.function.BiConsumer<BayClaim, UUID> beforeRemoval;
+    private final java.util.function.Predicate<BayClaim> stall;
     /** W98's port; the coordinator uses only its slot and barrier calls, so it is built without a transfer dispatch. */
     private final RocketRetirementWorld port;
     private final Map<UUID, Proved> proofs = new HashMap<>();
     private final Map<UUID, Long> retryAt = new HashMap<>();
     private final Set<UUID> capturing = new HashSet<>(), retiring = new HashSet<>();
 
-    BaySourceProof(MinecraftServer server, BayDeploymentSession session, Consumer<UUID> offer) {
-        this.server = server; this.session = session; this.offer = offer; port = new RocketRetirementWorld(server, null);
+    /** {@code beforeRemoval} and {@code stall} are the gated native cut seams (no-ops outside release tests). */
+    BaySourceProof(MinecraftServer server, BayDeploymentSession session, Consumer<UUID> offer,
+                   java.util.function.BiConsumer<BayClaim, UUID> beforeRemoval, java.util.function.Predicate<BayClaim> stall) {
+        this.server = server; this.session = session; this.offer = offer; this.beforeRemoval = beforeRemoval; this.stall = stall;
+        port = new RocketRetirementWorld(server, null);
     }
 
     /** D6 at stage PROVE. */
     BayStepQueue.Result prove(BayClaim claim) {
         UUID logical = claim.logical();
         if (claim.hold() == BayClaim.Hold.REPAIR || capturing.contains(logical)) { return BayStepQueue.Result.IDLE; }
-        if (server.getTickCount() < retryAt.getOrDefault(logical, Long.MIN_VALUE)) { return BayStepQueue.Result.NEXT_TICK; }
+        if (stall.test(claim) || server.getTickCount() < retryAt.getOrDefault(logical, Long.MIN_VALUE)) { return BayStepQueue.Result.NEXT_TICK; }
         BayGroup group = claim.group().orElseThrow();
         var journal = RocketTransferSavedData.get(server);
         RocketTransferRecord record = journal.find(claim.transfer()).orElse(null);
@@ -110,6 +115,7 @@ final class BaySourceProof {
         if (claim.hold() == BayClaim.Hold.REPAIR) { return BayStepQueue.Result.IDLE; }
         if (proved == null || !proved.valid() || !current(claim, proved)) { return again(claim); }
         BayGroup group = claim.group().orElseThrow();
+        beforeRemoval.accept(claim, group.operations().get(0));
         var admission = session.removeGroup(group.operations(), proved::valid, outcome -> retired(claim, group, outcome));
         if (admission.status() == BayReceiptStore.Status.BUSY) { return BayStepQueue.Result.NEXT_TICK; }
         if (!admission.queued()) {

@@ -59,8 +59,15 @@ public final class BayReleaseTestCommands {
                         .executes(context -> {
                             // The gate decides before the position is resolved against a Level (W128R-R1).
                             EscrowTestEndpoints.requireEnabled(context.getSource().getServer());
-                            return fixture(context.getSource(), BlockPosArgument.getLoadedBlockPos(context, "pos"));
-                        })))
+                            return fixture(context.getSource(), BlockPosArgument.getLoadedBlockPos(context, "pos"), false);
+                        })
+                        // W170 B4: the second bay holds a survey package, a non-data kind that needs no research.
+                        .then(Commands.literal("survey").executes(context -> {
+                            EscrowTestEndpoints.requireEnabled(context.getSource().getServer());
+                            return fixture(context.getSource(), BlockPosArgument.getLoadedBlockPos(context, "pos"), true);
+                        }))))
+                // W170 B16: a paused receipt replacement continues without a stop (its guard decides at the move).
+                .then(Commands.literal("release").executes(context -> release(context.getSource())))
                 .then(Commands.literal("status").then(Commands.argument("logical", UuidArgument.uuid())
                         .executes(context -> status(context.getSource(), UuidArgument.getUuid(context, "logical")))))
                 .then(Commands.literal("fill").then(Commands.argument("count", IntegerArgumentType.integer(1, 64))
@@ -68,12 +75,12 @@ public final class BayReleaseTestCommands {
                 .then(Commands.literal("pending").executes(context -> pending(context.getSource()))))));
     }
 
-    private static int fixture(CommandSourceStack source, BlockPos origin) {
+    private static int fixture(CommandSourceStack source, BlockPos origin, boolean survey) {
         MinecraftServer server = source.getServer();
         EscrowTestEndpoints.requireEnabled(server);
         ServerLevel level = server.overworld();
         var data = BayDeploymentGameTestSupport.dataPackage(OWNER);
-        var solar = BayDeploymentGameTestSupport.solarPackage(OWNER);
+        var solar = survey ? BayDeploymentGameTestSupport.surveyPackage(OWNER) : BayDeploymentGameTestSupport.solarPackage(OWNER);
         List<BlockPos> blocks = List.of(origin, origin.above(), origin.above(2), origin.west(), origin.east(), origin.east().above());
         level.setBlock(origin, ModBlocks.ROCKET_MOTOR.get().defaultBlockState(), Block.UPDATE_ALL);
         level.setBlock(origin.above(), ModBlocks.ROCKET_SEAT.get().defaultBlockState(), Block.UPDATE_ALL);
@@ -126,14 +133,18 @@ public final class BayReleaseTestCommands {
                     entity -> entity.assemblyTransactionId().filter(logical::equals).isPresent())) { rocket = candidate; }
         }
         RocketEntity found = rocket;
+        // W170: each bay root's consumed operation ("-" while it holds its package), and the fixture owner's satellites.
+        String consumed = found == null ? "NONE" : BayDeploymentGameTestSupport.consumedOps(found.snapshot().orElseThrow()).stream()
+                .map(op -> op == null ? "-" : op.toString()).collect(Collectors.joining("+"));
         LOGGER.info("ARCE_RELEASE_BAY_STATUS logical={} claim={} hold={} reason={} receipts=[{}] transfer={} rocket={} state={} y={} "
-                        + "packages={} locked={}", logical, claim.map(value -> value.stage().name()).orElse("NONE"),
+                        + "packages={} locked={} consumed={} owned={}", logical, claim.map(value -> value.stage().name()).orElse("NONE"),
                 claim.map(value -> value.hold().name()).orElse("NONE"), claim.map(io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.deployment.BayClaim::reason).orElse("NONE"), receipts,
                 record == null ? "NONE" : record.phase().name(), found == null ? "NONE" : found.getUUID(),
                 found == null ? "NONE" : found.flightData().map(data -> data.state().name()).orElse("NONE"),
                 found == null ? "NONE" : String.valueOf(found.getY()),
                 found == null ? "NONE" : signatures(found.snapshot().orElseThrow()),
-                io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceipts.holdsRocket(server, logical));
+                io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceipts.holdsRocket(server, logical), consumed,
+                registry.operational() ? registry.ownerSatellites(OWNER) : -1);
         source.sendSuccess(() -> Component.literal("Bay status reported"), false);
         return 1;
     }
@@ -157,6 +168,16 @@ public final class BayReleaseTestCommands {
         LOGGER.info("ARCE_RELEASE_BAY_FILLED requested={} queued={}", count, queued);
         source.sendSuccess(() -> Component.literal("Bay pending capacity filled"), false);
         return queued;
+    }
+
+    private static int release(CommandSourceStack source) {
+        MinecraftServer server = source.getServer();
+        EscrowTestEndpoints.requireEnabled(server);
+        io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowRuntime.of(server).bayReceipts(server).commitCutForTests(server)
+                .orElseThrow().release();
+        LOGGER.info("ARCE_RELEASE_BAY_RELEASE_REQUESTED");
+        source.sendSuccess(() -> Component.literal("Bay commit cut released"), false);
+        return 1;
     }
 
     private static int pending(CommandSourceStack source) {

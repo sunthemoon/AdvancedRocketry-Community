@@ -53,6 +53,15 @@ final class BayDeploymentGameTestSupport {
         return stack;
     }
 
+    /** W170: a survey package of the shipped survey satellite, a non-data kind with no research requirement. */
+    static ItemStack surveyPackage(UUID owner) {
+        ItemStack stack = new ItemStack(ModItems.SATELLITE_PACKAGE.get());
+        SatelliteItemData.write(stack, new SatelliteIdentity(UUID.randomUUID(), owner, ModIdentity.id("survey_satellite"),
+                SatelliteKind.SURVEY, List.of(ModIdentity.id("satellite_chassis"), ModIdentity.id("survey_scanner_module"),
+                        ModIdentity.id("satellite_solar_module"), ModIdentity.id("data_storage_unit"), ModIdentity.id("satellite_battery"))));
+        return stack;
+    }
+
     static UUID satellite(ItemStack pkg) {
         return SatelliteBayPackage.decode(pkg.copyWithCount(1).serializeNBT()).identity().orElseThrow().satelliteId();
     }
@@ -74,6 +83,33 @@ final class BayDeploymentGameTestSupport {
     static void clearBay(ServerLevel level, BlockPos absolute) {
         level.removeBlockEntity(absolute);
         level.setBlock(absolute, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+    }
+
+    /**
+     * W170: registers the shipped solar package's satellite as an earlier launch would (the bay then replays it as
+     * IDEMPOTENT); no GameTest can grant the 120 lifetime research a fresh solar launch needs.
+     */
+    static void registerSolar(net.minecraft.server.MinecraftServer server, ItemStack solar, UUID owner) {
+        var identity = SatelliteBayPackage.decode(solar.copyWithCount(1).serializeNBT()).identity().orElseThrow();
+        var code = io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteMissionSavedData.get(server).launchIdle(
+                time -> io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteState.launchIdle(identity.satelliteId(),
+                        identity.definitionId(), owner, time, io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds.EARTH_ID,
+                        new io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteBlueprint(identity.components(), false,
+                                new io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteStats(4, 720, 0, 0, 10)),
+                        new io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteKindState.Solar(100, Optional.empty())),
+                server.overworld().getGameTime()).code();
+        if (code != io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteOperationCode.SUCCESS) {
+            throw new IllegalStateException("Solar registry fixture refused: " + code);
+        }
+    }
+
+    /** W170: each bay root's consumed operation, in block order; null for a bay that still holds its package. */
+    static List<UUID> consumedOps(RocketStructureSnapshot snapshot) {
+        var ops = new ArrayList<UUID>();
+        for (CompoundTag root : bayPayloads(snapshot)) {
+            ops.add(SatelliteBayRoot.decode(root).contents().orElseThrow().consumed().orElse(null));
+        }
+        return ops;
     }
 
     /** The bay payloads of a snapshot, in block order. */
