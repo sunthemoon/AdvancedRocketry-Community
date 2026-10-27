@@ -1752,6 +1752,33 @@
       "counts": {"rocket_release_boarding": 1},
       "test": "RocketReleaseBoardingGameTests.sameSeatBoardsOnlyAfterS2AndSurvivesReloadWithoutRevivingOldCopies",
       "reason": "After a permitted retained-rider departure, the fixture explicitly stores the entity chunk while B1 is pending and asserts that its native generation supersedes the capture. W80 requires that capture to fail once and retry before S2; departure alone does not invalidate the manifest proof."
+    },
+    {
+      "id": "w128r-bay-protected-source-endpoint-proof",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_FENCED transfer=[0-9a-f-]{36} reason=ENDPOINT_PROOF_REQUIRED repair=offline-whole-world",
+      "counts": {"bay_deployment": 1},
+      "test": "BayDeploymentGameTests.anEscrowBoundSourceIsRefusedWithBaySourceProtectedAndKeepsItsPackages",
+      "reason": "W27d1: after BAY_SOURCE_PROTECTED the claim hands READY_SOURCE back, and the ordinary flight's endpoint classification fences the fixture source, whose bound escrow wrapper names a ledger that does not exist."
+    },
+    {
+      "id": "w128r-bay-protected-source-invalid-endpoint",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_FENCED transfer=[0-9a-f-]{36} reason=INVALID_ENDPOINT repair=offline-whole-world",
+      "counts": {"bay_deployment": 1},
+      "test": "BayDeploymentGameTests.anEscrowBoundSourceIsRefusedWithBaySourceProtectedAndKeepsItsPackages",
+      "reason": "W27d1: the same ordinary classification also records the bound wrapper with no ledger as an invalid endpoint; the test then removes its record."
+    },
+    {
+      "id": "w128r-bay-released-to-ordinary-source-recovery",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RECOVERY transfer=[0-9a-f-]{36} phase=PREPARED source_count=1 destination_count=0 action=KEEP_SOURCE status=RECOVERED",
+      "counts": {"bay_deployment": 1},
+      "test": "BayDeploymentGameTests.releasedToOrdinaryGivesTheOrdinaryStationaryRecovery",
+      "reason": "W27d1 (section 8.1 test 8): the claim ends RELEASED_TO_ORDINARY before any receipt, so exact ordinary source recovery restores and acknowledges the stationary source."
     }
   ]
 }

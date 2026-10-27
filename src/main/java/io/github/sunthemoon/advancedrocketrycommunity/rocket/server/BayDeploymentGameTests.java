@@ -244,7 +244,7 @@ public final class BayDeploymentGameTests {
             for (UUID id : List.of(equal, differs)) {
                 helper.assertTrue(registry.launchIdle(t -> SatelliteState.launchIdle(id, ModIdentity.id("solar_satellite"), owner, t,
                         ModIdentity.id("earth"), new SatelliteBlueprint(List.of(ModIdentity.id("primary")), false,
-                                new SatelliteStats(4, 720, 0, 0, 10)), new SatelliteKindState.Plain(SatelliteKind.SURVEY)), 0)
+                                new SatelliteStats(4, 720, 0, 0, 10)), new SatelliteKindState.Plain(SatelliteKind.GAS_HARVESTER)), 0)
                         .code() == io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteOperationCode.SUCCESS,
                         "Registry fixture refused");
             }
@@ -259,7 +259,7 @@ public final class BayDeploymentGameTests {
             var otherOwner = intent(record, absent, UUID.randomUUID(), "solar_satellite");
             helper.assertTrue(BayRestartRows.row(server, otherOwner) == BayRestartRows.Row.HOLD_AUTHORITY, "Owner mismatch");
             var missing = new BayReceipt(UUID.randomUUID(), 1, record.logicalRocketId(), new RocketPosition(0, 1, 0), absent, owner,
-                    ModIdentity.id("solar_satellite").toString(), SatelliteKind.SURVEY, ModIdentity.id("earth").toString(),
+                    ModIdentity.id("solar_satellite").toString(), SatelliteKind.GAS_HARVESTER, ModIdentity.id("earth").toString(),
                     record.sourceSnapshot().contentHash(), UUID.randomUUID(), record.sourceSnapshot().contentHash(), null,
                     record.destinationSnapshot().contentHash(), null, BayReceipt.Phase.INTENT, "NONE", false, false, 0, 0, 0, 0);
             helper.assertTrue(BayRestartRows.row(server, missing) == BayRestartRows.Row.HOLD_AUTHORITY, "T missing must hold, no write");
@@ -275,7 +275,7 @@ public final class BayDeploymentGameTests {
 
     private static BayReceipt intent(RocketTransferRecord record, UUID satellite, UUID owner, String definition) {
         return new BayReceipt(UUID.randomUUID(), 1, record.logicalRocketId(), new RocketPosition(0, 1, 0), satellite, owner,
-                ModIdentity.id(definition).toString(), SatelliteKind.SURVEY, ModIdentity.id("earth").toString(),
+                ModIdentity.id(definition).toString(), SatelliteKind.GAS_HARVESTER, ModIdentity.id("earth").toString(),
                 record.sourceSnapshot().contentHash(), record.transferId(), record.sourceSnapshot().contentHash(), null,
                 record.destinationSnapshot().contentHash(), null, BayReceipt.Phase.INTENT, "NONE", false, false, 0, 0, 0, 0);
     }
