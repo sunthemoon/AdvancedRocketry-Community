@@ -812,8 +812,7 @@ from source. These cannot prove Forge lifecycle, native durability, equipment co
 | OpenPet `thinking` event | Runtime unreachable; continued without app-data edits. |
 
 No Gradle, GameTest, native server, full regression, GPU or two-client execution is needed/claimed for TASK-W174's
-design-only verification. No heavy-JVM lock, source/world copy or archive was created. The repository validator must
-run on the record commit before delivery; its committed-source result is recorded below after execution.
+design-only verification. No heavy-JVM lock, source/world copy or archive was created.
 
 **Probe source identities.** All are under the evidence prefix above; the retained class directory is a temporary
 compile output, not an acceptance dependency. Its exact cleanup path is
@@ -833,3 +832,18 @@ exclusions are explicit; no risk is accepted here.
 
 **All current-version Required Gates satisfied: no.** Recommend only the fresh v1.8 W174 revision-2 review, then
 Root's L0/L0R and owner decision before the applicable implementation leaves.
+
+### Committed-source verification
+
+Revision-2 design commit: `7e7a153087a8733e3d716e2809a771042a551f95`. On that clean record commit,
+`python -B scripts/validate_repository.py --require-approved-identity` exited 0: **45 passed, 0 pending,
+0 warnings, 0 failed**. Evidence is `validator-7e7a15308.log`, `validator-7e7a15308-source.txt` and
+`validator-7e7a15308-exit.txt` under the revision-2 evidence prefix. `git diff --exit-code`,
+`git diff --cached --exit-code` and `git show --format= --check HEAD` also exited 0. The source/scripts/tests/build
+diff from revision 1 is empty. The staged-stat check contained this one record only; the commit was local, not pushed.
+
+This final verification addition changes no design or probe. The validator is repeated on its final record commit;
+`validator-final-source.txt`, `validator-final.log` and `validator-final-exit.txt` identify that run. Exact probe
+commands are in `COMMANDS.md` (SHA-256 `340a64651ec2d850d8691c22443627c2c42149878fc7ecbb879a49430349b1ed`).
+The revision-2 evidence directory is below 100 KB, including the 18,209-byte refused-cleanup remainder; it contains
+no server/world copy or archive. The required fresh independent design review and all version gates remain open.
