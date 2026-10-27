@@ -69,6 +69,39 @@ conflict.
 All heavy runs go under the heavy-JVM lock, with the atomic pattern and the 90-second hand-off. Unit runs need no lock.
 Check C: and D: above 10 GiB and 6 GiB of free memory first. Keep the evidence under 100 MB.
 
+## Integration under Root decision R133 (2026-10-28)
+
+W170 delivered `0623fa7be`: all 1,457 GameTests and all 32 native cases pass. Two things remain before its review:
+
+- **The shared-head merge.** The branch was cut from W128R's `36d568db0`. W128R merged later with R130's test fixes
+  (`16ca2b269`). Root's trial merge of the shared head conflicts in one place, `BayDeploymentMatrixGameTests` (around
+  line 152):
+  - this branch narrowed the assertion to "a refused solar bay registered X";
+  - the shared head added `assertPackagesUnchanged()`, which compares live and journal package state (W128R-R5).
+
+  Under W27d2 a matrix case may now register and consume the data package, so neither side is right on its own.
+- **One checker finding.** The full run had an unexpected WARN in `w152_recovery_rollback`: a sealed-disassembly
+  rollback proof overran W98's 100-tick attempt window and was retried.
+
+A fresh session continues on `codex/v1.8.0-w170`:
+
+1. **Merge the shared head named in your prompt.** For each matrix case:
+   - where W27d2 leaves the packages alone, keep `assertPackagesUnchanged()`;
+   - where it registers and consumes, assert the consumed state on the live source, the journal's T' and any
+     published destination, in the same live-state way.
+
+   Record each case. Rerun the bay batches three times and the whole unit suite.
+2. **Classify the `w152_recovery_rollback` WARN.**
+   - Run that batch alone three times on the merged branch.
+   - Check whether its fixture waits out a deliberate veto or a 200-tick retry in unpaced ticks, as W166 found for
+     other sealed fixtures.
+   - If so, pace it as `a859acaca` and W166b did, keeping its budget and assertions, and add nothing to the manifest.
+   - If it points at W27d2, stop and report.
+3. **Run one complete GameTest with the unchanged checker.** R131 applies.
+
+Root then pushes the branch for a hosted regression, registers risk entry D, and arranges the read-only review in the
+two passes the plan suggests.
+
 ## Not in this task
 
 W27d3 (copies and the absence census), W27d4 (released flight), admission (W27e), ADRs, the risk register, status
