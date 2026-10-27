@@ -11,6 +11,11 @@ never launches or registers anything itself. Expected outcomes (W27A section 4's
 * a durable INTENT: the first tick refuses decommission and terminal launch (B13), the restart row writes REJECTED
   (INTERRUPTED), the claim hands T to ordinary recovery, and B1_MOVED's relaunch re-arms the same operation;
 * a durable REJECTED: no claim, ordinary recovery;
+* a durable INTENT whose restarts see a blocked registry (B10's hold half, through the gated startup seam
+  ``bayRegistryBlocked``): the claim holds for offline repair with REGISTRY_BLOCKED, the receipt file is not written,
+  the pending charge stays and the rocket stays locked in TRANSIT at altitude;
+* a clean stop while D0 waits for its B14 request (B14_STOP): the coordinator latches with the claim unresolved, no
+  receipt is ever written, and the restarts give the ordinary recovery;
 * every case: both packages byte-equal, no satellite registered, no ERROR or FATAL at a restart.
 """
 from __future__ import annotations
@@ -35,11 +40,14 @@ ORIGIN = (8, 2, 8)
 FIXTURE = re.compile(r"ARCE_RELEASE_BAY_FIXTURE logical=(\S+) transfer=(\S+) rocket=(\S+) data=(\S+) solar=(\S+) "
                      r"launch=(\w+) packages=(\S+)")
 STATUS = re.compile(r"ARCE_RELEASE_BAY_STATUS logical=(\S+) claim=(\w+) hold=(\w+) reason=(\w+) receipts=\[([^\]]*)\] "
-                    r"transfer=(\w+) rocket=(\S+) state=(\w+) y=(\S+) packages=(\S+)")
+                    r"transfer=(\w+) rocket=(\S+) state=(\w+) y=(\S+) packages=(\S+) locked=(true|false)")
 PENDING = re.compile(r"ARCE_RELEASE_BAY_PENDING pending=(\d+) retained=(\d+) work=(true|false)")
 FILLED = re.compile(r"ARCE_RELEASE_BAY_FILLED requested=(\d+) queued=(\d+)")
 FIRST_TICK = re.compile(r"ARCE_RELEASE_BAY_FIRST_TICK satellite=(\S+) tick=(\d+) decommission=(\w+) launch=(\w+)")
 CLAIM = re.compile(r"ARCE_BAY_CLAIM transfer=(\S+) logical=(\S+) state=(\w+) reason=(\w+)")
+STOPPED = re.compile(r"ARCE_BAY_STOPPED claims=(\d+) unresolved=(\d+)")
+REGISTRY_BLOCKED = "ARCE_RELEASE_BAY_REGISTRY_BLOCKED session=true"
+ALTITUDE = 48
 TXW_PAUSED = re.compile(r"ARCE_RELEASE_TXW_PAUSED point=STAGED")
 TXW_DONE = re.compile(r"Transaction writer cut command done|ARCE_RELEASE_TXW_(ARMED|MUTATED)")
 
@@ -57,9 +65,13 @@ CASES = {
     "B18_CRASH": dict(cut="B18_INTENT", end="crash", durable="INTENT"),
     "B11_FULL": dict(cut=None, end="land", durable="NONE", fill=64),
     "B17_FAIR": dict(cut=None, end="stop", durable="NONE", fill=56, fixture_restart=1),
+    # W128R-R2: B10's INTENT hold half, and a clean stop while D0 waits for its B14 request.
+    "B10_BLOCKED": dict(cut="B1_MOVED", end="kill", durable="INTENT", hold="REGISTRY_BLOCKED"),
+    "B14_STOP": dict(cut=None, end="stop", durable="NONE", journal=True, at_stop=True),
 }
 INTERRUPTED = ("REJECTED", "INTERRUPTED")
 UNAVAILABLE = ("REJECTED", "DEPLOYMENT_UNAVAILABLE")
+HELD_INTENT = ("INTENT", "NONE")
 
 
 def parse_fixture(line: str) -> dict:
@@ -85,7 +97,7 @@ def parse_status(line: str) -> dict:
     match = STATUS.search(line)
     if match is None:
         raise smoke.SmokeError(f"Not a status line: {line!r}")
-    keys = ("logical", "claim", "hold", "reason", "receipts", "transfer", "rocket", "state", "y", "packages")
+    keys = ("logical", "claim", "hold", "reason", "receipts", "transfer", "rocket", "state", "y", "packages", "locked")
     status = dict(zip(keys, match.groups()))
     status["receipts"] = parse_receipts(status["receipts"])
     return status
@@ -98,6 +110,8 @@ def expected_receipt(case: str, restart: int, relaunched: bool = False) -> tuple
         return UNAVAILABLE
     if spec.get("fixture_restart") == 1:
         return UNAVAILABLE if restart >= 1 else None
+    if spec.get("hold"):
+        return HELD_INTENT
     durable = spec["durable"]
     if durable == "INTENT":
         return INTERRUPTED
@@ -107,7 +121,15 @@ def expected_receipt(case: str, restart: int, relaunched: bool = False) -> tuple
 
 
 def settled(case: str, restart: int, status: dict, fixture: dict, relaunched: bool = False) -> bool:
-    """No claim, the receipt resolved as expected, and the rocket at rest (landed, or stationary at its origin)."""
+    """No claim, the receipt resolved as expected, and the rocket at rest (landed, or stationary at its origin); for a
+    hold case, the claim held for offline repair, the INTENT unchanged and the rocket locked in TRANSIT at altitude."""
+    hold = CASES[case].get("hold")
+    if hold:
+        data = [receipt for receipt in status["receipts"] if receipt["satellite"] == fixture["data"]]
+        return (status["claim"] == "OUTCOMES" and status["hold"] == "REPAIR" and status["reason"] == hold
+                and status["locked"] == "true" and len(data) == 1 and (data[0]["phase"], data[0]["reason"]) == HELD_INTENT
+                and data[0]["acknowledged"] and status["transfer"] == "PREPARED" and status["state"] == "TRANSIT"
+                and float(status["y"]) == float(ORIGIN[1] + ALTITUDE))
     if status["claim"] != "NONE":
         return False
     expected = expected_receipt(case, restart, relaunched)
@@ -254,6 +276,9 @@ def first_start(run: Session, case: str, world: Path) -> tuple[dict | None, dict
         (world / "data" / STAGING).rmdir()
     if spec["end"] == "crash":
         run.send("arce rocket release-test transaction-writer crash false", TXW_DONE)
+    if spec.get("at_stop"):
+        # The stopping event releases the paused write so the shutdown drain can finish; D0's step never runs again.
+        run.send("arce rocket release-test transaction-writer at-stop", TXW_DONE)
     code = run.end("wait" if spec["end"] == "crash" else spec["end"] if spec["end"] != "land" else "stop",
                    run.args.exit_timeout)
     text = "".join(process.lines)
@@ -262,7 +287,43 @@ def first_start(run: Session, case: str, world: Path) -> tuple[dict | None, dict
     if spec["end"] == "stop" and spec["cut"] and "ARCE_RELEASE_BAY_RELEASED" not in text:
         raise smoke.SmokeError(f"{case}: the clean stop did not release and drain the paused receipt write")
     observed.update(exit_code=code, claims=[match.groups() for match in CLAIM.finditer(text)])
+    if spec.get("at_stop"):
+        observed["stopped"] = check_stopped_while_waiting(case, process.lines, fixture)
     return fixture, observed
+
+
+def check_stopped_while_waiting(case: str, lines: list[str], fixture: dict) -> dict:
+    """The coordinator latched with the waiting claim unresolved and logged no claim transition afterwards."""
+    stops = [index for index, line in enumerate(lines) if STOPPED.search(line)]
+    if len(stops) != 1:
+        raise smoke.SmokeError(f"{case}: expected one coordinator stop line, found {len(stops)}")
+    claims, unresolved = (int(value) for value in STOPPED.search(lines[stops[0]]).groups())
+    if claims != 1 or unresolved != 1:
+        raise smoke.SmokeError(f"{case}: the stop did not find the waiting claim: claims={claims} unresolved={unresolved}")
+    later = [line for line in lines[stops[0] + 1:] if CLAIM.search(line) or "ARCE_RELEASE_BAY_" in line]
+    if later:
+        raise smoke.SmokeError(f"{case}: the coordinator acted after it stopped: {later}")
+    waiting = [match.groups() for line in lines[:stops[0]] for match in [CLAIM.search(line)] if match]
+    if not waiting or waiting[-1][0] != fixture["transfer"] or waiting[-1][3] != "ASSEMBLY_JOURNAL_CHECKPOINT":
+        raise smoke.SmokeError(f"{case}: D0 was not waiting for its B14 request at the stop: {waiting[-1:]}")
+    return dict(claims=claims, unresolved=unresolved, last=list(waiting[-1]))
+
+
+def check_held_restart(case: str, restart: int, lines: list[str], fixture: dict, before: str | None, after: str | None,
+                       pending: dict) -> dict:
+    """B10's hold half at one restart: the seam ran, one REPAIR transition, no receipt write, the pending charge kept."""
+    hold = CASES[case]["hold"]
+    if not any(REGISTRY_BLOCKED in line for line in lines):
+        raise smoke.SmokeError(f"{case}/{restart}: the blocked-registry seam did not run")
+    holds = [match.groups() for line in lines for match in [CLAIM.search(line)]
+             if match and match.group(2) == fixture["logical"] and match.group(3) == "REPAIR"]
+    if holds != [(fixture["transfer"], fixture["logical"], "REPAIR", hold)]:
+        raise smoke.SmokeError(f"{case}/{restart}: expected one REPAIR {hold} transition: {holds}")
+    if before is None or before != after:
+        raise smoke.SmokeError(f"{case}/{restart}: the held INTENT's receipt file changed: {before} -> {after}")
+    if pending["pending"] != 1:
+        raise smoke.SmokeError(f"{case}/{restart}: the held INTENT's pending charge changed: {pending}")
+    return dict(transitions=len(holds))
 
 
 def run_case(run: Session, case: str) -> dict:
@@ -282,7 +343,10 @@ def run_case(run: Session, case: str) -> dict:
     row["restarts"] = []
     for restart in (1, 2):
         intent = fixture is not None and spec["durable"] == "INTENT" and restart == 1
-        process = run.start(case, restart, {"bayFirstTick": fixture["data"]} if intent else {})
+        properties = {"bayFirstTick": fixture["data"]} if intent else {}
+        if spec.get("hold") == "REGISTRY_BLOCKED":
+            properties["bayRegistryBlocked"] = "true"
+        process = run.start(case, restart, properties)
         entry = dict(restart=restart)
         if fixture is None and spec.get("fixture_restart") == restart:
             fixture = launch_fixture(run)
@@ -305,6 +369,9 @@ def run_case(run: Session, case: str) -> dict:
         if code != 0 or any("/ERROR]" in line or "/FATAL]" in line for line in process.lines):
             raise smoke.SmokeError(f"{case}/{restart}: the restart failed or logged ERROR/FATAL")
         entry.update(exit_code=code, receipts=digest(receipts) if receipts.is_file() else None)
+        if spec.get("hold"):
+            entry["held"] = check_held_restart(case, restart, process.lines, fixture, row["cut_disk"]["receipts"],
+                                               entry["receipts"], entry["pending"])
         row["restarts"].append(entry)
     row["fixture"] = fixture
     row["status"] = "PASS"

@@ -13,9 +13,10 @@ OP = "44444444-4444-4444-8444-444444444444"
 FIXTURE = dict(logical=L, transfer="t", rocket="r", data=X, solar=Y, launch="SUCCESS", packages="a" * 64 + "+" + "b" * 64)
 
 
-def status_line(claim="NONE", receipts="", transfer="NONE", state="FUELED", y="2.0", packages=FIXTURE["packages"]):
-    return (f"[12:00:00] [Server thread/INFO] [x/]: ARCE_RELEASE_BAY_STATUS logical={L} claim={claim} hold=NONE reason=NONE "
-            f"receipts=[{receipts}] transfer={transfer} rocket=r2 state={state} y={y} packages={packages}\n")
+def status_line(claim="NONE", receipts="", transfer="NONE", state="FUELED", y="2.0", packages=FIXTURE["packages"],
+                hold="NONE", reason="NONE", locked="false"):
+    return (f"[12:00:00] [Server thread/INFO] [x/]: ARCE_RELEASE_BAY_STATUS logical={L} claim={claim} hold={hold} reason={reason} "
+            f"receipts=[{receipts}] transfer={transfer} rocket=r2 state={state} y={y} packages={packages} locked={locked}\n")
 
 
 class ParseTests(unittest.TestCase):
@@ -29,8 +30,11 @@ class ParseTests(unittest.TestCase):
     def test_status_line_parses_receipts(self):
         status = runner.parse_status(status_line(receipts=f"{OP}:{X}:REJECTED:INTERRUPTED:true:false"))
         self.assertEqual("NONE", status["claim"])
+        self.assertEqual("false", status["locked"])
         self.assertEqual([dict(op=OP, satellite=X, phase="REJECTED", reason="INTERRUPTED", acknowledged=True, registered=False)],
                          status["receipts"])
+        with self.assertRaises(runner.smoke.SmokeError):
+            runner.parse_status(status_line().replace(" locked=false", ""))
         with self.assertRaises(runner.smoke.SmokeError):
             runner.parse_receipts("a:b:c")
 
@@ -43,7 +47,12 @@ class ExpectationTests(unittest.TestCase):
             self.assertIn(spec["end"], ("kill", "stop", "crash", "land"), case)
             self.assertIn(spec["durable"], ("NONE", "INTENT", "REJECTED"), case)
             for restart in (1, 2):
-                self.assertIn(runner.expected_receipt(case, restart), (None, runner.INTERRUPTED, runner.UNAVAILABLE), case)
+                self.assertIn(runner.expected_receipt(case, restart),
+                              (None, runner.INTERRUPTED, runner.UNAVAILABLE, runner.HELD_INTENT), case)
+            if spec.get("hold"):
+                self.assertEqual("INTENT", spec["durable"], case)
+            if spec.get("at_stop"):
+                self.assertTrue(spec.get("journal") and spec["end"] == "stop", case)
 
     def test_a_durable_intent_becomes_interrupted_and_a_relaunch_rearms(self):
         self.assertEqual(runner.INTERRUPTED, runner.expected_receipt("B1_MOVED", 1))
@@ -79,6 +88,40 @@ class ExpectationTests(unittest.TestCase):
                        runner.parse_status(status_line(receipts=f"{OP}:{OP}:REJECTED:INTERRUPTED:true:false"))):
             with self.assertRaises(runner.smoke.SmokeError):
                 runner.check_settled("B1_STAGED", 1, status, FIXTURE)
+
+    def test_a_blocked_registry_hold_needs_the_held_claim_an_unchanged_intent_and_the_lock_in_transit(self):
+        intent = f"{OP}:{X}:INTENT:NONE:true:false"
+        held = dict(claim="OUTCOMES", hold="REPAIR", reason="REGISTRY_BLOCKED", receipts=intent, transfer="PREPARED",
+                    state="TRANSIT", y="50.0", locked="true")
+        self.assertEqual(runner.HELD_INTENT, runner.expected_receipt("B10_BLOCKED", 2))
+        self.assertTrue(runner.settled("B10_BLOCKED", 1, runner.parse_status(status_line(**held)), FIXTURE))
+        for change in (dict(claim="NONE"), dict(hold="OWNED_WAIT"), dict(reason="TRANSFER_AUTHORITY_CONFLICT"),
+                       dict(locked="false"), dict(receipts=f"{OP}:{X}:REJECTED:INTERRUPTED:true:false"),
+                       dict(receipts=f"{OP}:{X}:INTENT:NONE:false:false"), dict(transfer="NONE"), dict(state="FUELED"),
+                       dict(y="2.0")):
+            self.assertFalse(runner.settled("B10_BLOCKED", 1, runner.parse_status(status_line(**{**held, **change})), FIXTURE),
+                             change)
+
+    def test_a_held_restart_needs_the_seam_one_repair_transition_no_write_and_its_pending_charge(self):
+        lines = [runner.REGISTRY_BLOCKED + "\n",
+                 f"ARCE_BAY_CLAIM transfer=t logical={L} state=OWNED_WAIT reason=BAY_RESTART\n",
+                 f"ARCE_BAY_CLAIM transfer=t logical={L} state=REPAIR reason=REGISTRY_BLOCKED\n"]
+        self.assertEqual(1, runner.check_held_restart("B10_BLOCKED", 1, lines, FIXTURE, "d", "d", dict(pending=1))["transitions"])
+        for found, before, after, pending in ((lines[1:], "d", "d", dict(pending=1)), (lines + lines[2:], "d", "d", dict(pending=1)),
+                                              (lines, "d", "e", dict(pending=1)), (lines, None, None, dict(pending=1)),
+                                              (lines, "d", "d", dict(pending=0))):
+            with self.assertRaises(runner.smoke.SmokeError):
+                runner.check_held_restart("B10_BLOCKED", 1, found, FIXTURE, before, after, pending)
+
+    def test_a_stop_while_d0_waits_must_latch_with_the_claim_unresolved_and_act_no_more(self):
+        waiting = f"ARCE_BAY_CLAIM transfer=t logical={L} state=OWNED_WAIT reason=ASSEMBLY_JOURNAL_CHECKPOINT\n"
+        stop = "ARCE_BAY_STOPPED claims=1 unresolved=1\n"
+        self.assertEqual(1, runner.check_stopped_while_waiting("B14_STOP", [waiting, stop], FIXTURE)["unresolved"])
+        for lines in ([waiting], [waiting, stop, stop], [waiting, stop.replace("unresolved=1", "unresolved=0")],
+                      [waiting, stop, waiting], [waiting.replace("ASSEMBLY_JOURNAL_CHECKPOINT", "BAY_VALIDATION"), stop],
+                      [waiting, stop, f"ARCE_RELEASE_BAY_PAUSED cut=B1_MOVED op={OP}\n"]):
+            with self.assertRaises(runner.smoke.SmokeError):
+                runner.check_stopped_while_waiting("B14_STOP", lines, FIXTURE)
 
     def test_the_first_tick_must_refuse_decommission_and_launch_of_a_durable_intent(self):
         good = [f"ARCE_RELEASE_BAY_FIRST_TICK satellite={X} tick=1 decommission=DEPLOYMENT_PENDING launch=DEPLOYMENT_PENDING\n"]

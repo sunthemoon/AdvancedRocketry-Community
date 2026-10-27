@@ -127,12 +127,13 @@ public final class BayReleaseTestCommands {
         }
         RocketEntity found = rocket;
         LOGGER.info("ARCE_RELEASE_BAY_STATUS logical={} claim={} hold={} reason={} receipts=[{}] transfer={} rocket={} state={} y={} "
-                        + "packages={}", logical, claim.map(value -> value.stage().name()).orElse("NONE"),
+                        + "packages={} locked={}", logical, claim.map(value -> value.stage().name()).orElse("NONE"),
                 claim.map(value -> value.hold().name()).orElse("NONE"), claim.map(io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.deployment.BayClaim::reason).orElse("NONE"), receipts,
                 record == null ? "NONE" : record.phase().name(), found == null ? "NONE" : found.getUUID(),
                 found == null ? "NONE" : found.flightData().map(data -> data.state().name()).orElse("NONE"),
                 found == null ? "NONE" : String.valueOf(found.getY()),
-                found == null ? "NONE" : signatures(found.snapshot().orElseThrow()));
+                found == null ? "NONE" : signatures(found.snapshot().orElseThrow()),
+                io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceipts.holdsRocket(server, logical));
         source.sendSuccess(() -> Component.literal("Bay status reported"), false);
         return 1;
     }
