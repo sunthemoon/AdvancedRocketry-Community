@@ -49,7 +49,8 @@ admission (N3-B3) stays off until this task is merged after a fresh review.
    The expiry then holds when ordinary service stops, such as an unreadable transfer journal or an inactive flight
    lifecycle. Use the server tick that the sealed and ordinary services already receive. Add no new clock.
 3. **W152J-R6.** Remove the two trailing blank lines from `SealedFailBackAdmissionHandoffTest.java`. Run
-   `git diff --check` on the committed range `0e2cd5645..HEAD` and record that result, not the worktree's.
+   `git diff --check` on the committed range from your branch base to HEAD and record that result, not the
+   worktree's.
 4. **W152J-R4 under R119.** Make no code change. State in the record which callers the hand-off covers.
 5. **Regressions in the repository.** Use the production composition as the review's probe does, in both callback
    orders:
@@ -59,7 +60,7 @@ admission (N3-B3) stays off until this task is merged after a fresh review.
    - RR2 with 1-tick and 3-tick retry periods, before and after service;
    - RR4 as a unit test of the window.
 
-   The RR1 cases, RR1b, RR1c and RR4 must fail on `0e2cd5645` and pass after the fix. Keep green:
+   The RR1 cases, RR1b, RR1c and RR4 must fail on your branch base and pass after the fix. Keep green:
    - RR1d, RR3 and RR5;
    - the W152H-R1 arrival and nudge cases;
    - the three W152J classes and `SealedOrdinaryHandoffTest`.
@@ -72,13 +73,12 @@ admission (N3-B3) stays off until this task is merged after a fresh review.
 
 ## Base
 
-Before the final test run, check `git log codex/v1.8.0-classic-content` for a commit `merge(v1.8.0): W129aM`. If it is
-there, merge the shared head into your branch (a merge, not a rebase) and run the verification on the merged tree:
-W129aM changes the sealed coordinator's journal port and can shift sealed timing.
+Your branch starts at `bb0eda86f`, which merges W129aM after W152J. W129aM changes the sealed coordinator's journal
+port and can shift sealed timing, so run every check on this base; do not use `0e2cd5645` alone.
 
 ## Verification
 
-- The new tests alone, failing first on `0e2cd5645`.
+- The new tests alone, failing first on your branch base.
 - These unit classes, unchanged, then the `resourceescrow`, `rocket.server` and `rocket.sealed` packages and the whole
   unit suite:
   - the W152, W152F, W152G, W152H and W152J classes;
