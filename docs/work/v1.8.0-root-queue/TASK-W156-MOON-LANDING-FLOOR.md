@@ -1,5 +1,30 @@
 # TASK W156: Moon landings at the real surface (real-client finding F2 of 2026-10-06)
 
+## Resumption under ADR-075 (2026-10-27)
+
+The first session stopped before code because the accepted ADR-033 and ADR-063 keep the Moon's y=80 floor
+([records/W156.md](records/W156.md)). The owner has since accepted
+[ADR-075](../../decisions/ADR-075-MOON-LANDING-ON-THE-HEIGHTMAP.md) (2026-10-27), which replaces that rule for new
+Moon arrivals. A fresh session implements it.
+
+- **Plan:** follow [records/W165.md](records/W165.md). Use its classes, its test-first order and its inventory of the
+  Moon-flying tests, fixtures and scripts.
+- **Tests:** ADR-075's two named test transitions, new cases 1 to 12 and the native restart case for recovery
+  identities.
+- **Worktree and branch:** `D:/GitHub/arce-v180-w156h` on `codex/v1.8.0-w156h`, from the commit named in your prompt.
+  Append a "Resumption" section to `records/W156.md`.
+- **Limits:**
+  - No change to bounds, budgets, saved formats or the protocol beyond what ADR-075 states.
+  - Shape the pad area first when a test needs a specific height. Do not weaken any assertion.
+  - Move the rule out of `RocketLandingPadSelector` (501 lines) as the plan says.
+- **Verification:**
+  - each changed unit class alone, then the whole unit suite;
+  - one complete GameTest with the unchanged log checker;
+  - the native restart case with two restarts;
+  - the native scripts the plan says to rerun.
+
+  Run heavy work under the heavy-JVM lock with the 90-second hand-off. Root reviews the diff before merge.
+
 Root: Claude. Date: 2026-10-24. Read [WORKER-RULES](WORKER-RULES.md), finding F2 in
 `D:/GitHub/ARCE-Task-Evidence/pre-v18-client-20261006/REPORT.md`, and the W83b row in [QUEUE](QUEUE.md) (the arrival
 path it changed) first. You are a new session.

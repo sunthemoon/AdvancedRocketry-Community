@@ -120,3 +120,16 @@ solutions after the independent draft review's support, identity-collision,
 quote and source-admission clarifications. The independent report remains
 separate from this decision. No new numbered manual approval, release permission
 or Gate PASS is claimed.
+
+## Pointer: ADR-075 (accepted 2026-10-27)
+
+[ADR-075](ADR-075-MOON-LANDING-ON-THE-HEIGHTMAP.md) changes the Moon landing rule for new arrivals. These passages
+stay as written, for history:
+
+- Lines 58-59 (Moon fixed-pad compatibility): the Moon's fixed pads keep their horizontal positions; their height
+  follows ADR-075.
+- Lines 75-76 (the Moon keeps its legacy minimum landing Y=80 without the ground-support requirement): superseded
+  for new Moon arrivals, which use the heightmap and support rule. Destinations recorded at y 80 or above keep the
+  legacy recheck.
+- Lines 80-81 (pad compatibility and captured recovery identities unchanged): the Moon pads' horizontal positions
+  and captured recovery identities stay unchanged; the height of new Moon arrivals follows ADR-075.
