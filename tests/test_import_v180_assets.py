@@ -5,6 +5,7 @@ import copy
 import importlib.util
 import io
 import json
+import os
 import shutil
 import struct
 import subprocess
@@ -603,6 +604,115 @@ class ImportV180AssetsTests(unittest.TestCase):
         self.assertIn("[PASS] 5 v1.8 targets and their record reproduce byte for byte", output.getvalue())
         self.assertIn(f"[FAIL] target bytes differ from the deterministic transform: {TARGET}lang/de_de.json",
                       failures.getvalue())
+
+
+TEXT = "".join(f"line {number:02d} of the fixture text\n" for number in range(1, 21))
+
+
+class UpstreamHistoryWalkTests(unittest.TestCase):
+    """The history check's own walk (W169). ``git log --follow`` gave the K6 record a different history on git 2.55
+    and 2.56: before 2.56 one followed path served the whole walk, so a side branch walked before the rename was
+    searched under the new name (``lib/new.txt`` misses ``q1``); from 2.56 each parent has its own path, but the
+    follow also takes a file that merely has the same bytes on a merge's side (``new/sensor.png`` gains ``s1``,
+    as K6's icons gained 0631f3ab through the 61d7b2b0 merge)."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.temporary = tempfile.TemporaryDirectory()
+        cls.repository = Path(cls.temporary.name) / "upstream"
+        cls.repository.mkdir()
+        cls.ids: dict[str, str] = {}
+        _git(cls.repository, "init", "-q", "-b", "main")
+        _git(cls.repository, "config", "user.name", "History Fixture")
+        _git(cls.repository, "config", "user.email", "history@example.invalid")
+        _git(cls.repository, "config", "core.autocrlf", "false")
+        twin, ambiguous = b"same bytes in two files\n", b"one picture, two names\n"
+        cls.commit("c0", 1000, {"README": "fixture\n"})
+        _git(cls.repository, "checkout", "-q", "-b", "side")
+        cls.commit("s1", 2000, {"old/twin.png": twin})
+        _git(cls.repository, "checkout", "-q", "main")
+        cls.commit("m1", 3000, {"old/sensor.png": twin, "old/twin.png": twin})
+        cls.merge("J", 3500, "side")
+        _git(cls.repository, "checkout", "-q", "side")
+        cls.commit("s2", 3600, {"side.txt": "side work\n"})
+        _git(cls.repository, "checkout", "-q", "main")
+        (cls.repository / "new").mkdir()
+        _git(cls.repository, "mv", "old/sensor.png", "new/sensor.png")
+        _git(cls.repository, "mv", "old/twin.png", "new/twin.png")
+        cls.commit("m2", 4000, {})
+        cls.merge("M", 5000, "side")
+        cls.commit("p1", 6000, {"lib/old.txt": TEXT})
+        _git(cls.repository, "checkout", "-q", "-b", "side-b")
+        cls.commit("q1", 7600, {"lib/old.txt": TEXT.replace("line 10", "line ten")})
+        _git(cls.repository, "checkout", "-q", "main")
+        _git(cls.repository, "mv", "lib/old.txt", "lib/new.txt")
+        cls.commit("p2", 7200, {})
+        cls.merge("N", 8000, "side-b")
+        notes = TEXT.replace("fixture text", "renamed notes")
+        cls.commit("r1", 9000, {"doc/a.txt": notes})
+        _git(cls.repository, "mv", "doc/a.txt", "doc/b.txt")
+        cls.commit("r2", 9100, {"doc/b.txt": notes.replace("line 03", "line three")})
+        cls.commit("u1", 9200, {"amb/one.png": ambiguous, "amb/two.png": ambiguous})
+        (cls.repository / "x").mkdir()
+        _git(cls.repository, "mv", "amb/one.png", "x/first.png")
+        _git(cls.repository, "mv", "amb/two.png", "x/second.png")
+        cls.commit("u2", 9300, {})
+        cls.commit("k1", 9400, {"copy/readme.txt": "fixture\n"})
+        cls.head = cls.ids["k1"]
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        cls.temporary.cleanup()
+
+    @classmethod
+    def dated(cls, name: str, when: int, *args: str) -> None:
+        stamp = f"@{when} +0000"
+        environment = {**os.environ, "GIT_AUTHOR_DATE": stamp, "GIT_COMMITTER_DATE": stamp}
+        subprocess.run(["git", "-C", str(cls.repository), *args], check=True, stdout=subprocess.PIPE,
+                       stderr=subprocess.PIPE, env=environment)
+        cls.ids[name] = _git(cls.repository, "rev-parse", "HEAD").strip()
+
+    @classmethod
+    def commit(cls, name: str, when: int, files: dict[str, bytes | str]) -> None:
+        for relative, data in files.items():
+            _write(cls.repository / relative, data)
+        _git(cls.repository, "add", "--all")
+        cls.dated(name, when, "commit", "-q", "-m", f"{name} fixture commit")
+
+    @classmethod
+    def merge(cls, name: str, when: int, branch: str) -> None:
+        cls.dated(name, when, "merge", "-q", "--no-ff", "-m", f"{name} merges {branch}", branch)
+
+    def history(self, path: str) -> list[str]:
+        names = {identifier: name for name, identifier in self.ids.items()}
+        history, triggers = MODULE.checks.upstream_history(self.repository, self.head, path)
+        self.assertEqual([], triggers)
+        return [names[item["commit"]] for item in history]
+
+    def test_a_merge_side_is_followed_under_its_own_path(self) -> None:
+        # q1 changed lib/old.txt on a side branch that N merged after p2 renamed the file on main; the first-parent
+        # pass adds N, the merge that brought q1's change in.
+        self.assertEqual(["q1", "p2", "p1", "N"], self.history("lib/new.txt"))
+
+    def test_a_file_with_the_same_bytes_on_a_merge_side_is_not_followed(self) -> None:
+        # m2 moved old/sensor.png and old/twin.png, which have the same bytes; the file name pairs them. M's side
+        # parent never had old/sensor.png: s1 added old/twin.png, another file.
+        self.assertEqual(["m2", "m1"], self.history("new/sensor.png"))
+        self.assertEqual(["m2", "m1", "s1"], self.history("new/twin.png"))
+
+    def test_a_rename_that_changed_the_bytes_is_followed(self) -> None:
+        self.assertEqual(["r2", "r1"], self.history("doc/b.txt"))
+
+    def test_a_copy_is_not_followed(self) -> None:
+        # k1 added copy/readme.txt with the bytes of README, which stays: ADR-061 section 4.9 lists the commits
+        # that touched the source file, following renames; README's own history is another file's.
+        self.assertEqual(["k1"], self.history("copy/readme.txt"))
+
+    def test_an_ambiguous_rename_fails(self) -> None:
+        expected = (r"adds x/first\.png with the bytes of the deleted \['amb/one\.png', 'amb/two\.png'\]; "
+                    r"the rename source is ambiguous")
+        with self.assertRaisesRegex(ValueError, expected):
+            MODULE.checks.upstream_history(self.repository, self.head, "x/first.png")
 
 
 class V010UnchangedTests(unittest.TestCase):
