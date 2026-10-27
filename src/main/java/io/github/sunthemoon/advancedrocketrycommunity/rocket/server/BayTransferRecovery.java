@@ -50,7 +50,7 @@ final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
     private final BayDeploymentChecks checks = new BayDeploymentChecks();
     private final Map<UUID, String> audited = new HashMap<>();
     @Nullable private BayDeploymentCuts cuts;
-    private boolean stopping;
+    private boolean stopping, ticked;
 
     private BayTransferRecovery(MinecraftServer server, BayDeploymentSession session) {
         this.server = server; this.session = session;
@@ -127,6 +127,7 @@ final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
     void tick() {
         if (stopping) { return; }
         if (shuttingDown()) { stop(); return; }
+        if (!ticked) { ticked = true; BayDeploymentCuts.firstTick(server); }
         renewTickets();
         queue.run(this::step);
     }

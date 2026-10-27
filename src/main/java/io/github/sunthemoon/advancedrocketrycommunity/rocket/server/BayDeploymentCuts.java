@@ -55,6 +55,27 @@ final class BayDeploymentCuts {
         return new BayDeploymentCuts(cut, committer);
     }
 
+    /**
+     * B13 (W27A-DESIGN section 9): on the coordinator's first tick of a restarted release-test server, try to decommission
+     * and terminal-launch the satellite named by {@code bayFirstTick=<uuid>}, and log both answers. A durable INTENT must
+     * refuse both with DEPLOYMENT_PENDING, because the receipt index was loaded at ServerStartingEvent (N6).
+     */
+    static void firstTick(MinecraftServer server) {
+        String value = System.getProperty("advancedrocketrycommunity.bayFirstTick", "");
+        if (value.isEmpty() || !Boolean.getBoolean(HOOKS) || !server.isDedicatedServer()) { return; }
+        java.util.UUID satellite = java.util.UUID.fromString(value);
+        var registry = io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteMissionSavedData.get(server);
+        var decommission = registry.decommission(satellite, BayReleaseTestCommands.OWNER, true, true).code();
+        var identity = new io.github.sunthemoon.advancedrocketrycommunity.satellite.content.SatelliteIdentity(satellite,
+                BayReleaseTestCommands.OWNER, io.github.sunthemoon.advancedrocketrycommunity.ModIdentity.id("data_satellite"));
+        var launch = io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteRuntime.launchService()
+                .map(service -> service.validate(server, BayReleaseTestCommands.OWNER, identity,
+                        io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds.EARTH_ID).result().code().name())
+                .orElse("NO_SERVICE");
+        LOGGER.info("ARCE_RELEASE_BAY_FIRST_TICK satellite={} tick={} decommission={} launch={}", satellite, server.getTickCount(),
+                decommission, launch);
+    }
+
     /** Before an in-session claim's receipt write: the first write of the cut's phase arms the one-shot committer cut. */
     void writing(BayClaim claim, BayReceipt receipt) {
         if (fired || claim.origin() != BayClaim.Origin.CHECKPOINT || receipt.phase() != cut.phase) { return; }
