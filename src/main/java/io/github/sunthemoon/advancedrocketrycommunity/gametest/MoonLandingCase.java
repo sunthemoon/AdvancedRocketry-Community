@@ -153,15 +153,19 @@ final class MoonLandingCase {
         helper.assertTrue(MoonPadArea.lowest(record.destinationSnapshot()) == lowestY,
                 "The fixture destination is not at y " + lowestY);
         source.discard();
+        helper.assertTrue(count(record.logicalRocketId()) == 0, "The fixture left a copy of the rocket before recovery");
         var journal = RocketTransferSavedData.get(server);
         journal.put(record.destinationSpawned(UUID.randomUUID()));
         journal.flush(server);
+        // As RocketTransferRecoveryGameTests: persist entity chunks, so recovery sees a restart-equivalent boundary.
+        server.saveEverything(false, true, true);
         recover(record, lowestY, new RocketManager(), 1, new GameTestTickPacer(server), next);
     }
 
     /**
-     * W98 (N3-A1): recovery answers RETRY_LATER until the discarded source's own entity slot is read back. One
-     * retry per tick, bounded as in {@code RocketTransferRecoveryGameTests}.
+     * Recovery rebuilds the missing destination (REBUILD_DESTINATION) and answers RETRY_LATER until its new identity
+     * is acknowledged; a later call then finds that rebuilt destination (KEEP_DESTINATION). One retry per tick,
+     * bounded as in {@code RocketTransferRecoveryGameTests}. No copy existed before the first call.
      */
     private void recover(RocketTransferRecord record, int lowestY, RocketManager manager, int attempt,
                          GameTestTickPacer pacer, Runnable next) {
@@ -174,10 +178,15 @@ final class MoonLandingCase {
             return;
         }
         var journal = RocketTransferSavedData.get(server);
-        helper.assertTrue(report.status() == RocketTransferRecoveryReport.Status.RECOVERED
-                && report.action().filter(RocketTransferRecoveryAction.REBUILD_DESTINATION::equals).isPresent()
-                && report.sourceMatches() == 0 && report.destinationMatches() == 0,
-                "Recovery of the y " + lowestY + " destination was " + report.status() + " " + report.action());
+        boolean rebuiltNow = report.action().filter(RocketTransferRecoveryAction.REBUILD_DESTINATION::equals).isPresent()
+                && report.destinationMatches() == 0;
+        boolean rebuiltBefore = attempt > 1
+                && report.action().filter(RocketTransferRecoveryAction.KEEP_DESTINATION::equals).isPresent()
+                && report.destinationMatches() == 1;
+        helper.assertTrue(report.status() == RocketTransferRecoveryReport.Status.RECOVERED && report.sourceMatches() == 0
+                        && (rebuiltNow || rebuiltBefore),
+                "Recovery of the y " + lowestY + " destination was " + report.status() + " " + report.action()
+                        + " after " + attempt + " attempts");
         var logical = record.logicalRocketId();
         RocketEntity rebuilt = findLogicalRocket(moon, logical);
         var origin = record.destinationSnapshot().sourceOrigin();
