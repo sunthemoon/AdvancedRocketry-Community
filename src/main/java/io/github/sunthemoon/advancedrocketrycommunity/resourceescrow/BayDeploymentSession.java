@@ -58,6 +58,20 @@ public final class BayDeploymentSession {
         return receipts.storeForAdmission(server).put(next, completion);
     }
 
+    /** W170 D4: one group's REGISTERED (or other) replacements in one generation; see {@link BayReceiptStore#putGroup}. */
+    public BayReceiptStore.Admission putGroup(List<BayReceipt> group, Consumer<BayReceiptWriter.Outcome> completion) {
+        if (unavailable()) { return BayReceiptStore.Admission.of(BayReceiptStore.Status.STORE_UNAVAILABLE); }
+        return store().map(store -> store.putGroup(group, completion)).orElse(BayReceiptStore.Admission.of(BayReceiptStore.Status.INVALID));
+    }
+
+    /** W170 D7: one group's guarded removal in one generation of a quiet store; see {@link BayReceiptStore#removeGroup}. */
+    public BayReceiptStore.Admission removeGroup(List<UUID> group, java.util.function.BooleanSupplier guard,
+            Consumer<BayReceiptWriter.Outcome> completion) {
+        if (unavailable()) { return BayReceiptStore.Admission.of(BayReceiptStore.Status.STORE_UNAVAILABLE); }
+        return store().map(store -> store.removeGroup(group, guard, completion))
+                .orElse(BayReceiptStore.Admission.of(BayReceiptStore.Status.INVALID));
+    }
+
     public Optional<BayReceipt> find(UUID satellite) { return store().flatMap(store -> store.find(satellite)); }
     /** The operation's receipt in RAM, including a queued or captured change. */
     public Optional<BayReceipt> current(UUID op) { return store().flatMap(store -> store.current(op)); }

@@ -117,6 +117,71 @@ public final class BayReceiptStore implements EscrowAdmissionAuthority.Store {
         return Admission.of(Status.QUEUED);
     }
 
+    /**
+     * W170 D4: replaces the receipts of one group's existing operations and queues every change before one write
+     * request, so they publish in one generation. All or nothing: a change must keep its op's key, satellite and owner,
+     * neither side may be released, and it charges no new slot (its retained and pending slots are already held).
+     * {@code completion} runs once, with the generation's outcome.
+     */
+    Admission putGroup(List<BayReceipt> group, Consumer<BayReceiptWriter.Outcome> completion) {
+        owner(); Objects.requireNonNull(completion);
+        if (group.isEmpty()) { return Admission.of(Status.INVALID); }
+        if (unavailable()) { return Admission.of(Status.STORE_UNAVAILABLE); }
+        var ops = new HashSet<UUID>();
+        for (BayReceipt next : group) {
+            BayReceipt before = current.get(next.op());
+            if (!ops.add(next.op()) || before == null || before.released() || next.released() || !before.key().equals(next.key())
+                    || !before.satellite().equals(next.satellite()) || !before.owner().equals(next.owner())) {
+                return Admission.of(Status.INVALID);
+            }
+            if (inFlight(next.op(), next.satellite())) { return Admission.of(Status.BUSY); }
+            var retention = authority.checkRetain(next.op(), next.owner());
+            if (retention != EscrowAdmissionAuthority.Retention.ALREADY_HELD) { return new Admission(Status.RETAIN_REFUSED, retention, null); }
+            var reservation = next.pending() ? authority.checkReserve(next.op(), next.owner(), next.rocket(), EscrowAdmissionAuthority.Consumer.BAY)
+                    : EscrowAdmissionAuthority.Result.ALREADY_HELD;
+            if (reservation != EscrowAdmissionAuthority.Result.ALREADY_HELD) { return new Admission(Status.RESERVE_REFUSED, retention, reservation); }
+        }
+        var mutations = new ArrayList<Mutation>();
+        for (int i = 0; i < group.size(); i++) {
+            BayReceipt next = group.get(i);
+            mutations.add(new Mutation(next.op(), current.put(next.op(), next), next, i == group.size() - 1 ? completion : outcome -> { }));
+            issuedThrough = Math.max(issuedThrough, next.seq());
+        }
+        queued.addAll(mutations); changed(); authority.refresh(); requestWrite();
+        return new Admission(Status.QUEUED, EscrowAdmissionAuthority.Retention.ALREADY_HELD, EscrowAdmissionAuthority.Result.ALREADY_HELD);
+    }
+
+    /**
+     * W170 D7: removes the receipts of one group in one generation whose replacement {@code guard} must allow, as
+     * {@code EscrowCoordinator.retire} guards its removal. Only a quiet store (nothing queued or captured) accepts it, so
+     * the guarded generation holds this group alone and a refused guard never cancels another change. The slots end at
+     * the exact acknowledgement; GUARD_REFUSED or a definite failure restores every receipt. Completion runs once.
+     */
+    Admission removeGroup(List<UUID> group, java.util.function.BooleanSupplier guard, Consumer<BayReceiptWriter.Outcome> completion) {
+        owner(); Objects.requireNonNull(guard); Objects.requireNonNull(completion);
+        if (group.isEmpty()) { return Admission.of(Status.INVALID); }
+        if (unavailable()) { return Admission.of(Status.STORE_UNAVAILABLE); }
+        if (!queued.isEmpty() || !writer.idle()) { return Admission.of(Status.BUSY); }
+        var ops = new HashSet<UUID>();
+        for (UUID op : group) {
+            BayReceipt before = current.get(op);
+            if (!ops.add(op) || before == null) { return Admission.of(Status.INVALID); }
+            if (before.released()) { return Admission.of(Status.RELEASED_LOCKED); }
+        }
+        for (int i = 0; i < group.size(); i++) {
+            UUID op = group.get(i);
+            queued.add(new Mutation(op, current.remove(op), null, i == group.size() - 1 ? completion : outcome -> { }));
+        }
+        changed(); authority.refresh();
+        if (!writer.request(this::capture, this::completed, guard)) {
+            // A closed or draining writer took nothing: restore exactly, as a definite failure before replacement would.
+            for (Mutation mutation : queued) { current.put(mutation.op(), mutation.before()); }
+            queued.clear(); changed(); authority.refresh();
+            return Admission.of(Status.STORE_UNAVAILABLE);
+        }
+        return Admission.of(Status.QUEUED);
+    }
+
     /** A queued or captured (active or exact unknown) change of this op or of this satellite. */
     private boolean inFlight(UUID op, @Nullable UUID satellite) {
         for (List<Mutation> mutations : List.of(queued, capturedMutations)) {
