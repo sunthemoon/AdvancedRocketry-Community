@@ -58,6 +58,37 @@ Verification:
 Check C: and D: above 10 GiB and 6 GiB of free memory before each heavy run. A fresh read-only review follows
 before merge.
 
+## Continuation under Root decision R129 (2026-10-28)
+
+W168 delivered `00409f25c`. Its review, `D:/GitHub/ARCE-Task-Evidence/root-queue/W168-review/REVIEW.md` (SHA-256
+`7df7009b…894e`), returned BLOCK. Read the whole review and its probe first.
+
+- **W168-R1 (High).** `CodecRecordSizer.missionBytes` reserves less than a valid restored mission can encode. A DATA
+  mission quarantined from CLAIM_PENDING_DISCOVERY, with `resolved_at` and the longest legal reason, encodes 37 bytes
+  over its reservation. Its probe builds a loadable root on which W168's fast path admits a START that the baseline
+  refuses, leaving the root 961 bytes over the cap.
+- The undercount predates W168. The older fast path for ordinary changes trusts the same reservations.
+
+A fresh session continues on `codex/v1.8.0-w168` and appends a "Continuation (R129)" section to the record:
+
+1. **A one-page note first.** For each record kind the reservations cover (satellites, missions, instances, ground
+   surveys, accounts), name the largest encoding any supported state can reach. Include restored records and every
+   transition, such as quarantine from each earlier status with its timestamps and the longest reason. Then compare
+   that with what the sizer reserves today.
+2. **Fix the sizer** so each reservation covers its record's largest reachable encoding. Add real-codec regressions:
+   - the review's probe, which must now refuse exactly as the baseline does, leaving the root, accounts,
+     reservations, clock and mutation sequence unchanged;
+   - a worst-state case for each kind.
+3. **Report the capacity effect.** Larger reservations can admit fewer records within a section budget. Report how
+   many missions, instances and jobs fit before and after, and what a restored root at today's budgets does after the
+   change. Nothing may refuse to load. If any already-admitted record could be refused, stop and report.
+4. **Keep the whole-root fallback** wherever the reservation proof cannot be shown sound.
+5. **Rerun the benchmark** on the fixed code.
+
+Verification: the new tests alone, failing first; the `satellite` packages and the whole unit suite. If the heavy-JVM
+lock is free within an hour, run one complete GameTest with the unchanged checker; otherwise report it, and the hosted
+regression after merge stands in. A fresh read-only review follows.
+
 ## Not in this task
 
 The registry writer (W129), the bay slices, ADRs, the risk register, status files and the ledger (Root).
