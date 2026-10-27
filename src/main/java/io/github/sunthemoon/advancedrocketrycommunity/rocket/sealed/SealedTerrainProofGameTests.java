@@ -22,6 +22,15 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 public final class SealedTerrainProofGameTests {
     @GameTest(template = "empty", batch = "w152_terrain", timeoutTicks = 200)
     public static void ordinaryTerrainUsesOriginalWorkerAndKeepsUnrelatedContents(GameTestHelper helper) {
+        readback(helper, false);
+    }
+
+    @GameTest(template = "empty", batch = "w164_terrain_supersession", timeoutTicks = 200)
+    public static void ordinaryTerrainReprovesAfterOneVanillaSave(GameTestHelper helper) {
+        readback(helper, true);
+    }
+
+    private static void readback(GameTestHelper helper, boolean supersedeFirst) {
         var level = helper.getLevel(); var server = level.getServer();
         var pos = helper.absolutePos(new BlockPos(1, 1, 1)); var chunk = new ChunkPos(pos);
         level.setBlock(pos, Blocks.CHEST.defaultBlockState(), 3);
@@ -30,6 +39,7 @@ public final class SealedTerrainProofGameTests {
         String dimension = level.dimension().location().toString();
         var result = new EscrowBarrier.Result[1]; var submitted = new boolean[1]; var completed = new boolean[1];
         var labels = new java.util.ArrayList<String>();
+        boolean[] saved = {false};
         helper.assertTrue(!barrier.availableOrdinaryTerrain(store, "w152:wrong_level", chunk, server.getTickCount()),
                 "Terrain facade accepted a different Level identity");
         helper.onEachTick(() -> {
@@ -41,6 +51,12 @@ public final class SealedTerrainProofGameTests {
                 if (submitted[0]) {
                     helper.assertTrue(!barrier.beginOrdinary(store, dimension, chunk, root -> true, server.getTickCount(),
                             label -> { }, value -> { }), "Terrain and entity captures used separate per-tick capacity");
+                    if (supersedeFirst && !saved[0]) {
+                        saved[0] = true;
+                        // A real vanilla store of unchanged contents invalidates this native capture.
+                        level.getChunkAt(pos).setUnsaved(true);
+                        server.saveEverything(true, true, true);
+                    }
                 }
             }
             if (result[0] == null) { return; }
