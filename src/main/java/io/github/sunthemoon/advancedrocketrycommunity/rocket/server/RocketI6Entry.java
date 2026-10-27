@@ -99,7 +99,7 @@ final class RocketI6Entry {
         return RocketValidationCode.DISASSEMBLY_PENDING;
     }
 
-    /** A cold-site click only loads the recorded origin; it cannot consume a destructive consent or create P. */
+    /** A cold-site click only prepares the recorded discovery columns; it cannot consume destructive consent or create P. */
     RocketValidationCode prepare(RocketEntity rocket, BooleanSupplier authorized) {
         if (!(rocket.level() instanceof ServerLevel level) || !level.getServer().isSameThread() || !rocket.operational()
                 || RocketReleaseAccess.fenced(rocket) || sealedClaim.test(rocket)) { return RocketValidationCode.REGION_BUSY; }

@@ -89,10 +89,13 @@ class RocketDestinationRetirement extends RocketRetirementWorld {
     @Override public void keepLoaded(RocketTransferRecord record, List<RocketRetirementProof.Slot> census) {
         // W130-R4: gated release tests time the synchronous load of the old site between these two checkpoints.
         EscrowRuntime.of(server).checkpoint("R52_TICKETING");
-        var source = RocketTransferEntities.level(server, record.sourceSnapshot().sourceDimension());
-        if (source != null) { RocketTransferEntities.keepLoaded(source, record.sourceSnapshot(), record.transferId()); }
-        var destination = RocketTransferEntities.level(server, record.destinationSnapshot().sourceDimension());
-        if (destination != null) { RocketTransferEntities.refreshOriginTicket(destination, record.destinationSnapshot(), record.transferId()); }
+        // R124: preparation requires every checked discovery column to be entity-ticking, not just each origin.
+        // The paced caller already checked bounds, storage and authority. Reuse the same finite flight tickets.
+        if (RocketTransferEntities.refreshMargins(record.transferId(), record.sourceSnapshot(),
+                record.destinationSnapshot(), RocketTransferEntities.levelTickets(server)) > 0) {
+            var source = RocketTransferEntities.level(server, record.sourceSnapshot().sourceDimension());
+            if (source != null) { RocketTransferEntities.loadOrigin(source, record.sourceSnapshot()); }
+        }
         EscrowRuntime.of(server).checkpoint("R52_TICKETED");
     }
 

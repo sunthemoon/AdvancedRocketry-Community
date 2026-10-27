@@ -520,7 +520,7 @@ final class RocketTransferEntities {
         void remove(ResourceLocation dimension, ChunkPos column, UUID transfer);
     }
 
-    private static FlightTickets levelTickets(MinecraftServer server) {
+    static FlightTickets levelTickets(MinecraftServer server) {
         return new FlightTickets() {
             @Override public boolean present(ResourceLocation dimension) { return level(server, dimension) != null; }
             @Override public void add(ResourceLocation dimension, ChunkPos column, UUID transfer) {
