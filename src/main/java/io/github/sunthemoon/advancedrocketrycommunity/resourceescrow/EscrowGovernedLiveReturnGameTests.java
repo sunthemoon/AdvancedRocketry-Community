@@ -247,10 +247,14 @@ public final class EscrowGovernedLiveReturnGameTests {
             }
             if (leaseCut != null && leaseCut.ready()) {
                 helper.assertTrue(sawF6, "F7 was captured without the joint CANCELLED checkpoint");
+                var writeFailure = dismountCut ? EscrowTerminalRetryCut.observeWriteFailure(server, record) : null;
                 try { leaseCut.exercise(helper, dismountCut ? EscrowTerminalLeaseCut.Fault.DISMOUNT : EscrowTerminalLeaseCut.Fault.NONE, rocket, passenger); }
-                finally { leaseCut.close(); leaseCut = null; }
+                finally {
+                    try { if (writeFailure != null) { writeFailure.close(); } }
+                    finally { leaseCut.close(); leaseCut = null; }
+                }
                 if (dismountCut) {
-                    EscrowTerminalRetryCut.assertWriteFailure(helper, server, record);
+                    EscrowTerminalRetryCut.assertWriteFailure(helper, server, record, writeFailure);
                     helper.assertTrue(!runtime.terminal().checkpoint(server, record) && !runtime.returns().checkpoint(server, record),
                             "Departure retained a terminal checkpoint");
                     journal.setDirty();
