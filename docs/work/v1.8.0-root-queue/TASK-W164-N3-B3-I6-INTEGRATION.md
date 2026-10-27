@@ -109,6 +109,55 @@ Stage temporary source archives under `build/`, not in the evidence directory. T
 your small edits to `RocketOrdinaryRetirement` and `RocketTransferRecoveryService` stay in their own commits, and
 Root reconciles them after W152J merges.
 
+## Continuation under Root decision R118 (2026-10-27)
+
+The second session stopped at checkpoint `67a85eb90` (tested `6ac199d6b`), not merge-ready.
+
+- **Done:**
+  - the plain-hook fixture failure is fixed;
+  - M0 and M1, cold preparation, B2 delegation and no-T routing are implemented, with the feedback;
+  - clean build, 5,141 unit tests and runData pass.
+- **Open:** the complete GameTest had 1,411 of 1,423 pass, and the log checker failed.
+  - Eleven failures are in the unchanged public-consumer tests under `src/adapterTest`. They expect a disassembly
+    restore failure to roll D back and allow a retry within the same call, but B2 materializes later.
+  - One is `SealedSupersessionGameTests.changedCarrierInvalidatesItsPendingNativeProofBeforeElection`, which fails
+    only in the complete run.
+  - The checker also reports an unexpected returned-time WARN for `arce_adapter_test:cargo_inventory`, and two missing
+    expected WARNs.
+
+**R118, the compatibility answer.** [ADR-022](../../decisions/ADR-022-ROCKET-ADAPTER-REGISTRATION.md) promises
+outcomes, not same-call timing:
+
+- a restore failure rejects the operation and keeps entity and journal authority;
+- a missing or mismatched adapter blocks restoration until the same provider is reinstalled.
+
+So:
+
+1. **Classify the eleven tests** by what B2 does with each failure, citing the source: certified rollback before D3 (DR,
+   then M3), or an uncertified hold under R107 (a failed carrier kept until reload).
+2. **Named asynchronous-result transitions.** Each test may wait for B2's result instead of the same call. Keep every
+   outcome assertion:
+   - no lost or duplicated item, fluid or fuel;
+   - D retained or rolled back exactly;
+   - the failing callback counted;
+   - the later healthy disassembly succeeds.
+
+   For a DR case, the retry succeeds in the same session after DR completes. For an R107 hold, the test drives the
+   documented recovery (the carrier's reload) before the retry. List each transition in the record, as W129aM did.
+   Root adds the R107 hold for external adapters to ADR-022 and R-035 at merge.
+3. **Tick limits.** A transition that needs more than its 60-tick limit derives the new limit in the test from
+   production constants: the proof deadline, retry and phase budgets. W94B did the same. Never use a bare larger
+   number, and never change a test that passes on the synchronous path.
+4. **The returned-time WARN.** Find which callback B2 now times, and whether it is a real overrun or a change in what
+   is measured. Do not declare it in the manifest without that cause.
+5. **The supersession failure.** Diagnose it after merging the current shared head (item 6), because W152J's R117 fix
+   changes admission arbitration. No timeout change.
+6. **Merge the shared branch** (`codex/v1.8.0-classic-content`, local) into this branch before the complete GameTest,
+   once it contains W152J and W129aM. Check `git log codex/v1.8.0-classic-content` for the commits
+   `merge(v1.8.0): W152J` and `merge(v1.8.0): W129aM`; until both exist, work on items 1 to 4. Resolve conflicts in
+   their favour where they own the line, and record each conflict. W129aM makes the N3-B2 sealed journal port wait on `WRITE_PENDING`; keep that rule.
+7. **Then R115's native tranche 1:** B-PRE, 20 cases, 60 starts.
+
 ## Not in this task
 
 - N3-B4 (the combined cut evidence), W98-R1 and governed admission.

@@ -1,7 +1,7 @@
 # ADR-075 - Moon arrivals land on the heightmap
 
 ```yaml
-status: PROPOSED
+status: ACCEPTED
 date: 2026-10-26
 owner: sunthemoon
 deciders: [sunthemoon]
@@ -20,8 +20,11 @@ terrain refusals (section 7). It adds test cases 11 and 12, sharpens cases 3 and
 the dismount consequence, and adds the ADR-033 lines 80-81 pointer note. No decision changes. The finding-by-finding
 disposition is in the [W165 record](../work/v1.8.0-root-queue/records/W165.md).
 
-This ADR is proposed for an independent read-only review and the owner's acceptance. No production or test code
-changes before acceptance. It approves no Gate and accepts no risk. The history of the y 80 floor is in the
+**Accepted (2026-10-27).** In the Claude Code Root session the owner answered Root's question "Accept it, including
+its named residuals?" on revision 2 (reviewed APPROVE-WITH-CHANGES, all eight findings addressed, merged as
+PROPOSED at `0c94e76e9`) with the option "Accept (Recommended)". The acceptance includes the residuals named under
+Consequences, among them the fixed dismount offset with no collision check. W156 resumes with the plan in the W165
+record. This acceptance approves no Gate. The history of the y 80 floor is in the
 [W156 record](../work/v1.8.0-root-queue/records/W156.md); the implementation plan for W156's resumption is in the
 [W165 record](../work/v1.8.0-root-queue/records/W165.md).
 
