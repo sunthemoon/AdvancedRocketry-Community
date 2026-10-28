@@ -180,10 +180,6 @@ final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
 
     void endpointSeen(RocketEntity rocket) { if (!stopping) { copies.seen(rocket, claims, this::offer); } }
     boolean mountAllowed(net.minecraft.world.entity.Entity player, RocketEntity source) { return copies.mountAllowed(player, source); }
-    void reconnect(net.minecraft.server.level.ServerPlayer player, RocketTransferRecord record) {
-        if (!stopping) { claims.get(record.logicalRocketId()).filter(claim -> claim.transfer().equals(record.transferId()))
-                .ifPresent(claim -> copies.reconnect(claim, record, player)); }
-    }
 
     /** ServerStoppingEvent, or the first observed shutdown: discard every waiting step and run no further effect. */
     void stop() {

@@ -39,9 +39,16 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 public final class BayCopiesGameTests {
     private BayCopiesGameTests() { }
 
+    /** W185-R4: the held login is retained, neither routed nor settled, and the standing passenger is never pulled back. */
     @GameTest(template = TEMPLATE, batch = "bay_copies_login", timeoutTicks = 1_200)
     public static void loginAndCopiesDuringQueuedRetirementInvalidateItWithoutSettlement(GameTestHelper helper) {
-        new Scenario(helper).start();
+        new Scenario(helper, false).start();
+    }
+
+    /** W185-R4: only a passenger riding a recognized copy that will be removed is moved, into the exact survivor. */
+    @GameTest(template = TEMPLATE, batch = "bay_copies_riding", timeoutTicks = 1_200)
+    public static void aPassengerRidingARemovedCopyIsMovedIntoTheSurvivor(GameTestHelper helper) {
+        new Scenario(helper, true).start();
     }
 
     /** W185-R2: an in-session claim tickets its whole source end from CONSUME on, so D6 cannot wait for ever. */
@@ -52,6 +59,7 @@ public final class BayCopiesGameTests {
 
     private static final class Scenario {
         final GameTestHelper helper;
+        final boolean riding;
         final UUID owner = UUID.randomUUID(), passenger = UUID.randomUUID();
         final GameTestTickPacer pacer;
         final List<RocketEntity> copies = new ArrayList<>();
@@ -65,7 +73,9 @@ public final class BayCopiesGameTests {
         int stage, waits;
         boolean installed, closed;
 
-        Scenario(GameTestHelper helper) { this.helper = helper; pacer = new GameTestTickPacer(helper.getLevel().getServer()); }
+        Scenario(GameTestHelper helper, boolean riding) {
+            this.helper = helper; this.riding = riding; pacer = new GameTestTickPacer(helper.getLevel().getServer());
+        }
         void start() { helper.onEachTick(this::tick); }
 
         void tick() {
@@ -110,16 +120,22 @@ public final class BayCopiesGameTests {
             player = FirstEventGameTestPlayers.join(server, passenger, "W185Passenger", helper.getLevel(),
                     helper.absolutePos(new BlockPos(3, 2, 6)));
             RocketSourceRetirementFixtures.recovery(RocketRuntime.installedTransfers()).onPlayerLoggedIn(player, journal);
-            helper.assertTrue(player.getVehicle() == flight.source() && !token.getAsBoolean(), "Login did not route/invalidate");
+            // W185-R4 (Root's scope): the held login stays queued for its 200 ticks; it moves nobody and proves nothing stale.
+            helper.assertTrue(player.getVehicle() == null && token.getAsBoolean() && queued(player),
+                    "The held login was routed, invalidated the group, or was not retained");
             helper.assertTrue(journal.find(record.transferId()).orElse(null) == record
                     && record.sourceFlightData().passengers().assignment(passenger).isPresent()
                     && record.destinationFlightData().passengers().assignment(passenger).isPresent(), "Login settled or cleared the seat");
             for (boolean destination : new boolean[] {false, true}) {
                 var copy = ModEntities.ROCKET.get().create(helper.getLevel());
+                // A copy that already carried the passenger, as before the claim held L: the mount precedes L's binding.
+                if (riding && !destination) { helper.assertTrue(player.startRiding(copy, true), "The passenger could not ride the copy"); }
                 copy.initializeTransferred(destination ? flight.record().destinationSnapshot() : flight.record().sourceSnapshot(),
                         record.logicalRocketId(), owner, destination ? record.destinationFlightData() : record.sourceFlightData());
                 helper.assertTrue(helper.getLevel().addFreshEntity(copy), "Late copy not published"); copies.add(copy);
             }
+            helper.assertTrue(!token.getAsBoolean(), "Late copies did not invalidate the queued token");
+            helper.assertTrue(!riding || player.getVehicle() == copies.get(0), "The fixture passenger is not riding the source copy");
             helper.assertTrue(bays(helper).sessionForTests().find(satellite(pkg)).isPresent(), "Queued removal lost receipt");
             cut.release(); stage = 2;
         }
@@ -137,7 +153,17 @@ public final class BayCopiesGameTests {
                     && copies.get(1).snapshot().orElseThrow().contentHash().equals(claim.group().orElseThrow().dstAfter()),
                     "Late copies were removed without their own consumed image");
             helper.assertTrue(bays(helper).sessionForTests().find(satellite(pkg)).isEmpty(), "Receipt not retired");
+            helper.assertTrue(riding ? player.getVehicle() == flight.source() : player.getVehicle() == null,
+                    riding ? "The removed copy's passenger was not moved into the survivor" : "The standing passenger was pulled back");
             close(); helper.succeed();
+        }
+
+        /** Whether the installed transfer service still holds this player's login in its bounded reconnect queue. */
+        boolean queued(ServerPlayer player) {
+            Object queue = RocketSourceRetirementFixtures.field(RocketSourceRetirementFixtures.recovery(RocketRuntime.installedTransfers()),
+                    "reconnects");
+            java.util.Map<UUID, Long> waiting = RocketSourceRetirementFixtures.field(queue, "waiting");
+            return waiting.containsKey(player.getUUID());
         }
 
         void close() {

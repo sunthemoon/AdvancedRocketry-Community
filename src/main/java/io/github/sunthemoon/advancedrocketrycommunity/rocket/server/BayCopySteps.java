@@ -22,10 +22,6 @@ final class BayCopySteps {
 
     boolean mountAllowed(Entity passenger, RocketEntity source) { return passengers.mountAllowed(passenger, source); }
 
-    void reconnect(BayClaim claim, RocketTransferRecord record, net.minecraft.server.level.ServerPlayer player) {
-        passengers.reconnect(claim, record, player);
-    }
-
     /** Join notifications also arrive before publication; inspect that supplied entity without a world-wide search. */
     void seen(RocketEntity rocket, BayClaimBook claims, java.util.function.Consumer<java.util.UUID> offer) {
         if (rocket.isRemoved()) { return; }
@@ -61,10 +57,7 @@ final class BayCopySteps {
         }
         var scan = BayCopyCensus.inspect(server, record, group);
         if (scan.refusal() != null) { return repair(claim, scan.refusal()); }
-        for (var assignment : record.sourceFlightData().passengers().assignments()) {
-            var player = server.getPlayerList().getPlayer(assignment.passengerId());
-            if (player != null) { passengers.reconnect(claim, record, player); }
-        }
+        // W185-R4: only a passenger riding a copy that this step removes is moved; nobody else is pulled back.
         for (var copy : scan.copies()) {
             var rocket = copy.rocket();
             if (!BayCopyCensus.recognizes(server, record, group, copy)) { return repair(claim, "UNEXPECTED_COPY"); }

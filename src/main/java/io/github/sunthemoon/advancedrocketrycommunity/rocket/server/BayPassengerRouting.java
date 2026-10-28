@@ -9,7 +9,12 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 
-/** A synchronous, coordinator-owned MOVE_ASSIGNED_PASSENGER scope; no settlement or manifest mutation. */
+/**
+ * A synchronous, coordinator-owned MOVE_ASSIGNED_PASSENGER scope; no settlement or manifest mutation. W185-R4 (Root's
+ * scope): it moves only an online assigned passenger riding a recognized copy that D5 removes, into the exact survivor,
+ * never one who dismounted, died or rides elsewhere. That mount alone changes no proved image (a player is never saved
+ * with the rocket), so it does not invalidate the group; removing the copy does.
+ */
 final class BayPassengerRouting {
     private final MinecraftServer server;
     private ServerPlayer permittedPlayer;
@@ -35,15 +40,6 @@ final class BayPassengerRouting {
         return copy.getPassengers().isEmpty();
     }
 
-    /** Online assigned players may rejoin the exact consumed source; offline seats remain untouched. */
-    void reconnect(BayClaim claim, RocketTransferRecord record, ServerPlayer player) {
-        if (claim.group().isEmpty() || BayConsumptionSteps.half(record, claim.group().orElseThrow())
-                != io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.deployment.BayGroup.Half.AFTER
-                || record.sourceFlightData().passengers().assignment(player.getUUID()).isEmpty()) { return; }
-        var survivor = BayConsumptionSteps.exactSource(server, record, record.sourceEntityId(), claim.group().orElseThrow());
-        if (survivor != null && player.getVehicle() != survivor) { move(claim, record, player, survivor); }
-    }
-
     private boolean move(BayClaim claim, RocketTransferRecord record, ServerPlayer player, RocketEntity survivor) {
         var journal = RocketTransferSavedData.get(server);
         if (!server.isSameThread() || permittedPlayer != null || claim.hold() == BayClaim.Hold.REPAIR
@@ -55,7 +51,6 @@ final class BayPassengerRouting {
                 || !RocketTransferEntities.loadedEntity(survivor) || !RocketEscrowGate.bayNeutral(survivor, record.transferId())
                 || RocketReleaseAccess.fenced(survivor)) { return false; }
         try {
-            claim.group().orElseThrow().invalidate();
             permittedPlayer = player; permittedSource = survivor;
             RocketTransferEntities.movePassenger(player, survivor, record.sourceSnapshot().sourceOrigin());
             return player.getVehicle() == survivor;
