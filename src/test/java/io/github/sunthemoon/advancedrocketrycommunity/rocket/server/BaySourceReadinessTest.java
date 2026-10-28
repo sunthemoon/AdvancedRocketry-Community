@@ -74,6 +74,13 @@ final class BaySourceReadinessTest {
         return rocket;
     }
 
+    /** The same image standing at {@code (x, y, z)}, with the rocket entity's 1.5 by 4 block box. */
+    private static RocketEntity standing(RocketTransferRecord record, double x, double y, double z) {
+        var rocket = unexpected(record, x - .5, y, z - .5);
+        UnstartedServer.set(Entity.class, rocket, "bb", new AABB(x - .75, y, z - .75, x + .75, y + 4, z + .75));
+        return rocket;
+    }
+
     /** D6's copy wait as it reads the one census: its refusal, DUPLICATE_PENDING while a copy remains, else null. */
     private static String census(World world, RocketTransferRecord record) {
         var scan = BayCopyCensus.inspect(world.server, record, group(record));
@@ -82,21 +89,22 @@ final class BaySourceReadinessTest {
 
     /**
      * W185-R11, replacing the removed covered() oracle: every column D6 awaits is one the claim's own tickets cover. A
-     * restart group's R1 tickets both checked sets; an in-session claim from CONSUME on tickets its source end's checked
-     * set and its destination's ticket set, which is that end's checked set when admissible.
+     * restart group's R1 tickets both ends' census columns; an in-session claim from CONSUME on tickets each admissible
+     * end's census columns, besides its destination's ticket set. Both ends here have a low strip (R150).
      */
-    @Test void aRestartGroupAndAnInSessionClaimFromConsumeOnTicketBothCheckedEnds() {
-        var record = record(1);
+    @Test void aRestartGroupAndAnInSessionClaimFromConsumeOnTicketBothCensusEnds() {
+        var record = BayAbsenceCensusTest.relocate(17, 17, 65, 65);
         var source = record.sourceSnapshot();
         var destination = record.destinationSnapshot();
+        assertFalse(BayCensusColumns.of(source).strip().isEmpty() || BayCensusColumns.of(destination).strip().isEmpty(), "control");
         var restart = new RocketMarginTicketsTest.Tickets(source.sourceDimension(), destination.sourceDimension());
-        RocketTransferEntities.refreshMargins(TRANSFER, source, destination, restart);
+        BayCensusColumns.renewBoth(TRANSFER, source, destination, restart);
         var inSession = new RocketMarginTicketsTest.Tickets(source.sourceDimension(), destination.sourceDimension());
-        RocketTransferEntities.addRefreshSet(TRANSFER, source, inSession);
+        BayCensusColumns.renewEach(TRANSFER, List.of(source, destination), inSession);
         RocketTransferEntities.addDestinationTickets(TRANSFER, destination, inSession);
         for (var tickets : List.of(restart, inSession)) {
-            assertEquals(Set.copyOf(RocketDiscoveryColumns.of(source).columns()), tickets.columns(source.sourceDimension(), TRANSFER));
-            assertEquals(Set.copyOf(RocketDiscoveryColumns.of(destination).columns()),
+            assertEquals(Set.copyOf(BayCensusColumns.of(source).columns()), tickets.columns(source.sourceDimension(), TRANSFER));
+            assertEquals(Set.copyOf(BayCensusColumns.of(destination).columns()),
                     tickets.columns(destination.sourceDimension(), TRANSFER));
         }
     }
@@ -121,6 +129,28 @@ final class BaySourceReadinessTest {
     }
 
     /**
+     * W170-R65 under Root decision R150: the census box's low edge, x 16 here, also meets an image standing in column 0,
+     * outside the shared set. D6 and R2 wait for that strip column too, and the census counts an image there once the
+     * column's sections are accessible (the entity index visits sections two blocks past the query box).
+     */
+    @Test void theLowStripIsAwaitedAndAnImageStandingThereIsCountedOnceItsColumnLoads() {
+        // Origin x = 17: the shared set starts at column 1 (x - 1 = 16); the strip is column 0.
+        var record = BayAbsenceCensusTest.relocate(17, 8, MOON.x(), MOON.z());
+        var strip = new ChunkPos(0, 0);
+        assertFalse(RocketDiscoveryColumns.of(record.sourceSnapshot()).columns().contains(strip), "control: the shared set");
+        var image = standing(record, 15.5, 80, 8.5); // its box, x 14.75 to 16.25, meets the census box at x 16
+        var world = new World();
+        var source = world.put(record.sourceSnapshot().sourceDimension(), Visibility.HIDDEN, true, image);
+        world.put(record.destinationSnapshot().sourceDimension(), Visibility.TICKING, true);
+        source.cold.add(strip.toLong());
+        assertFalse(BaySourceProof.endsLoaded(world.server, record), "D6 must wait for the strip column");
+        assertNull(census(world, record), "characterization: an image in a section that is not yet accessible is unseen");
+        source.load(); source.cold.clear();
+        assertTrue(BaySourceProof.endsLoaded(world.server, record));
+        assertEquals("UNEXPECTED_COPY", census(world, record), "once the strip column loads, the census counts the image");
+    }
+
+    /**
      * W185-R2: from CONSUME on, an in-session claim tickets its whole source end, as R1 does for a restart group, and the
      * flight's ordinary release removes those tickets. Earlier stages, REPAIR and restart groups add none here.
      */
@@ -128,26 +158,27 @@ final class BaySourceReadinessTest {
         var record = record(1);
         var group = group(record);
         var claim = BayClaim.checkpoint(LOGICAL, TRANSFER, SOURCE, group.members());
-        assertFalse(BaySourceProof.ticketsSourceEnd(claim), "GROUP");
+        assertFalse(BaySourceProof.ticketsCensus(claim), "GROUP");
         claim.groupPassed(1); claim.nextCandidate(); claim.freeze(group);
-        assertFalse(BaySourceProof.ticketsSourceEnd(claim), "before CONSUME");
+        assertFalse(BaySourceProof.ticketsCensus(claim), "before CONSUME");
         for (var stage : List.of(BayClaim.Stage.CONSUME, BayClaim.Stage.PROVE, BayClaim.Stage.RETIRE)) {
             claim.advance(stage);
-            assertTrue(BaySourceProof.ticketsSourceEnd(claim), stage.name());
+            assertTrue(BaySourceProof.ticketsCensus(claim), stage.name());
         }
         claim.repair("W185_TEST");
-        assertFalse(BaySourceProof.ticketsSourceEnd(claim), "REPAIR adds no ticket");
+        assertFalse(BaySourceProof.ticketsCensus(claim), "REPAIR adds no ticket");
         var restart = BayClaim.restart(LOGICAL, TRANSFER, group.members());
         restart.freeze(group); restart.establishSource(SOURCE); restart.advance(BayClaim.Stage.CONSUME);
-        assertFalse(BaySourceProof.ticketsSourceEnd(restart), "a restart group's R1 renewal covers both ends instead");
+        assertFalse(BaySourceProof.ticketsCensus(restart), "a restart group's R1 renewal covers both ends instead");
 
         // Origin x = 14: the checked set has two columns, and the origin ticket alone covers only one of them.
         RocketStructureSnapshot wide = record.sourceSnapshot().relocated(new UUID(996, 2), record.sourceSnapshot().sourceDimension(),
                 new RocketPosition(14, 80, 8), 0L);
         var columns = io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.RocketDiscoveryColumns.of(wide);
         assertTrue(columns.admissible() && columns.count() == 2, "control: " + columns);
+        assertEquals(columns.columns(), BayCensusColumns.of(wide).columns(), "control: no low strip here");
         var tickets = new RocketMarginTicketsTest.Tickets(wide.sourceDimension());
-        assertEquals(2, RocketTransferEntities.addRefreshSet(TRANSFER, wide, tickets));
+        assertEquals(2, BayCensusColumns.renewEach(TRANSFER, List.of(wide), tickets));
         assertEquals(java.util.Set.copyOf(columns.columns()), tickets.columns(wide.sourceDimension(), TRANSFER));
         RocketTransferEntities.releaseMargins(TRANSFER, wide, record.destinationSnapshot(), tickets);
         assertEquals(0, tickets.count(TRANSFER), "the flight's ordinary release removes the source end's tickets");

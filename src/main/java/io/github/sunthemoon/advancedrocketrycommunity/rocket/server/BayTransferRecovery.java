@@ -191,9 +191,9 @@ final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
     }
 
     /**
-     * While held, an in-session claim renews T's recorded flight tickets on both ends, and from CONSUME on its source end's
-     * checked set (W185-R2), without a load; a healthy restart group renews the existing tickets on T's checked columns of
-     * both ends (R1). REPAIR adds no ticket.
+     * While held, an in-session claim renews T's recorded flight tickets on both ends, and from CONSUME on each admissible
+     * end's census columns (W185-R2, R150), without a load; a healthy restart group renews the existing tickets on T's
+     * census columns of both ends (R1). REPAIR adds no ticket.
      */
     private void renewTickets() {
         var journal = RocketTransferSavedData.get(server);
@@ -207,7 +207,7 @@ final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
             }
             var source = RocketTransferEntities.level(server, record.sourceSnapshot().sourceDimension());
             if (source != null) { RocketTransferEntities.refreshOriginTicket(source, record.sourceSnapshot(), record.transferId()); }
-            if (BaySourceProof.ticketsSourceEnd(claim)) { RocketTransferEntities.refreshBaySource(server, record); }
+            if (BaySourceProof.ticketsCensus(claim)) { BayCensusColumns.renewInSession(server, record); }
             var destination = RocketTransferEntities.level(server, record.destinationSnapshot().sourceDimension());
             if (destination != null) {
                 RocketTransferEntities.refreshDestinationTickets(destination, record.destinationSnapshot(), record.transferId());

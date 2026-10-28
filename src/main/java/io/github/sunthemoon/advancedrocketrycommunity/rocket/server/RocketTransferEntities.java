@@ -518,27 +518,6 @@ final class RocketTransferEntities {
         return refreshed.size();
     }
 
-    /** W170 R1: a held bay group's two recorded ends, as {@link #refreshGovernedFlightTickets} does for a governed record. */
-    static int refreshBayMargins(MinecraftServer server, RocketTransferRecord record) {
-        return server.isSameThread() ? refreshMargins(record.transferId(), record.sourceSnapshot(), record.destinationSnapshot(), levelTickets(server)) : 0;
-    }
-
-    /**
-     * W185-R2: a held in-session bay claim's source end from CONSUME on, as R1 renews a restart group's: one ticket on each
-     * column of an admissible checked set (at most 16, the origin among them), else none beyond the origin ticket. That
-     * set is the source end's {@link RocketDiscoveryColumns#releaseSet}, so {@link #releaseMargins} removes it. No load.
-     */
-    static int refreshBaySource(MinecraftServer server, RocketTransferRecord record) {
-        return server.isSameThread() ? addRefreshSet(record.transferId(), record.sourceSnapshot(), levelTickets(server)) : 0;
-    }
-
-    static int addRefreshSet(UUID transfer, RocketStructureSnapshot end, FlightTickets tickets) {
-        if (!tickets.present(end.sourceDimension())) { return 0; }
-        var columns = RocketDiscoveryColumns.of(end).refreshSet();
-        columns.forEach(column -> tickets.add(end.sourceDimension(), column, transfer));
-        return columns.size();
-    }
-
     /** The flight-ticket calls of one Level, keyed by its dimension; a recording sink in unit tests. */
     interface FlightTickets {
         boolean present(ResourceLocation dimension);
@@ -546,7 +525,7 @@ final class RocketTransferEntities {
         void remove(ResourceLocation dimension, ChunkPos column, UUID transfer);
     }
 
-    private static FlightTickets levelTickets(MinecraftServer server) {
+    static FlightTickets levelTickets(MinecraftServer server) {
         return new FlightTickets() {
             @Override public boolean present(ResourceLocation dimension) { return level(server, dimension) != null; }
             @Override public void add(ResourceLocation dimension, ChunkPos column, UUID transfer) {

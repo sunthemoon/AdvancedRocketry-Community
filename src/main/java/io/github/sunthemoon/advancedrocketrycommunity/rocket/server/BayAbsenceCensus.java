@@ -1,12 +1,14 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord;
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.RocketDiscoveryColumns;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
 
-/** Complete bounded end coverage, never just the slots of copies already visible in RAM. */
+/**
+ * Complete bounded end coverage, never just the slots of copies already visible in RAM: each end's
+ * {@link BayCensusColumns}, the shared checked set with W170-R65's low strip (R150).
+ */
 final class BayAbsenceCensus {
     private BayAbsenceCensus() { }
 
@@ -22,7 +24,7 @@ final class BayAbsenceCensus {
         slots.add(RocketRetirementProof.Slot.origin(source));
         RocketRetirementProof.addSlot(slots, RocketRetirementProof.Slot.origin(destination), RocketOrdinaryRetirement.MAX_SLOTS);
         for (var snapshot : List.of(source, destination)) {
-            var columns = RocketDiscoveryColumns.of(snapshot);
+            var columns = BayCensusColumns.of(snapshot);
             if (!columns.valid()) { return null; }
             for (var column : columns.columns()) {
                 if (!RocketRetirementProof.addSlot(slots, new RocketRetirementProof.Slot(snapshot.sourceDimension(), column),

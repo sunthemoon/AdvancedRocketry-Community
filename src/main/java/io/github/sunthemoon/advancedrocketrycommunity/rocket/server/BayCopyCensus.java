@@ -19,7 +19,11 @@ import net.minecraft.util.AbortableIterationConsumer;
 import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.phys.AABB;
 
-/** W27d3's bounded recognition. Reading the loaded index is not an absence proof. */
+/**
+ * W27d3's bounded recognition. Reading the loaded index is not an absence proof. Each end's box starts at the census low
+ * edge, {@code min - 1}; the entity index visits sections two blocks past a query box, so an image standing in W170-R65's
+ * low strip is read once that column is loaded, and R2, D5 and D6 await every {@link BayCensusColumns} column (R150).
+ */
 final class BayCopyCensus {
     /** The rocket entity's existing height ({@code ModEntities}, 1.5 by 4 blocks), as NamedLandingPadOccupancy sizes it. */
     private static final double ENTITY_HEIGHT = 4D;

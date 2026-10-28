@@ -167,22 +167,23 @@ final class BaySourceProof {
     }
 
     /**
-     * W185-R2: from CONSUME on, a held in-session claim renews its source end's checked set (at most 16 columns), as a
-     * restart group's R1 renews both ends, because D6 awaits every column of it. REPAIR adds no ticket.
+     * W185-R2: from CONSUME on, a held in-session claim renews each admissible end's census columns (at most 16 each), as
+     * a restart group's R1 renews both ends, because D6 awaits every column of them, the low strip among them (R150).
+     * REPAIR adds no ticket.
      */
-    static boolean ticketsSourceEnd(BayClaim claim) {
+    static boolean ticketsCensus(BayClaim claim) {
         return claim.origin() == BayClaim.Origin.CHECKPOINT && claim.hold() != BayClaim.Hold.REPAIR
                 && (claim.stage() == BayClaim.Stage.CONSUME || claim.stage() == BayClaim.Stage.PROVE
                         || claim.stage() == BayClaim.Stage.RETIRE);
     }
 
     /**
-     * W27d3: D6 awaits every checked column at both ends. It never interprets an unloaded portion as absence; the claim's
-     * own renewed tickets cover both ends of a restart group and, from CONSUME on, of an in-session claim (W185-R2).
+     * W27d3: D6 awaits every census column at both ends, W170-R65's low strip among them (R150). It never interprets an
+     * unloaded portion as absence; the claim's own renewed tickets cover both ends of a restart group and, from CONSUME
+     * on, of an in-session claim (W185-R2).
      */
     static boolean endsLoaded(MinecraftServer server, RocketTransferRecord record) {
-        return RocketTransferEntities.endAlreadyLoaded(server, record.sourceSnapshot())
-                && RocketTransferEntities.endAlreadyLoaded(server, record.destinationSnapshot());
+        return BayCensusColumns.loaded(server, record.sourceSnapshot()) && BayCensusColumns.loaded(server, record.destinationSnapshot());
     }
 
     private void captured(BayClaim claim, BaySlotProofs.Result result, BooleanSupplier lease, BooleanSupplier token, CompoundTag frozen) {

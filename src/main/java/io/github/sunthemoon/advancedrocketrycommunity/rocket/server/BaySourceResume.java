@@ -12,7 +12,6 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlight
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightState;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.RocketDiscoveryColumns;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.server.MinecraftServer;
@@ -24,8 +23,9 @@ import org.slf4j.Logger;
 /**
  * W170's restart resume, extended by W185's copy recognition (W27A-DESIGN section 4.1, R0 to R2). R0: neither R1 nor R2 acts before the exact
  * checked authority of (L, T) (W170-R23). R1: while held, the claim renews the existing
- * flight tickets on T's checked columns of both ends (at most 16 per end), loading nothing else, and waits until both
- * ends' columns are entity-loaded and ticking, so the census never counts a loading end as empty (W170-R41); one group
+ * flight tickets on T's census columns of both ends ({@link BayCensusColumns}, at most 16 per end), loading nothing else,
+ * and waits until both ends' columns are entity-loaded and ticking, so the census never counts a loading end as empty
+ * (W170-R41); one group
  * step per tick. R2: the exact source UUID, present and
  * neutral, is kept (a lagging COUNTDOWN or ASCENT image gets TRANSIT from T at the altitude position, with no launch
  * effect); absent, the bay-resume constructor rebuilds it with T's source UUID, the journal's source snapshot and T's
@@ -56,7 +56,7 @@ final class BaySourceResume {
         if (renewing.add(claim.logical())) {
             LOGGER.info("ARCE_BAY_RESUME_TICKETS transfer={} logical={} stage={}", claim.transfer(), claim.logical(), claim.stage());
         }
-        return RocketTransferEntities.refreshBayMargins(server, record) > 0;
+        return BayCensusColumns.renewRestart(server, record) > 0;
     }
 
     /**
@@ -89,13 +89,13 @@ final class BaySourceResume {
         if (BayConsumptionSteps.half(record, group) == null) { return repair(claim, "TRANSFER_AUTHORITY_CONFLICT"); }
         ServerLevel level = RocketTransferEntities.level(server, record.sourceSnapshot().sourceDimension());
         if (level == null || RocketTransferEntities.level(server, record.destinationSnapshot().sourceDimension()) == null
-                || !RocketDiscoveryColumns.of(record.sourceSnapshot()).admissible()
-                || !RocketDiscoveryColumns.of(record.destinationSnapshot()).admissible()) {
+                || !BayCensusColumns.of(record.sourceSnapshot()).admissible()
+                || !BayCensusColumns.of(record.destinationSnapshot()).admissible()) {
             claim.waiting("END_UNAVAILABLE"); // wider regions or missing Levels wait, with no additional ticket
             return BayStepQueue.Result.NEXT_TICK;
         }
-        if (!RocketTransferEntities.recoveryEndsAlreadyLoaded(server, record)) {
-            claim.waiting("END_LOADING"); // W170-R41: both recorded ends, whose checked columns R1 already tickets
+        if (!BaySourceProof.endsLoaded(server, record)) {
+            claim.waiting("END_LOADING"); // W170-R41: both recorded ends' census columns, which R1 already tickets (R150)
             return BayStepQueue.Result.NEXT_TICK;
         }
         if (RocketReleaseAccess.fenced(server, claim.logical())) { claim.waiting("RELEASE_FENCED"); return BayStepQueue.Result.NEXT_TICK; }
