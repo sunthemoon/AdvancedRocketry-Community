@@ -1154,6 +1154,44 @@ This note records mechanics; it changes no decision and accepts no risk. The ris
 
 This is a development implementation note, not owner acceptance or a Gate result.
 
+### W27d2 implementation note: the registered half of bay deployment (W170, merged `61c2f6245`)
+
+This note records mechanics; it changes no decision and accepts no risk. The risk is R-043, with R-039, R-041 and
+R-042.
+
+- **The steps.** D2 registers satellites under the coordinator permit, after a replay, and checks a fresh DATA launch's
+  initial mission (F2). D3 proves each registration through one registry checkpoint per claim under ADR-074 item 11.
+  After three failures, 200 ticks apart, the claim shows REGISTRY_UNPROVED. Nothing is refused after a RAM
+  registration. D4 publishes the group's REGISTERED receipts in one receipt generation. D5 publishes S′ on the entity
+  and T′ in the journal, at most one whole-snapshot reconstruction per tick. D6 proves the survivor slot at altitude.
+  D7 retires the group's receipts in one guarded write, and the exact acknowledgement hands READY_SOURCE(T′) back to
+  the transfer. An in-session claim held for repair writes no further INTENT and runs no D2.
+- **Root decision R142 accepts W170-R5.** A D2 refusal is written in its own REJECTED generation before D4, not in D4's
+  generation. Pass 1 traced every forced-stop state, and the restart rows reach the same end state.
+- **The census.** R2 and D6 count every loaded rocket naming L at both ends, up to 64 identities, before they classify
+  each one. R2 waits for both ends to load; D6 waits for each end that the claim's tickets fully cover, and R-043 names
+  the in-session ends it does not wait for. A blocked image whose preserved `assembly_transaction_id` is L counts as an
+  unexpected copy. An unexpected image holds as runtime REPAIR without a write; a recognised neutral copy holds as
+  DUPLICATE_PENDING.
+- **The source watch.** From D6's capture to D7's outcome, any position write or removal of the source invalidates the
+  group's token, so a queued D7 guard refuses, the receipts come back and D6 repeats with a fresh proof.
+- **Restart.** R2, and R1's renewal before the source is re-established, wait for the exact checked L/T
+  acknowledgement. The absent-source rebuild checks all escrow eligibility before it adds the entity. One owner binds
+  a group.
+- **Admission stays off** outside the GameTest server and the full release-test gate. The restart rows and the D4 to
+  D7 steps for receipts already in a world run on every server.
+- **Unchanged:** every saved format, bound, budget, quota and timeout, and `RocketTransferService`.
+  `RocketTransferSavedData` gains one package-private hook for D5's rewrite and shares its two insert checks, with
+  the same answers; the rewrite's checks live in `RocketTransferConsumption`.
+- **A known cost (Root decision R143).** Each tick that D6 waits saves the source entity once. W27d3 first moves D6's
+  load check ahead of that save (W170-R62).
+- **Reviews and evidence.** Two review passes (APPROVE-WITH-CHANGES, then BLOCK), the fixes under R137 and R139, a
+  re-review (APPROVE-WITH-CHANGES), the R142 fixes and a final review (APPROVE-WITH-CHANGES on risk entry D and this
+  note only). The native forced-stop cases, two restarts each, are in `records/W170.md`; hosted regression 40687106917
+  passes.
+
+This is a development implementation note, not owner acceptance or a Gate result.
+
 ### W176 implementation note: the fluid fuel loader's native-save protection (merged `7c9e5f7e9`)
 
 This note records mechanics; it changes no decision and accepts no risk. The risk is R-044.
