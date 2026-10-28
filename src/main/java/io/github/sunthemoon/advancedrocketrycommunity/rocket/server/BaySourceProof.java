@@ -9,6 +9,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowReaso
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.deployment.BayClaim;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.deployment.BayGroup;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.deployment.BayMember;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.deployment.BayProofTurns;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.deployment.BayStepQueue;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightData;
@@ -39,6 +40,10 @@ import org.slf4j.Logger;
  * W170-R22: from D6's capture until D7's outcome, the source is watched on the server thread. Any position write or Level
  * removal of a rocket naming L invalidates the group at once, and each coordinator tick compares the source's position,
  * Level, flight, fuel and payload with the captured image, so a change after the removal queued refuses its guard too.
+ * R154: one claim at a time takes D6's captures to D7's outcome ({@link BayProofTurns}); a claim ready to capture waits
+ * for its turn in line with BAY_PROOF_TURN. The holder keeps the turn through W98-R11's retries and a proof invalidated
+ * before D7 queues its removal; it passes the turn on when D7 ends, when D7 parks it, when it holds for repair or ends, and
+ * when, holding no proof, it must wait for anything other than its retry or the barrier's quota.
  */
 final class BaySourceProof {
     /** W98's retry after an IO, force, bounds or veto failure; never after a superseding save (W98-R11). */
@@ -80,6 +85,7 @@ final class BaySourceProof {
     private final Set<UUID> retiring = new HashSet<>();
     /** W185-R5: claims whose D7 found the store busy; their next D6 waits for a quiet store. */
     private final Set<UUID> parked = new HashSet<>();
+    private final BayProofTurns turns = new BayProofTurns();
 
     /** {@code beforeRemoval}, {@code stall} and {@code guardCut} are the gated native cut seams (no-ops outside release tests). */
     BaySourceProof(MinecraftServer server, BayDeploymentSession session, Consumer<UUID> offer,
@@ -126,34 +132,35 @@ final class BaySourceProof {
         UUID logical = claim.logical();
         if (claim.hold() == BayClaim.Hold.REPAIR) { forget(logical); return BayStepQueue.Result.IDLE; }
         if (capturing.containsKey(logical)) { return capturing.get(logical).step(port, server.getTickCount()); }
+        // R154: the holder keeps its turn through W98-R11's retry after a refused capture.
         if (stall.test(claim) || server.getTickCount() < retryAt.getOrDefault(logical, Long.MIN_VALUE)) { return BayStepQueue.Result.NEXT_TICK; }
         BayGroup group = claim.group().orElseThrow();
         var journal = RocketTransferSavedData.get(server);
         RocketTransferRecord record = journal.find(claim.transfer()).orElse(null);
         if (BayConsumptionSteps.half(record, group) != BayGroup.Half.AFTER) { return repair(claim, "TRANSFER_AUTHORITY_CONFLICT"); }
-        if (!journal.actionable(logical)) { return BayStepQueue.Result.NEXT_TICK; } // T' is not acknowledged yet
+        if (!journal.actionable(logical)) { return await(claim, null); } // T' is not acknowledged yet
         RocketEntity source = BayConsumptionSteps.exactSource(server, record, claim.source().orElseThrow(), group);
-        if (source == null) { return BayStepQueue.Result.NEXT_TICK; }
-        if (!endsLoaded(server, record)) { claim.waiting("END_LOADING"); return BayStepQueue.Result.NEXT_TICK; }
+        if (source == null) { return await(claim, null); }
+        if (!endsLoaded(server, record)) { return await(claim, "END_LOADING"); }
         // W185-R11: the one census and rule set D5 normalized with; a copy seen now waits for its next consumption pass.
         var copies = BayCopyCensus.inspect(server, record, group);
         if (copies.refusal() != null) { claim.waiting(copies.refusal()); return repair(claim, copies.refusal()); }
-        if (!copies.copies().isEmpty()) { claim.waiting("DUPLICATE_PENDING"); return BayStepQueue.Result.NEXT_TICK; }
+        if (!copies.copies().isEmpty()) { return await(claim, "DUPLICATE_PENDING"); }
         claim.waiting(null);
         var slots = BayAbsenceCensus.slots(record);
-        if (slots == null) { claim.waiting("END_UNAVAILABLE"); return BayStepQueue.Result.NEXT_TICK; }
+        if (slots == null) { return await(claim, "END_UNAVAILABLE"); }
         String waiting = BayAbsenceCensus.waiting(port, slots);
-        if (waiting != null) { claim.waiting(waiting); return BayStepQueue.Result.NEXT_TICK; }
+        if (waiting != null) { return await(claim, waiting); }
         var slot = slots.get(0);
         long now = server.getTickCount();
-        if (!port.captureSupported(slot)) { claim.waiting("BARRIER_UNSUPPORTED"); return BayStepQueue.Result.NEXT_TICK; }
-        if (!port.captureAvailable(slot, now)) { return retryNextTick(logical); }
-        // W185-R5: a claim D7 parked proves again only once the store is quiet, holding no slot proof meanwhile. Other D6
-        // starts do not wait for the store, so claims that share slots do not all begin capturing on the same tick.
-        if (parked.contains(logical)) {
-            if (storeWaits.getAsBoolean()) { claim.waiting("BAY_RECEIPT_WRITE"); return BayStepQueue.Result.NEXT_TICK; }
-            parked.remove(logical);
-        }
+        if (!port.captureSupported(slot)) { return await(claim, "BARRIER_UNSUPPORTED"); }
+        // W185-R5: a claim D7 parked proves again only once the store is quiet, holding no slot proof meanwhile, and then
+        // queues again behind the claims already waiting (R154). Other D6 starts do not wait for the store.
+        if (parked.contains(logical) && storeWaits.getAsBoolean()) { return await(claim, "BAY_RECEIPT_WRITE"); }
+        // R154: one claim at a time captures and holds census proofs through D7; the others wait in line, in claim order.
+        if (!turns.take(logical)) { claim.waiting("BAY_PROOF_TURN"); return BayStepQueue.Result.NEXT_TICK; }
+        parked.remove(logical);
+        if (!port.captureAvailable(slot, now)) { return retryNextTick(logical); } // the holder keeps its turn
         // W185 / W170-R62: waiting needs no frozen image. Save only once a capture can actually start.
         CompoundTag frozen = projection(source, record);
         if (frozen == null) { return repair(claim, "SOURCE_AUTHORITY_CONFLICT"); }
@@ -192,6 +199,7 @@ final class BaySourceProof {
         if (claim.stage() != BayClaim.Stage.PROVE || claim.hold() == BayClaim.Hold.REPAIR) {
             watches.remove(logical);
             if (result.proof() != null) { result.proof().release(); }
+            turns.leave(logical); // R154: a claim held for repair passes its turn on
             return;
         }
         var proved = result.confirmed() ? new Proved(result.proof(), lease, token, frozen) : null;
@@ -234,16 +242,19 @@ final class BaySourceProof {
     /**
      * W185-R5: D7 waits for a quiet receipt store without its proofs. It releases every slot proof and the watch, and this
      * claim's D6 proves again once the store is quiet, so a parked claim holds none of the save monitor's shared slots.
+     * R154: the turn passes on, and the parked claim queues again behind the claims already waiting.
      */
     private BayStepQueue.Result park(BayClaim claim) {
         parked.add(claim.logical());
         claim.waiting("BAY_RECEIPT_WRITE");
+        turns.leave(claim.logical());
         return again(claim);
     }
 
     private void retired(BayClaim claim, BayGroup group, BayReceiptWriter.Outcome outcome) {
         if (outcome == BayReceiptWriter.Outcome.UNKNOWN) { return; } // the writer retries the exact candidate under its guard
         UUID logical = claim.logical();
+        turns.leave(logical); // R154: D7 ended; a refused claim asks again behind the claims already waiting
         retiring.remove(logical);
         watches.remove(logical);
         Proved proved = proofs.remove(logical);
@@ -300,23 +311,52 @@ final class BaySourceProof {
         return BayStepQueue.Result.IDLE;
     }
 
-    private static BayStepQueue.Result repair(BayClaim claim, String reason) {
+    /** R154: a wait before D6's capture holds no proof, so the claim leaves the line or passes its turn on. */
+    private BayStepQueue.Result await(BayClaim claim, @Nullable String reason) {
+        turns.leave(claim.logical());
+        if (reason != null) { claim.waiting(reason); }
+        return BayStepQueue.Result.NEXT_TICK;
+    }
+
+    /** R154: a claim held for repair cannot go on this session; it passes its turn on, with any proof it held. */
+    private BayStepQueue.Result repair(BayClaim claim, String reason) {
         claim.repair(reason);
+        forget(claim.logical());
         return BayStepQueue.Result.IDLE;
     }
 
-    /** A claim's end, or its gated forget: release any held proof. */
+    /**
+     * R154: D5's copy pass, or one of its waits, ran at PROVE instead of D6, so the claim's census does not stand now. An
+     * attempt still capturing ends as its next step would end it, BARRIER_UNSTABLE with W98's retry; then the claim, holding
+     * no proof, leaves the line or passes its turn on.
+     */
+    void yieldTurn(BayClaim claim) {
+        UUID logical = claim.logical();
+        if (proofs.containsKey(logical) || retiring.contains(logical)) { return; }
+        BaySlotProofs attempt = capturing.get(logical);
+        if (attempt != null) {
+            attempt.close();
+            captured(claim, new BaySlotProofs.Result(null, EscrowReason.BARRIER_UNSTABLE), () -> false, () -> false, null);
+        }
+        turns.leave(logical);
+    }
+
+    /** A claim's end, or its gated forget: release any held proof, and pass its turn on (R154). */
     void forget(UUID logical) {
         Proved proved = proofs.remove(logical);
         if (proved != null) { proved.proof().release(); }
         BaySlotProofs attempt = capturing.remove(logical);
         if (attempt != null) { attempt.close(); }
         retryAt.remove(logical); retiring.remove(logical); watches.remove(logical); parked.remove(logical);
+        turns.leave(logical);
     }
 
     void clear() {
         proofs.values().forEach(proved -> proved.proof().release());
         capturing.values().forEach(BaySlotProofs::close);
-        proofs.clear(); retryAt.clear(); capturing.clear(); retiring.clear(); watches.clear(); parked.clear();
+        proofs.clear(); retryAt.clear(); capturing.clear(); retiring.clear(); watches.clear(); parked.clear(); turns.clear();
     }
+
+    /** The R154 turn and its line, for unit observations. */
+    BayProofTurns turnsForTests() { return turns; }
 }

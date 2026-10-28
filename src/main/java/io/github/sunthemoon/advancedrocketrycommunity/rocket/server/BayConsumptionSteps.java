@@ -39,6 +39,7 @@ final class BayConsumptionSteps {
         var record = RocketTransferSavedData.get(server).find(claim.transfer()).orElse(null);
         var normalized = record == null ? null : copies.normalize(claim, record);
         if (claim.hold() == BayClaim.Hold.REPAIR) { proof.forget(claim.logical()); }
+        else if (normalized != null) { proof.yieldTurn(claim); } // R154: D5's copy pass or its wait gives the D6 turn up
         return normalized == null ? proof.prove(claim) : normalized;
     }
 
