@@ -117,6 +117,8 @@ final class BaySourceProof {
     }
 
     /** D6 at stage PROVE. */
+    boolean stalled(BayClaim claim) { return stall.test(claim); }
+
     BayStepQueue.Result prove(BayClaim claim) {
         UUID logical = claim.logical();
         if (claim.hold() == BayClaim.Hold.REPAIR) { forget(logical); return BayStepQueue.Result.IDLE; }

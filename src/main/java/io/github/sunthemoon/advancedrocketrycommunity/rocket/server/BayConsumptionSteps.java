@@ -35,6 +35,7 @@ final class BayConsumptionSteps {
     }
 
     BayStepQueue.Result prove(BayClaim claim, BaySourceProof proof) {
+        if (proof.stalled(claim)) { return BayStepQueue.Result.NEXT_TICK; } // gated post-D5 native cut
         var record = RocketTransferSavedData.get(server).find(claim.transfer()).orElse(null);
         var normalized = record == null ? null : copies.normalize(claim, record);
         if (claim.hold() == BayClaim.Hold.REPAIR) { proof.forget(claim.logical()); }

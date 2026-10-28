@@ -62,7 +62,10 @@ class ExpectationTests(unittest.TestCase):
             self.assertIn(spec["durable"], ("NONE", "INTENT", "REJECTED", "REGISTERED", "RETIRED"), case)
             self.assertEqual(2, len(spec["restarts"]), case)
             for name in spec["restarts"] + ((spec["first"],) if "first" in spec else ()):
-                self.assertTrue(name == "HELD" or name in runner.OUTCOMES, case)
+                self.assertTrue(name in ("HELD", "COPY_HELD") or name in runner.OUTCOMES, case)
+                if name == "COPY_HELD":
+                    self.assertIn(spec["copy_hold"], ("PROTECTED_DUPLICATE", "UNEXPECTED_COPY"), case)
+                    self.assertEqual("REGISTERED", spec["durable"], case)
             self.assertEqual(spec["end"] == "land", "first" in spec, case)
             if spec.get("hold"):
                 self.assertEqual("INTENT", spec["durable"], case)
@@ -76,11 +79,33 @@ class ExpectationTests(unittest.TestCase):
                 self.assertTrue(spec["durable"] == "REGISTERED" and spec["journal_hold"] in (1, 2), case)
 
     def test_the_tranches_split_every_case_once_under_sixty_starts(self):
-        listed = runner.TRANCHES["A"] + runner.TRANCHES["B"] + runner.TRANCHES["C"]
+        listed = [case for tranche in runner.TRANCHES.values() for case in tranche]
         self.assertEqual(sorted(runner.CASES), sorted(listed))
         self.assertEqual(len(listed), len(set(listed)))
         for cases in runner.TRANCHES.values():
             self.assertLessEqual(3 * len(cases), 60)
+
+    def test_copy_census_requires_every_survivor_seat_the_journal_seat_and_unique_identities(self):
+        line = f"ARCE_RELEASE_BAY_CENSUS logical={L} count=1 transfer=COMMITTED assigned=true rows=[{X}:minecraft:overworld:hash:true]"
+        self.assertEqual(1, runner.check_copy_census(line, L, 1)["count"])
+        for bad in (line.replace("count=1", "count=2"), line.replace("assigned=true", "assigned=false"),
+                    line.replace("hash:true", "hash:false"), line.replace(f"logical={L}", f"logical={X}"),
+                    line.replace("rows=[", f"rows=[{X}:minecraft:overworld:hash:true,").replace("count=1", "count=2")):
+            with self.assertRaises(runner.smoke.SmokeError):
+                runner.check_copy_census(bad, L, 1)
+
+    def test_protected_copy_hold_keeps_registered_authority_and_registry_count(self):
+        values = dict(claim="RESUME", hold="REPAIR", reason="PROTECTED_DUPLICATE", locked="true", transfer="PREPARED",
+                      receipts=f"{OP}:{X}:REGISTERED:NONE:true:true", owned="1")
+        case = "W185_B6_PROTECTED"
+        good = runner.parse_status(status_line(**values))
+        self.assertTrue(runner.settled(case, 1, good, FIXTURE))
+        runner.check_settled(case, 1, good, FIXTURE)
+        for change in (dict(locked="false"), dict(transfer="COMMITTED"), dict(hold="OWNED_WAIT"),
+                       dict(reason="UNEXPECTED_COPY"), dict(receipts=f"{OP}:{X}:REGISTERED:NONE:false:true")):
+            self.assertFalse(runner.settled(case, 1, runner.parse_status(status_line(**{**values, **change})), FIXTURE))
+        with self.assertRaises(runner.smoke.SmokeError):
+            runner.check_settled(case, 1, runner.parse_status(status_line(**{**values, "owned": "2"})), FIXTURE)
 
     def test_a_durable_intent_becomes_interrupted_and_a_relaunch_rearms_and_consumes(self):
         self.assertEqual(runner.INTERRUPTED, runner.expected_receipt("B1_MOVED", 1))

@@ -479,6 +479,10 @@ final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
     // ---- Gated test access (GameTests and the release-test harness); never reached in production. ----
 
     Optional<BayClaim> claimForTests(UUID logical) { return claims.get(logical); }
+
+    BayGroupPublication.Prepared preparedForTests(UUID logical) {
+        EscrowTestEndpoints.requireEnabled(server); return publication.prepared(logical).orElseThrow();
+    }
     BayDeploymentSession sessionForTests() { return session; }
 
     /** The restart rows for receipts already in the store, as ServerStartingEvent builds them; they run from the next step. */
