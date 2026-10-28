@@ -15,20 +15,42 @@ import io.github.sunthemoon.advancedrocketrycommunity.material.press.SmallPlateP
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModRecipes;
 import java.util.List;
+import java.util.function.Predicate;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
+import mezz.jei.api.recipe.IRecipeManager;
 import mezz.jei.api.registration.IGuiHandlerRegistration;
 import mezz.jei.api.registration.IRecipeCatalystRegistration;
 import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
+import mezz.jei.api.runtime.IJeiRuntime;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.TagsUpdatedEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 
 /** Optional client adapter; core initialization never references JEI classes. */
 @JeiPlugin
 public final class ArceJeiPlugin implements IModPlugin {
     private static final ResourceLocation PLUGIN_ID = ModIdentity.id("jei_plugin");
+
+    // Render thread only: JEI's callbacks and the client network events below all run there.
+    private final ServerTagGate<IRecipeManager> gate = new ServerTagGate<>();
+    private IJeiRuntime runtime;
+
+    public ArceJeiPlugin() {
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, ClientPlayerNetworkEvent.LoggingIn.class,
+                event -> gate.connectionChanged());
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, ClientPlayerNetworkEvent.LoggingOut.class,
+                event -> gate.connectionChanged());
+        // Low, so RecipeTagGeneration has already advanced the generation that deferred definitions check.
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.LOW, false, TagsUpdatedEvent.class, this::onTagsUpdated);
+    }
 
     @Override
     public ResourceLocation getPluginUid() {
@@ -61,21 +83,14 @@ public final class ArceJeiPlugin implements IModPlugin {
                 mezz.jei.api.constants.VanillaTypes.ITEM_STACK,
                 net.minecraft.network.chat.Component.translatable("jei.advancedrocketrycommunity.solar_array"));
         ClientLevel level = Minecraft.getInstance().level;
-        List<ElectrolyzerRecipe> electrolyzerRecipes = level == null
-                ? List.of()
-                : level.getRecipeManager().getAllRecipesFor(ModRecipes.ELECTROLYZING_TYPE.get());
-        List<RollingMachineRecipe> rollingRecipes = level == null
-                ? List.of()
-                : level.getRecipeManager().getAllRecipesFor(ModRecipes.ROLLING_TYPE.get());
-        List<PrecisionAssemblerRecipe> precisionRecipes = level == null
-                ? List.of()
-                : level.getRecipeManager().getAllRecipesFor(ModRecipes.PRECISION_ASSEMBLING_TYPE.get());
-        registerCategoryRecipes(registration, ElectrolyzerJeiCategory.TYPE, electrolyzerRecipes);
-        registerCategoryRecipes(registration, RollingMachineJeiCategory.TYPE, rollingRecipes);
-        registerCategoryRecipes(registration, PrecisionAssemblerJeiCategory.TYPE, precisionRecipes);
-        List<SmallPlatePressRecipe> pressRecipes = level == null ? List.of()
-                : level.getRecipeManager().getAllRecipesFor(MaterialContent.SMALL_PLATE_PRESS_TYPE.get());
-        registerCategoryRecipes(registration, SmallPlatePressJeiCategory.TYPE, pressRecipes);
+        register(registration, level, ModRecipes.ELECTROLYZING_TYPE.get(), ElectrolyzerJeiCategory.TYPE,
+                ElectrolyzerRecipe::hasTagIngredients, recipe -> true);
+        register(registration, level, ModRecipes.ROLLING_TYPE.get(), RollingMachineJeiCategory.TYPE,
+                RollingMachineRecipe::hasTagIngredients, recipe -> true);
+        register(registration, level, ModRecipes.PRECISION_ASSEMBLING_TYPE.get(), PrecisionAssemblerJeiCategory.TYPE,
+                PrecisionAssemblerRecipe::hasTagIngredients, recipe -> true);
+        register(registration, level, MaterialContent.SMALL_PLATE_PRESS_TYPE.get(), SmallPlatePressJeiCategory.TYPE,
+                SmallPlatePressRecipe::hasTagIngredients, recipe -> true);
         registerClassic(registration, level, ModRecipes.LATHE_TYPE.get(), ClassicMachineJeiCategory.LATHE);
         registerClassic(registration, level, ModRecipes.ARC_FURNACE_TYPE.get(), ClassicMachineJeiCategory.ARC_FURNACE);
         registerClassic(registration, level, ModRecipes.CUTTING_TYPE.get(), ClassicMachineJeiCategory.CUTTING);
@@ -120,23 +135,57 @@ public final class ArceJeiPlugin implements IModPlugin {
         );
     }
 
-    private static void registerClassic(IRecipeRegistration registration, ClientLevel level,
-            net.minecraft.world.item.crafting.RecipeType<ClassicMachineRecipe> type,
-            mezz.jei.api.recipe.RecipeType<ClassicMachineRecipe> category) {
-        var recipes = level == null ? List.<ClassicMachineRecipe>of()
-                : level.getRecipeManager().getAllRecipesFor(type);
-        registerCategoryRecipes(registration, category, recipes.stream().filter(recipe -> {
-            try { recipe.definition(); return true; } catch (IllegalArgumentException invalid) { return false; }
-        }).toList());
+    @Override
+    public void onRuntimeAvailable(IJeiRuntime jeiRuntime) {
+        runtime = jeiRuntime;
+        release();
     }
 
-    private static <T> void registerCategoryRecipes(IRecipeRegistration registration,
-            mezz.jei.api.recipe.RecipeType<T> category, List<T> recipes) {
-        registration.addRecipes(category, recipes);
+    @Override
+    public void onRuntimeUnavailable() {
+        runtime = null;
+        gate.runtimeStopped();
+    }
+
+    private void onTagsUpdated(TagsUpdatedEvent event) {
+        // The integrated server's own data load runs on the server thread and is not this connection's tags packet.
+        if (event.getUpdateCause() == TagsUpdatedEvent.UpdateCause.CLIENT_PACKET_RECEIVED) {
+            gate.tagsArrived();
+            release();
+        }
+    }
+
+    private void release() {
+        if (runtime != null) {
+            gate.release(runtime.getRecipeManager())
+                    .forEach(released -> receipt("registered", released.category(), released.total()));
+        }
+    }
+
+    private void registerClassic(IRecipeRegistration registration, ClientLevel level,
+            net.minecraft.world.item.crafting.RecipeType<ClassicMachineRecipe> type,
+            mezz.jei.api.recipe.RecipeType<ClassicMachineRecipe> category) {
+        register(registration, level, type, category, ClassicMachineRecipe::hasTagIngredients, recipe -> {
+            try { recipe.definition(); return true; } catch (IllegalArgumentException invalid) { return false; }
+        });
+    }
+
+    private <C extends Container, T extends Recipe<C>> void register(IRecipeRegistration registration,
+            ClientLevel level, net.minecraft.world.item.crafting.RecipeType<T> type,
+            mezz.jei.api.recipe.RecipeType<T> category, Predicate<T> namesTag, Predicate<T> shown) {
+        List<T> recipes = level == null ? List.of() : level.getRecipeManager().getAllRecipesFor(type);
+        String id = category.getUid().toString();
+        List<T> now = gate.admit(id, recipes, namesTag, shown, (manager, later) -> manager.addRecipes(category, later));
+        registration.addRecipes(category, now);
         // One bounded receipt per category per registration, after any recipe filtering.
-        AdvancedRocketryCommunity.LOGGER.info(
-                "{} optional_compat=jei status=registered category={} recipes={}",
-                BetaDiagnosticId.OPTIONAL_COMPATIBILITY.code(), category.getUid(), recipes.size()
-        );
+        receipt("registered", id, now.size());
+        if (gate.held(id) > 0) {
+            receipt("held", id, gate.held(id));
+        }
+    }
+
+    private static void receipt(String status, String category, int recipes) {
+        AdvancedRocketryCommunity.LOGGER.info("{} optional_compat=jei status={} category={} recipes={}",
+                BetaDiagnosticId.OPTIONAL_COMPATIBILITY.code(), status, category, recipes);
     }
 }
