@@ -21,6 +21,12 @@ W184 guarded `RocketRejoinAdmissionGameTests` and `EscrowMoonLandingRuleGameTest
    `EscrowRetireBeforeFillGameTests` and `RocketSettlementIdleGameTests`. Also check the later stages of the governed
    Moon flights (F4 and the boundary return). Then search for any other GameTest that starts a native capture. For
    each, say whether an autosave inside its window can fail the test or write an undeclared line.
+   - **A new case, first.** Hosted run 40725066567 at `29c0411d` (the W184 merge) failed only
+     `LandingPadGameTests.allFiveRecoveryPhasesAndFourPresenceCutsReleaseClaimsAfterReload` with "Recovery cut
+     COMMITTED/1 failed: NOT_FOUND". The source's retirement was proved and then abandoned in the same second
+     (`ARCE_TRANSFER_RETIREMENT_PROVED`, then `..._ABANDONED`, transfer `76d5a576`). The job log is
+     `D:/GitHub/ARCE-Task-Evidence/root-queue/W184-hosted/29c0411d/job-122945997201.log`, around line 7071. Find
+     what abandoned the proof; if it is the autosave, guard the fixture; if not, report the cause.
 2. **Guard** each one that can, the way W184 did: wait before the step while the next autosave is within the step's
    window, with the window derived and commented. Each guard in its own commit.
 3. Do not change a timeout, bound, budget or assertion, and do not add a manifest entry.
