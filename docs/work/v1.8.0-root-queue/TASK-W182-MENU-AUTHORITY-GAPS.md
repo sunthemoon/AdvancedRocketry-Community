@@ -52,3 +52,30 @@ follows before merge.
 
 W179-F4 (vanilla's per-file data-pack errors) and F5 (a vanished tag's contents), any packet format, the client
 screens, ADRs, status files and the ledger.
+
+## Review findings under Root decision R147 (2026-10-29)
+
+The review, `D:/GitHub/ARCE-Task-Evidence/root-queue/W182-review/REVIEW.md` (SHA-256 `388b013c…ea2a`), returned
+APPROVE-WITH-CHANGES: the production code has no defect. A fresh session continues on `codex/v1.8.0-w182` from
+`fb68ae5d8` and appends a "Review fixes (R147)" section to the record:
+
+1. **W182-R1.** A refused intent now gets no message, so three checks that expect a refusal can pass for the wrong
+   reason: `RocketFlightSecurityGameTests` line 54, the `launch` helper and the loop at lines 167 to 171 of
+   `EscrowGovernedWarmupGameTests`, and `RocketNavigationGameTests` line 126. Assert, right before each intent, that
+   the flight menu is open and still valid, so the refusal under test is the one that answers.
+2. **W182-R2.** Add a test that each of the twelve holders returns no menu for a spectator at opening, so that
+   removing a `createMenu` guard fails a test. It must fail first with the guard removed.
+3. **W182-R3.** Give the other 16 menus' holders the same opening refusal for a spectator, reusing the same check.
+   Today a spectator's client gets one slot sync before the server closes such a menu, and the client's menu
+   constructor throws for lack of extra data. Extend R2's test to cover them.
+4. **W182-R4.** Correct the record: a refused intent gets no message and no log line, and the service's own range
+   check is no longer reachable through `request`.
+5. **W182-R5.** Add refusal cases for a `FakePlayer` and for an unconnected player.
+6. **The native cases the review names**, two restarts each where the case restarts, under the heavy-JVM lock:
+   `FT_CANCEL_*`; `RT_CANCEL_*`, at least `RT_CANCEL_SEPARATE_0_READBACK_AFTER`; `FF_CANCEL_AFTER_CARGO`;
+   `GOVERNED_BENCH`; W160's row `C27`; and `run_w151_native.py --case load` with one restart case. A case that fails
+   because a probe still sends as a fake player is fixed in the probe, never in its assertion.
+
+Verification: the new tests alone, failing first; the whole unit suite; the `menu_authority`, flight and touched
+escrow batches three times; the native cases above. Root's hosted run on the pushed head stands in for a complete
+GameTest.
