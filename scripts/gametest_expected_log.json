@@ -1861,6 +1861,15 @@
       "reason": "W170-R4: the escrow hook reports a conflict once the data bay's INTENT is seen, so the in-session claim holds for offline repair before D2 and registers nothing; the one transition is a WARN by design."
     },
     {
+      "id": "w170-r44-bay-escrow-conflict-before-d1",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.server.BayTransferRecovery/",
+      "message": "ARCE_BAY_CLAIM transfer=[0-9a-f-]{36} logical=[0-9a-f-]{36} state=REPAIR reason=ESCROW_AUTHORITY_CONFLICT",
+      "counts": {"bay_deployment_hold": 1},
+      "test": "BayDeploymentGameTests.aClaimHeldForRepairBeforeD1WritesNoIntent",
+      "reason": "W170-R44: the escrow hook reports a conflict in the tick of the ascent-complete hook, before any D1, so the in-session claim holds for offline repair and each bay holds at its step without an INTENT; the one transition is a WARN by design."
+    },
+    {
       "id": "w128r-r126-bay-hook-unclaimed-record-recovery",
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",

@@ -291,6 +291,8 @@ final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
     private BayStepQueue.Result bayStep(BayClaim claim) {
         BayMember member = claim.nextCandidate().orElse(null);
         if (member == null) { return BayStepQueue.Result.AGAIN; }
+        // W170-R44: a claim held for repair writes no further INTENT; each remaining candidate holds without a write.
+        if (claim.hold() == BayClaim.Hold.REPAIR) { member.hold(claim.reason()); return BayStepQueue.Result.AGAIN; }
         RocketTransferRecord record = RocketTransferSavedData.get(server).find(claim.transfer()).orElse(null);
         var bay = record == null ? null : checks.bay(record.sourceSnapshot(), member.bay()).orElse(null);
         if (bay == null) { refuse(claim, member, "INVALID_PACKAGE"); return BayStepQueue.Result.AGAIN; }

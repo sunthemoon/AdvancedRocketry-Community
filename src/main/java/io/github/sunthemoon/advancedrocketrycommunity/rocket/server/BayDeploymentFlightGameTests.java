@@ -69,7 +69,8 @@ public final class BayDeploymentFlightGameTests {
     /**
      * W170-R4's remaining part: an escrow conflict holds the claim for repair once the data bay's INTENT is seen, before D2.
      * D2 then runs for no member: nothing is registered under the held claim, every member waits HELD with its durable
-     * INTENT, and the solar satellite registered beforehand stays the owner's only satellite.
+     * INTENT, and the solar satellite registered beforehand stays the owner's only satellite. No INTENT is written after
+     * the hold (W170-R44; {@code BayDeploymentGameTests.aClaimHeldForRepairBeforeD1WritesNoIntent} holds before any D1).
      */
     @GameTest(template = TEMPLATE, batch = BATCH, timeoutTicks = 1_000)
     public static void aClaimHeldForRepairBeforeD2RegistersNoSatellite(GameTestHelper helper) {
@@ -86,6 +87,7 @@ public final class BayDeploymentFlightGameTests {
         RocketEntity source;
         BayClaim claim;
         List<String> before;
+        final java.util.Map<ItemStack, UUID> atHold = new java.util.IdentityHashMap<>();
         int stage, waits, ownerSatellites, held;
         boolean sawIntent, sawRegistered, probedRecovery, blocked, closed;
 
@@ -172,6 +174,10 @@ public final class BayDeploymentFlightGameTests {
                     if (conflict && !blocked) { // before D2 runs, as the escrow hook reports a conflict at a permitted boundary
                         bays(helper).escrowConflict(server, RocketTransferSavedData.get(server), transferRecord());
                         blocked = true;
+                        // W170-R44: the receipts that exist at the hold; no INTENT may be written after it
+                        for (var pkg : List.of(data, solar)) {
+                            session.find(satellite(pkg)).ifPresent(receipt -> atHold.put(pkg, receipt.op()));
+                        }
                     }
                 }
                 if (conflict && blocked) { heldBeforeD2(server); return; }
@@ -204,7 +210,11 @@ public final class BayDeploymentFlightGameTests {
             stage = 3;
         }
 
-        /** The held variant while the claim holds: REPAIR, nothing registered, no member past INTENT; done 40 ticks after both hold. */
+        /**
+         * The held variant while the claim holds: REPAIR, nothing registered, no member past INTENT, and no INTENT written
+         * after the hold (W170-R44): a package with no receipt at the hold never gets one, and one with an INTENT keeps that
+         * exact operation. Done 40 ticks after every member holds and each INTENT from before the hold is acknowledged.
+         */
         void heldBeforeD2(net.minecraft.server.MinecraftServer server) {
             helper.assertTrue(claim.hold() == BayClaim.Hold.REPAIR && claim.reason().equals("ESCROW_AUTHORITY_CONFLICT"),
                     "The escrow conflict did not hold the claim for repair: " + claim.hold() + " " + claim.reason());
@@ -215,9 +225,15 @@ public final class BayDeploymentFlightGameTests {
                     || member.state() == BayMember.State.INTENT_WRITE || member.state() == BayMember.State.INTENT
                     || member.state() == BayMember.State.HELD), "A member went past INTENT under the hold");
             var session = bays(helper).sessionForTests();
+            for (var pkg : List.of(data, solar)) {
+                var receipt = session.find(satellite(pkg)).orElse(null);
+                UUID op = atHold.get(pkg);
+                helper.assertTrue(op == null ? receipt == null
+                        : receipt != null && receipt.op().equals(op) && receipt.phase() == BayReceipt.Phase.INTENT,
+                        "An INTENT was written after the hold: " + receipt);
+            }
             boolean settled = claim.members().stream().allMatch(member -> member.state() == BayMember.State.HELD)
-                    && List.of(data, solar).stream().allMatch(pkg -> session.find(satellite(pkg))
-                            .filter(receipt -> receipt.phase() == BayReceipt.Phase.INTENT && session.acknowledged(receipt.op())).isPresent());
+                    && atHold.values().stream().allMatch(session::acknowledged);
             helper.assertTrue(before.equals(BayDeploymentGameTests.signatures(transferRecord())), "A held bay's package in T changed");
             if (settled && ++held >= 40) { close(); helper.succeed(); }
         }
