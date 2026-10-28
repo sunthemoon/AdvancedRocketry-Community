@@ -102,3 +102,32 @@ updates. No format, bound, budget or timeout changes.
 Verification: the new tests alone, failing first; the whole unit suite; the bay batches three times; the native
 tranche again (B3 to B7 with copies and offline seats, two restarts each). Root's hosted run on the pushed head stands
 in for a complete GameTest. A fresh review of these fixes follows.
+
+## Hosted failures under Root decision R150 (2026-10-29)
+
+Hosted run 40738843353 on `31bf36d10` failed 10 GameTests (job log saved at
+`D:/GitHub/ARCE-Task-Evidence/root-queue/W185-hosted/31bf36d10/`):
+
+- `acknowledgedSettlementRestoresMountRefuelAndLaunch`, `ordinaryL2WithoutReceiptCompletesTwoPassengerFlights` and
+  `normalizedSettlementSurvivorCompletesTwoPassengerFlights`: "Launch did not await its exact journal acknowledgement:
+  LAUNCH_AREA_INACTIVE";
+- `theCapAndThePerPlayerLimitRefuseColdDestinationsAndEveryWarmupEnds`: a warm-up answered `launch_area_inactive`;
+- `aRecordedSeventeenColumnDestinationHoldsWithoutMarginTickets`: "The fixture geometry is not the intended invalid
+  destination";
+- `governedLaunchAreaRefusalsPrecedePadSelectionAndLegacySelectionIsUnchanged`: LAUNCH_CHUNK_BUDGET instead of the
+  pad's `chunk_budget` refusal;
+- three of this slice's copy cases, each "Fixture exceeded its bounded wait at stage 2 PROVE OWNED_WAIT
+  BAY_SOURCE_PROOF";
+- `SealedLazyGameTests`' 400-tick timeout, which W186 addresses.
+
+The first six follow W185-R7: `b689f3c50` widened `RocketDiscoveryColumns`, the set every flight shares, so ordinary
+flights' launch areas, warm-ups, pad choice and tickets changed in production. **Root decision R150:** the shared set
+stays at `min - 1`. A fresh session, after the R149 round:
+
+1. **Reverts the shared widening** (`b689f3c50`, and `907cf5695` if it only follows it) in its own commits, and covers
+   W170-R65's low strip in the bay's own census instead: the bay recognition and absence census include the column
+   that holds the strip, waiting for it to load and ticketing it under R2's renewal, without changing the shared set.
+   Keep the low-edge regression as a bay-census test. W185-R3 (the W164 conflict) and R-035's change then fall away.
+2. **Diagnoses the three PROVE timeouts** from the job log: whether R149's R2 tickets fix them, or what else holds D6.
+3. Reruns the full GameTest once locally under the heavy-JVM lock, since this round touches shared flight geometry,
+   and the bay batches three times and the native tranche. Root's hosted run on the pushed head then decides.
