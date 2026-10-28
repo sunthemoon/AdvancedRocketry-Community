@@ -37,9 +37,9 @@ import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.TicketType;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
@@ -89,6 +89,7 @@ public final class PlanetaryAdmissionGameTests {
                         var denied = manager.requestAdminFlight(rocket, target, UUID.randomUUID());
                         helper.assertTrue(denied.code() == RocketFlightRequestCode.INVALID_DESTINATION,
                                 "Closed destination was not rejected by capability: " + denied.code());
+                        helper.assertTrue(RocketFlightConsoleFixtures.open(player, rocket), "The player could not open the flight menu");
                         manager.requestFlightIntent(player, rocket.getId(), RocketFlightAction.LAUNCH, target, UUID.randomUUID());
                         helper.assertTrue(rocket.flightData().orElseThrow().equals(flightBefore), "Denied arrival changed flight/fuel");
                         helper.assertTrue(journal.save(new CompoundTag()).equals(journalBefore), "Denied arrival changed journal");
@@ -200,6 +201,7 @@ public final class PlanetaryAdmissionGameTests {
                             helper.assertTrue(manager.navigation(owner, rocket).quotes().forTarget(EARTH).status()
                                     == io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketNavigationStatus.UNAUTHORIZED,
                                     "Source station access denial advertised a ready departure");
+                            helper.assertTrue(RocketFlightConsoleFixtures.open(owner, rocket), "The owner could not open the flight menu");
                             manager.requestFlightIntent(owner, rocket.getId(), RocketFlightAction.LAUNCH, EARTH, UUID.randomUUID());
                             helper.assertTrue(rocket.flightData().orElseThrow().equals(flightBefore), "Station access denial changed flight");
                             helper.assertTrue(RocketTransferSavedData.get(server).save(new CompoundTag()).equals(before),
@@ -421,8 +423,9 @@ public final class PlanetaryAdmissionGameTests {
      * the wait began runs {@code failed} once; a synchronous failure is the caller's to clean up, as before.
      */
     private static void launchAndCancel(GameTestHelper helper, GameTestTickDriver driver, RocketManager manager, RocketEntity rocket,
-            FakePlayer owner, TravelTarget destination, Runnable then, Runnable failed) {
+            ServerPlayer owner, TravelTarget destination, Runnable then, Runnable failed) {
         owner.setPos(rocket.getX(), rocket.getY(), rocket.getZ());
+        helper.assertTrue(RocketFlightConsoleFixtures.open(owner, rocket), "The owner could not open the flight menu");
         var journal = RocketTransferSavedData.get(helper.getLevel().getServer());
         var before = journal.save(new CompoundTag());
         var fuel = rocket.flightData().orElseThrow().fuel();
@@ -437,6 +440,7 @@ public final class PlanetaryAdmissionGameTests {
             helper.assertTrue(rocket.flightData().orElseThrow().state() == RocketFlightState.COUNTDOWN,
                     "Authorized closed-source departure did not enter countdown");
             helper.assertTrue(journal.find(transfer).isPresent(), "Accepted departure did not persist its journal");
+            helper.assertTrue(RocketFlightConsoleFixtures.open(owner, rocket), "The owner could not reopen the flight menu");
             manager.requestFlightIntent(owner, rocket.getId(), RocketFlightAction.CANCEL, destination, UUID.randomUUID());
             io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport.acknowledgeFixture(helper);
             helper.assertTrue(rocket.flightData().orElseThrow().state() == RocketFlightState.FUELED,
@@ -495,8 +499,9 @@ public final class PlanetaryAdmissionGameTests {
         }
     }
 
-    private static FakePlayer player(ServerLevel level, UUID id) {
-        return new FakePlayer(level, new GameProfile(id, "PlanetaryFixture"));
+    /** W182: a connected stand-in that never joins, since the server refuses a fake player's flight intents. */
+    private static ServerPlayer player(ServerLevel level, UUID id) {
+        return RocketFlightConsoleFixtures.standIn(level, new GameProfile(id, "PlanetaryFixture"));
     }
 
     private static PlanetaryCatalogManager catalogs(boolean earthLandable, boolean moonLandable, boolean earthOrbitable) {

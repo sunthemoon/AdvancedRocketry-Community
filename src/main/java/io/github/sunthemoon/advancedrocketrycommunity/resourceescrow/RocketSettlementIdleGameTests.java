@@ -5,6 +5,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import io.github.sunthemoon.advancedrocketrycommunity.fluid.ClassicFluids;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.RocketFlightConsoleFixtures;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModEntities;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketDestination;
@@ -47,7 +48,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
@@ -261,8 +261,9 @@ public final class RocketSettlementIdleGameTests {
             var connection = new net.minecraft.network.Connection(net.minecraft.network.protocol.PacketFlow.SERVERBOUND);
             new io.netty.channel.embedded.EmbeddedChannel(connection); server.getPlayerList().placeNewPlayer(connection, passenger);
             passenger.teleportTo(level, rocket.getX(), rocket.getY(), rocket.getZ(), 0, 0);
-            RocketRuntime.requestFlightIntent(passenger, rocket.getId(), RocketFlightAction.BOARD,
-                    new TravelTarget.BodySurface(CelestialIds.EARTH_ID), UUID.randomUUID());
+            // W182: from the passenger's open flight menu, as the flight screen sends it.
+            RocketFlightConsoleFixtures.send(passenger, rocket, () -> RocketRuntime.requestFlightIntent(passenger, rocket.getId(),
+                    RocketFlightAction.BOARD, new TravelTarget.BodySurface(CelestialIds.EARTH_ID), UUID.randomUUID()));
             helper.assertTrue(passenger.getVehicle() == rocket
                     && rocket.flightData().orElseThrow().passengers().assignment(passenger.getUUID()).isPresent(),
                     "Released source did not board its connected passenger");
@@ -495,7 +496,10 @@ public final class RocketSettlementIdleGameTests {
             coordinator.prepareTest(operation, capture.before(), committed -> helper.assertTrue(committed, "L1 was not acknowledged")); step = 1;
         }
         private void exerciseMountAndRefuel() {
-            var owner = new FakePlayer(level, new GameProfile(rocket.ownerId().orElseThrow(), "N1Board")); owner.setPos(rocket.position());
+            // W182: a connected stand-in with the open flight menu, since the server refuses a fake player's intents.
+            var owner = RocketFlightConsoleFixtures.standIn(level, new GameProfile(rocket.ownerId().orElseThrow(), "N1Board"));
+            owner.setPos(rocket.position());
+            helper.assertTrue(RocketFlightConsoleFixtures.open(owner, rocket), "The owner could not open the flight menu");
             var manager = new RocketManager(); var target = new TravelTarget.BodySurface(CelestialIds.EARTH_ID);
             manager.requestFlightIntent(owner, rocket.getId(), RocketFlightAction.BOARD, target, UUID.randomUUID());
             helper.assertTrue(owner.getVehicle() == rocket && rocket.flightData().orElseThrow().passengers().assignment(owner.getUUID()).isPresent(),

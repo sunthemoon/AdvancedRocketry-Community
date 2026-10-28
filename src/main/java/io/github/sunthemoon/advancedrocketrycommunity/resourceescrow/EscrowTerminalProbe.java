@@ -127,11 +127,14 @@ public final class EscrowTerminalProbe {
             var source = (RocketEntity) level.getEntity(record.sourceEntityId());
             EscrowTags.require(source != null && source.flightData().orElseThrow().state() == RocketFlightState.COUNTDOWN,
                     "Terminal cancellation lost its live countdown");
-            var player = new net.minecraftforge.common.util.FakePlayer(level,
+            // W182: the server serves a flight intent only from a connected player's open flight menu.
+            var player = io.github.sunthemoon.advancedrocketrycommunity.gametest.RocketFlightConsoleFixtures.standIn(level,
                     new com.mojang.authlib.GameProfile(source.ownerId().orElseThrow(), "TerminalOwner"));
             player.setPos(source.position());
-            io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime.requestFlightIntent(player, source.getId(),
-                    RocketFlightAction.CANCEL, source.flightData().orElseThrow().plan().orElseThrow().destinationTarget(), UUID.randomUUID());
+            io.github.sunthemoon.advancedrocketrycommunity.gametest.RocketFlightConsoleFixtures.send(player, source, () ->
+                    io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime.requestFlightIntent(player,
+                            source.getId(), RocketFlightAction.CANCEL,
+                            source.flightData().orElseThrow().plan().orElseThrow().destinationTarget(), UUID.randomUUID()));
             EscrowTags.require(EscrowRuntime.of(server).returns().handles(record, source), "Terminal cancellation was refused");
             requested = true;
         }

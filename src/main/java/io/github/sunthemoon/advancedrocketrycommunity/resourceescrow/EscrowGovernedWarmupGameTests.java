@@ -5,6 +5,7 @@ import static io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.Escr
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.RocketFlightConsoleFixtures;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketDestination;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightAction;
@@ -51,6 +52,12 @@ public final class EscrowGovernedWarmupGameTests {
     @GameTest(template = "empty", batch = "rocket_warmup_capacity", timeoutTicks = 2_400)
     public static void theCapAndThePerPlayerLimitRefuseColdDestinationsAndEveryWarmupEnds(GameTestHelper helper) {
         new Capacity(helper).start();
+    }
+
+    /** The player's Moon launch, from the rocket's open flight menu as the flight screen sends it (W182). */
+    private static void launch(Player pilot, RocketEntity rocket, UUID request) {
+        RocketFlightConsoleFixtures.send(pilot, rocket, () -> RocketRuntime.requestFlightIntent(pilot, rocket.getId(),
+                RocketFlightAction.LAUNCH, RocketDestination.MOON, request));
     }
 
     /**
@@ -133,7 +140,7 @@ public final class EscrowGovernedWarmupGameTests {
             helper.assertTrue(refused.code() == RocketFlightRequestCode.DESTINATION_LOADING, "The decoy did not warm: " + refused.code());
             helper.assertTrue(region(pads.get(0)).equals(warmup(server, decoy).region()), "The decoy did not take the first pad");
 
-            RocketRuntime.requestFlightIntent(pilot, rocket.getId(), RocketFlightAction.LAUNCH, RocketDestination.MOON, start);
+            launch(pilot, rocket, start);
             helper.assertTrue(pilot.last().equals(LOADING), "The player's cold launch answered " + pilot.last());
             warming = warmup(server, rocket);
             helper.assertTrue(warming != null && warming.state().equals("WARMING") && warming.request().equals(start)
@@ -158,11 +165,11 @@ public final class EscrowGovernedWarmupGameTests {
             // Without its kept pad, L would now move to the free first pad.
             helper.assertTrue(region(pads.get(0)).equals(ordinary(server, moon, rocket)), "The first pad did not become free again");
             for (int i = 0; i < 5; i++) {
-                RocketRuntime.requestFlightIntent(pilot, rocket.getId(), RocketFlightAction.LAUNCH, RocketDestination.MOON, UUID.randomUUID());
+                launch(pilot, rocket, UUID.randomUUID());
                 helper.assertTrue(pilot.last().equals(LOADING), "A repeated request answered " + pilot.last());
                 kept(server, columns);
             }
-            RocketRuntime.requestFlightIntent(pilot, rocket.getId(), RocketFlightAction.LAUNCH, RocketDestination.MOON, start);
+            launch(pilot, rocket, start);
             helper.assertTrue(pilot.last().equals(REPLAYED), "The starting request was reused: " + pilot.last());
             kept(server, columns);
 
@@ -200,7 +207,7 @@ public final class EscrowGovernedWarmupGameTests {
                     && RocketWarmupGameTestSupport.launchReservations(server, journal, logical(rocket)).stream().noneMatch(region(pads.get(0))::equals),
                     "The removed rocket's warm-up kept its tickets or reservation");
             if (!journal.retryChecked(server)) { return; }
-            RocketRuntime.requestFlightIntent(pilot, rocket.getId(), RocketFlightAction.LAUNCH, RocketDestination.MOON, launch);
+            launch(pilot, rocket, launch);
             helper.assertTrue(pilot.last().equals(PENDING), "The READY relaunch answered " + pilot.last());
             var bound = warmup(server, rocket);
             helper.assertTrue(bound != null && bound.state().equals("BOUND") && launch.equals(bound.transfer())
@@ -344,11 +351,11 @@ public final class EscrowGovernedWarmupGameTests {
             if (pads.stream().anyMatch(pad -> !cold(server, pad)) || !cold(server, stationPad.snapshot().orElseThrow())) { return; }
 
             for (int i = 0; i < 2; i++) {
-                RocketRuntime.requestFlightIntent(pilot, mine.get(i).getId(), RocketFlightAction.LAUNCH, RocketDestination.MOON, UUID.randomUUID());
+                launch(pilot, mine.get(i), UUID.randomUUID());
                 helper.assertTrue(pilot.last().equals(LOADING) && region(pads.get(i)).equals(warmup(server, mine.get(i)).region()),
                         "The player's warm-up " + i + " answered " + pilot.last());
             }
-            RocketRuntime.requestFlightIntent(pilot, mine.get(2).getId(), RocketFlightAction.LAUNCH, RocketDestination.MOON, UUID.randomUUID());
+            launch(pilot, mine.get(2), UUID.randomUUID());
             helper.assertTrue(pilot.last().equals(LIMIT) && warmup(server, mine.get(2)) == null && tickets(server, mine.get(2)).isEmpty(),
                     "The per-player limit did not refuse a third cold destination: " + pilot.last());
             for (int i = 0; i < 6; i++) {

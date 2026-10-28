@@ -136,10 +136,13 @@ final class RocketRejoinNativeRows {
         if (mode.equals("seed")) { RocketReleaseNativeCuts.checkpoint(cut); }
         return true;
     }
+    /** W182: from the player's open flight menu, as the flight screen sends it. */
     private void board(ServerPlayer player, RocketEntity rocket) {
         player.setPos(rocket.position());
-        RocketRuntime.requestFlightIntent(player, rocket.getId(), RocketFlightAction.BOARD,
-                new TravelTarget.BodySurface(io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds.EARTH_ID), UUID.randomUUID());
+        io.github.sunthemoon.advancedrocketrycommunity.gametest.RocketFlightConsoleFixtures.send(player, rocket, () ->
+                RocketRuntime.requestFlightIntent(player, rocket.getId(), RocketFlightAction.BOARD,
+                        new TravelTarget.BodySurface(io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds.EARTH_ID),
+                        UUID.randomUUID()));
     }
     private boolean peerReady() {
         var journal = io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData.get(server);

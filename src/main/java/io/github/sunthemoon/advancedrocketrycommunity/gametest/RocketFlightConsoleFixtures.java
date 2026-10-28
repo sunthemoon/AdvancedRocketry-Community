@@ -50,6 +50,18 @@ public final class RocketFlightConsoleFixtures {
         return valid(player, rocket);
     }
 
+    /**
+     * Runs {@code intent} with {@code rocket}'s flight menu open, as the flight screen's button sends it, then closes
+     * the menu, as the player closing the screen does, so no open menu stays behind on a joined, ticking player.
+     * Returns whether the menu was open; when it was not, the server refuses the intent.
+     */
+    public static boolean send(ServerPlayer player, RocketEntity rocket, Runnable intent) {
+        boolean opened = open(player, rocket);
+        intent.run();
+        player.closeContainer();
+        return opened;
+    }
+
     private static boolean valid(ServerPlayer player, RocketEntity rocket) {
         return player.containerMenu instanceof RocketFlightMenu menu && menu.rocketEntityId() == rocket.getId()
                 && menu.stillValid(player);

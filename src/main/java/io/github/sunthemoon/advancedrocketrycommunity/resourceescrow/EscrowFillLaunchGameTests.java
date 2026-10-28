@@ -7,6 +7,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.RocketFlightConsoleFixtures;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketDestination;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightAction;
@@ -175,10 +176,12 @@ public final class EscrowFillLaunchGameTests {
                     "Only the escrow fill binds the rocket to the ledger");
             helper.assertTrue(filled.launchReady() == (kind != Kind.EMPTY), "Launch readiness differs for " + kind);
             // A creative viewer that is never placed in the player list, so it loads no chunks around this far area.
-            pilot = new ServerPlayer(level.getServer(), level, new GameProfile(UUID.randomUUID(), "W133" + kind.name())) {
+            // W182: it has a game connection, since the server serves flight intents only to a connected player.
+            pilot = RocketFlightConsoleFixtures.connect(new ServerPlayer(level.getServer(), level,
+                    new GameProfile(UUID.randomUUID(), "W133" + kind.name())) {
                 @Override public boolean isCreative() { return true; }
                 @Override public boolean isSpectator() { return false; }
-            };
+            });
             pilot.setPos(rocket.getX(), rocket.getY() + 1, rocket.getZ());
             var menu = new RocketFlightMenu(1_330 + kind.ordinal(), pilot.getInventory(), rocket);
             helper.assertTrue(menu.canLaunch() == (kind != Kind.EMPTY), "Menu launch flag differs for " + kind);
@@ -195,8 +198,9 @@ public final class EscrowFillLaunchGameTests {
             request = UUID.randomUUID();
             var result = RocketRuntime.requestAdminFlight(rocket, RocketDestination.MOON, request);
             helper.assertTrue(result.code() == RocketFlightRequestCode.INVALID_STATE, "Empty launch answered " + result.code());
-            RocketRuntime.requestFlightIntent(pilot, rocket.getId(), RocketFlightAction.LAUNCH,
-                    new TravelTarget.BodySurface(CelestialIds.MOON_ID), UUID.randomUUID());
+            helper.assertTrue(RocketFlightConsoleFixtures.send(pilot, rocket, () -> RocketRuntime.requestFlightIntent(pilot,
+                    rocket.getId(), RocketFlightAction.LAUNCH, new TravelTarget.BodySurface(CelestialIds.MOON_ID),
+                    UUID.randomUUID())), "The pilot could not open the flight menu");
             helper.assertTrue(filled.equals(rocket.flightData().orElseThrow()) && journal.find(request).isEmpty()
                     && journal.findByLogicalRocket(filled.logicalRocketId()).isEmpty() && RocketEscrowGate.idle(rocket),
                     "A refused launch changed the rocket or the journal");
@@ -252,8 +256,9 @@ public final class EscrowFillLaunchGameTests {
                 var source = RocketFlightNbtCodec.decode(frozen.getCompound("flight")).data().orElseThrow();
                 helper.assertTrue(source.equals(filled), "The governed launch rewrote its checkpointed ASSEMBLED source");
             }
-            RocketRuntime.requestFlightIntent(pilot, rocket.getId(), RocketFlightAction.CANCEL,
-                    flight.plan().orElseThrow().destinationTarget(), UUID.randomUUID());
+            helper.assertTrue(RocketFlightConsoleFixtures.send(pilot, rocket, () -> RocketRuntime.requestFlightIntent(pilot,
+                    rocket.getId(), RocketFlightAction.CANCEL, flight.plan().orElseThrow().destinationTarget(),
+                    UUID.randomUUID())), "The pilot could not open the flight menu");
             if (kind == Kind.ESCROW) {
                 helper.assertTrue(EscrowRuntime.of(server).returns().handles(record, rocket), "The governed cancellation queued no return");
             }

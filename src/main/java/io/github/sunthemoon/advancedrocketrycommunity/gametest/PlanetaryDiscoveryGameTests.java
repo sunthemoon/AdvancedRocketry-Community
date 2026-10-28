@@ -32,7 +32,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraftforge.common.util.FakePlayer;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
@@ -85,6 +85,7 @@ public final class PlanetaryDiscoveryGameTests {
                                         && locked.quotes().forTarget(MARS).requiredFuel() == 0, "Undiscovered surface offered travel");
                                 helper.assertTrue(locked.quotes().forTarget(stationTarget).status() == RocketNavigationStatus.DISCOVERY_REQUIRED,
                                         "Owned station bypassed orbit discovery");
+                                helper.assertTrue(RocketFlightConsoleFixtures.open(owner, rocket), "The owner could not open the flight menu");
                                 manager.requestFlightIntent(owner, rocket.getId(), RocketFlightAction.LAUNCH, MARS, UUID.randomUUID());
                                 helper.assertTrue(before.equals(rocket.flightData().orElseThrow()), "Player intent bypassed discovery");
                                 helper.assertTrue(manager.requestAdminFlight(rocket, stationTarget, UUID.randomUUID()).code()
@@ -161,8 +162,9 @@ public final class PlanetaryDiscoveryGameTests {
         });
     }
 
-    private static FakePlayer actor(GameTestHelper helper, String name) {
-        return new FakePlayer(helper.getLevel(), new GameProfile(UUID.randomUUID(), name));
+    /** W182: a connected stand-in that never joins, since the server refuses a fake player's flight intents. */
+    private static ServerPlayer actor(GameTestHelper helper, String name) {
+        return RocketFlightConsoleFixtures.standIn(helper.getLevel(), new GameProfile(UUID.randomUUID(), name));
     }
 
     private static java.util.Map<String, Integer> chunks(GameTestHelper helper) {
