@@ -75,6 +75,9 @@ final class BayCopySteps {
             var after = copy.destination() ? record.destinationSnapshot() : record.sourceSnapshot();
             try {
                 if (!before.contentHash().equals(after.contentHash())) {
+                    if (!reserveCopyWork(RocketRuntime.cargoPreparations(server).budget(), server.getTickCount())) {
+                        return BayStepQueue.Result.NEXT_TICK;
+                    }
                     rocket.applyBayConsumption(new BaySourceConsumption(rocket.getUUID(), claim.logical(), record.ownerId(), before, after));
                 }
             } catch (RuntimeException refused) { return repair(claim, "CONSUMPTION_MISMATCH"); }
@@ -95,6 +98,12 @@ final class BayCopySteps {
         }
         claim.waiting(null);
         return null;
+    }
+
+    /** Consumption publishes a visual snapshot too. Reserve the existing whole work allowance, never encode 63 copies in one tick. */
+    static boolean reserveCopyWork(io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.RocketCargoWorkBudget budget, long tick) {
+        return budget.charge(tick, io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.RocketCargoWorkBudget.MAX_BYTES,
+                io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.RocketCargoWorkBudget.MAX_VISITS, true);
     }
 
     private static BayStepQueue.Result repair(BayClaim claim, String reason) {

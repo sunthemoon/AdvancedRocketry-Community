@@ -20,6 +20,7 @@ final class BayAbsenceCensus {
             io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot destination) {
         var slots = new ArrayList<RocketRetirementProof.Slot>();
         slots.add(RocketRetirementProof.Slot.origin(source));
+        RocketRetirementProof.addSlot(slots, RocketRetirementProof.Slot.origin(destination), RocketOrdinaryRetirement.MAX_SLOTS);
         for (var snapshot : List.of(source, destination)) {
             var columns = RocketDiscoveryColumns.of(snapshot);
             if (!columns.valid()) { return null; }

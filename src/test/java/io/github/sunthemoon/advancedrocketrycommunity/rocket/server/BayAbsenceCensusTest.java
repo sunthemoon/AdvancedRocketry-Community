@@ -42,6 +42,16 @@ final class BayAbsenceCensusTest {
         assertNull(BayAbsenceCensus.slots(relocate(Integer.MIN_VALUE, 8, 72, 8)));
     }
 
+    @Test void validRectanglesOutsideTheirOriginsStillProveBothRecordedOriginSlots() {
+        var old = record(1);
+        var source = RocketMarginTicketsTest.snapshot(old.sourceSnapshot().sourceDimension(), 15, 8, 5, 6);
+        var destination = RocketMarginTicketsTest.snapshot(old.destinationSnapshot().sourceDimension(), 79, 8, 5, 6);
+        var slots = BayAbsenceCensus.slots(source, destination);
+        assertEquals(4, slots.size());
+        assertEquals(RocketRetirementProof.Slot.origin(source), slots.get(0));
+        assertTrue(slots.contains(RocketRetirementProof.Slot.origin(destination)));
+    }
+
     @Test void overlappingEndsShareTheSameSlotAndNeverRequireAnAbsenceProofForTheSurvivorSlot() {
         var old = record(1); var source = old.sourceSnapshot();
         var destination = old.destinationSnapshot().relocated(old.destinationSnapshot().snapshotId(), source.sourceDimension(), source.sourceOrigin(), 0);

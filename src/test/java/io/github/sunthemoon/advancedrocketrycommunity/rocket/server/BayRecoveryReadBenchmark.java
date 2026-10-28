@@ -31,16 +31,16 @@ public final class BayRecoveryReadBenchmark {
         var data = new CompoundTag(); data.putUUID("assembly_transaction_id", BayConsumptionFixtures.LOGICAL);
         frozen.put(RocketRetirementProof.DATA, data);
         var directory = Files.createTempDirectory("arce-w185-read-");
-        int slots = 2 * RocketFlightLimits.MAX_LANDING_CHUNKS;
+        int slots = 2 * RocketFlightLimits.MAX_LANDING_CHUNKS + 2; // both rectangles and separate recorded origins
         int decoded = 0, compressed = 0;
         try {
-            // Thirty-two distinct actual Anvil slots. The large root is unrelated data that the bounded reader must still decode.
+            // Distinct actual Anvil slots. The large root is unrelated data that the bounded reader must still decode.
             byte[] noise = new byte[524_288]; new java.util.Random(185).nextBytes(noise);
             try (var region = new RegionFile(directory.resolve("r.0.0.mca"), directory, false)) {
                 for (int i = 0; i < slots; i++) {
                     var root = i == 0 ? BaySlotProofsTest.root(frozen) : BaySlotProofsTest.root();
                     root.putByteArray("noise", noise); root.putByteArray("padding", new byte[AnvilRecordReader.DECODED_BYTES - noise.length - 1_024]);
-                    try (var output = region.getChunkDataOutputStream(new ChunkPos(i, 0))) { NbtIo.write(root, output); }
+                    try (var output = region.getChunkDataOutputStream(new ChunkPos(i % 16, i / 16))) { NbtIo.write(root, output); }
                 }
                 region.flush();
             }
@@ -52,7 +52,7 @@ public final class BayRecoveryReadBenchmark {
                 if (sample >= 5) { censusTimes.add(census); }
                 begin = System.nanoTime();
                 for (int i = 0; i < slots; i++) {
-                    long started = System.nanoTime(); var read = AnvilRecordReader.read(directory, new ChunkPos(i, 0));
+                    long started = System.nanoTime(); var read = AnvilRecordReader.read(directory, new ChunkPos(i % 16, i / 16));
                     var root = read.root();
                     boolean valid = i == 0 ? RocketRetirementProof.survivorSlot(root, BayConsumptionFixtures.LOGICAL, frozen)
                             : RocketRetirementProof.absentSlot(root, BayConsumptionFixtures.LOGICAL, BayConsumptionFixtures.SOURCE);

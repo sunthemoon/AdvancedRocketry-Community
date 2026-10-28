@@ -83,19 +83,28 @@ final class BayCopyCensus {
                 || rocket.preservedAssemblyTransactionId().filter(logical::equals).isPresent();
     }
 
-    private record End(ServerLevel level, RocketStructureSnapshot snapshot, AABB box, boolean destination) {
+    private record End(ServerLevel level, RocketStructureSnapshot snapshot, AABB box, @Nullable AABB originBox, boolean destination) {
         @Nullable static End of(MinecraftServer server, RocketStructureSnapshot snapshot, boolean destination) {
             // Join/movement notifications precede R1 readiness; never form an overflowing or over-budget region there.
-            if (!io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.RocketDiscoveryColumns.of(snapshot).valid()) { return null; }
+            var columns = io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.RocketDiscoveryColumns.of(snapshot);
+            if (!columns.valid()) { return null; }
             var level = RocketTransferEntities.level(server, snapshot.sourceDimension());
             if (level == null) { return null; }
             var region = RocketRegion.fromSnapshot(snapshot);
+            var origin = columns.origin();
+            AABB originBox = columns.containsOrigin() ? null : new AABB(origin.x * 16D, level.getMinBuildHeight(), origin.z * 16D,
+                    origin.x * 16D + 16, level.getMaxBuildHeight(), origin.z * 16D + 16);
             return new End(level, snapshot, new AABB(region.minimum().x() - 1D, level.getMinBuildHeight(), region.minimum().z() - 1D,
-                    region.maximum().x() + 2D, level.getMaxBuildHeight(), region.maximum().z() + 2D), destination);
+                    region.maximum().x() + 2D, level.getMaxBuildHeight(), region.maximum().z() + 2D), originBox, destination);
         }
-        boolean contains(RocketEntity rocket) { return rocket.level() == level && box.intersects(rocket.getBoundingBox()); }
+        boolean contains(RocketEntity rocket) { return rocket.level() == level && (box.intersects(rocket.getBoundingBox())
+                || originBox != null && originBox.intersects(rocket.getBoundingBox())); }
         boolean collect(UUID logical, IdentityHashMap<RocketEntity, List<End>> named) {
-            level.getEntities().get(EntityTypeTest.forClass(RocketEntity.class), box, rocket -> {
+            if (collect(box, logical, named)) { return true; }
+            return originBox != null && collect(originBox, logical, named);
+        }
+        private boolean collect(AABB region, UUID logical, IdentityHashMap<RocketEntity, List<End>> named) {
+            level.getEntities().get(EntityTypeTest.forClass(RocketEntity.class), region, rocket -> {
                 if (names(rocket, logical)) { named.computeIfAbsent(rocket, ignored -> new ArrayList<>()).add(this); }
                 return named.size() >= RocketFlightLimits.MAX_TRANSFER_ENTITY_MATCHES
                         ? AbortableIterationConsumer.Continuation.ABORT : AbortableIterationConsumer.Continuation.CONTINUE;

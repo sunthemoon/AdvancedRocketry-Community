@@ -101,6 +101,26 @@ final class BayCopyCensusTest {
         assertFalse(assertDoesNotThrow(() -> BayCopyCensus.within(f.server, f.before, source)));
     }
 
+    @Test void aRecordedOriginOutsideTheRectangleIsQueriedWithoutWideningThatRectangle() {
+        var f = new Fixture(); var original = f.before.sourceSnapshot();
+        var blocks = original.blocks().stream().map(block -> new io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketBlock(
+                new io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition(block.position().x() + 16,
+                        block.position().y(), block.position().z()), block.state(), block.blockEntityPayload().orElse(null))).toList();
+        var anchors = original.passengerAnchors().stream().map(pos ->
+                new io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition(pos.x() + 16, pos.y(), pos.z())).toList();
+        var source = RocketStructureSnapshot.create(original.snapshotId(), original.sourceDimension(), original.sourceOrigin(), blocks,
+                anchors, original.stats(), 0);
+        var destination = source.relocated(f.before.destinationSnapshot().snapshotId(), f.before.destinationSnapshot().sourceDimension(), MOON, 160);
+        var record = RocketTransferRecord.create(TRANSFER, LOGICAL, OWNER, SOURCE, source, destination,
+                f.before.sourceFlightData(), f.before.destinationFlightData(), f.before.requiredFuel(), 0);
+        var group = new BayGroup(LOGICAL, TRANSFER, f.group.members(), source.contentHash(), destination.contentHash(),
+                f.group.srcAfter(), f.group.dstAfter());
+        assertFalse(io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.RocketDiscoveryColumns.of(source).containsOrigin());
+        f.add(source, SOURCE); var copy = f.add(destination, new UUID(185, 15));
+        var scan = BayCopyCensus.inspect(f.server, record, group, rocket -> true);
+        assertNull(scan.refusal()); assertEquals(List.of(new BayCopyCensus.Copy(copy, true)), scan.copies());
+    }
+
     @Test void sourceUuidAtDestinationAndBlockedImagesHoldBeforeNeutralityChecks() {
         var f = new Fixture(); f.add(f.before.destinationSnapshot(), SOURCE);
         assertEquals("UNEXPECTED_COPY", f.scan().refusal());
@@ -121,6 +141,19 @@ final class BayCopyCensusTest {
         assertNull(f.scan().refusal()); assertEquals(62, f.scan().copies().size());
         f.add(f.before.destinationSnapshot(), new UUID(185, 63));
         assertEquals("DUPLICATE_LIMIT", f.scan().refusal());
+    }
+
+    @Test void copyConsumptionSharesTheExistingSnapshotBudgetAndDefersBehindOtherWork() {
+        var budget = new RocketCargoWorkBudget();
+        assertTrue(budget.claim(1, new Object()));
+        assertFalse(BayCopySteps.reserveCopyWork(budget, 1));
+        assertTrue(BayCopySteps.reserveCopyWork(budget, 2));
+        assertEquals(RocketCargoWorkBudget.MAX_BYTES, budget.chargedBytes());
+        assertEquals(RocketCargoWorkBudget.MAX_VISITS, budget.chargedVisits());
+        assertEquals(1, budget.reconstructions());
+        assertFalse(BayCopySteps.reserveCopyWork(budget, 2));
+        assertFalse(budget.claim(2, new Object()));
+        assertTrue(BayCopySteps.reserveCopyWork(budget, 3));
     }
 
     static final class Fixture {
