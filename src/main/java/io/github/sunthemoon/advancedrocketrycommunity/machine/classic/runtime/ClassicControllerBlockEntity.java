@@ -525,7 +525,10 @@ public class ClassicControllerBlockEntity extends BlockEntity implements MenuPro
         }
     }
     @Override public Component getDisplayName() { return Component.translatable("block." + definition.kind().getNamespace() + "." + definition.kind().getPath()); }
-    @Override public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) { return new ClassicControllerMenu(id, this); }
+    /** W182-R3: vanilla opens a spectator's menu here directly, from {@code useItemOn}; a spectator gets none. */
+    @Override public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) {
+        return player.isSpectator() ? null : new ClassicControllerMenu(id, this);
+    }
     static PatternTransform transform(BlockState state) {
         Direction facing = state.getValue(ClassicControllerBlock.FACING);
         return new PatternTransform(switch (facing) {
