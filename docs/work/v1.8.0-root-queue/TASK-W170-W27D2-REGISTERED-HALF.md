@@ -102,6 +102,28 @@ A fresh session continues on `codex/v1.8.0-w170`:
 Root then pushes the branch for a hosted regression, registers risk entry D, and arranges the read-only review in the
 two passes the plan suggests.
 
+## Pass 1 findings under Root decision R137 (2026-10-28)
+
+Review pass 1 (receipts and registry), `D:/GitHub/ARCE-Task-Evidence/root-queue/W170-review/pass1/REVIEW.md` (SHA-256
+`74f48f6b…ab8e`), returned APPROVE-WITH-CHANGES. Pass 2 is still to come. A fresh session fixes pass 1's findings on
+`codex/v1.8.0-w170` and appends a "Pass 1 fixes (R137)" section to the record:
+
+1. **W170-R1 (Medium).** `BayConsumedSnapshots.Job.step` can rebuild both S' and D' in one server tick. ADR-065
+   section 4.1.1 allows at most one whole-snapshot reconstruction per tick. Split the step so that each tick
+   reconstructs at most one, with a test that pins it, and rerun the D5 benchmark.
+2. **W170-R3 (Low).** Remove or guard the unreachable branch that would write REJECTED after a RAM registration, so
+   that it can never be reached.
+3. **W170-R6 (Low).** Add a test that pins D3's three-failure threshold and its 200-tick pacing.
+4. **W170-R7 (Low).** Restore a durable-REJECTED bay menu assertion.
+5. **W170-R4 and R8 (Low).** Correct the record: F2 holds are runtime-only and are promoted at the next start, and
+   filtered runs on uncommitted trees were not committed evidence.
+6. **W170-R9 (Info).** Rerun the native cases that go through D2's launches on the merged source, since the shared
+   head changed the registry storage-budget path. That is at least B2, B3 and B4; name any others. Two restarts each,
+   under the lock.
+
+W170-R2, the R-043 draft, is Root's. Verification: the new tests alone, the whole unit suite, and the bay batches
+three times. A full GameTest is needed only if production code outside `rocket/bay` changes.
+
 ## Not in this task
 
 W27d3 (copies and the absence census), W27d4 (released flight), admission (W27e), ADRs, the risk register, status
