@@ -59,7 +59,13 @@ class RocketIssueFeedbackTest {
     @Test void serverDataPackContainsEveryBoundedReasonAndTheEntityName() throws IOException {
         Path root = Path.of("src/generated");
         var server = JsonParser.parseString(Files.readString(root.resolve(
-                "v1.8/resources/data/advancedrocketrycommunity_v180/lang/en_us.json"))).getAsJsonObject();
+                "v1.8/resources/data/advancedrocketrycommunity_v180_rocket/lang/en_us.json"))).getAsJsonObject();
+        var client = JsonParser.parseString(Files.readString(root.resolve(
+                "v1.8/resources/assets/advancedrocketrycommunity_v180_rocket/lang/en_us.json"))).getAsJsonObject();
+        assertEquals(server, client, "Forge redirects its server language lookup to the asset copy");
+        var chinese = JsonParser.parseString(Files.readString(root.resolve(
+                "v1.8/resources/assets/advancedrocketrycommunity_v180_rocket/lang/zh_cn.json"))).getAsJsonObject();
+        assertEquals("组装火箭", chinese.get("entity.advancedrocketrycommunity.rocket").getAsString());
         var legacy = JsonParser.parseString(Files.readString(root.resolve(
                 "v0.5/resources/assets/advancedrocketrycommunity_v050/lang/en_us.json"))).getAsJsonObject();
         var fuel = JsonParser.parseString(Files.readString(root.resolve(
@@ -72,6 +78,7 @@ class RocketIssueFeedbackTest {
             String expected = (active.has(key) ? active : fuel.has(key) ? fuel : legacy).get(key).getAsString();
             assertEquals(expected, server.get(key).getAsString(), key);
             assertTrue(expected.length() <= 256 && !expected.isBlank() && !expected.equals(key), key);
+            assertTrue(chinese.has(key) && !chinese.get(key).getAsString().isBlank(), key);
         }
     }
 }
