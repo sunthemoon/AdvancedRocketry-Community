@@ -165,9 +165,12 @@ final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
         if (stopping) { return; }
         if (shuttingDown()) { stop(); return; }
         if (!ticked) { ticked = true; BayDeploymentCuts.firstTick(server); }
-        renewTickets();
+        renewTickets(); proof.observe(); // W170-R22: a watched source that changed invalidates its D6/D7 token first
         queue.run(this::step);
     }
+
+    /** W170-R22: a rocket's position write or Level removal, from the entity itself; a watched L's proof is invalidated. */
+    void sourceChanged(RocketEntity rocket) { if (!stopping) { proof.changed(rocket); } }
 
     /** ServerStoppingEvent, or the first observed shutdown: discard every waiting step and run no further effect. */
     void stop() {

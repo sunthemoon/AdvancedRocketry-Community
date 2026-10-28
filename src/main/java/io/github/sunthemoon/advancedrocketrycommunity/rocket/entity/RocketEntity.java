@@ -507,9 +507,20 @@ public final class RocketEntity extends Entity implements MenuProvider {
         }
     }
 
+    /**
+     * W170-R22: every server position write reports to the bay coordinator, which invalidates a D6/D7 proof watching this
+     * rocket's logical ID. Vanilla's {@code moveTo} writes the position before it calls here, so nothing is compared.
+     */
+    @Override
+    public void setPos(double x, double y, double z) {
+        super.setPos(x, y, z);
+        if (level() != null && !level().isClientSide) { RocketRuntime.baySourceChanged(this); }
+    }
+
     @Override
     public void remove(RemovalReason reason) {
         if (!level().isClientSide) {
+            RocketRuntime.baySourceChanged(this); // W170-R22: leaving the Level invalidates a watched proof
             RocketRuntime.cargoRemoved(this);
             AdvancedRocketryCommunity.LOGGER.info(
                     "ARCE_ROCKET_ENTITY_REMOVED entity={} reason={} operational={}",
