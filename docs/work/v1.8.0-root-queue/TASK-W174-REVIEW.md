@@ -70,3 +70,20 @@ A new session reviews revision 2 of `records/W174-DESIGN.md`, on `codex/v1.8.0-w
    that the risk text states them honestly.
 
 Use the same rules and output format as above, with findings numbered from W174-R9.
+
+## Third review, of revision 3 (2026-10-28)
+
+A new session reviews revision 3 (`cf656dfe8..2b155bd57` on `codex/v1.8.0-w174`). Use the review worktree
+`D:/GitHub/arce-v180-w174-review3`, a detached checkout of `2b155bd57`, and write
+`D:/GitHub/ARCE-Task-Evidence/root-queue/W174-review3/REVIEW.md`. The second review is
+`D:/GitHub/ARCE-Task-Evidence/root-queue/W174-review2/REVIEW.md` (SHA-256 `c8683ad1…ddb3`). Check:
+
+- that W174-R9 to R15 are closed, each against its finding;
+- R9's binding to the "due" predicates of W98, W152 and W158, and the registered residual for rocket demand that
+  covers every tick;
+- R10's list of barrier consumers against the source, and the new 32-entry limit on the barrier's Level table;
+- R11's bound of 19 + R ticks, with the second review's probe rerun unchanged;
+- R12's per-transaction validity;
+- R13's statement of the rollback when a world changes hosting.
+
+Then look for any new gap. Use the same rules and output format as above, with findings numbered from W174-R16.
