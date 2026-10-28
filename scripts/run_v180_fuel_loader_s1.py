@@ -139,6 +139,8 @@ def run(args):
             report["starts"].append(row)
             (evidence / "results.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
             before_refusal = world_hashes(session / world_name) if stage == "downgrade" else None
+            if before_refusal is not None:
+                (evidence / f"{index}-world-before.json").write_text(json.dumps(before_refusal, indent=2) + "\n", encoding="utf-8")
             process = smoke.CapturedProcess(command, session, evidence / f"{index}-{stage}.log")
             if stage == "downgrade":
                 process.wait_for(DOWNGRADE_GUARD, args.startup_timeout)
@@ -146,8 +148,11 @@ def run(args):
                 latest = evidence / f"{index}-{stage}-latest.log"; shutil.copy2(session / "logs/latest.log", latest)
                 row["live"] = check_downgrade_refusal(latest.read_text(encoding="utf-8").splitlines()); process = None
                 after_refusal = world_hashes(session / world_name)
-                oracle.require(before_refusal and before_refusal == after_refusal, "Refused downgrade changed world file bytes")
                 (evidence / f"{index}-world-hashes.json").write_text(json.dumps(after_refusal, indent=2) + "\n", encoding="utf-8")
+                row["changed_world_files"] = [key for key in sorted(before_refusal.keys() | after_refusal.keys())
+                                              if before_refusal.get(key) != after_refusal.get(key)]
+                oracle.require(before_refusal and not row["changed_world_files"],
+                               "Refused downgrade changed world file bytes: " + ", ".join(row["changed_world_files"]))
                 crashes = evidence / f"{index}-crash-reports"; crashes.mkdir()
                 for crash in (session / "crash-reports").glob("*.txt"): shutil.copy2(crash, crashes / crash.name)
                 oracle.inspect(session / world_name, evidence / f"{index}-native", stage, old_before)
