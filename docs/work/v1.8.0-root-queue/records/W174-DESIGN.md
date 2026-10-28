@@ -1417,3 +1417,19 @@ server-wide IO/demand holds, W80 priority, unsupported host and vanilla tearing/
 **All current-version Required Gates satisfied: no.** This revision establishes no G0-G9 result. The next v1.8
 action is Root's four-finding check against review 3, then freeze until D4 as R140 requests, not a fourth full review
 or automatic implementation/admission.
+
+### Committed-source verification (revision 4)
+
+Design/record commit: `3c090b1d61449e3141939b47484f105bfdcc6242`. On that clean commit,
+`python -B scripts/validate_repository.py --require-approved-identity` exited 0: **45 passed, 0 pending,
+0 warnings, 0 failed**. Under the revision-4 evidence prefix, `validator-record-source.txt`,
+`validator-record-status.txt`, `validator-record-exit.txt` and `validator-record.log` bind the result to this
+source. The log SHA-256 is `dc5c618fc831b8d2bc1c749fb2d8e00ca159a8be68ec19676386530ce9bc5f89`.
+`git show --format= --check HEAD`, `git diff --exit-code`, `git diff --cached --exit-code` and the production
+diff from `171c1d71d` all exited 0. Staged-stat inspection contained this record only. The third-review input
+hashes were rechecked unchanged after the probes. The commit is local, not pushed.
+
+This verification-only addition changes no design or probe. The validator is repeated on its final record commit;
+`validator-final-source.txt`, `validator-final-status.txt`, `validator-final-exit.txt` and `validator-final.log`
+identify that run. Evidence remains below 200 KiB, including the policy-blocked cleanup remainder above. Root's
+R140 check, D4 and all implementation/acceptance work remain open; no Gate is approved here.
