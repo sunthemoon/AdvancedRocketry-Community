@@ -309,7 +309,10 @@ public final class RocketRetirementCoverageGameTests {
                         + " reason=" + recovery().retirements().reason(record.logicalRocketId())
                         + " effects=" + journal.outstandingEffectCount() + " dirty=" + journal.isDirty()
                         + " acknowledged=" + journal.acknowledgedCurrent()
-                        + " governed=" + (governed == null ? "pending" : governed.confirmed()));
+                        + " governed=" + (governed == null ? "pending" : governed.confirmed())
+                        + " governed_reason=" + (governed == null ? "pending" : governed.reason())
+                        + " governed_tick=" + governedTick
+                        + " next_autosave=" + io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestAutosave.ticksUntil((int) now));
             }
             helper.assertTrue(recovery().retirements().attempts(record.logicalRocketId()) == 0,
                     "The protected slot admitted an ordinary capture");

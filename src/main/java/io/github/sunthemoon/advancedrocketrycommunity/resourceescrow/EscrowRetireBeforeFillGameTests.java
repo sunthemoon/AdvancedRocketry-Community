@@ -165,10 +165,12 @@ public final class EscrowRetireBeforeFillGameTests {
                 }
                 if (launchPending) { return; }
                 request = UUID.randomUUID();
+                String beforeLaunch = launchState();
                 var launch = RocketRuntime.requestAdminFlight(rocket, RocketDestination.MOON, request);
                 helper.assertTrue(launch.code() == RocketFlightRequestCode.JOURNAL_PENDING || launch.code() == RocketFlightRequestCode.SUCCESS
                                 || launch.code() == RocketFlightRequestCode.DESTINATION_LOADING,
-                        "Post-fill launch refused: " + launch.code());
+                        "Post-fill launch refused: " + launch.code() + " before={" + beforeLaunch
+                                + "} after={" + launchState() + "}");
                 launchPending = launch.code() == RocketFlightRequestCode.JOURNAL_PENDING || launch.code() == RocketFlightRequestCode.SUCCESS;
                 return;
             }
@@ -235,6 +237,17 @@ public final class EscrowRetireBeforeFillGameTests {
             var data = ResourceEscrowSavedData.existing(level.getServer());
             return data != null && data.bind(level.getServer()).unresolvedNaming(rocket.getUUID()).isEmpty()
                     && !section(loader).locked() && rocket.escrowSection().markers().isEmpty();
+        }
+        String launchState() {
+            var server = level.getServer(); var journal = RocketTransferSavedData.get(server);
+            var logical = record.logicalRocketId(); var runtime = EscrowRuntime.of(server);
+            return "tick=" + server.getTickCount() + " idle=" + RocketEscrowGate.idle(rocket)
+                    + " mutation=" + RocketRuntime.resourceMutationAllowed(rocket)
+                    + " governed=" + ResourceEscrowSavedData.existing(server).bind(server).governedAvailable(logical)
+                    + " authority=" + journal.actionAuthorityAvailable(logical)
+                    + " barrier=" + runtime.barrier().available(level.dimension().location().toString(), true, server.getTickCount())
+                    + " effects=" + journal.outstandingEffectCount() + " dirty=" + journal.isDirty()
+                    + " guard=" + journal.logicalGuard(logical);
         }
         void cleanup() {
             if (occupiedPad != null) { occupiedPad.close(); occupiedPad = null; }
