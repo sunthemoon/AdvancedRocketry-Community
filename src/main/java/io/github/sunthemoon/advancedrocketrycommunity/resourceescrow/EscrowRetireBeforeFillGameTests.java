@@ -191,6 +191,11 @@ public final class EscrowRetireBeforeFillGameTests {
                             });
                     helper.assertTrue(captureOccupied, "The competing native capture was not admitted");
                 }
+                // Idle resources do not imply a free native capture: the other fills, ordinary retirement and F1
+                // all use one shared capture per tick. Exercise the launch only on an available turn, not on the
+                // tick on which an asynchronous fill happened to finish. A submitted launch is never resubmitted.
+                if (!EscrowRuntime.of(server).barrier().available(level.dimension().location().toString(),
+                        true, server.getTickCount())) { return; }
                 request = UUID.randomUUID();
                 String beforeLaunch = launchState();
                 var launch = RocketRuntime.requestAdminFlight(rocket, RocketDestination.MOON, request);
