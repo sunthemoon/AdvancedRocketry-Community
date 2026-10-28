@@ -32,7 +32,8 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
 /**
  * W185 A1: actual queued D7 guard, a returning assigned passenger and late joins at both ends; W185-R2's in-session source
- * end wider than its origin column. Each B16 cut scenario has its own batch, because the cut pauses every in-session guard.
+ * end wider than its origin column. Each case has its own batch: the B16 cut pauses the first in-session guard of the
+ * server session, so only the login case installs it, and the wide source end must stay the only load of its far columns.
  */
 @GameTestHolder(ModIdentity.MOD_ID)
 @PrefixGameTestTemplate(false)
@@ -83,7 +84,7 @@ public final class BayCopiesGameTests {
             try {
                 helper.assertTrue(++waits < 1_150, "Copy/login fixture exceeded its wait at " + stage);
                 if (stage == 0) { setup(); }
-                else if (stage == 1) { whileGuardQueued(); }
+                else if (stage == 1) { whileHeld(); }
                 else { finished(); }
                 if (!closed) { pacer.pace(); }
             } catch (ReflectiveOperationException failure) { close(); throw new IllegalStateException(failure); }
@@ -98,24 +99,32 @@ public final class BayCopiesGameTests {
             flight = transit(helper, origin, level.dimension().location(), position(target), owner, List.of(pkg),
                     RocketEscrowSectionPatch.NEUTRAL, RocketFlightPlanner.EARTH.bodyId(), passenger);
             var journal = RocketTransferSavedData.get(server); journal.put(flight.record());
-            // Use the existing B16 guard cut, only inside this isolated GameTest batch; no new production hook.
-            cut = EscrowRuntime.of(server).bayReceipts(server).commitCutForTests(server).orElseThrow();
-            var constructor = BayDeploymentCuts.class.getDeclaredConstructor(BayDeploymentCuts.Cut.class, BayReceiptCommitCut.class);
-            constructor.setAccessible(true);
-            var field = BayTransferRecovery.class.getDeclaredField("cuts"); field.setAccessible(true);
-            previousCuts = (BayDeploymentCuts) field.get(bays(helper));
-            field.set(bays(helper), constructor.newInstance(BayDeploymentCuts.Cut.B16_GUARD, cut)); installed = true;
+            // The riding case needs no queued guard, and the server's commit cut pauses only one guard per session.
+            if (!riding) {
+                // Use the existing B16 guard cut, only inside this isolated GameTest batch; no new production hook.
+                cut = EscrowRuntime.of(server).bayReceipts(server).commitCutForTests(server).orElseThrow();
+                var constructor = BayDeploymentCuts.class.getDeclaredConstructor(BayDeploymentCuts.Cut.class, BayReceiptCommitCut.class);
+                constructor.setAccessible(true);
+                var field = BayTransferRecovery.class.getDeclaredField("cuts"); field.setAccessible(true);
+                previousCuts = (BayDeploymentCuts) field.get(bays(helper));
+                field.set(bays(helper), constructor.newInstance(BayDeploymentCuts.Cut.B16_GUARD, cut)); installed = true;
+            }
             bays(helper).ascentComplete(server, journal, flight.record(), flight.source());
             claim = claim(helper, flight.record().logicalRocketId()).orElseThrow(); stage = 1;
         }
 
-        void whileGuardQueued() throws ReflectiveOperationException {
-            var field = BayReceiptCommitCut.class.getDeclaredField("guardPaused"); field.setAccessible(true);
-            if (!((AtomicBoolean) field.get(cut)).get()) { return; }
+        /** The login and the late copies: during the queued D7 guard, or for the riding case at any held stage with a group. */
+        void whileHeld() throws ReflectiveOperationException {
             var server = helper.getLevel().getServer(); var journal = RocketTransferSavedData.get(server);
             var record = journal.find(flight.record().transferId()).orElseThrow();
-            helper.assertTrue(claim.stage() == BayClaim.Stage.RETIRE && record.phase() == RocketTransferPhase.PREPARED,
-                    "The actual D7 guard was not queued on a PREPARED record");
+            if (riding) {
+                if (claim.group().isEmpty() || claim.stage() == BayClaim.Stage.ENDED) { return; }
+            } else {
+                var field = BayReceiptCommitCut.class.getDeclaredField("guardPaused"); field.setAccessible(true);
+                if (!((AtomicBoolean) field.get(cut)).get()) { return; }
+                helper.assertTrue(claim.stage() == BayClaim.Stage.RETIRE && record.phase() == RocketTransferPhase.PREPARED,
+                        "The actual D7 guard was not queued on a PREPARED record");
+            }
             token = claim.group().orElseThrow().token(); helper.assertTrue(token.getAsBoolean(), "Initial token invalid");
             player = FirstEventGameTestPlayers.join(server, passenger, "W185Passenger", helper.getLevel(),
                     helper.absolutePos(new BlockPos(3, 2, 6)));
@@ -137,7 +146,8 @@ public final class BayCopiesGameTests {
             helper.assertTrue(!token.getAsBoolean(), "Late copies did not invalidate the queued token");
             helper.assertTrue(!riding || player.getVehicle() == copies.get(0), "The fixture passenger is not riding the source copy");
             helper.assertTrue(bays(helper).sessionForTests().find(satellite(pkg)).isPresent(), "Queued removal lost receipt");
-            cut.release(); stage = 2;
+            if (cut != null) { cut.release(); }
+            stage = 2;
         }
 
         void finished() {
