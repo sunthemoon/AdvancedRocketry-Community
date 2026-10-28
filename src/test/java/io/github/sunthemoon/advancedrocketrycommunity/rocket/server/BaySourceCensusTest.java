@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.UUID;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -147,6 +148,31 @@ final class BaySourceCensusTest {
         }
         var world = new World().put(record.sourceSnapshot().sourceDimension()).put(record.destinationSnapshot().sourceDimension(), copies);
         assertEquals("DUPLICATE_LIMIT", world.copies(record), "reaching the cap is a conflict, never a truncation");
+    }
+
+    /**
+     * W170-R42, the re-review's probe: a loaded rocket whose entity data did not decode keeps it as preserved blocked data,
+     * with null decoded fields. Its preserved {@code assembly_transaction_id} names L, so it counts toward the cap and is
+     * unexpected, never no copy.
+     */
+    @Test void aLoadedBlockedImageWhosePreservedDataNamesLMustHold() {
+        var record = record(1);
+        var blocked = UnstartedServer.allocate(RocketEntity.class);
+        var data = new CompoundTag();
+        data.putInt("schema_version", 99);
+        data.putUUID("assembly_transaction_id", LOGICAL);
+        data.putUUID("owner_id", OWNER);
+        UnstartedServer.set(RocketEntity.class, blocked, "preservedBlockedData", data);
+        UnstartedServer.set(Entity.class, blocked, "uuid", new UUID(999, 5));
+        UnstartedServer.set(Entity.class, blocked, "bb", new AABB(MOON.x(), MOON.y(), MOON.z(), MOON.x() + 1, MOON.y() + 1, MOON.z() + 1));
+        assertFalse(blocked.operational(), "control: the image is blocked");
+        assertEquals(LOGICAL, blocked.preservedBlockedData().orElseThrow().getUUID("assembly_transaction_id"),
+                "control: the preserved data names L");
+        var world = new World().put(record.sourceSnapshot().sourceDimension()).put(record.destinationSnapshot().sourceDimension(), blocked);
+        int[] visible = {0};
+        world.levels.values().forEach(level -> level.getEntities().get(new AABB(-1_000, -64, -1_000, 1_000, 320, 1_000), entity -> visible[0]++));
+        assertEquals(1, visible[0], "control: the blocked image is in the destination's loaded entity index");
+        assertEquals("UNEXPECTED_COPY", world.copies(record), "a loaded image whose preserved data names L must not count as no copy");
     }
 
     static final class ProbeLevel extends ServerLevel {

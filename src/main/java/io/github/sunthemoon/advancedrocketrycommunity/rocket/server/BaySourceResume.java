@@ -178,9 +178,9 @@ final class BaySourceResume {
 
     /**
      * W170-R21's census of the loaded images of L at both recorded ends, other than {@code exact} at the source end. It
-     * first bounds every loaded rocket naming L (its logical ID or its flight data's) in each end's box, at most
-     * {@value RocketFlightLimits#MAX_TRANSFER_ENTITY_MATCHES} (reaching the cap is a conflict, never a truncation), then
-     * classifies each one. An image is recognized when it names L in both places, has T's owner, is operational and not a
+     * first bounds every loaded rocket naming L (its logical ID, its flight data's, or a blocked image's preserved one,
+     * W170-R42) in each end's box, at most {@value RocketFlightLimits#MAX_TRANSFER_ENTITY_MATCHES} (reaching the cap is
+     * a conflict, never a truncation), then classifies each one. An image is recognized when it names L in both places, has T's owner, is operational and not a
      * passenger, and carries its end's snapshot ID with one of that end's group hashes (a destination copy never matches
      * the source pair). Null when there is no other image; UNEXPECTED_COPY when any image is not recognized, including
      * T's source UUID at the destination end; else PROTECTED_DUPLICATE unless every recognized copy is neutral, which is
@@ -241,9 +241,11 @@ final class BaySourceResume {
         }
     }
 
+    /** Its logical ID, its flight data's, or a blocked image's preserved one (W170-R42), never recognized, names L. */
     private static boolean names(RocketEntity rocket, UUID logical) {
         return rocket.assemblyTransactionId().filter(logical::equals).isPresent()
-                || rocket.flightData().filter(flight -> logical.equals(flight.logicalRocketId())).isPresent();
+                || rocket.flightData().filter(flight -> logical.equals(flight.logicalRocketId())).isPresent()
+                || rocket.preservedAssemblyTransactionId().filter(logical::equals).isPresent();
     }
 
     private static BayStepQueue.Result repair(BayClaim claim, String reason) {

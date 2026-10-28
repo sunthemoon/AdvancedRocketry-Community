@@ -346,6 +346,12 @@ public final class RocketEntity extends Entity implements MenuProvider {
                                 + RocketFlightLimits.MAX_FLIGHT_DATA_NBT_BYTES + ENTITY_ENVELOPE_BYTES));
     }
 
+    /** W170-R42: the logical ID a blocked image's preserved data names, read in place without a copy; empty otherwise. */
+    public Optional<UUID> preservedAssemblyTransactionId() {
+        return preservedBlockedData != null && preservedBlockedData.hasUUID("assembly_transaction_id")
+                ? Optional.of(preservedBlockedData.getUUID("assembly_transaction_id")) : Optional.empty();
+    }
+
     @Override
     protected void defineSynchedData() {
         entityData.define(DISPLAYED_FLIGHT_STATE, RocketFlightState.ASSEMBLED.name());
