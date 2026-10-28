@@ -189,7 +189,7 @@ final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
             if (record == null) { continue; }
             if (claim.origin() != BayClaim.Origin.CHECKPOINT) {
                 if (claim.group().isPresent() && claim.hold() != BayClaim.Hold.REPAIR && claim.stage() != BayClaim.Stage.ENDED
-                        && claim.stage() != BayClaim.Stage.PUBLISH) { resume.renew(record); }
+                        && claim.stage() != BayClaim.Stage.PUBLISH) { resume.renew(claim); } // W170-R23: checked T first
                 continue;
             }
             var source = RocketTransferEntities.level(server, record.sourceSnapshot().sourceDimension());
@@ -449,7 +449,7 @@ final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
     /** The ended (or forgotten) claim's RAM proof state in every step class. */
     private void forgetState(BayClaim claim) {
         registration.forget(claim); publication.forget(claim.logical()); consumption.forget(claim.logical());
-        proof.forget(claim.logical());
+        proof.forget(claim.logical()); resume.forget(claim.logical());
     }
 
     /** The loaded registry, unless a gated seam blocks this coordinator's view of it for the session or for L. */

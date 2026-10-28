@@ -1,5 +1,6 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
+import com.mojang.logging.LogUtils;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModEntities;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.deployment.BayClaim;
@@ -25,9 +26,11 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.slf4j.Logger;
 
 /**
- * W170's restart resume for one copy (W27A-DESIGN section 4.1, R1 and R2). R1: while held, the claim renews the existing
+ * W170's restart resume for one copy (W27A-DESIGN section 4.1, R0 to R2). R0: neither R1 nor R2 acts before the exact
+ * checked authority of (L, T) (W170-R23). R1: while held, the claim renews the existing
  * flight tickets on T's checked columns of both ends (at most 16 per end), loading nothing else, and waits until the
  * source end's columns are entity-loaded and ticking; one group step per tick. R2: the exact source UUID, present and
  * neutral, is kept (a lagging COUNTDOWN or ASCENT image gets TRANSIT from T at the altitude position, with no launch
@@ -38,14 +41,41 @@ import net.minecraft.world.phys.Vec3;
  * identities naming L hold it for repair.
  */
 final class BaySourceResume {
+    private static final Logger LOGGER = LogUtils.getLogger();
     private final MinecraftServer server;
+    private final java.util.Set<UUID> renewing = new java.util.HashSet<>();
     private long stepTick = Long.MIN_VALUE;
 
     BaySourceResume(MinecraftServer server) { this.server = server; }
 
-    /** R1's ticket renewal for a held restart group: false when an end is not admissible (no ticket is added then). */
-    boolean renew(RocketTransferRecord record) {
+    /**
+     * R1's ticket renewal for a held restart group: false when an end is not admissible (no ticket is added then). In
+     * RESUME it needs the exact checked authority of (L, T) (W170-R23); from CONSUME on, the source authority that R2
+     * established on that checked T covers the claim's own T' write. Either way T must be the group's (W170-R25). The
+     * first renewal of a claim logs one line.
+     */
+    boolean renew(BayClaim claim) {
+        var journal = RocketTransferSavedData.get(server);
+        RocketTransferRecord record = claim.stage() == BayClaim.Stage.RESUME ? checked(journal, claim)
+                : journal.find(claim.transfer()).orElse(null);
+        if (record == null || BayConsumptionSteps.half(record, claim.group().orElseThrow()) == null) { return false; }
+        if (renewing.add(claim.logical())) {
+            LOGGER.info("ARCE_BAY_RESUME_TICKETS transfer={} logical={} stage={}", claim.transfer(), claim.logical(), claim.stage());
+        }
         return RocketTransferEntities.refreshBayMargins(server, record) > 0;
+    }
+
+    /**
+     * W170-R23: T under the exact checked authority of (L, T): L's latest change is in the journal's acknowledged
+     * generation with no queued same-L effect, and that generation's guard names T with its record digest. Null while it
+     * is pending, or when the acknowledged generation names no T or another one. The transfer service's existing baseline
+     * request and checked-retry pacing write it; the claim only waits.
+     */
+    @Nullable
+    static RocketTransferRecord checked(RocketTransferSavedData journal, BayClaim claim) {
+        var guard = journal.operational() && journal.actionable(claim.logical()) ? journal.logicalGuard(claim.logical()).orElse(null) : null;
+        return guard != null && claim.transfer().equals(guard.transfer()) && guard.recordDigest() != null
+                ? journal.find(claim.transfer()).orElse(null) : null;
     }
 
     /** R1 and R2 at stage RESUME. */
@@ -57,7 +87,11 @@ final class BaySourceResume {
         BayGroup group = claim.group().orElseThrow();
         var journal = RocketTransferSavedData.get(server);
         if (!journal.operational()) { claim.waiting("TRANSFER_JOURNAL_UNAVAILABLE"); return BayStepQueue.Result.NEXT_TICK; }
-        RocketTransferRecord record = journal.find(claim.transfer()).orElse(null);
+        if (!journal.actionable(claim.logical()) || journal.logicalGuard(claim.logical()).isEmpty()) {
+            claim.waiting("TRANSFER_JOURNAL_PENDING"); // W170-R23: no R1 or R2 effect before the exact checked T
+            return BayStepQueue.Result.NEXT_TICK;
+        }
+        RocketTransferRecord record = checked(journal, claim);
         if (BayConsumptionSteps.half(record, group) == null) { return repair(claim, "TRANSFER_AUTHORITY_CONFLICT"); }
         ServerLevel level = RocketTransferEntities.level(server, record.sourceSnapshot().sourceDimension());
         if (level == null || RocketTransferEntities.level(server, record.destinationSnapshot().sourceDimension()) == null
@@ -216,4 +250,7 @@ final class BaySourceResume {
         claim.repair(reason);
         return BayStepQueue.Result.IDLE;
     }
+
+    /** A claim's end, or its gated forget. */
+    void forget(UUID logical) { renewing.remove(logical); }
 }
