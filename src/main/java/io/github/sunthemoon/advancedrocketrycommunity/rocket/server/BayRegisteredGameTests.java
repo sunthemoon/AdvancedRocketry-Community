@@ -34,7 +34,9 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
  * absent; the restart resume (R1 to R3) with the exact source present, absent (the bay-resume constructor with T's source
  * UUID at altitude), and the mixed images {@code (S',T)} and {@code (S,T')}; an INTENT whose X is equal promoting at a
  * restart; and a second recognized copy holding the claim as DUPLICATE_PENDING with no record change. Each ends with
- * READY_SOURCE(T'), the receipts retired and every bay consumed by its own operation.
+ * READY_SOURCE(T'), the receipts retired and every bay consumed by its own operation. A protected copy, and an unexpected
+ * image of L in the source margin or the destination column (W170-R21), hold the claim for repair instead, with T, the
+ * source, the receipts and the copy unchanged.
  */
 @GameTestHolder(ModIdentity.MOD_ID)
 @PrefixGameTestTemplate(false)
@@ -42,7 +44,11 @@ public final class BayRegisteredGameTests {
     static final String REGISTERED = "bay_registered";
     private BayRegisteredGameTests() { }
 
-    private enum Kind { DECOMMISSION, PRESENT, ABSENT, MIXED_SOURCE_CONSUMED, MIXED_JOURNAL_CONSUMED, PROMOTE, DUPLICATE, PROTECTED }
+    private enum Kind {
+        DECOMMISSION, PRESENT, ABSENT, MIXED_SOURCE_CONSUMED, MIXED_JOURNAL_CONSUMED, PROMOTE, DUPLICATE, PROTECTED,
+        UNEXPECTED_MARGIN, UNEXPECTED_COLUMN;
+        boolean held() { return this == PROTECTED || this == UNEXPECTED_MARGIN || this == UNEXPECTED_COLUMN; }
+    }
 
     @GameTest(template = TEMPLATE, batch = REGISTERED, timeoutTicks = 1_200)
     public static void decommissionAfterRegistrationLeavesOneSatelliteLiveOneAbsentAndBothBaysConsumed(GameTestHelper helper) {
@@ -83,6 +89,18 @@ public final class BayRegisteredGameTests {
     @GameTest(template = TEMPLATE, batch = REGISTERED, timeoutTicks = 1_200)
     public static void aProtectedSecondCopyHoldsTheRestartForRepairWithNoRecordChange(GameTestHelper helper) {
         new Case(helper, Kind.PROTECTED).start();
+    }
+
+    /** W170-R21: a loaded image of L in the source end's lookup margin whose hash is neither group hash holds for repair. */
+    @GameTest(template = TEMPLATE, batch = REGISTERED, timeoutTicks = 1_200)
+    public static void anUnexpectedImageInTheSourceMarginHoldsTheRestartForRepairWithNoRecordChange(GameTestHelper helper) {
+        new Case(helper, Kind.UNEXPECTED_MARGIN).start();
+    }
+
+    /** W170-R21: the same in the destination's column, where D6's source-slot proof would never look. */
+    @GameTest(template = TEMPLATE, batch = REGISTERED, timeoutTicks = 1_200)
+    public static void anUnexpectedImageInTheDestinationColumnHoldsTheRestartForRepairWithNoRecordChange(GameTestHelper helper) {
+        new Case(helper, Kind.UNEXPECTED_COLUMN).start();
     }
 
     private static final class Case {
@@ -158,6 +176,17 @@ public final class BayRegisteredGameTests {
                 copy.initializeTransferred(flight.record().sourceSnapshot(), logical(), owner, flight.record().sourceFlightData());
                 if (kind == Kind.PROTECTED) { copy = RocketEscrowSectionPatch.BOUND.apply(helper.getLevel(), copy); }
                 helper.assertTrue(helper.getLevel().addFreshEntity(copy), "Copy not published");
+            } else if (kind == Kind.UNEXPECTED_MARGIN || kind == Kind.UNEXPECTED_COLUMN) {
+                // The end's own snapshot ID with only the first bay consumed: a hash that is neither group hash.
+                var partial = consumed(flight.record(), List.of(intents.get(0)));
+                boolean margin = kind == Kind.UNEXPECTED_MARGIN;
+                var snapshot = margin ? partial.source() : partial.destination();
+                copy = ModEntities.ROCKET.get().create(helper.getLevel());
+                copy.initializeTransferred(snapshot, logical(), owner, flight.record().sourceFlightData());
+                var region = io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRegion.fromSnapshot(snapshot);
+                var end = snapshot.sourceOrigin();
+                copy.setPos(margin ? region.minimum().x() - 0.5D : end.x() + 0.5D, end.y(), end.z() + 0.5D);
+                helper.assertTrue(helper.getLevel().addFreshEntity(copy), "Copy not published");
             }
             stage = 1;
         }
@@ -197,14 +226,17 @@ public final class BayRegisteredGameTests {
                         decommissioned = true;
                     }
                 }
-                if (kind == Kind.PROTECTED) {
+                if (kind.held()) {
                     if (claim.hold() != BayClaim.Hold.REPAIR) { return; }
-                    helper.assertTrue(claim.reason().equals("PROTECTED_DUPLICATE") && claim.stage() == BayClaim.Stage.RESUME,
-                            "A protected copy must hold the claim for repair: " + describe());
+                    String reason = kind == Kind.PROTECTED ? "PROTECTED_DUPLICATE" : "UNEXPECTED_COPY";
+                    helper.assertTrue(claim.reason().equals(reason) && claim.stage() == BayClaim.Stage.RESUME,
+                            "The copy must hold the claim for repair with " + reason + ": " + describe());
                     helper.assertTrue(record().checksum().equals(checksum) && flight.source().snapshot().orElseThrow().contentHash()
                             .equals(flight.record().sourceSnapshot().contentHash()) && receipts.stream().allMatch(receipt ->
                             session.acknowledged(receipt.op()) && session.current(receipt.op()).orElseThrow().equals(receipt)),
                             "The repair hold changed a record or the source");
+                    helper.assertTrue(copy.isAlive() && helper.getLevel().getEntity(copy.getUUID()) == copy,
+                            "The repair hold must retain the copy, not discard it");
                     if (++held >= 20) { close(); helper.succeed(); }
                     return;
                 }
@@ -222,6 +254,7 @@ public final class BayRegisteredGameTests {
                 }
                 return;
             }
+            helper.assertTrue(!kind.held(), "The claim ended while a copy that must hold it for repair was loaded: " + describe());
             helper.assertTrue(claim.stage() == BayClaim.Stage.ENDED && claim.handoff().orElseThrow() == BayClaim.Handoff.READY_SOURCE,
                     "The claim did not end with READY_SOURCE: " + claim.stage() + " " + claim.reason());
             var group = claim.group().orElseThrow();

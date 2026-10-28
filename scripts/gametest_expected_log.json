@@ -1825,6 +1825,15 @@
       "reason": "W170 (B6's protected-copy refusal): a restarted REGISTERED group finds a second recognized copy whose escrow wrapper is bound, so its claim holds for offline repair with no record change; the one transition is a WARN by design."
     },
     {
+      "id": "w170-r21-bay-unexpected-copy",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.server.BayTransferRecovery/",
+      "message": "ARCE_BAY_CLAIM transfer=[0-9a-f-]{36} logical=[0-9a-f-]{36} state=REPAIR reason=UNEXPECTED_COPY",
+      "counts": {"bay_registered": 2},
+      "test": "BayRegisteredGameTests.anUnexpectedImageInTheSourceMarginHoldsTheRestartForRepairWithNoRecordChange and anUnexpectedImageInTheDestinationColumnHoldsTheRestartForRepairWithNoRecordChange",
+      "reason": "W170-R21: a restarted REGISTERED group's census finds a loaded image of L whose hash is neither group hash, once in the source margin and once in the destination column, so each claim holds for offline repair with no record change; each transition is a WARN by design."
+    },
+    {
       "id": "w128r-r126-bay-hook-unclaimed-record-recovery",
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",

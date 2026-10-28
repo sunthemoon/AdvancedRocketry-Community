@@ -33,8 +33,9 @@ import net.minecraft.world.phys.Vec3;
  * neutral, is kept (a lagging COUNTDOWN or ASCENT image gets TRANSIT from T at the altitude position, with no launch
  * effect); absent, the bay-resume constructor rebuilds it with T's source UUID, the journal's source snapshot and T's
  * TRANSIT flight data restamped to the recovery tick, at altitude with zero velocity, never {@code rebuildSource}. Any
- * other recognized neutral copy at either end holds the claim at runtime as DUPLICATE_PENDING; a protected one, an
- * unexpected source, or more than {@value RocketFlightLimits#MAX_TRANSFER_ENTITY_MATCHES} matches holds it for repair.
+ * other recognized neutral copy at either end holds the claim at runtime as DUPLICATE_PENDING; a protected one, any
+ * unexpected image naming L (W170-R21), an unexpected source, or {@value RocketFlightLimits#MAX_TRANSFER_ENTITY_MATCHES}
+ * identities naming L hold it for repair.
  */
 final class BaySourceResume {
     private final MinecraftServer server;
@@ -133,39 +134,73 @@ final class BaySourceResume {
     }
 
     /**
-     * Loaded recognized images of L at both recorded ends (snapshot ID and either group hash) other than {@code exact}:
-     * null when none, DUPLICATE_PENDING when every one is neutral, else the repair reason. Reads the entity index only.
+     * W170-R21's census of the loaded images of L at both recorded ends, other than {@code exact} at the source end. It
+     * first bounds every loaded rocket naming L (its logical ID or its flight data's) in each end's box, at most
+     * {@value RocketFlightLimits#MAX_TRANSFER_ENTITY_MATCHES} (reaching the cap is a conflict, never a truncation), then
+     * classifies each one. An image is recognized when it names L in both places, has T's owner, is operational and not a
+     * passenger, and carries its end's snapshot ID with one of that end's group hashes (a destination copy never matches
+     * the source pair). Null when there is no other image; UNEXPECTED_COPY when any image is not recognized, including
+     * T's source UUID at the destination end; else PROTECTED_DUPLICATE unless every recognized copy is neutral, which is
+     * DUPLICATE_PENDING. The escrow reads come last, so an unexpected image never reaches them. Entity index reads only.
      */
     @Nullable
     static String copies(MinecraftServer server, RocketTransferRecord record, BayGroup group, UUID exact) {
-        var found = new ArrayList<RocketEntity>();
-        boolean capped = collect(server, record, record.sourceSnapshot(), List.of(group.srcBefore(), group.srcAfter()), exact, found)
-                | collect(server, record, record.destinationSnapshot(), List.of(group.dstBefore(), group.dstAfter()), exact, found);
-        if (capped) { return "DUPLICATE_LIMIT"; }
-        if (found.isEmpty()) { return null; }
-        return found.stream().allMatch(copy -> RocketEscrowGate.bayNeutral(copy, record.transferId())) ? "DUPLICATE_PENDING"
+        UUID logical = record.logicalRocketId();
+        var source = End.of(server, record.sourceSnapshot(), group.srcBefore(), group.srcAfter());
+        var destination = End.of(server, record.destinationSnapshot(), group.dstBefore(), group.dstAfter());
+        var named = new java.util.IdentityHashMap<RocketEntity, List<End>>();
+        for (End end : new End[] {source, destination}) {
+            if (end != null && end.collect(logical, named)) { return "DUPLICATE_LIMIT"; }
+        }
+        var recognized = new ArrayList<RocketEntity>();
+        for (var entry : named.entrySet()) {
+            RocketEntity rocket = entry.getKey();
+            if (source != null && rocket.getUUID().equals(exact) && entry.getValue().stream().anyMatch(end -> end.level() == source.level())) {
+                continue; // T's exact source in the source Level; R2 and D6 check its own image
+            }
+            if (entry.getValue().stream().noneMatch(end -> end.recognizes(rocket, record))) { return "UNEXPECTED_COPY"; }
+            recognized.add(rocket);
+        }
+        if (recognized.isEmpty()) { return null; }
+        return recognized.stream().allMatch(copy -> RocketEscrowGate.bayNeutral(copy, record.transferId())) ? "DUPLICATE_PENDING"
                 : "PROTECTED_DUPLICATE";
     }
 
-    /** True when the bounded query reached its cap, which is a conflict, never a truncation. */
-    private static boolean collect(MinecraftServer server, RocketTransferRecord record, RocketStructureSnapshot snapshot,
-                                   List<String> hashes, UUID exact, List<RocketEntity> found) {
-        ServerLevel level = RocketTransferEntities.level(server, snapshot.sourceDimension());
-        if (level == null) { return false; }
-        RocketRegion region = RocketRegion.fromSnapshot(snapshot);
-        AABB box = new AABB(region.minimum().x() - 1.0D, level.getMinBuildHeight(), region.minimum().z() - 1.0D,
-                region.maximum().x() + 2.0D, level.getMaxBuildHeight(), region.maximum().z() + 2.0D);
-        int[] matched = {0};
-        level.getEntities().get(EntityTypeTest.forClass(RocketEntity.class), box, rocket -> {
-            if (rocket.assemblyTransactionId().filter(record.logicalRocketId()::equals).isPresent()
-                    && rocket.snapshot().filter(s -> s.snapshotId().equals(snapshot.snapshotId()) && hashes.contains(s.contentHash())).isPresent()) {
-                matched[0]++;
-                if (!rocket.getUUID().equals(exact)) { found.add(rocket); }
-            }
-            return matched[0] >= RocketFlightLimits.MAX_TRANSFER_ENTITY_MATCHES
-                    ? AbortableIterationConsumer.Continuation.ABORT : AbortableIterationConsumer.Continuation.CONTINUE;
-        });
-        return matched[0] >= RocketFlightLimits.MAX_TRANSFER_ENTITY_MATCHES;
+    /** One recorded end: its Level, its bounded box (the region with the one-block lookup margin, whole column). */
+    private record End(ServerLevel level, AABB box, RocketStructureSnapshot snapshot, List<String> hashes) {
+        @Nullable
+        static End of(MinecraftServer server, RocketStructureSnapshot snapshot, String before, String after) {
+            ServerLevel level = RocketTransferEntities.level(server, snapshot.sourceDimension());
+            if (level == null) { return null; }
+            RocketRegion region = RocketRegion.fromSnapshot(snapshot);
+            return new End(level, new AABB(region.minimum().x() - 1.0D, level.getMinBuildHeight(), region.minimum().z() - 1.0D,
+                    region.maximum().x() + 2.0D, level.getMaxBuildHeight(), region.maximum().z() + 2.0D), snapshot, List.of(before, after));
+        }
+
+        /** Adds every loaded rocket naming L in this box; true when the census reached its cap. */
+        boolean collect(UUID logical, java.util.Map<RocketEntity, List<End>> named) {
+            level.getEntities().get(EntityTypeTest.forClass(RocketEntity.class), box, rocket -> {
+                if (names(rocket, logical)) { named.computeIfAbsent(rocket, ignored -> new ArrayList<>()).add(this); }
+                return named.size() >= RocketFlightLimits.MAX_TRANSFER_ENTITY_MATCHES
+                        ? AbortableIterationConsumer.Continuation.ABORT : AbortableIterationConsumer.Continuation.CONTINUE;
+            });
+            return named.size() >= RocketFlightLimits.MAX_TRANSFER_ENTITY_MATCHES;
+        }
+
+        boolean recognizes(RocketEntity rocket, RocketTransferRecord record) {
+            UUID logical = record.logicalRocketId();
+            return rocket.operational() && !rocket.isPassenger()
+                    && rocket.assemblyTransactionId().filter(logical::equals).isPresent()
+                    && rocket.flightData().filter(flight -> flight.logicalRocketId().equals(logical)).isPresent()
+                    && rocket.ownerId().filter(record.ownerId()::equals).isPresent()
+                    && rocket.snapshot().filter(value -> value.snapshotId().equals(snapshot.snapshotId())
+                            && hashes.contains(value.contentHash())).isPresent();
+        }
+    }
+
+    private static boolean names(RocketEntity rocket, UUID logical) {
+        return rocket.assemblyTransactionId().filter(logical::equals).isPresent()
+                || rocket.flightData().filter(flight -> logical.equals(flight.logicalRocketId())).isPresent();
     }
 
     private static BayStepQueue.Result repair(BayClaim claim, String reason) {
