@@ -155,6 +155,10 @@ class FuelLoaderS1OracleTest(unittest.TestCase):
                   line("ERROR", "net.minecraft.server.MinecraftServer/", "Exception stopping the server"),
                   'java.lang.NullPointerException: Cannot invoke "net.minecraft.server.level.ServerLevel.m_6857_()" because "serverlevel2" is null']
         self.assertEqual("REFUSED_BEFORE_WORLD_LOAD", runner.check_downgrade_refusal(lines)["outcome"])
+        self.assertEqual(8, runner.check_downgrade_refusal(lines)["errors"])
+        self.assertEqual(5, runner.check_downgrade_refusal(lines[3:], first_attempt=False)["errors"])
+        with self.assertRaises(SmokeError): runner.check_downgrade_refusal(lines[3:])
+        with self.assertRaises(SmokeError): runner.check_downgrade_refusal(lines, first_attempt=False)
         for bad in (lines[:-1], lines + [lines[0]], lines + [line("ERROR", "test/", "unrelated")],
                     lines + ["ARCE_ROCKET_ENTITY_ACTIVE entity=bad"], [s.replace("future schema 3", "future schema 4") for s in lines]):
             with self.assertRaises(SmokeError): runner.check_downgrade_refusal(bad)

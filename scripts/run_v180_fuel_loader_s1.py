@@ -43,16 +43,18 @@ def refusal_storage_result(before, after):
                 world_files_unchanged=len(before) - len(changed))
 
 
-def check_downgrade_refusal(lines):
+def check_downgrade_refusal(lines, first_attempt=True):
     """Separate negative-startup oracle; never an ERROR allowance for a healthy S1 process."""
     oracle.require(not any(smoke.READY_MARKER.search(line) or "ARCE_ROCKET_ENTITY_ACTIVE" in line
                    or any(marker in line for marker in smoke.CLIENT_LINKAGE_MARKERS) for line in lines), "Downgrade loaded a world/client")
     findings = smoke.scan_log(lines)
     reason = re.escape(DOWNGRADE_REASON)
-    expected = [
+    registry = [
         ("ERROR", "net.minecraftforge.registries.GameData/REGISTRIES", r"Unidentified mapping from registry minecraft:block"),
         ("ERROR", "net.minecraftforge.registries.GameData/REGISTRIES", r"Unidentified mapping from registry minecraft:item"),
         ("ERROR", "net.minecraftforge.registries.GameData/REGISTRIES", r"There are unidentified mappings in this world - we are going to attempt to process anyway"),
+    ]
+    expected = (registry if first_attempt else []) + [
         ("ERROR", "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
          re.escape("[ARCE-BETA-2001] Beta world data check blocked startup: " + DOWNGRADE_REASON
                    + ". Keep the world stopped. Escrow recovery requires a consistent whole-world backup including all terrain, entities, POI, journals and player data; never restore or delete only the escrow file.")),
@@ -73,7 +75,7 @@ def check_downgrade_refusal(lines):
     shutdown = 'java.lang.NullPointerException: Cannot invoke "net.minecraft.server.level.ServerLevel.m_6857_()" because "serverlevel2" is null'
     oracle.require(exceptions.count(guard) == 3 and exceptions.count(shutdown) == 1 and len(exceptions) == 4,
                    "Downgrade exception chain differs from the observed pre-Level guard and historical shutdown residual")
-    return dict(outcome="REFUSED_BEFORE_WORLD_LOAD", reason=DOWNGRADE_REASON, errors=8, fatals=1,
+    return dict(outcome="REFUSED_BEFORE_WORLD_LOAD", reason=DOWNGRADE_REASON, errors=8 if first_attempt else 5, fatals=1,
                 shutdown_residual="Historical pre-Level shutdown NullPointerException; not a healthy-server pass")
 
 
@@ -156,7 +158,7 @@ def run(args):
                 process.wait_for(DOWNGRADE_GUARD, args.startup_timeout)
                 row["exit_code"] = process.finish()
                 latest = evidence / f"{index}-{stage}-latest.log"; shutil.copy2(session / "logs/latest.log", latest)
-                row["live"] = check_downgrade_refusal(latest.read_text(encoding="utf-8").splitlines()); process = None
+                row["live"] = check_downgrade_refusal(latest.read_text(encoding="utf-8").splitlines(), index == 3); process = None
                 after_refusal = world_hashes(session / world_name)
                 (evidence / f"{index}-world-hashes.json").write_text(json.dumps(after_refusal, indent=2) + "\n", encoding="utf-8")
                 row.update(refusal_storage_result(before_refusal, after_refusal))
