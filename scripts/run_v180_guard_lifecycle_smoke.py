@@ -19,6 +19,7 @@ else:
 server, regions, worlds = tanks.server, tanks.regions, tanks.worlds
 require, write = tanks.require, tanks.write
 CHUNK = tanks.CHUNK
+HOST_VERSION = "1.20.1-1.8.0-dev"
 REGION = Path("region/r.0.0.mca")
 CULPRIT = (186, 180, 180)
 COPY_SPAWN_COMMAND = "setworldspawn 256 74 -256 0"
@@ -295,25 +296,35 @@ def check_record(actual: bytes, expected: bytes) -> dict:
     return {"bytes": len(actual), "sha256": hashlib.sha256(actual).hexdigest(), "roots": roots}
 
 
-def audit_refusal(lines: list[str]) -> dict:
-    findings = tanks.audit_save_refusal(lines)
+def audit_refusal(lines: list[str], start: int = 0, expected_version: str | None = None) -> dict:
+    """Audit the refusal in lines[start:] of one process log.
+
+    The build's startup allowance (scan_log) is counted over the whole process, not per slice:
+    a line the process has already used it for blocks again inside a later slice.
+    """
+    window = lines[start:]
+    findings = tanks.audit_save_refusal(window, expected_version)
+    earlier = server.scan_log(lines[:start], expected_mod_version=expected_version)
+    require(server.scan_log(lines, expected_mod_version=expected_version)[len(earlier):] == findings,
+            "Startup log allowance exceeded its per-process count")
     require(all(EVENT_ERROR.search(line) or CHUNK_ERROR.search(line) for line in findings),
             "Unexpected native severity/logger in refusal audit")
-    event_headers = [line for line in lines if EVENT_ERROR.search(line)]
-    chunk_headers = [line for line in lines if CHUNK_ERROR.search(line)]
+    event_headers = [line for line in window if EVENT_ERROR.search(line)]
+    chunk_headers = [line for line in window if CHUNK_ERROR.search(line)]
     require(len(event_headers) > 0 and len(event_headers) == len(chunk_headers),
             "Refusal logger headers are missing or unpaired")
     return {"event_bus_error_headers": len(event_headers), "chunk_map_error_headers": len(chunk_headers),
-            "findings": findings, "log_bytes_utf8": len("\n".join(lines).encode("utf-8"))}
+            "findings": findings, "log_bytes_utf8": len("\n".join(window).encode("utf-8"))}
 
 
-def native_cycle(runtime: Path, evidence: Path, command: list[str], expected: bytes, removal_cut: bool) -> dict:
+def native_cycle(runtime: Path, evidence: Path, command: list[str], expected: bytes, removal_cut: bool,
+                 expected_version: str | None = None) -> dict:
     evidence.mkdir()
     write(evidence / "launch.json", {"command": command, "cwd": str(runtime)})
     process = None
     commands = []
     unload_start = None
-    receipt = {"result": "IN_PROGRESS", "removal_cut": removal_cut}
+    receipt = {"result": "IN_PROGRESS", "removal_cut": removal_cut, "expected_mod_version": expected_version}
     try:
         receipt["forced_preflight"] = read_forced_metadata(
             runtime / "world", removal_cut, evidence / "forced-before.dat")
@@ -337,7 +348,7 @@ def native_cycle(runtime: Path, evidence: Path, command: list[str], expected: by
             send("save-all flush")
             process.wait_for(server.SAVE_MARKER, 300, start_at=start)
             say_barrier(process, commands, label + "_END")
-            receipt[label] = audit_refusal(process.lines[start:])
+            receipt[label] = audit_refusal(list(process.lines), start, expected_version)
 
         send("forceload add 176 176")
         wait_chunk(process, commands, True)
@@ -365,7 +376,8 @@ def native_cycle(runtime: Path, evidence: Path, command: list[str], expected: by
         receipt["forced_after_clean_stop"] = read_forced_metadata(
             runtime / "world", False, evidence / "forced-after.dat")
         receipt.update(result="PASS", exit_code=0, record=check_record(actual, expected),
-                       refusal=audit_refusal(process.lines), log_counts=server.log_audit_counts(process.lines))
+                       refusal=audit_refusal(process.lines, 0, expected_version),
+                       log_counts=server.log_audit_counts(process.lines))
         (evidence / "chunk-11-11.nbt.zlib").write_bytes(actual)
     except BaseException as error:
         receipt.update(result="FAIL", error=f"{type(error).__name__}: {error}")
@@ -396,7 +408,7 @@ def main() -> None:
         resolved = source.resolve()
         require(not work.is_relative_to(resolved) and not resolved.is_relative_to(work),
                 "Work root overlaps an input")
-    host = tanks.motors.artifact(args.host_jar, "1.20.1-1.8.0-dev")
+    host = tanks.motors.artifact(args.host_jar, HOST_VERSION)
     fixture = tanks.motors.artifact(args.fixture_jar)
     require(host["name"] != fixture["name"], "Host/fixture name collision")
     expected = saved_record(args.source_world)
@@ -430,8 +442,9 @@ def main() -> None:
     (work / "source-chunk-11-11.nbt.zlib").write_bytes(expected)
     cycles = []
     try:
-        cycles.append(native_cycle(runtime, work / "removal-availability-reload", command, expected, True))
-        cycles.append(native_cycle(runtime, work / "restart-retrigger", command, expected, False))
+        # The host's verified build selects scan_log's startup allowance in both processes.
+        cycles.append(native_cycle(runtime, work / "removal-availability-reload", command, expected, True, HOST_VERSION))
+        cycles.append(native_cycle(runtime, work / "restart-retrigger", command, expected, False, HOST_VERSION))
     finally:
         unchanged = worlds.inventory(args.source_world) == original
         artifacts_unchanged = all(server.digest_file(Path(row["path"])) == row["sha256"] for row in (host, fixture))

@@ -621,6 +621,40 @@ class FixedForcedSetupTest(unittest.TestCase):
             self.assertFalse(any("forceload remove" in command for command in process.sent))
 
 
+class MockedHost(FixedSetupProcess):
+    """A packaged host with fixed setup replies, a refused save and a clean stop that keeps two marks."""
+
+    def __init__(self, saved, startup=(), on_save=(), expect_abort=False):
+        super().__init__()
+        self.saved, self.on_save, self.expect_abort = saved, list(on_save), expect_abort
+        self.lines.extend(startup)
+
+    def command(self, command):
+        if command in self.responses or command.startswith("say "):
+            super().command(command)
+        else:
+            self.sent.append(command)
+            if command.startswith("execute if block "):
+                self.lines.append(info(command.split("run say ", 1)[1]))
+            elif command == "save-all flush":
+                self.lines.extend(errors() + self.on_save)
+
+    def wait_for(self, pattern, timeout, start_at=0):
+        if pattern in (guard.server.READY_MARKER, guard.server.SAVE_MARKER):
+            return 0
+        return super().wait_for(pattern, timeout, start_at)
+
+    def finish(self, timeout):
+        self.finish_timeout = timeout
+        self.saved.write_bytes(forced_blob())
+        return 0
+
+    def abort(self):
+        if not self.expect_abort:
+            raise AssertionError("Positive mocked host unexpectedly aborted")
+        self.aborted = True
+
+
 class NativeForcedPhaseTest(unittest.TestCase):
     def test_bad_metadata_is_captured_and_refused_before_process_launch(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -646,32 +680,8 @@ class NativeForcedPhaseTest(unittest.TestCase):
             saved.write_bytes(SOURCE_FORCED)
             hosts = []
 
-            class Process(FixedSetupProcess):
-                def command(self, command):
-                    if command in self.responses or command.startswith("say "):
-                        super().command(command)
-                    else:
-                        self.sent.append(command)
-                        if command.startswith("execute if block "):
-                            self.lines.append(info(command.split("run say ", 1)[1]))
-                        elif command == "save-all flush":
-                            self.lines.extend(errors())
-
-                def wait_for(self, pattern, timeout, start_at=0):
-                    if pattern in (guard.server.READY_MARKER, guard.server.SAVE_MARKER):
-                        return 0
-                    return super().wait_for(pattern, timeout, start_at)
-
-                def finish(self, timeout):
-                    self.finish_timeout = timeout
-                    saved.write_bytes(forced_blob())
-                    return 0
-
-                def abort(self):
-                    raise AssertionError("Positive mocked host unexpectedly aborted")
-
             def launch(*args):
-                process = Process()
+                process = MockedHost(saved)
                 hosts.append(process)
                 return process
 
@@ -701,6 +711,131 @@ class NativeForcedPhaseTest(unittest.TestCase):
             self.assertIn("execute if block 186 180 180 " + guard.tanks.NS
                           + ":pressurized_tank run say ARCE_GUARD_REMOVAL_ROLLED_BACK", hosts[0].sent)
             self.assertIn("execute if block 190 180 180 minecraft:air run say ARCE_GUARD_MUTATION_ROLLED_BACK", hosts[0].sent)
+
+
+V180 = "1.20.1-1.8.0-dev"
+STARTUP = ("[03:17:39] [Server thread/WARN] [io.gi.su.ad.AdvancedRocketryCommunity/]: "
+           "ARCE_FIRST_EVENT_HELD kind=first_moon_landing reason=SOURCE_UNCONFIRMED")
+
+
+def mocked_removal_cycle(root, version, startup=(), on_save=(), expect_abort=False):
+    """Run the bootstrap removal phase on one MockedHost; the receipt is also written to root/phase."""
+    runtime = root / "server"
+    (runtime / "world/data").mkdir(parents=True)
+    saved = runtime / "world/data/chunks.dat"
+    saved.write_bytes(SOURCE_FORCED)
+    with patch.object(guard.server, "CapturedProcess",
+                      side_effect=lambda *args: MockedHost(saved, startup, on_save, expect_abort)), \
+            patch.object(guard, "wait_chunk"), \
+            patch.object(guard, "wait_unload_begin", return_value=NativeUnloadObservationTest.LINE), \
+            patch.object(guard, "saved_record", return_value=b"same"), \
+            patch.object(guard, "check_record", return_value={"bytes": 4}), \
+            patch.object(guard.time, "monotonic", return_value=0):
+        return guard.native_cycle(runtime, root / "phase", ["mock-only"], b"same", True, version)
+
+
+class GuardStartupAllowanceTest(unittest.TestCase):
+    def test_one_v180_startup_hold_in_a_complete_process_log(self):
+        for lines in ([STARTUP] + errors(), errors() + [STARTUP]):
+            with self.subTest(lines=lines):
+                self.assertEqual(guard.audit_refusal(lines, 0, V180)["findings"], errors())
+        with self.assertRaisesRegex(RuntimeError, "Unexpected packaged-server"):
+            guard.audit_refusal([STARTUP] + errors() + [STARTUP], 0, V180)
+
+    def test_other_or_unspecified_builds_get_no_allowance(self):
+        with self.assertRaisesRegex(RuntimeError, "Unexpected packaged-server"):
+            guard.audit_refusal([STARTUP] + errors())
+        for version in (None, "1.20.1-1.7.0-dev", "1.20.1-1.8.1-dev"):
+            with self.subTest(version=version), self.assertRaisesRegex(RuntimeError, "Unexpected packaged-server"):
+                guard.audit_refusal([STARTUP] + errors(), 0, version)
+
+    def test_a_slice_continues_the_process_count_and_reports_only_itself(self):
+        before = [STARTUP, info("ARCE_GUARD_BEFORE")]
+        result = guard.audit_refusal(before + errors(), len(before), V180)
+        self.assertEqual(result["findings"], errors())
+        self.assertEqual(result["event_bus_error_headers"], 1)
+        self.assertEqual(result["log_bytes_utf8"], len("\n".join(errors()).encode("utf-8")))
+        guard.audit_refusal([info("ARCE_GUARD_BEFORE")] + errors() + [STARTUP], 1, V180)
+        # The slice alone holds one line, but this process has already used its allowance.
+        with self.assertRaisesRegex(RuntimeError, "per-process count"):
+            guard.audit_refusal([STARTUP] + errors() + [STARTUP], 1, V180)
+
+    def test_v180_cycle_accepts_one_startup_hold_in_its_process(self):
+        with tempfile.TemporaryDirectory() as directory:
+            receipt = mocked_removal_cycle(Path(directory), V180, [STARTUP])
+        self.assertEqual(receipt["result"], "PASS")
+        self.assertEqual(receipt["expected_mod_version"], V180)
+        for label in ("initial_refusal", "after_removal_refusal"):
+            self.assertEqual(receipt[label]["findings"], errors())
+        self.assertEqual(receipt["refusal"]["findings"], errors() * 2)
+        self.assertEqual(receipt["log_counts"]["project_warning_count"], 1)
+
+    def test_unspecified_build_refuses_the_startup_hold_at_the_process_audit(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            with self.assertRaisesRegex(RuntimeError, "Unexpected packaged-server"):
+                mocked_removal_cycle(root, None, [STARTUP], expect_abort=True)
+            receipt = json.loads((root / "phase/receipt.json").read_bytes())
+        self.assertEqual(receipt["result"], "FAIL")
+        self.assertIsNone(receipt["expected_mod_version"])
+        # Neither save slice contains the hold; the complete process log does.
+        self.assertIn("after_removal_refusal", receipt)
+        self.assertNotIn("refusal", receipt)
+
+    def test_a_second_hold_inside_any_save_slice_is_refused_in_that_slice(self):
+        for startup, passed in (([STARTUP], []), ([], ["initial_refusal"])):
+            with self.subTest(startup=startup), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                with self.assertRaisesRegex(RuntimeError, "per-process count"):
+                    mocked_removal_cycle(root, V180, startup, [STARTUP], expect_abort=True)
+                receipt = json.loads((root / "phase/receipt.json").read_bytes())
+                self.assertEqual(receipt["result"], "FAIL")
+                self.assertEqual([label for label in ("initial_refusal", "after_removal_refusal")
+                                  if label in receipt], passed)
+
+
+class GuardMainBuildTest(unittest.TestCase):
+    def test_main_verifies_the_v180_host_and_passes_its_build_to_both_phases(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            template, source = root / "template", root / "source-world"
+            (template / "libraries").mkdir(parents=True)
+            (template / "libraries/library.jar").write_bytes(b"library")
+            source.mkdir()
+            for name in ("host.jar", "fixture.jar"):
+                (root / name).write_bytes(name.encode("ascii"))
+            verified = []
+
+            def artifact(path, version=None):
+                verified.append((Path(path).name, version))
+                return {"path": str(path), "name": Path(path).name, "bytes": 8,
+                        "sha256": guard.server.digest_file(Path(path))}
+
+            argv = ["guard", "--runtime-template", str(template), "--source-world", str(source),
+                    "--host-jar", str(root / "host.jar"), "--fixture-jar", str(root / "fixture.jar"),
+                    "--work-root", str(root / "work")]
+            with patch("sys.argv", argv), patch.object(guard.tanks.motors, "artifact", side_effect=artifact), \
+                    patch.object(guard, "saved_record", return_value=b"record"), \
+                    patch.object(guard, "check_fixture"), patch.object(guard.regions, "_decode_chunk"), \
+                    patch.object(guard, "read_forced_metadata", return_value={"phase": "bootstrap"}), \
+                    patch.object(guard.worlds, "copy_world", return_value={"files": 1}), \
+                    patch.object(guard.worlds, "inventory", return_value={"files": 1}), \
+                    patch.object(guard.server, "write_server_configuration", return_value="a" * 64), \
+                    patch.object(guard.server, "allocate_port", return_value=12345), \
+                    patch.object(guard.server, "resolve_java", return_value=("java", "17.0.7")), \
+                    patch.object(guard.tanks.rocket, "_server_command", return_value=["java", "-Xms1G", "-Xmx1G"]), \
+                    patch.object(guard, "native_cycle", return_value={"result": "PASS"}) as cycle, \
+                    patch("builtins.print") as printed:
+                guard.main()
+            summary = json.loads((root / "work/summary.json").read_bytes())
+        printed.assert_called_once()
+        self.assertEqual(verified, [("host.jar", V180), ("fixture.jar", None)])
+        self.assertEqual(summary["result"], "PASS")
+        self.assertEqual(cycle.call_count, 2)
+        for call, removal_cut in zip(cycle.call_args_list, (True, False)):
+            self.assertEqual(call.args[4], removal_cut)
+            self.assertEqual(call.args[5], guard.server.V180_STARTUP_VERSION)
+            self.assertEqual(call.args[2], ["java", "-Xms1G", "-Xmx2G"])
 
 
 if __name__ == "__main__":
