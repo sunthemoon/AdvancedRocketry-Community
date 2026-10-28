@@ -1154,6 +1154,22 @@ This note records mechanics; it changes no decision and accepts no risk. The ris
 
 This is a development implementation note, not owner acceptance or a Gate result.
 
+### W176 implementation note: the fluid fuel loader's native-save protection (merged `7c9e5f7e9`)
+
+This note records mechanics; it changes no decision and accepts no risk. The risk is R-044.
+
+- **The rule.** W176 applies W109's native-save rule to the fluid fuel loader, without changing schema 1, the
+  operational bounds, the native preflight budgets or the inherited 256-coordinate guard.
+- **What it records.** Load and onLoad record only observed incompatibilities. The serialized-root event catches
+  unloaded roots.
+- **How it refuses.** The existing chunk-save event exception restores the dirty flag and prevents omission.
+  `saveAdditional` itself retains the raw tag and never throws as a normal save-control mechanism.
+- **Admission** is unchanged.
+- **Downgrade (R138).** The historical JAR rewrites `level.dat` metadata before its journal guard refuses to
+  start, so W176's three downgrade S1 rows stay recorded as failed. Downgrades need a pre-upgrade backup.
+
+This is a development implementation note, not owner acceptance or a Gate result.
+
 ## 9. Solar generator and array (C17c)
 
 Single `solar_generator`: 10,000 FE buffer, FE output-only on six sides, no item or
