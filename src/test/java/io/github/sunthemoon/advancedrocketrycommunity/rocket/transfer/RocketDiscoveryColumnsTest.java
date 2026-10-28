@@ -41,18 +41,18 @@ class RocketDiscoveryColumnsTest {
         assertEquals(rectangle(0, 1, 0, 0), border.columns());
         var corner = RocketDiscoveryColumns.of(15, 15, bounds(0, 0, 0, 0));
         assertEquals(rectangle(0, 1, 0, 1), corner.columns()); assertEquals(4, corner.count());
-        // Margin 63 to 66 gives columns 3 to 4.
+        // Checked margin 62 to 66 gives columns 3 to 4.
         assertEquals(rectangle(3, 4, 0, 0), RocketDiscoveryColumns.of(64, 8, bounds(0, 0, 0, 0)).columns());
     }
 
     @Test void theBoundIsSixteenColumnsWhateverTheShape() {
-        // 1 x 16: blocks 0..252 from x = 1 span 0..255.
-        var line = RocketDiscoveryColumns.of(1, 8, bounds(0, 252, 0, 0));
+        // 1 x 16: blocks 0..251 from x = 2 span 0..255 including the widened low edge.
+        var line = RocketDiscoveryColumns.of(2, 8, bounds(0, 251, 0, 0));
         assertEquals(RocketDiscoveryColumns.Status.VALID, line.status()); assertEquals(16, line.count());
         assertEquals(rectangle(0, 15, 0, 0), line.columns());
         // 1 x 17: the same rocket one block further spans 1..256.
-        assertEquals(RocketDiscoveryColumns.Status.OVER_BUDGET, RocketDiscoveryColumns.of(2, 8, bounds(0, 252, 0, 0)).status());
-        var square = RocketDiscoveryColumns.of(1, 1, bounds(0, 49, 0, 49));
+        assertEquals(RocketDiscoveryColumns.Status.OVER_BUDGET, RocketDiscoveryColumns.of(3, 8, bounds(0, 251, 0, 0)).status());
+        var square = RocketDiscoveryColumns.of(2, 2, bounds(0, 49, 0, 49));
         assertTrue(square.admissible()); assertEquals(16, square.count());
         var wide = RocketDiscoveryColumns.of(13, 1, bounds(0, 49, 0, 49));
         assertEquals(RocketDiscoveryColumns.Status.OVER_BUDGET, wide.status());
@@ -71,9 +71,10 @@ class RocketDiscoveryColumnsTest {
         // Region max 13 stays in column 0 (13 + 2 = 15); 14 reaches column 1.
         assertEquals(rectangle(0, 0, 0, 0), RocketDiscoveryColumns.of(8, 8, bounds(0, 5, 0, 0)).columns());
         assertEquals(rectangle(0, 1, 0, 0), RocketDiscoveryColumns.of(8, 8, bounds(0, 6, 0, 0)).columns());
-        // Region min 0 reaches column -1 (0 - 1); 1 stays in column 0.
+        // Region min 0 or 1 reaches column -1; 2 stays in column 0 (W185 / W170-R65).
         assertEquals(rectangle(-1, 0, 0, 0), RocketDiscoveryColumns.of(0, 8, bounds(0, 0, 0, 0)).columns());
-        assertEquals(rectangle(0, 0, 0, 0), RocketDiscoveryColumns.of(1, 8, bounds(0, 0, 0, 0)).columns());
+        assertEquals(rectangle(-1, 0, 0, 0), RocketDiscoveryColumns.of(1, 8, bounds(0, 0, 0, 0)).columns());
+        assertEquals(rectangle(0, 0, 0, 0), RocketDiscoveryColumns.of(2, 8, bounds(0, 0, 0, 0)).columns());
     }
 
     @Test void overflowAtEitherEndIsArithmeticAndNeverThrows() {
@@ -90,7 +91,8 @@ class RocketDiscoveryColumnsTest {
             assertEquals(List.of(columns.origin()), columns.releaseSet(), "Release still names the origin column");
         }
         assertEquals(RocketDiscoveryColumns.Status.VALID, RocketDiscoveryColumns.of(Integer.MAX_VALUE - 2, 8, bounds(0, 0, 0, 0)).status());
-        assertEquals(RocketDiscoveryColumns.Status.VALID, RocketDiscoveryColumns.of(Integer.MIN_VALUE + 1, 8, bounds(0, 0, 0, 0)).status());
+        assertEquals(RocketDiscoveryColumns.Status.ARITHMETIC, RocketDiscoveryColumns.of(Integer.MIN_VALUE + 1, 8, bounds(0, 0, 0, 0)).status());
+        assertEquals(RocketDiscoveryColumns.Status.VALID, RocketDiscoveryColumns.of(Integer.MIN_VALUE + 2, 8, bounds(0, 0, 0, 0)).status());
     }
 
     @Test void boundsThatMissTheOriginAcrossABorderAreValidButNotAdmissible() {

@@ -10,8 +10,9 @@ import net.minecraft.world.level.ChunkPos;
 
 /**
  * W90 (Root decisions R21 item 2 and R22): the one checked discovery-margin column set of a rocket end. Its rectangle
- * is the chunk columns from {@code (min - 1) >> 4} to {@code (max + 2) >> 4} in x and z, exactly the columns that the
- * transfer census reads, with overflow-checked arithmetic and at most {@link RocketFlightLimits#MAX_LANDING_CHUNKS}
+ * is the chunk columns from {@code (min - 2) >> 4} to {@code (max + 2) >> 4} in x and z. W185 / W170-R65 includes the
+ * home column of a 1.5-block-wide rocket intersecting the census box's low edge ({@code min - 1}). Arithmetic is
+ * overflow-checked, with at most {@link RocketFlightLimits#MAX_LANDING_CHUNKS}
  * columns. Readiness, every governed pad-admission path, F1's source check, the margin ticket refresh and the release
  * all use it. Server-free: it never reads a Level, a chunk or a ticket.
  */
@@ -38,9 +39,9 @@ public final class RocketDiscoveryColumns {
         int columnX = originX >> 4, columnZ = originZ >> 4;
         int minX, maxX, minZ, maxZ;
         try {
-            minX = Math.subtractExact(Math.addExact(originX, bounds.minimum().x()), 1) >> 4;
+            minX = Math.subtractExact(Math.addExact(originX, bounds.minimum().x()), 2) >> 4;
             maxX = Math.addExact(Math.addExact(originX, bounds.maximum().x()), 2) >> 4;
-            minZ = Math.subtractExact(Math.addExact(originZ, bounds.minimum().z()), 1) >> 4;
+            minZ = Math.subtractExact(Math.addExact(originZ, bounds.minimum().z()), 2) >> 4;
             maxZ = Math.addExact(Math.addExact(originZ, bounds.maximum().z()), 2) >> 4;
         } catch (ArithmeticException overflow) {
             return new RocketDiscoveryColumns(Status.ARITHMETIC, 0, -1, 0, -1, columnX, columnZ);
