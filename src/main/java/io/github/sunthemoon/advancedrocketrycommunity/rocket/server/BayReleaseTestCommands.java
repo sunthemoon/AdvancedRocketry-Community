@@ -240,7 +240,11 @@ public final class BayReleaseTestCommands {
         return copies.size();
     }
 
-    /** B16 leave and join: the source leaves its Level as a chunk unload does and joins again from its saved tag. */
+    /**
+     * B16 leave and join: the source leaves its Level through {@code remove(UNLOADED_TO_CHUNK)}, whose bay hook reports at
+     * once, and joins again at once from its saved tag. A real chunk unload calls {@code setRemoved} instead, which only
+     * the per-tick observation sees (W170-R46; {@code BaySourceProofObserveTest} covers that path).
+     */
     private static int reload(CommandSourceStack source, UUID logical) {
         MinecraftServer server = source.getServer();
         EscrowTestEndpoints.requireEnabled(server);
