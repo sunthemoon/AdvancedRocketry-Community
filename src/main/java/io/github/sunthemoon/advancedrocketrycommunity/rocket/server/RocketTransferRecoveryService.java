@@ -272,8 +272,7 @@ final class RocketTransferRecoveryService {
             // A fenced assignment is intentionally finished for this login; it remains durably assigned.
             if (fences.ids().contains(record.transferId())) { continue; }
             if (!bays.allowed(server, journal, record, RocketTransferBayRecoveryGate.Action.RECONNECT)) {
-                // W27d3: retain a held seat's login request, never routed, elected or settled while held (W185-R4).
-                if (record.sourceFlightData().passengers().assignment(player.getUUID()).isPresent()) { return false; }
+                if (bays.retainsHeldLogin(record, player.getUUID())) { return false; }
                 continue;
             }
             if (bays.source(record.transferId()) != null) { continue; }

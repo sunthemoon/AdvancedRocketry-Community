@@ -110,6 +110,13 @@ final class RocketTransferBayDispatch {
         return classified;
     }
     UUID source(UUID transfer) { return readySources.get(transfer); }
+    /**
+     * W27d3 (W185-R4, R12): a login whose record a bay claim holds. A seat in T's source manifest keeps the request in the
+     * reconnect queue (at most 200 ticks, then ARCE_PASSENGER_RECONNECT_EXPIRED), never routed, elected or settled while held.
+     */
+    boolean retainsHeldLogin(RocketTransferRecord record, UUID player) {
+        return record.sourceFlightData().passengers().assignment(player).isPresent();
+    }
     /** The ascent-complete bay checkpoint (W27d1's D0 enqueue); classification follows in the same call. */
     void checkpoint(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
             io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity source) {
