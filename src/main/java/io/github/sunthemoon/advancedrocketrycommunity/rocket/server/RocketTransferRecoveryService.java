@@ -271,8 +271,15 @@ final class RocketTransferRecoveryService {
             if (retirements.replacing(record.logicalRocketId())) { continue; }
             // A fenced assignment is intentionally finished for this login; it remains durably assigned.
             if (fences.ids().contains(record.transferId())) { continue; }
-            if (!bays.allowed(server, journal, record, RocketTransferBayRecoveryGate.Action.RECONNECT)
-                    || bays.source(record.transferId()) != null) { continue; }
+            if (!bays.allowed(server, journal, record, RocketTransferBayRecoveryGate.Action.RECONNECT)) {
+                // W27d3: retain a held seat's login request; never elect or settle while D7 is queued.
+                if (record.sourceFlightData().passengers().assignment(player.getUUID()).isPresent()) {
+                    RocketRuntime.installedBays().ifPresent(coordinator -> coordinator.reconnect(player, record));
+                    return false;
+                }
+                continue;
+            }
+            if (bays.source(record.transferId()) != null) { continue; }
             RocketEntity settled = RocketTransferEntities.loadedSettledAuthority(server, record);
             if (settled == null && RocketTransferEntities.nearbyArrivalStillLoading(player, record)) {
                 // A newly boarded passenger may be in the adjacent, already loaded chunk.

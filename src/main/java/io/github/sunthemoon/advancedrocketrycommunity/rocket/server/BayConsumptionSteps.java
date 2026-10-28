@@ -27,10 +27,18 @@ import net.minecraft.server.MinecraftServer;
 final class BayConsumptionSteps {
     private final MinecraftServer server;
     private final BayGroupPublication publication;
+    private final BayCopySteps copies;
     private final Map<UUID, BayConsumedSnapshots.Job> jobs = new HashMap<>();
 
-    BayConsumptionSteps(MinecraftServer server, BayGroupPublication publication) {
-        this.server = server; this.publication = publication;
+    BayConsumptionSteps(MinecraftServer server, BayGroupPublication publication, BayCopySteps copies) {
+        this.server = server; this.publication = publication; this.copies = copies;
+    }
+
+    BayStepQueue.Result prove(BayClaim claim, BaySourceProof proof) {
+        var record = RocketTransferSavedData.get(server).find(claim.transfer()).orElse(null);
+        var normalized = record == null ? null : copies.normalize(claim, record);
+        if (claim.hold() == BayClaim.Hold.REPAIR) { proof.forget(claim.logical()); }
+        return normalized == null ? proof.prove(claim) : normalized;
     }
 
     BayStepQueue.Result consume(BayClaim claim) {
@@ -66,6 +74,9 @@ final class BayConsumptionSteps {
             return repair(claim, "CONSUMPTION_MISMATCH");
         }
         journal.flush(server); // a request: the checked writer persists T' off-thread and D6 waits for its acknowledgement
+        if (!journal.actionable(claim.logical())) { return BayStepQueue.Result.NEXT_TICK; }
+        var normalized = copies.normalize(claim, journal.find(claim.transfer()).orElseThrow());
+        if (normalized != null) { return normalized; }
         jobs.remove(claim.logical());
         claim.advance(BayClaim.Stage.PROVE);
         return BayStepQueue.Result.AGAIN;

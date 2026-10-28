@@ -39,7 +39,7 @@ import org.slf4j.Logger;
  * ADR-074; W170's for the registered half): the section 8.1 gate, D0 at the ascent-complete checkpoint, D1's INTENT or
  * re-arm through the real receipt store, D2's registration under a registry permit, D3's checkpoint, D4's group
  * publication, D5's consumption, D6's source proof, D7's guarded retirement, the exits, and the restart rows with the
- * one-copy resume. Copies and released flight belong to later slices. Admission is gated (only the GameTest server and
+ * source resume and W185's bounded copy/absence census. Released flight belongs to W27d4. Admission is gated (only the GameTest server and
  * gated release-test hooks start D0); the restart rows always run. Completions only mark state and enqueue; every
  * write is a queued step on the server thread.
  */
@@ -54,6 +54,7 @@ final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
     private final BayRegistrationSteps registration;
     private final BayGroupPublication publication;
     private final BayConsumptionSteps consumption;
+    private final BayCopySteps copies;
     private final BaySourceProof proof;
     private final BaySourceResume resume;
     private final Map<UUID, String> audited = new HashMap<>();
@@ -68,7 +69,8 @@ final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
         registration = new BayRegistrationSteps(server, session, checks, () -> refuseRegistration);
         publication = new BayGroupPublication(server, session, registration, this::offer,
                 (claim, receipt) -> { if (cuts != null) { cuts.writing(claim, receipt); } });
-        consumption = new BayConsumptionSteps(server, publication);
+        copies = new BayCopySteps(server);
+        consumption = new BayConsumptionSteps(server, publication, copies);
         proof = new BaySourceProof(server, session, this::offer, (claim, op) -> { if (cuts != null) { cuts.removing(claim, op); } },
                 claim -> cuts != null && cuts.stallAfterConsumption(claim), (claim, guard) -> cuts == null ? guard : cuts.guard(claim, guard));
         resume = new BaySourceResume(server);
@@ -170,7 +172,18 @@ final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
     }
 
     /** W170-R22: a rocket's position write or Level removal, from the entity itself; a watched L's proof is invalidated. */
-    void sourceChanged(RocketEntity rocket) { if (!stopping) { proof.changed(rocket); } }
+    void sourceChanged(RocketEntity rocket) {
+        if (stopping) { return; }
+        proof.changed(rocket);
+        if (rocket.isAddedToWorld()) { endpointSeen(rocket); }
+    }
+
+    void endpointSeen(RocketEntity rocket) { if (!stopping) { copies.seen(rocket, claims, this::offer); } }
+    boolean mountAllowed(net.minecraft.world.entity.Entity player, RocketEntity source) { return copies.mountAllowed(player, source); }
+    void reconnect(net.minecraft.server.level.ServerPlayer player, RocketTransferRecord record) {
+        if (!stopping) { claims.get(record.logicalRocketId()).filter(claim -> claim.transfer().equals(record.transferId()))
+                .ifPresent(claim -> copies.reconnect(claim, record, player)); }
+    }
 
     /** ServerStoppingEvent, or the first observed shutdown: discard every waiting step and run no further effect. */
     void stop() {
@@ -215,7 +228,7 @@ final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
             case PUBLISH -> publication.publish(claim);
             case RESUME -> resume.resume(claim);
             case CONSUME -> consumption.consume(claim);
-            case PROVE -> proof.prove(claim);
+            case PROVE -> consumption.prove(claim, proof);
             case RETIRE -> proof.retire(claim);
             case ENDED -> BayStepQueue.Result.IDLE;
         };

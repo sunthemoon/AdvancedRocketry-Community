@@ -1,0 +1,154 @@
+package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
+
+import static io.github.sunthemoon.advancedrocketrycommunity.rocket.server.BayDeploymentGameTestSupport.*;
+
+import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.FirstEventGameTestPlayers;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
+import io.github.sunthemoon.advancedrocketrycommunity.registry.ModEntities;
+import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceiptCommitCut;
+import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceiptTestHooks;
+import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowRuntime;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.deployment.BayClaim;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightPlanner;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferPhase;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteMissionSavedData;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BooleanSupplier;
+import net.minecraft.core.BlockPos;
+import net.minecraft.gametest.framework.GameTest;
+import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.gametest.GameTestHolder;
+import net.minecraftforge.gametest.PrefixGameTestTemplate;
+
+/** W185 A1: actual queued D7 guard, a returning assigned passenger and late joins at both ends. */
+@GameTestHolder(ModIdentity.MOD_ID)
+@PrefixGameTestTemplate(false)
+public final class BayCopiesGameTests {
+    private BayCopiesGameTests() { }
+
+    @GameTest(template = TEMPLATE, batch = "bay_copies_login", timeoutTicks = 1_200)
+    public static void loginAndCopiesDuringQueuedRetirementInvalidateItWithoutSettlement(GameTestHelper helper) {
+        new Scenario(helper).start();
+    }
+
+    private static final class Scenario {
+        final GameTestHelper helper;
+        final UUID owner = UUID.randomUUID(), passenger = UUID.randomUUID();
+        final GameTestTickPacer pacer;
+        final List<RocketEntity> copies = new ArrayList<>();
+        Flight flight;
+        ItemStack pkg;
+        BayClaim claim;
+        BayReceiptCommitCut cut;
+        BayDeploymentCuts previousCuts;
+        BooleanSupplier token;
+        ServerPlayer player;
+        int stage, waits;
+        boolean installed, closed;
+
+        Scenario(GameTestHelper helper) { this.helper = helper; pacer = new GameTestTickPacer(helper.getLevel().getServer()); }
+        void start() { helper.onEachTick(this::tick); }
+
+        void tick() {
+            if (closed) { return; }
+            try {
+                helper.assertTrue(++waits < 1_150, "Copy/login fixture exceeded its wait at " + stage);
+                if (stage == 0) { setup(); }
+                else if (stage == 1) { whileGuardQueued(); }
+                else { finished(); }
+                if (!closed) { pacer.pace(); }
+            } catch (ReflectiveOperationException failure) { close(); throw new IllegalStateException(failure); }
+            catch (RuntimeException | Error failure) { close(); throw failure; }
+        }
+
+        void setup() throws ReflectiveOperationException {
+            var level = helper.getLevel(); var server = level.getServer();
+            var origin = helper.absolutePos(new BlockPos(3, 2, 3)); var target = helper.absolutePos(new BlockPos(14, 2, 3));
+            if (!level.isPositionEntityTicking(origin) || !level.isPositionEntityTicking(target)) { return; }
+            pkg = solarPackage(owner); registerSolar(server, pkg, owner);
+            flight = transit(helper, origin, level.dimension().location(), position(target), owner, List.of(pkg),
+                    RocketEscrowSectionPatch.NEUTRAL, RocketFlightPlanner.EARTH.bodyId(), passenger);
+            var journal = RocketTransferSavedData.get(server); journal.put(flight.record());
+            // Use the existing B16 guard cut, only inside this isolated GameTest batch; no new production hook.
+            cut = EscrowRuntime.of(server).bayReceipts(server).commitCutForTests(server).orElseThrow();
+            var constructor = BayDeploymentCuts.class.getDeclaredConstructor(BayDeploymentCuts.Cut.class, BayReceiptCommitCut.class);
+            constructor.setAccessible(true);
+            var field = BayTransferRecovery.class.getDeclaredField("cuts"); field.setAccessible(true);
+            previousCuts = (BayDeploymentCuts) field.get(bays(helper));
+            field.set(bays(helper), constructor.newInstance(BayDeploymentCuts.Cut.B16_GUARD, cut)); installed = true;
+            bays(helper).ascentComplete(server, journal, flight.record(), flight.source());
+            claim = claim(helper, flight.record().logicalRocketId()).orElseThrow(); stage = 1;
+        }
+
+        void whileGuardQueued() throws ReflectiveOperationException {
+            var field = BayReceiptCommitCut.class.getDeclaredField("guardPaused"); field.setAccessible(true);
+            if (!((AtomicBoolean) field.get(cut)).get()) { return; }
+            var server = helper.getLevel().getServer(); var journal = RocketTransferSavedData.get(server);
+            var record = journal.find(flight.record().transferId()).orElseThrow();
+            helper.assertTrue(claim.stage() == BayClaim.Stage.RETIRE && record.phase() == RocketTransferPhase.PREPARED,
+                    "The actual D7 guard was not queued on a PREPARED record");
+            token = claim.group().orElseThrow().token(); helper.assertTrue(token.getAsBoolean(), "Initial token invalid");
+            player = FirstEventGameTestPlayers.join(server, passenger, "W185Passenger", helper.getLevel(),
+                    helper.absolutePos(new BlockPos(3, 2, 6)));
+            RocketSourceRetirementFixtures.recovery(RocketRuntime.installedTransfers()).onPlayerLoggedIn(player, journal);
+            helper.assertTrue(player.getVehicle() == flight.source() && !token.getAsBoolean(), "Login did not route/invalidate");
+            helper.assertTrue(journal.find(record.transferId()).orElse(null) == record
+                    && record.sourceFlightData().passengers().assignment(passenger).isPresent()
+                    && record.destinationFlightData().passengers().assignment(passenger).isPresent(), "Login settled or cleared the seat");
+            for (boolean destination : new boolean[] {false, true}) {
+                var copy = ModEntities.ROCKET.get().create(helper.getLevel());
+                copy.initializeTransferred(destination ? flight.record().destinationSnapshot() : flight.record().sourceSnapshot(),
+                        record.logicalRocketId(), owner, destination ? record.destinationFlightData() : record.sourceFlightData());
+                helper.assertTrue(helper.getLevel().addFreshEntity(copy), "Late copy not published"); copies.add(copy);
+            }
+            helper.assertTrue(bays(helper).sessionForTests().find(satellite(pkg)).isPresent(), "Queued removal lost receipt");
+            cut.release(); stage = 2;
+        }
+
+        void finished() {
+            var server = helper.getLevel().getServer(); var journal = RocketTransferSavedData.get(server);
+            if (claim(helper, flight.record().logicalRocketId()).isPresent()) {
+                helper.assertTrue(journal.find(flight.record().transferId()).orElseThrow().phase() == RocketTransferPhase.PREPARED,
+                        "Held login settled the transfer"); return;
+            }
+            helper.assertTrue(claim.handoff().orElseThrow() == BayClaim.Handoff.READY_SOURCE, "Not READY_SOURCE");
+            helper.assertTrue(!token.getAsBoolean() && copies.size() == 2 && copies.stream().allMatch(RocketEntity::isRemoved),
+                    "Queued token or duplicate removal was not enforced");
+            helper.assertTrue(copies.get(0).snapshot().orElseThrow().contentHash().equals(claim.group().orElseThrow().srcAfter())
+                    && copies.get(1).snapshot().orElseThrow().contentHash().equals(claim.group().orElseThrow().dstAfter()),
+                    "Late copies were removed without their own consumed image");
+            helper.assertTrue(bays(helper).sessionForTests().find(satellite(pkg)).isEmpty(), "Receipt not retired");
+            close(); helper.succeed();
+        }
+
+        void close() {
+            if (closed) { return; } closed = true;
+            if (cut != null) { cut.release(); }
+            if (installed) {
+                try { var field = BayTransferRecovery.class.getDeclaredField("cuts"); field.setAccessible(true); field.set(bays(helper), previousCuts); }
+                catch (ReflectiveOperationException failure) { throw new IllegalStateException(failure); }
+            }
+            var server = helper.getLevel().getServer();
+            if (player != null) { player.stopRiding(); server.getPlayerList().remove(player); }
+            if (flight == null) { return; }
+            bays(helper).forgetForTests(flight.record().logicalRocketId());
+            var journal = RocketTransferSavedData.get(server);
+            journal.find(flight.record().transferId()).ifPresent(record -> {
+                record.destinationEntityId().map(helper.getLevel()::getEntity).ifPresent(net.minecraft.world.entity.Entity::discard);
+                journal.remove(record.transferId());
+            });
+            flight.source().discard(); copies.forEach(RocketEntity::discard);
+            RocketTransferEntities.releaseFlightTickets(server, flight.record());
+            bays(helper).sessionForTests().find(satellite(pkg)).ifPresent(receipt -> BayReceiptTestHooks.remove(server, receipt.op(), ignored -> { }));
+            SatelliteMissionSavedData.get(server).decommission(satellite(pkg), owner, true, true);
+        }
+    }
+}

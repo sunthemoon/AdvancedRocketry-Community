@@ -54,6 +54,9 @@ public final class RocketEscrowInterlocks {
         }
         if (protectedRocket(event.getEntityMounting()) || protectedRocket(event.getEntityBeingMounted())) {
             if (event.getEntityBeingMounted() instanceof RocketEntity rocket && !rocket.level().isClientSide
+                    && io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime
+                    .bayMountAllowed(event.getEntityMounting(), rocket)) { return; }
+            if (event.getEntityBeingMounted() instanceof RocketEntity rocket && !rocket.level().isClientSide
                     && EscrowRuntime.of(rocket.getServer()).flightPhases().mountAllowed(event.getEntityMounting(), rocket)) { return; }
             event.setCanceled(true);
         }

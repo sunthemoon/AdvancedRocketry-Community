@@ -32,12 +32,12 @@ import org.slf4j.Logger;
 
 /**
  * W170's D6 and D7 (W27A-DESIGN sections 4, 4.1 R4 and 5). D6: once the journal's acknowledged version for L is T', one
- * capture of the source's entity slot through W98's port and the barrier's ordinary sub-quota, validated by W98's
+ * census of both bounded ends through W98's port and the barrier's ordinary sub-quota, with the source validated by W98's
  * {@code survivorSlot} against a frozen altitude projection (S', TRANSIT for T, T's fuel, the bound position). D7: the
  * group's REGISTERED receipts leave in one guarded generation; the guard reads only the barrier proof, the journal lease
  * and the group's invalidation counter. A refused guard or a definite failure repeats D6; the exact acknowledgement ends
- * the claim with READY_SOURCE. Another recognized copy of L holds the claim as DUPLICATE_PENDING (W27d3 resolves it).
- * W170-R41: D6's census waits for every end whose checked columns the claim's renewed tickets cover to be entity-loaded.
+ * the claim with READY_SOURCE. W185 consumes/removes recognized copies before proving absence in every other slot.
+ * W27d3: D6 waits for every checked end column, including unticketed margins, to be entity-loaded.
  * W170-R22: from D6's capture until D7's outcome, the source is watched on the server thread. Any position write or Level
  * removal of a rocket naming L invalidates the group at once, and each coordinator tick compares the source's position,
  * Level, flight, fuel and payload with the captured image, so a change after the removal queued refuses its guard too.
@@ -46,7 +46,7 @@ final class BaySourceProof {
     /** W98's retry after an IO, force, bounds or veto failure; never after a superseding save (W98-R11). */
     static final int RETRY_TICKS = RocketOrdinaryRetirement.RETRY_TICKS;
     private static final Logger LOGGER = LogUtils.getLogger();
-    private record Proved(EscrowBarrier.Proof proof, BooleanSupplier lease, BooleanSupplier token, CompoundTag frozen) {
+    private record Proved(BaySlotProofs.Proof proof, BooleanSupplier lease, BooleanSupplier token, CompoundTag frozen) {
         boolean valid() { return proof.valid() && lease.getAsBoolean() && token.getAsBoolean(); }
     }
 
@@ -76,7 +76,8 @@ final class BaySourceProof {
     private final Map<UUID, Proved> proofs = new HashMap<>();
     private final Map<UUID, Watch> watches = new HashMap<>();
     private final Map<UUID, Long> retryAt = new HashMap<>();
-    private final Set<UUID> capturing = new HashSet<>(), retiring = new HashSet<>();
+    private final Map<UUID, BaySlotProofs> capturing = new HashMap<>();
+    private final Set<UUID> retiring = new HashSet<>();
 
     /** {@code beforeRemoval}, {@code stall} and {@code guardCut} are the gated native cut seams (no-ops outside release tests). */
     BaySourceProof(MinecraftServer server, BayDeploymentSession session, Consumer<UUID> offer,
@@ -118,7 +119,8 @@ final class BaySourceProof {
     /** D6 at stage PROVE. */
     BayStepQueue.Result prove(BayClaim claim) {
         UUID logical = claim.logical();
-        if (claim.hold() == BayClaim.Hold.REPAIR || capturing.contains(logical)) { return BayStepQueue.Result.IDLE; }
+        if (claim.hold() == BayClaim.Hold.REPAIR) { forget(logical); return BayStepQueue.Result.IDLE; }
+        if (capturing.containsKey(logical)) { return capturing.get(logical).step(port, server.getTickCount()); }
         if (stall.test(claim) || server.getTickCount() < retryAt.getOrDefault(logical, Long.MIN_VALUE)) { return BayStepQueue.Result.NEXT_TICK; }
         BayGroup group = claim.group().orElseThrow();
         var journal = RocketTransferSavedData.get(server);
@@ -134,7 +136,11 @@ final class BaySourceProof {
             return copies.equals("DUPLICATE_PENDING") ? BayStepQueue.Result.NEXT_TICK : repair(claim, copies);
         }
         claim.waiting(null);
-        var slot = RocketRetirementProof.Slot.origin(record.sourceSnapshot());
+        var slots = BayAbsenceCensus.slots(record);
+        if (slots == null) { claim.waiting("END_UNAVAILABLE"); return BayStepQueue.Result.NEXT_TICK; }
+        String waiting = BayAbsenceCensus.waiting(port, slots);
+        if (waiting != null) { claim.waiting(waiting); return BayStepQueue.Result.NEXT_TICK; }
+        var slot = slots.get(0);
         long now = server.getTickCount();
         if (!port.captureSupported(slot)) { claim.waiting("BARRIER_UNSUPPORTED"); return BayStepQueue.Result.NEXT_TICK; }
         if (!port.captureAvailable(slot, now)) { return retryNextTick(logical); }
@@ -143,23 +149,20 @@ final class BaySourceProof {
         if (frozen == null) { return repair(claim, "SOURCE_AUTHORITY_CONFLICT"); }
         var lease = journal.logicalLease(logical, record.transferId(), 0);
         var token = group.token();
-        capturing.add(logical);
+        var attempt = new BaySlotProofs(slots, logical, source.getUUID(), frozen, () -> lease.getAsBoolean() && token.getAsBoolean(),
+                () -> offer.accept(logical), result -> captured(claim, result, lease, token, frozen));
+        capturing.put(logical, attempt);
         watch(claim, source);
-        boolean begun = port.capture(slot, root -> RocketRetirementProof.survivorSlot(root, logical, frozen), now, label -> { },
-                result -> captured(claim, result, lease, token, frozen));
-        if (!begun) { capturing.remove(logical); watches.remove(logical); return retryNextTick(logical); }
-        return BayStepQueue.Result.IDLE;
+        return attempt.step(port, now);
     }
 
     /**
-     * W170-R41: D6 counts images only while every end that the claim's renewed tickets cover in full has its checked
-     * columns entity-loaded and ticking. An end they do not cover is not awaited, and no ticket is added for it: its
-     * census there is loaded-only (the R-043 limit).
+     * W27d3: D6 awaits every checked column at both ends, including the in-session unticketed margins. It never
+     * interprets an unloaded portion as absence or acquires extra tickets to make this predicate true.
      */
     static boolean endsLoaded(MinecraftServer server, BayClaim.Origin origin, RocketTransferRecord record) {
         RocketStructureSnapshot source = record.sourceSnapshot(), destination = record.destinationSnapshot();
-        return (!covered(origin, source, destination, false) || RocketTransferEntities.endAlreadyLoaded(server, source))
-                && (!covered(origin, source, destination, true) || RocketTransferEntities.endAlreadyLoaded(server, destination));
+        return RocketTransferEntities.endAlreadyLoaded(server, source) && RocketTransferEntities.endAlreadyLoaded(server, destination);
     }
 
     /**
@@ -176,7 +179,7 @@ final class BaySourceProof {
         return atDestination ? to.admissible() : from.admissible() && from.count() == 1;
     }
 
-    private void captured(BayClaim claim, EscrowBarrier.Result result, BooleanSupplier lease, BooleanSupplier token, CompoundTag frozen) {
+    private void captured(BayClaim claim, BaySlotProofs.Result result, BooleanSupplier lease, BooleanSupplier token, CompoundTag frozen) {
         UUID logical = claim.logical();
         capturing.remove(logical);
         if (claim.stage() != BayClaim.Stage.PROVE || claim.hold() == BayClaim.Hold.REPAIR) {
@@ -205,7 +208,7 @@ final class BaySourceProof {
         UUID logical = claim.logical();
         if (retiring.contains(logical)) { return BayStepQueue.Result.IDLE; }
         Proved proved = proofs.get(logical);
-        if (claim.hold() == BayClaim.Hold.REPAIR) { return BayStepQueue.Result.IDLE; }
+        if (claim.hold() == BayClaim.Hold.REPAIR) { forget(logical); return BayStepQueue.Result.IDLE; }
         if (proved == null || !proved.valid() || !watches.containsKey(logical) || !current(claim, proved)) { return again(claim); }
         BayGroup group = claim.group().orElseThrow();
         beforeRemoval.accept(claim, group.operations().get(0));
@@ -287,11 +290,14 @@ final class BaySourceProof {
     void forget(UUID logical) {
         Proved proved = proofs.remove(logical);
         if (proved != null) { proved.proof().release(); }
-        retryAt.remove(logical); capturing.remove(logical); retiring.remove(logical); watches.remove(logical);
+        BaySlotProofs attempt = capturing.remove(logical);
+        if (attempt != null) { attempt.close(); }
+        retryAt.remove(logical); retiring.remove(logical); watches.remove(logical);
     }
 
     void clear() {
         proofs.values().forEach(proved -> proved.proof().release());
+        capturing.values().forEach(BaySlotProofs::close);
         proofs.clear(); retryAt.clear(); capturing.clear(); retiring.clear(); watches.clear();
     }
 }

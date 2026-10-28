@@ -142,6 +142,11 @@ public final class RocketRuntime {
         if (service instanceof RocketManager manager) { manager.onBaySourceChanged(rocket); }
     }
 
+    /** Only the synchronous coordinator scope can bypass the bay mount lock; escrow remains checked. */
+    public static boolean bayMountAllowed(net.minecraft.world.entity.Entity player, RocketEntity source) {
+        return installedBays().map(bays -> bays.mountAllowed(player, source)).orElse(false);
+    }
+
     public static boolean releaseFenced(RocketEntity rocket) { return RocketReleaseAccess.fenced(rocket); }
     public static io.github.sunthemoon.advancedrocketrycommunity.rocket.rejoin.RocketReleaseResult
             releaseAbsent(MinecraftServer server, UUID transfer) { return RocketReleaseAccess.admit(server, transfer); }
