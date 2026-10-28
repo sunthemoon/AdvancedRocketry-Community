@@ -34,6 +34,11 @@ public final class ClassicMachineRecipe implements Recipe<Container> {
         return rows.itemInputs().stream().map(row -> BoundedItemIngredientCodec.resolveAlternatives(
                 JsonParser.parseString(row.canonicalIngredientJson()))).toList();
     }
+    /** Whether an item input names a tag, read from the authored JSON without resolving it. */
+    public boolean hasTagIngredients() {
+        return rows.itemInputs().stream().anyMatch(row -> BoundedItemIngredientCodec.hasTags(
+                JsonParser.parseString(row.canonicalIngredientJson())));
+    }
     public ProcessDefinition definition() {
         var inputs = new ArrayList<ProcessInput>(); var outputs = new ArrayList<ProcessOutput>();
         List<List<String>> alternatives = resolveInputs();

@@ -491,10 +491,11 @@ public final class BlackHoleGeneratorBlockEntity extends EndgameDeviceBlockEntit
         return Component.translatable("block.advancedrocketrycommunity.black_hole_generator");
     }
 
+    /** W182: vanilla opens a spectator's menu here directly, without the block's use; a spectator gets none. */
     @Nullable
     @Override
     public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) {
-        return new BlackHoleGeneratorMenu(id, inventory, this);
+        return player.isSpectator() ? null : new BlackHoleGeneratorMenu(id, inventory, this);
     }
 
     @Override

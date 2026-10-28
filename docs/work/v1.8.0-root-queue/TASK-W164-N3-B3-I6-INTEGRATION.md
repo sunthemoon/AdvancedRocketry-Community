@@ -267,6 +267,38 @@ and `hosted-d7e800dc4-job-122530950140.log`. A fresh Codex session continues on 
 3. **Run the whole unit suite and one complete GameTest** (R131 applies). Root pushes the branch for a hosted run.
 4. **Then B-PRE, all 20 cases** (the R124 limits), and tranche 2.
 
+## Continuation under Root decision R141 (2026-10-28)
+
+The R135 session (10:33 to 15:33, record `a9438448c`) diagnosed both hosted failures as fixture timing and fixed them:
+- the post-fill launch now waits for its native capture turn;
+- the retained-pin assertions stay outside the periodic autosave.
+
+It merged shared head `e00677450` as `9a939b303`, keeping both ticks in `RocketManager.tick`. 5,421 unit tests, a clean
+build, runData and all 1,461 GameTests with the unchanged checker pass. Root pushed the branch for a hosted run.
+
+B-PRE did not start, because the native preflight refused an evidence directory of 117,489,135 bytes, over AGENTS
+section 9's 100 MB per-slice limit. A fresh Codex session continues:
+
+1. **Evidence retention.** Root authorizes lossless packaging of superseded evidence, as R118's `native-inputs.tar.xz`
+   with `native-retention.json` did.
+   - The candidates are `verification-9336b0fd4` (24 MB) and `full-final-2` (21 MB), from the 2026-10-26 sessions and
+     superseded by later runs.
+   - Each becomes a solid archive plus a retention manifest that rebuilds it and verifies every original file's SHA-256.
+   - Do not change any file inside a sealed packet. Record the mapping, so that every path the records cite stays
+     reproducible.
+   - Bring the directory comfortably under 100 MB, leaving room for B-PRE and tranche 2. If that is impossible, stop
+     and report.
+2. **Read the hosted run** on `a9438448c` when it finishes. If it fails, diagnose that before the natives.
+   - **Root, 16:58:** run 40651475584 failed one test.
+     `sameLevelLandedTransferRetiresBeforeFillAndGovernedLaunch` "Didn't succeed or fail within 2400 ticks". R135's
+     fixture now waits for the post-fill native capture turn, and on the hosted runner that turn never came.
+   - Its raw logs are in `D:/GitHub/ARCE-Task-Evidence/root-queue/W164-hosted/a9438448c/` (the run's zip and the job
+     log). That folder is outside this slice's evidence directory, so it does not count against the 100 MB.
+   - Find why the capture turn never arrives. Is a W164 retirement or preparation path starving the ordinary capture,
+     or is the fixture waiting for a turn that this path never grants? Fix the cause without loosening anything, and
+     fail the fix first.
+3. **Then B-PRE, all 20 cases**, with two restarts each and the R124 limits; then tranche 2.
+
 ## Not in this task
 
 - N3-B4 (the combined cut evidence), W98-R1 and governed admission.

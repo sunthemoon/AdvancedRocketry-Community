@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestAutosave;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickDriver;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
@@ -48,6 +49,14 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 public final class LandingPadGameTests {
     private static final TicketType<UUID> FIXTURE_TICKET = TicketType.create(
             "arce_gametest_landing_pad", Comparator.<UUID>naturalOrder(), 400);
+    /**
+     * W187: a source-side cut's survivor proof captures its own slot and, one tick later, a discarded copy's slot; each
+     * completes with its Level's next 20-tick force. The cut allows 40 ticks after its recovery for that proof, so a
+     * later autosave cannot reach the cut, which has passed or failed by then.
+     */
+    private static final int CUT_WINDOW_TICKS = 40;
+    /** W187: the fail-back's survivor proof, one slot, completes within the cancellation test's 60-tick wait. */
+    private static final int CANCEL_WINDOW_TICKS = 60;
 
     private LandingPadGameTests() { }
     private record Fixture(ServerLevel space, StationState station, BlockPos pad,
@@ -183,7 +192,12 @@ public final class LandingPadGameTests {
         var driver = new GameTestTickDriver(helper);
         Fixture f = fixture(helper); var snapshot = sourceSnapshot(helper);
         var entry = LandingPadService.register(f.space, f.pad, f.station.ownerId(), false, "Cancel");
-        await(helper, driver, 80, () -> ready(helper.getLevel(), snapshot.sourceOrigin()) && f.space.areEntitiesLoaded(new ChunkPos(f.pad).toLong()), () -> {
+        // W187: as in the recovery matrix, an autosave that supersedes the fail-back's survivor capture releases its
+        // reservation, and the runtime's own recovery can then remove T and log an undeclared ARCE_TRANSFER_RECOVERY
+        // WARN. Cancel only when the next autosave falls after this test's 60-tick wait for the proof.
+        await(helper, driver, 80, () -> ready(helper.getLevel(), snapshot.sourceOrigin()) && f.space.areEntitiesLoaded(new ChunkPos(f.pad).toLong()),
+                () -> await(helper, driver, helper.getTick() + CANCEL_WINDOW_TICKS + 1L,
+                        () -> !GameTestAutosave.within(f.space.getServer(), CANCEL_WINDOW_TICKS), () -> {
             var source = addSource(helper, snapshot, f.station.ownerId()); var transfer = UUID.randomUUID();
             var countdown = countdown(source, f.station, entry, transfer);
             var service = new RocketTransferService();
@@ -202,7 +216,7 @@ public final class LandingPadGameTests {
                 helper.assertTrue(RocketTransferSavedData.get(f.space.getServer()).find(transfer).isEmpty(), "Cancelled transfer retained");
                 source.discard(); cleanup(helper, f); helper.succeed();
             });
-        });
+        }));
     }
 
     /** W98: drive a detached service's ordinary retirements and acknowledge; true once the record has left the journal. */
@@ -232,6 +246,18 @@ public final class LandingPadGameTests {
             cleanup(helper, f); helper.succeed(); return;
         }
         RocketTransferPhase phase = RocketTransferPhase.values()[cut / 4]; int presence = cut % 4;
+        var action = RocketTransferRecoveryDecision.decide(phase, new RocketTransferPresence((presence & 1) != 0, (presence & 2) != 0));
+        // W187: a periodic autosave stores the survivor's entity section and supersedes the source return's pending
+        // capture. The failed attempt releases its reservation, and the runtime's own recovery can then take T over and
+        // remove it, so this detached service reports NOT_FOUND (hosted run 40725066567, COMMITTED/1). Start a source
+        // return only when the next autosave falls after the cut's window; destination cuts take no native capture.
+        boolean sourceReturn = action == RocketTransferRecoveryAction.KEEP_SOURCE
+                || action == RocketTransferRecoveryAction.REMOVE_DESTINATION_KEEP_SOURCE || action == RocketTransferRecoveryAction.REBUILD_SOURCE;
+        if (sourceReturn && GameTestAutosave.within(f.space.getServer(), CUT_WINDOW_TICKS)) {
+            await(helper, driver, helper.getTick() + CUT_WINDOW_TICKS + 1L, () -> !GameTestAutosave.within(f.space.getServer(), CUT_WINDOW_TICKS),
+                    () -> recoveryCut(helper, driver, f, snapshot, entry, cut));
+            return;
+        }
         var source = addSource(helper, snapshot, f.station.ownerId()); UUID transfer = UUID.randomUUID();
         var countdown = countdown(source, f.station, entry, transfer);
         var selection = new NamedLandingPadStaging().select(f.space, snapshot, transfer, f.station, entry.reference(), List.of(), 0);

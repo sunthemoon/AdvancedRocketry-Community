@@ -1,13 +1,12 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader;
 
 import com.mojang.logging.LogUtils;
-import io.github.sunthemoon.advancedrocketrycommunity.machine.tank.TankContainerExchange;
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlockEntities;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowLoaderAdmission;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowReconciliationAction;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowReconciliationPruning;
-import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -25,7 +24,7 @@ import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.capabilities.Capability;
@@ -45,15 +44,11 @@ import org.slf4j.Logger;
  */
 public final class FluidFuelLoaderBlockEntity extends BlockEntity implements MenuProvider {
     public static final double MAX_ACTOR_DISTANCE = 8.0D;
+    public static final String SAVE_REFUSAL =
+            "Refusing chunk save with a fluid fuel loader root that native serialization cannot keep; back up and repair offline";
     private static final Logger LOGGER = LogUtils.getLogger();
 
-    /** The root exactly as loaded or last written; null for a device that never had one. */
-    @Nullable private Tag held;
-    /** Present exactly when {@link #held} decodes as a schema-1 root. */
-    @Nullable private LoaderRoot root;
-    private LoaderRoot.Status status = LoaderRoot.Status.ABSENT;
-    /** An over-bound root is kept by reference rather than copied. */
-    private boolean retainedByReference;
+    private final LoaderRetainedRoot data = new LoaderRetainedRoot();
     /** Transient: not saved, created when the device loads, so a load always waits one full interval. */
     @Nullable private RefillPacer pacer;
     @Nullable private FluidFuelLoaderStatus attempted;
@@ -66,8 +61,8 @@ public final class FluidFuelLoaderBlockEntity extends BlockEntity implements Men
     private final io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowDeviceTurns turns =
             new io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowDeviceTurns();
     private boolean refreshTurns() {
-        if (!live() || root == null || root.binding() == null) { turns.close(); return false; }
-        return turns.refresh(((ServerLevel) level).getServer(), root.device(), root.binding().logicalRocket());
+        if (!live() || data.root == null || data.root.binding() == null) { turns.close(); return false; }
+        return turns.refresh(((ServerLevel) level).getServer(), data.root.device(), data.root.binding().logicalRocket());
     }
 
     public FluidFuelLoaderBlockEntity(BlockPos position, BlockState state) {
@@ -82,20 +77,20 @@ public final class FluidFuelLoaderBlockEntity extends BlockEntity implements Men
     }
 
     public Optional<LoaderRoot> root() {
-        return Optional.ofNullable(root);
+        return Optional.ofNullable(data.root);
     }
 
     public LoaderRoot.Status dataStatus() {
-        return status;
+        return data.status;
     }
 
     /** A detached copy of the held root when it is within its envelope, otherwise the retained reference. */
     public Optional<Tag> heldRoot() {
-        return held == null ? Optional.empty() : Optional.of(retainedByReference ? held : held.copy());
+        return data.heldRoot();
     }
 
     public Optional<UUID> owner() {
-        return root == null ? Optional.empty() : Optional.ofNullable(root.owner());
+        return data.root == null ? Optional.empty() : Optional.ofNullable(data.root.owner());
     }
 
     public boolean claimed() {
@@ -104,13 +99,15 @@ public final class FluidFuelLoaderBlockEntity extends BlockEntity implements Men
 
     /** An invalid, future or unregistered-Fluid root: kept verbatim, disabled and protected. */
     public boolean unsupportedRoot() {
-        return !status.supported();
+        return !data.status.supported();
     }
+
+    public boolean unkeepable() { return data.unkeepable; }
 
     /** A second loaded loader with this device's UUID in the same Level; it stays disabled while the first is loaded. */
     public boolean duplicate() {
-        return root != null && !isRemoved() && level instanceof ServerLevel server
-                && !FluidFuelLoaderIndex.claim(server, root.device(), this);
+        return data.root != null && !isRemoved() && level instanceof ServerLevel server
+                && !FluidFuelLoaderIndex.claim(server, data.root.device(), this);
     }
 
     /**
@@ -118,10 +115,10 @@ public final class FluidFuelLoaderBlockEntity extends BlockEntity implements Men
      * proof or a settlement receipt names it. Reading never creates a ledger.
      */
     public boolean escrowLocked() {
-        if (root == null) {
+        if (data.root == null) {
             return false;
         }
-        if (root.escrow().locked()) {
+        if (data.root.escrow().locked()) {
             return true;
         }
         if (!(level instanceof ServerLevel server) || !server.getServer().isSameThread()) {
@@ -136,24 +133,24 @@ public final class FluidFuelLoaderBlockEntity extends BlockEntity implements Men
      */
     @Nullable
     public FluidFuelLoaderStatus escrowProgress() {
-        if (root == null || !(level instanceof ServerLevel server) || !server.getServer().isSameThread()) {
+        if (data.root == null || !(level instanceof ServerLevel server) || !server.getServer().isSameThread()) {
             return null;
         }
         long now = server.getGameTime();
-        if (progressCheckedAt != now || !root.device().equals(progressCheckedFor)) {
+        if (progressCheckedAt != now || !data.root.device().equals(progressCheckedFor)) {
             progress = EscrowLoaderAdmission.progress(this);
             progressCheckedAt = now;
-            progressCheckedFor = root.device();
+            progressCheckedFor = data.root.device();
         }
         return progress;
     }
 
     /** The fair queue admitted this device: its port and binding lock in this very tick, before any capture repeats. */
     public void escrowAdmitted() {
-        if (root != null && level instanceof ServerLevel server) {
+        if (data.root != null && level instanceof ServerLevel server) {
             progress = FluidFuelLoaderStatus.PREPARING;
             progressCheckedAt = server.getGameTime();
-            progressCheckedFor = root.device();
+            progressCheckedFor = data.root.device();
             attempted = FluidFuelLoaderStatus.PREPARING;
         }
     }
@@ -179,7 +176,7 @@ public final class FluidFuelLoaderBlockEntity extends BlockEntity implements Men
      */
     @Nullable
     public FluidFuelLoaderStatus deviceRefusal() {
-        if (status == LoaderRoot.Status.INVALID) {
+        if (data.status == LoaderRoot.Status.INVALID) {
             return FluidFuelLoaderStatus.INVALID_DATA;
         }
         if (unsupportedRoot()) {
@@ -195,7 +192,7 @@ public final class FluidFuelLoaderBlockEntity extends BlockEntity implements Men
             FluidFuelLoaderStatus held = escrowProgress();
             return held == null ? FluidFuelLoaderStatus.ESCROW_PENDING : held;
         }
-        return root.binding() == null ? FluidFuelLoaderStatus.UNBOUND : null;
+        return data.root.binding() == null ? FluidFuelLoaderStatus.UNBOUND : null;
     }
 
     /**
@@ -225,7 +222,7 @@ public final class FluidFuelLoaderBlockEntity extends BlockEntity implements Men
             loader.pacer = RefillPacer.loadedAt(level.getGameTime());
         }
         if (loader.pacer.tryStart(level.getGameTime())) {
-            if (loader.root != null && loader.root.escrow().locked() && loader.live()) {
+            if (loader.data.root != null && loader.data.root.escrow().locked() && loader.live()) {
                 // Restart and next-observation cleanup of a retired marker; live records belong to reconciliation.
                 EscrowReconciliationPruning.observe(loader);
             }
@@ -249,14 +246,14 @@ public final class FluidFuelLoaderBlockEntity extends BlockEntity implements Men
         }
         ServerLevel server = (ServerLevel) level;
         if (!refreshTurns()) { return yieldTurn(FluidFuelLoaderStatus.ESCROW_FULL); }
-        FluidFuelLoaderStatus status = LoaderEligibility.evaluate(server, worldPosition, root).refusal();
+        FluidFuelLoaderStatus status = LoaderEligibility.evaluate(server, worldPosition, data.root).refusal();
         if (status != null) {
-            if (status == FluidFuelLoaderStatus.ROCKET_BUSY && EscrowLoaderAdmission.enabled(server.getServer(), root.device())) {
+            if (status == FluidFuelLoaderStatus.ROCKET_BUSY && EscrowLoaderAdmission.enabled(server.getServer(), data.root.device())) {
                 turns.blocked(); return status;
             }
             return yieldTurn(status);
         }
-        if (!EscrowLoaderAdmission.enabled(server.getServer(), root.device())) {
+        if (!EscrowLoaderAdmission.enabled(server.getServer(), data.root.device())) {
             return yieldTurn(FluidFuelLoaderStatus.ADMISSION_DISABLED);
         }
         if (!turns.allows()) { turns.blocked(); return FluidFuelLoaderStatus.ROCKET_BUSY; }
@@ -279,10 +276,10 @@ public final class FluidFuelLoaderBlockEntity extends BlockEntity implements Men
             attempted = yieldTurn(refusal != null ? refusal : FluidFuelLoaderStatus.WAITING_UNLOADED);
             return false;
         }
-        LoaderEligibility.Resolved eligible = LoaderEligibility.evaluate((ServerLevel) level, worldPosition, root);
+        LoaderEligibility.Resolved eligible = LoaderEligibility.evaluate((ServerLevel) level, worldPosition, data.root);
         if (eligible.refusal() != null) {
             if (eligible.refusal() == FluidFuelLoaderStatus.ROCKET_BUSY && refreshTurns()
-                    && EscrowLoaderAdmission.enabled(((ServerLevel) level).getServer(), root.device())) {
+                    && EscrowLoaderAdmission.enabled(((ServerLevel) level).getServer(), data.root.device())) {
                 turns.blocked(); attempted = eligible.refusal();
             } else { attempted = yieldTurn(eligible.refusal()); }
             return false;
@@ -302,12 +299,12 @@ public final class FluidFuelLoaderBlockEntity extends BlockEntity implements Men
     /** C8 and O4: the one-use permit removes only retired markers; the tank and epoch stay. */
     public void pruneReconciledEscrow(EscrowReconciliationPruning.SourcePermit permit) {
         LoaderEscrowSection section = Objects.requireNonNull(permit, "permit").consume(this);
-        write(new LoaderRoot(root.owner(), root.device(), root.binding(), root.tank(), section));
+        write(new LoaderRoot(data.root.owner(), data.root.device(), data.root.binding(), data.root.tank(), section));
     }
 
     /** The owner, never a spectator, a fake player or another player (operators included), within 8 blocks. */
     public boolean admitted(Player player) {
-        return actorNear(player) && supportedClaimed() && !duplicate() && root.owner().equals(player.getUUID());
+        return actorNear(player) && supportedClaimed() && !duplicate() && data.root.owner().equals(player.getUUID());
     }
 
     /** A connected, living, non-fake player in this Level within 8 blocks who may interact here. */
@@ -320,7 +317,7 @@ public final class FluidFuelLoaderBlockEntity extends BlockEntity implements Men
     }
 
     private boolean supportedClaimed() {
-        return !unsupportedRoot() && root != null && root.owner() != null;
+        return !unsupportedRoot() && data.root != null && data.root.owner() != null;
     }
 
     /** Fill, drain and local container use: a claimed, supported, unlocked, unique device, live, with no call in progress. */
@@ -346,9 +343,9 @@ public final class FluidFuelLoaderBlockEntity extends BlockEntity implements Men
     /** The carrier this device drops: its owner and tank, or an empty unowned carrier for a device with no root. */
     LoaderCarrier carrier() {
         if (unsupportedRoot()) {
-            throw new IllegalStateException("An unsupported loader root drops nothing");
+            throw new IllegalStateException("An unsupported loader data.root drops nothing");
         }
-        return root == null ? new LoaderCarrier(null, LoaderTank.EMPTY) : LoaderCarrier.drop(root);
+        return data.root == null ? new LoaderCarrier(null, LoaderTank.EMPTY) : LoaderCarrier.drop(data.root);
     }
 
     /** Writes a binding the linker has fully validated; the device must be idle and unchanged. */
@@ -358,7 +355,7 @@ public final class FluidFuelLoaderBlockEntity extends BlockEntity implements Men
             return false;
         }
         turns.close();
-        write(new LoaderRoot(root.owner(), root.device(), binding, root.tank(), root.escrow()));
+        write(new LoaderRoot(data.root.owner(), data.root.device(), binding, data.root.tank(), data.root.escrow()));
         refreshTurns();
         attempted = null;
         return true;
@@ -366,21 +363,17 @@ public final class FluidFuelLoaderBlockEntity extends BlockEntity implements Men
 
     /** Clears an idle binding; a protected or locked device refuses. */
     boolean clearBinding() {
-        if (operationLock || !live() || !supportedClaimed() || duplicate() || escrowLocked() || root.binding() == null) {
+        if (operationLock || !live() || !supportedClaimed() || duplicate() || escrowLocked() || data.root.binding() == null) {
             return false;
         }
         turns.close();
-        write(new LoaderRoot(root.owner(), root.device(), null, root.tank(), root.escrow()));
+        write(new LoaderRoot(data.root.owner(), data.root.device(), null, data.root.tank(), data.root.escrow()));
         attempted = null;
         return true;
     }
 
     private void write(LoaderRoot next) {
-        CompoundTag encoded = next.encode();
-        held = encoded;
-        root = next;
-        status = LoaderRoot.Status.VALID;
-        retainedByReference = false;
+        data.write(next);
         progressCheckedAt = Long.MIN_VALUE;
         setChanged();
     }
@@ -389,168 +382,41 @@ public final class FluidFuelLoaderBlockEntity extends BlockEntity implements Men
 
     /** The tank's contents for display and the port; empty when the device is not usable. */
     public FluidStack fluid() {
-        return root == null || unsupportedRoot() ? FluidStack.EMPTY : root.tank().fluidStack();
+        return data.root == null || unsupportedRoot() ? FluidStack.EMPTY : data.root.tank().fluidStack();
     }
 
     /** The tank, or empty for an unsupported device. */
     public LoaderTank tank() {
-        return root == null || unsupportedRoot() ? LoaderTank.EMPTY : root.tank();
+        return data.root == null || unsupportedRoot() ? LoaderTank.EMPTY : data.root.tank();
     }
 
-    /**
-     * One mB of the offered Fluid when it may enter {@code tank} at all, whatever the amount and the room: a registered
-     * Fluid within the tank envelope, the same Fluid and native tag as any contents, and (Root's W82 decision) a
-     * native envelope that an escrow operation could carry. The envelope's size does not depend on the amount, so an
-     * offer larger than the tank is judged by its identity alone. Null when intake refuses it.
-     */
-    @Nullable
-    private static LoaderTank intake(LoaderTank tank, FluidStack offered) {
-        if (offered == null || offered.isEmpty()) {
-            return null;
-        }
-        LoaderTank unit;
-        try {
-            FluidStack one = offered.copy();
-            one.setAmount(1);
-            unit = LoaderTank.of(one);
-        } catch (IllegalArgumentException refused) {
-            return null;
-        }
-        if (!unit.escrowCarriable()
-                || !tank.isEmpty() && (!tank.fluid().equals(unit.fluid()) || !Objects.equals(tank.tag(), unit.tag()))) {
-            return null;
-        }
-        return unit;
-    }
-
-    /** The tank after accepting as much of {@code offered} as fits, or null when nothing is accepted. */
-    @Nullable
-    private static LoaderTank accepting(LoaderTank tank, FluidStack offered) {
-        LoaderTank unit = intake(tank, offered);
-        int accepted = unit == null ? 0 : Math.min(offered.getAmount(), tank.room());
-        return accepted <= 0 ? null : unit.withAmount(tank.amount() + accepted);
-    }
-
-    int fill(FluidStack offered, IFluidHandler.FluidAction action) {
-        Objects.requireNonNull(action, "action");
-        if (offered == null || !usable()) {
-            return 0;
-        }
+    /** Shared lock for the port and local container exchange. */
+    boolean beginLocal() {
+        if (!usable()) { return false; }
         operationLock = true;
-        try {
-            LoaderTank before = root.tank();
-            LoaderTank after = accepting(before, offered);
-            if (after == null) {
-                return 0;
-            }
-            if (action.execute()) {
-                write(new LoaderRoot(root.owner(), root.device(), root.binding(), after, root.escrow()));
-            }
-            return after.amount() - before.amount();
-        } finally {
-            operationLock = false;
-        }
+        return true;
     }
 
+    void endLocal() { operationLock = false; }
+
+    void writeTank(LoaderTank tank) {
+        if (!operationLock) { throw new IllegalStateException("Local loader mutation requires its lock"); }
+        write(new LoaderRoot(data.root.owner(), data.root.device(), data.root.binding(), tank, data.root.escrow()));
+    }
+
+    int fill(FluidStack offered, IFluidHandler.FluidAction action) { return LoaderLocalTank.fill(this, offered, action); }
     FluidStack drain(int maximum, @Nullable FluidStack matching, IFluidHandler.FluidAction action) {
-        Objects.requireNonNull(action, "action");
-        if (!usable() || root.tank().isEmpty()) {
-            return FluidStack.EMPTY;
-        }
-        operationLock = true;
-        try {
-            LoaderTank tank = root.tank();
-            FluidStack contents = tank.fluidStack();
-            if (matching != null) {
-                if (matching.isEmpty() || !contents.isFluidEqual(matching)) {
-                    return FluidStack.EMPTY;
-                }
-                maximum = matching.getAmount();
-            }
-            int amount = Math.min(maximum, tank.amount());
-            if (amount <= 0) {
-                return FluidStack.EMPTY;
-            }
-            FluidStack result = tank.withAmount(amount).fluidStack();
-            if (action.execute()) {
-                write(new LoaderRoot(root.owner(), root.device(), root.binding(), tank.withAmount(tank.amount() - amount),
-                        root.escrow()));
-            }
-            return result;
-        } finally {
-            operationLock = false;
-        }
+        return LoaderLocalTank.drain(this, maximum, matching, action);
     }
-
-    boolean validFluid(FluidStack offered) {
-        if (offered == null || !usable()) {
-            return false;
-        }
-        operationLock = true;
-        try {
-            return intake(root.tank(), offered) != null;
-        } finally {
-            operationLock = false;
-        }
-    }
-
-    /** Local container use by the owner: one whole bucket or canister, prepared on detached copies before any write. */
-    public boolean exchange(Player player, InteractionHand hand) {
-        if (!usable() || !admitted(player)) {
-            return false;
-        }
-        operationLock = true;
-        try {
-            var inventory = player.getInventory();
-            ItemStack heldStack = player.getItemInHand(hand);
-            ItemStack heldBefore = heldStack.copy();
-            var storage = new ArrayList<ItemStack>();
-            var slots = new ArrayList<Integer>();
-            for (int slot = 0; slot < inventory.items.size(); slot++) {
-                if (hand != InteractionHand.MAIN_HAND || slot != inventory.selected) {
-                    storage.add(inventory.getItem(slot));
-                    slots.add(slot);
-                }
-            }
-            LoaderTank before = root.tank();
-            var plan = TankContainerExchange.plan(heldBefore, storage, before.fluidStack(), LoaderTank.CAPACITY);
-            if (plan.isEmpty()) {
-                return false;
-            }
-            LoaderTank after;
-            try {
-                after = LoaderTank.of(plan.get().fluid());
-            } catch (IllegalArgumentException refused) {
-                return false;
-            }
-            if (after.amount() > before.amount() && !after.escrowCarriable()) {
-                return false;
-            }
-            var prepared = plan.get().slots();
-            int destination = prepared.destinationSlot() < 0 ? -1 : slots.get(prepared.destinationSlot());
-            if (!ItemStack.matches(player.getItemInHand(hand), heldBefore)) {
-                return false;
-            }
-            write(new LoaderRoot(root.owner(), root.device(), root.binding(), after, root.escrow()));
-            player.setItemInHand(hand, prepared.held());
-            if (destination >= 0) {
-                inventory.setItem(destination, prepared.destination());
-            }
-            inventory.setChanged();
-            return true;
-        } finally {
-            operationLock = false;
-        }
-    }
+    boolean validFluid(FluidStack offered) { return LoaderLocalTank.validFluid(this, offered); }
+    public boolean exchange(Player player, InteractionHand hand) { return LoaderLocalTank.exchange(this, player, hand); }
 
     // Lifecycle -------------------------------------------------------------------------------------------------
 
     @Override
     protected void saveAdditional(CompoundTag outer) {
         super.saveAdditional(outer);
-        if (held != null) {
-            outer.put(LoaderRoot.KEY, retainedByReference ? held : held.copy());
-        }
+        data.save(outer);
     }
 
     @Override
@@ -570,22 +436,13 @@ public final class FluidFuelLoaderBlockEntity extends BlockEntity implements Men
             FluidFuelLoaderIndex.release(server, this);
         }
         invalidatePort();
-        held = null;
-        root = null;
         attempted = null;
         progressCheckedAt = Long.MIN_VALUE;
-        retainedByReference = false;
-        LoaderRoot.Read read = LoaderRoot.read(outer);
-        status = read.status();
-        if (status != LoaderRoot.Status.ABSENT) {
-            Tag raw = outer.get(LoaderRoot.KEY);
-            retainedByReference = !LoaderRoot.bounded(raw);
-            held = retainedByReference ? raw : raw.copy();
-            root = read.root();
-        }
+        data.load(outer);
         if (unsupportedRoot()) {
-            LOGGER.warn("ARCE_FLUID_FUEL_LOADER_UNSUPPORTED pos={} status={}", worldPosition.toShortString(), status);
+            LOGGER.warn("ARCE_FLUID_FUEL_LOADER_UNSUPPORTED pos={} status={}", worldPosition.toShortString(), data.status);
         }
+        recordDenial();
         createCap();
         claimDevice();
     }
@@ -593,6 +450,7 @@ public final class FluidFuelLoaderBlockEntity extends BlockEntity implements Men
     @Override
     public void onLoad() {
         super.onLoad();
+        recordDenial();
         refreshTurns();
         if (level instanceof ServerLevel server) {
             pacer = RefillPacer.loadedAt(server.getGameTime());
@@ -603,8 +461,14 @@ public final class FluidFuelLoaderBlockEntity extends BlockEntity implements Men
 
     /** The first loaded holder of a device UUID keeps it; the check in {@link #duplicate} also takes over a freed one. */
     private void claimDevice() {
-        if (root != null && !isRemoved() && level instanceof ServerLevel server) {
-            FluidFuelLoaderIndex.claim(server, root.device(), this);
+        if (data.root != null && !isRemoved() && level instanceof ServerLevel server) {
+            FluidFuelLoaderIndex.claim(server, data.root.device(), this);
+        }
+    }
+
+    private void recordDenial() {
+        if (data.unkeepable && level instanceof ServerLevel server) {
+            GuardedChunkSaves.recordObservedDenial(server, new ChunkPos(worldPosition), SAVE_REFUSAL);
         }
     }
 

@@ -152,6 +152,82 @@ public final class BayDeploymentGameTests {
 
     }
 
+    /**
+     * W170-R44: an escrow conflict holds an in-session claim for repair at D0, in the tick of the ascent-complete hook, so
+     * before any D1. Each bay then holds at its step without a write: neither package ever gets an INTENT, nothing is
+     * registered, and T and its packages are unchanged, for 40 ticks after both bays hold.
+     */
+    @GameTest(template = TEMPLATE, batch = "bay_deployment_repair", timeoutTicks = 400)
+    public static void aClaimHeldForRepairBeforeD1WritesNoIntent(GameTestHelper helper) {
+        new HeldBeforeIntent(helper).start();
+    }
+
+    private static final class HeldBeforeIntent {
+        final GameTestHelper helper;
+        final UUID owner = UUID.randomUUID();
+        final net.minecraft.world.item.ItemStack data, solar;
+        Flight flight;
+        BayClaim claim;
+        List<String> before;
+        int waits, held;
+        boolean closed;
+
+        HeldBeforeIntent(GameTestHelper helper) { this.helper = helper; data = dataPackage(owner); solar = solarPackage(owner); }
+        void start() { helper.onEachTick(this::tick); }
+
+        void tick() {
+            if (closed) { return; }
+            try {
+                helper.assertTrue(++waits < 380, "The held-before-D1 fixture exceeded its bounded wait");
+                var server = helper.getLevel().getServer();
+                var journal = RocketTransferSavedData.get(server);
+                if (flight == null) {
+                    BlockPos origin = helper.absolutePos(new BlockPos(3, 2, 3)), target = helper.absolutePos(new BlockPos(14, 2, 3));
+                    if (!helper.getLevel().isPositionEntityTicking(origin) || !helper.getLevel().isPositionEntityTicking(target)) { return; }
+                    flight = transit(helper, origin, target, owner, List.of(data, solar), RocketEscrowSectionPatch.NEUTRAL);
+                    before = signatures(flight.record());
+                    journal.put(flight.record());
+                    bays(helper).ascentComplete(server, journal, flight.record(), flight.source());
+                    claim = claim(helper, flight.record().logicalRocketId()).orElseThrow();
+                    helper.assertTrue(claim.stage() == BayClaim.Stage.GROUP && claim.members().size() == 2
+                            && claim.members().stream().allMatch(member -> member.state() == BayMember.State.CANDIDATE),
+                            "D0 did not hold L with both bays still candidates");
+                    bays(helper).escrowConflict(server, journal, flight.record()); // before the claim's first step
+                    return;
+                }
+                helper.assertTrue(claim(helper, claim.logical()).isPresent() && claim.hold() == BayClaim.Hold.REPAIR
+                        && claim.reason().equals("ESCROW_AUTHORITY_CONFLICT"), "The repair hold ended or changed: " + claim.reason());
+                var session = bays(helper).sessionForTests();
+                for (var pkg : List.of(data, solar)) {
+                    helper.assertTrue(session.find(satellite(pkg)).isEmpty(), "An INTENT was written under the repair hold");
+                }
+                helper.assertTrue(claim.members().stream().allMatch(member -> member.state() == BayMember.State.CANDIDATE
+                        || member.state() == BayMember.State.HELD), "A bay left CANDIDATE other than to HELD");
+                var registry = SatelliteMissionSavedData.get(server);
+                helper.assertTrue(registry.satellite(satellite(data)).isEmpty() && registry.ownerSatellites(owner) == 0,
+                        "A satellite was registered under the repair hold");
+                var current = journal.find(flight.record().transferId()).orElseThrow();
+                helper.assertTrue(current.checksum().equals(flight.record().checksum()) && before.equals(signatures(current)),
+                        "T or its packages changed under the repair hold");
+                boolean settled = claim.members().stream().allMatch(member -> member.state() == BayMember.State.HELD
+                        && member.reason().equals("ESCROW_AUTHORITY_CONFLICT"));
+                if (settled && ++held >= 40) { close(); helper.succeed(); }
+            } catch (RuntimeException | Error failure) { close(); throw failure; }
+        }
+
+        void close() {
+            if (closed) { return; }
+            closed = true;
+            if (flight == null) { return; }
+            var server = helper.getLevel().getServer();
+            bays(helper).forgetForTests(flight.record().logicalRocketId());
+            var journal = RocketTransferSavedData.get(server);
+            if (journal.find(flight.record().transferId()).isPresent()) { journal.remove(flight.record().transferId()); }
+            RocketTransferEntities.releaseFlightTickets(server, flight.record());
+            flight.source().discard();
+        }
+    }
+
     static List<String> signatures(RocketTransferRecord record) { return signatures(record.sourceSnapshot()); }
     static List<String> signatures(io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot snapshot) {
         return bayPayloads(snapshot).stream().map(RocketNativeResources::signature).toList();
@@ -253,7 +329,7 @@ public final class BayDeploymentGameTests {
             helper.assertTrue(BayRestartRows.row(server, intent(record, absent, owner, "solar_satellite"))
                     == BayRestartRows.Row.REJECT_INTERRUPTED, "X absent with matching T must become REJECTED (INTERRUPTED)");
             helper.assertTrue(BayRestartRows.row(server, intent(record, equal, owner, "solar_satellite"))
-                    == BayRestartRows.Row.HOLD_EQUAL, "An equal X waits unchanged for W27d2");
+                    == BayRestartRows.Row.PROMOTE, "An equal X promotes (W170; the interim wait of R49 Q4 is gone)");
             helper.assertTrue(BayRestartRows.row(server, intent(record, differs, owner, "data_satellite"))
                     == BayRestartRows.Row.REPAIR_SIGNATURE, "A different tuple becomes REPAIR");
             var otherOwner = intent(record, absent, UUID.randomUUID(), "solar_satellite");

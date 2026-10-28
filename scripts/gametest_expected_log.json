@@ -693,6 +693,33 @@
       "reason": "R-038: a live /data replacement keeps a held guarded root and writes one audit line; the test tries it once on each of the five guarded roots."
     },
     {
+      "id": "w176-loader-keepable-future",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderBlockEntity/",
+      "message": "ARCE_FLUID_FUEL_LOADER_UNSUPPORTED pos=-?\\d+, -?\\d+, -?\\d+ status=FUTURE",
+      "counts": {"fluid_fuel_loader_save_keepable": 1},
+      "test": "FluidFuelLoaderProtectionGameTests.losslessAndWorkLimitedRootsSaveVerbatimWithoutDenial",
+      "reason": "One lossless future root is retained without a native save denial."
+    },
+    {
+      "id": "w176-loader-keepable-invalid",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderBlockEntity/",
+      "message": "ARCE_FLUID_FUEL_LOADER_UNSUPPORTED pos=-?\\d+, -?\\d+, -?\\d+ status=INVALID",
+      "counts": {"fluid_fuel_loader_save_keepable": 3},
+      "test": "FluidFuelLoaderProtectionGameTests.losslessAndWorkLimitedRootsSaveVerbatimWithoutDenial",
+      "reason": "Malformed, operationally oversized and native-work-budget roots each log once and preserve their raw data without denial."
+    },
+    {
+      "id": "w176-loader-native-incompatible",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderBlockEntity/",
+      "message": "ARCE_FLUID_FUEL_LOADER_UNSUPPORTED pos=-?\\d+, -?\\d+, -?\\d+ status=FUTURE",
+      "counts": {"fluid_fuel_loader_save_incompatible": 2},
+      "test": "FluidFuelLoaderProtectionGameTests.liveAndDeferredLoadDenialsSurviveUnloadAndSerializedRoots",
+      "reason": "One live and one deferred load observe noncanonical NaN bits and record native denials; direct save-hook assertions do not post an EventBus error."
+    },
+    {
       "id": "w82-fluid-fuel-loader-unsupported-root",
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderBlockEntity/",
@@ -903,6 +930,151 @@
       "counts": {"recipe_signatures": 1},
       "test": "RecipeSignatureMigrationGameTests.allThreeTagSerializersSyncUnboundJsonWithoutResolving",
       "reason": "The electrolyzer recipe must independently be disabled until tags reload."
+    },
+    {
+      "id": "w179-recipe-text-bound",
+      "level": "ERROR",
+      "logger": "net.minecraft.world.item.crafting.RecipeManager/",
+      "message": "Parsing error loading recipe arce_w179:[a-z_]+",
+      "exception": "java\\.lang\\.IllegalArgumentException: Recipe text bound",
+      "counts": {"datapack_overlimit": 7},
+      "test": "DataPackOverLimitReloadGameTests.anOverLimitPackIsRefusedEntryByEntryWithBoundedLoggingAndThenRemoved",
+      "reason": "W179 (VDOC 12.4): the generated over-limit pack holds one classic recipe per type whose text exceeds RecipeJsonSignature.MAX_BYTES (65,536). Vanilla's RecipeManager logs each refused file once, with the classic codec's own bounded message."
+    },
+    {
+      "id": "w179-recipe-structural-bound",
+      "level": "ERROR",
+      "logger": "net.minecraft.world.item.crafting.RecipeManager/",
+      "message": "Parsing error loading recipe arce_w179:[a-z_]+",
+      "exception": "java\\.lang\\.IllegalArgumentException: Recipe structural bound",
+      "counts": {"datapack_overlimit": 14},
+      "test": "DataPackOverLimitReloadGameTests.anOverLimitPackIsRefusedEntryByEntryWithBoundedLoggingAndThenRemoved",
+      "reason": "W179 (VDOC 12.4): the generated over-limit pack holds two classic recipes per type, one deeper than MAX_DEPTH (16) and one with more than MAX_NODES (4,096) nodes. Vanilla's RecipeManager logs each refused file once, with the classic codec's own bounded message."
+    },
+    {
+      "id": "w179-recipe-row-count",
+      "level": "ERROR",
+      "logger": "net.minecraft.world.item.crafting.RecipeManager/",
+      "message": "Parsing error loading recipe arce_w179:[a-z_]+",
+      "exception": "java\\.lang\\.IllegalArgumentException: Recipe row type/count",
+      "counts": {"datapack_overlimit": 8},
+      "test": "DataPackOverLimitReloadGameTests.anOverLimitPackIsRefusedEntryByEntryWithBoundedLoggingAndThenRemoved",
+      "reason": "W179 (VDOC 12.4): the generated over-limit pack holds one classic recipe per type with five item inputs (at most four) and one centrifuging recipe with three fluid inputs (at most two). Vanilla's RecipeManager logs each refused file once, with the classic codec's own bounded message."
+    },
+    {
+      "id": "w179-recipe-unknown-field",
+      "level": "ERROR",
+      "logger": "net.minecraft.world.item.crafting.RecipeManager/",
+      "message": "Parsing error loading recipe arce_w179:[a-z_]+",
+      "exception": "java\\.lang\\.IllegalArgumentException: Recipe missing/unknown field",
+      "counts": {"datapack_overlimit": 1},
+      "test": "DataPackOverLimitReloadGameTests.anOverLimitPackIsRefusedEntryByEntryWithBoundedLoggingAndThenRemoved",
+      "reason": "W179 (VDOC 12.4): the generated over-limit pack holds one lathe recipe with an unknown field. Vanilla's RecipeManager logs each refused file once, with the classic codec's own bounded message."
+    },
+    {
+      "id": "w179-recipe-number-range",
+      "level": "ERROR",
+      "logger": "net.minecraft.world.item.crafting.RecipeManager/",
+      "message": "Parsing error loading recipe arce_w179:[a-z_]+",
+      "exception": "java\\.lang\\.IllegalArgumentException: Recipe number range",
+      "counts": {"datapack_overlimit": 2},
+      "test": "DataPackOverLimitReloadGameTests.anOverLimitPackIsRefusedEntryByEntryWithBoundedLoggingAndThenRemoved",
+      "reason": "W179 (VDOC 12.4): the generated over-limit pack holds an arc furnace recipe with schema_version 2 and a laser etching recipe with an input count of 65. Vanilla's RecipeManager logs each refused file once, with the classic codec's own bounded message."
+    },
+    {
+      "id": "w179-recipe-fraction",
+      "level": "ERROR",
+      "logger": "net.minecraft.world.item.crafting.RecipeManager/",
+      "message": "Parsing error loading recipe arce_w179:[a-z_]+",
+      "exception": "java\\.lang\\.IllegalArgumentException: Recipe number is not an exact int",
+      "counts": {"datapack_overlimit": 1},
+      "test": "DataPackOverLimitReloadGameTests.anOverLimitPackIsRefusedEntryByEntryWithBoundedLoggingAndThenRemoved",
+      "reason": "W179 (VDOC 12.4): the generated over-limit pack holds one cutting recipe whose processing time is 1.5. Vanilla's RecipeManager logs each refused file once, with the classic codec's own bounded message."
+    },
+    {
+      "id": "w179-recipe-null-token",
+      "level": "ERROR",
+      "logger": "net.minecraft.world.item.crafting.RecipeManager/",
+      "message": "Parsing error loading recipe arce_w179:[a-z_]+",
+      "exception": "java\\.lang\\.IllegalArgumentException: Null or unexpected recipe token",
+      "counts": {"datapack_overlimit": 1},
+      "test": "DataPackOverLimitReloadGameTests.anOverLimitPackIsRefusedEntryByEntryWithBoundedLoggingAndThenRemoved",
+      "reason": "W179 (VDOC 12.4): the generated over-limit pack holds one crystallizing recipe whose energy per tick is null. Vanilla's RecipeManager logs each refused file once, with the classic codec's own bounded message."
+    },
+    {
+      "id": "w179-recipe-noncanonical-id",
+      "level": "ERROR",
+      "logger": "net.minecraft.world.item.crafting.RecipeManager/",
+      "message": "Parsing error loading recipe arce_w179:[a-z_]+",
+      "exception": "java\\.lang\\.IllegalArgumentException: Noncanonical identifier",
+      "counts": {"datapack_overlimit": 1},
+      "test": "DataPackOverLimitReloadGameTests.anOverLimitPackIsRefusedEntryByEntryWithBoundedLoggingAndThenRemoved",
+      "reason": "W179 (VDOC 12.4): the generated over-limit pack holds one chemical reacting recipe whose output names minecraft:Iron_Nugget. Vanilla's RecipeManager logs each refused file once, with the classic codec's own bounded message."
+    },
+    {
+      "id": "w179-recipe-identifier-bound",
+      "level": "ERROR",
+      "logger": "net.minecraft.world.item.crafting.RecipeManager/",
+      "message": "Parsing error loading recipe arce_w179:[a-z_]+",
+      "exception": "java\\.lang\\.IllegalArgumentException: Identifier exceeds limit",
+      "counts": {"datapack_overlimit": 1},
+      "test": "DataPackOverLimitReloadGameTests.anOverLimitPackIsRefusedEntryByEntryWithBoundedLoggingAndThenRemoved",
+      "reason": "W179 (VDOC 12.4): the generated over-limit pack holds one lathe recipe whose id is longer than 128 characters. Vanilla's RecipeManager logs each refused file once, with the classic codec's own bounded message."
+    },
+    {
+      "id": "w179-recipe-top-level-array",
+      "level": "ERROR",
+      "logger": "net.minecraft.world.item.crafting.RecipeManager/",
+      "message": "Parsing error loading recipe arce_w179:[a-z_]+",
+      "exception": "com\\.google\\.gson\\.JsonSyntaxException: Expected top element to be a JsonObject, was an array \\(\\[1\\]\\)",
+      "counts": {"datapack_overlimit": 1},
+      "test": "DataPackOverLimitReloadGameTests.anOverLimitPackIsRefusedEntryByEntryWithBoundedLoggingAndThenRemoved",
+      "reason": "W179 (VDOC 12.4): the generated over-limit pack holds one recipe file whose top level is the array [1]. Vanilla's RecipeManager logs each refused file once, with the classic codec's own bounded message."
+    },
+    {
+      "id": "w179-recipe-file-unparsable",
+      "level": "ERROR",
+      "logger": "net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener/",
+      "message": "Couldn't parse data file arce_w179:(not_json|truncated) from arce_w179:recipes/(not_json|truncated)\\.json",
+      "counts": {"datapack_overlimit": 2},
+      "test": "DataPackOverLimitReloadGameTests.anOverLimitPackIsRefusedEntryByEntryWithBoundedLoggingAndThenRemoved",
+      "reason": "W179 (VDOC 12.4): two recipe files of the over-limit pack are not JSON; vanilla refuses each file once before any serializer runs."
+    },
+    {
+      "id": "w179-tag-unreadable",
+      "level": "ERROR",
+      "logger": "net.minecraft.tags.TagLoader/",
+      "message": "Couldn't read tag list arce_w179:unreadable from arce_w179:tags/items/unreadable\\.json in data pack file/arce_w179_overlimit",
+      "counts": {"datapack_overlimit": 1},
+      "test": "DataPackOverLimitReloadGameTests.anOverLimitPackIsRefusedEntryByEntryWithBoundedLoggingAndThenRemoved",
+      "reason": "W179 (VDOC 12.4): one item tag file of the over-limit pack is not JSON; vanilla refuses it once."
+    },
+    {
+      "id": "w179-tag-missing-reference",
+      "level": "ERROR",
+      "logger": "net.minecraft.tags.TagLoader/",
+      "message": "Couldn't load tag arce_w179:missing_reference as it is missing following references: arce_w179:does_not_exist \\(from file/arce_w179_overlimit\\)",
+      "counts": {"datapack_overlimit": 1},
+      "test": "DataPackOverLimitReloadGameTests.anOverLimitPackIsRefusedEntryByEntryWithBoundedLoggingAndThenRemoved",
+      "reason": "W179 (VDOC 12.4): one item tag of the over-limit pack names an unknown item; vanilla refuses the whole tag once, so the lathe recipe that names it resolves to no alternatives."
+    },
+    {
+      "id": "w179-pattern-catalog-rejected",
+      "level": "ERROR",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "Rejected multiblock pattern catalog; last valid generation remains active: pattern catalog: exceeds 256 definitions",
+      "counts": {"datapack_overlimit": 2},
+      "test": "DataPackOverLimitReloadGameTests.anOverLimitPackIsRefusedEntryByEntryWithBoundedLoggingAndThenRemoved",
+      "reason": "W179 (VDOC 12.4): the over-limit pack adds 300 pattern files; each of the two pattern catalogs (the mod's and ClassicRuntime's) refuses the whole candidate once and keeps its last valid generation."
+    },
+    {
+      "id": "w179-tag-no-longer-defined",
+      "level": "WARN",
+      "logger": "net.minecraftforge.registries.NamespacedWrapper/",
+      "message": "Not all defined tags for registry ResourceKey\\[minecraft:root / minecraft:item\\] are present in data pack: arce_w179:oversized",
+      "counts": {"datapack_overlimit": 1},
+      "test": "DataPackOverLimitReloadGameTests.anOverLimitPackIsRefusedEntryByEntryWithBoundedLoggingAndThenRemoved",
+      "reason": "W179 (VDOC 12.4): deselecting the over-limit pack removes its oversized item tag; vanilla's MappedRegistry.bindTags warns once that the tag is no longer defined."
     },
     {
       "id": "transfer-returned-to-source",
@@ -1841,6 +2013,60 @@
       "counts": {"bay_deployment_hold": 1},
       "test": "BayDeploymentHoldGameTests.aRestartIntentWhoseSatelliteDiffersWritesRepairWithItsExactAcknowledgement",
       "reason": "W128R-R2: a restart INTENT whose satellite is registered with a different owner gets its durable REPAIR, and the claim holds for offline repair."
+    },
+    {
+      "id": "w170-bay-protected-duplicate",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.server.BayTransferRecovery/",
+      "message": "ARCE_BAY_CLAIM transfer=[0-9a-f-]{36} logical=[0-9a-f-]{36} state=REPAIR reason=PROTECTED_DUPLICATE",
+      "counts": {"bay_registered": 1},
+      "test": "BayRegisteredGameTests.aProtectedSecondCopyHoldsTheRestartForRepairWithNoRecordChange",
+      "reason": "W170 (B6's protected-copy refusal): a restarted REGISTERED group finds a second recognized copy whose escrow wrapper is bound, so its claim holds for offline repair with no record change; the one transition is a WARN by design."
+    },
+    {
+      "id": "w170-r21-bay-unexpected-copy",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.server.BayTransferRecovery/",
+      "message": "ARCE_BAY_CLAIM transfer=[0-9a-f-]{36} logical=[0-9a-f-]{36} state=REPAIR reason=UNEXPECTED_COPY",
+      "counts": {"bay_registered": 2},
+      "test": "BayRegisteredGameTests.anUnexpectedImageInTheSourceMarginHoldsTheRestartForRepairWithNoRecordChange and anUnexpectedImageInTheDestinationColumnHoldsTheRestartForRepairWithNoRecordChange",
+      "reason": "W170-R21: a restarted REGISTERED group's census finds a loaded image of L whose hash is neither group hash, once in the source margin and once in the destination column, so each claim holds for offline repair with no record change; each transition is a WARN by design."
+    },
+    {
+      "id": "w170-r41-bay-unexpected-copy-after-loading",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.server.BayTransferRecovery/",
+      "message": "ARCE_BAY_CLAIM transfer=[0-9a-f-]{36} logical=[0-9a-f-]{36} state=REPAIR reason=UNEXPECTED_COPY",
+      "counts": {"bay_registered_loading_copy": 1},
+      "test": "BayRegisteredGameTests.anImageOfLAtADestinationEndStillLoadingHoldsTheRestartOnceTheEndLoads",
+      "reason": "W170-R41: a restarted REGISTERED group's destination column loads only after R2 has started waiting for it; once it loads, the census finds the image of L added there beforehand, whose hash is neither group hash, so the claim holds for offline repair with no record change; the one transition is a WARN by design."
+    },
+    {
+      "id": "w170-r24-bay-absent-source-protected",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.server.BayTransferRecovery/",
+      "message": "ARCE_BAY_CLAIM transfer=[0-9a-f-]{36} logical=[0-9a-f-]{36} state=REPAIR reason=BAY_SOURCE_PROTECTED",
+      "counts": {"bay_registered_floor": 1, "bay_registered_locked": 1, "bay_registered_unavailable": 1},
+      "test": "BayRegisteredEscrowGameTests.anEscrowFloorNamingTheRocketRefusesTheAbsentSourceRebuildWithNoChange, anEscrowOperationLockingTheRocketRefusesTheAbsentSourceRebuildWithNoChange and anUnavailableEscrowRootRefusesTheAbsentSourceRebuildWithNoChange",
+      "reason": "W170-R24: a restarted REGISTERED group whose exact source is absent meets an escrow floor, an escrow operation locking L, or an unavailable escrow root; the bay-resume candidate fails the neutral-wrapper rule before publication, so each claim holds for offline repair with no entity, journal or receipt change; each transition is a WARN by design."
+    },
+    {
+      "id": "w170-r4-bay-escrow-conflict-before-d2",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.server.BayTransferRecovery/",
+      "message": "ARCE_BAY_CLAIM transfer=[0-9a-f-]{36} logical=[0-9a-f-]{36} state=REPAIR reason=ESCROW_AUTHORITY_CONFLICT",
+      "counts": {"bay_deployment": 1},
+      "test": "BayDeploymentFlightGameTests.aClaimHeldForRepairBeforeD2RegistersNoSatellite",
+      "reason": "W170-R4: the escrow hook reports a conflict once the data bay's INTENT is seen, so the in-session claim holds for offline repair before D2 and registers nothing; the one transition is a WARN by design."
+    },
+    {
+      "id": "w170-r44-bay-escrow-conflict-before-d1",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.server.BayTransferRecovery/",
+      "message": "ARCE_BAY_CLAIM transfer=[0-9a-f-]{36} logical=[0-9a-f-]{36} state=REPAIR reason=ESCROW_AUTHORITY_CONFLICT",
+      "counts": {"bay_deployment_repair": 1},
+      "test": "BayDeploymentGameTests.aClaimHeldForRepairBeforeD1WritesNoIntent",
+      "reason": "W170-R44: the escrow hook reports a conflict in the tick of the ascent-complete hook, before any D1, so the in-session claim holds for offline repair and each bay holds at its step without an INTENT; the one transition is a WARN by design."
     },
     {
       "id": "w128r-r126-bay-hook-unclaimed-record-recovery",

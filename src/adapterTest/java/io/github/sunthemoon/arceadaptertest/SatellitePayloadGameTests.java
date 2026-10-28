@@ -48,27 +48,42 @@ public final class SatellitePayloadGameTests {
         helper.assertTrue(SatellitePayloadFixture.root(terminal).getInt("energy") == 9000, "Assembly energy differs");
         // Discovery is world-wide; snapshot it before launch rather than depend on other test batches.
         int expectedReward = research.targetDiscovered() ? 137 : 126;
+        var server = helper.getLevel().getServer();
+        var claimPacer = new FixtureTickPacer(server);
+        int[] before = new int[1];
+        int[] claimedAt = new int[1];
+        int[] claimedResult = new int[1];
         // ADR-049 section 10 (C8a): a player's state-changing intents are spaced by 10 ticks.
-        helper.runAfterDelay(10, () -> {
+        // Register the whole sequence at setup; callbacks must not mutate vanilla's schedule map.
+        helper.startSequence().thenIdle(10).thenExecute(() -> {
             // ADR-074 item 6: the launch changes RAM at once; the package leaves on a tick after the registration's commit.
             helper.assertTrue(menu.clickMenuButton(player, 3) && !inventory.getStackInSlot(4).isEmpty(),
                     "Actual launch was refused, or its package left before the registration's commit");
-            int before = research.balance();
+            before[0] = research.balance();
             var intruder = SatellitePayloadFixture.player(terminal, UUID.randomUUID());
             helper.assertTrue(!menu.clickMenuButton(intruder, 4), "Wrong owner could use menu");
-            helper.runAtTickTime(430, () -> {
-                helper.assertTrue(inventory.getStackInSlot(4).isEmpty(), "Actual launch did not consume package");
-                helper.assertTrue(menu.clickMenuButton(player, 4), "Claim intent rejected");
-                helper.assertTrue(research.balance() == before + expectedReward, "Registered research reward differs");
-                helper.runAtTickTime(441, () -> {
+        }).thenWaitUntil(() -> helper.assertTrue(helper.getTick() >= 430, "Waiting for the payload mission's claim tick"))
+                .thenExecute(() -> {
+                    helper.assertTrue(inventory.getStackInSlot(4).isEmpty(), "Actual launch did not consume package");
+                    helper.assertTrue(menu.clickMenuButton(player, 4), "Claim intent rejected");
+                    helper.assertTrue(research.balance() == before[0] + expectedReward, "Registered research reward differs");
+                    claimedAt[0] = server.getTickCount();
+                    // ADR-074: NBT retains the RAM result while menu data shows the session-local pending state.
+                    // Observe that fixed result through platform interfaces, without importing host implementation types.
+                    claimedResult[0] = SatellitePayloadFixture.root(terminal).getInt("last_result");
+                }).thenIdle(11).thenWaitUntil(() -> {
+                    // Eleven GameTest ticks alone do not prove an asynchronous registry write finished.
+                    // Pace only this wait, within the unchanged 460-tick timeout, as on a 20 TPS server.
+                    claimPacer.pace();
+                    helper.assertTrue(menu.stillValid(player), "Terminal menu became invalid while the claim waited");
+                    helper.assertTrue(server.getTickCount() - claimedAt[0] >= 10, "Replay is inside the server-tick rate limit");
+                    helper.assertTrue(research.result() == claimedResult[0], "Claim result still waits for its registry commit");
+                }).thenExecute(() -> {
                     helper.assertTrue(menu.clickMenuButton(player, 4), "Replayed claim intent was not processed");
-                    helper.assertTrue(research.balance() == before + expectedReward, "Replay duplicated reward");
+                    helper.assertTrue(research.balance() == before[0] + expectedReward, "Replay duplicated reward");
                     var saved = terminal.saveWithoutMetadata(); terminal.load(saved);
                     helper.assertTrue(saved.equals(terminal.saveWithoutMetadata()), "Native terminal save/load changed completed identity");
-                    helper.succeed();
-                });
-            });
-        });
+                }).thenSucceed();
     }
 
     @GameTest(templateNamespace = SatellitePayloadFixture.HOST, template = "empty", timeoutTicks = 20)
@@ -98,6 +113,10 @@ public final class SatellitePayloadGameTests {
         private boolean targetDiscovered() {
             menu.broadcastChanges();
             return values[8] == 1;
+        }
+        private int result() {
+            menu.broadcastChanges();
+            return values[2];
         }
         private int balance() {
             // Retain the same observer: unchanged values are not rebroadcast to newly added listeners.

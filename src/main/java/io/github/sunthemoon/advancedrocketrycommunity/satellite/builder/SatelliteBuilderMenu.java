@@ -149,7 +149,7 @@ public final class SatelliteBuilderMenu extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return (builder == null || !builder.isRemoved() && builder.getLevel() != null
+        return !player.isSpectator() && (builder == null || !builder.isRemoved() && builder.getLevel() != null
                 && builder.getLevel().hasChunkAt(builder.getBlockPos())
                 && builder.getLevel().getBlockEntity(builder.getBlockPos()) == builder
                 && generation == SatelliteRuntime.catalogGeneration())

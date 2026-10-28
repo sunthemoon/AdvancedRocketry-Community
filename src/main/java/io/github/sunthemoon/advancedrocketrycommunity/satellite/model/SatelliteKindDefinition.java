@@ -161,7 +161,8 @@ public record SatelliteKindDefinition(
             throw new IllegalArgumentException("Field " + key + " must be an identifier");
         }
         ResourceLocation parsed = ResourceLocation.tryParse(primitive.getAsString());
-        if (parsed == null) {
+        // A bare name gains "minecraft:"; records store the canonical form, which the registry decoder bounds.
+        if (parsed == null || parsed.toString().length() > 128) {
             throw new IllegalArgumentException("Field " + key + " must be an identifier");
         }
         return parsed;

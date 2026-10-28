@@ -5,6 +5,7 @@ import static io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.Escr
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.SafeCelestialTravel;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestAutosave;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.MoonLandingRuleGameTests;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.MoonPadArea;
@@ -61,6 +62,11 @@ public final class EscrowMoonLandingRuleGameTests {
     }
 
     private static final class Flight {
+        /**
+         * W184: F1's source capture completes with its Level's next 20-tick force, and the ARMED ledger write must capture
+         * while that proof is still valid. Three force periods bound both at paced ticks, as in W166's boarding fixture.
+         */
+        private static final int F1_WINDOW_TICKS = 60;
         final GameTestHelper helper;
         final boolean platform;
         final BlockPos source;
@@ -140,6 +146,10 @@ public final class EscrowMoonLandingRuleGameTests {
 
         private void request(MinecraftServer server, RocketTransferSavedData journal) {
             if (!RocketMarginGameTestSupport.endReady(server, destination) || !journal.retryChecked(server)) { return; }
+            // W184: a periodic autosave stores the source's entity section and supersedes F1's pending capture. F1 then
+            // discards the launch (F1_CALLBACK NO_ACKNOWLEDGED_RECORD) and no PREPARED record follows. Request the
+            // flight only when the next autosave falls after F1's window.
+            if (GameTestAutosave.within(server, F1_WINDOW_TICKS)) { return; }
             departure = rocket.flightData().orElseThrow();
             var result = RocketRuntime.requestAdminFlight(rocket, RocketDestination.MOON, launch);
             helper.assertTrue(result.code() == RocketFlightRequestCode.JOURNAL_PENDING,
@@ -150,7 +160,15 @@ public final class EscrowMoonLandingRuleGameTests {
         /** PREPARED: the recorded destination is the prediction; then the fault is installed for the flight. */
         private void prepared(RocketTransferSavedData journal) {
             var record = journal.find(launch).orElse(null);
-            if (record == null || !journal.acknowledgedCurrent()) { return; }
+            if (record == null) {
+                // W184: F1 holds L's lock from the accepted request until its ARMED callback writes PREPARED, or until it
+                // discards the launch. With neither, no record can follow: fail now and pass the pads on, rather than
+                // hold the turn until every waiting case of the batch times out.
+                helper.assertTrue(EscrowRuntime.of(earth.getServer()).flightCheckpoint().locked(logical(rocket)),
+                        "The governed launch was discarded before its PREPARED record was acknowledged");
+                return;
+            }
+            if (!journal.acknowledgedCurrent()) { return; }
             helper.assertTrue(record.nativeTransfer().isPresent() && record.phase() == RocketTransferPhase.PREPARED,
                     "The flight bypassed governed preparation");
             helper.assertTrue(RocketRegion.fromSnapshot(record.destinationSnapshot()).equals(RocketRegion.fromSnapshot(destination)),

@@ -289,32 +289,24 @@ public final class RocketTransferSavedData extends SavedData {
     }
 
     /** Read-only F1 reservation check; neither a candidate nor this check acknowledges PREPARED. */
-    public void validateNewRecord(RocketTransferRecord record) {
-        Objects.requireNonNull(record, "record");
-        if (!operational() || stopping || entries.containsKey(record.transferId())
-                || entries.size() >= RocketFlightLimits.MAX_ACTIVE_TRANSFERS) {
-            throw new IllegalArgumentException("New transfer authority is unavailable");
-        }
-        ensureNoAuthorityConflict(record);
-        var candidate = new java.util.ArrayList<>(entries()); candidate.add(record);
-        try { encode(candidate, firstMoonLanding, new CompoundTag()); }
-        catch (IllegalStateException invalid) { throw new IllegalArgumentException("New transfer does not fit the journal", invalid); }
-    }
+    public void validateNewRecord(RocketTransferRecord record) { validateInsert(record, true, "New"); }
 
     /**
      * W85 M3: the insert checks of {@link #validateNewRecord} without its {@code stopping} refusal, so that a stop can
      * still carry a written-back landed record into its final capture. Read-only.
      */
-    public void validateWriteBack(RocketTransferRecord record) {
+    public void validateWriteBack(RocketTransferRecord record) { validateInsert(record, false, "Written-back"); }
+
+    private void validateInsert(RocketTransferRecord record, boolean refuseStopping, String kind) {
         Objects.requireNonNull(record, "record");
-        if (!operational() || entries.containsKey(record.transferId())
+        if (!operational() || refuseStopping && stopping || entries.containsKey(record.transferId())
                 || entries.size() >= RocketFlightLimits.MAX_ACTIVE_TRANSFERS) {
-            throw new IllegalArgumentException("Written-back transfer authority is unavailable");
+            throw new IllegalArgumentException(kind + " transfer authority is unavailable");
         }
         ensureNoAuthorityConflict(record);
         var candidate = new java.util.ArrayList<>(entries()); candidate.add(record);
         try { encode(candidate, firstMoonLanding, new CompoundTag()); }
-        catch (IllegalStateException invalid) { throw new IllegalArgumentException("Written-back transfer does not fit the journal", invalid); }
+        catch (IllegalStateException invalid) { throw new IllegalArgumentException(kind + " transfer does not fit the journal", invalid); }
     }
 
     public void put(RocketTransferRecord record) {
@@ -394,6 +386,12 @@ public final class RocketTransferSavedData extends SavedData {
         if (after == null) { entries.remove(before.transferId()); } else { entries.put(after.transferId(), after); }
         changed(after == null ? before : after, before, after == null ? "REMOVED" : after.phase().name());
         return true;
+    }
+
+    /** W170 D5: {@link RocketTransferConsumption} rewrites live PREPARED T into T' after its checks; nothing else calls it. */
+    void consumed(RocketTransferRecord before, RocketTransferRecord after) {
+        if (!operational() || stopping || entries.get(before.transferId()) != before) { throw new IllegalStateException("Bay consumption needs live T"); }
+        entries.put(after.transferId(), after); changed(after, before, "BAY_CONSUMED");
     }
 
     private void changed(RocketTransferRecord record, RocketTransferRecord previous, String event) {

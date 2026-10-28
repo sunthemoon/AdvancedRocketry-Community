@@ -35,11 +35,12 @@ import net.minecraft.server.MinecraftServer;
 import org.slf4j.Logger;
 
 /**
- * W27d1's bay deployment coordinator for one server session (W127-PLAN; W128's one-page design and its resumption
- * under ADR-074): the section 8.1 gate, D0 at the ascent-complete checkpoint, D1's INTENT or re-arm through the real
- * receipt store, the reject-only D2 under a registry permit, the exits and the INTENT restart rows. Registration, D3 to
- * D7, reconstruction, copies and released flight belong to later slices. Admission is gated (only the GameTest server
- * and gated release-test hooks start D0); the restart rows always run. Completions only mark state and enqueue; every
+ * The bay deployment coordinator for one server session (W127-PLAN; W128's one-page design and its resumption under
+ * ADR-074; W170's for the registered half): the section 8.1 gate, D0 at the ascent-complete checkpoint, D1's INTENT or
+ * re-arm through the real receipt store, D2's registration under a registry permit, D3's checkpoint, D4's group
+ * publication, D5's consumption, D6's source proof, D7's guarded retirement, the exits, and the restart rows with the
+ * one-copy resume. Copies and released flight belong to later slices. Admission is gated (only the GameTest server and
+ * gated release-test hooks start D0); the restart rows always run. Completions only mark state and enqueue; every
  * write is a queued step on the server thread.
  */
 final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
@@ -50,16 +51,30 @@ final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
     private final BayClaimBook claims = new BayClaimBook();
     private final BayStepQueue queue = new BayStepQueue();
     private final BayDeploymentChecks checks = new BayDeploymentChecks();
+    private final BayRegistrationSteps registration;
+    private final BayGroupPublication publication;
+    private final BayConsumptionSteps consumption;
+    private final BaySourceProof proof;
+    private final BaySourceResume resume;
     private final Map<UUID, String> audited = new HashMap<>();
     // Gated seams (W128R-R2): GameTests name single rockets; the native B10 case blocks the registry view for the session.
     private final java.util.Set<UUID> registryBlockedForTests = new java.util.HashSet<>();
     private final java.util.Set<UUID> checkpointRefusedForTests = new java.util.HashSet<>();
     @Nullable private BayDeploymentCuts cuts;
-    private boolean stopping, ticked, registryBlockedSession;
+    private boolean stopping, ticked, registryBlockedSession, refuseRegistration;
 
     private BayTransferRecovery(MinecraftServer server, BayDeploymentSession session) {
         this.server = server; this.session = session;
+        registration = new BayRegistrationSteps(server, session, checks, () -> refuseRegistration);
+        publication = new BayGroupPublication(server, session, registration, this::offer,
+                (claim, receipt) -> { if (cuts != null) { cuts.writing(claim, receipt); } });
+        consumption = new BayConsumptionSteps(server, publication);
+        proof = new BaySourceProof(server, session, this::offer, (claim, op) -> { if (cuts != null) { cuts.removing(claim, op); } },
+                claim -> cuts != null && cuts.stallAfterConsumption(claim), (claim, guard) -> cuts == null ? guard : cuts.guard(claim, guard));
+        resume = new BaySourceResume(server);
     }
+
+    private void offer(UUID logical) { if (!stopping) { queue.offer(logical); } }
 
     /** ServerStartingEvent, after the receipt index: the session handle, the claim predicate, then the restart rows. */
     static BayTransferRecovery start(MinecraftServer server) {
@@ -69,6 +84,7 @@ final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
         coordinator.beginRestart(session.receipts());
         coordinator.cuts = BayDeploymentCuts.configured(server);
         coordinator.registryBlockedSession = BayDeploymentCuts.registryBlocked(server);
+        coordinator.refuseRegistration = BayDeploymentCuts.refuseRegistration(server);
         return coordinator;
     }
 
@@ -94,7 +110,7 @@ final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
             }
             var handoff = claims.report(logical, record.transferId());
             if (handoff.isPresent()) {
-                audited.remove(logical);
+                audited.remove(logical); forgetState(claim);
                 return handoff.get() == BayClaim.Handoff.READY_SOURCE ? Claim.readySource(claim.source().orElseThrow()) : Claim.ordinary();
             }
             return Claim.held(claim.hold() == BayClaim.Hold.REPAIR ? State.REPAIR : State.OWNED_WAIT, claim.reason());
@@ -114,6 +130,14 @@ final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
     @Override
     public void escrowConflict(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record) {
         claims.get(record.logicalRocketId()).ifPresent(claim -> { claim.repair("ESCROW_AUTHORITY_CONFLICT"); audit(claim); });
+    }
+
+    /** A join or leave of L's endpoint invalidates its group's D6/D7 proof (B16); the coordinator repeats D6. */
+    @Override
+    public void endpointChanged(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record) {
+        claims.get(record.logicalRocketId()).flatMap(BayClaim::group).ifPresent(group -> {
+            group.invalidate(); offer(record.logicalRocketId());
+        });
     }
 
     /** D0's enqueue: a HELD claim at once when T's source snapshot has a bay holding a package (R49 Q1); none, no claim. */
@@ -141,25 +165,36 @@ final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
         if (stopping) { return; }
         if (shuttingDown()) { stop(); return; }
         if (!ticked) { ticked = true; BayDeploymentCuts.firstTick(server); }
-        renewTickets();
+        renewTickets(); proof.observe(); // W170-R22: a watched source that changed invalidates its D6/D7 token first
         queue.run(this::step);
     }
+
+    /** W170-R22: a rocket's position write or Level removal, from the entity itself; a watched L's proof is invalidated. */
+    void sourceChanged(RocketEntity rocket) { if (!stopping) { proof.changed(rocket); } }
 
     /** ServerStoppingEvent, or the first observed shutdown: discard every waiting step and run no further effect. */
     void stop() {
         if (stopping) { return; }
         stopping = true; queue.close(); checks.clear();
+        registration.clear(); publication.clear(); consumption.clear(); proof.clear();
         LOGGER.info("ARCE_BAY_STOPPED claims={} unresolved={}", claims.size(),
                 claims.claims().stream().filter(claim -> claim.stage() != BayClaim.Stage.ENDED).count());
     }
 
-    /** While held, an in-session claim renews only T's recorded flight tickets on both ends, without a load. */
+    /**
+     * While held, an in-session claim renews only T's recorded flight tickets on both ends, without a load; a healthy
+     * restart group renews the existing tickets on T's checked columns of both ends (R1). REPAIR adds no ticket.
+     */
     private void renewTickets() {
         var journal = RocketTransferSavedData.get(server);
         for (BayClaim claim : claims.claims()) {
-            if (claim.origin() != BayClaim.Origin.CHECKPOINT) { continue; }
             RocketTransferRecord record = journal.find(claim.transfer()).orElse(null);
             if (record == null) { continue; }
+            if (claim.origin() != BayClaim.Origin.CHECKPOINT) {
+                if (claim.group().isPresent() && claim.hold() != BayClaim.Hold.REPAIR && claim.stage() != BayClaim.Stage.ENDED
+                        && claim.stage() != BayClaim.Stage.PUBLISH) { resume.renew(claim); } // W170-R23: checked T first
+                continue;
+            }
             var source = RocketTransferEntities.level(server, record.sourceSnapshot().sourceDimension());
             if (source != null) { RocketTransferEntities.refreshOriginTicket(source, record.sourceSnapshot(), record.transferId()); }
             var destination = RocketTransferEntities.level(server, record.destinationSnapshot().sourceDimension());
@@ -171,11 +206,17 @@ final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
 
     private BayStepQueue.Result step(UUID logical) {
         BayClaim claim = claims.get(logical).orElse(null);
-        if (claim == null || claim.stage() == BayClaim.Stage.ENDED || shuttingDown()) { return BayStepQueue.Result.IDLE; }
+        if (claim == null || shuttingDown()) { return BayStepQueue.Result.IDLE; }
+        if (claim.stage() == BayClaim.Stage.ENDED) { audit(claim); return BayStepQueue.Result.IDLE; } // D7 ends it in a completion
         BayStepQueue.Result result = switch (claim.stage()) {
             case GROUP -> groupStep(claim);
             case BAYS -> bayStep(claim);
             case OUTCOMES -> outcomeStep(claim);
+            case PUBLISH -> publication.publish(claim);
+            case RESUME -> resume.resume(claim);
+            case CONSUME -> consumption.consume(claim);
+            case PROVE -> proof.prove(claim);
+            case RETIRE -> proof.retire(claim);
             case ENDED -> BayStepQueue.Result.IDLE;
         };
         audit(claim);
@@ -250,11 +291,13 @@ final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
     private BayStepQueue.Result bayStep(BayClaim claim) {
         BayMember member = claim.nextCandidate().orElse(null);
         if (member == null) { return BayStepQueue.Result.AGAIN; }
+        // W170-R44: a claim held for repair writes no further INTENT; each remaining candidate holds without a write.
+        if (claim.hold() == BayClaim.Hold.REPAIR) { member.hold(claim.reason()); return BayStepQueue.Result.AGAIN; }
         RocketTransferRecord record = RocketTransferSavedData.get(server).find(claim.transfer()).orElse(null);
         var bay = record == null ? null : checks.bay(record.sourceSnapshot(), member.bay()).orElse(null);
         if (bay == null) { refuse(claim, member, "INVALID_PACKAGE"); return BayStepQueue.Result.AGAIN; }
         var registry = SatelliteMissionSavedData.get(server);
-        var refusal = BayDeploymentChecks.bayRefusal(bay, record, registry);
+        var refusal = BayDeploymentChecks.bayRefusal(bay, record);
         if (refusal.isPresent()) { refuse(claim, member, refusal.get()); return BayStepQueue.Result.AGAIN; }
         var identity = bay.identity().orElseThrow();
         String signature = RocketNativeResources.signature(bay.pkg());
@@ -273,15 +316,16 @@ final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
             return BayStepQueue.Result.AGAIN;
         }
         long now = server.getTickCount();
+        boolean preexisting = registry.satellite(identity.satelliteId()).isPresent(); // sampled again at every D1 (W27A section 3)
         BayReceipt intent = previous == null
                 ? new BayReceipt(UUID.randomUUID(), session.nextSequence(), claim.logical(), member.bay(), identity.satelliteId(),
                         identity.ownerId(), identity.definitionId().toString(), identity.kind(), body.toString(), signature,
                         record.transferId(), record.sourceSnapshot().contentHash(), null, record.destinationSnapshot().contentHash(),
-                        null, BayReceipt.Phase.INTENT, "NONE", false, false, 0, now, now, 0)
+                        null, BayReceipt.Phase.INTENT, "NONE", preexisting, false, 0, now, now, 0)
                 : new BayReceipt(previous.op(), previous.seq(), claim.logical(), member.bay(), previous.satellite(), previous.owner(),
                         previous.definition(), previous.kind(), body.toString(), previous.packageSig(), record.transferId(),
                         record.sourceSnapshot().contentHash(), null, record.destinationSnapshot().contentHash(), null,
-                        BayReceipt.Phase.INTENT, "NONE", previous.preexisting(), false, previous.registryEpoch(),
+                        BayReceipt.Phase.INTENT, "NONE", preexisting, false, previous.registryEpoch(),
                         previous.createdTick(), now, Math.min(BayReceipt.MAX_ATTEMPTS, previous.attempts() + 1));
         if (cuts != null) { cuts.writing(claim, intent); }
         BayReceiptStore.Admission admission = session.put(intent, completion(claim, member, intent, true));
@@ -294,11 +338,19 @@ final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
         return BayStepQueue.Result.AGAIN;
     }
 
-    /** The outcome steps: D2's REJECTED, or a restart row; then the exit once every member is resolved. */
+    /**
+     * The outcome steps: D2 or a restart row per INTENT member; D3 once no member waits for its D1 or D2; D4's freeze once
+     * every member is resolved or proved; else the exit once every member is resolved.
+     */
     private BayStepQueue.Result outcomeStep(BayClaim claim) {
         BayMember member = claim.members().stream().filter(candidate -> candidate.state() == BayMember.State.INTENT)
                 .findFirst().orElse(null);
         if (member != null) { return outcome(claim, member); }
+        if (claim.members().stream().anyMatch(candidate -> candidate.state() == BayMember.State.REGISTERING)) {
+            boolean d1 = claim.members().stream().anyMatch(candidate -> candidate.state() == BayMember.State.INTENT_WRITE);
+            return d1 ? BayStepQueue.Result.IDLE : registration.prove(claim); // the INTENT completion offers the claim
+        }
+        if (BayGroupPublication.ready(claim)) { return publication.freeze(claim); }
         if (!claim.finished()) { return BayStepQueue.Result.IDLE; } // completions offer the claim again
         var store = session.receipts().stream().anyMatch(receipt -> receipt.rocket().equals(claim.logical()) && receipt.pending());
         if (store) { return BayStepQueue.Result.NEXT_TICK; } // RELEASED_TO_ORDINARY only once no blocking receipt names L
@@ -312,12 +364,16 @@ final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
         long now = server.getTickCount();
         BayReceipt next;
         if (claim.origin() == BayClaim.Origin.CHECKPOINT) {
-            next = intent.withPhase(BayReceipt.Phase.REJECTED, BayDeploymentReasons.revalidate(server, session, checks, claim, intent), now);
+            // W170-R4: a claim held for repair cannot proceed this session, so D2 registers nothing more under it.
+            if (claim.hold() == BayClaim.Hold.REPAIR) { member.hold(claim.reason()); return BayStepQueue.Result.AGAIN; }
+            var refusal = registryOperational(claim.logical()) ? registration.register(claim, member, intent) : java.util.Optional.of("REGISTRY_BLOCKED");
+            if (refusal.isEmpty()) { return BayStepQueue.Result.AGAIN; } // REGISTERING: D3 follows once every member passed D2
+            next = intent.withPhase(BayReceipt.Phase.REJECTED, refusal.get(), now);
         } else {
             switch (BayRestartRows.row(server, intent, registryOperational(claim.logical()))) {
                 case REJECT_INTERRUPTED -> next = intent.withPhase(BayReceipt.Phase.REJECTED, "INTERRUPTED", now);
                 case REPAIR_SIGNATURE -> next = intent.withPhase(BayReceipt.Phase.REPAIR, "REGISTRY_SIGNATURE_CONFLICT", now);
-                case HOLD_EQUAL -> { member.hold("DEPLOYMENT_PENDING"); return BayStepQueue.Result.AGAIN; }
+                case PROMOTE -> { registration.promote(member, intent); return BayStepQueue.Result.AGAIN; }
                 case HOLD_BLOCKED -> { member.hold("REGISTRY_BLOCKED"); claim.repair("REGISTRY_BLOCKED"); return BayStepQueue.Result.AGAIN; }
                 default -> {
                     member.hold("TRANSFER_AUTHORITY_CONFLICT"); claim.repair("TRANSFER_AUTHORITY_CONFLICT");
@@ -395,6 +451,12 @@ final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
 
     private boolean shuttingDown() { return server.isStopped() || !server.isRunning(); }
 
+    /** The ended (or forgotten) claim's RAM proof state in every step class. */
+    private void forgetState(BayClaim claim) {
+        registration.forget(claim); publication.forget(claim.logical()); consumption.forget(claim.logical());
+        proof.forget(claim.logical()); resume.forget(claim.logical());
+    }
+
     /** The loaded registry, unless a gated seam blocks this coordinator's view of it for the session or for L. */
     private boolean registryOperational(UUID logical) {
         return !registryBlockedSession && !registryBlockedForTests.contains(logical)
@@ -427,6 +489,7 @@ final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
     /** Cleanup of a claim that this slice holds until offline repair; it reports no handoff. */
     void forgetForTests(UUID logical) {
         EscrowTestEndpoints.requireEnabled(server);
+        claims.get(logical).ifPresent(this::forgetState);
         claims.remove(logical); audited.remove(logical);
         registryBlockedForTests.remove(logical); checkpointRefusedForTests.remove(logical);
     }

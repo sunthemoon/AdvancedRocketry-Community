@@ -39,8 +39,8 @@ final class AccountRecoveryTest {
         Map<UUID, ResearchAccount> accounts = new LinkedHashMap<>();
         StorageBudget budget = new StorageBudget();
         // Isolate section arithmetic; normal 4,096 x 128 account reservations fit below this byte cap.
-        budget.reserve(StorageBudget.Section.ACCOUNTS, new UUID(1L, 0L),
-                (int) StorageBudget.Section.ACCOUNTS.bytes - RecordSizer.ACCOUNT_BYTES);
+        budget.reserve(StorageBudget.Section.ACCOUNTS, new UUID(1L, 0L), new RecordSizer.Reservation(
+                (int) StorageBudget.Section.ACCOUNTS.bytes - RecordSizer.ACCOUNT_BYTES, true));
         long before = budget.reserved(StorageBudget.Section.ACCOUNTS);
         assertThrows(IllegalArgumentException.class, () -> AccountRecovery.restore(
                 List.of(satellite(0, new UUID(2L, 0L)), satellite(1, new UUID(2L, 1L))), accounts, budget));
@@ -52,8 +52,8 @@ final class AccountRecoveryTest {
     void exactSectionByteCapacityCountsSharedOwnersOnceAndRepeatedRestoreChangesNothing() {
         Map<UUID, ResearchAccount> accounts = new LinkedHashMap<>();
         StorageBudget budget = new StorageBudget();
-        budget.reserve(StorageBudget.Section.ACCOUNTS, new UUID(1L, 0L),
-                (int) StorageBudget.Section.ACCOUNTS.bytes - RecordSizer.ACCOUNT_BYTES);
+        budget.reserve(StorageBudget.Section.ACCOUNTS, new UUID(1L, 0L), new RecordSizer.Reservation(
+                (int) StorageBudget.Section.ACCOUNTS.bytes - RecordSizer.ACCOUNT_BYTES, true));
         UUID owner = new UUID(2L, 0L);
         List<SatelliteState> satellites = List.of(satellite(0, owner), satellite(1, owner));
         assertEquals(1, AccountRecovery.restore(satellites, accounts, budget));

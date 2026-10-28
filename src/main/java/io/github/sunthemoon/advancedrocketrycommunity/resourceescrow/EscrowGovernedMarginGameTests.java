@@ -3,6 +3,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.resourceescrow;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.EscrowGameTestProof;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestAutosave;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataPolicy;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
@@ -136,6 +137,11 @@ public final class EscrowGovernedMarginGameTests {
      */
     private static final class Flight {
         private static final int[][] FOOTPRINT = {{0, 0}, {13, 13}};
+        /**
+         * W187: F1's source capture completes with its Level's next 20-tick force, and the ARMED ledger write must capture
+         * while that proof is still valid. Three force periods bound both at paced ticks, as in W184's Moon landing rule.
+         */
+        private static final int F1_WINDOW_TICKS = 60;
         private final GameTestHelper helper;
         private final ServerLevel earth;
         private final ServerLevel moon;
@@ -241,6 +247,10 @@ public final class EscrowGovernedMarginGameTests {
             helper.assertTrue(line.startsWith("Warm-up logical=" + logical + " state=READY request=" + first + " transfer=none level=")
                     && line.contains(" columns=4/4 ") && line.endsWith(" player=none"), "Inspect lost the warm-up line: " + line);
             if (!journal.retryChecked(server)) { return; }
+            // W187: a periodic autosave stores the source's entity section and supersedes F1's pending capture. F1 then
+            // discards the launch and awaitF2 waits for a record that never comes, until the 3,000-tick timeout. Request
+            // the flight only when the next autosave falls after F1's window; the 600-tick warm-up outlasts the wait.
+            if (GameTestAutosave.within(server, F1_WINDOW_TICKS)) { return; }
             var result = RocketRuntime.requestAdminFlight(rocket, RocketDestination.MOON, launch);
             helper.assertTrue(result.code() == RocketFlightRequestCode.JOURNAL_PENDING,
                     "The governed border-crossing launch was refused: " + result.code() + " " + result.detailKey());

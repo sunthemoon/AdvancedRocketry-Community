@@ -6,6 +6,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.Rocket
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketFluidCargoBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderStatus;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.LoaderFixtureData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.LoaderRoot;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.UnstartedServer;
@@ -46,7 +47,7 @@ class EscrowTurnYieldTest {
         try (var fixture = new Turns(temp)) {
             var device = UnstartedServer.allocate(FluidFuelLoaderBlockEntity.class);
             UnstartedServer.set(FluidFuelLoaderBlockEntity.class, device, "turns", fixture.first);
-            UnstartedServer.set(FluidFuelLoaderBlockEntity.class, device, "status", LoaderRoot.Status.INVALID);
+            LoaderFixtureData.install(device, null, LoaderRoot.Status.INVALID);
             fixture.first.blocked();
             assertEquals(FluidFuelLoaderStatus.INVALID_DATA, device.attempt());
             assertTrue(fixture.second.claim()); fixture.second.release();

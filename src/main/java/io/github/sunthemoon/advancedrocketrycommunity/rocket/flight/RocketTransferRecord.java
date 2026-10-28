@@ -284,6 +284,44 @@ public final class RocketTransferRecord {
                 requiredFuel, createdAtGameTime, updatedChecksum, null);
     }
 
+    /**
+     * W170 D4/D5: T' for a bay consumption group. Only PREPARED and ungoverned; it keeps the transfer ID, phase, owner,
+     * source UUID, flight data, fuel and creation tick, and replaces only the two snapshots (same IDs, dimensions,
+     * origins, positions and states; block-entity payloads only) and the checksum.
+     */
+    public RocketTransferRecord withConsumedSnapshots(RocketStructureSnapshot source, RocketStructureSnapshot destination) {
+        if (phase != RocketTransferPhase.PREPARED || nativeTransfer != null) {
+            throw new IllegalStateException("Only an ungoverned PREPARED transfer can carry a bay consumption");
+        }
+        if (!payloadOnly(sourceSnapshot, source) || !payloadOnly(destinationSnapshot, destination)) {
+            throw new IllegalArgumentException("A bay consumption replaces block-entity payloads only");
+        }
+        String updated = RocketTransferChecksum.compute(schemaVersion, transferId, logicalRocketId, ownerId, sourceEntityId,
+                source, destination, sourceFlightData, destinationFlightData, requiredFuel, createdAtGameTime);
+        return new RocketTransferRecord(schemaVersion, transferId, phase, logicalRocketId, ownerId, sourceEntityId, null,
+                source, destination, sourceFlightData, destinationFlightData, requiredFuel, createdAtGameTime, updated, null);
+    }
+
+    private static boolean payloadOnly(RocketStructureSnapshot before, RocketStructureSnapshot after) {
+        if (before.schemaVersion() != after.schemaVersion() || !before.snapshotId().equals(after.snapshotId())
+                || !before.sourceDimension().equals(after.sourceDimension())
+                || !before.sourceOrigin().equals(after.sourceOrigin()) || before.blocks().size() != after.blocks().size()
+                || !before.passengerAnchors().equals(after.passengerAnchors()) || !before.stats().equals(after.stats())
+                || !before.propulsion().equals(after.propulsion()) || before.createdAtGameTime() != after.createdAtGameTime()) {
+            return false;
+        }
+        for (int i = 0; i < before.blocks().size(); i++) {
+            var was = before.blocks().get(i); var now = after.blocks().get(i);
+            if (!was.position().equals(now.position()) || !was.state().equals(now.state())
+                    || was.blockEntityPayload().isPresent() != now.blockEntityPayload().isPresent()
+                    || was.blockEntityPayload().isPresent() && !was.blockEntityPayload().get().adapterId()
+                            .equals(now.blockEntityPayload().get().adapterId())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     private RocketTransferRecord copy(RocketTransferPhase updatedPhase, UUID updatedDestinationEntityId) {
         return new RocketTransferRecord(
                 schemaVersion,

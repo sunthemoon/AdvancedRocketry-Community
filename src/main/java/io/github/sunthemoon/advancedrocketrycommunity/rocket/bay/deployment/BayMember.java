@@ -28,7 +28,17 @@ public final class BayMember {
         /** Refused at runtime (D0, or a definite D1 failure); nothing durable changed. */
         REFUSED,
         /** A state this slice never resolves online; it waits unchanged for a later slice or offline repair. */
-        HELD
+        HELD,
+        /** W170 D2: X is registered (or replayed) in RAM under the permit; D3's proof is outstanding. INTENT stays durable. */
+        REGISTERING,
+        /** W170 D3: a published registry acknowledgement proves X; the member waits for its group's publication (D4). */
+        PROVED,
+        /** W170 D4: the group's REGISTERED receipt is queued or captured. */
+        REGISTERED_WRITE,
+        /** W170 D4: REGISTERED is exactly acknowledged (or loaded at a restart); consumption and retirement follow. */
+        REGISTERED,
+        /** W170 D7: the group's removal is exactly acknowledged. */
+        RETIRED
     }
 
     private final RocketPosition bay;
@@ -61,17 +71,55 @@ public final class BayMember {
         return member;
     }
 
+    /** W170: a durable REGISTERED receipt found at restart; its group resumes consumption and retirement. */
+    public static BayMember restartRegistered(BayReceipt registered) {
+        if (registered.phase() != BayReceipt.Phase.REGISTERED || registered.released()) {
+            throw new IllegalArgumentException("A resumed member starts from a non-released REGISTERED receipt");
+        }
+        return new BayMember(registered.bay(), registered.satellite(), State.REGISTERED, registered);
+    }
+
     public RocketPosition bay() { return bay; }
     public Optional<UUID> satellite() { return Optional.ofNullable(satellite); }
     public State state() { return state; }
     public String reason() { return reason; }
     public Optional<BayReceipt> receipt() { return Optional.ofNullable(receipt); }
     /** The member's last durable outcome is known and nothing about it is pending. */
-    public boolean resolved() { return state == State.REJECTED || state == State.REFUSED; }
+    public boolean resolved() { return state == State.REJECTED || state == State.REFUSED || state == State.RETIRED; }
     /** A receipt write of this member is queued, captured or unknown, or its outcome step is still to run. */
     public boolean awaiting() {
-        return state == State.INTENT_WRITE || state == State.INTENT || state == State.REJECT_WRITE || state == State.REPAIR_WRITE;
+        return state == State.INTENT_WRITE || state == State.INTENT || state == State.REJECT_WRITE || state == State.REPAIR_WRITE
+                || state == State.REGISTERING || state == State.REGISTERED_WRITE;
     }
+    /** W170: the member is in, or ready for, its group: proved and not yet retired. */
+    public boolean consumable() {
+        return state == State.PROVED || state == State.REGISTERED_WRITE || state == State.REGISTERED;
+    }
+
+    /** W170 D2: X is registered or replayed in RAM under the permit; the INTENT receipt is unchanged. */
+    public void registered() { require(state == State.INTENT, "register"); state = State.REGISTERING; }
+
+    /** W170 D3: a published acknowledgement proves X. */
+    public void proved() { require(state == State.REGISTERING, "prove"); state = State.PROVED; }
+
+    /** W170 D4: the group's REGISTERED receipt was queued. */
+    public void groupQueued(BayReceipt registered) {
+        require(state == State.PROVED && receipt != null && registered.op().equals(receipt.op())
+                && registered.phase() == BayReceipt.Phase.REGISTERED, "queue REGISTERED");
+        state = State.REGISTERED_WRITE; receipt = registered; reason = registered.reason();
+    }
+
+    /** W170 D4: the group's generation is exactly acknowledged. */
+    public void groupAcknowledged() { require(state == State.REGISTERED_WRITE, "acknowledge REGISTERED"); state = State.REGISTERED; }
+
+    /** W170 D4: the group's generation failed definitely; the store restored INTENT and the publication runs again. */
+    public void groupFailed(BayReceipt restored) {
+        require(state == State.REGISTERED_WRITE && restored.phase() == BayReceipt.Phase.INTENT, "fail REGISTERED");
+        state = State.PROVED; receipt = restored; reason = restored.reason();
+    }
+
+    /** W170 D7: the group's removal is exactly acknowledged. */
+    public void retired() { require(state == State.REGISTERED, "retire"); state = State.RETIRED; }
 
     /** D0 refused it, or its INTENT write failed definitely (the store restored the prior receipt). */
     public void refuse(String nextReason) {

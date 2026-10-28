@@ -253,9 +253,10 @@ public final class RailgunBlockEntity extends CargoEndpointBlockEntity implement
         return Component.translatable("block.advancedrocketrycommunity.railgun");
     }
 
+    /** W182: vanilla opens a spectator's menu here directly, without the block's use; a spectator gets none. */
     @Nullable
     @Override
     public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) {
-        return new RailgunMenu(id, inventory, this);
+        return player.isSpectator() ? null : new RailgunMenu(id, inventory, this);
     }
 }

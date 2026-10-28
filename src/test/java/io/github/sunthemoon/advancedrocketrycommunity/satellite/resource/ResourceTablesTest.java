@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.satellite.resource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -87,6 +88,77 @@ final class ResourceTablesTest {
                 new byte[ResourceTableCodec.MAX_ASTEROID_FILE_BYTES + 1], ANY_ITEM));
         String gas = "{\"schema_version\":1,\"body\":\"a:b\",\"products\":[{\"item\":\"a:c\",\"amount_per_1000_ticks\":65}]}";
         assertThrows(IllegalArgumentException.class, () -> ResourceTableCodec.decodeGasTable(id, bytes(gas), ANY_ITEM));
+    }
+
+    @Test
+    void bareIdsAreBoundedByTheirCanonicalForm() {
+        // W173 section 6.3: records store canonical IDs, which the registry decoder bounds at 128 characters.
+        ResourceLocation type = ResourceLocation.tryParse("t:a");
+        ResourceLocation table = ResourceLocation.tryParse("t:gas");
+        for (int length : List.of(118, 119, 128)) {
+            String bare = "r" + "x".repeat(length - 1);
+            ResourceLocation id = ResourceLocation.tryParse(bare);
+            assertEquals(length + 10, id.toString().length());
+            boolean fits = id.toString().length() <= ResourceTableCodec.MAX_ID_CHARS;
+            assertCanonicalBound("id", fits, () -> ResourceTableCodec.decodeAsteroidType(id,
+                    asteroid(bare, "a:b", "minecraft:cobblestone"), ANY_ITEM));
+            assertCanonicalBound("system", fits, () -> ResourceTableCodec.decodeAsteroidType(type,
+                    asteroid("t:a", bare, "minecraft:cobblestone"), ANY_ITEM));
+            assertCanonicalBound("item", fits, () -> ResourceTableCodec.decodeAsteroidType(type,
+                    asteroid("t:a", "a:b", bare), ANY_ITEM));
+            assertCanonicalBound("body", fits, () -> ResourceTableCodec.decodeGasTable(table, gas(bare, "a:c"), ANY_ITEM));
+            assertCanonicalBound("item", fits, () -> ResourceTableCodec.decodeGasTable(table, gas("a:b", bare), ANY_ITEM));
+        }
+    }
+
+    private static void assertCanonicalBound(String field, boolean fits, Runnable decode) {
+        if (fits) {
+            decode.run();
+            return;
+        }
+        var refused = assertThrows(IllegalArgumentException.class, decode::run, field);
+        assertEquals(field + " must be an ID of at most 128 characters", refused.getMessage());
+    }
+
+    private static byte[] asteroid(String id, String system, String baseItem) {
+        return bytes("{\"schema_version\":1,\"id\":\"" + id + "\",\"weight\":1,\"systems\":[\"" + system + "\"],"
+                + "\"mass\":10,\"mass_variability_pct\":0,\"richness_pct\":50,\"richness_variability_pct\":0,"
+                + "\"base_item\":\"" + baseItem + "\",\"ores\":[{\"item\":\"minecraft:iron_ore\",\"weight\":1}],"
+                + "\"time_multiplier_pct\":100}");
+    }
+
+    private static byte[] gas(String body, String item) {
+        return bytes("{\"schema_version\":1,\"body\":\"" + body + "\",\"products\":[{\"item\":\"" + item
+                + "\",\"amount_per_1000_ticks\":8}]}");
+    }
+
+    @Test
+    void gasFileIdsKeepTheExistingCanonicalRewardVersionBoundary() {
+        for (int length : List.of(128, 129, 176, 177)) {
+            ResourceLocation file = ResourceLocation.tryParse("g".repeat(length - 10));
+            assertEquals(length, file.toString().length());
+            byte[] raw = gas(ModIdentity.id("gas_giant").toString(), "minecraft:iron_ingot");
+            if (length <= 176) {
+                GasTable table = ResourceTableCodec.decodeGasTable(file, raw, ANY_ITEM);
+                assertTrue(ResourceTables.create(List.of(), List.of(table), catalog()).result().isPresent());
+            } else {
+                var refused = assertThrows(IllegalArgumentException.class,
+                        () -> ResourceTableCodec.decodeGasTable(file, raw, ANY_ITEM));
+                assertEquals("id must be an ID of at most 176 characters", refused.getMessage());
+            }
+        }
+    }
+
+    @Test
+    void anOversizedGasFileIdReturnsTheCatalogDiagnosticInsteadOfThrowing() {
+        ResourceLocation file = ResourceLocation.tryParse("g".repeat(167));
+        GasTable table = new GasTable(file, ModIdentity.id("gas_giant"),
+                List.of(new GasTable.Product(ResourceLocation.tryParse("minecraft:iron_ingot"), 8)),
+                "0123456789abcdef");
+        var result = assertDoesNotThrow(() -> ResourceTables.create(List.of(), List.of(table), catalog()));
+        assertTrue(result.result().isEmpty());
+        assertEquals("Gas table " + file + " would exceed the mission record bound ("
+                + SatelliteRecordFit.DOES_NOT_FIT + " B)", result.error().orElseThrow().message());
     }
 
     @Test

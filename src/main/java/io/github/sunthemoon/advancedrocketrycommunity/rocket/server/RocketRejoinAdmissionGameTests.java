@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.FirstEventGameTestPlayers;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestAutosave;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedRootSupplier;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModEntities;
@@ -80,6 +81,12 @@ public final class RocketRejoinAdmissionGameTests {
         public boolean shouldInformAdmins() { return false; }
     }
     private static final class Scenario {
+        /**
+         * W184: B0 and each of B1's slot captures (at most three: the authority, source and destination slots) complete
+         * with their Level's next 20-tick force, and S1's sidecar write between them takes about one more such period at
+         * paced ticks. Five force periods bound the native window; at most one wait of this length per run.
+         */
+        private static final int CAPTURE_WINDOW_TICKS = 100;
         final GameTestHelper helper; final ServerLevel level; final MinecraftServer server;
         final boolean landed, refusalOnly, unloadedOnly; final RocketTransferService transfers; final RocketTransferSavedData journal;
         final GameTestTickPacer pacer; final Output output = new Output();
@@ -145,6 +152,10 @@ public final class RocketRejoinAdmissionGameTests {
         String release() { return "arce rocket recover " + transfer.transferId() + " release-absent"; }
         void admit() throws Exception {
             if (!journal.retryChecked(server)) { return; }
+            // W184: a periodic autosave stores the authority's entity section and supersedes a pending native capture.
+            // In B0, W80 then drops the admission (B0_FAILED); in B1, the release logs CAPTURE_FAILED and retries 200
+            // ticks later. Admit only when the next autosave falls after the release's captures.
+            if (!refusalOnly && GameTestAutosave.within(server, CAPTURE_WINDOW_TICKS)) { return; }
             helper.assertTrue(command("arce rocket rejoins") == 0 && !Files.exists(file) && !data.isDirty(), "Unused view wrote a sidecar");
             var before = RocketRejoinCodec.encode(data.root());
             helper.assertTrue(command("arce rocket recover " + UUID.randomUUID() + " release-absent") == 0, "Unknown transfer admitted");

@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModEntities;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.AnvilRecordReader;
@@ -99,6 +100,10 @@ public final class SealedRecoveryGameTests {
                 snapshot.contentHash(), snapshot.sourceDimension(), snapshot.sourceOrigin(), 0, snapshot.blocks().get(0).state(), null)));
         level.setBlockEntity(carrier); carrier.setChanged();
         var seen = new boolean[1]; var done = new boolean[1];
+        // W170 (R133): the recovery's proof (store, force and readback) must finish inside its 100-tick attempt window, and
+        // it and the journal writes take wall-clock time. Unpaced, a lagging host let the window pass first (DEADLINE, then
+        // the 200-tick retry, done at about tick 370 of 400), so each tick lasts a 20 TPS server tick.
+        var pacer = new GameTestTickPacer(server);
         helper.runAtTickTime(399, () -> {
             if (!done[0]) { helper.fail("Recovery incomplete: " + RocketRuntime.sealedDiagnosticForReleaseTest(server, id)
                     + ",absent=" + data.acknowledgedAbsent(id, snapshot.snapshotId(), rocket.getUUID())
@@ -107,6 +112,7 @@ public final class SealedRecoveryGameTests {
         });
         helper.onEachTick(() -> {
             if (done[0]) { return; }
+            pacer.pace();
             seen[0] |= tracked(server, id);
             boolean absent = data.acknowledgedAbsent(id, snapshot.snapshotId(), rocket.getUUID());
             if (!absent) {

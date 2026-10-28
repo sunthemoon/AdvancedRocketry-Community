@@ -67,6 +67,24 @@ final class SatelliteComponentDefinitionTest {
         assertEquals(64, SatelliteComponentCatalog.decode(many, item -> true).result().orElseThrow().size());
     }
 
+    @Test
+    void aBareItemIsBoundedByItsCanonicalFormAtDatapackLoad() {
+        // W173 section 6.3: the blueprint stores the item's canonical ID, which the registry decoder bounds at 128.
+        for (int length : List.of(118, 119, 128)) {
+            String bare = "c" + "x".repeat(length - 1);
+            Map<ResourceLocation, JsonElement> resources = new LinkedHashMap<>();
+            resources.put(id("a:component"), json("{\"schema_version\":1,\"item\":\"" + bare + "\",\"role\":\"chassis\"}"));
+            var catalog = SatelliteComponentCatalog.decode(resources, item -> true);
+            assertEquals(length + 10, id(bare).toString().length());
+            if (id(bare).toString().length() <= 128) {
+                assertEquals(id(bare), catalog.result().orElseThrow().definitions().get(0).item());
+            } else {
+                assertEquals(Optional.of("a:component: Field item is not a valid identifier"),
+                        catalog.error().map(error -> error.message()));
+            }
+        }
+    }
+
     private static JsonElement json(String raw) {
         return JsonParser.parseString(raw);
     }

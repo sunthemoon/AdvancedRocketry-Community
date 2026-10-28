@@ -52,6 +52,36 @@ final class BayRestartRowsTest {
         assertFalse(second.finished());
     }
 
+    private static BayReceipt registered(int n, UUID rocket, UUID transfer, String srcAfter) {
+        var intent = receipt(n, rocket, transfer, BayReceipt.Phase.INTENT, false);
+        return new BayReceipt(intent.op(), intent.seq(), rocket, intent.bay(), intent.satellite(), OWNER, intent.definition(),
+                intent.kind(), intent.orbit(), intent.packageSig(), transfer, HASH, srcAfter, HASH,
+                RocketNativeResources.hash("dst-after"), BayReceipt.Phase.REGISTERED, "NONE", false, false, 4, 1, 2, 0);
+    }
+
+    /** W170: REGISTERED receipts of one T with equal hashes resume as one frozen group; any other mix holds for repair. */
+    @Test void registeredReceiptsResumeAsOneFrozenGroupAndEveryOtherMixHoldsForRepair() {
+        UUID a = new UUID(9, 1), b = new UUID(9, 2), c = new UUID(9, 3), t = new UUID(8, 1);
+        String after = RocketNativeResources.hash("src-after");
+        var claims = BayRestartRows.claims(List.of(registered(1, a, t, after), registered(2, a, t, after),
+                registered(3, b, t, after), receipt(4, b, t, BayReceipt.Phase.INTENT, false),
+                registered(5, c, t, after), registered(6, c, t, RocketNativeResources.hash("other-after")),
+                receipt(7, a, t, BayReceipt.Phase.REJECTED, false)));
+        assertEquals(3, claims.size());
+        var resumed = claims.get(0);
+        assertEquals(BayClaim.Stage.RESUME, resumed.stage(), "R1 and R2 first");
+        assertEquals(BayClaim.Hold.OWNED_WAIT, resumed.hold());
+        assertEquals(2, resumed.group().orElseThrow().members().size(), "the REJECTED receipt is not a member");
+        assertEquals(after, resumed.group().orElseThrow().srcAfter());
+        assertTrue(resumed.source().isEmpty(), "source authority comes from R2");
+        for (var held : claims.subList(1, 3)) {
+            assertEquals(BayClaim.Hold.REPAIR, held.hold(), "REGISTERED with INTENT, or with differing hashes");
+            assertEquals("TRANSFER_AUTHORITY_CONFLICT", held.reason());
+            assertTrue(held.group().isEmpty());
+            assertEquals(BayClaim.Stage.OUTCOMES, held.stage());
+        }
+    }
+
     @Test void receiptsOfOneRocketNamingDifferentTransfersHoldForRepairWithoutAWrite() {
         UUID rocket = new UUID(9, 9);
         var claims = BayRestartRows.claims(List.of(receipt(1, rocket, new UUID(8, 1), BayReceipt.Phase.INTENT, false),

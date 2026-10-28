@@ -4,7 +4,9 @@ import static io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.Escr
 
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestAutosave;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.RocketFlightConsoleFixtures;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketDestination;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightAction;
@@ -54,6 +56,16 @@ public final class EscrowGovernedWarmupGameTests {
     }
 
     /**
+     * The player's Moon launch, from the rocket's open flight menu as the flight screen sends it (W182). W182-R1: the
+     * menu must be open and valid, so that the launch is answered and a refusal of it is never a silent one.
+     */
+    private static void launch(GameTestHelper helper, Player pilot, RocketEntity rocket, UUID request) {
+        helper.assertTrue(RocketFlightConsoleFixtures.send(pilot, rocket, () -> RocketRuntime.requestFlightIntent(pilot,
+                rocket.getId(), RocketFlightAction.LAUNCH, RocketDestination.MOON, request)),
+                "The pilot's flight menu was not open and valid for the launch");
+    }
+
+    /**
      * R22 amendment 1 and design 7.3, through the player entry. A decoy D warms the first Moon pad, so L's warm-up takes
      * the second. D's pad is then invalidated by a non-air block and D is replaced onto the third; with the first pad
      * free again, ordinary selection would move L there, but five fresh relaunches and a replay of L's starting request
@@ -62,6 +74,11 @@ public final class EscrowGovernedWarmupGameTests {
      * over after T's first margin refresh, and the flight lands on the kept pad.
      */
     private static final class KeptPad {
+        /**
+         * W187: F1's source capture completes with its Level's next 20-tick force, and the ARMED ledger write must capture
+         * while that proof is still valid. Three force periods bound both at paced ticks, as in W184's Moon landing rule.
+         */
+        private static final int F1_WINDOW_TICKS = 60;
         private final GameTestHelper helper;
         private final ServerLevel earth, moon;
         private final GameTestTickPacer pacer;
@@ -133,7 +150,7 @@ public final class EscrowGovernedWarmupGameTests {
             helper.assertTrue(refused.code() == RocketFlightRequestCode.DESTINATION_LOADING, "The decoy did not warm: " + refused.code());
             helper.assertTrue(region(pads.get(0)).equals(warmup(server, decoy).region()), "The decoy did not take the first pad");
 
-            RocketRuntime.requestFlightIntent(pilot, rocket.getId(), RocketFlightAction.LAUNCH, RocketDestination.MOON, start);
+            launch(helper, pilot, rocket, start);
             helper.assertTrue(pilot.last().equals(LOADING), "The player's cold launch answered " + pilot.last());
             warming = warmup(server, rocket);
             helper.assertTrue(warming != null && warming.state().equals("WARMING") && warming.request().equals(start)
@@ -158,11 +175,14 @@ public final class EscrowGovernedWarmupGameTests {
             // Without its kept pad, L would now move to the free first pad.
             helper.assertTrue(region(pads.get(0)).equals(ordinary(server, moon, rocket)), "The first pad did not become free again");
             for (int i = 0; i < 5; i++) {
-                RocketRuntime.requestFlightIntent(pilot, rocket.getId(), RocketFlightAction.LAUNCH, RocketDestination.MOON, UUID.randomUUID());
-                helper.assertTrue(pilot.last().equals(LOADING), "A repeated request answered " + pilot.last());
+                // W182-R1: each request adds its own answer; an unanswered one would leave the previous LOADING last.
+                long answered = pilot.count(LOADING);
+                launch(helper, pilot, rocket, UUID.randomUUID());
+                helper.assertTrue(pilot.last().equals(LOADING) && pilot.count(LOADING) == answered + 1,
+                        "A repeated request answered " + pilot.last());
                 kept(server, columns);
             }
-            RocketRuntime.requestFlightIntent(pilot, rocket.getId(), RocketFlightAction.LAUNCH, RocketDestination.MOON, start);
+            launch(helper, pilot, rocket, start);
             helper.assertTrue(pilot.last().equals(REPLAYED), "The starting request was reused: " + pilot.last());
             kept(server, columns);
 
@@ -200,7 +220,11 @@ public final class EscrowGovernedWarmupGameTests {
                     && RocketWarmupGameTestSupport.launchReservations(server, journal, logical(rocket)).stream().noneMatch(region(pads.get(0))::equals),
                     "The removed rocket's warm-up kept its tickets or reservation");
             if (!journal.retryChecked(server)) { return; }
-            RocketRuntime.requestFlightIntent(pilot, rocket.getId(), RocketFlightAction.LAUNCH, RocketDestination.MOON, launch);
+            // W187: a periodic autosave stores the source's entity section and supersedes F1's pending capture. F1 then
+            // discards the launch and awaitF2 waits for a record that never comes, until the 2,400-tick timeout. Relaunch
+            // only when the next autosave falls after F1's window; the 600-tick warm-up outlasts the wait.
+            if (GameTestAutosave.within(server, F1_WINDOW_TICKS)) { return; }
+            launch(helper, pilot, rocket, launch);
             helper.assertTrue(pilot.last().equals(PENDING), "The READY relaunch answered " + pilot.last());
             var bound = warmup(server, rocket);
             helper.assertTrue(bound != null && bound.state().equals("BOUND") && launch.equals(bound.transfer())
@@ -344,11 +368,11 @@ public final class EscrowGovernedWarmupGameTests {
             if (pads.stream().anyMatch(pad -> !cold(server, pad)) || !cold(server, stationPad.snapshot().orElseThrow())) { return; }
 
             for (int i = 0; i < 2; i++) {
-                RocketRuntime.requestFlightIntent(pilot, mine.get(i).getId(), RocketFlightAction.LAUNCH, RocketDestination.MOON, UUID.randomUUID());
+                launch(helper, pilot, mine.get(i), UUID.randomUUID());
                 helper.assertTrue(pilot.last().equals(LOADING) && region(pads.get(i)).equals(warmup(server, mine.get(i)).region()),
                         "The player's warm-up " + i + " answered " + pilot.last());
             }
-            RocketRuntime.requestFlightIntent(pilot, mine.get(2).getId(), RocketFlightAction.LAUNCH, RocketDestination.MOON, UUID.randomUUID());
+            launch(helper, pilot, mine.get(2), UUID.randomUUID());
             helper.assertTrue(pilot.last().equals(LIMIT) && warmup(server, mine.get(2)) == null && tickets(server, mine.get(2)).isEmpty(),
                     "The per-player limit did not refuse a third cold destination: " + pilot.last());
             for (int i = 0; i < 6; i++) {

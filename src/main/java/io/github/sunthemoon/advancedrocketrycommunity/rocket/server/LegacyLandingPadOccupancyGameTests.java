@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestAutosave;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickDriver;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
@@ -99,7 +100,11 @@ public final class LegacyLandingPadOccupancyGameTests {
     @GameTest(template = "rocket_test", batch = "legacy_pad_occupancy", timeoutTicks = 180)
     public static void wideParkedStructureAppearingAfterPreparationRefusesUnnamedPreSpawn(GameTestHelper helper) {
         StationFixture f = new StationFixture(helper);
-        f.awaitReady(() -> {
+        // W187: the detached service's fail-back takes a native survivor capture on the world journal. An autosave that
+        // supersedes it releases the reservation, and the runtime's own recovery can then take T over, as it did in
+        // LandingPadGameTests' hosted NOT_FOUND, and log an undeclared ARCE_TRANSFER_RECOVERY WARN. Start only when the
+        // next autosave falls after the 60-tick wait for the proof.
+        f.awaitReady(StationFixture.RETIREMENT_WINDOW_TICKS, () -> {
             var source = f.source(); UUID transfer = UUID.randomUUID();
             var service = new RocketTransferService();
             io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport.assertPendingLaunch(helper,
@@ -241,6 +246,8 @@ public final class LegacyLandingPadOccupancyGameTests {
     }
 
     private static final class StationFixture {
+        /** W187: the fail-back's survivor proof, one slot, completes within {@link #afterRetired}'s 60-tick wait. */
+        static final int RETIREMENT_WINDOW_TICKS = 60;
         private final GameTestHelper helper;
         private final GameTestTickDriver driver;
         private final ServerLevel space;
@@ -292,6 +299,24 @@ public final class LegacyLandingPadOccupancyGameTests {
                 }
                 then.run();
             } finally { if (!waiting) { close(); } }
+        }
+
+        /**
+         * W187: {@link #awaitReady}, then {@code action} once the next autosave falls more than {@code window} ticks ahead.
+         * The pad's distance-2 region ticket keeps every chunk that readiness checked loaded while it waits.
+         */
+        private void awaitReady(int window, Runnable action) {
+            awaitReady(() -> clearOfAutosave(window, action));
+        }
+
+        /** Keeps the fixture open while it waits; {@code action} then closes it as {@link #awaitReady} would. */
+        private void clearOfAutosave(int window, Runnable action) {
+            if (GameTestAutosave.within(space.getServer(), window)) {
+                deferred = true; pacer.pace();
+                driver.after(1, () -> { deferred = false; try { clearOfAutosave(window, action); } finally { if (!deferred) { close(); } } });
+                return;
+            }
+            action.run();
         }
 
         private void awaitReady(Runnable action) {

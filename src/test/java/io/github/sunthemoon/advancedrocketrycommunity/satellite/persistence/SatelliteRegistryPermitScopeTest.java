@@ -49,6 +49,40 @@ final class SatelliteRegistryPermitScopeTest {
         assertEquals(before, data.save(new CompoundTag()), "validation inside the scope changed nothing");
     }
 
+    /** W170 A0: the registration scope opens launch and launchIdle of the permit's satellite only, never decommission. */
+    @Test void theRegistrationScopeOpensOnlyTheLaunchOfItsOwnSatellite() {
+        var data = SatelliteMissionSavedData.create(0);
+        data.deploymentFence((satellite, removal) -> true);
+        UUID x = UUID.randomUUID(), y = UUID.randomUUID(), z = UUID.randomUUID(), owner = UUID.randomUUID();
+        UUID op = UUID.randomUUID(), dataOp = UUID.randomUUID();
+        var intent = new AtomicBoolean(true);
+        var permit = BayPermitsForTests.permit((candidate, satellite) -> candidate.equals(op) && intent.get(), op, x);
+        var dataPermit = BayPermitsForTests.permit((candidate, satellite) -> candidate.equals(dataOp), dataOp, z);
+        assertEquals(SatelliteOperationCode.DEPLOYMENT_PENDING, data.launchIdle(t -> idle(x, owner, t), 0).code(), "no scope");
+        long sequence = data.mutationSequence();
+        data.registerWithPermit(permit, () -> {
+            assertEquals(SatelliteOperationCode.DEPLOYMENT_PENDING, data.launchIdle(t -> idle(y, owner, t), 0).code(),
+                    "never another satellite");
+            intent.set(false);
+            assertEquals(SatelliteOperationCode.DEPLOYMENT_PENDING, data.launchIdle(t -> idle(x, owner, t), 0).code(),
+                    "a permit whose operation is no longer INTENT is dead");
+            intent.set(true);
+            assertEquals(SatelliteOperationCode.SUCCESS, data.launchIdle(t -> idle(x, owner, t), 0).code(), "its own satellite");
+            assertEquals(SatelliteOperationCode.DEPLOYMENT_PENDING, data.decommission(x, owner, true, true).code(),
+                    "decommission ignores it");
+            assertThrows(IllegalStateException.class, () -> data.validateWithPermit(permit, () -> 0), "scopes do not nest");
+            return 0;
+        });
+        assertTrue(data.satellite(x).isPresent(), "registered once");
+        assertTrue(data.mutationSequence() > sequence, "the registration is a sequenced mutation");
+        assertEquals(SatelliteOperationCode.DEPLOYMENT_PENDING, data.launchIdle(t -> idle(y, owner, t), 0).code(), "scope ended");
+        assertEquals(SatelliteOperationCode.SUCCESS, data.registerWithPermit(dataPermit, () -> data.launch(z, UUID.randomUUID(), owner,
+                SatelliteRegistryProofTest.definition(), ModIdentity.id("earth"), 0, false)).code(), "data launch of its own X");
+        assertThrows(IllegalStateException.class, () -> data.registerWithPermit(permit, () -> { throw new IllegalStateException(); }));
+        assertEquals(SatelliteOperationCode.DEPLOYMENT_PENDING, data.launchIdle(t -> idle(y, owner, t), 0).code(),
+                "the scope ends when it throws");
+    }
+
     private static SatelliteState idle(UUID satellite, UUID owner, long time) {
         return SatelliteState.launchIdle(satellite, ModIdentity.id("gas_harvester"), owner, time, ModIdentity.id("earth"),
                 new SatelliteBlueprint(List.of(ModIdentity.id("primary")), false, new SatelliteStats(4, 10720, 1000, 1, 10)),

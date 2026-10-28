@@ -342,8 +342,9 @@ public final class CombustionGeneratorBlockEntity extends BlockEntity implements
         return Component.translatable("block.advancedrocketrycommunity.combustion_generator");
     }
 
+    /** W182-R3: vanilla opens a spectator's menu here directly, from {@code useItemOn}; a spectator gets none. */
     @Override
     public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) {
-        return new CombustionGeneratorMenu(id, inventory, this);
+        return player.isSpectator() ? null : new CombustionGeneratorMenu(id, inventory, this);
     }
 }

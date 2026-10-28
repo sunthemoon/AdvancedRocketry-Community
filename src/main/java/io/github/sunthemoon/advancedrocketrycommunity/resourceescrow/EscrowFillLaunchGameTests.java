@@ -6,7 +6,9 @@ import com.mojang.authlib.GameProfile;
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestAutosave;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.RocketFlightConsoleFixtures;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketDestination;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightAction;
@@ -97,6 +99,11 @@ public final class EscrowFillLaunchGameTests {
     }
 
     private static final class Scenario {
+        /**
+         * W187: F1's source capture completes with its Level's next 20-tick force, and the ARMED ledger write must capture
+         * while that proof is still valid. Three force periods bound both at paced ticks, as in W184's Moon landing rule.
+         */
+        private static final int F1_WINDOW_TICKS = 60;
         private final GameTestHelper helper;
         private final ServerLevel level;
         private final GameTestTickPacer pacer;
@@ -175,10 +182,12 @@ public final class EscrowFillLaunchGameTests {
                     "Only the escrow fill binds the rocket to the ledger");
             helper.assertTrue(filled.launchReady() == (kind != Kind.EMPTY), "Launch readiness differs for " + kind);
             // A creative viewer that is never placed in the player list, so it loads no chunks around this far area.
-            pilot = new ServerPlayer(level.getServer(), level, new GameProfile(UUID.randomUUID(), "W133" + kind.name())) {
+            // W182: it has a game connection, since the server serves flight intents only to a connected player.
+            pilot = RocketFlightConsoleFixtures.connect(new ServerPlayer(level.getServer(), level,
+                    new GameProfile(UUID.randomUUID(), "W133" + kind.name())) {
                 @Override public boolean isCreative() { return true; }
                 @Override public boolean isSpectator() { return false; }
-            };
+            });
             pilot.setPos(rocket.getX(), rocket.getY() + 1, rocket.getZ());
             var menu = new RocketFlightMenu(1_330 + kind.ordinal(), pilot.getInventory(), rocket);
             helper.assertTrue(menu.canLaunch() == (kind != Kind.EMPTY), "Menu launch flag differs for " + kind);
@@ -195,8 +204,9 @@ public final class EscrowFillLaunchGameTests {
             request = UUID.randomUUID();
             var result = RocketRuntime.requestAdminFlight(rocket, RocketDestination.MOON, request);
             helper.assertTrue(result.code() == RocketFlightRequestCode.INVALID_STATE, "Empty launch answered " + result.code());
-            RocketRuntime.requestFlightIntent(pilot, rocket.getId(), RocketFlightAction.LAUNCH,
-                    new TravelTarget.BodySurface(CelestialIds.MOON_ID), UUID.randomUUID());
+            helper.assertTrue(RocketFlightConsoleFixtures.send(pilot, rocket, () -> RocketRuntime.requestFlightIntent(pilot,
+                    rocket.getId(), RocketFlightAction.LAUNCH, new TravelTarget.BodySurface(CelestialIds.MOON_ID),
+                    UUID.randomUUID())), "The pilot could not open the flight menu");
             helper.assertTrue(filled.equals(rocket.flightData().orElseThrow()) && journal.find(request).isEmpty()
                     && journal.findByLogicalRocket(filled.logicalRocketId()).isEmpty() && RocketEscrowGate.idle(rocket),
                     "A refused launch changed the rocket or the journal");
@@ -223,6 +233,10 @@ public final class EscrowFillLaunchGameTests {
             }
             if (EscrowWarmupFixtures.cold(server, pad) || !journal.retryChecked(server) || !RocketRuntime.resourceMutationAllowed(rocket)) { return; }
             if (kind == Kind.ESCROW && !ResourceEscrowSavedData.existing(server).bind(server).governedAvailable(filled.logicalRocketId())) { return; }
+            // W187: a periodic autosave stores the source's entity section and supersedes the governed F1's pending
+            // capture. F1 then discards the launch, and countdown fails its 400-tick bound. Request the governed launch
+            // only when the next autosave falls after F1's window. The ordinary kinds take no F1 capture.
+            if (kind == Kind.ESCROW && GameTestAutosave.within(server, F1_WINDOW_TICKS)) { return; }
             request = UUID.randomUUID(); requestedAt = helper.getTick();
             var result = RocketRuntime.requestAdminFlight(rocket, RocketDestination.MOON, request);
             helper.assertTrue(result.code() == RocketFlightRequestCode.JOURNAL_PENDING && !result.success(),
@@ -252,8 +266,9 @@ public final class EscrowFillLaunchGameTests {
                 var source = RocketFlightNbtCodec.decode(frozen.getCompound("flight")).data().orElseThrow();
                 helper.assertTrue(source.equals(filled), "The governed launch rewrote its checkpointed ASSEMBLED source");
             }
-            RocketRuntime.requestFlightIntent(pilot, rocket.getId(), RocketFlightAction.CANCEL,
-                    flight.plan().orElseThrow().destinationTarget(), UUID.randomUUID());
+            helper.assertTrue(RocketFlightConsoleFixtures.send(pilot, rocket, () -> RocketRuntime.requestFlightIntent(pilot,
+                    rocket.getId(), RocketFlightAction.CANCEL, flight.plan().orElseThrow().destinationTarget(),
+                    UUID.randomUUID())), "The pilot could not open the flight menu");
             if (kind == Kind.ESCROW) {
                 helper.assertTrue(EscrowRuntime.of(server).returns().handles(record, rocket), "The governed cancellation queued no return");
             }

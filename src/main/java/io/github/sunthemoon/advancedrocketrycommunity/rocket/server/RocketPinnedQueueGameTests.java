@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestAutosave;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowPinnedQueueGameTestSupport;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowRuntime;
 import net.minecraft.core.BlockPos;
@@ -12,6 +13,12 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 @GameTestHolder(ModIdentity.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class RocketPinnedQueueGameTests {
+    /**
+     * W187: act() to retired() spans the governed source proof (one 20-tick force), the support's 40-tick drain after it,
+     * the checked ARM write, and the fail-back's own proof (one more force). Green hosted runs take 60 to 80 ticks; 120
+     * bounds the span with one force period of margin.
+     */
+    private static final int CASE_WINDOW_TICKS = 120;
     private RocketPinnedQueueGameTests() { }
 
     @GameTest(template = "rocket_test", batch = "ordinary_retirement_pinned_queue", timeoutTicks = 400)
@@ -20,6 +27,10 @@ public final class RocketPinnedQueueGameTests {
             EscrowPinnedQueueGameTestSupport consumer;
             boolean began, returned, acknowledged;
             int superseded;
+            // W187: a periodic autosave in this span supersedes the governed proof (asserted confirmed, then required
+            // valid for the ARM write) or another capture, and retired() requires the barrier's superseding-save count
+            // to be unchanged. Act only when the next autosave falls after the span.
+            @Override boolean ready() { return super.ready() && !GameTestAutosave.within(server(), CASE_WINDOW_TICKS); }
             void act() {
                 source = flight.spawnCountdown(helper); prepare(true);
                 // Distinct positions and logical IDs, but exactly the same physical entity slot.

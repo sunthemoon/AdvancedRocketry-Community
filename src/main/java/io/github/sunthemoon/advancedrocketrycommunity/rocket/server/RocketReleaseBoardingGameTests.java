@@ -6,6 +6,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.FirstEventGameTestPlayers;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestAutosave;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.RocketFlightConsoleFixtures;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedRootSupplier;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
@@ -30,7 +31,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.TicketType;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
@@ -66,7 +66,7 @@ public final class RocketReleaseBoardingGameTests {
         RocketTransferRecord record;
         RocketEntity rocket, stale;
         ServerPlayer retainedPlayer, firstPlayer;
-        FakePlayer stranger;
+        ServerPlayer stranger;
         Path sidecarFile;
         ChunkPos originSlot, otherSlot;
         BlockPos origin, other;
@@ -131,8 +131,9 @@ public final class RocketReleaseBoardingGameTests {
             record = fixture.record(); journal.put(record);
             RocketSourceRetirementFixtures.settled(transfers).add(record.transferId());
             rocket = fixture.spawn(helper, level, RocketTransferEntities.stationarySource(record, level.getGameTime()), false);
-            firstPlayer = new FakePlayer(level, new GameProfile(first, "W158Returning"));
-            stranger = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "W158NewSeat"));
+            // W182: connected stand-ins that never join, since the server refuses a fake player's flight intents.
+            firstPlayer = RocketFlightConsoleFixtures.standIn(level, new GameProfile(first, "W158Returning"));
+            stranger = RocketFlightConsoleFixtures.standIn(level, new GameProfile(UUID.randomUUID(), "W158NewSeat"));
             helper.assertTrue(retainedPlayer.startRiding(rocket, true), "Retained passenger did not mount before release");
             seat = rocket.flightData().orElseThrow().passengers().assignment(first).orElseThrow().seatIndex();
             resources = RocketReleasePlan.resources(rocket.snapshot().orElseThrow(), rocket.flightData().orElseThrow());
@@ -300,9 +301,14 @@ public final class RocketReleaseBoardingGameTests {
                         && flight.passengers().assignment(retained).isPresent(), "Reloaded T revived a released seat or lost its remaining rider");
             }
         }
+        /** W182: from the player's open flight menu, as the flight screen sends it; the menu closes again afterwards. */
         RocketFlightRequestCode intent(ServerPlayer player, RocketFlightAction action) {
             player.setPos(rocket.position());
-            return intents.request(player, rocket.getId(), action, new TravelTarget.BodySurface(CelestialIds.EARTH_ID), UUID.randomUUID()).code();
+            var code = new RocketFlightRequestCode[1];
+            helper.assertTrue(RocketFlightConsoleFixtures.send(player, rocket, () -> code[0] = intents.request(player, rocket.getId(),
+                    action, new TravelTarget.BodySurface(CelestialIds.EARTH_ID), UUID.randomUUID()).code()),
+                    player.getScoreboardName() + " could not open the flight menu for " + action);
+            return code[0];
         }
         static boolean hasSeat(CompoundTag entity, UUID player) {
             return entity.getCompound("RocketEntityData").getCompound("flight_data").getCompound("passengers")

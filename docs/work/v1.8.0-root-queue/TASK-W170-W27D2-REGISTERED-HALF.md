@@ -124,6 +124,85 @@ Review pass 1 (receipts and registry), `D:/GitHub/ARCE-Task-Evidence/root-queue/
 W170-R2, the R-043 draft, is Root's. Verification: the new tests alone, the whole unit suite, and the bay batches
 three times. A full GameTest is needed only if production code outside `rocket/bay` changes.
 
+## Pass 2 findings under Root decision R139 (2026-10-28)
+
+Review pass 2 (entity and journal), `D:/GitHub/ARCE-Task-Evidence/root-queue/W170-review/pass2/REVIEW.md` (SHA-256
+`d1a94f9f…956b`), returned BLOCK. Its probes are in the same folder. A fresh session starts after the R137 session
+has delivered, on the branch head that session leaves. It appends a "Pass 2 fixes (R139)" section to the record:
+
+1. **W170-R21 (High).** `BaySourceResume.collect` drops an entity naming L whose snapshot or hash is unexpected, so a
+   visible conflicting copy counts as absent and can survive retirement.
+   - Bound the census by identities naming L first.
+   - Then classify each candidate by owner, end, snapshot ID and hash, position and protection.
+   - An unexpected image holds as runtime REPAIR without mutation; a recognised neutral non-survivor stays
+     DUPLICATE_PENDING.
+   - Add source-margin and destination-column regressions, starting with the review's probe.
+2. **W170-R22.** Movement after D7 queues must invalidate the replacement guard. Connect source position and
+   authority observations to an IO-safe token through captured and queued retirement. Add a pre-guard cut, and run
+   B16 natively for motion, superseding save, join and leave, keeping receipts until a fresh proof succeeds.
+3. **W170-R23.** R1 and R2 effects must wait for the exact checked L/T acknowledgement, not `journal.operational()`.
+   Add a regression that holds the startup writer.
+4. **W170-R24.** The absent-source branch must check all escrow eligibility (`bayNeutral`: locks, floors, tombstones,
+   an unavailable root) before it publishes. Add regressions that leave entity, journal and receipts unchanged on
+   the hold.
+5. **W170-R25.** All of a group's receipts and the checked record must agree on owner before any recovery effect.
+   Start from the review's probe, and cover BEFORE, AFTER and mixed-owner groups.
+
+6. **W170-R4's remaining part** (from pass 1). Once a claim is REPAIR-held, skip D2 for its remaining INTENT members, so
+   that no further satellite is registered in RAM under a claim that cannot proceed this session.
+
+No format, bound, budget or timeout changes. Verification:
+- the new tests alone, failing first;
+- the whole unit suite and the bay batches three times;
+- one complete GameTest;
+- the native cases that the fixes touch, B16 included, two restarts each.
+
+A fresh review of the R137 and R139 changes follows.
+
+## Re-review findings under Root decision R142 (2026-10-28)
+
+The re-review, `D:/GitHub/ARCE-Task-Evidence/root-queue/W170-rereview/REVIEW.md` (SHA-256 `7c1dc465…24e3`), returned
+APPROVE-WITH-CHANGES. Every pass 1 and pass 2 finding is closed. Its probes are in `probe-src/` in the same folder. A
+fresh session works on `codex/v1.8.0-w170` from `1af1d76ed` and appends a "Re-review fixes (R142)" section to the
+record:
+
+1. **W170-R41 (Medium): wait for both ends before the census counts them.**
+   - R2 waits (END_LOADING) until the destination snapshot's end is also entity-loaded. R1 already tickets that end,
+     so add no ticket.
+   - D6 runs its census only while both ends' checked columns are entity-loaded, using the tickets that already exist.
+     If some path reaches D6 with an end that no ticket covers, do not wait there and do not add a ticket. Name the
+     path in the record instead, and Root states the limit in R-043.
+   - Add a case whose destination end is not yet loaded. It must wait, not reach READY_SOURCE, and then proceed once the
+     end loads. Start from the review's HIDDEN-section probe.
+2. **W170-R42 (Low).** A loaded rocket whose data did not decode, and whose preserved `assembly_transaction_id` is L,
+   counts toward the census cap and is classified UNEXPECTED_COPY. Add the probe's case
+   (`aLoadedBlockedImageWhosePreservedDataNamesLMustHold`) to `BaySourceCensusTest`.
+3. **W170-R44 (Low).** Once the claim is REPAIR-held, `bayStep` writes no further INTENT: the remaining candidates hold
+   without a write, as `outcome` already does for D2. Tighten the A1 test `aClaimHeldForRepairBeforeD2RegistersNoSatellite`
+   to assert that no INTENT is written after the hold.
+4. **W170-R45 (Low).** In `scripts/run_v180_bay_forced_stop.py`, allow a changed receipt file only after the fresh
+   proof's own D7, that is, a BAY_RECEIPT_WRITE claim line after the BAY_SOURCE_PROOF line. Otherwise require the file
+   unchanged. Add a Python test for both sides.
+5. **W170-R46 (Low).** Correct the record on what B16_LEAVE exercises, and add an A0 test that drives
+   `BaySourceProof.observe` through the real unload path (`setRemoved`, then the per-tick observation).
+6. **W170-R43 (Low), the log part only.** Log one INFO line per refused D6 capture, at its existing 200-tick pacing.
+   The bay menu does not change: new menu reasons would change the menu's synced data, which is out of scope. Root
+   states in R-043 that runtime holds show only in the log and the gated status command.
+7. **W170-R47 (Info).** Correct the record's attribution: TRANSFER_JOURNAL_BLOCKED came from one of
+   `RocketFlightService`'s launch preconditions, not necessarily rejoin protection.
+
+W170-R48 and R49 (risk entry D), the R5 acceptance and ADR-065's W27d2 note are Root's. **Root accepts W170-R5:** a D2
+refusal is written in its own REJECTED generation before D4, and D4 publishes the REGISTERED receipts in one
+generation. Pass 1 traced every forced-stop state, and the restart rows reach the same end state.
+
+No format, bound, budget or timeout changes. Verification:
+- the new tests alone, failing first;
+- the whole unit suite, the bay batches three times, and the harness's Python tests;
+- the native restart cases that go through R2, and B16, two restarts each, under the lock.
+
+Root's hosted run on the pushed head stands in for a complete local GameTest. A short fresh review of these fixes
+and of R-043 draft 3 follows.
+
 ## Not in this task
 
 W27d3 (copies and the absence census), W27d4 (released flight), admission (W27e), ADRs, the risk register, status

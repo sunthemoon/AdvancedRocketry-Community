@@ -117,6 +117,19 @@ revision 3, closing W174-R9 to R15 as that review suggests. Mark each change wit
 Verification as before: the validator on the record commit, and any probes kept in the evidence folder. A fresh
 read-only review follows.
 
+## Revision 4 under Root decision R140 (2026-10-28)
+
+The third review, `D:/GitHub/ARCE-Task-Evidence/root-queue/W174-review3/REVIEW.md` (SHA-256 `5db15d26…66c1`), returned
+APPROVE-WITH-CHANGES on revision 3. A fresh session closes its four findings as revision 4, marking each change:
+
+- **W174-R16:** protect retained governed terrain proofs from pad captures.
+- **W174-R17:** include all drain latency in the `19 + R` bound.
+- **W174-R18:** correct the eager-save no-livelock claim.
+- **W174-R19:** expose Level-table membership, not only its size.
+
+Follow the review's suggested fixes. Root then checks these four against the review instead of a fourth full review,
+and freezes the design until the owner's D4 choice. Verification as before.
+
 ## Not in this task
 
 Any production code, ADR changes (Root proposes them from your note), the risk register, status files and the ledger.

@@ -137,6 +137,11 @@ public final class RocketRuntime {
         if (service instanceof RocketManager manager) { manager.onRocketJoined(rocket); }
     }
 
+    /** W170-R22: a server rocket wrote its position or left its Level; a bay proof watching its L is invalidated. */
+    public static void baySourceChanged(RocketEntity rocket) {
+        if (service instanceof RocketManager manager) { manager.onBaySourceChanged(rocket); }
+    }
+
     public static boolean releaseFenced(RocketEntity rocket) { return RocketReleaseAccess.fenced(rocket); }
     public static io.github.sunthemoon.advancedrocketrycommunity.rocket.rejoin.RocketReleaseResult
             releaseAbsent(MinecraftServer server, UUID transfer) { return RocketReleaseAccess.admit(server, transfer); }

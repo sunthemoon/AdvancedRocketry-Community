@@ -43,9 +43,11 @@ public final class W151NativeReturns {
                 "cursor", cursor, "not_before", notBefore, "state", state);
     }
 
+    /** W182: from the player's open flight menu, as the flight screen sends it; the menu closes again afterwards. */
     public static void request(ServerPlayer player, RocketEntity rocket, RocketFlightAction action, UUID request) {
         player.teleportTo((ServerLevel) rocket.level(), rocket.getX(), rocket.getY() + 3, rocket.getZ(), 0, 0);
-        RocketRuntime.requestFlightIntent(player, rocket.getId(), action, RocketDestination.MOON, request);
+        io.github.sunthemoon.advancedrocketrycommunity.gametest.RocketFlightConsoleFixtures.send(player, rocket,
+                () -> RocketRuntime.requestFlightIntent(player, rocket.getId(), action, RocketDestination.MOON, request));
     }
 
     /** Read the normal player replay ledger; a pending warm-up must not be mistaken for a discarded request. */
