@@ -55,6 +55,8 @@ public final class LandingPadGameTests {
      * later autosave cannot reach the cut, which has passed or failed by then.
      */
     private static final int CUT_WINDOW_TICKS = 40;
+    /** W187: the fail-back's survivor proof, one slot, completes within the cancellation test's 60-tick wait. */
+    private static final int CANCEL_WINDOW_TICKS = 60;
 
     private LandingPadGameTests() { }
     private record Fixture(ServerLevel space, StationState station, BlockPos pad,
@@ -190,7 +192,12 @@ public final class LandingPadGameTests {
         var driver = new GameTestTickDriver(helper);
         Fixture f = fixture(helper); var snapshot = sourceSnapshot(helper);
         var entry = LandingPadService.register(f.space, f.pad, f.station.ownerId(), false, "Cancel");
-        await(helper, driver, 80, () -> ready(helper.getLevel(), snapshot.sourceOrigin()) && f.space.areEntitiesLoaded(new ChunkPos(f.pad).toLong()), () -> {
+        // W187: as in the recovery matrix, an autosave that supersedes the fail-back's survivor capture releases its
+        // reservation, and the runtime's own recovery can then remove T and log an undeclared ARCE_TRANSFER_RECOVERY
+        // WARN. Cancel only when the next autosave falls after this test's 60-tick wait for the proof.
+        await(helper, driver, 80, () -> ready(helper.getLevel(), snapshot.sourceOrigin()) && f.space.areEntitiesLoaded(new ChunkPos(f.pad).toLong()),
+                () -> await(helper, driver, helper.getTick() + CANCEL_WINDOW_TICKS + 1L,
+                        () -> !GameTestAutosave.within(f.space.getServer(), CANCEL_WINDOW_TICKS), () -> {
             var source = addSource(helper, snapshot, f.station.ownerId()); var transfer = UUID.randomUUID();
             var countdown = countdown(source, f.station, entry, transfer);
             var service = new RocketTransferService();
@@ -209,7 +216,7 @@ public final class LandingPadGameTests {
                 helper.assertTrue(RocketTransferSavedData.get(f.space.getServer()).find(transfer).isEmpty(), "Cancelled transfer retained");
                 source.discard(); cleanup(helper, f); helper.succeed();
             });
-        });
+        }));
     }
 
     /** W98: drive a detached service's ordinary retirements and acknowledge; true once the record has left the journal. */
