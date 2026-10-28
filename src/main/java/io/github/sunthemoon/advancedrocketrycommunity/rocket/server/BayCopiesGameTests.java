@@ -32,8 +32,9 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
 /**
  * W185 A1: actual queued D7 guard, a returning assigned passenger and late joins at both ends; W185-R2's in-session source
- * end wider than its origin column. Each case has its own batch: the B16 cut pauses the first in-session guard of the
- * server session, so only the login case installs it, and the wide source end must stay the only load of its far columns.
+ * end wider than its origin column, and R150's low strip outside the shared set. Each case has its own batch: the B16 cut
+ * pauses the first in-session guard of the server session, so only the login case installs it, and each far source end
+ * must stay the only load of its columns.
  */
 @GameTestHolder(ModIdentity.MOD_ID)
 @PrefixGameTestTemplate(false)
@@ -55,7 +56,16 @@ public final class BayCopiesGameTests {
     /** W185-R2: an in-session claim tickets its whole source end from CONSUME on, so D6 cannot wait for ever. */
     @GameTest(template = TEMPLATE, batch = "bay_copies_wide", timeoutTicks = 1_200)
     public static void anInSessionSourceEndWiderThanItsOriginColumnFinishes(GameTestHelper helper) {
-        new WideSource(helper).start();
+        new WideSource(helper, false).start();
+    }
+
+    /**
+     * W170-R65 under Root decision R150: the census box's low edge also meets the column west of the shared set. The
+     * in-session renewal tickets that strip column too, and D6 awaits it, while the shared set stays the origin column.
+     */
+    @GameTest(template = TEMPLATE, batch = "bay_copies_strip", timeoutTicks = 1_200)
+    public static void anInSessionSourceEndsLowStripIsTicketedAndAwaited(GameTestHelper helper) {
+        new WideSource(helper, true).start();
     }
 
     private static final class Scenario {
@@ -203,12 +213,17 @@ public final class BayCopiesGameTests {
      * W185-R2: the source end is two columns wide, far from every other fixture, and nothing but this flight's tickets
      * loads it. Before the claim, the fixture renews only the origin ticket, as the in-session claim itself does; the low
      * column is then loaded but not entity-ticking, so D6 can finish only once the claim tickets the whole source end.
+     * R150's strip variant: the shared set is the origin column alone, and its low column is the bay's strip west of it.
      */
     private static final class WideSource {
-        /** x is a multiple of 16, so the checked set's low edge, origin x - 2, lies in the column west of the origin. */
+        /** x is a multiple of 16, so the checked set's low edge, origin x - 1, lies in the column west of the origin. */
         static final BlockPos ORIGIN = new BlockPos(750_000, 100, 750_008);
+        /** x - 1 is a multiple of 16: the shared set starts at the origin column, and the strip is the column west of it. */
+        static final BlockPos STRIP = new BlockPos(760_001, 100, 760_008);
         final GameTestHelper helper;
         final GameTestTickPacer pacer;
+        final boolean strip;
+        final BlockPos at;
         final UUID owner = UUID.randomUUID();
         Flight flight;
         ItemStack pkg;
@@ -217,7 +232,10 @@ public final class BayCopiesGameTests {
         int stage, waits;
         boolean closed, lowTicking;
 
-        WideSource(GameTestHelper helper) { this.helper = helper; pacer = new GameTestTickPacer(helper.getLevel().getServer()); }
+        WideSource(GameTestHelper helper, boolean strip) {
+            this.helper = helper; this.strip = strip; at = strip ? STRIP : ORIGIN;
+            pacer = new GameTestTickPacer(helper.getLevel().getServer());
+        }
         void start() { helper.onEachTick(this::tick); }
 
         void tick() {
@@ -235,12 +253,17 @@ public final class BayCopiesGameTests {
             var target = helper.absolutePos(new BlockPos(14, 2, 3));
             if (!level.isPositionEntityTicking(target)) { return; }
             pkg = solarPackage(owner); registerSolar(server, pkg, owner);
-            flight = transit(helper, ORIGIN, level.dimension().location(), position(target), owner, List.of(pkg),
+            flight = transit(helper, at, level.dimension().location(), position(target), owner, List.of(pkg),
                     RocketEscrowSectionPatch.NEUTRAL, RocketFlightPlanner.EARTH.bodyId(), null);
             var columns = RocketDiscoveryColumns.of(flight.record().sourceSnapshot());
-            origin = columns.origin(); low = new ChunkPos(columns.minColumnX(), columns.minColumnZ());
-            helper.assertTrue(columns.admissible() && columns.count() == 2 && !low.equals(origin),
-                    "The source end is not two columns wide: " + columns);
+            origin = columns.origin(); low = new ChunkPos(columns.minColumnX() - (strip ? 1 : 0), columns.minColumnZ());
+            if (strip) { // a one-block-wide rocket: its region's low x is the origin's, and x - 1 starts the origin column
+                helper.assertTrue(columns.admissible() && columns.count() == 1 && ((at.getX() - 1) & 15) == 0 && low.x == origin.x - 1,
+                        "The shared set is not the origin column with an aligned low edge: " + columns);
+            } else {
+                helper.assertTrue(columns.admissible() && columns.count() == 2 && !low.equals(origin),
+                        "The source end is not two columns wide: " + columns);
+            }
             stage = 1;
         }
 
@@ -248,8 +271,8 @@ public final class BayCopiesGameTests {
             var level = helper.getLevel(); var server = level.getServer();
             RocketTransferEntities.refreshOriginTicket(level, flight.record().sourceSnapshot(), flight.record().transferId());
             if (level.getEntity(flight.source().getUUID()) != flight.source()
-                    || !RocketTransferEntities.columnReady(level, origin.x, origin.z, ORIGIN.getY())) { return; }
-            helper.assertTrue(!RocketTransferEntities.columnReady(level, low.x, low.z, ORIGIN.getY()),
+                    || !RocketTransferEntities.columnReady(level, origin.x, origin.z, at.getY())) { return; }
+            helper.assertTrue(!RocketTransferEntities.columnReady(level, low.x, low.z, at.getY()),
                     "control: the origin ticket alone already made the low column entity-ticking");
             var journal = RocketTransferSavedData.get(server); journal.put(flight.record());
             bays(helper).ascentComplete(server, journal, flight.record(), flight.source());
@@ -257,10 +280,10 @@ public final class BayCopiesGameTests {
         }
 
         void finished() {
-            if (RocketTransferEntities.columnReady(helper.getLevel(), low.x, low.z, ORIGIN.getY())) { lowTicking = true; }
+            if (RocketTransferEntities.columnReady(helper.getLevel(), low.x, low.z, at.getY())) { lowTicking = true; }
             if (claim(helper, flight.record().logicalRocketId()).isPresent()) { return; }
             helper.assertTrue(claim.handoff().orElseThrow() == BayClaim.Handoff.READY_SOURCE, "Not READY_SOURCE: " + claim.reason());
-            helper.assertTrue(lowTicking, "The claim never made the source end's low column entity-ticking");
+            helper.assertTrue(lowTicking, "The claim never made the source end's low " + (strip ? "strip" : "column") + " entity-ticking");
             helper.assertTrue(bays(helper).sessionForTests().find(satellite(pkg)).isEmpty(), "Receipt not retired");
             close(); helper.succeed();
         }
