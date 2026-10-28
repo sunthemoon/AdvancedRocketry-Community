@@ -242,6 +242,31 @@ The same pattern occurred on W128R, whose hosted regression then passed every te
 4. **Then B-PRE, all 20 cases**, on the final committed source, with two restarts each and the 66-start limit from
    R124. After that, tranche 2 as R124 describes.
 
+## Continuation under Root decision R135 (2026-10-28)
+
+The R131 session (02:51 to 07:15, record `d7e800dc4`) merged the shared head and fixed the terrain and arrival
+fixtures. Locally, the full GameTest passed 1,443 of 1,444; the failure was the satellite payload replay test, which
+W178 is diagnosing on the shared head. Root pushed the branch. Hosted regression run 40601641293 at `d7e800dc4` passed
+that test but failed two others:
+
+- `sameLevelLandedTransferRetiresBeforeFillAndGovernedLaunch`: "Post-fill launch refused: TRANSFER_JOURNAL_BLOCKED".
+- `aGovernedProofOfTheSurvivorsOwnSlotIsObserved`: "A pin wait retained the ordinary journal reservation: now=30001
+  created=29946 state=PROVING reason=BUSY effects=1 dirty=false acknowledged=true governed=false".
+
+Both pass on the shared branch's hosted runs, and both touch the journal reservations and retirement paths this
+branch changes. The raw logs are in `D:/GitHub/ARCE-Task-Evidence/root-queue/W164/hosted-d7e800dc4/` (the run's zip)
+and `hosted-d7e800dc4-job-122530950140.log`. A fresh Codex session continues on this branch:
+
+1. **Diagnose both failures from the hosted logs.** Find the W164 change that makes each one possible, then
+   reproduce each, by running its batch alone and with its hosted neighbours.
+   - A fixture that times its steps against wall-clock work is fixed in the fixture.
+   - A production cause is fixed in production with a regression that fails first.
+   - Either way, no timeout or assertion is loosened.
+2. **Merge the shared head named in your prompt.** It contains W128R. Keep both the bay tick and
+   `landedDisassemblies().tickRetained()` in `RocketManager.tick`, and record each conflict.
+3. **Run the whole unit suite and one complete GameTest** (R131 applies). Root pushes the branch for a hosted run.
+4. **Then B-PRE, all 20 cases** (the R124 limits), and tranche 2.
+
 ## Not in this task
 
 - N3-B4 (the combined cut evidence), W98-R1 and governed admission.
