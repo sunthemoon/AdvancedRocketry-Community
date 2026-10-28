@@ -34,6 +34,7 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 @PrefixGameTestTemplate(false)
 public final class EscrowRetireBeforeFillGameTests {
     private static final String BATCH = "escrow_retire_before_fill";
+    private static final String CAPTURE_CONTENTION = "w164_retire_fill_capture_turn";
     private static final List<Scenario> RUNNING = new ArrayList<>();
     private EscrowRetireBeforeFillGameTests() { }
 
@@ -52,8 +53,16 @@ public final class EscrowRetireBeforeFillGameTests {
         new Scenario(helper, true, true, 48_016).start();
     }
 
+    @GameTest(template = "empty", batch = CAPTURE_CONTENTION, timeoutTicks = 2_400)
+    public static void postFillLaunchWaitsForAnAvailableCaptureTurn(GameTestHelper helper) {
+        new Scenario(helper, false, false, 48_024, true).start();
+    }
+
     @AfterBatch(batch = BATCH)
     public static void cleanup(ServerLevel level) { RUNNING.forEach(Scenario::cleanup); RUNNING.clear(); }
+
+    @AfterBatch(batch = CAPTURE_CONTENTION)
+    public static void cleanupCaptureContention(ServerLevel level) { cleanup(level); }
 
     private static final class Scenario {
         final GameTestHelper helper;
@@ -62,6 +71,9 @@ public final class EscrowRetireBeforeFillGameTests {
         final RocketPosition oldOrigin;
         final GameTestTickPacer pacer;
         final boolean stale;
+        final boolean occupyCapture;
+        boolean captureOccupied;
+        EscrowReason occupiedCaptureResult;
         RocketEntity rocket, oldCopy, arrival;
         /** W166: the Moon arrival's identity, and its column, which this fixture holds from landing until removal. */
         UUID arrivalId;
@@ -74,7 +86,11 @@ public final class EscrowRetireBeforeFillGameTests {
         boolean refused, sawCountdown, finished, launchPending;
 
         Scenario(GameTestHelper helper, boolean cross, boolean stale, int chunk) {
+            this(helper, cross, stale, chunk, false);
+        }
+        Scenario(GameTestHelper helper, boolean cross, boolean stale, int chunk, boolean occupyCapture) {
             this.helper = helper; this.stale = stale; level = helper.getLevel();
+            this.occupyCapture = occupyCapture;
             oldLevel = cross ? level.getServer().getLevel(CelestialIds.MOON_LEVEL) : level;
             destination = new Area(level, chunk, 48_000);
             oldOrigin = new RocketPosition((chunk + 200) * 16 + 8, 100, 48_000 * 16 + 8);
@@ -164,6 +180,17 @@ public final class EscrowRetireBeforeFillGameTests {
                     helper.assertTrue(next.nativeTransfer().isPresent(), "The launch was not governed"); step = 6; return;
                 }
                 if (launchPending) { return; }
+                if (occupyCapture && !captureOccupied) {
+                    var runtime = EscrowRuntime.of(server); var barrier = runtime.barrier();
+                    if (!barrier.availableOrdinary(level.dimension().location().toString(), server.getTickCount())) { return; }
+                    // Another native consumer can spend this tick's one shared capture before the launch callback.
+                    captureOccupied = barrier.beginOrdinary(runtime.store(level), level.dimension().location().toString(),
+                            destination.chunk, root -> true, server.getTickCount(), label -> { }, result -> {
+                                occupiedCaptureResult = result.reason();
+                                if (result.proof() != null) { result.proof().release(); }
+                            });
+                    helper.assertTrue(captureOccupied, "The competing native capture was not admitted");
+                }
                 request = UUID.randomUUID();
                 String beforeLaunch = launchState();
                 var launch = RocketRuntime.requestAdminFlight(rocket, RocketDestination.MOON, request);
@@ -225,6 +252,9 @@ public final class EscrowRetireBeforeFillGameTests {
                     found -> found.assemblyTransactionId().filter(next.logicalRocketId()::equals).isPresent());
             helper.assertTrue(moon.getEntity(arrivalId) == null && copies.isEmpty(),
                     "The discarded Moon arrival " + arrivalId + " came back from disk (" + copies.size() + " copies in " + chunk + ")");
+            helper.assertTrue(!occupyCapture || captureOccupied && (occupiedCaptureResult == EscrowReason.NONE
+                            || occupiedCaptureResult == EscrowReason.SUPERSEDING_SAVE),
+                    "The competing capture did not complete: " + occupiedCaptureResult);
             finished = true; cleanup(); helper.succeed();
         }
         void attempt() {
