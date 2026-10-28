@@ -243,8 +243,7 @@ public final class GravityFallGameTests {
                 drifting.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, 2_000));
                 drifting.setNoAi(false);
                 // Full native ticks: LivingEntity.aiStep resets the fall distance under slow falling before travel.
-                // aiStep also zeroes motion below 0.003 per tick, and slow falling in Moon gravity adds only 0.00165,
-                // so a mob at rest would hover; it starts as if it had stepped off a ledge.
+                // Keep this ledge-step fixture; LivingGravityGameTests separately covers starting from rest (W189).
                 Vec3 top = GravityFallFixtures.above(pad, 6.0D);
                 helper.assertTrue(tickUntilLanded(drifting, top, new Vec3(0.0D, -0.1D, 0.0D)), "The slow fall did not land");
                 helper.assertTrue(probe.of(drifting).isEmpty() && drifting.fallDistance == 0.0F,

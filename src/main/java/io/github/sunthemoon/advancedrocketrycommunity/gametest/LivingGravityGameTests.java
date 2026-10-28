@@ -80,6 +80,10 @@ public final class LivingGravityGameTests {
             helper.assertTrue(moon.getDeltaMovement().y < -0.003D, "Descent is below the native motion dead zone");
             helper.assertTrue(gravity(moon).getValue() >= 0.0031D - 1.0E-9D,
                     "Scaled slow-fall gravity was not floored above the damped dead zone");
+            expect(helper, CelestialGravityController.appliedMultiplier(moon), 0.165D,
+                    "Slow-fall floor changed the body's fall-damage factor");
+            helper.assertTrue(!moon.saveWithoutId(new CompoundTag()).toString().contains("ARCE slow-fall gravity floor"),
+                    "Transient slow-fall floor leaked into entity NBT");
             moon.removeEffect(MobEffects.SLOW_FALLING);
             moon.tick();
             moon.tick();
@@ -87,6 +91,37 @@ public final class LivingGravityGameTests {
         } finally {
             SwitchOverrides.clear(CommonConfig.CLASSIC_GRAVITY_ENABLED);
             moon.discard();
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", batch = "living_slow_fall", timeoutTicks = 100)
+    public static void nativeSlowFallPreservesZeroNoGravityAndDisabledBehaviour(GameTestHelper helper) {
+        Cow earth = cow(level(helper, Level.OVERWORLD), airPosition(helper));
+        Cow moon = cow(level(helper, CelestialIds.MOON_LEVEL), airPosition(helper));
+        Cow space = cow(level(helper, CelestialIds.SPACE_LEVEL), airPosition(helper));
+        SwitchOverrides.set(CommonConfig.CLASSIC_GRAVITY_ENABLED, true);
+        try {
+            moon.setNoGravity(true);
+            for (Cow cow : List.of(earth, moon, space)) {
+                cow.setNoAi(false);
+                cow.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, 200));
+                cow.setDeltaMovement(Vec3.ZERO);
+                double start = cow.getY();
+                for (int tick = 0; tick < 12; tick++) { cow.tick(); }
+                if (cow != earth) { expect(helper, cow.getY(), start, "Floor introduced gravity where none applies"); }
+            }
+            expect(helper, gravity(earth).getValue(), 0.01D, "Native Earth slow fall changed");
+            expect(helper, gravity(space).getValue(), 0.0D, "Space gravity changed");
+            moon.setNoGravity(false);
+            SwitchOverrides.set(CommonConfig.CLASSIC_GRAVITY_ENABLED, false);
+            for (int tick = 0; tick < 12; tick++) { moon.tick(); }
+            expect(helper, gravity(moon).getValue(), 0.01D, "Disabled switch left a floor modifier");
+        } finally {
+            SwitchOverrides.clear(CommonConfig.CLASSIC_GRAVITY_ENABLED);
+            earth.discard();
+            moon.discard();
+            space.discard();
         }
         helper.succeed();
     }
