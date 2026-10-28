@@ -24,6 +24,7 @@ final class SealedLoadedDiscovery {
     private Iterator<BlockEntity> entities;
     private ServerLevel level;
     private LevelChunk chunk;
+    private int revisitsRemaining;
 
     SealedLoadedDiscovery(MinecraftServer server) { this.server = server; }
 
@@ -42,15 +43,25 @@ final class SealedLoadedDiscovery {
                             ? new Hint(level.dimension(), entity.getBlockPos()) : null;
                 }
             } catch (ConcurrentModificationException changed) {
-                // A publication or unrelated BE edit invalidated this cursor. Move to the next chunk,
-                // not the first chunk; the next complete sweep revisits any remaining members fairly.
+                // Publication removes/replaces a carrier. Finish this chunk without waiting for another world
+                // sweep, but do not let a continually edited map retain the cursor indefinitely. Each restart
+                // consumes this already-charged step; inspecting the next entity needs a new discovery turn.
+                if (revisitsRemaining > 0) {
+                    revisitsRemaining--;
+                    entities = chunk.getBlockEntities().values().iterator();
+                    return null;
+                }
             }
             chunk = null; entities = null; return null;
         }
         if (chunks.hasNext()) {
             var at = chunks.next().getPos();
             chunk = server.getLevel(level.dimension()) == level ? level.getChunkSource().getChunkNow(at.x, at.z) : null;
-            if (chunk != null) { entities = chunk.getBlockEntities().values().iterator(); }
+            if (chunk != null) {
+                // Capture once per visit: additions during a revisit must not replenish the allowance.
+                revisitsRemaining = chunk.getBlockEntities().size();
+                entities = chunk.getBlockEntities().values().iterator();
+            }
             return null;
         }
         try {
