@@ -3,6 +3,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 import static io.github.sunthemoon.advancedrocketrycommunity.rocket.server.BayDeploymentGameTestSupport.*;
 
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataPolicy;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModEntities;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceipt;
@@ -138,7 +139,12 @@ public final class BayRegisteredEscrowGameTests {
             backup = file.resolveSibling(file.getFileName() + ".w170-r24-backup");
             try { if (Files.exists(file)) { Files.move(file, backup, StandardCopyOption.ATOMIC_MOVE); } aside = true; }
             catch (IOException failure) { throw new UncheckedIOException(failure); }
-            installed = ResourceEscrowSavedData.load(EscrowCodec.encode(ledger()));
+            var ledger = ledger();
+            // A ledger with a floor or a record is a checked baseline only when its file holds exactly its bytes.
+            if (condition != Condition.UNAVAILABLE) {
+                CheckedSavedDataPolicy.atomic(ManagedSavedDataType.RESOURCE_ESCROW).replace(file, () -> EscrowCodec.encode(ledger));
+            }
+            installed = ResourceEscrowSavedData.load(EscrowCodec.encode(ledger));
             helper.assertTrue(runtime.replaceLedgerForTests(server, installed), "The condition ledger was refused");
             if (condition == Condition.UNAVAILABLE) { installed.stop(); }
             helper.assertTrue(installed.operational() == (condition != Condition.UNAVAILABLE),
@@ -153,8 +159,8 @@ public final class BayRegisteredEscrowGameTests {
         EscrowLedger ledger() {
             RocketTransferRecord record = flight.record();
             return switch (condition) {
-                case FLOOR -> new EscrowLedger(UUID.randomUUID(), 1, 0, List.of(), List.of(floor(record)), List.of());
-                case LOCKED -> new EscrowLedger(UUID.randomUUID(), 1, 0, List.of(lock(record)), List.of(), List.of());
+                case FLOOR -> new EscrowLedger(UUID.randomUUID(), 1, 1, List.of(), List.of(floor(record)), List.of());
+                case LOCKED -> new EscrowLedger(UUID.randomUUID(), 1, 1, List.of(lock(record)), List.of(), List.of());
                 case UNAVAILABLE -> EscrowLedger.empty(UUID.randomUUID());
             };
         }
