@@ -322,10 +322,13 @@ public final class BayRegisteredGameTests {
 
         /**
          * W170-R41, each tick until the destination end is loaded: R2 has not gone on (the claim waits in RESUME), and the
-         * source, T and the receipts are unchanged. R1's tickets load the end; the wait must be seen at least once.
+         * source, T and the receipts are unchanged. R1's tickets load the end; the wait must be seen at least once. R2 sets
+         * END_LOADING in the step that adds R1's first tickets and runs at most once per tick, so the wait is visible to
+         * this check in the tick the end is first seen loaded at the latest; a paced tick can load the far column whole.
          */
         void awaitEnd() {
             var server = helper.getLevel().getServer();
+            if (claim.stage() == BayClaim.Stage.RESUME && claim.reason().equals("END_LOADING")) { sawLoading = true; }
             if (RocketTransferEntities.endAlreadyLoaded(server, flight.record().destinationSnapshot())) { endLoaded = true; return; }
             helper.assertTrue(claim.stage() == BayClaim.Stage.RESUME && claim.hold() == BayClaim.Hold.OWNED_WAIT,
                     "R2 went on before the destination end loaded: " + describe());
@@ -333,7 +336,6 @@ public final class BayRegisteredGameTests {
             helper.assertTrue(record().checksum().equals(checksum) && flight.source().snapshot().orElseThrow().contentHash()
                     .equals(flight.record().sourceSnapshot().contentHash()) && receipts.stream().allMatch(receipt ->
                     session.current(receipt.op()).filter(receipt::equals).isPresent()), "A record changed before the end loaded");
-            if (claim.reason().equals("END_LOADING")) { sawLoading = true; }
         }
 
         /** D6 and D7: the exact source holds S', in TRANSIT at altitude; an absent source was rebuilt, not resurrected. */
