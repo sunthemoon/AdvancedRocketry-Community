@@ -53,11 +53,22 @@ public final class BayDeploymentFlightGameTests {
 
     @GameTest(template = TEMPLATE, batch = BATCH, timeoutTicks = 1_000)
     public static void aDataAndSolarBayRocketRegistersBothOnceAndLandsWithBothBaysConsumed(GameTestHelper helper) {
-        new Flight(helper).start();
+        new Flight(helper, false).start();
+    }
+
+    /**
+     * W170-R7: D2 refuses after D1. Once the data bay's INTENT is seen, this coordinator sees the registry as blocked for L
+     * only, so D2 writes each bay REJECTED (REGISTRY_BLOCKED) and registers nothing. The bay menu shows the durable REJECTED
+     * phase with its reason, and T lands with both packages byte-equal to the launch (W27d1's menu assertion, restored).
+     */
+    @GameTest(template = TEMPLATE, batch = BATCH, timeoutTicks = 1_000)
+    public static void aRegistryRefusalAfterIntentRejectsBothBaysDurablyAndTheMenuShowsIt(GameTestHelper helper) {
+        new Flight(helper, true).start();
     }
 
     private static final class Flight {
         final GameTestHelper helper;
+        final boolean refuse;
         final UUID owner = UUID.randomUUID(), transfer = UUID.randomUUID(), logical = UUID.randomUUID();
         final ItemStack data = dataPackage(owner), solar = solarPackage(owner);
         final BlockPos origin = new BlockPos(2, 2, 2);
@@ -66,9 +77,9 @@ public final class BayDeploymentFlightGameTests {
         BayClaim claim;
         List<String> before;
         int stage, waits, ownerSatellites;
-        boolean sawIntent, sawRegistered, probedRecovery, closed;
+        boolean sawIntent, sawRegistered, probedRecovery, blocked, closed;
 
-        Flight(GameTestHelper helper) { this.helper = helper; }
+        Flight(GameTestHelper helper, boolean refuse) { this.helper = helper; this.refuse = refuse; }
         void start() { helper.onEachTick(this::tick); }
 
         void tick() {
@@ -147,6 +158,7 @@ public final class BayDeploymentFlightGameTests {
                     helper.assertTrue(SatelliteMissionSavedData.get(server).decommission(satellite(data), owner, true, true).code()
                             == SatelliteOperationCode.DEPLOYMENT_PENDING, "Decommission was not fenced from INTENT");
                     helper.assertTrue(bay(origin().east()).phase() == SatelliteBayStatus.Phase.INTENT, "The menu does not show INTENT");
+                    if (refuse && !blocked) { bays(helper).blockRegistryForTests(logical); blocked = true; } // before D2 runs
                 }
                 if (intent != null && intent.phase() == BayReceipt.Phase.REGISTERED && session.acknowledged(intent.op())) {
                     sawRegistered = true;
@@ -159,6 +171,7 @@ public final class BayDeploymentFlightGameTests {
             }
             helper.assertTrue(claim.stage() == BayClaim.Stage.ENDED && claim.handoff().orElseThrow() == BayClaim.Handoff.READY_SOURCE,
                     "The claim did not end with READY_SOURCE: " + claim.stage() + " " + claim.reason());
+            if (refuse) { assertRejected(server); stage = 3; return; }
             helper.assertTrue(sawIntent && sawRegistered, "INTENT and the acknowledged REGISTERED group were not both observed");
             var ops = claim.members().stream().map(member -> member.receipt().orElseThrow().op()).toList();
             helper.assertTrue(claim.members().stream().allMatch(member -> member.state() == BayMember.State.RETIRED),
@@ -176,6 +189,31 @@ public final class BayDeploymentFlightGameTests {
             stage = 3;
         }
 
+        /** The refused variant at the claim's end: both bays durably REJECTED with REGISTRY_BLOCKED, shown by the menu. */
+        void assertRejected(net.minecraft.server.MinecraftServer server) {
+            var session = bays(helper).sessionForTests();
+            helper.assertTrue(sawIntent && blocked && !sawRegistered, "The INTENT and the block before D2 were not observed");
+            for (var pkg : List.of(data, solar)) {
+                var member = claim.members().stream().filter(candidate -> candidate.satellite().orElseThrow().equals(satellite(pkg)))
+                        .findFirst().orElseThrow();
+                helper.assertTrue(member.state() == BayMember.State.REJECTED && member.reason().equals("REGISTRY_BLOCKED"),
+                        "A bay was not REJECTED by D2 with REGISTRY_BLOCKED: " + member.state() + " " + member.reason());
+                var rejected = session.find(satellite(pkg)).orElseThrow();
+                helper.assertTrue(rejected.phase() == BayReceipt.Phase.REJECTED && rejected.reason().equals("REGISTRY_BLOCKED")
+                        && session.acknowledged(rejected.op()) && rejected.transfer().equals(transfer) && rejected.rocket().equals(logical),
+                        "The REJECTED receipt is not exact: " + rejected);
+            }
+            for (BlockPos at : List.of(origin().east(), origin().east().above())) {
+                helper.assertTrue(bay(at).phase() == SatelliteBayStatus.Phase.REJECTED
+                        && bay(at).reason() == SatelliteBayStatus.Reason.REGISTRY_BLOCKED,
+                        "The bay menu does not show the durable REJECTED: " + bay(at).phase() + " " + bay(at).reason());
+            }
+            helper.assertTrue(before.equals(BayDeploymentGameTests.signatures(transferRecord())), "A rejected bay's package in T changed");
+            var registry = SatelliteMissionSavedData.get(server);
+            helper.assertTrue(registry.satellite(satellite(data)).isEmpty() && registry.ownerSatellites(owner) == ownerSatellites,
+                    "A refusal registered a satellite");
+        }
+
         void land() {
             var server = helper.getLevel().getServer();
             var record = RocketTransferSavedData.get(server).find(transfer).orElse(null);
@@ -183,6 +221,16 @@ public final class BayDeploymentFlightGameTests {
             var moon = server.getLevel(CelestialIds.MOON_LEVEL);
             var destination = moon == null ? null : (RocketEntity) moon.getEntity(record.destinationEntityId().orElseThrow());
             if (destination == null || destination.flightData().orElseThrow().state() != RocketFlightState.LANDED) { return; }
+            if (refuse) {
+                helper.assertTrue(before.equals(BayDeploymentGameTests.signatures(destination.snapshot().orElseThrow())),
+                        "The landed rocket's packages are not byte-equal to the launch");
+                helper.assertTrue(SatelliteMissionSavedData.get(server).ownerSatellites(owner) == ownerSatellites,
+                        "The landing registered a satellite");
+                helper.assertTrue(bay(origin().east()).phase() == SatelliteBayStatus.Phase.REJECTED, "The durable REJECTED did not stay");
+                close();
+                helper.succeed();
+                return;
+            }
             var landed = consumedOps(destination.snapshot().orElseThrow());
             helper.assertTrue(landed.size() == 2 && landed.stream().allMatch(java.util.Objects::nonNull)
                     && claim.members().stream().allMatch(member -> landed.contains(member.receipt().orElseThrow().op())),
@@ -214,6 +262,7 @@ public final class BayDeploymentFlightGameTests {
                 journal.remove(transfer);
             });
             if (source != null) { source.discard(); }
+            if (blocked) { bays(helper).forgetForTests(logical); } // ends the registry block for L
             var session = bays(helper).sessionForTests();
             for (var pkg : List.of(data, solar)) {
                 session.find(satellite(pkg)).ifPresent(receipt -> BayReceiptTestHooks.remove(server, receipt.op(), outcome -> { }));
