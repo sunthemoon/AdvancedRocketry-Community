@@ -1220,3 +1220,17 @@ section 10, and none is accepted here.
 
 **All current-version Required Gates satisfied: no.** This is a design note. The next v1.8 step is the fresh
 read-only review of revision 3, then Root's L0 and L0R and the owner's D4 choice before any implementation leaf.
+
+### Committed-source verification (revision 3)
+
+Revision-3 design commit: `160ffc59aee271734456463ea80eb76dcb1b882c`. On that clean record commit,
+`python -B scripts/validate_repository.py --require-approved-identity` exited 0: **45 passed, 0 pending,
+0 warnings, 0 failed**. The evidence is `validator-160ffc59a.log`, `validator-160ffc59a-source.txt` and
+`validator-160ffc59a-exit.txt` under the revision-3 evidence prefix. `git diff --exit-code`,
+`git diff --cached --exit-code` and `git show --format= --check HEAD` also exited 0. The commit changes this one
+record only, and it is local, not pushed.
+
+This addition changes no design or probe. The validator is repeated on the final record commit; its
+`validator-final-source.txt`, `validator-final.log` and `validator-final-exit.txt` identify that run. The
+revision-3 evidence directory is about 270 KB, almost all of it the `ChunkMap` dump, and holds no server or world
+copy, archive or compiled class.
