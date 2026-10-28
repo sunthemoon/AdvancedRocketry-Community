@@ -67,3 +67,38 @@ the pushed branch stands in for a complete local GameTest.
 
 Released flight (W27d4), admission (W27e), ADRs, the risk register, status files and the ledger. Root updates R-043
 before this slice merges, and an independent read-only review follows.
+
+
+## Review findings under Root decision R149 (2026-10-29)
+
+The review, `D:/GitHub/ARCE-Task-Evidence/root-queue/W185-review/REVIEW.md` (SHA-256 `eeea955c…f35c`), returned
+APPROVE-WITH-CHANGES: no path removes a copy that still holds unconsumed packages, or the last image. A fresh session
+continues on `codex/v1.8.0-w185` from `31bf36d10`, one commit per finding, and appends a "Review fixes (R149)" section
+to the record:
+
+1. **W185-R1 (fix before merge).** Recognize the exact source by UUID, Level, exact x and z and the
+   `[origin.y, origin.y + 48]` range, without the build-height clamp, and extend each end's query box and `within()` to
+   at least `origin.y + 48 + 4`. Add unit cases at `maxBuildHeight - 48` and in a 256-high Level; they fail first.
+2. **W185-R2, Root's choice (a).** From CONSUME on, an in-session claim renews region tickets on its source end's
+   checked set (at most 16 columns, the existing limit), as a restart claim already does, so D6 cannot wait for ever
+   at END_LOADING. Add a case whose source end is wider than its origin column; it must finish. Root updates R-042's
+   ticket sentence.
+3. **W185-R4, Root's scope.** The coordinator moves only an online assigned passenger who is riding a recognized copy
+   that will be removed, as the record's design says. It does not pull back a passenger who dismounted, died or rides
+   elsewhere. A mount change on the survivor alone does not invalidate the group. Record the 200-tick login-queue
+   expiry and its WARN.
+4. **W185-R5.** Release D6's slot proofs while D7 waits for a quiet receipt store, and prove again once it is quiet, so
+   a parked claim holds no save-monitor slots. Show it with a test.
+5. **W185-R9.** D7 checks that the store is quiet before it serializes the source, so its wait saves nothing.
+6. **W185-R11.** Remove the dead `covered()` and the unused parameter, rename or remove the stale test, and route D6's
+   copy check through `BayCopyCensus`, so one census uses one rule set.
+7. **W185-R12.** Move the held-login branch out of `RocketTransferRecoveryService` into the bay dispatch, or say in the
+   record why it stays.
+
+Not in this round: R6 (one capture at a time) and R8 (the cargo-budget fairness), which Root registers in R-043; R3,
+the W164 conflict, which W164 resolves after this slice merges; R7 and R10, which are Root's record and register
+updates. No format, bound, budget or timeout changes.
+
+Verification: the new tests alone, failing first; the whole unit suite; the bay batches three times; the native
+tranche again (B3 to B7 with copies and offline seats, two restarts each). Root's hosted run on the pushed head stands
+in for a complete GameTest. A fresh review of these fixes follows.
