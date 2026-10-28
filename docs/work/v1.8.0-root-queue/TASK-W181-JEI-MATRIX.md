@@ -35,3 +35,23 @@ The v1.8 version document's section 10.4 asks for JEI evidence across the classi
 ## Not in this task
 
 Gameplay changes, real-client sessions, ADRs, status files and the ledger.
+
+## Continuation under Root decision R145 (2026-10-28)
+
+The first session committed `25f0b6dd8` (the markers, the runner and its 63 Python tests; 5,425 unit tests pass)
+and wrote no record. Its detached driver `D:/GitHub/ARCE-Task-Evidence/root-queue/W181/run-heavy-3.ps1` took the
+lock at 22:45 and built the JAR. Runtime preparation then failed on a network fault: one asset download from
+`resources.download.minecraft.net` ended with a TLS handshake error (curl exit 35). The matrix did not run. The
+driver went on to a complete GameTest. Its outputs are in `D:/GitHub/ARCE-Task-Evidence/root-queue/W181/attempt-3/`.
+
+Both Codex slots are taken, so a fresh session finishes the slice on `codex/v1.8.0-w181`:
+
+1. Read `attempt-3/heavy-result.json` and the GameTest result, and keep them as evidence.
+2. **Retry runtime preparation outside the lock.** It only downloads and unpacks, so it needs no heavy-JVM lock.
+   Retry a failed download a bounded number of times, and record each attempt. If the network still fails, stop
+   and report.
+3. **Run the matrix under the lock**, on a JAR built from the committed source, and only the matrix: no second
+   complete GameTest.
+4. Write `records/W181.md` (both sessions, the commands and their results) and commit it.
+
+Do not change the runner's expectations to make a cell pass. A cell that fails is a finding for Root.
