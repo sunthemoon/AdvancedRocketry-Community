@@ -120,6 +120,9 @@ public final class BlackHoleCodec {
         if (id == null) {
             throw new IllegalArgumentException(name + " is not a valid ID");
         }
+        if (id.toString().length() > MAX_ID_CHARS) {
+            throw new IllegalArgumentException(name + " must be an ID of at most " + MAX_ID_CHARS + " characters");
+        }
         return id;
     }
 }

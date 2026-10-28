@@ -51,6 +51,10 @@ public final class SatelliteRecordFit {
 
     /** The worst-case encoded asteroid or gas mission with this reward and reward version. */
     public static int resourceMissionBytes(MissionKind kind, String rewardVersion, List<ResourceLocation> rewardItems) {
+        // A gas table's canonical file ID contributes to the version; reject before constructing the specimen.
+        if (rewardVersion.isEmpty() || rewardVersion.length() > SatelliteLimits.MAX_REWARD_VERSION_CHARS) {
+            return DOES_NOT_FIT;
+        }
         // The encoder writes an item's canonical form, and the registry decoder refuses it over the bound.
         if (rewardItems.stream().anyMatch(item -> item.toString().length() > MAX_ID_CHARS)) {
             return DOES_NOT_FIT;

@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.function.Predicate;
 import net.minecraft.resources.ResourceLocation;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 /** ADR-055 section 2: the strict schema-1 table codec and raw-byte versions. */
 final class LaserDrillTableCodecTest {
@@ -88,6 +90,28 @@ final class LaserDrillTableCodecTest {
     void aFileOverSixteenKibibytesIsRejected() {
         String padded = table("[]", "false", entries(1)) + " ".repeat(LaserDrillTableCodec.MAX_FILE_BYTES);
         assertThrows(IllegalArgumentException.class, () -> LaserDrillTableCodec.decode(FILE, bytes(padded), VANILLA));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"body", "item"})
+    void canonicalIdsUseTheExistingFieldDiagnostic(String field) {
+        for (int length : List.of(118, 119, 128)) {
+            String bare = "l".repeat(length);
+            ResourceLocation id = ResourceLocation.tryParse(bare);
+            for (String spelling : List.of(bare, id.toString())) {
+                byte[] raw = bytes(table("[\"" + (field.equals("body") ? spelling : "test:earth") + "\"]", "false",
+                        "[{\"item\":\"" + (field.equals("item") ? spelling : "minecraft:stone")
+                                + "\",\"count\":1,\"weight\":1}]"));
+                if (length == 118) {
+                    var decoded = LaserDrillTableCodec.decode(FILE, raw, VANILLA);
+                    assertEquals(id, field.equals("body") ? decoded.bodies().get(0) : decoded.entries().get(0).item());
+                } else {
+                    var refused = assertThrows(IllegalArgumentException.class,
+                            () -> LaserDrillTableCodec.decode(FILE, raw, VANILLA));
+                    assertEquals(field + " must be an ID of at most 128 characters", refused.getMessage());
+                }
+            }
+        }
     }
 
     static String table(String bodies, String isDefault, String entries) {
