@@ -29,6 +29,7 @@ public final class V180LanguageProvider extends LanguageProvider {
 
     @Override
     protected void addTranslations() {
+        add("entity." + NS + ".rocket", chinese ? "组装火箭" : "Assembled Rocket");
         add("flight.advancedrocketrycommunity.request.journal_pending", chinese
                 ? "等待转移日志持久化确认；需要燃料 %s" : "Waiting for durable transfer confirmation; required fuel %s");
         // W90 (Root decisions R21 item 3 and R22 answer 4): governed launch-area refusals.

@@ -9,12 +9,14 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
-/** Persists only the last bounded diagnostic; active scans remain manager-owned. */
+/** Persists only the last bounded report; active scans and detailed diagnostics remain session-local. */
 public final class RocketAssemblerBlockEntity extends BlockEntity {
+    public static final int MAX_OPERATOR_DETAIL_LENGTH = 1_024;
     private static final String DATA_KEY = "RocketAssemblerData";
     private static final int SCHEMA_VERSION = 1;
 
     private RocketAssemblerReport report = RocketAssemblerReport.idle();
+    private String operatorDetail = "";
     private CompoundTag preservedFutureData;
 
     public RocketAssemblerBlockEntity(BlockPos position, BlockState state) {
@@ -27,8 +29,18 @@ public final class RocketAssemblerBlockEntity extends BlockEntity {
 
     public void setReport(RocketAssemblerReport report) {
         this.report = report;
+        operatorDetail = "";
         preservedFutureData = null;
         setChanged();
+    }
+
+    /** Session-local diagnostic for the permission-gated status command; never saved or sent in a report. */
+    public String operatorDetail() {
+        return operatorDetail;
+    }
+
+    public void setOperatorDetail(String detail) {
+        operatorDetail = detail.substring(0, Math.min(detail.length(), MAX_OPERATOR_DETAIL_LENGTH));
     }
 
     public boolean blockedByFutureData() {
@@ -61,6 +73,7 @@ public final class RocketAssemblerBlockEntity extends BlockEntity {
     public void load(CompoundTag parent) {
         super.load(parent);
         report = RocketAssemblerReport.idle();
+        operatorDetail = "";
         preservedFutureData = null;
         if (!parent.contains(DATA_KEY, Tag.TAG_COMPOUND)) {
             return;

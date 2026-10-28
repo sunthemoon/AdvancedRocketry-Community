@@ -31,7 +31,6 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
@@ -625,11 +624,6 @@ public final class RocketEntity extends Entity implements MenuProvider {
     @Override
     public Packet<ClientGamePacketListener> getAddEntityPacket() {
         return NetworkHooks.getEntitySpawningPacket(this);
-    }
-
-    @Override
-    public Component getDisplayName() {
-        return Component.translatable("menu.advancedrocketrycommunity.rocket_flight");
     }
 
     /** W182: vanilla opens a spectator's menu here directly, from {@code Player.interactOn}; a spectator gets none. */

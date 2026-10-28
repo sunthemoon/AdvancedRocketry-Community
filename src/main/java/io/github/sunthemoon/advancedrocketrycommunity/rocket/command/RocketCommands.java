@@ -207,6 +207,7 @@ public final class RocketCommands {
         source.sendSuccess(
                 () -> Component.literal(
                         "Rocket assembler code=" + report.code() + stats + " detail=" + report.detail()
+                                + (assembler.operatorDetail().isEmpty() ? "" : " diagnostic=" + assembler.operatorDetail())
                 ),
                 false
         );

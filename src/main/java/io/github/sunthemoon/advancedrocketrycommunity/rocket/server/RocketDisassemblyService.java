@@ -289,8 +289,10 @@ final class RocketDisassemblyService {
                 snapshot.sourceOrigin().x(), snapshot.sourceOrigin().y() - 1, snapshot.sourceOrigin().z()));
         String detail = result.success() ? "disassembly committed blocks=" + result.changedBlocks()
                 : RocketInteraction.issueDetail(result.issue().orElseThrow());
+        String diagnostic = result.issue().map(RocketInteraction::diagnosticDetail).orElse("");
         if (assembler != null) {
             RocketInteraction.update(assembler, result.code(), snapshot.stats(), detail, level);
+            assembler.setOperatorDetail(diagnostic);
         }
         if (player != null && result.success()) {
             RocketInteraction.notifyStats(player, snapshot, "disassembly committed");
@@ -298,9 +300,9 @@ final class RocketDisassemblyService {
             RocketInteraction.notify(player, result.code(), detail);
         }
         AdvancedRocketryCommunity.LOGGER.info(
-                "ARCE_ROCKET_TRANSACTION operation=disassembly code={} blocks={} snapshot={} entity={}",
+                "ARCE_ROCKET_TRANSACTION operation=disassembly code={} blocks={} snapshot={} entity={} detail={}",
                 result.code(), result.changedBlocks(), snapshot.contentHash(),
-                result.rocketEntityId().map(UUID::toString).orElse("none"));
+                result.rocketEntityId().map(UUID::toString).orElse("none"), diagnostic);
     }
 
     /**

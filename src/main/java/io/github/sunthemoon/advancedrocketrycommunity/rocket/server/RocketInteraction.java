@@ -5,7 +5,6 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.assembler.RocketAss
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.validation.RocketValidationCode;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.validation.RocketValidationIssue;
-import java.util.Locale;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -48,11 +47,8 @@ final class RocketInteraction {
     }
 
     static void notify(ServerPlayer player, RocketValidationCode code, String detail) {
-        player.displayClientMessage(
-                Component.translatable(code.translationKey())
-                        .append(Component.literal(": " + detail)),
-                true
-        );
+        // The diagnostic is for logs/operators, never a literal suffix in a player's localized message.
+        player.displayClientMessage(Component.translatable(code.translationKey()), true);
     }
 
     static void notifyStats(ServerPlayer player, RocketStructureSnapshot snapshot, String action) {
@@ -70,10 +66,31 @@ final class RocketInteraction {
     }
 
     static String issueDetail(RocketValidationIssue issue) {
-        String position = issue.position()
-                .map(value -> " at " + value.x() + "," + value.y() + "," + value.z())
-                .orElse("");
-        String parameters = issue.parameters().isEmpty() ? "" : " " + issue.parameters();
-        return issue.code().name().toLowerCase(Locale.ROOT) + position + parameters;
+        // R153: schema-1 still stores a bounded string, now resolved in the server's language.
+        return Component.translatable(issue.translationKey()).getString();
+    }
+
+    /** Bounded, single-line diagnostics without first allocating an unbounded Map.toString(). */
+    static String diagnosticDetail(RocketValidationIssue issue) {
+        StringBuilder text = new StringBuilder();
+        appendDiagnostic(text, issue.code().name());
+        issue.position().ifPresent(value -> appendDiagnostic(text, " at " + value.x() + "," + value.y() + "," + value.z()));
+        for (var entry : issue.parameters().entrySet()) {
+            if (text.length() >= RocketAssemblerBlockEntity.MAX_OPERATOR_DETAIL_LENGTH) { break; }
+            appendDiagnostic(text, " ");
+            appendDiagnostic(text, entry.getKey());
+            appendDiagnostic(text, "=");
+            appendDiagnostic(text, entry.getValue());
+        }
+        return text.toString();
+    }
+
+    private static void appendDiagnostic(StringBuilder target, String value) {
+        for (int index = 0; index < value.length()
+                && target.length() < RocketAssemblerBlockEntity.MAX_OPERATOR_DETAIL_LENGTH; index++) {
+            char character = value.charAt(index);
+            target.append(Character.isISOControl(character) || character == '\u2028' || character == '\u2029'
+                    ? ' ' : character);
+        }
     }
 }
