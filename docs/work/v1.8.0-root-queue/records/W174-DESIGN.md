@@ -1232,5 +1232,5 @@ record only, and it is local, not pushed.
 
 This addition changes no design or probe. The validator is repeated on the final record commit; its
 `validator-final-source.txt`, `validator-final.log` and `validator-final-exit.txt` identify that run. The
-revision-3 evidence directory is about 270 KB, almost all of it the `ChunkMap` dump, and holds no server or world
-copy, archive or compiled class.
+revision-3 evidence directory stays below 300 KB, most of it the `ChunkMap` dump and the validator logs, and holds
+no server or world copy, archive or compiled class.
