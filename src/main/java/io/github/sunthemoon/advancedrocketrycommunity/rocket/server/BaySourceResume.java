@@ -31,8 +31,9 @@ import org.slf4j.Logger;
 /**
  * W170's restart resume for one copy (W27A-DESIGN section 4.1, R0 to R2). R0: neither R1 nor R2 acts before the exact
  * checked authority of (L, T) (W170-R23). R1: while held, the claim renews the existing
- * flight tickets on T's checked columns of both ends (at most 16 per end), loading nothing else, and waits until the
- * source end's columns are entity-loaded and ticking; one group step per tick. R2: the exact source UUID, present and
+ * flight tickets on T's checked columns of both ends (at most 16 per end), loading nothing else, and waits until both
+ * ends' columns are entity-loaded and ticking, so the census never counts a loading end as empty (W170-R41); one group
+ * step per tick. R2: the exact source UUID, present and
  * neutral, is kept (a lagging COUNTDOWN or ASCENT image gets TRANSIT from T at the altitude position, with no launch
  * effect); absent, the bay-resume constructor rebuilds it with T's source UUID, the journal's source snapshot and T's
  * TRANSIT flight data restamped to the recovery tick, at altitude with zero velocity, never {@code rebuildSource}. Any
@@ -100,8 +101,8 @@ final class BaySourceResume {
             claim.waiting("END_UNAVAILABLE"); // wider regions or missing Levels wait, with no additional ticket
             return BayStepQueue.Result.NEXT_TICK;
         }
-        if (!RocketTransferEntities.endAlreadyLoaded(server, record.sourceSnapshot())) {
-            claim.waiting("END_LOADING");
+        if (!RocketTransferEntities.recoveryEndsAlreadyLoaded(server, record)) {
+            claim.waiting("END_LOADING"); // W170-R41: both recorded ends, whose checked columns R1 already tickets
             return BayStepQueue.Result.NEXT_TICK;
         }
         if (RocketReleaseAccess.fenced(server, claim.logical())) { claim.waiting("RELEASE_FENCED"); return BayStepQueue.Result.NEXT_TICK; }

@@ -3,6 +3,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 import static io.github.sunthemoon.advancedrocketrycommunity.rocket.server.BayDeploymentGameTestSupport.*;
 
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModEntities;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceipt;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceiptTestHooks;
@@ -36,7 +37,8 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
  * restart; and a second recognized copy holding the claim as DUPLICATE_PENDING with no record change. Each ends with
  * READY_SOURCE(T'), the receipts retired and every bay consumed by its own operation. A protected copy, and an unexpected
  * image of L in the source margin or the destination column (W170-R21), hold the claim for repair instead, with T, the
- * source, the receipts and the copy unchanged.
+ * source, the receipts and the copy unchanged. A destination end that is still loading holds R2 at END_LOADING until it
+ * loads, with or without an image of L there (W170-R41).
  */
 @GameTestHolder(ModIdentity.MOD_ID)
 @PrefixGameTestTemplate(false)
@@ -46,8 +48,11 @@ public final class BayRegisteredGameTests {
 
     private enum Kind {
         DECOMMISSION, PRESENT, ABSENT, MIXED_SOURCE_CONSUMED, MIXED_JOURNAL_CONSUMED, PROMOTE, DUPLICATE, PROTECTED,
-        UNEXPECTED_MARGIN, UNEXPECTED_COLUMN;
-        boolean held() { return this == PROTECTED || this == UNEXPECTED_MARGIN || this == UNEXPECTED_COLUMN; }
+        UNEXPECTED_MARGIN, UNEXPECTED_COLUMN, DESTINATION_LOADING, UNEXPECTED_LOADING;
+        boolean held() { return this == PROTECTED || this == UNEXPECTED_MARGIN || this == UNEXPECTED_COLUMN || this == UNEXPECTED_LOADING; }
+        /** W170-R41: the destination is a far overworld column that only R1's tickets load; no other GameTest reads it. */
+        boolean loading() { return this == DESTINATION_LOADING || this == UNEXPECTED_LOADING; }
+        BlockPos far() { return this == DESTINATION_LOADING ? new BlockPos(742_008, 100, 742_008) : new BlockPos(746_008, 100, 746_008); }
     }
 
     @GameTest(template = TEMPLATE, batch = REGISTERED, timeoutTicks = 1_200)
@@ -103,6 +108,21 @@ public final class BayRegisteredGameTests {
         new Case(helper, Kind.UNEXPECTED_COLUMN).start();
     }
 
+    /** W170-R41: R2 waits (END_LOADING) while the destination end is still loading, then the group goes on to READY_SOURCE. */
+    @GameTest(template = TEMPLATE, batch = REGISTERED, timeoutTicks = 1_200)
+    public static void aRestartWaitsForADestinationEndStillLoadingAndThenProceeds(GameTestHelper helper) {
+        new Case(helper, Kind.DESTINATION_LOADING).start();
+    }
+
+    /**
+     * W170-R41, from the re-review's HIDDEN-section probe: an image of L added to the destination column before it loads is
+     * not yet in the entity index. R2 waits for the end, and once it loads the census holds the restart for repair.
+     */
+    @GameTest(template = TEMPLATE, batch = BayDeploymentHoldGameTests.HOLD, timeoutTicks = 1_200)
+    public static void anImageOfLAtADestinationEndStillLoadingHoldsTheRestartOnceTheEndLoads(GameTestHelper helper) {
+        new Case(helper, Kind.UNEXPECTED_LOADING).start();
+    }
+
     private static final class Case {
         final GameTestHelper helper;
         final Kind kind;
@@ -114,16 +134,20 @@ public final class BayRegisteredGameTests {
         BayClaim claim;
         String checksum;
         int stage, waits, held;
-        boolean sawIntent, decommissioned, sawConsumedSource, closed;
+        boolean sawIntent, decommissioned, sawConsumedSource, closed, sawLoading, endLoaded;
+        /** W170-R41's loading kinds wait on chunk and entity-section loads, which run in wall-clock time. */
+        final GameTestTickPacer pacer;
 
         Case(GameTestHelper helper, Kind kind) {
             this.helper = helper; this.kind = kind;
             packages = List.of(solarPackage(owner), solarPackage(owner));
+            pacer = kind.loading() ? new GameTestTickPacer(helper.getLevel().getServer()) : null;
         }
         void start() { helper.onEachTick(this::tick); }
 
         void tick() {
             if (closed) { return; }
+            if (pacer != null) { pacer.pace(); }
             try {
                 helper.assertTrue(++waits < 1_150, "Fixture exceeded its bounded wait at stage " + stage + " " + describe());
                 switch (stage) {
@@ -136,8 +160,14 @@ public final class BayRegisteredGameTests {
 
         void begin() {
             var server = helper.getLevel().getServer();
-            BlockPos origin = helper.absolutePos(new BlockPos(3, 2, 3)), target = helper.absolutePos(new BlockPos(14, 2, 3));
-            if (!helper.getLevel().isPositionEntityTicking(origin) || !helper.getLevel().isPositionEntityTicking(target)) { return; }
+            BlockPos origin = helper.absolutePos(new BlockPos(3, 2, 3));
+            BlockPos target = kind.loading() ? kind.far() : helper.absolutePos(new BlockPos(14, 2, 3));
+            if (!helper.getLevel().isPositionEntityTicking(origin)
+                    || (!kind.loading() && !helper.getLevel().isPositionEntityTicking(target))) { return; }
+            if (kind.loading()) {
+                helper.assertTrue(!helper.getLevel().areEntitiesLoaded(new net.minecraft.world.level.ChunkPos(target).toLong()),
+                        "The far destination column was already loaded");
+            }
             if (kind != Kind.PRESENT && kind != Kind.ABSENT) { packages.forEach(pkg -> registerSolar(server, pkg, owner)); }
             flight = transit(helper, origin, target, owner, packages, RocketEscrowSectionPatch.NEUTRAL);
             var journal = RocketTransferSavedData.get(server);
@@ -176,7 +206,7 @@ public final class BayRegisteredGameTests {
                 copy.initializeTransferred(flight.record().sourceSnapshot(), logical(), owner, flight.record().sourceFlightData());
                 if (kind == Kind.PROTECTED) { copy = RocketEscrowSectionPatch.BOUND.apply(helper.getLevel(), copy); }
                 helper.assertTrue(helper.getLevel().addFreshEntity(copy), "Copy not published");
-            } else if (kind == Kind.UNEXPECTED_MARGIN || kind == Kind.UNEXPECTED_COLUMN) {
+            } else if (kind == Kind.UNEXPECTED_MARGIN || kind == Kind.UNEXPECTED_COLUMN || kind == Kind.UNEXPECTED_LOADING) {
                 // The end's own snapshot ID with only the first bay consumed: a hash that is neither group hash.
                 var partial = consumed(flight.record(), List.of(intents.get(0)));
                 boolean margin = kind == Kind.UNEXPECTED_MARGIN;
@@ -187,6 +217,9 @@ public final class BayRegisteredGameTests {
                 var end = snapshot.sourceOrigin();
                 copy.setPos(margin ? region.minimum().x() - 0.5D : end.x() + 0.5D, end.y(), end.z() + 0.5D);
                 helper.assertTrue(helper.getLevel().addFreshEntity(copy), "Copy not published");
+                if (kind == Kind.UNEXPECTED_LOADING) { // the HIDDEN-section probe: added, but not in the entity index yet
+                    helper.assertTrue(helper.getLevel().getEntity(copy.getUUID()) == null, "The copy at the unloaded end is already accessible");
+                }
             }
             stage = 1;
         }
@@ -213,6 +246,7 @@ public final class BayRegisteredGameTests {
             if (claim(helper, logical()).isPresent()) {
                 helper.assertTrue(record().phase() == io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferPhase.PREPARED,
                         "T advanced while held");
+                if (kind.loading() && !endLoaded) { awaitEnd(); }
                 if (claim.stage() == BayClaim.Stage.PROVE || claim.stage() == BayClaim.Stage.RETIRE) { observeConsumedSource(); }
                 var first = session.find(satellite(packages.get(0))).orElse(null);
                 if (kind == Kind.DECOMMISSION && first != null) {
@@ -237,6 +271,7 @@ public final class BayRegisteredGameTests {
                             "The repair hold changed a record or the source");
                     helper.assertTrue(copy.isAlive() && helper.getLevel().getEntity(copy.getUUID()) == copy,
                             "The repair hold must retain the copy, not discard it");
+                    helper.assertTrue(!kind.loading() || sawLoading, "The hold came without R2's END_LOADING wait");
                     if (++held >= 20) { close(); helper.succeed(); }
                     return;
                 }
@@ -278,8 +313,25 @@ public final class BayRegisteredGameTests {
                 helper.assertTrue(packages.stream().allMatch(pkg -> registry.satellite(satellite(pkg)).isPresent()), "Promotion kept X");
             }
             if (kind == Kind.DUPLICATE) { helper.assertTrue(held >= 40, "The duplicate hold was never observed"); }
+            if (kind.loading()) { helper.assertTrue(sawLoading && endLoaded, "R2's END_LOADING wait was never observed"); }
             close();
             helper.succeed();
+        }
+
+        /**
+         * W170-R41, each tick until the destination end is loaded: R2 has not gone on (the claim waits in RESUME), and the
+         * source, T and the receipts are unchanged. R1's tickets load the end; the wait must be seen at least once.
+         */
+        void awaitEnd() {
+            var server = helper.getLevel().getServer();
+            if (RocketTransferEntities.endAlreadyLoaded(server, flight.record().destinationSnapshot())) { endLoaded = true; return; }
+            helper.assertTrue(claim.stage() == BayClaim.Stage.RESUME && claim.hold() == BayClaim.Hold.OWNED_WAIT,
+                    "R2 went on before the destination end loaded: " + describe());
+            var session = bays(helper).sessionForTests();
+            helper.assertTrue(record().checksum().equals(checksum) && flight.source().snapshot().orElseThrow().contentHash()
+                    .equals(flight.record().sourceSnapshot().contentHash()) && receipts.stream().allMatch(receipt ->
+                    session.current(receipt.op()).filter(receipt::equals).isPresent()), "A record changed before the end loaded");
+            if (claim.reason().equals("END_LOADING")) { sawLoading = true; }
         }
 
         /** D6 and D7: the exact source holds S', in TRANSIT at altitude; an absent source was rebuilt, not resurrected. */

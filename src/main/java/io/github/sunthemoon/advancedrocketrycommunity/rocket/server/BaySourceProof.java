@@ -14,6 +14,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.RocketDiscoveryColumns;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -35,6 +37,7 @@ import org.slf4j.Logger;
  * group's REGISTERED receipts leave in one guarded generation; the guard reads only the barrier proof, the journal lease
  * and the group's invalidation counter. A refused guard or a definite failure repeats D6; the exact acknowledgement ends
  * the claim with READY_SOURCE. Another recognized copy of L holds the claim as DUPLICATE_PENDING (W27d3 resolves it).
+ * W170-R41: D6's census waits for every end whose checked columns the claim's renewed tickets cover to be entity-loaded.
  * W170-R22: from D6's capture until D7's outcome, the source is watched on the server thread. Any position write or Level
  * removal of a rocket naming L invalidates the group at once, and each coordinator tick compares the source's position,
  * Level, flight, fuel and payload with the captured image, so a change after the removal queued refuses its guard too.
@@ -123,6 +126,7 @@ final class BaySourceProof {
         if (source == null) { return BayStepQueue.Result.NEXT_TICK; }
         CompoundTag frozen = projection(source, record);
         if (frozen == null) { return repair(claim, "SOURCE_AUTHORITY_CONFLICT"); }
+        if (!endsLoaded(server, claim.origin(), record)) { claim.waiting("END_LOADING"); return BayStepQueue.Result.NEXT_TICK; }
         String copies = BaySourceResume.copies(server, record, group, source.getUUID());
         if (copies != null) {
             claim.waiting(copies);
@@ -141,6 +145,31 @@ final class BaySourceProof {
                 result -> captured(claim, result, lease, token, frozen));
         if (!begun) { capturing.remove(logical); watches.remove(logical); return retryNextTick(logical); }
         return BayStepQueue.Result.IDLE;
+    }
+
+    /**
+     * W170-R41: D6 counts images only while every end that the claim's renewed tickets cover in full has its checked
+     * columns entity-loaded and ticking. An end they do not cover is not awaited, and no ticket is added for it: its
+     * census there is loaded-only (the R-043 limit).
+     */
+    static boolean endsLoaded(MinecraftServer server, BayClaim.Origin origin, RocketTransferRecord record) {
+        RocketStructureSnapshot source = record.sourceSnapshot(), destination = record.destinationSnapshot();
+        return (!covered(origin, source, destination, false) || RocketTransferEntities.endAlreadyLoaded(server, source))
+                && (!covered(origin, source, destination, true) || RocketTransferEntities.endAlreadyLoaded(server, destination));
+    }
+
+    /**
+     * Whether the claim's renewed tickets cover every checked column of one end. A restart group renews both ends' checked
+     * columns, or nothing unless both are admissible (R1). An in-session claim renews the destination's ticket set, which
+     * is its checked set when admissible, and the source's origin column alone, which covers the source end only when it
+     * is that end's whole checked set.
+     */
+    static boolean covered(BayClaim.Origin origin, RocketStructureSnapshot source, RocketStructureSnapshot destination,
+                           boolean atDestination) {
+        var from = RocketDiscoveryColumns.of(source);
+        var to = RocketDiscoveryColumns.of(destination);
+        if (origin == BayClaim.Origin.RESTART) { return from.admissible() && to.admissible(); }
+        return atDestination ? to.admissible() : from.admissible() && from.count() == 1;
     }
 
     private void captured(BayClaim claim, EscrowBarrier.Result result, BooleanSupplier lease, BooleanSupplier token, CompoundTag frozen) {
