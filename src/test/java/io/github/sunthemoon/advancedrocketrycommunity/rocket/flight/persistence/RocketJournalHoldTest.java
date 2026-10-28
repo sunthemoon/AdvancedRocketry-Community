@@ -70,6 +70,30 @@ class RocketJournalHoldTest {
         } finally { hold.release(); writer.join(6_000); }
     }
 
+    /** W170-R23's startup variant: the first replacement waits once, even an unchanged one, until release. */
+    @Test void startupVariantHoldsOnlyTheFirstReplacementUntilRelease() throws Exception {
+        String previous = System.getProperty(RocketJournalHold.STARTUP_PROPERTY);
+        RocketJournalHold hold;
+        try {
+            System.setProperty(RocketJournalHold.STARTUP_PROPERTY, "true");
+            hold = new RocketJournalHold(5_000);
+        } finally {
+            if (previous == null) { System.clearProperty(RocketJournalHold.STARTUP_PROPERTY); }
+            else { System.setProperty(RocketJournalHold.STARTUP_PROPERTY, previous); }
+        }
+        var baseline = root(UUID.randomUUID(), "PREPARED");
+        var first = CompletableFuture.runAsync(() -> hold.beforeReplace(baseline.copy(), baseline));
+        try {
+            awaitWaiting(hold); assertFalse(first.isDone(), "the startup baseline is held although it changes nothing");
+            hold.release(); first.get(2, TimeUnit.SECONDS); assertFalse(hold.waiting());
+            long start = System.nanoTime(); hold.beforeReplace(baseline.copy(), baseline);
+            assertTrue(System.nanoTime() - start < TimeUnit.SECONDS.toNanos(1), "only the first replacement is held");
+        } finally { hold.release(); first.get(6, TimeUnit.SECONDS); }
+        var plain = new RocketJournalHold(5_000);
+        long start = System.nanoTime(); plain.beforeReplace(baseline.copy(), baseline);
+        assertTrue(System.nanoTime() - start < TimeUnit.SECONDS.toNanos(1) && !plain.waiting(), "without the property nothing waits");
+    }
+
     private static void awaitWaiting(RocketJournalHold hold) throws InterruptedException {
         long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(2);
         while (!hold.waiting() && System.nanoTime() < deadline) { Thread.sleep(1); }
