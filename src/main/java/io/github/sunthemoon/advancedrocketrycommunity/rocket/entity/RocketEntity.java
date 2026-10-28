@@ -499,6 +499,12 @@ public final class RocketEntity extends Entity implements MenuProvider {
         setDeltaMovement(Vec3.ZERO);
         io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowAudit.observe(this);
         setNoGravity(true);
+        // Vanilla's tracker consumes this hint even between the type's 20-tick parked updates.
+        // Only the two moving phases request a 2-tick cadence; no extra packet type or client authority.
+        if (!level().isClientSide && flightData != null && tickCount % 2 == 0
+                && (flightData.state() == RocketFlightState.ASCENT || flightData.state() == RocketFlightState.DESCENT)) {
+            hasImpulse = true;
+        }
         if (!level().isClientSide && !activeStateLogged) {
             activeStateLogged = true;
             AdvancedRocketryCommunity.LOGGER.info(
