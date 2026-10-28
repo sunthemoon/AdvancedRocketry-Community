@@ -124,6 +124,38 @@ Review pass 1 (receipts and registry), `D:/GitHub/ARCE-Task-Evidence/root-queue/
 W170-R2, the R-043 draft, is Root's. Verification: the new tests alone, the whole unit suite, and the bay batches
 three times. A full GameTest is needed only if production code outside `rocket/bay` changes.
 
+## Pass 2 findings under Root decision R139 (2026-10-28)
+
+Review pass 2 (entity and journal), `D:/GitHub/ARCE-Task-Evidence/root-queue/W170-review/pass2/REVIEW.md` (SHA-256
+`d1a94f9f…956b`), returned BLOCK. Its probes are in the same folder. A fresh session starts after the R137 session
+has delivered, on the branch head that session leaves. It appends a "Pass 2 fixes (R139)" section to the record:
+
+1. **W170-R21 (High).** `BaySourceResume.collect` drops an entity naming L whose snapshot or hash is unexpected, so a
+   visible conflicting copy counts as absent and can survive retirement.
+   - Bound the census by identities naming L first.
+   - Then classify each candidate by owner, end, snapshot ID and hash, position and protection.
+   - An unexpected image holds as runtime REPAIR without mutation; a recognised neutral non-survivor stays
+     DUPLICATE_PENDING.
+   - Add source-margin and destination-column regressions, starting with the review's probe.
+2. **W170-R22.** Movement after D7 queues must invalidate the replacement guard. Connect source position and
+   authority observations to an IO-safe token through captured and queued retirement. Add a pre-guard cut, and run
+   B16 natively for motion, superseding save, join and leave, keeping receipts until a fresh proof succeeds.
+3. **W170-R23.** R1 and R2 effects must wait for the exact checked L/T acknowledgement, not `journal.operational()`.
+   Add a regression that holds the startup writer.
+4. **W170-R24.** The absent-source branch must check all escrow eligibility (`bayNeutral`: locks, floors, tombstones,
+   an unavailable root) before it publishes. Add regressions that leave entity, journal and receipts unchanged on
+   the hold.
+5. **W170-R25.** All of a group's receipts and the checked record must agree on owner before any recovery effect.
+   Start from the review's probe, and cover BEFORE, AFTER and mixed-owner groups.
+
+No format, bound, budget or timeout changes. Verification:
+- the new tests alone, failing first;
+- the whole unit suite and the bay batches three times;
+- one complete GameTest;
+- the native cases that the fixes touch, B16 included, two restarts each.
+
+A fresh review of the R137 and R139 changes follows.
+
 ## Not in this task
 
 W27d3 (copies and the absence census), W27d4 (released flight), admission (W27e), ADRs, the risk register, status
