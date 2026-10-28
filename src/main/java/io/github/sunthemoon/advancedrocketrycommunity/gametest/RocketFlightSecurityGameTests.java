@@ -50,8 +50,10 @@ public final class RocketFlightSecurityGameTests {
                     UUID.randomUUID(), unauthorizedRocket -> {
                 long unauthorizedFuel = unauthorizedRocket.flightData().orElseThrow().fuel().amount();
                 owner.setPos(unauthorizedRocket.getX(), unauthorizedRocket.getY(), unauthorizedRocket.getZ());
-                // Anyone near a rocket may open its flight menu; only its owner may command it.
-                RocketFlightConsoleFixtures.open(owner, unauthorizedRocket);
+                // Anyone near a rocket may open its flight menu; only its owner may command it. W182-R1: with the menu
+                // valid, the owner check, not the menu boundary, is what refuses the launch below.
+                helper.assertTrue(RocketFlightConsoleFixtures.open(owner, unauthorizedRocket),
+                        "A player near another owner's rocket could not open its flight menu");
                 RocketRuntime.requestFlightIntent(
                         owner,
                         unauthorizedRocket.getId(),

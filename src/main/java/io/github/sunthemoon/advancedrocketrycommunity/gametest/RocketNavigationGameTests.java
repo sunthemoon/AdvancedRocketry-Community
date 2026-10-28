@@ -123,6 +123,8 @@ public final class RocketNavigationGameTests {
                     rocket.updateFlightData(original);
                     helper.assertTrue(menu.quotes().forTarget(MARS).canLaunch(), "Restored fuel did not refresh immediately");
                     stations.removeMember(station, owner.getUUID());
+                    // W182-R1: with the menu open and valid, station access, not the menu boundary, refuses the launch.
+                    helper.assertTrue(owner.containerMenu == menu && menu.stillValid(owner), "The flight menu was not valid before the revoked-station launch");
                     RocketRuntime.requestFlightIntent(owner, rocket.getId(), RocketFlightAction.LAUNCH, new TravelTarget.Station(station), UUID.randomUUID());
                     helper.assertTrue(original.equals(rocket.flightData().orElseThrow()), "Stale station view bypassed server access");
                     driver.after(21, () -> {
