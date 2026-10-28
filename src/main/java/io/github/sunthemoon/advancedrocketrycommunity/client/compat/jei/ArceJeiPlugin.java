@@ -70,12 +70,12 @@ public final class ArceJeiPlugin implements IModPlugin {
         List<PrecisionAssemblerRecipe> precisionRecipes = level == null
                 ? List.of()
                 : level.getRecipeManager().getAllRecipesFor(ModRecipes.PRECISION_ASSEMBLING_TYPE.get());
-        registration.addRecipes(ElectrolyzerJeiCategory.TYPE, electrolyzerRecipes);
-        registration.addRecipes(RollingMachineJeiCategory.TYPE, rollingRecipes);
-        registration.addRecipes(PrecisionAssemblerJeiCategory.TYPE, precisionRecipes);
+        registerCategoryRecipes(registration, ElectrolyzerJeiCategory.TYPE, electrolyzerRecipes);
+        registerCategoryRecipes(registration, RollingMachineJeiCategory.TYPE, rollingRecipes);
+        registerCategoryRecipes(registration, PrecisionAssemblerJeiCategory.TYPE, precisionRecipes);
         List<SmallPlatePressRecipe> pressRecipes = level == null ? List.of()
                 : level.getRecipeManager().getAllRecipesFor(MaterialContent.SMALL_PLATE_PRESS_TYPE.get());
-        registration.addRecipes(SmallPlatePressJeiCategory.TYPE, pressRecipes);
+        registerCategoryRecipes(registration, SmallPlatePressJeiCategory.TYPE, pressRecipes);
         registerClassic(registration, level, ModRecipes.LATHE_TYPE.get(), ClassicMachineJeiCategory.LATHE);
         registerClassic(registration, level, ModRecipes.ARC_FURNACE_TYPE.get(), ClassicMachineJeiCategory.ARC_FURNACE);
         registerClassic(registration, level, ModRecipes.CUTTING_TYPE.get(), ClassicMachineJeiCategory.CUTTING);
@@ -83,16 +83,6 @@ public final class ArceJeiPlugin implements IModPlugin {
         registerClassic(registration, level, ModRecipes.CHEMICAL_REACTOR_TYPE.get(), ClassicMachineJeiCategory.CHEMICAL_REACTOR);
         registerClassic(registration, level, ModRecipes.PRECISION_LASER_ETCHER_TYPE.get(), ClassicMachineJeiCategory.PRECISION_LASER_ETCHER);
         registerClassic(registration, level, ModRecipes.CENTRIFUGE_TYPE.get(), ClassicMachineJeiCategory.CENTRIFUGE);
-        AdvancedRocketryCommunity.LOGGER.info(
-                "{} optional_compat=jei status=registered recipes={}",
-                BetaDiagnosticId.OPTIONAL_COMPATIBILITY.code(),
-                electrolyzerRecipes.size()
-        );
-        AdvancedRocketryCommunity.LOGGER.info(
-                "{} optional_compat=jei machine_recipes rolling={} precision={} small_plate_press={}",
-                BetaDiagnosticId.OPTIONAL_COMPATIBILITY.code(),
-                rollingRecipes.size(), precisionRecipes.size(), pressRecipes.size()
-        );
     }
 
     @Override
@@ -135,8 +125,18 @@ public final class ArceJeiPlugin implements IModPlugin {
             mezz.jei.api.recipe.RecipeType<ClassicMachineRecipe> category) {
         var recipes = level == null ? List.<ClassicMachineRecipe>of()
                 : level.getRecipeManager().getAllRecipesFor(type);
-        registration.addRecipes(category, recipes.stream().filter(recipe -> {
+        registerCategoryRecipes(registration, category, recipes.stream().filter(recipe -> {
             try { recipe.definition(); return true; } catch (IllegalArgumentException invalid) { return false; }
         }).toList());
+    }
+
+    private static <T> void registerCategoryRecipes(IRecipeRegistration registration,
+            mezz.jei.api.recipe.RecipeType<T> category, List<T> recipes) {
+        registration.addRecipes(category, recipes);
+        // One bounded receipt per category per registration, after any recipe filtering.
+        AdvancedRocketryCommunity.LOGGER.info(
+                "{} optional_compat=jei status=registered category={} recipes={}",
+                BetaDiagnosticId.OPTIONAL_COMPATIBILITY.code(), category.getUid(), recipes.size()
+        );
     }
 }
