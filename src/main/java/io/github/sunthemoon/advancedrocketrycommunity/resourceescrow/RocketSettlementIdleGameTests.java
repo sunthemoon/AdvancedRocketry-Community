@@ -4,6 +4,7 @@ import com.mojang.authlib.GameProfile;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import io.github.sunthemoon.advancedrocketrycommunity.fluid.ClassicFluids;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestAutosave;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.RocketFlightConsoleFixtures;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModEntities;
@@ -98,6 +99,11 @@ public final class RocketSettlementIdleGameTests {
     }
 
     private static final class Scenario {
+        /**
+         * W187: F1's source capture completes with its Level's next 20-tick force, and the ARMED ledger write must capture
+         * while that proof is still valid. Three force periods bound both at paced ticks, as in W184's Moon landing rule.
+         */
+        private static final int F1_WINDOW_TICKS = 60;
         private final GameTestHelper helper;
         private final ServerLevel level;
         private final Release release;
@@ -181,6 +187,10 @@ public final class RocketSettlementIdleGameTests {
                 case 5 -> {
                     var target = completed.isEmpty() ? level.getServer().getLevel(CelestialIds.MOON_LEVEL) : level;
                     if (!readyLaunch(target)) { return; }
+                    // W187: a periodic autosave stores the source's entity section and supersedes F1's pending capture.
+                    // F1 then discards the launch, and flight() fails it as discarded before any ARMED write. Request each
+                    // of the two flights only when the next autosave falls after F1's window.
+                    if (GameTestAutosave.within(level.getServer(), F1_WINDOW_TICKS)) { return; }
                     predecessor = rocket; successor = null;
                     departure = rocket.flightData().orElseThrow(); departureWrapper = rocket.escrowSection();
                     sourceStates.clear(); phases.clear(); sawDescent = false; sawF6 = false; sawF7 = false;

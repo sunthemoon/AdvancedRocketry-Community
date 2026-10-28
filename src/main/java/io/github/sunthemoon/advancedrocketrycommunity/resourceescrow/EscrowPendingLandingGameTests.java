@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.resourceescrow;
 
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestAutosave;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.RocketFlightConsoleFixtures;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
@@ -59,6 +60,11 @@ public final class EscrowPendingLandingGameTests {
     }
 
     private static final class Flights {
+        /**
+         * W187: F1's source capture completes with its Level's next 20-tick force, and the ARMED ledger write must capture
+         * while that proof is still valid. Three force periods bound both at paced ticks, as in W184's Moon landing rule.
+         */
+        private static final int F1_WINDOW_TICKS = 60;
         private final GameTestHelper helper;
         private final ServerLevel earth, moon;
         private final GameTestTickPacer pacer;
@@ -143,7 +149,11 @@ public final class EscrowPendingLandingGameTests {
                 });
                 started = true;
             }
-            if (requested < 8 && runtime.barrier().available(earth.dimension().location().toString(), true, server.getTickCount())) {
+            // W187: a periodic autosave stores a source's entity section and supersedes its pending F1 capture. F1 then
+            // discards that launch, and the eight records never complete before the 1,200-tick timeout. Make each request
+            // only when the next autosave falls after its F1 window; a pause leaves at least four launches concurrent.
+            if (requested < 8 && runtime.barrier().available(earth.dimension().location().toString(), true, server.getTickCount())
+                    && !GameTestAutosave.within(server, F1_WINDOW_TICKS)) {
                 var rocket = sources.get(requested); var player = players.get(0);
                 player.teleportTo(earth, rocket.getX(), rocket.getY() + 3, rocket.getZ(), 0, 0);
                 helper.assertTrue(RocketRuntime.flightQuotes(player, rocket).moon().canLaunch(), "Product launch quote refused");

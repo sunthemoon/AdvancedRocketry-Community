@@ -4,6 +4,7 @@ import static io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.Escr
 
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestAutosave;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.RocketFlightConsoleFixtures;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
@@ -73,6 +74,11 @@ public final class EscrowGovernedWarmupGameTests {
      * over after T's first margin refresh, and the flight lands on the kept pad.
      */
     private static final class KeptPad {
+        /**
+         * W187: F1's source capture completes with its Level's next 20-tick force, and the ARMED ledger write must capture
+         * while that proof is still valid. Three force periods bound both at paced ticks, as in W184's Moon landing rule.
+         */
+        private static final int F1_WINDOW_TICKS = 60;
         private final GameTestHelper helper;
         private final ServerLevel earth, moon;
         private final GameTestTickPacer pacer;
@@ -214,6 +220,10 @@ public final class EscrowGovernedWarmupGameTests {
                     && RocketWarmupGameTestSupport.launchReservations(server, journal, logical(rocket)).stream().noneMatch(region(pads.get(0))::equals),
                     "The removed rocket's warm-up kept its tickets or reservation");
             if (!journal.retryChecked(server)) { return; }
+            // W187: a periodic autosave stores the source's entity section and supersedes F1's pending capture. F1 then
+            // discards the launch and awaitF2 waits for a record that never comes, until the 2,400-tick timeout. Relaunch
+            // only when the next autosave falls after F1's window; the 600-tick warm-up outlasts the wait.
+            if (GameTestAutosave.within(server, F1_WINDOW_TICKS)) { return; }
             launch(helper, pilot, rocket, launch);
             helper.assertTrue(pilot.last().equals(PENDING), "The READY relaunch answered " + pilot.last());
             var bound = warmup(server, rocket);
