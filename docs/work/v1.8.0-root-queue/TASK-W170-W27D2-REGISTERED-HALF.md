@@ -148,6 +148,9 @@ has delivered, on the branch head that session leaves. It appends a "Pass 2 fixe
 5. **W170-R25.** All of a group's receipts and the checked record must agree on owner before any recovery effect.
    Start from the review's probe, and cover BEFORE, AFTER and mixed-owner groups.
 
+6. **W170-R4's remaining part** (from pass 1). Once a claim is REPAIR-held, skip D2 for its remaining INTENT members, so
+   that no further satellite is registered in RAM under a claim that cannot proceed this session.
+
 No format, bound, budget or timeout changes. Verification:
 - the new tests alone, failing first;
 - the whole unit suite and the bay batches three times;
