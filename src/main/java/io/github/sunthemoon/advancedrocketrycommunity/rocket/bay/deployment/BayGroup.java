@@ -12,14 +12,16 @@ import java.util.function.BooleanSupplier;
 
 /**
  * W170 D4: one frozen consumption group for exact (L, T) (W27A-DESIGN sections 4 and 4.1, R3). Its members are the
- * proved registrations only, in bay order, each consumed by its own operation; the four hashes are the same for every
- * REGISTERED receipt of the group. A group never admits a member after it freezes. Its invalidation counter is the
+ * proved registrations only, in bay order, each consumed by its own operation; the four hashes and the owner are the same
+ * for every REGISTERED receipt of the group, and the owner binds T for the session (W170-R25). A group never admits a
+ * member after it freezes. Its invalidation counter is the
  * D6/D7 token's group part: a save, join, leave or movement of the source bumps it, and a token taken before refuses.
  * RAM only; owner thread, except {@link #token()}'s supplier, which the receipt writer's guard reads on its IO thread.
  */
 public final class BayGroup {
     private final UUID logical;
     private final UUID transfer;
+    private final UUID owner;
     private final List<BayMember> members;
     private final Map<RocketPosition, UUID> consumed = new LinkedHashMap<>();
     private final String srcBefore, dstBefore, srcAfter, dstAfter;
@@ -37,18 +39,20 @@ public final class BayGroup {
         if (srcBefore.equals(srcAfter) || dstBefore.equals(dstAfter)) {
             throw new IllegalArgumentException("A consumption group changes both snapshots");
         }
+        owner = this.members.get(0).receipt().map(BayReceipt::owner)
+                .orElseThrow(() -> new IllegalArgumentException("A group member has a receipt"));
         for (BayMember member : this.members) {
             BayReceipt receipt = member.receipt().orElseThrow(() -> new IllegalArgumentException("A group member has a receipt"));
             if (!member.consumable() || !receipt.rocket().equals(logical) || !receipt.transfer().equals(transfer)
-                    || consumed.put(member.bay(), receipt.op()) != null) {
-                throw new IllegalArgumentException("A group member must be a proved or registered bay of (L, T), once");
+                    || !receipt.owner().equals(owner) || consumed.put(member.bay(), receipt.op()) != null) {
+                throw new IllegalArgumentException("A group member must be a proved or registered bay of (L, T) and its one owner, once");
             }
         }
     }
 
     /**
-     * The group of durable REGISTERED receipts found at a restart: every receipt names L and T with the same four
-     * hashes, or the group is incoherent and the claim holds for repair.
+     * The group of durable REGISTERED receipts found at a restart: every receipt names L, T and one owner with the same
+     * four hashes, or the group is incoherent and the claim holds for repair.
      */
     public static java.util.Optional<BayGroup> resumed(UUID logical, UUID transfer, List<BayMember> registered) {
         if (registered.isEmpty()) { return java.util.Optional.empty(); }
@@ -69,6 +73,8 @@ public final class BayGroup {
 
     public UUID logical() { return logical; }
     public UUID transfer() { return transfer; }
+    /** The receipts' one owner; T must name the same owner before any recovery effect (W170-R25). */
+    public UUID owner() { return owner; }
     public List<BayMember> members() { return members; }
     /** Bay position to the operation that consumes it, in bay order. */
     public Map<RocketPosition, UUID> consumed() { return java.util.Collections.unmodifiableMap(consumed); }

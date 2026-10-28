@@ -94,11 +94,15 @@ final class BayConsumptionSteps {
         catch (RuntimeException invalid) { repair(claim, "CONSUMPTION_MISMATCH"); return null; }
     }
 
-    /** The journal record's half for the group: both ends BEFORE or both AFTER, PREPARED for exact (L, T); else null. */
+    /**
+     * The journal record's half for the group: both ends BEFORE or both AFTER, PREPARED for exact (L, T) and the group's
+     * owner (W170-R25: content hashes do not encode the owner); else null.
+     */
     @Nullable
     static BayGroup.Half half(@Nullable RocketTransferRecord record, BayGroup group) {
         if (record == null || record.phase() != RocketTransferPhase.PREPARED || !record.logicalRocketId().equals(group.logical())
-                || !record.transferId().equals(group.transfer()) || record.nativeTransfer().isPresent()) { return null; }
+                || !record.transferId().equals(group.transfer()) || !record.ownerId().equals(group.owner())
+                || record.nativeTransfer().isPresent()) { return null; }
         var source = group.sourceHalf(record.sourceSnapshot().contentHash());
         return source != BayGroup.Half.OUTSIDE && source == group.destinationHalf(record.destinationSnapshot().contentHash()) ? source : null;
     }
