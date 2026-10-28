@@ -1834,6 +1834,15 @@
       "reason": "W170-R21: a restarted REGISTERED group's census finds a loaded image of L whose hash is neither group hash, once in the source margin and once in the destination column, so each claim holds for offline repair with no record change; each transition is a WARN by design."
     },
     {
+      "id": "w170-r24-bay-absent-source-protected",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.server.BayTransferRecovery/",
+      "message": "ARCE_BAY_CLAIM transfer=[0-9a-f-]{36} logical=[0-9a-f-]{36} state=REPAIR reason=BAY_SOURCE_PROTECTED",
+      "counts": {"bay_registered_floor": 1, "bay_registered_locked": 1, "bay_registered_unavailable": 1},
+      "test": "BayRegisteredEscrowGameTests.anEscrowFloorNamingTheRocketRefusesTheAbsentSourceRebuildWithNoChange, anEscrowOperationLockingTheRocketRefusesTheAbsentSourceRebuildWithNoChange and anUnavailableEscrowRootRefusesTheAbsentSourceRebuildWithNoChange",
+      "reason": "W170-R24: a restarted REGISTERED group whose exact source is absent meets an escrow floor, an escrow operation locking L, or an unavailable escrow root; the bay-resume candidate fails the neutral-wrapper rule before publication, so each claim holds for offline repair with no entity, journal or receipt change; each transition is a WARN by design."
+    },
+    {
       "id": "w128r-r126-bay-hook-unclaimed-record-recovery",
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",

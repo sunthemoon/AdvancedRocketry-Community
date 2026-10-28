@@ -83,8 +83,9 @@ final class BaySourceResume {
             if (source == null || !RocketEscrowGate.bayNeutral(source, record.transferId()) || !establishTransit(source, record, level)) {
                 return repair(claim, "SOURCE_AUTHORITY_CONFLICT");
             }
-        } else if (!rebuild(level, record)) {
-            return repair(claim, "SOURCE_REBUILD_REFUSED"); // never a second random source
+        } else {
+            String refused = rebuild(level, record);
+            if (refused != null) { return repair(claim, refused); } // never a second random source
         }
         claim.waiting(null);
         claim.establishSource(uuid);
@@ -111,18 +112,26 @@ final class BaySourceResume {
         return BayConsumptionSteps.inTransit(source, record);
     }
 
-    /** The bay-resume constructor: T's source UUID, L, owner and the journal's source snapshot, in TRANSIT at altitude. */
-    private boolean rebuild(ServerLevel level, RocketTransferRecord record) {
+    /**
+     * The bay-resume constructor: T's source UUID, L, owner and the journal's source snapshot, in TRANSIT at altitude.
+     * The unpublished candidate must pass the present source's eligibility first (W170-R24): its TRANSIT image, and the
+     * neutral-wrapper rule for L and T (no escrow logical lock, ledger record, floor, armed flight, authority head or
+     * tombstone, and an available escrow root). Null once published; else the repair reason, with nothing added.
+     */
+    @Nullable
+    private String rebuild(ServerLevel level, RocketTransferRecord record) {
         RocketEntity source = ModEntities.ROCKET.get().create(level);
-        if (source == null) { return false; }
+        if (source == null) { return "SOURCE_REBUILD_REFUSED"; }
         source.setUUID(record.sourceEntityId());
         try {
             source.initializeTransferred(record.sourceSnapshot(), record.logicalRocketId(), record.ownerId(),
                     restamped(record, level.getGameTime()));
-        } catch (RuntimeException invalid) { return false; }
+        } catch (RuntimeException invalid) { return "SOURCE_REBUILD_REFUSED"; }
         RocketTransferEntities.positionAtAltitude(source, record.sourceSnapshot().sourceOrigin());
         source.setDeltaMovement(Vec3.ZERO);
-        return level.addFreshEntity(source) && BayConsumptionSteps.inTransit(source, record);
+        if (!BayConsumptionSteps.inTransit(source, record)) { return "SOURCE_REBUILD_REFUSED"; }
+        if (!RocketEscrowGate.bayNeutral(source, record.transferId())) { return "BAY_SOURCE_PROTECTED"; }
+        return level.addFreshEntity(source) && BayConsumptionSteps.inTransit(source, record) ? null : "SOURCE_REBUILD_REFUSED";
     }
 
     /** T's source TRANSIT flight data, with its state started at the recovery tick (W27A-DESIGN section 4.1). */
