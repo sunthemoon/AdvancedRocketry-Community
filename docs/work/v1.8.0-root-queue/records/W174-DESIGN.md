@@ -1,15 +1,20 @@
 # W174: the gas charge pad's feasibility design (ADR-066 section 4, D4)
 
-**Proposed design, revision 2, 2026-10-28. Not implementation, risk acceptance, owner decision or Gate evidence.**
-Revision 1 was Claude's design at `f9dbf78e5`, based on shared head `171c1d71d`. Revision 2 is a fresh Codex
-implementer session on `codex/v1.8.0-w174`, addressing Root decision R134 and findings W174-R1 to W174-R8. The task is
-`docs/work/v1.8.0-root-queue/TASK-W174-GAS-CHARGE-PAD-DESIGN.md`, read from the shared checkout; its Revision 2/R134
-section is this session's assignment. Root owns ADR-066, the risk register, the ledger and the owner question. A fresh read-only review of
-this note follows. Section 12 preserves the revision-1 session record; section 13 records revision 2.
+**Proposed design, revision 3, 2026-10-28. Not implementation, risk acceptance, owner decision or Gate evidence.**
+Revision 1 was Claude's design at `f9dbf78e5`, based on shared head `171c1d71d`. Revision 2 was a fresh Codex
+implementer session on `codex/v1.8.0-w174`, addressing Root decision R134 and findings W174-R1 to W174-R8. Its second
+review returned APPROVE-WITH-CHANGES. Revision 3 is a fresh Claude implementer session on the same branch from
+`cf656dfe8`. It addresses Root decision R136 and findings W174-R9 to W174-R15. The task is
+`docs/work/v1.8.0-root-queue/TASK-W174-GAS-CHARGE-PAD-DESIGN.md`, read from the shared checkout; its Revision 3/R136
+section is this session's assignment. Root owns ADR-066, the risk register, the ledger and the owner question. A fresh
+read-only review of this note follows. Section 12 preserves the revision-1 session record, section 13 records
+revision 2 and section 14 records revision 3.
 
-**Write scope:** this record only, plus new probes/logs under `D:/GitHub/ARCE-Task-Evidence/root-queue/W174/revision-2/`.
-No production, ADR, risk, status, ledger or other worktree changes are authorized. Finding labels below identify
-revisions, not independent closure verdicts. Revision 1's feasibility conclusion was blocked by its review.
+**Write scope:** this record only, plus new probes and logs under
+`D:/GitHub/ARCE-Task-Evidence/root-queue/W174/revision-3/` (revision 2 used `.../W174/revision-2/`). No production,
+ADR, risk, status, ledger or other worktree changes are authorized. Finding labels below identify revisions, not
+independent closure verdicts. Revision 1's feasibility conclusion was blocked by its review. Revision 3 keeps revision
+2's text where it still holds; each change carries the label of the finding it answers.
 
 **Inputs.**
 
@@ -17,10 +22,13 @@ revisions, not independent closure verdicts. Revision 1's feasibility conclusion
 |---|---|---|
 | W172 inventory, section 3, item B1 | `D:/GitHub/ARCE-Task-Evidence/root-queue/W172/INVENTORY.md` | `134fb14c0e588758639cad574f63fa2af18e615e8ac5622832b1bccf043e64ca` |
 | Independent revision-1 review and named design-model tests | `D:/GitHub/ARCE-Task-Evidence/root-queue/W174-review/REVIEW.md` | `f390b483c4e3dcdf42b446f76a311e0476a67b7339b0194a20e13dd06681913c` |
+| Second independent review, of revision 2, and its probes | `D:/GitHub/ARCE-Task-Evidence/root-queue/W174-review2/REVIEW.md` | `c8683ad1dd1ce83aae179cbf5c3990d2c160447512a04c60c4630f9ef9bdddb3` |
 | Forge 47.4.10 mapped jar, read as bytecode | the Gradle cache file that W80 and W159 used | `95eecc5985233d83a6571299f89f02de034267646da171f7b36a5be2d394d71e` |
 | ADR-066 sections 2 and 4, and section 9 item 4 (D4) | [ADR-066](../../../decisions/ADR-066-CLASSIC-LIFE-SUPPORT-EQUIPMENT-RESEARCH-AND-PRESENTATION.md) | not hashed |
+| ADR-065, "Proof admission" (the hand-off bounds and the pre-U request expiry) | [ADR-065](../../../decisions/ADR-065-CLASSIC-PROPULSION-STATION-CONTROLS-AND-SOLAR.md) | not hashed |
 
-In code citations, `J` means `src/main/java/io/github/sunthemoon/advancedrocketrycommunity` at `171c1d71d`.
+In code citations, `J` means `src/main/java/io/github/sunthemoon/advancedrocketrycommunity` at `171c1d71d`. The
+source tree is unchanged at `cf656dfe8`; revision 3 cites it there.
 
 **Names used below.**
 
@@ -32,7 +40,12 @@ In code citations, `J` means `src/main/java/io/github/sunthemoon/advancedrocketr
 - **W174-R1:** *Q(T)* is the source acknowledgement marker, retaining O(T)'s exact fields in the same bounded
   source entry with phase ACK instead of OWED. It is not another gas asset or another delivery obligation.
 - D, PS1, C, PF, A, PS2 and P are the protocol stages of section 4.2. K0 to K8 are the crash cuts of section 5.
-  F1 to F8 are the bytecode facts of section 2.1.
+  F1 to F9 are the bytecode facts of section 2.1.
+- **W174-R9/R10:** pad admission is *open* at a tick when the predicate of section 4.5 holds there. A barrier
+  *consumer* is a production caller of `EscrowBarrier` (section 4.5 lists all of them).
+- **W174-R12:** a pad's *incarnation* is a RAM token minted when its block entity is loaded or placed, and dropped
+  when it unloads or is removed. A position's *absence generation* is a RAM counter that advances whenever a pad
+  block entity appears at, or leaves, that position (section 4.1).
 - A *chunk proof* is a completed ordinary terrain proof of the escrow barrier (section 2.2). A *player-file proof*
   is a matching streaming readback of the installed `playerdata/<uuid>.dat` (section 2.3).
 - The *integrated owner* is the player that an integrated (single-player or LAN) server reports through
@@ -46,6 +59,12 @@ In code citations, `J` means `src/main/java/io/github/sunthemoon/advancedrocketr
    independent review and S2 qualification. Each step maps onto a merged mechanism (section 3); the proposed glue
    needs no new lifecycle hook, no new Access Transformer line and no Mixin. It does
    use the escrow chunk store, which relies on Access Transformer lines that W11a2 already merged.
+   **W174-R9 to R12:** revision 3 binds pad admission to the existing "due" predicates of every barrier consumer
+   instead of to every waiting rocket entry, and refuses D while admission is closed (section 4.5). It includes W158
+   and governed in-flight captures, and bounds the rest (section 4.5). It quantifies the sealed start delay of the
+   pad drain wait (section 4.5) and makes proof currency per transaction entry and incarnation (sections 4.1 and 4.2).
+   The glue still needs no new hook, AT or Mixin. It adds read-only accessors to `EscrowBarrier`, a neutral demand
+   view in `resourceescrow`, and one change to the sealed coordinator's existing `attemptRoom` (section 4.5).
 2. **It needs two changes to the proposed protocol text of ADR-066 section 4.**
    - The receipt lives in the player's own persisted data, `ForgeData.PlayerPersisted.arce_gas_charge_receipts`, not
      on the worn chest.
@@ -59,7 +78,10 @@ In code citations, `J` means `src/main/java/io/github/sunthemoon/advancedrocketr
    enforced runtime predicate even in the fallback case, not a claim that this player is unreachable. No merged
    mechanism observes a durable `level.dat`
    write. The pad must refuse automatic charging for that player, so single-player worlds need the alternative
-   interaction of section 9, which the owner must choose.
+   interaction of section 9, which the owner must choose. **W174-R13:** moving a world from dedicated to
+   single-player hosting also rolls back the host's player file through a stale `level.dat` `Player` tag. This is a
+   vanilla partial rollback of every item, in both directions, and needs a whole-world repair step before the move
+   (sections 4.7, 7 and 10).
 4. **D4 therefore cannot close through this note alone.** The TASK's stop condition (a new hook, Access Transformer
    or Mixin) is not triggered. Point 3 still changes the interaction for single-player worlds, so section 9 is
    written for the owner, with a recommendation. Root takes the two protocol changes of point 2 into an ADR-066 note.
@@ -70,18 +92,20 @@ In code citations, `J` means `src/main/java/io/github/sunthemoon/advancedrocketr
 
 These facts were read in revision 1 with `javap -c -p` from JDK 17.0.7 on the jar named above, and independently
 checked by the revision-1 review. Revision 2 inspected those records and the source, not a new bytecode run. The dumps are in
-`D:/GitHub/ARCE-Task-Evidence/root-queue/W174/bytecode/`. Numbers are bytecode offsets.
+`D:/GitHub/ARCE-Task-Evidence/root-queue/W174/bytecode/`. Numbers are bytecode offsets. Revision 3 added F9 from a
+new `ChunkMap` dump in `.../W174/revision-3/bytecode/`, and relies on the second review's dumps for F3 and R13.
 
 | Fact | Content | Where |
 |---|---|---|
 | F1 | `PlayerDataStorage.save` serializes the player (8), writes a temporary file (33), calls `Util.safeReplaceFile` (85) and then fires `PlayerEvent.SaveToFile` (97). Every exception in that range is caught and logged at WARN. | `save`; W80 and W159 recorded the same order |
 | F2 | `PlayerDataStorage.load` reads only `<uuid>.dat` and never falls back to `.dat_old`. A missing or unreadable file gives a fresh player. | `load`, 2 to 41 |
-| F3 | `PlayerList.load` loads the integrated owner from `WorldData.getLoadedPlayerTag()`, the `Player` tag of `level.dat`, whenever that tag exists. It loads every other player through `PlayerDataStorage.load`. | `load`, 7 to 72 |
+| F3 | **W174-R15 item 1:** `PlayerList.load` loads the integrated owner from `WorldData.getLoadedPlayerTag()`, the `Player` tag of `level.dat`, when that tag exists. When the tag is null, the owner falls back to `PlayerDataStorage.load` (24 to 28 and 67 to 72), as every other player always does. | `load`, 7 to 72 |
 | F4 | `IntegratedPlayerList.save` caches the owner's tag for the next `level.dat` write and then writes `playerdata` as usual. `DedicatedServer.isSingleplayerOwner` always returns false. | `save`, 8 to 31; `isSingleplayerOwner`, 0 |
 | F5 | `ServerPlayer.restoreFrom` copies `ForgeData.PlayerPersisted` from the old body to the new one on every clone, that is, after a death and on the End exit. The copy is outside the keep-everything branch. | `restoreFrom`, 296 to 328 |
 | F6 | `PlayerList.saveAll()` is public. `PlayerList.save(ServerPlayer)` and `MinecraftServer.playerDataStorage` are protected, so saving one player alone would need new access. | declarations |
 | F7 | The armor slot of the inventory menu refuses a pickup only when the player is not creative and the stack reports Curse of Binding through `ItemStack.getEnchantmentLevel`. | `InventoryMenu$1.mayPickup`, 13 to 32; `EnchantmentHelper.hasBindingCurse` |
 | F8 | `Inventory.save` stores armor at `Slot` 100 plus its index, so the worn chest is the `Inventory` element with `Slot` 102. | `Inventory.save`, 114 to 122 |
+| F9 | **W174-R12, new in revision 3:** `ChunkMap.processUnloads` eagerly saves up to 20 visible chunks per tick while the tick has time left (178 to 244). `saveChunkIfNeeded` skips a chunk within 10,000 ms of wall time after its previous eager save (48 to 77 and 94 to 110). `ChunkMap.save` stores nothing unless the chunk is unsaved (12 to 19), clears the flag (22) and posts `ChunkDataEvent.Save` (119 to 144), which advances the escrow save monitor's slot generation. | `ChunkMap`, dumped in revision 3's evidence |
 
 Vanilla runs every player save on the server thread: the autosave, a logout and `saveAll`. The design depends on this
 only for the statement that no save runs inside one owner-thread step.
@@ -97,6 +121,12 @@ only for the statement that no save runs inside one owner-thread step.
   `ORDINARY_PER_LEVEL = 4` per 20-tick window (`CADENCE`). W98's retirements, W158's release proofs and W152's sealed
   disassembly share it. A sealed attempt reserves all four slots of its Level until it ends (ADR-065, N3-B2, "Proof
   admission").
+- **W174-R10:** every capture, ordinary or governed, also shares the rest of `EscrowBarrierBudget`: one capture per
+  server tick (`lastCapture`), `PENDING = 32`, `PER_TYPE = 16` per Level window, `LEVELS = 64` and the 16 MiB byte
+  budget, of which a reservation needs 4 MiB of room. The budget's Level table only grows: `reserve` puts an entry
+  for each Level it serves and nothing removes one for the barrier's lifetime. A Level's staged captures are forced
+  together; the force waits for every staged store (`EscrowBarrier.java:204-205`), and a later capture goes into the
+  next batch.
 - `GuardedChunkSaves` is the existing whole-chunk save refusal for an outgoing device root that fails
   `BoundedNbt.fits` (ADR-066 section 2 and its W03 and W14 notes; R-026 and R-027).
 
@@ -182,8 +212,12 @@ The ADR's bound of eight receipts per equipment piece becomes eight receipts per
   a revision, an owner UUID, a gas and an amount of 1 to 100. These fields are immutable; its phase changes only
   OWED -> ACK. A Q entry never returns to OWED and never credits gas. The four-per-owner limit includes both phases.
 
-**W174-R1/R3:** RAM records the load incarnation, state generation and PS1 coverage, plus at most one unresolved
+**W174-R1/R3:** RAM records the load incarnation and PS1 coverage per entry, plus at most one unresolved
 capture per chunk and two server-wide (4.5). Pending acknowledgement identity is in Q(T), not only this RAM index.
+**W174-R12:** revision 2's "state generation" is withdrawn; no whole-root counter takes part in proof currency.
+The incarnation token is minted in the block entity's existing load and placement paths and dropped on unload and
+removal. The pad index keeps the absence generation of a position only while a pad is registered there (at most
+4,096) or one of the two pad tickets is an orphan capture of it, so it stays bounded.
 Unload drops the live index/proof authority, not a persisted entry. If unload saves Q(T), reload reconstructs its
 hold and requires fresh PS2. If no store installed Q(T), restart loads O(T), and the durable R(T) repeats A, not C.
 Removal before PS2 is refused. An unexpected forced removal invalidates the incarnation; it does not authorize P.
@@ -191,9 +225,11 @@ R(T)'s saved source identity supplies any later absent/replaced-source proof req
 
 **The receipt root** `ForgeData.PlayerPersisted.arce_gas_charge_receipts`, schema 1, holds at most eight receipts.
 Each has a transaction UUID, a revision, the pad UUID, the dimension (canonical ASCII, at most 128 bytes), the block
-position, a gas and an amount. The proposed bounds are 4 KiB encoded, depth 4 and 96 nodes, with exact keys and types
-and no duplicate transaction. RAM-only state records whether a player-file proof covered each receipt. The codec never
-reads or changes other keys under `PlayerPersisted`.
+position, a gas and an amount. **W174-R13:** each receipt also carries the owner UUID, copied from O(T). The
+proposed bounds are 4 KiB encoded, depth 4 and 96 nodes, with exact keys and types and no duplicate transaction.
+With the owner field and the position as three integers, eight receipts take about 91 nodes; L2 checks the exact
+count and size at the maximum dimension length. RAM-only state records whether a player-file proof covered each
+receipt. The codec never reads or changes other keys under `PlayerPersisted`.
 
 A transaction's identity is the pair of UUID and revision, as the ADR asks. A transaction is never retried under a new
 identity: a waiting outbox keeps its identity until it is acknowledged.
@@ -202,13 +238,13 @@ identity: a waiting outbox keeps its identity until it is acknowledged.
 
 | Stage | Condition | Action, on the server thread | Result |
 |---|---|---|---|
-| D | A pad pass (4.3). The pad is enabled, unpowered and not quarantined. One eligible player (4.4) was chosen. The source-entry section and the owner's per-pad cap have room. | Set a to the smallest of 100, the bank, and the player's room minus what this pad already owes them. Debit the bank and append O(T) in one step. | Nothing durable yet; D and C are mutually exclusive in this pass (W174-R4). |
-| PS1 | The pad has an outbox that no proof covered, and no proof in flight. Pad-side admission (4.5) allows a proof. | `beginOrdinaryTerrain` on the pad's chunk. The validator requires the pad's block entity at its position, a decodable root with the same identity, and every captured outbox with identical fields. | On success, every captured outbox counts as proved. |
+| D | A pad pass (4.3). The pad is enabled, unpowered and not quarantined. One eligible player (4.4) was chosen. The source-entry section and the owner's per-pad cap have room. **W174-R9:** pad admission is open at this tick (4.5), and the pad holds no OWED entry that PS1 has not covered. | Set a to the smallest of 100, the bank, and the player's room minus what this pad already owes them. Debit the bank and append O(T) in one step. | Nothing durable yet; D and C are mutually exclusive in this pass (W174-R4). At most one unproved outbox per pad. |
+| PS1 | The pad has an outbox that no proof covered, and no proof in flight. Pad-side admission (4.5) allows a proof. | `beginOrdinaryTerrain` on the pad's chunk. The validator requires the pad's block entity at its position, a decodable root with the same identity, and every captured outbox with identical fields. | **W174-R12:** a current result (4.2, below) proves each captured outbox that is still OWED with the same fields, one entry at a time. |
 | C | O(T) is proved, R(T) is absent, and the cadence/player selection of 4.3 admits this one entry (W174-R4). The owner is eligible again and stands on this pad. Their receipt root is valid and has room. | Credit exactly a to a detached copy of the worn chest (4.4) and append R(T) to a detached copy of the receipt root. Validate both, then publish both with no callback in between. | R(T) is live and not yet proved. |
 | PF | An online player has a receipt that is not yet proved. | The shared prompt clock calls `saveAll()` at most once per 100 ticks, and never while a scan is open. A `SaveToFile` for that player requests a scan of the installed file's UUID and receipt root. | Each R(T) found with exact fields is proved. Anything else stays unproved. |
-| A (W174-R1) | R(T) is proved, and the original pad is loaded. | Replace O(T) with Q(T), retaining all identity/value fields. | Acknowledgement is RAM-only; removal and gas switching remain held. |
+| A (W174-R1) | R(T) is proved, and the original pad is loaded. **W174-R13:** the holder's UUID, R(T)'s owner and O(T)'s owner are equal. | Replace O(T) with Q(T), retaining all identity/value fields. | Acknowledgement is RAM-only; removal and gas switching remain held. |
 | PS2 (W174-R1/R3) | The pad holds Q(T) and shared admission allows a capture. | Validate the coherent source root, same pad identity, exact Q(T), and absence of O(T). A confirmed, current result permits clearing this Q entry on the owner thread. | The ACK state is durably installed before the hold clears; clearing Q cannot restore O. |
-| P (W174-R1) | A current positive PS2 or orphan-source proof covers this exact R(T); the owner is online and supported. | Recheck live receipt equality and source incarnation/generation, then prune in the proof-consumption step and release the proof. | The next ordinary player save carries the prune. Offline or stale results require a fresh source proof later. |
+| P (W174-R1) | A current positive PS2 or orphan-source proof covers this exact R(T); the owner is online and supported. **W174-R13:** the holder's UUID equals R(T)'s owner, and Q(T)'s owner when Q is present. | Recheck live receipt equality and the currency of 4.2 below, then prune in the proof-consumption step and release the proof. | The next ordinary player save carries the prune. Offline or stale results require a fresh source proof later. |
 
 Three orderings carry the conservation argument:
 
@@ -222,10 +258,40 @@ dimension join, death, End clone and reconnect callbacks must not promote arbitr
 is uncertain, require PF instead. The host predicate is checked before this classification too. C may precede PF,
 but neither admission nor proof completion has a guaranteed end-to-end latency.
 
-**W174-R1/R3:** a PS2 callback validates its captured generation before any publication. Clearing its exact Q and,
+**W174-R1/R3:** a PS2 callback validates its currency (below) before any publication. Clearing its exact Q and,
 for an online supported player with that exact valid receipt, pruning R are one callback-free owner transition. That transition's own Q deletion is an
 expected monotonic edit, not permission to ignore an intervening mutation. If P cannot run in that transition,
 release the proof and require a fresh orphan proof later. No stored marker is an instruction to refund the bank.
+
+**W174-R12: proof currency per transaction entry and incarnation.** A capture can cover several entries of one
+chunk. Its result is judged separately for each transaction T it covers. It is current for T only when all of these
+hold on the owner thread:
+
+- the barrier's own checks: `Result.confirmed()` and `Proof.valid()`, which include the save monitor's slot
+  generation, so a vanilla save of the chunk between capture and consumption still fails the attempt
+  (`SUPERSEDING_SAVE`);
+- the pad's attempt checks of 4.5: server and Level lifetime, the chunk FULL, the attempt token and the inclusive
+  deadline;
+- for PS1 and PS2: the same pad incarnation as at capture, and the live root still holds T's entry with identical
+  fields in the captured phase (OWED for PS1, ACK for PS2);
+- for an orphan proof (4.6): the position's absence generation unchanged since capture, and T still absent from the
+  live state there;
+- for P: also the exact live receipt and the owner rule of the P row.
+
+Nothing else invalidates the result for T: not the bank, not a canister slot, not fluid input, and not another
+entry's D, A or Q clearing. Those edits only change entries other than T, or no entry at all. Safety does not need
+whole-root equality. Entry fields are immutable, phases only move OWED, then ACK, then absent, and at most one
+capture per chunk is unresolved. The incarnation and absence generation catch replacement and removal. A new entry
+written after the capture, such as another owner's D, is simply not covered; it waits for the next PS1.
+
+**W174-R12: superseding saves under continuous input.** A barrier capture leaves the chunk clean, but continuous
+fluid or hopper input marks it unsaved again at once. Vanilla's eager save (F9) then stores that chunk at most once
+per 10 s of wall time, and an eager save that lands inside a proof window fails that attempt with
+`SUPERSEDING_SAVE`. At 20 ticks per second the window of about 20 plus R ticks (R is the readback latency) is about
+one tenth of the 200-tick cooldown. So continuous input is expected to fail roughly one attempt in eight to ten,
+and more under server lag. This is an estimate, not a measurement. It is a retry cost, not a livelock: the next
+attempt follows no sooner than 20 ticks after the failed one ends (4.5), and nothing is relaxed in the barrier's
+own check.
 
 ### 4.3 Scheduling and the fair queue
 
@@ -249,6 +315,11 @@ release the proof and require a fresh orphan proof later. No stored marker is an
 - Receipt upkeep (A, P and the orphan rows of 4.6) runs for each online player with receipts at most once per 100
   ticks, with at most 16 receipt checks per tick. It considers only pads whose chunk is already FULL and never loads
   a chunk.
+- **W174-R10:** pad passes, receipt upkeep and every pad capture submission run once per server tick in the
+  existing `TickEvent.ServerTickEvent`, phase END, at `EventPriority.LOWEST`. That is after every NORMAL-priority END
+  handler, including the merged barrier consumers (`RocketManager.onServerTick`, `EscrowRuntime.tick` with
+  `EscrowBarrier.tick` and its callbacks, and `RocketRejoinEvents.tick` for W158). This uses an existing event, not
+  a new lifecycle hook.
 
 ### 4.4 Eligibility and the credit target
 
@@ -270,7 +341,10 @@ unchanged live stack/reference/tag immediately before publication:
   to native enchantment to bypass refusal. External ADR-025 providers are refused here. No arbitrary capability
   callback participates in the credit publication.
 
-The built-in credit target follows a fixed order (W174-R5); the enchanted branch has only its active oxygen buffer:
+The built-in credit target follows a fixed order (W174-R5); the enchanted branch has only its active oxygen buffer.
+**W174-R15 item 2:** both native branches fill the active buffer only up to the configured target
+(`suitOxygenTarget`, at most 2,000), as the merged canister refill does for both
+(`J/compat/atmosphere/SuitEquipmentService.java:119`).
 
 - **Oxygen:** the installed OXYGEN tank; else an installed EMPTY tank, which becomes OXYGEN; else the active buffer up
   to the configured target (`suitOxygenTarget`, at most 2,000).
@@ -283,51 +357,189 @@ matches an existing gas only. `ModuleLayout` still refuses two tanks of one gas.
 ### 4.5 Proof admission for pads
 
 **W174-R2: policy before quota.** `availableOrdinaryTerrain` is only the final native hint. It does not implement
-`SealedProofAdmission` or `SealedProofTurns`. L1b must add a narrow owner-thread admission adapter beside those
-classes, using the same `RocketOrdinaryRetirement`/`SealedDisassemblyCoordinator` instances and turn state, not a
-second independent reservation policy. Its binding and tests are prerequisites to enabling pad proof submissions:
+`SealedProofAdmission` or `SealedProofTurns`. Pad proofs therefore pass the shared policy below before that hint,
+and its binding and tests are prerequisites to enabling pad proof submissions. **W174-R10:** revision 2 put this
+adapter beside the two rocket classes. Revision 3 moves the seam to a neutral view and covers every consumer.
+
+**W174-R10: every barrier consumer.** A search of `J` at `cf656dfe8` for calls of `begin`, `beginJoint`,
+`beginOrdinary` and `beginOrdinaryTerrain` finds the production consumers below. The other callers
+(`EscrowChainReleaseProbe`, `EscrowDestinationProbe`, `EscrowPhaseProbe`, `EscrowReleaseProbe`,
+`EscrowSourceClockProbe`, `EscrowTestReconciliation` and `EscrowPinnedQueueGameTestSupport`) each call
+`EscrowTestEndpoints.requireEnabled`, so they run only in gated tests.
+
+| Consumer | Entry | Shares with a pad | Pad admission |
+|---|---|---|---|
+| W98 ordinary retirements (`RocketOrdinaryRetirement`) | `beginOrdinary` through `RocketRetirementWorld` | the ordinary sub-quota and every budget item of 2.2 | **Included.** Closed while any entry is PROVING or holds a reservation, or meets the due expression of `ordinaryTurn` (`RocketOrdinaryRetirement.java:421-424`): WAITING, and either its admission tick or `now + 1 >= notBefore`. The expression is evaluated over every pending entry, because an entry that waits before its turn check has been withdrawn from the turns map (`waiting` calls `fail`, which calls `withdraw`). |
+| W152 sealed disassembly (`SealedDisassemblyCoordinator`, `SealedProofBatch`) | `beginOrdinary` and `beginOrdinaryTerrain` through `SealedDisassemblyWorld` | as above; an active attempt reserves all four ordinary captures of its Level | **Included.** Closed while an attempt is active, while the existing sealed waiting predicate holds (`SealedDisassemblyCoordinator.java:77-78`), and while the `SealedProofTurns` refused-caller window is open. Rule 3 below adds the drain wait. |
+| W158 release proofs (`RocketReleaseCoordinator`) | `beginOrdinary` through `RocketReleaseWorld.java:148-149` | as above | **Included.** Closed while any release entry is in stage B0, is capturing, has a started B1 attempt, or is in B1 with `now + 1 >= notBefore`. Only B0 and B1 capture. W158 cannot merely be bounded: a refused capture drops a B0 admission (`B0_FAILED`, `RocketReleaseCoordinator.java:262` and 276) and delays B1 by its 200-tick retry. |
+| Governed escrow: F1 (`EscrowFlightCheckpoint.java:154`), `EscrowGovernedDestination.java:161`, `EscrowGovernedReturn.java:127`, `EscrowGovernedTerminal.java:103`, `EscrowReconciliationDriver.java:206`, `EscrowSettlementRecovery.java:133` and `EscrowPreF2Cancellation.java:85` | `begin` and `beginJoint` | the capture tick, `PENDING`, `PER_TYPE`, `LEVELS`, bytes and the Level batch; not the ordinary sub-quota | **Included while in flight:** closed while the barrier holds any reservation that is not a pad ticket. **Bounded otherwise,** as stated below. |
+
+**W174-R9: the open predicate (option (a) of the second review).** Pad admission is open for a pad at tick t only
+when all of these hold, evaluated in the pad service step of 4.3:
+
+1. the barrier holds no reservation other than the pads' own tickets (its reservation count equals the pad IO
+   count). This covers every consumer's in-flight IO, including rocket IO left behind by an expired rocket attempt;
+2. no W98, W152 or W158 condition of the table above holds;
+3. if the pad's Level has no entry in the budget's Level table, fewer than 32 of its 64 entries are in use (a new
+   W174-R10 bound: the table never shrinks, so pads may never take its last 32 entries from rockets and governed
+   escrow).
+
+A capture additionally needs the native hint `availableOrdinaryTerrain` for the pad's chunk and the pad limits of
+rule 4 below. D needs admission open, but not those capture limits.
+
+A rocket entry that waits on a condition of its own (`SURVIVOR_UNLOADED`, `CREW_WAITING`, slot holds,
+`SLOT_UNLOADED` and `SAVE_OFF`, polled every 20 ticks; `CENSUS_LIMIT`, every 200) closes admission only on the ticks
+where its due expression is true. Those are two ticks of every 20 for a 20-tick poll, and two of every 200 for
+`CENSUS_LIMIT`. A native-window BUSY retries one tick later, so it stays due on every tick; that is real contention,
+and pads yield to it. The second review's option (b), a server-wide hold of all pads for every waiting entry, is not
+chosen: one offline crew member or one unloaded survivor would stop every pad on the server. Pads still stop
+everywhere while rocket demand covers every tick: continuous BUSY contention, sealed work back to back, or at least
+ten polling entries whose due ticks cover all twenty phases. Section 10 registers that hold.
+
+**W174-R9: D while admission is closed.** D needs admission open at its tick (D row of 4.2), and a pad never holds
+more than one OWED entry without PS1 coverage. A stall that begins after a D therefore leaves at most one unproved
+outbox on that pad, and no further D runs there until admission reopens. While admission is closed at the pad's
+pass, the menu and the action bar show a localized reason ("charging paused: rocket proofs have priority"). C, A,
+P, the canister slots and safe withdrawal are unaffected; C needs no capture.
+
+**W174-R10: what a pad capture can take from a consumer that is not yet due.** The pad service runs after every
+merged consumer has ticked (4.3). In tick t those consumers have already made the captures they were due to make,
+and the barrier has already delivered tick t's callbacks. A pad capture at t then takes, at most:
+
+- **the capture of tick t.** Only work that runs between ticks with the same tick count, chiefly packet tasks, can
+  find it taken. Their existing response applies: W98 retries a busy capture one tick later; W152 and W158 capture
+  only from their own tick, which has already run; governed callers report "not started" (for F1, the
+  `BARRIER_AVAILABLE` precondition or `f1.refused.BARRIER_BEGIN`) and are tried again by their caller. A pad
+  captures only while no other reservation exists, and every other reservation closes pad admission until it ends,
+  so each governed capture loses at most one tick to a pad;
+- **one of the four ordinary captures of its Level's current 20-tick window**, and two of the eight
+  `ORDINARY_PENDING` server-wide while its IO runs. A W98 attempt that becomes due in that window and Level, and
+  starts after the pad's tick, still has 21 capture opportunities within its inclusive 100-tick deadline by
+  ADR-065's window-phase arithmetic when no other consumer uses those windows: three in the shared window, sixteen
+  in the next four, and at least two in the window that opens at the deadline. W158 needs at most three slots per
+  batch and captures one at a time. It can lose a capture to a pad only when other ordinary consumers that became
+  due after the pad fill the rest of that window, which those consumers can already do to it. Its existing
+  `B0_FAILED` and retry outcomes then apply, and the tests below assert that boundary;
+- **one of the sixteen terrain captures per Level window, two of `PENDING = 32`, and its actual capture bytes.**
+  Two pad chunks at the 4 MiB decoded ceiling would still leave room for two concurrent 4 MiB governed
+  reservations under the 12 MiB admission line, instead of four. Typical chunks are far smaller;
+- **its Level batch.** A capture that another consumer stages in the same Level and batch is forced with the pad's.
+  The shared force tick is no later than its own would be, because the pad's earlier staging set it; the force
+  does wait for the pad's own store. A pad store that never completes holds that batch's force (`allOf`); W116's
+  `forceMixed` separates failures, not hangs. A later capture goes into the next batch, and at most two pad tickets
+  exist, so at most two batches can be held per server run. Their consumers fail by their own deadlines or
+  retries. Section 10 registers this with the stalled-IO row.
+
+So, under healthy IO, a waiting entry that is not yet due when a pad captures loses no capture opportunity within
+its deadline and no hand-off, apart from the bounded cases named in these bullets; the tests below assert each of
+them. Sealed attempts are protected more strongly. Rule 3 keeps them from starting while any pad IO is unresolved,
+and the second review's model, which includes earlier forces and window phases, keeps all 21 submissions in every
+case with pads.
+
+**W174-R10: the seam stays one-way (AGENTS 3.4).** A neutral view, `EscrowProofDemand`, lives in `resourceescrow`
+and is owned by `EscrowRuntime` for the server's lifetime. It imports no rocket or pad type.
+
+- W98, W152 and W158 each register one read-only demand source with it, in their existing construction or bind on
+  the server thread. Each source answers the conditions of the table above, reading their own state; the W158
+  source is registered by `RocketReleaseWorld`, which already uses `EscrowRuntime`.
+- The pad coordinator publishes its unresolved IO ticket count into the same view.
+- `EscrowBarrier` gains two read-only owner-thread accessors: its reservation count, and its Level-table size.
+- The sealed coordinator's existing `attemptRoom` (`SealedDisassemblyCoordinator.java:287-289`) also requires the
+  view's pad IO count to be zero. That is rule 3. Apart from registering the three read-only sources, it is the only
+  change inside rocket code.
+
+Rocket code then reads pad load, and pad code reads rocket demand, only through `resourceescrow`; neither imports
+the other. A missing source or view denies pad proofs. It never falls back to calling the barrier directly. No new
+Forge lifecycle hook, AT or Mixin is involved.
+
+**The rules (revision 2, kept where they still hold).**
 
 1. Service active sealed and ordinary rocket work in its existing order before considering pad capture. A sealed
    attempt keeps **all four** ordinary captures of its Level and its next-tick inspection priority. Pad PS1, PS2
    and absent-source proofs are all lower-priority consumers; none bypass this rule through receipt upkeep.
-2. Conservatively admit no new pad capture while any rocket proof is active or waiting server-wide, including
-   delayed/backoff ordinary entries, sealed demand, native-window BUSY, and the bounded anonymous refused-caller
-   opportunity in `SealedProofTurns`. This global rule also protects the one-capture-per-tick resource. A pad is
-   not a fake ordinary rocket UUID: it neither consumes `ordinaryStarted` nor extends/clears the rocket turn.
-   The ordinary return entitled to the post-sealed opportunity runs before another sealed attempt under the
-   existing policy; a pad cannot slip into that hand-off, even if numerical quota is available.
-3. Account already-submitted pad captures as outstanding ordinary work in shared admission. In particular,
-   `SealedProofAdmission.canStart` must see them until their terminal callback; an expired logical pad attempt is
+2. **W174-R9:** admit a new pad capture only while the open predicate holds. This replaces revision 2's
+   "no capture while any rocket proof is active or waiting server-wide". A pad is not a fake ordinary rocket UUID:
+   it neither consumes `ordinaryStarted` nor extends or clears the rocket turn. The ordinary return entitled to the
+   post-sealed opportunity runs before another sealed attempt under the existing policy. It is due during that
+   hand-off, so a pad cannot slip into it, even if numerical quota is available.
+3. Account already-submitted pad captures as outstanding work in shared admission. In particular, the sealed
+   coordinator's `attemptRoom` must see them until their terminal callback; an expired logical pad attempt is
    not zero outstanding IO. New rocket demand closes pad admission immediately, waits for those existing captures
    to drain, then takes the native opportunities before any pad retry. Running IO is not revoked. Waiting for
    admission does not start a sealed 100-tick attempt or suspend its existing pre-U expiry.
-4. Only when the shared policy is idle may the pad queue use `availableOrdinaryTerrain` and the atomic native
+4. Only while the open predicate holds may the pad queue use `availableOrdinaryTerrain` and the atomic native
    reservation. Keep at most one pad submission per Level per 20 ticks, two unresolved captures server-wide, and
    one per chunk. One captured chunk may cover the bounded registered pads there, with exact per-pad validators.
    Failed/expired/superseded attempts retry no sooner than 20 ticks after logical termination and only after the
    original IO terminates. No quota, rocket deadline, retry window or service-lag allowance increases.
 
-The adapter is proposed service wiring through existing tick/close calls, not a new Forge lifecycle hook/AT/Mixin.
-Its absence must deny pad proofs, not fall back to calling the barrier directly. Permanent rocket demand can starve
-pads. A pad IO submitted before rocket demand can delay rocket admission; if IO never finishes the delay is
-unbounded. This explicitly replaces revision 1's claim that busy Levels slow only pads. Existing ADR-065/R-035
-availability residuals remain; the pad design does not claim to fix them.
+Existing ADR-065 and R-035 availability residuals remain; the pad design does not claim to fix them.
 
-**Required mixed-workload tests (W174-R2).** Run the actual shared admission/turn classes and native budget with
-a 21-slot sealed plan, pads continuously ready, ordinary retirements waiting, same-Level and different-Level demand,
-and each 20-tick window phase. No pad capture occurs during sealed activity or its waiting hand-off. Compare the
-rocket-only trace to the pad trace once any pre-existing pad IO drains: pad work must not take any reserved capture
-or worsen the inherited ordinary/sealed hand-off bounds. Cover the anonymous refusal window, two-wave crew-waiting
-residual, native BUSY/backoff and global capture tick. With rockets absent and finite IO, registered pads resume
-round-robin; under endless rocket demand assert a retained pad hold, not fabricated progress. Slow/never-completed
-IO is a separate unbounded-availability case, not a deadline extension.
+**W174-R11: the sealed start delay caused by rule 3.** Let sealed demand first become visible at tick d. A pad
+captured at most at d − 1, because demand closes admission. The barrier forces that capture's Level at most 20 ticks
+after its staging (`nextForce`, `EscrowBarrier.java:120`, 167 and 309-313), and releases the ticket after the
+readback latency R and the next barrier tick. Rule 3 makes the sealed start wait for that release. Under healthy IO,
+the extra start delay over the rocket-only trace is therefore at most one force interval plus R, less one tick
+(19 + R), because the capture came at d − 1 at the latest. The second review's model, rerun unchanged in revision 3's
+evidence, gives 20 ticks at R = 1 and 24 ticks at R = 5, with 21 submissions in all 25,600 cases. Its largest total
+start delay after demand is 26 ticks, which includes the delay that earlier rocket captures cause without pads too.
+The model does not include batch coupling or confirmation before the deadline.
+
+- **ADR-065's hand-off bounds are unchanged.** This delay happens only at an idle-to-demand edge. Once any rocket
+  demand is due or active, no new pad capture starts. Later sealed attempts and retries, the post-sealed ordinary
+  opportunity with its 2-tick service lag (up to 16 ticks after a sealed attempt), the 4-tick W152K case and the
+  W152L two-wave residual therefore see no new pad IO. If an ordinary attempt is already running at d, the pad wait
+  overlaps the existing wait for that attempt; under healthy IO the pad's IO ends first.
+- **The 200-tick pre-U expiry.** `SealedDisassembly` rejects a request older than 200 ticks before retention
+  (`J/rocket/sealed/SealedDisassembly.java:83` and 93), and the PREPARE proof precedes retention (`prepare()`,
+  line 129). Take a request with p ticks before its first attempt can start, a pad delay δ, and an attempt that needs
+  up to 101 ticks with its inclusive deadline. A first attempt that succeeds needs p + δ + 101 ≤ 200, which still
+  holds for δ ≤ 24 whenever p ≤ 75. A first attempt that fails at age a, followed by the 1-tick superseding-save
+  retry and a full second attempt, needs p + δ + a + 1 + 101 ≤ 200, that is a ≤ 98 − p − δ. The pad delay therefore
+  shrinks the retry headroom by δ: at R = 5, from a ≤ 98 − p to a ≤ 74 − p. A request that would have been rescued
+  by a late retry can now expire as `REJECTED`, the existing result, after which the player asks again. This is an
+  estimate from the stated assumptions, not a measurement.
+- **The own-Level refinement is not adopted.** Pad IO in another Level does not share the sealed Level's batch, but
+  it still holds up to two of the eight server-wide `ORDINARY_PENDING`, its bytes and a Level-table entry. The model
+  suggests that this does not cost a submission under healthy or stalled IO, but it does not model every resource.
+  Rule 3 stays server-wide until the L1b tests measure both variants; Root may then adopt the refinement with that
+  evidence and a review.
+- **Stalled pad IO** keeps rule 3 closed: no sealed attempt starts anywhere until the ticket's IO ends or the server
+  stops. Section 10 registers this as a server-wide rocket unavailability beside R-035's residuals.
+
+**Required mixed-workload tests (W174-R2, extended by W174-R9 to R11).** Run the actual shared admission and turn
+classes, the demand view and the native budget, with a 21-slot sealed plan, pads continuously ready, ordinary
+retirements waiting, same-Level and different-Level demand, and each 20-tick window phase.
+
+- No pad capture occurs during sealed activity or its waiting hand-off. Pad work must not take any reserved capture
+  or worsen the inherited ordinary and sealed hand-off bounds. Cover the anonymous refusal window, the two-wave
+  crew-waiting residual, native BUSY and backoff, and the global capture tick.
+- **W174-R11:** compare the rocket-only trace with the pad trace including any pad IO made 1 to 40 ticks before
+  demand, not only after it drains. Assert 21 submissions, an extra sealed start delay of at most one force interval
+  plus the measured readback latency, and the pre-U arithmetic above with the real `SealedDisassembly`. Measure the
+  own-Level variant of rule 3 in the same matrix.
+- **W174-R9:** a long-waiting retirement (`SURVIVOR_UNLOADED`, and separately `CENSUS_LIMIT`) with pads ready. Pads
+  capture between its due ticks and never on them, PS1 and PS2 complete, and when the survivor loads, its attempt
+  starts at its next poll with the same capture trace as without pads. With sealed work back to back, D stays at
+  zero, no new outbox appears and the localized reason is shown. With ten polling entries covering every phase,
+  assert a retained pad hold, not fabricated progress.
+- **W174-R10:** W158 B0 and B1 in the pad's Level and in another Level, including a B0 admitted in the same tick as a
+  pad pass, and a W158 batch sharing a window with a pad capture and a W98 attempt: no `B0_FAILED` that the
+  rocket-only trace lacks, except the asserted fill-the-window boundary above. Governed F1 preparation, a
+  pre-F2 cancellation and a governed return, each with a pad capture in the same tick and in the same Level batch:
+  at most one lost tick per governed capture, and unchanged governed margins (the W90a margin GameTests run with
+  pads ready). A W98 census of 21 slots in one Level after a pad capture. The Level-table rule at 31, 32 and 33
+  entries.
+- With rockets absent and finite IO, registered pads resume round-robin. Slow or never-completed IO is a separate
+  unbounded-availability case, not a deadline extension; include one stalled pad store sharing a batch with a
+  governed capture.
 
 **W174-R3: pad-owned attempt lifecycle.** The barrier does not expire attempts. A new bounded pad coordinator owns
 `WAITING -> ACTIVE -> CONFIRMED/FAILED/EXPIRED`, a monotonic attempt token and an inclusive 100-tick logical deadline
 from accepted first capture (age 100 is allowed; age 101 is expired). Before submission it registers an IO ticket,
 so even a synchronous callback cannot escape accounting. A refused submission retires that ticket without IO.
 Every result checks, on the owner thread, server/Level lifetime, FULL chunk, load incarnation, attempt token, deadline,
-captured state generation and exact source/receipt fields. A late or mismatched result releases any returned proof
+and **(W174-R12)** the per-transaction currency of 4.2 instead of a whole-root generation. A late or mismatched result releases any returned proof
 once and changes no source, receipt, bank or equipment. Accepted proofs are consumed under those checks and released;
 there is no transferable proof authority cached across reload. Duplicate completions cannot release capacity twice.
 
@@ -357,13 +569,18 @@ and never acknowledges.
 | O(T) and Q(T) absent, original valid pad present (W174-R1) | R(T) names this pad | Hold until a fresh terrain capture/force/readback proves the same pad root excludes T. Live or loaded absence alone never permits P. |
 | Another valid pad, or no pad, at R(T)'s position (W174-R1) | R(T) present | Hold until a fresh terrain proof positively establishes the original source identity is absent in this FULL chunk. Only then P, with one diagnostic per source/receipt episode. No refund/re-credit or inference from a missing BE. |
 | The pad at R(T)'s position is quarantined | R(T) present | Hold. |
+| any (W174-R13) | R(T)'s owner differs from the holder's UUID, or from O/Q(T)'s owner | Hold and never use it: no C suppression, no A, no orphan request, no P. One WARN per holder per server session. It occupies one of the holder's eight receipts until whole-world repair. |
 
 Disconnected owners wait for login. Only the saved owner UUID can receive C, and only the saved pad identity can
-acknowledge.
+acknowledge. **W174-R13:** "R(T) absent" in the C row means absent among the receipts that the holder owns; a
+foreign receipt never stands in for delivery.
 
 **W174-R1:** every orphan request is keyed by the receipt's original pad UUID, dimension, position, transaction,
 revision, owner, gas and amount, even if no BE exists. The captured terrain must be structurally valid and show the
-exact same coherent source root without T, or the original identity absent and the replacement state unchanged.
+exact same coherent source root without T, or the original identity absent. **W174-R12:** revision 2's "and the
+replacement state unchanged" is replaced by the per-transaction currency of 4.2. The position's absence generation
+must be unchanged since capture, and T must still be absent there. A replacement pad's bank, slots, fluid input and
+other entries may change meanwhile.
 IO failure, unreadable terrain, missing disk slot or an unloaded chunk is not positive absence. The regular terrain
 capture can install and prove an already-loaded chunk's actual absence; it does not load an absent chunk. A receipt
 upkeep request uses the same two-ticket/turn admission, not another orphan queue. Before P recheck the exact live
@@ -375,7 +592,7 @@ cleanup is never an exception to PS2 ordering. Operator root edits/partial resto
 
 | Case | Behaviour | Data |
 |---|---|---|
-| The integrated owner (F3, F4; W174-R6) | Check `server.isSingleplayerOwner(player.getGameProfile())` before D, C, login proof promotion, PF acceptance, A and P. Refuse automatic charging/reconciliation even for obligations created on a dedicated server. The menu/action bar shows a localized reason; canister slots still work. | Preserve O/Q/R exactly; no host receipt is pruned based on playerdata. Resume on a supported dedicated/guest session or validated whole-world repair. |
+| The integrated owner (F3, F4; W174-R6) | Check `server.isSingleplayerOwner(player.getGameProfile())` before D, C, login proof promotion, PF acceptance, A and P. Refuse automatic charging/reconciliation even for obligations created on a dedicated server. The menu/action bar shows a localized reason; canister slots still work. **W174-R13:** a pad that owes this player stays held against removal and gas switching for as long as this UUID hosts. | Preserve O/Q/R exactly in the mod's own logic; no host receipt is pruned based on playerdata. **W174-R13:** vanilla itself may not preserve them: a world moved from dedicated hosting can load a stale `level.dat` `Player` tag and overwrite the host's playerdata (section 7). Resume on a supported dedicated/guest session, after the whole-world repair step of section 7. |
 | A receipt root that is future, malformed, over its bounds or duplicated, or a `PlayerPersisted` that is not a compound | No D, C or P, and no proof promotion/A based on that root (W174-R1/R6). One WARN per player, per case, per server session. Outboxes owed to the player wait. | The raw tag is never rewritten; vanilla keeps saving it unchanged. |
 | A chest root that the existing readers refuse (FUTURE, INVALID or unsafe) | No C. | The chest is not touched. |
 | An external provider chest | No D and no C (4.4). | Unchanged. |
@@ -396,6 +613,8 @@ whose receipts cannot be proved holds at most eight receipts, and at most four o
   depend on it.
 - A loaded root that does not decode is kept raw, and the pad is quarantined (no pass, no break), as W14 and W33 do.
   An outgoing root that fails `BoundedNbt.fits` uses `GuardedChunkSaves`, within R-027's scope.
+- **W174-R12:** canister, fluid and output-slot operations change only the bank and the slots. They never touch a
+  source entry, so they never invalidate a proof (4.2), and they may continue while a capture is in flight.
 - The pad uses no FE. A redstone signal, or `lifeSupport.classicDevicesEnabled=false`, stops D and the input slot. A,
   PS2, P, C for proved outboxes, and the output slot (safe withdrawal) continue. The block, the block entity and their
   IDs stay registered.
@@ -463,6 +682,11 @@ Interleavings:
   Neither a vanished queue entry nor a callback for the former BE incarnation allows P.
 - **Server stop.** The reader closes as W159F made it, and pending proofs are dropped. A restart continues by the
   table.
+- **W174-R12: continuous input or another owner's D during a capture.** The result for T stays current (4.2). A
+  vanilla eager save inside the window fails the attempt (F9); the next attempt recaptures. Neither changes a cut.
+- **W174-R13: a hosting-kind switch.** This is not a crash cut but a vanilla rollback between two sessions; section 7
+  states it. The K0 to K8 continuations assume that the host's installed player file is the one the host's next
+  session loads, which a stale `level.dat` `Player` tag breaks.
 
 ## 6. The Windows overlap rule
 
@@ -489,7 +713,8 @@ PF. Queue no more than one coalesced request per tracked player, using existing 
 ## 7. What stays non-atomic
 
 - **W174-R1/R8: two files, ordered but not joined.** The K0-K8 invariant applies to coherent, available installed
-  files and a chest remaining in that player's saved inventory, with no excluded third-store/rollback effects.
+  files and a chest remaining in that player's saved inventory, with no excluded third-store/rollback effects
+  (**W174-R13:** including no hosting-kind switch without the repair step below).
   Delivery is once or remains owed; Q is acknowledgement, never gas. This is not unconditional global exactly-once
   conservation. Positive source proof before every prune also applies to ordinary removal, which is not an accepted
   tearing exception.
@@ -513,6 +738,37 @@ PF. Queue no more than one coalesced request per tracked player, using existing 
   Actual positive terrain proof is still required before orphan pruning; a warning never substitutes for it.
   Missing player-file replacement holes in section 5 are separate vanilla losses, including after acknowledgement.
 - **The integrated owner** is not covered at all (section 9).
+- **W174-R13: switching between dedicated and single-player hosting rolls back the host's player file.** Vanilla
+  does this to every item, not only to gas. The bytecode chain, from the second review's dumps (offsets in
+  brackets):
+  1. A dedicated server's `saveAllChunks` passes `PlayerList.getSingleplayerData()`, which is null there [0 to 1],
+     to `saveDataTag` [155 to 161].
+  2. `PrimaryLevelData.createTag` then substitutes its `loadedPlayerTag` [4 to 12], and `setTagData` writes it as
+     `Player` [505 to 513]. `loadedPlayerTag` is assigned only in the constructor and by the data-fixer upgrade.
+     A `Player` tag from an earlier single-player session therefore survives dedicated hosting unchanged.
+  3. When the world is next opened locally, `PlayerList.load` gives that stale tag to the integrated owner (F3,
+     [7 to 35]). `IntegratedPlayerList.save` caches it and then calls `PlayerList.save` [14 to 31], which overwrites
+     `playerdata/<uuid>.dat` at the first save.
+
+  The consequences run in both directions:
+  - **Loss.** Receipts and credited chests written during dedicated hosting vanish with the rest of that inventory.
+    If O(T) is still durable, a later dedicated session credits a again, because the owner's file lacks R(T); if
+    only Q or nothing remains, a is lost.
+  - **Gain.** Suppose the stale tag holds an R(T) and its credited chest from a single-player session between two
+    dedicated periods (the host refusal of 4.7 preserved them). If R(T) was pruned and the chest consumed during the
+    second dedicated period, the next local opening brings both back: a returns, with every other item of that old
+    inventory.
+  - **Another player's data.** The integrated owner is whoever opens the world locally, so the stale tag can load
+    into a different UUID. The receipt's owner field and the owner rule of 4.6 keep such a receipt from ever
+    acknowledging, pruning or standing in for delivery. The items that came with it remain a vanilla duplicate.
+
+  **Repair step.** Before a world that was hosted on a dedicated server is opened in single-player, a validated
+  whole-world repair removes the stale `Player` tag from `level.dat`, or replaces it with the intended host's
+  current playerdata compound. With the tag null, the host falls back to `playerdata/<uuid>.dat` (F3). Hosting kinds
+  must not alternate without this step. The mod cannot perform or enforce it: no merged mechanism observes or edits
+  `level.dat` at that point, and adding one would need a new hook. The step is therefore operator guidance in the
+  risk text (section 10), not a protocol guarantee. L0R should consider the same rollback for W80 obligations
+  (section 11).
 
 ## 8. Bounds
 
@@ -532,6 +788,12 @@ PF. Queue no more than one coalesced request per tracked player, using existing 
 | Pad proof authority (W174-R3) | inclusive 100 ticks from accepted capture; IO retains its ticket after expiry | caller-owned proposal, not a barrier deadline |
 | Player readback | W80's ceilings, one scan at a time, a prompt save at most once per 100 ticks | merged |
 | Pad scan requests (W174-R3) | **proposal:** 128 identities, one coalesced request per player | new; overflow remains in persisted receipts |
+| D admission (W174-R9) | only while pad admission is open; at most one unproved outbox per pad | new |
+| Pad admission (W174-R9/R10) | the open predicate of 4.5: no non-pad reservation, no due or active W98, W152 or W158 demand | binds existing due predicates; no quota changes |
+| Pad service phase (W174-R10) | once per server tick, `ServerTickEvent` END at `EventPriority.LOWEST` | existing event |
+| Barrier Level table (W174-R10) | a pad may add a Level entry only while fewer than 32 of the 64 are in use | new; the table never shrinks |
+| Sealed start delay from rule 3 (W174-R11) | healthy IO: one force interval plus readback latency, once per idle-to-demand edge (modelled 20 to 24 ticks) | derived; stalled IO is unbounded (section 10) |
+| Receipt fields (W174-R13) | adds the owner UUID; the 4 KiB, depth 4 and 96-node proposal still holds (about 91 nodes at eight receipts) | new |
 
 **W174-R3/R4:** no throughput bound is inferred from average transaction duration. The pass token enforces the
 charge ceiling. Quota contention, W80 priority, unavailable players, full receipts, equipment room and IO can make
@@ -574,6 +836,8 @@ worlds. The owner may also choose O1 for every player, instead of sections 4 to 
 Under O1, a single-player world has no other way to fill jetpack hydrogen without the new canister-to-tank refill,
 because tanks have no other merged supported survival source (section 2.4); operator imports and third-party mods
 are not acquisition evidence. O1 is a genuine alternative, not a closure of automatic pad parity.
+**W174-R13:** O1 is player-local, so it has no cross-store obligation to lose, but the vanilla rollback of a
+hosting-kind switch (section 7) still rolls back the refilled chest with the rest of the host's inventory.
 
 ## 10. Proposed risk-register text, for Root
 
@@ -584,13 +848,17 @@ including L1a with D disabled. All table text below is proposed; this task does 
 
 | Protection | Scope | Duration | Log volume | Recovery |
 |---|---|---|---|---|
-| Removal/gas-switch refusal with O or unproved Q (W174-R1/R3) | One pad, including after unload/reload | Until receipt and positive source acknowledgement complete; indefinite for an absent/ineligible owner, lack of equipment room, or failed IO | No per-break log; one WARN per pad/load and reason transition, not per retry | Eligible owner returns, adequate room and healthy IO; otherwise validated whole-world repair. Never refund/discard an outbox |
+| Removal/gas-switch refusal with O or unproved Q (W174-R1/R3) | One pad, including after unload/reload | Until receipt and positive source acknowledgement complete; indefinite for an absent/ineligible owner, lack of equipment room, or failed IO. **W174-R9/R13:** also while pad admission stays closed (next row), while W80 priority starves PF (last row), and for as long as an owner of one of its entries hosts the world as integrated owner | No per-break log; one WARN per pad/load and reason transition, not per retry | Eligible owner returns, adequate room and healthy IO; otherwise validated whole-world repair. Never refund/discard an outbox |
+| **W174-R9/R10:** pad proof admission closed by other barrier consumers | Every pad of the server: no PS1, PS2 or orphan proof, and no D (at most one unproved outbox per pad remains) | While W98, W152 or W158 demand is due or active on every tick (continuous BUSY contention, sealed work back to back, or at least ten polling entries covering all twenty phases), while any non-pad reservation is outstanding, or, for pads in a Level without a budget entry, while 32 or more of the 64 entries are used. Not bounded by a timer | Localized player reason only; no log per waiting tick | Rocket demand ends or thins out; orderly restart empties the Level table. Obligations stay owed |
 | Quarantine of an undecodable or copied pad root | One pad block | Until compatible decoding or coherent repair; decoding alone cannot fix a copied identity | One WARN per pad per load | Compatible jar for supported schema; whole-world repair for copied/edited identity; preserve raw root |
 | Save refusal for an oversized outgoing pad root (W174-R7) | Whole terrain chunk; after 256 distinct denied coordinates, subsequent terrain writes throughout the Level (R-027) | Until Level closure; no online reset; retained dirty state does not prevent unload | Existing EventBus/ChunkMap ERROR pair and stack per native retry, with **no total log cap** | Offline whole-world backup and scoped repair, restart, native saving and conservation checks; do not delete player/source files |
 | Refusal of a player whose receipt root is unsupported | That player's automatic charging | Until an offline repair or a compatible jar | One WARN per player, per case, per session | An offline repair of a whole-world copy; the raw root is preserved |
-| Refusal of the integrated owner (W174-R6) | That player's automatic charge and receipt reconciliation; retain existing obligations | By design while that UUID is host, including a world moved from dedicated hosting | Localized message, no per-tick log | O1 for new supply; reconcile old obligations in supported hosting or validated whole-world repair |
-| Full entries/receipts or unprovable player file (W174-R3) | New charging at that pad/for that player | Unbounded until reconciliation/repair; restart alone may not help | One WARN per OVERSIZED transition; no per-tick retry log | Healthy IO and supported bounded data, or validated whole-world repair; do not erase receipts |
-| Expired but unresolved pad IO (W174-R2/R3) | At most two pad tickets plus inherited native ordinary capacity; can block sealed admission server-wide | Logical authority ends after age 100; IO occupancy lasts to terminal completion/server closure and may recur indefinitely | One WARN per ticket failure/expiry, not per waiting tick; repeated completed failures over unlimited play have no total cap | Restore storage health, orderly restart and re-prove retained entries; never release occupancy to submit unlimited replacement IO |
+| Refusal of the integrated owner (W174-R6) | That player's automatic charge and receipt reconciliation; retain existing obligations. **W174-R13:** every pad that owes this player stays held | By design while that UUID is host, including a world moved from dedicated hosting | Localized message, no per-tick log | O1 for new supply; reconcile old obligations in supported hosting, after the repair step of the next row, or validated whole-world repair |
+| **W174-R13:** vanilla rollback on a hosting-kind switch (not a mod protection; disclosed with this entry) | The host's whole player file: every item, receipts and credited chests included; a stale tag can also load into another UUID | From the first save of a single-player session that loads a stale `level.dat` `Player` tag; permanent once saved | None from the mod; vanilla logs nothing | Before opening a dedicated-hosted world in single-player, a validated whole-world repair removes the stale `Player` tag or replaces it with the host's current playerdata. Do not alternate hosting kinds without it. Afterwards, only a consistent whole-world backup restores coherence |
+| **W174-R13:** receipt whose owner differs from its holder | That receipt, and one of the holder's eight receipt slots | Until whole-world repair | One WARN per holder per server session | Validated whole-world repair; never used for A, P or delivery |
+| Full entries/receipts or unprovable player file (W174-R3) | New charging at that pad/for that player | Unbounded until reconciliation/repair; restart alone may not help. A receipt whose dimension was deleted, or whose chunk is never loaded again, holds its slot forever; eight of them stop that player's automatic charging everywhere | One WARN per OVERSIZED transition; no per-tick retry log | Healthy IO and supported bounded data, the owner online while the original chunk is loaded, or validated whole-world repair; do not erase receipts |
+| Expired but unresolved pad IO (W174-R2/R3) | At most two pad tickets plus inherited native ordinary capacity. **W174-R11:** blocks every sealed attempt server-wide (rule 3). **W174-R10:** also holds the force of any other consumer's capture staged in the same Level batch, at most two batches per server run | Logical authority ends after age 100; IO occupancy lasts to terminal completion/server closure and may recur indefinitely | One WARN per ticket failure/expiry, not per waiting tick; repeated completed failures over unlimited play have no total cap | Restore storage health, orderly restart and re-prove retained entries; never release occupancy to submit unlimited replacement IO |
+| **W174-R11:** sealed start delay from the pad drain, with healthy IO (an availability residual beside R-035's) | The first sealed attempt after rocket-idle time, in any Level | One force interval plus readback latency, once per idle-to-demand edge (modelled at 20 to 24 ticks); reduces a pre-U request's retry headroom by the same amount | None | None needed; the request's existing `REJECTED` result and a new request remain the recovery |
 | Shared readback priority (W174-R3) | Pad PF and guarded W80 players | Open scan up to existing time ceiling; W80 keeps 200-tick disconnect; perpetual W80 demand can starve pads | Existing W80 diagnostics and bounded pad transitions; no new poll log | Healthy IO/retry; protected W80 reconnect retains obligations |
 
 **Proposed entry text.** Automatic gas charging writes an outbox in the pad's chunk and a receipt in the player's
@@ -605,7 +873,12 @@ saves all online players at most once per 100 ticks, a cadence shared with W80, 
 online players and the size of their files. Restoring a single file, power loss and charging of the integrated owner
 are outside the claim. Missing-player-file replacement holes and third-store movement can lose or duplicate gas;
 ordinary pad removal is not such an exception. Recovery is a consistent whole-world backup, never the deletion of a
-single file or root. No player-file veto, new AT or Mixin is proposed.
+single file or root. No player-file veto, new AT or Mixin is proposed. **W174-R9 to R13:** pad proofs yield to every
+other barrier consumer. Rocket demand that is due on every tick therefore pauses all pads on the server, including
+their D. A pad's capture can delay the first sealed attempt after idle time by about one force interval plus
+readback, and stalled pad IO stops sealed disassembly server-wide until the IO ends or the server restarts. Moving
+a world from dedicated to single-player hosting without first repairing its `level.dat` `Player` tag rolls back the
+host's whole player file, in both directions.
 
 ## 11. Implementation leaves
 
@@ -617,7 +890,8 @@ if none of those diffs was integrated earlier. D disabled is not a waiver. The o
 required before player-facing release. Each leaf has its own TASK, local commits and WORKER-RULES checks.
 
 The automatic route is L0 -> L2 -> L3, with L1a after L0 and L5 after L1a's IDs; L1b depends on L1a/L2/L3, then L4.
-L0R below must be resolved before shared-reader L3 integration. Admission stays off until L4 and review qualify;
+**W174-R15 item 3:** L0R below must be resolved before shared-reader L3 integration. An unresolved L0R therefore
+blocks L3 integration, and with it the automatic route; recording it does not unblock it. Admission stays off until L4 and review qualify;
 no Gate PASS follows automatically. If the owner chooses O1 for all, L0 -> L1a/L6 -> L5 and their inventory/restart
 tests form a separately scoped finite-exchange slice; L1b's automatic protocol is not silently implemented. Sizes
 are estimates of main lines, with test lines in brackets, across small classes, not permission for giant classes.
@@ -634,11 +908,17 @@ are estimates of main lines, with test lines in brackets, across small classes, 
   protected disconnect rather than crash, delete or falsely acknowledge. No-pending hosts remain unaffected by W80.
   Recovery is opening a consistent world in supported dedicated hosting and completing the obligation, or validated
   whole-world repair. A fresh proof must use the supported store, not a pre-switch callback.
+  **W174-R15 item 4:** when the disconnected player is the integrated owner, that disconnect stops the whole
+  integrated server (`ServerGamePacketListenerImpl.onDisconnect`, offsets 113 to 136, calls `MinecraftServer.halt`).
+  So while a W80 obligation is pending for that UUID, the world cannot be played locally by it at all; Root and the
+  owner judge whether that is acceptable. **W174-R13:** L0R should also consider the stale `level.dat` `Player` tag
+  rollback of section 7 for W80 obligations, since it can restore a host file from before a placement.
 - *Tests:* persisted PENDING created with the UUID offline on dedicated, then the same UUID as integrated owner;
   no P2/entry deletion from a matching playerdata file, retained obligation on restart, and eventual supported-hosting
   recovery. Test the guard seam and an integrated-server reproduction; a dedicated GameTest alone cannot prove it.
   Root owns its ADR/risk registration and independent review before integration. W174's own 4.7 check does not wait
-  for or rely on this separate W80 fix; leaving L0R unresolved must be recorded, never called unreachable.
+  for or rely on this separate W80 fix. An unresolved L0R must be recorded and never called unreachable, and it
+  still blocks L3 integration (W174-R15 item 3).
 
 **L1a: block, block entity and menu.** M, about 600 to 800 lines (about 400).
 - *Scope:* the `gas_charge_pad` block, block entity and menu; the pad root codec; the bank; the input and output
@@ -650,11 +930,18 @@ are estimates of main lines, with test lines in brackets, across small classes, 
   quarantine; a restart that preserves bank, slots and outboxes exactly. **W174-R1/R7:** include Q fixtures,
   removal refusal through PS2 and inherited whole-chunk save refusal; this persistence leaf needs prior L0 and review.
 
-**L1b: the charge coordinator (W174-R1 to R6).** L, about 1,100 to 1,500 lines (about 1,200), split into source
-state, queue, equipment editor, proof lifecycle and shared admission adapter classes.
+**L1b: the charge coordinator (W174-R1 to R6, R9 to R13).** L, about 1,250 to 1,700 lines (about 1,400), split
+into source state, queue, equipment editor, proof lifecycle and shared admission classes.
 - *Scope:* the pad index and fair queue (4.3), eligibility and target order (4.4) with the EMPTY-tank editor, the
   stages D to P, pad-side proof admission (4.5), receipt upkeep and the reconciliation table (4.6), the refusals of
-  4.7 and their localized reasons. D's production admission is gated off.
+  4.7 and their localized reasons. D's production admission is gated off. **W174-R9 to R12:** the open predicate and
+  D's refusal with its localized reason; the per-transaction currency with incarnation tokens and absence
+  generations; the `EscrowProofDemand` view in `resourceescrow`, about 100 to 150 of the added lines. Outside the pad
+  package, it needs the three read-only demand sources registered by W98, W152 and W158, the two read-only
+  `EscrowBarrier` accessors and rule 3's one condition in `SealedDisassemblyCoordinator.attemptRoom`. Those rocket
+  and escrow edits are part of the persistence review of section 11's prerequisites, and every existing rocket and
+  escrow suite runs unchanged. **W174-R13:** the owner rule for A, P and orphan handling, and the WARN for a foreign
+  receipt.
 - *Tests:* unit tests for target order, room, caps, UUID order, cursor fairness, every reconciliation row and every
   refusal, including the integrated owner through a test seam, because a GameTest server cannot be an integrated
   owner; GameTests with real players on a pad, real proofs, the prompt save and the readback, death and logout between
@@ -662,6 +949,12 @@ state, queue, equipment editor, proof lifecycle and shared admission adapter cla
   four returning outboxes, multiple owners, unload cooldown and capped-index re-admission. Positive built-in and
   enchanted-native chest tests must both pass; provider precedence, unsupported roots and hydrogen-on-enchanted
   refusal must preserve data. A/Q/PS2 and stale callbacks must remain safe through unload/removal/stop.
+  **W174-R9 to R11:** the extended mixed-workload matrix of 4.5. **W174-R12:** continuous fluid input and hopper
+  input, and a second owner's D, each during PS1, PS2 and an orphan capture: the result for T stays current and is
+  consumed; another entry written during the capture waits for its own PS1; a replacement or unload between capture
+  and callback still invalidates. Count the attempts that fail by a superseding eager save under continuous input
+  and report them; do not relax the barrier's check. **W174-R13:** a receipt whose owner differs from its holder is
+  never used and never pruned, and a matching holder still completes A and P.
 
 **L2: the receipt codec.** S, about 150 to 200 lines (about 250).
 - *Scope:* the strict schema-1 codec of the receipt root, its bounds, duplicate refusal and raw preservation; a
@@ -669,7 +962,8 @@ state, queue, equipment editor, proof lifecycle and shared admission adapter cla
   untouched; the classification used by 4.7.
 - *Tests:* every bound at its limit with eight entries and maximum-length dimensions, every malformed shape,
   future schema and foreign parent; exact unrelated sibling preservation and round trips through real save, death
-  with/without keepInventory and End clone (W174-R5/R8).
+  with/without keepInventory and End clone (W174-R5/R8). **W174-R13:** the owner field at its exact node and byte
+  count; a missing or malformed owner refuses the root as section 4.7 does.
 
 **L3: the readback adapter (W174-R3/R6).** M, about 300 to 450 lines (about 400).
 - *Scope:* move W80's reader and prompt clock into one server-lifetime service, with W80's requests first (section 6).
@@ -701,12 +995,16 @@ state, queue, equipment editor, proof lifecycle and shared admission adapter cla
   16-case/48-start and 0.78-hour estimate is withdrawn; its 60-start proposal is not silently enlarged or used to
   omit new cases. No native run is authorized/executed by this design task. Keep all existing runtime quotas and
   deadlines, machine lock/resource checks and owned cleanup; report incomplete rows if the eventual allocation ends.
+- **W174-R13:** the dedicated-to-single-player switch needs an integrated client, so it is not a case of this
+  dedicated runner. A separate integrated reproduction, beside L0R's, records the rollback in both directions and
+  shows that the repair step of section 7 prevents it.
 
 **L5: DataGen art and data.** S, about 150 to 250 lines.
 - *Scope:* NEW original art from a v1.8 provider; the asset row `textures/blocks/gaschargertop.png` stays REVIEW,
   and no AR 16x file is imported, following W172's recommendation on owner question D3. Also the blockstate, block and
   item models, loot table, mineable and tool tags, and a recipe as a reviewed proposal for Root. English and Chinese
-  text covers the name, the menu and every reason of 4.7. Output goes to `src/generated/v1.8`.
+  text covers the name, the menu, every reason of 4.7 and **(W174-R9)** the admission pause of 4.5. Output goes to
+  `src/generated/v1.8`.
 - *Tests:* language completeness, the resource graph and provenance screening.
 
 **L6: O1 player-local whole-canister refill (W174-R5/R6/R7).** S to M, about 200 to 300 lines (about 300).
@@ -716,8 +1014,9 @@ state, queue, equipment editor, proof lifecycle and shared admission adapter cla
   integrated-host player-local save/restart, bank/output restart and separately documented container-transfer cuts.
   No claim that these tests close the automatic S2 gate.
 
-The automatic main-code leaves L1a/L1b/L2/L3/L5 total about 2,300 to 3,200 lines, plus L4 test infrastructure.
-L0R and owner-selected L6 are additional scoped work, not hidden inside the earlier W172 estimate.
+The automatic main-code leaves L1a/L1b/L2/L3/L5 total about 2,450 to 3,400 lines, plus L4 test infrastructure
+(revision 2: 2,300 to 3,200; **W174-R9 to R13** add about 150 to 200 lines to L1b). L0R and owner-selected L6 are
+additional scoped work, not hidden inside the earlier W172 estimate.
 
 ## 12. Revision-1 session record (historical)
 
@@ -765,6 +1064,9 @@ under revision 2's section 11 prerequisites.
 
 ## 13. Revision-2 execution record (R134)
 
+**Revision-3 correction:** this record describes revision 2. Findings W174-R9 to R15 changed sections 1 to 11
+afterwards (section 14); the only edits inside this record are the two W174-R14 corrections marked below.
+
 **Completed scope.** Revised this design only, on clean branch `codex/v1.8.0-w174` from
 `f9dbf78e5fdb1fe16f9ac6825b8e805074bb377e`. The task, complete independent review, both named review probes,
 W80/W157-W160 records and relevant pinned source were inspected. The roadmap acceptance cursor remains v1.0;
@@ -774,7 +1076,7 @@ was launched, and no merge/push/tag or Gate approval was made. Other active impl
 | Finding | Revision and evidence boundary |
 |---|---|
 | W174-R1 | Sections 4.1/4.2/4.6/4.8 and 5 retain Q until PS2, require positive orphan proof and reject stale incarnations; native cuts expanded. Executable examples pass, not S2 qualification. |
-| W174-R2 | Section 4.5 uses shared turn/reservation admission and yields full sealed windows; 20 modeled quota phases and 11 actual turn/admission assertions pass. Adapter wiring/full mixed fairness is future implementation. |
+| W174-R2 | Section 4.5 uses shared turn/reservation admission and yields full sealed windows. **W174-R14 (revision-3 correction):** the 20-phase quota probe is only a construction check: its pad captures only after the rocket already holds all 21 captures, and both release in the same tick, so trace equality holds by construction. It cannot show a pad capture made before demand, IO drain, pads in other Levels, or W158 and governed consumers. The 11 turn assertions exercise merged classes only. The second review's `SealedPadProbe`, which captures pads 1 to 40 ticks before demand (rerun in revision 3), is the closer model, and the implementation tests of section 4.5 are the actual evidence. Adapter wiring/full mixed fairness is future implementation. |
 | W174-R3 | Section 4.5 owns the inclusive deadline, invalidates authority but retains IO tickets; sections 6/10 state unbounded failure duration and reader latency. Delayed/never-completion examples pass. |
 | W174-R4 | Sections 4.3/8 budget one D or C and one UUID per pass; returning-obligation and cyclic-owner examples pass. |
 | W174-R5 | Section 4.4 has distinct built-in/enchanted predicates; positive equipment tests are specified in L1b, not executed here. |
@@ -804,7 +1106,7 @@ from source. These cannot prove Forge lifecycle, native durability, equipment co
 | `python -B D:/GitHub/ARCE-Task-Evidence/root-queue/W174-review/probes/design_model_checks.py` | Exit 0, 6 tests pass, including revision-1 counterexamples; `review-model-rerun.log`. Original review evidence unchanged. |
 | `python -B <evidence>/design_model_checks.py` | Exit 0, 15 revision-2 examples pass; `revision-2-model.log`. |
 | JDK 17.0.7 `javac -d <evidence>/classes <two probes> <EscrowBarrierBudget.java> <EscrowLimits.java> <SealedProofAdmission.java> <SealedProofTurns.java>` | Exit 0; `javac.log`. `javac` was absent from PATH, so the pinned absolute JDK path was used. |
-| JDK 17.0.7 `java -cp <evidence>/classes io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BudgetPolicyProbe` | Exit 0; 20 phases retain the 21-capture trace, plus original counterexample and cross-Level capture-tick assertions; `budget-policy.log`. |
+| JDK 17.0.7 `java -cp <evidence>/classes io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BudgetPolicyProbe` | Exit 0; 20 phases retain the 21-capture trace, plus original counterexample and cross-Level capture-tick assertions; `budget-policy.log`. **W174-R14:** a construction check only (see the W174-R2 row above). |
 | JDK 17.0.7 `java -cp <evidence>/classes io.github.sunthemoon.advancedrocketrycommunity.rocket.server.TurnsProbe` | Exit 0; 11 checks pass; `turns.log`. |
 | `git diff --check` | Exit 0 for the revised note. Two earlier patch context mismatches made no edits and were corrected. |
 | `python -B scripts/validate_repository.py --require-approved-identity` before commit | Exit 0: 45 passed, 0 pending, 0 warnings, 0 failed; `validator-precommit.log`. |
@@ -847,3 +1149,74 @@ This final verification addition changes no design or probe. The validator is re
 commands are in `COMMANDS.md` (SHA-256 `340a64651ec2d850d8691c22443627c2c42149878fc7ecbb879a49430349b1ed`).
 The revision-2 evidence directory is below 100 KB, including the 18,209-byte refused-cleanup remainder; it contains
 no server/world copy or archive. The required fresh independent design review and all version gates remain open.
+
+## 14. Revision-3 execution record (R136)
+
+**Completed scope.** A fresh Claude implementer session revised this design only, on the clean branch
+`codex/v1.8.0-w174` from `cf656dfe81d5228e22e1ee0d6d22e860731e8324`. It read the whole TASK, WORKER-RULES, both
+reviews, revisions 1 and 2 of this note, ADR-065's "Proof admission" paragraph, and the merged source and bytecode
+that the findings cite. No other worktree or the shared checkout was changed, no agent was started, and nothing was
+pushed, merged or tagged.
+
+| Finding | Revision 3 | Evidence boundary |
+|---|---|---|
+| W174-R9 (High) | Option (a): pad admission binds to the existing due predicates of W98, W152 and W158 plus every non-pad reservation (4.5). D needs admission open and at most one unproved outbox per pad; the player sees a localized reason (4.2, 4.5, L5). The remaining server-wide stall is registered (10). | Design and source reading; the long-waiting retirement test is specified for L1b, not run. |
+| W174-R10 | Every production barrier consumer listed, with source lines (4.5). W98, W152 and W158 are included; governed in-flight work is included and the rest bounded: one tick per governed capture, budget shares, batch coupling. A new Level-table bound (fewer than 32 of 64 entries) and the END/`LOWEST` service phase (4.3). One-way seam `EscrowProofDemand` in `resourceescrow`. | Source reading; mixed tests with W158 and governed captures specified for L1b. |
+| W174-R11 | Healthy-IO bound 19 + R ticks once per idle-to-demand edge; ADR-065 hand-off bounds unchanged; pre-U retry headroom shrinks by the delay; the own-Level refinement is analysed and not adopted; stalled IO registered as server-wide (4.5, 8, 10). | The second review's model rerun unchanged gives identical output (20 and 24 ticks, 21 submissions). The pre-U arithmetic is an estimate. |
+| W174-R12 | Revision 2's whole-root "state generation" withdrawn. Currency per transaction entry, incarnation and absence generation (4.1, 4.2, 4.6, 4.8). Superseding eager saves under continuous input quantified as a retry cost from new fact F9. | Bytecode read for F9; the one-in-eight-to-ten rate is an estimate; tests specified for L1b. |
+| W174-R13 | The dedicated-to-single-player rollback stated in both directions with its bytecode chain and the whole-world repair step (7, 4.7, 10). Receipts carry the owner UUID; A, P and orphan handling require the holder to match (4.1, 4.2, 4.6). L0R asked to consider W80 (11). | Offsets rechecked in the second review's dumps; no integrated reproduction run (L4 note). |
+| W174-R14 | Section 13 now calls revision 2's quota probe a construction check and points to `SealedPadProbe` and the L1b tests. | Wording. |
+| W174-R15 | F3 fallback wording; the `suitOxygenTarget` ceiling for both native chests; an unresolved L0R blocks L3; the owner's protected disconnect halts the integrated server. | Wording, with `SuitEquipmentService.java:119` and `onDisconnect` 113-136 checked. |
+
+**Key decisions.**
+
+- Option (a) rather than (b) for W174-R9, because (b) lets one offline crew member stop every pad on the server.
+- Rule 3 stays server-wide, because cross-Level pad IO still shares `ORDINARY_PENDING`, bytes and the Level table.
+- D needs admission open and allows at most one unproved outbox per pad. This throttles a single player's charge
+  rate below the ADR's 100-per-20-ticks ceiling while PS1 is outstanding; the ceiling remains a ceiling, not a
+  promise (8).
+- The hosting-switch repair is operator guidance, not a protocol step, because the mod has no merged way to observe
+  or edit `level.dat` at that point.
+- No new lifecycle hook, Access Transformer or Mixin is identified as necessary, so the TASK's stop condition is not
+  triggered. The design does need read-only `EscrowBarrier` accessors, three read-only demand sources in rocket code
+  and one added condition in the sealed coordinator's `attemptRoom`; L1b owns them under review.
+
+**Files and tests.** Only this record changed in the repository. The revision-3 evidence holds a `ChunkMap`
+bytecode dump, the unchanged copies of the second review's two probe sources, their rerun log, an empty `javac.log`,
+`COMMANDS.md` and the validator logs. No repository test was added or changed.
+
+**Commands and results.** Evidence prefix `D:/GitHub/ARCE-Task-Evidence/root-queue/W174/revision-3/`; exact
+commands are in its `COMMANDS.md`.
+
+| Command or check | Result |
+|---|---|
+| `git status`, `git log`, `git worktree list`; `git diff --stat 171c1d71d cf656dfe8 -- src scripts tests build.gradle` | Clean at `cf656dfe8`; the source diff is empty, so section 2's `J` citations hold. |
+| `sha256sum` of both reviews | Match the TASK and the input table. |
+| JDK 17.0.7 `javap -c -p` of `net.minecraft.server.level.ChunkMap` on the pinned jar | Exit 0; jar hash matches; fact F9. |
+| JDK 17.0.7 `javac` of the second review's `SealedPadProbe` and `AdmissionBridge` with the unchanged `EscrowBarrierBudget`, `EscrowLimits` and `SealedProofAdmission`; `java ... SealedPadProbe` | Both exit 0; the log is identical to the second review's after line-ending normalization. |
+| `rm -rf` of this session's `classes/` (11 files, 19,221 bytes) | Removed. |
+| `git diff --check`; `git diff --cached --stat`; `git ls-files --eol` | Exit 0; this note is the only staged file; LF endings. |
+| `python -B scripts/validate_repository.py --require-approved-identity`, with this note staged | Exit 0: 45 passed, 0 pending, 0 warnings, 0 failed; `validator-precommit.log`. It ran again after this row was filled in, with the same result (`validator-precommit2.log`). |
+
+No Gradle, GameTest, native server, heavy-JVM lock, world copy or archive was used or created.
+
+| Artifact under the evidence prefix | SHA-256 |
+|---|---|
+| `bytecode/net.minecraft.server.level.ChunkMap.txt` | `50f2fc78f90ba3f50ba4dbcc62098ae93da98acfbbfd3008b48ee28d88b2df57` |
+| `sealed-pad-probe-rerun.log` | `08f5290253c3252f1f1a13d114f8207aabf3b3f1c58c72dfe1593c7b660a221c` |
+| `rerun-sources/SealedPadProbe.java` | `67eb6cf1df211fc692193fad615fddabb19e67e92ea910085ea29fba63c3c194` |
+| `rerun-sources/AdmissionBridge.java` | `05068c2e550c483e421d0433e2822da47850cdc948601503d11f1c0381ae0ae8` |
+| `COMMANDS.md` | `aa66b0f2f513087ade6d687acb897e46873134f1bfbd1922d47329e231849d6f` |
+
+**Not completed.** The fresh read-only review of revision 3, Root's ADR-066 note and risk entries (L0), L0R, the
+owner's D4 choice, every implementation leaf, and all native, integrated and real-client validation. The design-level
+claims of 4.5 (one lost tick per governed capture, the W98 window arithmetic, the eager-save retry rate and the pre-U
+headroom) are derived from source reading and the rerun model, not from runs of the real services.
+
+**Known risks.** Pads can stall server-wide under dense rocket demand; stalled pad IO blocks sealed disassembly
+server-wide and can hold two foreign batches; the drain wait delays the first sealed attempt after idle time; the
+hosting-kind rollback depends on an operator repair step the mod cannot enforce. All are registered as proposals in
+section 10, and none is accepted here.
+
+**All current-version Required Gates satisfied: no.** This is a design note. The next v1.8 step is the fresh
+read-only review of revision 3, then Root's L0 and L0R and the owner's D4 choice before any implementation leaf.
