@@ -78,6 +78,8 @@ final class BaySourceProof {
     private final Map<UUID, Long> retryAt = new HashMap<>();
     private final Map<UUID, BaySlotProofs> capturing = new HashMap<>();
     private final Set<UUID> retiring = new HashSet<>();
+    /** W185-R5: claims whose D7 found the store busy; their next D6 waits for a quiet store. */
+    private final Set<UUID> parked = new HashSet<>();
 
     /** {@code beforeRemoval}, {@code stall} and {@code guardCut} are the gated native cut seams (no-ops outside release tests). */
     BaySourceProof(MinecraftServer server, BayDeploymentSession session, Consumer<UUID> offer,
@@ -146,8 +148,12 @@ final class BaySourceProof {
         long now = server.getTickCount();
         if (!port.captureSupported(slot)) { claim.waiting("BARRIER_UNSUPPORTED"); return BayStepQueue.Result.NEXT_TICK; }
         if (!port.captureAvailable(slot, now)) { return retryNextTick(logical); }
-        // W185-R5: D7 needs a quiet receipt store, so D6 proves only then and a parked claim holds no slot proof meanwhile.
-        if (storeWaits.getAsBoolean()) { claim.waiting("BAY_RECEIPT_WRITE"); return BayStepQueue.Result.NEXT_TICK; }
+        // W185-R5: a claim D7 parked proves again only once the store is quiet, holding no slot proof meanwhile. Other D6
+        // starts do not wait for the store, so claims that share slots do not all begin capturing on the same tick.
+        if (parked.contains(logical)) {
+            if (storeWaits.getAsBoolean()) { claim.waiting("BAY_RECEIPT_WRITE"); return BayStepQueue.Result.NEXT_TICK; }
+            parked.remove(logical);
+        }
         // W185 / W170-R62: waiting needs no frozen image. Save only once a capture can actually start.
         CompoundTag frozen = projection(source, record);
         if (frozen == null) { return repair(claim, "SOURCE_AUTHORITY_CONFLICT"); }
@@ -225,10 +231,11 @@ final class BaySourceProof {
     }
 
     /**
-     * W185-R5: D7 waits for a quiet receipt store without its proofs. It releases every slot proof and the watch, and D6
-     * proves again once the store is quiet, so a parked claim holds none of the save monitor's shared slots.
+     * W185-R5: D7 waits for a quiet receipt store without its proofs. It releases every slot proof and the watch, and this
+     * claim's D6 proves again once the store is quiet, so a parked claim holds none of the save monitor's shared slots.
      */
     private BayStepQueue.Result park(BayClaim claim) {
+        parked.add(claim.logical());
         claim.waiting("BAY_RECEIPT_WRITE");
         return again(claim);
     }
@@ -303,12 +310,12 @@ final class BaySourceProof {
         if (proved != null) { proved.proof().release(); }
         BaySlotProofs attempt = capturing.remove(logical);
         if (attempt != null) { attempt.close(); }
-        retryAt.remove(logical); retiring.remove(logical); watches.remove(logical);
+        retryAt.remove(logical); retiring.remove(logical); watches.remove(logical); parked.remove(logical);
     }
 
     void clear() {
         proofs.values().forEach(proved -> proved.proof().release());
         capturing.values().forEach(BaySlotProofs::close);
-        proofs.clear(); retryAt.clear(); capturing.clear(); retiring.clear(); watches.clear();
+        proofs.clear(); retryAt.clear(); capturing.clear(); retiring.clear(); watches.clear(); parked.clear();
     }
 }

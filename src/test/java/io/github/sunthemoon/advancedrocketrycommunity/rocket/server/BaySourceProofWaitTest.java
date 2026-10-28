@@ -109,6 +109,18 @@ final class BaySourceProofWaitTest {
     }
 
     /**
+     * W185-R5's bay-batch finding: only a parked claim waits for a quiet store. An unparked D6 start does not, so claims
+     * that share census slots do not all begin capturing on the tick the store becomes quiet.
+     */
+    @Test void anUnparkedD6StartDoesNotWaitForTheStore() {
+        try (var f = new Fixture(true, true, true, false)) {
+            f.busy = true;
+            assertSaveTrap(assertThrows(NullPointerException.class, () -> f.proof.prove(f.claim),
+                    "an unparked D6 start must go on to serialize the source"));
+        }
+    }
+
+    /**
      * W185-R11: D6 reads D5's one census and rule set, so an image of L in the end's box but off the exact origin column is
      * an unexpected copy held for repair, never a recognized duplicate that D6 would wait on.
      */
