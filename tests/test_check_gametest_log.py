@@ -382,7 +382,9 @@ class ManifestValidationTests(unittest.TestCase):
             # W153/R92 adds three exact-version rejection cases in each direction.
             # W159 adds ten actual backup retries and their single abort, all in one named fixture.
             # W160F repeats that real filesystem fault in the controlled ordinary-save regression.
-            135, sum(sum(item.counts.values()) for item in expectations if item.level == "ERROR")
+            # W179 adds the over-limit data-pack reload's 43 refusals (w179-recipe-*, w179-recipe-file-unparsable,
+            # w179-tag-unreadable, w179-tag-missing-reference and w179-pattern-catalog-rejected): 135 + 43.
+            178, sum(sum(item.counts.values()) for item in expectations if item.level == "ERROR")
         )
 
     def test_w159_player_save_failures_are_exact_and_batch_scoped(self) -> None:

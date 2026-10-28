@@ -932,6 +932,151 @@
       "reason": "The electrolyzer recipe must independently be disabled until tags reload."
     },
     {
+      "id": "w179-recipe-text-bound",
+      "level": "ERROR",
+      "logger": "net.minecraft.world.item.crafting.RecipeManager/",
+      "message": "Parsing error loading recipe arce_w179:[a-z_]+",
+      "exception": "java\\.lang\\.IllegalArgumentException: Recipe text bound",
+      "counts": {"datapack_overlimit": 7},
+      "test": "DataPackOverLimitReloadGameTests.anOverLimitPackIsRefusedEntryByEntryWithBoundedLoggingAndThenRemoved",
+      "reason": "W179 (VDOC 12.4): the generated over-limit pack holds one classic recipe per type whose text exceeds RecipeJsonSignature.MAX_BYTES (65,536). Vanilla's RecipeManager logs each refused file once, with the classic codec's own bounded message."
+    },
+    {
+      "id": "w179-recipe-structural-bound",
+      "level": "ERROR",
+      "logger": "net.minecraft.world.item.crafting.RecipeManager/",
+      "message": "Parsing error loading recipe arce_w179:[a-z_]+",
+      "exception": "java\\.lang\\.IllegalArgumentException: Recipe structural bound",
+      "counts": {"datapack_overlimit": 14},
+      "test": "DataPackOverLimitReloadGameTests.anOverLimitPackIsRefusedEntryByEntryWithBoundedLoggingAndThenRemoved",
+      "reason": "W179 (VDOC 12.4): the generated over-limit pack holds two classic recipes per type, one deeper than MAX_DEPTH (16) and one with more than MAX_NODES (4,096) nodes. Vanilla's RecipeManager logs each refused file once, with the classic codec's own bounded message."
+    },
+    {
+      "id": "w179-recipe-row-count",
+      "level": "ERROR",
+      "logger": "net.minecraft.world.item.crafting.RecipeManager/",
+      "message": "Parsing error loading recipe arce_w179:[a-z_]+",
+      "exception": "java\\.lang\\.IllegalArgumentException: Recipe row type/count",
+      "counts": {"datapack_overlimit": 8},
+      "test": "DataPackOverLimitReloadGameTests.anOverLimitPackIsRefusedEntryByEntryWithBoundedLoggingAndThenRemoved",
+      "reason": "W179 (VDOC 12.4): the generated over-limit pack holds one classic recipe per type with five item inputs (at most four) and one centrifuging recipe with three fluid inputs (at most two). Vanilla's RecipeManager logs each refused file once, with the classic codec's own bounded message."
+    },
+    {
+      "id": "w179-recipe-unknown-field",
+      "level": "ERROR",
+      "logger": "net.minecraft.world.item.crafting.RecipeManager/",
+      "message": "Parsing error loading recipe arce_w179:[a-z_]+",
+      "exception": "java\\.lang\\.IllegalArgumentException: Recipe missing/unknown field",
+      "counts": {"datapack_overlimit": 1},
+      "test": "DataPackOverLimitReloadGameTests.anOverLimitPackIsRefusedEntryByEntryWithBoundedLoggingAndThenRemoved",
+      "reason": "W179 (VDOC 12.4): the generated over-limit pack holds one lathe recipe with an unknown field. Vanilla's RecipeManager logs each refused file once, with the classic codec's own bounded message."
+    },
+    {
+      "id": "w179-recipe-number-range",
+      "level": "ERROR",
+      "logger": "net.minecraft.world.item.crafting.RecipeManager/",
+      "message": "Parsing error loading recipe arce_w179:[a-z_]+",
+      "exception": "java\\.lang\\.IllegalArgumentException: Recipe number range",
+      "counts": {"datapack_overlimit": 2},
+      "test": "DataPackOverLimitReloadGameTests.anOverLimitPackIsRefusedEntryByEntryWithBoundedLoggingAndThenRemoved",
+      "reason": "W179 (VDOC 12.4): the generated over-limit pack holds an arc furnace recipe with schema_version 2 and a laser etching recipe with an input count of 65. Vanilla's RecipeManager logs each refused file once, with the classic codec's own bounded message."
+    },
+    {
+      "id": "w179-recipe-fraction",
+      "level": "ERROR",
+      "logger": "net.minecraft.world.item.crafting.RecipeManager/",
+      "message": "Parsing error loading recipe arce_w179:[a-z_]+",
+      "exception": "java\\.lang\\.IllegalArgumentException: Recipe number is not an exact int",
+      "counts": {"datapack_overlimit": 1},
+      "test": "DataPackOverLimitReloadGameTests.anOverLimitPackIsRefusedEntryByEntryWithBoundedLoggingAndThenRemoved",
+      "reason": "W179 (VDOC 12.4): the generated over-limit pack holds one cutting recipe whose processing time is 1.5. Vanilla's RecipeManager logs each refused file once, with the classic codec's own bounded message."
+    },
+    {
+      "id": "w179-recipe-null-token",
+      "level": "ERROR",
+      "logger": "net.minecraft.world.item.crafting.RecipeManager/",
+      "message": "Parsing error loading recipe arce_w179:[a-z_]+",
+      "exception": "java\\.lang\\.IllegalArgumentException: Null or unexpected recipe token",
+      "counts": {"datapack_overlimit": 1},
+      "test": "DataPackOverLimitReloadGameTests.anOverLimitPackIsRefusedEntryByEntryWithBoundedLoggingAndThenRemoved",
+      "reason": "W179 (VDOC 12.4): the generated over-limit pack holds one crystallizing recipe whose energy per tick is null. Vanilla's RecipeManager logs each refused file once, with the classic codec's own bounded message."
+    },
+    {
+      "id": "w179-recipe-noncanonical-id",
+      "level": "ERROR",
+      "logger": "net.minecraft.world.item.crafting.RecipeManager/",
+      "message": "Parsing error loading recipe arce_w179:[a-z_]+",
+      "exception": "java\\.lang\\.IllegalArgumentException: Noncanonical identifier",
+      "counts": {"datapack_overlimit": 1},
+      "test": "DataPackOverLimitReloadGameTests.anOverLimitPackIsRefusedEntryByEntryWithBoundedLoggingAndThenRemoved",
+      "reason": "W179 (VDOC 12.4): the generated over-limit pack holds one chemical reacting recipe whose output names minecraft:Iron_Nugget. Vanilla's RecipeManager logs each refused file once, with the classic codec's own bounded message."
+    },
+    {
+      "id": "w179-recipe-identifier-bound",
+      "level": "ERROR",
+      "logger": "net.minecraft.world.item.crafting.RecipeManager/",
+      "message": "Parsing error loading recipe arce_w179:[a-z_]+",
+      "exception": "java\\.lang\\.IllegalArgumentException: Identifier exceeds limit",
+      "counts": {"datapack_overlimit": 1},
+      "test": "DataPackOverLimitReloadGameTests.anOverLimitPackIsRefusedEntryByEntryWithBoundedLoggingAndThenRemoved",
+      "reason": "W179 (VDOC 12.4): the generated over-limit pack holds one lathe recipe whose id is longer than 128 characters. Vanilla's RecipeManager logs each refused file once, with the classic codec's own bounded message."
+    },
+    {
+      "id": "w179-recipe-top-level-array",
+      "level": "ERROR",
+      "logger": "net.minecraft.world.item.crafting.RecipeManager/",
+      "message": "Parsing error loading recipe arce_w179:[a-z_]+",
+      "exception": "com\\.google\\.gson\\.JsonSyntaxException: Expected top element to be a JsonObject, was an array \\(\\[1\\]\\)",
+      "counts": {"datapack_overlimit": 1},
+      "test": "DataPackOverLimitReloadGameTests.anOverLimitPackIsRefusedEntryByEntryWithBoundedLoggingAndThenRemoved",
+      "reason": "W179 (VDOC 12.4): the generated over-limit pack holds one recipe file whose top level is the array [1]. Vanilla's RecipeManager logs each refused file once, with the classic codec's own bounded message."
+    },
+    {
+      "id": "w179-recipe-file-unparsable",
+      "level": "ERROR",
+      "logger": "net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener/",
+      "message": "Couldn't parse data file arce_w179:(not_json|truncated) from arce_w179:recipes/(not_json|truncated)\\.json",
+      "counts": {"datapack_overlimit": 2},
+      "test": "DataPackOverLimitReloadGameTests.anOverLimitPackIsRefusedEntryByEntryWithBoundedLoggingAndThenRemoved",
+      "reason": "W179 (VDOC 12.4): two recipe files of the over-limit pack are not JSON; vanilla refuses each file once before any serializer runs."
+    },
+    {
+      "id": "w179-tag-unreadable",
+      "level": "ERROR",
+      "logger": "net.minecraft.tags.TagLoader/",
+      "message": "Couldn't read tag list arce_w179:unreadable from arce_w179:tags/items/unreadable\\.json in data pack file/arce_w179_overlimit",
+      "counts": {"datapack_overlimit": 1},
+      "test": "DataPackOverLimitReloadGameTests.anOverLimitPackIsRefusedEntryByEntryWithBoundedLoggingAndThenRemoved",
+      "reason": "W179 (VDOC 12.4): one item tag file of the over-limit pack is not JSON; vanilla refuses it once."
+    },
+    {
+      "id": "w179-tag-missing-reference",
+      "level": "ERROR",
+      "logger": "net.minecraft.tags.TagLoader/",
+      "message": "Couldn't load tag arce_w179:missing_reference as it is missing following references: arce_w179:does_not_exist \\(from file/arce_w179_overlimit\\)",
+      "counts": {"datapack_overlimit": 1},
+      "test": "DataPackOverLimitReloadGameTests.anOverLimitPackIsRefusedEntryByEntryWithBoundedLoggingAndThenRemoved",
+      "reason": "W179 (VDOC 12.4): one item tag of the over-limit pack names an unknown item; vanilla refuses the whole tag once, so the lathe recipe that names it resolves to no alternatives."
+    },
+    {
+      "id": "w179-pattern-catalog-rejected",
+      "level": "ERROR",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "Rejected multiblock pattern catalog; last valid generation remains active: pattern catalog: exceeds 256 definitions",
+      "counts": {"datapack_overlimit": 2},
+      "test": "DataPackOverLimitReloadGameTests.anOverLimitPackIsRefusedEntryByEntryWithBoundedLoggingAndThenRemoved",
+      "reason": "W179 (VDOC 12.4): the over-limit pack adds 300 pattern files; each of the two pattern catalogs (the mod's and ClassicRuntime's) refuses the whole candidate once and keeps its last valid generation."
+    },
+    {
+      "id": "w179-tag-no-longer-defined",
+      "level": "WARN",
+      "logger": "net.minecraftforge.registries.NamespacedWrapper/",
+      "message": "Not all defined tags for registry ResourceKey\\[minecraft:root / minecraft:item\\] are present in data pack: arce_w179:oversized",
+      "counts": {"datapack_overlimit": 1},
+      "test": "DataPackOverLimitReloadGameTests.anOverLimitPackIsRefusedEntryByEntryWithBoundedLoggingAndThenRemoved",
+      "reason": "W179 (VDOC 12.4): deselecting the over-limit pack removes its oversized item tag; vanilla's MappedRegistry.bindTags warns once that the tag is no longer defined."
+    },
+    {
       "id": "transfer-returned-to-source",
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
