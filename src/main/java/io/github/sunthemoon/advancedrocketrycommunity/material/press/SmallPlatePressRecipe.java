@@ -140,6 +140,11 @@ public final class SmallPlatePressRecipe implements Recipe<SimpleContainer> {
         return result.copy();
     }
 
+    /** Whether the ingredient names a tag, read from its JSON without resolving it. */
+    public boolean hasTagIngredients() {
+        return BoundedItemIngredientCodec.hasTags(ingredient.toJson());
+    }
+
     public static final class Serializer implements RecipeSerializer<SmallPlatePressRecipe> {
         @Override
         public SmallPlatePressRecipe fromJson(ResourceLocation id, JsonObject json) {
