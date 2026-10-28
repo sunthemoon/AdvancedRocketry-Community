@@ -99,6 +99,9 @@ final class BaySourceProof {
         }
     }
 
+    /** W170-R22: D6's capture starts watching the captured source; the watch lasts through D7's outcome. */
+    void watch(BayClaim claim, RocketEntity source) { watches.put(claim.logical(), Watch.of(claim, source)); }
+
     /** W170-R22, from the entity's own position write or removal: a rocket naming a watched L invalidates that group. */
     void changed(RocketEntity rocket) {
         if (watches.isEmpty()) { return; }
@@ -140,7 +143,7 @@ final class BaySourceProof {
         var lease = journal.logicalLease(logical, record.transferId(), 0);
         var token = group.token();
         capturing.add(logical);
-        watches.put(logical, Watch.of(claim, source)); // W170-R22: from the capture through D7's outcome
+        watch(claim, source);
         boolean begun = port.capture(slot, root -> RocketRetirementProof.survivorSlot(root, logical, frozen), now, label -> { },
                 result -> captured(claim, result, lease, token, frozen));
         if (!begun) { capturing.remove(logical); watches.remove(logical); return retryNextTick(logical); }
