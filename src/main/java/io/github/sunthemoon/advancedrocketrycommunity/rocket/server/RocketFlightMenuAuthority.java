@@ -4,6 +4,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.gametest.MenuAuthorityMatr
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightAction;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightRequestCode;
+import io.github.sunthemoon.advancedrocketrycommunity.travel.model.TravelTarget;
 import java.util.UUID;
 import net.minecraft.server.level.ServerPlayer;
 
@@ -18,6 +19,16 @@ public final class RocketFlightMenuAuthority {
 
     /** Accepted once the intent passed the rate limiter and the owner check; its flight result does not matter. */
     public static MenuAuthorityMatrix.Outcome cancel(ServerPlayer player, RocketEntity rocket) {
+        RocketFlightRequestCode code = request(player, rocket, RocketFlightAction.CANCEL,
+                rocket.flightData().orElseThrow().currentTarget().orElseThrow());
+        return code == RocketFlightRequestCode.RATE_LIMITED ? MenuAuthorityMatrix.Outcome.RATE_LIMITED
+                : code == RocketFlightRequestCode.UNAUTHORIZED ? MenuAuthorityMatrix.Outcome.REFUSED
+                : MenuAuthorityMatrix.Outcome.ACCEPTED;
+    }
+
+    /** W182: the installed flight service's answer to one intent with a new request ID, as the handler passes it on. */
+    public static RocketFlightRequestCode request(ServerPlayer player, RocketEntity rocket, RocketFlightAction action,
+                                                  TravelTarget target) {
         RocketFlightService flights;
         try {
             var service = RocketRuntime.class.getDeclaredField("service");
@@ -26,10 +37,6 @@ public final class RocketFlightMenuAuthority {
         } catch (ReflectiveOperationException failure) {
             throw new IllegalStateException("The installed flight service is unavailable", failure);
         }
-        RocketFlightRequestCode code = flights.request(player, rocket.getId(), RocketFlightAction.CANCEL,
-                rocket.flightData().orElseThrow().currentTarget().orElseThrow(), UUID.randomUUID()).code();
-        return code == RocketFlightRequestCode.RATE_LIMITED ? MenuAuthorityMatrix.Outcome.RATE_LIMITED
-                : code == RocketFlightRequestCode.UNAUTHORIZED ? MenuAuthorityMatrix.Outcome.REFUSED
-                : MenuAuthorityMatrix.Outcome.ACCEPTED;
+        return flights.request(player, rocket.getId(), action, target, UUID.randomUUID()).code();
     }
 }
