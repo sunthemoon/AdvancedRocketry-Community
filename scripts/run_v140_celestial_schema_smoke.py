@@ -143,8 +143,13 @@ def verify_joint_rejections(root: Path, output: Path, artifact: Path, query) -> 
     return expected_errors, receipts
 
 
-def validate_log(lines: list[str], expected_errors: list[str]) -> None:
-    require(server.scan_log(lines) == expected_errors,
+def validate_log(lines: list[str], expected_errors: list[str], expected_version: str | None = None) -> None:
+    """Compare one complete process log with its exact fault-injection rejections.
+
+    The build's startup allowance (scan_log) is counted over this whole process, never per reload;
+    other and unspecified builds get none.
+    """
+    require(server.scan_log(lines, expected_mod_version=expected_version) == expected_errors,
             "Blocking log findings differ from the exact observed fault-injection rejections")
 
 
@@ -303,7 +308,7 @@ def run_cycle(root: Path, output: Path, artifact: dict, java: str, port: int, ph
         commands.append("stop")
         process.command("stop")
         require(process.finish() == 0, "Dedicated process did not exit cleanly")
-        validate_log(process.lines, expected_errors)
+        validate_log(process.lines, expected_errors, artifact["version"])
         if check_bindings:
             capture_bindings(root, directory / "bindings-at-stop.json")
         require(server.digest_file(root / "mods" / artifact["name"]) == artifact["sha256"], "Installed JAR changed")
