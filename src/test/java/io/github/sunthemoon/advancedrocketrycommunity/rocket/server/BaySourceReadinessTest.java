@@ -13,9 +13,12 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPositio
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.UnstartedServer;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.RocketDiscoveryColumns;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
@@ -25,6 +28,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.entity.EntityLookup;
 import net.minecraft.world.level.entity.EntitySection;
@@ -33,15 +37,16 @@ import net.minecraft.world.level.entity.LevelEntityGetter;
 import net.minecraft.world.level.entity.LevelEntityGetterAdapter;
 import net.minecraft.world.level.entity.Visibility;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 /**
  * W170-R41 A0: the census counts only loaded images, so R2 and D6 must not run it while a recorded end is still loading.
- * R2 waits for both ends, which R1 tickets. D6 waits for the ends that its claim's renewed tickets cover in full: both
- * ends of a restart group, an in-session claim's admissible destination, and an in-session source end only when the
- * origin column is all of it. The loading case starts from the re-review's HIDDEN-section probe, with the real vanilla
- * entity index and no started server.
+ * R2 waits for both ends, which R1 tickets. D6 waits for every checked column of both ends (W27d3), which the claim's own
+ * renewed tickets cover: both ends of a restart group, and from CONSUME on both ends of an in-session claim (W185-R2).
+ * The loading case starts from the re-review's HIDDEN-section probe, with the real vanilla entity index and no started
+ * server. The census is {@link BayCopyCensus}, the one rule set R2, D5 and D6 share (W185-R11).
  */
 final class BaySourceReadinessTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
@@ -64,30 +69,55 @@ final class BaySourceReadinessTest {
         UnstartedServer.set(RocketEntity.class, rocket, "snapshot", record(2).destinationSnapshot());
         UnstartedServer.set(RocketEntity.class, rocket, "flightData", record.sourceFlightData());
         UnstartedServer.set(Entity.class, rocket, "uuid", new UUID(996, 1));
+        UnstartedServer.set(Entity.class, rocket, "position", new Vec3(x + .5, y, z + .5));
         UnstartedServer.set(Entity.class, rocket, "bb", new AABB(x, y, z, x + 1, y + 1, z + 1));
         return rocket;
     }
 
-    @Test void aRestartGroupAwaitsBothEndsAndAnInSessionClaimItsAdmissibleDestination() {
+    /** D6's copy wait as it reads the one census: its refusal, DUPLICATE_PENDING while a copy remains, else null. */
+    private static String census(World world, RocketTransferRecord record) {
+        var scan = BayCopyCensus.inspect(world.server, record, group(record));
+        return scan.refusal() != null ? scan.refusal() : scan.copies().isEmpty() ? null : "DUPLICATE_PENDING";
+    }
+
+    /**
+     * W185-R11, replacing the removed covered() oracle: every column D6 awaits is one the claim's own tickets cover. A
+     * restart group's R1 tickets both checked sets; an in-session claim from CONSUME on tickets its source end's checked
+     * set and its destination's ticket set, which is that end's checked set when admissible.
+     */
+    @Test void aRestartGroupAndAnInSessionClaimFromConsumeOnTicketBothCheckedEnds() {
         var record = record(1);
         var source = record.sourceSnapshot();
         var destination = record.destinationSnapshot();
-        assertTrue(BaySourceProof.covered(BayClaim.Origin.RESTART, source, destination, false));
-        assertTrue(BaySourceProof.covered(BayClaim.Origin.RESTART, source, destination, true));
-        assertTrue(BaySourceProof.covered(BayClaim.Origin.CHECKPOINT, source, destination, true), "the destination ticket set");
-        assertTrue(BaySourceProof.covered(BayClaim.Origin.CHECKPOINT, source, destination, false),
-                "control: this source end is its origin column alone, which the origin ticket covers");
+        var restart = new RocketMarginTicketsTest.Tickets(source.sourceDimension(), destination.sourceDimension());
+        RocketTransferEntities.refreshMargins(TRANSFER, source, destination, restart);
+        var inSession = new RocketMarginTicketsTest.Tickets(source.sourceDimension(), destination.sourceDimension());
+        RocketTransferEntities.addRefreshSet(TRANSFER, source, inSession);
+        RocketTransferEntities.addDestinationTickets(TRANSFER, destination, inSession);
+        for (var tickets : List.of(restart, inSession)) {
+            assertEquals(Set.copyOf(RocketDiscoveryColumns.of(source).columns()), tickets.columns(source.sourceDimension(), TRANSFER));
+            assertEquals(Set.copyOf(RocketDiscoveryColumns.of(destination).columns()),
+                    tickets.columns(destination.sourceDimension(), TRANSFER));
+        }
     }
 
-    /** The one path that reaches D6 with an end no renewed ticket covers: an in-session source wider than its origin. */
-    @Test void anInSessionSourceEndWiderThanItsOriginColumnIsNotAwaited() {
-        var record = record(1);
-        // Origin x = 14: the margin runs from column 0 to column 1, and the in-session claim tickets only column 0.
-        RocketStructureSnapshot wide = record.sourceSnapshot().relocated(new UUID(996, 2), record.sourceSnapshot().sourceDimension(),
-                new RocketPosition(14, 80, 8), 0L);
-        assertFalse(BaySourceProof.covered(BayClaim.Origin.CHECKPOINT, wide, record.destinationSnapshot(), false));
-        assertTrue(BaySourceProof.covered(BayClaim.Origin.RESTART, wide, record.destinationSnapshot(), false),
-                "a restart group's R1 tickets cover the whole checked set");
+    /**
+     * W185-R11, renamed from "...IsNotAwaited", which W27d3 made stale: D6 awaits an in-session source end wider than its
+     * origin column until every column is entity-loaded and ticking; W185-R2's tickets are what load it.
+     */
+    @Test void anInSessionSourceEndWiderThanItsOriginColumnIsAwaitedUntilEveryColumnLoads() {
+        // Origin x = 14: the checked set runs from column 0 to column 1, and the origin ticket alone covers only column 0.
+        var record = BayAbsenceCensusTest.relocate(14, 8, MOON.x(), MOON.z());
+        var columns = RocketDiscoveryColumns.of(record.sourceSnapshot());
+        assertTrue(columns.admissible() && columns.count() == 2, "control: " + columns);
+        var margin = columns.columns().stream().filter(column -> !column.equals(columns.origin())).findFirst().orElseThrow();
+        var world = new World();
+        var source = world.put(record.sourceSnapshot().sourceDimension(), Visibility.TICKING, true);
+        world.put(record.destinationSnapshot().sourceDimension(), Visibility.TICKING, true);
+        source.cold.add(margin.toLong());
+        assertFalse(BaySourceProof.endsLoaded(world.server, record), "D6 must wait for the source end's margin column");
+        source.cold.clear();
+        assertTrue(BaySourceProof.endsLoaded(world.server, record), "with every column loaded and ticking, D6 may census the end");
     }
 
     /**
@@ -132,18 +162,16 @@ final class BaySourceReadinessTest {
         var destination = world.put(record.destinationSnapshot().sourceDimension(), Visibility.HIDDEN, false, copy);
         assertTrue(source.ready && RocketTransferEntities.endAlreadyLoaded(world.server, record.sourceSnapshot()),
                 "control: the source end is ready");
-        assertNull(BaySourceResume.copies(world.server, record, group(record), SOURCE),
+        assertNull(census(world, record),
                 "characterization: the census cannot see an image in a section that is not yet accessible");
         assertFalse(RocketTransferEntities.recoveryEndsAlreadyLoaded(world.server, record), "R2 must wait for the destination end");
-        assertFalse(BaySourceProof.endsLoaded(world.server, BayClaim.Origin.RESTART, record), "D6 of a restart group must wait");
-        assertFalse(BaySourceProof.endsLoaded(world.server, BayClaim.Origin.CHECKPOINT, record), "D6 of an in-session claim must wait");
+        // W185-R11: one predicate for restart groups and in-session claims alike; its unused origin parameter is gone.
+        assertFalse(BaySourceProof.endsLoaded(world.server, record), "D6 must wait, for a restart group and an in-session claim");
 
         destination.load(); // the end's entity sections load and tick, as R1's tickets make them
         assertTrue(RocketTransferEntities.recoveryEndsAlreadyLoaded(world.server, record));
-        assertTrue(BaySourceProof.endsLoaded(world.server, BayClaim.Origin.RESTART, record));
-        assertTrue(BaySourceProof.endsLoaded(world.server, BayClaim.Origin.CHECKPOINT, record));
-        assertEquals("UNEXPECTED_COPY", BaySourceResume.copies(world.server, record, group(record), SOURCE),
-                "once the end is loaded, the census counts the image");
+        assertTrue(BaySourceProof.endsLoaded(world.server, record));
+        assertEquals("UNEXPECTED_COPY", census(world, record), "once the end is loaded, the census counts the image");
     }
 
     /** Levels by dimension over the real vanilla entity index, with settable entity-section readiness. */
@@ -154,10 +182,11 @@ final class BaySourceReadinessTest {
         ProbeLevel put(ResourceLocation dimension, Visibility visibility, boolean ready, RocketEntity... entities) {
             var level = UnstartedServer.allocate(ProbeLevel.class);
             level.key = ResourceKey.create(Registries.DIMENSION, dimension);
-            level.ready = ready;
+            level.ready = ready; level.cold = new HashSet<>();
             level.sections = new EntitySectionStorage<Entity>(Entity.class, key -> visibility);
             var lookup = new EntityLookup<Entity>();
             for (RocketEntity rocket : entities) {
+                UnstartedServer.set(Entity.class, rocket, "level", level);
                 var box = rocket.getBoundingBox();
                 level.sections.getOrCreateSection(SectionPos.asLong(SectionPos.blockToSectionCoord(box.minX),
                         SectionPos.blockToSectionCoord(box.minY), SectionPos.blockToSectionCoord(box.minZ))).add(rocket);
@@ -175,6 +204,8 @@ final class BaySourceReadinessTest {
         EntitySectionStorage<Entity> sections;
         ResourceKey<Level> key;
         boolean ready;
+        /** Columns that stay unloaded while the rest of a ready Level is entity-loaded and ticking. */
+        Set<Long> cold;
         ProbeLevel() { super(null, null, null, null, null, null, null, false, 0, List.of(), false, null); }
         /** Every section becomes accessible and ticking, and every column entity-loaded and entity-ticking. */
         void load() {
@@ -188,7 +219,7 @@ final class BaySourceReadinessTest {
         @Override public int getMinBuildHeight() { return -64; }
         @Override public int getHeight() { return 384; }
         @Override public LevelEntityGetter<Entity> getEntities() { return getter; }
-        @Override public boolean areEntitiesLoaded(long chunk) { return ready; }
-        @Override public boolean isPositionEntityTicking(BlockPos pos) { return ready; }
+        @Override public boolean areEntitiesLoaded(long chunk) { return ready && !cold.contains(chunk); }
+        @Override public boolean isPositionEntityTicking(BlockPos pos) { return ready && !cold.contains(ChunkPos.asLong(pos)); }
     }
 }

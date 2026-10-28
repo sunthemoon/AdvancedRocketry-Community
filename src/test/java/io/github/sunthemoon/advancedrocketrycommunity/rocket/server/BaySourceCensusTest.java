@@ -32,13 +32,15 @@ import net.minecraft.world.level.entity.LevelEntityGetter;
 import net.minecraft.world.level.entity.LevelEntityGetterAdapter;
 import net.minecraft.world.level.entity.Visibility;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 /**
  * W170-R21 A0: the R2 and D6 census first bounds every loaded identity naming L at both recorded ends, then classifies
  * each one, so an unexpected image is never treated as no copy. The destination-column case is review pass 2's probe;
- * the entity index is the real vanilla one, without a started server.
+ * the entity index is the real vanilla one, without a started server. W185-R11: the census is {@link BayCopyCensus}, the
+ * one rule set R2, D5 and D6 share; each case reads it as D6 does.
  */
 final class BaySourceCensusTest {
     private static final UUID OTHER = new UUID(999, 1);
@@ -63,6 +65,7 @@ final class BaySourceCensusTest {
         UnstartedServer.set(RocketEntity.class, rocket, "snapshot", snapshot);
         UnstartedServer.set(RocketEntity.class, rocket, "flightData", record.sourceFlightData());
         UnstartedServer.set(Entity.class, rocket, "uuid", uuid);
+        UnstartedServer.set(Entity.class, rocket, "position", new Vec3(x + .5, y, z + .5));
         UnstartedServer.set(Entity.class, rocket, "bb", new AABB(x, y, z, x + 1, y + 1, z + 1));
         return rocket;
     }
@@ -78,6 +81,7 @@ final class BaySourceCensusTest {
             var sections = new EntitySectionStorage<Entity>(Entity.class, key -> Visibility.TICKING);
             var lookup = new EntityLookup<Entity>();
             for (RocketEntity rocket : entities) {
+                UnstartedServer.set(Entity.class, rocket, "level", level);
                 var box = rocket.getBoundingBox();
                 sections.getOrCreateSection(SectionPos.asLong(SectionPos.blockToSectionCoord(box.minX),
                         SectionPos.blockToSectionCoord(box.minY), SectionPos.blockToSectionCoord(box.minZ))).add(rocket);
@@ -88,7 +92,11 @@ final class BaySourceCensusTest {
             UnstartedServer.set(MinecraftServer.class, server, "levels", levels);
             return this;
         }
-        String copies(RocketTransferRecord record) { return BaySourceResume.copies(server, record, group(record), SOURCE); }
+        /** D6's copy wait as it reads the one census: its refusal, DUPLICATE_PENDING while a copy remains, else null. */
+        String copies(RocketTransferRecord record) {
+            var scan = BayCopyCensus.inspect(server, record, group(record));
+            return scan.refusal() != null ? scan.refusal() : scan.copies().isEmpty() ? null : "DUPLICATE_PENDING";
+        }
     }
 
     private static double altitude(RocketTransferRecord record) {

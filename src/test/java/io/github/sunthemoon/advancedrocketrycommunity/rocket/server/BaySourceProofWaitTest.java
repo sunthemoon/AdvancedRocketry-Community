@@ -108,6 +108,20 @@ final class BaySourceProofWaitTest {
         }
     }
 
+    /**
+     * W185-R11: D6 reads D5's one census and rule set, so an image of L in the end's box but off the exact origin column is
+     * an unexpected copy held for repair, never a recognized duplicate that D6 would wait on.
+     */
+    @Test void d6ReadsTheCopyCensusRuleSetOfD5() {
+        try (var f = new Fixture(true, true, true, false)) {
+            var offColumn = rocket(f.sourceLevel, f.record, new UUID(185, 63));
+            UnstartedServer.set(Entity.class, offColumn, "position", new Vec3(EARTH.x() + 1.5, EARTH.y() + 48, EARTH.z() + .5));
+            assertDoesNotThrow(() -> f.proof.prove(f.claim), "a census refusal must not call Entity.save");
+            assertEquals(BayClaim.Hold.REPAIR, f.claim.hold());
+            assertEquals("UNEXPECTED_COPY", f.claim.reason());
+        }
+    }
+
     private void check(boolean ready, boolean supported, boolean available, boolean duplicate, String reason) {
         try (var f = new Fixture(ready, supported, available, duplicate)) {
             for (int tick = 0; tick < 3; tick++) {
@@ -123,6 +137,7 @@ final class BaySourceProofWaitTest {
         final RocketTransferRecord record;
         final BayClaim claim;
         final RocketTransferSavedData journal;
+        final ProbeLevel sourceLevel;
         final RocketEntity source;
         final BaySourceProof proof;
         final List<RocketRetirementProof.Slot> captures = new ArrayList<>();
@@ -147,7 +162,7 @@ final class BaySourceProofWaitTest {
             UnstartedServer.set(LevelStorageSource.LevelStorageAccess.class, access, "resources", new HashMap<>());
             UnstartedServer.set(LevelStorageSource.LevelStorageAccess.class, access, "levelDirectory", new LevelStorageSource.LevelDirectory(directory));
             UnstartedServer.set(MinecraftServer.class, server, "storageSource", access);
-            var sourceLevel = level(server, Level.OVERWORLD, true);
+            sourceLevel = level(server, Level.OVERWORLD, true);
             var destination = level(server, ResourceKey.create(Registries.DIMENSION, record.destinationSnapshot().sourceDimension()), ready);
             UnstartedServer.set(MinecraftServer.class, server, "levels", Map.of(sourceLevel.key, sourceLevel, destination.key, destination));
             journal = new RocketTransferSavedData(); journal.put(record);

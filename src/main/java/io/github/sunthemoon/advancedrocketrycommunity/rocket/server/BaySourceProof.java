@@ -14,8 +14,6 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.RocketDiscoveryColumns;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -134,12 +132,11 @@ final class BaySourceProof {
         if (!journal.actionable(logical)) { return BayStepQueue.Result.NEXT_TICK; } // T' is not acknowledged yet
         RocketEntity source = BayConsumptionSteps.exactSource(server, record, claim.source().orElseThrow(), group);
         if (source == null) { return BayStepQueue.Result.NEXT_TICK; }
-        if (!endsLoaded(server, claim.origin(), record)) { claim.waiting("END_LOADING"); return BayStepQueue.Result.NEXT_TICK; }
-        String copies = BaySourceResume.copies(server, record, group, source.getUUID());
-        if (copies != null) {
-            claim.waiting(copies);
-            return copies.equals("DUPLICATE_PENDING") ? BayStepQueue.Result.NEXT_TICK : repair(claim, copies);
-        }
+        if (!endsLoaded(server, record)) { claim.waiting("END_LOADING"); return BayStepQueue.Result.NEXT_TICK; }
+        // W185-R11: the one census and rule set D5 normalized with; a copy seen now waits for its next consumption pass.
+        var copies = BayCopyCensus.inspect(server, record, group);
+        if (copies.refusal() != null) { claim.waiting(copies.refusal()); return repair(claim, copies.refusal()); }
+        if (!copies.copies().isEmpty()) { claim.waiting("DUPLICATE_PENDING"); return BayStepQueue.Result.NEXT_TICK; }
         claim.waiting(null);
         var slots = BayAbsenceCensus.slots(record);
         if (slots == null) { claim.waiting("END_UNAVAILABLE"); return BayStepQueue.Result.NEXT_TICK; }
@@ -177,23 +174,9 @@ final class BaySourceProof {
      * W27d3: D6 awaits every checked column at both ends. It never interprets an unloaded portion as absence; the claim's
      * own renewed tickets cover both ends of a restart group and, from CONSUME on, of an in-session claim (W185-R2).
      */
-    static boolean endsLoaded(MinecraftServer server, BayClaim.Origin origin, RocketTransferRecord record) {
-        RocketStructureSnapshot source = record.sourceSnapshot(), destination = record.destinationSnapshot();
-        return RocketTransferEntities.endAlreadyLoaded(server, source) && RocketTransferEntities.endAlreadyLoaded(server, destination);
-    }
-
-    /**
-     * Whether the claim's renewed tickets cover every checked column of one end. A restart group renews both ends' checked
-     * columns, or nothing unless both are admissible (R1). An in-session claim renews the destination's ticket set, which
-     * is its checked set when admissible, and the source's origin column alone, which covers the source end only when it
-     * is that end's whole checked set.
-     */
-    static boolean covered(BayClaim.Origin origin, RocketStructureSnapshot source, RocketStructureSnapshot destination,
-                           boolean atDestination) {
-        var from = RocketDiscoveryColumns.of(source);
-        var to = RocketDiscoveryColumns.of(destination);
-        if (origin == BayClaim.Origin.RESTART) { return from.admissible() && to.admissible(); }
-        return atDestination ? to.admissible() : from.admissible() && from.count() == 1;
+    static boolean endsLoaded(MinecraftServer server, RocketTransferRecord record) {
+        return RocketTransferEntities.endAlreadyLoaded(server, record.sourceSnapshot())
+                && RocketTransferEntities.endAlreadyLoaded(server, record.destinationSnapshot());
     }
 
     private void captured(BayClaim claim, BaySlotProofs.Result result, BooleanSupplier lease, BooleanSupplier token, CompoundTag frozen) {
