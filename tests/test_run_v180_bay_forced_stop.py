@@ -221,6 +221,24 @@ class ExpectationTests(unittest.TestCase):
             with self.assertRaises(runner.smoke.SmokeError):
                 runner.check_fresh_proof("B16_MOTION", lines, FIXTURE)
 
+    def test_b16_allows_a_changed_receipt_file_only_after_the_fresh_proofs_own_d7(self):
+        """W170-R45: a proof line alone, which follows every refusal, never excuses a changed file."""
+        claim = lambda reason, logical=L: f"ARCE_BAY_CLAIM transfer=t logical={logical} state=OWNED_WAIT reason={reason}\n"
+        refused = f"ARCE_BAY_RETIRE_REFUSED transfer=t logical={L} outcome=GUARD_REFUSED\n"
+        paused = [claim("BAY_RECEIPT_WRITE"), "ARCE_RELEASE_BAY_RELEASE_REQUESTED\n"]
+        proof, retire = claim("BAY_SOURCE_PROOF"), claim("BAY_RECEIPT_WRITE")
+        self.assertTrue(runner.check_refused_file("B16_MOTION", paused + [refused, proof], 1, FIXTURE, "d", "d"),
+                        "an unchanged file always passes")
+        self.assertTrue(runner.check_refused_file("B16_MOTION", paused + [refused], 1, FIXTURE, "d", "d"))
+        self.assertFalse(runner.check_refused_file("B16_MOTION", paused + [refused, proof, retire], 1, FIXTURE, "d", "e"),
+                         "the fresh proof's own D7 may change the file")
+        for lines in (paused + [refused], paused + [refused, proof], paused + [refused, retire, proof],
+                      paused + [refused, proof, claim("BAY_RECEIPT_WRITE", X)], paused + [retire, refused, proof]):
+            with self.assertRaises(runner.smoke.SmokeError, msg=lines):
+                runner.check_refused_file("B16_MOTION", lines, 1, FIXTURE, "d", "e")
+        with self.assertRaises(runner.smoke.SmokeError):
+            runner.check_refused_file("B16_MOTION", paused, 1, FIXTURE, "d", "d")
+
     def test_a_held_startup_writer_needs_r1_to_renew_only_after_its_release(self):
         """W170-R23: the claim's first ticket renewal follows the released startup write."""
         released = "ARCE_RELEASE_JOURNAL_STARTUP_RELEASED\n"

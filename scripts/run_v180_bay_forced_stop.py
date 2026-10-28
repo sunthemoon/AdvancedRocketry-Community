@@ -435,20 +435,32 @@ def b16_guard(run: Session, case: str, fixture: dict, world: Path) -> dict:
     refused = RETIRE_REFUSED.search(run.wait_after(RETIRE_REFUSED, start, 60))
     if refused.group(1) != fixture["transfer"] or refused.group(3) != "GUARD_REFUSED":
         raise smoke.SmokeError(f"{case}: the paused guard did not refuse: {refused.group(0)}")
+    # The file is read before the log: the server logs a fresh D7's claim line before its writer can change the file.
     after = digest(receipts)
-    # A fresh D6 may already be retiring the group again; only that may change the file after the refusal.
-    lines = run.process.lines
-    at = next(index for index in range(start, len(lines)) if RETIRE_REFUSED.search(lines[index]))
-    fresh = any((match := CLAIM.search(line)) and match.group(2) == fixture["logical"] and match.group(4) == "BAY_SOURCE_PROOF"
-                for line in lines[at:])
-    if after != before and not fresh:
-        raise smoke.SmokeError(f"{case}: the refused retirement changed the receipt file: {before} -> {after}")
-    observed = dict(paused=paused["claim"], receipts=before, refused=refused.group(3), file_unchanged=after == before)
+    unchanged = check_refused_file(case, run.process.lines, start, fixture, before, after)
+    observed = dict(paused=paused["claim"], receipts=before, refused=refused.group(3), file_unchanged=unchanged)
     if CASES[case]["b16"] == "copy":
         run.wait_after(re.compile(rf"ARCE_BAY_CLAIM transfer={fixture['transfer']} .* reason=DUPLICATE_PENDING"), start, 60)
         run.send(f"arce bay release-test discard-copy {fixture['logical']}", re.compile(r"ARCE_RELEASE_BAY_COPY_DISCARDED .* count=1"))
         observed["copy"] = "DUPLICATE_PENDING, then discarded"
     return observed
+
+
+def check_refused_file(case: str, lines: list[str], start: int, fixture: dict, before: str, after: str) -> bool:
+    """B16 (W170-R45) after the guard's refusal: the receipt file must be byte-equal, unless the fresh proof's own D7 has
+    begun, that is, a BAY_RECEIPT_WRITE claim line of L after the BAY_SOURCE_PROOF line that follows the refusal. A proof
+    line alone (the coordinator prints it at its first step after any refusal) never excuses a changed file."""
+    at = next((index for index in range(start, len(lines)) if (match := RETIRE_REFUSED.search(lines[index]))
+               and match.group(2) == fixture["logical"]), None)
+    if at is None:
+        raise smoke.SmokeError(f"{case}: no refused retirement of L after the pause")
+    reasons = [match.group(4) for line in lines[at + 1:]
+               if (match := CLAIM.search(line)) and match.group(2) == fixture["logical"]]
+    proved = reasons.index("BAY_SOURCE_PROOF") if "BAY_SOURCE_PROOF" in reasons else None
+    retiring = proved is not None and "BAY_RECEIPT_WRITE" in reasons[proved + 1:]
+    if after != before and not retiring:
+        raise smoke.SmokeError(f"{case}: the refused retirement changed the receipt file: {before} -> {after}")
+    return after == before
 
 
 def check_fresh_proof(case: str, lines: list[str], fixture: dict) -> dict:
