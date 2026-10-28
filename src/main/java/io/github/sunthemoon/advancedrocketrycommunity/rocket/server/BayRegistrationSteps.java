@@ -48,9 +48,10 @@ final class BayRegistrationSteps {
     }
 
     /**
-     * D2 for one acknowledged INTENT: empty when X is registered or replayed with an equal identity (the member is then
-     * REGISTERING with its watch); otherwise the refusal's code, which becomes REJECTED (B9). An F2 mismatch of a fresh
-     * launch result holds the claim for repair; the RAM registration stays.
+     * D2 for one acknowledged INTENT: empty once the registry answered success (the member is then REGISTERING with its
+     * watch); otherwise the refusal's code, which becomes REJECTED (B9). A success whose X is absent or not the INTENT's
+     * identity, or an F2 mismatch of a fresh launch result, holds the claim as runtime REPAIR with no write; the RAM
+     * registration stays, and the next start's INTENT row decides again (W170-R3, R4).
      */
     Optional<String> register(BayClaim claim, BayMember member, BayReceipt intent) {
         var record = RocketTransferSavedData.get(server).find(claim.transfer()).orElse(null);
@@ -69,17 +70,17 @@ final class BayRegistrationSteps {
             branch[0] = validation.request().get().branch();
             return service.register(server, validation.request().get(), server.overworld().getGameTime());
         });
+        // Only a refusal becomes REJECTED: the registry changes nothing on a refusal, and a successful validation always
+        // carries a request, so a refusal is never answered after a RAM registration.
+        if (!result.success()) { return Optional.of(result.code().name()); }
+        // W170-R3: from here X may be registered in RAM, so every mismatch holds for repair and nothing returns a refusal.
         SatelliteState registered = registry.satellite(intent.satellite()).orElse(null);
-        if (branch[0] == null || !result.success() || registered == null || !equal(registered, intent)) {
-            return Optional.of(result.success() ? "REGISTRY_SIGNATURE_CONFLICT" : result.code().name());
-        }
-        if (branch[0] == SatelliteLaunchService.Branch.FRESH && !freshResultMatches(result, identity, body)) {
-            member.registered(); watches.put(intent.op(), registry.watch(intent.satellite()));
-            claim.repair("REGISTRY_SIGNATURE_CONFLICT");
-            return Optional.empty();
-        }
         member.registered();
-        watches.put(intent.op(), registry.watch(intent.satellite()));
+        if (registered != null) { watches.put(intent.op(), registry.watch(intent.satellite())); }
+        if (branch[0] == null || registered == null || !equal(registered, intent)
+                || branch[0] == SatelliteLaunchService.Branch.FRESH && !freshResultMatches(result, identity, body)) {
+            claim.repair("REGISTRY_SIGNATURE_CONFLICT");
+        }
         return Optional.empty();
     }
 
