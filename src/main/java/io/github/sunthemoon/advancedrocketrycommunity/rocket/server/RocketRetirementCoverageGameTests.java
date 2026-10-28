@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestAutosave;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowBarrier;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowChunkStore;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowOperation;
@@ -188,6 +189,12 @@ public final class RocketRetirementCoverageGameTests {
      */
     private static final class Contention extends RocketSourceRetirementGameTests.Case {
         private static final BlockPos FAR = new BlockPos(610_001, 100, 610_001);
+        /**
+         * W187: act() to retired() spans the primer's proof (one 20-tick force), the paired governed and ordinary batch
+         * (one more), and in the shared case the governed proof's 40-tick retained use and the ordinary return's own proof
+         * (one more force). 100 bounds both cases; green hosted runs take 20 to 60 ticks.
+         */
+        private static final int CASE_WINDOW_TICKS = 100;
         final boolean shared;
         EscrowTestEndpoints.Fixture endpoints;
         EscrowOperation operation;
@@ -216,7 +223,11 @@ public final class RocketRetirementCoverageGameTests {
                 }
             }
             var bank = chest.offset(2, 0, 0);
-            return level().areEntitiesLoaded(new ChunkPos(bank).toLong()) && level().isPositionEntityTicking(bank);
+            // W187: a periodic autosave in this span supersedes the primer's or the governed proof (each asserted
+            // confirmed) or the ordinary capture, and assertCountersUnchanged requires the barrier's superseding-save
+            // count to stay as act() found it. Act only when the next autosave falls after the span.
+            return level().areEntitiesLoaded(new ChunkPos(bank).toLong()) && level().isPositionEntityTicking(bank)
+                    && !GameTestAutosave.within(server(), CASE_WINDOW_TICKS);
         }
 
         void act() {
