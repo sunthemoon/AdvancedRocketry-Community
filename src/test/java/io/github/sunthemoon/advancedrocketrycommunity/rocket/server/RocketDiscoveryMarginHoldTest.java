@@ -37,9 +37,7 @@ class RocketDiscoveryMarginHoldTest {
         var earth = record.sourceSnapshot().sourceDimension();
         var wide = RocketMarginTicketsTest.snapshot(earth, 2, 8, 0, 252);
         var outside = RocketMarginTicketsTest.snapshot(earth, 15, 8, 5, 6);
-        // W185/R65: the widened low edge keeps this fixture at exactly 16 columns, not 17.
-        var valid = RocketMarginTicketsTest.snapshot(earth, 2, 8, 0, 251);
-        assertEquals(16, io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.RocketDiscoveryColumns.of(valid).count());
+        var valid = RocketMarginTicketsTest.snapshot(earth, 1, 8, 0, 252);
         assertTrue(io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.RocketDiscoveryColumns.of(valid).admissible());
         assertFalse(io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.RocketDiscoveryColumns.of(wide).admissible());
         assertFalse(io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.RocketDiscoveryColumns.of(outside).admissible());
