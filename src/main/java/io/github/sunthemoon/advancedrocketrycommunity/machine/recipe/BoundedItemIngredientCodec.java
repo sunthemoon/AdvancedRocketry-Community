@@ -159,7 +159,8 @@ public final class BoundedItemIngredientCodec {
             }
             String resource = value.getAsString();
             ResourceLocation parsed = ResourceLocation.tryParse(resource);
-            if (parsed == null || resource.length() > ProcessResourceKey.MAX_RESOURCE_ID_CHARS) {
+            if (parsed == null || resource.length() > ProcessResourceKey.MAX_RESOURCE_ID_CHARS
+                    || parsed.toString().length() > ProcessResourceKey.MAX_RESOURCE_ID_CHARS) {
                 throw new IllegalArgumentException("ingredient resource id is invalid");
             }
         }
@@ -178,6 +179,7 @@ public final class BoundedItemIngredientCodec {
         Item item = id == null ? null : BuiltInRegistries.ITEM.getOptional(id).orElse(null);
         if (rawId.length() > ProcessResourceKey.MAX_RESOURCE_ID_CHARS
                 || item == null
+                || id.toString().length() > ProcessResourceKey.MAX_RESOURCE_ID_CHARS
                 || item.getDefaultInstance().isEmpty()) {
             throw new IllegalArgumentException("ingredient item is unknown or empty");
         }

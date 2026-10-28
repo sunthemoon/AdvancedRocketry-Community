@@ -94,7 +94,7 @@ public final class SatelliteItemData {
             return DecodeResult.invalid();
         }
         ResourceLocation definitionId = ResourceLocation.tryParse(rawDefinition);
-        if (definitionId == null) {
+        if (definitionId == null || definitionId.toString().length() > BoundedCelestialCodecs.MAX_RESOURCE_LOCATION_CHARS) {
             return DecodeResult.invalid();
         }
         if (schema == LEGACY_SCHEMA_VERSION) {
@@ -121,7 +121,7 @@ public final class SatelliteItemData {
             String raw = list.getString(index);
             ResourceLocation component = raw.length() > BoundedCelestialCodecs.MAX_RESOURCE_LOCATION_CHARS
                     ? null : ResourceLocation.tryParse(raw);
-            if (component == null) {
+            if (component == null || component.toString().length() > BoundedCelestialCodecs.MAX_RESOURCE_LOCATION_CHARS) {
                 return DecodeResult.invalid();
             }
             components.add(component);

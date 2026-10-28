@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteLimits;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -27,6 +28,10 @@ public final class ResourceTableCodec {
     public static final int MAX_ASTEROID_TYPES = 64;
     public static final int MAX_GAS_TABLES = 32;
     public static final int MAX_ID_CHARS = 128;
+
+    // Gas file IDs live in "gas-v1/<id>/<16 hex>", not in a 128-character identifier field.
+    private static final int MAX_GAS_FILE_ID_CHARS = SatelliteLimits.MAX_REWARD_VERSION_CHARS
+            - ResourceAlgorithms.GAS_V1.length() - 2 - 16;
 
     private static final Set<String> ASTEROID_KEYS = Set.of("schema_version", "id", "weight", "systems", "mass",
             "mass_variability_pct", "richness_pct", "richness_variability_pct", "base_item", "ores",
@@ -70,6 +75,9 @@ public final class ResourceTableCodec {
     }
 
     public static GasTable decodeGasTable(ResourceLocation fileId, byte[] raw, Predicate<ResourceLocation> itemExists) {
+        if (fileId.toString().length() > MAX_GAS_FILE_ID_CHARS) {
+            throw new IllegalArgumentException("id must be an ID of at most " + MAX_GAS_FILE_ID_CHARS + " characters");
+        }
         JsonObject object = object(parse(raw, MAX_GAS_FILE_BYTES), GAS_KEYS, "gas table");
         schema(object);
         List<GasTable.Product> products = new ArrayList<>();

@@ -25,6 +25,8 @@ import java.util.function.Predicate;
 import net.minecraft.resources.ResourceLocation;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 /** ADR-057 sections 1, 2 and 4 against the C10 reference vectors ({@code examples.json}, {@code black_hole}). */
 final class BlackHoleTest {
@@ -116,6 +118,37 @@ final class BlackHoleTest {
         files.put(ModIdentity.id("x"), bytes("{}"));
         assertTrue(BlackHoleDataReloadListener.build(files, Map.of(), List.of(), VANILLA).error().isPresent(),
                 "one bad file rejects the whole reload");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"body", "fuel_table", "item"})
+    void canonicalIdsUseTheExistingFieldDiagnostic(String field) {
+        for (int length : List.of(118, 119, 128)) {
+            String bare = "b".repeat(length);
+            ResourceLocation id = ResourceLocation.tryParse(bare);
+            for (String spelling : List.of(bare, id.toString())) {
+                Runnable decode = () -> {
+                    if (field.equals("item")) {
+                        var table = BlackHoleCodec.decodeFuelTable(ModIdentity.id("default"), bytes(
+                                "{\"schema_version\":1,\"default_burn_ticks\":500,\"entries\":[{\"item\":\""
+                                        + spelling + "\",\"burn_ticks\":1}]}"), VANILLA);
+                        assertEquals(1, table.burnTicks(id));
+                    } else {
+                        var profile = BlackHoleCodec.decodeSingularity(ModIdentity.id("singularity"), bytes(
+                                "{\"schema_version\":1,\"body\":\"" + (field.equals("body") ? spelling : "test:body")
+                                        + "\",\"output_fe_per_tick\":500,\"fuel_table\":\""
+                                        + (field.equals("fuel_table") ? spelling : "test:fuel") + "\"}"));
+                        assertEquals(id, field.equals("body") ? profile.body() : profile.fuelTable());
+                    }
+                };
+                if (length == 118) {
+                    decode.run();
+                } else {
+                    var refused = assertThrows(IllegalArgumentException.class, decode::run);
+                    assertEquals(field + " must be an ID of at most 128 characters", refused.getMessage());
+                }
+            }
+        }
     }
 
     private static void assertBurn(List<ResourceLocation> fuel, Map<ResourceLocation, Integer> burnTicks, int capacity,
