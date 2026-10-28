@@ -53,7 +53,7 @@ public final class BayDeploymentFlightGameTests {
 
     @GameTest(template = TEMPLATE, batch = BATCH, timeoutTicks = 1_000)
     public static void aDataAndSolarBayRocketRegistersBothOnceAndLandsWithBothBaysConsumed(GameTestHelper helper) {
-        new Flight(helper, false).start();
+        new Flight(helper, false, false).start();
     }
 
     /**
@@ -63,12 +63,22 @@ public final class BayDeploymentFlightGameTests {
      */
     @GameTest(template = TEMPLATE, batch = BATCH, timeoutTicks = 1_000)
     public static void aRegistryRefusalAfterIntentRejectsBothBaysDurablyAndTheMenuShowsIt(GameTestHelper helper) {
-        new Flight(helper, true).start();
+        new Flight(helper, true, false).start();
+    }
+
+    /**
+     * W170-R4's remaining part: an escrow conflict holds the claim for repair once the data bay's INTENT is seen, before D2.
+     * D2 then runs for no member: nothing is registered under the held claim, every member waits HELD with its durable
+     * INTENT, and the solar satellite registered beforehand stays the owner's only satellite.
+     */
+    @GameTest(template = TEMPLATE, batch = BATCH, timeoutTicks = 1_000)
+    public static void aClaimHeldForRepairBeforeD2RegistersNoSatellite(GameTestHelper helper) {
+        new Flight(helper, false, true).start();
     }
 
     private static final class Flight {
         final GameTestHelper helper;
-        final boolean refuse;
+        final boolean refuse, conflict;
         final UUID owner = UUID.randomUUID(), transfer = UUID.randomUUID(), logical = UUID.randomUUID();
         final ItemStack data = dataPackage(owner), solar = solarPackage(owner);
         final BlockPos origin = new BlockPos(2, 2, 2);
@@ -76,10 +86,10 @@ public final class BayDeploymentFlightGameTests {
         RocketEntity source;
         BayClaim claim;
         List<String> before;
-        int stage, waits, ownerSatellites;
+        int stage, waits, ownerSatellites, held;
         boolean sawIntent, sawRegistered, probedRecovery, blocked, closed;
 
-        Flight(GameTestHelper helper, boolean refuse) { this.helper = helper; this.refuse = refuse; }
+        Flight(GameTestHelper helper, boolean refuse, boolean conflict) { this.helper = helper; this.refuse = refuse; this.conflict = conflict; }
         void start() { helper.onEachTick(this::tick); }
 
         void tick() {
@@ -159,7 +169,12 @@ public final class BayDeploymentFlightGameTests {
                             == SatelliteOperationCode.DEPLOYMENT_PENDING, "Decommission was not fenced from INTENT");
                     helper.assertTrue(bay(origin().east()).phase() == SatelliteBayStatus.Phase.INTENT, "The menu does not show INTENT");
                     if (refuse && !blocked) { bays(helper).blockRegistryForTests(logical); blocked = true; } // before D2 runs
+                    if (conflict && !blocked) { // before D2 runs, as the escrow hook reports a conflict at a permitted boundary
+                        bays(helper).escrowConflict(server, RocketTransferSavedData.get(server), transferRecord());
+                        blocked = true;
+                    }
                 }
+                if (conflict && blocked) { heldBeforeD2(server); return; }
                 if (intent != null && intent.phase() == BayReceipt.Phase.REGISTERED && session.acknowledged(intent.op())) {
                     sawRegistered = true;
                     var solarReceipt = session.find(satellite(solar)).orElseThrow();
@@ -187,6 +202,24 @@ public final class BayDeploymentFlightGameTests {
             helper.assertTrue(ops.containsAll(consumedOps(transferRecord().sourceSnapshot())) && consumedOps(transferRecord()
                     .sourceSnapshot()).containsAll(ops), "T' must carry both bays consumed by their own operations");
             stage = 3;
+        }
+
+        /** The held variant while the claim holds: REPAIR, nothing registered, no member past INTENT; done 40 ticks after both hold. */
+        void heldBeforeD2(net.minecraft.server.MinecraftServer server) {
+            helper.assertTrue(claim.hold() == BayClaim.Hold.REPAIR && claim.reason().equals("ESCROW_AUTHORITY_CONFLICT"),
+                    "The escrow conflict did not hold the claim for repair: " + claim.hold() + " " + claim.reason());
+            var registry = SatelliteMissionSavedData.get(server);
+            helper.assertTrue(registry.satellite(satellite(data)).isEmpty() && registry.ownerSatellites(owner) == ownerSatellites,
+                    "D2 registered a satellite under a claim held for repair");
+            helper.assertTrue(claim.members().stream().allMatch(member -> member.state() == BayMember.State.CANDIDATE
+                    || member.state() == BayMember.State.INTENT_WRITE || member.state() == BayMember.State.INTENT
+                    || member.state() == BayMember.State.HELD), "A member went past INTENT under the hold");
+            var session = bays(helper).sessionForTests();
+            boolean settled = claim.members().stream().allMatch(member -> member.state() == BayMember.State.HELD)
+                    && List.of(data, solar).stream().allMatch(pkg -> session.find(satellite(pkg))
+                            .filter(receipt -> receipt.phase() == BayReceipt.Phase.INTENT && session.acknowledged(receipt.op())).isPresent());
+            helper.assertTrue(before.equals(BayDeploymentGameTests.signatures(transferRecord())), "A held bay's package in T changed");
+            if (settled && ++held >= 40) { close(); helper.succeed(); }
         }
 
         /** The refused variant at the claim's end: both bays durably REJECTED with REGISTRY_BLOCKED, shown by the menu. */

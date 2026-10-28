@@ -359,6 +359,8 @@ final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
         long now = server.getTickCount();
         BayReceipt next;
         if (claim.origin() == BayClaim.Origin.CHECKPOINT) {
+            // W170-R4: a claim held for repair cannot proceed this session, so D2 registers nothing more under it.
+            if (claim.hold() == BayClaim.Hold.REPAIR) { member.hold(claim.reason()); return BayStepQueue.Result.AGAIN; }
             var refusal = registryOperational(claim.logical()) ? registration.register(claim, member, intent) : java.util.Optional.of("REGISTRY_BLOCKED");
             if (refusal.isEmpty()) { return BayStepQueue.Result.AGAIN; } // REGISTERING: D3 follows once every member passed D2
             next = intent.withPhase(BayReceipt.Phase.REJECTED, refusal.get(), now);

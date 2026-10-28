@@ -1843,6 +1843,15 @@
       "reason": "W170-R24: a restarted REGISTERED group whose exact source is absent meets an escrow floor, an escrow operation locking L, or an unavailable escrow root; the bay-resume candidate fails the neutral-wrapper rule before publication, so each claim holds for offline repair with no entity, journal or receipt change; each transition is a WARN by design."
     },
     {
+      "id": "w170-r4-bay-escrow-conflict-before-d2",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.server.BayTransferRecovery/",
+      "message": "ARCE_BAY_CLAIM transfer=[0-9a-f-]{36} logical=[0-9a-f-]{36} state=REPAIR reason=ESCROW_AUTHORITY_CONFLICT",
+      "counts": {"bay_deployment": 1},
+      "test": "BayDeploymentFlightGameTests.aClaimHeldForRepairBeforeD2RegistersNoSatellite",
+      "reason": "W170-R4: the escrow hook reports a conflict once the data bay's INTENT is seen, so the in-session claim holds for offline repair before D2 and registers nothing; the one transition is a WARN by design."
+    },
+    {
       "id": "w128r-r126-bay-hook-unclaimed-record-recovery",
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
