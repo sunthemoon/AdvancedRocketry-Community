@@ -4,6 +4,7 @@ import static io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.Flui
 
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestAutosave;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModEntities;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
@@ -56,6 +57,11 @@ public final class EscrowRetireBeforeFillGameTests {
     public static void cleanup(ServerLevel level) { RUNNING.forEach(Scenario::cleanup); RUNNING.clear(); }
 
     private static final class Scenario {
+        /**
+         * W187: F1's source capture completes with its Level's next 20-tick force, and the ARMED ledger write must capture
+         * while that proof is still valid. Three force periods bound both at paced ticks, as in W184's Moon landing rule.
+         */
+        static final int F1_WINDOW_TICKS = 60;
         final GameTestHelper helper;
         final ServerLevel level, oldLevel;
         final Area destination;
@@ -164,6 +170,11 @@ public final class EscrowRetireBeforeFillGameTests {
                     helper.assertTrue(next.nativeTransfer().isPresent(), "The launch was not governed"); step = 6; return;
                 }
                 if (launchPending) { return; }
+                // W187: a periodic autosave stores the source's entity section and supersedes F1's pending capture. F1 then
+                // discards the launch, and the pending launch never reaches its countdown before the 2,400-tick timeout.
+                // Request only when the next autosave falls after F1's window. The BEFORE_FILL proof before it needs no
+                // guard: one demand's third ticket step absorbs a superseded proof (RocketFillRetirementPacing).
+                if (GameTestAutosave.within(server, F1_WINDOW_TICKS)) { return; }
                 request = UUID.randomUUID();
                 var launch = RocketRuntime.requestAdminFlight(rocket, RocketDestination.MOON, request);
                 helper.assertTrue(launch.code() == RocketFlightRequestCode.JOURNAL_PENDING || launch.code() == RocketFlightRequestCode.SUCCESS
