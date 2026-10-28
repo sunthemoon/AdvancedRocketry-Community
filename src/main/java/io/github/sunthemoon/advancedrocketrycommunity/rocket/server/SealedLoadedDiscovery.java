@@ -25,10 +25,11 @@ final class SealedLoadedDiscovery {
     private ServerLevel level;
     private LevelChunk chunk;
     private int revisitsRemaining;
+    private boolean publishedHere;
 
     SealedLoadedDiscovery(MinecraftServer server) { this.server = server; }
 
-    /** Exactly one visited entity, chunk or Level advance; the caller charges it before entry. */
+    /** Exactly one visited entity, iterator restart, chunk or Level advance; the caller charges it before entry. */
     Hint advance() {
         if (!server.isSameThread()) { throw new IllegalStateException("Loaded discovery requires the server thread"); }
         if (chunk != null) {
@@ -36,6 +37,8 @@ final class SealedLoadedDiscovery {
                     || level.getChunkSource().getChunkNow(chunk.getPos().x, chunk.getPos().z) != chunk) {
                 chunk = null; entities = null; return null;
             }
+            // A publication's own edit fails this very step; any later step is past it.
+            boolean ownEdit = publishedHere; publishedHere = false;
             try {
                 if (entities.hasNext()) {
                     var entity = entities.next();
@@ -43,10 +46,11 @@ final class SealedLoadedDiscovery {
                             ? new Hint(level.dimension(), entity.getBlockPos()) : null;
                 }
             } catch (ConcurrentModificationException changed) {
-                // Publication removes/replaces a carrier. Finish this chunk without waiting for another world
-                // sweep, but do not let a continually edited map retain the cursor indefinitely. Each restart
-                // consumes this already-charged step; inspecting the next entity needs a new discovery turn.
-                if (revisitsRemaining > 0) {
+                // Our publication removes/replaces a carrier. Finish this chunk without waiting for another world
+                // sweep. Any other edit (a piston, a placed chest) moves on as before W186, so a busy chunk cannot
+                // hold the sweep (R155). Each restart consumes this already-charged step; inspecting the next
+                // entity needs a new discovery turn.
+                if (ownEdit && revisitsRemaining > 0) {
                     revisitsRemaining--;
                     entities = chunk.getBlockEntities().values().iterator();
                     return null;
@@ -59,7 +63,7 @@ final class SealedLoadedDiscovery {
             chunk = server.getLevel(level.dimension()) == level ? level.getChunkSource().getChunkNow(at.x, at.z) : null;
             if (chunk != null) {
                 // Capture once per visit: additions during a revisit must not replenish the allowance.
-                revisitsRemaining = chunk.getBlockEntities().size();
+                revisitsRemaining = chunk.getBlockEntities().size(); publishedHere = false;
                 entities = chunk.getBlockEntities().values().iterator();
             }
             return null;
@@ -76,5 +80,14 @@ final class SealedLoadedDiscovery {
         }
         levels = server.getAllLevels().iterator(); level = null; chunks = Collections.emptyIterator();
         return null;
+    }
+
+    /** A lazy attempt published the carrier here. Only a carrier in the visited chunk lets the next step restart. */
+    void published(ResourceKey<Level> dimension, BlockPos position) {
+        if (!server.isSameThread()) { throw new IllegalStateException("Loaded discovery requires the server thread"); }
+        if (chunk != null && level.dimension().equals(dimension)
+                && chunk.getPos().x == position.getX() >> 4 && chunk.getPos().z == position.getZ() >> 4) {
+            publishedHere = true;
+        }
     }
 }

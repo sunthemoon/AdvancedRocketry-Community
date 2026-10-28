@@ -58,13 +58,37 @@ class SealedLoadedDiscoveryTest {
         assertNull(fixture.discovery.advance()); // Enter the first chunk with five entries.
         int advances = 0;
         while (!fixture.chunks.nextChunkReached && advances < 20) {
-            fixture.add(100 + advances); // Invalidate every fresh iterator, while increasing map size.
+            // Every step follows a publication here, and the map grows, so every fresh iterator is invalidated.
+            fixture.chunk.entities.remove(position(advances)); fixture.add(100 + advances); fixture.add(200 + advances);
+            fixture.discovery.published(Level.OVERWORLD, position(advances));
             assertNull(fixture.discovery.advance());
             advances++;
         }
         assertTrue(fixture.chunks.nextChunkReached, "An edited map retained the cursor indefinitely");
         assertEquals(7, advances, "Five restarts, one exhausted advance, then the next chunk");
-        assertEquals(12, fixture.chunk.entities.size(), "Discovery must not mutate or drop carriers");
+        assertEquals(14, fixture.chunk.entities.size(), "Discovery must not mutate or drop carriers");
+    }
+
+    @Test void onlyAPublicationInTheVisitedChunkRestartsItAndOnlyAtTheNextStep() {
+        // Reported: 0 in this chunk, 1 in the next chunk, 2 in another Level, 3 in this chunk one step too early.
+        for (int report = 0; report < 4; report++) {
+            var fixture = new Fixture(5);
+            fixture.discovery.advance();
+            var found = fixture.discovery.advance(); assertNotNull(found);
+            if (report == 0) { fixture.discovery.published(Level.OVERWORLD, found.position()); }
+            if (report == 1) { fixture.discovery.published(Level.OVERWORLD, found.position().east(16)); }
+            if (report == 2) { fixture.discovery.published(Level.NETHER, found.position()); }
+            if (report == 3) {
+                // An in-place replacement is no structural edit: the next step passes, and the grant ends with it.
+                fixture.discovery.published(Level.OVERWORLD, found.position());
+                assertNotNull(fixture.discovery.advance());
+            }
+            fixture.chunk.entities.remove(found.position());
+            assertNull(fixture.discovery.advance());
+            assertEquals(report == 0, UnstartedServer.get(SealedLoadedDiscovery.class, fixture.discovery, "chunk") != null,
+                    "Report " + report + " decided the restart wrongly");
+            assertEquals(4, fixture.chunk.entities.size());
+        }
     }
 
     @Test void aStableNonCarrierPrefixDoesNotHideOverflowMembersDuringRestarts() {
@@ -89,6 +113,7 @@ class SealedLoadedDiscoveryTest {
             fixture.discovery.advance();
             var found = fixture.discovery.advance(); assertNotNull(found);
             fixture.chunk.entities.remove(found.position());
+            fixture.discovery.published(Level.OVERWORLD, found.position());
             fixture.discovery.advance(); // Restart after publication invalidates the iterator.
             assertNotNull(UnstartedServer.get(SealedLoadedDiscovery.class, fixture.discovery, "chunk"),
                     "The publication ended the visit instead of starting a revisit");
@@ -205,7 +230,10 @@ class SealedLoadedDiscoveryTest {
                 public void attempt(SealedLoadedDiscovery.Hint hint, SealedWorkBudget budget) {
                     assertTrue(budget.take(), "Publication uses the caller's remaining budget");
                     attempts++;
-                    if (!holdAttempts && chunk.entities.remove(hint.position()) != null) { published.add(hint.position()); }
+                    // As SealedDisassemblyCoordinator.attemptLazy does, report only an actual publication.
+                    if (!holdAttempts && chunk.entities.remove(hint.position()) != null) {
+                        published.add(hint.position()); discovery.published(hint.dimension(), hint.position());
+                    }
                 }
             });
         }
