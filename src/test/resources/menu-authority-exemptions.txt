@@ -36,18 +36,3 @@ advancedrocketrycommunity:rocket_satellite_bay RATE not-applicable Its only clie
 advancedrocketrycommunity:fluid_fuel_loader RATE not-applicable The loader's menu has no client action: no slot, no button and no intent; clicks change nothing.
 advancedrocketrycommunity:rocket_fluid_cargo RATE not-applicable The fluid cargo menu has no client action: no slot, no button and no intent; clicks change nothing.
 advancedrocketrycommunity:rocket_item_cargo RATE not-applicable Its only client actions are vanilla slot clicks on the buffer view; the menu has no button or intent.
-# Gaps this matrix found (W179 findings F1 and F2); each line goes when its gap is fixed.
-advancedrocketrycommunity:electrolyzer SPECTATOR gap:W179-F1 A spectator, here the owner, both opens this menu and keeps it valid; vanilla drops only its slot and button clicks.
-advancedrocketrycommunity:electrolyzer UNLOADED gap:W179-F2 The menu checks only the block at the position and the distance, so it stays valid on a removed block entity.
-advancedrocketrycommunity:microwave_receiver SPECTATOR gap:W179-F1 A spectator, here the owner, both opens this menu and keeps it valid; vanilla drops only its slot and button clicks.
-advancedrocketrycommunity:satellite_builder SPECTATOR gap:W179-F1 A spectator, here the owner, both opens this menu and keeps it valid; vanilla drops only its slot and button clicks.
-advancedrocketrycommunity:satellite_terminal SPECTATOR gap:W179-F1 A spectator, here the owner, both opens this menu and keeps it valid; vanilla drops only its slot and button clicks.
-advancedrocketrycommunity:rolling_machine SPECTATOR gap:W179-F1 A spectator, here the owner, both opens this menu and keeps it valid; vanilla drops only its slot and button clicks.
-advancedrocketrycommunity:rolling_machine UNLOADED gap:W179-F2 The menu checks only the block at the position and the distance, so it stays valid on a removed block entity.
-advancedrocketrycommunity:orbital_laser_drill SPECTATOR gap:W179-F1 A spectator, here the owner, both opens this menu and keeps it valid; vanilla drops only its slot and button clicks.
-advancedrocketrycommunity:laser_target SPECTATOR gap:W179-F1 A spectator, here the owner, both opens this menu and keeps it valid; vanilla drops only its slot and button clicks.
-advancedrocketrycommunity:gravity_field_controller SPECTATOR gap:W179-F1 A spectator, here the owner, both opens this menu and keeps it valid; vanilla drops only its slot and button clicks.
-advancedrocketrycommunity:railgun SPECTATOR gap:W179-F1 A spectator, here the owner, both opens this menu and keeps it valid; vanilla drops only its slot and button clicks.
-advancedrocketrycommunity:elevator SPECTATOR gap:W179-F1 A spectator, here the owner, both opens this menu and keeps it valid; vanilla drops only its slot and button clicks.
-advancedrocketrycommunity:black_hole_generator SPECTATOR gap:W179-F1 A spectator, here the owner, both opens this menu and keeps it valid; vanilla drops only its slot and button clicks.
-advancedrocketrycommunity:rocket_flight SPECTATOR gap:W179-F1 A spectator, here the owner, opens the flight menu through Player.interactOn and keeps it valid; see the record.
