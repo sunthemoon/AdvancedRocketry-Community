@@ -97,15 +97,21 @@ final class BayCopyCensus {
             return new End(level, snapshot, new AABB(region.minimum().x() - 1D, level.getMinBuildHeight(), region.minimum().z() - 1D,
                     region.maximum().x() + 2D, level.getMaxBuildHeight(), region.maximum().z() + 2D), originBox, destination);
         }
-        boolean contains(RocketEntity rocket) { return rocket.level() == level && (box.intersects(rocket.getBoundingBox())
-                || originBox != null && originBox.intersects(rocket.getBoundingBox())); }
-        boolean collect(UUID logical, IdentityHashMap<RocketEntity, List<End>> named) {
-            if (collect(box, logical, named)) { return true; }
-            return originBox != null && collect(originBox, logical, named);
+        boolean contains(RocketEntity rocket) { return rocket.level() == level && (box.intersects(rocket.getBoundingBox()) || originContains(rocket)); }
+        /** The extra origin slot proves home-column membership, not adjacent columns whose entity boxes overlap it. */
+        boolean originContains(RocketEntity rocket) {
+            return originBox != null && rocket.getX() >= originBox.minX && rocket.getX() < originBox.maxX
+                    && rocket.getZ() >= originBox.minZ && rocket.getZ() < originBox.maxZ && originBox.intersects(rocket.getBoundingBox());
         }
-        private boolean collect(AABB region, UUID logical, IdentityHashMap<RocketEntity, List<End>> named) {
+        boolean collect(UUID logical, IdentityHashMap<RocketEntity, List<End>> named) {
+            if (collect(box, logical, named, false)) { return true; }
+            return originBox != null && collect(originBox, logical, named, true);
+        }
+        private boolean collect(AABB region, UUID logical, IdentityHashMap<RocketEntity, List<End>> named, boolean originOnly) {
             level.getEntities().get(EntityTypeTest.forClass(RocketEntity.class), region, rocket -> {
-                if (names(rocket, logical)) { named.computeIfAbsent(rocket, ignored -> new ArrayList<>()).add(this); }
+                if ((!originOnly || originContains(rocket)) && names(rocket, logical)) {
+                    named.computeIfAbsent(rocket, ignored -> new ArrayList<>()).add(this);
+                }
                 return named.size() >= RocketFlightLimits.MAX_TRANSFER_ENTITY_MATCHES
                         ? AbortableIterationConsumer.Continuation.ABORT : AbortableIterationConsumer.Continuation.CONTINUE;
             });

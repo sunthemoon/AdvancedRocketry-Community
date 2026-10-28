@@ -119,6 +119,14 @@ final class BayCopyCensusTest {
         f.add(source, SOURCE); var copy = f.add(destination, new UUID(185, 15));
         var scan = BayCopyCensus.inspect(f.server, record, group, rocket -> true);
         assertNull(scan.refusal()); assertEquals(List.of(new BayCopyCensus.Copy(copy, true)), scan.copies());
+        var outside = f.add(source, new UUID(185, 16));
+        double low = (source.sourceOrigin().x() >> 4) * 16D;
+        UnstartedServer.set(Entity.class, outside, "position", new Vec3(low - .25, EARTH.y() + 48, EARTH.z() + .5));
+        UnstartedServer.set(Entity.class, outside, "bb", new AABB(low - 1, EARTH.y() + 48, EARTH.z() - .25,
+                low + .5, EARTH.y() + 49.5, EARTH.z() + 1.25));
+        assertFalse(BayCopyCensus.within(f.server, record, outside), "A known neighboring-home-column join is outside the proved origin slot");
+        assertEquals(scan, BayCopyCensus.inspect(f.server, record, group, rocket -> true),
+                "The optional origin query must not silently include neighboring home columns that D6 does not prove");
     }
 
     @Test void sourceUuidAtDestinationAndBlockedImagesHoldBeforeNeutralityChecks() {
