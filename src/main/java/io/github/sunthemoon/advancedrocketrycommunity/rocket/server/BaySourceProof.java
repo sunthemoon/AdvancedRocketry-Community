@@ -159,8 +159,18 @@ final class BaySourceProof {
     }
 
     /**
-     * W27d3: D6 awaits every checked column at both ends, including the in-session unticketed margins. It never
-     * interprets an unloaded portion as absence or acquires extra tickets to make this predicate true.
+     * W185-R2: from CONSUME on, a held in-session claim renews its source end's checked set (at most 16 columns), as a
+     * restart group's R1 renews both ends, because D6 awaits every column of it. REPAIR adds no ticket.
+     */
+    static boolean ticketsSourceEnd(BayClaim claim) {
+        return claim.origin() == BayClaim.Origin.CHECKPOINT && claim.hold() != BayClaim.Hold.REPAIR
+                && (claim.stage() == BayClaim.Stage.CONSUME || claim.stage() == BayClaim.Stage.PROVE
+                        || claim.stage() == BayClaim.Stage.RETIRE);
+    }
+
+    /**
+     * W27d3: D6 awaits every checked column at both ends. It never interprets an unloaded portion as absence; the claim's
+     * own renewed tickets cover both ends of a restart group and, from CONSUME on, of an in-session claim (W185-R2).
      */
     static boolean endsLoaded(MinecraftServer server, BayClaim.Origin origin, RocketTransferRecord record) {
         RocketStructureSnapshot source = record.sourceSnapshot(), destination = record.destinationSnapshot();

@@ -14,6 +14,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightPlanner;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferPhase;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.RocketDiscoveryColumns;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteMissionSavedData;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,10 +26,14 @@ import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
-/** W185 A1: actual queued D7 guard, a returning assigned passenger and late joins at both ends. */
+/**
+ * W185 A1: actual queued D7 guard, a returning assigned passenger and late joins at both ends; W185-R2's in-session source
+ * end wider than its origin column. Each B16 cut scenario has its own batch, because the cut pauses every in-session guard.
+ */
 @GameTestHolder(ModIdentity.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class BayCopiesGameTests {
@@ -37,6 +42,12 @@ public final class BayCopiesGameTests {
     @GameTest(template = TEMPLATE, batch = "bay_copies_login", timeoutTicks = 1_200)
     public static void loginAndCopiesDuringQueuedRetirementInvalidateItWithoutSettlement(GameTestHelper helper) {
         new Scenario(helper).start();
+    }
+
+    /** W185-R2: an in-session claim tickets its whole source end from CONSUME on, so D6 cannot wait for ever. */
+    @GameTest(template = TEMPLATE, batch = "bay_copies_wide", timeoutTicks = 1_200)
+    public static void anInSessionSourceEndWiderThanItsOriginColumnFinishes(GameTestHelper helper) {
+        new WideSource(helper).start();
     }
 
     private static final class Scenario {
@@ -146,6 +157,89 @@ public final class BayCopiesGameTests {
                 journal.remove(record.transferId());
             });
             flight.source().discard(); copies.forEach(RocketEntity::discard);
+            RocketTransferEntities.releaseFlightTickets(server, flight.record());
+            bays(helper).sessionForTests().find(satellite(pkg)).ifPresent(receipt -> BayReceiptTestHooks.remove(server, receipt.op(), ignored -> { }));
+            SatelliteMissionSavedData.get(server).decommission(satellite(pkg), owner, true, true);
+        }
+    }
+
+    /**
+     * W185-R2: the source end is two columns wide, far from every other fixture, and nothing but this flight's tickets
+     * loads it. Before the claim, the fixture renews only the origin ticket, as the in-session claim itself does; the low
+     * column is then loaded but not entity-ticking, so D6 can finish only once the claim tickets the whole source end.
+     */
+    private static final class WideSource {
+        /** x is a multiple of 16, so the checked set's low edge, origin x - 2, lies in the column west of the origin. */
+        static final BlockPos ORIGIN = new BlockPos(750_000, 100, 750_008);
+        final GameTestHelper helper;
+        final GameTestTickPacer pacer;
+        final UUID owner = UUID.randomUUID();
+        Flight flight;
+        ItemStack pkg;
+        BayClaim claim;
+        ChunkPos origin, low;
+        int stage, waits;
+        boolean closed, lowTicking;
+
+        WideSource(GameTestHelper helper) { this.helper = helper; pacer = new GameTestTickPacer(helper.getLevel().getServer()); }
+        void start() { helper.onEachTick(this::tick); }
+
+        void tick() {
+            if (closed) { return; }
+            try {
+                helper.assertTrue(++waits < 1_150, "Wide-source fixture exceeded its wait at " + stage
+                        + (claim == null ? "" : " " + claim.stage() + " " + claim.reason()));
+                if (stage == 0) { publish(); } else if (stage == 1) { begin(); } else { finished(); }
+                if (!closed) { pacer.pace(); }
+            } catch (RuntimeException | Error failure) { close(); throw failure; }
+        }
+
+        void publish() {
+            var level = helper.getLevel(); var server = level.getServer();
+            var target = helper.absolutePos(new BlockPos(14, 2, 3));
+            if (!level.isPositionEntityTicking(target)) { return; }
+            pkg = solarPackage(owner); registerSolar(server, pkg, owner);
+            flight = transit(helper, ORIGIN, level.dimension().location(), position(target), owner, List.of(pkg),
+                    RocketEscrowSectionPatch.NEUTRAL, RocketFlightPlanner.EARTH.bodyId(), null);
+            var columns = RocketDiscoveryColumns.of(flight.record().sourceSnapshot());
+            origin = columns.origin(); low = new ChunkPos(columns.minColumnX(), columns.minColumnZ());
+            helper.assertTrue(columns.admissible() && columns.count() == 2 && !low.equals(origin),
+                    "The source end is not two columns wide: " + columns);
+            stage = 1;
+        }
+
+        void begin() {
+            var level = helper.getLevel(); var server = level.getServer();
+            RocketTransferEntities.refreshOriginTicket(level, flight.record().sourceSnapshot(), flight.record().transferId());
+            if (level.getEntity(flight.source().getUUID()) != flight.source()
+                    || !RocketTransferEntities.columnReady(level, origin.x, origin.z, ORIGIN.getY())) { return; }
+            helper.assertTrue(!RocketTransferEntities.columnReady(level, low.x, low.z, ORIGIN.getY()),
+                    "control: the origin ticket alone already made the low column entity-ticking");
+            var journal = RocketTransferSavedData.get(server); journal.put(flight.record());
+            bays(helper).ascentComplete(server, journal, flight.record(), flight.source());
+            claim = claim(helper, flight.record().logicalRocketId()).orElseThrow(); stage = 2;
+        }
+
+        void finished() {
+            if (RocketTransferEntities.columnReady(helper.getLevel(), low.x, low.z, ORIGIN.getY())) { lowTicking = true; }
+            if (claim(helper, flight.record().logicalRocketId()).isPresent()) { return; }
+            helper.assertTrue(claim.handoff().orElseThrow() == BayClaim.Handoff.READY_SOURCE, "Not READY_SOURCE: " + claim.reason());
+            helper.assertTrue(lowTicking, "The claim never made the source end's low column entity-ticking");
+            helper.assertTrue(bays(helper).sessionForTests().find(satellite(pkg)).isEmpty(), "Receipt not retired");
+            close(); helper.succeed();
+        }
+
+        void close() {
+            if (closed) { return; } closed = true;
+            if (flight == null) { return; }
+            var server = helper.getLevel().getServer();
+            bays(helper).forgetForTests(flight.record().logicalRocketId());
+            var journal = RocketTransferSavedData.get(server);
+            journal.find(flight.record().transferId()).ifPresent(record -> {
+                record.destinationEntityId().map(helper.getLevel()::getEntity).ifPresent(net.minecraft.world.entity.Entity::discard);
+                journal.remove(record.transferId());
+            });
+            flight.source().discard();
             RocketTransferEntities.releaseFlightTickets(server, flight.record());
             bays(helper).sessionForTests().find(satellite(pkg)).ifPresent(receipt -> BayReceiptTestHooks.remove(server, receipt.op(), ignored -> { }));
             SatelliteMissionSavedData.get(server).decommission(satellite(pkg), owner, true, true);

@@ -523,6 +523,22 @@ final class RocketTransferEntities {
         return server.isSameThread() ? refreshMargins(record.transferId(), record.sourceSnapshot(), record.destinationSnapshot(), levelTickets(server)) : 0;
     }
 
+    /**
+     * W185-R2: a held in-session bay claim's source end from CONSUME on, as R1 renews a restart group's: one ticket on each
+     * column of an admissible checked set (at most 16, the origin among them), else none beyond the origin ticket. That
+     * set is the source end's {@link RocketDiscoveryColumns#releaseSet}, so {@link #releaseMargins} removes it. No load.
+     */
+    static int refreshBaySource(MinecraftServer server, RocketTransferRecord record) {
+        return server.isSameThread() ? addRefreshSet(record.transferId(), record.sourceSnapshot(), levelTickets(server)) : 0;
+    }
+
+    static int addRefreshSet(UUID transfer, RocketStructureSnapshot end, FlightTickets tickets) {
+        if (!tickets.present(end.sourceDimension())) { return 0; }
+        var columns = RocketDiscoveryColumns.of(end).refreshSet();
+        columns.forEach(column -> tickets.add(end.sourceDimension(), column, transfer));
+        return columns.size();
+    }
+
     /** The flight-ticket calls of one Level, keyed by its dimension; a recording sink in unit tests. */
     interface FlightTickets {
         boolean present(ResourceLocation dimension);

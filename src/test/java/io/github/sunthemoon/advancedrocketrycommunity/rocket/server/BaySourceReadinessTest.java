@@ -90,6 +90,39 @@ final class BaySourceReadinessTest {
                 "a restart group's R1 tickets cover the whole checked set");
     }
 
+    /**
+     * W185-R2: from CONSUME on, an in-session claim tickets its whole source end, as R1 does for a restart group, and the
+     * flight's ordinary release removes those tickets. Earlier stages, REPAIR and restart groups add none here.
+     */
+    @Test void anInSessionClaimTicketsItsWholeSourceEndFromConsumeOn() {
+        var record = record(1);
+        var group = group(record);
+        var claim = BayClaim.checkpoint(LOGICAL, TRANSFER, SOURCE, group.members());
+        assertFalse(BaySourceProof.ticketsSourceEnd(claim), "GROUP");
+        claim.groupPassed(1); claim.nextCandidate(); claim.freeze(group);
+        assertFalse(BaySourceProof.ticketsSourceEnd(claim), "before CONSUME");
+        for (var stage : List.of(BayClaim.Stage.CONSUME, BayClaim.Stage.PROVE, BayClaim.Stage.RETIRE)) {
+            claim.advance(stage);
+            assertTrue(BaySourceProof.ticketsSourceEnd(claim), stage.name());
+        }
+        claim.repair("W185_TEST");
+        assertFalse(BaySourceProof.ticketsSourceEnd(claim), "REPAIR adds no ticket");
+        var restart = BayClaim.restart(LOGICAL, TRANSFER, group.members());
+        restart.freeze(group); restart.establishSource(SOURCE); restart.advance(BayClaim.Stage.CONSUME);
+        assertFalse(BaySourceProof.ticketsSourceEnd(restart), "a restart group's R1 renewal covers both ends instead");
+
+        // Origin x = 14: the checked set has two columns, and the origin ticket alone covers only one of them.
+        RocketStructureSnapshot wide = record.sourceSnapshot().relocated(new UUID(996, 2), record.sourceSnapshot().sourceDimension(),
+                new RocketPosition(14, 80, 8), 0L);
+        var columns = io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.RocketDiscoveryColumns.of(wide);
+        assertTrue(columns.admissible() && columns.count() == 2, "control: " + columns);
+        var tickets = new RocketMarginTicketsTest.Tickets(wide.sourceDimension());
+        assertEquals(2, RocketTransferEntities.addRefreshSet(TRANSFER, wide, tickets));
+        assertEquals(java.util.Set.copyOf(columns.columns()), tickets.columns(wide.sourceDimension(), TRANSFER));
+        RocketTransferEntities.releaseMargins(TRANSFER, wide, record.destinationSnapshot(), tickets);
+        assertEquals(0, tickets.count(TRANSFER), "the flight's ordinary release removes the source end's tickets");
+    }
+
     /** The re-review's HIDDEN-section probe: an image of L at a destination that is still loading. */
     @Test void aDestinationEndThatIsStillLoadingIsAwaitedAndItsImageCountedOnceLoaded() {
         var record = record(1);
