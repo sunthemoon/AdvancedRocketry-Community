@@ -47,3 +47,13 @@ Root's hosted run on the pushed branch stands in for a complete local GameTest.
 ## Not in this task
 
 Real-client checks, other rocket behaviour, ADRs, status files and the ledger.
+
+## Root decision R153 (2026-10-29)
+
+The first session stopped the whole task at B6's stop condition: the parameter map is rendered into a string that
+`RocketAssemblerData.detail` saves (schema 1) and that `RocketInteraction.notify` sends to the player. The stop condition
+applied to B6 only; B5 and B7 go ahead. For B6, the schema and the field stay as they are, with no migration and no
+change to saved values already in worlds. New reports store and show the translated reason without the parameter
+map, within the existing 256-character bound, and the player message omits it too. The map goes to the log, in the
+existing failure line or one bounded line per failure, and to the operator view if one shows reports. Say in the
+record which saved or synced strings now differ in content, and that their format does not.
