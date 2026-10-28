@@ -289,6 +289,14 @@ section 9's 100 MB per-slice limit. A fresh Codex session continues:
    - Bring the directory comfortably under 100 MB, leaving room for B-PRE and tranche 2. If that is impossible, stop
      and report.
 2. **Read the hosted run** on `a9438448c` when it finishes. If it fails, diagnose that before the natives.
+   - **Root, 16:58:** run 40651475584 failed one test.
+     `sameLevelLandedTransferRetiresBeforeFillAndGovernedLaunch` "Didn't succeed or fail within 2400 ticks". R135's
+     fixture now waits for the post-fill native capture turn, and on the hosted runner that turn never came.
+   - Its raw logs are in `D:/GitHub/ARCE-Task-Evidence/root-queue/W164-hosted/a9438448c/` (the run's zip and the job
+     log). That folder is outside this slice's evidence directory, so it does not count against the 100 MB.
+   - Find why the capture turn never arrives. Is a W164 retirement or preparation path starving the ordinary capture,
+     or is the fixture waiting for a turn that this path never grants? Fix the cause without loosening anything, and
+     fail the fix first.
 3. **Then B-PRE, all 20 cases**, with two restarts each and the R124 limits; then tranche 2.
 
 ## Not in this task
