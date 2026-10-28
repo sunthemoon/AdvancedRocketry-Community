@@ -96,6 +96,27 @@ If a finding cannot be closed without a new hook, an Access Transformer or a Mix
 alternative (O1, canister filling) instead. Verification as before: the validator on the record commit, and any probes
 kept in the evidence folder. A fresh read-only review follows.
 
+## Revision 3 under Root decision R136 (2026-10-28)
+
+Revision 2 (`cf656dfe8`) was reviewed again: `D:/GitHub/ARCE-Task-Evidence/root-queue/W174-review2/REVIEW.md`
+(SHA-256 `c8683ad1…ddb3`), APPROVE-WITH-CHANGES. W174-R1 and R3 to R8 are closed. A fresh session revises the note as
+revision 3, closing W174-R9 to R15 as that review suggests. Mark each change with its finding:
+
+- **R9 (High).** Pad admission must not hang on any waiting rocket retirement anywhere. Bind it to the existing "due"
+  predicates, or register the hold as server-wide. Refuse D while proofs are closed, and add the test.
+- **R10.** List every barrier consumer (W158 release proofs and the governed escrow captures included). Either include
+  each one in pad admission, or bound and test its interference. Keep the dependency one-way.
+- **R11.** Quantify the sealed-start delay that waiting for pad IO to drain causes, include it in the test, and check
+  it against ADR-065's hand-off bounds and the 200-tick pre-U expiry.
+- **R12.** Make proof validity per transaction entry and incarnation, with tests for continuous input and a second
+  player.
+- **R13.** State the vanilla rollback when a world moves between dedicated and single-player hosting, with a
+  whole-world repair step, and match the receipt holder's UUID to the outbox owner's.
+- **R14 and R15:** the wording fixes.
+
+Verification as before: the validator on the record commit, and any probes kept in the evidence folder. A fresh
+read-only review follows.
+
 ## Not in this task
 
 Any production code, ADR changes (Root proposes them from your note), the risk register, status files and the ledger.
