@@ -1,0 +1,139 @@
+"""I6 native cut admission and conservation, without launching a server."""
+import copy
+from pathlib import Path
+import sys
+from types import SimpleNamespace
+import unittest
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+
+
+def fixture():
+    snapshot = dict(source_origin=[8, 100, 8], source_dimension="advancedrocketrycommunity:moon",
+                    bounding_box=[-1, 0, 0, 1, 2, 0], relative_blocks=[dict(position=[0, 0, 0], items=[7])])
+    fuel = dict(amount=1000, debit_history=[dict(amount=500)], propulsion=dict(revision=3))
+    old = dict(transfer_id=[0, 0, 0, 1], logical_rocket_id=[0, 0, 0, 2], owner_id=[0, 0, 0, 3],
+               source_entity_id=[0, 0, 0, 4], destination_entity_id=[0, 0, 0, 5], phase="COMMITTED",
+               destination_snapshot=snapshot, destination_flight=dict(passengers=dict(seat_capacity=1)))
+    entity = dict(UUID=old["destination_entity_id"], Pos=[8.5, 100, 8.5], RocketEntityData=dict(
+        assembly_transaction_id=old["logical_rocket_id"], owner_id=old["owner_id"], snapshot=snapshot,
+        flight_data=dict(logical_rocket_id=old["logical_rocket_id"], current_origin=[8, 100, 8],
+                         current_dimension=snapshot["source_dimension"], fuel=fuel, state="FUELED",
+                         passengers=dict(seat_capacity=1, assignments=[]))))
+    disk = dict(entities=[dict(entity=entity, depth=0)], journal=dict(schema_version=3,
+        format_epoch="v1.8.0-first-moon-landing", transfers=[],
+        classic_first_moon_landing=dict(schema_version=1, state="EMPTY")),
+        world_authority=dict(transactions=dict(transactions=[]), payload_blocks=[dict(
+            end="destination_snapshot", position=[8, 100, 8], state="minecraft:air")]))
+    return copy.deepcopy(disk), copy.deepcopy(old), copy.deepcopy(fuel)
+
+
+class W164I6OracleTests(unittest.TestCase):
+    def test_four_plain_and_ten_m_rows_are_separate(self):
+        import w164_i6_oracle as oracle
+        self.assertEqual(14, len(oracle.CASES))
+        self.assertEqual(4, sum(name.startswith("PLAIN_") for name in oracle.CASES))
+        self.assertEqual(42, len(oracle.CASES) * 3)
+
+    def test_missing_d_is_rejected_even_at_k2(self):
+        from w164_i6_oracle import check_disk
+        disk, old, fuel = fixture()
+        check_disk("K2", disk, old, fuel, 0)
+        disk["entities"] = []
+        with self.assertRaisesRegex(Exception, "D1"): check_disk("K2", disk, old, fuel, 0)
+
+    def test_current_complete_snapshot_fuel_debits_and_identity_are_required(self):
+        from w164_i6_oracle import check_disk
+        for field in ("snapshot", "fuel", "debit", "owner", "logical", "physical", "location", "crew", "active"):
+            with self.subTest(field=field):
+                disk, old, fuel = fixture()
+                entity = disk["entities"][0]["entity"]; data = entity["RocketEntityData"]; flight = data["flight_data"]
+                if field == "snapshot": data["snapshot"]["relative_blocks"][0]["items"] = [8]
+                elif field == "fuel": flight["fuel"]["amount"] -= 1
+                elif field == "debit": flight["fuel"]["debit_history"] = []
+                elif field == "owner": data["owner_id"] = [1, 2, 3, 4]
+                elif field == "logical": data["assembly_transaction_id"] = [1, 2, 3, 4]
+                elif field == "physical": entity["UUID"] = old["source_entity_id"]
+                elif field == "location": entity["Pos"][0] += 16
+                elif field == "crew": flight["passengers"]["assignments"] = [1]
+                else: flight["active_transfer_id"] = old["transfer_id"]
+                with self.assertRaises(Exception): check_disk("K2", disk, old, fuel, 0)
+
+    def test_old_source_duplicate_and_nested_authorities_are_rejected(self):
+        from w164_i6_oracle import check_disk
+        for nested in (False, True):
+            disk, old, fuel = fixture()
+            if nested: disk["entities"][0]["depth"] = 1
+            else: disk["entities"].append(copy.deepcopy(disk["entities"][0]))
+            with self.assertRaises(Exception): check_disk("K2", disk, old, fuel, 0)
+
+    def test_t_matches_the_actual_cut_not_the_callback(self):
+        from w164_i6_oracle import check_disk
+        for case, present in (("K1", True), ("K2", False), ("K3_MOVE", False), ("K3_UNKNOWN", True),
+                              ("K4", True), ("K9_REFUSED", True), ("K9_LATE", True),
+                              ("K10_ON", True), ("K10_OFF", True), ("K10_FAIL", False)):
+            disk, old, fuel = fixture()
+            disk["journal"]["transfers"] = [copy.deepcopy(old)] if present else []
+            if case == "K1": disk["pending"] = dict(transfers=[])
+            if case == "K3_MOVE": disk["pending"] = dict(transfers=[copy.deepcopy(old)])
+            for restart in range(3): check_disk(case, disk, old, fuel, restart)
+            disk["journal"]["transfers"] = [] if present else [copy.deepcopy(old)]
+            with self.assertRaises(Exception): check_disk(case, disk, old, fuel, 0)
+
+    def test_staged_writeback_must_be_identical(self):
+        from w164_i6_oracle import check_disk
+        disk, old, fuel = fixture()
+        disk["pending"] = dict(transfers=[dict(old, phase="PREPARED")])
+        with self.assertRaises(Exception): check_disk("K3_MOVE", disk, old, fuel, 0)
+
+    def test_u_and_payload_blocks_cannot_coexist_with_d(self):
+        from w164_i6_oracle import check_disk
+        for kind in ("U", "block"):
+            disk, old, fuel = fixture()
+            if kind == "U": disk["world_authority"]["transactions"]["transactions"] = [dict(type="DISASSEMBLY")]
+            else: disk["world_authority"]["payload_blocks"][0]["state"] = "minecraft:chest"
+            with self.assertRaises(Exception): check_disk("K2", disk, old, fuel, 0)
+
+    def test_plain_outbox_and_receipt_keep_the_exact_event(self):
+        from w164_i6_oracle import check_disk
+        disk, old, fuel = fixture()
+        event = dict(event_id=[0, 0, 0, 9], kind="first_moon_landing", participants=[], fingerprint="a" * 64)
+        disk["journal"]["classic_first_moon_landing"] = dict(schema_version=1, state="ELECTED", event=event)
+        disk["receipt"] = dict(occurred=0)
+        check_disk("PLAIN_ACK", disk, old, fuel, 0, event)
+        disk["journal"]["classic_first_moon_landing"]["state"] = "DELIVERED"
+        disk["receipt"] = dict(occurred=1, event=copy.deepcopy(event))
+        check_disk("PLAIN_ACK", disk, old, fuel, 1, event)
+        disk["receipt"]["event"]["fingerprint"] = "b" * 64
+        with self.assertRaises(Exception): check_disk("PLAIN_ACK", disk, old, fuel, 2, event)
+
+
+class W164I6HarnessTests(unittest.TestCase):
+    def test_cut_and_fm12_properties_are_initial_start_only(self):
+        import run_w164_i6_native as native
+        for case in native.CASES:
+            first = native.command_for(SimpleNamespace(java="java"), case, 0)
+            self.assertIn("-Dadvancedrocketrycommunity.i6NativeCut=" + case, first)
+            self.assertEqual(case.startswith("PLAIN_"), "-Darce.releaseTest.firstEventCut=FM12a" in first)
+            for restart in (1, 2):
+                command = native.command_for(SimpleNamespace(java="java"), case, restart)
+                self.assertFalse(any("i6NativeCut=" in arg or "firstEventCut=" in arg for arg in command))
+
+    def test_attempts_count_failed_launches_and_never_reset_the_66_limit(self):
+        import run_w164_i6_native as native
+        native.check_attempt([], "K2", 1)
+        rows = [dict(case="K2", attempt=1, restart=0)]
+        native.check_attempt(rows, "K2", 2)
+        for history, case, attempt in ((rows, "K2", 1), ([], "K2", 2), (rows, "K2", 3), (rows * 64, "K1", 1)):
+            with self.assertRaises(Exception): native.check_attempt(history, case, attempt)
+
+    def test_actual_cut_log_is_required_without_expiry_or_success(self):
+        import run_w164_i6_native as native
+        native.check_cut_lines("PLAIN_ACK", ["ARCE_LANDED_DISASSEMBLY_PAUSED boundary=PLAIN_ACK"], "id")
+        for lines in ([], ["ARCE_LANDED_DISASSEMBLY_PAUSED boundary=PLAIN_ACK",
+                           "event=landed_reservation_released entity=id"],
+                      ["ARCE_LANDED_DISASSEMBLY_PAUSED boundary=PLAIN_ACK", "ARCE_W164_CUT_EXPIRED"]):
+            with self.assertRaises(Exception): native.check_cut_lines("PLAIN_ACK", lines, "id")
+
+
+if __name__ == "__main__": unittest.main()
