@@ -71,6 +71,12 @@ final class BayCopyCensus {
         return source != null && source.contains(rocket) || destination != null && destination.contains(rocket);
     }
 
+    /** Recheck after callbacks such as passenger movement, before consuming or discarding this particular copy. */
+    static boolean recognizes(MinecraftServer server, RocketTransferRecord record, BayGroup group, Copy copy) {
+        var end = End.of(server, copy.destination() ? record.destinationSnapshot() : record.sourceSnapshot(), copy.destination());
+        return end != null && end.recognizes(copy.rocket(), record, group);
+    }
+
     static boolean names(RocketEntity rocket, UUID logical) {
         return rocket.assemblyTransactionId().filter(logical::equals).isPresent()
                 || rocket.flightData().filter(flight -> logical.equals(flight.logicalRocketId())).isPresent()
@@ -79,6 +85,8 @@ final class BayCopyCensus {
 
     private record End(ServerLevel level, RocketStructureSnapshot snapshot, AABB box, boolean destination) {
         @Nullable static End of(MinecraftServer server, RocketStructureSnapshot snapshot, boolean destination) {
+            // Join/movement notifications precede R1 readiness; never form an overflowing or over-budget region there.
+            if (!io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.RocketDiscoveryColumns.of(snapshot).valid()) { return null; }
             var level = RocketTransferEntities.level(server, snapshot.sourceDimension());
             if (level == null) { return null; }
             var region = RocketRegion.fromSnapshot(snapshot);

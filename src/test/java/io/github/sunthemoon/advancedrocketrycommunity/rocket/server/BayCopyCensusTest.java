@@ -70,12 +70,35 @@ final class BayCopyCensusTest {
         }
     }
 
+    @Test void aPreviouslyRecognizedCopyMustBeRecheckedAfterCallbackMutations() {
+        var f = new Fixture(); var rocket = f.add(f.before.sourceSnapshot(), new UUID(185, 9));
+        var copy = f.scan().copies().get(0);
+        assertTrue(BayCopyCensus.recognizes(f.server, f.before, f.group, copy));
+        UnstartedServer.set(RocketEntity.class, rocket, "ownerId", new UUID(185, 10));
+        assertFalse(BayCopyCensus.recognizes(f.server, f.before, f.group, copy));
+    }
+
+    @Test void transitAuthorityIncludesTheDurableManifestNotJustItsTransferAndPosition() {
+        var f = new Fixture(); var source = f.add(f.before.sourceSnapshot(), SOURCE);
+        assertTrue(BayConsumptionSteps.inTransit(source, f.before));
+        var flight = source.flightData().orElseThrow();
+        UnstartedServer.set(RocketEntity.class, source, "flightData",
+                flight.withPassengers(flight.passengers().assign(new UUID(185, 11)).orElseThrow()));
+        assertFalse(BayConsumptionSteps.inTransit(source, f.before));
+    }
+
     @Test void anExactUuidOutsideItsRecordedBoxIsNotRebuiltOrIgnored() {
         var f = new Fixture(); var source = f.add(f.before.sourceSnapshot(), SOURCE);
         UnstartedServer.set(Entity.class, source, "position", new Vec3(1000, 128, 1000));
         UnstartedServer.set(Entity.class, source, "bb", new AABB(999, 128, 999, 1001, 130, 1001));
         assertFalse(BayCopyCensus.within(f.server, f.before, source));
         assertEquals("SOURCE_AUTHORITY_CONFLICT", f.scan().refusal());
+    }
+
+    @Test void joinNotificationRefusesAnEndWhoseCheckedMarginOverflows() {
+        var f = new Fixture(BayAbsenceCensusTest.relocate(Integer.MAX_VALUE - 2, 8, 72, 8));
+        var source = f.add(f.before.sourceSnapshot(), SOURCE);
+        assertFalse(assertDoesNotThrow(() -> BayCopyCensus.within(f.server, f.before, source)));
     }
 
     @Test void sourceUuidAtDestinationAndBlockedImagesHoldBeforeNeutralityChecks() {
@@ -102,11 +125,13 @@ final class BayCopyCensusTest {
 
     static final class Fixture {
         final MinecraftServer server = UnstartedServer.owned();
-        final RocketTransferRecord before = record(1);
+        final RocketTransferRecord before;
         final BayConsumedSnapshots.Result after;
         final BayGroup group;
         final ProbeLevel source, destination;
-        Fixture() {
+        Fixture() { this(record(1)); }
+        Fixture(RocketTransferRecord before) {
+            this.before = before;
             var job = BayConsumedSnapshots.prepare(before.sourceSnapshot(), before.destinationSnapshot(), Map.of(bay(0), intent(before, 0))).orElseThrow();
             var budget = new RocketCargoWorkBudget(); for (long tick = 1; !job.step(budget, tick); tick++) { }
             after = job.result().orElseThrow();

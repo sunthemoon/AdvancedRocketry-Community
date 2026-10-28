@@ -56,8 +56,8 @@ public final class BayRegisteredGameTests {
     private enum Kind {
         DECOMMISSION, PRESENT, ABSENT, MIXED_SOURCE_CONSUMED, MIXED_JOURNAL_CONSUMED, PROMOTE, DUPLICATE, PROTECTED,
         UNEXPECTED_MARGIN, UNEXPECTED_COLUMN, DESTINATION_LOADING, UNEXPECTED_LOADING,
-        BOTH_COPIES, ABSENT_WITH_COPIES, RECOGNIZED_COLD_COPY;
-        boolean held() { return this == PROTECTED || this == UNEXPECTED_MARGIN || this == UNEXPECTED_COLUMN || this == UNEXPECTED_LOADING; }
+        BOTH_COPIES, ABSENT_WITH_COPIES, RECOGNIZED_COLD_COPY, OUTSIDE_JOIN;
+        boolean held() { return this == PROTECTED || this == UNEXPECTED_MARGIN || this == UNEXPECTED_COLUMN || this == UNEXPECTED_LOADING || this == OUTSIDE_JOIN; }
         /** W170-R41: the destination is a far overworld column that only R1's tickets load; no other GameTest reads it. */
         boolean loading() { return this == DESTINATION_LOADING || this == UNEXPECTED_LOADING || this == RECOGNIZED_COLD_COPY; }
         boolean copies() { return this == DUPLICATE || this == BOTH_COPIES || this == ABSENT_WITH_COPIES || this == RECOGNIZED_COLD_COPY; }
@@ -112,6 +112,11 @@ public final class BayRegisteredGameTests {
     @GameTest(template = TEMPLATE, batch = RECOGNIZED_LOADING, timeoutTicks = 1_200)
     public static void aRecognizedColdDestinationCopyIsConsumedOnlyAfterItsEndLoads(GameTestHelper helper) {
         new Case(helper, Kind.RECOGNIZED_COLD_COPY).start();
+    }
+
+    @GameTest(template = TEMPLATE, batch = "bay_copies_outside", timeoutTicks = 1_200)
+    public static void aKnownCopyJoiningOutsideBothRecordedEndsQuarantinesWithoutRetiring(GameTestHelper helper) {
+        new Case(helper, Kind.OUTSIDE_JOIN).start();
     }
 
     /** B6's protected-copy refusal: a second recognized copy with a bound escrow wrapper holds the claim for repair. */
@@ -271,6 +276,12 @@ public final class BayRegisteredGameTests {
             var begun = bays(helper).restartForTests(receipts);
             helper.assertTrue(begun.size() == 1, "One restart claim for L");
             claim = begun.get(0);
+            if (kind == Kind.OUTSIDE_JOIN) {
+                copy = ModEntities.ROCKET.get().create(helper.getLevel());
+                copy.initializeTransferred(flight.record().sourceSnapshot(), logical(), owner, flight.record().sourceFlightData());
+                copy.setPos(copy.getX() + 32, copy.getY(), copy.getZ());
+                helper.assertTrue(helper.getLevel().addFreshEntity(copy), "Outside copy not published");
+            }
             helper.assertTrue(claim.stage() == (kind == Kind.PROMOTE ? BayClaim.Stage.OUTCOMES : BayClaim.Stage.RESUME),
                     "Wrong restart stage " + claim.stage());
             stage = 2;

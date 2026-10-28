@@ -51,6 +51,7 @@ final class BayPassengerRouting {
                 || record.sourceFlightData().passengers().assignment(player.getUUID()).isEmpty()
                 || !journal.actionable(claim.logical()) || journal.find(claim.transfer()).orElse(null) != record
                 || !survivor.getUUID().equals(record.sourceEntityId()) || !BayConsumptionSteps.inTransit(survivor, record)
+                || survivor.snapshot().filter(value -> value.contentHash().equals(record.sourceSnapshot().contentHash())).isEmpty()
                 || !RocketTransferEntities.loadedEntity(survivor) || !RocketEscrowGate.bayNeutral(survivor, record.transferId())
                 || RocketReleaseAccess.fenced(survivor)) { return false; }
         try {

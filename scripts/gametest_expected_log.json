@@ -1997,6 +1997,15 @@
       "reason": "W170 (B6's protected-copy refusal): a restarted REGISTERED group finds a second recognized copy whose escrow wrapper is bound, so its claim holds for offline repair with no record change; the one transition is a WARN by design."
     },
     {
+      "id": "w185-bay-outside-copy-join",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.server.BayTransferRecovery/",
+      "message": "ARCE_BAY_CLAIM transfer=[0-9a-f-]{36} logical=[0-9a-f-]{36} state=REPAIR reason=UNEXPECTED_COPY",
+      "counts": {"bay_copies_outside": 1},
+      "test": "BayRegisteredGameTests.aKnownCopyJoiningOutsideBothRecordedEndsQuarantinesWithoutRetiring",
+      "reason": "W185 observes an identity joining outside both recorded ends while its restart claim owns T; the runtime repair retains the source, copy, journal and REGISTERED receipts."
+    },
+    {
       "id": "w170-r21-bay-unexpected-copy",
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.server.BayTransferRecovery/",

@@ -67,6 +67,7 @@ final class BayCopySteps {
         }
         for (var copy : scan.copies()) {
             var rocket = copy.rocket();
+            if (!BayCopyCensus.recognizes(server, record, group, copy)) { return repair(claim, "UNEXPECTED_COPY"); }
             if (!RocketTransferEntities.loadedEntity(rocket) || !RocketEscrowGate.bayNeutral(rocket, record.transferId())) {
                 return repair(claim, "PROTECTED_DUPLICATE");
             }
@@ -81,6 +82,9 @@ final class BayCopySteps {
                 claim.waiting("DUPLICATE_PASSENGERS"); return BayStepQueue.Result.NEXT_TICK;
             }
             // The scope never discards an unconsumed, foreign or protected image, and never drops its payload.
+            if (!BayCopyCensus.recognizes(server, record, group, copy)) { return repair(claim, "UNEXPECTED_COPY"); }
+            if (!RocketTransferEntities.loadedEntity(survivor) || !BayConsumptionSteps.inTransit(survivor, record)
+                    || !RocketEscrowGate.bayNeutral(survivor, record.transferId())) { return repair(claim, "SOURCE_AUTHORITY_CONFLICT"); }
             if (rocket.snapshot().filter(value -> value.snapshotId().equals(after.snapshotId())
                     && value.contentHash().equals(after.contentHash())).isEmpty()
                     || !RocketEscrowGate.bayNeutral(rocket, record.transferId()) || !rocket.getPassengers().isEmpty()) {
