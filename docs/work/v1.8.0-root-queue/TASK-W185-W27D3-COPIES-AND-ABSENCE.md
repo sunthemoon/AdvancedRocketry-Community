@@ -131,3 +131,27 @@ stays at `min - 1`. A fresh session, after the R149 round:
 2. **Diagnoses the three PROVE timeouts** from the job log: whether R149's R2 tickets fix them, or what else holds D6.
 3. Reruns the full GameTest once locally under the heavy-JVM lock, since this round touches shared flight geometry,
    and the bay batches three times and the native tranche. Root's hosted run on the pushed head then decides.
+
+## The D6 capture livelock under Root decision R154 (2026-10-29)
+
+R150 delivered `3e9eacc93`. The shared set is back to W90's `min - 1`, and the bay-only `BayCensusColumns` covers the
+low strip. The full local GameTest reproduced the three PROVE timeouts. Restart claims whose census slots share chunk
+columns supersede each other's slot proofs in rotation (`SUPERSEDING_SAVE`, retry 0), so none finishes. The same could
+happen in production between rockets on neighbouring pads. W185 captures every census slot, where W170 captured one.
+
+**Root decision R154:** bay claims take D6 to D7 one at a time.
+
+1. **One turn at a time.** At most one bay claim at a time runs D6's census captures and holds their proofs through
+   D7. Other claims that reach D6 wait in claim order, as a runtime hold with a reason the log shows. The turn passes
+   on when D7 ends, when the claim holds for repair or ends, or when a D7 parked on a busy store releases its proofs
+   (R5). A parked claim queues again behind the claims already waiting.
+2. **Unchanged:** W98-R11's barrier retry rule, every bound, budget, quota and timeout, and the saved formats. This is
+   a scheduling rule in the bay coordinator only.
+3. **Tests.** An A0 test with two and with three claims whose census slots overlap: both or all finish, in claim
+   order, and fail first on `3e9eacc93`. The three PROVE cases then pass in the complete local GameTest.
+4. **Record** the expected wait per queued claim, and that ordinary single captures (F1, W98 retirements) can still
+   supersede a bay proof, which then retries within its turn.
+
+Verification: the new tests alone, failing first; the whole unit suite; the bay batches three times; one complete
+local GameTest under the heavy-JVM lock; the native tranche. Root's hosted run on the pushed head then decides, and a
+fresh review of the R149, R150 and R154 changes follows.
