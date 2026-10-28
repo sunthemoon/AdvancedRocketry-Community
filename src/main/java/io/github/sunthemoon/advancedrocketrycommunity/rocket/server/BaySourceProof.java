@@ -73,6 +73,8 @@ final class BaySourceProof {
     private final java.util.function.BiFunction<BayClaim, BooleanSupplier, BooleanSupplier> guardCut;
     /** W98's port; the coordinator uses only its slot and barrier calls, so it is built without a transfer dispatch. */
     private final RocketRetirementWorld port;
+    /** W185-R9: the session's quiet-store read, which D7 makes before it serializes the source. */
+    private final BooleanSupplier storeWaits;
     private final Map<UUID, Proved> proofs = new HashMap<>();
     private final Map<UUID, Watch> watches = new HashMap<>();
     private final Map<UUID, Long> retryAt = new HashMap<>();
@@ -86,6 +88,7 @@ final class BaySourceProof {
         this.server = server; this.session = session; this.offer = offer; this.beforeRemoval = beforeRemoval; this.stall = stall;
         this.guardCut = guardCut;
         port = new RocketRetirementWorld(server, null);
+        storeWaits = () -> session.removalWaits();
     }
 
     /**
@@ -221,7 +224,10 @@ final class BaySourceProof {
         if (retiring.contains(logical)) { return BayStepQueue.Result.IDLE; }
         Proved proved = proofs.get(logical);
         if (claim.hold() == BayClaim.Hold.REPAIR) { forget(logical); return BayStepQueue.Result.IDLE; }
-        if (proved == null || !proved.valid() || !watches.containsKey(logical) || !current(claim, proved)) { return again(claim); }
+        if (proved == null || !proved.valid() || !watches.containsKey(logical)) { return again(claim); }
+        // W185-R9: a removal the store would refuse now waits before the source is serialized, so the wait saves nothing.
+        if (storeWaits.getAsBoolean()) { return BayStepQueue.Result.NEXT_TICK; }
+        if (!current(claim, proved)) { return again(claim); }
         BayGroup group = claim.group().orElseThrow();
         beforeRemoval.accept(claim, group.operations().get(0));
         var admission = session.removeGroup(group.operations(), guardCut.apply(claim, proved::valid), outcome -> retired(claim, group, outcome));

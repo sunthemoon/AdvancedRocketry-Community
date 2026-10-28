@@ -4,6 +4,8 @@ import static io.github.sunthemoon.advancedrocketrycommunity.rocket.server.BayCo
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.google.common.collect.ImmutableList;
+import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowBarrier;
+import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowChunkStore;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowSection;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.deployment.BayClaim;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.deployment.BayGroup;
@@ -16,11 +18,21 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.TestDataStorage;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.UnstartedServer;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
@@ -62,54 +74,110 @@ final class BaySourceProofWaitTest {
     @Test void unavailableCaptureDoesNotSaveTheSource() { check(true, true, false, false, "BAY_SOURCE_PROOF"); }
     @Test void aRecognizedDuplicateWaitDoesNotSaveTheSource() { check(true, true, true, true, "DUPLICATE_PENDING"); }
 
-    private void check(boolean ready, boolean supported, boolean available, boolean duplicate, String reason) {
-        var before = record(1);
-        var job = BayConsumedSnapshots.prepare(before.sourceSnapshot(), before.destinationSnapshot(), Map.of(bay(0), intent(before, 0)))
-                .orElseThrow();
-        var budget = new RocketCargoWorkBudget();
-        for (long tick = 1; !job.step(budget, tick); tick++) { }
-        var result = job.result().orElseThrow();
-        var record = before.withConsumedSnapshots(result.source(), result.destination());
-        var member = BayMember.restartRegistered(registered(intent(before, 0), result.source().contentHash(), result.destination().contentHash()));
-        var group = BayGroup.resumed(LOGICAL, TRANSFER, List.of(member)).orElseThrow();
-        var claim = BayClaim.restart(LOGICAL, TRANSFER, group.members());
-        claim.freeze(group); claim.establishSource(SOURCE); claim.advance(BayClaim.Stage.CONSUME); claim.advance(BayClaim.Stage.PROVE);
+    /** W185-R9: D7 checks for a quiet receipt store before it serializes the source, so a busy store's wait saves nothing. */
+    @Test void aBusyStoreAtD7DoesNotSaveTheSource() throws ReflectiveOperationException {
+        try (var f = new Fixture(true, true, true, false)) {
+            f.retiring(); f.busy = true;
+            for (int tick = 0; tick < 3; tick++) {
+                assertDoesNotThrow(() -> f.proof.retire(f.claim), "a busy store's tick must not call Entity.save");
+            }
+        }
+    }
 
-        var server = UnstartedServer.owned();
-        var access = UnstartedServer.allocate(LevelStorageSource.LevelStorageAccess.class);
-        UnstartedServer.set(LevelStorageSource.LevelStorageAccess.class, access, "resources", new HashMap<>());
-        UnstartedServer.set(LevelStorageSource.LevelStorageAccess.class, access, "levelDirectory", new LevelStorageSource.LevelDirectory(directory));
-        UnstartedServer.set(MinecraftServer.class, server, "storageSource", access);
-        var sourceLevel = level(server, Level.OVERWORLD, true);
-        var destination = level(server, ResourceKey.create(Registries.DIMENSION, record.destinationSnapshot().sourceDimension()), ready);
-        UnstartedServer.set(MinecraftServer.class, server, "levels", Map.of(sourceLevel.key, sourceLevel, destination.key, destination));
-        var journal = new RocketTransferSavedData(); journal.put(record);
-        journal.save(directory.resolve(RocketTransferSavedData.DATA_NAME + ".dat").toFile());
-        RocketJournalTestAccess.awaitWriter(journal);
-        assertTrue(journal.actionable(LOGICAL));
-        sourceLevel.storage.set(RocketTransferSavedData.DATA_NAME, journal);
-        var source = rocket(sourceLevel, record, SOURCE);
-        // Deliberately omit Entity.type: all projection checks pass, but Entity.save itself trips this trap.
-        // This avoids a Forge entity constructor in plain JUnit and detects any premature serialization.
-        var trap = assertThrows(NullPointerException.class, () -> BaySourceProof.projection(source, record));
+    private void check(boolean ready, boolean supported, boolean available, boolean duplicate, String reason) {
+        try (var f = new Fixture(ready, supported, available, duplicate)) {
+            for (int tick = 0; tick < 3; tick++) {
+                assertEquals(available ? BayStepQueue.Result.NEXT_TICK : BayStepQueue.Result.IDLE,
+                        assertDoesNotThrow(() -> f.proof.prove(f.claim), "a waiting tick must not call Entity.save"));
+                assertEquals(reason, f.claim.reason());
+            }
+        }
+    }
+
+    /** A restart claim in PROVE over T', its trapped source, the real D6/D7 class and a stand-in barrier port. */
+    private final class Fixture implements AutoCloseable {
+        final RocketTransferRecord record;
+        final BayClaim claim;
+        final RocketTransferSavedData journal;
+        final RocketEntity source;
+        final BaySourceProof proof;
+        final List<RocketRetirementProof.Slot> captures = new ArrayList<>();
+        final AtomicInteger released = new AtomicInteger();
+        boolean busy;
+
+        Fixture(boolean ready, boolean supported, boolean available, boolean duplicate) {
+            var before = record(1);
+            var job = BayConsumedSnapshots.prepare(before.sourceSnapshot(), before.destinationSnapshot(), Map.of(bay(0), intent(before, 0)))
+                    .orElseThrow();
+            var budget = new RocketCargoWorkBudget();
+            for (long tick = 1; !job.step(budget, tick); tick++) { }
+            var result = job.result().orElseThrow();
+            record = before.withConsumedSnapshots(result.source(), result.destination());
+            var member = BayMember.restartRegistered(registered(intent(before, 0), result.source().contentHash(), result.destination().contentHash()));
+            var group = BayGroup.resumed(LOGICAL, TRANSFER, List.of(member)).orElseThrow();
+            claim = BayClaim.restart(LOGICAL, TRANSFER, group.members());
+            claim.freeze(group); claim.establishSource(SOURCE); claim.advance(BayClaim.Stage.CONSUME); claim.advance(BayClaim.Stage.PROVE);
+
+            var server = UnstartedServer.owned();
+            var access = UnstartedServer.allocate(LevelStorageSource.LevelStorageAccess.class);
+            UnstartedServer.set(LevelStorageSource.LevelStorageAccess.class, access, "resources", new HashMap<>());
+            UnstartedServer.set(LevelStorageSource.LevelStorageAccess.class, access, "levelDirectory", new LevelStorageSource.LevelDirectory(directory));
+            UnstartedServer.set(MinecraftServer.class, server, "storageSource", access);
+            var sourceLevel = level(server, Level.OVERWORLD, true);
+            var destination = level(server, ResourceKey.create(Registries.DIMENSION, record.destinationSnapshot().sourceDimension()), ready);
+            UnstartedServer.set(MinecraftServer.class, server, "levels", Map.of(sourceLevel.key, sourceLevel, destination.key, destination));
+            journal = new RocketTransferSavedData(); journal.put(record);
+            journal.save(directory.resolve(RocketTransferSavedData.DATA_NAME + ".dat").toFile());
+            RocketJournalTestAccess.awaitWriter(journal);
+            assertTrue(journal.actionable(LOGICAL));
+            sourceLevel.storage.set(RocketTransferSavedData.DATA_NAME, journal);
+            source = rocket(sourceLevel, record, SOURCE);
+            // Deliberately omit Entity.type: all projection checks pass, but Entity.save itself trips this trap.
+            // This avoids a Forge entity constructor in plain JUnit and detects any premature serialization.
+            assertSaveTrap(assertThrows(NullPointerException.class, () -> BaySourceProof.projection(source, record)));
+            if (duplicate) { rocket(sourceLevel, record, new UUID(185, 62)); }
+
+            proof = new BaySourceProof(server, null, ignored -> { }, (held, op) -> { }, held -> false, (held, guard) -> guard);
+            UnstartedServer.set(BaySourceProof.class, proof, "port", new RocketRetirementWorld(server, null) {
+                @Override public boolean captureSupported(RocketRetirementProof.Slot slot) { return supported; }
+                @Override public boolean captureAvailable(RocketRetirementProof.Slot slot, long now) { return available; }
+                @Override public void retryNextTick(Runnable retry) { }
+                @Override public boolean capture(RocketRetirementProof.Slot slot, Predicate<CompoundTag> validator, long now,
+                                                 Consumer<String> sink, Consumer<EscrowBarrier.Result> callback) {
+                    captures.add(slot); return true;
+                }
+            });
+            UnstartedServer.set(BaySourceProof.class, proof, "storeWaits", (BooleanSupplier) () -> busy);
+        }
+
+        /** D6's outcome as {@code captured} leaves it: RETIRE with one valid held slot proof and the source watched. */
+        void retiring() throws ReflectiveOperationException {
+            claim.advance(BayClaim.Stage.RETIRE);
+            var generation = new AtomicLong(1);
+            var capture = new EscrowChunkStore.Capture(CompletableFuture.completedFuture(null), null, Path.of("."),
+                    new ChunkPos(EARTH.x() >> 4, EARTH.z() >> 4), generation, generation.get(), 1, () -> { }, released::incrementAndGet);
+            var slots = new BaySlotProofs.Proof(List.of(new EscrowBarrier.Proof(null, capture, new AtomicBoolean(true), new AtomicBoolean(true))));
+            var constructor = Class.forName(BaySourceProof.class.getName() + "$Proved").getDeclaredConstructors()[0];
+            constructor.setAccessible(true);
+            BooleanSupplier current = () -> true;
+            Map<UUID, Object> proofs = field("proofs");
+            proofs.put(LOGICAL, constructor.newInstance(slots, current, current, new CompoundTag()));
+            proof.watch(claim, source);
+        }
+
+        @SuppressWarnings("unchecked")
+        <T> T field(String name) throws ReflectiveOperationException {
+            var field = BaySourceProof.class.getDeclaredField(name); field.setAccessible(true);
+            return (T) field.get(proof);
+        }
+
+        @Override public void close() { journal.abort(); }
+    }
+
+    private static void assertSaveTrap(NullPointerException trap) {
         assertTrue(java.util.Arrays.stream(trap.getStackTrace()).anyMatch(frame ->
                 frame.getClassName().equals(Entity.class.getName()) && frame.getMethodName().equals("save")),
                 "control: the serialization trap must come from the real Entity.save, not a projection check");
-        if (duplicate) { rocket(sourceLevel, record, new UUID(185, 62)); }
-
-        var proof = new BaySourceProof(server, null, ignored -> { }, (held, op) -> { }, held -> false, (held, guard) -> guard);
-        UnstartedServer.set(BaySourceProof.class, proof, "port", new RocketRetirementWorld(server, null) {
-            @Override public boolean captureSupported(RocketRetirementProof.Slot slot) { return supported; }
-            @Override public boolean captureAvailable(RocketRetirementProof.Slot slot, long now) { return available; }
-            @Override public void retryNextTick(Runnable retry) { }
-        });
-        try {
-            for (int tick = 0; tick < 3; tick++) {
-                assertEquals(available ? BayStepQueue.Result.NEXT_TICK : BayStepQueue.Result.IDLE,
-                        assertDoesNotThrow(() -> proof.prove(claim), "a waiting tick must not call Entity.save"));
-                assertEquals(reason, claim.reason());
-            }
-        } finally { journal.abort(); }
     }
 
     private ProbeLevel level(MinecraftServer server, ResourceKey<Level> key, boolean ready) {

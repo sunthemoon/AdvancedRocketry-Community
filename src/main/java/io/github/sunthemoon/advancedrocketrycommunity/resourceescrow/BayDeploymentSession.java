@@ -72,6 +72,9 @@ public final class BayDeploymentSession {
                 .orElse(BayReceiptStore.Admission.of(BayReceiptStore.Status.INVALID));
     }
 
+    /** W185-R9: whether {@link #removeGroup} would now answer BUSY or STORE_UNAVAILABLE; a read, with no write. */
+    public boolean removalWaits() { return unavailable() || store().map(BayReceiptStore::holdsWork).orElse(false); }
+
     public Optional<BayReceipt> find(UUID satellite) { return store().flatMap(store -> store.find(satellite)); }
     /** The operation's receipt in RAM, including a queued or captured change. */
     public Optional<BayReceipt> current(UUID op) { return store().flatMap(store -> store.current(op)); }
