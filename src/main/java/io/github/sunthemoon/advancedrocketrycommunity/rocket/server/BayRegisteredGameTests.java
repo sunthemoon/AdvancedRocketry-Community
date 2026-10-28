@@ -44,6 +44,8 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 @PrefixGameTestTemplate(false)
 public final class BayRegisteredGameTests {
     static final String REGISTERED = "bay_registered";
+    /** W170-R41's far-destination restarts, paced; apart from the batches whose fixtures pin the store's pending count. */
+    static final String LOADING = "bay_registered_loading";
     private BayRegisteredGameTests() { }
 
     private enum Kind {
@@ -109,7 +111,7 @@ public final class BayRegisteredGameTests {
     }
 
     /** W170-R41: R2 waits (END_LOADING) while the destination end is still loading, then the group goes on to READY_SOURCE. */
-    @GameTest(template = TEMPLATE, batch = REGISTERED, timeoutTicks = 1_200)
+    @GameTest(template = TEMPLATE, batch = LOADING, timeoutTicks = 1_200)
     public static void aRestartWaitsForADestinationEndStillLoadingAndThenProceeds(GameTestHelper helper) {
         new Case(helper, Kind.DESTINATION_LOADING).start();
     }
@@ -118,7 +120,7 @@ public final class BayRegisteredGameTests {
      * W170-R41, from the re-review's HIDDEN-section probe: an image of L added to the destination column before it loads is
      * not yet in the entity index. R2 waits for the end, and once it loads the census holds the restart for repair.
      */
-    @GameTest(template = TEMPLATE, batch = BayDeploymentHoldGameTests.HOLD, timeoutTicks = 1_200)
+    @GameTest(template = TEMPLATE, batch = LOADING, timeoutTicks = 1_200)
     public static void anImageOfLAtADestinationEndStillLoadingHoldsTheRestartOnceTheEndLoads(GameTestHelper helper) {
         new Case(helper, Kind.UNEXPECTED_LOADING).start();
     }

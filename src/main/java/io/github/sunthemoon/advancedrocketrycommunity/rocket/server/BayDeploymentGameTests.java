@@ -157,7 +157,7 @@ public final class BayDeploymentGameTests {
      * before any D1. Each bay then holds at its step without a write: neither package ever gets an INTENT, nothing is
      * registered, and T and its packages are unchanged, for 40 ticks after both bays hold.
      */
-    @GameTest(template = TEMPLATE, batch = BayDeploymentHoldGameTests.HOLD, timeoutTicks = 400)
+    @GameTest(template = TEMPLATE, batch = "bay_deployment_repair", timeoutTicks = 400)
     public static void aClaimHeldForRepairBeforeD1WritesNoIntent(GameTestHelper helper) {
         new HeldBeforeIntent(helper).start();
     }

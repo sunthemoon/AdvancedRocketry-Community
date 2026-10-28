@@ -1838,7 +1838,7 @@
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.server.BayTransferRecovery/",
       "message": "ARCE_BAY_CLAIM transfer=[0-9a-f-]{36} logical=[0-9a-f-]{36} state=REPAIR reason=UNEXPECTED_COPY",
-      "counts": {"bay_deployment_hold": 1},
+      "counts": {"bay_registered_loading": 1},
       "test": "BayRegisteredGameTests.anImageOfLAtADestinationEndStillLoadingHoldsTheRestartOnceTheEndLoads",
       "reason": "W170-R41: a restarted REGISTERED group's destination column loads only after R2 has started waiting for it; once it loads, the census finds the image of L added there beforehand, whose hash is neither group hash, so the claim holds for offline repair with no record change; the one transition is a WARN by design."
     },
@@ -1865,7 +1865,7 @@
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.server.BayTransferRecovery/",
       "message": "ARCE_BAY_CLAIM transfer=[0-9a-f-]{36} logical=[0-9a-f-]{36} state=REPAIR reason=ESCROW_AUTHORITY_CONFLICT",
-      "counts": {"bay_deployment_hold": 1},
+      "counts": {"bay_deployment_repair": 1},
       "test": "BayDeploymentGameTests.aClaimHeldForRepairBeforeD1WritesNoIntent",
       "reason": "W170-R44: the escrow hook reports a conflict in the tick of the ascent-complete hook, before any D1, so the in-session claim holds for offline repair and each bay holds at its step without an INTENT; the one transition is a WARN by design."
     },
