@@ -35,7 +35,8 @@ import net.minecraftforge.registries.ForgeRegistries;
  * checks that the server refuses the menu for five conditions:
  * <ul>
  * <li>{@link Check#DISTANCE}: the owner moves out of reach and the open menu is no longer valid;</li>
- * <li>{@link Check#SPECTATOR}: the owner, as a spectator, cannot open the menu nor keep it open;</li>
+ * <li>{@link Check#SPECTATOR}: the owner, as a spectator, cannot keep the open menu, and the holder builds no menu
+ * for it at all (W182-R2), so no open packet and no slot sync reach a spectator's client;</li>
  * <li>{@link Check#FOREIGN_OWNER}: another player cannot open it, keep it valid, or have an action accepted;</li>
  * <li>{@link Check#RATE}: within one tick, a burst of the owner's identical actions meets a refusal;</li>
  * <li>{@link Check#UNLOADED}: once the holder is unloaded, the open menu is no longer valid.</li>
@@ -243,12 +244,12 @@ public final class MenuAuthorityMatrix {
                     }
                     owner.setGameMode(GameType.SPECTATOR);
                     boolean kept = menu.stillValid(owner);
-                    AbstractContainerMenu spectating = open(fixture, type, owner);
-                    boolean opened = spectating != null && spectating.stillValid(owner);
+                    // W182-R2: a menu the server builds is refused, even one that stillValid would close next tick.
+                    boolean built = open(fixture, type, owner) != null;
                     owner.closeContainer();
                     owner.setGameMode(GameType.SURVIVAL);
-                    refused.put(check, !kept && !opened);
-                    notes.add("SPECTATOR kept=" + kept + " opened=" + opened);
+                    refused.put(check, !kept && !built);
+                    notes.add("SPECTATOR kept=" + kept + " built=" + built);
                 }
                 case FOREIGN_OWNER -> {
                     if (control.apply("FOREIGN_OWNER") == null) {
