@@ -91,6 +91,43 @@ final class SatelliteKindDefinitionTest {
                 .error().orElseThrow().message().contains("mismatched id"));
     }
 
+    @Test
+    void aBareIdIsBoundedByItsCanonicalFormAtDatapackLoad() {
+        // W173 section 6.3: data/minecraft/satellite_definitions/<128 characters>.json declaring the bare ID defined a
+        // satellite whose 138-character canonical ID the registry decoder refuses after its first save.
+        List<ResourceLocation> targets = List.of(ModIdentity.id("moon"));
+        SatelliteComponentCatalog components = SatelliteComponentCatalog.create(List.of(
+                SatelliteComponentDefinition.decode(json("{\"schema_version\":1,\"item\":\"a:solar_module\","
+                        + "\"role\":\"primary\",\"kind\":\"solar\",\"primary_rating\":10}"))
+        ), id -> true).result().orElseThrow();
+        for (int length : List.of(118, 119, 128)) {
+            String declared = "s" + "x".repeat(length - 1);
+            ResourceLocation id = ResourceLocation.tryParse(declared);
+            Map<ResourceLocation, JsonElement> resources = new LinkedHashMap<>();
+            resources.put(SatelliteIds.DATA_SATELLITE, json("{\"schema_version\":1,"
+                    + "\"id\":\"advancedrocketrycommunity:data_satellite\",\"mission_duration_ticks\":200,"
+                    + "\"research_yield\":120,\"discovery_cost\":100,\"allowed_targets\":[\"advancedrocketrycommunity:moon\"]}"));
+            resources.put(id, json(SOLAR.replace("\"id\":\"a:solar\"", "\"id\":\"" + declared + "\"")));
+
+            var catalog = SatelliteCatalogDecoder.decode(resources, targets, List.of(), components);
+            assertEquals(length + 10, id.toString().length());
+            if (id.toString().length() <= 128) {
+                assertEquals(id, catalog.result().orElseThrow().kindDefinitionForPrimary(
+                        ResourceLocation.tryParse("a:solar_module")).orElseThrow().id());
+            } else {
+                assertEquals(java.util.Optional.of(id + ": Field id must be an identifier"),
+                        catalog.error().map(error -> error.message()));
+            }
+        }
+        for (String field : List.of("primary_component", "launch_targets")) {
+            String bare = "p" + "x".repeat(118);
+            String invalid = field.equals("primary_component") ? SOLAR.replace("a:solar_module", bare)
+                    : SOLAR.replace("advancedrocketrycommunity:moon", bare);
+            var refused = assertThrows(IllegalArgumentException.class, () -> SatelliteKindDefinition.decode(json(invalid)));
+            assertEquals("Field " + field + " must be an identifier", refused.getMessage());
+        }
+    }
+
     private static JsonElement json(String raw) {
         return JsonParser.parseString(raw);
     }

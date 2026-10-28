@@ -132,7 +132,7 @@ public final class SatelliteMissionRegistry {
         if (accounts.putIfAbsent(account.ownerId(), account) != null) {
             throw new IllegalArgumentException("Duplicate research account " + account.ownerId());
         }
-        budget.reserve(StorageBudget.Section.ACCOUNTS, account.ownerId(), RecordSizer.ACCOUNT_BYTES);
+        budget.reserveAccount(account.ownerId());
     }
 
     public synchronized void restoreInstance(AsteroidInstance instance) {
@@ -648,7 +648,7 @@ public final class SatelliteMissionRegistry {
     private void admitAccount(UUID ownerId) {
         if (!accounts.containsKey(ownerId)) {
             accounts.put(ownerId, ResearchAccount.empty(ownerId));
-            budget.reserve(StorageBudget.Section.ACCOUNTS, ownerId, RecordSizer.ACCOUNT_BYTES);
+            budget.reserveAccount(ownerId);
         }
     }
 

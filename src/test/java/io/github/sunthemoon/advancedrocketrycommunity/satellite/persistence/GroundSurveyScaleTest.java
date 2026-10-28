@@ -231,6 +231,18 @@ final class GroundSurveyScaleTest {
         public int missionBytes(MissionState mission) { return CodecRecordSizer.INSTANCE.missionBytes(mission); }
         public int instanceBytes(AsteroidInstance instance) { return CodecRecordSizer.INSTANCE.instanceBytes(instance); }
         public int groundSurveyBytes(GroundSurveyJob job) { return CodecRecordSizer.INSTANCE.groundSurveyBytes(job); }
+        // W168-R5: claim a proof only where the persisted sizer does; an inflated reservation stays proven as before.
+        public Reservation satelliteReservation(SatelliteState state) {
+            return satelliteReservation >= 0 ? new Reservation(satelliteReservation, true)
+                    : CodecRecordSizer.INSTANCE.satelliteReservation(state);
+        }
+        public Reservation missionReservation(MissionState mission) { return CodecRecordSizer.INSTANCE.missionReservation(mission); }
+        public Reservation instanceReservation(AsteroidInstance instance) {
+            return CodecRecordSizer.INSTANCE.instanceReservation(instance);
+        }
+        public Reservation groundSurveyReservation(GroundSurveyJob job) {
+            return CodecRecordSizer.INSTANCE.groundSurveyReservation(job);
+        }
         public boolean groundMutationFits(SatelliteMissionRegistry registry, GroundSurveyJob job,
                 AsteroidInstance instance, boolean removeInstance, ResearchAccount account, long now, long observedTime) {
             rootChecks++;

@@ -171,6 +171,13 @@ public final class GroundPreflightBenchmark {
         public int missionBytes(MissionState value) { return CodecRecordSizer.INSTANCE.missionBytes(value); }
         public int instanceBytes(AsteroidInstance value) { return CodecRecordSizer.INSTANCE.instanceBytes(value); }
         public int groundSurveyBytes(GroundSurveyJob value) { return CodecRecordSizer.INSTANCE.groundSurveyBytes(value); }
+        // W168-R5: claim a proof only where the persisted sizer does, not RecordSizer's proof by contract.
+        public Reservation satelliteReservation(SatelliteState value) { return CodecRecordSizer.INSTANCE.satelliteReservation(value); }
+        public Reservation missionReservation(MissionState value) { return CodecRecordSizer.INSTANCE.missionReservation(value); }
+        public Reservation instanceReservation(AsteroidInstance value) { return CodecRecordSizer.INSTANCE.instanceReservation(value); }
+        public Reservation groundSurveyReservation(GroundSurveyJob value) {
+            return CodecRecordSizer.INSTANCE.groundSurveyReservation(value);
+        }
         public boolean groundMutationFits(SatelliteMissionRegistry registry, GroundSurveyJob job,
                 AsteroidInstance instance, boolean removeInstance, ResearchAccount account, long now, long observedTime) {
             rootChecks++;

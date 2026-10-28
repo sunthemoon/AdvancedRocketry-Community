@@ -276,6 +276,8 @@ final class GroundPreflightTest {
         int reservation;
         boolean refuse;
         @Override public int missionBytes(MissionState value) { return reservation; }
+        // fillReservations checks each size against the codec sizer, so the proof by contract holds.
+        @Override public Reservation missionReservation(MissionState value) { return new Reservation(reservation, true); }
         @Override public boolean groundMutationFits(SatelliteMissionRegistry registry, GroundSurveyJob job,
                 AsteroidInstance instance, boolean remove, ResearchAccount account, long now, long observedTime) {
             if (refuse) { rootChecks++; return false; }

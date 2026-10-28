@@ -42,7 +42,7 @@ final class AccountRecovery {
         }
         for (UUID owner : missing) {
             accounts.put(owner, ResearchAccount.empty(owner));
-            budget.reserve(StorageBudget.Section.ACCOUNTS, owner, RecordSizer.ACCOUNT_BYTES);
+            budget.reserveAccount(owner);
         }
         return missing.size();
     }

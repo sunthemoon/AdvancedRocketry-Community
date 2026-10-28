@@ -140,6 +140,10 @@ public final class ResourceTableCodec {
         if (id == null) {
             throw new IllegalArgumentException(name + " is not a valid ID");
         }
+        // A bare name gains "minecraft:"; records store the canonical form, which the registry decoder bounds.
+        if (id.toString().length() > MAX_ID_CHARS) {
+            throw new IllegalArgumentException(name + " must be an ID of at most " + MAX_ID_CHARS + " characters");
+        }
         return id;
     }
 
