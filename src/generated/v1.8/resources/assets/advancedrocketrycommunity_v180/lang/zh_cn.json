@@ -171,7 +171,6 @@
   "command.advancedrocketrycommunity.rejoin.stage.s2": "S2：座位完成写入",
   "command.advancedrocketrycommunity.rejoin.unavailable": "恢复服务或检查写入暂不可用；未更改数据。",
   "enchantment.advancedrocketrycommunity.space_breathing": "太空呼吸",
-  "entity.advancedrocketrycommunity.rocket": "组装火箭",
   "flight.advancedrocketrycommunity.request.destination_loading": "正在准备目的地，就绪后请再次发射",
   "flight.advancedrocketrycommunity.request.destination_loading_limit": "正在准备的目的地过多，请稍后再试",
   "flight.advancedrocketrycommunity.request.journal_pending": "等待转移日志持久化确认；需要燃料 %s",
