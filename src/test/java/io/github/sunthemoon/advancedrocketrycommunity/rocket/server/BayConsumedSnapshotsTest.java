@@ -26,11 +26,21 @@ final class BayConsumedSnapshotsTest {
         return map;
     }
 
+    /** Steps the job three times in each tick, as a busy coordinator might, and checks the tick rule (W170-R1). */
     private static BayConsumedSnapshots.Result run(BayConsumedSnapshots.Job job) {
         var budget = new RocketCargoWorkBudget();
-        long tick = 1;
-        while (!job.step(budget, tick)) { tick++; assertTrue(tick < 100, "the job must finish within a few ticks"); }
-        return job.result().orElseThrow();
+        for (long tick = 1; tick < 100; tick++) {
+            int before = job.completedSnapshots();
+            boolean done = false;
+            for (int call = 0; call < 3 && !done; call++) { done = job.step(budget, tick); }
+            assertTrue(job.completedSnapshots() - before <= 1, "at most one whole snapshot is reconstructed in tick " + tick);
+            assertTrue(budget.reconstructions() <= 1, "one reconstruction slot is charged in tick " + tick);
+            if (done) {
+                assertTrue(tick >= 2, "S' and D' complete in different ticks");
+                return job.result().orElseThrow();
+            }
+        }
+        return fail("the job must finish within a few ticks");
     }
 
     @Test void oneConsumedBayChangesOnlyItsOwnRootAtBothEnds() {
@@ -102,7 +112,16 @@ final class BayConsumedSnapshotsTest {
         var job = BayConsumedSnapshots.prepare(record.sourceSnapshot(), record.destinationSnapshot(), consumed(record, 0, 1)).orElseThrow();
         assertFalse(job.step(budget, 5), "the job defers in a tick whose slot is taken");
         assertTrue(job.result().isEmpty());
-        assertTrue(job.step(budget, 6), "and runs in the next");
+        assertEquals(0, job.completedSnapshots());
+        assertFalse(job.step(budget, 6), "and runs in the next, completing S' only");
+        assertEquals(1, job.completedSnapshots());
         assertFalse(budget.claim(6, new Object()), "holding that tick's slot itself");
+        assertFalse(job.step(budget, 6), "a second step in the same tick does not start D' (W170-R1)");
+        assertEquals(1, job.completedSnapshots());
+        assertEquals(1, budget.reconstructions(), "tick 6 charged one reconstruction");
+        assertTrue(job.step(budget, 7), "D' completes in the next tick, in its own slot");
+        assertEquals(2, job.completedSnapshots());
+        assertEquals(1, budget.reconstructions(), "tick 7 charged one reconstruction");
+        assertTrue(job.result().isPresent());
     }
 }

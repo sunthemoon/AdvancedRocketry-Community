@@ -10,43 +10,49 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPositio
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketSnapshotPreparation;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nullable;
 
 /**
  * W170 D4 and R3: the consumed snapshots S' and D' of one group, computed from T's before snapshots through the runtime's
- * ADR-065 4.1.1 budget (one reconstruction per tick). Each consumed bay root becomes {@code {owner, consumed_op}}; every
+ * ADR-065 4.1.1 budget (one reconstruction per tick, so S' and D' complete in different ticks). Each consumed bay root becomes {@code {owner, consumed_op}}; every
  * other block, payload and REJECTED bay stays byte-equal. Only a bay that still holds the receipt's exact package (by
  * its NC1 signature) can be consumed. Server thread only.
  */
 final class BayConsumedSnapshots {
     record Result(RocketStructureSnapshot source, RocketStructureSnapshot destination) { }
 
-    /** One computation: both preparations share the budget's reconstruction slot for this tick. */
+    /**
+     * One computation, S' then D'. A tick works on one of the two preparations only, inside the budget's reconstruction
+     * slot for that tick: when S' completes, D' starts in a later tick (ADR-065 4.1.1, W170-R1).
+     */
     static final class Job {
         private final RocketSnapshotPreparation source, destination;
+        private long finishedTick = Long.MIN_VALUE;
         @Nullable private Result result;
 
         private Job(RocketSnapshotPreparation source, RocketSnapshotPreparation destination) {
             this.source = source; this.destination = destination;
         }
 
-        /** As much work as this tick's budget allows; true once both snapshots are complete. */
+        /** As much of one snapshot as this tick's budget allows; true once both snapshots are complete. */
         boolean step(RocketCargoWorkBudget budget, long tick) {
             if (result != null) { return true; }
-            if (!budget.claim(tick, this)) { return false; }
-            for (RocketSnapshotPreparation preparation : List.of(source, destination)) {
-                while (!preparation.done()) {
-                    if (!budget.perform(tick, preparation.nextByteBound(), preparation.nextVisits(), false, preparation::step)) {
-                        return false;
-                    }
+            if (tick == finishedTick || !budget.claim(tick, this)) { return false; }
+            RocketSnapshotPreparation preparation = source.done() ? destination : source;
+            while (!preparation.done()) {
+                if (!budget.perform(tick, preparation.nextByteBound(), preparation.nextVisits(), false, preparation::step)) {
+                    return false;
                 }
             }
+            if (preparation == source) { finishedTick = tick; return false; }
             result = new Result(source.result(), destination.result());
             return true;
         }
+
+        /** How many of the two snapshots are complete; A0 checks that it grows by at most one per tick. */
+        int completedSnapshots() { return (source.done() ? 1 : 0) + (destination.done() ? 1 : 0); }
 
         Optional<Result> result() { return Optional.ofNullable(result); }
     }
