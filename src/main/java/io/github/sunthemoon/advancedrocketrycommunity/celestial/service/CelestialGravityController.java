@@ -88,10 +88,13 @@ public final class CelestialGravityController {
             gravity.removeModifier(existing);
             existing = null;
         }
-        double scaled = gravity.getValue() / (existing == null ? 1.0D : 1.0D + existing.getAmount());
+        if (!active || gravity.getModifier(SLOW_FALLING_ID) == null) {
+            if (existing != null) { gravity.removeModifier(existing); }
+            return;
+        }
+        double scaled = existing == null ? gravity.getValue() : gravityWithoutFloor(gravity);
         double amount = MIN_SLOW_FALL_GRAVITY / scaled - 1.0D;
-        if (!active || gravity.getModifier(SLOW_FALLING_ID) == null || scaled <= 0.0D
-                || scaled >= MIN_SLOW_FALL_GRAVITY || !Double.isFinite(amount)) {
+        if (scaled <= 0.0D || scaled >= MIN_SLOW_FALL_GRAVITY || !Double.isFinite(amount)) {
             if (existing != null) { gravity.removeModifier(existing); }
             return;
         }
@@ -102,6 +105,18 @@ public final class CelestialGravityController {
         if (existing != null) { gravity.removeModifier(existing); }
         gravity.addTransientModifier(new AttributeModifier(SLOW_FALL_FLOOR_ID, "ARCE slow-fall gravity floor", amount,
                 AttributeModifier.Operation.MULTIPLY_TOTAL));
+    }
+
+    /** Attribute operations without our floor. Dividing getValue loses information when the attribute was clamped. */
+    private static double gravityWithoutFloor(AttributeInstance gravity) {
+        double base = gravity.getBaseValue();
+        for (var modifier : gravity.getModifiers(AttributeModifier.Operation.ADDITION)) { base += modifier.getAmount(); }
+        double value = base;
+        for (var modifier : gravity.getModifiers(AttributeModifier.Operation.MULTIPLY_BASE)) { value += base * modifier.getAmount(); }
+        for (var modifier : gravity.getModifiers(AttributeModifier.Operation.MULTIPLY_TOTAL)) {
+            if (!modifier.getId().equals(SLOW_FALL_FLOOR_ID)) { value *= 1.0D + modifier.getAmount(); }
+        }
+        return gravity.getAttribute().sanitizeValue(value);
     }
 
     /**
