@@ -127,8 +127,6 @@ final class BaySourceProof {
         if (!journal.actionable(logical)) { return BayStepQueue.Result.NEXT_TICK; } // T' is not acknowledged yet
         RocketEntity source = BayConsumptionSteps.exactSource(server, record, claim.source().orElseThrow(), group);
         if (source == null) { return BayStepQueue.Result.NEXT_TICK; }
-        CompoundTag frozen = projection(source, record);
-        if (frozen == null) { return repair(claim, "SOURCE_AUTHORITY_CONFLICT"); }
         if (!endsLoaded(server, claim.origin(), record)) { claim.waiting("END_LOADING"); return BayStepQueue.Result.NEXT_TICK; }
         String copies = BaySourceResume.copies(server, record, group, source.getUUID());
         if (copies != null) {
@@ -140,6 +138,9 @@ final class BaySourceProof {
         long now = server.getTickCount();
         if (!port.captureSupported(slot)) { claim.waiting("BARRIER_UNSUPPORTED"); return BayStepQueue.Result.NEXT_TICK; }
         if (!port.captureAvailable(slot, now)) { return retryNextTick(logical); }
+        // W185 / W170-R62: waiting needs no frozen image. Save only once a capture can actually start.
+        CompoundTag frozen = projection(source, record);
+        if (frozen == null) { return repair(claim, "SOURCE_AUTHORITY_CONFLICT"); }
         var lease = journal.logicalLease(logical, record.transferId(), 0);
         var token = group.token();
         capturing.add(logical);
