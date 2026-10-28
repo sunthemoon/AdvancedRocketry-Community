@@ -104,6 +104,8 @@ public final class RocketIssueFeedbackGameTests {
             helper.assertTrue(scans.pendingScans() == 0, "One-block failure scan did not finish");
             helper.assertTrue(assembler.report().detail().equals(Component.translatable(assembler.report().code().translationKey()).getString()),
                     "Failure service stored developer details instead of the reason");
+            helper.assertTrue(assembler.report().detail().equals("Selected block is not rocket-movable"),
+                    "Native scan report did not resolve its server translation");
             helper.assertTrue(assembler.operatorDetail().contains("coordinate_space=absolute"), "Failure service lost operator diagnostics");
         }
         helper.succeed();

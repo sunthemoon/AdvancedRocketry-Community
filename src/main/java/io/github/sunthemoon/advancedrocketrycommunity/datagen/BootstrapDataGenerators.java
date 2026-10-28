@@ -22,6 +22,7 @@ public final class BootstrapDataGenerators {
         PackOutput output = generator.getPackOutput();
         generator.addProvider(event.includeClient() || event.includeServer(), new V180ResearchData(output, event.includeClient(), event.includeServer()));
         generator.addProvider(event.includeClient(), new V180ResearchArt(output));
+        generator.addProvider(event.includeServer(), new V180RocketServerLanguageProvider(output));
         generator.addProvider(event.includeClient() || event.includeServer(),
                 new V180LandingPadData(output, event.includeClient(), event.includeServer()));
 

@@ -44,7 +44,7 @@ public final class RocketLanguageProvider extends LanguageProvider {
         }
     }
 
-    private static String english(RocketValidationCode code) {
+    static String english(RocketValidationCode code) {
         return switch (code) {
             case SUCCESS -> "Success";
             case SCAN_IN_PROGRESS -> "Scanning structure";
