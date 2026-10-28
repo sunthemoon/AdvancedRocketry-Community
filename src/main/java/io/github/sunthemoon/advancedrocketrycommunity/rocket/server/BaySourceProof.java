@@ -187,7 +187,11 @@ final class BaySourceProof {
         } else {
             watches.remove(logical);
             if (result.proof() != null) { result.proof().release(); }
-            retryAt.put(logical, (long) server.getTickCount() + (result.reason() == EscrowReason.SUPERSEDING_SAVE ? 0 : RETRY_TICKS));
+            int delay = result.reason() == EscrowReason.SUPERSEDING_SAVE ? 0 : RETRY_TICKS;
+            retryAt.put(logical, (long) server.getTickCount() + delay);
+            // W170-R43: one line per refused capture, at W98's pacing; the bay menu shows no runtime hold
+            String why = !result.confirmed() ? String.valueOf(result.reason()) : lease.getAsBoolean() ? "INVALIDATED" : "LEASE_LOST";
+            LOGGER.info("ARCE_BAY_PROOF_REFUSED transfer={} logical={} reason={} retry={}", claim.transfer(), logical, why, delay);
         }
         offer.accept(logical);
     }
