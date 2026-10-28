@@ -215,7 +215,7 @@ public final class SatelliteTerminalMenu extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return (terminal == null || !terminal.isRemoved() && terminal.getLevel() != null
+        return !player.isSpectator() && (terminal == null || !terminal.isRemoved() && terminal.getLevel() != null
                 && terminal.getLevel().hasChunkAt(terminal.getBlockPos())
                 && terminal.getLevel().getBlockEntity(terminal.getBlockPos()) == terminal
                 && terminal.canAccess(player) && catalog.generation() == SatelliteRuntime.catalogGeneration())

@@ -282,10 +282,12 @@ public final class SatelliteBuilderBlockEntity extends BlockEntity implements Me
         return Component.translatable("menu.advancedrocketrycommunity.satellite_builder");
     }
 
+    /** W182: vanilla opens a spectator's menu here directly, without the block's use; a spectator gets none. */
     @Nullable
     @Override
     public AbstractContainerMenu createMenu(int id, Inventory playerInventory, Player player) {
-        return new SatelliteBuilderMenu(id, playerInventory, this, SatelliteRuntime.catalogGeneration());
+        return player.isSpectator() ? null
+                : new SatelliteBuilderMenu(id, playerInventory, this, SatelliteRuntime.catalogGeneration());
     }
 
     @Override

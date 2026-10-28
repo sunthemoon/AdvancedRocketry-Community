@@ -176,9 +176,12 @@ public abstract class EndgameDeviceMenu extends AbstractContainerMenu {
     /**
      * Whether a player may open (and keep open) this device's menu: with {@code VIEW}, or with {@code WITHDRAW} alone
      * where {@code VIEW} is refused, as for the owner of a device in an unavailable station (ADR-054 section 3, review
-     * C11R-M4). Returns the {@code VIEW} refusal otherwise.
+     * C11R-M4). Returns the {@code VIEW} refusal otherwise, and {@code UNAUTHORIZED} for a spectator (W182).
      */
     public static EndgameCode openRefusal(ServerLevel level, Player viewer, EndgameDeviceBlockEntity device) {
+        if (viewer.isSpectator()) {
+            return EndgameCode.UNAUTHORIZED;
+        }
         EndgameAuthority.Decision view = viewAuthority(level, viewer, device);
         if (view.allowed() || authority(level, viewer, device, EndgameAction.WITHDRAW).allowed()) {
             return EndgameCode.OK;

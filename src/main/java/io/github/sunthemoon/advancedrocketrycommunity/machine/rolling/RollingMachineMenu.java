@@ -126,9 +126,10 @@ public final class RollingMachineMenu extends AbstractContainerMenu {
         return original;
     }
 
+    /** W182: not for a spectator. */
     @Override
     public boolean stillValid(Player player) {
-        return stillValid(access, player, ModBlocks.ROLLING_MACHINE.get());
+        return !player.isSpectator() && stillValid(access, player, ModBlocks.ROLLING_MACHINE.get());
     }
 
     public MultiblockFormationState formationState() {

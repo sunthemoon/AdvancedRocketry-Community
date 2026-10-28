@@ -275,6 +275,7 @@ public final class RollingMachineBlockEntity extends BlockEntity implements Menu
         return Component.translatable("menu.advancedrocketrycommunity.rolling_machine");
     }
 
+    /** W182: vanilla opens a spectator's menu here directly, without the block's use; a spectator gets none. */
     @Nullable
     @Override
     public AbstractContainerMenu createMenu(
@@ -282,7 +283,7 @@ public final class RollingMachineBlockEntity extends BlockEntity implements Menu
             Inventory playerInventory,
             Player player
     ) {
-        return new RollingMachineMenu(containerId, playerInventory, this, menuData);
+        return player.isSpectator() ? null : new RollingMachineMenu(containerId, playerInventory, this, menuData);
     }
 
     @Override

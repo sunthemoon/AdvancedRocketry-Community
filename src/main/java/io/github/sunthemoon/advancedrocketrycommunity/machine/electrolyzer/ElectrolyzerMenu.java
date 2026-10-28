@@ -150,9 +150,10 @@ public final class ElectrolyzerMenu extends AbstractContainerMenu {
         return true;
     }
 
+    /** W182: not for a spectator. */
     @Override
     public boolean stillValid(Player player) {
-        return stillValid(access, player, ModBlocks.ELECTROLYZER.get());
+        return !player.isSpectator() && stillValid(access, player, ModBlocks.ELECTROLYZER.get());
     }
 
     public int progress() {

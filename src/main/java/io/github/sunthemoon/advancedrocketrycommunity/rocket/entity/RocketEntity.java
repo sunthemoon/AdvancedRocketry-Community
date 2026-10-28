@@ -606,9 +606,10 @@ public final class RocketEntity extends Entity implements MenuProvider {
         return Component.translatable("menu.advancedrocketrycommunity.rocket_flight");
     }
 
+    /** W182: vanilla opens a spectator's menu here directly, from {@code Player.interactOn}; a spectator gets none. */
     @Override
     public AbstractContainerMenu createMenu(int containerId, Inventory inventory, Player player) {
-        return new RocketFlightMenu(containerId, inventory, this);
+        return player.isSpectator() ? null : new RocketFlightMenu(containerId, inventory, this);
     }
 
     private void validateBindings() {

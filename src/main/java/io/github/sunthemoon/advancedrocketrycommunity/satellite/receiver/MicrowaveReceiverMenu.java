@@ -121,7 +121,7 @@ public final class MicrowaveReceiverMenu extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return (receiver == null || !receiver.isRemoved() && receiver.getLevel() != null
+        return !player.isSpectator() && (receiver == null || !receiver.isRemoved() && receiver.getLevel() != null
                 && receiver.getLevel().hasChunkAt(receiver.getBlockPos())
                 && receiver.getLevel().getBlockEntity(receiver.getBlockPos()) == receiver)
                 && stillValid(access, player, ModBlocks.MICROWAVE_RECEIVER.get());
