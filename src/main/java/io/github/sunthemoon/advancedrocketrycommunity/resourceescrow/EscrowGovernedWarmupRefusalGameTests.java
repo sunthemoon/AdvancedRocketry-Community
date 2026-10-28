@@ -4,6 +4,7 @@ import static io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.Escr
 
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestAutosave;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModEntities;
@@ -68,6 +69,11 @@ public final class EscrowGovernedWarmupRefusalGameTests {
 
     /** A cold launch whose warm-up reaches READY, then the relaunch; shared by the three scenarios. */
     private abstract static class Launch {
+        /**
+         * W187: F1's source capture completes with its Level's next 20-tick force, and the ARMED ledger write must capture
+         * while that proof is still valid. Three force periods bound both at paced ticks, as in W184's Moon landing rule.
+         */
+        private static final int F1_WINDOW_TICKS = 60;
         final GameTestHelper helper;
         final ServerLevel earth, moon;
         final GameTestTickPacer pacer;
@@ -118,6 +124,11 @@ public final class EscrowGovernedWarmupRefusalGameTests {
                 helper.assertTrue(current != null && current.started() == warming.started(), "The warm-up ended while warming");
                 unlaunched(journal);
                 if (!current.state().equals("READY") || !readyToRelaunch(server) || !journal.retryChecked(server)) { return; }
+                // W187: a periodic autosave stores the source's entity section and supersedes F1's pending capture. F1 then
+                // discards the launch: Discard fails its 400-tick F2 bound and NamedPad waits for its record until the
+                // timeout. Relaunch only when the next autosave falls after F1's window; the 600-tick warm-up outlasts the
+                // wait. StaleCopy's relaunch is refused before F1 captures, so its wait changes nothing.
+                if (GameTestAutosave.within(server, F1_WINDOW_TICKS)) { return; }
                 relaunch(server, journal); return;
             }
             later(server, journal);
