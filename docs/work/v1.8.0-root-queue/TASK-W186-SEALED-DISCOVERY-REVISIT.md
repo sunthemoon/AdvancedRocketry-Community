@@ -44,3 +44,22 @@ An independent read-only review follows before merge.
 
 Releasing the GameTest harness's forced chunks (W184's option A), changes to the test fixture (option B), other sealed
 work, ADRs, status files and the ledger.
+
+## Review findings under Root decision R155 (2026-10-29)
+
+The review, `D:/GitHub/ARCE-Task-Evidence/root-queue/W186-review/REVIEW.md` (SHA-256 `813aebad…dcd15`), returned
+APPROVE-WITH-CHANGES; its probe test is in the same folder. A fresh session continues on `codex/v1.8.0-w186` from
+`e002c4b23` and appends a "Review fixes (R155)" section to the record:
+
+1. **W186-R1.** The restart allowance counts any change to the chunk's block-entity map, so a chunk with no carrier
+   and a busy map can hold the cursor: 1,000 block entities changed every tick held it 1,002 ticks, and 5,000 changed
+   every 19 ticks held it 95,020 ticks. Grant a restart only after the lazy attempt publishes a carrier in the
+   current chunk, capped at that chunk's block-entity count. The write scope widens to the one call this needs from
+   `SealedDisassemblyCoordinator.attemptLazy`. Add the review's probe as a test that fails first: a busy chunk with no
+   carrier keeps no more than its pre-fix cost.
+2. **W186-R2.** State the time cost of the revisit in the record, including the busy-chunk case.
+3. **W186-R3.** Make the unload test check that a revisit was under way, so it fails on the unfixed code.
+4. **W186-R4.** Update the method comment to say that a step can be a restart.
+
+Verification: the new tests alone, failing first; the whole unit suite; every sealed batch three times under the
+heavy-JVM lock. Root's hosted run on the pushed head stands in for a complete GameTest.
