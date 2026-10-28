@@ -38,6 +38,8 @@ CATEGORIES = tuple("advancedrocketrycommunity:" + name for name in (
     "electrolyzing", "rolling", "precision_assembling", "small_plate_press", "lathe", "arc_furnace",
     "cutting", "crystallizing", "chemical_reacting", "laser_etching", "centrifuging"))
 REGISTRATION_PREFIX = "ARCE-BETA-1100 optional_compat=jei status=registered "
+REGISTRATION_RECEIPT = re.compile(r"^(?:\[[^\]\r\n]+\]\s*)+[^\r\n]*?:\s+" + re.escape(REGISTRATION_PREFIX)
+                                  + r"category=(\S+) recipes=(0|[1-9][0-9]*)\s*$")
 
 
 def artifact_recipe_counts(artifact: Path) -> dict[str, int]:
@@ -106,6 +108,23 @@ def forge_message(forge: str) -> str:
     return f"Forge mod loading, version {forge}, for MC 1.20.1 with MCP 20230612.114412"
 
 
+def category_receipts(lines: list[str], connected: int) -> dict[str, list[int]]:
+    """Every JEI category count logged after the connection, in log order.
+
+    JEI 15.56 starts twice when the server has no JEI, first with the client's default recipes, and recipes that
+    name a tag are added once the server's tags arrive (W188). Only the last count per category is final (R148).
+    """
+    receipts = {category: [] for category in CATEGORIES}
+    for line in lines[connected + 1:]:
+        if REGISTRATION_PREFIX not in line:
+            continue
+        match = REGISTRATION_RECEIPT.search(line)
+        if match is None or match.group(1) not in receipts:
+            raise server.SmokeError(f"Unexpected JEI category/count receipt: {line.strip()}")
+        receipts[match.group(1)].append(int(match.group(2)))
+    return receipts
+
+
 def audit_client(lines: list[str], forge: str, jei: bool, username: str, port: int, version: str,
                  counts: dict[str, int]) -> dict:
     positions = {}
@@ -118,17 +137,16 @@ def audit_client(lines: list[str], forge: str, jei: bool, username: str, port: i
     if connected < positions[f"Connecting to 127.0.0.1, {port}"][-1]:
         raise server.SmokeError("Client connection receipts are out of order")
     observed = {}
+    receipts = None
     if jei:
-        expected = {registration_marker(category, counts[category]) for category in CATEGORIES}
+        receipts = category_receipts(lines, connected)
         for category in CATEGORIES:
-            value = registration_marker(category, counts[category])
-            synchronized = [index for index in positions[value] if index > connected]
-            if len(synchronized) != 1:
-                raise server.SmokeError(f"Expected one JEI category receipt after server connection: {category}")
-            observed[category] = counts[category]
-        for line in lines[connected + 1:]:
-            if REGISTRATION_PREFIX in line and not any(marker(value).search(line) for value in expected):
-                raise server.SmokeError(f"Unexpected JEI category/count receipt: {line.strip()}")
+            if not receipts[category]:
+                raise server.SmokeError(f"Expected a JEI category receipt after server connection: {category}")
+            if receipts[category][-1] != counts[category]:
+                raise server.SmokeError(f"Last JEI category receipt after server connection has "
+                                        f"recipes={receipts[category][-1]}, expected {counts[category]}: {category}")
+            observed[category] = receipts[category][-1]
     elif any(REGISTRATION_PREFIX in line for line in lines):
         raise server.SmokeError("JEI-absent client reports registered recipes")
     for line in lines:
@@ -146,7 +164,8 @@ def audit_client(lines: list[str], forge: str, jei: bool, username: str, port: i
             "log_audit": server.log_audit_counts(lines),
             "external_error_or_fatal_lines": [line.strip() for line in lines if re.search(r"/(?:ERROR|FATAL)\]", line)],
             "renderer_lines": [line.strip() for line in lines if "Renderer:" in line or "GL info:" in line],
-            "jei_synchronized_recipe_counts": observed if jei else None}
+            "jei_synchronized_recipe_counts": observed if jei else None,
+            "jei_category_receipts_after_connection": receipts}
 
 
 def check_mods(game: Path, artifact: Path, jei: Path | None) -> list[dict]:

@@ -80,12 +80,40 @@ class CompatibilityLogTests(unittest.TestCase):
                 with self.subTest(index=index, count=count), self.assertRaises(SmokeError):
                     audit(values)
 
-    def test_extra_unknown_malformed_and_duplicate_receipts_fail(self):
-        for extra in (log()[-1], log()[-1].replace("centrifuging", "unknown"),
+    def test_extra_unknown_malformed_and_wrong_final_receipts_fail(self):
+        for extra in (log()[-1].replace("centrifuging", "unknown"),
                       log()[-1].replace("recipes=11", "recipes=0"),
+                      log()[-1].replace("recipes=11", "recipes=011"),
                       log()[-1].replace("category=advancedrocketrycommunity:centrifuging ", "")):
             with self.subTest(extra=extra), self.assertRaises(SmokeError):
                 audit(log() + [extra])
+
+    def test_a_repeated_final_receipt_with_the_expected_count_passes(self):
+        # R148 (W181-F2): earlier receipts may differ or repeat; only the last one per category is final.
+        result = audit(log() + [log()[-1]])
+        self.assertEqual(COUNTS, result["jei_synchronized_recipe_counts"])
+        self.assertEqual([11, 11], result["jei_category_receipts_after_connection"]["advancedrocketrycommunity:centrifuging"])
+
+    def test_double_jei_start_passes_when_each_last_receipt_carries_the_expected_count(self):
+        # JEI 15.56 without JEI on the server: a first start with the client's default recipes logs zero for every
+        # category, then the restart on the server's recipes holds back tag recipes until the tags arrive (W188).
+        values = log()
+        zeros = [line.split(" recipes=")[0] + " recipes=0\n" for line in values[6:]]
+        held = values[10].split(" recipes=")[0] + " recipes=2\n"
+        result = audit(values[:6] + zeros + [held] + values[6:])
+        self.assertEqual(COUNTS, result["jei_synchronized_recipe_counts"])
+        receipts = result["jei_category_receipts_after_connection"]
+        self.assertEqual([0, 2, 5], receipts["advancedrocketrycommunity:lathe"])
+        self.assertEqual([0, 1], receipts["advancedrocketrycommunity:electrolyzing"])
+
+    def test_wrong_final_count_fails_after_a_double_start(self):
+        values = log()
+        zeros = [line.split(" recipes=")[0] + " recipes=0\n" for line in values[6:]]
+        for name, lines in (("expected count first, zero last", values + zeros[4:5]),
+                            ("zero, expected, then a wrong count", values[:6] + zeros + values[6:]
+                             + [values[10].replace("recipes=5", "recipes=4")])):
+            with self.subTest(name=name), self.assertRaisesRegex(SmokeError, "Last JEI category receipt.*lathe"):
+                audit(lines)
 
     def test_absent_jei_cannot_report_registration(self):
         with self.assertRaisesRegex(SmokeError, "absent client"):
