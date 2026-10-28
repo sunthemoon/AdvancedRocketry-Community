@@ -8,6 +8,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.deployment.BayG
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.deployment.BayMember;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.RocketCargoWorkBudget;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
@@ -95,6 +96,27 @@ final class BayCopyCensusTest {
         assertEquals("SOURCE_AUTHORITY_CONFLICT", f.scan().refusal());
     }
 
+    /**
+     * W185-R1: a pad within 48 blocks of the build limit puts the bound altitude above it, in the Overworld (-64 to 320)
+     * and in the mod's 256-high Levels. The exact source and copies there are still recognized at their own ends.
+     */
+    @Test void theBoundAltitudeAboveTheBuildLimitIsStillInsideBothRecordedEnds() {
+        for (int[] height : new int[][] {{-64, 384}, {0, 256}}) {
+            int y = height[0] + height[1] - RocketFlightLimits.FLIGHT_ALTITUDE_BLOCKS;
+            var f = new Fixture(BayAbsenceCensusTest.relocate(EARTH.x(), y, EARTH.z(), MOON.x(), y, MOON.z()), height[0], height[1]);
+            var source = f.add(f.before.sourceSnapshot(), SOURCE);
+            var copy = f.add(f.before.sourceSnapshot(), new UUID(185, 17));
+            var destination = f.add(f.before.destinationSnapshot(), new UUID(185, 18));
+            String level = "Level " + height[0] + ".." + (height[0] + height[1]);
+            assertTrue(source.getY() >= height[0] + height[1], "control: the bound altitude is at or above the build limit");
+            assertTrue(BayCopyCensus.within(f.server, f.before, source), "the exact source's own join is inside its end, " + level);
+            assertTrue(BayCopyCensus.within(f.server, f.before, destination), "a destination copy's join is inside its end, " + level);
+            var scan = f.scan();
+            assertNull(scan.refusal(), "the exact source at the bound altitude is no conflict, " + level);
+            assertEquals(List.of(new BayCopyCensus.Copy(copy, false), new BayCopyCensus.Copy(destination, true)), scan.copies(), level);
+        }
+    }
+
     @Test void joinNotificationRefusesAnEndWhoseCheckedMarginOverflows() {
         var f = new Fixture(BayAbsenceCensusTest.relocate(Integer.MAX_VALUE - 2, 8, 72, 8));
         var source = f.add(f.before.sourceSnapshot(), SOURCE);
@@ -170,9 +192,11 @@ final class BayCopyCensusTest {
         final BayConsumedSnapshots.Result after;
         final BayGroup group;
         final ProbeLevel source, destination;
+        final int minY, height;
         Fixture() { this(record(1)); }
-        Fixture(RocketTransferRecord before) {
-            this.before = before;
+        Fixture(RocketTransferRecord before) { this(before, -64, 384); }
+        Fixture(RocketTransferRecord before, int minY, int height) {
+            this.before = before; this.minY = minY; this.height = height;
             var job = BayConsumedSnapshots.prepare(before.sourceSnapshot(), before.destinationSnapshot(), Map.of(bay(0), intent(before, 0))).orElseThrow();
             var budget = new RocketCargoWorkBudget(); for (long tick = 1; !job.step(budget, tick); tick++) { }
             after = job.result().orElseThrow();
@@ -186,6 +210,7 @@ final class BayCopyCensusTest {
         private ProbeLevel level(RocketStructureSnapshot snapshot) {
             var level = UnstartedServer.allocate(ProbeLevel.class);
             level.key = ResourceKey.create(Registries.DIMENSION, snapshot.sourceDimension());
+            level.minY = minY; level.height = height;
             level.lookup = new EntityLookup<>(); level.sections = new EntitySectionStorage<>(Entity.class, chunk -> Visibility.TICKING);
             level.getter = new LevelEntityGetterAdapter<>(level.lookup, level.sections);
             return level;
@@ -213,10 +238,11 @@ final class BayCopyCensusTest {
         EntityLookup<Entity> lookup;
         EntitySectionStorage<Entity> sections;
         LevelEntityGetter<Entity> getter;
+        int minY, height;
         ProbeLevel() { super(null, null, null, null, null, null, null, false, 0, List.of(), false, null); }
         @Override public ResourceKey<Level> dimension() { return key; }
-        @Override public int getMinBuildHeight() { return -64; }
-        @Override public int getHeight() { return 384; }
+        @Override public int getMinBuildHeight() { return minY; }
+        @Override public int getHeight() { return height; }
         @Override public LevelEntityGetter<Entity> getEntities() { return getter; }
         @Override public Entity getEntity(UUID id) { return lookup.getEntity(id); }
     }

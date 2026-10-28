@@ -21,6 +21,8 @@ import net.minecraft.world.phys.AABB;
 
 /** W27d3's bounded recognition. Reading the loaded index is not an absence proof. */
 final class BayCopyCensus {
+    /** The rocket entity's existing height ({@code ModEntities}, 1.5 by 4 blocks), as NamedLandingPadOccupancy sizes it. */
+    private static final double ENTITY_HEIGHT = 4D;
     record Copy(RocketEntity rocket, boolean destination) { }
     record Scan(List<Copy> copies, @Nullable String refusal) {
         Scan { copies = List.copyOf(copies); }
@@ -52,7 +54,7 @@ final class BayCopyCensus {
         for (var entry : named.entrySet()) {
             var rocket = entry.getKey();
             if (rocket.getUUID().equals(record.sourceEntityId()) && source != null && rocket.level() == source.level()) {
-                if (!source.recognizes(rocket, record, group)) { return Scan.refused("SOURCE_AUTHORITY_CONFLICT"); }
+                if (!source.recognizesSource(rocket, record, group)) { return Scan.refused("SOURCE_AUTHORITY_CONFLICT"); }
                 continue;
             }
             if (rocket.getUUID().equals(record.sourceEntityId())) { return Scan.refused("UNEXPECTED_COPY"); }
@@ -92,10 +94,13 @@ final class BayCopyCensus {
             if (level == null) { return null; }
             var region = RocketRegion.fromSnapshot(snapshot);
             var origin = columns.origin();
+            // W185-R1: the bound altitude and the four-block entity can stand above the build limit, never clamp it away.
+            double top = Math.max(level.getMaxBuildHeight(),
+                    (double) snapshot.sourceOrigin().y() + RocketFlightLimits.FLIGHT_ALTITUDE_BLOCKS + ENTITY_HEIGHT);
             AABB originBox = columns.containsOrigin() ? null : new AABB(origin.x * 16D, level.getMinBuildHeight(), origin.z * 16D,
-                    origin.x * 16D + 16, level.getMaxBuildHeight(), origin.z * 16D + 16);
+                    origin.x * 16D + 16, top, origin.z * 16D + 16);
             return new End(level, snapshot, new AABB(region.minimum().x() - 1D, level.getMinBuildHeight(), region.minimum().z() - 1D,
-                    region.maximum().x() + 2D, level.getMaxBuildHeight(), region.maximum().z() + 2D), originBox, destination);
+                    region.maximum().x() + 2D, top, region.maximum().z() + 2D), originBox, destination);
         }
         boolean contains(RocketEntity rocket) { return rocket.level() == level && (box.intersects(rocket.getBoundingBox()) || originContains(rocket)); }
         /** The extra origin slot proves home-column membership, not adjacent columns whose entity boxes overlap it. */
@@ -118,8 +123,15 @@ final class BayCopyCensus {
             return named.size() >= RocketFlightLimits.MAX_TRANSFER_ENTITY_MATCHES;
         }
         boolean recognizes(RocketEntity rocket, RocketTransferRecord record, BayGroup group) {
+            return contains(rocket) && authority(rocket, record, group);
+        }
+        /** W185-R1: T's exact source by its UUID, this Level, its exact column and altitude range; no box, no vertical clamp. */
+        boolean recognizesSource(RocketEntity rocket, RocketTransferRecord record, BayGroup group) {
+            return rocket.level() == level && rocket.getUUID().equals(record.sourceEntityId()) && authority(rocket, record, group);
+        }
+        private boolean authority(RocketEntity rocket, RocketTransferRecord record, BayGroup group) {
             var origin = snapshot.sourceOrigin();
-            return contains(rocket) && rocket.operational() && !rocket.isPassenger()
+            return rocket.operational() && !rocket.isPassenger()
                     && rocket.assemblyTransactionId().filter(record.logicalRocketId()::equals).isPresent()
                     && rocket.ownerId().filter(record.ownerId()::equals).isPresent()
                     && rocket.flightData().filter(flight -> flight.logicalRocketId().equals(record.logicalRocketId())).isPresent()

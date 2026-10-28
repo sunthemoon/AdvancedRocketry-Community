@@ -59,12 +59,14 @@ final class BayAbsenceCensusTest {
         assertEquals(1, slots.size()); assertEquals(RocketRetirementProof.Slot.origin(source), slots.get(0));
     }
 
-    static RocketTransferRecord relocate(int sx, int sz, int dx, int dz) {
+    static RocketTransferRecord relocate(int sx, int sz, int dx, int dz) { return relocate(sx, 80, sz, dx, 80, dz); }
+
+    static RocketTransferRecord relocate(int sx, int sy, int sz, int dx, int dy, int dz) {
         var old = record(1);
         var source = old.sourceSnapshot().relocated(old.sourceSnapshot().snapshotId(), old.sourceSnapshot().sourceDimension(),
-                new RocketPosition(sx, 80, sz), 0);
+                new RocketPosition(sx, sy, sz), 0);
         var destination = old.destinationSnapshot().relocated(old.destinationSnapshot().snapshotId(), old.destinationSnapshot().sourceDimension(),
-                new RocketPosition(dx, 80, dz), 0);
+                new RocketPosition(dx, dy, dz), 0);
         return RocketTransferRecord.create(TRANSFER, LOGICAL, OWNER, SOURCE, source, destination,
                 at(old.sourceFlightData(), source), at(old.destinationFlightData(), destination), old.requiredFuel(), 0);
     }
