@@ -69,12 +69,17 @@ class CycleProcess:
         pass
 
 
-def station_document():
-    return {"schema_version": 2, "reservations": [],
-            "stations": [{"station_id": [1, 2, 3, 4], "orbit_body": runner.HOST + ":moon", "landing_pad": PAD}]}
+def station_document(version=None, tick=100):
+    """The decoded station root: v1.8 adds root schema 5, warp energy and the orbital clock."""
+    document = {"schema_version": 2, "reservations": [],
+                "stations": [{"station_id": [1, 2, 3, 4], "orbit_body": runner.HOST + ":moon", "landing_pad": PAD}]}
+    if version == V180:
+        document.update(schema_version=5, warp_energy=[],
+                        orbital_clock={"schema_version": 1, "logical_tick": tick})
+    return document
 
 
-def run_restart_cycle(root, version, startup):
+def run_restart_cycle(root, version, startup, saved=None):
     """Run the real restart phase against CycleProcess; only process, status and NBT decoding are faked."""
     artifact_path = root / "host-input.jar"
     with zipfile.ZipFile(artifact_path, "w") as archive:
@@ -92,7 +97,8 @@ def run_restart_cycle(root, version, startup):
     output = root / "evidence"
     output.mkdir()
     process = CycleProcess(startup)
-    baseline = station_document()
+    baseline = station_document(version)
+    saved = station_document(version, 160) if saved is None else saved
     with patch.object(runner.support.rocket_smoke, "_server_command",
                       return_value=["java", "-Dadvancedrocketrycommunity.releaseTestHooks=true"]), \
             patch.object(runner.server, "CapturedProcess", return_value=process), \
@@ -100,7 +106,7 @@ def run_restart_cycle(root, version, startup):
             patch.object(runner.server, "validate_status_identity") as identity, \
             patch.object(runner.server, "forge_mod_versions",
                          return_value={runner.HOST: version, "minecraft": "1.20.1", "forge": "47.4.10"}), \
-            patch.object(runner, "read_nbt", return_value={"data": station_document()}):
+            patch.object(runner, "read_nbt", return_value={"data": saved}):
         result = runner.run_cycle(server_root, output, artifact, "java", 12345, "restart",
                                   "00000000-0000-0001-0000-000200000003", baseline)
     identity.assert_called_once_with({"players": {"online": 0}}, version)
@@ -295,6 +301,73 @@ class StartupAllowanceTest(unittest.TestCase):
                 observations = json.loads((Path(directory) / "evidence/restart/observations.json")
                                           .read_text(encoding="utf-8"))
                 self.assertEqual("FAIL", observations["result"])
+
+
+class StationRegistryShapeTest(unittest.TestCase):
+    STATION = "00000001-0000-0002-0000-000300000004"
+
+    def test_root_schema_follows_only_the_exact_v180_build(self):
+        self.assertEqual(5, runner.station_root_schema(V180))
+        for version in (None, V140, "1.20.1-1.7.0-dev", "1.20.1-1.8.1-dev"):
+            with self.subTest(version=version):
+                self.assertEqual(2, runner.station_root_schema(version))
+
+    def test_new_station_requires_its_build_root_schema_and_creation_receipt(self):
+        runner.validate_new_station(station_document(V180), self.STATION, V180)
+        runner.validate_new_station(station_document(), self.STATION, V140)
+        runner.validate_new_station(station_document(), self.STATION)
+        for document, version in ((station_document(V180), V140), (station_document(V180), None),
+                                  (station_document(), V180)):
+            with self.subTest(schema=document["schema_version"], version=version), \
+                    self.assertRaisesRegex(runner.SmokeError, "Initial native station shape"):
+                runner.validate_new_station(document, self.STATION, version)
+        for change in ({"reservations": [{}]}, {"stations": []}):
+            with self.subTest(change=change), self.assertRaisesRegex(runner.SmokeError, "Initial native station shape"):
+                runner.validate_new_station(dict(station_document(V180), **change), self.STATION, V180)
+        moved = station_document(V180)
+        moved["stations"][0]["orbit_body"] = runner.HOST + ":earth"
+        for document, station in ((moved, self.STATION), (station_document(V180), str(runner.uuid.UUID(int=1)))):
+            with self.subTest(station=station), self.assertRaisesRegex(runner.SmokeError, "creation receipt"):
+                runner.validate_new_station(document, station, V180)
+
+    def test_v180_clock_may_only_advance_with_its_exact_shape(self):
+        baseline = station_document(V180, 100)
+        for tick in (100, 101, 10**12):
+            runner.validate_unchanged_station(station_document(V180, tick), baseline, V180)
+        self.assertEqual(station_document(V180, 100), baseline)
+
+        def changed(mutate):
+            document = station_document(V180, 160)
+            mutate(document)
+            return document
+
+        for document in (station_document(V180, 99), changed(lambda value: value.pop("orbital_clock")),
+                         changed(lambda value: value["orbital_clock"].update(schema_version=2)),
+                         changed(lambda value: value["orbital_clock"].update(extra=1)),
+                         changed(lambda value: value["orbital_clock"].update(logical_tick=True)),
+                         changed(lambda value: value["orbital_clock"].update(logical_tick=160.0)),
+                         changed(lambda value: value.update(orbital_clock=[1, 160]))):
+            with self.subTest(clock=document.get("orbital_clock")), \
+                    self.assertRaisesRegex(runner.SmokeError, "orbital clock"):
+                runner.validate_unchanged_station(document, baseline, V180)
+        for mutate in (lambda value: value.update(warp_energy=[{}]), lambda value: value.update(schema_version=4),
+                       lambda value: value["stations"][0].update(landing_pad=[8, 65, 8]),
+                       lambda value: value.update(extra="new")):
+            with self.subTest(mutate=mutate), self.assertRaisesRegex(runner.SmokeError, "station authority"):
+                runner.validate_unchanged_station(changed(mutate), baseline, V180)
+
+    def test_other_builds_keep_exact_equality_even_for_a_clock(self):
+        baseline = station_document(V180, 100)
+        for version in (None, V140, "1.20.1-1.8.1-dev"):
+            with self.subTest(version=version):
+                runner.validate_unchanged_station(copy.deepcopy(baseline), baseline, version)
+                with self.assertRaisesRegex(runner.SmokeError, "station authority"):
+                    runner.validate_unchanged_station(station_document(V180, 101), baseline, version)
+
+    def test_restart_cycle_checks_the_saved_root_with_the_artifact_build(self):
+        with tempfile.TemporaryDirectory() as directory:
+            with self.assertRaisesRegex(runner.SmokeError, "orbital clock"):
+                run_restart_cycle(Path(directory), V180, [STARTUP], station_document(V180, 99))
 
 
 if __name__ == "__main__":
