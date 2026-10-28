@@ -62,12 +62,14 @@ class RocketIssueFeedbackTest {
                 "v1.8/resources/data/advancedrocketrycommunity_v180/lang/en_us.json"))).getAsJsonObject();
         var legacy = JsonParser.parseString(Files.readString(root.resolve(
                 "v0.5/resources/assets/advancedrocketrycommunity_v050/lang/en_us.json"))).getAsJsonObject();
+        var fuel = JsonParser.parseString(Files.readString(root.resolve(
+                "v1.3/resources/assets/advancedrocketrycommunity_v130/lang/en_us.json"))).getAsJsonObject();
         var active = JsonParser.parseString(Files.readString(root.resolve(
                 "v1.8/resources/assets/advancedrocketrycommunity_v180/lang/en_us.json"))).getAsJsonObject();
         assertEquals("Assembled Rocket", server.get("entity.advancedrocketrycommunity.rocket").getAsString());
         for (var code : RocketValidationCode.values()) {
             String key = code.translationKey();
-            String expected = (active.has(key) ? active : legacy).get(key).getAsString();
+            String expected = (active.has(key) ? active : fuel.has(key) ? fuel : legacy).get(key).getAsString();
             assertEquals(expected, server.get(key).getAsString(), key);
             assertTrue(expected.length() <= 256 && !expected.isBlank() && !expected.equals(key), key);
         }
