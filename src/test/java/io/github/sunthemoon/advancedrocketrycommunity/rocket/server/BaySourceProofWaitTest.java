@@ -79,8 +79,32 @@ final class BaySourceProofWaitTest {
         try (var f = new Fixture(true, true, true, false)) {
             f.retiring(); f.busy = true;
             for (int tick = 0; tick < 3; tick++) {
-                assertDoesNotThrow(() -> f.proof.retire(f.claim), "a busy store's tick must not call Entity.save");
+                // The coordinator's dispatch: D7 at RETIRE, D6 at PROVE once a busy store parks the claim (W185-R5).
+                assertDoesNotThrow(() -> f.claim.stage() == BayClaim.Stage.RETIRE ? f.proof.retire(f.claim) : f.proof.prove(f.claim),
+                        "a busy store's tick must not call Entity.save");
             }
+        }
+    }
+
+    /**
+     * W185-R5: D7 parked on a busy store releases its slot proofs and watch and returns to D6, which captures nothing and
+     * saves nothing until the store is quiet, then proves again. A parked claim holds no save-monitor slot.
+     */
+    @Test void aParkedRetirementHoldsNoSlotProofAndProvesAgainOnceTheStoreIsQuiet() throws ReflectiveOperationException {
+        try (var f = new Fixture(true, true, true, false)) {
+            f.retiring(); f.busy = true;
+            assertEquals(BayStepQueue.Result.AGAIN, assertDoesNotThrow(() -> f.proof.retire(f.claim)));
+            assertEquals(BayClaim.Stage.PROVE, f.claim.stage(), "the parked claim returns to D6");
+            assertEquals(1, f.released.get(), "the parked claim still holds its slot proof");
+            assertTrue(f.<Map<?, ?>>field("proofs").isEmpty() && f.<Map<?, ?>>field("watches").isEmpty(), "proof or watch kept");
+            for (int tick = 0; tick < 3; tick++) {
+                assertEquals(BayStepQueue.Result.NEXT_TICK, assertDoesNotThrow(() -> f.proof.prove(f.claim), "a parked tick saved the source"));
+                assertEquals("BAY_RECEIPT_WRITE", f.claim.reason());
+            }
+            assertTrue(f.captures.isEmpty(), "a parked claim captured a slot");
+            f.busy = false;
+            assertSaveTrap(assertThrows(NullPointerException.class, () -> f.proof.prove(f.claim),
+                    "once the store is quiet, D6 must serialize the source to prove again"));
         }
     }
 

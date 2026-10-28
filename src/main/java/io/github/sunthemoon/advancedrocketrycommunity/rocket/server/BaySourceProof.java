@@ -149,6 +149,8 @@ final class BaySourceProof {
         long now = server.getTickCount();
         if (!port.captureSupported(slot)) { claim.waiting("BARRIER_UNSUPPORTED"); return BayStepQueue.Result.NEXT_TICK; }
         if (!port.captureAvailable(slot, now)) { return retryNextTick(logical); }
+        // W185-R5: D7 needs a quiet receipt store, so D6 proves only then and a parked claim holds no slot proof meanwhile.
+        if (storeWaits.getAsBoolean()) { claim.waiting("BAY_RECEIPT_WRITE"); return BayStepQueue.Result.NEXT_TICK; }
         // W185 / W170-R62: waiting needs no frozen image. Save only once a capture can actually start.
         CompoundTag frozen = projection(source, record);
         if (frozen == null) { return repair(claim, "SOURCE_AUTHORITY_CONFLICT"); }
@@ -218,7 +220,7 @@ final class BaySourceProof {
         offer.accept(logical);
     }
 
-    /** D7 at stage RETIRE: the guarded group removal, issued only to a quiet store. */
+    /** D7 at stage RETIRE: the guarded group removal, issued only to a quiet store; a busy one parks the claim (W185-R5). */
     BayStepQueue.Result retire(BayClaim claim) {
         UUID logical = claim.logical();
         if (retiring.contains(logical)) { return BayStepQueue.Result.IDLE; }
@@ -226,18 +228,26 @@ final class BaySourceProof {
         if (claim.hold() == BayClaim.Hold.REPAIR) { forget(logical); return BayStepQueue.Result.IDLE; }
         if (proved == null || !proved.valid() || !watches.containsKey(logical)) { return again(claim); }
         // W185-R9: a removal the store would refuse now waits before the source is serialized, so the wait saves nothing.
-        if (storeWaits.getAsBoolean()) { return BayStepQueue.Result.NEXT_TICK; }
+        if (storeWaits.getAsBoolean()) { return park(claim); }
         if (!current(claim, proved)) { return again(claim); }
         BayGroup group = claim.group().orElseThrow();
         beforeRemoval.accept(claim, group.operations().get(0));
         var admission = session.removeGroup(group.operations(), guardCut.apply(claim, proved::valid), outcome -> retired(claim, group, outcome));
-        if (admission.status() == BayReceiptStore.Status.BUSY) { return BayStepQueue.Result.NEXT_TICK; }
-        if (!admission.queued()) {
-            return admission.status() == BayReceiptStore.Status.STORE_UNAVAILABLE ? BayStepQueue.Result.NEXT_TICK
-                    : repair(claim, "BAY_CONFLICT");
+        if (admission.status() == BayReceiptStore.Status.BUSY || admission.status() == BayReceiptStore.Status.STORE_UNAVAILABLE) {
+            return park(claim);
         }
+        if (!admission.queued()) { return repair(claim, "BAY_CONFLICT"); }
         retiring.add(logical);
         return BayStepQueue.Result.IDLE;
+    }
+
+    /**
+     * W185-R5: D7 waits for a quiet receipt store without its proofs. It releases every slot proof and the watch, and D6
+     * proves again once the store is quiet, so a parked claim holds none of the save monitor's shared slots.
+     */
+    private BayStepQueue.Result park(BayClaim claim) {
+        claim.waiting("BAY_RECEIPT_WRITE");
+        return again(claim);
     }
 
     private void retired(BayClaim claim, BayGroup group, BayReceiptWriter.Outcome outcome) {
