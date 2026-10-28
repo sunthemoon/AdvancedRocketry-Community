@@ -9,6 +9,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.registry.ModEntities;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceiptCommitCut;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceiptTestHooks;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowRuntime;
+import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.ResourceEscrowSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.deployment.BayClaim;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightPlanner;
@@ -109,6 +110,9 @@ public final class BayCopiesGameTests {
             flight = transit(helper, origin, level.dimension().location(), position(target), owner, List.of(pkg),
                     RocketEscrowSectionPatch.NEUTRAL, RocketFlightPlanner.EARTH.bodyId(), passenger);
             var journal = RocketTransferSavedData.get(server); journal.put(flight.record());
+            // R150: a full suite has an escrow root by now, and with one an unbound rocket is not idle. The riding case
+            // creates it, so its seat (see seat) never depends on batch order.
+            if (riding) { ResourceEscrowSavedData.forTests(server); }
             // The riding case needs no queued guard, and the server's commit cut pauses only one guard per session.
             if (!riding) {
                 // Use the existing B16 guard cut, only inside this isolated GameTest batch; no new production hook.
@@ -147,10 +151,9 @@ public final class BayCopiesGameTests {
                     && record.destinationFlightData().passengers().assignment(passenger).isPresent(), "Login settled or cleared the seat");
             for (boolean destination : new boolean[] {false, true}) {
                 var copy = ModEntities.ROCKET.get().create(helper.getLevel());
-                // A copy that already carried the passenger, as before the claim held L: the mount precedes L's binding.
-                if (riding && !destination) { helper.assertTrue(player.startRiding(copy, true), "The passenger could not ride the copy"); }
                 copy.initializeTransferred(destination ? flight.record().destinationSnapshot() : flight.record().sourceSnapshot(),
                         record.logicalRocketId(), owner, destination ? record.destinationFlightData() : record.sourceFlightData());
+                if (riding && !destination) { seat(copy); }
                 helper.assertTrue(helper.getLevel().addFreshEntity(copy), "Late copy not published"); copies.add(copy);
             }
             helper.assertTrue(!token.getAsBoolean(), "Late copies did not invalidate the queued token");
@@ -176,6 +179,23 @@ public final class BayCopiesGameTests {
             helper.assertTrue(riding ? player.getVehicle() == flight.source() : player.getVehicle() == null,
                     riding ? "The removed copy's passenger was not moved into the survivor" : "The standing passenger was pulled back");
             close(); helper.succeed();
+        }
+
+        /**
+         * A copy that already carried the passenger, as a stale image that boarded before the claim held L. Ordinary mounting
+         * is refused both ways: the claim holds L, and with an escrow root an unbound rocket is not idle either (R150, from
+         * the local full run). So the fixture seats the passenger inside the coordinator's own MOVE_ASSIGNED_PASSENGER scope,
+         * the one D5's routing uses, and closes it at once.
+         */
+        void seat(RocketEntity copy) throws ReflectiveOperationException {
+            var steps = BayTransferRecovery.class.getDeclaredField("copies"); steps.setAccessible(true);
+            var routingField = BayCopySteps.class.getDeclaredField("passengers"); routingField.setAccessible(true);
+            Object routing = routingField.get(steps.get(bays(helper)));
+            var permittedPlayer = BayPassengerRouting.class.getDeclaredField("permittedPlayer"); permittedPlayer.setAccessible(true);
+            var permittedSource = BayPassengerRouting.class.getDeclaredField("permittedSource"); permittedSource.setAccessible(true);
+            permittedPlayer.set(routing, player); permittedSource.set(routing, copy);
+            try { helper.assertTrue(player.startRiding(copy, true), "The passenger could not ride the copy"); }
+            finally { permittedPlayer.set(routing, null); permittedSource.set(routing, null); }
         }
 
         /** Whether the installed transfer service still holds this player's login in its bounded reconnect queue. */
