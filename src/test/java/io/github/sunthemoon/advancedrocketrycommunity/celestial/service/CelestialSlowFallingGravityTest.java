@@ -76,6 +76,27 @@ class CelestialSlowFallingGravityTest {
         assertNull(gravity.getModifier(CelestialGravityController.SLOW_FALL_FLOOR_ID));
     }
 
+    @Test void clampedOldFloorDoesNotMaskProfileOrBaseChanges() {
+        var gravity = gravity(1.0E-12D);
+        CelestialGravityController.applySlowFallFloor(gravity, true);
+        CelestialGravityController.applyMultiplier(gravity, 0.165D);
+        CelestialGravityController.applySlowFallFloor(gravity, true);
+        assertEquals(0.0031D, gravity.getValue(), 1.0E-12D);
+        gravity.setBaseValue(0.07000001D);
+        CelestialGravityController.applySlowFallFloor(gravity, true);
+        gravity.setBaseValue(1.0D);
+        gravity.addTransientModifier(foreign(AttributeModifier.Operation.ADDITION, 0.01D));
+        gravity.addTransientModifier(foreign(AttributeModifier.Operation.MULTIPLY_BASE, 0.2D));
+        gravity.addTransientModifier(foreign(AttributeModifier.Operation.MULTIPLY_TOTAL, 0.5D));
+        CelestialGravityController.applySlowFallFloor(gravity, true);
+        assertNull(gravity.getModifier(CelestialGravityController.SLOW_FALL_FLOOR_ID));
+        assertEquals((1.0D - 0.07D + 0.01D) * 1.2D * 1.5D * 0.165D, gravity.getValue(), 1.0E-12D);
+    }
+
+    private static AttributeModifier foreign(AttributeModifier.Operation operation, double amount) {
+        return new AttributeModifier(UUID.randomUUID(), "foreign change", amount, operation);
+    }
+
     private static AttributeInstance gravity(double factor) {
         var gravity = new AttributeInstance(new RangedAttribute("test.gravity", 0.08D, 0.0D, 1.0D), ignored -> { });
         gravity.addTransientModifier(new AttributeModifier(CelestialGravityController.SLOW_FALLING_ID,
