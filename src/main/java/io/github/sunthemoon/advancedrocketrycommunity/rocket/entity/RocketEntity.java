@@ -193,6 +193,15 @@ public final class RocketEntity extends Entity implements MenuProvider {
                 .snapshotChanged(this, oldSnapshot);
     }
 
+    /** W170 D5: the bay coordinator's one-use permit replaces only the snapshot with its consumed version S'. */
+    public void applyBayConsumption(io.github.sunthemoon.advancedrocketrycommunity.rocket.server.BaySourceConsumption permit) {
+        var next = Objects.requireNonNull(permit).consume(this);
+        var old = snapshot; snapshot = next;
+        try { validateBindings(); } catch (RuntimeException failure) { snapshot = old; throw failure; }
+        refreshSyncedData();
+        io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketVisualSynchronizer.snapshotChanged(this, old);
+    }
+
     /** Only F4's checked, one-use permit can initialize a new bound destination. */
     public void initializeGovernedDestination(io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGovernedDestinationAction.Permit permit) {
         var record = Objects.requireNonNull(permit).consume(this);
@@ -335,6 +344,12 @@ public final class RocketEntity extends Entity implements MenuProvider {
                 : Optional.of(io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNativeResources
                         .preserve(preservedBlockedData, io.github.sunthemoon.advancedrocketrycommunity.rocket.RocketLimits.MAX_TOTAL_NBT_BYTES
                                 + RocketFlightLimits.MAX_FLIGHT_DATA_NBT_BYTES + ENTITY_ENVELOPE_BYTES));
+    }
+
+    /** W170-R42: the logical ID a blocked image's preserved data names, read in place without a copy; empty otherwise. */
+    public Optional<UUID> preservedAssemblyTransactionId() {
+        return preservedBlockedData != null && preservedBlockedData.hasUUID("assembly_transaction_id")
+                ? Optional.of(preservedBlockedData.getUUID("assembly_transaction_id")) : Optional.empty();
     }
 
     @Override
@@ -498,9 +513,20 @@ public final class RocketEntity extends Entity implements MenuProvider {
         }
     }
 
+    /**
+     * W170-R22: every server position write reports to the bay coordinator, which invalidates a D6/D7 proof watching this
+     * rocket's logical ID. Vanilla's {@code moveTo} writes the position before it calls here, so nothing is compared.
+     */
+    @Override
+    public void setPos(double x, double y, double z) {
+        super.setPos(x, y, z);
+        if (level() != null && !level().isClientSide) { RocketRuntime.baySourceChanged(this); }
+    }
+
     @Override
     public void remove(RemovalReason reason) {
         if (!level().isClientSide) {
+            RocketRuntime.baySourceChanged(this); // W170-R22: leaving the Level invalidates a watched proof
             RocketRuntime.cargoRemoved(this);
             AdvancedRocketryCommunity.LOGGER.info(
                     "ARCE_ROCKET_ENTITY_REMOVED entity={} reason={} operational={}",

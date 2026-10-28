@@ -59,8 +59,24 @@ public final class BayReleaseTestCommands {
                         .executes(context -> {
                             // The gate decides before the position is resolved against a Level (W128R-R1).
                             EscrowTestEndpoints.requireEnabled(context.getSource().getServer());
-                            return fixture(context.getSource(), BlockPosArgument.getLoadedBlockPos(context, "pos"));
-                        })))
+                            return fixture(context.getSource(), BlockPosArgument.getLoadedBlockPos(context, "pos"), false);
+                        })
+                        // W170 B4: the second bay holds a survey package, a non-data kind that needs no research.
+                        .then(Commands.literal("survey").executes(context -> {
+                            EscrowTestEndpoints.requireEnabled(context.getSource().getServer());
+                            return fixture(context.getSource(), BlockPosArgument.getLoadedBlockPos(context, "pos"), true);
+                        }))))
+                // W170 B16: a paused receipt replacement continues without a stop (its guard decides at the move).
+                .then(Commands.literal("release").executes(context -> release(context.getSource())))
+                // W170-R22's B16 changes while D7's guard is paused: motion, a joining copy and its leave, a reload.
+                .then(Commands.literal("nudge").then(Commands.argument("logical", UuidArgument.uuid())
+                        .executes(context -> nudge(context.getSource(), UuidArgument.getUuid(context, "logical")))))
+                .then(Commands.literal("copy").then(Commands.argument("logical", UuidArgument.uuid())
+                        .executes(context -> copy(context.getSource(), UuidArgument.getUuid(context, "logical")))))
+                .then(Commands.literal("discard-copy").then(Commands.argument("logical", UuidArgument.uuid())
+                        .executes(context -> discardCopies(context.getSource(), UuidArgument.getUuid(context, "logical")))))
+                .then(Commands.literal("reload").then(Commands.argument("logical", UuidArgument.uuid())
+                        .executes(context -> reload(context.getSource(), UuidArgument.getUuid(context, "logical")))))
                 .then(Commands.literal("status").then(Commands.argument("logical", UuidArgument.uuid())
                         .executes(context -> status(context.getSource(), UuidArgument.getUuid(context, "logical")))))
                 .then(Commands.literal("fill").then(Commands.argument("count", IntegerArgumentType.integer(1, 64))
@@ -68,12 +84,12 @@ public final class BayReleaseTestCommands {
                 .then(Commands.literal("pending").executes(context -> pending(context.getSource()))))));
     }
 
-    private static int fixture(CommandSourceStack source, BlockPos origin) {
+    private static int fixture(CommandSourceStack source, BlockPos origin, boolean survey) {
         MinecraftServer server = source.getServer();
         EscrowTestEndpoints.requireEnabled(server);
         ServerLevel level = server.overworld();
         var data = BayDeploymentGameTestSupport.dataPackage(OWNER);
-        var solar = BayDeploymentGameTestSupport.solarPackage(OWNER);
+        var solar = survey ? BayDeploymentGameTestSupport.surveyPackage(OWNER) : BayDeploymentGameTestSupport.solarPackage(OWNER);
         List<BlockPos> blocks = List.of(origin, origin.above(), origin.above(2), origin.west(), origin.east(), origin.east().above());
         level.setBlock(origin, ModBlocks.ROCKET_MOTOR.get().defaultBlockState(), Block.UPDATE_ALL);
         level.setBlock(origin.above(), ModBlocks.ROCKET_SEAT.get().defaultBlockState(), Block.UPDATE_ALL);
@@ -126,14 +142,18 @@ public final class BayReleaseTestCommands {
                     entity -> entity.assemblyTransactionId().filter(logical::equals).isPresent())) { rocket = candidate; }
         }
         RocketEntity found = rocket;
+        // W170: each bay root's consumed operation ("-" while it holds its package), and the fixture owner's satellites.
+        String consumed = found == null ? "NONE" : BayDeploymentGameTestSupport.consumedOps(found.snapshot().orElseThrow()).stream()
+                .map(op -> op == null ? "-" : op.toString()).collect(Collectors.joining("+"));
         LOGGER.info("ARCE_RELEASE_BAY_STATUS logical={} claim={} hold={} reason={} receipts=[{}] transfer={} rocket={} state={} y={} "
-                        + "packages={} locked={}", logical, claim.map(value -> value.stage().name()).orElse("NONE"),
+                        + "packages={} locked={} consumed={} owned={}", logical, claim.map(value -> value.stage().name()).orElse("NONE"),
                 claim.map(value -> value.hold().name()).orElse("NONE"), claim.map(io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.deployment.BayClaim::reason).orElse("NONE"), receipts,
                 record == null ? "NONE" : record.phase().name(), found == null ? "NONE" : found.getUUID(),
                 found == null ? "NONE" : found.flightData().map(data -> data.state().name()).orElse("NONE"),
                 found == null ? "NONE" : String.valueOf(found.getY()),
                 found == null ? "NONE" : signatures(found.snapshot().orElseThrow()),
-                io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceipts.holdsRocket(server, logical));
+                io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceipts.holdsRocket(server, logical), consumed,
+                registry.operational() ? registry.ownerSatellites(OWNER) : -1);
         source.sendSuccess(() -> Component.literal("Bay status reported"), false);
         return 1;
     }
@@ -157,6 +177,87 @@ public final class BayReleaseTestCommands {
         LOGGER.info("ARCE_RELEASE_BAY_FILLED requested={} queued={}", count, queued);
         source.sendSuccess(() -> Component.literal("Bay pending capacity filled"), false);
         return queued;
+    }
+
+    private static int release(CommandSourceStack source) {
+        MinecraftServer server = source.getServer();
+        EscrowTestEndpoints.requireEnabled(server);
+        io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowRuntime.of(server).bayReceipts(server).commitCutForTests(server)
+                .orElseThrow().release();
+        LOGGER.info("ARCE_RELEASE_BAY_RELEASE_REQUESTED");
+        source.sendSuccess(() -> Component.literal("Bay commit cut released"), false);
+        return 1;
+    }
+
+    /** The claim's established source of L in T's source Level, or a refusal (W170 B16). */
+    private static RocketEntity claimedSource(MinecraftServer server, UUID logical) {
+        var claim = RocketRuntime.installedBays().orElseThrow().claimForTests(logical).orElseThrow();
+        var record = RocketTransferSavedData.get(server).find(claim.transfer()).orElseThrow();
+        var level = RocketTransferEntities.level(server, record.sourceSnapshot().sourceDimension());
+        if (level == null || !(level.getEntity(claim.source().orElseThrow()) instanceof RocketEntity rocket)) {
+            throw new IllegalStateException("The claim's source is not loaded");
+        }
+        return rocket;
+    }
+
+    /** B16 motion: one block east and back, so the final image equals the proved one and only a motion observer sees it. */
+    private static int nudge(CommandSourceStack source, UUID logical) {
+        MinecraftServer server = source.getServer();
+        EscrowTestEndpoints.requireEnabled(server);
+        RocketEntity rocket = claimedSource(server, logical);
+        double x = rocket.getX(), y = rocket.getY(), z = rocket.getZ();
+        rocket.setPos(x + 1.0D, y, z);
+        rocket.setPos(x, y, z);
+        LOGGER.info("ARCE_RELEASE_BAY_NUDGED logical={} rocket={} x={} y={} z={}", logical, rocket.getUUID(), x, y, z);
+        source.sendSuccess(() -> Component.literal("Bay source nudged"), false);
+        return 1;
+    }
+
+    /** B16 join: a neutral copy of L, from T's current source snapshot and flight data, joins the source Level. */
+    private static int copy(CommandSourceStack source, UUID logical) {
+        MinecraftServer server = source.getServer();
+        EscrowTestEndpoints.requireEnabled(server);
+        var record = RocketTransferSavedData.get(server).findByLogicalRocket(logical).orElseThrow();
+        ServerLevel level = RocketTransferEntities.level(server, record.sourceSnapshot().sourceDimension());
+        RocketEntity copy = ModEntities.ROCKET.get().create(level);
+        copy.initializeTransferred(record.sourceSnapshot(), logical, record.ownerId(), record.sourceFlightData());
+        boolean added = level.addFreshEntity(copy);
+        LOGGER.info("ARCE_RELEASE_BAY_COPY logical={} copy={} added={}", logical, copy.getUUID(), added);
+        source.sendSuccess(() -> Component.literal("Bay copy added"), false);
+        return added ? 1 : 0;
+    }
+
+    /** B16 leave: every other loaded rocket naming L in the source Level is discarded; the claim's source stays. */
+    private static int discardCopies(CommandSourceStack source, UUID logical) {
+        MinecraftServer server = source.getServer();
+        EscrowTestEndpoints.requireEnabled(server);
+        RocketEntity exact = claimedSource(server, logical);
+        var copies = ((ServerLevel) exact.level()).getEntities(ModEntities.ROCKET.get(),
+                rocket -> rocket != exact && rocket.assemblyTransactionId().filter(logical::equals).isPresent());
+        copies.forEach(RocketEntity::discard);
+        LOGGER.info("ARCE_RELEASE_BAY_COPY_DISCARDED logical={} count={}", logical, copies.size());
+        source.sendSuccess(() -> Component.literal("Bay copies discarded"), false);
+        return copies.size();
+    }
+
+    /**
+     * B16 leave and join: the source leaves its Level through {@code remove(UNLOADED_TO_CHUNK)}, whose bay hook reports at
+     * once, and joins again at once from its saved tag. A real chunk unload calls {@code setRemoved} instead, which only
+     * the per-tick observation sees (W170-R46; {@code BaySourceProofObserveTest} covers that path).
+     */
+    private static int reload(CommandSourceStack source, UUID logical) {
+        MinecraftServer server = source.getServer();
+        EscrowTestEndpoints.requireEnabled(server);
+        RocketEntity rocket = claimedSource(server, logical);
+        ServerLevel level = (ServerLevel) rocket.level();
+        CompoundTag saved = new CompoundTag();
+        if (!rocket.save(saved)) { throw new IllegalStateException("The claim's source did not save"); }
+        rocket.remove(net.minecraft.world.entity.Entity.RemovalReason.UNLOADED_TO_CHUNK);
+        var loaded = net.minecraft.world.entity.EntityType.loadEntityRecursive(saved, level, entity -> entity);
+        boolean added = loaded != null && level.addFreshEntity(loaded);
+        LOGGER.info("ARCE_RELEASE_BAY_RELOADED logical={} rocket={} added={}", logical, loaded == null ? "NONE" : loaded.getUUID(), added);
+        source.sendSuccess(() -> Component.literal("Bay source reloaded"), false);
+        return added ? 1 : 0;
     }
 
     private static int pending(CommandSourceStack source) {

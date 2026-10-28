@@ -7,6 +7,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowRunti
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowTestEndpoints;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.deployment.BayClaim;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteMissionSavedData;
+import java.util.UUID;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.server.MinecraftServer;
@@ -22,6 +23,7 @@ final class BayDeploymentCuts {
     static final String PROPERTY = "advancedrocketrycommunity.bayCheckpoint";
     static final String FIRST_TICK = "advancedrocketrycommunity.bayFirstTick";
     static final String REGISTRY_BLOCKED = "advancedrocketrycommunity.bayRegistryBlocked";
+    static final String REFUSE = "advancedrocketrycommunity.bayRefuseRegistration";
     private static final String HOOKS = "advancedrocketrycommunity.releaseTestHooks";
     private static final Logger LOGGER = LogUtils.getLogger();
 
@@ -32,14 +34,27 @@ final class BayDeploymentCuts {
         B9_MOVED(BayReceipt.Phase.REJECTED, BayReceiptCommitCut.Point.MOVED, BayReceiptCommitCut.Mode.PAUSE),
         B12_UNKNOWN(BayReceipt.Phase.INTENT, BayReceiptCommitCut.Point.STAGED, BayReceiptCommitCut.Mode.UNKNOWN),
         B18_INTENT(BayReceipt.Phase.INTENT, BayReceiptCommitCut.Point.MOVED, BayReceiptCommitCut.Mode.PAUSE),
-        B18_REJECTED(BayReceipt.Phase.REJECTED, BayReceiptCommitCut.Point.MOVED, BayReceiptCommitCut.Mode.PAUSE);
+        B18_REJECTED(BayReceipt.Phase.REJECTED, BayReceiptCommitCut.Point.MOVED, BayReceiptCommitCut.Mode.PAUSE),
+        // W170: D4's REGISTERED generation, D7's guarded removal (phase null) and the stall after D5's publication.
+        B3_STAGED(BayReceipt.Phase.REGISTERED, BayReceiptCommitCut.Point.STAGED, BayReceiptCommitCut.Mode.PAUSE),
+        B3_MOVED(BayReceipt.Phase.REGISTERED, BayReceiptCommitCut.Point.MOVED, BayReceiptCommitCut.Mode.PAUSE),
+        B12_D4(BayReceipt.Phase.REGISTERED, BayReceiptCommitCut.Point.STAGED, BayReceiptCommitCut.Mode.UNKNOWN),
+        B15_D4(BayReceipt.Phase.REGISTERED, BayReceiptCommitCut.Point.MOVED, BayReceiptCommitCut.Mode.UNKNOWN),
+        B8_STAGED(null, BayReceiptCommitCut.Point.STAGED, BayReceiptCommitCut.Mode.PAUSE),
+        B8_MOVED(null, BayReceiptCommitCut.Point.MOVED, BayReceiptCommitCut.Mode.PAUSE),
+        B12_D7(null, BayReceiptCommitCut.Point.STAGED, BayReceiptCommitCut.Mode.UNKNOWN),
+        B15_D7(null, BayReceiptCommitCut.Point.MOVED, BayReceiptCommitCut.Mode.UNKNOWN),
+        B6_D5(null, null, null),
+        // W170-R22: B16's pause of D7's guard on the IO thread, before it reads the proof, lease and group token.
+        B16_GUARD(null, null, null);
 
-        final BayReceipt.Phase phase;
-        final BayReceiptCommitCut.Point point;
-        final BayReceiptCommitCut.Mode mode;
-        Cut(BayReceipt.Phase phase, BayReceiptCommitCut.Point point, BayReceiptCommitCut.Mode mode) {
+        @Nullable final BayReceipt.Phase phase;
+        @Nullable final BayReceiptCommitCut.Point point;
+        @Nullable final BayReceiptCommitCut.Mode mode;
+        Cut(@Nullable BayReceipt.Phase phase, @Nullable BayReceiptCommitCut.Point point, @Nullable BayReceiptCommitCut.Mode mode) {
             this.phase = phase; this.point = point; this.mode = mode;
         }
+        boolean removal() { return phase == null && point != null; }
     }
 
     private final Cut cut;
@@ -56,7 +71,8 @@ final class BayDeploymentCuts {
         var committer = EscrowRuntime.of(server).bayReceipts(server).commitCutForTests(server)
                 .orElseThrow(() -> new IllegalStateException("The receipt committer has no cut seam"));
         Cut cut = Cut.valueOf(value);
-        LOGGER.info("ARCE_RELEASE_BAY_CUT configured={} phase={} point={} mode={}", cut, cut.phase, cut.point, cut.mode);
+        LOGGER.info("ARCE_RELEASE_BAY_CUT configured={} phase={} point={} mode={}", cut, cut.phase == null ? (cut.removal() ? "REMOVAL"
+                : cut == Cut.B16_GUARD ? "GUARD" : "STALL") : cut.phase, cut.point, cut.mode);
         return new BayDeploymentCuts(cut, committer);
     }
 
@@ -111,8 +127,49 @@ final class BayDeploymentCuts {
 
     /** Before an in-session claim's receipt write: the first write of the cut's phase arms the one-shot committer cut. */
     void writing(BayClaim claim, BayReceipt receipt) {
-        if (fired || claim.origin() != BayClaim.Origin.CHECKPOINT || receipt.phase() != cut.phase) { return; }
+        if (fired || claim.origin() != BayClaim.Origin.CHECKPOINT || cut.phase == null || receipt.phase() != cut.phase) { return; }
         fired = true;
         committer.arm(cut.point, cut.mode, cut.name(), receipt.op());
+    }
+
+    /** W170 B8, B12 and B15 at D7: before an in-session claim's guarded removal, arm the one-shot committer cut. */
+    void removing(BayClaim claim, java.util.UUID op) {
+        if (fired || claim.origin() != BayClaim.Origin.CHECKPOINT || !cut.removal()) { return; }
+        fired = true;
+        committer.arm(cut.point, cut.mode, cut.name(), op);
+    }
+
+    /**
+     * W170 B16 (W170-R22): an in-session claim's D7 guard pauses once on the receipt writer's IO thread, after the removal
+     * was captured and staged but before the guard reads its proof, lease and group token, until the harness releases the
+     * committer cut. The harness then moves the source, saves, or adds or reloads an image of L, so the guard must refuse.
+     */
+    java.util.function.BooleanSupplier guard(BayClaim claim, java.util.function.BooleanSupplier guard) {
+        if (cut != Cut.B16_GUARD || claim.origin() != BayClaim.Origin.CHECKPOINT) { return guard; }
+        UUID op = claim.group().orElseThrow().operations().get(0);
+        return () -> { committer.pauseBeforeGuard(cut.name(), op); return guard.getAsBoolean(); };
+    }
+
+    /**
+     * W170 B6: once an in-session claim has published S' and T' (D5), it stalls before D6 and prints the pause marker
+     * once, so the harness can kill the server between the consumption and its proof. True while stalled.
+     */
+    boolean stallAfterConsumption(BayClaim claim) {
+        if (cut != Cut.B6_D5 || claim.origin() != BayClaim.Origin.CHECKPOINT) { return false; }
+        if (!fired) {
+            fired = true;
+            LOGGER.info("ARCE_RELEASE_BAY_PAUSED cut={} op={}", cut, claim.group().orElseThrow().operations().get(0));
+        }
+        return true;
+    }
+
+    /**
+     * W170 B9 and B18 at a refusal: with {@code bayRefuseRegistration=true} on a gated release-test dedicated server, D2
+     * refuses every in-session registration with SERVER_ERROR (the code a missing launch service gives), so the REJECTED
+     * outcome path runs. It registers nothing.
+     */
+    static boolean refuseRegistration(MinecraftServer server) {
+        if (!Boolean.getBoolean(REFUSE) || !Boolean.getBoolean(HOOKS) || !server.isDedicatedServer()) { return false; }
+        return EscrowTestEndpoints.enabled(server);
     }
 }

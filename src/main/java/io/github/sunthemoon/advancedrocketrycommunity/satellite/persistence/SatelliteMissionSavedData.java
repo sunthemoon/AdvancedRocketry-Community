@@ -39,6 +39,7 @@ public final class SatelliteMissionSavedData extends SavedData {
     private java.util.function.BiPredicate<UUID, Boolean> deploymentFence = (satellite, removal) -> false;
     private MinecraftServer ownerServer;
     private io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayRegistryPermit scopedPermit;
+    private boolean registering;
     private CompoundTag preservedBlockedData;
     /** ADR-050 section 2: a state change waits here for the next coalesced flush (at most one per 100 ticks). */
     private boolean flushPending;
@@ -154,8 +155,10 @@ public final class SatelliteMissionSavedData extends SavedData {
         if (scopedPermit != null && scopedPermit.covers(satellite)) { return false; }
         return deploymentFence.test(satellite, false);
     }
-    /** Launch and registration never honour a permit (W128: D2 only revalidates). */
-    private boolean launchFenced(UUID satellite) { return deploymentFence.test(satellite, false); }
+    /** Launch and launchIdle honour a permit only inside {@link #registerWithPermit} (W170 D2); decommission never does. */
+    private boolean launchFenced(UUID satellite) {
+        return !(registering && scopedPermit != null && scopedPermit.covers(satellite)) && deploymentFence.test(satellite, false);
+    }
 
     /**
      * W128 D2: runs one validation with the coordinator's permit in scope, on the owner thread. Only {@link
@@ -164,11 +167,26 @@ public final class SatelliteMissionSavedData extends SavedData {
      */
     public <T> T validateWithPermit(io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayRegistryPermit permit,
             java.util.function.Supplier<T> validation) {
-        Objects.requireNonNull(permit, "permit"); Objects.requireNonNull(validation, "validation");
+        return scoped(permit, false, validation);
+    }
+
+    /**
+     * W170 D2: as {@link #validateWithPermit}, and {@code launch} and {@code launchIdle} of the permit's own satellite
+     * also honour it, so the coordinator registers X while its INTENT fences every other caller. {@code decommission}
+     * still ignores it.
+     */
+    public <T> T registerWithPermit(io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayRegistryPermit permit,
+            java.util.function.Supplier<T> registration) {
+        return scoped(permit, true, registration);
+    }
+
+    private <T> T scoped(io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayRegistryPermit permit, boolean register,
+            java.util.function.Supplier<T> call) {
+        Objects.requireNonNull(permit, "permit"); Objects.requireNonNull(call, "call");
         if (ownerServer != null && !ownerServer.isSameThread()) { throw new IllegalStateException("Permit scope requires the server thread"); }
         if (scopedPermit != null) { throw new IllegalStateException("Registry permit scopes do not nest"); }
-        scopedPermit = permit;
-        try { return validation.get(); } finally { scopedPermit = null; }
+        scopedPermit = permit; registering = register;
+        try { return call.get(); } finally { scopedPermit = null; registering = false; }
     }
     private static SatelliteOperationResult deploymentPendingResult() {
         return new SatelliteOperationResult(SatelliteOperationCode.DEPLOYMENT_PENDING, false, Optional.empty(), Optional.empty(), 0);
