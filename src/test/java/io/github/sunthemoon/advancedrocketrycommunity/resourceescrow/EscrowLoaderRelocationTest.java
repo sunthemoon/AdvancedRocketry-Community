@@ -66,8 +66,8 @@ class EscrowLoaderRelocationTest {
         var holder = UnstartedServer.allocate(FluidFuelLoaderBlockEntity.class);
         var block = net.minecraft.world.level.block.entity.BlockEntity.class;
         UnstartedServer.set(block, holder, "level", level); UnstartedServer.set(block, holder, "worldPosition", BlockPos.ZERO);
-        UnstartedServer.set(FluidFuelLoaderBlockEntity.class, holder, "status", LoaderRoot.Status.VALID);
-        UnstartedServer.set(FluidFuelLoaderBlockEntity.class, holder, "root", LoaderRoot.placed(null, device, LoaderTank.EMPTY));
+        io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.LoaderFixtureData.install(holder,
+                LoaderRoot.placed(null, device, LoaderTank.EMPTY), LoaderRoot.Status.VALID);
         assertEquals(new EscrowLoaderRelocation.Slot("minecraft:overworld", BlockPos.ZERO),
                 EscrowLoaderRelocation.loadedHolder(level, device, holder, pos -> holder));
         assertNull(EscrowLoaderRelocation.loadedHolder(level, device, holder, pos -> null), "Unloaded holder");
@@ -78,7 +78,8 @@ class EscrowLoaderRelocationTest {
         UnstartedServer.set(block, holder, "remove", true);
         assertNull(EscrowLoaderRelocation.loadedHolder(level, device, holder, pos -> fail("Removed holder")));
         UnstartedServer.set(block, holder, "remove", false);
-        UnstartedServer.set(FluidFuelLoaderBlockEntity.class, holder, "status", LoaderRoot.Status.INVALID);
+        io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.LoaderFixtureData.install(holder,
+                holder.root().orElseThrow(), LoaderRoot.Status.INVALID);
         assertNull(EscrowLoaderRelocation.loadedHolder(level, device, holder, pos -> fail("Invalid root")));
     }
 

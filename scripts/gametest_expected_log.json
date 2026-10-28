@@ -693,6 +693,33 @@
       "reason": "R-038: a live /data replacement keeps a held guarded root and writes one audit line; the test tries it once on each of the five guarded roots."
     },
     {
+      "id": "w176-loader-keepable-future",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderBlockEntity/",
+      "message": "ARCE_FLUID_FUEL_LOADER_UNSUPPORTED pos=-?\\d+, -?\\d+, -?\\d+ status=FUTURE",
+      "counts": {"fluid_fuel_loader_save_keepable": 1},
+      "test": "FluidFuelLoaderProtectionGameTests.losslessAndWorkLimitedRootsSaveVerbatimWithoutDenial",
+      "reason": "One lossless future root is retained without a native save denial."
+    },
+    {
+      "id": "w176-loader-keepable-invalid",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderBlockEntity/",
+      "message": "ARCE_FLUID_FUEL_LOADER_UNSUPPORTED pos=-?\\d+, -?\\d+, -?\\d+ status=INVALID",
+      "counts": {"fluid_fuel_loader_save_keepable": 3},
+      "test": "FluidFuelLoaderProtectionGameTests.losslessAndWorkLimitedRootsSaveVerbatimWithoutDenial",
+      "reason": "Malformed, operationally oversized and native-work-budget roots each log once and preserve their raw data without denial."
+    },
+    {
+      "id": "w176-loader-native-incompatible",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderBlockEntity/",
+      "message": "ARCE_FLUID_FUEL_LOADER_UNSUPPORTED pos=-?\\d+, -?\\d+, -?\\d+ status=FUTURE",
+      "counts": {"fluid_fuel_loader_save_incompatible": 2},
+      "test": "FluidFuelLoaderProtectionGameTests.liveAndDeferredLoadDenialsSurviveUnloadAndSerializedRoots",
+      "reason": "One live and one deferred load observe noncanonical NaN bits and record native denials; direct save-hook assertions do not post an EventBus error."
+    },
+    {
       "id": "w82-fluid-fuel-loader-unsupported-root",
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderBlockEntity/",

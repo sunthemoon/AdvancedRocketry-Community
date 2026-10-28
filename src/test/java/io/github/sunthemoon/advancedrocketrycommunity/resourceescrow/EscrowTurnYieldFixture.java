@@ -130,8 +130,7 @@ final class EscrowTurnYieldFixture {
         var device = UnstartedServer.allocate(FluidFuelLoaderBlockEntity.class);
         var turns = new EscrowDeviceTurns(); registrations.add(turns);
         var root = new LoaderRoot(owner, UUID.randomUUID(), binding(), water(amount), LoaderEscrowSection.neutral());
-        UnstartedServer.set(FluidFuelLoaderBlockEntity.class, device, "root", root);
-        UnstartedServer.set(FluidFuelLoaderBlockEntity.class, device, "status", LoaderRoot.Status.VALID);
+        LoaderFixtureData.install(device, root, LoaderRoot.Status.VALID);
         UnstartedServer.set(FluidFuelLoaderBlockEntity.class, device, "turns", turns);
         UnstartedServer.set(FluidFuelLoaderBlockEntity.class, device, "progressCheckedAt", Long.MIN_VALUE);
         place(device, Blocks.STONE.defaultBlockState());
