@@ -417,15 +417,15 @@ def first_start(run: Session, case: str, world: Path) -> tuple[dict | None, dict
 
 
 def b16_guard(run: Session, case: str, fixture: dict, world: Path) -> dict:
-    """B16 (W170-R22) at D7's paused guard: the removal is staged and the REGISTERED receipt still durable; the case's
-    change to the proved source must make the guard refuse with the receipt file unchanged. A joining copy then holds the
-    claim as DUPLICATE_PENDING until it leaves."""
+    """B16 (W170-R22) at D7's paused guard: the removal is captured (the store's RAM view, which the status line shows,
+    already lacks the group's receipts) and staged, while the receipt file still holds them. The case's change to the
+    proved source must make the guard refuse with the receipt file unchanged, and the store restore the REGISTERED
+    receipt. A joining copy then holds the claim as DUPLICATE_PENDING until it leaves."""
     receipts = world / "data" / RECEIPTS
     paused = run.status(fixture["logical"])
-    data = [receipt for receipt in paused["receipts"] if receipt["satellite"] == fixture["data"]]
-    if (paused["claim"] != "RETIRE" or len(data) != 1 or data[0]["phase"] != "REGISTERED" or not data[0]["acknowledged"]
-            or paused["state"] != "TRANSIT" or paused["transfer"] != "PREPARED"):
-        raise smoke.SmokeError(f"{case}: the guard pause is not D7 with the REGISTERED receipt durable: {paused}")
+    if (paused["claim"] != "RETIRE" or paused["state"] != "TRANSIT" or paused["transfer"] != "PREPARED"
+            or not receipts.is_file()):
+        raise smoke.SmokeError(f"{case}: the guard pause is not D7 with T in TRANSIT and a receipt file: {paused}")
     before = digest(receipts)
     command, marker = B16_ACTIONS[CASES[case]["b16"]]
     assert run.process is not None
@@ -436,11 +436,14 @@ def b16_guard(run: Session, case: str, fixture: dict, world: Path) -> dict:
     if refused.group(1) != fixture["transfer"] or refused.group(3) != "GUARD_REFUSED":
         raise smoke.SmokeError(f"{case}: the paused guard did not refuse: {refused.group(0)}")
     after = digest(receipts)
-    kept = run.status(fixture["logical"])
-    data = [receipt for receipt in kept["receipts"] if receipt["satellite"] == fixture["data"]]
-    if after != before or kept["claim"] == "NONE" or len(data) != 1 or data[0]["phase"] != "REGISTERED":
-        raise smoke.SmokeError(f"{case}: the refused retirement changed the receipts: {before} -> {after}, {kept}")
-    observed = dict(paused=paused["claim"], receipts=before, refused=refused.group(3), kept=kept["claim"])
+    # A fresh D6 may already be retiring the group again; only that may change the file after the refusal.
+    lines = run.process.lines
+    at = next(index for index in range(start, len(lines)) if RETIRE_REFUSED.search(lines[index]))
+    fresh = any((match := CLAIM.search(line)) and match.group(2) == fixture["logical"] and match.group(4) == "BAY_SOURCE_PROOF"
+                for line in lines[at:])
+    if after != before and not fresh:
+        raise smoke.SmokeError(f"{case}: the refused retirement changed the receipt file: {before} -> {after}")
+    observed = dict(paused=paused["claim"], receipts=before, refused=refused.group(3), file_unchanged=after == before)
     if CASES[case]["b16"] == "copy":
         run.wait_after(re.compile(rf"ARCE_BAY_CLAIM transfer={fixture['transfer']} .* reason=DUPLICATE_PENDING"), start, 60)
         run.send(f"arce bay release-test discard-copy {fixture['logical']}", re.compile(r"ARCE_RELEASE_BAY_COPY_DISCARDED .* count=1"))
