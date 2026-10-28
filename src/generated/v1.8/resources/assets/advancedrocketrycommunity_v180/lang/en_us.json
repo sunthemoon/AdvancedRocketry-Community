@@ -171,6 +171,7 @@
   "command.advancedrocketrycommunity.rejoin.stage.s2": "S2: seat completion write",
   "command.advancedrocketrycommunity.rejoin.unavailable": "Recovery service or checked storage is unavailable; nothing changed.",
   "enchantment.advancedrocketrycommunity.space_breathing": "Space Breathing",
+  "entity.advancedrocketrycommunity.rocket": "Assembled Rocket",
   "flight.advancedrocketrycommunity.request.destination_loading": "Preparing the destination; launch again when it is ready",
   "flight.advancedrocketrycommunity.request.destination_loading_limit": "Too many destinations are being prepared; try again shortly",
   "flight.advancedrocketrycommunity.request.journal_pending": "Waiting for durable transfer confirmation; required fuel %s",
