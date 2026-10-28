@@ -40,6 +40,8 @@ public final class RocketManager implements RocketOperationService {
     private final RocketTargetContextService targetContexts;
     private final SealedDisassemblyCoordinator sealed;
     private final RocketFlightLifecycleController flightLifecycle = new RocketFlightLifecycleController();
+    /** W27d1: the bay coordinator of the running server session, created at ServerStartingEvent. */
+    private BayTransferRecovery bays;
 
     public RocketManager() {
         this(RocketBlockEntityAdapters.defaults(), null, null);
@@ -269,8 +271,26 @@ public final class RocketManager implements RocketOperationService {
         }
     }
 
+    /**
+     * ServerStartingEvent at LOW priority, after EscrowRuntime indexed the receipts and before the first tick: the bay
+     * coordinator claims its restart rows and installs the section 8.1 gate for this server session.
+     */
+    public void onServerStarting(net.minecraftforge.event.server.ServerStartingEvent event) {
+        bays = BayTransferRecovery.start(event.getServer());
+        flights.installBayRecoveryGate(bays);
+    }
+
+    /** ServerStoppingEvent: the coordinator discards waiting steps and runs no further effect; RAM claims stay held. */
+    public void onServerStopping(net.minecraftforge.event.server.ServerStoppingEvent event) {
+        if (bays != null) { bays.stop(); }
+    }
+
+    /** Gated GameTest access to the session's coordinator; empty outside a running session. */
+    Optional<BayTransferRecovery> baysForTests() { return Optional.ofNullable(bays); }
+
     public void tick(MinecraftServer server) {
         Objects.requireNonNull(server, "server");
+        if (bays != null) { bays.tick(); }
         flights.transfers().landedDisassemblies().tickRetained();
         var selectedRecovery = sealed.tick(server, !flightLifecycle.recoverySuppressedForReleaseTest());
         if (flightLifecycle.active()) {
@@ -346,6 +366,7 @@ public final class RocketManager implements RocketOperationService {
     }
 
     public void clear() {
+        bays = null; // the crash path has no ServerStoppingEvent; the dispatch's gate is cleared with the flights below
         sealed.clear();
         recovery.clear();
         assemblerScans.clear();

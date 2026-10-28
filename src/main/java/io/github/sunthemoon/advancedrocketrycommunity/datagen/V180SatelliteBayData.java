@@ -74,9 +74,68 @@ public final class V180SatelliteBayData implements DataProvider {
         entries.put("block." + NS + "." + BAY, chinese ? "火箭卫星舱" : "Rocket Satellite Bay");
         String screen = "screen." + NS + "." + BAY + ".";
         entries.put(screen + "phase", chinese ? "部署阶段：%s" : "Deployment phase: %s");
-        entries.put(SatelliteBayStatus.Phase.NONE.translationKey(), chinese ? "无" : "None");
-        entries.put(SatelliteBayStatus.Reason.DEPLOYMENT_UNAVAILABLE.translationKey(), chinese
-                ? "本版本尚不能部署卫星。" : "Satellite deployment is not available in this version.");
+        String[][] phases = {
+                {"NONE", "None", "无"},
+                {"INTENT", "Deploying", "正在部署"},
+                {"REGISTERED", "Registered", "已登记"},
+                {"REJECTED", "Refused", "已拒绝"},
+                {"REPAIR", "Needs offline repair", "需要离线修复"}};
+        for (String[] phase : phases) {
+            entries.put(SatelliteBayStatus.Phase.valueOf(phase[0]).translationKey(), phase[chinese ? 2 : 1]);
+        }
+        // W27d1: one line per recorded reason, in the order of SatelliteBayStatus.Reason.
+        String[][] reasons = {
+                {"NONE", "No refusal.", "没有拒绝原因。"},
+                {"DEPLOYMENT_UNAVAILABLE", "Satellite deployment is not available in this version.", "本版本尚不能部署卫星。"},
+                {"BAY_SOURCE_PROTECTED", "This rocket was filled through a resource loader, so its bays cannot deploy.",
+                        "这枚火箭曾通过资源装载机加注，其卫星舱不能部署。"},
+                {"BAY_RECEIPTS_UNAVAILABLE", "Deployment records cannot be written now; the package stays in the bay.",
+                        "目前无法写入部署记录；包裹留在卫星舱中。"},
+                {"REGISTRY_BLOCKED", "The satellite registry is blocked; ask an administrator.", "卫星登记表已被锁定；请联系管理员。"},
+                {"TARGET_NOT_ALLOWED", "The satellite cannot orbit the body this rocket launched from.",
+                        "这颗卫星不能环绕火箭发射所在的天体运行。"},
+                {"CATALOG_UNAVAILABLE", "The celestial catalog is not loaded; the package stays in the bay.",
+                        "天体目录尚未加载；包裹留在卫星舱中。"},
+                {"ASSEMBLY_JOURNAL_PENDING", "A rocket assembly record of this rocket is still unresolved.",
+                        "这枚火箭的组装记录尚未处理完毕。"},
+                {"ASSEMBLY_JOURNAL_UNPROVED", "The rocket assembly journal could not be confirmed on disk.",
+                        "无法确认火箭组装日志已写入磁盘。"},
+                {"ROCKET_DEPLOYMENT_LIMIT", "A rocket deploys from at most 8 bays per flight.", "一枚火箭每次飞行最多从 8 个卫星舱部署。"},
+                {"UNSUPPORTED_DATA", "The package was made by a newer version and is kept unchanged.", "包裹由更新的版本制作，已原样保留。"},
+                {"PACKAGE_UNAVAILABLE", "The package item is not installed; the package is kept unchanged.", "包裹物品未安装，包裹已原样保留。"},
+                {"INVALID_PACKAGE", "The bay holds an invalid package, kept unchanged.", "卫星舱中的包裹无效，已原样保留。"},
+                {"BAY_OWNER_MISMATCH", "The bay, the package and the rocket must have the same owner.", "卫星舱、包裹和火箭必须属于同一所有者。"},
+                {"BAY_CONFLICT", "Another deployment record names this bay or satellite.", "另一条部署记录涉及这个卫星舱或卫星。"},
+                {"RECEIPT_PENDING", "An earlier deployment record of this satellite is still being written.",
+                        "这颗卫星先前的部署记录仍在写入。"},
+                {"DEPLOYMENT_CAPACITY", "The server's pending deployments are full; try a later flight.", "服务器的待处理部署已满；请在之后的飞行中再试。"},
+                {"ROCKET_PENDING_FULL", "This rocket's pending operations are full.", "这枚火箭的待处理操作已满。"},
+                {"RECEIPTS_FULL", "The server's deployment records are full; ask an administrator.", "服务器的部署记录已满；请联系管理员。"},
+                {"OWNER_RECEIPTS_FULL", "Your deployment records are full; ask an administrator to retire refused ones.",
+                        "你的部署记录已满；请管理员清理已拒绝的记录。"},
+                {"RECEIPT_IDENTITY_CONFLICT", "The deployment record's identity conflicts with another; ask an administrator.",
+                        "部署记录的身份与另一条记录冲突；请联系管理员。"},
+                {"RECEIPT_WRITE_FAILED", "The deployment record could not be written; the package stays in the bay.",
+                        "部署记录写入失败；包裹留在卫星舱中。"},
+                {"INTERRUPTED", "The server stopped before the deployment finished; the next flight retries it.",
+                        "部署完成前服务器已停止；下次飞行会重试。"},
+                {"REGISTRY_SIGNATURE_CONFLICT", "A different satellite with this identity is registered; ask an administrator.",
+                        "已登记了一颗身份相同但内容不同的卫星；请联系管理员。"},
+                {"TRANSFER_AUTHORITY_CONFLICT", "The rocket's flight record does not match the deployment; ask an administrator.",
+                        "火箭的飞行记录与部署不一致；请联系管理员。"},
+                {"UNAUTHORIZED", "The package's owner did not launch this rocket.", "包裹的所有者没有发射这枚火箭。"},
+                {"DEPLOYMENT_PENDING", "Another deployment of this satellite is unresolved.", "这颗卫星的另一次部署尚未完成。"},
+                {"IDENTITY_CONFLICT", "A different satellite with this identity already exists.", "已存在一颗身份相同但内容不同的卫星。"},
+                {"DEFINITION_NOT_FOUND", "This satellite type is not available on this server.", "这个服务器上没有这种卫星类型。"},
+                {"RESEARCH_LOCKED", "This satellite needs more research before it can launch.", "这颗卫星需要更多研究才能发射。"},
+                {"CAPACITY_REACHED", "The server's satellite or mission limit is reached.", "服务器的卫星或任务数量已达上限。"},
+                {"OWNER_LIMIT", "Your satellite limit is reached.", "你的卫星数量已达上限。"},
+                {"STORAGE_BUDGET", "The satellite registry is full.", "卫星登记表已满。"},
+                {"INVALID_COMPONENTS", "The satellite's components are not valid.", "卫星的组件无效。"},
+                {"LAUNCH_REFUSED", "The satellite launch was refused.", "卫星发射被拒绝。"}};
+        for (String[] reason : reasons) {
+            entries.put(SatelliteBayStatus.Reason.valueOf(reason[0]).translationKey(), reason[chinese ? 2 : 1]);
+        }
         String message = "message." + NS + "." + BAY + ".";
         entries.put(message + "unauthorized", chinese
                 ? "只有卫星舱的所有者或管理员可以在 8 格内打开它。"

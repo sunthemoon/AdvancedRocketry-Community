@@ -1134,6 +1134,26 @@ This note records mechanics; it changes no decision and accepts no risk. The ris
 - No saved format changed; maximum-size synchronous write cost is not yet measured. This is a development
   implementation note, not owner acceptance or a Gate result.
 
+### W27d1 implementation note: the bay deployment coordinator (W128 and W128R, merged `4b3812db4`)
+
+This note records mechanics; it changes no decision and accepts no risk. The risk is R-042, with R-039 and R-041.
+
+- **The coordinator.** It is created at `ServerStartingEvent` and runs D0, D1 (INTENT, or a REJECTED receipt
+  re-armed with the same `op`) and the reject-only D2 through a registry permit bound to the session. The exits
+  are READY_SOURCE and RELEASED_TO_ORDINARY. D0's journal checkpoint follows ADR-074 item 11. At most 256 claims
+  exist; the queue runs 32 steps per tick.
+- **Admission stays off.** D0 starts only on the GameTest server and on a dedicated server that passes the full
+  `EscrowTestEndpoints` gate. The release-test first-tick hook and every test seam pass that gate first (W128R-R1).
+  Existing receipts are still indexed at startup, and their restart rows hold or reject as R-042 describes.
+- **The gate lock's bay part** joins `idle`, `logicalLocked` and `resourcesIdle` (R49 Q3 and Q8).
+  `escrowIdle` and `escrowLogicalLocked` stay escrow-only. A vanilla dismount is never cancelled (R49 Q2).
+- **Reviews and evidence.** Two independent reviews (BLOCK, then BLOCK on test findings) and Root's review of
+  the R130 test fixes. Fourteen native forced-stop cases, two restarts each, and hosted regression 40554256640
+  pass. No saved format beyond the receipt store's existing one changed. W27d2 removes the interim
+  DEPLOYMENT_UNAVAILABLE outcome (R49 Q4).
+
+This is a development implementation note, not owner acceptance or a Gate result.
+
 ## 9. Solar generator and array (C17c)
 
 Single `solar_generator`: 10,000 FE buffer, FE output-only on six sides, no item or

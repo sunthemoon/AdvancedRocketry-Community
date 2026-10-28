@@ -446,6 +446,11 @@ final class RocketTransferEntities {
         refreshFlightTicket(level, snapshot, transferId);
     }
 
+    /** W27d1: a held bay claim renews the destination end's flight tickets as {@link #keepDestinationLoaded} does, with no load. */
+    static void refreshDestinationTickets(ServerLevel level, RocketStructureSnapshot destination, UUID transferId) {
+        addDestinationTickets(transferId, destination, levelTickets(level.getServer()));
+    }
+
     /** W83b (Root decision R32 item 2): the destination end's flight tickets over its ticket set, then today's origin load. */
     static void keepDestinationLoaded(ServerLevel level, RocketStructureSnapshot destination, UUID transferId) {
         addDestinationTickets(transferId, destination, levelTickets(level.getServer()));

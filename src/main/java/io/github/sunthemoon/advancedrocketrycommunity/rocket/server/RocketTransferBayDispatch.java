@@ -110,6 +110,11 @@ final class RocketTransferBayDispatch {
         return classified;
     }
     UUID source(UUID transfer) { return readySources.get(transfer); }
+    /** The ascent-complete bay checkpoint (W27d1's D0 enqueue); classification follows in the same call. */
+    void checkpoint(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity source) {
+        gate.ascentComplete(server, journal, record, source);
+    }
     String diagnostics(RocketTransferSavedData journal) {
         return " claimed=" + claimedTransfers.size() + journal.entries().stream()
                 .filter(record -> claimedTransfers.contains(record.transferId())).limit(4).map(record -> {

@@ -22,8 +22,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 /**
- * W21b review F1: per-tick ground changes cost O(touched records); only START and account creation encode and
- * read back the whole root. Budgets: one advance on the review's 2,001-instance, 701-job registry stays below
+ * W21b review F1, W168: ground changes cost O(touched records) when reservations prove the candidate fits;
+ * otherwise they encode and read back the whole root. Budgets: one advance on the review's registry stays below
  * 1 ms, and START on a root near the 16 MiB bound stays within the 500 ms single-spike budget (docs/17), measured
  * as its server-thread cost ({@link SpikeCost}).
  */
@@ -33,13 +33,13 @@ final class GroundSurveyScaleTest {
 
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
 
-    @Test void onlyStartAndAccountCreationTakeTheWholeRootPreflight() {
+    @Test void reservationBoundedLifecycleIncludingStartAndAccountCreationSkipsTheWholeRootPreflight() {
         CountingSizer sizer = new CountingSizer();
         var registry = SatelliteMissionRegistry.create(0, sizer);
         var jobs = registry.groundSurveys();
         assertEquals(GroundSurveys.Code.SUCCESS, jobs.start(start(0, 20, 2), 0).code());
         assertEquals(GroundSurveys.Code.SUCCESS, jobs.start(start(1, 20, 2), 0).code());
-        assertEquals(2, sizer.rootChecks);
+        assertEquals(0, sizer.rootChecks, "both STARTs fit their added reservations");
         registry.markPersisted();
         GroundSurveyJob.Device source = device(200);
         for (int tick = 1; tick <= 20; tick++) {
@@ -58,7 +58,7 @@ final class GroundSurveyScaleTest {
         assertEquals(GroundSurveys.Code.SUCCESS, jobs.advanceAnalysis(id(100), device(301), 24).code());
         assertEquals(GroundSurveyJob.Phase.PROCESSED, jobs.job(id(100)).orElseThrow().phase());
         assertEquals(120, registry.account(OWNER).balance());
-        assertEquals(2, sizer.rootChecks, "advances, rebinds, claim, credit and cancel");
+        assertEquals(0, sizer.rootChecks, "advances, rebinds, claim, credit and cancel");
 
         CountingSizer releases = new CountingSizer();
         var held = SatelliteMissionRegistry.restore(0, 0, 2, releases);
@@ -82,7 +82,7 @@ final class GroundSurveyScaleTest {
         assertEquals(GroundSurveys.Code.SUCCESS, unaccounted.groundSurveys().advanceAnalysis(running.jobId(),
                 device(300), 30).code());
         assertEquals(120, unaccounted.account(id(77)).balance());
-        assertEquals(1, accounts.rootChecks, "a credit that creates the account");
+        assertEquals(0, accounts.rootChecks, "the new account's reservation also fits");
     }
 
     @Test void reservationsAboveTheRootBoundSendOrdinaryChangesThroughTheWholeRootPreflight() {

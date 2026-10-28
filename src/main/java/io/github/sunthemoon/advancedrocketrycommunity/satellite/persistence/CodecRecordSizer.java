@@ -24,7 +24,8 @@ import net.minecraft.resources.ResourceLocation;
 
 /**
  * ADR-050 section 7 lifecycle reservation for the persisted registry: the largest encoding of a record over
- * every state it can still reach. The fields that never change (IDs, kind, reward, blueprint) are the record's
+ * every state it can still reach or be loaded in, since the reservation is computed once from whichever state
+ * admitted or restored it. The fields that never change (IDs, kind, reward, blueprint) are the record's
  * own; the fields a later transition adds (a current mission, a receiver link, times, a quarantine, a paying or
  * rebound terminal, an acknowledgement) take their largest value.
  */
@@ -44,6 +45,11 @@ public final class CodecRecordSizer implements RecordSizer {
 
     @Override
     public int satelliteBytes(SatelliteState satellite) {
+        return satelliteReservation(satellite).bytes();
+    }
+
+    @Override
+    public Reservation satelliteReservation(SatelliteState satellite) {
         SatelliteKindState state = satellite.kindState() instanceof SatelliteKindState.Solar solar
                 ? new SatelliteKindState.Solar(solar.outputMultiplierPercent(), Optional.of(ANY))
                 : satellite.kindState() instanceof SatelliteKindState.Survey survey
@@ -64,6 +70,11 @@ public final class CodecRecordSizer implements RecordSizer {
 
     @Override
     public int missionBytes(MissionState mission) {
+        return missionReservation(mission).bytes();
+    }
+
+    @Override
+    public Reservation missionReservation(MissionState mission) {
         MissionPayload payload = mission.payload() instanceof MissionPayload.Resource resource
                 ? new MissionPayload.Resource(resource.kind(), resource.reward(), ANY,
                         Optional.of(new MissionPayload.TerminalLocation(LONGEST_LEVEL, FAR)), true, Optional.of(ANY),
@@ -72,15 +83,22 @@ public final class CodecRecordSizer implements RecordSizer {
         long ready = Math.max(mission.completesAtLogicalTime(), Long.MAX_VALUE - 1);
         MissionState claimed = variant(mission, MissionStatus.CLAIMED, OptionalLong.of(ready),
                 OptionalLong.of(Long.MAX_VALUE), Optional.empty(), payload);
+        // Held from CLAIM_PENDING_DISCOVERY: the longest previous status and the only one that keeps both times.
+        // The constructor accepts it for every kind, so a loaded file can hold it even where no transition leads.
         MissionState quarantined = variant(mission, MissionStatus.QUARANTINED, OptionalLong.of(ready),
-                OptionalLong.empty(), Optional.of(new MissionQuarantine(LONGEST_REASON, MissionStatus.READY, true)),
-                payload);
+                OptionalLong.of(Long.MAX_VALUE), Optional.of(new MissionQuarantine(LONGEST_REASON,
+                        MissionStatus.CLAIM_PENDING_DISCOVERY, true)), payload);
         return bounded(() -> Math.max(bytes(SatelliteNbtCodec.encodeMission(claimed)),
                 bytes(SatelliteNbtCodec.encodeMission(quarantined))), SatelliteLimits.MAX_MISSION_RECORD_NBT_BYTES);
     }
 
     @Override
     public int instanceBytes(AsteroidInstance instance) {
+        return instanceReservation(instance).bytes();
+    }
+
+    @Override
+    public Reservation instanceReservation(AsteroidInstance instance) {
         AsteroidInstance allocated = new AsteroidInstance(instance.schemaVersion(), instance.instanceId(),
                 instance.ownerId(), instance.system(), instance.asteroidType(), instance.tableVersion(),
                 instance.candidateFingerprint(), instance.seed(), instance.yield(), instance.createdAt(),
@@ -92,6 +110,11 @@ public final class CodecRecordSizer implements RecordSizer {
 
     @Override
     public int groundSurveyBytes(GroundSurveyJob job) {
+        return groundSurveyReservation(job).bytes();
+    }
+
+    @Override
+    public Reservation groundSurveyReservation(GroundSurveyJob job) {
         var source = new GroundSurveyJob.Device(ANY, LONGEST_LEVEL, Long.MAX_VALUE);
         var analysis = new GroundSurveyJob.Analysis(GroundSurveyJob.AnalysisState.CREDITED,
                 job.analysis().ticks(), job.analysis().energy(), job.analysis().credit(), job.analysis().ticks(),
@@ -156,12 +179,12 @@ public final class CodecRecordSizer implements RecordSizer {
         return SatelliteNbtSize.uncompressedBytes(tag);
     }
 
-    /** A variant the encoder refuses is reserved at the record bound it exceeded. */
-    private static int bounded(java.util.function.IntSupplier size, int bound) {
+    /** A refused variant keeps its accounting cap, but cannot authorize a whole-root preflight bypass. */
+    private static Reservation bounded(java.util.function.IntSupplier size, int bound) {
         try {
-            return size.getAsInt();
+            return new Reservation(size.getAsInt(), true);
         } catch (IllegalArgumentException overBound) {
-            return bound;
+            return new Reservation(bound, false);
         }
     }
 }

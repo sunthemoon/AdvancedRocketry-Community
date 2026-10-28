@@ -28,7 +28,7 @@ public final class EscrowTestEndpoints {
                 "Escrow fixture requires a GameTestServer or a gated release-test dedicated server with only test-owned players and no RCON");
     }
     /** The same gate as {@link #requireEnabled}, as a query: false on every ordinary server. */
-    static boolean enabled(MinecraftServer server) {
+    public static boolean enabled(MinecraftServer server) {
         return enabled(server.isSameThread(), server instanceof GameTestServer,
                 Boolean.getBoolean(HOOKS), server.isDedicatedServer(),
                 () -> server instanceof net.minecraft.server.dedicated.DedicatedServer dedicated
