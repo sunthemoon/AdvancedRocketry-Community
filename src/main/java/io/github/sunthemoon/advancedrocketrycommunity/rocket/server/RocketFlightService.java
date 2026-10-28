@@ -147,14 +147,19 @@ final class RocketFlightService {
         return request(player, rocketEntityId, action, target, requestId, null);
     }
 
+    /**
+     * W182 (finding W179-F3): the flight screen is the only client that sends LAUNCH, CANCEL, BOARD or LEAVE, so
+     * every intent, with or without a landing pad, needs the server thread, a connected, living, non-spectator player
+     * that is not a fake player, and that player's open, valid flight menu for this rocket; otherwise UNAUTHORIZED.
+     */
     RocketFlightRequestResult request(ServerPlayer player, int rocketEntityId, RocketFlightAction action,
             TravelTarget target, UUID requestId,
             io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadReference pad) {
-        if (pad != null && (!player.serverLevel().getServer().isSameThread() || player.connection == null
+        if (!player.serverLevel().getServer().isSameThread() || player.connection == null
                 || !player.connection.connection.isConnected() || !player.isAlive() || player.isSpectator()
                 || player instanceof net.minecraftforge.common.util.FakePlayer
                 || !(player.containerMenu instanceof io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightMenu menu)
-                || menu.rocketEntityId() != rocketEntityId || !menu.stillValid(player))) {
+                || menu.rocketEntityId() != rocketEntityId || !menu.stillValid(player)) {
             return RocketFlightRequestResult.failure(RocketFlightRequestCode.UNAUTHORIZED);
         }
         Objects.requireNonNull(player, "player");
