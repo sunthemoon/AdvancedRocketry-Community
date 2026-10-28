@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.RocketFeedback;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.validation.RocketValidationCode;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.validation.RocketValidationIssue;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
@@ -13,25 +14,25 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
-import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.contents.TranslatableContents;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 class RocketIssueFeedbackTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
 
-    @Test void failureReportContainsOnlyTheTranslatedReason() {
+    @Test void failureReportContainsOnlyTheTranslatedReason() throws IOException {
         for (var code : RocketValidationCode.values()) {
             if (code == RocketValidationCode.SUCCESS) { continue; }
             var issue = new RocketValidationIssue(code, new RocketPosition(1, 2, 3),
                     Map.of("coordinate_space", "absolute", "detail", "internal diagnostic"));
-            assertEquals(Component.translatable(code.translationKey()).getString(), RocketInteraction.issueDetail(issue));
+            assertEquals(expectedReason(code), RocketInteraction.issueDetail(issue));
         }
     }
 
     @Test void emptyParametersDoNotLeakTheEnumOrCoordinatesEither() {
         var issue = new RocketValidationIssue(RocketValidationCode.TARGET_OCCUPIED, Map.of());
-        assertEquals(Component.translatable(issue.translationKey()).getString(), RocketInteraction.issueDetail(issue));
+        assertEquals("Rocket disassembly target is occupied", RocketInteraction.issueDetail(issue));
     }
 
     @Test void operatorDiagnosticRetainsCodePositionAndMapWithABoundedSingleLine() {
@@ -46,8 +47,8 @@ class RocketIssueFeedbackTest {
         assertEquals(1_024, RocketInteraction.diagnosticDetail(large).length());
     }
 
-    @Test void activeLanguageFilesProvideBothEntityNames() throws IOException {
-        Path directory = Path.of("src/generated/v1.8/resources/assets/advancedrocketrycommunity_v180/lang");
+    @Test void packagedLanguageFilesProvideBothEntityNames() throws IOException {
+        Path directory = Path.of("src/generated/v0.5/resources/assets/advancedrocketrycommunity_v050/lang");
         for (var entry : Map.of("en_us", "Assembled Rocket", "zh_cn", "组装火箭").entrySet()) {
             var json = JsonParser.parseString(Files.readString(directory.resolve(entry.getKey() + ".json"))).getAsJsonObject();
             String key = "entity.advancedrocketrycommunity.rocket";
@@ -56,29 +57,30 @@ class RocketIssueFeedbackTest {
         }
     }
 
-    @Test void serverDataPackContainsEveryBoundedReasonAndTheEntityName() throws IOException {
+    @Test void packagedFallbackKeepsEveryReasonBoundedAndLocalizable() throws IOException {
+        var name = RocketFeedback.entityName();
+        assertEquals("Assembled Rocket", name.getString());
+        assertTrue(name.getContents() instanceof TranslatableContents text
+                && text.getKey().equals("entity.advancedrocketrycommunity.rocket"));
+        for (var code : RocketValidationCode.values()) {
+            var reason = RocketFeedback.reason(code);
+            String expected = expectedReason(code);
+            assertEquals(expected, reason.getString(), code.name());
+            assertTrue(expected.length() <= 256 && !expected.isBlank() && !expected.equals(code.translationKey()), code.name());
+            assertTrue(reason.getContents() instanceof TranslatableContents text && text.getKey().equals(code.translationKey()));
+            assertTrue(reason.getSiblings().isEmpty());
+        }
+    }
+
+    private static String expectedReason(RocketValidationCode code) throws IOException {
         Path root = Path.of("src/generated");
-        var server = JsonParser.parseString(Files.readString(root.resolve(
-                "v1.8/resources/data/advancedrocketrycommunity_v180_rocket/lang/en_us.json"))).getAsJsonObject();
-        var client = JsonParser.parseString(Files.readString(root.resolve(
-                "v1.8/resources/assets/advancedrocketrycommunity_v180_rocket/lang/en_us.json"))).getAsJsonObject();
-        assertEquals(server, client, "Forge redirects its server language lookup to the asset copy");
-        var chinese = JsonParser.parseString(Files.readString(root.resolve(
-                "v1.8/resources/assets/advancedrocketrycommunity_v180_rocket/lang/zh_cn.json"))).getAsJsonObject();
-        assertEquals("组装火箭", chinese.get("entity.advancedrocketrycommunity.rocket").getAsString());
         var legacy = JsonParser.parseString(Files.readString(root.resolve(
                 "v0.5/resources/assets/advancedrocketrycommunity_v050/lang/en_us.json"))).getAsJsonObject();
         var fuel = JsonParser.parseString(Files.readString(root.resolve(
                 "v1.3/resources/assets/advancedrocketrycommunity_v130/lang/en_us.json"))).getAsJsonObject();
         var active = JsonParser.parseString(Files.readString(root.resolve(
                 "v1.8/resources/assets/advancedrocketrycommunity_v180/lang/en_us.json"))).getAsJsonObject();
-        assertEquals("Assembled Rocket", server.get("entity.advancedrocketrycommunity.rocket").getAsString());
-        for (var code : RocketValidationCode.values()) {
-            String key = code.translationKey();
-            String expected = (active.has(key) ? active : fuel.has(key) ? fuel : legacy).get(key).getAsString();
-            assertEquals(expected, server.get(key).getAsString(), key);
-            assertTrue(expected.length() <= 256 && !expected.isBlank() && !expected.equals(key), key);
-            assertTrue(chinese.has(key) && !chinese.get(key).getAsString().isBlank(), key);
-        }
+        String key = code.translationKey();
+        return (active.has(key) ? active : fuel.has(key) ? fuel : legacy).get(key).getAsString();
     }
 }

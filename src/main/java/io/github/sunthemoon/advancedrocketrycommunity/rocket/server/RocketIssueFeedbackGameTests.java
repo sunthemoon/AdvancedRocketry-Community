@@ -8,6 +8,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.assembler.RocketAss
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.assembler.RocketAssemblerReport;
 import io.github.sunthemoon.advancedrocketrycommunity.compat.rocket.component.RocketComponentCatalog;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.RocketBlockEntityAdapters;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.RocketFeedback;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.validation.RocketValidationCode;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.validation.RocketValidationIssue;
@@ -102,7 +103,7 @@ public final class RocketIssueFeedbackGameTests {
                     assemble) == RocketValidationCode.SCAN_IN_PROGRESS, "Failure scan was not queued");
             scans.tick(helper.getLevel().getServer());
             helper.assertTrue(scans.pendingScans() == 0, "One-block failure scan did not finish");
-            helper.assertTrue(assembler.report().detail().equals(Component.translatable(assembler.report().code().translationKey()).getString()),
+            helper.assertTrue(assembler.report().detail().equals(RocketFeedback.reason(assembler.report().code()).getString()),
                     "Failure service stored developer details instead of the reason");
             helper.assertTrue(assembler.report().detail().equals("Selected block is not rocket-movable"),
                     "Native scan report did not resolve its server translation: " + assembler.report().detail());

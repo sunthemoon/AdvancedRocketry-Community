@@ -44,7 +44,7 @@ public final class RocketLanguageProvider extends LanguageProvider {
         }
     }
 
-    static String english(RocketValidationCode code) {
+    private static String english(RocketValidationCode code) {
         return switch (code) {
             case SUCCESS -> "Success";
             case SCAN_IN_PROGRESS -> "Scanning structure";
@@ -92,7 +92,7 @@ public final class RocketLanguageProvider extends LanguageProvider {
         };
     }
 
-    static String chinese(RocketValidationCode code) {
+    private static String chinese(RocketValidationCode code) {
         return switch (code) {
             case SUCCESS -> "成功";
             case SCAN_IN_PROGRESS -> "正在扫描结构";

@@ -3,6 +3,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.assembler.RocketAssemblerBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.assembler.RocketAssemblerReport;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.RocketFeedback;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.validation.RocketValidationCode;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.validation.RocketValidationIssue;
 import net.minecraft.core.BlockPos;
@@ -45,7 +46,7 @@ final class RocketInteraction {
     ) {
         boolean failure = code != RocketValidationCode.SUCCESS && code != RocketValidationCode.SCAN_IN_PROGRESS;
         assembler.setReport(new RocketAssemblerReport(code, stats,
-                failure ? Component.translatable(code.translationKey()).getString() : detail, level.getGameTime()));
+                failure ? RocketFeedback.reason(code).getString() : detail, level.getGameTime()));
         if (failure) {
             StringBuilder diagnostic = new StringBuilder();
             appendDiagnostic(diagnostic, detail);
@@ -74,7 +75,7 @@ final class RocketInteraction {
 
     static String issueDetail(RocketValidationIssue issue) {
         // R153: schema-1 still stores a bounded string, now resolved in the server's language.
-        return Component.translatable(issue.translationKey()).getString();
+        return RocketFeedback.reason(issue.code()).getString();
     }
 
     /** Bounded, single-line diagnostics without first allocating an unbounded Map.toString(). */

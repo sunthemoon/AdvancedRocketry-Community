@@ -8,6 +8,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlight
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightState;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketPassengerPosition;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketFlightNbtCodec;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.RocketFeedback;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightMenu;
@@ -23,6 +24,7 @@ import java.util.UUID;
 import java.util.stream.IntStream;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -77,6 +79,11 @@ public final class RocketEntity extends Entity implements MenuProvider {
         super(entityType, level);
         noPhysics = true;
         setNoGravity(true);
+    }
+
+    @Override
+    protected Component getTypeName() {
+        return RocketFeedback.entityName();
     }
 
     public void initialize(
