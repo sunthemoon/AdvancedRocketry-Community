@@ -4,6 +4,7 @@ import static io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.Flui
 
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestAutosave;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModEntities;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
@@ -35,8 +36,14 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 public final class EscrowRetireBeforeFillGameTests {
     private static final String BATCH = "escrow_retire_before_fill";
     private static final String CAPTURE_CONTENTION = "w164_retire_fill_capture_turn";
+    // W166's positive native-capture window, not a production timeout or extra fixture time.
+    private static final int CAPTURE_WINDOW_TICKS = 60;
     private static final List<Scenario> RUNNING = new ArrayList<>();
     private EscrowRetireBeforeFillGameTests() { }
+
+    static boolean launchCaptureWindow(int tick) {
+        return GameTestAutosave.ticksUntil(tick) > CAPTURE_WINDOW_TICKS;
+    }
 
     @GameTest(template = "empty", batch = BATCH, timeoutTicks = 2_400)
     public static void sameLevelLandedTransferRetiresBeforeFillAndGovernedLaunch(GameTestHelper helper) {
@@ -194,6 +201,9 @@ public final class EscrowRetireBeforeFillGameTests {
                 // Idle resources do not imply a free native capture: the other fills, ordinary retirement and F1
                 // all use one shared capture per tick. Exercise the launch only on an available turn, not on the
                 // tick on which an asynchronous fill happened to finish. A submitted launch is never resubmitted.
+                // An available turn can still be superseded by vanilla's periodic save before F1 acknowledges.
+                // This positive launch fixture does not test that refusal; start outside the autosave window.
+                if (!launchCaptureWindow(server.getTickCount())) { return; }
                 if (!EscrowRuntime.of(server).barrier().available(level.dimension().location().toString(),
                         true, server.getTickCount())) { return; }
                 request = UUID.randomUUID();
