@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestAutosave;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowBarrier;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowChunkStore;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowOperation;
@@ -41,7 +42,13 @@ public final class RocketRetirementCoverageGameTests {
     private static final String STORAGE = "ordinary_source_retirement_storage";
     private static final String CONTENTION = "ordinary_source_retirement_contention";
     private static final String SHARED_SLOT = "ordinary_source_retirement_shared_slot";
+    private static final int SHARED_RETAIN_TICKS = 40;
     private RocketRetirementCoverageGameTests() { }
+
+    /** Leave the ordinary proof deadline and the existing consumer-retention interval before vanilla's next save. */
+    static boolean sharedProofWindowAvailable(int tick) {
+        return GameTestAutosave.ticksUntil(tick) > RocketOrdinaryRetirement.ATTEMPT_TICKS + SHARED_RETAIN_TICKS;
+    }
 
     /**
      * R5(c): while another mod's decorator replaces the Level's entity storage, a countdown cancellation keeps today's
@@ -320,7 +327,7 @@ public final class RocketRetirementCoverageGameTests {
             assertCountersUnchanged(barrier);
             if (governed == null) { return false; }
             helper.assertTrue(governed.confirmed(), "The one governed attempt did not confirm: " + governed.reason());
-            if (retainedUntil < 0) { retainedUntil = now + 40; }
+            if (retainedUntil < 0) { retainedUntil = now + SHARED_RETAIN_TICKS; }
             if (now < retainedUntil) { return false; }
             // A consumer owns the successful proof beyond the callback and across two ordinary quota windows.
             governed.proof().release(); observed = true; dispatched = true;
@@ -330,6 +337,9 @@ public final class RocketRetirementCoverageGameTests {
         /** No barrier clock or queue mutation: wait for a real primer's proof and inspect the resulting window. */
         boolean openWindow(EscrowBarrier barrier, long now) {
             if (!priming) {
+                // This positive pin test needs an unchanged slot, including after the governed callback. Vanilla's
+                // periodic save invalidates that pin legitimately; the ordinary return may then reserve and capture.
+                if (shared && !sharedProofWindowAvailable(server().getTickCount())) { return false; }
                 var frontier = endpoints.bankState();
                 priming = barrier.begin(EscrowRuntime.of(server()).store(level()), operation.destination(), frontier,
                         EscrowTestEndpoints.validator(operation.destination(), frontier), now, result -> primer = result);
@@ -341,7 +351,7 @@ public final class RocketRetirementCoverageGameTests {
             helper.assertTrue(batch.governed().isEmpty() && batch.ordinary().isEmpty(), "The primer left staged captures");
             primer.proof().release(); primer = null; priming = false;
             // Leave room for the next tick's ordinary capture. A slow primer can use another real batch.
-            return batch.forceTick() > now + 1;
+            return batch.forceTick() > now + 1 && (!shared || sharedProofWindowAvailable(server().getTickCount()));
         }
 
         /** Snapshots through the existing read-only fixture accessor; attempt identities survive until dispatch. */
