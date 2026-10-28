@@ -8,6 +8,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessInput;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -19,6 +21,7 @@ import java.util.regex.Matcher;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import net.minecraft.Util;
+import net.minecraft.commands.Commands;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -27,6 +30,7 @@ import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.ReloadableServerResources;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
@@ -73,20 +77,27 @@ public final class DataPackOverLimitReloadGameTests {
     private DataPackOverLimitReloadGameTests() {
     }
 
-    /** What the server held before the pack: its selected packs, its classic recipes by type and its patterns. */
-    private record Before(List<String> selected, Map<String, Integer> classic, int patterns) {
+    /**
+     * What the server held before the pack: its selected packs, its classic recipes by type, its patterns and its
+     * command set.
+     */
+    private record Before(List<String> selected, Map<String, Integer> classic, int patterns, Commands commands) {
         static Before of(MinecraftServer server) {
             return new Before(List.copyOf(server.getPackRepository().getSelectedIds()), classicCounts(server),
                     server.getResourceManager().listResources(MultiblockPatternReloadListener.DIRECTORY,
-                            location -> location.getPath().endsWith(".json")).size());
+                            location -> location.getPath().endsWith(".json")).size(), server.getCommands());
         }
     }
+
+    /** The command set to reinstate if the test ends before its restoring reload. */
+    private static Commands original;
 
     @GameTest(template = "empty", batch = BATCH, timeoutTicks = 1200)
     public static void anOverLimitPackIsRefusedEntryByEntryWithBoundedLoggingAndThenRemoved(GameTestHelper helper) {
         MinecraftServer server = helper.getLevel().getServer();
         OverLimitDataPack pack = new OverLimitDataPack();
         Before before = Before.of(server);
+        original = before.commands();
         helper.assertTrue(!before.selected().contains(OverLimitDataPack.ID), "The fixture pack is already selected");
         helper.assertTrue(server.getRecipeManager().byKey(KNOWN_GOOD).isPresent(), "No known classic recipe");
         List<String> enabled = new ArrayList<>(before.selected());
@@ -156,6 +167,10 @@ public final class DataPackOverLimitReloadGameTests {
             selected.remove(OverLimitDataPack.ID);
             server.reloadResources(selected);
         }
+        if (original != null && server.getCommands() != original) {
+            reinstate(server, original);
+        }
+        original = null;
         try {
             OverLimitDataPack.delete(OverLimitDataPack.directory(server));
         } catch (IOException failure) {
@@ -243,6 +258,8 @@ public final class DataPackOverLimitReloadGameTests {
                                  Reload reload) {
         long millis = reload.millis();
         List<ReloadLogCapture.Event> logged = reload.finish(helper);
+        reinstate(server, before.commands());
+        original = null;
         try {
             OverLimitDataPack.delete(OverLimitDataPack.directory(server));
         } catch (IOException failure) {
@@ -291,11 +308,36 @@ public final class DataPackOverLimitReloadGameTests {
         if (forgotten != 1) {
             defects.add("Forge warned " + forgotten + " times, not once, that the oversized tag is gone");
         }
+        if (server.getCommands() != before.commands()
+                || server.getCommands().getDispatcher().getRoot().getChild("save-all") == null) {
+            defects.add("the server's own command set, with save-all, is not back");
+        }
         helper.assertTrue(defects.isEmpty(), "Restoring reload defects: " + defects);
         AdvancedRocketryCommunity.LOGGER.info("ARCE_W179_RELOAD stage=disable ms={} patterns={}", millis,
                 before.patterns());
     }
 
+
+    /**
+     * {@code GameTestServer} is not a {@code DedicatedServer}, so {@code MinecraftServer.reloadResources} builds the
+     * INTEGRATED command set, without {@code save-all}, {@code stop} or {@code op}, which later batches use. The
+     * server's own set, built at start with the DEDICATED selection, goes back into the reloaded resources.
+     */
+    private static void reinstate(MinecraftServer server, Commands commands) {
+        ReloadableServerResources managers = server.getServerResources().managers();
+        for (Field field : ReloadableServerResources.class.getDeclaredFields()) {
+            if (field.getType() == Commands.class && !Modifier.isStatic(field.getModifiers())) {
+                try {
+                    field.setAccessible(true);
+                    field.set(managers, commands);
+                    return;
+                } catch (IllegalAccessException failure) {
+                    throw new IllegalStateException("The reloaded command set cannot be replaced", failure);
+                }
+            }
+        }
+        throw new IllegalStateException("The reloaded resources hold no command set");
+    }
 
     /** Each refusal of the pack logs exactly once, within {@link #MAX_LOGGED_CHARS}; nothing else warns. */
     private static List<String> enabledLog(OverLimitDataPack pack, List<ReloadLogCapture.Event> logged) {
