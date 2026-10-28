@@ -40,6 +40,8 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.animal.Cow;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
@@ -61,6 +63,32 @@ public final class LivingGravityGameTests {
     private static final UUID FOREIGN_ID = UUID.fromString("d4b9983d-9dc3-4e88-9ee6-d2dd95fa693b");
 
     private LivingGravityGameTests() {
+    }
+
+    @GameTest(template = "empty", batch = "living_slow_fall", timeoutTicks = 100)
+    public static void nativeSlowFallOnMoonStartsDescendingFromRest(GameTestHelper helper) {
+        Cow moon = cow(level(helper, CelestialIds.MOON_LEVEL), airPosition(helper));
+        SwitchOverrides.set(CommonConfig.CLASSIC_GRAVITY_ENABLED, true);
+        try {
+            moon.setNoAi(false);
+            moon.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, 200));
+            moon.setDeltaMovement(Vec3.ZERO);
+            double start = moon.getY();
+            for (int tick = 0; tick < 12; tick++) { moon.tick(); }
+            helper.assertTrue(moon.getY() < start - 0.1D,
+                    "Slow-falling Moon mob still hovers from rest: drop=" + (start - moon.getY()));
+            helper.assertTrue(moon.getDeltaMovement().y < -0.003D, "Descent is below the native motion dead zone");
+            helper.assertTrue(gravity(moon).getValue() >= 0.0031D - 1.0E-9D,
+                    "Scaled slow-fall gravity was not floored above the damped dead zone");
+            moon.removeEffect(MobEffects.SLOW_FALLING);
+            moon.tick();
+            moon.tick();
+            expect(helper, gravity(moon).getValue(), 0.08D * 0.165D, "Normal Moon gravity did not return");
+        } finally {
+            SwitchOverrides.clear(CommonConfig.CLASSIC_GRAVITY_ENABLED);
+            moon.discard();
+        }
+        helper.succeed();
     }
 
     @GameTest(template = "empty", batch = BATCH, timeoutTicks = 100)
