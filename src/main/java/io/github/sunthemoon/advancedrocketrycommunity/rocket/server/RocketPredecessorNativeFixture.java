@@ -118,6 +118,17 @@ public final class RocketPredecessorNativeFixture {
         var flight = landed.flightData().orElseThrow();
         if (flight.state() == RocketFlightState.DESCENT) { landed.updateFlightData(flight.land(destination.getGameTime())); }
         if (mode.equals("NAMED") || mode.equals("STOLEN")) { namedPad(); }
+        if (System.getProperty("advancedrocketrycommunity.i6NativeCut", "").startsWith("PLAIN_")) {
+            // Nonempty FM12a outbox, without saving the new D. This synthetic event is test-fixture input,
+            // not a claim that the fixture flew a player or exercised production Moon landing election.
+            var origin = old.destinationSnapshot().sourceOrigin();
+            var event = io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent.FirstEvent.MoonLanding.create(
+                    UUID.randomUUID(), old.transferId(), old.logicalRocketId(), old.ownerId(), landed.getUUID(),
+                    old.checksum(), origin.x(), origin.y(), origin.z(), destination.getGameTime(), java.util.List.of());
+            var journal = RocketTransferSavedData.get(server);
+            if (!journal.electFirstMoonLanding(event)) { throw new IllegalStateException("I6 fixture event was not elected"); }
+            journal.flushChecked(server);
+        }
         AdvancedRocketryCommunity.LOGGER.info("ARCE_I7_FIXTURE_LANDED mode={} entity={}", mode, landed.getUUID());
     }
 
@@ -182,7 +193,7 @@ public final class RocketPredecessorNativeFixture {
     private void close() {
         if (closed) { return; } closed = true;
         if (storage != null) { destination.entityManager.permanentStorage = storage; }
-        destination.noSave = false;
+        if (mode.equals("SAVE_OFF")) { destination.noSave = false; }
         MinecraftForge.EVENT_BUS.unregister(this);
     }
 

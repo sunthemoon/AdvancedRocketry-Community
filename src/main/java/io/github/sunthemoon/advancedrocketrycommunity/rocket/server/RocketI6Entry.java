@@ -44,6 +44,7 @@ final class RocketI6Entry {
             var port = ports.apply(server, journal);
             retirements.begin(proof, journal, RocketOrdinaryRetirement.Site.BEFORE_RELEASE, record, rocket.getUUID(),
                     List.of(), false, held, RocketOrdinaryRetirement.Effects.of(() -> {
+                        port.probe("PLAIN_ACK", record);
                         if (port.bayAllowsRemoval(record)) { port.released(record, rocket.getUUID()); }
                         return true;
                     }));

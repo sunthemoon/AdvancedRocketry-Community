@@ -31,6 +31,8 @@ final class RocketJournalFailurePolicy {
         if (cut.isPresent()) {
             return cut.orElseThrow();
         }
+        String i6 = RocketI6NativeCut.selection(server);
+        if (!i6.isEmpty()) { return RocketTransferSavedData.get(server).nativeI6Policy(i6, server); }
         var removalCut = RocketJournalRemovalCut.checked(server);
         if (removalCut.isPresent()) { return removalCut.orElseThrow(); }
         var landedCut = RocketLandedRemovalCut.checked(server);
