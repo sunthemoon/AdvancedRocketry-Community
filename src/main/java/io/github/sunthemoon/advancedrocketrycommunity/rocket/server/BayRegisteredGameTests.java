@@ -325,7 +325,9 @@ public final class BayRegisteredGameTests {
                 }
                 if (kind.copies() && claim.stage() == BayClaim.Stage.RETIRE) {
                     assertCopiesConsumed();
-                    helper.assertTrue(receipts.stream().allMatch(receipt -> session.current(receipt.op()).isPresent()),
+                    // current() is the pending RAM root: removeGroup excludes these entries before the IO acknowledgement.
+                    // The acknowledged root must still retain the exact receipts until that completion ends RETIRE.
+                    helper.assertTrue(BayReceiptTestHooks.store(server).orElseThrow().durable().receipts().containsAll(receipts),
                             "Receipts disappeared before D7 acknowledgement");
                 }
                 return;
