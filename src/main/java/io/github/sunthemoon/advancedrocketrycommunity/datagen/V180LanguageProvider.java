@@ -6,6 +6,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.material.MaterialCatalog.E
 import io.github.sunthemoon.advancedrocketrycommunity.material.MaterialCatalog.Material;
 import io.github.sunthemoon.advancedrocketrycommunity.material.MaterialCatalog.Product;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteOperationCode;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.validation.RocketValidationCode;
 import java.util.EnumMap;
 import java.util.Map;
 import net.minecraft.data.PackOutput;
@@ -30,6 +31,15 @@ public final class V180LanguageProvider extends LanguageProvider {
     @Override
     protected void addTranslations() {
         add("entity." + NS + ".rocket", chinese ? "组装火箭" : "Assembled Rocket");
+        // Server LanguageHook discovers data namespaces; PathPackResources redirects lang/ to assets.
+        // Keep historical files sealed and publish the older reasons in this server-visible namespace too.
+        var propulsionLabels = V180PropulsionLanguage.entries(chinese);
+        var disassemblyLabels = V180LandedDisassemblyLanguage.entries(chinese);
+        for (var code : RocketValidationCode.values()) {
+            if (!propulsionLabels.containsKey(code.translationKey()) && !disassemblyLabels.containsKey(code.translationKey())) {
+                add(code.translationKey(), chinese ? RocketLanguageProvider.chinese(code) : RocketLanguageProvider.english(code));
+            }
+        }
         add("flight.advancedrocketrycommunity.request.journal_pending", chinese
                 ? "等待转移日志持久化确认；需要燃料 %s" : "Waiting for durable transfer confirmation; required fuel %s");
         // W90 (Root decisions R21 item 3 and R22 answer 4): governed launch-area refusals.

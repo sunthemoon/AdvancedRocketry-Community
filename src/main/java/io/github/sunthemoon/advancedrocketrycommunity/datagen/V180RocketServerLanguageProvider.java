@@ -8,7 +8,7 @@ import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
 
-/** Forge's server LanguageHook reads data-pack languages, not client asset languages. */
+/** Exposes the language namespace to server discovery; Forge redirects its lang/ lookup to matching assets. */
 public final class V180RocketServerLanguageProvider implements DataProvider {
     private final PackOutput output;
 
