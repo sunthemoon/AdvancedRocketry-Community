@@ -435,6 +435,7 @@ def first_start(run: Session, case: str, world: Path) -> tuple[dict | None, dict
                 observed["saved"] = run.send("save-all flush", SAVED, 120)
             if spec.get("cold"):
                 run.send(f"forceload remove {ORIGIN[0]} {ORIGIN[2]}", re.compile(r"[Uu]nmarked|forceload|chunk"))
+                observed["cold_forceloads_saved"] = run.send("save-all flush", SAVED, 120)
     if spec.get("staging"):
         (world / "data" / STAGING).rmdir()
     if spec["end"] == "crash":
