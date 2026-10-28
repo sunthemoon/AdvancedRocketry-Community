@@ -299,6 +299,36 @@ section 9's 100 MB per-slice limit. A fresh Codex session continues:
      fail the fix first.
 3. **Then B-PRE, all 20 cases**, with two restarts each and the R124 limits; then tranche 2.
 
+## Continuation under Root decision R156 (2026-10-29)
+
+The R141 session (15:39 to 07:10, record `44f6e9959`) packaged the superseded evidence losslessly, reproduced the
+hosted F1 autosave supersession and fixed it in the fixture (`b6abbbf91`), and passed all 20 B-PRE cases with two
+restarts each (60 starts, no retries). 5,423 unit tests, a clean build, runData and all 1,461 GameTests with the
+unchanged checker pass. Root pushed the branch at 07:14. Tranche 2 has no starts: the B-PLAIN and B-M rows need
+harness work, because W85's runner asserts the pre-I6 loss of an unsaved D. The evidence directory holds 88,967,740
+bytes. Root decision R156:
+
+1. **Merge the shared head named in your prompt.** It contains W187, which also guards two of your fixtures:
+   - in `EscrowRetireBeforeFillGameTests`, keep your `b6abbbf91` version and drop W187's `e35642b41`;
+   - in the retirement-contention fixture, keep both: your shared-slot fix and W187's `ready()` guard for the
+     non-shared case.
+
+   Record each conflict, then run the whole unit suite.
+2. **Evidence headroom.** Before any native run, check the directory's size. If tranche 2 would take it past 100 MB,
+   Root authorizes moving sealed, superseded runs unchanged to `D:/GitHub/ARCE-Task-Evidence/archive/W164/`, with a
+   SHA-256 manifest of every moved file and a pointer file in the slice directory. Change no file inside a sealed
+   packet, and keep every path the record cites reproducible.
+3. **Build and qualify the B-PLAIN and B-M harness.** Add the test seams the rows need (plain ACK-before-effects, K3
+   write-back move and UNKNOWN, K10 final-write failure) and native oracles that require I6's durable D1. Python tests
+   for the harness fail first where they can. A seam is gated as the existing release-test seams are.
+4. **Run tranche 2:** the 14 B-PLAIN and B-M rows, two restarts each (42 starts, within the 66-start limit). Stop and
+   report if a case fails twice. No row is folded into another.
+5. **Measure the native worst-case proof and preparation tick cost** against docs/17 and record it.
+6. **The combined terrain matrix** (89 rows, at least 356 starts) is not part of W164. Root makes it its own slice
+   after W164 merges, so record its row count and inventory only.
+
+Then Root pushes the branch for a hosted run, and a fresh independent persistence review precedes the merge.
+
 ## Not in this task
 
 - N3-B4 (the combined cut evidence), W98-R1 and governed admission.
