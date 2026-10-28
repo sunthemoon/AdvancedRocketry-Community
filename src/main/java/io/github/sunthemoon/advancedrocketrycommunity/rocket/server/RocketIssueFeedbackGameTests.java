@@ -66,6 +66,11 @@ public final class RocketIssueFeedbackGameTests {
         helper.assertTrue(assembler.saveWithoutMetadata().getCompound("RocketAssemblerData").getString("detail").equals(oldDetail),
                 "Existing schema-1 report was migrated or rewritten");
         helper.assertTrue(assembler.operatorDetail().isEmpty(), "Loading another report retained a stale diagnostic");
+        RocketInteraction.update(assembler, RocketValidationCode.REGION_BUSY, null,
+                "unfinished transaction owns the region", helper.getLevel());
+        helper.assertTrue(assembler.report().detail().equals("Rocket region is busy")
+                        && assembler.operatorDetail().equals("unfinished transaction owns the region"),
+                "A preflight failure bypassed translated reports or lost its operator detail");
         assembler.setOperatorDetail("x".repeat(2_000));
         helper.assertTrue(assembler.operatorDetail().length() == 1_024, "Transient diagnostic is unbounded");
         assembler.setReport(new RocketAssemblerReport(issue.code(), null, "x".repeat(300), 0));

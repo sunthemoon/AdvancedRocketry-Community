@@ -43,7 +43,14 @@ final class RocketInteraction {
             String detail,
             ServerLevel level
     ) {
-        assembler.setReport(new RocketAssemblerReport(code, stats, detail, level.getGameTime()));
+        boolean failure = code != RocketValidationCode.SUCCESS && code != RocketValidationCode.SCAN_IN_PROGRESS;
+        assembler.setReport(new RocketAssemblerReport(code, stats,
+                failure ? Component.translatable(code.translationKey()).getString() : detail, level.getGameTime()));
+        if (failure) {
+            StringBuilder diagnostic = new StringBuilder();
+            appendDiagnostic(diagnostic, detail);
+            assembler.setOperatorDetail(diagnostic.toString());
+        }
     }
 
     static void notify(ServerPlayer player, RocketValidationCode code, String detail) {

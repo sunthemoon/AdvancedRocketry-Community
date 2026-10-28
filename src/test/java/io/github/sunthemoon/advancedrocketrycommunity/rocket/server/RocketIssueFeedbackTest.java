@@ -8,6 +8,10 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPositio
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.validation.RocketValidationCode;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.validation.RocketValidationIssue;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
+import com.google.gson.JsonParser;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Map;
 import net.minecraft.network.chat.Component;
 import org.junit.jupiter.api.BeforeAll;
@@ -40,5 +44,15 @@ class RocketIssueFeedbackTest {
         var large = new RocketValidationIssue(RocketValidationCode.EXTRACTION_FAILED,
                 Map.of("detail", "x".repeat(20_000)));
         assertEquals(1_024, RocketInteraction.diagnosticDetail(large).length());
+    }
+
+    @Test void activeLanguageFilesProvideBothEntityNames() throws IOException {
+        Path directory = Path.of("src/generated/v1.8/resources/assets/advancedrocketrycommunity_v180/lang");
+        for (var entry : Map.of("en_us", "Assembled Rocket", "zh_cn", "组装火箭").entrySet()) {
+            var json = JsonParser.parseString(Files.readString(directory.resolve(entry.getKey() + ".json"))).getAsJsonObject();
+            String key = "entity.advancedrocketrycommunity.rocket";
+            assertTrue(json.has(key), entry.getKey() + " lacks the entity name");
+            assertEquals(entry.getValue(), json.get(key).getAsString());
+        }
     }
 }
