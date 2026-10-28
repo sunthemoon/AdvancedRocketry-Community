@@ -35,6 +35,14 @@ def world_hashes(world):
             if path.is_file() and path.name != "session.lock"}
 
 
+def refusal_storage_result(before, after):
+    """Keep the whole-world byte assertion's failed verdict while collecting the independent later rows."""
+    oracle.require(before, "No pre-refusal world hashes")
+    changed = [key for key in sorted(before.keys() | after.keys()) if before.get(key) != after.get(key)]
+    return dict(status="FAILED" if changed else "PASS", changed_world_files=changed,
+                world_files_unchanged=len(before) - len(changed))
+
+
 def check_downgrade_refusal(lines):
     """Separate negative-startup oracle; never an ERROR allowance for a healthy S1 process."""
     oracle.require(not any(smoke.READY_MARKER.search(line) or "ARCE_ROCKET_ENTITY_ACTIVE" in line
@@ -141,6 +149,8 @@ def run(args):
             before_refusal = world_hashes(session / world_name) if stage == "downgrade" else None
             if before_refusal is not None:
                 (evidence / f"{index}-world-before.json").write_text(json.dumps(before_refusal, indent=2) + "\n", encoding="utf-8")
+                for name in ("level.dat", "level.dat_old"):
+                    shutil.copy2(session / world_name / name, evidence / f"{index}-before-{name}")
             process = smoke.CapturedProcess(command, session, evidence / f"{index}-{stage}.log")
             if stage == "downgrade":
                 process.wait_for(DOWNGRADE_GUARD, args.startup_timeout)
@@ -149,15 +159,13 @@ def run(args):
                 row["live"] = check_downgrade_refusal(latest.read_text(encoding="utf-8").splitlines()); process = None
                 after_refusal = world_hashes(session / world_name)
                 (evidence / f"{index}-world-hashes.json").write_text(json.dumps(after_refusal, indent=2) + "\n", encoding="utf-8")
-                row["changed_world_files"] = [key for key in sorted(before_refusal.keys() | after_refusal.keys())
-                                              if before_refusal.get(key) != after_refusal.get(key)]
-                oracle.require(before_refusal and not row["changed_world_files"],
-                               "Refused downgrade changed world file bytes: " + ", ".join(row["changed_world_files"]))
+                row.update(refusal_storage_result(before_refusal, after_refusal))
+                for name in ("level.dat", "level.dat_old"):
+                    shutil.copy2(session / world_name / name, evidence / f"{index}-after-{name}")
                 crashes = evidence / f"{index}-crash-reports"; crashes.mkdir()
                 for crash in (session / "crash-reports").glob("*.txt"): shutil.copy2(crash, crashes / crash.name)
                 oracle.inspect(session / world_name, evidence / f"{index}-native", stage, old_before)
-                row.update(status="PASS", world_files_unchanged=len(after_refusal))
-                print(f"{index}/{stage}: verified startup refusal; {len(after_refusal)} world files unchanged", flush=True)
+                print(f"{index}/{stage}: {row['status']}; startup refused; changed={row['changed_world_files']}", flush=True)
                 continue
             process.wait_for(smoke.READY_MARKER, args.startup_timeout)
             if stage == "old-seed":
@@ -188,7 +196,10 @@ def run(args):
             row["inspection_sha256"] = smoke.digest_file(evidence / row["inspection"])
             row["status"] = "PASS"
             print(f"{index}/{stage}: PASS", flush=True)
-        assert_pin(args.source_commit); report["status"] = "PASS"
+        assert_pin(args.source_commit)
+        failed = [row["index"] for row in report["starts"] if row["status"] != "PASS"]
+        oracle.require(not failed, "Native row assertions failed: " + ", ".join(map(str, failed)))
+        report["status"] = "PASS"
     except Exception as failure:
         report.update(status="FAILED", error=str(failure)); raise
     finally:

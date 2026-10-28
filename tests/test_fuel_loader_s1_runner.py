@@ -169,6 +169,16 @@ class FuelLoaderS1OracleTest(unittest.TestCase):
             (world / "session.lock").write_bytes(b"two"); self.assertEqual(before, runner.world_hashes(world))
             (world / "data/journal.dat").write_bytes(b"changed"); self.assertNotEqual(before, runner.world_hashes(world))
 
+    def test_changed_world_metadata_keeps_a_failed_verdict(self):
+        before = {"level.dat": "a", "data/journal.dat": "b"}
+        self.assertEqual("PASS", runner.refusal_storage_result(before, dict(before))["status"])
+        for after in ({**before, "level.dat": "changed"}, {**before, "data/journal.dat": "changed"},
+                      {"level.dat": "a"}, {**before, "new.dat": "new"}):
+            with self.subTest(after=after):
+                result = runner.refusal_storage_result(before, after)
+                self.assertEqual("FAILED", result["status"]); self.assertTrue(result["changed_world_files"])
+        with self.assertRaises(SmokeError): runner.refusal_storage_result({}, {})
+
 
 if __name__ == "__main__":
     unittest.main()
