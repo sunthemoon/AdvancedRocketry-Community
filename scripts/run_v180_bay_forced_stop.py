@@ -36,6 +36,7 @@ from run_v060_flight_server_smoke import _server_command
 from run_v180_escrow_forced_stop import digest
 from run_v180_escrow_pre_f2 import assert_pin
 from run_v180_rocket_settlement_completion import require_lock
+from run_v180_landed_disassembly_cuts import chunk_record, uuid_of
 
 RECEIPTS = "advancedrocketrycommunity_bay_receipts.dat"
 STAGING = RECEIPTS + ".arce-pending"
@@ -57,7 +58,7 @@ TXW_DONE = re.compile(r"Transaction writer cut command done|ARCE_RELEASE_TXW_(AR
 SRW_DONE = re.compile(r"Registry writer cut command done|ARCE_RELEASE_SRW_ARMED")
 SRW_INJECTED = re.compile(r"ARCE_RELEASE_SRW_INJECTED point=\w+ mode=(FAIL|UNKNOWN)")
 UNPROVED_FAILURES = 3  # BayClaim.REGISTRY_UNPROVED_FAILURES (W27A section 4's D3)
-SAVED = re.compile(r"Saved the game|saved the game|Saving the game", re.IGNORECASE)
+SAVED = re.compile(r"\bSaved the game\b", re.IGNORECASE)
 # W170-R22 (B16) and W170-R23 (the held startup journal writer).
 RETIRE_REFUSED = re.compile(r"ARCE_BAY_RETIRE_REFUSED transfer=(\S+) logical=(\S+) outcome=(\w+)")
 B16_ACTIONS = {
@@ -365,7 +366,15 @@ class Session:
 def launch_fixture(run: Session, survey: bool = False) -> dict:
     run.send(f"forceload add {ORIGIN[0]} {ORIGIN[2]}", re.compile(r"[Mm]arked|already|forceload|chunk"))
     variant = " survey" if survey else ""
-    fixture = parse_fixture(run.send(f"arce bay release-test fixture {ORIGIN[0]} {ORIGIN[1]} {ORIGIN[2]}{variant}", FIXTURE))
+    deadline = time.monotonic() + run.args.flight_timeout
+    while True:
+        line = run.send(f"arce bay release-test fixture {ORIGIN[0]} {ORIGIN[1]} {ORIGIN[2]}{variant}",
+                        re.compile(FIXTURE.pattern + r"|ARCE_RELEASE_BAY_FIXTURE_WAIT\b"))
+        if "ARCE_RELEASE_BAY_FIXTURE_WAIT" not in line:
+            fixture = parse_fixture(line); break
+        if time.monotonic() > deadline:
+            raise smoke.SmokeError("The fixture source did not become entity-ticking")
+        time.sleep(1)
     if fixture["launch"] not in ("SUCCESS", "JOURNAL_PENDING") or fixture["packages"].count("+") != 1:
         raise smoke.SmokeError(f"The fixture did not launch with two packaged bays: {fixture}")
     return fixture
@@ -430,6 +439,9 @@ def first_start(run: Session, case: str, world: Path) -> tuple[dict | None, dict
                     if time.monotonic() > deadline:
                         raise smoke.SmokeError(f"{case}: destination did not load for copy fixture")
                     time.sleep(1)
+                census = run.send(f"arce bay release-test census {fixture['logical']}",
+                                  re.compile(r"ARCE_RELEASE_BAY_CENSUS logical="))
+                observed["copy_census"] = check_copy_census(census, fixture["logical"], 4 if spec["copies"] == "absent" else 5)
             if spec.get("save"):
                 # The source entity is on disk at its current image before the end (B3 and B6 with S present).
                 observed["saved"] = run.send("save-all flush", SAVED, 120)
@@ -619,6 +631,8 @@ def run_case(run: Session, case: str) -> dict:
     receipts = world / "data" / RECEIPTS
     row["cut_disk"] = dict(receipts=digest(receipts) if receipts.is_file() else None,
                            staging=(world / "data" / STAGING).exists())
+    if spec.get("copies"):
+        row["cut_disk"]["copies"] = inspect_copy_disk(world, fixture["logical"], row["first_start"]["copy_census"])
     row["restarts"] = []
     for restart in (1, 2):
         hooked = first_tick_satellite(case, fixture) if fixture is not None and restart == 1 else None
@@ -684,7 +698,47 @@ def check_copy_census(line: str, logical: str, expected_count: int) -> dict:
             or any(not row.endswith(":true") for row in rows) or len({row.split(":")[0] for row in rows}) != len(rows)
             or match[3] != "NONE" and match[4] != "true"):
         raise smoke.SmokeError(f"Duplicate count or offline seat changed: {line}")
+    for row in rows:
+        copy_row(row)
     return dict(count=int(match[2]), transfer=match[3], assigned=match[4] == "true", rows=rows)
+
+
+def copy_row(row: str) -> dict:
+    parts = row.split(":")
+    if len(parts) != 9 or not all(re.fullmatch(r"-?\d+", parts[i]) for i in (4, 5, 7)):
+        raise smoke.SmokeError(f"Invalid copy row: {row}")
+    return dict(uuid=parts[0], dimension=":".join(parts[1:3]), hash=parts[3], x=int(parts[4]), z=int(parts[5]),
+                ledger=parts[6], epoch=int(parts[7]))
+
+
+def inspect_copy_disk(world: Path, logical: str, census: dict) -> list[dict]:
+    """After the kill, prove the actual fixture images were saved before testing their restart disposition."""
+    expected = {copy["uuid"]: copy for copy in map(copy_row, census["rows"])}
+    dimensions = {"minecraft:overworld": world, "advancedrocketrycommunity:moon": world / "dimensions/advancedrocketrycommunity/moon"}
+    found = []
+    for dimension, x, z in sorted({(row["dimension"], row["x"], row["z"]) for row in expected.values()}):
+        if dimension not in dimensions:
+            raise smoke.SmokeError(f"Unexpected fixture dimension: {dimension}")
+        path = dimensions[dimension] / "entities" / f"r.{x >> 5}.{z >> 5}.mca"
+        root = chunk_record(path, x, z)
+        if root is None or root.get("Position") != [x, z] or not isinstance(root.get("Entities"), list):
+            raise smoke.SmokeError(f"Fixture entity slot was not saved: {dimension} {x} {z}")
+        for entity in root["Entities"]:
+            data = entity.get("RocketEntityData", {})
+            if uuid_of(data.get("assembly_transaction_id")) != logical:
+                continue
+            identity = uuid_of(entity.get("UUID"))
+            wrapper = data.get("resource_escrow", {})
+            actual = dict(uuid=identity, dimension=dimension, x=x, z=z, hash=data.get("snapshot", {}).get("content_hash"),
+                          ledger=uuid_of(wrapper.get("ledger_id")) or "NONE", epoch=wrapper.get("resource_epoch"))
+            seats = data.get("flight_data", {}).get("passengers", {}).get("assignments", [])
+            if actual != expected.get(identity) or not any(uuid_of(seat.get("passenger_id"))
+                    == "00000000-0000-4000-8000-000000185001" for seat in seats):
+                raise smoke.SmokeError(f"Saved copy differs from the observed fixture: {actual}")
+            found.append(actual)
+    if len(found) != len(expected) or {row["uuid"] for row in found} != set(expected):
+        raise smoke.SmokeError(f"Copies absent/duplicated on disk: expected={list(expected)} actual={found}")
+    return found
 
 
 def run(args) -> dict:

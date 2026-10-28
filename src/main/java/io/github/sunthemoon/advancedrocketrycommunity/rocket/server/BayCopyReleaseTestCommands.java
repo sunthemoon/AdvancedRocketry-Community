@@ -88,7 +88,9 @@ final class BayCopyReleaseTestCommands {
             found.addAll(level.getEntities(ModEntities.ROCKET.get(), rocket -> BayCopyCensus.names(rocket, logical)));
         }
         var rows = found.stream().map(rocket -> rocket.getUUID() + ":" + rocket.level().dimension().location() + ":"
-                + rocket.snapshot().orElseThrow().contentHash() + ":" + rocket.flightData().orElseThrow().passengers()
+                + rocket.snapshot().orElseThrow().contentHash() + ":" + rocket.chunkPosition().x + ":" + rocket.chunkPosition().z
+                + ":" + (rocket.escrowSection().ledger() == null ? "NONE" : rocket.escrowSection().ledger())
+                + ":" + rocket.escrowSection().epoch() + ":" + rocket.flightData().orElseThrow().passengers()
                 .assignment(PASSENGER).isPresent()).sorted().collect(java.util.stream.Collectors.joining(","));
         LOGGER.info("ARCE_RELEASE_BAY_CENSUS logical={} count={} transfer={} assigned={} rows=[{}]", logical, found.size(),
                 record == null ? "NONE" : record.phase(), record != null && record.sourceFlightData().passengers()

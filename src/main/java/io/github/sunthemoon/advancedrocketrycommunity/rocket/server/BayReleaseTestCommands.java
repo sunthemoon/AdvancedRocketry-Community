@@ -89,6 +89,10 @@ public final class BayReleaseTestCommands {
         MinecraftServer server = source.getServer();
         EscrowTestEndpoints.requireEnabled(server);
         ServerLevel level = server.overworld();
+        if (!level.isPositionEntityTicking(origin)) {
+            LOGGER.info("ARCE_RELEASE_BAY_FIXTURE_WAIT origin={}", origin.toShortString());
+            return 0;
+        }
         var data = BayDeploymentGameTestSupport.dataPackage(OWNER);
         var solar = survey ? BayDeploymentGameTestSupport.surveyPackage(OWNER) : BayDeploymentGameTestSupport.solarPackage(OWNER);
         List<BlockPos> blocks = List.of(origin, origin.above(), origin.above(2), origin.west(), origin.east(), origin.east().above());

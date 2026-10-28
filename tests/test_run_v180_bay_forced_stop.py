@@ -2,6 +2,8 @@
 import sys
 from pathlib import Path
 import unittest
+from unittest.mock import Mock, patch
+from copy import deepcopy
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 import run_v180_bay_forced_stop as runner
@@ -28,6 +30,19 @@ def landed(**changes):
 
 
 class ParseTests(unittest.TestCase):
+    def test_save_completion_never_matches_save_start(self):
+        self.assertIsNone(runner.SAVED.search("Saving the game (this may take a moment!)"))
+        self.assertIsNotNone(runner.SAVED.search("Saved the game"))
+
+    def test_fixture_waits_for_entity_ticking_before_launching(self):
+        run = Mock()
+        run.args.flight_timeout = 120
+        run.send.side_effect = ["Marked chunk", "ARCE_RELEASE_BAY_FIXTURE_WAIT origin=8, 2, 8",
+            f"ARCE_RELEASE_BAY_FIXTURE logical={L} transfer=t rocket=r data={X} solar={Y} launch=SUCCESS packages={FIXTURE['packages']}"]
+        with patch.object(runner.time, "sleep"):
+            self.assertEqual(FIXTURE, runner.launch_fixture(run))
+        self.assertEqual(3, run.send.call_count)
+
     def test_fixture_line_parses_every_field(self):
         line = (f"ARCE_RELEASE_BAY_FIXTURE logical={L} transfer=t rocket=r data={X} solar={Y} launch=SUCCESS "
                 f"packages={FIXTURE['packages']}\n")
@@ -86,13 +101,32 @@ class ExpectationTests(unittest.TestCase):
             self.assertLessEqual(3 * len(cases), 60)
 
     def test_copy_census_requires_every_survivor_seat_the_journal_seat_and_unique_identities(self):
-        line = f"ARCE_RELEASE_BAY_CENSUS logical={L} count=1 transfer=COMMITTED assigned=true rows=[{X}:minecraft:overworld:hash:true]"
+        row = f"{X}:minecraft:overworld:hash:0:0:NONE:0:true"
+        line = f"ARCE_RELEASE_BAY_CENSUS logical={L} count=1 transfer=COMMITTED assigned=true rows=[{row}]"
         self.assertEqual(1, runner.check_copy_census(line, L, 1)["count"])
         for bad in (line.replace("count=1", "count=2"), line.replace("assigned=true", "assigned=false"),
-                    line.replace("hash:true", "hash:false"), line.replace(f"logical={L}", f"logical={X}"),
-                    line.replace("rows=[", f"rows=[{X}:minecraft:overworld:hash:true,").replace("count=1", "count=2")):
+                    line.replace(":true]", ":false]"), line.replace(f"logical={L}", f"logical={X}"),
+                    line.replace("rows=[", f"rows=[{row},").replace("count=1", "count=2"),
+                    line.replace(":hash:0:", ":hash:bad:")):
             with self.assertRaises(runner.smoke.SmokeError):
                 runner.check_copy_census(bad, L, 1)
+
+    def test_copy_disk_requires_actual_saved_identity_hash_wrapper_and_offline_seat(self):
+        census = dict(rows=[f"{X}:minecraft:overworld:hash:0:0:{Y}:1:true"])
+        entity = dict(UUID=X, RocketEntityData=dict(assembly_transaction_id=L, snapshot=dict(content_hash="hash"),
+                      resource_escrow=dict(ledger_id=Y, resource_epoch=1), flight_data=dict(passengers=dict(assignments=[
+                          dict(passenger_id="00000000-0000-4000-8000-000000185001")]))))
+        root = dict(Position=[0, 0], Entities=[entity])
+        with patch.object(runner, "chunk_record", return_value=root):
+            self.assertEqual([runner.copy_row(census["rows"][0])], runner.inspect_copy_disk(Path("fixture"), L, census))
+        changed_hash, changed_wrapper, no_seat = (deepcopy(root) for _ in range(3))
+        changed_hash["Entities"][0]["RocketEntityData"]["snapshot"]["content_hash"] = "other"
+        changed_wrapper["Entities"][0]["RocketEntityData"]["resource_escrow"] = dict(resource_epoch=0)
+        no_seat["Entities"][0]["RocketEntityData"]["flight_data"]["passengers"]["assignments"] = []
+        for bad in (None, dict(Position=[0, 0], Entities=[]), dict(Position=[1, 0], Entities=[entity]),
+                    dict(Position=[0, 0], Entities=[entity, entity]), changed_hash, changed_wrapper, no_seat):
+            with patch.object(runner, "chunk_record", return_value=bad), self.assertRaises(runner.smoke.SmokeError):
+                runner.inspect_copy_disk(Path("fixture"), L, census)
 
     def test_protected_copy_hold_keeps_registered_authority_and_registry_count(self):
         values = dict(claim="RESUME", hold="REPAIR", reason="PROTECTED_DUPLICATE", locked="true", transfer="PREPARED",
