@@ -16,6 +16,7 @@ import java.util.function.Consumer;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerEvent;
@@ -157,11 +158,12 @@ public final class RocketPassengerContinuedUseGameTests {
     public static void departedPassengerLoginDoesNotTeleportBack(GameTestHelper helper) {
         var driver = new GameTestTickDriver(helper);
         afterLanding(helper, driver, rocket -> {
-            var player = new TrackingPlayer((ServerLevel) rocket.level(), rocket.ownerId().orElseThrow());
+            var player = new ConnectedTrackingPlayer((ServerLevel) rocket.level(), rocket.ownerId().orElseThrow());
             var manager = new RocketManager();
             manager.onInstalled();
             player.setPos(rocket.position());
             helper.assertTrue(player.startRiding(rocket, true), "Fixture passenger did not mount");
+            helper.assertTrue(RocketFlightConsoleFixtures.open(player, rocket), "The passenger could not open the flight menu");
             manager.requestFlightIntent(player, rocket.getId(), RocketFlightAction.LEAVE,
                     RocketDestination.EARTH, null, UUID.randomUUID());
             helper.assertTrue(rocket.flightData().orElseThrow().passengers().assignment(player.getUUID()).isEmpty(),
@@ -177,10 +179,11 @@ public final class RocketPassengerContinuedUseGameTests {
     public static void newlyBoardedPassengerReconnectsAfterLanding(GameTestHelper helper) {
         var driver = new GameTestTickDriver(helper);
         afterLanding(helper, driver, rocket -> {
-            var player = new TrackingPlayer((ServerLevel) rocket.level(), UUID.randomUUID());
+            var player = new ConnectedTrackingPlayer((ServerLevel) rocket.level(), UUID.randomUUID());
             var manager = new RocketManager();
             manager.onInstalled();
             player.setPos(rocket.position());
+            helper.assertTrue(RocketFlightConsoleFixtures.open(player, rocket), "The passenger could not open the flight menu");
             manager.requestFlightIntent(player, rocket.getId(), RocketFlightAction.BOARD,
                     RocketDestination.EARTH, null, UUID.randomUUID());
             helper.assertTrue(player.getVehicle() == rocket, "New passenger did not board");
@@ -233,6 +236,25 @@ public final class RocketPassengerContinuedUseGameTests {
 
         private TrackingPlayer(ServerLevel level, UUID id) {
             super(level, new GameProfile(id, "ARCEContinuedUse"));
+        }
+
+        @Override
+        public void teleportTo(ServerLevel level, double x, double y, double z, float yaw, float pitch) {
+            teleports++;
+            super.teleportTo(level, x, y, z, yaw, pitch);
+        }
+    }
+
+    /**
+     * W182: as {@link TrackingPlayer}, for the tests that send a flight intent, which the server serves only to a
+     * connected player that is not a fake player. It never joins the player list either.
+     */
+    private static final class ConnectedTrackingPlayer extends ServerPlayer {
+        private int teleports;
+
+        private ConnectedTrackingPlayer(ServerLevel level, UUID id) {
+            super(level.getServer(), level, new GameProfile(id, "ARCEContinuedUse"));
+            RocketFlightConsoleFixtures.connect(this);
         }
 
         @Override

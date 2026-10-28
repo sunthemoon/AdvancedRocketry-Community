@@ -28,7 +28,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraftforge.common.util.FakePlayer;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
@@ -85,6 +85,7 @@ public final class RocketNavigationGameTests {
                     var closed = manager.navigation(owner, rocket);
                     helper.assertTrue(closed.generation() > navigation.generation() && closed.stations().isEmpty()
                             && !closed.quotes().forTarget(MARS).canLaunch(), "Reload mixed generations or retained closed arrivals");
+                    helper.assertTrue(RocketFlightConsoleFixtures.open(owner, rocket), "The owner could not open the flight menu");
                     manager.requestFlightIntent(owner, rocket.getId(), RocketFlightAction.LAUNCH, MARS, UUID.randomUUID());
                     helper.assertTrue(before.equals(rocket.flightData().orElseThrow()), "Stale quote launched after catalog changed");
                     helper.succeed();
@@ -122,6 +123,8 @@ public final class RocketNavigationGameTests {
                     rocket.updateFlightData(original);
                     helper.assertTrue(menu.quotes().forTarget(MARS).canLaunch(), "Restored fuel did not refresh immediately");
                     stations.removeMember(station, owner.getUUID());
+                    // W182-R1: with the menu open and valid, station access, not the menu boundary, refuses the launch.
+                    helper.assertTrue(owner.containerMenu == menu && menu.stillValid(owner), "The flight menu was not valid before the revoked-station launch");
                     RocketRuntime.requestFlightIntent(owner, rocket.getId(), RocketFlightAction.LAUNCH, new TravelTarget.Station(station), UUID.randomUUID());
                     helper.assertTrue(original.equals(rocket.flightData().orElseThrow()), "Stale station view bypassed server access");
                     driver.after(21, () -> {
@@ -177,8 +180,9 @@ public final class RocketNavigationGameTests {
         });
     }
 
-    private static FakePlayer actor(GameTestHelper helper, String name) {
-        return new FakePlayer(helper.getLevel(), new GameProfile(UUID.randomUUID(), name));
+    /** W182: a connected stand-in that never joins, since the server refuses a fake player's flight intents. */
+    private static ServerPlayer actor(GameTestHelper helper, String name) {
+        return RocketFlightConsoleFixtures.standIn(helper.getLevel(), new GameProfile(UUID.randomUUID(), name));
     }
 
     private static java.util.Map<String, Integer> chunks(GameTestHelper helper) {

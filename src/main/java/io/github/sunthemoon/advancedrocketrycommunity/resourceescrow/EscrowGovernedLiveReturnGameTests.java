@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.resourceescrow;
 
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.RocketFlightConsoleFixtures;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.*;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport;
@@ -196,8 +197,10 @@ public final class EscrowGovernedLiveReturnGameTests {
                 helper.assertTrue(flight.state() == RocketFlightState.COUNTDOWN && journal.acknowledgedCurrent(),
                         "Cancellation did not start from a live checked countdown");
                 var before = EscrowNativeEnvelope.rocket(rocket);
-                RocketRuntime.requestFlightIntent(passenger, rocket.getId(), RocketFlightAction.CANCEL,
-                        flight.plan().orElseThrow().destinationTarget(), UUID.randomUUID());
+                // W182: from the passenger's open flight menu, as the flight screen sends it.
+                helper.assertTrue(RocketFlightConsoleFixtures.send(passenger, rocket, () -> RocketRuntime.requestFlightIntent(
+                        passenger, rocket.getId(), RocketFlightAction.CANCEL, flight.plan().orElseThrow().destinationTarget(),
+                        UUID.randomUUID())), "The passenger could not open the flight menu");
                 helper.assertTrue(returns.handles(record, rocket) && !returns.checkpoint(server, record)
                         && before.equals(EscrowNativeEnvelope.rocket(rocket)), "Cancellation bypassed its native proof wait");
                 requested = true;

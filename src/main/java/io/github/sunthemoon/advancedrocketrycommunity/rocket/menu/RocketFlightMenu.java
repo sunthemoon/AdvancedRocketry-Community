@@ -134,7 +134,7 @@ public final class RocketFlightMenu extends AbstractContainerMenu {
     @Override
     public boolean stillValid(Player player) {
         return rocket != null
-                && player == viewer && player.isAlive()
+                && player == viewer && player.isAlive() && !player.isSpectator()
                 && rocket.isAlive()
                 && rocket.operational()
                 && rocket.level() == player.level()

@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.resourceescrow;
 
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.RocketFlightConsoleFixtures;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketCargoRole;
@@ -209,10 +210,12 @@ final class EscrowCargoFlightCuts extends EscrowCargoCutProbe {
         if (boundary.equals("CANCELLED_REPLACED") && !cancelled) {
             var record = journal.entries().stream().findFirst().orElse(null);
             if (record == null || rocket.flightData().orElseThrow().state() != RocketFlightState.COUNTDOWN || !journal.actionAuthorityAvailable()) { return; }
-            var player = new net.minecraftforge.common.util.FakePlayer(level, new com.mojang.authlib.GameProfile(rocket.ownerId().orElseThrow(), "W142Owner"));
+            // W182: the server serves a flight intent only from a connected player's open flight menu.
+            var player = RocketFlightConsoleFixtures.standIn(level, new com.mojang.authlib.GameProfile(rocket.ownerId().orElseThrow(), "W142Owner"));
             player.setPos(rocket.position());
-            RocketRuntime.requestFlightIntent(player, rocket.getId(), RocketFlightAction.CANCEL,
-                    rocket.flightData().orElseThrow().plan().orElseThrow().destinationTarget(), UUID.randomUUID());
+            RocketFlightConsoleFixtures.send(player, rocket, () -> RocketRuntime.requestFlightIntent(player, rocket.getId(),
+                    RocketFlightAction.CANCEL, rocket.flightData().orElseThrow().plan().orElseThrow().destinationTarget(),
+                    UUID.randomUUID()));
             EscrowTags.require(EscrowRuntime.of(server).returns().handles(record, rocket), "W142 exact-source cancellation was refused");
             cancelled = true; return;
         }

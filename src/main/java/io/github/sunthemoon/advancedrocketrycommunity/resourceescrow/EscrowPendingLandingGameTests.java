@@ -3,6 +3,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.resourceescrow;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.RocketFlightConsoleFixtures;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.*;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport;
@@ -146,7 +147,10 @@ public final class EscrowPendingLandingGameTests {
                 var rocket = sources.get(requested); var player = players.get(0);
                 player.teleportTo(earth, rocket.getX(), rocket.getY() + 3, rocket.getZ(), 0, 0);
                 helper.assertTrue(RocketRuntime.flightQuotes(player, rocket).moon().canLaunch(), "Product launch quote refused");
-                RocketRuntime.requestFlightIntent(player, rocket.getId(), RocketFlightAction.LAUNCH, RocketDestination.MOON, requests.get(requested));
+                // W182: from the player's open flight menu, as the flight screen sends it.
+                UUID request = requests.get(requested);
+                helper.assertTrue(RocketFlightConsoleFixtures.send(player, rocket, () -> RocketRuntime.requestFlightIntent(player,
+                        rocket.getId(), RocketFlightAction.LAUNCH, RocketDestination.MOON, request)), "The flight menu did not open");
                 helper.assertTrue(RocketEscrowGate.flightFrozen(rocket), "Player request did not begin F1");
                 requested++;
                 peakPending = Math.max(peakPending, runtime.flightCheckpoint().pendingDestinations().size());
@@ -155,7 +159,9 @@ public final class EscrowPendingLandingGameTests {
                 var player = players.get(1);
                 player.teleportTo(earth, refusedSource.getX(), refusedSource.getY() + 3, refusedSource.getZ(), 0, 0);
                 player.messages.clear();
-                RocketRuntime.requestFlightIntent(player, refusedSource.getId(), RocketFlightAction.LAUNCH, RocketDestination.MOON, UUID.randomUUID());
+                helper.assertTrue(RocketFlightConsoleFixtures.send(player, refusedSource, () -> RocketRuntime.requestFlightIntent(player,
+                        refusedSource.getId(), RocketFlightAction.LAUNCH, RocketDestination.MOON, UUID.randomUUID())),
+                        "The flight menu did not open");
                 helper.assertTrue(player.messages.contains(RocketFlightRequestCode.LANDING_PAD_UNAVAILABLE.translationKey()),
                         "All eight reservations did not return LANDING_PAD_UNAVAILABLE: " + player.messages);
                 helper.assertTrue(RocketEscrowGate.idle(refusedSource), "Refused launch retained a preparation lock");

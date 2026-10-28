@@ -196,10 +196,11 @@ public final class ElectrolyzerBlockEntity extends BlockEntity implements MenuPr
         return Component.translatable("menu.advancedrocketrycommunity.electrolyzer");
     }
 
+    /** W182: vanilla opens a spectator's menu here directly, without the block's use; a spectator gets none. */
     @Nullable
     @Override
     public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
-        return new ElectrolyzerMenu(containerId, playerInventory, this, menuData);
+        return player.isSpectator() ? null : new ElectrolyzerMenu(containerId, playerInventory, this, menuData);
     }
 
     @Override

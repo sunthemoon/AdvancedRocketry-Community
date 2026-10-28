@@ -28,6 +28,7 @@ public final class ElectrolyzerMenu extends AbstractContainerMenu {
     private static final int PLAYER_SLOT_END = PLAYER_SLOT_START + 27;
     private static final int HOTBAR_SLOT_END = PLAYER_SLOT_END + 9;
 
+    private final ElectrolyzerBlockEntity machine;
     private final ContainerLevelAccess access;
     private final ContainerData data;
     private final IItemHandler machineInventory;
@@ -54,6 +55,7 @@ public final class ElectrolyzerMenu extends AbstractContainerMenu {
         this(
                 containerId,
                 playerInventory,
+                machine,
                 machine.menuInventory(),
                 data,
                 ContainerLevelAccess.create(machine.getLevel(), machine.getBlockPos())
@@ -63,6 +65,7 @@ public final class ElectrolyzerMenu extends AbstractContainerMenu {
     private ElectrolyzerMenu(
             int containerId,
             Inventory playerInventory,
+            ElectrolyzerBlockEntity machine,
             IItemHandler machineInventory,
             ContainerData data,
             ContainerLevelAccess access
@@ -70,6 +73,7 @@ public final class ElectrolyzerMenu extends AbstractContainerMenu {
         super(ModMenuTypes.ELECTROLYZER.get(), containerId);
         checkContainerDataCount(data, ElectrolyzerBlockEntity.MENU_DATA_COUNT);
         MachineMenuOpening.requireExactDataCount(data, ElectrolyzerBlockEntity.MENU_DATA_COUNT);
+        this.machine = machine;
         this.data = data;
         this.access = access;
         this.machineInventory = machineInventory;
@@ -150,9 +154,13 @@ public final class ElectrolyzerMenu extends AbstractContainerMenu {
         return true;
     }
 
+    /** W182: not for a spectator, and only while this exact block entity is still the loaded one at its position. */
     @Override
     public boolean stillValid(Player player) {
-        return stillValid(access, player, ModBlocks.ELECTROLYZER.get());
+        return !player.isSpectator() && !machine.isRemoved() && machine.getLevel() != null
+                && machine.getLevel().hasChunkAt(machine.getBlockPos())
+                && machine.getLevel().getBlockEntity(machine.getBlockPos()) == machine
+                && stillValid(access, player, ModBlocks.ELECTROLYZER.get());
     }
 
     public int progress() {

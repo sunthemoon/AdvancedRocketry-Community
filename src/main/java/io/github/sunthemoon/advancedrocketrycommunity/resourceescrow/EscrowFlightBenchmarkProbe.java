@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.resourceescrow;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.RocketFlightConsoleFixtures;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightState;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
@@ -198,8 +199,11 @@ final class EscrowFlightBenchmarkProbe {
         player.teleportTo(load.earth, rocket.getX(), rocket.getY() + 3, rocket.getZ(), 0, 0);
         var quote = RocketRuntime.flightQuotes(player, rocket).moon();
         EscrowTags.require(quote.canLaunch() && quote.requiredFuel() == ROUTE_FUEL, "Product benchmark quote unavailable: " + quote);
+        // W182: the server serves the intent only from the player's open flight menu; it opens before the clock starts.
+        EscrowTags.require(RocketFlightConsoleFixtures.open(player, rocket), "Product benchmark flight menu did not open: " + i);
         requestedAt[i] = System.nanoTime();
         RocketRuntime.requestFlightIntent(player, rocket.getId(), RocketFlightAction.LAUNCH, RocketDestination.MOON, requestId(i));
+        player.closeContainer();
         EscrowTags.require(RocketEscrowGate.flightFrozen(rocket), "Product benchmark request did not start F1: " + i);
         requested[i] = true;
     }

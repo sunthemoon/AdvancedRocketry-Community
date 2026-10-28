@@ -22,11 +22,12 @@ import java.util.Map;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
+import net.minecraft.gametest.framework.GameTestAssertException;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
@@ -151,13 +152,18 @@ public final class RocketLegacyFuelGameTests {
         return rocket;
     }
 
-    static FakePlayer owner(GameTestHelper helper, RocketEntity rocket) {
-        var player = new FakePlayer((net.minecraft.server.level.ServerLevel) rocket.level(),
+    /** W182: a connected stand-in, since the server refuses a fake player's flight intents; it never joins either. */
+    static ServerPlayer owner(GameTestHelper helper, RocketEntity rocket) {
+        var player = RocketFlightConsoleFixtures.standIn((net.minecraft.server.level.ServerLevel) rocket.level(),
                 new GameProfile(rocket.ownerId().orElseThrow(), "LegacyFuel"));
         player.setPos(rocket.position()); return player;
     }
 
-    static void intent(RocketManager manager, FakePlayer player, RocketEntity rocket, RocketFlightAction action) {
+    /** As the flight screen sends it (W182): from the rocket's open flight menu. */
+    static void intent(RocketManager manager, ServerPlayer player, RocketEntity rocket, RocketFlightAction action) {
+        if (!RocketFlightConsoleFixtures.open(player, rocket)) {
+            throw new GameTestAssertException("The player could not open the flight menu for " + action);
+        }
         manager.requestFlightIntent(player, rocket.getId(), action, new TravelTarget.BodySurface(CelestialIds.EARTH_ID), UUID.randomUUID());
     }
 

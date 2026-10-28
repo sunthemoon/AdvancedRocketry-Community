@@ -557,10 +557,11 @@ public final class OrbitalLaserDrillBlockEntity extends EndgameDeviceBlockEntity
         return Component.translatable("block.advancedrocketrycommunity.orbital_laser_drill");
     }
 
+    /** W182: vanilla opens a spectator's menu here directly, without the block's use; a spectator gets none. */
     @Nullable
     @Override
     public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) {
-        return new OrbitalLaserDrillMenu(id, inventory, this);
+        return player.isSpectator() ? null : new OrbitalLaserDrillMenu(id, inventory, this);
     }
 
     /** A quarantined device is inert: it exposes no capability. */

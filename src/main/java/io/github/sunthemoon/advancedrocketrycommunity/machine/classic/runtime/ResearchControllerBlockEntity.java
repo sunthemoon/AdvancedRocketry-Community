@@ -110,7 +110,8 @@ public final class ResearchControllerBlockEntity extends ClassicControllerBlockE
                     server, new net.minecraft.world.level.ChunkPos(worldPosition), "Research device root requires backup and offline repair");
         }
     }
+    /** W182-R3: vanilla opens a spectator's menu here directly, from {@code useItemOn}; a spectator gets none. */
     @Override public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) {
-        return new ResearchControllerMenu(id, this, player);
+        return player.isSpectator() ? null : new ResearchControllerMenu(id, this, player);
     }
 }

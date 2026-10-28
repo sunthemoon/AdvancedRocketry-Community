@@ -603,10 +603,12 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
         return Component.translatable("menu.advancedrocketrycommunity.satellite_terminal");
     }
 
+    /** W182: vanilla opens a spectator's menu here directly, without the block's use; a spectator gets none. */
     @Nullable
     @Override
     public AbstractContainerMenu createMenu(int id, Inventory playerInventory, Player player) {
-        return new SatelliteTerminalMenu(id, playerInventory, this, SatelliteTerminalTargets.current());
+        return player.isSpectator() ? null
+                : new SatelliteTerminalMenu(id, playerInventory, this, SatelliteTerminalTargets.current());
     }
 
     /**

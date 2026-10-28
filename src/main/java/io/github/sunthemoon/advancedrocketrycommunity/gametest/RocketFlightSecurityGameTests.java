@@ -24,7 +24,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
-import net.minecraftforge.common.util.FakePlayer;
 
 /** Server-authority and hostile flight-intent scenarios. */
 @GameTestHolder(AdvancedRocketryCommunity.MOD_ID)
@@ -45,12 +44,16 @@ public final class RocketFlightSecurityGameTests {
         primePadChunks(moon);
         // W166: within the 200-tick budget, a shorter paced bound for the pads primed 40 ticks earlier.
         driver.after(40, () -> clearPadRocketsWhenLoaded(helper, driver, 40, () -> {
-            ServerPlayer owner = new FlightFakePlayer(earth);
+            ServerPlayer owner = flightPlayer(earth);
             assembleFueledRocket(helper, driver,
                     new BlockPos(3, 2, 3),
                     UUID.randomUUID(), unauthorizedRocket -> {
                 long unauthorizedFuel = unauthorizedRocket.flightData().orElseThrow().fuel().amount();
                 owner.setPos(unauthorizedRocket.getX(), unauthorizedRocket.getY(), unauthorizedRocket.getZ());
+                // Anyone near a rocket may open its flight menu; only its owner may command it. W182-R1: with the menu
+                // valid, the owner check, not the menu boundary, is what refuses the launch below.
+                helper.assertTrue(RocketFlightConsoleFixtures.open(owner, unauthorizedRocket),
+                        "A player near another owner's rocket could not open its flight menu");
                 RocketRuntime.requestFlightIntent(
                         owner,
                         unauthorizedRocket.getId(),
@@ -70,7 +73,9 @@ public final class RocketFlightSecurityGameTests {
                 assembleFueledRocket(helper, driver, new BlockPos(12, 2, 3), owner.getUUID(), rocket -> {
                     long fuelBefore = rocket.flightData().orElseThrow().fuel().amount();
 
+                    // W182: out of reach the server opens no flight menu, so the far intent is refused at the menu.
                     owner.setPos(rocket.getX() + 100.0D, rocket.getY(), rocket.getZ());
+                    helper.assertTrue(!RocketFlightConsoleFixtures.open(owner, rocket), "A far player opened the flight menu");
                     RocketRuntime.requestFlightIntent(
                             owner,
                             rocket.getId(),
@@ -81,6 +86,7 @@ public final class RocketFlightSecurityGameTests {
                     assertUnchangedSecurityState(helper, earth, rocket, fuelBefore, "far request");
 
                     owner.setPos(rocket.getX(), rocket.getY(), rocket.getZ());
+                    helper.assertTrue(RocketFlightConsoleFixtures.open(owner, rocket), "The owner could not open the flight menu");
                     RocketRuntime.requestFlightIntent(
                             owner,
                             rocket.getId(),
@@ -179,14 +185,15 @@ public final class RocketFlightSecurityGameTests {
         }, earth, moon));
     }
 
-    /** Network-free server actor for authority and hostile-intent validation. */
-    private static final class FlightFakePlayer extends FakePlayer {
-        private FlightFakePlayer(ServerLevel level) {
-            super(level, new GameProfile(
-                    UUID.fromString("637c42c9-f7f6-4d42-b44c-40ded65e760f"),
-                    "ARCEFlightTest"
-            ));
-        }
+    /**
+     * Server actor for authority and hostile-intent validation. W182: a fake player's intents are refused, so this is a
+     * connected stand-in that, like the fake player before it, never joins the player list.
+     */
+    private static ServerPlayer flightPlayer(ServerLevel level) {
+        return RocketFlightConsoleFixtures.standIn(level, new GameProfile(
+                UUID.fromString("637c42c9-f7f6-4d42-b44c-40ded65e760f"),
+                "ARCEFlightTest"
+        ));
     }
 
     private static void assertUnchangedSecurityState(

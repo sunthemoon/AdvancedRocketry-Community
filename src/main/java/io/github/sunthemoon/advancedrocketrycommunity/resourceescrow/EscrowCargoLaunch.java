@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.resourceescrow;
 
 import com.mojang.authlib.GameProfile;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.RocketFlightConsoleFixtures;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightAction;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightPlan;
@@ -79,8 +80,9 @@ final class EscrowCargoLaunch implements AutoCloseable {
         if (!requested) {
             if (cancel) {
                 if (flight.state() != RocketFlightState.COUNTDOWN || !journal.acknowledgedCurrent()) { return false; }
-                RocketRuntime.requestFlightIntent(passenger, source.getId(), RocketFlightAction.CANCEL,
-                        flight.plan().orElseThrow().destinationTarget(), UUID.randomUUID());
+                // W182: from the passenger's open flight menu, as the flight screen sends it.
+                RocketFlightConsoleFixtures.send(passenger, source, () -> RocketRuntime.requestFlightIntent(passenger,
+                        source.getId(), RocketFlightAction.CANCEL, flight.plan().orElseThrow().destinationTarget(), UUID.randomUUID()));
                 survivor = source;
             } else {
                 var arrival = world.level.getEntity(record.nativeTransfer().orElseThrow().armed().destination());
@@ -128,8 +130,9 @@ final class EscrowCargoLaunch implements AutoCloseable {
             new io.netty.channel.embedded.EmbeddedChannel(connection); server.getPlayerList().placeNewPlayer(connection, passenger);
             world.players.add(passenger);
             passenger.teleportTo(level, source.getX(), source.getY(), source.getZ(), 0, 0);
-            RocketRuntime.requestFlightIntent(passenger, source.getId(), RocketFlightAction.BOARD,
-                    new TravelTarget.BodySurface(CelestialIds.EARTH_ID), UUID.randomUUID());
+            RocketFlightConsoleFixtures.send(passenger, source, () -> RocketRuntime.requestFlightIntent(passenger,
+                    source.getId(), RocketFlightAction.BOARD, new TravelTarget.BodySurface(CelestialIds.EARTH_ID),
+                    UUID.randomUUID()));
             check(passenger.getVehicle() == source && source.flightData().orElseThrow().passengers().assignment(passenger.getUUID()).isPresent(),
                     "The released cargo rocket did not board its passenger");
         }

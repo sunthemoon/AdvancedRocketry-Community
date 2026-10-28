@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.resourceescrow;
 
 import com.mojang.authlib.GameProfile;
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.RocketFlightConsoleFixtures;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.*;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
@@ -18,7 +19,6 @@ import net.minecraft.server.level.TicketType;
 import net.minecraft.util.Unit;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraftforge.common.util.FakePlayer;
 
 /** Empty-server return storage cuts. No cancellation is reissued on recovery and no F7 is fabricated. */
 final class EscrowReturnProbe {
@@ -94,10 +94,13 @@ final class EscrowReturnProbe {
         if (!recovery && cancel && !requested) {
             EscrowTags.require(source != null && source.flightData().orElseThrow().state() == RocketFlightState.COUNTDOWN,
                     "Cancellation lost its live countdown");
-            var player = new FakePlayer(level, new GameProfile(source.ownerId().orElseThrow(), "ReturnOwner"));
+            // W182: the server serves a flight intent only from a connected player's open flight menu.
+            var player = RocketFlightConsoleFixtures.standIn(level, new GameProfile(source.ownerId().orElseThrow(), "ReturnOwner"));
             player.setPos(source.position());
-            RocketRuntime.requestFlightIntent(player, source.getId(), RocketFlightAction.CANCEL,
-                    source.flightData().orElseThrow().plan().orElseThrow().destinationTarget(), UUID.randomUUID());
+            var cancelling = source;
+            RocketFlightConsoleFixtures.send(player, cancelling, () -> RocketRuntime.requestFlightIntent(player, cancelling.getId(),
+                    RocketFlightAction.CANCEL, cancelling.flightData().orElseThrow().plan().orElseThrow().destinationTarget(),
+                    UUID.randomUUID()));
             EscrowTags.require(EscrowRuntime.of(server).returns().handles(record, source), "Live cancellation was refused");
             requested = true;
         }

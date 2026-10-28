@@ -11,6 +11,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessMac
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModMenuTypes;
 import java.util.Optional;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
@@ -38,6 +39,9 @@ public final class RollingMachineMenu extends AbstractContainerMenu {
     private static final int PLAYER_SLOT_END = PLAYER_SLOT_START + 27;
     private static final int HOTBAR_SLOT_END = PLAYER_SLOT_END + 9;
 
+    /** The server's block entity; null in the client's copy. */
+    @Nullable
+    private final RollingMachineBlockEntity controller;
     private final ContainerLevelAccess access;
     private final ContainerData data;
     private final IItemHandler machineItems;
@@ -46,6 +50,7 @@ public final class RollingMachineMenu extends AbstractContainerMenu {
         this(
                 containerId,
                 playerInventory,
+                null,
                 new ItemStackHandler(MACHINE_SLOT_COUNT),
                 new SimpleContainerData(RollingMachineMenuData.COUNT),
                 requireAccess(playerInventory, MachineMenuOpening.read(buffer, RollingMachineMenuData.COUNT))
@@ -61,6 +66,7 @@ public final class RollingMachineMenu extends AbstractContainerMenu {
         this(
                 containerId,
                 playerInventory,
+                controller,
                 new RollingMachineMenuItemHandler(controller),
                 data,
                 ContainerLevelAccess.create(
@@ -73,6 +79,7 @@ public final class RollingMachineMenu extends AbstractContainerMenu {
     private RollingMachineMenu(
             int containerId,
             Inventory playerInventory,
+            @Nullable RollingMachineBlockEntity controller,
             IItemHandler machineItems,
             ContainerData data,
             ContainerLevelAccess access
@@ -80,6 +87,7 @@ public final class RollingMachineMenu extends AbstractContainerMenu {
         super(ModMenuTypes.ROLLING_MACHINE.get(), containerId);
         checkContainerDataCount(data, RollingMachineMenuData.COUNT);
         MachineMenuOpening.requireExactDataCount(data, RollingMachineMenuData.COUNT);
+        this.controller = controller;
         this.data = data;
         this.access = access;
         this.machineItems = machineItems;
@@ -126,9 +134,14 @@ public final class RollingMachineMenu extends AbstractContainerMenu {
         return original;
     }
 
+    /** W182: not for a spectator, and on the server only while this exact controller is still the loaded one. */
     @Override
     public boolean stillValid(Player player) {
-        return stillValid(access, player, ModBlocks.ROLLING_MACHINE.get());
+        return !player.isSpectator()
+                && (controller == null || !controller.isRemoved() && controller.getLevel() != null
+                && controller.getLevel().hasChunkAt(controller.getBlockPos())
+                && controller.getLevel().getBlockEntity(controller.getBlockPos()) == controller)
+                && stillValid(access, player, ModBlocks.ROLLING_MACHINE.get());
     }
 
     public MultiblockFormationState formationState() {

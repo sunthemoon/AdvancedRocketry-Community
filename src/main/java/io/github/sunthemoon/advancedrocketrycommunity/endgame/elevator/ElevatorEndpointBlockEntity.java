@@ -259,9 +259,10 @@ public abstract class ElevatorEndpointBlockEntity extends CargoEndpointBlockEnti
                 : new AABB(worldPosition).expandTowards(0.0D, -ElevatorRules.MAX_TETHER_BLOCKS, 0.0D);
     }
 
+    /** W182: vanilla opens a spectator's menu here directly, without the block's use; a spectator gets none. */
     @Nullable
     @Override
     public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) {
-        return new ElevatorMenu(id, inventory, this);
+        return player.isSpectator() ? null : new ElevatorMenu(id, inventory, this);
     }
 }
