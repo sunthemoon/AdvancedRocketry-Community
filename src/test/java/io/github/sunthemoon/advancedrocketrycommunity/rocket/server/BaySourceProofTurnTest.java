@@ -90,7 +90,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 /**
  * R154: restart claims whose census slots overlap take D6 to D7 one at a time, in claim order. The real D6 and D7 class
- * runs each claim through the coordinator's step queue. The stand-in barrier gives every slot a save generation: a capture
+ * runs each claim through the coordinator's step queue and its PROVE dispatch (D5's copy pass, then D6). The stand-in barrier gives every slot a save generation: a capture
  * forces a save of its column, which supersedes every earlier proof of that column, as the save monitor does. A stand-in
  * receipt writer reads D7's guard a few ticks after the removal is queued. Claim i flies from end i to end i + 1, so its
  * destination column is the next claim's source column, as neighbouring GameTest fixtures and neighbouring pads share them.
@@ -148,19 +148,26 @@ final class BaySourceProofTurnTest {
     }
 
     /**
-     * D5's copy pass runs at PROVE while the holder is still capturing: its attempt ends as its next step would end it,
-     * BARRIER_UNSTABLE with W98's 200-tick retry (W98-R11 unchanged), and the turn passes on at once.
+     * A census column unloads while the holder captures. D5's copy pass runs first at PROVE and waits (END_LOADING), so the
+     * attempt is never stepped. It ends as its next step would end it, BARRIER_UNSTABLE with W98's 200-tick retry (W98-R11
+     * unchanged), and the turn passes on at once; the claim asks again when its retry is due.
      */
-    @Test void aCopyPassDuringACapturePassesTheTurnOnAndKeepsW98sRetry() throws Exception {
+    @Test void aCopyPassWaitDuringACaptureEndsTheAttemptWithW98sRetryAndPassesTheTurnOn() throws Exception {
         run(2, f -> f.each = fixture -> {
             var first = fixture.claim(0);
+            var column = BayAbsenceCensus.slots(fixture.records.get(0)).get(0);
             Map<UUID, ?> capturing = fixture.field("capturing");
-            if (fixture.triggered || !capturing.containsKey(first.logical())) { return; }
-            fixture.triggered = true;
-            fixture.proof.yieldTurn(first);
-            assertFalse(fixture.<Map<UUID, ?>>field("capturing").containsKey(first.logical()), "the attempt still captures");
-            assertEquals(fixture.now + BaySourceProof.RETRY_TICKS, fixture.<Map<UUID, Long>>field("retryAt").get(first.logical()));
-            assertTrue(fixture.proof.turnsForTests().holder().isEmpty(), "the turn did not pass on");
+            if (!fixture.triggered && capturing.containsKey(first.logical())) {
+                fixture.unloadedSlots.add(column); fixture.triggered = true; fixture.mark = fixture.now;
+                return;
+            }
+            if (fixture.unloadedSlots.contains(column) && !capturing.containsKey(first.logical())) {
+                Map<UUID, Long> retryAt = fixture.field("retryAt");
+                assertTrue(retryAt.get(first.logical()) >= fixture.mark + BaySourceProof.RETRY_TICKS, "W98's retry was not kept");
+                assertFalse(fixture.proof.turnsForTests().holds(first.logical()), "the turn did not pass on");
+                assertEquals("END_LOADING", first.reason());
+                fixture.unloadedSlots.remove(column);
+            }
         }, 1, 0);
     }
 
@@ -209,7 +216,12 @@ final class BaySourceProofTurnTest {
         int mostAtOnce, superseded;
         /** Scenario switches: the store is busy until D7 first parks; the first queued removal's source changes; a hook. */
         boolean busy, refuseFirst, triggered;
+        long mark;
         Hook each = f -> { };
+        /** Census slots the stand-in barrier reports as not entity-loaded. */
+        final Set<RocketRetirementProof.Slot> unloadedSlots = new HashSet<>();
+        /** The coordinator's PROVE dispatch: D5's copy pass, then D6. */
+        final BayConsumptionSteps consumption;
 
         record Capture(RocketRetirementProof.Slot slot, AtomicLong generation, long mine, long due, Consumer<EscrowBarrier.Result> callback) { }
         record Write(BayClaim claim, BooleanSupplier guard, long due) { }
@@ -263,8 +275,10 @@ final class BaySourceProofTurnTest {
                 throw new Queued();
             });
             UnstartedServer.set(BaySourceProof.class, proof, "storeWaits", (BooleanSupplier) () -> busy);
-            UnstartedServer.set(BaySourceProof.class, proof, "port", new RocketRetirementWorld(server, null) {
-                @Override public RocketOrdinaryRetirement.SlotState slot(RocketRetirementProof.Slot slot) { return RocketOrdinaryRetirement.SlotState.LOADED; }
+            var port = new RocketRetirementWorld(server, null) {
+                @Override public RocketOrdinaryRetirement.SlotState slot(RocketRetirementProof.Slot slot) {
+                    return unloadedSlots.contains(slot) ? RocketOrdinaryRetirement.SlotState.UNLOADED : RocketOrdinaryRetirement.SlotState.LOADED;
+                }
                 @Override public boolean captureSupported(RocketRetirementProof.Slot slot) { return true; }
                 @Override public boolean captureAvailable(RocketRetirementProof.Slot slot, long tick) { return true; }
                 @Override public void retryNextTick(Runnable retry) { fail("the stand-in barrier always has capture quota"); }
@@ -275,7 +289,11 @@ final class BaySourceProofTurnTest {
                     captures.add(new Capture(slot, generation, generation.incrementAndGet(), tick + CAPTURE_TICKS, callback));
                     return true;
                 }
-            });
+            };
+            UnstartedServer.set(BaySourceProof.class, proof, "port", port);
+            var copies = new BayCopySteps(server);
+            UnstartedServer.set(BayCopySteps.class, copies, "port", port);
+            consumption = new BayConsumptionSteps(server, null, copies);
             assertEquals(count, groups.size());
         }
 
@@ -312,7 +330,7 @@ final class BaySourceProofTurnTest {
         BayStepQueue.Result step(UUID logical) {
             var claim = claims.get(logical);
             var result = switch (claim.stage()) {
-                case PROVE -> proof.prove(claim);
+                case PROVE -> consumption.prove(claim, proof);
                 case RETIRE -> {
                     try { yield proof.retire(claim); }
                     catch (Queued queued) { yield BayStepQueue.Result.IDLE; }
