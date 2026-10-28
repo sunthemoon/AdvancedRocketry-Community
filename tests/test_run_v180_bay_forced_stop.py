@@ -182,13 +182,29 @@ class ExpectationTests(unittest.TestCase):
                 runner.check_first_tick("B1_MOVED", lines, FIXTURE)
 
     def test_a_checkpoint_failure_reports_unproved_and_never_rejects(self):
-        lines = [f"ARCE_BAY_CLAIM transfer=t logical={L} state=OWNED_WAIT reason=BAY_REGISTRY_PROOF\n",
+        injected = "[04:40:25] [ARCE-satellite-registry/INFO] [x/]: ARCE_RELEASE_SRW_INJECTED point=STAGED mode=FAIL\n"
+        lines = [f"ARCE_BAY_CLAIM transfer=t logical={L} state=OWNED_WAIT reason=BAY_REGISTRY_PROOF\n", injected, injected, injected,
                  f"ARCE_BAY_CLAIM transfer=t logical={L} state=OWNED_WAIT reason=REGISTRY_UNPROVED\n",
                  f"ARCE_BAY_CLAIM transfer=t logical={L} state=READY_SOURCE reason=READY_SOURCE\n"]
-        self.assertIn("REGISTRY_UNPROVED", runner.check_unproved("B13_FAILED", lines, FIXTURE)["reasons"])
-        for found in (lines[:1] + lines[2:], lines[:2]):
+        observed = runner.check_unproved("B13_FAILED", lines, FIXTURE)
+        self.assertIn("REGISTRY_UNPROVED", observed["reasons"])
+        self.assertEqual(3, observed["failures"])
+        unknown = [line.replace("point=STAGED mode=FAIL", "point=MOVED mode=UNKNOWN") for line in lines]
+        self.assertEqual(3, runner.check_unproved("B13_UNKNOWN", unknown, FIXTURE)["failures"])
+        for found in (lines[:4] + lines[5:], lines[:5]):
             with self.assertRaises(runner.smoke.SmokeError):
                 runner.check_unproved("B13_FAILED", found, FIXTURE)
+
+    def test_unproved_pins_the_third_failure(self):
+        """W170-R6: REGISTRY_UNPROVED after two or four injected failures fails the case."""
+        injected = "ARCE_RELEASE_SRW_INJECTED point=STAGED mode=FAIL\n"
+        unproved = f"ARCE_BAY_CLAIM transfer=t logical={L} state=OWNED_WAIT reason=REGISTRY_UNPROVED\n"
+        ready = f"ARCE_BAY_CLAIM transfer=t logical={L} state=READY_SOURCE reason=READY_SOURCE\n"
+        for count in (2, 4):
+            with self.assertRaises(runner.smoke.SmokeError):
+                runner.check_unproved("B13_FAILED", [injected] * count + [unproved, ready], FIXTURE)
+        later = [injected] * 3 + [unproved, injected, ready]
+        self.assertEqual(3, runner.check_unproved("B13_FAILED", later, FIXTURE)["failures"], "only failures before it count")
 
 
 if __name__ == "__main__":

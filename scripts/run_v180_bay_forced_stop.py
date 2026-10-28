@@ -55,6 +55,8 @@ ALTITUDE = 48
 TXW_PAUSED = re.compile(r"ARCE_RELEASE_TXW_PAUSED point=STAGED")
 TXW_DONE = re.compile(r"Transaction writer cut command done|ARCE_RELEASE_TXW_(ARMED|MUTATED)")
 SRW_DONE = re.compile(r"Registry writer cut command done|ARCE_RELEASE_SRW_ARMED")
+SRW_INJECTED = re.compile(r"ARCE_RELEASE_SRW_INJECTED point=\w+ mode=(FAIL|UNKNOWN)")
+UNPROVED_FAILURES = 3  # BayClaim.REGISTRY_UNPROVED_FAILURES (W27A section 4's D3)
 SAVED = re.compile(r"Saved the game|saved the game|Saving the game", re.IGNORECASE)
 
 # durable: the data satellite's state on disk after the first start; end: how the first start ends; outcomes: the
@@ -383,13 +385,19 @@ def first_start(run: Session, case: str, world: Path) -> tuple[dict | None, dict
 
 
 def check_unproved(case: str, lines: list[str], fixture: dict) -> dict:
-    """B13: the claim reported REGISTRY_UNPROVED while it waited, then retired its group: never a rejection."""
+    """B13: the claim reported REGISTRY_UNPROVED at the third injected failure, then retired its group: never a rejection."""
     reasons = [match.group(4) for line in lines for match in [CLAIM.search(line)] if match and match.group(2) == fixture["logical"]]
     if "REGISTRY_UNPROVED" not in reasons or reasons[-1] != "READY_SOURCE":
         raise smoke.SmokeError(f"{case}: expected REGISTRY_UNPROVED, then READY_SOURCE: {reasons}")
     if any("REJECTED" in line and fixture["data"] in line for line in lines):
         raise smoke.SmokeError(f"{case}: a RAM registration was rejected")
-    return dict(reasons=reasons)
+    # W170-R6: D3's threshold. The armed cut fails every write until the PAUSE re-arm, and each failure answers one request.
+    first = next(index for index, line in enumerate(lines)
+                 if (match := CLAIM.search(line)) and match.group(2) == fixture["logical"] and match.group(4) == "REGISTRY_UNPROVED")
+    failures = sum(1 for line in lines[:first] if SRW_INJECTED.search(line))
+    if failures != UNPROVED_FAILURES:
+        raise smoke.SmokeError(f"{case}: REGISTRY_UNPROVED came after {failures} injected failures, not {UNPROVED_FAILURES}")
+    return dict(reasons=reasons, failures=failures)
 
 
 def check_stopped_while_waiting(case: str, lines: list[str], fixture: dict) -> dict:

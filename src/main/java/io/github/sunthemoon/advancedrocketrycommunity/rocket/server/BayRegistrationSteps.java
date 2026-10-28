@@ -32,8 +32,6 @@ import net.minecraft.server.MinecraftServer;
  * Watches, tickets and proving epochs are RAM of this session only. Server thread only.
  */
 final class BayRegistrationSteps {
-    /** W27A section 4's D3 pacing; the registry writer's own backoff after a non-COMMITTED outcome is also 200 ticks. */
-    static final int RETRY_TICKS = 200, UNPROVED_FAILURES = 3;
     private final MinecraftServer server;
     private final BayDeploymentSession session;
     private final BayDeploymentChecks checks;
@@ -102,7 +100,7 @@ final class BayRegistrationSteps {
         if (!registry.operational()) { claim.waiting("REGISTRY_BLOCKED"); return BayStepQueue.Result.NEXT_TICK; }
         var ticket = tickets.get(claim.logical());
         if (ticket == null) {
-            if (server.getTickCount() < claim.registryRetryAt()) { return BayStepQueue.Result.NEXT_TICK; }
+            if (!claim.registryRequestDue(server.getTickCount())) { return BayStepQueue.Result.NEXT_TICK; }
             var claimWatches = new ArrayList<SatelliteRegistryProof.Watch>();
             for (BayMember member : registering) { claimWatches.add(watches.get(op(member))); }
             ticket = registry.requestCheckpoint(server, claimWatches);
@@ -127,8 +125,7 @@ final class BayRegistrationSteps {
 
     private BayStepQueue.Result failed(BayClaim claim) {
         tickets.remove(claim.logical());
-        claim.registryFailed(server.getTickCount() + RETRY_TICKS);
-        if (claim.registryFailures() >= UNPROVED_FAILURES) { claim.waiting("REGISTRY_UNPROVED"); }
+        claim.registryFailed(server.getTickCount()); // BayClaim's D3 rule: 200-tick pacing, REGISTRY_UNPROVED from the third
         return BayStepQueue.Result.NEXT_TICK;
     }
 

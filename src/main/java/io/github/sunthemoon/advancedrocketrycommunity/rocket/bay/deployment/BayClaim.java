@@ -13,6 +13,8 @@ import javax.annotation.Nullable;
  */
 public final class BayClaim {
     public static final int BAYS_PER_ROCKET = 8;
+    /** W27A section 4's D3 rule; the registry writer's own backoff after a non-COMMITTED outcome is also 200 ticks. */
+    public static final int REGISTRY_RETRY_TICKS = 200, REGISTRY_UNPROVED_FAILURES = 3;
     public enum Origin { CHECKPOINT, RESTART }
     public enum Hold { OWNED_WAIT, REPAIR }
     /** READY_SOURCE needs this session's source authority; ORDINARY hands T to ordinary recovery. */
@@ -150,10 +152,18 @@ public final class BayClaim {
         source = Objects.requireNonNull(established);
     }
 
-    /** W170 D3: one more failed or unknown registry checkpoint; the next request waits until {@code retryAt}. */
-    public void registryFailed(long retryAt) { registryFailures++; registryRetryAt = retryAt; }
+    /**
+     * W170 D3 at server tick {@code now}: one more FAILED, UNKNOWN or discarded registry checkpoint. The next request waits
+     * {@link #REGISTRY_RETRY_TICKS}; from the {@link #REGISTRY_UNPROVED_FAILURES}th failure the claim waits with
+     * REGISTRY_UNPROVED until a proof clears it. Nothing is rejected.
+     */
+    public void registryFailed(long now) {
+        registryFailures++; registryRetryAt = now + REGISTRY_RETRY_TICKS;
+        if (registryFailures >= REGISTRY_UNPROVED_FAILURES) { waitReason = "REGISTRY_UNPROVED"; }
+    }
     public int registryFailures() { return registryFailures; }
-    public long registryRetryAt() { return registryRetryAt; }
+    /** Whether D3 may request a registry checkpoint at server tick {@code now}: at once, or 200 ticks after a failure. */
+    public boolean registryRequestDue(long now) { return now >= registryRetryAt; }
 
     /** A runtime reason the claim is waiting for (DUPLICATE_PENDING, REGISTRY_UNPROVED); null clears it. */
     public void waiting(@Nullable String reason) { waitReason = reason; }

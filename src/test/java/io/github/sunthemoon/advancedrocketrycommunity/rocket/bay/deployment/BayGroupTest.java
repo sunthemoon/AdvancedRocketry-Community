@@ -149,16 +149,32 @@ final class BayGroupTest {
         assertFalse(second.getAsBoolean()); assertFalse(first.getAsBoolean());
     }
 
-    @Test void restartRowsResumeOrPromoteAndTheRegistryRuleCountsFailures() {
+    @Test void d3ReportsUnprovedFromTheThirdFailureAndPacesEachRequest200TicksAfterAFailure() {
+        var claim = admitted(1);
+        claim.members().get(0).registered();
+        assertEquals(200, BayClaim.REGISTRY_RETRY_TICKS, "W27A section 4's D3 pacing");
+        assertEquals(3, BayClaim.REGISTRY_UNPROVED_FAILURES, "W27A section 4's REGISTRY_UNPROVED threshold");
+        assertTrue(claim.registryRequestDue(0), "the first request is not paced");
+        long failedAt = 1_000;
+        for (int failure = 1; failure <= 4; failure++) {
+            claim.registryFailed(failedAt);
+            assertEquals(failure, claim.registryFailures());
+            assertFalse(claim.registryRequestDue(failedAt), "no request in the failure's own tick");
+            assertFalse(claim.registryRequestDue(failedAt + 199), "no request sooner than 200 ticks after failure " + failure);
+            assertTrue(claim.registryRequestDue(failedAt + 200), "the next request 200 ticks after failure " + failure);
+            assertEquals(failure < 3 ? "BAY_REGISTRY_PROOF" : "REGISTRY_UNPROVED", claim.reason(), "the reason after failure " + failure);
+            failedAt += 200 + failure; // a later request may fail a few ticks after it became due
+        }
+        assertEquals(BayClaim.Hold.OWNED_WAIT, claim.hold(), "REGISTRY_UNPROVED waits; it never rejects or repairs");
+        assertTrue(claim.members().stream().allMatch(member -> member.state() == BayMember.State.REGISTERING));
+        claim.waiting(null); // the proof clears it
+        assertEquals("BAY_REGISTRY_PROOF", claim.reason());
+    }
+
+    @Test void restartRowsResumeOrPromote() {
         var claim = admitted(1);
         var member = claim.members().get(0);
         member.registered();
-        claim.registryFailed(200); claim.registryFailed(400);
-        assertEquals(2, claim.registryFailures()); assertEquals(400, claim.registryRetryAt());
-        claim.waiting("REGISTRY_UNPROVED");
-        assertEquals("REGISTRY_UNPROVED", claim.reason(), "the third failure's runtime reason");
-        claim.waiting(null);
-        assertEquals("BAY_REGISTRY_PROOF", claim.reason());
         assertThrows(IllegalStateException.class, member::registered, "D2 runs once per INTENT");
         var intentOnly = BayMember.restartIntent(intent(1));
         intentOnly.registered();
