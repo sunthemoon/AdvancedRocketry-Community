@@ -49,7 +49,7 @@ public final class RocketIssueFeedbackGameTests {
         var issue = new RocketValidationIssue(RocketValidationCode.TARGET_OCCUPIED, new RocketPosition(1, 2, 3),
                 Map.of("coordinate_space", "absolute", "detail", "occupied fixture"));
         String reason = RocketInteraction.issueDetail(issue);
-        helper.assertTrue(reason.equals("Rocket disassembly target is occupied"), "New report is not a translated reason");
+        helper.assertTrue(reason.equals("Rocket disassembly target is occupied"), "New report is not a translated reason: " + reason);
         RocketInteraction.update(assembler, issue.code(), null, reason, helper.getLevel());
         assembler.setOperatorDetail(RocketInteraction.diagnosticDetail(issue));
         var saved = assembler.saveWithoutMetadata();
@@ -105,7 +105,7 @@ public final class RocketIssueFeedbackGameTests {
             helper.assertTrue(assembler.report().detail().equals(Component.translatable(assembler.report().code().translationKey()).getString()),
                     "Failure service stored developer details instead of the reason");
             helper.assertTrue(assembler.report().detail().equals("Selected block is not rocket-movable"),
-                    "Native scan report did not resolve its server translation");
+                    "Native scan report did not resolve its server translation: " + assembler.report().detail());
             helper.assertTrue(assembler.operatorDetail().contains("coordinate_space=absolute"), "Failure service lost operator diagnostics");
         }
         helper.succeed();
