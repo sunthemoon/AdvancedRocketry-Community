@@ -138,6 +138,37 @@ class FuelLoaderS1OracleTest(unittest.TestCase):
         self.assertEqual(2, runner.STAGES.count("check"))
         self.assertEqual(2, runner.STAGES.count("old-check"))
 
+    def test_downgrade_refusal_is_separate_from_a_healthy_log_pass(self):
+        reason = runner.DOWNGRADE_REASON
+        guard = "io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.SavedDataMigrationException: " + reason
+        def line(level, logger, message): return f"[Server thread/{level}] [{logger}]: {message}"
+        lines = [line("ERROR", "net.minecraftforge.registries.GameData/REGISTRIES", "Unidentified mapping from registry minecraft:" + value)
+                 for value in ("block", "item")]
+        lines += [line("ERROR", "net.minecraftforge.registries.GameData/REGISTRIES", "There are unidentified mappings in this world - we are going to attempt to process anyway"),
+                  line("ERROR", "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+                       "[ARCE-BETA-2001] Beta world data check blocked startup: " + reason
+                       + ". Keep the world stopped. Escrow recovery requires a consistent whole-world backup including all terrain, entities, POI, journals and player data; never restore or delete only the escrow file."), guard,
+                  line("ERROR", "net.minecraftforge.eventbus.EventBus/EVENTBUS", "Exception caught during firing event: " + reason), guard,
+                  line("ERROR", "net.minecraft.server.MinecraftServer/", "Encountered an unexpected exception"), guard,
+                  line("FATAL", "net.minecraftforge.common.ForgeMod/", "Preparing crash report with UUID 00000000-0000-0000-0000-000000000176"),
+                  line("ERROR", "net.minecraft.server.MinecraftServer/", "This crash report has been saved to: D:/fixture/crash-reports/crash-server.txt"),
+                  line("ERROR", "net.minecraft.server.MinecraftServer/", "Exception stopping the server"),
+                  'java.lang.NullPointerException: Cannot invoke "net.minecraft.server.level.ServerLevel.m_6857_()" because "serverlevel2" is null']
+        self.assertEqual("REFUSED_BEFORE_WORLD_LOAD", runner.check_downgrade_refusal(lines)["outcome"])
+        for bad in (lines[:-1], lines + [lines[0]], lines + [line("ERROR", "test/", "unrelated")],
+                    lines + ["ARCE_ROCKET_ENTITY_ACTIVE entity=bad"], [s.replace("future schema 3", "future schema 4") for s in lines]):
+            with self.assertRaises(SmokeError): runner.check_downgrade_refusal(bad)
+        with self.assertRaises(SmokeError): runner.check_log(lines, "old-check")
+
+    def test_refusal_hashes_cover_every_world_file_except_the_process_lock(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            world = Path(tmp); (world / "data").mkdir()
+            (world / "level.dat").write_bytes(b"level"); (world / "data/journal.dat").write_bytes(b"journal")
+            (world / "session.lock").write_bytes(b"one")
+            before = runner.world_hashes(world); self.assertEqual(2, len(before))
+            (world / "session.lock").write_bytes(b"two"); self.assertEqual(before, runner.world_hashes(world))
+            (world / "data/journal.dat").write_bytes(b"changed"); self.assertNotEqual(before, runner.world_hashes(world))
+
 
 if __name__ == "__main__":
     unittest.main()

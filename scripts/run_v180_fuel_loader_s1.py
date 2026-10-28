@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """B3-D S1: genuine schema-2 upgrade, schema-3 downgrade, loader roots and cut-G2.
 
-Nine counted native starts: old seed and two upgrades; old-JAR downgrade and two
-restarts; new devices and two restarts. No admission switches or offline edits.
+Nine counted native starts: old seed and two upgrades; old-JAR startup refusal and
+two repeated attempts; new devices and two restarts. No admission switches or offline edits.
 The detached lock-owning caller removes its disposable server in its finally.
 """
 from __future__ import annotations
@@ -25,6 +25,48 @@ from run_v130_adapter_recovery_smoke import STARTUP_HOLD, STARTUP_HOLD_CLEARED
 
 STAGES = ("old-seed", "old-check", "old-check", "downgrade", "downgrade", "downgrade", "seed", "check", "check")
 MAX_STARTS = 60
+DOWNGRADE_REASON = "advancedrocketrycommunity_rocket_transfers uses future schema 3"
+DOWNGRADE_GUARD = re.compile(re.escape("[ARCE-BETA-2001] Beta world data check blocked startup: " + DOWNGRADE_REASON))
+
+
+def world_hashes(world):
+    """A refused downgrade must leave every world file byte-identical, apart from the process lock."""
+    return {str(path.relative_to(world)): smoke.digest_file(path) for path in sorted(world.rglob("*"))
+            if path.is_file() and path.name != "session.lock"}
+
+
+def check_downgrade_refusal(lines):
+    """Separate negative-startup oracle; never an ERROR allowance for a healthy S1 process."""
+    oracle.require(not any(smoke.READY_MARKER.search(line) or "ARCE_ROCKET_ENTITY_ACTIVE" in line
+                   or any(marker in line for marker in smoke.CLIENT_LINKAGE_MARKERS) for line in lines), "Downgrade loaded a world/client")
+    findings = smoke.scan_log(lines)
+    reason = re.escape(DOWNGRADE_REASON)
+    expected = [
+        ("ERROR", "net.minecraftforge.registries.GameData/REGISTRIES", r"Unidentified mapping from registry minecraft:block"),
+        ("ERROR", "net.minecraftforge.registries.GameData/REGISTRIES", r"Unidentified mapping from registry minecraft:item"),
+        ("ERROR", "net.minecraftforge.registries.GameData/REGISTRIES", r"There are unidentified mappings in this world - we are going to attempt to process anyway"),
+        ("ERROR", "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+         re.escape("[ARCE-BETA-2001] Beta world data check blocked startup: " + DOWNGRADE_REASON
+                   + ". Keep the world stopped. Escrow recovery requires a consistent whole-world backup including all terrain, entities, POI, journals and player data; never restore or delete only the escrow file.")),
+        ("ERROR", "net.minecraftforge.eventbus.EventBus/EVENTBUS", "Exception caught during firing event: " + reason),
+        ("ERROR", "net.minecraft.server.MinecraftServer/", "Encountered an unexpected exception"),
+        ("FATAL", "net.minecraftforge.common.ForgeMod/", r"Preparing crash report with UUID [0-9a-f-]{36}"),
+        ("ERROR", "net.minecraft.server.MinecraftServer/", r"This crash report has been saved to: .+crash-reports.+-server\.txt"),
+        ("ERROR", "net.minecraft.server.MinecraftServer/", "Exception stopping the server"),
+    ]
+    for level, logger, message in expected:
+        pattern = re.compile(r"/" + level + r"\] \[" + re.escape(logger) + r"\]: " + message + r"$")
+        hits = [line for line in findings if pattern.search(line)]
+        oracle.require(len(hits) == 1, "Unexpected/missing downgrade diagnostic: " + message)
+        findings.remove(hits[0])
+    oracle.require(not findings, "Foreign downgrade finding: " + "\n".join(findings))
+    exceptions = [line.strip() for line in lines if "Exception:" in line and not line.startswith("\t")]
+    guard = "io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.SavedDataMigrationException: " + DOWNGRADE_REASON
+    shutdown = 'java.lang.NullPointerException: Cannot invoke "net.minecraft.server.level.ServerLevel.m_6857_()" because "serverlevel2" is null'
+    oracle.require(exceptions.count(guard) == 3 and exceptions.count(shutdown) == 1 and len(exceptions) == 4,
+                   "Downgrade exception chain differs from the observed pre-Level guard and historical shutdown residual")
+    return dict(outcome="REFUSED_BEFORE_WORLD_LOAD", reason=DOWNGRADE_REASON, errors=8, fatals=1,
+                shutdown_residual="Historical pre-Level shutdown NullPointerException; not a healthy-server pass")
 
 
 def check_log(lines, stage):
@@ -96,7 +138,22 @@ def run(args):
             row["counted_start"] = count_start(args.start_counter, dict(evidence=str(evidence), index=index, stage=stage))
             report["starts"].append(row)
             (evidence / "results.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
+            before_refusal = world_hashes(session / world_name) if stage == "downgrade" else None
             process = smoke.CapturedProcess(command, session, evidence / f"{index}-{stage}.log")
+            if stage == "downgrade":
+                process.wait_for(DOWNGRADE_GUARD, args.startup_timeout)
+                row["exit_code"] = process.finish()
+                latest = evidence / f"{index}-{stage}-latest.log"; shutil.copy2(session / "logs/latest.log", latest)
+                row["live"] = check_downgrade_refusal(latest.read_text(encoding="utf-8").splitlines()); process = None
+                after_refusal = world_hashes(session / world_name)
+                oracle.require(before_refusal and before_refusal == after_refusal, "Refused downgrade changed world file bytes")
+                (evidence / f"{index}-world-hashes.json").write_text(json.dumps(after_refusal, indent=2) + "\n", encoding="utf-8")
+                crashes = evidence / f"{index}-crash-reports"; crashes.mkdir()
+                for crash in (session / "crash-reports").glob("*.txt"): shutil.copy2(crash, crashes / crash.name)
+                oracle.inspect(session / world_name, evidence / f"{index}-native", stage, old_before)
+                row.update(status="PASS", world_files_unchanged=len(after_refusal))
+                print(f"{index}/{stage}: verified startup refusal; {len(after_refusal)} world files unchanged", flush=True)
+                continue
             process.wait_for(smoke.READY_MARKER, args.startup_timeout)
             if stage == "old-seed":
                 old_smoke._configure_rocket(process)
@@ -107,11 +164,6 @@ def run(args):
                 row["commands"] = ["run_v050_rocket_server_smoke._configure_rocket", old_loader_command(), f"arce rocket assemble {old_smoke.ASSEMBLER}"]
                 old_smoke._wait_for_active_entity(process, match[2], start_at=start)
                 old_smoke._verify_assembled(process, match[2], "W176_OLD_ASSEMBLED")
-            elif stage == "downgrade":
-                expected = re.compile(r"ARCE_ROCKET_ENTITY_ACTIVE entity=" + re.escape(report["starts"][0]["physical_uuid"])
-                                      + r" operational=false snapshot=none flight_state=FAILED_RECOVERABLE fuel=0")
-                process.wait_for(expected, 45)
-                row["live"] = dict(quarantined=True)
             else:
                 process.wait_for(re.compile(r"ARCE_W176_(RESULT|FAILURE)"), args.startup_timeout)
                 row["live"] = oracle.check_result(process.lines, stage, report["starts"][0]["snapshot"] if old_world else None)
