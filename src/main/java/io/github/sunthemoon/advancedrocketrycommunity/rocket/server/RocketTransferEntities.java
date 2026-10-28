@@ -220,7 +220,7 @@ final class RocketTransferEntities {
         return level != null && marginReady(snapshot, (x, z) -> columnReady(level, x, z, snapshot.sourceOrigin().y()));
     }
 
-    /** The readiness predicate over the checked set, including W185's low-edge intersecting-entity column. */
+    /** The readiness predicate over the checked set; the same answer as the pre-W90 formula for every snapshot. */
     static boolean marginReady(RocketStructureSnapshot snapshot, java.util.function.BiPredicate<Integer, Integer> ready) {
         var columns = RocketDiscoveryColumns.of(snapshot);
         return columns.valid() && columnsAlreadyLoaded(columns.minColumnX(), columns.maxColumnX(), columns.minColumnZ(),

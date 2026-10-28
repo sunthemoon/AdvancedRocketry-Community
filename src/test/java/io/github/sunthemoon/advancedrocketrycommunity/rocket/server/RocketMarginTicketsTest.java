@@ -132,7 +132,7 @@ class RocketMarginTicketsTest {
         }
     }
 
-    @Test void readinessChecksTheWidenedCensusFootprintOnRandomAndEdgeRegions() {
+    @Test void theReExpressedPredicateEqualsThePreW90FormulaOnRandomAndEdgeRegions() {
         var random = new Random(9_043L);
         var snapshots = new ArrayList<RocketStructureSnapshot>();
         for (int i = 0; i < 4_000; i++) {
@@ -149,20 +149,18 @@ class RocketMarginTicketsTest {
         for (var snapshot : snapshots) {
             for (int salt : new int[] {0, 1, 2, 7}) {
                 BiPredicate<Integer, Integer> ready = (cx, cz) -> salt == 0 || Math.floorMod(cx * 31 + cz * 17 + salt, 13) != 0;
-                assertEquals(censusFootprint(snapshot, ready), RocketTransferEntities.marginReady(snapshot, ready), snapshot.sourceOrigin().toString());
+                assertEquals(preW90(snapshot, ready), RocketTransferEntities.marginReady(snapshot, ready), snapshot.sourceOrigin().toString());
                 checked++;
             }
         }
         assertTrue(checked > 16_000);
     }
 
-    /** W185 / W170-R65: the census footprint includes the home column of low-edge intersecting entities. */
-    private static boolean censusFootprint(RocketStructureSnapshot snapshot, BiPredicate<Integer, Integer> ready) {
+    /** The predicate as it was before W90 (RocketTransferEntities at 379525ea). */
+    private static boolean preW90(RocketStructureSnapshot snapshot, BiPredicate<Integer, Integer> ready) {
         var region = RocketRegion.fromSnapshot(snapshot);
-        try {
-            int minX = Math.subtractExact(region.minimum().x(), 2) >> 4, maxX = Math.addExact(region.maximum().x(), 2) >> 4;
-            int minZ = Math.subtractExact(region.minimum().z(), 2) >> 4, maxZ = Math.addExact(region.maximum().z(), 2) >> 4;
-            return RocketTransferEntities.columnsAlreadyLoaded(minX, maxX, minZ, maxZ, ready);
-        } catch (ArithmeticException overflow) { return false; }
+        int minX = (region.minimum().x() - 1) >> 4, maxX = (region.maximum().x() + 2) >> 4;
+        int minZ = (region.minimum().z() - 1) >> 4, maxZ = (region.maximum().z() + 2) >> 4;
+        return RocketTransferEntities.columnsAlreadyLoaded(minX, maxX, minZ, maxZ, ready);
     }
 }
