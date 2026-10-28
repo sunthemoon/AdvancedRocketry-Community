@@ -58,6 +58,18 @@ SRW_DONE = re.compile(r"Registry writer cut command done|ARCE_RELEASE_SRW_ARMED"
 SRW_INJECTED = re.compile(r"ARCE_RELEASE_SRW_INJECTED point=\w+ mode=(FAIL|UNKNOWN)")
 UNPROVED_FAILURES = 3  # BayClaim.REGISTRY_UNPROVED_FAILURES (W27A section 4's D3)
 SAVED = re.compile(r"Saved the game|saved the game|Saving the game", re.IGNORECASE)
+# W170-R22 (B16) and W170-R23 (the held startup journal writer).
+RETIRE_REFUSED = re.compile(r"ARCE_BAY_RETIRE_REFUSED transfer=(\S+) logical=(\S+) outcome=(\w+)")
+B16_ACTIONS = {
+    "nudge": ("arce bay release-test nudge {logical}", re.compile(r"ARCE_RELEASE_BAY_NUDGED logical=")),
+    "save": ("save-all flush", SAVED),
+    "copy": ("arce bay release-test copy {logical}", re.compile(r"ARCE_RELEASE_BAY_COPY logical=\S+ copy=\S+ added=true")),
+    "reload": ("arce bay release-test reload {logical}", re.compile(r"ARCE_RELEASE_BAY_RELOADED logical=\S+ rocket=\S+ added=true")),
+}
+JOURNAL_HELD = re.compile(r"ARCE_RELEASE_JOURNAL_STARTUP_HELD")
+JOURNAL_RELEASED = re.compile(r"ARCE_RELEASE_JOURNAL_STARTUP_RELEASED")
+RESUME_TICKETS = re.compile(r"ARCE_BAY_RESUME_TICKETS transfer=(\S+) logical=(\S+) stage=(\w+)")
+HELD_POLLS = 5
 
 # durable: the data satellite's state on disk after the first start; end: how the first start ends; outcomes: the
 # settled state of the first start (when it lands) and of each restart (W170). Outcome names are OUTCOMES' keys.
@@ -103,13 +115,24 @@ CASES = {
     "B15_D7": dict(cut="B15_D7", end="land", durable="NONE", first="LANDED", restarts=("LANDED", "LANDED")),
     "B18_D4": dict(cut="B3_MOVED", end="stop", durable="REGISTERED", restarts=("LANDED", "LANDED")),
     "B18_D7": dict(cut="B8_MOVED", end="stop", durable="RETIRED", restarts=("CONSUMED_REST", "CONSUMED_REST")),
+    # W170-R22, B16: D7's guard pauses on the receipt writer's IO thread after the removal is staged; the source is then
+    # moved one block and back, saved, joined by a copy of L (which leaves once the hold shows), or unloaded and reloaded.
+    # The guard must refuse, the receipt file stay unchanged, and only a fresh D6 proof retire the group.
+    "B16_MOTION": dict(cut="B16_GUARD", end="land", durable="NONE", first="LANDED", b16="nudge", restarts=("LANDED", "LANDED")),
+    "B16_SAVE": dict(cut="B16_GUARD", end="land", durable="NONE", first="LANDED", b16="save", restarts=("LANDED", "LANDED")),
+    "B16_JOIN": dict(cut="B16_GUARD", end="land", durable="NONE", first="LANDED", b16="copy", restarts=("LANDED", "LANDED")),
+    "B16_LEAVE": dict(cut="B16_GUARD", end="land", durable="NONE", first="LANDED", b16="reload", restarts=("LANDED", "LANDED")),
+    # W170-R23: B3's REGISTERED group restarts with the startup journal writer held; R1 and R2 wait for the release.
+    "B3_JOURNAL_HELD": dict(cut="B3_MOVED", end="kill", durable="REGISTERED", journal_hold=1, restarts=("LANDED", "LANDED")),
 }
-# W170's second tranche; the first is W27d1's fourteen cases with their W27d2 outcomes (at most 60 starts each).
+# W170's second tranche; the first is W27d1's fourteen cases with their W27d2 outcomes, the third W170 R139's five (at
+# most 60 starts each).
 TRANCHES = {"A": ["B1_STAGED", "B1_MOVED", "B9_STAGED", "B9_MOVED", "B12_UNKNOWN", "B12_FAILED", "B14_T1", "B18_INTENT",
                   "B18_REJECTED", "B18_CRASH", "B11_FULL", "B17_FAIR", "B10_BLOCKED", "B14_STOP"],
             "B": ["B2_STAGED", "B2_MOVED", "B3_STAGED", "B3_MOVED", "B3_SAVED", "B4_DECOMMISSION", "B6_D5", "B6_SAVED",
                   "B8_STAGED", "B8_MOVED", "B12_D4", "B12_D7", "B13_FAILED", "B13_UNKNOWN", "B15_D4", "B15_D7", "B18_D4",
-                  "B18_D7"]}
+                  "B18_D7"],
+            "C": ["B16_MOTION", "B16_SAVE", "B16_JOIN", "B16_LEAVE", "B3_JOURNAL_HELD"]}
 INTERRUPTED = ("REJECTED", "INTERRUPTED")
 REFUSED = ("REJECTED", "SERVER_ERROR")
 HELD_INTENT = ("INTENT", "NONE")
@@ -268,6 +291,11 @@ class Session:
         assert self.process is not None
         return self.process.lines[self.process.wait_for(marker, timeout)]
 
+    def wait_after(self, marker: re.Pattern[str], start: int, timeout: float) -> str:
+        """The first line matching {marker} at or after line {start}."""
+        assert self.process is not None
+        return self.process.lines[self.process.wait_for(marker, timeout, start_at=start)]
+
     def status(self, logical: str) -> dict:
         return parse_status(self.send(f"arce bay release-test status {logical}", STATUS))
 
@@ -353,8 +381,12 @@ def first_start(run: Session, case: str, world: Path) -> tuple[dict | None, dict
             run.wait(re.compile(rf"ARCE_RELEASE_SRW_PAUSED point={spec['registry'].split()[0]}"), run.args.flight_timeout)
         elif spec.get("cut"):
             run.wait(re.compile(rf"ARCE_RELEASE_BAY_(PAUSED|INJECTED) cut={spec['cut']} op="), run.args.flight_timeout)
+        if spec.get("b16"):
+            observed["b16"] = b16_guard(run, case, fixture, world)
         if spec["end"] == "land" or spec.get("staging"):
             observed["settled"] = run.await_settled(case, 0, fixture)
+            if spec.get("b16"):
+                observed["fresh_proof"] = check_fresh_proof(case, process.lines, fixture)
         else:
             observed["at_cut"] = run.status(fixture["logical"])
             if observed["at_cut"]["claim"] == "NONE" or observed["at_cut"]["state"] != "TRANSIT":
@@ -382,6 +414,81 @@ def first_start(run: Session, case: str, world: Path) -> tuple[dict | None, dict
     if spec.get("at_stop"):
         observed["stopped"] = check_stopped_while_waiting(case, process.lines, fixture)
     return fixture, observed
+
+
+def b16_guard(run: Session, case: str, fixture: dict, world: Path) -> dict:
+    """B16 (W170-R22) at D7's paused guard: the removal is staged and the REGISTERED receipt still durable; the case's
+    change to the proved source must make the guard refuse with the receipt file unchanged. A joining copy then holds the
+    claim as DUPLICATE_PENDING until it leaves."""
+    receipts = world / "data" / RECEIPTS
+    paused = run.status(fixture["logical"])
+    data = [receipt for receipt in paused["receipts"] if receipt["satellite"] == fixture["data"]]
+    if (paused["claim"] != "RETIRE" or len(data) != 1 or data[0]["phase"] != "REGISTERED" or not data[0]["acknowledged"]
+            or paused["state"] != "TRANSIT" or paused["transfer"] != "PREPARED"):
+        raise smoke.SmokeError(f"{case}: the guard pause is not D7 with the REGISTERED receipt durable: {paused}")
+    before = digest(receipts)
+    command, marker = B16_ACTIONS[CASES[case]["b16"]]
+    assert run.process is not None
+    start = len(run.process.lines)
+    run.send(command.format(logical=fixture["logical"]), marker, 120)
+    run.send("arce bay release-test release", re.compile(r"ARCE_RELEASE_BAY_RELEASE_REQUESTED"))
+    refused = RETIRE_REFUSED.search(run.wait_after(RETIRE_REFUSED, start, 60))
+    if refused.group(1) != fixture["transfer"] or refused.group(3) != "GUARD_REFUSED":
+        raise smoke.SmokeError(f"{case}: the paused guard did not refuse: {refused.group(0)}")
+    after = digest(receipts)
+    kept = run.status(fixture["logical"])
+    data = [receipt for receipt in kept["receipts"] if receipt["satellite"] == fixture["data"]]
+    if after != before or kept["claim"] == "NONE" or len(data) != 1 or data[0]["phase"] != "REGISTERED":
+        raise smoke.SmokeError(f"{case}: the refused retirement changed the receipts: {before} -> {after}, {kept}")
+    observed = dict(paused=paused["claim"], receipts=before, refused=refused.group(3), kept=kept["claim"])
+    if CASES[case]["b16"] == "copy":
+        run.wait_after(re.compile(rf"ARCE_BAY_CLAIM transfer={fixture['transfer']} .* reason=DUPLICATE_PENDING"), start, 60)
+        run.send(f"arce bay release-test discard-copy {fixture['logical']}", re.compile(r"ARCE_RELEASE_BAY_COPY_DISCARDED .* count=1"))
+        observed["copy"] = "DUPLICATE_PENDING, then discarded"
+    return observed
+
+
+def check_fresh_proof(case: str, lines: list[str], fixture: dict) -> dict:
+    """After B16's refusal, D6 runs again (BAY_SOURCE_PROOF) before the one READY_SOURCE: no stale token retires."""
+    refusals = [index for index, line in enumerate(lines) if (match := RETIRE_REFUSED.search(line)) and match.group(2) == fixture["logical"]]
+    claims = [(index, match.group(3), match.group(4)) for index, line in enumerate(lines)
+              if (match := CLAIM.search(line)) and match.group(2) == fixture["logical"]]
+    if len(refusals) != 1:
+        raise smoke.SmokeError(f"{case}: expected one refused retirement, found {len(refusals)}")
+    later = [(state, reason) for index, state, reason in claims if index > refusals[0]]
+    ready = [n for n, (state, _) in enumerate(later) if state == "READY_SOURCE"]
+    if len(ready) != 1 or ("OWNED_WAIT", "BAY_SOURCE_PROOF") not in later[:ready[0]]:
+        raise smoke.SmokeError(f"{case}: no fresh D6 proof before READY_SOURCE after the refusal: {later}")
+    return dict(after_refusal=later)
+
+
+def check_journal_hold(run: Session, case: str, fixture: dict) -> dict:
+    """W170-R23 while the startup journal writer is held: the restart claim waits in RESUME for the checked T, with no
+    source rebuilt or consumed and no ticket renewed; then the hold is released."""
+    run.wait(JOURNAL_HELD, 60)
+    polls = []
+    for _ in range(HELD_POLLS):
+        status = run.status(fixture["logical"])
+        polls.append(dict(claim=status["claim"], reason=status["reason"], rocket=status["rocket"], consumed=status["consumed"]))
+        if (status["claim"] != "RESUME" or status["reason"] != "TRANSFER_JOURNAL_PENDING" or status["transfer"] != "PREPARED"
+                or any(op is not None for op in status["consumed"])):
+            raise smoke.SmokeError(f"{case}: R1 or R2 acted before the checked T: {status}")
+        time.sleep(1.0)
+    assert run.process is not None
+    if any((match := RESUME_TICKETS.search(line)) and match.group(2) == fixture["logical"] for line in run.process.lines):
+        raise smoke.SmokeError(f"{case}: R1 renewed tickets while the startup writer was held")
+    run.send("arce rocket release-test journal-hold-release", re.compile(r"\S"))
+    run.wait(JOURNAL_RELEASED, 60)
+    return dict(polls=polls)
+
+
+def check_tickets_after_release(case: str, lines: list[str], fixture: dict) -> int:
+    """R1's first renewal of the claim comes after the held startup write was released."""
+    released = [index for index, line in enumerate(lines) if JOURNAL_RELEASED.search(line)]
+    renewed = [index for index, line in enumerate(lines) if (match := RESUME_TICKETS.search(line)) and match.group(2) == fixture["logical"]]
+    if len(released) != 1 or not renewed or renewed[0] < released[0]:
+        raise smoke.SmokeError(f"{case}: R1's renewal did not follow the release: released={released} renewed={renewed[:1]}")
+    return renewed[0] - released[0]
 
 
 def check_unproved(case: str, lines: list[str], fixture: dict) -> dict:
@@ -461,12 +568,19 @@ def run_case(run: Session, case: str) -> dict:
         properties = {"bayFirstTick": hooked} if hooked else {}
         if spec.get("hold") == "REGISTRY_BLOCKED":
             properties["bayRegistryBlocked"] = "true"
+        held = spec.get("journal_hold") == restart
+        if held:  # W170-R23: the journal's gated HOLD mode, with its first (startup) replacement held once
+            properties.update(rocketJournalFailure="HOLD", rocketJournalHoldStartup="true")
         process = run.start(case, restart, properties)
         entry = dict(restart=restart)
         if fixture is None and spec.get("fixture_restart") == restart:
             fixture = launch_fixture(run)
         if fixture is not None:
+            if held:
+                entry["journal_hold"] = check_journal_hold(run, case, fixture)
             entry["settled"] = run.await_settled(case, restart, fixture)
+            if held:
+                entry["journal_hold"]["tickets_after_release"] = check_tickets_after_release(case, process.lines, fixture)
             if hooked:
                 entry["first_tick"] = check_first_tick(case, process.lines, fixture)
             if restart == 2 and spec.get("relaunch"):

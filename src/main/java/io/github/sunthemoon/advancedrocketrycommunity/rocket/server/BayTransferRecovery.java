@@ -70,7 +70,7 @@ final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
                 (claim, receipt) -> { if (cuts != null) { cuts.writing(claim, receipt); } });
         consumption = new BayConsumptionSteps(server, publication);
         proof = new BaySourceProof(server, session, this::offer, (claim, op) -> { if (cuts != null) { cuts.removing(claim, op); } },
-                claim -> cuts != null && cuts.stallAfterConsumption(claim));
+                claim -> cuts != null && cuts.stallAfterConsumption(claim), (claim, guard) -> cuts == null ? guard : cuts.guard(claim, guard));
         resume = new BaySourceResume(server);
     }
 

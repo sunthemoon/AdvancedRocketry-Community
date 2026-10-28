@@ -23,6 +23,7 @@ public final class BayReceiptCommitCut implements CheckedSavedDataFile.Committer
     private record Armed(Point point, Mode mode, String cut, UUID op) { }
     private static final Logger LOGGER = LogUtils.getLogger();
     private final CountDownLatch release = new CountDownLatch(1);
+    private final java.util.concurrent.atomic.AtomicBoolean guardPaused = new java.util.concurrent.atomic.AtomicBoolean();
     private volatile Armed armed;
 
     /** One-shot: the next receipt replacement fires this cut. */
@@ -42,18 +43,30 @@ public final class BayReceiptCommitCut implements CheckedSavedDataFile.Committer
         if (current != null && current.point() == Point.MOVED) { fire(current); }
     }
 
+    /**
+     * W170 B16: once per process, a guarded removal's guard pauses here on the IO thread before it reads its tokens, with
+     * the same marker and release as a committer pause. Later guards of the session pass at once.
+     */
+    public void pauseBeforeGuard(String cut, UUID op) {
+        if (guardPaused.compareAndSet(false, true)) { pause(cut, op); }
+    }
+
     private void fire(Armed current) throws IOException {
         armed = null;
         if (current.mode() == Mode.UNKNOWN) {
             LOGGER.info("ARCE_RELEASE_BAY_INJECTED cut={} op={} outcome=UNKNOWN point={}", current.cut(), current.op(), current.point());
             throw new IOException("Injected an ambiguous receipt replacement");
         }
-        LOGGER.info("ARCE_RELEASE_BAY_PAUSED cut={} op={}", current.cut(), current.op());
+        pause(current.cut(), current.op());
+    }
+
+    private void pause(String cut, UUID op) {
+        LOGGER.info("ARCE_RELEASE_BAY_PAUSED cut={} op={}", cut, op);
         boolean interrupted = false;
         while (true) {
             try { release.await(); break; } catch (InterruptedException again) { interrupted = true; }
         }
         if (interrupted) { Thread.currentThread().interrupt(); }
-        LOGGER.info("ARCE_RELEASE_BAY_RELEASED cut={} op={}", current.cut(), current.op());
+        LOGGER.info("ARCE_RELEASE_BAY_RELEASED cut={} op={}", cut, op);
     }
 }

@@ -68,6 +68,15 @@ public final class BayReleaseTestCommands {
                         }))))
                 // W170 B16: a paused receipt replacement continues without a stop (its guard decides at the move).
                 .then(Commands.literal("release").executes(context -> release(context.getSource())))
+                // W170-R22's B16 changes while D7's guard is paused: motion, a joining copy and its leave, a reload.
+                .then(Commands.literal("nudge").then(Commands.argument("logical", UuidArgument.uuid())
+                        .executes(context -> nudge(context.getSource(), UuidArgument.getUuid(context, "logical")))))
+                .then(Commands.literal("copy").then(Commands.argument("logical", UuidArgument.uuid())
+                        .executes(context -> copy(context.getSource(), UuidArgument.getUuid(context, "logical")))))
+                .then(Commands.literal("discard-copy").then(Commands.argument("logical", UuidArgument.uuid())
+                        .executes(context -> discardCopies(context.getSource(), UuidArgument.getUuid(context, "logical")))))
+                .then(Commands.literal("reload").then(Commands.argument("logical", UuidArgument.uuid())
+                        .executes(context -> reload(context.getSource(), UuidArgument.getUuid(context, "logical")))))
                 .then(Commands.literal("status").then(Commands.argument("logical", UuidArgument.uuid())
                         .executes(context -> status(context.getSource(), UuidArgument.getUuid(context, "logical")))))
                 .then(Commands.literal("fill").then(Commands.argument("count", IntegerArgumentType.integer(1, 64))
@@ -178,6 +187,73 @@ public final class BayReleaseTestCommands {
         LOGGER.info("ARCE_RELEASE_BAY_RELEASE_REQUESTED");
         source.sendSuccess(() -> Component.literal("Bay commit cut released"), false);
         return 1;
+    }
+
+    /** The claim's established source of L in T's source Level, or a refusal (W170 B16). */
+    private static RocketEntity claimedSource(MinecraftServer server, UUID logical) {
+        var claim = RocketRuntime.installedBays().orElseThrow().claimForTests(logical).orElseThrow();
+        var record = RocketTransferSavedData.get(server).find(claim.transfer()).orElseThrow();
+        var level = RocketTransferEntities.level(server, record.sourceSnapshot().sourceDimension());
+        if (level == null || !(level.getEntity(claim.source().orElseThrow()) instanceof RocketEntity rocket)) {
+            throw new IllegalStateException("The claim's source is not loaded");
+        }
+        return rocket;
+    }
+
+    /** B16 motion: one block east and back, so the final image equals the proved one and only a motion observer sees it. */
+    private static int nudge(CommandSourceStack source, UUID logical) {
+        MinecraftServer server = source.getServer();
+        EscrowTestEndpoints.requireEnabled(server);
+        RocketEntity rocket = claimedSource(server, logical);
+        double x = rocket.getX(), y = rocket.getY(), z = rocket.getZ();
+        rocket.setPos(x + 1.0D, y, z);
+        rocket.setPos(x, y, z);
+        LOGGER.info("ARCE_RELEASE_BAY_NUDGED logical={} rocket={} x={} y={} z={}", logical, rocket.getUUID(), x, y, z);
+        source.sendSuccess(() -> Component.literal("Bay source nudged"), false);
+        return 1;
+    }
+
+    /** B16 join: a neutral copy of L, from T's current source snapshot and flight data, joins the source Level. */
+    private static int copy(CommandSourceStack source, UUID logical) {
+        MinecraftServer server = source.getServer();
+        EscrowTestEndpoints.requireEnabled(server);
+        var record = RocketTransferSavedData.get(server).findByLogicalRocket(logical).orElseThrow();
+        ServerLevel level = RocketTransferEntities.level(server, record.sourceSnapshot().sourceDimension());
+        RocketEntity copy = ModEntities.ROCKET.get().create(level);
+        copy.initializeTransferred(record.sourceSnapshot(), logical, record.ownerId(), record.sourceFlightData());
+        boolean added = level.addFreshEntity(copy);
+        LOGGER.info("ARCE_RELEASE_BAY_COPY logical={} copy={} added={}", logical, copy.getUUID(), added);
+        source.sendSuccess(() -> Component.literal("Bay copy added"), false);
+        return added ? 1 : 0;
+    }
+
+    /** B16 leave: every other loaded rocket naming L in the source Level is discarded; the claim's source stays. */
+    private static int discardCopies(CommandSourceStack source, UUID logical) {
+        MinecraftServer server = source.getServer();
+        EscrowTestEndpoints.requireEnabled(server);
+        RocketEntity exact = claimedSource(server, logical);
+        var copies = ((ServerLevel) exact.level()).getEntities(ModEntities.ROCKET.get(),
+                rocket -> rocket != exact && rocket.assemblyTransactionId().filter(logical::equals).isPresent());
+        copies.forEach(RocketEntity::discard);
+        LOGGER.info("ARCE_RELEASE_BAY_COPY_DISCARDED logical={} count={}", logical, copies.size());
+        source.sendSuccess(() -> Component.literal("Bay copies discarded"), false);
+        return copies.size();
+    }
+
+    /** B16 leave and join: the source leaves its Level as a chunk unload does and joins again from its saved tag. */
+    private static int reload(CommandSourceStack source, UUID logical) {
+        MinecraftServer server = source.getServer();
+        EscrowTestEndpoints.requireEnabled(server);
+        RocketEntity rocket = claimedSource(server, logical);
+        ServerLevel level = (ServerLevel) rocket.level();
+        CompoundTag saved = new CompoundTag();
+        if (!rocket.save(saved)) { throw new IllegalStateException("The claim's source did not save"); }
+        rocket.remove(net.minecraft.world.entity.Entity.RemovalReason.UNLOADED_TO_CHUNK);
+        var loaded = net.minecraft.world.entity.EntityType.loadEntityRecursive(saved, level, entity -> entity);
+        boolean added = loaded != null && level.addFreshEntity(loaded);
+        LOGGER.info("ARCE_RELEASE_BAY_RELOADED logical={} rocket={} added={}", logical, loaded == null ? "NONE" : loaded.getUUID(), added);
+        source.sendSuccess(() -> Component.literal("Bay source reloaded"), false);
+        return added ? 1 : 0;
     }
 
     private static int pending(CommandSourceStack source) {

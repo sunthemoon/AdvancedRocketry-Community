@@ -54,7 +54,7 @@ class ParseTests(unittest.TestCase):
 class ExpectationTests(unittest.TestCase):
     def test_every_case_names_a_known_cut_an_end_and_resolvable_outcomes(self):
         cuts = {"B1_STAGED", "B1_MOVED", "B9_STAGED", "B9_MOVED", "B12_UNKNOWN", "B18_INTENT", "B18_REJECTED", "B3_STAGED",
-                "B3_MOVED", "B12_D4", "B15_D4", "B8_STAGED", "B8_MOVED", "B12_D7", "B15_D7", "B6_D5"}
+                "B3_MOVED", "B12_D4", "B15_D4", "B8_STAGED", "B8_MOVED", "B12_D7", "B15_D7", "B6_D5", "B16_GUARD"}
         for case, spec in runner.CASES.items():
             self.assertTrue(spec.get("cut") is None or spec["cut"] in cuts, case)
             self.assertFalse(spec.get("cut") and spec.get("registry"), case)
@@ -70,9 +70,13 @@ class ExpectationTests(unittest.TestCase):
                 self.assertTrue(spec.get("journal") and spec["end"] == "stop", case)
             if spec.get("refuse"):
                 self.assertTrue(spec.get("cut", "").startswith(("B9_", "B18_REJECTED")), case)
+            if spec.get("b16"):
+                self.assertTrue(spec["cut"] == "B16_GUARD" and spec["end"] == "land" and spec["b16"] in runner.B16_ACTIONS, case)
+            if spec.get("journal_hold"):
+                self.assertTrue(spec["durable"] == "REGISTERED" and spec["journal_hold"] in (1, 2), case)
 
     def test_the_tranches_split_every_case_once_under_sixty_starts(self):
-        listed = runner.TRANCHES["A"] + runner.TRANCHES["B"]
+        listed = runner.TRANCHES["A"] + runner.TRANCHES["B"] + runner.TRANCHES["C"]
         self.assertEqual(sorted(runner.CASES), sorted(listed))
         self.assertEqual(len(listed), len(set(listed)))
         for cases in runner.TRANCHES.values():
@@ -205,6 +209,30 @@ class ExpectationTests(unittest.TestCase):
                 runner.check_unproved("B13_FAILED", [injected] * count + [unproved, ready], FIXTURE)
         later = [injected] * 3 + [unproved, injected, ready]
         self.assertEqual(3, runner.check_unproved("B13_FAILED", later, FIXTURE)["failures"], "only failures before it count")
+
+    def test_b16_needs_one_refused_guard_then_a_fresh_proof_before_ready_source(self):
+        """W170-R22: a stale token must not retire; the refusal is followed by D6 again, then the one READY_SOURCE."""
+        claim = lambda state, reason: f"ARCE_BAY_CLAIM transfer=t logical={L} state={state} reason={reason}\n"
+        refused = f"ARCE_BAY_RETIRE_REFUSED transfer=t logical={L} outcome=GUARD_REFUSED\n"
+        good = [claim("OWNED_WAIT", "BAY_RECEIPT_WRITE"), refused, claim("OWNED_WAIT", "BAY_SOURCE_PROOF"),
+                claim("OWNED_WAIT", "BAY_RECEIPT_WRITE"), claim("READY_SOURCE", "READY_SOURCE")]
+        self.assertEqual(3, len(runner.check_fresh_proof("B16_MOTION", good, FIXTURE)["after_refusal"]))
+        for lines in (good[:1] + good[2:], good[:2] + good[3:], good + [refused], good[:2] + [good[4]]):
+            with self.assertRaises(runner.smoke.SmokeError):
+                runner.check_fresh_proof("B16_MOTION", lines, FIXTURE)
+
+    def test_a_held_startup_writer_needs_r1_to_renew_only_after_its_release(self):
+        """W170-R23: the claim's first ticket renewal follows the released startup write."""
+        released = "ARCE_RELEASE_JOURNAL_STARTUP_RELEASED\n"
+        renewed = f"ARCE_BAY_RESUME_TICKETS transfer=t logical={L} stage=RESUME\n"
+        other = renewed.replace(L, X)
+        self.assertEqual(1, runner.check_tickets_after_release("B3_JOURNAL_HELD", [released, renewed], FIXTURE))
+        self.assertEqual(2, runner.check_tickets_after_release("B3_JOURNAL_HELD", [other, released, other, renewed], FIXTURE))
+        for lines in ([renewed, released], [released], [renewed], [released, released, renewed]):
+            with self.assertRaises(runner.smoke.SmokeError):
+                runner.check_tickets_after_release("B3_JOURNAL_HELD", lines, FIXTURE)
+        self.assertEqual("LANDED", runner.outcome("B3_JOURNAL_HELD", 1))
+        self.assertEqual("LANDED", runner.outcome("B16_MOTION", 0))
 
 
 if __name__ == "__main__":

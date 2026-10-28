@@ -1,5 +1,6 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
+import com.mojang.logging.LogUtils;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayDeploymentSession;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceiptStore;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceiptWriter;
@@ -22,6 +23,7 @@ import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
+import org.slf4j.Logger;
 
 /**
  * W170's D6 and D7 (W27A-DESIGN sections 4, 4.1 R4 and 5). D6: once the journal's acknowledged version for L is T', one
@@ -34,6 +36,7 @@ import net.minecraft.server.MinecraftServer;
 final class BaySourceProof {
     /** W98's retry after an IO, force, bounds or veto failure; never after a superseding save (W98-R11). */
     static final int RETRY_TICKS = RocketOrdinaryRetirement.RETRY_TICKS;
+    private static final Logger LOGGER = LogUtils.getLogger();
     private record Proved(EscrowBarrier.Proof proof, BooleanSupplier lease, BooleanSupplier token, CompoundTag frozen) {
         boolean valid() { return proof.valid() && lease.getAsBoolean() && token.getAsBoolean(); }
     }
@@ -43,16 +46,19 @@ final class BaySourceProof {
     private final Consumer<UUID> offer;
     private final java.util.function.BiConsumer<BayClaim, UUID> beforeRemoval;
     private final java.util.function.Predicate<BayClaim> stall;
+    private final java.util.function.BiFunction<BayClaim, BooleanSupplier, BooleanSupplier> guardCut;
     /** W98's port; the coordinator uses only its slot and barrier calls, so it is built without a transfer dispatch. */
     private final RocketRetirementWorld port;
     private final Map<UUID, Proved> proofs = new HashMap<>();
     private final Map<UUID, Long> retryAt = new HashMap<>();
     private final Set<UUID> capturing = new HashSet<>(), retiring = new HashSet<>();
 
-    /** {@code beforeRemoval} and {@code stall} are the gated native cut seams (no-ops outside release tests). */
+    /** {@code beforeRemoval}, {@code stall} and {@code guardCut} are the gated native cut seams (no-ops outside release tests). */
     BaySourceProof(MinecraftServer server, BayDeploymentSession session, Consumer<UUID> offer,
-                   java.util.function.BiConsumer<BayClaim, UUID> beforeRemoval, java.util.function.Predicate<BayClaim> stall) {
+                   java.util.function.BiConsumer<BayClaim, UUID> beforeRemoval, java.util.function.Predicate<BayClaim> stall,
+                   java.util.function.BiFunction<BayClaim, BooleanSupplier, BooleanSupplier> guardCut) {
         this.server = server; this.session = session; this.offer = offer; this.beforeRemoval = beforeRemoval; this.stall = stall;
+        this.guardCut = guardCut;
         port = new RocketRetirementWorld(server, null);
     }
 
@@ -116,7 +122,7 @@ final class BaySourceProof {
         if (proved == null || !proved.valid() || !current(claim, proved)) { return again(claim); }
         BayGroup group = claim.group().orElseThrow();
         beforeRemoval.accept(claim, group.operations().get(0));
-        var admission = session.removeGroup(group.operations(), proved::valid, outcome -> retired(claim, group, outcome));
+        var admission = session.removeGroup(group.operations(), guardCut.apply(claim, proved::valid), outcome -> retired(claim, group, outcome));
         if (admission.status() == BayReceiptStore.Status.BUSY) { return BayStepQueue.Result.NEXT_TICK; }
         if (!admission.queued()) {
             return admission.status() == BayReceiptStore.Status.STORE_UNAVAILABLE ? BayStepQueue.Result.NEXT_TICK
@@ -137,8 +143,10 @@ final class BaySourceProof {
         if (removed) {
             group.members().forEach(BayMember::retired);
             claim.end(BayClaim.Handoff.READY_SOURCE);
-        } else if (claim.stage() == BayClaim.Stage.RETIRE) {
-            claim.advance(BayClaim.Stage.PROVE); // GUARD_REFUSED or a definite failure: the receipts are back; D6 repeats
+        } else {
+            LOGGER.info("ARCE_BAY_RETIRE_REFUSED transfer={} logical={} outcome={}", claim.transfer(), logical, outcome);
+            // GUARD_REFUSED or a definite failure: the receipts are back; D6 repeats with a fresh proof
+            if (claim.stage() == BayClaim.Stage.RETIRE) { claim.advance(BayClaim.Stage.PROVE); }
         }
         offer.accept(logical);
     }

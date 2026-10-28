@@ -7,6 +7,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowRunti
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowTestEndpoints;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.deployment.BayClaim;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteMissionSavedData;
+import java.util.UUID;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.server.MinecraftServer;
@@ -43,7 +44,9 @@ final class BayDeploymentCuts {
         B8_MOVED(null, BayReceiptCommitCut.Point.MOVED, BayReceiptCommitCut.Mode.PAUSE),
         B12_D7(null, BayReceiptCommitCut.Point.STAGED, BayReceiptCommitCut.Mode.UNKNOWN),
         B15_D7(null, BayReceiptCommitCut.Point.MOVED, BayReceiptCommitCut.Mode.UNKNOWN),
-        B6_D5(null, null, null);
+        B6_D5(null, null, null),
+        // W170-R22: B16's pause of D7's guard on the IO thread, before it reads the proof, lease and group token.
+        B16_GUARD(null, null, null);
 
         @Nullable final BayReceipt.Phase phase;
         @Nullable final BayReceiptCommitCut.Point point;
@@ -68,8 +71,8 @@ final class BayDeploymentCuts {
         var committer = EscrowRuntime.of(server).bayReceipts(server).commitCutForTests(server)
                 .orElseThrow(() -> new IllegalStateException("The receipt committer has no cut seam"));
         Cut cut = Cut.valueOf(value);
-        LOGGER.info("ARCE_RELEASE_BAY_CUT configured={} phase={} point={} mode={}", cut, cut.phase == null ? (cut.removal() ? "REMOVAL" : "STALL")
-                : cut.phase, cut.point, cut.mode);
+        LOGGER.info("ARCE_RELEASE_BAY_CUT configured={} phase={} point={} mode={}", cut, cut.phase == null ? (cut.removal() ? "REMOVAL"
+                : cut == Cut.B16_GUARD ? "GUARD" : "STALL") : cut.phase, cut.point, cut.mode);
         return new BayDeploymentCuts(cut, committer);
     }
 
@@ -134,6 +137,17 @@ final class BayDeploymentCuts {
         if (fired || claim.origin() != BayClaim.Origin.CHECKPOINT || !cut.removal()) { return; }
         fired = true;
         committer.arm(cut.point, cut.mode, cut.name(), op);
+    }
+
+    /**
+     * W170 B16 (W170-R22): an in-session claim's D7 guard pauses once on the receipt writer's IO thread, after the removal
+     * was captured and staged but before the guard reads its proof, lease and group token, until the harness releases the
+     * committer cut. The harness then moves the source, saves, or adds or reloads an image of L, so the guard must refuse.
+     */
+    java.util.function.BooleanSupplier guard(BayClaim claim, java.util.function.BooleanSupplier guard) {
+        if (cut != Cut.B16_GUARD || claim.origin() != BayClaim.Origin.CHECKPOINT) { return guard; }
+        UUID op = claim.group().orElseThrow().operations().get(0);
+        return () -> { committer.pauseBeforeGuard(cut.name(), op); return guard.getAsBoolean(); };
     }
 
     /**
