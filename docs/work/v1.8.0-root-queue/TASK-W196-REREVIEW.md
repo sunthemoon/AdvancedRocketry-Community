@@ -41,3 +41,21 @@ full build or server. Delete the worktree's `build`, `.gradle` and `logs` afterw
 
 A verdict (APPROVE, APPROVE-WITH-CHANGES or BLOCK); findings with an ID (W196-R11, ...), severity, file and line,
 problem and suggested change; the commands you ran and their results; the SHA-256 of REVIEW.md on the last line.
+
+## Second re-review, of the R170 fix (2026-10-29)
+
+A new session reviews `e2f5a47b8..ef33db7fd` (fix `ba2972c27`, record `ef33db7fd`) in the review worktree
+`D:/GitHub/arce-v180-w196-rereview2`, a detached checkout of `ef33db7fd`, and writes
+`D:/GitHub/ARCE-Task-Evidence/root-queue/W196-rereview2/REVIEW.md`. The previous re-review is
+`D:/GitHub/ARCE-Task-Evidence/root-queue/W196-rereview/REVIEW.md` (SHA-256 `6e21a6fd…06a1`), with its probes.
+
+1. **W196-R11 is closed.** Rerun its two probes. A physical-held claim releases its captures, proof handles, watches and
+   D6 turn or queue position, keeps its receipts, charges and conflict latch, and regains no ordinary recovery,
+   registration or delegation. A second claim then finishes.
+2. **No new hold path:** every way a claim becomes physical-held runs the same cleanup, and the cleanup cannot release
+   a turn the claim does not hold.
+3. **Nothing weakened**, and the new manifest entry matches a real hold.
+4. **R-043:** confirm or extend the previous reviews' R-043 lists for W27d4.
+
+Rerun the changed unit classes and the `rocket.bay` and `rocket.server` packages. Output format as above, with
+findings numbered from W196-R21.
