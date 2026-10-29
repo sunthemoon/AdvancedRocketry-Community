@@ -30,6 +30,8 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 public final class BayHeldProofGameTests {
     private BayHeldProofGameTests() { }
 
+    static BlockPos targetOrigin(BlockPos origin) { return origin.offset(11, 0, 0); }
+
     @GameTest(template = TEMPLATE, batch = "bay_held_proof_capture", timeoutTicks = 1_200)
     public static void outsideCopyDuringPartialCaptureHoldsOnlyItsClaim(GameTestHelper helper) { new Case(helper, false).start(); }
 
@@ -76,13 +78,16 @@ public final class BayHeldProofGameTests {
         void begin() {
             var server = helper.getLevel().getServer();
             var origin = helper.absolutePos(new BlockPos(3, 2, 3));
-            var target = helper.absolutePos(new BlockPos(14, 2, 3));
+            var target = targetOrigin(origin);
             if (!helper.getLevel().isPositionEntityTicking(origin) || !helper.getLevel().isPositionEntityTicking(target)) { return; }
             for (int i = 0; i < 2; i++) {
                 var owner = UUID.randomUUID();
                 var pkg = solarPackage(owner);
                 flights[i] = transit(helper, origin.offset(0, 0, i * 3), target.offset(0, 0, i * 3), owner,
                         List.of(pkg), RocketEscrowSectionPatch.NEUTRAL);
+                com.mojang.logging.LogUtils.getLogger().info("ARCE_BAY_HELD_PROOF_FIXTURE retire={} claim={} source={} target={} slots={}",
+                        retire, i, flights[i].record().sourceSnapshot().sourceOrigin(),
+                        flights[i].record().destinationSnapshot().sourceOrigin(), BayAbsenceCensus.slots(flights[i].record()).size());
                 RocketTransferSavedData.get(server).put(flights[i].record());
                 var intent = intent(server, flights[i].record(), pkg, 0);
                 var after = BayRegisteredGameTests.consumed(flights[i].record(), List.of(intent));
