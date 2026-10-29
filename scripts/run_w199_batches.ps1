@@ -1,12 +1,13 @@
-param([Parameter(Mandatory=$true)][string]$Commit, [string]$Label='batches')
+param([Parameter(Mandatory=$true)][string]$Commit, [string]$Label='batches', [string]$TaskId='W199')
 $ErrorActionPreference='Stop'
 $workspace=(Resolve-Path "$PSScriptRoot/..").Path
 if($Label -notmatch '^batches(?:-[a-z0-9-]+)?$') { throw 'Invalid evidence label' }
-$root="D:/GitHub/ARCE-Task-Evidence/root-queue/W199/$Label"
+if($TaskId -notmatch '^W[0-9]+$') { throw 'Invalid task id' }
+$root="D:/GitHub/ARCE-Task-Evidence/root-queue/$TaskId/$Label"
 $temp='D:/GitHub/ARCE-Task-Evidence/Temp'
-$export="$temp/W199-$Label-export"; $archive="$temp/W199-$Label.zip"
+$export="$temp/$TaskId-$Label-export"; $archive="$temp/$TaskId-$Label.zip"
 $lock='D:\GitHub\ARCE-Task-Evidence\locks\heavy-jvm'
-$token="W199-batches pid=$PID $([guid]::NewGuid())"
+$token="$TaskId-batches pid=$PID $([guid]::NewGuid())"
 $owned=$false; $created=$false; $archived=$false
 $result=@{source_commit=$Commit;started=(Get-Date -Format o);runs=@();status='RUNNING'}
 function Remove-Owned([string]$Path) {

@@ -17,7 +17,6 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlight
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferPhase;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNbtSize;
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRegion;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -47,6 +46,7 @@ public final class RocketTransferSavedData extends SavedData {
     private final Map<UUID, RocketTransferRecord> entries = new LinkedHashMap<>();
     /** Derived encodability only, never durable authority. Validated mutations preserve this witness. */
     private boolean canonicalResidents = true;
+    private final RocketCheckedInsertion checkedInsertion;
     private CompoundTag preservedBlockedData;
     private final RocketJournalCheckpoint checkpoint = new RocketJournalCheckpoint();
     private volatile long mutationSequence = 1;
@@ -118,7 +118,10 @@ public final class RocketTransferSavedData extends SavedData {
     public RocketTransferSavedData() { this(RocketJournalSchedule.LIMIT); }
 
     /** A smaller detached-journal bound exercises capacity refusals without enlarging production limits. */
-    public RocketTransferSavedData(int reservationLimit) { schedule = new RocketJournalSchedule(this, reservationLimit); }
+    public RocketTransferSavedData(int reservationLimit) { this(reservationLimit, new RocketCheckedInsertion()); }
+    RocketTransferSavedData(int reservationLimit, RocketCheckedInsertion checkedInsertion) {
+        schedule = new RocketJournalSchedule(this, reservationLimit); this.checkedInsertion = checkedInsertion;
+    }
 
     /** Single-use owner-thread token. Closing a consumed or invalidated token cannot release another reservation. */
     public static final class Reservation implements AutoCloseable {
@@ -308,6 +311,7 @@ public final class RocketTransferSavedData extends SavedData {
     public void validateWriteBack(RocketTransferRecord record) { validateInsert(record, false, "Written-back"); }
 
     private void validateInsert(RocketTransferRecord record, boolean refuseStopping, String kind) {
+        checkedInsertion.clear();
         Objects.requireNonNull(record, "record");
         if (!operational() || refuseStopping && stopping || entries.containsKey(record.transferId())
                 || entries.size() >= RocketFlightLimits.MAX_ACTIVE_TRANSFERS) {
@@ -315,8 +319,9 @@ public final class RocketTransferSavedData extends SavedData {
         }
         ensureNoAuthorityConflict(record);
         try {
-            RocketJournalInsertionBudget.validate(entries(), record, firstMoonLanding, canonicalResidents);
+            RocketJournalInsertionBudget.validate(entries(), record, firstMoonLanding, canonicalResidents, checkedInsertion::encode);
             canonicalResidents = true;
+            checkedInsertion.validated(record, mutationSequence);
         }
         catch (IllegalStateException invalid) { throw new IllegalArgumentException(kind + " transfer does not fit the journal", invalid); }
     }
@@ -326,10 +331,7 @@ public final class RocketTransferSavedData extends SavedData {
             throw new IllegalStateException("Transfer journal is blocked by unsupported or invalid data");
         }
         Objects.requireNonNull(record, "record");
-        CompoundTag encoded = encodeRecord(record);
-        if (RocketNbtSize.uncompressedBytes(encoded) > RocketFlightLimits.MAX_TRANSFER_RECORD_NBT_BYTES) {
-            throw new IllegalArgumentException("Transfer record exceeds the fixed NBT limit");
-        }
+        checkedInsertion.check(record, mutationSequence, canonicalResidents);
         RocketTransferRecord existing = entries.get(record.transferId());
         if (existing == null && entries.size() >= RocketFlightLimits.MAX_ACTIVE_TRANSFERS) {
             throw new IllegalStateException("Transfer journal is full");
@@ -407,6 +409,7 @@ public final class RocketTransferSavedData extends SavedData {
     }
 
     private void changed(RocketTransferRecord record, RocketTransferRecord previous, String event) {
+        checkedInsertion.clear();
         mutationSequence++; leases.changed(record.logicalRocketId(), record.transferId(), mutationSequence, previous);
         if (nativeProbe != null) { nativeProbe.event(record.logicalRocketId(), "mutation", mutationSequence, event, 0); }
         setDirty(); publishLeases();
@@ -783,18 +786,7 @@ public final class RocketTransferSavedData extends SavedData {
     }
 
     private void ensureNoAuthorityConflict(RocketTransferRecord candidate) {
-        RocketRegion destination = RocketRegion.fromSnapshot(candidate.destinationSnapshot());
-        for (RocketTransferRecord existing : entries.values()) {
-            if (existing.transferId().equals(candidate.transferId())) {
-                continue;
-            }
-            if (existing.logicalRocketId().equals(candidate.logicalRocketId())) {
-                throw new IllegalArgumentException("Logical rocket already has an active transfer");
-            }
-            if (RocketRegion.fromSnapshot(existing.destinationSnapshot()).overlaps(destination)) {
-                throw new IllegalArgumentException("Transfer destination overlaps an active reservation");
-            }
-        }
+        RocketJournalInsertionBudget.ensureNoAuthorityConflict(entries.values(), candidate);
     }
 
 }

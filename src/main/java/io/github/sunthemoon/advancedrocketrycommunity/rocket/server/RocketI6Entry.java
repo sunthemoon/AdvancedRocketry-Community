@@ -60,18 +60,16 @@ final class RocketI6Entry {
         }
         // Only the isolated historical GameTest adapter still exercises the original direct M1 contract.
         if (!request.retainedExecutor()) { return landed.begin(rocket, preflight, request, ports); }
-        if (!(rocket.level() instanceof ServerLevel level)) { return RocketValidationCode.ENTITY_STATE_INVALID; }
-        try {
-            if (new SealedPlanAdmission(rocket.snapshot().orElseThrow()).refuseNew(rocket.getUUID(),
-                    io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity.LOGGER::info) != null) {
-                return RocketValidationCode.SCAN_BUDGET_EXCEEDED;
-            }
-        } catch (IllegalArgumentException invalid) { return RocketValidationCode.SCAN_BUDGET_EXCEEDED; }
+        if (!(rocket.level() instanceof ServerLevel level) || !level.getServer().isSameThread()) {
+            return RocketValidationCode.ENTITY_STATE_INVALID;
+        }
         var journal = RocketTransferSavedData.get(level.getServer()); var logical = rocket.assemblyTransactionId().orElseThrow();
         var retirements = recovery.retirements();
         if (landed.pending(logical) || retirements.plainReleasePending(logical)) { return RocketValidationCode.DISASSEMBLY_PENDING; }
         var record = journal.findByLogicalRocket(logical).orElse(null); var port = ports.apply(level.getServer(), journal);
-        var decision = landed.admission(rocket, record, journal, port, preflight, true);
+        // Standalone execution retains its immediate plan check. I6's bounded queue owns the expensive work otherwise.
+        if (record == null && !planAllowed(rocket)) { return RocketValidationCode.SCAN_BUDGET_EXCEEDED; }
+        var decision = landed.admission(rocket, record, journal, port, Optional::empty, true);
         if (decision.admission() != RocketLandedDisassemblyRules.Admission.RELEASE) { return decision.code(); }
         if (!retirements.pendingRoom(logical) || !request.authorized()) { return RocketValidationCode.REGION_BUSY; }
         if (!RocketTransferEntities.recoveryEndsAlreadyLoaded(level.getServer(), record)) {
@@ -80,6 +78,13 @@ final class RocketI6Entry {
         var proof = recovery.i6Port(level.getServer(), journal, record, rocket);
         var handoff = new RocketLandedDisassemblies.Pending[1];
         var refusal = new RocketValidationCode[] {RocketValidationCode.REGION_BUSY};
+        proof.preflight(() -> {
+            if (!request.authorized() || !request.restorable()) { return false; }
+            if (!planAllowed(rocket)) { refusal[0] = RocketValidationCode.SCAN_BUDGET_EXCEEDED; return false; }
+            var issue = preflight.get();
+            if (issue.isPresent()) { refusal[0] = issue.orElseThrow(); return false; }
+            return true;
+        });
         proof.handoff(request::authorized, (data, actual, own) -> {
             if (!request.authorized() || !request.restorable()) { return false; }
             var issue = preflight.get();
@@ -98,6 +103,13 @@ final class RocketI6Entry {
                                     else { request.finished(refusal[0], null); } }));
         }
         return RocketValidationCode.DISASSEMBLY_PENDING;
+    }
+
+    private static boolean planAllowed(RocketEntity rocket) {
+        try {
+            return new SealedPlanAdmission(rocket.snapshot().orElseThrow()).refuseNew(rocket.getUUID(),
+                    io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity.LOGGER::info) == null;
+        } catch (IllegalArgumentException invalid) { return false; }
     }
 
     /** A cold-site click only prepares the recorded discovery columns; it cannot consume destructive consent or create P. */

@@ -4,6 +4,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firste
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNbtSize;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRegion;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.ToIntFunction;
@@ -15,8 +16,13 @@ final class RocketJournalInsertionBudget {
 
     static void validate(List<RocketTransferRecord> existing, RocketTransferRecord candidate, FirstEventOutbox outbox,
                          boolean canonicalResidents) {
+        validate(existing, candidate, outbox, canonicalResidents, RocketTransferJournalCodec::encodeRecord);
+    }
+
+    static void validate(List<RocketTransferRecord> existing, RocketTransferRecord candidate, FirstEventOutbox outbox,
+                         boolean canonicalResidents, java.util.function.Function<RocketTransferRecord, CompoundTag> encoder) {
         validate(existing, candidate, canonicalResidents, records -> RocketNbtSize.uncompressedBytes(
-                RocketTransferSavedData.encode(records, outbox, new CompoundTag())));
+                RocketTransferJournalCodec.encodeRoot(records, outbox, new CompoundTag(), encoder)));
     }
 
     /** The encoder retains every codec/record/root check. The seam counts encodes in unit tests. */
@@ -36,5 +42,20 @@ final class RocketJournalInsertionBudget {
     private static void validateWholeRoot(List<RocketTransferRecord> existing, RocketTransferRecord candidate,
                                          ToIntFunction<List<RocketTransferRecord>> encodeBytes) {
         var all = new ArrayList<>(existing); all.add(candidate); encodeBytes.applyAsInt(all);
+    }
+
+    static void ensureNoAuthorityConflict(java.util.Collection<RocketTransferRecord> entries, RocketTransferRecord candidate) {
+        RocketRegion destination = RocketRegion.fromSnapshot(candidate.destinationSnapshot());
+        for (RocketTransferRecord existing : entries) {
+            if (existing.transferId().equals(candidate.transferId())) {
+                continue;
+            }
+            if (existing.logicalRocketId().equals(candidate.logicalRocketId())) {
+                throw new IllegalArgumentException("Logical rocket already has an active transfer");
+            }
+            if (RocketRegion.fromSnapshot(existing.destinationSnapshot()).overlaps(destination)) {
+                throw new IllegalArgumentException("Transfer destination overlaps an active reservation");
+            }
+        }
     }
 }
