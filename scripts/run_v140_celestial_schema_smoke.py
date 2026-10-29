@@ -34,6 +34,11 @@ GAS = HOST + ":schema_probe_gas"
 PACK = "world/datapacks/schema_probe/data/" + HOST
 BINDINGS = "world/data/advancedrocketrycommunity_planetary_bindings.json"
 BINDING_BODY = HOST + ":binding_probe"
+# v1.8's station registry (as W101 found for the v1.3 environment smoke): root schema 5
+# (StationLimits.REGISTRY_SCHEMA_VERSION), whose orbital clock advances once per server tick
+# (StationOrbitalClock, schema 1). Every other build keeps root schema 2 and exact equality.
+V180_STATION_ROOT_SCHEMA = 5
+ORBITAL_CLOCK = "orbital_clock"
 
 
 def packaged_counts(artifact: Path) -> tuple[int, int]:
@@ -58,7 +63,31 @@ def read_nbt(path: Path) -> dict:
     return support.NbtReader(payload).read_root()
 
 
-def validate_unchanged_station(actual: dict, baseline: dict) -> None:
+def station_root_schema(expected_version: str | None) -> int:
+    return V180_STATION_ROOT_SCHEMA if expected_version == server.V180_STARTUP_VERSION else 2
+
+
+def validate_new_station(document: dict, station_id: str, expected_version: str | None = None) -> None:
+    require(document.get("schema_version") == station_root_schema(expected_version)
+            and document.get("reservations") == [] and len(document.get("stations", [])) == 1,
+            "Initial native station shape differs")
+    station = document["stations"][0]
+    require(support.uuid_from_nbt(station["station_id"]) == station_id
+            and station["orbit_body"] == HOST + ":moon", "Native station differs from creation receipt")
+
+
+def validate_unchanged_station(actual: dict, baseline: dict, expected_version: str | None = None) -> None:
+    if expected_version == server.V180_STARTUP_VERSION:
+        # Only the v1.8 clock may move, and only forward with its exact shape.
+        clock, before = actual.get(ORBITAL_CLOCK), baseline.get(ORBITAL_CLOCK)
+        require(isinstance(clock, dict) and isinstance(before, dict)
+                and set(clock) == set(before) == {"schema_version", "logical_tick"}
+                and clock["schema_version"] == before["schema_version"] == 1
+                and type(clock["logical_tick"]) is int and type(before["logical_tick"]) is int
+                and clock["logical_tick"] >= before["logical_tick"],
+                "Native station orbital clock changed shape or went back")
+        actual = {key: value for key, value in actual.items() if key != ORBITAL_CLOCK}
+        baseline = {key: value for key, value in baseline.items() if key != ORBITAL_CLOCK}
     require(actual == baseline, "Reload/denied creation/restart changed native station authority")
 
 
@@ -143,8 +172,13 @@ def verify_joint_rejections(root: Path, output: Path, artifact: Path, query) -> 
     return expected_errors, receipts
 
 
-def validate_log(lines: list[str], expected_errors: list[str]) -> None:
-    require(server.scan_log(lines) == expected_errors,
+def validate_log(lines: list[str], expected_errors: list[str], expected_version: str | None = None) -> None:
+    """Compare one complete process log with its exact fault-injection rejections.
+
+    The build's startup allowance (scan_log) is counted over this whole process, never per reload;
+    other and unspecified builds get none.
+    """
+    require(server.scan_log(lines, expected_mod_version=expected_version) == expected_errors,
             "Blocking log findings differ from the exact observed fault-injection rejections")
 
 
@@ -250,11 +284,7 @@ def run_cycle(root: Path, output: Path, artifact: dict, java: str, port: int, ph
             query("save-all flush", server.SAVE_MARKER, 60)
             shutil.copyfile(root / STATIONS, directory / "before-reload-stations.dat")
             baseline = read_nbt(directory / "before-reload-stations.dat")["data"]
-            require(baseline.get("schema_version") == 2 and baseline.get("reservations") == []
-                    and len(baseline.get("stations", [])) == 1, "Initial native station shape differs")
-            station = baseline["stations"][0]
-            require(support.uuid_from_nbt(station["station_id"]) == station_id
-                    and station["orbit_body"] == HOST + ":moon", "Native station differs from creation receipt")
+            validate_new_station(baseline, station_id, artifact["version"])
             observations["definitions"] = install_pack(root, Path(artifact["path"]))
             if joint_reload or check_bindings:
                 observations["route"] = install_route(root, Path(artifact["path"]), 123)
@@ -303,14 +333,14 @@ def run_cycle(root: Path, output: Path, artifact: dict, java: str, port: int, ph
         commands.append("stop")
         process.command("stop")
         require(process.finish() == 0, "Dedicated process did not exit cleanly")
-        validate_log(process.lines, expected_errors)
+        validate_log(process.lines, expected_errors, artifact["version"])
         if check_bindings:
             capture_bindings(root, directory / "bindings-at-stop.json")
         require(server.digest_file(root / "mods" / artifact["name"]) == artifact["sha256"], "Installed JAR changed")
         support.regular(root / STATIONS, 4 * 1024**2)
         shutil.copyfile(root / STATIONS, directory / "stations.dat")
         actual = read_nbt(directory / "stations.dat")["data"]
-        validate_unchanged_station(actual, baseline)
+        validate_unchanged_station(actual, baseline, artifact["version"])
         write_json(directory / "native-stations.json", actual)
         support.regular(root / "world/level.dat", 4 * 1024**2)
         shutil.copyfile(root / "world/level.dat", directory / "level.dat")

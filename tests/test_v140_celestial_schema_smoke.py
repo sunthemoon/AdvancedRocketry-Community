@@ -6,9 +6,111 @@ import tempfile
 import unittest
 import zipfile
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from scripts import run_v140_celestial_schema_smoke as runner
+
+
+V180 = "1.20.1-1.8.0-dev"
+V140 = "1.20.1-1.4.0-dev"
+STARTUP = ("[12:00:00] [Server thread/WARN] [io.gi.su.ad.AdvancedRocketryCommunity/]: "
+           "ARCE_FIRST_EVENT_HELD kind=first_moon_landing reason=SOURCE_UNCONFIRMED")
+READY = '[12:00:00] [Server thread/INFO] [minecraft/DedicatedServer]: Done (1.000s)! For help, type "help"'
+SAVED = "[12:00:00] [Server thread/INFO] [minecraft/MinecraftServer]: Saved the game"
+PAD = [8, 64, 8]
+
+
+def console(text):
+    return "[12:00:00] [Server thread/INFO] [minecraft/MinecraftServer]: " + text
+
+
+# Fixed replies of the restart phase without reload modes, matched by command prefix in this order.
+RESTART_REPLIES = (
+    ("arce celestial validate", [console("Celestial catalog generation 1 is valid with 4 bodies")]),
+    ("arce celestial list", [
+        console(f"{runner.GAS} -> unmapped gravity=2.5 atmosphere={runner.GAS} "
+                "landable=false orbitable=true gas_giant=true solar=0.04 radiation=0.5"),
+        console(f"{runner.HOST}:moon -> {runner.HOST}:moon gravity=0.165 atmosphere={runner.HOST}:vacuum "
+                "landable=false orbitable=false gas_giant=false solar=0.5 radiation=0.25")]),
+    ("arce station admin inspect", [console(
+        f"region=0,0..15,15 pad={PAD[0]},{PAD[1]},{PAD[2]} orbit={runner.HOST}:moon "
+        "gravity_milli=0 vacuum=true warp_energy=0")]),
+    ("arce station admin create", [console("Station creation failed: UNKNOWN_ORBIT_BODY")]),
+    (f"execute in {runner.GAS} ", [console(f"Unknown dimension '{runner.GAS}'")]),
+    ("execute in ", [console("The time is 40")]),
+    ("save-all flush", [SAVED]),
+)
+
+
+class CycleProcess:
+    """A finite fake packaged server for one restart phase; its log starts with the given lines."""
+
+    def __init__(self, startup):
+        self.lines = [READY, *startup]
+        self.process = Mock(returncode=0)
+        self.process.poll.return_value = 0
+
+    def command(self, value):
+        for prefix, replies in RESTART_REPLIES:
+            if value.startswith(prefix):
+                self.lines.extend(replies)
+                return
+
+    def wait_for(self, pattern, timeout, start_at=0):
+        for index in range(start_at, len(self.lines)):
+            if pattern.search(self.lines[index]):
+                return index
+        raise runner.SmokeError("Fake server has no matching fresh line")
+
+    def finish(self):
+        return 0
+
+    def abort(self):
+        pass
+
+
+def station_document(version=None, tick=100):
+    """The decoded station root: v1.8 adds root schema 5, warp energy and the orbital clock."""
+    document = {"schema_version": 2, "reservations": [],
+                "stations": [{"station_id": [1, 2, 3, 4], "orbit_body": runner.HOST + ":moon", "landing_pad": PAD}]}
+    if version == V180:
+        document.update(schema_version=5, warp_energy=[],
+                        orbital_clock={"schema_version": 1, "logical_tick": tick})
+    return document
+
+
+def run_restart_cycle(root, version, startup, saved=None):
+    """Run the real restart phase against CycleProcess; only process, status and NBT decoding are faked."""
+    artifact_path = root / "host-input.jar"
+    with zipfile.ZipFile(artifact_path, "w") as archive:
+        for kind, count in (("celestial_bodies", 3), ("travel_routes", 4)):
+            for index in range(count):
+                archive.writestr(f"data/{runner.HOST}/{kind}/{index}.json", "{}")
+    server_root = root / "server"
+    (server_root / "mods").mkdir(parents=True)
+    (server_root / "mods/host.jar").write_bytes(artifact_path.read_bytes())
+    (server_root / runner.STATIONS).parent.mkdir(parents=True)
+    (server_root / runner.STATIONS).write_bytes(b"native stations")
+    (server_root / "world/level.dat").write_bytes(b"native level")
+    artifact = {"path": str(artifact_path), "name": "host.jar", "version": version,
+                "sha256": runner.server.digest_file(artifact_path)}
+    output = root / "evidence"
+    output.mkdir()
+    process = CycleProcess(startup)
+    baseline = station_document(version)
+    saved = station_document(version, 160) if saved is None else saved
+    with patch.object(runner.support.rocket_smoke, "_server_command",
+                      return_value=["java", "-Dadvancedrocketrycommunity.releaseTestHooks=true"]), \
+            patch.object(runner.server, "CapturedProcess", return_value=process), \
+            patch.object(runner.server, "wait_for_status", return_value={"players": {"online": 0}}), \
+            patch.object(runner.server, "validate_status_identity") as identity, \
+            patch.object(runner.server, "forge_mod_versions",
+                         return_value={runner.HOST: version, "minecraft": "1.20.1", "forge": "47.4.10"}), \
+            patch.object(runner, "read_nbt", return_value={"data": saved}):
+        result = runner.run_cycle(server_root, output, artifact, "java", 12345, "restart",
+                                  "00000000-0000-0001-0000-000200000003", baseline)
+    identity.assert_called_once_with({"players": {"online": 0}}, version)
+    return result, json.loads((output / "restart/observations.json").read_text(encoding="utf-8"))
 
 
 class CelestialSchemaSmokeTest(unittest.TestCase):
@@ -160,6 +262,112 @@ class CelestialSchemaSmokeTest(unittest.TestCase):
                     runner.capture_bindings(root, root / "rejected.json")
                 self.assertEqual(before, source.read_bytes())
                 self.assertFalse((root / "rejected.json").exists())
+
+
+class StartupAllowanceTest(unittest.TestCase):
+    REJECTED = ("[12:00:01] [Server thread/ERROR] [advancedrocketrycommunity/]: "
+                "Rejected planetary catalog; last valid generation remains active: fixture")
+
+    def test_v180_startup_hold_is_counted_once_per_process_log(self):
+        for lines in ([STARTUP, self.REJECTED], [self.REJECTED, STARTUP]):
+            with self.subTest(lines=lines):
+                runner.validate_log(lines, [self.REJECTED], V180)
+        runner.validate_log([STARTUP], [], V180)
+        for lines, errors in (([STARTUP, self.REJECTED, STARTUP], [self.REJECTED]), ([STARTUP, STARTUP], []),
+                              ([STARTUP.replace("SOURCE_UNCONFIRMED", "SOURCE_UNAVAILABLE")], [])):
+            with self.subTest(lines=lines), self.assertRaises(runner.SmokeError):
+                runner.validate_log(lines, errors, V180)
+
+    def test_other_or_unspecified_builds_get_no_startup_allowance(self):
+        with self.assertRaises(runner.SmokeError):
+            runner.validate_log([STARTUP, self.REJECTED], [self.REJECTED])
+        for version in (None, V140, "1.20.1-1.7.0-dev", "1.20.1-1.8.1-dev"):
+            with self.subTest(version=version), self.assertRaises(runner.SmokeError):
+                runner.validate_log([STARTUP, self.REJECTED], [self.REJECTED], version)
+
+    def test_restart_cycle_audits_its_process_log_with_the_artifact_build(self):
+        with tempfile.TemporaryDirectory() as directory:
+            station, observations = run_restart_cycle(Path(directory), V180, [STARTUP])
+        self.assertEqual("00000000-0000-0001-0000-000200000003", station[0])
+        self.assertEqual("PASS", observations["result"])
+        self.assertEqual([], observations["expected_fault_errors"])
+        self.assertEqual(1, observations["log_counts"]["project_warning_count"])
+
+    def test_restart_cycle_refuses_a_repeated_hold_or_another_build(self):
+        for version, startup in ((V180, [STARTUP, STARTUP]), (V140, [STARTUP])):
+            with self.subTest(version=version, startup=startup), tempfile.TemporaryDirectory() as directory:
+                with self.assertRaisesRegex(runner.SmokeError, "Blocking log findings differ"):
+                    run_restart_cycle(Path(directory), version, startup)
+                observations = json.loads((Path(directory) / "evidence/restart/observations.json")
+                                          .read_text(encoding="utf-8"))
+                self.assertEqual("FAIL", observations["result"])
+
+
+class StationRegistryShapeTest(unittest.TestCase):
+    STATION = "00000001-0000-0002-0000-000300000004"
+
+    def test_root_schema_follows_only_the_exact_v180_build(self):
+        self.assertEqual(5, runner.station_root_schema(V180))
+        for version in (None, V140, "1.20.1-1.7.0-dev", "1.20.1-1.8.1-dev"):
+            with self.subTest(version=version):
+                self.assertEqual(2, runner.station_root_schema(version))
+
+    def test_new_station_requires_its_build_root_schema_and_creation_receipt(self):
+        runner.validate_new_station(station_document(V180), self.STATION, V180)
+        runner.validate_new_station(station_document(), self.STATION, V140)
+        runner.validate_new_station(station_document(), self.STATION)
+        for document, version in ((station_document(V180), V140), (station_document(V180), None),
+                                  (station_document(), V180)):
+            with self.subTest(schema=document["schema_version"], version=version), \
+                    self.assertRaisesRegex(runner.SmokeError, "Initial native station shape"):
+                runner.validate_new_station(document, self.STATION, version)
+        for change in ({"reservations": [{}]}, {"stations": []}):
+            with self.subTest(change=change), self.assertRaisesRegex(runner.SmokeError, "Initial native station shape"):
+                runner.validate_new_station(dict(station_document(V180), **change), self.STATION, V180)
+        moved = station_document(V180)
+        moved["stations"][0]["orbit_body"] = runner.HOST + ":earth"
+        for document, station in ((moved, self.STATION), (station_document(V180), str(runner.uuid.UUID(int=1)))):
+            with self.subTest(station=station), self.assertRaisesRegex(runner.SmokeError, "creation receipt"):
+                runner.validate_new_station(document, station, V180)
+
+    def test_v180_clock_may_only_advance_with_its_exact_shape(self):
+        baseline = station_document(V180, 100)
+        for tick in (100, 101, 10**12):
+            runner.validate_unchanged_station(station_document(V180, tick), baseline, V180)
+        self.assertEqual(station_document(V180, 100), baseline)
+
+        def changed(mutate):
+            document = station_document(V180, 160)
+            mutate(document)
+            return document
+
+        for document in (station_document(V180, 99), changed(lambda value: value.pop("orbital_clock")),
+                         changed(lambda value: value["orbital_clock"].update(schema_version=2)),
+                         changed(lambda value: value["orbital_clock"].update(extra=1)),
+                         changed(lambda value: value["orbital_clock"].update(logical_tick=True)),
+                         changed(lambda value: value["orbital_clock"].update(logical_tick=160.0)),
+                         changed(lambda value: value.update(orbital_clock=[1, 160]))):
+            with self.subTest(clock=document.get("orbital_clock")), \
+                    self.assertRaisesRegex(runner.SmokeError, "orbital clock"):
+                runner.validate_unchanged_station(document, baseline, V180)
+        for mutate in (lambda value: value.update(warp_energy=[{}]), lambda value: value.update(schema_version=4),
+                       lambda value: value["stations"][0].update(landing_pad=[8, 65, 8]),
+                       lambda value: value.update(extra="new")):
+            with self.subTest(mutate=mutate), self.assertRaisesRegex(runner.SmokeError, "station authority"):
+                runner.validate_unchanged_station(changed(mutate), baseline, V180)
+
+    def test_other_builds_keep_exact_equality_even_for_a_clock(self):
+        baseline = station_document(V180, 100)
+        for version in (None, V140, "1.20.1-1.8.1-dev"):
+            with self.subTest(version=version):
+                runner.validate_unchanged_station(copy.deepcopy(baseline), baseline, version)
+                with self.assertRaisesRegex(runner.SmokeError, "station authority"):
+                    runner.validate_unchanged_station(station_document(V180, 101), baseline, version)
+
+    def test_restart_cycle_checks_the_saved_root_with_the_artifact_build(self):
+        with tempfile.TemporaryDirectory() as directory:
+            with self.assertRaisesRegex(runner.SmokeError, "orbital clock"):
+                run_restart_cycle(Path(directory), V180, [STARTUP], station_document(V180, 99))
 
 
 if __name__ == "__main__":
