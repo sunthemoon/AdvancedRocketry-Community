@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Hard-cut ordinary per-record scheduling and governed returns, then restart twice.
 
-Unavailable ordinary N2 fixtures are explicit BLOCKED rows, never passing cuts.
+W204 adds gated refusal and named-pad fixtures; unavailable boundaries remain findings.
 Uses HOLD, FM6b, FP6, RT and the passive N2_REMOVAL_MOVED release-test pause.
 W98 adds three opt-in N3 cuts (``--case``): the gated ordinary-retirement pause
 before the survivor proof's own store, after that store and before its force,
@@ -31,9 +31,8 @@ from run_v180_governed_benchmark import utc
 import run_v180_escrow_returns as governed
 
 CASES = ("F3_HELD", "F3_UNKNOWN", "N2_REFUSED", "N2_MOVED", "N2_UNKNOWN", "N2_GOVERNED")
-BLOCKED = {
-    "N2_REFUSED": "No native refusal fixture; production has 128 slots, detached tests use two. Needs scope decision.",
-}
+BLOCKED = {}
+N3C_CASES = ("N2_REFUSED", "N2_STOPPED", "N2_PAD_MOVED", "N2_PAD_UNKNOWN")
 # W98 (P1-N3 leaf N3-A1): not in the default campaign; each pauses B's ordinary retirement once.
 N3_CUTS = {"N3_STORE": "BARRIER_STORE_BEFORE", "N3_FORCE": "BARRIER_FORCE_BEFORE", "N3_REMOVAL": "ORDINARY_REMOVAL_BEFORE"}
 GOVERNED = "RT_CANCEL_SEPARATE_0_READBACK_AFTER"
@@ -53,7 +52,7 @@ def heavy_lock(timeout=10_800):
             if time.monotonic() >= deadline:
                 raise smoke.SmokeError("Heavy-JVM lock wait expired")
             time.sleep(30)
-    token = f"W91K PID={os.getpid()} {uuid.uuid4()} {utc()}"
+    token = f"W204 PID={os.getpid()} {uuid.uuid4()} {utc()}"
     owner = LOCK / "owner.txt"
     owner.write_text(token, encoding="utf-8")
     try:
@@ -81,6 +80,10 @@ def read_disk(world: Path) -> dict:
         raise smoke.SmokeError("Wrong journal schema")
     files["data/" + JOURNAL] = digest(path)
     result = dict(entities=entities, journal=journal, files=files)
+    pads = world / "data/advancedrocketrycommunity_landing_pads.dat"
+    if pads.is_file():
+        result["pads"] = read_journal(pads)
+        files["data/" + pads.name] = digest(pads)
     pending = path.with_name(path.name + ".arce-pending")
     if pending.exists():
         result["pending"] = read_journal(pending)
@@ -122,6 +125,109 @@ def conserved(entity: dict) -> dict:
                 owner=data["owner_id"], snapshot=data["snapshot"], fuel=flight["fuel"],
                 escrow=data["resource_escrow"], passengers=flight["passengers"],
                 mounted=entity.get("Passengers", []))
+
+
+def verify_n3c_observation(before, after, phase):
+    """Read-only comparison; a claim attempt is a real product call, not a forced release."""
+    if phase == "refused":
+        if after.get("accepted", False):
+            raise smoke.SmokeError("Refused return was admitted")
+        for key in ("source", "journal", "pads", "live"):
+            if before[key] != after[key]:
+                raise smoke.SmokeError("Refusal mutated " + key)
+    elif phase == "pending":
+        if after["acknowledged"] or after["reuse"] or after["pads"] != before["pads"]:
+            raise smoke.SmokeError("Unacknowledged named pad was released or reused")
+        if conserved(before["source"]) != conserved(after["source"]):
+            raise smoke.SmokeError("Pending return changed conserved resources or identity")
+    else:
+        raise smoke.SmokeError("Unknown N3-C observation phase")
+
+
+def n3c_observe(process, entity, label, session):
+    begin = len(process.lines)
+    process.command(f"arce-w204 observe {entity} {label}")
+    process.wait_for(re.compile("ARCE_W204_OBSERVED label=" + label), 30, start_at=begin)
+    return read_journal(session / f"w204-{label}.dat")
+
+
+def cut_n3c(process, world, case, row):
+    a = assemble(process, 0); launch(process, a)
+    landing = re.compile(r"ARCE_TRANSFER_PHASE transfer=\S+ logical=" + a["logical"]
+                         + r" phase=COMMITTED event=landed_reservation_retained entity=(\S+)")
+    at = process.wait_for(landing, 120)
+    a["destination_entity"] = landing.search(process.lines[at]).group(1)
+    deadline = time.monotonic() + 30
+    while read_journal(world / "data" / JOURNAL)["classic_first_moon_landing"]["state"] != "DELIVERED":
+        if time.monotonic() >= deadline:
+            raise smoke.SmokeError("N3-C control outbox never delivered")
+        time.sleep(.05)
+    b = assemble(process, 1); row["flights"] = [a, b]
+    for i, flight in enumerate(row["flights"]):
+        flight["source_position"] = [384.5 + 32 * i, 101.0, 384.5]
+    mode = {"N2_REFUSED": "refused", "N2_STOPPED": "stopped"}.get(case, "removal")
+    begin = len(process.lines)
+    process.command(f"arce-w204 seed {b['entity']} {mode}")
+    seeded = re.compile(r"ARCE_W204_SEEDED logical=" + b["logical"] + r" transfer=(\S+)")
+    at = process.wait_for(seeded, 30, start_at=begin)
+    b["transfer"] = seeded.search(process.lines[at]).group(1)
+    deadline = time.monotonic() + 30
+    while True:
+        root = read_journal(world / "data" / JOURNAL)
+        if any(str(nbt_uuid(t["logical_rocket_id"])) == b["logical"] for t in root["transfers"]):
+            break
+        if time.monotonic() >= deadline:
+            raise smoke.SmokeError("N3-C seed never became durable")
+        time.sleep(.05)
+    # Preparation saves precede the return request and the observation boundary.
+    save(process)
+    row["before_removal"] = read_disk(world)
+    row["seed"] = n3c_observe(process, b["entity"], "seed", world.parent)
+    begin = len(process.lines); process.command("arce-w204 act " + mode)
+    at = process.wait_for(re.compile("ARCE_W204_ACT mode=" + mode), 30, start_at=begin)
+    row["request"] = process.lines[at].strip()
+    if mode != "removal":
+        code = process.finish(timeout=30)
+        if code != 75:
+            raise smoke.SmokeError("Refusal observation did not halt with status 75")
+    else:
+        marker = re.compile("ARCE_N2_REMOVAL_PAUSED boundary=after_atomic_move" if case == "N2_PAD_MOVED"
+                            else "ARCE_TRANSFER_JOURNAL_UNACKNOWLEDGED retained dirty authority")
+        at = process.wait_for(marker, 60, start_at=begin); row["boundary"] = process.lines[at].strip()
+        if case == "N2_PAD_UNKNOWN":
+            start = len(process.lines); process.command("arce progression release-test journal-proof")
+            at = process.wait_for(re.compile("first_event_fixture journal_proof result=.*outcome=UNKNOWN"), 20, start_at=start)
+            row["unknown_proof"] = process.lines[at].strip()
+        row["pending"] = n3c_observe(process, b["entity"], "pending", world.parent)
+        process.process.kill(); code = process.finish(timeout=30)
+        if code == 0:
+            raise smoke.SmokeError("Named-pad cut did not hard kill")
+    row["before"] = read_journal(world.parent / "w204-before.dat")
+    row["after"] = read_journal(world.parent / "w204-after.dat")
+    return code
+
+
+def verify_n3c_disk(disk, row, restart):
+    if restart == 0 and row["case"] in ("N2_REFUSED", "N2_STOPPED"):
+        verify_n3c_observation(row["before"], row["after"], "refused")
+        for key in ("entities", "journal", "pads"):
+            if disk[key] != row["before_removal"][key]:
+                raise smoke.SmokeError("Refusal changed persisted " + key)
+        return
+    verify_removal(disk, row, restart)
+    if restart == 0:
+        verify_n3c_observation(row["before"], row["pending"], "pending")
+    else:
+        # Only claim state may change. All named-pad identity, owner, epoch and position data stay exact.
+        before = row["before_removal"]["pads"]
+        def unclaimed(root):
+            import copy
+            result = copy.deepcopy(root)
+            for entry in result["pads"]:
+                entry.pop("claim", None)
+            return result
+        if disk["pads"] != unclaimed(before):
+            raise smoke.SmokeError("Restart retained the old pad claim or changed pad authority")
 
 
 def verify_ordinary(disk: dict, flights: list[dict], case: str, restart: int, baseline: dict | None) -> dict:
@@ -337,7 +443,7 @@ def verify_retirement(disk, row, restart, case):
 
 def run_case(args, case, evidence):
     assert_pin(args.source_commit)
-    session = TEMP / ("W91K-" + uuid.uuid4().hex)
+    session = TEMP / ("W204-" + uuid.uuid4().hex)
     if session.exists() or smoke.is_link_or_junction(session) or session.resolve().parent != TEMP.resolve():
         raise smoke.SmokeError("Unsafe disposable server path")
     libraries = args.source_server.resolve() / "libraries"
@@ -367,12 +473,16 @@ def run_case(args, case, evidence):
                 command[1:1] = ["-Dadvancedrocketrycommunity.escrowCase=" + GOVERNED,
                                 "-Dadvancedrocketrycommunity.escrowScenario=" + ("start" if restart == 0 else "recover")]
             elif restart == 0:
-                command.insert(1, {"F3_HELD": "-Dadvancedrocketrycommunity.rocketJournalFailure=HOLD",
+                prop = {"F3_HELD": "-Dadvancedrocketrycommunity.rocketJournalFailure=HOLD",
                                    "F3_UNKNOWN": "-Darce.releaseTest.firstEventCut=FM6b",
                                    "N2_MOVED": "-Dadvancedrocketrycommunity.rocketJournalFailure=N2_REMOVAL_MOVED",
                                    "N2_UNKNOWN": "-Darce.releaseTest.firstEventCut=FP6",
+                                   "N2_PAD_MOVED": "-Dadvancedrocketrycommunity.rocketJournalFailure=N2_REMOVAL_MOVED",
+                                   "N2_PAD_UNKNOWN": "-Darce.releaseTest.firstEventCut=FP6",
                                    **{name: "-Dadvancedrocketrycommunity.ordinaryRetirementCut=" + label
-                                      for name, label in N3_CUTS.items()}}[case])
+                                      for name, label in N3_CUTS.items()}}.get(case)
+                if prop:
+                    command.insert(1, prop)
             entry = dict(restart=restart, command=command, at=utc(),
                          free_bytes={drive: shutil.disk_usage(drive).free for drive in ("C:/", "D:/")})
             row["starts"].append(entry)
@@ -399,7 +509,7 @@ def run_case(args, case, evidence):
             else:
                 process.wait_for(smoke.READY_MARKER, args.startup_timeout)
                 if restart == 0:
-                    code = (cut_removal if case.startswith(("N2_", "N3_")) else cut_ordinary)(process, world, case, row)
+                    code = (cut_n3c if case in N3C_CASES else cut_removal if case.startswith(("N2_", "N3_")) else cut_ordinary)(process, world, case, row)
                 else:
                     if case.startswith(("N2_", "N3_")):
                         for i, flight in enumerate(row["flights"]):
@@ -409,6 +519,17 @@ def run_case(args, case, evidence):
                             # Recovery returns B again and removes its record only after the survivor proof.
                             proved = re.compile("ARCE_TRANSFER_RETIREMENT_PROVED transfer=" + row["flights"][1]["transfer"])
                             entry["proof"] = process.lines[process.wait_for(proved, 120)].strip()
+                        if case in N3C_CASES:
+                            deadline = time.monotonic() + 120
+                            while True:
+                                payload = read_journal(world / "data" / JOURNAL)
+                                if not any(str(nbt_uuid(t["logical_rocket_id"])) == row["flights"][1]["logical"]
+                                           for t in payload["transfers"]):
+                                    break
+                                if time.monotonic() >= deadline:
+                                    raise smoke.SmokeError("N3-C recovery retained T past the observation ceiling")
+                                time.sleep(.1)
+                            entry["observation"] = n3c_observe(process, row["flights"][1]["entity"], f"restart{restart}", session)
                         time.sleep(2)
                     else:
                         wait_recovered(process, row["flights"], case)
@@ -421,7 +542,12 @@ def run_case(args, case, evidence):
                         flight["destination_entity"] = str(nbt_uuid(transfer["destination_entity_id"]))
                         origin = transfer["destination_flight"]["current_origin"]
                         flight["destination_position"] = [origin[0] + .5, float(origin[1]), origin[2] + .5]
-                if case in N3_CUTS:
+                if case in N3C_CASES:
+                    try:
+                        verify_n3c_disk(disk, row, restart)
+                    except smoke.SmokeError as finding:
+                        row["findings"].append(dict(restart=restart, error=str(finding)))
+                elif case in N3_CUTS:
                     try:
                         verify_retirement(disk, row, restart, case)
                     except smoke.SmokeError as finding:
@@ -441,7 +567,7 @@ def run_case(args, case, evidence):
                          errors=[line.strip() for line in process.lines if "/ERROR]" in line or "/FATAL]" in line])
             if restart and code != 0:
                 raise smoke.SmokeError("Restart did not stop normally")
-            expected_unknown = case == "N2_UNKNOWN" and restart == 0
+            expected_unknown = case in ("N2_UNKNOWN", "N2_PAD_UNKNOWN") and restart == 0
             unexpected = [line for line in entry["errors"] if not (expected_unknown and
                           "ARCE_TRANSFER_JOURNAL_UNACKNOWLEDGED retained dirty authority" in line)]
             if unexpected:
@@ -452,7 +578,8 @@ def run_case(args, case, evidence):
                 if restart == 0 and entry["return_reasons"]:
                     row["findings"].append(dict(restart=restart, error="Return reason published before removal acknowledgement"))
                 # These real Moon flights have no named landing pad. Do not claim named-pad coverage.
-                row["named_pad_claim"] = "NOT_COVERED: ordinary Moon destination has no named pad"
+                if case not in N3C_CASES:
+                    row["named_pad_claim"] = "NOT_COVERED: ordinary Moon destination has no named pad"
             process = None
             (evidence / f"disk-{restart}.json").write_text(json.dumps(entry["disk"], indent=2), encoding="utf-8")
         row["status"] = "FINDING" if row["findings"] else "PARTIAL" if "named_pad_claim" in row else "PASS"
@@ -476,7 +603,7 @@ def main():
     parser.add_argument("--evidence-dir", type=Path, required=True)
     parser.add_argument("--source-commit", required=True)
     parser.add_argument("--java", required=True)
-    parser.add_argument("--case", action="append", choices=CASES + tuple(N3_CUTS))
+    parser.add_argument("--case", action="append", choices=tuple(dict.fromkeys(CASES + tuple(N3_CUTS) + N3C_CASES)))
     parser.add_argument("--startup-timeout", type=float, default=240)
     args = parser.parse_args()
     try:
@@ -484,6 +611,8 @@ def main():
         if args.evidence_dir.exists():
             raise smoke.SmokeError("Evidence directory must be new")
         args.evidence_dir.mkdir(parents=True)
+        if len(args.case or CASES) * 3 > 60:
+            raise smoke.SmokeError("Tranche exceeds 60 counted starts")
         rows = []
         for case in args.case or CASES:
             if case in BLOCKED:
@@ -494,10 +623,14 @@ def main():
             rows.append(row)
             (args.evidence_dir / "summary.json").write_text(json.dumps(rows, indent=2), encoding="utf-8")
             print(case + ": " + row["status"], flush=True)
+            if row["status"] in ("FAILED", "FINDING"):
+                # Retain the full row, including two restart observations when obtainable. Root decides
+                # whether a fresh reproduction is appropriate; no automatic retry hides failed starts.
+                break
             if case not in BLOCKED:
                 # Other workers poll the machine lock every 30 seconds. Leave an
                 # actual acquisition window, not just an instantaneous unlock.
-                time.sleep(30)
+                time.sleep(90)
         return 0 if all(row["status"] == "PASS" for row in rows) else 1
     except (OSError, smoke.SmokeError) as failure:
         print("FAIL: " + str(failure), flush=True)

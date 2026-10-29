@@ -109,9 +109,10 @@ class CutTests(unittest.TestCase):
         with self.assertRaises(cuts.smoke.SmokeError):
             cuts.verify_ordinary(disk, flights, "F3_HELD", 1, None)
 
-    def test_default_campaign_reports_unavailable_rows_not_passes(self):
+    def test_refusal_has_a_native_fixture_and_controls_remain_available(self):
         self.assertEqual(6, len(cuts.CASES))
-        self.assertEqual({"N2_REFUSED"}, set(cuts.BLOCKED))
+        self.assertEqual({}, cuts.BLOCKED)
+        self.assertEqual({"N2_REFUSED", "N2_STOPPED", "N2_PAD_MOVED", "N2_PAD_UNKNOWN"}, set(cuts.N3C_CASES))
         self.assertEqual("RT_CANCEL_SEPARATE_0_READBACK_AFTER", cuts.GOVERNED)
 
     def test_save_waits_for_its_own_marker(self):
@@ -190,6 +191,55 @@ class CutTests(unittest.TestCase):
     def test_n3_cuts_are_opt_in_and_name_existing_boundaries(self):
         self.assertEqual({"BARRIER_STORE_BEFORE", "BARRIER_FORCE_BEFORE", "ORDINARY_REMOVAL_BEFORE"}, set(cuts.N3_CUTS.values()))
         self.assertFalse(set(cuts.N3_CUTS) & set(cuts.CASES))
+
+    def observation(self):
+        row, disk = self.removal()
+        return dict(source=disk["entities"][1]["entity"], journal=row["before_removal"]["journal"],
+                    pads={"entries": [{"pad": 4, "claim": ident(2)}]}, live=True, acknowledged=False)
+
+    def test_n3c_refusal_compares_source_journal_pad_and_live_membership(self):
+        before = self.observation()
+        cuts.verify_n3c_observation(before, copy.deepcopy(before), "refused")
+        for key, value in (("source", {}), ("journal", {}), ("pads", {}), ("live", False)):
+            changed = copy.deepcopy(before); changed[key] = value
+            with self.subTest(key=key), self.assertRaises(cuts.smoke.SmokeError):
+                cuts.verify_n3c_observation(before, changed, "refused")
+
+    def test_n3c_pending_claim_cannot_be_reused_or_changed(self):
+        before = self.observation(); pending = copy.deepcopy(before)
+        pending.update(reuse=False, acknowledged=False)
+        cuts.verify_n3c_observation(before, pending, "pending")
+        for key, value in (("reuse", True), ("pads", {}), ("acknowledged", True)):
+            changed = copy.deepcopy(pending); changed[key] = value
+            with self.subTest(key=key), self.assertRaises(cuts.smoke.SmokeError):
+                cuts.verify_n3c_observation(before, changed, "pending")
+
+    def test_n3c_oracle_rejects_resource_uuid_owner_and_debit_mutations(self):
+        before = self.observation(); pending = copy.deepcopy(before)
+        pending.update(reuse=False, acknowledged=False)
+        for field in ("owner_id", "snapshot", "resource_escrow"):
+            changed = copy.deepcopy(pending); changed["source"]["RocketEntityData"][field] = {}
+            with self.subTest(field=field), self.assertRaises(cuts.smoke.SmokeError):
+                cuts.verify_n3c_observation(before, changed, "pending")
+        for edit in (lambda e: e.update(UUID=ident(99)),
+                     lambda e: e["RocketEntityData"]["flight_data"]["fuel"].update(committed_debits=[99])):
+            changed = copy.deepcopy(pending); edit(changed["source"])
+            with self.assertRaises(cuts.smoke.SmokeError):
+                cuts.verify_n3c_observation(before, changed, "pending")
+
+    def test_n3c_disk_requires_full_pad_authority_and_stationary_resources_on_both_restarts(self):
+        row, removed = self.removal(); row["case"] = "N2_PAD_MOVED"
+        row["before_removal"]["pads"] = dict(schema=1, next_epoch=1,
+                pads=[dict(pad=ident(4), owner=ident(30), physical=ident(5), epoch=0, claim=ident(2))])
+        removed["pads"] = copy.deepcopy(row["before_removal"]["pads"])
+        removed["pads"]["pads"][0].pop("claim")
+        returned = self.returned(removed, row)
+        for restart in (1, 2):
+            cuts.verify_n3c_disk(returned, row, restart)
+            for key, value in (("claim", ident(2)), ("owner", ident(99)), ("epoch", 9)):
+                broken = copy.deepcopy(returned); broken["pads"]["pads"][0][key] = value
+                with self.subTest(restart=restart, key=key), self.assertRaises(cuts.smoke.SmokeError):
+                    cuts.verify_n3c_disk(broken, row, restart)
 
 
 if __name__ == "__main__":
