@@ -32,7 +32,7 @@ public final class RecipeRefusalLedger {
     /** Room for every refusal message of the mod's recipe codecs; the longest has 68 characters. */
     static final int MAX_REASON_CHARS = 72;
     /** The summary names the smallest recipe ids, each cut to {@link #MAX_ID_CHARS}. */
-    static final int MAX_IDS = 8;
+    public static final int MAX_IDS = 8;
     static final int MAX_ID_CHARS = 96;
     /** Refusals per reload whose detail and stack trace go to DEBUG. */
     static final int MAX_DETAILS = 64;

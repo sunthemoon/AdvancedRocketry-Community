@@ -384,7 +384,9 @@ class ManifestValidationTests(unittest.TestCase):
             # W160F repeats that real filesystem fault in the controlled ordinary-save regression.
             # W179 adds the over-limit data-pack reload's 43 refusals (w179-recipe-*, w179-recipe-file-unparsable,
             # w179-tag-unreadable, w179-tag-missing-reference and w179-pattern-catalog-rejected): 135 + 43.
-            178, sum(sum(item.counts.values()) for item in expectations if item.level == "ERROR")
+            # W193 logs the classic serializer's 36 refusals of that pack as one summary (w193-recipe-refusal-summary
+            # replaces w179-recipe-text-bound to w179-recipe-identifier-bound): 178 - 36 + 1.
+            143, sum(sum(item.counts.values()) for item in expectations if item.level == "ERROR")
         )
 
     def test_w159_player_save_failures_are_exact_and_batch_scoped(self) -> None:
