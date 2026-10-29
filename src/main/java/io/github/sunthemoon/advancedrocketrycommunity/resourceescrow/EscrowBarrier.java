@@ -341,10 +341,12 @@ public final class EscrowBarrier implements AutoCloseable {
     /**
      * W98: an ordinary attempt that found its capture budget busy runs once more at the end of the next barrier tick,
      * on this owner thread, whoever owns the attempt. At most 64 are held; a re-request in that run waits a further tick.
+     * Returns whether the retry is held: false once 64 others are, or while the barrier is not working (W185-R22).
      */
-    public void retryOrdinaryNextTick(Runnable retry) {
+    public boolean retryOrdinaryNextTick(Runnable retry) {
         owner();
-        if (working.get() && (ordinaryRetries.contains(retry) || ordinaryRetries.size() < 64)) { ordinaryRetries.add(retry); }
+        if (working.get() && (ordinaryRetries.contains(retry) || ordinaryRetries.size() < 64)) { ordinaryRetries.add(retry); return true; }
+        return false;
     }
     /** Design reason table: IO/force/unstable and superseding saves differ from veto/external/bounds refusals. */
     static EscrowReason captureReason(RuntimeException failure) {

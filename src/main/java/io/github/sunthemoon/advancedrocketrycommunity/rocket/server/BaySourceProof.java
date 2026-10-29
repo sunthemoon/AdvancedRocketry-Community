@@ -43,8 +43,8 @@ import org.slf4j.Logger;
  * R154: one claim at a time takes D6's captures to D7's outcome ({@link BayProofTurns}); a claim ready to capture waits
  * for its turn in line with BAY_PROOF_TURN. The holder keeps the turn through a superseding save's immediate retry and a
  * proof invalidated before D7 queues its removal; it passes the turn on when D7 ends, when D7 parks it, when it holds for
- * repair or ends, when a refusal other than a superseding save starts W98-R11's 200-tick retry (W185-R21), and when,
- * holding no proof, it must wait for anything other than the barrier's quota.
+ * repair or ends, when a refusal other than a superseding save starts W98-R11's 200-tick retry (W185-R21), when the
+ * barrier cannot hold its quota retry (W185-R22), and when, holding no proof, it must wait for anything else.
  */
 final class BaySourceProof {
     /** W98's retry after an IO, force, bounds or veto failure; never after a superseding save (W98-R11). */
@@ -161,7 +161,7 @@ final class BaySourceProof {
         // R154: one claim at a time captures and holds census proofs through D7; the others wait in line, in claim order.
         if (!turns.take(logical)) { claim.waiting("BAY_PROOF_TURN"); return BayStepQueue.Result.NEXT_TICK; }
         parked.remove(logical);
-        if (!port.captureAvailable(slot, now)) { return retryNextTick(logical); } // the holder keeps its turn
+        if (!port.captureAvailable(slot, now)) { return retryNextTick(logical); } // kept while the barrier holds the retry
         // W185 / W170-R62: waiting needs no frozen image. Save only once a capture can actually start.
         CompoundTag frozen = projection(source, record);
         if (frozen == null) { return repair(claim, "SOURCE_AUTHORITY_CONFLICT"); }
@@ -309,9 +309,14 @@ final class BaySourceProof {
         return source.save(tag) ? tag : null;
     }
 
+    /**
+     * The barrier's next-tick retry wakes the holder. W185-R22: a retry the barrier cannot hold (its 64-entry list is full)
+     * would never wake it, so the holder, which holds no proof yet, passes the turn on and polls, asking again next tick.
+     */
     private BayStepQueue.Result retryNextTick(UUID logical) {
-        port.retryNextTick(() -> offer.accept(logical));
-        return BayStepQueue.Result.IDLE;
+        if (port.offerRetryNextTick(() -> offer.accept(logical))) { return BayStepQueue.Result.IDLE; }
+        turns.leave(logical);
+        return BayStepQueue.Result.NEXT_TICK;
     }
 
     /** R154: a wait before D6's capture holds no proof, so the claim leaves the line or passes its turn on. */

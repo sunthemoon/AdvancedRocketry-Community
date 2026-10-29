@@ -195,6 +195,31 @@ final class BaySourceProofTurnTest {
         assertEquals(0, f.heldThroughRetry, "the refused claim kept the turn or its place in line through W98's retry");
     }
 
+    /**
+     * W185-R22: claim 0's first slot has no ordinary capture quota until claim 1 ends (an ordinary capture of that column is
+     * outstanding), and the barrier cannot hold claim 0's next-tick retry, because its 64-entry list is full. Nothing would
+     * wake claim 0, so it passes the turn on and polls. Claim 1 takes the turn and finishes, then claim 0, from the line.
+     */
+    @Test void aHolderWhoseRetryTheBarrierCannotHoldPassesTheTurnOnAndPolls() throws Exception {
+        var f = new Fixture(2);
+        try {
+            var first = f.claim(0); var second = f.claim(1);
+            f.busyQuota.add(BayAbsenceCensus.slots(f.records.get(0)).get(0));
+            f.claims.values().forEach(claim -> f.queue.offer(claim.logical()));
+            for (long tick = 1; tick <= TICK_BOUND && f.ended.size() < 2; tick++) {
+                f.tick(tick);
+                if (f.ended.contains(second.logical())) { f.busyQuota.clear(); }
+            }
+            assertEquals(2, f.ended.size(), "Only " + f.ended.size() + " of 2 claims finished within " + TICK_BOUND + " ticks");
+            assertTrue(f.dropped > 0, "control: the barrier held every retry request");
+            assertEquals(List.of(second.logical(), first.logical()), f.ended, "the claims finished out of the expected order");
+            f.claims.values().forEach(claim -> assertEquals(BayClaim.Handoff.READY_SOURCE, claim.handoff().orElseThrow()));
+            assertEquals(1, f.mostAtOnce, "more than one claim captured or held its proofs at once");
+            assertEquals(0, f.superseded, "a bay capture superseded another bay claim's proof");
+            assertTrue(f.turnWaits.contains(first.logical()), "the claim that passed the turn on did not wait in line for it");
+        } finally { f.close(); }
+    }
+
     @FunctionalInterface private interface Scenario { void apply(Fixture f) throws Exception; }
     @FunctionalInterface private interface Hook { void run(Fixture f) throws Exception; }
 
@@ -250,6 +275,9 @@ final class BaySourceProofTurnTest {
         final Set<RocketRetirementProof.Slot> ioFail = new HashSet<>();
         int refusals, heldThroughRetry;
         long refusedAt;
+        /** W185-R22: slots without ordinary capture quota; the retry requests the stand-in barrier could not hold. */
+        final Set<RocketRetirementProof.Slot> busyQuota = new HashSet<>();
+        int dropped;
         /** The coordinator's PROVE dispatch: D5's copy pass, then D6. */
         final BayConsumptionSteps consumption;
 
@@ -310,8 +338,9 @@ final class BaySourceProofTurnTest {
                     return unloadedSlots.contains(slot) ? RocketOrdinaryRetirement.SlotState.UNLOADED : RocketOrdinaryRetirement.SlotState.LOADED;
                 }
                 @Override public boolean captureSupported(RocketRetirementProof.Slot slot) { return true; }
-                @Override public boolean captureAvailable(RocketRetirementProof.Slot slot, long tick) { return true; }
-                @Override public void retryNextTick(Runnable retry) { fail("the stand-in barrier always has capture quota"); }
+                @Override public boolean captureAvailable(RocketRetirementProof.Slot slot, long tick) { return !busyQuota.contains(slot); }
+                @Override public void retryNextTick(Runnable retry) { fail("D6 asks for its retry through offerRetryNextTick"); }
+                @Override boolean offerRetryNextTick(Runnable retry) { dropped++; return false; } // as a full 64-entry list
                 @Override public boolean capture(RocketRetirementProof.Slot slot, Predicate<CompoundTag> validator, long tick,
                                                  Consumer<String> sink, Consumer<EscrowBarrier.Result> callback) {
                     // The capture's forced save of this column supersedes every earlier proof of it.

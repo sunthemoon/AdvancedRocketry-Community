@@ -193,6 +193,7 @@ final class BaySourceProofWaitTest {
                 @Override public boolean captureSupported(RocketRetirementProof.Slot slot) { return supported; }
                 @Override public boolean captureAvailable(RocketRetirementProof.Slot slot, long now) { return available; }
                 @Override public void retryNextTick(Runnable retry) { }
+                @Override boolean offerRetryNextTick(Runnable retry) { return true; } // the barrier holds the retry
                 @Override public boolean capture(RocketRetirementProof.Slot slot, Predicate<CompoundTag> validator, long now,
                                                  Consumer<String> sink, Consumer<EscrowBarrier.Result> callback) {
                     captures.add(slot); return true;

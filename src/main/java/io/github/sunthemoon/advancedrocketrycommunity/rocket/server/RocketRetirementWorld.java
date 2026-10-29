@@ -76,7 +76,10 @@ class RocketRetirementWorld implements RocketOrdinaryRetirement.Port {
         return runtime.barrier().beginOrdinary(runtime.store(level), slot.dimension().toString(), slot.chunk(), validator, now, sink, callback);
     }
 
-    @Override public void retryNextTick(Runnable retry) { EscrowRuntime.of(server).barrier().retryOrdinaryNextTick(retry); }
+    @Override public void retryNextTick(Runnable retry) { offerRetryNextTick(retry); }
+
+    /** W185-R22: the same retry, and whether the barrier holds it; false when its 64-entry list is full. */
+    boolean offerRetryNextTick(Runnable retry) { return EscrowRuntime.of(server).barrier().retryOrdinaryNextTick(retry); }
 
     @Override
     public boolean bayAllows(RocketTransferSavedData journal, RocketTransferRecord record, RocketTransferBayRecoveryGate.Action action) {
