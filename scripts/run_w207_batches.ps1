@@ -69,7 +69,8 @@ try {
                 Copy-Item -LiteralPath 'build/gametest/logs/latest.log' -Destination "$out/latest.log"
                 $result.runs+=@{iteration=$iteration;group=$group.name;exit_code=$code;finished=(Get-Date -Format o)}
                 Remove-Owned "$export/build/gametest/world"
-                if($code -ne 0) { throw "GameTest run $iteration group $($group.name) failed" }
+                # Every group has its own world. Preserve failures and run all requested repetitions,
+                # rather than losing launch/repeat coverage because an earlier independent group failed.
             }
         } finally {
             try { if($created) { Remove-Owned "$export/build/gametest/world" } }
@@ -85,7 +86,7 @@ try {
         }
         if($iteration -lt 3) { Start-Sleep 90 }
     }
-    $result.status='PASS'
+    $result.status=if(@($result.runs | Where-Object { $_.exit_code -ne 0 }).Count) { 'FAIL' } else { 'PASS' }
 } catch { $result.status='FAIL'; $result.error=$_.Exception.ToString() }
 finally {
     Set-Location $workspace
