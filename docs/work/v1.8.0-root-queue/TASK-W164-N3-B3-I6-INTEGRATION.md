@@ -358,6 +358,30 @@ Root decision R164: fix the oracle, prove it with Python tests that fail first a
 continue tranche 2 with the same 66-start limit. The three counted starts stay counted. Stop and report again if a row
 fails twice for a reason in production code.
 
+## Review findings under Root decision R166 (2026-10-29)
+
+The persistence review, `D:/GitHub/ARCE-Task-Evidence/root-queue/W164-review/REVIEW.md` (SHA-256 `d1d8c3c1…49d5`),
+returned APPROVE-WITH-CHANGES and found no new loss or duplication defect. A fresh session continues on
+`codex/v1.8.0-w164` from `a96d31d38`:
+
+1. **W164-R1.** Split `RocketLandedDisassembliesTest` (876 class lines, over AGENTS section 3.4's 800): move the retained
+   and I6 asynchronous hand-off cases into a focused test class, share only the fixture support they need, and keep
+   every assertion. Run both classes and the whole unit suite.
+2. **W164-R2, drafts for Root.** Root owns the risk register and ADRs, so do not edit them in the branch. Write proposed
+   replacement text, with the exact sentences each replaces, into `D:/GitHub/ARCE-Task-Evidence/root-queue/W164-review/input/`:
+   - R-035 and an ADR-065 note for what N3-B3 enables: the two-step cold preparation with fresh consent, the unchanged
+     200-tick request age, the exact D1 and exclusion proof before M1, the native-certified M3, cancelling unstarted
+     hand-offs at stop, and ordinary no-T B2 admission, kept apart from the still-closed governed, escrow and bay
+     admission; the ticket scope (at most 16 checked columns per end, three demand steps 200 ticks apart, the existing
+     400-tick expiry) and its effect on BEFORE_FILL and I7, not only I6;
+   - an ADR-022 implementation note for the R107 external-adapter behaviour (a detached Level-less target, the inert
+     carrier and exact payload kept on a failed publication, the retry deferred to the carrier's reload);
+   - R-040's wider applicability to the ordinary B2 consumer (WRITE_PENDING and UNKNOWN, U and footprint exclusion,
+     the unbounded waits);
+   - the open evidence carried forward: the worst-case tick-cost measurement (R165) and the combined terrain matrix.
+
+Verification: the split classes alone and the whole unit suite. Root applies the texts at merge.
+
 ## Not in this task
 
 - N3-B4 (the combined cut evidence), W98-R1 and governed admission.
