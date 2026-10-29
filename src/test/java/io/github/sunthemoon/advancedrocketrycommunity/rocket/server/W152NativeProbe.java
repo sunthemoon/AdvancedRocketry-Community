@@ -48,6 +48,7 @@ public final class W152NativeProbe {
     private final String boundary = System.getProperty("advancedrocketrycommunity.w152Cut", "NONE");
     private final W152NativeConsumers consumers;
     private final W152NativeFailure preparationFailure;
+    private final W152NativeI6 integrated;
     private final boolean neverSaved = System.getProperty("advancedrocketrycommunity.w152InitialD", "SAVED").equals("NEVER_SAVED");
     private final boolean allHosts = System.getProperty("advancedrocketrycommunity.w152PayloadHosts", "CONTAINERS").equals("ALL");
     private final ConcurrentLinkedQueue<Map<String, Object>> events = new ConcurrentLinkedQueue<>();
@@ -71,6 +72,7 @@ public final class W152NativeProbe {
     }
     private W152NativeProbe(MinecraftServer server) {
         this.server = server;
+        integrated = Boolean.getBoolean("advancedrocketrycommunity.w198Integrated") ? new W152NativeI6(server) : null;
         consumers = new W152NativeConsumers(server, System.getProperty("advancedrocketrycommunity.w152Experiment", ""), this::pause);
         preparationFailure = boundary.equals("UNSEAL_PREPARE_FAILED") ? W152NativeFailure.install() : null;
         RocketRuntime.sealedNativeObserverForReleaseTest(server, this::observe);
@@ -134,13 +136,15 @@ public final class W152NativeProbe {
             if (!begun) {
                 begun = true;
                 if (stage.equals("start")) {
-                    if (neverSaved && !consumers.vanilla()) { server.saveEverything(true, true, true); }
+                    if (integrated == null && neverSaved && !consumers.vanilla()) { server.saveEverything(true, true, true); }
                     if (consumers.vanilla()) { consumers.prepareVanilla(); }
                     else { setup(); }
                     consumers.prepareRecipient();
-                    if (!neverSaved || consumers.vanilla()) { server.saveEverything(true, true, true); observe("C0_BASELINE_SAVED"); }
+                    if (integrated != null) { /* I6 saves its input before its installed request, on a later tick. */ }
+                    else if (!neverSaved || consumers.vanilla()) { server.saveEverything(true, true, true); observe("C0_BASELINE_SAVED"); }
                     else { observe("C0_D_NEVER_SAVED"); }
-                    if (consumers.vanilla()) {
+                    if (integrated != null) { /* Never use the direct B2 hook for the integrated matrix. */ }
+                    else if (consumers.vanilla()) {
                         var data = RocketTransactionSavedData.get(server);
                         if (!data.acknowledgedCurrent()) { data.requestCheckpoint(server); }
                     } else {
@@ -155,6 +159,10 @@ public final class W152NativeProbe {
                     if (data.entries().isEmpty() && !data.acknowledgedCurrent()) { data.requestCheckpoint(server); }
                     observe("RECOVERY_LOADED");
                 }
+            }
+            if (integrated != null && stage.equals("start")) {
+                integrated.tick(neverSaved, this::observe);
+                if (!integrated.requested()) { return; }
             }
             if (age > 1200) { throw new IllegalStateException("Native fixture deadline: " + diagnostic()); }
             if (age > 60 && stable()) {
@@ -200,6 +208,7 @@ public final class W152NativeProbe {
         var snapshot = RocketStructureSnapshot.create(id("snapshot"), level.dimension().location(),
                 new RocketPosition(ORIGIN.getX(), ORIGIN.getY(), ORIGIN.getZ()), blocks, List.of(new RocketPosition(0, 0, 0)),
                 new RocketStats(blocks.size(), blocks.size() * 100, 1000, 1000, 1, 1, 1, allHosts ? 4 : 2), level.getGameTime());
+        if (integrated != null) { rocket = integrated.setup(snapshot); return; }
         rocket = ModEntities.ROCKET.get().create(level); require(rocket != null, "Missing rocket type");
         rocket.setUUID(id("entity")); rocket.initialize(snapshot, id("logical"), id("owner"));
         RocketTransferEntities.positionAtOrigin(rocket, snapshot.sourceOrigin());
