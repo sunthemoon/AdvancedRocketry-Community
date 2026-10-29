@@ -234,7 +234,7 @@ final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
         return result;
     }
 
-    /** D0's group checks, one per step: checked T, the live source, the neutral wrapper, availability, F5, then B14. */
+    /** D0's group checks, one per step: checked T, the live source, the neutral wrapper, availability, F5 and the census, then B14. */
     private BayStepQueue.Result groupStep(BayClaim claim) {
         var journal = RocketTransferSavedData.get(server);
         RocketTransferRecord record = journal.find(claim.transfer()).orElse(null);
@@ -265,7 +265,7 @@ final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
                 if (!RocketTransactionSavedData.get(server).operational()) { return reject(claim, "ASSEMBLY_JOURNAL_UNPROVED", true); }
             }
             case 4 -> {
-                var refusal = BayDeploymentChecks.orbitRefusal(plannedBody(record));
+                var refusal = BayDeploymentChecks.orbitRefusal(plannedBody(record)).or(() -> BayDeploymentChecks.censusRefusal(record));
                 if (refusal.isPresent()) { return reject(claim, refusal.get(), true); }
             }
             default -> {

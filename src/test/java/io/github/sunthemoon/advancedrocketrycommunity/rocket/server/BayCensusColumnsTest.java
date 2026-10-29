@@ -88,6 +88,18 @@ final class BayCensusColumnsTest {
         assertTrue(BayCensusColumns.of(east).admissible() && BayCensusColumns.of(east).count() == 16);
     }
 
+    /** W185-R25: D0 refuses every bay, with an existing reason, when either end has no bay census; else it passes. */
+    @Test void d0RefusesAFlightWithAnEndThatTheStripTakesPastSixteenColumns() {
+        var line = RocketMarginTicketsTest.snapshot(EARTH, 1, 8, IntStream.rangeClosed(0, 252).toArray());
+        var moonLine = RocketMarginTicketsTest.snapshot(MOON, 1, 8, IntStream.rangeClosed(0, 252).toArray());
+        var east = RocketMarginTicketsTest.snapshot(EARTH, 2, 8, IntStream.rangeClosed(0, 251).toArray());
+        var other = RocketMarginTicketsTest.snapshot(MOON, 72, 8, 0);
+        assertEquals(java.util.Optional.of("DEPLOYMENT_UNAVAILABLE"), BayDeploymentChecks.censusRefusal(line, other), "the source end");
+        assertEquals(java.util.Optional.of("DEPLOYMENT_UNAVAILABLE"), BayDeploymentChecks.censusRefusal(east, moonLine), "the destination end");
+        assertEquals(java.util.Optional.empty(), BayDeploymentChecks.censusRefusal(east, other), "16 columns with no strip pass");
+        assertEquals(java.util.Optional.empty(), BayDeploymentChecks.censusRefusal(record(1)), "the ordinary fixture passes");
+    }
+
     @Test void overflowAtTheStripIsAHold() {
         var edge = RocketMarginTicketsTest.snapshot(EARTH, Integer.MIN_VALUE + 1, 8, 0);
         assertTrue(RocketDiscoveryColumns.of(edge).valid(), "control: the shared set is still valid");

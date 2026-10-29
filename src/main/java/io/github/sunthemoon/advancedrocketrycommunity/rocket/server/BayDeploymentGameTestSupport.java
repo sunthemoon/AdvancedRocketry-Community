@@ -171,10 +171,18 @@ final class BayDeploymentGameTestSupport {
      */
     static Flight transit(GameTestHelper helper, BlockPos origin, ResourceLocation targetDimension, RocketPosition target, UUID owner,
             List<ItemStack> packages, RocketEscrowSectionPatch wrapper, ResourceLocation sourceBody, @javax.annotation.Nullable UUID passenger) {
+        return transit(helper, origin, targetDimension, target, owner, packages, wrapper, sourceBody, passenger, List.of());
+    }
+
+    /** The same flight with extra iron blocks at {@code extra}, relative to the base block, which widen both ends' bounds. */
+    static Flight transit(GameTestHelper helper, BlockPos origin, ResourceLocation targetDimension, RocketPosition target, UUID owner,
+            List<ItemStack> packages, RocketEscrowSectionPatch wrapper, ResourceLocation sourceBody, @javax.annotation.Nullable UUID passenger,
+            List<RocketPosition> extra) {
         var level = helper.getLevel();
         long now = level.getGameTime();
         var blocks = new ArrayList<RocketBlock>();
         blocks.add(new RocketBlock(new RocketPosition(0, 0, 0), state("minecraft:iron_block")));
+        extra.forEach(position -> blocks.add(new RocketBlock(position, state("minecraft:iron_block"))));
         for (int i = 0; i < packages.size(); i++) {
             blocks.add(new RocketBlock(new RocketPosition(0, i + 1, 0), state("advancedrocketrycommunity:rocket_satellite_bay"),
                     new RocketBlockEntityPayload(SatelliteBayRocketAdapter.ID, root(owner, packages.get(i)))));
