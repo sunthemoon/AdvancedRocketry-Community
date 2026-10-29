@@ -13,6 +13,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessRes
 import io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.BoundedItemIngredientCodec;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.DeferredProcessDefinition;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeJsonSignature;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeRefusalLedger;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModRecipes;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
@@ -38,6 +39,7 @@ import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraftforge.common.crafting.conditions.ICondition;
 
 /** Strict datapack recipe adapter for the first journaled multiblock process. */
 public final class RollingMachineRecipe implements Recipe<SimpleContainer> {
@@ -314,6 +316,12 @@ public final class RollingMachineRecipe implements Recipe<SimpleContainer> {
     }
 
     public static final class Serializer implements RecipeSerializer<RollingMachineRecipe> {
+        /** A data-pack reload records a refusal and skips the recipe (W193); see {@link RecipeRefusalLedger}. */
+        @Override
+        public RollingMachineRecipe fromJson(ResourceLocation id, JsonObject json, ICondition.IContext context) {
+            return RecipeRefusalLedger.decode(context, id, () -> fromJson(id, json));
+        }
+
         @Override
         public RollingMachineRecipe fromJson(ResourceLocation id, JsonObject json) {
             try {
