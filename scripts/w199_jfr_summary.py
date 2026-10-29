@@ -32,7 +32,7 @@ class Profile:
             self.samples[thread] += 1
             if thread == "Server thread":
                 self.stacks[stack] += 1
-                self.frames.update(set(stack.split(";")) - {""})
+                self.frames.update(sorted(set(stack.split(";")) - {""}))
         elif thread == "Server thread" or kind.startswith("jdk.GC") or kind.startswith("jdk.Safepoint"):
             overlap = max(0, min(end, hi) - max(start, lo))
             if overlap:
@@ -51,8 +51,9 @@ def summarize(rows, events):
     ends = [int(row["end_epoch_ms"]) * 1_000_000 for row in ticks]
     starts = [end - int(row["tick_ns"]) for end, row in zip(ends, ticks)]
     selected = {int(row["tick"]) for row in ticks if int(row["tick_ns"]) > 500_000_000}
-    selected.update(int(row["tick"]) for row in sorted(
-        (row for row in ticks if row["phase"] == "PREPARATION"), key=lambda row: int(row["tick_ns"]), reverse=True)[:5])
+    for phase in ("PREPARATION", "PROOF"):
+        selected.update(int(row["tick"]) for row in sorted(
+            (row for row in ticks if row["phase"] == phase), key=lambda row: int(row["tick_ns"]), reverse=True)[:5])
     profiles, individual, counts = {}, {}, Counter()
     for line in events:
         kind, start, end, thread, stack = line.rstrip("\n").split("\t", 4)
@@ -74,6 +75,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("directory", type=Path)
     parser.add_argument("--java", default="C:/Program Files/Java/jdk-17.0.7/bin/java.exe")
+    parser.add_argument("--output", default="jfr-summary.json")
     args = parser.parse_args()
     with (args.directory / "w197-ticks.csv").open() as stream:
         rows = list(csv.DictReader(stream))
@@ -83,7 +85,7 @@ def main():
         summary = summarize(rows, process.stdout)
         if process.wait() != 0:
             raise RuntimeError("JFR extraction failed")
-    target = args.directory / "jfr-summary.json"
+    target = args.directory / args.output
     if target.exists():
         raise FileExistsError(target)
     target.write_text(json.dumps(summary, indent=2), encoding="utf-8")
