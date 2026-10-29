@@ -211,7 +211,8 @@ public final class AdapterFaultGameTests {
             int result = helper.getLevel().getServer().getCommands().getDispatcher().execute(
                     "arce rocket status " + assembler.getX() + " " + assembler.getY() + " " + assembler.getZ(),
                     owner.createCommandSourceStack().withPermission(2).withSource(output));
-            helper.assertTrue(result == 1, "Operator status command failed: " + replies);
+            // Status returns the operation's failure code even when the diagnostic lookup succeeds.
+            helper.assertTrue(result == 0 && replies.size() == 1, "Operator failure status response differs: " + replies);
         } catch (CommandSyntaxException exception) { throw new IllegalStateException(exception); }
         return String.join("\n", replies);
     }
