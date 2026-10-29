@@ -45,6 +45,8 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 public final class BayDeploymentMatrixGameTests {
     static final String MATRIX = "bay_deployment_matrix";
     static final String B14 = "bay_deployment_b14";
+    /** W185-R25's wide flight runs alone: its 46 by 41 block destination would overlap the other flights' reservations. */
+    static final String CENSUS_BATCH = "bay_deployment_census";
     private BayDeploymentMatrixGameTests() { }
 
     @GameTest(template = TEMPLATE, batch = MATRIX, timeoutTicks = 400)
@@ -74,7 +76,7 @@ public final class BayDeploymentMatrixGameTests {
     }
 
     /** W185-R25: an end that the low strip takes past 16 columns has no bay census, so D0 refuses before any INTENT. */
-    @GameTest(template = TEMPLATE, batch = MATRIX, timeoutTicks = 400)
+    @GameTest(template = TEMPLATE, batch = CENSUS_BATCH, timeoutTicks = 400)
     public static void d0RefusesEveryBayWhenTheLowStripTakesAnEndPastSixteenColumns(GameTestHelper helper) {
         new Matrix(helper, RocketFlightPlanner.EARTH.bodyId(), Expect.CENSUS).start();
     }
