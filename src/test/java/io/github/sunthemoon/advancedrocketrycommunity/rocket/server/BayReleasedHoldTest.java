@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceipt;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.deployment.BayStepQueue;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.deployment.BayClaim;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.deployment.BayMember;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.UnstartedServer;
 import java.util.HashMap;
@@ -82,5 +84,22 @@ final class BayReleasedHoldTest {
         var resume = UnstartedServer.allocate(BayReleasedResume.class);
         assertEquals("SOURCE_AUTHORITY_CONFLICT", resume.resume(null, true, List.of(), () -> false));
         assertFalse(resume.move(null, null, null, () -> false));
+    }
+
+    @Test void physicalHoldStillMarksCandidatesAndAcknowledgedIntentsHeldWithoutWrites() {
+        var record = record(2);
+        var first = BayMember.candidate(intent(record, 0).bay(), intent(record, 0).satellite());
+        var second = BayMember.restartIntent(intent(record, 1));
+        var claim = BayClaim.checkpoint(record.logicalRocketId(), record.transferId(), record.sourceEntityId(), List.of(first, second));
+        claim.repair("ESCROW_AUTHORITY_CONFLICT");
+        var flight = UnstartedServer.allocate(BayReleasedFlight.class);
+        UnstartedServer.set(BayReleasedFlight.class, flight, "states", new HashMap<>());
+        assertEquals(BayStepQueue.Result.AGAIN, flight.step(claim));
+        assertEquals(BayMember.State.HELD, first.state());
+        assertEquals(BayMember.State.INTENT, second.state(), "One member per existing queued step");
+        assertEquals(BayStepQueue.Result.AGAIN, flight.step(claim));
+        assertEquals(BayMember.State.HELD, second.state());
+        assertEquals(BayStepQueue.Result.IDLE, flight.step(claim));
+        assertTrue(claim.members().stream().allMatch(member -> member.reason().equals("ESCROW_AUTHORITY_CONFLICT")));
     }
 }

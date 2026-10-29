@@ -57,7 +57,15 @@ final class BayReleasedFlight {
 
     /** Null means this is still an ordinary deployment claim. Release work uses the parent's 32-step queue. */
     BayStepQueue.Result step(BayClaim claim) {
-        if (claim.releaseRefusal().isPresent()) { conflict(claim.logical()); return BayStepQueue.Result.IDLE; }
+        if (claim.releaseRefusal().isPresent()) {
+            conflict(claim.logical());
+            // Preserve D1/D2's RAM-only hold bookkeeping, one member per queued step, without reading a store
+            // or allowing registration/recovery. An outstanding INTENT write is handled after its acknowledgement.
+            var member = claim.members().stream().filter(m -> m.state() == BayMember.State.CANDIDATE
+                    || m.state() == BayMember.State.INTENT).findFirst().orElse(null);
+            if (member != null) { member.hold(claim.reason()); return BayStepQueue.Result.AGAIN; }
+            return BayStepQueue.Result.IDLE;
+        }
         var receipts = session.receipts().stream().filter(r -> r.rocket().equals(claim.logical()) && r.pending()).toList();
         boolean alreadyReleased = !receipts.isEmpty() && receipts.stream().allMatch(BayReceipt::released);
         boolean blocked = claim.reason().equals("REGISTRY_BLOCKED");
