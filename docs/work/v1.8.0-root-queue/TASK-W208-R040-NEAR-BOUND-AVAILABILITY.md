@@ -41,3 +41,15 @@ and the results follows.
 Production writer, journal, sealed-executor, schema or budget changes; an M3 work queue; consent renewal; larger
 100 or 200-tick bounds; a shutdown timeout; accepting long holds; a docs/17 reference or soak claim; ADRs, status files
 and the ledger.
+
+## Root decision R180 (2026-10-30 07:40): continue after the lock-token fix
+
+The first session delivered `e7a0691bf` as BLOCKED: a lock-token mismatch refused every native start, and its exited
+driver kept the heavy-JVM lock and its export. Root checked that the owner (`W208 pid=24788 bd63fe5d…`, 07:21:36) had
+exited and that no world was created, then released the lock and deleted `Temp/W208-native-02-export` and
+`Temp/W208-native-02.zip`.
+
+A new session continues on the same branch and worktree from `e7a0691bf`: read the record's section "Delivery status:
+BLOCKED" first, keep every retained failure as it is, and run the native measurements of the committed design on a JAR
+built from your committed source. The token fix is already committed with its regression; any further harness fix is
+test-side with a test that fails first. The rest of this TASK is unchanged.
