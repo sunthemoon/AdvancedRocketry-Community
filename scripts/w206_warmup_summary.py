@@ -24,15 +24,27 @@ def summarize_rows(rows):
 
 def readiness(events):
     starts = {}
+    requests = {(e.get("logical"), e.get("request")): e["ns"] - e["duration_ns"]
+                for e in events if e["kind"] == "REQUEST"}
     for event in events:
         key = event.get("logical"), event.get("request")
         if event["kind"] == "STARTED":
             starts[key] = dict(logical=key[0], request=key[1], tick=event["tick"], ns=event["ns"],
-                               ticks=None, ms=None, status="NOT_READY")
+                               ticks=None, ms=None, request_to_ready_ms=None, status="NOT_READY")
         elif event["kind"] == "READY" and key in starts:
             row = starts[key]
             row.update(ticks=event["tick"] - row["tick"], ms=(event["ns"] - row["ns"]) / 1e6, status="READY")
+            if key in requests:
+                row["request_to_ready_ms"] = (event["ns"] - requests[key]) / 1e6
     return list(starts.values())
+
+
+def phase_latencies(events):
+    rows = [dict(phase=e["to"], tick=e["tick"], ns=e["ns"], ticks=None, ms=None)
+            for e in events if e["kind"] == "PHASE"]
+    for previous, current in zip(rows, rows[1:]):
+        previous.update(ticks=current["tick"] - previous["tick"], ms=(current["ns"] - previous["ns"]) / 1e6)
+    return rows
 
 
 def qualify(result):
@@ -50,7 +62,7 @@ def summarize(root):
     measured = [r for r in ticks if r["phase"] not in ("SETUP", "SEED", "RECOVER")]
     samples = json.loads((root / "host-samples.json").read_text())
     return dict(fixture=data, flight_qualified=qualify(data), timing=summarize_rows(measured),
-                readiness=readiness(events), host=host_load(samples),
+                readiness=readiness(events), phase_latencies=phase_latencies(events), host=host_load(samples),
                 io_bytes={k: max((r.get(k, 0) for r in samples), default=0) for k in ("read_bytes", "write_bytes", "other_bytes")},
                 methodology="Nearest-rank percentiles; native core plus Forge END. Work includes product requests, "
                 "live warm-ups and flights; callbacks are server-thread escrow checkpoint-bearing ticks, not exclusive "

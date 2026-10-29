@@ -39,6 +39,21 @@ class SummaryTest(unittest.TestCase):
         self.assertIsNone(result[1]["ticks"])
         self.assertEqual(result[1]["status"], "NOT_READY")
 
+    def test_request_to_ready_includes_synchronous_selection(self):
+        events = [dict(kind="REQUEST", logical="a", request="r", tick=120, ns=100_000_000, duration_ns=20_000_000),
+                  dict(kind="STARTED", logical="a", request="r", tick=120, ns=105_000_000),
+                  dict(kind="READY", logical="a", request="r", tick=125, ns=130_000_000)]
+        self.assertEqual(readiness(events)[0]["request_to_ready_ms"], 50)
+
+    def test_phase_latency_keeps_unfinished_phase_censored(self):
+        from w206_warmup_summary import phase_latencies
+        events = [dict(kind="PHASE", to="WARMING", tick=10, ns=100_000_000),
+                  dict(kind="PHASE", to="F1_F2", tick=13, ns=250_000_000)]
+        rows = phase_latencies(events)
+        self.assertEqual(rows[0]["ticks"], 3)
+        self.assertEqual(rows[0]["ms"], 150)
+        self.assertIsNone(rows[1]["ms"])
+
     def test_fixture_requires_real_cold_and_exact_release_evidence(self):
         base = dict(outcome="MEASURED", cold=True, no_other_ticket=True, new_terrain=True,
                     selected_columns=16, expected_columns=16, f2=True, handover=True,

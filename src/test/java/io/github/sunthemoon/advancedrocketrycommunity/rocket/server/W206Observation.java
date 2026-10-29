@@ -46,6 +46,16 @@ public final class W206Observation {
         return Math.addExact(core, end);
     }
 
+    static int ownerCallbacks(List<Map<String, Object>> delivered, int endTick) {
+        // START callbacks can run before MinecraftServer increments tickCount. Delivery before the last END
+        // observer, not equality with the callback's getTickCount(), identifies this completed tick.
+        return (int) delivered.stream().filter(row -> Boolean.TRUE.equals(row.get("owner_thread"))).count();
+    }
+
+    static boolean released(boolean landingWitness, boolean survivorStillLoaded, List<String> flight, List<String> warmup) {
+        return landingWitness && flight.isEmpty() && warmup.isEmpty();
+    }
+
     public static List<TicketRow> tickets(ServerLevel level) {
         var rows = new ArrayList<TicketRow>();
         var distance = level.getChunkSource().chunkMap.getDistanceManager();

@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -37,5 +38,18 @@ class W206ObservationTest {
         assertEquals(105, W206Observation.fullTick(100, 5));
         assertThrows(IllegalArgumentException.class, () -> W206Observation.fullTick(-1, 1));
         assertThrows(ArithmeticException.class, () -> W206Observation.fullTick(Long.MAX_VALUE, 1));
+    }
+
+    @Test void startCallbacksBeforeTheNativeTickIncrementBelongToThisCompletedTick() {
+        var callbacks = List.<Map<String, Object>>of(Map.of("owner_thread", true, "tick", 41),
+                Map.of("owner_thread", true, "tick", 42), Map.of("owner_thread", false, "tick", 42));
+        assertEquals(2, W206Observation.ownerCallbacks(callbacks, 42));
+    }
+
+    @Test void ticketReleaseDoesNotRequireChunkRetentionButDoesRequireLandingEvidence() {
+        assertTrue(W206Observation.released(true, false, List.of(), List.of()));
+        assertFalse(W206Observation.released(false, true, List.of(), List.of()));
+        assertFalse(W206Observation.released(true, false, List.of("flight"), List.of()));
+        assertFalse(W206Observation.released(true, false, List.of(), List.of("warmup")));
     }
 }

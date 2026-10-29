@@ -49,6 +49,7 @@ public final class W206NativeWarmup {
     private final List<RocketEntity> rockets = new ArrayList<>();
     private final Map<String, Object> result = new LinkedHashMap<>();
     private final Map<UUID, String> states = new HashMap<>();
+    private final Map<UUID, RocketWarmupRegistry.Warmup> abandoned = new HashMap<>();
     private final Set<String> loadedUnion = new TreeSet<>(), ticketUnion = new TreeSet<>();
     private final ConcurrentLinkedQueue<Map<String, Object>> checkpoints = new ConcurrentLinkedQueue<>();
     private final BufferedWriter ticks, events, snapshots;
@@ -64,7 +65,7 @@ public final class W206NativeWarmup {
     private String phase = "SETUP", lastFlight = "";
     private int age, phaseAt, callbackCount;
     private long endStart, requestNanos;
-    private boolean done, requested, seenF2, handover;
+    private boolean done, requested, seenF2, handover, landingWitness;
 
     @SubscribeEvent public static void started(ServerStartedEvent event) {
         if (!Boolean.getBoolean("advancedrocketrycommunity.w206")) { return; }
@@ -96,10 +97,9 @@ public final class W206NativeWarmup {
         try {
             require(++age <= 4000, "External 4000-tick observation ceiling reached; not a product timeout");
             step();
-            while (!checkpoints.isEmpty()) {
-                var point = checkpoints.remove(); write(events, point);
-                if (Boolean.TRUE.equals(point.get("owner_thread")) && ((Number) point.get("tick")).intValue() == server.getTickCount()) { callbackCount++; }
-            }
+            var delivered = new ArrayList<Map<String, Object>>();
+            while (!checkpoints.isEmpty()) { var point = checkpoints.remove(); write(events, point); delivered.add(point); }
+            callbackCount = W206Observation.ownerCallbacks(delivered, server.getTickCount());
             observeWarmups();
             work |= requested || !live().isEmpty() || journal != null && !journal.entries().isEmpty();
             long observationStart = System.nanoTime();
@@ -231,6 +231,8 @@ public final class W206NativeWarmup {
         result.put("selected_region", first.region().toString()); result.put("logical", first.logical().toString());
         result.put("selected_ticket_columns", W206Observation.owned(server, "arce_rocket_warmup", first.logical()));
         require(first.columns().size() == predicted.count(), "Selected geometry differs from declared cohort");
+        var expectedTickets = first.columns().stream().map(c -> first.level() + ":" + c.x + ":" + c.z).sorted().toList();
+        require(W206Observation.owned(server, "arce_rocket_warmup", first.logical()).equals(expectedTickets), "Warm-up ticket set differs from server selection");
         phase("WARMING");
     }
 
@@ -259,6 +261,18 @@ public final class W206NativeWarmup {
         var current = journal.find(launch).orElse(null);
         if (current != null) {
             record = current;
+            var entity = moon.getEntity(record.nativeTransfer().orElseThrow().armed().destination());
+            if (!landingWitness && entity instanceof RocketEntity landed
+                    && landed.flightData().orElseThrow().state() == RocketFlightState.LANDED) {
+                var fuel = landed.flightData().orElseThrow().fuel();
+                var expected = record.sourceFlightData().fuel().debit(record.sourceFlightData().plan().orElseThrow()).state();
+                require(fuel.committedDebits().equals(List.of(launch)) && fuel.totalAmount() == expected.totalAmount()
+                        && landed.snapshot().orElseThrow().contentHash().equals(record.destinationSnapshot().contentHash()),
+                        "Loaded landed survivor changed its exact debit or snapshot");
+                landingWitness = true; result.put("landing_witness", true);
+                event("LANDED_WITNESS", Map.of("entity", entity.getUUID().toString(), "fuel", fuel.totalAmount(),
+                        "snapshot", landed.snapshot().orElseThrow().contentHash()));
+            }
             if (!seenF2 && rocket.flightData().orElseThrow().state() == RocketFlightState.COUNTDOWN && journal.acknowledgedCurrent()) {
                 seenF2 = true; result.put("f2", true); event("F2", Map.of("latency_ns", System.nanoTime() - requestNanos));
             }
@@ -280,12 +294,12 @@ public final class W206NativeWarmup {
         require(seenF2 && handover, "Flight ended without observed F2/handover");
         if (data.ledger().armedFlights().stream().anyMatch(a -> a.transfer().equals(launch))) { return; }
         var arrival = moon.getEntity(record.nativeTransfer().orElseThrow().armed().destination());
-        require(arrival instanceof RocketEntity landed && landed.flightData().orElseThrow().state() == RocketFlightState.LANDED
-                && landed.flightData().orElseThrow().fuel().committedDebits().equals(List.of(launch)), "F8 survivor/debit not observed without support tickets");
         var flightTickets = W206Observation.owned(server, "arce_rocket_flight", launch);
         var warmTickets = W206Observation.owned(server, "arce_rocket_warmup", first.logical());
         result.put("tickets_after_f8", flightTickets); result.put("warmups_after_f8", warmTickets);
-        require(flightTickets.isEmpty() && warmTickets.isEmpty(), "F8 tickets remain");
+        result.put("survivor_still_loaded_after_f8", arrival != null);
+        require(W206Observation.released(landingWitness, arrival != null, flightTickets, warmTickets),
+                "F8 lacks a landing witness or retained tickets; chunk eviction is independent");
         result.put("f8", true); event("F8", Map.of("latency_ns", System.nanoTime() - requestNanos));
         phase("F8_RELEASED"); result.put("outcome", "MEASURED");
     }
@@ -311,6 +325,9 @@ public final class W206NativeWarmup {
     }
 
     private void capacity() throws Exception {
+        require(W206Observation.tickets(moon).isEmpty(), "Capacity Moon was ticketed before the first request");
+        require(W206Observation.chunks(moon).isEmpty(), "Capacity Moon was loaded before the first request");
+        result.put("cold", true); result.put("no_other_ticket", true);
         phase("CAPACITY");
         for (int i = 0; i < 3; i++) {
             var rocket = rockets.get(i); player.teleportTo(earth, rocket.getX(), rocket.getY() + 2, rocket.getZ(), 0, 0);
@@ -326,11 +343,19 @@ public final class W206NativeWarmup {
         require(request(rockets.get(9), true).code() == RocketFlightRequestCode.DESTINATION_LOADING_LIMIT
                 && warm(rockets.get(9)) == null && W206Observation.owned(server, "arce_rocket_warmup", rockets.get(9).assemblyTransactionId().orElseThrow()).isEmpty(), "Ninth was not refused");
         result.put("ninth_refused", true); observeWarmups(); snapshot("EIGHT_AND_NINTH");
+        for (int i = 4; i < 9; i++) { var warm = warm(rockets.get(i)); abandoned.put(warm.logical(), warm); }
         server.getPlayerList().remove(player); player = null; rockets.get(3).discard(); phase("EXPIRY");
     }
 
     private void lifecycle() throws Exception {
         if (player != null) { ReleaseTestPlayers.pump(server); }
+        for (var started : abandoned.values()) {
+            var current = RocketRuntime.installedTransfers().warmups.registry().warmup(started.logical()).orElse(null);
+            if (server.getTickCount() - started.started() < started.lifetime()) {
+                require(current != null && current.started() == started.started() && current.lifetime() == 600,
+                        "An abandoned warm-up ended early or changed its lifetime");
+            } else { require(current == null, "An abandoned warm-up outlived its captured deadline"); }
+        }
         if (age - phaseAt == 2) {
             for (int i : List.of(0, 1, 3)) {
                 require(warm(rockets.get(i)) == null && W206Observation.owned(server, "arce_rocket_warmup", rockets.get(i).assemblyTransactionId().orElseThrow()).isEmpty(), "Disconnect/removal ticket leak");
