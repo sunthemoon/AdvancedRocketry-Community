@@ -1225,6 +1225,30 @@ This note records mechanics; it changes no decision and accepts no risk. The ris
 
 This is a development implementation note, not owner acceptance or a Gate result.
 
+### W27d4 implementation note: released flight (W196, merged `0cd4f1195`)
+
+This note records mechanics; it changes no decision and accepts no risk. The risk is R-043, with R-042.
+
+- **Release.** A coherent REPAIR or REGISTRY_BLOCKED bay group flies on under `released = 1`, which the receipt writer
+  accepts only as the grouped release operation and which must be acknowledged before the first delegated step.
+  UNEXPECTED_COPY and the other physical-authority holds are never released; a conflict observed before release
+  authority exists stays latched, and an existing release flag does not erase it.
+- **Delegation under permits.** `tickLive`, destination publication, passenger moves, source removal and cleanup run
+  under one-shot permits bound to the complete pending group, its physical endpoints and observations. A refused
+  acknowledged effect suspends delegation and schedules checked-phase reconciliation (R168); source removal waits for
+  the passenger obligation. REGISTERED consumption finishes before any package reaches the destination.
+- **Holds.** A physical-held claim releases its proof resources and its D6 turn or queue position, and keeps its
+  receipts, charges and conflict latch (R170). A released receipt with T absent holds for offline repair.
+- **Restart.** Released receipts dispatch at the next start, and the admitted destination identity is kept across
+  released phases.
+- **Unchanged:** the saved formats beyond the existing `released` field, every bound, budget, quota and timeout, and
+  `RocketTransferService`.
+- **Reviews and evidence.** A review (BLOCK), the R168 fixes, a re-review (BLOCK on W196-R11), the R170 fix and a second
+  re-review (APPROVE-WITH-CHANGES). Hosted regression 40859326468 passes; the native release cases are in
+  `records/W196.md`.
+
+This is a development implementation note, not owner acceptance or a Gate result.
+
 ### W176 implementation note: the fluid fuel loader's native-save protection (merged `7c9e5f7e9`)
 
 This note records mechanics; it changes no decision and accepts no risk. The risk is R-044.
