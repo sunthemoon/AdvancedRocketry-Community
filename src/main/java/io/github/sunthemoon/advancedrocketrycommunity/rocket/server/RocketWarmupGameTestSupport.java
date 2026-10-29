@@ -35,6 +35,11 @@ public final class RocketWarmupGameTestSupport {
         return warmups(server).registry().live().stream().map(RocketWarmupGameTestSupport::view).toList();
     }
 
+    /** An unresolved capacity allocation, not a selected pad or reservation. */
+    public static boolean preparing(MinecraftServer server, UUID logical) {
+        return warmups(server).terrain.contains(logical);
+    }
+
     /** prepareLaunch's reservations for a request of logical rocket {@code requester}, as the product computes them. */
     public static List<RocketRegion> launchReservations(MinecraftServer server, RocketTransferSavedData journal, UUID requester) {
         var transfers = transfers(server);

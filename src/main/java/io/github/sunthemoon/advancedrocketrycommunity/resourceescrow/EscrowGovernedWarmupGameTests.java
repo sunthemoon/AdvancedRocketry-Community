@@ -309,6 +309,8 @@ public final class EscrowGovernedWarmupGameTests {
         private Player pilot;
         private List<RocketStructureSnapshot> pads;
         private RocketWarmupGameTestSupport.View fresh;
+        private UUID freshRequest;
+        private long freshAt;
         private int step;
 
         Capacity(GameTestHelper helper) {
@@ -415,13 +417,24 @@ public final class EscrowGovernedWarmupGameTests {
 
         /** The cleared tickets demote their columns at the next ticket update; a new request then warms afresh. */
         private void freshWhenCold(MinecraftServer server, RocketTransferSavedData journal) {
-            if (cold(server, pads.get(0)) && journal.retryChecked(server)) {
-                var request = UUID.randomUUID();
-                var result = RocketRuntime.requestAdminFlight(admin.get(1), RocketDestination.MOON, request);
+            if (freshRequest == null && cold(server, pads.get(0)) && journal.retryChecked(server)) {
+                freshRequest = UUID.randomUUID(); freshAt = server.getTickCount();
+                var result = RocketRuntime.requestAdminFlight(admin.get(1), RocketDestination.MOON, freshRequest);
+                helper.assertTrue(result.code() == RocketFlightRequestCode.DESTINATION_LOADING,
+                        "A new request did not wait for a fresh warm-up: " + result.code());
+            }
+            if (freshRequest != null) {
+                helper.assertTrue(journal.find(freshRequest).isEmpty()
+                        && data.ledger().armedFlights().stream().noneMatch(arm -> arm.logical().equals(logical(admin.get(1)))),
+                        "Terrain preparation launched without a fresh request");
                 fresh = warmup(server, admin.get(1));
-                helper.assertTrue(result.code() == RocketFlightRequestCode.DESTINATION_LOADING && fresh != null
-                        && fresh.request().equals(request) && fresh.started() == server.getTickCount()
-                        && fresh.region().equals(region(pads.get(0))), "A new request did not start a fresh warm-up: " + result.code());
+                if (fresh == null) {
+                    helper.assertTrue(RocketWarmupGameTestSupport.preparing(server, logical(admin.get(1))),
+                            "The cleared rocket lost its new terrain allocation");
+                    return;
+                }
+                helper.assertTrue(fresh.request().equals(freshRequest) && fresh.started() == freshAt
+                        && fresh.region().equals(region(pads.get(0))), "A new request changed its fresh warm-up identity or deadline");
                 step = 5;
             }
         }
