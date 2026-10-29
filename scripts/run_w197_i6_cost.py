@@ -143,8 +143,9 @@ def main():
             summary = summarize(output)
             (output / "summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
             row["fixture_qualified"] = summary["fixture_qualified"]
+            row["timing_boundary_qualified"] = summary["timing_boundary_qualified"]
             if row["status"] == "COLLECTED":
-                row["status"] = "PASS" if summary["fixture_qualified"] else "FAIL"
+                row["status"] = "PASS" if summary["fixture_qualified"] and summary["timing_boundary_qualified"] else "FAIL"
         log = (output / "native.log").read_text(encoding="utf-8", errors="replace") if (output / "native.log").exists() else ""
         row["errors"] = [line for line in log.splitlines() if "/ERROR]" in line or "/FATAL]" in line]
         row["overload_warnings"] = [line for line in log.splitlines() if "Can't keep up" in line]

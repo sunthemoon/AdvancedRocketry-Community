@@ -90,4 +90,11 @@ class W197MaximumFixtureTest {
         assertEquals(1_048_577, RocketNbtSize.uncompressedBytes(encoded));
         assertTrue(RocketSnapshotNbtCodec.decode(encoded).snapshot().isEmpty());
     }
+
+    @Test void fullTickIncludesEarlyStartWorkAndDoesNotDoubleCountVanillaCore() {
+        // A late START observer could see only 10 of these 60 core milliseconds; the native core still owns all 60.
+        assertEquals(65_000_000, W197CostObserver.fullTickNanos(60_000_000, 5_000_000));
+        assertThrows(IllegalArgumentException.class, () -> W197CostObserver.fullTickNanos(-1, 5));
+        assertThrows(ArithmeticException.class, () -> W197CostObserver.fullTickNanos(Long.MAX_VALUE, 1));
+    }
 }

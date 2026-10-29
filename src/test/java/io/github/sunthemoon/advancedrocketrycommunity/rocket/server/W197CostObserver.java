@@ -15,7 +15,8 @@ import net.minecraft.server.MinecraftServer;
 
 /** Diagnostic-only transparent port observer. No result, request, ticket, quota or deadline is replaced. */
 final class W197CostObserver {
-    final List<String> ticks = new ArrayList<>(List.of("phase,round,tick,tick_ns,observed_ns,pending,active"));
+    final List<String> ticks = new ArrayList<>(List.of(
+            "phase,round,tick,tick_ns,observed_ns,pending,active,vanilla_core_ns,forge_end_ns,late_start_interval_ns"));
     final List<String> steps = new ArrayList<>(List.of("phase,round,tick,step,calls,exclusive_ns,max_inclusive_ns"));
     final List<String> proofs = new ArrayList<>(List.of(
             "round,index,admitted_tick,attempt,started_tick,terminal_tick,attempt_ticks,queue_ticks,slots,accepted"));
@@ -27,11 +28,19 @@ final class W197CostObserver {
     private final MinecraftServer server;
     String phase = "SETUP";
     int round, peakPending, peakActive, confirmedCaptures, refusedCaptures;
-    long tickStart, observed;
+    long tickStart, endStart, observed;
 
     W197CostObserver(MinecraftServer server) { this.server = server; }
 
-    void start() { tickStart = System.nanoTime(); observed = 0; costs.clear(); }
+    // Earlier HIGHEST START listeners can already have delivered journal callbacks. Do not erase their costs here.
+    void start() { tickStart = System.nanoTime(); }
+    void beginEnd() { endStart = System.nanoTime(); }
+    void reset() { observed = 0; costs.clear(); }
+
+    static long fullTickNanos(long vanillaCore, long forgeEnd) {
+        if (vanillaCore < 0 || forgeEnd < 0) { throw new IllegalArgumentException("Negative tick duration"); }
+        return Math.addExact(vanillaCore, forgeEnd);
+    }
 
     <T> T timed(String name, Supplier<T> action) {
         if (!server.isSameThread()) { throw new IllegalStateException("Cost observer left the server thread: " + name); }
@@ -51,13 +60,20 @@ final class W197CostObserver {
     }
 
     void end(RocketOrdinaryRetirement coordinator) {
-        long elapsed = System.nanoTime() - tickStart;
+        long now = System.nanoTime(), lateStartInterval = now - tickStart, forgeEnd = now - endStart;
+        // Forge 47.4.10 records vanilla tickTimes before posting END. Its timer starts BEFORE posting START,
+        // so it includes journal polling by earlier same-priority START listeners that our late timer cannot see.
+        long vanillaCore = server.tickTimes[server.getTickCount() % server.tickTimes.length];
+        long elapsed = fullTickNanos(vanillaCore, forgeEnd);
         int pending = coordinator.size(), active = coordinator.activeAttempts();
         peakPending = Math.max(peakPending, pending); peakActive = Math.max(peakActive, active);
-        if (!measuring()) { return; }
-        ticks.add(phase + "," + round + "," + server.getTickCount() + "," + elapsed + "," + observed + "," + pending + "," + active);
-        costs.forEach((name, cost) -> steps.add(phase + "," + round + "," + server.getTickCount() + "," + name
-                + "," + cost[0] + "," + cost[1] + "," + cost[2]));
+        if (measuring()) {
+            ticks.add(phase + "," + round + "," + server.getTickCount() + "," + elapsed + "," + observed + "," + pending + "," + active
+                    + "," + vanillaCore + "," + forgeEnd + "," + lateStartInterval);
+            costs.forEach((name, cost) -> steps.add(phase + "," + round + "," + server.getTickCount() + "," + name
+                    + "," + cost[0] + "," + cost[1] + "," + cost[2]));
+        }
+        reset();
     }
 
     boolean measuring() {

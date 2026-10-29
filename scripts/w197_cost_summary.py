@@ -41,6 +41,13 @@ def host_load(samples):
                 scope="Two-second samples over the entire native process, including startup and fixture setup; not only measured phases.")
 
 
+def timing_qualified(ticks):
+    return bool(ticks) and all("vanilla_core_ns" in row and "forge_end_ns" in row
+                              and int(row["vanilla_core_ns"]) > 0 and int(row["forge_end_ns"]) >= 0
+                              and int(row["tick_ns"]) == int(row["vanilla_core_ns"]) + int(row["forge_end_ns"])
+                              and 0 <= int(row["observed_ns"]) <= int(row["tick_ns"]) for row in ticks)
+
+
 def summarize(root):
     ticks = read_csv(root, "w197-ticks.csv")
     steps = read_csv(root, "w197-steps.csv")
@@ -71,6 +78,8 @@ def summarize(root):
     grouped = defaultdict(list)
     for row in steps:
         grouped[row["phase"] + "." + row["step"]].append(row)
+        if row["phase"] == "PROOF" and row["round"] == "1":
+            grouped["PROOF.round_1." + row["step"]].append(row)
     step_stats = {key: dict(exclusive_ms_per_invoked_tick=statistics([row["exclusive_ns"] for row in rows], 1e6),
                            calls=sum(int(row["calls"]) for row in rows),
                            largest_inclusive_call_ms=max(int(row["max_inclusive_ns"]) for row in rows) / 1e6)
@@ -83,7 +92,8 @@ def summarize(root):
                      and result.get("blocks") == 2048 and result.get("volume") == 32768
                      and result.get("snapshot_bytes") == 1048576 and result.get("columns_per_end") == 16)
     samples = json.loads((root / "host-samples.json").read_text()) if (root / "host-samples.json").exists() else []
-    return dict(fixture_qualified=qualification, fixture=result, windows=windows, steps=step_stats, host_load=host_load(samples),
+    return dict(fixture_qualified=qualification, timing_boundary_qualified=timing_qualified(ticks),
+                fixture=result, windows=windows, steps=step_stats, host_load=host_load(samples),
                 proof_attempt_ticks=statistics([row["attempt_ticks"] for row in accepted]),
                 proof_queue_ticks=statistics([row["queue_ticks"] for row in accepted]),
                 terminal_attempts=Counter(row["attempt"] for row in accepted),
@@ -93,6 +103,8 @@ def summarize(root):
                 methodology="Nearest-rank percentiles. Step samples are exclusive server-thread nanoseconds summed per "
                 "method per tick with calls, not individual-call percentiles. Inclusive call maxima are retained. "
                 "Admission is included; setup, forced warmup and offer construction are separate. Async IO is not timed. "
+                "For schema with vanilla_core_ns, tick_ns is native MinecraftServer.tickTimes plus the Forge END interval. "
+                "The retained late_start_interval_ns demonstrates work missed by a later same-priority START observer. "
                 "Observer overhead, other server work and concurrent B2 work remain in whole-tick timings. "
                 "Round 1 starts at 64; later rounds use fresh consent for remaining unproved requests. "
                 "This Windows synthetic workload is not docs/17's Debian reference-load or soak Gate.")
@@ -105,7 +117,7 @@ def main():
     summary = summarize(args.evidence)
     (args.evidence / "summary.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
     print(json.dumps({key: value for key, value in summary.items() if key != "steps"}, indent=2))
-    return 0 if summary["fixture_qualified"] else 1
+    return 0 if summary["fixture_qualified"] and summary["timing_boundary_qualified"] else 1
 
 
 if __name__ == "__main__":

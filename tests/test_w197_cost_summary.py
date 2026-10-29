@@ -29,6 +29,14 @@ class SummaryTest(unittest.TestCase):
         self.assertEqual(stats["other_busy_percent"]["mean"], 10)
         self.assertEqual(stats["peak_rss_gib"], 2)
 
+    def test_timing_qualification_requires_full_non_overlapping_components(self):
+        row = dict(vanilla_core_ns="600", forge_end_ns="50", tick_ns="650", observed_ns="100")
+        self.assertTrue(MODULE.timing_qualified([row]))
+        self.assertFalse(MODULE.timing_qualified([]))
+        self.assertFalse(MODULE.timing_qualified([dict(row, tick_ns="150")]))
+        self.assertFalse(MODULE.timing_qualified([dict(row, observed_ns="651")]))
+        self.assertFalse(MODULE.timing_qualified([dict(tick_ns="150", observed_ns="100")]))
+
     def test_active_window_retains_slow_tick_and_incomplete_proofs_do_not_qualify(self):
         with tempfile.TemporaryDirectory(prefix="w197-summary-") as directory:
             root = Path(directory)

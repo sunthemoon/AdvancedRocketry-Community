@@ -57,7 +57,9 @@ public final class W197I6NativeCost {
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST) public void start(TickEvent.ServerTickEvent event) {
-        if (event.phase == TickEvent.Phase.START && !done) { observation.start(); }
+        if (done) { return; }
+        if (event.phase == TickEvent.Phase.START) { observation.start(); }
+        else { observation.beginEnd(); }
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST) public void end(TickEvent.ServerTickEvent event) {
@@ -69,7 +71,7 @@ public final class W197I6NativeCost {
             AdvancedRocketryCommunity.LOGGER.error("ARCE_W197_COST_FIXTURE_FAILED", error);
         }
         // The final setup tick includes a checked journal flush, not baseline work.
-        if (!previousPhase.equals("SETUP")) { observation.end(coordinator); }
+        if (!previousPhase.equals("SETUP")) { observation.end(coordinator); } else { observation.reset(); }
         if (failure != null) { finish("FAILED"); }
         else if (observation.phase.equals("DONE")) { finish("MEASURED"); }
     }
