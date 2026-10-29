@@ -1192,6 +1192,39 @@ R-042.
 
 This is a development implementation note, not owner acceptance or a Gate result.
 
+### W27d3 implementation note: copies, the absence census and offline login (W185, merged `14d93687f`)
+
+This note records mechanics; it changes no decision and accepts no risk. The risk is R-043, with R-042.
+
+- **Recognition.** The exact source first, by UUID, Level, exact x and z and `[origin.y, origin.y + 48]`, with no
+  build-height clamp; then both end boxes and a separately recorded origin column. At most 64 identities across both
+  ends; the cap is a conflict. A blocked image whose preserved `assembly_transaction_id` is L counts as an unexpected
+  copy, and a destination copy is never PREPARED authority.
+- **Consumption and removal.** D5 consumes every recognized copy with its own end's after snapshot and removes only
+  consumed neutral non-survivors, after a valid exact survivor exists. Only an online assigned passenger who rides a
+  copy being removed is moved into the survivor.
+- **The bay census columns.** `BayCensusColumns` is the shared W90 set (`RocketDiscoveryColumns`, unchanged) plus the
+  low-strip column `(min - 2) >> 4`, at most 16 per end. R2, D5's copy pass and D6 wait for every census column to be
+  entity-loaded and ticking. From CONSUME on, an in-session claim tickets each admissible end's census columns, as R1
+  does for a restart group. D0 refuses every bay of a flight with DEPLOYMENT_UNAVAILABLE when either end has no bay
+  census, such as an end the strip pushes past 16 columns.
+- **Absence proofs.** D6 captures and proves every census slot (at most 34), the survivor at the source origin and
+  absence everywhere else, nested passengers included, and holds the proofs through D7. D6's waits and D7's
+  quiet-store wait save nothing. A D7 parked on a busy store releases its proofs and proves again.
+- **One D6 turn per server (W185's R154 and R160).** At most one claim captures and holds proofs between D6 and D7;
+  others wait in claim order. The holder gives the turn up when D7 ends, on a repair hold, on a park, when it waits
+  without a capture or proof, on any capture refusal other than SUPERSEDING_SAVE, and when the barrier's retry list is
+  full. W98-R11's retry rule is unchanged.
+- **Logins.** A login during a held claim waits in the reconnect queue for at most 200 ticks, with no settlement or
+  journal removal.
+- **Unchanged:** every saved format, bound, budget, quota and timeout, `RocketTransferService`, and the shared
+  discovery column set, so ordinary flights' launch areas, pads and tickets are as before.
+- **Reviews and evidence.** A review (APPROVE-WITH-CHANGES), the fixes under R149, R150 (the shared set's widening
+  reverted) and R154 (the D6 turn), a re-review (APPROVE-WITH-CHANGES) and the R160 fixes. The native tranche (B3 to
+  B7 with copies and offline seats, two restarts each) is in `records/W185.md`; hosted regression 40808878524 failed only the landing-pad recovery cut that W187 guards on the shared head.
+
+This is a development implementation note, not owner acceptance or a Gate result.
+
 ### W176 implementation note: the fluid fuel loader's native-save protection (merged `7c9e5f7e9`)
 
 This note records mechanics; it changes no decision and accepts no risk. The risk is R-044.
