@@ -61,8 +61,10 @@ def summarize(root):
     events = [json.loads(line) for line in (root / "w206-events.jsonl").read_text().splitlines()]
     measured = [r for r in ticks if r["phase"] not in ("SETUP", "SEED", "RECOVER")]
     samples = json.loads((root / "host-samples.json").read_text())
+    host = host_load(samples)
+    host["scope"] = "One-second samples over the entire native process, including startup/setup and shutdown; not only measured phases."
     return dict(fixture=data, flight_qualified=qualify(data), timing=summarize_rows(measured),
-                readiness=readiness(events), phase_latencies=phase_latencies(events), host=host_load(samples),
+                readiness=readiness(events), phase_latencies=phase_latencies(events), host=host,
                 io_bytes={k: max((r.get(k, 0) for r in samples), default=0) for k in ("read_bytes", "write_bytes", "other_bytes")},
                 methodology="Nearest-rank percentiles; native core plus Forge END. Work includes product requests, "
                 "live warm-ups and flights; callbacks are server-thread escrow checkpoint-bearing ticks, not exclusive "

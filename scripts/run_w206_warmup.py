@@ -24,6 +24,17 @@ class IO(ctypes.Structure):
                 ("reads", "writes", "others", "read_bytes", "write_bytes", "other_bytes")]
 
 
+def archive_timing(session, output):
+    """The optional probe uses CREATE_NEW per process. Retire only its copied diagnostic file, never world state."""
+    source = session / "escrow-consumer-timing.json"
+    if source.is_file():
+        target = output / "server-escrow-consumer-timing.json"
+        require(not target.exists(), "Timing archive already exists")
+        shutil.copy2(source, target)
+        require(sha256(source) == sha256(target), "Timing archive did not verify")
+        source.unlink()
+
+
 def inventory(production, diagnostic):
     with zipfile.ZipFile(production) as a, zipfile.ZipFile(diagnostic) as b:
         aa = {n: hashlib.sha256(a.read(n)).hexdigest() for n in a.namelist()}
@@ -95,8 +106,11 @@ def run_stage(args, session, output, mode, shape):
         (output / "host-samples.json").write_text(json.dumps(samples, indent=2))
         for path in (session / "world").glob("w206-*"):
             shutil.copy2(path, output / path.name)
-        for path in (session / "gc.log", session / "logs/latest.log", session / "logs/debug.log", session / "escrow-consumer-timing.json"):
+        for path in (session / "gc.log", session / "logs/latest.log", session / "logs/debug.log"):
             if path.is_file(): shutil.copy2(path, output / ("server-" + path.name))
+        archive_timing(session, output)
+        for path in (session / "crash-reports").glob("*.txt"):
+            shutil.copy2(path, output / path.name)
         log = (output / "native.log").read_text(encoding="utf-8", errors="replace") if (output / "native.log").exists() else ""
         row["errors"] = [line for line in log.splitlines() if "/ERROR]" in line or "/FATAL]" in line]
         row["overload_warnings"] = [line for line in log.splitlines() if "Can't keep up" in line]

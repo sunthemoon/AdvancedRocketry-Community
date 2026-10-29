@@ -2,12 +2,25 @@
 import sys
 from pathlib import Path
 import unittest
+import tempfile
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 from w206_warmup_summary import summarize_rows, readiness, qualify
 
 
 class SummaryTest(unittest.TestCase):
+    def test_restart_retires_only_archived_timing_output(self):
+        from run_w206_warmup import archive_timing
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory); source = root / "server"; output = root / "evidence"
+            source.mkdir(); output.mkdir()
+            (source / "escrow-consumer-timing.json").write_text('{"events":[]}')
+            (source / "level.dat").write_text("world remains")
+            archive_timing(source, output)
+            self.assertFalse((source / "escrow-consumer-timing.json").exists())
+            self.assertEqual((output / "server-escrow-consumer-timing.json").read_text(), '{"events":[]}')
+            self.assertEqual((source / "level.dat").read_text(), "world remains")
+
     def test_lock_owner_written_is_the_exact_token_passed_to_native(self):
         script = (Path(__file__).resolve().parents[1] / "scripts/run_w206_warmup.ps1").read_text()
         owner_line = next(line.strip() for line in script.splitlines() if line.strip().startswith('Set-Content -LiteralPath "$lock/owner.txt"'))
