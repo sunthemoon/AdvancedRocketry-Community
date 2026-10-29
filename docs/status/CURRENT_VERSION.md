@@ -144,6 +144,8 @@ What is still open:
   and questions. The table and those records must be read together. The scoped fuel-residual
   acceptance and ADR-074 acceptance are already decided; ADR-075 was also accepted and W156
   merged (`5586e19e6`), so its old “acceptance before code” wording is superseded.
+  On 2026-10-30 Root added a fifteenth row: the risk scope to accept, or keep disabled, before each
+  admission switch (W203's question 4).
 - **Performance at the bounds.** W128's 2026-10-21 synchronous baseline remains historical evidence:
   on the development host, the satellite registry's checkpoint, coalesced flush and autosave at a
   16.7 MB root took about 450 to 900 ms at P95 and P99, and the rocket transaction journal's
