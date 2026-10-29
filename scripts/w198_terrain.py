@@ -215,7 +215,8 @@ def inspect(world: Path, fixture: dict, row: dict, stage: str):
     require_inventory(state, expected_resources("ALL"))
     # Empty fuel cannot be inferred from absence of D: successful block election is the sole disposal authority.
     if state["authority"] == "ENTITY": require(len(survivors) == 1, "Missing durable D1")
-    if phase is None and state["authority"] == "BLOCKS": require(len(sealed) + len(native) == 6, "Incomplete footprint")
+    if state["authority"] == "BLOCKS":
+        require(len(sealed) + len(native) == len(snapshot["relative_blocks"]), "Incomplete footprint")
     if stage in ("recover1", "recover2"):
         require(not transaction and not sealed, "Stable restart retains U/carrier")
     state.update(transfer=transfer, transaction=root, entities=[entity_projection(entity) for entity in survivors],

@@ -196,6 +196,22 @@ class W198NativeOracleTest(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, "Changed full D1"):
                     self.inspect("recovery-cut")
 
+    def test_every_block_election_requires_plain_members_even_with_retained_u(self):
+        for phase, stage in (("RESTORED", "start"), ("COMMITTED", "recovery-cut"), (None, "recover1")):
+            for missing in (0, 1):
+                with self.subTest(phase=phase, missing=missing):
+                    self.populate(sealed=phase is not None)
+                    self.retain(phase) if phase else setattr(self, "transaction", None)
+                    complete = self.inspect(stage, "C3_MOVE_AFTER")
+                    self.assertEqual("BLOCKS", complete["authority"])
+                    self.assertEqual("CONSENTED_DISPOSAL", complete["fuel"])
+                    at = (15, 100, 15 + missing); image = self.regions[at[0] >> 4, at[2] >> 4]
+                    image["states"][at] = "minecraft:air"
+                    image["block_entities"] = [be for be in image["block_entities"]
+                                               if tuple(be[k] for k in ("x", "y", "z")) != at]
+                    with self.assertRaisesRegex(ValueError, "Incomplete footprint"):
+                        self.inspect(stage, "C3_MOVE_AFTER")
+
 
 class W198TerrainTest(unittest.TestCase):
     def test_inventory_is_not_folded_and_every_row_has_four_starts(self):
