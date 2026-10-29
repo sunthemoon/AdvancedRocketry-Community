@@ -8,6 +8,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceiptT
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceipts;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightState;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferPhase;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
 import java.util.List;
 import java.util.UUID;
@@ -40,10 +41,64 @@ public final class BayReleasedGameTests {
         new FlightCheck(helper, false, true).start();
     }
 
+    @GameTest(template = TEMPLATE, batch = "bay_released_prepared", timeoutTicks = 1_200)
+    public static void releasedPreparedRebuildsItsAbsentSource(GameTestHelper helper) {
+        new FlightCheck(helper, RocketTransferPhase.PREPARED).start();
+    }
+    @GameTest(template = TEMPLATE, batch = "bay_released_spawned", timeoutTicks = 1_200)
+    public static void releasedSpawnedRebuildsItsAbsentDestination(GameTestHelper helper) {
+        new FlightCheck(helper, RocketTransferPhase.DESTINATION_SPAWNED).start();
+    }
+    @GameTest(template = TEMPLATE, batch = "bay_released_passengers", timeoutTicks = 1_200)
+    public static void releasedPassengerPhaseRebuildsItsAbsentDestination(GameTestHelper helper) {
+        new FlightCheck(helper, RocketTransferPhase.PASSENGERS_TRANSFERRED).start();
+    }
+    @GameTest(template = TEMPLATE, batch = "bay_released_removed", timeoutTicks = 1_200)
+    public static void releasedRemovedPhaseRebuildsItsAbsentDestination(GameTestHelper helper) {
+        new FlightCheck(helper, RocketTransferPhase.SOURCE_REMOVED).start();
+    }
+    @GameTest(template = TEMPLATE, batch = "bay_released_committed", timeoutTicks = 1_200)
+    public static void releasedCommittedRebuildsItsAbsentDestination(GameTestHelper helper) {
+        new FlightCheck(helper, RocketTransferPhase.COMMITTED).start();
+    }
+
+    @GameTest(template = TEMPLATE, batch = "bay_released_missing", timeoutTicks = 1_200)
+    public static void releasedWithoutJournalStaysLockedForOfflineRepair(GameTestHelper helper) {
+        var fixture = new Flight[1]; var row = new BayReceipt[1]; var stage = new int[] {0};
+        helper.onEachTick(() -> {
+            var server = helper.getLevel().getServer(); var coordinator = bays(helper);
+            if (stage[0] == 0) {
+                var origin = helper.absolutePos(new BlockPos(3, 2, 3));
+                if (!helper.getLevel().isPositionEntityTicking(origin)) { return; }
+                var owner = UUID.randomUUID(); var pkg = dataPackage(owner);
+                fixture[0] = transit(helper, origin, helper.absolutePos(new BlockPos(14, 2, 3)), owner,
+                        List.of(pkg), RocketEscrowSectionPatch.NEUTRAL);
+                row[0] = intent(server, fixture[0].record(), pkg, 0).withReleased();
+                // Deliberately no journal: this is an offline-repair fixture, never a successful recovery.
+                helper.assertTrue(BayReceiptTestHooks.put(server, row[0], outcome -> { }).queued(), "Receipt refused");
+                stage[0] = 1;
+            } else if (stage[0] == 1 && storeIdle(server)) {
+                coordinator.restartForTests(List.of(row[0])); stage[0] = 2;
+            } else if (stage[0] == 2) {
+                var claim = coordinator.claimForTests(row[0].rocket()).orElseThrow();
+                if (!claim.reason().equals("TRANSFER_AUTHORITY_CONFLICT")) { return; }
+                helper.assertTrue(BayReceipts.holdsRocket(server, row[0].rocket()) && !RocketEscrowGate.idle(fixture[0].source()),
+                        "Missing T unlocked released receipt");
+                helper.assertTrue(coordinator.sessionForTests().current(row[0].op()).filter(row[0]::equals).isPresent()
+                        && coordinator.sessionForTests().acknowledged(row[0].op()), "Missing T changed receipt");
+                helper.assertTrue(RocketTransferSavedData.get(server).find(row[0].transfer()).isEmpty(), "Missing T was recreated");
+                fixture[0].source().discard(); coordinator.forgetForTests(row[0].rocket());
+                helper.assertTrue(BayReceiptTestHooks.removeReleasedFixture(server, row[0].op()).queued(), "Cleanup refused");
+                stage[0] = 3;
+            } else if (stage[0] == 3 && storeIdle(server)) { stage[0] = 4; helper.succeed(); }
+        });
+    }
+
     private static final class FlightCheck {
         private final GameTestHelper helper;
         private final boolean blocked;
         private final boolean mixed;
+        private RocketTransferPhase restartPhase;
         private final UUID owner = UUID.randomUUID();
         private final ItemStack pkg;
         private Flight fixture;
@@ -58,6 +113,9 @@ public final class BayReleasedGameTests {
         }
         FlightCheck(GameTestHelper helper, boolean blocked, boolean mixed) {
             this.helper = helper; this.blocked = blocked; this.mixed = mixed; pkg = dataPackage(owner);
+        }
+        FlightCheck(GameTestHelper helper, RocketTransferPhase restartPhase) {
+            this(helper, false, false); this.restartPhase = restartPhase;
         }
         void start() { helper.onEachTick(this::tick); }
         private void tick() {
@@ -76,6 +134,7 @@ public final class BayReleasedGameTests {
                                 mixed ? List.of(pkg, other) : List.of(pkg), RocketEscrowSectionPatch.NEUTRAL);
                         receipt = intent(server, fixture.record(), pkg, 0);
                         if (!blocked) { receipt = receipt.withPhase(BayReceipt.Phase.REPAIR, "REGISTRY_SIGNATURE_CONFLICT", server.getTickCount()); }
+                        if (restartPhase != null) { receipt = receipt.withReleased(); }
                         helper.assertTrue(BayReceiptTestHooks.put(server, receipt, outcome -> { }).queued(), "Fixture receipt refused");
                         expectedPayloads = bayPayloads(fixture.record().sourceSnapshot());
                         if (mixed) {
@@ -85,7 +144,17 @@ public final class BayReleasedGameTests {
                             helper.assertTrue(BayReceiptTestHooks.put(server, registered, outcome -> { }).queued(), "REGISTERED fixture refused");
                             expectedPayloads = bayPayloads(after.source());
                         }
-                        journal.put(fixture.record());
+                        var record = fixture.record();
+                        if (restartPhase != null) {
+                            if (restartPhase != RocketTransferPhase.PREPARED) {
+                                record = record.destinationSpawned(UUID.randomUUID());
+                                while (record.phase() != restartPhase) {
+                                    record = record.advance(RocketTransferPhase.values()[record.phase().ordinal() + 1]);
+                                }
+                            }
+                            fixture.source().discard();
+                        }
+                        journal.put(record);
                         if (blocked) { coordinator.blockRegistryForTests(fixture.record().logicalRocketId()); }
                         stage = 1;
                     }
@@ -112,9 +181,17 @@ public final class BayReleasedGameTests {
                         helper.assertTrue(boundary.kind() == RocketTransferBayRecoveryGate.BoundaryKind.PERMIT, "No exact flight permit");
                         helper.assertTrue(boundary.token().valid(server, journal, t, RocketTransferBayRecoveryGate.Action.TICK_SOURCE), "Fresh permit refused");
                         helper.assertTrue(!boundary.token().valid(server, journal, t, RocketTransferBayRecoveryGate.Action.TICK_SOURCE), "Permit reused");
-                        var saved = coordinator.beforeAction(server, journal, t, RocketTransferBayRecoveryGate.Action.TICK_SOURCE);
-                        fixture.source().saveWithoutId(new CompoundTag());
-                        helper.assertTrue(!saved.token().valid(server, journal, t, RocketTransferBayRecoveryGate.Action.TICK_SOURCE), "Save did not invalidate permit");
+                        if (restartPhase == null) {
+                            var saved = coordinator.beforeAction(server, journal, t, RocketTransferBayRecoveryGate.Action.TICK_SOURCE);
+                            fixture.source().saveWithoutId(new CompoundTag());
+                            helper.assertTrue(!saved.token().valid(server, journal, t, RocketTransferBayRecoveryGate.Action.TICK_SOURCE), "Save did not invalidate permit");
+                            var moved = coordinator.beforeAction(server, journal, t, RocketTransferBayRecoveryGate.Action.TICK_SOURCE);
+                            double x = fixture.source().getX();
+                            fixture.source().setPos(x + 1, fixture.source().getY(), fixture.source().getZ());
+                            helper.assertTrue(!moved.token().valid(server, journal, t, RocketTransferBayRecoveryGate.Action.TICK_SOURCE),
+                                    "Source motion did not invalidate permit");
+                            fixture.source().setPos(x, fixture.source().getY(), fixture.source().getZ());
+                        }
                         for (var action : List.of(RocketTransferBayRecoveryGate.Action.REMOVE_JOURNAL,
                                 RocketTransferBayRecoveryGate.Action.SETTLE_SOURCE, RocketTransferBayRecoveryGate.Action.RECOVER_BY_ID,
                                 RocketTransferBayRecoveryGate.Action.ELECT_DUPLICATES)) {

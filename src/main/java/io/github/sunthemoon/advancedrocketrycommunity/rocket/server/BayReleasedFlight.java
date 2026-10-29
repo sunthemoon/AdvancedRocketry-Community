@@ -139,7 +139,7 @@ final class BayReleasedFlight {
                                                  RocketTransferBayRecoveryGate.Action action) {
         var state = states.get(record.logicalRocketId());
         if (state == null || !valid(state, journal, record, action)) { return RocketTransferBayRecoveryGate.Boundary.held(); }
-        long sourceObservation = observation(exactSource(journal.find(record.transferId()).orElseThrow()));
+        long sourceObservation = observation(exactSource(journal.find(record.transferId()).orElse(null)));
         long destinationObservation = observation(exactDestination(record));
         long generation = state.observation;
         var used = new boolean[] {false};
@@ -148,7 +148,7 @@ final class BayReleasedFlight {
             used[0] = true;
             return s == server && j == journal && r == record && a == action
                     && generation == state.observation
-                    && sourceObservation == observation(exactSource(journal.find(record.transferId()).orElseThrow()))
+                    && sourceObservation == observation(exactSource(journal.find(record.transferId()).orElse(null)))
                     && destinationObservation == observation(exactDestination(record)) && valid(state, journal, record, action);
         });
     }
@@ -167,7 +167,8 @@ final class BayReleasedFlight {
         }
         var current = journal.find(record.transferId()).orElse(null);
         var guard = journal.logicalGuard(record.logicalRocketId()).orElse(null);
-        if (current == null || guard == null || !record.transferId().equals(guard.transfer()) || guard.recordDigest() == null) { return false; }
+        if (current == null || guard == null || !journal.actionable(record.logicalRocketId())
+                || !record.transferId().equals(guard.transfer()) || guard.recordDigest() == null) { return false; }
         if (action == RocketTransferBayRecoveryGate.Action.SPAWN_DESTINATION && record.phase() != RocketTransferPhase.PREPARED
                 && !(record.phase() == RocketTransferPhase.DESTINATION_SPAWNED && (current != record || state.proposed == record))) { return false; }
         if (current != record) {
@@ -217,6 +218,7 @@ final class BayReleasedFlight {
         var source = exactSource(record);
         if (source != null && (!RocketTransferEntities.loadedEntity(source)
                 || !RocketEscrowGate.bayNeutral(source, record.transferId()) || !BayConsumptionSteps.inTransit(source, record)
+                || !passengers(source, record)
                 || source.ownerId().filter(record.ownerId()::equals).isEmpty()
                 || source.assemblyTransactionId().filter(record.logicalRocketId()::equals).isEmpty()
                 || source.snapshot().filter(s -> s.snapshotId().equals(record.sourceSnapshot().snapshotId())
@@ -225,11 +227,18 @@ final class BayReleasedFlight {
         var destination = exactDestination(record);
         if (destination == null) { return effectPending && record.phase() == RocketTransferPhase.DESTINATION_SPAWNED && source != null; }
         return RocketTransferEntities.loadedEntity(destination) && BayReleasedResume.destinationCurrent(destination, record)
+                && passengers(destination, record)
                 && (record.phase().ordinal() < RocketTransferPhase.SOURCE_REMOVED.ordinal() || source == null || effectPending);
     }
 
     private RocketEntity exactSource(RocketTransferRecord record) {
-        return BayReleasedResume.exact(RocketTransferEntities.level(server, record.sourceSnapshot().sourceDimension()), record.sourceEntityId());
+        return record == null ? null : BayReleasedResume.exact(
+                RocketTransferEntities.level(server, record.sourceSnapshot().sourceDimension()), record.sourceEntityId());
+    }
+    private boolean passengers(RocketEntity rocket, RocketTransferRecord record) {
+        return rocket.getPassengers().stream().allMatch(entity -> entity instanceof ServerPlayer player && player.isAlive()
+                && server.getPlayerList().getPlayer(player.getUUID()) == player
+                && record.sourceFlightData().passengers().assignment(player.getUUID()).isPresent());
     }
     private RocketEntity exactDestination(RocketTransferRecord record) {
         return record.destinationEntityId().map(id -> BayReleasedResume.exact(

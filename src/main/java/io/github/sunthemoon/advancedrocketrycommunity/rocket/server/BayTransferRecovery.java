@@ -39,7 +39,7 @@ import org.slf4j.Logger;
  * ADR-074; W170's for the registered half): the section 8.1 gate, D0 at the ascent-complete checkpoint, D1's INTENT or
  * re-arm through the real receipt store, D2's registration under a registry permit, D3's checkpoint, D4's group
  * publication, D5's consumption, D6's source proof, D7's guarded retirement, the exits, and the restart rows with the
- * source resume and W185's bounded copy/absence census. Released flight belongs to W27d4. Admission is gated (only the GameTest server and
+ * source resume, W185's bounded copy/absence census and W196's exact released-flight delegation. Admission is gated (only the GameTest server and
  * gated release-test hooks start D0); the restart rows always run. Completions only mark state and enqueue; every
  * write is a queued step on the server thread.
  */

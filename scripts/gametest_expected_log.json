@@ -1898,6 +1898,15 @@
       "reason": "W196 starts from an exactly acknowledged REPAIR receipt and checks that its coherent released flight retains the package and lock."
     },
     {
+      "id": "w196-released-missing-journal",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.server.BayTransferRecovery/",
+      "message": "ARCE_BAY_CLAIM transfer=[0-9a-f-]{36} logical=[0-9a-f-]{36} state=REPAIR reason=TRANSFER_AUTHORITY_CONFLICT",
+      "counts": {"bay_released_missing": 1},
+      "test": "BayReleasedGameTests.releasedWithoutJournalStaysLockedForOfflineRepair",
+      "reason": "W196 deliberately seeds a released receipt without T and verifies an unchanged offline-repair lock."
+    },
+    {
       "id": "w196-released-blocked",
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.server.BayTransferRecovery/",
