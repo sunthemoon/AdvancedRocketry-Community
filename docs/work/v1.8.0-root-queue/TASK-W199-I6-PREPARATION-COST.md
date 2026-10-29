@@ -42,3 +42,24 @@ production change.
 ## Not in this task
 
 The combined terrain matrix (W198), other performance work, ADRs, status files and the ledger.
+
+## Review findings under Root decision R171 (2026-10-29)
+
+The review, `D:/GitHub/ARCE-Task-Evidence/root-queue/W199-review/REVIEW.md` (SHA-256 `90232f45…7453`), accepted the
+cold-preparation change and returned BLOCK on the write-back change. Its probe is in `review-tests/` in the same folder.
+A fresh session continues on `codex/v1.8.0-w199` from `74aa6acbd`, one commit per finding:
+
+1. **W199-R1.** The candidate-only validation assumes every resident record was checked by its encoder, which `load`
+   does not establish. Use the shortcut only with a bounded, lifecycle-correct witness that the residents encode
+   canonically (a successful checked encode can supply it, and validated mutations keep it), and keep the exact old
+   whole-root validation for an unproven resident set. Do not raise a limit or change the load or quarantine policy.
+   Start from the review's probe; cover `validateWriteBack` and `validateNewRecord`.
+2. **W199-R2.** Pace `SealedDisassemblyGameTests` with the established real-tick pacing, keeping its 100-tick proof
+   deadline, 200-tick retry, 400-tick timeout and assertions, so the two undeclared DEADLINE WARNs no longer occur. Add
+   no manifest entry.
+3. **W199-R3.** Make the shared escrow test bootstrap's ordering explicit in the test infrastructure, so the package
+   selection the review ran passes in any order.
+
+The residual 138.57 ms admission burst and 341.16 ms write-back tick are a separate follow-up (W200). Verification: the
+new tests alone, failing first; the whole unit suite; the sealed and I6 batches three times; W197's measurement once
+again. A short fresh review follows.
