@@ -34,7 +34,10 @@ final class BayReleasedTestCommands {
         EscrowTestEndpoints.requireEnabled(server);
         var journal = RocketTransferSavedData.get(server);
         var record = journal.findByLogicalRocket(logical).orElseThrow();
-        if (!journal.actionable(logical) || journal.logicalGuard(logical).isEmpty()) { return 0; }
+        if (!journal.actionable(logical) || journal.logicalGuard(logical).isEmpty()) {
+            LOGGER.info("ARCE_RELEASE_BAY_ENDS logical={} loaded=false reason=JOURNAL_PENDING", logical);
+            return 0;
+        }
         BayCensusColumns.renewRestart(server, record);
         LOGGER.info("ARCE_RELEASE_BAY_ENDS logical={} loaded={}", logical, BaySourceProof.endsLoaded(server, record));
         return 1;
