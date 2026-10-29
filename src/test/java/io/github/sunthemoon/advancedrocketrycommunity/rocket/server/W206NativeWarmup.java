@@ -198,7 +198,7 @@ public final class W206NativeWarmup {
             data = ResourceEscrowSavedData.forTests(server); data.bind(server); journal = RocketTransferSavedData.get(server);
             // The synthetic empty ledger is otherwise never dirty before F1. Establish its checked
             // durable identity in SETUP, so restart tests reload it rather than create a new ledger.
-            if (mode.equals("restart")) { data.bind(server).autosave(); }
+            if (mode.equals("restart")) { data.setDirty(); data.bind(server).autosave(); }
             int count = mode.equals("capacity") ? 10 : 1;
             var extent = W206Observation.extent(shape);
             for (int i = 0; i < count; i++) {
