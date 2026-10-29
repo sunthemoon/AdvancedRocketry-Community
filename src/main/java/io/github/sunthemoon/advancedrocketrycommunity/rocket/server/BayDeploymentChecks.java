@@ -27,8 +27,8 @@ import net.minecraft.server.MinecraftServer;
 
 /**
  * D0's physical checks (W27A-DESIGN sections 4.1 and 7; W128's one-page design): the bays of T's source snapshot, the
- * live source at altitude, the orbit body (F5) and each bay's package and owners. Reads only; it loads no chunk and
- * writes nothing. Server thread only.
+ * live source at altitude, the orbit body (F5), both ends' bay census (W185-R25) and each bay's package and owners. Reads
+ * only; it loads no chunk and writes nothing. Server thread only.
  */
 final class BayDeploymentChecks {
     /** At most 128 block-entity visits per snapshot, and 64 snapshots cached by ID and content hash. */
@@ -99,6 +99,19 @@ final class BayDeploymentChecks {
         if (body == null || CelestialIds.SPACE_ID.equals(body)) { return Optional.of("TARGET_NOT_ALLOWED"); }
         var definition = catalog.get().get(body);
         return definition.isPresent() && definition.get().capabilities().orbitable() ? Optional.empty() : Optional.of("TARGET_NOT_ALLOWED");
+    }
+
+    /**
+     * W185-R25: D5 and D6 hold a claim at END_UNAVAILABLE, after consumption and without limit, when either end has no bay
+     * census, such as an end that W170-R65's low strip takes past 16 columns (R150). D0 refuses every bay of such a flight
+     * before any INTENT, with an existing reason, so no package is consumed for a claim that could not retire.
+     */
+    static Optional<String> censusRefusal(RocketTransferRecord record) {
+        return censusRefusal(record.sourceSnapshot(), record.destinationSnapshot());
+    }
+
+    static Optional<String> censusRefusal(RocketStructureSnapshot source, RocketStructureSnapshot destination) {
+        return BayAbsenceCensus.slots(source, destination) == null ? Optional.of("DEPLOYMENT_UNAVAILABLE") : Optional.empty();
     }
 
     /**

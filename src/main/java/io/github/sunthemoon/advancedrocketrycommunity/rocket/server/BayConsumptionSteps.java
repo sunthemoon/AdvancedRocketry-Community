@@ -27,10 +27,20 @@ import net.minecraft.server.MinecraftServer;
 final class BayConsumptionSteps {
     private final MinecraftServer server;
     private final BayGroupPublication publication;
+    private final BayCopySteps copies;
     private final Map<UUID, BayConsumedSnapshots.Job> jobs = new HashMap<>();
 
-    BayConsumptionSteps(MinecraftServer server, BayGroupPublication publication) {
-        this.server = server; this.publication = publication;
+    BayConsumptionSteps(MinecraftServer server, BayGroupPublication publication, BayCopySteps copies) {
+        this.server = server; this.publication = publication; this.copies = copies;
+    }
+
+    BayStepQueue.Result prove(BayClaim claim, BaySourceProof proof) {
+        if (proof.stalled(claim)) { return BayStepQueue.Result.NEXT_TICK; } // gated post-D5 native cut
+        var record = RocketTransferSavedData.get(server).find(claim.transfer()).orElse(null);
+        var normalized = record == null ? null : copies.normalize(claim, record);
+        if (claim.hold() == BayClaim.Hold.REPAIR) { proof.forget(claim.logical()); }
+        else if (normalized != null) { proof.yieldTurn(claim); } // R154: D5's copy pass or its wait gives the D6 turn up
+        return normalized == null ? proof.prove(claim) : normalized;
     }
 
     BayStepQueue.Result consume(BayClaim claim) {
@@ -66,6 +76,9 @@ final class BayConsumptionSteps {
             return repair(claim, "CONSUMPTION_MISMATCH");
         }
         journal.flush(server); // a request: the checked writer persists T' off-thread and D6 waits for its acknowledgement
+        if (!journal.actionable(claim.logical())) { return BayStepQueue.Result.NEXT_TICK; }
+        var normalized = copies.normalize(claim, journal.find(claim.transfer()).orElseThrow());
+        if (normalized != null) { return normalized; }
         jobs.remove(claim.logical());
         claim.advance(BayClaim.Stage.PROVE);
         return BayStepQueue.Result.AGAIN;
@@ -122,9 +135,14 @@ final class BayConsumptionSteps {
     /** TRANSIT for T at the bound altitude position (W27A-DESIGN section 4.1's source reference). */
     static boolean inTransit(RocketEntity source, RocketTransferRecord record) {
         var flight = source.flightData().orElse(null);
+        var authority = record.sourceFlightData();
         var origin = record.sourceSnapshot().sourceOrigin();
         return flight != null && flight.state() == RocketFlightState.TRANSIT
                 && flight.activeTransferId().filter(record.transferId()::equals).isPresent() && !source.isPassenger()
+                && flight.fuel().equals(authority.fuel()) && flight.plan().equals(authority.plan())
+                && flight.passengers().equals(authority.passengers()) && flight.currentBody().equals(authority.currentBody())
+                && flight.currentDimension().equals(authority.currentDimension()) && flight.currentOrigin().equals(authority.currentOrigin())
+                && flight.currentTarget().equals(authority.currentTarget())
                 && source.getX() == origin.x() + 0.5D && source.getZ() == origin.z() + 0.5D
                 && source.getY() == origin.y() + RocketFlightLimits.FLIGHT_ALTITUDE_BLOCKS;
     }

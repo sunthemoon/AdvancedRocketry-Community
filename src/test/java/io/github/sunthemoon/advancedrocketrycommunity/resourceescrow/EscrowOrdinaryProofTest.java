@@ -90,6 +90,26 @@ class EscrowOrdinaryProofTest {
         }
     }
 
+    /** W185-R22: the barrier reports whether it holds a retry; the 65th distinct request in a tick is not held. */
+    @Test void anOrdinaryRetryRequestReportsWhetherTheBarrierHoldsIt() {
+        try (var barrier = new EscrowBarrier()) {
+            var runs = new java.util.concurrent.atomic.AtomicInteger();
+            var held = new ArrayList<Runnable>();
+            for (int i = 0; i < 64; i++) {
+                Runnable retry = runs::incrementAndGet;
+                held.add(retry);
+                assertTrue(barrier.retryOrdinaryNextTick(retry), "Retry " + i + " of 64 was not held");
+            }
+            assertFalse(barrier.retryOrdinaryNextTick(runs::incrementAndGet), "A 65th distinct retry was held");
+            assertTrue(barrier.retryOrdinaryNextTick(held.get(0)), "A re-request of a held retry is held");
+            barrier.tick(1);
+            assertEquals(64, runs.get(), "Only the held retries ran");
+            assertTrue(barrier.retryOrdinaryNextTick(runs::incrementAndGet), "The list emptied after its run");
+            barrier.quiesce();
+            assertFalse(barrier.retryOrdinaryNextTick(runs::incrementAndGet), "A stopped barrier held a retry");
+        }
+    }
+
     /** W98-R11: the own store bypasses a subclass's storeEntities, so only the exact vanilla class supports a proof. */
     @Test void onlyTheExactVanillaEntityStorageSupportsAnOrdinaryProof() {
         assertTrue(EscrowChunkStore.vanillaEntityStorage(EntityStorage.class));

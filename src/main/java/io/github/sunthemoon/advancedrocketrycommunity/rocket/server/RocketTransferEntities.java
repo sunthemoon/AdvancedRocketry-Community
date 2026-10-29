@@ -518,11 +518,6 @@ final class RocketTransferEntities {
         return refreshed.size();
     }
 
-    /** W170 R1: a held bay group's two recorded ends, as {@link #refreshGovernedFlightTickets} does for a governed record. */
-    static int refreshBayMargins(MinecraftServer server, RocketTransferRecord record) {
-        return server.isSameThread() ? refreshMargins(record.transferId(), record.sourceSnapshot(), record.destinationSnapshot(), levelTickets(server)) : 0;
-    }
-
     /** The flight-ticket calls of one Level, keyed by its dimension; a recording sink in unit tests. */
     interface FlightTickets {
         boolean present(ResourceLocation dimension);
@@ -530,7 +525,7 @@ final class RocketTransferEntities {
         void remove(ResourceLocation dimension, ChunkPos column, UUID transfer);
     }
 
-    private static FlightTickets levelTickets(MinecraftServer server) {
+    static FlightTickets levelTickets(MinecraftServer server) {
         return new FlightTickets() {
             @Override public boolean present(ResourceLocation dimension) { return level(server, dimension) != null; }
             @Override public void add(ResourceLocation dimension, ChunkPos column, UUID transfer) {

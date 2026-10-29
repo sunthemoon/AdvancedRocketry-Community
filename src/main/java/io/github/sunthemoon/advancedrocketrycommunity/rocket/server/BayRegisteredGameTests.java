@@ -34,7 +34,7 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
  * W170 A1 for the registered half on the real installed services: decommission after registration with X live and X
  * absent; the restart resume (R1 to R3) with the exact source present, absent (the bay-resume constructor with T's source
  * UUID at altitude), and the mixed images {@code (S',T)} and {@code (S,T')}; an INTENT whose X is equal promoting at a
- * restart; and a second recognized copy holding the claim as DUPLICATE_PENDING with no record change. Each ends with
+ * restart; and W185's recognized copies consumed and removed at both ends. Each ends with
  * READY_SOURCE(T'), the receipts retired and every bay consumed by its own operation. A protected copy, and an unexpected
  * image of L in the source margin or the destination column (W170-R21), hold the claim for repair instead, with T, the
  * source, the receipts and the copy unchanged. A destination end that is still loading holds R2 at END_LOADING until it
@@ -50,14 +50,17 @@ public final class BayRegisteredGameTests {
      * Alone, its first checked R2 step comes in the coordinator tick of R1's first tickets, while the end is still loading.
      */
     static final String LOADING = "bay_registered_loading", LOADING_COPY = "bay_registered_loading_copy";
+    static final String RECOGNIZED_LOADING = "bay_copies_loading";
     private BayRegisteredGameTests() { }
 
     private enum Kind {
         DECOMMISSION, PRESENT, ABSENT, MIXED_SOURCE_CONSUMED, MIXED_JOURNAL_CONSUMED, PROMOTE, DUPLICATE, PROTECTED,
-        UNEXPECTED_MARGIN, UNEXPECTED_COLUMN, DESTINATION_LOADING, UNEXPECTED_LOADING;
-        boolean held() { return this == PROTECTED || this == UNEXPECTED_MARGIN || this == UNEXPECTED_COLUMN || this == UNEXPECTED_LOADING; }
+        UNEXPECTED_MARGIN, UNEXPECTED_COLUMN, DESTINATION_LOADING, UNEXPECTED_LOADING,
+        BOTH_COPIES, ABSENT_WITH_COPIES, RECOGNIZED_COLD_COPY, OUTSIDE_JOIN;
+        boolean held() { return this == PROTECTED || this == UNEXPECTED_MARGIN || this == UNEXPECTED_COLUMN || this == UNEXPECTED_LOADING || this == OUTSIDE_JOIN; }
         /** W170-R41: the destination is a far overworld column that only R1's tickets load; no other GameTest reads it. */
-        boolean loading() { return this == DESTINATION_LOADING || this == UNEXPECTED_LOADING; }
+        boolean loading() { return this == DESTINATION_LOADING || this == UNEXPECTED_LOADING || this == RECOGNIZED_COLD_COPY; }
+        boolean copies() { return this == DUPLICATE || this == BOTH_COPIES || this == ABSENT_WITH_COPIES || this == RECOGNIZED_COLD_COPY; }
         BlockPos far() { return this == DESTINATION_LOADING ? new BlockPos(742_008, 100, 742_008) : new BlockPos(746_008, 100, 746_008); }
     }
 
@@ -92,8 +95,28 @@ public final class BayRegisteredGameTests {
     }
 
     @GameTest(template = TEMPLATE, batch = REGISTERED, timeoutTicks = 1_200)
-    public static void aSecondRecognizedCopyHoldsTheRestartAsDuplicatePendingWithNoRecordChange(GameTestHelper helper) {
+    public static void aSecondRecognizedCopyIsConsumedAndRemovedBeforeReceiptsRetire(GameTestHelper helper) {
         new Case(helper, Kind.DUPLICATE).start();
+    }
+
+    @GameTest(template = TEMPLATE, batch = REGISTERED, timeoutTicks = 1_200)
+    public static void copiesAtBothEndsAreConsumedWithTheirOwnHashBeforeRemoval(GameTestHelper helper) {
+        new Case(helper, Kind.BOTH_COPIES).start();
+    }
+
+    @GameTest(template = TEMPLATE, batch = REGISTERED, timeoutTicks = 1_200)
+    public static void copiesNeverReplaceTheMissingExactSourceAndOfflineSeatsSurvive(GameTestHelper helper) {
+        new Case(helper, Kind.ABSENT_WITH_COPIES).start();
+    }
+
+    @GameTest(template = TEMPLATE, batch = RECOGNIZED_LOADING, timeoutTicks = 1_200)
+    public static void aRecognizedColdDestinationCopyIsConsumedOnlyAfterItsEndLoads(GameTestHelper helper) {
+        new Case(helper, Kind.RECOGNIZED_COLD_COPY).start();
+    }
+
+    @GameTest(template = TEMPLATE, batch = "bay_copies_outside", timeoutTicks = 1_200)
+    public static void aKnownCopyJoiningOutsideBothRecordedEndsQuarantinesWithoutRetiring(GameTestHelper helper) {
+        new Case(helper, Kind.OUTSIDE_JOIN).start();
     }
 
     /** B6's protected-copy refusal: a second recognized copy with a bound escrow wrapper holds the claim for repair. */
@@ -136,6 +159,8 @@ public final class BayRegisteredGameTests {
         final List<ItemStack> packages;
         Flight flight;
         RocketEntity copy;
+        RocketEntity destinationCopy;
+        final UUID offlinePassenger = UUID.randomUUID();
         List<BayReceipt> receipts = List.of();
         BayClaim claim;
         String checksum;
@@ -175,7 +200,9 @@ public final class BayRegisteredGameTests {
                         "The far destination column was already loaded");
             }
             if (kind != Kind.PRESENT && kind != Kind.ABSENT) { packages.forEach(pkg -> registerSolar(server, pkg, owner)); }
-            flight = transit(helper, origin, target, owner, packages, RocketEscrowSectionPatch.NEUTRAL);
+            flight = transit(helper, origin, helper.getLevel().dimension().location(), position(target), owner, packages,
+                    RocketEscrowSectionPatch.NEUTRAL, io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightPlanner.EARTH.bodyId(),
+                    kind == Kind.ABSENT_WITH_COPIES ? offlinePassenger : null);
             var journal = RocketTransferSavedData.get(server);
             journal.put(flight.record());
             checksum = flight.record().checksum();
@@ -207,11 +234,20 @@ public final class BayRegisteredGameTests {
                 journal.flush(server);
             } else if (kind == Kind.ABSENT) {
                 flight.source().discard();
-            } else if (kind == Kind.DUPLICATE || kind == Kind.PROTECTED) {
+            } else if (kind.copies() || kind == Kind.PROTECTED) {
                 copy = ModEntities.ROCKET.get().create(helper.getLevel());
                 copy.initializeTransferred(flight.record().sourceSnapshot(), logical(), owner, flight.record().sourceFlightData());
                 if (kind == Kind.PROTECTED) { copy = RocketEscrowSectionPatch.BOUND.apply(helper.getLevel(), copy); }
                 helper.assertTrue(helper.getLevel().addFreshEntity(copy), "Copy not published");
+                if (kind != Kind.DUPLICATE && kind != Kind.PROTECTED) {
+                    destinationCopy = ModEntities.ROCKET.get().create(helper.getLevel());
+                    destinationCopy.initializeTransferred(flight.record().destinationSnapshot(), logical(), owner, flight.record().destinationFlightData());
+                    helper.assertTrue(helper.getLevel().addFreshEntity(destinationCopy), "Destination copy not published");
+                    if (kind == Kind.RECOGNIZED_COLD_COPY) {
+                        helper.assertTrue(helper.getLevel().getEntity(destinationCopy.getUUID()) == null, "Cold copy was already indexed");
+                    }
+                }
+                if (kind == Kind.ABSENT_WITH_COPIES) { flight.source().discard(); }
             } else if (kind == Kind.UNEXPECTED_MARGIN || kind == Kind.UNEXPECTED_COLUMN || kind == Kind.UNEXPECTED_LOADING) {
                 // The end's own snapshot ID with only the first bay consumed: a hash that is neither group hash.
                 var partial = consumed(flight.record(), List.of(intents.get(0)));
@@ -240,6 +276,12 @@ public final class BayRegisteredGameTests {
             var begun = bays(helper).restartForTests(receipts);
             helper.assertTrue(begun.size() == 1, "One restart claim for L");
             claim = begun.get(0);
+            if (kind == Kind.OUTSIDE_JOIN) {
+                copy = ModEntities.ROCKET.get().create(helper.getLevel());
+                copy.initializeTransferred(flight.record().sourceSnapshot(), logical(), owner, flight.record().sourceFlightData());
+                copy.setPos(copy.getX() + 32, copy.getY(), copy.getZ());
+                helper.assertTrue(helper.getLevel().addFreshEntity(copy), "Outside copy not published");
+            }
             helper.assertTrue(claim.stage() == (kind == Kind.PROMOTE ? BayClaim.Stage.OUTCOMES : BayClaim.Stage.RESUME),
                     "Wrong restart stage " + claim.stage());
             stage = 2;
@@ -281,17 +323,12 @@ public final class BayRegisteredGameTests {
                     if (++held >= 20) { close(); helper.succeed(); }
                     return;
                 }
-                if (kind == Kind.DUPLICATE && copy != null) {
-                    if (!claim.reason().equals("DUPLICATE_PENDING")) {
-                        helper.assertTrue(held == 0, "The duplicate hold ended while the copy was loaded: " + claim.reason());
-                        return;
-                    }
-                    helper.assertTrue(claim.stage() == BayClaim.Stage.RESUME && claim.hold() == BayClaim.Hold.OWNED_WAIT,
-                            "DUPLICATE_PENDING is a runtime wait, not a repair");
-                    helper.assertTrue(record().checksum().equals(checksum) && receipts.stream().allMatch(receipt ->
-                            session.acknowledged(receipt.op()) && session.current(receipt.op()).orElseThrow().equals(receipt)),
-                            "DUPLICATE_PENDING changed a record");
-                    if (++held >= 40) { copy.discard(); copy = null; } // W27d3 resolves copies; here the copy leaves
+                if (kind.copies() && claim.stage() == BayClaim.Stage.RETIRE) {
+                    assertCopiesConsumed();
+                    // current() is the pending RAM root: removeGroup excludes these entries before the IO acknowledgement.
+                    // The acknowledged root must still retain the exact receipts until that completion ends RETIRE.
+                    helper.assertTrue(BayReceiptTestHooks.store(server).orElseThrow().durable().receipts().containsAll(receipts),
+                            "Receipts disappeared before D7 acknowledgement");
                 }
                 return;
             }
@@ -318,7 +355,11 @@ public final class BayRegisteredGameTests {
             if (kind == Kind.PROMOTE) {
                 helper.assertTrue(packages.stream().allMatch(pkg -> registry.satellite(satellite(pkg)).isPresent()), "Promotion kept X");
             }
-            if (kind == Kind.DUPLICATE) { helper.assertTrue(held >= 40, "The duplicate hold was never observed"); }
+            if (kind.copies()) { assertCopiesConsumed(); }
+            if (kind == Kind.ABSENT_WITH_COPIES) {
+                helper.assertTrue(current.sourceFlightData().passengers().assignment(offlinePassenger).isPresent()
+                        && current.destinationFlightData().passengers().assignment(offlinePassenger).isPresent(), "Offline seat was cleared");
+            }
             if (kind.loading()) { helper.assertTrue(sawLoading && endLoaded, "R2's END_LOADING wait was never observed"); }
             close();
             helper.succeed();
@@ -352,8 +393,20 @@ public final class BayRegisteredGameTests {
                     && rocket.flightData().orElseThrow().state() == RocketFlightState.TRANSIT
                     && rocket.getY() == origin.y() + io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightLimits.FLIGHT_ALTITUDE_BLOCKS,
                     "The held source is not S' at altitude in TRANSIT");
-            helper.assertTrue(kind != Kind.ABSENT || rocket != flight.source(), "The absent source was rebuilt, not resurrected");
+            helper.assertTrue((kind != Kind.ABSENT && kind != Kind.ABSENT_WITH_COPIES) || rocket != flight.source(),
+                    "The absent source was rebuilt, not resurrected");
             sawConsumedSource = true;
+        }
+
+        void assertCopiesConsumed() {
+            var group = claim.group().orElseThrow();
+            helper.assertTrue(copy.isRemoved() && copy.snapshot().orElseThrow().contentHash().equals(group.srcAfter())
+                    && consumedOps(copy.snapshot().orElseThrow()).containsAll(group.operations()), "Source copy was not consumed before removal");
+            if (destinationCopy != null) {
+                helper.assertTrue(destinationCopy.isRemoved() && destinationCopy.snapshot().orElseThrow().contentHash().equals(group.dstAfter())
+                        && consumedOps(destinationCopy.snapshot().orElseThrow()).containsAll(group.operations()),
+                        "Destination copy was not consumed with its own hash before removal");
+            }
         }
 
         UUID logical() { return flight.record().logicalRocketId(); }
@@ -380,6 +433,7 @@ public final class BayRegisteredGameTests {
             if (source != null) { source.discard(); }
             flight.source().discard();
             if (copy != null) { copy.discard(); }
+            if (destinationCopy != null) { destinationCopy.discard(); }
             var session = bays(helper).sessionForTests();
             var registry = SatelliteMissionSavedData.get(server);
             for (var pkg : packages) {

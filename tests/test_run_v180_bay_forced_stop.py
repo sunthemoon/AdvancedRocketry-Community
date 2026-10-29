@@ -2,6 +2,8 @@
 import sys
 from pathlib import Path
 import unittest
+from unittest.mock import Mock, patch
+from copy import deepcopy
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 import run_v180_bay_forced_stop as runner
@@ -28,6 +30,19 @@ def landed(**changes):
 
 
 class ParseTests(unittest.TestCase):
+    def test_save_completion_never_matches_save_start(self):
+        self.assertIsNone(runner.SAVED.search("Saving the game (this may take a moment!)"))
+        self.assertIsNotNone(runner.SAVED.search("Saved the game"))
+
+    def test_fixture_waits_for_entity_ticking_before_launching(self):
+        run = Mock()
+        run.args.flight_timeout = 120
+        run.send.side_effect = ["Marked chunk", "ARCE_RELEASE_BAY_FIXTURE_WAIT origin=8, 2, 8",
+            f"ARCE_RELEASE_BAY_FIXTURE logical={L} transfer=t rocket=r data={X} solar={Y} launch=SUCCESS packages={FIXTURE['packages']}"]
+        with patch.object(runner.time, "sleep"):
+            self.assertEqual(FIXTURE, runner.launch_fixture(run))
+        self.assertEqual(3, run.send.call_count)
+
     def test_fixture_line_parses_every_field(self):
         line = (f"ARCE_RELEASE_BAY_FIXTURE logical={L} transfer=t rocket=r data={X} solar={Y} launch=SUCCESS "
                 f"packages={FIXTURE['packages']}\n")
@@ -62,7 +77,10 @@ class ExpectationTests(unittest.TestCase):
             self.assertIn(spec["durable"], ("NONE", "INTENT", "REJECTED", "REGISTERED", "RETIRED"), case)
             self.assertEqual(2, len(spec["restarts"]), case)
             for name in spec["restarts"] + ((spec["first"],) if "first" in spec else ()):
-                self.assertTrue(name == "HELD" or name in runner.OUTCOMES, case)
+                self.assertTrue(name in ("HELD", "COPY_HELD") or name in runner.OUTCOMES, case)
+                if name == "COPY_HELD":
+                    self.assertIn(spec["copy_hold"], ("PROTECTED_DUPLICATE", "UNEXPECTED_COPY"), case)
+                    self.assertEqual("REGISTERED", spec["durable"], case)
             self.assertEqual(spec["end"] == "land", "first" in spec, case)
             if spec.get("hold"):
                 self.assertEqual("INTENT", spec["durable"], case)
@@ -76,11 +94,52 @@ class ExpectationTests(unittest.TestCase):
                 self.assertTrue(spec["durable"] == "REGISTERED" and spec["journal_hold"] in (1, 2), case)
 
     def test_the_tranches_split_every_case_once_under_sixty_starts(self):
-        listed = runner.TRANCHES["A"] + runner.TRANCHES["B"] + runner.TRANCHES["C"]
+        listed = [case for tranche in runner.TRANCHES.values() for case in tranche]
         self.assertEqual(sorted(runner.CASES), sorted(listed))
         self.assertEqual(len(listed), len(set(listed)))
         for cases in runner.TRANCHES.values():
             self.assertLessEqual(3 * len(cases), 60)
+
+    def test_copy_census_requires_every_survivor_seat_the_journal_seat_and_unique_identities(self):
+        row = f"{X}:minecraft:overworld:hash:0:0:NONE:0:true"
+        line = f"ARCE_RELEASE_BAY_CENSUS logical={L} count=1 transfer=COMMITTED assigned=true rows=[{row}]"
+        self.assertEqual(1, runner.check_copy_census(line, L, 1)["count"])
+        for bad in (line.replace("count=1", "count=2"), line.replace("assigned=true", "assigned=false"),
+                    line.replace(":true]", ":false]"), line.replace(f"logical={L}", f"logical={X}"),
+                    line.replace("rows=[", f"rows=[{row},").replace("count=1", "count=2"),
+                    line.replace(":hash:0:", ":hash:bad:")):
+            with self.assertRaises(runner.smoke.SmokeError):
+                runner.check_copy_census(bad, L, 1)
+
+    def test_copy_disk_requires_actual_saved_identity_hash_wrapper_and_offline_seat(self):
+        census = dict(rows=[f"{X}:minecraft:overworld:hash:0:0:{Y}:1:true"])
+        entity = dict(UUID=X, RocketEntityData=dict(assembly_transaction_id=L, snapshot=dict(content_hash="hash"),
+                      resource_escrow=dict(ledger_id=Y, resource_epoch=1), flight_data=dict(passengers=dict(assignments=[
+                          dict(passenger_id="00000000-0000-4000-8000-000000185001")]))))
+        root = dict(Position=[0, 0], Entities=[entity])
+        with patch.object(runner, "chunk_record", return_value=root):
+            self.assertEqual([runner.copy_row(census["rows"][0])], runner.inspect_copy_disk(Path("fixture"), L, census))
+        changed_hash, changed_wrapper, no_seat = (deepcopy(root) for _ in range(3))
+        changed_hash["Entities"][0]["RocketEntityData"]["snapshot"]["content_hash"] = "other"
+        changed_wrapper["Entities"][0]["RocketEntityData"]["resource_escrow"] = dict(resource_epoch=0)
+        no_seat["Entities"][0]["RocketEntityData"]["flight_data"]["passengers"]["assignments"] = []
+        for bad in (None, dict(Position=[0, 0], Entities=[]), dict(Position=[1, 0], Entities=[entity]),
+                    dict(Position=[0, 0], Entities=[entity, entity]), changed_hash, changed_wrapper, no_seat):
+            with patch.object(runner, "chunk_record", return_value=bad), self.assertRaises(runner.smoke.SmokeError):
+                runner.inspect_copy_disk(Path("fixture"), L, census)
+
+    def test_protected_copy_hold_keeps_registered_authority_and_registry_count(self):
+        values = dict(claim="RESUME", hold="REPAIR", reason="PROTECTED_DUPLICATE", locked="true", transfer="PREPARED",
+                      receipts=f"{OP}:{X}:REGISTERED:NONE:true:true", owned="1")
+        case = "W185_B6_PROTECTED"
+        good = runner.parse_status(status_line(**values))
+        self.assertTrue(runner.settled(case, 1, good, FIXTURE))
+        runner.check_settled(case, 1, good, FIXTURE)
+        for change in (dict(locked="false"), dict(transfer="COMMITTED"), dict(hold="OWNED_WAIT"),
+                       dict(reason="UNEXPECTED_COPY"), dict(receipts=f"{OP}:{X}:REGISTERED:NONE:false:true")):
+            self.assertFalse(runner.settled(case, 1, runner.parse_status(status_line(**{**values, **change})), FIXTURE))
+        with self.assertRaises(runner.smoke.SmokeError):
+            runner.check_settled(case, 1, runner.parse_status(status_line(**{**values, "owned": "2"})), FIXTURE)
 
     def test_a_durable_intent_becomes_interrupted_and_a_relaunch_rearms_and_consumes(self):
         self.assertEqual(runner.INTERRUPTED, runner.expected_receipt("B1_MOVED", 1))

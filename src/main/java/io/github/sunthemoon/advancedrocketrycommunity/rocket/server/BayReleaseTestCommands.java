@@ -53,6 +53,7 @@ public final class BayReleaseTestCommands {
 
     public void register(RegisterCommandsEvent event) {
         if (!Boolean.getBoolean(ReleaseTestCommands.PROPERTY)) { return; }
+        BayCopyReleaseTestCommands.register(event);
         event.getDispatcher().register(Commands.literal("arce").then(Commands.literal("bay").then(Commands.literal("release-test")
                 .requires(source -> source.hasPermission(2))
                 .then(Commands.literal("fixture").then(Commands.argument("pos", BlockPosArgument.blockPos())
@@ -88,6 +89,10 @@ public final class BayReleaseTestCommands {
         MinecraftServer server = source.getServer();
         EscrowTestEndpoints.requireEnabled(server);
         ServerLevel level = server.overworld();
+        if (!level.isPositionEntityTicking(origin)) {
+            LOGGER.info("ARCE_RELEASE_BAY_FIXTURE_WAIT origin={}", origin.toShortString());
+            return 0;
+        }
         var data = BayDeploymentGameTestSupport.dataPackage(OWNER);
         var solar = survey ? BayDeploymentGameTestSupport.surveyPackage(OWNER) : BayDeploymentGameTestSupport.solarPackage(OWNER);
         List<BlockPos> blocks = List.of(origin, origin.above(), origin.above(2), origin.west(), origin.east(), origin.east().above());
@@ -115,6 +120,9 @@ public final class BayReleaseTestCommands {
         rocket.initialize(snapshot, logical, OWNER);
         if (!level.addFreshEntity(rocket)) { throw new IllegalStateException("The bay fixture rocket was not added"); }
         var flight = rocket.flightData().orElseThrow();
+        if (Boolean.getBoolean("advancedrocketrycommunity.bayOfflinePassenger")) {
+            flight = flight.withPassengers(flight.passengers().assign(BayCopyReleaseTestCommands.PASSENGER).orElseThrow());
+        }
         rocket.updateFlightData(flight.withFuel(flight.fuel().fill(flight.fuel().capacity()).state(), level.getGameTime()));
         var launched = RocketRuntime.requestAdminFlight(rocket, RocketDestination.MOON, transfer);
         LOGGER.info("ARCE_RELEASE_BAY_FIXTURE logical={} transfer={} rocket={} data={} solar={} launch={} packages={}", logical,

@@ -271,8 +271,11 @@ final class RocketTransferRecoveryService {
             if (retirements.replacing(record.logicalRocketId())) { continue; }
             // A fenced assignment is intentionally finished for this login; it remains durably assigned.
             if (fences.ids().contains(record.transferId())) { continue; }
-            if (!bays.allowed(server, journal, record, RocketTransferBayRecoveryGate.Action.RECONNECT)
-                    || bays.source(record.transferId()) != null) { continue; }
+            if (!bays.allowed(server, journal, record, RocketTransferBayRecoveryGate.Action.RECONNECT)) {
+                if (bays.retainsHeldLogin(record, player.getUUID())) { return false; }
+                continue;
+            }
+            if (bays.source(record.transferId()) != null) { continue; }
             RocketEntity settled = RocketTransferEntities.loadedSettledAuthority(server, record);
             if (settled == null && RocketTransferEntities.nearbyArrivalStillLoading(player, record)) {
                 // A newly boarded passenger may be in the adjacent, already loaded chunk.
