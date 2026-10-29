@@ -48,6 +48,7 @@ def check_landed(status, fixture, phase, op):
         raise bay.smoke.SmokeError(f"Released landing invariants failed: {status}")
     rows = status["receipts"]
     if (len(rows) != 1 or rows[0]["op"] != op or rows[0]["phase"] != phase
+            or rows[0]["reason"] != ("REGISTRY_SIGNATURE_CONFLICT" if phase == "REPAIR" else "NONE")
             or rows[0]["satellite"] != fixture["data"] or not rows[0]["acknowledged"] or rows[0]["registered"]):
         raise bay.smoke.SmokeError(f"Released receipt changed or registered: {rows}")
 

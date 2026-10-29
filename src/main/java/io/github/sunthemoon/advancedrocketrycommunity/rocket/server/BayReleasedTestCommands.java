@@ -61,7 +61,7 @@ final class BayReleasedTestCommands {
         var rows = session.receipts().stream().filter(r -> r.rocket().equals(logical)).toList();
         if (rows.size() != 1 || rows.get(0).phase() != BayReceipt.Phase.INTENT || rows.get(0).released()
                 || !session.acknowledged(rows.get(0).op())) { return 0; }
-        var row = rows.get(0).withPhase(BayReceipt.Phase.REPAIR, "SIGNATURE_CONFLICT", server.getTickCount());
+        var row = rows.get(0).withPhase(BayReceipt.Phase.REPAIR, "REGISTRY_SIGNATURE_CONFLICT", server.getTickCount());
         var result = BayReceiptTestHooks.put(server, row,
                 outcome -> LOGGER.info("ARCE_RELEASE_BAY_REPAIR logical={} outcome={}", logical, outcome));
         return result.queued() ? 1 : 0;

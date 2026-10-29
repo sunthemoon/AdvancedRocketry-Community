@@ -14,6 +14,7 @@ class ReleasedFlightChecks(unittest.TestCase):
         self.fixture = dict(logical="l", rocket="source", data="data", packages="a+b")
         self.status = dict(state="LANDED", transfer="COMMITTED", locked="true", packages="a+b", consumed=[None, None],
                            owned=0, rocket="destination", receipts=[dict(op="op", phase="REPAIR", satellite="data",
+                                                                        reason="REGISTRY_SIGNATURE_CONFLICT",
                                                                         acknowledged=True, registered=False)])
 
     def test_four_cases_each_have_two_restart_checks(self):
@@ -36,7 +37,8 @@ class ReleasedFlightChecks(unittest.TestCase):
             status = deepcopy(self.status); status["receipts"] = rows
             with self.assertRaises(runner.bay.smoke.SmokeError):
                 runner.check_landed(status, self.fixture, "REPAIR", "op")
-        for key, value in dict(op="other", phase="REJECTED", satellite="other", acknowledged=False, registered=True).items():
+        for key, value in dict(op="other", phase="REJECTED", reason="SIGNATURE_CONFLICT", satellite="other",
+                               acknowledged=False, registered=True).items():
             with self.subTest(key=key):
                 status = deepcopy(self.status); status["receipts"][0][key] = value
                 with self.assertRaises(runner.bay.smoke.SmokeError):
