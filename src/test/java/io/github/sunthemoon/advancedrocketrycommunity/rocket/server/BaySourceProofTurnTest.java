@@ -94,7 +94,7 @@ import org.junit.jupiter.api.io.TempDir;
  * forces a save of its column, which supersedes every earlier proof of that column, as the save monitor does. A stand-in
  * receipt writer reads D7's guard a few ticks after the removal is queued. Claim i flies from end i to end i + 1, so its
  * destination column is the next claim's source column, as neighbouring GameTest fixtures and neighbouring pads share them.
- * Without the turn the claims supersede each other's proofs in rotation and none finishes; the last four cases cover the
+ * Without the turn the claims supersede each other's proofs in rotation and none finishes; the other cases cover the
  * turn's hand-offs.
  */
 final class BaySourceProofTurnTest {
@@ -171,10 +171,35 @@ final class BaySourceProofTurnTest {
         }, 1, 0);
     }
 
+    /**
+     * W185-R21, from the re-review's reproduction: claim 0's source-origin capture is refused with BARRIER_IO, a refusal other
+     * than a superseding save, until claim 1 ends. Each refusal keeps W98's 200-tick retry (W98-R11 unchanged), but claim 0
+     * holds no proof then, so it gives the turn up and waits out its retry outside the line. Claim 1 takes the turn and
+     * finishes; claim 0 asks again behind it and finishes once its captures succeed.
+     */
+    @Test void aHolderRefusedOtherThanByASupersedingSaveGivesTheTurnUpWhileItWaitsOutW98sRetry() throws Exception {
+        var f = run(2, scenario -> {
+            scenario.ioFail.add(BayAbsenceCensus.slots(scenario.records.get(0)).get(0));
+            scenario.each = fixture -> {
+                var first = fixture.claim(0);
+                Map<UUID, Long> retryAt = fixture.field("retryAt");
+                if (fixture.refusals > 0 && fixture.now < retryAt.get(first.logical())) {
+                    assertEquals(fixture.refusedAt + BaySourceProof.RETRY_TICKS, retryAt.get(first.logical()), "W98's retry was not kept");
+                    var turns = fixture.proof.turnsForTests();
+                    if (turns.holds(first.logical()) || turns.line().contains(first.logical())) { fixture.heldThroughRetry++; }
+                }
+                if (fixture.ended.contains(fixture.claim(1).logical())) { fixture.ioFail.clear(); }
+            };
+        }, 1, 0);
+        assertTrue(f.refusals > 0, "control: claim 0's capture was never refused");
+        assertEquals(0, f.heldThroughRetry, "the refused claim kept the turn or its place in line through W98's retry");
+    }
+
     @FunctionalInterface private interface Scenario { void apply(Fixture f) throws Exception; }
     @FunctionalInterface private interface Hook { void run(Fixture f) throws Exception; }
 
-    private void run(int count, Scenario scenario, int... order) throws Exception {
+    /** Runs the claims to their end and checks the turn's invariants; returns the closed fixture for further checks. */
+    private Fixture run(int count, Scenario scenario, int... order) throws Exception {
         var f = new Fixture(count);
         try {
             for (int i = 0; i + 1 < count; i++) {
@@ -197,6 +222,7 @@ final class BaySourceProofTurnTest {
                 assertTrue(f.turnWaits.contains(f.claim(i).logical()), "claim " + i + " never waited for its turn with BAY_PROOF_TURN");
             }
         } finally { f.close(); }
+        return f;
     }
 
     private final class Fixture implements AutoCloseable {
@@ -220,6 +246,10 @@ final class BaySourceProofTurnTest {
         Hook each = f -> { };
         /** Census slots the stand-in barrier reports as not entity-loaded. */
         final Set<RocketRetirementProof.Slot> unloadedSlots = new HashSet<>();
+        /** W185-R21: slots whose captures the stand-in barrier refuses with BARRIER_IO; the refusals, the last one's tick. */
+        final Set<RocketRetirementProof.Slot> ioFail = new HashSet<>();
+        int refusals, heldThroughRetry;
+        long refusedAt;
         /** The coordinator's PROVE dispatch: D5's copy pass, then D6. */
         final BayConsumptionSteps consumption;
 
@@ -304,6 +334,11 @@ final class BaySourceProofTurnTest {
             for (var capture : List.copyOf(captures)) {
                 if (capture.due() > tick) { continue; }
                 captures.remove(capture);
+                if (ioFail.contains(capture.slot())) {
+                    refusals++; refusedAt = tick;
+                    capture.callback().accept(new EscrowBarrier.Result(null, EscrowReason.BARRIER_IO));
+                    continue;
+                }
                 var stored = new EscrowChunkStore.Capture(CompletableFuture.completedFuture(null), null, Path.of("."),
                         capture.slot().chunk(), capture.generation(), capture.mine(), 1, () -> { }, () -> { });
                 var proved = new EscrowBarrier.Proof(null, stored, new AtomicBoolean(true), new AtomicBoolean(true));

@@ -41,9 +41,10 @@ import org.slf4j.Logger;
  * removal of a rocket naming L invalidates the group at once, and each coordinator tick compares the source's position,
  * Level, flight, fuel and payload with the captured image, so a change after the removal queued refuses its guard too.
  * R154: one claim at a time takes D6's captures to D7's outcome ({@link BayProofTurns}); a claim ready to capture waits
- * for its turn in line with BAY_PROOF_TURN. The holder keeps the turn through W98-R11's retries and a proof invalidated
- * before D7 queues its removal; it passes the turn on when D7 ends, when D7 parks it, when it holds for repair or ends, and
- * when, holding no proof, it must wait for anything other than its retry or the barrier's quota.
+ * for its turn in line with BAY_PROOF_TURN. The holder keeps the turn through a superseding save's immediate retry and a
+ * proof invalidated before D7 queues its removal; it passes the turn on when D7 ends, when D7 parks it, when it holds for
+ * repair or ends, when a refusal other than a superseding save starts W98-R11's 200-tick retry (W185-R21), and when,
+ * holding no proof, it must wait for anything other than the barrier's quota.
  */
 final class BaySourceProof {
     /** W98's retry after an IO, force, bounds or veto failure; never after a superseding save (W98-R11). */
@@ -132,7 +133,7 @@ final class BaySourceProof {
         UUID logical = claim.logical();
         if (claim.hold() == BayClaim.Hold.REPAIR) { forget(logical); return BayStepQueue.Result.IDLE; }
         if (capturing.containsKey(logical)) { return capturing.get(logical).step(port, server.getTickCount()); }
-        // R154: the holder keeps its turn through W98-R11's retry after a refused capture.
+        // R154: the holder keeps its turn through a superseding save's immediate retry; W98's 200-tick wait is outside it.
         if (stall.test(claim) || server.getTickCount() < retryAt.getOrDefault(logical, Long.MIN_VALUE)) { return BayStepQueue.Result.NEXT_TICK; }
         BayGroup group = claim.group().orElseThrow();
         var journal = RocketTransferSavedData.get(server);
@@ -211,6 +212,8 @@ final class BaySourceProof {
             if (result.proof() != null) { result.proof().release(); }
             int delay = result.reason() == EscrowReason.SUPERSEDING_SAVE ? 0 : RETRY_TICKS;
             retryAt.put(logical, (long) server.getTickCount() + delay);
+            // W185-R21: holding no proof, the claim waits out W98's retry without the turn and then asks behind the others.
+            if (delay > 0) { turns.leave(logical); }
             // W170-R43: one line per refused capture, at W98's pacing; the bay menu shows no runtime hold
             String why = !result.confirmed() ? String.valueOf(result.reason()) : lease.getAsBoolean() ? "INVALIDATED" : "LEASE_LOST";
             LOGGER.info("ARCE_BAY_PROOF_REFUSED transfer={} logical={} reason={} retry={}", claim.transfer(), logical, why, delay);
