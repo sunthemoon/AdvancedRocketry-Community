@@ -3,7 +3,6 @@ package io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence
 import io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent.FirstEventOutbox;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord;
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNbtSize;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRegion;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,8 +20,8 @@ final class RocketJournalInsertionBudget {
 
     static void validate(List<RocketTransferRecord> existing, RocketTransferRecord candidate, FirstEventOutbox outbox,
                          boolean canonicalResidents, java.util.function.Function<RocketTransferRecord, CompoundTag> encoder) {
-        validate(existing, candidate, canonicalResidents, records -> RocketNbtSize.uncompressedBytes(
-                RocketTransferJournalCodec.encodeRoot(records, outbox, new CompoundTag(), encoder)));
+        validate(existing, candidate, canonicalResidents, records ->
+                RocketTransferJournalCodec.encodeRootBytes(records, outbox, new CompoundTag(), encoder));
     }
 
     /** The encoder retains every codec/record/root check. The seam counts encodes in unit tests. */

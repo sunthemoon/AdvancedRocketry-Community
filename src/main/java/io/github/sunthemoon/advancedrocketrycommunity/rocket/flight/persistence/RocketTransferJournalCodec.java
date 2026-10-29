@@ -30,6 +30,13 @@ final class RocketTransferJournalCodec {
 
     static CompoundTag encodeRoot(List<RocketTransferRecord> records, FirstEventOutbox firstMoonLanding,
                                   CompoundTag target, java.util.function.Function<RocketTransferRecord, CompoundTag> encoder) {
+        encodeRootBytes(records, firstMoonLanding, target, encoder);
+        return target;
+    }
+
+    /** Count only this invocation's exact encoded target; no size is cached for mutable caller-owned NBT. */
+    static int encodeRootBytes(List<RocketTransferRecord> records, FirstEventOutbox firstMoonLanding,
+                               CompoundTag target, java.util.function.Function<RocketTransferRecord, CompoundTag> encoder) {
         SavedDataSchemaMigrator.stampCurrent(ManagedSavedDataType.ROCKET_TRANSFERS, target);
         ListTag transfers = new ListTag();
         records.stream().sorted(Comparator.comparing(RocketTransferRecord::transferId)).forEach(record -> {
@@ -41,10 +48,11 @@ final class RocketTransferJournalCodec {
         });
         target.put("transfers", transfers);
         target.put(RocketTransferSavedData.FIRST_MOON_LANDING, firstMoonLanding.encode(FirstEventKind.FIRST_MOON_LANDING));
-        if (RocketNbtSize.uncompressedBytes(target) > RocketFlightLimits.MAX_TRANSFER_JOURNAL_NBT_BYTES) {
+        int bytes = RocketNbtSize.uncompressedBytes(target);
+        if (bytes > RocketFlightLimits.MAX_TRANSFER_JOURNAL_NBT_BYTES) {
             throw new IllegalStateException("Encoded transfer journal exceeds the fixed NBT limit");
         }
-        return target;
+        return bytes;
     }
 
     static CompoundTag encodeRecord(RocketTransferRecord record) {
