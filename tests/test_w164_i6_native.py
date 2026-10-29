@@ -1,6 +1,7 @@
 """I6 native cut admission and conservation, without launching a server."""
 import copy
 import gzip
+import json
 from pathlib import Path
 import sys
 import tempfile
@@ -105,10 +106,24 @@ class W164I6OracleTests(unittest.TestCase):
         disk["receipt"] = dict(occurred=0)
         check_disk("PLAIN_ACK", disk, old, fuel, 0, event)
         disk["journal"]["classic_first_moon_landing"]["state"] = "DELIVERED"
-        disk["receipt"] = dict(occurred=1, event=copy.deepcopy(event))
+        disk["receipt"] = dict(occurred=1, source="rocket_transfers", event=copy.deepcopy(event))
         check_disk("PLAIN_ACK", disk, old, fuel, 1, event)
         disk["receipt"]["event"]["fingerprint"] = "b" * 64
         with self.assertRaises(Exception): check_disk("PLAIN_ACK", disk, old, fuel, 2, event)
+
+    def test_delivered_receipt_requires_exact_source_event_and_fields(self):
+        from w164_i6_oracle import check_disk
+        disk, old, fuel = fixture()
+        event = dict(event_id=[0, 0, 0, 9], fingerprint="a" * 64)
+        disk["journal"]["classic_first_moon_landing"] = dict(schema_version=1, state="DELIVERED", event=event)
+        receipt = dict(occurred=1, source="rocket_transfers", event=event)
+        for changed in (dict(occurred=1, event=event), dict(receipt, source="station_warp"),
+                        dict(receipt, extra=1), dict(receipt, occurred=0),
+                        dict(receipt, event=dict(event, fingerprint="b" * 64))):
+            with self.subTest(receipt=changed):
+                disk["receipt"] = changed
+                with self.assertRaisesRegex(Exception, "exact durable R"):
+                    check_disk("PLAIN_ACK", disk, old, fuel, 1, event)
 
 
 class W164I6HarnessTests(unittest.TestCase):
@@ -162,6 +177,39 @@ class W164I6HarnessTests(unittest.TestCase):
         native.check_attempt(rows, "K2", 2)
         for history, case, attempt in ((rows, "K2", 1), ([], "K2", 2), (rows, "K2", 3), (rows * 64, "K1", 1)):
             with self.assertRaises(Exception): native.check_attempt(history, case, attempt)
+
+    def test_r164_third_attempt_preserves_three_counted_starts(self):
+        import run_w164_i6_native as native
+        rows = [dict(case="PLAIN_MOVE", attempt=attempt, restart=restart)
+                for attempt, restart in ((1, 0), (2, 0), (2, 1))]
+        before = copy.deepcopy(rows)
+        native.check_attempt(rows, "PLAIN_MOVE", 3)
+        self.assertEqual(before, rows)
+        other = [dict(case="K1", attempt=1, restart=0)]
+        native.check_attempt(rows + other * 60, "PLAIN_MOVE", 3)
+        with self.assertRaises(Exception): native.check_attempt(rows + other * 61, "PLAIN_MOVE", 3)
+        for attempt in (0, 2, 4, 67):
+            with self.assertRaises(Exception): native.check_attempt(rows, "PLAIN_MOVE", attempt)
+
+    def test_retry_checks_latest_completed_failure_and_distinct_directory(self):
+        import run_w164_i6_native as native
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            first = native.case_evidence(root, "PLAIN_MOVE", 1)
+            second = native.case_evidence(root, "PLAIN_MOVE", 2)
+            third = native.case_evidence(root, "PLAIN_MOVE", 3)
+            self.assertEqual(root / "PLAIN_MOVE", first)
+            self.assertEqual(root / "PLAIN_MOVE-attempt-2", second)
+            self.assertEqual(root / "PLAIN_MOVE-attempt-3", third)
+            first.mkdir(); second.mkdir()
+            (first / "result.json").write_text(json.dumps(dict(status="FAIL")))
+            for status in ("PASS", "RUNNING"):
+                (second / "result.json").write_text(json.dumps(dict(status=status)))
+                with self.assertRaisesRegex(Exception, "completed failed case"):
+                    native.check_retry(root, "PLAIN_MOVE", 3)
+            (second / "result.json").write_text(json.dumps(dict(status="FAIL")))
+            native.check_retry(root, "PLAIN_MOVE", 3)
+            self.assertFalse(third.exists())
 
     def test_actual_cut_log_is_required_without_expiry_or_success(self):
         import run_w164_i6_native as native

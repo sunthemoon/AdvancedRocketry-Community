@@ -57,10 +57,22 @@ def command_for(args, case, restart):
 
 
 def check_attempt(rows, case, attempt):
-    require(case in CASES and attempt in (1, 2), "Unknown case or attempt")
+    # R164 permits diagnosed harness retries; every launch still spends the same ledger.
+    require(case in CASES and 1 <= attempt <= MAX_STARTS, "Unknown case or attempt")
     require(len(rows) + STARTS_PER_CASE <= MAX_STARTS, "Case would exceed the 66-start tranche")
     previous = {row.get("attempt", 1) for row in rows if row["case"] == case}
     require(previous == set(range(1, attempt)), "Missing prior attempt or repeated counted case")
+
+
+def case_evidence(root, case, attempt):
+    return root / (case + (f"-attempt-{attempt}" if attempt > 1 else ""))
+
+
+def check_retry(root, case, attempt):
+    if attempt > 1:
+        prior = case_evidence(root, case, attempt - 1) / "result.json"
+        require(json.loads(prior.read_text(encoding="utf-8"))["status"] == "FAIL",
+                "Retry requires a completed failed case")
 
 
 def check_cut_lines(case, lines, transfer):
@@ -220,21 +232,19 @@ def main():
     for name in ("jar", "evidence-dir"): parser.add_argument("--" + name, type=Path, required=True)
     for name in ("source-commit", "java", "lock-owner"): parser.add_argument("--" + name, required=True)
     parser.add_argument("--case", choices=CASES, required=True)
-    parser.add_argument("--attempt", type=int, choices=(1, 2), default=1)
+    parser.add_argument("--attempt", type=int, choices=range(1, MAX_STARTS + 1), default=1)
     parser.add_argument("--startup-timeout", type=float, default=240)
     args = parser.parse_args()
     require_lock(args.lock_owner); predecessor.assert_pin(args.source_commit)
     root = args.evidence_dir.resolve(); root.mkdir(parents=True, exist_ok=True)
     require(sum(path.stat().st_size for path in root.parent.rglob("*") if path.is_file()) < 95_000_000,
             "Insufficient evidence headroom for a native case")
-    evidence = root / (args.case + ("-attempt-2" if args.attempt == 2 else ""))
+    evidence = case_evidence(root, args.case, args.attempt)
     require(not evidence.exists(), "Never overwrite a counted case")
     ledger = root / "starts.json"
     rows = json.loads(ledger.read_text(encoding="utf-8")) if ledger.exists() else []
     check_attempt(rows, args.case, args.attempt)
-    if args.attempt == 2:
-        require(json.loads((root / args.case / "result.json").read_text(encoding="utf-8"))["status"] == "FAIL",
-                "Retry requires a completed failed case")
+    check_retry(root, args.case, args.attempt)
     def started(entry):
         require_lock(args.lock_owner); require(len(rows) < MAX_STARTS, "Native start ceiling reached")
         rows.append(dict(case=args.case, attempt=args.attempt, restart=entry["restart"], source=args.source_commit,

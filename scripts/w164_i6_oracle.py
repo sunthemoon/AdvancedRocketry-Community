@@ -50,7 +50,8 @@ def check_disk(case, disk, old, fuel, restart, event=None):
         require(event is not None, "Plain cut must preserve a nonempty elected landing event")
         require(outbox == dict(schema_version=1, state="ELECTED" if restart == 0 else "DELIVERED", event=event),
                 "Plain removal changed its exact landing outbox")
-        require(disk.get("receipt", dict(occurred=0)) == (dict(occurred=0) if restart == 0 else dict(occurred=1, event=event)),
+        require(disk.get("receipt", dict(occurred=0)) == (dict(occurred=0) if restart == 0 else
+                dict(occurred=1, source="rocket_transfers", event=event)),
                 "Receipt is not the exact durable R(E)")
     else:
         require(outbox == dict(schema_version=1, state="EMPTY"), "Unexpected landing event")
