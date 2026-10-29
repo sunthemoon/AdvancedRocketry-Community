@@ -8,6 +8,12 @@ from w206_warmup_summary import summarize_rows, readiness, qualify
 
 
 class SummaryTest(unittest.TestCase):
+    def test_lock_owner_written_is_the_exact_token_passed_to_native(self):
+        script = (Path(__file__).resolve().parents[1] / "scripts/run_w206_warmup.ps1").read_text()
+        owner_line = next(line.strip() for line in script.splitlines() if line.strip().startswith('Set-Content -LiteralPath "$lock/owner.txt"'))
+        self.assertEqual(owner_line, 'Set-Content -LiteralPath "$lock/owner.txt" $token')
+        self.assertIn('--lock-owner $token', script)
+
     def test_idle_ticks_do_not_dilute_work_or_callback_cohorts(self):
         rows = [dict(tick=i, core_ns=1_000_000, end_ns=0, tick_ns=1_000_000,
                      work=False, callbacks=0, phase="IDLE") for i in range(100)]

@@ -111,16 +111,23 @@ public final class W206NativeWarmup {
                 for (var row : W206Observation.tickets(level)) { ticketUnion.add(row.dimension() + ":" + row.x() + ":" + row.z() + ":" + row.type()); }
             }
             long observed = System.nanoTime() - observationStart;
-            long end = System.nanoTime() - endStart, core = server.tickTimes[server.getTickCount() % server.tickTimes.length];
-            write(ticks, Map.of("tick", server.getTickCount(), "phase", measuredPhase, "core_ns", core,
-                    "end_ns", end, "tick_ns", W206Observation.fullTick(core, end), "work", work,
-                    "callbacks", callbackCount, "column_observer_ns", observed, "epoch_ms", System.currentTimeMillis()));
+            captureTick(requested ? "REQUEST" : measuredPhase, work, observed);
             if (result.containsKey("outcome")) { finish(); }
         } catch (Exception failure) {
             result.put("outcome", "FAILED"); result.put("error", failure.toString());
+            // A failed cold-generation/launch tick is cost evidence too, not a sample to discard.
+            try { captureTick(requested ? "REQUEST" : measuredPhase, true, 0); }
+            catch (Exception writeFailure) { failure.addSuppressed(writeFailure); }
             AdvancedRocketryCommunity.LOGGER.error("ARCE_W206_FAILED", failure);
             try { snapshot("FAILURE"); finish(); } catch (Exception error) { throw new IllegalStateException(error); }
         }
+    }
+
+    private void captureTick(String measuredPhase, boolean work, long observed) throws Exception {
+        long end = System.nanoTime() - endStart, core = server.tickTimes[server.getTickCount() % server.tickTimes.length];
+        write(ticks, Map.of("tick", server.getTickCount(), "phase", measuredPhase, "core_ns", core,
+                "end_ns", end, "tick_ns", W206Observation.fullTick(core, end), "work", work,
+                "callbacks", callbackCount, "column_observer_ns", observed, "epoch_ms", System.currentTimeMillis()));
     }
 
     private Collection<RocketWarmupRegistry.Warmup> live() { return RocketRuntime.installedTransfers().warmups.registry().live(); }

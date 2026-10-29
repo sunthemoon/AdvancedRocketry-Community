@@ -34,7 +34,7 @@ try {
         if((Get-Date) -gt $deadline -or ((Get-Date)-(Get-Item -LiteralPath $lock).CreationTime).TotalHours -gt 3) { throw 'Heavy lock wait expired; not removed' }
         Start-Sleep 60
     }
-    Set-Content -LiteralPath "$lock/owner.txt" "$token $(Get-Date -Format o)"
+    Set-Content -LiteralPath "$lock/owner.txt" $token
     foreach($drive in 'C','D') { if((Get-PSDrive $drive).Free -lt 10GB) { throw "Disk $drive below 10 GiB" } }
     @{
         cpu=(Get-CimInstance Win32_Processor | Select-Object Name,NumberOfCores,NumberOfLogicalProcessors)
