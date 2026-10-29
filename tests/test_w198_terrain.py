@@ -161,6 +161,14 @@ class W198NativeOracleTest(unittest.TestCase):
         self.put_block([48, 100, 15], "minecraft:chest", dict(Items=[self.item]))
         self.assertEqual(terrain.comparable(before), terrain.comparable(self.inspect()))
 
+    def test_valid_sealed_identity_does_not_exempt_unaccounted_member_fields(self):
+        self.populate(sealed=True)
+        self.assertEqual("BLOCKS", self.inspect("recovery-cut")["authority"])
+        member = self.regions[0, 0]["block_entities"][0]["arce_sealed_rocket_member"]
+        member["Items"] = [dict(id="minecraft:diamond", Count=7)]
+        with self.assertRaisesRegex(ValueError, "Unaccounted census"):
+            self.inspect("recovery-cut")
+
 
 class W198TerrainTest(unittest.TestCase):
     def test_inventory_is_not_folded_and_every_row_has_four_starts(self):

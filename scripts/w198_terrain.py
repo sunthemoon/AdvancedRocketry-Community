@@ -99,7 +99,7 @@ def native_payload(be, payload):
     raise ValueError("Unmapped fixture payload: " + adapter)
 
 
-def check_census_payloads(roots, accounted):
+def check_census_payloads(roots, accounted, members):
     """Reject resources/identities outside the exact payload subtrees already validated.
 
     Unlike the labelled conservation sum, this walks nested inventories and item tags,
@@ -117,7 +117,7 @@ def check_census_payloads(roots, accounted):
                     and not (isinstance(value.get("FluidName"), str) and "Amount" in value)
                     and value.get("id") not in ("minecraft:item", "minecraft:player")
                     and ("arce_sealed_rocket_member" not in value
-                         or id(value["arce_sealed_rocket_member"]) in accounted),
+                         or id(value["arce_sealed_rocket_member"]) in members),
                     "Unaccounted census resource or sealed-member identity")
             children = value.values()
         elif isinstance(value, list):
@@ -147,7 +147,7 @@ def inspect(world: Path, fixture: dict, row: dict, stage: str):
                 and transaction["content_hash"] == snapshot["content_hash"], "Changed full U snapshot or identity")
     files = {TRANSFER: digest(world / TRANSFER)}
     if path.exists(): files[TRANSACTION] = digest(path)
-    entities = []; terrain = {}; recipients = []; census = []; accounted = set()
+    entities = []; terrain = {}; recipients = []; census = []; accounted = set(); members = set()
     for x in range(-1, 3):
         for z in range(-1, 3):
             for folder in ("region", "entities", "poi"):
@@ -190,7 +190,10 @@ def inspect(world: Path, fixture: dict, row: dict, stage: str):
             if name == "advancedrocketrycommunity:sealed_rocket_block":
                 require(be is not None, "Carrier without payload")
                 check_member(be["arce_sealed_rocket_member"], block, snapshot, expected, transaction); sealed.append(be)
-                accounted.add(id(be["arce_sealed_rocket_member"]))
+                member = be["arce_sealed_rocket_member"]
+                members.add(id(member))
+                if "block_entity" in block:
+                    accounted.add(id(member["block_entity"]))
             else:
                 state = block_state_at(chunk, x, y, z); wanted = image["block_palette"][block["palette"]]
                 require(state["Name"] == wanted["id"] and state.get("Properties", {}) == wanted["properties"],
@@ -201,7 +204,7 @@ def inspect(world: Path, fixture: dict, row: dict, stage: str):
                 if payload:
                     accounted.update(id(value) for value in native_payload(be, payload).values())
                 native.append(dict(state=state, block_entity=be))
-    check_census_payloads(census, accounted)
+    check_census_payloads(census, accounted, members)
     phase = transaction["phase"] if transaction else None
     if stage == "start": require(phase == phase_at_cut(row["input"]["cut"]), "Wrong exact cut U phase")
     state = elect(phase, survivors, sealed, native, recipients, retained=snapshot if transaction else None)
