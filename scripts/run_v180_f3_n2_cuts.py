@@ -10,6 +10,7 @@ and after its readback and before B's record is removed.
 from __future__ import annotations
 
 import argparse
+import copy
 from contextlib import contextmanager
 import gzip
 import json
@@ -136,12 +137,41 @@ def verify_n3c_observation(before, after, phase):
             if before[key] != after[key]:
                 raise smoke.SmokeError("Refusal mutated " + key)
     elif phase == "pending":
-        if after["acknowledged"] or after["reuse"] or after["pads"] != before["pads"]:
+        if after["acknowledged"] or after["reuse"] or after["completions"] != 0 or after["pads"] != before["pads"]:
             raise smoke.SmokeError("Unacknowledged named pad was released or reused")
         if conserved(before["source"]) != conserved(after["source"]):
             raise smoke.SmokeError("Pending return changed conserved resources or identity")
     else:
         raise smoke.SmokeError("Unknown N3-C observation phase")
+
+
+def verify_n3c_reconciliation(proof, before):
+    """Count a real old-to-contender transition, not a callback log or the fixture's contender cleanup."""
+    if (not proof["absence_acknowledged"] or not proof["accepted"] or not proof["repeat"]
+            or proof["competing"] or proof["old_release"] or not proof["cleanup"]):
+        raise smoke.SmokeError("Named-pad reconciliation was unacknowledged, refused or released twice")
+    if (proof["before"] != before or len(before["pads"]) != 1
+            or before["pads"][0].get("claim") != proof["old_transfer"]
+            or proof["old_transfer"] == proof["contender"]):
+        raise smoke.SmokeError("Reconciliation did not start from the original claim")
+    successor = copy.deepcopy(before); successor["pads"][0]["claim"] = proof["contender"]
+    cleaned = copy.deepcopy(before); cleaned["pads"][0].pop("claim")
+    if (proof["after_claim"] != successor or proof["after_retries"] != successor
+            or proof["after_cleanup"] != cleaned):
+        raise smoke.SmokeError("Reconciliation changed authority or failed to retain the successor")
+    return 1
+
+
+def verify_n3c_restarts(row):
+    if len(row["starts"]) != 3:
+        raise smoke.SmokeError("Named-pad release requires both restarts")
+    first, second = (entry["observation"] for entry in row["starts"][1:])
+    if "reconciliation" not in first or "reconciliation" in second:
+        raise smoke.SmokeError("Named-pad old claim must reconcile exactly once, on restart 1")
+    count = verify_n3c_reconciliation(first["reconciliation"], row["before_removal"]["pads"])
+    if first["pads"] != first["reconciliation"]["after_cleanup"] or second["pads"] != first["pads"]:
+        raise smoke.SmokeError("Named-pad release did not survive restart 2")
+    return count
 
 
 def n3c_observe(process, entity, label, session):
@@ -584,6 +614,11 @@ def run_case(args, case, evidence):
                     row["named_pad_claim"] = "NOT_COVERED: ordinary Moon destination has no named pad"
             process = None
             (evidence / f"disk-{restart}.json").write_text(json.dumps(entry["disk"], indent=2), encoding="utf-8")
+        if case in ("N2_PAD_MOVED", "N2_PAD_UNKNOWN"):
+            try:
+                row["acknowledged_old_claim_releases"] = verify_n3c_restarts(row)
+            except smoke.SmokeError as finding:
+                row["findings"].append(dict(error=str(finding)))
         row["status"] = "FINDING" if row["findings"] else "PARTIAL" if "named_pad_claim" in row else "PASS"
     except Exception as failure:
         row.update(status="FAILED", error=str(failure))

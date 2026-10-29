@@ -157,8 +157,38 @@ public final class RocketN3cReleaseProbe {
             observation.putBoolean("reuse", LandingPadService.claim(server, entry, UUID.randomUUID()));
             observation.put("pads", index.save(new CompoundTag()));
         }
+        if (label.equals("restart1")) { reconcile(observation); }
         write(label, observation);
         AdvancedRocketryCommunity.LOGGER.info("ARCE_W204_OBSERVED label={}", label);
+    }
+
+    /** Exercise lazy reconciliation once; retain each ownership image and explicitly clean up the test contender. */
+    private void reconcile(CompoundTag observation) {
+        var index = LandingPadIndex.get(server);
+        var entries = LandingPadIndexCodec.decode(index.save(new CompoundTag())).entries();
+        if (entries.size() != 1 || !entries.get(0).name().equals("W204")
+                || !entries.get(0).ownerId().equals(source.ownerId().orElseThrow())) {
+            throw new IllegalStateException("W204 reconciliation needs its single seeded pad");
+        }
+        var old = entries.get(0);
+        if (old.claim() == null) { return; } // Ordinary recovery may already have completed its acknowledged release.
+        var proof = new CompoundTag();
+        UUID contender = UUID.randomUUID();
+        proof.putUUID("old_transfer", old.claim()); proof.putUUID("contender", contender);
+        proof.putBoolean("absence_acknowledged", journal().transferAbsenceAcknowledged(old.claim()));
+        proof.put("before", index.save(new CompoundTag()));
+        proof.putBoolean("accepted", LandingPadService.claim(server, old, contender));
+        proof.put("after_claim", index.save(new CompoundTag()));
+        // Replayed requests still carry the old entry, as does the delayed old release callback.
+        proof.putBoolean("repeat", LandingPadService.claim(server, old, contender));
+        proof.putBoolean("competing", LandingPadService.claim(server, old, UUID.randomUUID()));
+        proof.putBoolean("old_release", index.release(old.stationId(), old.reference(), old.claim()));
+        proof.put("after_retries", index.save(new CompoundTag()));
+        // This release is fixture cleanup of the contender, not another release of the old transfer.
+        proof.putBoolean("cleanup", index.release(old.stationId(), old.reference(), contender));
+        proof.put("after_cleanup", index.save(new CompoundTag()));
+        observation.put("reconciliation", proof);
+        observation.put("pads", index.save(new CompoundTag()));
     }
 
     private void write(String label, CompoundTag observation) {
