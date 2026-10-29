@@ -97,6 +97,8 @@ def run_case(run, case):
                 raise bay.smoke.SmokeError(f"Released flight never landed: {status}")
             time.sleep(1)
         check_landed(status, fixture, phase, op)
+        if result["restarts"] and status["rocket"] != result["restarts"][0]["status"]["rocket"]:
+            raise bay.smoke.SmokeError("Restart rebound the retained destination UUID")
         observed = flags(run, fixture["logical"])
         pending = run.pending()
         if observed != [[op, phase, "true", "true"]] or pending != dict(pending=1, retained=1, work=False):
