@@ -74,3 +74,20 @@ commit per finding, and appends a "Review fixes (R168)" section to the record:
 
 No format, bound, budget or timeout changes. Verification: the new tests alone, failing first; the whole unit suite;
 the bay batches three times; B10's native release cases again. A fresh review follows.
+
+## Re-review finding under Root decision R170 (2026-10-29)
+
+The re-review, `D:/GitHub/ARCE-Task-Evidence/root-queue/W196-rereview/REVIEW.md` (SHA-256 `6e21a6fd…06a1`), found R1
+and R2 closed but returned BLOCK on W196-R11 (High): the physical-hold early return in `BayReleasedFlight` (from
+`7ff45dece`) applies to every claim, including an ordinary REGISTERED group that holds D6's server-wide turn, and it
+skips `proof.forget()`, so the holder keeps the turn and blocks unrelated claims. Its probes are in `probes/` in the
+same folder. A fresh session continues on `codex/v1.8.0-w196` from `e2f5a47b8`:
+
+1. Before a physical-held claim short-circuits, run the coordinator's proof cleanup: release its captures, proof
+   handles, watches and D6 turn or queue position, while keeping its receipts, charges and the conflict latch. Do not
+   restore ordinary recovery, registration or delegation for it.
+2. Start from the review's two probes; they fail first. Add a GameTest where a claim holding the turn is held this way
+   and a second claim then finishes.
+
+No format, bound, budget or timeout changes. Verification: the new tests alone, failing first; the whole unit suite;
+the bay batches three times. A short fresh review follows.
