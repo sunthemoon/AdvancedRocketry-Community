@@ -31,7 +31,7 @@ class RocketInsertionCostTest {
     @Test void aFullAdmittedJournalOnlyEncodesTheCandidate() {
         var candidate = RocketTransferSavedDataTest.record();
         var calls = new ArrayList<Integer>();
-        RocketJournalInsertionBudget.validate(Collections.nCopies(63, candidate), candidate, records -> {
+        RocketJournalInsertionBudget.validate(Collections.nCopies(63, candidate), candidate, true, records -> {
             calls.add(records.size()); assertSame(candidate, records.get(0));
             return RocketFlightLimits.MAX_TRANSFER_RECORD_NBT_BYTES + 4096;
         });
@@ -41,17 +41,29 @@ class RocketInsertionCostTest {
     @Test void anInconclusiveUpperBoundFallsBackToTheOriginalExactCheck() {
         var candidate = RocketTransferSavedDataTest.record();
         var calls = new ArrayList<Integer>();
-        RocketJournalInsertionBudget.validate(Collections.nCopies(63, candidate), candidate, records -> {
+        RocketJournalInsertionBudget.validate(Collections.nCopies(63, candidate), candidate, true, records -> {
             calls.add(records.size()); return RocketFlightLimits.MAX_TRANSFER_JOURNAL_NBT_BYTES;
         });
         assertEquals(List.of(1, 64), calls, "A conservative bound must not invent a new refusal");
         assertThrows(IllegalStateException.class, () -> RocketJournalInsertionBudget.validate(
-                List.of(), candidate, records -> { throw new IllegalStateException("codec bound"); }));
+                List.of(), candidate, true, records -> { throw new IllegalStateException("codec bound"); }));
         assertThrows(IllegalStateException.class, () -> RocketJournalInsertionBudget.validate(
-                Collections.nCopies(63, candidate), candidate, records -> {
+                Collections.nCopies(63, candidate), candidate, true, records -> {
                     if (records.size() > 1) { throw new IllegalStateException("root bound"); }
                     return RocketFlightLimits.MAX_TRANSFER_JOURNAL_NBT_BYTES;
                 }));
+    }
+
+    @Test void anUnprovenResidentSetUsesOnlyTheOriginalWholeRootCheck() {
+        var candidate = RocketTransferSavedDataTest.record();
+        var calls = new ArrayList<Integer>();
+        RocketJournalInsertionBudget.validate(Collections.nCopies(63, candidate), candidate, false, records -> {
+            calls.add(records.size()); return RocketFlightLimits.MAX_TRANSFER_JOURNAL_NBT_BYTES;
+        });
+        assertEquals(List.of(64), calls);
+        var refusal = new IllegalStateException("resident codec bound");
+        assertSame(refusal, assertThrows(IllegalStateException.class, () -> RocketJournalInsertionBudget.validate(
+                List.of(candidate), candidate, false, records -> { throw refusal; })));
     }
 
     @Test void actualListEncodingMatchesAdditiveSizingForAllOutboxStatesAndBothRecordKinds() {

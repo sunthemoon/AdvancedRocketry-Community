@@ -13,21 +13,28 @@ import net.minecraft.nbt.CompoundTag;
 final class RocketJournalInsertionBudget {
     private RocketJournalInsertionBudget() { }
 
-    static void validate(List<RocketTransferRecord> existing, RocketTransferRecord candidate, FirstEventOutbox outbox) {
-        validate(existing, candidate, records -> RocketNbtSize.uncompressedBytes(
+    static void validate(List<RocketTransferRecord> existing, RocketTransferRecord candidate, FirstEventOutbox outbox,
+                         boolean canonicalResidents) {
+        validate(existing, candidate, canonicalResidents, records -> RocketNbtSize.uncompressedBytes(
                 RocketTransferSavedData.encode(records, outbox, new CompoundTag())));
     }
 
     /** The encoder retains every codec/record/root check. The seam counts encodes in unit tests. */
     static void validate(List<RocketTransferRecord> existing, RocketTransferRecord candidate,
-                         ToIntFunction<List<RocketTransferRecord>> encodeBytes) {
+                         boolean canonicalResidents, ToIntFunction<List<RocketTransferRecord>> encodeBytes) {
+        if (!canonicalResidents) { validateWholeRoot(existing, candidate, encodeBytes); return; }
         int singleton = encodeBytes.applyAsInt(List.of(candidate));
         // The singleton already includes the actual schema/outbox/list framing and the checked candidate.
-        // Each resident record was bounded at admission. As a list member it uses LESS than its standalone
+        // The journal's witness proves each resident's canonical encode. A list member uses LESS than its standalone
         // NBT size (no named-root header), so adding the unchanged per-record ceiling is conservative.
         long upper = singleton + (long) existing.size() * RocketFlightLimits.MAX_TRANSFER_RECORD_NBT_BYTES;
         if (upper <= RocketFlightLimits.MAX_TRANSFER_JOURNAL_NBT_BYTES) { return; }
         // Do not turn a conservative estimate into a new refusal if a future framing/budget no longer fits it.
+        validateWholeRoot(existing, candidate, encodeBytes);
+    }
+
+    private static void validateWholeRoot(List<RocketTransferRecord> existing, RocketTransferRecord candidate,
+                                         ToIntFunction<List<RocketTransferRecord>> encodeBytes) {
         var all = new ArrayList<>(existing); all.add(candidate); encodeBytes.applyAsInt(all);
     }
 }
