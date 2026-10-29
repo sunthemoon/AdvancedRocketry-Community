@@ -17,6 +17,25 @@ import org.junit.jupiter.api.Test;
 class EscrowGovernedLaunchTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
 
+    @Test void equalArmedTupleReusesOneImmutableProjectionButDifferentGenerationDoesNot() {
+        var fixture = GovernedTransferFixture.create(); var root = root(fixture);
+        var prepared = prepare(root, fixture, countdown(fixture));
+        var firstArm = prepared.preflight(root, 1).armedFlights().get(0);
+        var firstRecord = prepared.record(firstArm);
+        var sameArm = prepared.preflight(root, 1).armedFlights().get(0);
+        assertEquals(firstArm, sameArm);
+        assertSame(firstRecord, prepared.record(sameArm), "One exact tuple should not repeatedly project and hash frozen bodies");
+        var later = new EscrowLedger(root.id(), 0, 20, List.of(), List.of(), List.of(), 30, List.of(), List.of());
+        var nextArm = prepared.preflight(later, 21).armedFlights().get(0);
+        var nextRecord = prepared.record(nextArm);
+        assertNotSame(firstRecord, nextRecord);
+        assertEquals(nextArm, nextRecord.nativeTransfer().orElseThrow().armed());
+        assertEquals(firstRecord.nativeTransfer().orElseThrow().sourceEnvelope(firstRecord),
+                nextRecord.nativeTransfer().orElseThrow().sourceEnvelope(nextRecord));
+        assertSame(nextRecord, prepared.record(nextArm));
+        assertNotSame(firstRecord, prepared.record(firstArm), "The cache retains only one tuple");
+    }
+
     @Test void preparationIsImmutableAndDebitsOnlyThePrescribedDestination() {
         var fixture = GovernedTransferFixture.create(); var original = fixture.source().copy();
         var root = root(fixture); var beforeRoot = EscrowCodec.encode(root);
