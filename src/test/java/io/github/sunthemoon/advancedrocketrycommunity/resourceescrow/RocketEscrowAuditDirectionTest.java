@@ -13,7 +13,6 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketBlockState;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.stats.RocketStats;
-import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.TestDataStorage;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.UnstartedServer;
 import java.nio.file.Files;
@@ -27,15 +26,12 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.DimensionDataStorage;
@@ -50,51 +46,9 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 /** Calls the real audit entry points; no server, terrain, native proof or cargo mutation is simulated as passed. */
 class RocketEscrowAuditDirectionTest {
-    private static boolean runtimeInitialized;
     @TempDir Path directory;
 
-    @BeforeAll static void bootstrap() throws Exception {
-        MinecraftBootstrap.initialize();
-        bootstrapRuntimeCapability();
-        var id = ResourceLocation.tryParse(EscrowAdapterIds.ROCKET);
-        if (!BuiltInRegistries.ENTITY_TYPE.containsKey(id)) {
-            Registry.register(BuiltInRegistries.ENTITY_TYPE, id,
-                    EntityType.Builder.<RocketEntity>of(RocketEntity::new, MobCategory.MISC).build(id.toString()));
-        }
-    }
-
-    /** Plain JUnit lacks Forge's CapabilityToken transformer. Resolve only that token before defining the runtime. */
-    private static void bootstrapRuntimeCapability() throws Exception {
-        if (runtimeInitialized) { return; }
-        var type = new org.objectweb.asm.tree.ClassNode();
-        try (var input = RocketEscrowAuditDirectionTest.class.getResourceAsStream("EscrowRuntime.class")) {
-            assertNotNull(input); new org.objectweb.asm.ClassReader(input).accept(type, 0);
-        }
-        var initializer = type.methods.stream().filter(method -> method.name.equals("<clinit>")).findFirst().orElseThrow();
-        var instructions = initializer.instructions;
-        var token = Stream.of(instructions.toArray()).filter(node -> node instanceof org.objectweb.asm.tree.TypeInsnNode allocation
-                && allocation.getOpcode() == org.objectweb.asm.Opcodes.NEW && allocation.desc.equals(type.name + "$1"))
-                .findFirst().orElseThrow();
-        var get = token.getNext().getNext().getNext();
-        var call = assertInstanceOf(org.objectweb.asm.tree.MethodInsnNode.class, get);
-        assertEquals("net/minecraftforge/common/capabilities/CapabilityManager", call.owner);
-        assertEquals("get", call.name);
-        var end = get.getNext();
-        instructions.insertBefore(token, new org.objectweb.asm.tree.MethodInsnNode(org.objectweb.asm.Opcodes.INVOKESTATIC,
-                RocketEscrowAuditDirectionTest.class.getName().replace('.', '/'), "runtimeCapability",
-                "()Lnet/minecraftforge/common/capabilities/Capability;", false));
-        for (var node = token; node != end; ) { var next = node.getNext(); instructions.remove(node); node = next; }
-        var output = new org.objectweb.asm.ClassWriter(0); type.accept(output);
-        java.lang.invoke.MethodHandles.lookup().defineClass(output.toByteArray());
-        runtimeInitialized = true;
-    }
-
-    static Capability<?> runtimeCapability() throws Exception {
-        var get = net.minecraftforge.common.capabilities.CapabilityManager.class.getDeclaredMethod("get", String.class, boolean.class);
-        get.setAccessible(true);
-        return (Capability<?>) get.invoke(net.minecraftforge.common.capabilities.CapabilityManager.INSTANCE,
-                RocketEscrowAuditDirectionTest.class.getPackageName().replace('.', '/') + "/EscrowRuntime", false);
-    }
+    @BeforeAll static void bootstrap() { EscrowTestBootstrap.initialize(); }
 
     static Stream<EscrowOperation.Kind> kinds() {
         return Stream.of(EscrowOperation.Kind.FLUID_PROPULSION_FILL,

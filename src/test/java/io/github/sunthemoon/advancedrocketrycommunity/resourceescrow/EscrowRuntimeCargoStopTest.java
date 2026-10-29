@@ -21,7 +21,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 class EscrowRuntimeCargoStopTest {
     @BeforeAll static void bootstrap() throws Exception {
-        MinecraftBootstrap.initialize(); RocketEscrowAuditDirectionTest.bootstrap();
+        MinecraftBootstrap.initialize(); EscrowTestBootstrap.initialize();
     }
     @TempDir Path temp;
 

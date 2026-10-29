@@ -43,6 +43,16 @@ final class RocketI6Retirement extends RocketDestinationRetirement {
         prepared = RocketTransferEntities.recoveryEndsAlreadyLoaded(server, predecessor); return prepared;
     }
     @Override public boolean needsTicketStep() { return terminal == null; }
+    @Override public void keepLoaded(RocketTransferRecord record, List<RocketRetirementProof.Slot> census) {
+        if (!preparation) { super.keepLoaded(record, census); return; }
+        // The coordinator has checked authority/storage and admitted this tick's one cold preparation.
+        // Ticket only: native chunk work progresses asynchronously, and preparationReady still checks every column.
+        var runtime = io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowRuntime.of(server);
+        runtime.checkpoint("R52_TICKETING");
+        RocketTransferEntities.refreshMargins(record.transferId(), record.sourceSnapshot(),
+                record.destinationSnapshot(), RocketTransferEntities.levelTickets(server));
+        runtime.checkpoint("R52_TICKETED");
+    }
     @Override public void releaseTickets(RocketTransferRecord record) {
         // Completed preparation leaves its existing finite ticket to expire; it never renews while awaiting a click.
         if (!(preparation && prepared)) { super.releaseTickets(record); }

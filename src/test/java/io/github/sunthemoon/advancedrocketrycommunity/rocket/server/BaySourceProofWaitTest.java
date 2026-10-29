@@ -62,10 +62,7 @@ import org.junit.jupiter.api.io.TempDir;
 final class BaySourceProofWaitTest {
     @BeforeAll static void bootstrap() throws Exception {
         MinecraftBootstrap.initialize();
-        // Reuse the existing plain-JUnit capability bootstrap before resolving EscrowRuntime.
-        var bootstrap = Class.forName("io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowAuditDirectionTest")
-                .getDeclaredMethod("bootstrap");
-        bootstrap.setAccessible(true); bootstrap.invoke(null);
+        io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowTestBootstrap.initialize();
     }
     @TempDir Path directory;
 

@@ -45,6 +45,8 @@ public final class RocketTransferSavedData extends SavedData {
     }
 
     private final Map<UUID, RocketTransferRecord> entries = new LinkedHashMap<>();
+    /** Derived encodability only, never durable authority. Validated mutations preserve this witness. */
+    private boolean canonicalResidents = true;
     private CompoundTag preservedBlockedData;
     private final RocketJournalCheckpoint checkpoint = new RocketJournalCheckpoint();
     private volatile long mutationSequence = 1;
@@ -183,6 +185,7 @@ public final class RocketTransferSavedData extends SavedData {
             }
             CompoundTag payload = migration.payload();
             ListTag transfers = requireList(payload, "transfers", Tag.TAG_COMPOUND);
+            data.canonicalResidents = transfers.isEmpty(); // Decoding bounds input, not its canonical re-encoding.
             if (transfers.size() > RocketFlightLimits.MAX_ACTIVE_TRANSFERS) {
                 throw new IllegalArgumentException("Transfer journal exceeds the active-record bound");
             }
@@ -311,8 +314,10 @@ public final class RocketTransferSavedData extends SavedData {
             throw new IllegalArgumentException(kind + " transfer authority is unavailable");
         }
         ensureNoAuthorityConflict(record);
-        var candidate = new java.util.ArrayList<>(entries()); candidate.add(record);
-        try { encode(candidate, firstMoonLanding, new CompoundTag()); }
+        try {
+            RocketJournalInsertionBudget.validate(entries(), record, firstMoonLanding, canonicalResidents);
+            canonicalResidents = true;
+        }
         catch (IllegalStateException invalid) { throw new IllegalArgumentException(kind + " transfer does not fit the journal", invalid); }
     }
 
@@ -637,6 +642,8 @@ public final class RocketTransferSavedData extends SavedData {
             return;
         }
         checkpoint.publish(completion); lastWriterNanos = completion.writerNanos();
+        if (completion.outcome() == RocketJournalCheckpoint.Outcome.COMMITTED
+                && completion.sequence() == mutationSequence) { canonicalResidents = true; }
         writeOutcome = WriteOutcome.valueOf(completion.outcome().name());
         failedWrite = completion.outcome() != RocketJournalCheckpoint.Outcome.COMMITTED;
         if (writeOutcome == WriteOutcome.UNKNOWN && ownerServer != null
@@ -750,26 +757,14 @@ public final class RocketTransferSavedData extends SavedData {
         if (presence == ManagedRootPresence.UNREADABLE) {
             throw new IllegalStateException("An unreadable transfer journal is never encoded");
         }
-        return encode(entries(), firstMoonLanding, target);
+        CompoundTag encoded = encode(entries(), firstMoonLanding, target);
+        canonicalResidents = true;
+        return encoded;
     }
 
     static CompoundTag encode(List<RocketTransferRecord> records, FirstEventOutbox firstMoonLanding,
                               CompoundTag target) {
-        SavedDataSchemaMigrator.stampCurrent(ManagedSavedDataType.ROCKET_TRANSFERS, target);
-        ListTag transfers = new ListTag();
-        records.stream().sorted(Comparator.comparing(RocketTransferRecord::transferId)).forEach(record -> {
-            CompoundTag encoded = encodeRecord(record);
-            if (RocketNbtSize.uncompressedBytes(encoded) > RocketFlightLimits.MAX_TRANSFER_RECORD_NBT_BYTES) {
-                throw new IllegalStateException("Encoded transfer record exceeds the fixed NBT limit");
-            }
-            transfers.add(encoded);
-        });
-        target.put("transfers", transfers);
-        target.put(FIRST_MOON_LANDING, firstMoonLanding.encode(FirstEventKind.FIRST_MOON_LANDING));
-        if (RocketNbtSize.uncompressedBytes(target) > RocketFlightLimits.MAX_TRANSFER_JOURNAL_NBT_BYTES) {
-            throw new IllegalStateException("Encoded transfer journal exceeds the fixed NBT limit");
-        }
-        return target;
+        return RocketTransferJournalCodec.encodeRoot(records, firstMoonLanding, target);
     }
 
     private void insertValidated(RocketTransferRecord record) {

@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModEntities;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.AnvilRecordReader;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
@@ -78,10 +79,13 @@ public final class SealedDisassemblyGameTests {
                 callbackFailure[0] = assertion.getClass().getSimpleName() + ":" + assertion.getMessage();
             }
         };
+        // Native store/force/readback needs wall-clock time within the unchanged 100-tick proof deadline.
+        var pacer = new GameTestTickPacer(server);
         helper.onEachTick(() -> {
             if (callbackFailure[0] != null) { helper.fail(callbackFailure[0]); }
             // GameTest completion can synchronously start the next batch. Do not run it inside the production callback/claim.
             if (done[0]) { helper.succeed(); return; }
+            pacer.pace();
             if (transaction[0] == null && level.areEntitiesLoaded(new ChunkPos(origin).toLong())) {
                 try {
                     var begin = RocketRuntime.class.getMethod("beginSealedForReleaseTest", RocketEntity.class, Consumer.class);

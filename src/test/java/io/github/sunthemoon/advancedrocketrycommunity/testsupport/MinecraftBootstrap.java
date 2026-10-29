@@ -16,6 +16,8 @@ public final class MinecraftBootstrap {
         }
 
         try {
+            // Plain JUnit must define this transformed capability before any fixture resolves its runtime class.
+            io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowTestBootstrap.defineRuntimeCapability();
             SharedConstants.tryDetectVersion();
             // Plain JUnit does not run through ModLauncher, so Forge's patched full bootstrap
             // cannot initialize its transformed event classes. ResourceKey constants only need

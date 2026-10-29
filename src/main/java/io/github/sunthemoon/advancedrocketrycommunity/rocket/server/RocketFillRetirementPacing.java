@@ -29,12 +29,14 @@ import java.util.function.BiConsumer;
 final class RocketFillRetirementPacing {
     /** Ticket steps one demand allows: a cold old site needs two (load, then prove), and the third absorbs one failed proof. */
     static final int DEMAND_TICKETS = 3;
+    /** W199: one cold I6 pair (at most 16 columns per end) enters chunk scheduling per server tick. */
+    static final int COLD_PREPARATIONS_PER_TICK = 1;
     private final Map<UUID, UUID> demands = new LinkedHashMap<>();
     /** The tick of each rocket's last attempt, within the existing pending bound. */
     private final Map<UUID, Long> attempts = new LinkedHashMap<>();
     private final Set<String> warned = new HashSet<>();
     private long tick = Long.MIN_VALUE;
-    private int starts;
+    private int starts, coldStarts;
 
     /** Queues a loader's demand for L's landed rocket; a demand already queued, or a full queue, adds nothing. */
     void demand(UUID logical, UUID survivor) {
@@ -57,14 +59,20 @@ final class RocketFillRetirementPacing {
      * one attempt per rocket per retry interval, at most MAX_ATTEMPTS starts per tick, and none while {@code busy}.
      */
     long admit(UUID logical, long now, boolean busy) {
+        return admit(logical, now, busy, false);
+    }
+
+    long admit(UUID logical, long now, boolean busy, boolean coldPreparation) {
         attempts.entrySet().removeIf(attempt -> now - attempt.getValue() >= RocketOrdinaryRetirement.RETRY_TICKS);
         var last = attempts.get(logical);
         if (last != null) { return last + RocketOrdinaryRetirement.RETRY_TICKS; }
-        if (tick != now) { tick = now; starts = 0; }
-        if (starts >= RocketOrdinaryRetirement.MAX_ATTEMPTS || busy || attempts.size() >= RocketOrdinaryRetirement.MAX_PENDING) {
+        if (tick != now) { tick = now; starts = 0; coldStarts = 0; }
+        if (starts >= RocketOrdinaryRetirement.MAX_ATTEMPTS || busy || attempts.size() >= RocketOrdinaryRetirement.MAX_PENDING
+                || coldPreparation && coldStarts >= COLD_PREPARATIONS_PER_TICK) {
             return now + 1;
         }
         starts++;
+        if (coldPreparation) { coldStarts++; }
         attempts.put(logical, now);
         return now;
     }
@@ -102,6 +110,6 @@ final class RocketFillRetirementPacing {
 
     void clear() {
         demands.clear(); attempts.clear(); warned.clear();
-        tick = Long.MIN_VALUE; starts = 0;
+        tick = Long.MIN_VALUE; starts = 0; coldStarts = 0;
     }
 }

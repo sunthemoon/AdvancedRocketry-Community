@@ -62,6 +62,7 @@ def main():
     parser.add_argument("--evidence", required=True, type=Path)
     parser.add_argument("--source-commit", required=True)
     parser.add_argument("--lock-owner", required=True)
+    parser.add_argument("--jfr", action="store_true", help="Record JDK profile events without changing the workload")
     parser.add_argument("--java", default="C:/Program Files/Java/jdk-17.0.7/bin/java.exe")
     args = parser.parse_args()
     require_lock(args.lock_owner)
@@ -99,6 +100,9 @@ def main():
         command = _server_command(args.java)
         command[2] = "-Xmx4G"
         command[1:1] = ["-Dadvancedrocketrycommunity.w197I6Cost=true", "-Xlog:gc*:file=gc.log:time,uptime,level,tags"]
+        if args.jfr:
+            command[1:1] = ["-XX:FlightRecorderOptions=stackdepth=128",
+                            "-XX:StartFlightRecording=filename=profile.jfr,settings=profile,dumponexit=true,maxsize=256M"]
         require_lock(args.lock_owner)
         for drive in ("C:/", "D:/"):
             require(shutil.disk_usage(drive).free >= 10 * 1024**3, "Disk below 10 GiB: " + drive)
@@ -132,7 +136,7 @@ def main():
         (output / "host-samples.json").write_text(json.dumps(samples, indent=2), encoding="utf-8")
         for path in (session / "world").glob("w197-*"):
             shutil.copy2(path, output / path.name)
-        for path in (session / "gc.log", session / "logs/latest.log", session / "logs/debug.log"):
+        for path in (session / "gc.log", session / "logs/latest.log", session / "logs/debug.log", session / "profile.jfr"):
             if path.is_file():
                 shutil.copy2(path, output / ("server-" + path.name))
         require(session.resolve().parent == TEMP.resolve() and not smoke.is_link_or_junction(session)

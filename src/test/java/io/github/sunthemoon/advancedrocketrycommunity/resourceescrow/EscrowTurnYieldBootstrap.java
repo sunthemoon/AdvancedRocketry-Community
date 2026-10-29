@@ -15,7 +15,7 @@ public final class EscrowTurnYieldBootstrap {
     private static boolean initialized;
     private EscrowTurnYieldBootstrap() { }
     static void initialize() throws Exception {
-        RocketEscrowAuditDirectionTest.bootstrap();
+        EscrowTestBootstrap.initialize();
         if (initialized) { return; }
         defineIndex(RocketFluidCargoRoot.class, "RocketFluidCargoIndex");
         defineIndex(LoaderTank.class, "FluidFuelLoaderIndex");

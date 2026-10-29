@@ -9,14 +9,39 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNbtSize
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketSnapshotDecodeResult;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketSnapshotNbtCodec;
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.SavedDataSchemaMigrator;
+import io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent.FirstEventKind;
+import io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent.FirstEventOutbox;
+import java.util.Comparator;
+import java.util.List;
 import java.util.UUID;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 
-/** Strict per-record NBT codec, independent of writer and lifecycle state. */
+/** Strict record/root NBT codec, independent of writer and lifecycle state. */
 final class RocketTransferJournalCodec {
     private RocketTransferJournalCodec() { }
+    static CompoundTag encodeRoot(List<RocketTransferRecord> records, FirstEventOutbox firstMoonLanding,
+                                  CompoundTag target) {
+        SavedDataSchemaMigrator.stampCurrent(ManagedSavedDataType.ROCKET_TRANSFERS, target);
+        ListTag transfers = new ListTag();
+        records.stream().sorted(Comparator.comparing(RocketTransferRecord::transferId)).forEach(record -> {
+            CompoundTag encoded = encodeRecord(record);
+            if (RocketNbtSize.uncompressedBytes(encoded) > RocketFlightLimits.MAX_TRANSFER_RECORD_NBT_BYTES) {
+                throw new IllegalStateException("Encoded transfer record exceeds the fixed NBT limit");
+            }
+            transfers.add(encoded);
+        });
+        target.put("transfers", transfers);
+        target.put(RocketTransferSavedData.FIRST_MOON_LANDING, firstMoonLanding.encode(FirstEventKind.FIRST_MOON_LANDING));
+        if (RocketNbtSize.uncompressedBytes(target) > RocketFlightLimits.MAX_TRANSFER_JOURNAL_NBT_BYTES) {
+            throw new IllegalStateException("Encoded transfer journal exceeds the fixed NBT limit");
+        }
+        return target;
+    }
+
     static CompoundTag encodeRecord(RocketTransferRecord record) {
         CompoundTag target = new CompoundTag();
         target.putInt("schema_version", record.schemaVersion());
