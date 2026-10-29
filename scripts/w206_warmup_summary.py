@@ -2,6 +2,7 @@
 from __future__ import annotations
 import argparse
 import json
+import re
 from pathlib import Path
 from w197_cost_summary import statistics, host_load
 
@@ -15,7 +16,9 @@ def stats(rows):
 
 
 def summarize_rows(rows):
-    return dict(all=stats(rows), work=stats([r for r in rows if r["work"]]),
+    # The native FLIGHT phase ends only after ARMED pruning/F8, whereas the raw work flag primarily sees W/T.
+    # Include that retained cleanup and every delivered owner-thread checkpoint; never classify callbacks as idle.
+    return dict(all=stats(rows), work=stats([r for r in rows if r["work"] or r["callbacks"] or r["phase"] == "FLIGHT"]),
                 callbacks=stats([r for r in rows if r["callbacks"]]),
                 phases={p: stats([r for r in rows if r["phase"] == p]) for p in sorted({r["phase"] for r in rows})},
                 timing_qualified=bool(rows) and all(r.get("core_ns", 0) > 0 and r.get("end_ns", -1) >= 0
@@ -51,8 +54,13 @@ def qualify(result):
     return (result.get("outcome") == "MEASURED" and result.get("cold") is True
             and result.get("no_other_ticket") is True and result.get("source_unchanged") is True
             and result.get("selected_columns", 0) == result.get("expected_columns", -1)
-            and all(result.get(k) is True for k in ("f2", "handover", "f8"))
+            and all(result.get(k) is True for k in ("f2", "handover", "f8", "landing_witness"))
             and result.get("tickets_after_f8") == [] and result.get("warmups_after_f8") == [])
+
+
+def gc_pauses(log):
+    values = [float(value) for value in re.findall(r"\[info\]\[gc\s*\].*Pause.* ([0-9.]+)ms$", log, re.MULTILINE)]
+    return dict(statistics(values), total_ms=sum(values))
 
 
 def summarize(root):
@@ -63,11 +71,19 @@ def summarize(root):
     samples = json.loads((root / "host-samples.json").read_text())
     host = host_load(samples)
     host["scope"] = "One-second samples over the entire native process, including startup/setup and shutdown; not only measured phases."
+    gc_file = root / "server-gc.log"
+    consumer_file = root / "server-escrow-consumer-timing.json"
+    consumer = json.loads(consumer_file.read_text()) if consumer_file.exists() else {}
+    io_events = consumer.get("events", [])
     return dict(fixture=data, flight_qualified=qualify(data), timing=summarize_rows(measured),
                 readiness=readiness(events), phase_latencies=phase_latencies(events), host=host,
+                gc_pause_ms=gc_pauses(gc_file.read_text()) if gc_file.exists() else {"available": False},
+                asynchronous_io_ms={phase: statistics([e["value"] for e in io_events if e["phase"] == phase], 1e6)
+                                    for phase in ("own_store_io", "force_io", "readback_io")},
+                consumer_timing_capped=consumer.get("capped"),
                 io_bytes={k: max((r.get(k, 0) for r in samples), default=0) for k in ("read_bytes", "write_bytes", "other_bytes")},
                 methodology="Nearest-rank percentiles; native core plus Forge END. Work includes product requests, "
-                "live warm-ups and flights; callbacks are server-thread escrow checkpoint-bearing ticks, not exclusive "
+                "live warm-ups and flights through F8 pruning, including callback-only ticks; callbacks are server-thread escrow checkpoint-bearing ticks, not exclusive "
                 "callback durations. Complete process RSS and IO include setup. All-phase samples are retained. "
                 "Windows short diagnostic workload, not reference-node/soak or real-client Gate evidence.")
 

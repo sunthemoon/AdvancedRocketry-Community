@@ -42,6 +42,20 @@ class SummaryTest(unittest.TestCase):
     def test_missing_end_time_cannot_qualify(self):
         self.assertFalse(summarize_rows([dict(tick_ns=1, work=True, callbacks=0, phase="X")])["timing_qualified"])
 
+    def test_cleanup_and_callbacks_are_work_even_after_the_journal_entry_is_absent(self):
+        rows = [dict(tick=1, core_ns=2_000_000, end_ns=0, tick_ns=2_000_000,
+                     work=False, callbacks=1, phase="F1_F2"),
+                dict(tick=2, core_ns=3_000_000, end_ns=0, tick_ns=3_000_000,
+                     work=False, callbacks=0, phase="FLIGHT")]
+        self.assertEqual(summarize_rows(rows)["work"]["count"], 2)
+
+    def test_gc_counts_completed_pauses_not_start_lines(self):
+        from w206_warmup_summary import gc_pauses
+        log = ('[0.1s][info][gc,start    ] GC(0) Pause Young\n'
+               '[0.2s][info][gc          ] GC(0) Pause Young 24M->4M(512M) 2.281ms\n')
+        self.assertEqual(gc_pauses(log)["count"], 1)
+        self.assertEqual(gc_pauses(log)["maximum"], 2.281)
+
     def test_readiness_latency_is_per_allocation_not_process_age(self):
         events = [dict(kind="STARTED", logical="a", request="r1", tick=120, ns=10_000_000),
                   dict(kind="READY", logical="a", request="r1", tick=125, ns=30_000_000),
@@ -70,9 +84,9 @@ class SummaryTest(unittest.TestCase):
     def test_fixture_requires_real_cold_and_exact_release_evidence(self):
         base = dict(outcome="MEASURED", cold=True, no_other_ticket=True, new_terrain=True,
                     selected_columns=16, expected_columns=16, f2=True, handover=True,
-                    f8=True, tickets_after_f8=[], warmups_after_f8=[], source_unchanged=True)
+                    f8=True, landing_witness=True, tickets_after_f8=[], warmups_after_f8=[], source_unchanged=True)
         self.assertTrue(qualify(base))
-        for key in ("cold", "no_other_ticket", "source_unchanged", "f2", "handover", "f8"):
+        for key in ("cold", "no_other_ticket", "source_unchanged", "f2", "handover", "f8", "landing_witness"):
             self.assertFalse(qualify(dict(base, **{key: False})), key)
         self.assertFalse(qualify(dict(base, tickets_after_f8=["flight"])))
         self.assertFalse(qualify(dict(base, selected_columns=1)))
