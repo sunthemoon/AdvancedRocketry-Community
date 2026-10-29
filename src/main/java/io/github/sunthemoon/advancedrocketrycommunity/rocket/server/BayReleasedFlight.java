@@ -71,6 +71,7 @@ final class BayReleasedFlight {
         if (guard == null || !claim.transfer().equals(guard.transfer()) || guard.recordDigest() == null
                 || receipts.stream().anyMatch(r -> !session.acknowledged(r.op()))) { return BayStepQueue.Result.NEXT_TICK; }
         if (state.delegated && state.authority != null && state.authority.matches(record) && physical(record, false)) {
+            if (!receipts.equals(state.authority.receipts())) { return held(claim, state, "TRANSFER_AUTHORITY_CONFLICT"); }
             return BayStepQueue.Result.NEXT_TICK;
         }
         state.delegated = false;
@@ -161,6 +162,8 @@ final class BayReleasedFlight {
                     && action != RocketTransferBayRecoveryGate.Action.SPAWN_DESTINATION
                 || RocketReleaseAccess.fenced(server, record.logicalRocketId())
                 || RocketEscrowGate.escrowLogicalLocked(server, record.logicalRocketId())) { return false; }
+        if (!session.receipts().stream().filter(r -> r.rocket().equals(record.logicalRocketId()) && r.pending()).toList()
+                .equals(state.authority.receipts())) { return false; }
         for (var receipt : state.authority.receipts()) {
             if (!receipt.released() || !session.acknowledged(receipt.op())
                     || session.current(receipt.op()).filter(receipt::equals).isEmpty()) { return false; }
