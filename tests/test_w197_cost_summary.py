@@ -20,6 +20,15 @@ class SummaryTest(unittest.TestCase):
     def test_empty_is_not_reported_as_zero_cost(self):
         self.assertEqual(MODULE.statistics([]), {"count": 0})
 
+    def test_host_load_separates_native_process_from_other_work(self):
+        rows = [dict(host_total_100ns=100, host_idle_100ns=20, server_cpu_100ns=10, peak_rss=1024**3),
+                dict(host_total_100ns=200, host_idle_100ns=80, server_cpu_100ns=40, peak_rss=2 * 1024**3)]
+        stats = MODULE.host_load(rows)
+        self.assertEqual(stats["host_busy_percent"]["mean"], 40)
+        self.assertEqual(stats["server_percent_of_host_capacity"]["mean"], 30)
+        self.assertEqual(stats["other_busy_percent"]["mean"], 10)
+        self.assertEqual(stats["peak_rss_gib"], 2)
+
     def test_active_window_retains_slow_tick_and_incomplete_proofs_do_not_qualify(self):
         with tempfile.TemporaryDirectory(prefix="w197-summary-") as directory:
             root = Path(directory)

@@ -24,6 +24,23 @@ def read_csv(root, name):
         return list(csv.DictReader(stream))
 
 
+def host_load(samples):
+    busy, server, other = [], [], []
+    for previous, current in zip(samples, samples[1:]):
+        fields = ("host_total_100ns", "host_idle_100ns", "server_cpu_100ns")
+        if not all(name in previous and name in current for name in fields):
+            continue
+        total, idle, process = [current[name] - previous[name] for name in fields]
+        if total <= 0:
+            continue
+        busy.append(100 * (total - idle) / total)
+        server.append(100 * process / total)
+        other.append(max(0, 100 * (total - idle - process) / total))
+    return dict(host_busy_percent=statistics(busy), server_percent_of_host_capacity=statistics(server),
+                other_busy_percent=statistics(other), peak_rss_gib=max((row.get("peak_rss", 0) for row in samples), default=0) / 1024**3,
+                scope="Two-second samples over the entire native process, including startup and fixture setup; not only measured phases.")
+
+
 def summarize(root):
     ticks = read_csv(root, "w197-ticks.csv")
     steps = read_csv(root, "w197-steps.csv")
@@ -65,7 +82,8 @@ def summarize(root):
                      and result.get("confirmed_captures", 0) >= 128
                      and result.get("blocks") == 2048 and result.get("volume") == 32768
                      and result.get("snapshot_bytes") == 1048576 and result.get("columns_per_end") == 16)
-    return dict(fixture_qualified=qualification, fixture=result, windows=windows, steps=step_stats,
+    samples = json.loads((root / "host-samples.json").read_text()) if (root / "host-samples.json").exists() else []
+    return dict(fixture_qualified=qualification, fixture=result, windows=windows, steps=step_stats, host_load=host_load(samples),
                 proof_attempt_ticks=statistics([row["attempt_ticks"] for row in accepted]),
                 proof_queue_ticks=statistics([row["queue_ticks"] for row in accepted]),
                 terminal_attempts=Counter(row["attempt"] for row in accepted),
