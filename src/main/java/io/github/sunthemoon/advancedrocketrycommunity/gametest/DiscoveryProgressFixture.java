@@ -9,7 +9,10 @@ import net.minecraft.gametest.framework.BeforeBatch;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.gametest.GameTestHolder;
 
-/** Serial batch-owned progress; restores original authorities even after a failed test. */
+/**
+ * Serial batch-owned progress; restores original authorities even after a failed test. Satellite roots share a
+ * staging file, so installation awaits the original and restoration closes the temporary writer before swapping.
+ */
 @GameTestHolder(AdvancedRocketryCommunity.MOD_ID)
 public final class DiscoveryProgressFixture {
     private static DiscoveryProgressFixture active;
@@ -22,6 +25,7 @@ public final class DiscoveryProgressFixture {
         var server = level.getServer();
         progress = CelestialSavedData.get(server);
         missions = known ? null : SatelliteMissionSavedData.get(server);
+        if (missions != null) { missions.awaitForTests(server); }
         var fixture = CelestialSavedData.create();
         if (known) {
             fixture.discover(PlanetaryContent.MARS, server.overworld().getGameTime());
@@ -43,7 +47,15 @@ public final class DiscoveryProgressFixture {
         var fixture = active;
         if (fixture == null || fixture.level != level) { throw new IllegalStateException("Discovery fixture lifecycle mismatch"); }
         try {
-            var storage = level.getServer().overworld().getDataStorage();
+            var server = level.getServer();
+            if (fixture.missions != null) {
+                var temporary = SatelliteMissionSavedData.get(server);
+                if (temporary != fixture.missions) {
+                    temporary.awaitForTests(server);
+                    temporary.close();
+                }
+            }
+            var storage = server.overworld().getDataStorage();
             storage.set(CelestialSavedData.DATA_NAME, fixture.progress);
             fixture.progress.setDirty();
             if (fixture.missions != null) {
