@@ -69,6 +69,13 @@ public final class RocketTransferSavedData extends SavedData {
     private long completedWriteCount;
     private RocketJournalNativeProbe nativeProbe;
     private RocketJournalHold nativeHold;
+    private CheckedSavedDataPolicy nativeI6Policy;
+
+    CheckedSavedDataPolicy nativeI6Policy(String mode, MinecraftServer server) {
+        if (!mode.equals(RocketI6NativeCut.selection(server))) { throw new IllegalStateException("I6 cut is not armed"); }
+        if (nativeI6Policy == null) { nativeI6Policy = RocketI6NativeCut.live(mode, server); }
+        return nativeI6Policy;
+    }
 
     public RocketJournalNativeProbe nativeProbe() { return nativeProbe; }
 

@@ -19,7 +19,7 @@ final class FixtureInventoryAdapter implements RocketBlockEntityAdapter {
         if (blockEntity.isRemoved()) { throw new IllegalStateException("Removed provider target"); }
         FixtureContainerBlockEntity container = (FixtureContainerBlockEntity) blockEntity;
         if (container.fault != null) { container.fault.enter("CAPTURE"); }
-        FixtureAdapterFaults.Probe restoreProbe = FixtureAdapterFaults.restoring();
+        FixtureAdapterFaults.Probe restoreProbe = FixtureAdapterFaults.restoring(blockEntity);
         if (restoreProbe == null) { restoreProbe = SealedPreparationLatchGameTests.probe(blockEntity); }
         if (restoreProbe != null) { restoreProbe.readbacks++; }
         CompoundTag body = container.captureInventory();
@@ -35,10 +35,11 @@ final class FixtureInventoryAdapter implements RocketBlockEntityAdapter {
         if (!(blockEntity instanceof FixtureContainerBlockEntity container) || !container.restoreInventory(payload)) {
             return false;
         }
-        FixtureAdapterFaults.Probe probe = FixtureAdapterFaults.restoring();
+        FixtureAdapterFaults.Probe probe = FixtureAdapterFaults.restoring(blockEntity);
         if (probe == null) { probe = SealedPreparationLatchGameTests.probe(blockEntity); }
         if (probe != null) {
             // Fail after writing only the new target's owned data, exercising real cleanup.
+            probe.target = blockEntity;
             probe.enter("RESTORE");
             if (probe.mode == FixtureAdapterFaults.Mode.RESTORE_FALSE) { return false; }
             if (probe.mode == FixtureAdapterFaults.Mode.RESTORE_MISMATCH) { container.clearContent(); }

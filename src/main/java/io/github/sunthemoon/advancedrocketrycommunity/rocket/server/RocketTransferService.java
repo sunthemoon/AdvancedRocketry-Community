@@ -88,6 +88,7 @@ final class RocketTransferService {
 
     private java.util.function.Predicate<RocketEntity> sealedClaim = rocket -> false;
     private java.util.function.Function<MinecraftServer, List<RocketRegion>> sealedReservations = server -> List.of();
+    private final RocketI6Entry i6 = new RocketI6Entry(recovery, landed, rocket -> sealedClaim.test(rocket), this::landedPort);
 
     RocketOrdinaryRetirement ordinaryRetirements() { return recovery.retirements(); }
     void sealedClaims(java.util.function.Predicate<RocketEntity> claim,
@@ -484,24 +485,7 @@ final class RocketTransferService {
 
     /** No endpoint may mutate a balance that restart recovery can replace from its journal. */
     boolean resourceMutationAllowed(RocketEntity rocket) {
-        if (RocketReleaseAccess.fenced(rocket)) { return false; }
-        if (sealedClaim.test(rocket)) { return false; }
-        if (!io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate.resourcesIdle(rocket)) { return false; }
-        if (landed.pending(rocket.assemblyTransactionId().orElse(null))) { return false; }
-        if (recovery.retirements().replacing(rocket.assemblyTransactionId().orElse(null))) { return false; }
-        if (!(rocket.level() instanceof ServerLevel level) || !level.getServer().isSameThread()
-                || !rocket.operational() || rocket.flightData().orElseThrow().activeTransferId().isPresent()) {
-            return false;
-        }
-        var journal = RocketTransferSavedData.get(level.getServer());
-        if (journal.resourceMutationUnproved(rocket.assemblyTransactionId().orElseThrow())) { return false; }
-        var record = journal.findByLogicalRocket(rocket.assemblyTransactionId().orElseThrow()).orElse(null);
-        if (record != null && record.nativeTransfer().isPresent()) {
-            return io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate.terminalSuccessor(rocket);
-        }
-        return resourceMutationAllowed(journal.operational(), record == null ? null : record.phase(),
-                record != null && settledTransfers.contains(record.transferId()) && !liveTransfers.contains(record.transferId()),
-                record != null && RocketTransferEntities.isReplaceableLandedAuthority(rocket, record));
+        return i6.resourceMutationAllowed(rocket, liveTransfers, settledTransfers);
     }
 
     static boolean resourceMutationAllowed(boolean operational, RocketTransferPhase phase,
@@ -525,19 +509,21 @@ final class RocketTransferService {
 
     /** W44's FM12a hook only; player and release-test disassembly use {@link #beginLandedDisassembly}. */
     boolean releaseLandedReservation(RocketEntity rocket) {
-        if (RocketReleaseAccess.fenced(rocket)) { return false; }
-        return !recovery.retirements().replacing(rocket.assemblyTransactionId().orElse(null))
-                && RocketLandedDisassemblies.releasePlain(rocket, this::landedPort);
+        return i6.releasePlain(rocket);
     }
 
     /** W85 M0 and M1; SUCCESS means that L has no landed record T, so the caller runs today's one-tick path. */
     RocketValidationCode beginLandedDisassembly(RocketEntity rocket, java.util.function.Supplier<Optional<RocketValidationCode>> preflight,
             RocketLandedDisassemblies.Request request) {
-        if (RocketReleaseAccess.fenced(rocket)) { return RocketValidationCode.REGION_BUSY; }
-        return sealedClaim.test(rocket) || recovery.retirements().replacing(rocket.assemblyTransactionId().orElse(null)) ? RocketValidationCode.REGION_BUSY
-                : landed.begin(rocket, preflight, request, this::landedPort);
+        return i6.begin(rocket, preflight, request);
     }
-    boolean landedDisassemblyPending(RocketEntity rocket) { return landed.pending(rocket.assemblyTransactionId().orElse(null)); }
+    boolean landedDisassemblyPending(RocketEntity rocket) {
+        var logical = rocket.assemblyTransactionId().orElse(null);
+        return landed.pending(logical) || recovery.retirements().plainReleasePending(logical);
+    }
+    RocketValidationCode prepareLandedDisassembly(RocketEntity rocket, java.util.function.BooleanSupplier authorized) {
+        return i6.prepare(rocket, authorized);
+    }
     RocketLandedDisassemblies landedDisassemblies() { return landed; }
     RocketLandedDisassemblies.Port landedPort(MinecraftServer server, RocketTransferSavedData journal) {
         return new RocketLandedDisassemblyPort(server, journal, recovery.bays(), liveTransfers, settledTransfers);

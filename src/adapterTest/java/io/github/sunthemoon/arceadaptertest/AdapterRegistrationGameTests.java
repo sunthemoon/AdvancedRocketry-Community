@@ -13,7 +13,6 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
@@ -29,6 +28,12 @@ import net.minecraftforge.registries.ForgeRegistries;
 @GameTestHolder(AdapterTestMod.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class AdapterRegistrationGameTests {
+    @net.minecraft.gametest.framework.GameTestGenerator
+    public static java.util.Collection<net.minecraft.gametest.framework.TestFunction> asynchronousTransitions() {
+        return java.util.List.of(
+                AdapterAsyncFixture.test("w164_adapter_success", "AdapterRegistrationGameTests.externalAdapterProductionAssemblyPreservesInventory",
+                        4, 1, false, AdapterRegistrationGameTests::externalAdapterProductionAssemblyPreservesInventory));
+    }
     private static final String HOST_ID = "advancedrocketrycommunity";
     private static final ResourceLocation ROCKET_TYPE = ResourceLocation.tryParse(HOST_ID + ":rocket");
 
@@ -62,7 +67,6 @@ public final class AdapterRegistrationGameTests {
         helper.succeed();
     }
 
-    @GameTest(templateNamespace = HOST_ID, template = "rocket_test", timeoutTicks = 40)
     public static void externalAdapterProductionAssemblyPreservesInventory(GameTestHelper helper) {
         helper.assertTrue(AdapterTestMod.registrationEvents() == 1,
                 "Production test started without exactly one external registration event");
@@ -81,7 +85,7 @@ public final class AdapterRegistrationGameTests {
         CompoundTag expectedInventory = original.captureInventory();
 
         // A per-test owner avoids the global fake-player cache and needs no login or test hook.
-        FakePlayer owner = new FakePlayer(helper.getLevel(),
+        FakePlayer owner = new AdapterAsyncFixture.Player(helper.getLevel(),
                 new GameProfile(UUID.randomUUID(), "AdapterFixture"));
         BlockPos absoluteOrigin = helper.absolutePos(origin);
         owner.setPos(absoluteOrigin.getX() + 0.5D, absoluteOrigin.getY(), absoluteOrigin.getZ() + 0.5D);
@@ -97,12 +101,15 @@ public final class AdapterRegistrationGameTests {
         }
 
         AABB region = new AABB(absoluteOrigin).inflate(3.0D);
+        Entity[] authority = new Entity[1];
+        AdapterAsyncFixture.Submission[] disassembly = new AdapterAsyncFixture.Submission[1];
         helper.startSequence()
                 .thenWaitUntil(() -> helper.assertTrue(rockets(helper, region).size() == 1,
                         "Production tick did not assemble one fixture rocket; assembler="
                                 + helper.getBlockEntity(origin.below()).saveWithoutMetadata()))
                 .thenExecute(() -> {
                     Entity rocket = rockets(helper, region).get(0);
+                    authority[0] = rocket;
                     for (BlockPos position : List.of(origin, origin.above(), origin.above(2), cargoPosition)) {
                         helper.assertTrue(helper.getBlockState(position).isAir(),
                                 "Assembly left a duplicate world block at " + position);
@@ -114,13 +121,14 @@ public final class AdapterRegistrationGameTests {
                             "Assembly dropped duplicate inventory items");
 
                     // Normal player interaction dispatches into the installed production RocketRuntime.
-                    owner.setPos(rocket.getX(), rocket.getY(), rocket.getZ());
-                    owner.setShiftKeyDown(true);
-                    try {
-                        rocket.interact(owner, InteractionHand.MAIN_HAND);
-                    } finally {
-                        owner.setShiftKeyDown(false);
-                    }
+                    disassembly[0] = new AdapterAsyncFixture.Submission(owner, rocket);
+                })
+                .thenWaitUntil(() -> helper.assertTrue(disassembly[0].advance(helper), "Production disassembly admission is busy"))
+                // DISASSEMBLY_PENDING -> BLOCKS_PUBLISHED; no same-call completion promise.
+                .thenWaitUntil(() -> helper.assertTrue(helper.getBlockState(cargoPosition).is(AdapterTestMod.CONTAINER.get()),
+                        "Production disassembly has not published the inventory"))
+                .thenExecute(() -> {
+                    Entity rocket = authority[0];
                     helper.assertTrue(rocket.isRemoved() && rockets(helper, region).isEmpty(),
                             "Owner interaction did not remove the assembled rocket exactly once");
                     helper.assertTrue(helper.getBlockState(origin).is(hostBlock("rocket_motor"))

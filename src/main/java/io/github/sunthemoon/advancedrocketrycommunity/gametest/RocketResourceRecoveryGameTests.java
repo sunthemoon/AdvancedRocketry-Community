@@ -50,6 +50,7 @@ public final class RocketResourceRecoveryGameTests {
 
     @GameTest(template = "rocket_test", batch = "resource_arrival_recovery", timeoutTicks = 400)
     public static void drainedArrivalSurvivesReloadAndDisassemblyRetiresJournal(GameTestHelper helper) {
+        var driver = new GameTestTickDriver(helper);
         var fixture = new Fixture(helper, false);
         fixture.whenReady(() -> {
             fixture.land();
@@ -68,25 +69,46 @@ public final class RocketResourceRecoveryGameTests {
             fixture.recover(RocketTransferRecoveryReport.Status.RECOVERED);
             fixture.assertBalances(0, 0, 2_000);
             // W85: one zero-fuel request answers pending; the acknowledged removal's continuation restores the rocket.
-            fixture.manager.requestDisassembly(fixture.player, fixture.rocket);
+            RocketRuntime.requestDisassembly(fixture.player, fixture.rocket);
             helper.assertTrue(fixture.rocket.isAlive() && fixture.player.refusal != null
                     && fixture.player.refusal.getContents() instanceof net.minecraft.network.chat.contents.TranslatableContents pending
-                    && pending.getKey().endsWith("disassembly_pending"), "Unacknowledged retirement disassembled an arrival");
+                    && pending.getKey().endsWith("disassembly_pending"),
+                    "Unacknowledged retirement disassembled an arrival: alive=" + fixture.rocket.isAlive()
+                            + " refusal=" + fixture.player.refusal);
             io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport.acknowledgeFixture(helper);
-            helper.assertTrue(fixture.rocket.isRemoved(), "Empty arrival disassembly refused");
-            helper.assertTrue(fixture.journal().find(fixture.record.transferId()).isEmpty(),
-                    "Disassembly retained reconstructable arrival resources");
-            assertSnapshotBlocks(helper, new io.github.sunthemoon.advancedrocketrycommunity.rocket.forge
-                    .ServerLevelRocketTransactionWorld(fixture.moon,
-                            io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.RocketBlockEntityAdapters.defaults(),
-                            fixture.owner), fixture.record.destinationSnapshot());
-            fixture.reloadJournalAndPlayer();
-            helper.assertTrue(fixture.manager.recoverTransfer(fixture.earth.getServer(), fixture.record.transferId())
-                    .status() == RocketTransferRecoveryReport.Status.NOT_FOUND, "Retired arrival recovered again");
-            fixture.assertBalances(0, 0, 2_000, 0);
-            clearSnapshotBlocks(fixture.moon, fixture.record.destinationSnapshot());
-            fixture.support.restore();
-            helper.succeed();
+            var pacer = new GameTestTickPacer(helper.getLevel().getServer());
+            Runnable[] completed = new Runnable[1];
+            completed[0] = () -> {
+                pacer.pace();
+                var transactions = io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketTransactionSavedData
+                        .get(helper.getLevel().getServer());
+                var world = new io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.ServerLevelRocketTransactionWorld(
+                        fixture.moon, io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.RocketBlockEntityAdapters.defaults(), fixture.owner);
+                if (fixture.rocket.isAlive() || !transactions.acknowledgedCurrent()
+                        || transactions.entries().stream().anyMatch(entry -> entry.record().snapshotId()
+                                .equals(fixture.record.destinationSnapshot().snapshotId()))
+                        || fixture.record.destinationSnapshot().blocks().stream().anyMatch(block -> world.readBlock(
+                                fixture.record.destinationSnapshot().sourceOrigin().add(block.position())).filter(
+                                        io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketWorldBlock
+                                                .fromSnapshotBlock(block)::equals).isEmpty())) {
+                    driver.after(1, completed[0]); return;
+                }
+                helper.assertTrue(fixture.rocket.isRemoved(), "Empty arrival disassembly refused");
+                helper.assertTrue(fixture.journal().find(fixture.record.transferId()).isEmpty(),
+                        "Disassembly retained reconstructable arrival resources");
+                assertSnapshotBlocks(helper, new io.github.sunthemoon.advancedrocketrycommunity.rocket.forge
+                        .ServerLevelRocketTransactionWorld(fixture.moon,
+                                io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.RocketBlockEntityAdapters.defaults(),
+                                fixture.owner), fixture.record.destinationSnapshot());
+                fixture.reloadJournalAndPlayer();
+                helper.assertTrue(fixture.manager.recoverTransfer(fixture.earth.getServer(), fixture.record.transferId())
+                        .status() == RocketTransferRecoveryReport.Status.NOT_FOUND, "Retired arrival recovered again");
+                fixture.assertBalances(0, 0, 2_000, 0);
+                clearSnapshotBlocks(fixture.moon, fixture.record.destinationSnapshot());
+                fixture.support.restore();
+                helper.succeed();
+            };
+            driver.after(1, completed[0]);
         });
     }
 
@@ -294,28 +316,28 @@ public final class RocketResourceRecoveryGameTests {
         void whenReady(Runnable action) {
             var pacer = new GameTestTickPacer(earth.getServer());
             helper.startSequence().thenWaitUntil(() -> {
-                keepFixtureRegionLoaded(earth, record.sourceSnapshot());
-                keepFixtureRegionLoaded(moon, record.destinationSnapshot());
-                var origin = record.sourceSnapshot().sourceOrigin();
-                long chunk = ChunkPos.asLong(origin.x() >> 4, origin.z() >> 4);
-                boolean ready = earth.areEntitiesLoaded(chunk) && moon.areEntitiesLoaded(chunk);
+                boolean sourceReady = keepFixtureRegionLoaded(earth, record.sourceSnapshot());
+                boolean destinationReady = keepFixtureRegionLoaded(moon, record.destinationSnapshot());
+                boolean ready = sourceReady && destinationReady;
                 if (!ready) { pacer.pace(); }
-                helper.assertTrue(ready, "Resource recovery fixture entity chunks not ready");
+                helper.assertTrue(ready, "Resource recovery fixture discovery columns not ready");
             }).thenExecute(action);
         }
 
-        private static void keepFixtureRegionLoaded(ServerLevel level,
+        private boolean keepFixtureRegionLoaded(ServerLevel level,
                 io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot snapshot) {
-            var chunks = new java.util.HashSet<ChunkPos>();
-            for (var block : snapshot.blocks()) {
-                var absolute = snapshot.sourceOrigin().add(block.position());
-                var at = new BlockPos(absolute.x(), absolute.y(), absolute.z());
-                var chunk = new ChunkPos(at);
-                if (chunks.add(chunk)) {
-                    level.getChunkSource().addRegionTicket(FIXTURE_TICKET, chunk, 2, chunk);
-                    level.getChunkAt(at);
-                }
+            // This is a ready-arrival fixture, not the separate cold-preparation scenario. Its checked
+            // discovery margin can cross a column boundary when the batch runner relocates the template.
+            var columns = io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.RocketDiscoveryColumns.of(snapshot);
+            helper.assertTrue(columns.admissible(), "Invalid resource recovery fixture columns");
+            boolean ready = true;
+            for (var chunk : columns.columns()) {
+                level.getChunkSource().addRegionTicket(FIXTURE_TICKET, chunk, 2, chunk);
+                level.getChunk(chunk.x, chunk.z);
+                ready &= level.areEntitiesLoaded(chunk.toLong()) && level.isPositionEntityTicking(
+                        new BlockPos(chunk.x << 4, snapshot.sourceOrigin().y(), chunk.z << 4));
             }
+            return ready;
         }
 
         void land() {

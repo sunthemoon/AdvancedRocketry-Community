@@ -27,6 +27,8 @@ public final class AdapterTestMod {
     public static final String MOD_ID = "arce_adapter_test";
     static final ResourceLocation CONTAINER_ID = id("cargo_container");
     static final ResourceLocation ADAPTER_ID = id("cargo_inventory");
+    static final ResourceLocation SLOW_MOVE_ID = id("slow_move_container");
+    static final ResourceLocation SLOW_CAPTURE_ID = id("slow_capture_container");
     static final ResourceLocation SEALED_CONTAINER_ID = id("sealed_cargo_container");
     static final ResourceLocation SEALED_ADAPTER_ID = id("sealed_cargo_inventory");
     static final ResourceLocation LATCH_CONTAINER_ID = id("latch_cargo_container");
@@ -41,6 +43,10 @@ public final class AdapterTestMod {
 
     static final RegistryObject<Block> CONTAINER =
             BLOCKS.register(CONTAINER_ID.getPath(), FixtureContainerBlock::new);
+    static final RegistryObject<Block> SLOW_MOVE_CONTAINER =
+            BLOCKS.register(SLOW_MOVE_ID.getPath(), FixtureContainerBlock::new);
+    static final RegistryObject<Block> SLOW_CAPTURE_CONTAINER =
+            BLOCKS.register(SLOW_CAPTURE_ID.getPath(), FixtureContainerBlock::new);
     static final RegistryObject<Block> SEALED_CONTAINER =
             BLOCKS.register(SEALED_CONTAINER_ID.getPath(), FixtureContainerBlock::new);
     static final RegistryObject<Block> LATCH_CONTAINER =
@@ -50,6 +56,12 @@ public final class AdapterTestMod {
     static final RegistryObject<BlockEntityType<FixtureContainerBlockEntity>> CONTAINER_TYPE =
             BLOCK_ENTITIES.register(CONTAINER_ID.getPath(), () -> BlockEntityType.Builder.of(
                     FixtureContainerBlockEntity::new, CONTAINER.get()).build(null));
+    static final RegistryObject<BlockEntityType<FixtureContainerBlockEntity>> SLOW_MOVE_TYPE =
+            BLOCK_ENTITIES.register(SLOW_MOVE_ID.getPath(), () -> BlockEntityType.Builder.of(
+                    FixtureContainerBlockEntity::new, SLOW_MOVE_CONTAINER.get()).build(null));
+    static final RegistryObject<BlockEntityType<FixtureContainerBlockEntity>> SLOW_CAPTURE_TYPE =
+            BLOCK_ENTITIES.register(SLOW_CAPTURE_ID.getPath(), () -> BlockEntityType.Builder.of(
+                    FixtureContainerBlockEntity::new, SLOW_CAPTURE_CONTAINER.get()).build(null));
     static final RegistryObject<BlockEntityType<FixtureContainerBlockEntity>> SEALED_CONTAINER_TYPE =
             BLOCK_ENTITIES.register(SEALED_CONTAINER_ID.getPath(), () -> BlockEntityType.Builder.of(
                     FixtureContainerBlockEntity::new, SEALED_CONTAINER.get()).build(null));
@@ -108,6 +120,9 @@ public final class AdapterTestMod {
             return;
         }
         event.register(ADAPTER_ID, Set.of(CONTAINER_ID), PAYLOAD_VERSION, new FixtureInventoryAdapter());
+        // A once-per-wrapper warning must belong to its own deliberate slow callback, not test order.
+        event.register(SLOW_MOVE_ID, Set.of(SLOW_MOVE_ID), PAYLOAD_VERSION, new FixtureInventoryAdapter());
+        event.register(SLOW_CAPTURE_ID, Set.of(SLOW_CAPTURE_ID), PAYLOAD_VERSION, new FixtureInventoryAdapter());
         // Independent wrapper lifetime: sealed-publication slow faults cannot consume the legacy fixture's warning.
         event.register(SEALED_ADAPTER_ID, Set.of(SEALED_CONTAINER_ID), PAYLOAD_VERSION, new FixtureInventoryAdapter());
         // Lifetime/reload faults must not consume another test's one-warning-per-wrapper diagnostic.

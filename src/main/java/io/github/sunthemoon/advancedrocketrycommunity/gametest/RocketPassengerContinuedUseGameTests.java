@@ -122,9 +122,17 @@ public final class RocketPassengerContinuedUseGameTests {
     @GameTest(template = "rocket_test", batch = "passenger_refueled_disassembly", timeoutTicks = 400)
     public static void refueledArrivalDisassemblyReleasesTransferRecord(GameTestHelper helper) {
         var driver = new GameTestTickDriver(helper);
-        afterLanding(helper, driver, rocket -> {
-            var player = new RocketDisassemblyGameTests.ConsentPlayer(
+        var pacer = new GameTestTickPacer(helper.getLevel().getServer());
+        afterLanding(helper, driver, (rocket, done) -> {
+            var player = new RocketPropulsionGameTests.ContainerPlayer(
                     (ServerLevel) rocket.level(), rocket.ownerId().orElseThrow());
+            // T retains the original seat obligation. Observe its owner alive and placed at D rather than
+            // erasing that obligation just because the current manifest is empty after disembarkation.
+            var connection = new net.minecraft.network.Connection(net.minecraft.network.protocol.PacketFlow.SERVERBOUND);
+            new io.netty.channel.embedded.EmbeddedChannel(connection);
+            helper.getLevel().getServer().getPlayerList().placeNewPlayer(connection, player);
+            ARRIVAL_PLAYERS.add(player);
+            player.teleportTo((ServerLevel) rocket.level(), rocket.getX() + 2, rocket.getY(), rocket.getZ(), 0, 0);
             player.setPos(rocket.position());
             var landed = rocket.flightData().orElseThrow();
             rocket.updateFlightData(landed.withFuel(landed.fuel().fill(1000).state(), rocket.level().getGameTime())
@@ -138,19 +146,37 @@ public final class RocketPassengerContinuedUseGameTests {
                     .recoverFixture(helper, () -> manager.recoverTransfer(helper.getLevel().getServer(), retained.transferId())).status()
                     == io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecoveryReport.Status.RECOVERED,
                     "Fresh disassembly manager did not reconcile arrival authority");
-            manager.requestDisassembly(player, rocket);
+            Runnable[] demand = new Runnable[1];
+            long[] retry = {0};
+            demand[0] = () -> {
+            pacer.pace();
+            if (!RocketRuntime.resourceMutationAllowed(rocket) || helper.getTick() < retry[0]) {
+                driver.after(1, demand[0]); return;
+            }
+            RocketRuntime.requestDisassembly(player, rocket);
             helper.assertTrue(rocket.isAlive() && rocket.flightData().orElseThrow().fuel().amount() == 1000,
                     "Implicit fueled teardown changed arrival authority");
+            if (player.command == null) { retry[0] = helper.getTick() + 20; driver.after(1, demand[0]); return; }
             // W85: the confirmed request answers pending; nothing is restored or discarded before the acknowledgement.
-            helper.assertTrue(RocketDisassemblyGameTests.confirmCommand(manager, player) == 1 && rocket.isAlive()
+            helper.assertTrue(helper.getLevel().getServer().getCommands().performPrefixedCommand(
+                    player.createCommandSourceStack().withPermission(0), player.command.substring(1)) == 1 && rocket.isAlive()
                     && player.discarded == 0 && rocket.flightData().orElseThrow().fuel().amount() == 1000,
                     "Unacknowledged retirement consumed arrival authority");
             io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport.acknowledgeFixture(helper);
-            helper.assertTrue(player.discarded == 1000, "Explicit arrival disposal did not report its exact amount");
-            helper.assertTrue(rocket.isRemoved(), "Refueled arrival did not disassemble");
-            var journal = RocketTransferSavedData.get(helper.getLevel().getServer());
-            helper.assertTrue(journal.findByLogicalRocket(rocket.assemblyTransactionId().orElseThrow()).isEmpty(),
-                    "Disassembly left a transfer record that can rebuild the consumed rocket");
+            Runnable[] completion = new Runnable[1];
+            completion[0] = () -> {
+                pacer.pace();
+                if (rocket.isAlive() || player.discarded == 0) { driver.after(1, completion[0]); return; }
+                helper.assertTrue(player.discarded == 1000, "Explicit arrival disposal did not report its exact amount");
+                helper.assertTrue(rocket.isRemoved(), "Refueled arrival did not disassemble");
+                var journal = RocketTransferSavedData.get(helper.getLevel().getServer());
+                helper.assertTrue(journal.findByLogicalRocket(rocket.assemblyTransactionId().orElseThrow()).isEmpty(),
+                        "Disassembly left a transfer record that can rebuild the consumed rocket");
+                done.run();
+            };
+            driver.after(1, completion[0]);
+            };
+            driver.after(1, demand[0]);
         });
     }
 
@@ -199,6 +225,23 @@ public final class RocketPassengerContinuedUseGameTests {
     }
 
     private static void afterLanding(GameTestHelper helper, GameTestTickDriver driver, Consumer<RocketEntity> check) {
+        afterLanding(helper, driver, (rocket, done) -> { check.accept(rocket); done.run(); });
+    }
+
+    private static final java.util.Map<UUID, Runnable> ARRIVALS = new java.util.HashMap<>();
+    private static final java.util.List<net.minecraft.server.level.ServerPlayer> ARRIVAL_PLAYERS = new java.util.ArrayList<>();
+    @net.minecraft.gametest.framework.AfterBatch(batch = "passenger_refueled_disassembly")
+    public static void cleanupDisassembly(ServerLevel level) {
+        java.util.List.copyOf(ARRIVALS.values()).forEach(Runnable::run);
+        for (var player : ARRIVAL_PLAYERS) {
+            player.stopRiding(); level.getServer().getPlayerList().remove(player);
+            player.connection.connection.disconnect(net.minecraft.network.chat.Component.literal("Fixture complete"));
+        }
+        ARRIVAL_PLAYERS.clear();
+    }
+
+    private static void afterLanding(GameTestHelper helper, GameTestTickDriver driver,
+            java.util.function.BiConsumer<RocketEntity, Runnable> check) {
         var earth = helper.getLevel();
         var moon = earth.getServer().getLevel(CelestialIds.MOON_LEVEL);
         helper.assertTrue(moon != null, "Moon unavailable");
@@ -215,19 +258,23 @@ public final class RocketPassengerContinuedUseGameTests {
             var journal = RocketTransferSavedData.get(earth.getServer());
             var record = journal.find(transfer).orElseThrow();
             var rocket = (RocketEntity) moon.getEntity(RocketFlightGameTestFixtures.landedDestinationId(helper, record));
+            var chunk = new net.minecraft.world.level.ChunkPos(new net.minecraft.core.BlockPos(
+                    record.destinationSnapshot().sourceOrigin().x(), record.destinationSnapshot().sourceOrigin().y(),
+                    record.destinationSnapshot().sourceOrigin().z()));
+            boolean ownedForce = !moon.getForcedChunks().contains(chunk.toLong());
+            if (ownedForce) { moon.setChunkForced(chunk.x, chunk.z, true); }
+            Runnable cleanup = () -> {
+                if (ARRIVALS.remove(transfer) == null) { return; }
+                if (rocket != null) { rocket.ejectPassengers(); rocket.discard(); }
+                journal.remove(transfer); journal.flush(earth.getServer());
+                if (ownedForce) { moon.setChunkForced(chunk.x, chunk.z, false); }
+            };
+            ARRIVALS.put(transfer, cleanup);
             try {
                 helper.assertTrue(rocket != null && rocket.flightData().orElseThrow().state() == RocketFlightState.LANDED,
                         "Fixture did not land");
-                check.accept(rocket);
-                helper.succeed();
-            } finally {
-                if (rocket != null) {
-                    rocket.ejectPassengers();
-                    rocket.discard();
-                }
-                journal.remove(transfer);
-                journal.flush(earth.getServer());
-            }
+                check.accept(rocket, () -> { cleanup.run(); helper.succeed(); });
+            } catch (RuntimeException | Error failure) { cleanup.run(); throw failure; }
         });
     }
 

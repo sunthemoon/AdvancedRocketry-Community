@@ -439,6 +439,7 @@
   "message.advancedrocketrycommunity.rejoin.tickets": "等待区块票容量",
   "message.advancedrocketrycommunity.rejoin.unsafe": "没有已验证的安全位置",
   "message.advancedrocketrycommunity.rejoin.waiting": "等待恢复",
+  "message.advancedrocketrycommunity.rocket.disassembly_preparing": "正在准备此火箭原发射场的区块。准备完成后，请重新请求拆解并确认燃料处置。",
   "message.advancedrocketrycommunity.rocket_cargo.admission_disabled": "货物转移尚未启用；未移动货物。",
   "message.advancedrocketrycommunity.rocket_cargo.cargo_full": "火箭的货物储存空间已满。",
   "message.advancedrocketrycommunity.rocket_cargo.cargo_too_large": "货物数据超过转移限制；未移动货物。",

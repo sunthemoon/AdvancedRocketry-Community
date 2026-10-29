@@ -13,6 +13,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketLanded
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketLandedDisassemblyRules.WriteBack;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRegion;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionResult;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.sealed.SealedDisassembly;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.validation.RocketValidationCode;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -39,6 +40,17 @@ final class RocketLandedDisassemblies {
 
     /** The request's world side: E, the v0.5 transaction and the requester's or the release-test hook's report. */
     interface Request {
+        /** Original M0 time; the sentinel is only for legacy direct callers that have no proof stage. */
+        default long requestedAt() { return Long.MIN_VALUE; }
+        /** The installed ordinary caller uses B2; legacy synchronous adapters are isolated test fixtures. */
+        default boolean retainedExecutor() { return false; }
+        /** False means no executor was admitted; completion must not run inline before admission returns. */
+        default boolean beginRetained(java.util.function.Consumer<SealedDisassembly.Result> completion) {
+            throw new UnsupportedOperationException("No retained executor");
+        }
+        default RocketValidationCode admissionRefusal() { return RocketValidationCode.REGION_BUSY; }
+        default void finishedRetained(SealedDisassembly.Result result) { }
+        default boolean authorized() { return matches(); }
         /** E is alive and loaded and still equals S. */
         boolean matches();
 
@@ -53,6 +65,17 @@ final class RocketLandedDisassemblies {
 
         /** Today's one-tick v0.5 transaction. Called at most once, with the latch already set. */
         RocketTransactionResult restore();
+
+        /** Resumable completion. A synchronous adapter is not a native rollback certificate. */
+        default void restore(java.util.function.Consumer<RocketTransactionResult> completion) {
+            completion.accept(restore());
+        }
+
+        /** True only after the executor proves native rollback and checked U absence. */
+        default boolean rollbackCertified() { return false; }
+
+        /** Legacy direct execution remains unchanged until its caller is replaced by the retained executor. */
+        default boolean requiresNativeRollbackProof() { return false; }
 
         /** Called at most once per P: the result's code, or REGION_BUSY when M2 did not restore (result null). */
         void finished(RocketValidationCode code, RocketTransactionResult result);
@@ -93,7 +116,9 @@ final class RocketLandedDisassemblies {
         private final Progress progress = new Progress();
         private RocketValidationCode code = RocketValidationCode.REGION_BUSY;
         private RocketTransactionResult result;
+        private SealedDisassembly.Result retainedResult;
         private boolean reported;
+        private boolean retainedReady;
 
         private Pending(RocketTransferRecord record, UUID entity, long requestedAt, Request request, Port port,
                         RocketTransferSavedData journal) {
@@ -237,6 +262,7 @@ final class RocketLandedDisassemblies {
     int size() {
         return pending.size();
     }
+    java.util.Set<UUID> logicalIds() { return java.util.Set.copyOf(pending.keySet()); }
 
     boolean hasCapacity() {
         return pending.size() < MAX_PENDING;
@@ -249,16 +275,8 @@ final class RocketLandedDisassemblies {
      */
     RocketValidationCode release(RocketTransferSavedData journal, RocketTransferRecord record, UUID entity,
                                  Request request, Port port, Reservation reservation) {
-        Objects.requireNonNull(journal, "journal");
-        Objects.requireNonNull(record, "record");
-        if (pending.containsKey(record.logicalRocketId()) || !hasCapacity() || reservation == null
-                || !reservation.logical().equals(record.logicalRocketId())) {
-            return RocketValidationCode.REGION_BUSY;
-        }
-        Pending entry = new Pending(record, Objects.requireNonNull(entity, "entity"), port.now(),
-                Objects.requireNonNull(request, "request"), Objects.requireNonNull(port, "port"), journal);
-        pending.put(entry.logical(), entry);
-        journal.remove(record.transferId());
+        Pending entry = prepareRelease(journal, record, entity, request, port, reservation);
+        if (entry == null) { return RocketValidationCode.REGION_BUSY; }
         if (!port.queueRemoval(reservation, () -> removalAcknowledged(entry), () -> removalDiscarded(entry))) {
             end(entry);
             try {
@@ -271,11 +289,28 @@ final class RocketLandedDisassemblies {
         return RocketValidationCode.DISASSEMBLY_PENDING;
     }
 
+    /** M1 under the proof coordinator's token; that coordinator alone queues the removal continuation. */
+    Pending prepareRelease(RocketTransferSavedData journal, RocketTransferRecord record, UUID entity,
+                           Request request, Port port, Reservation reservation) {
+        Objects.requireNonNull(journal, "journal");
+        Objects.requireNonNull(record, "record");
+        if (pending.containsKey(record.logicalRocketId()) || !hasCapacity() || reservation == null
+                || !reservation.logical().equals(record.logicalRocketId())) {
+            return null;
+        }
+        long requestedAt = request.requestedAt() == Long.MIN_VALUE ? port.now() : request.requestedAt();
+        Pending entry = new Pending(record, Objects.requireNonNull(entity, "entity"), requestedAt,
+                Objects.requireNonNull(request, "request"), Objects.requireNonNull(port, "port"), journal);
+        pending.put(entry.logical(), entry);
+        journal.remove(record.transferId());
+        return entry;
+    }
+
     /**
      * M2, inside the removal's exact-acknowledgement continuation; it also runs while another record's write has failed
      * definitely, because the acknowledgement that it needs is already retained. Every handled case returns true (N1).
      */
-    private boolean removalAcknowledged(Pending entry) {
+    boolean removalAcknowledged(Pending entry) {
         if (!current(entry) || entry.stage() != Stage.RELEASED) {
             return true;
         }
@@ -287,12 +322,71 @@ final class RocketLandedDisassemblies {
                 writeBack(entry);
                 return true;
             }
-            entry.progress.startRestoration();
-            RocketTransactionResult result = entry.request.restore();
+            if (entry.request.retainedExecutor()) {
+                // The journal callback runs after B2's END-tick work. P retains its capacity/region until the next
+                // manager turn, before the shared inspection allowance is consumed. No U or executor exists yet.
+                entry.retainedReady = true;
+            } else {
+                entry.progress.startRestoration();
+                entry.request.restore(result -> restorationCompleted(entry, result));
+            }
+        } catch (RuntimeException failure) {
+            restorationFailed(entry);
+        }
+        return true;
+    }
+
+    /** Service acknowledged handoffs before B2 spends this server tick's existing inspection budget. */
+    void tickRetained() {
+        for (var entry : List.copyOf(pending.values())) {
+            if (!entry.retainedReady || entry.stage() != Stage.RELEASED) { continue; }
+            entry.retainedReady = false;
+            try {
+                if (!entry.request.authorized() || !RocketLandedDisassemblyRules.restore(entry.requestedAt,
+                        entry.port.now(), entry.request.matches(), entry.request.restorable(), entry.port.bayAllowsRemoval(entry.record))) {
+                    writeBack(entry); continue;
+                }
+                boolean admitted;
+                try { admitted = entry.request.beginRetained(result -> retainedCompleted(entry, result)); }
+                catch (RuntimeException | Error uncertain) { entry.progress.startRestoration(); throw uncertain; }
+                if (!admitted) { entry.code = entry.request.admissionRefusal(); writeBack(entry); continue; }
+                entry.progress.startRestoration();
+            } catch (RuntimeException failure) { restorationFailed(entry); }
+        }
+    }
+
+    /** Before the transfer writer stops, M3 still owns a handoff that has entered no executor and made no terrain change. */
+    void cancelRetainedHandoffs() {
+        for (var entry : List.copyOf(pending.values())) {
+            if (entry.retainedReady && entry.stage() == Stage.RELEASED) {
+                entry.retainedReady = false; writeBack(entry);
+            }
+        }
+    }
+
+    private void retainedCompleted(Pending entry, SealedDisassembly.Result result) {
+        if (!current(entry) || entry.stage() != Stage.RESTORING) { return; }
+        try {
+            entry.retainedResult = Objects.requireNonNull(result);
+            if (result == SealedDisassembly.Result.ROLLBACK_PROVED && entry.request.matches()) {
+                entry.progress.certifyCleanRollback(); writeBack(entry);
+            } else {
+                // REJECTED/PROOF_PLAN_LIMIT are not native rollback certificates. No invented block counters.
+                end(entry); report(entry);
+            }
+        } catch (RuntimeException failure) { restorationFailed(entry); }
+        catch (Error fatal) { end(entry); throw fatal; }
+    }
+
+    private void restorationCompleted(Pending entry, RocketTransactionResult result) {
+        if (!current(entry) || entry.stage() != Stage.RESTORING) { return; }
+        try {
             entry.code = result.code();
             entry.result = result;
             Outcome outcome = RocketLandedDisassemblyRules.classify(result.success(), result.code(),
-                    result.changedBlocks(), result.rolledBackBlocks(), !result.success() && entry.request.matches());
+                    result.changedBlocks(), result.rolledBackBlocks(), !result.success()
+                            && (!entry.request.requiresNativeRollbackProof() || entry.request.rollbackCertified())
+                            && entry.request.matches());
             switch (outcome) {
                 case SUCCESS -> {
                     report(entry);
@@ -310,26 +404,33 @@ final class RocketLandedDisassemblies {
                 }
             }
         } catch (RuntimeException failure) {
-            if (!entry.restorationStarted() || entry.progress.certified()) {
-                writeBack(entry);
-            } else if (current(entry) && entry.stage() == Stage.RESTORING) {
-                // Mutation is uncertain, also after a SUCCESS whose notification threw: never write T back.
-                notRestored(entry, "uncertain");
-                end(entry);
-                if (entry.result == null) {
-                    entry.code = RocketValidationCode.ROLLBACK_FAILED;
-                }
-                report(entry);
-            }
+            restorationFailed(entry);
+        } catch (Error fatal) {
+            // A late callback cannot leave a RAM-only owner alive after its executor releases the claim.
+            end(entry);
+            throw fatal;
         }
-        return true;
+    }
+
+    private void restorationFailed(Pending entry) {
+        if (!entry.restorationStarted() || entry.progress.certified()) {
+            writeBack(entry);
+        } else if (current(entry) && entry.stage() == Stage.RESTORING) {
+            // Mutation is uncertain, also after a SUCCESS whose notification threw: never write T back.
+            notRestored(entry, "uncertain");
+            end(entry);
+            if (entry.result == null) {
+                entry.code = RocketValidationCode.ROLLBACK_FAILED;
+            }
+            report(entry);
+        }
     }
 
     /**
      * The removal's discarded callback (N1's four cases). Once the latch is set without a certified clean rollback it
      * only logs and ends P, which is all it does while an {@code Error} unwinds; otherwise it runs M3.
      */
-    private void removalDiscarded(Pending entry) {
+    void removalDiscarded(Pending entry) {
         if (!current(entry) || entry.stage() == Stage.WRITE_BACK || entry.stage() == Stage.ENDED) {
             return;
         }
@@ -424,7 +525,8 @@ final class RocketLandedDisassemblies {
             return;
         }
         entry.reported = true;
-        entry.request.finished(entry.code, entry.result);
+        if (entry.retainedResult != null) { entry.request.finishedRetained(entry.retainedResult); }
+        else { entry.request.finished(entry.code, entry.result); }
     }
 
     /**

@@ -84,6 +84,10 @@ final class RocketAdapterFailureFixture implements AutoCloseable {
         this(helper, ORIGIN, ADAPTER_ID, fuelTank);
     }
 
+    static RocketAdapterFailureFixture ordinaryCargo(GameTestHelper helper) {
+        return new RocketAdapterFailureFixture(helper, ORIGIN, VanillaContainerRocketAdapter.ID, true);
+    }
+
     private RocketAdapterFailureFixture(GameTestHelper helper, BlockPos relativeOrigin,
                                        ResourceLocation adapterId, boolean fuelTank) {
         this.helper = helper;
@@ -107,7 +111,8 @@ final class RocketAdapterFailureFixture implements AutoCloseable {
         chest().setItem(0, new ItemStack(Items.DIAMOND, 17));
         chest().setItem(26, new ItemStack(Items.IRON_INGOT, 3));
         adapter = new FaultAdapter(adapterId, chestPosition);
-        adapters = new RocketBlockEntityAdapters(List.of(adapter));
+        adapters = adapterId.equals(VanillaContainerRocketAdapter.ID) ? RocketBlockEntityAdapters.defaults()
+                : new RocketBlockEntityAdapters(List.of(adapter));
         RocketStructureScanTask scan = new RocketStructureScanTask(
                 new ServerLevelRocketScanWorld(level, adapters), level.dimension().location(),
                 position(origin), UUID.randomUUID(), level.getGameTime());

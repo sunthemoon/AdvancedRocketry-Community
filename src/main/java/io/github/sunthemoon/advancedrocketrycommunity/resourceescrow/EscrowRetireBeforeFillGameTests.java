@@ -35,8 +35,15 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 @PrefixGameTestTemplate(false)
 public final class EscrowRetireBeforeFillGameTests {
     private static final String BATCH = "escrow_retire_before_fill";
+    private static final String CAPTURE_CONTENTION = "w164_retire_fill_capture_turn";
+    // W166's positive native-capture window, not a production timeout or extra fixture time.
+    private static final int CAPTURE_WINDOW_TICKS = 60;
     private static final List<Scenario> RUNNING = new ArrayList<>();
     private EscrowRetireBeforeFillGameTests() { }
+
+    static boolean launchCaptureWindow(int tick) {
+        return GameTestAutosave.ticksUntil(tick) > CAPTURE_WINDOW_TICKS;
+    }
 
     @GameTest(template = "empty", batch = BATCH, timeoutTicks = 2_400)
     public static void sameLevelLandedTransferRetiresBeforeFillAndGovernedLaunch(GameTestHelper helper) {
@@ -53,21 +60,27 @@ public final class EscrowRetireBeforeFillGameTests {
         new Scenario(helper, true, true, 48_016).start();
     }
 
+    @GameTest(template = "empty", batch = CAPTURE_CONTENTION, timeoutTicks = 2_400)
+    public static void postFillLaunchWaitsForAnAvailableCaptureTurn(GameTestHelper helper) {
+        new Scenario(helper, false, false, 48_024, true).start();
+    }
+
     @AfterBatch(batch = BATCH)
     public static void cleanup(ServerLevel level) { RUNNING.forEach(Scenario::cleanup); RUNNING.clear(); }
 
+    @AfterBatch(batch = CAPTURE_CONTENTION)
+    public static void cleanupCaptureContention(ServerLevel level) { cleanup(level); }
+
     private static final class Scenario {
-        /**
-         * W187: F1's source capture completes with its Level's next 20-tick force, and the ARMED ledger write must capture
-         * while that proof is still valid. Three force periods bound both at paced ticks, as in W184's Moon landing rule.
-         */
-        static final int F1_WINDOW_TICKS = 60;
         final GameTestHelper helper;
         final ServerLevel level, oldLevel;
         final Area destination;
         final RocketPosition oldOrigin;
         final GameTestTickPacer pacer;
         final boolean stale;
+        final boolean occupyCapture;
+        boolean captureOccupied;
+        EscrowReason occupiedCaptureResult;
         RocketEntity rocket, oldCopy, arrival;
         /** W166: the Moon arrival's identity, and its column, which this fixture holds from landing until removal. */
         UUID arrivalId;
@@ -80,7 +93,11 @@ public final class EscrowRetireBeforeFillGameTests {
         boolean refused, sawCountdown, finished, launchPending;
 
         Scenario(GameTestHelper helper, boolean cross, boolean stale, int chunk) {
+            this(helper, cross, stale, chunk, false);
+        }
+        Scenario(GameTestHelper helper, boolean cross, boolean stale, int chunk, boolean occupyCapture) {
             this.helper = helper; this.stale = stale; level = helper.getLevel();
+            this.occupyCapture = occupyCapture;
             oldLevel = cross ? level.getServer().getLevel(CelestialIds.MOON_LEVEL) : level;
             destination = new Area(level, chunk, 48_000);
             oldOrigin = new RocketPosition((chunk + 200) * 16 + 8, 100, 48_000 * 16 + 8);
@@ -170,16 +187,32 @@ public final class EscrowRetireBeforeFillGameTests {
                     helper.assertTrue(next.nativeTransfer().isPresent(), "The launch was not governed"); step = 6; return;
                 }
                 if (launchPending) { return; }
-                // W187: a periodic autosave stores the source's entity section and supersedes F1's pending capture. F1 then
-                // discards the launch, and the pending launch never reaches its countdown before the 2,400-tick timeout.
-                // Request only when the next autosave falls after F1's window. The BEFORE_FILL proof before it needs no
-                // guard: one demand's third ticket step absorbs a superseded proof (RocketFillRetirementPacing).
-                if (GameTestAutosave.within(server, F1_WINDOW_TICKS)) { return; }
+                if (occupyCapture && !captureOccupied) {
+                    var runtime = EscrowRuntime.of(server); var barrier = runtime.barrier();
+                    if (!barrier.availableOrdinary(level.dimension().location().toString(), server.getTickCount())) { return; }
+                    // Another native consumer can spend this tick's one shared capture before the launch callback.
+                    captureOccupied = barrier.beginOrdinary(runtime.store(level), level.dimension().location().toString(),
+                            destination.chunk, root -> true, server.getTickCount(), label -> { }, result -> {
+                                occupiedCaptureResult = result.reason();
+                                if (result.proof() != null) { result.proof().release(); }
+                            });
+                    helper.assertTrue(captureOccupied, "The competing native capture was not admitted");
+                }
+                // Idle resources do not imply a free native capture: the other fills, ordinary retirement and F1
+                // all use one shared capture per tick. Exercise the launch only on an available turn, not on the
+                // tick on which an asynchronous fill happened to finish. A submitted launch is never resubmitted.
+                // An available turn can still be superseded by vanilla's periodic save before F1 acknowledges.
+                // This positive launch fixture does not test that refusal; start outside the autosave window.
+                if (!launchCaptureWindow(server.getTickCount())) { return; }
+                if (!EscrowRuntime.of(server).barrier().available(level.dimension().location().toString(),
+                        true, server.getTickCount())) { return; }
                 request = UUID.randomUUID();
+                String beforeLaunch = launchState();
                 var launch = RocketRuntime.requestAdminFlight(rocket, RocketDestination.MOON, request);
                 helper.assertTrue(launch.code() == RocketFlightRequestCode.JOURNAL_PENDING || launch.code() == RocketFlightRequestCode.SUCCESS
                                 || launch.code() == RocketFlightRequestCode.DESTINATION_LOADING,
-                        "Post-fill launch refused: " + launch.code());
+                        "Post-fill launch refused: " + launch.code() + " before={" + beforeLaunch
+                                + "} after={" + launchState() + "}");
                 launchPending = launch.code() == RocketFlightRequestCode.JOURNAL_PENDING || launch.code() == RocketFlightRequestCode.SUCCESS;
                 return;
             }
@@ -234,6 +267,9 @@ public final class EscrowRetireBeforeFillGameTests {
                     found -> found.assemblyTransactionId().filter(next.logicalRocketId()::equals).isPresent());
             helper.assertTrue(moon.getEntity(arrivalId) == null && copies.isEmpty(),
                     "The discarded Moon arrival " + arrivalId + " came back from disk (" + copies.size() + " copies in " + chunk + ")");
+            helper.assertTrue(!occupyCapture || captureOccupied && (occupiedCaptureResult == EscrowReason.NONE
+                            || occupiedCaptureResult == EscrowReason.SUPERSEDING_SAVE),
+                    "The competing capture did not complete: " + occupiedCaptureResult);
             finished = true; cleanup(); helper.succeed();
         }
         void attempt() {
@@ -246,6 +282,17 @@ public final class EscrowRetireBeforeFillGameTests {
             var data = ResourceEscrowSavedData.existing(level.getServer());
             return data != null && data.bind(level.getServer()).unresolvedNaming(rocket.getUUID()).isEmpty()
                     && !section(loader).locked() && rocket.escrowSection().markers().isEmpty();
+        }
+        String launchState() {
+            var server = level.getServer(); var journal = RocketTransferSavedData.get(server);
+            var logical = record.logicalRocketId(); var runtime = EscrowRuntime.of(server);
+            return "tick=" + server.getTickCount() + " idle=" + RocketEscrowGate.idle(rocket)
+                    + " mutation=" + RocketRuntime.resourceMutationAllowed(rocket)
+                    + " governed=" + ResourceEscrowSavedData.existing(server).bind(server).governedAvailable(logical)
+                    + " authority=" + journal.actionAuthorityAvailable(logical)
+                    + " barrier=" + runtime.barrier().available(level.dimension().location().toString(), true, server.getTickCount())
+                    + " effects=" + journal.outstandingEffectCount() + " dirty=" + journal.isDirty()
+                    + " guard=" + journal.logicalGuard(logical);
         }
         void cleanup() {
             if (occupiedPad != null) { occupiedPad.close(); occupiedPad = null; }

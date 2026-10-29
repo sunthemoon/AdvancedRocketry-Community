@@ -185,10 +185,11 @@ def command_for(args, mode, cut, restart):
     return command
 
 
-def run_case(args, name, evidence):
+def run_case(args, name, evidence, *, demand=None, preserve=retain_raw, started=None,
+             command_builder=command_for, prefix="W150-R89"):
     assert_pin(args.source_commit)
     mode, cut = CASES[name]
-    session = TEMP.resolve() / ("W150-R89-" + name + "-" + uuid.uuid4().hex)
+    session = TEMP.resolve() / (prefix + "-" + name + "-" + uuid.uuid4().hex)
     session.mkdir(); evidence.mkdir(); token = uuid.uuid4().hex
     marker = session / ".w150-owned"; marker.write_text(token, encoding="ascii")
     row = dict(case=name, mode=mode, cut=cut, source=args.source_commit, jar_sha256=digest(args.jar), starts=[], status="RUNNING")
@@ -206,9 +207,10 @@ def run_case(args, name, evidence):
         world = session / "world"
         for restart in range(3):
             assert_pin(args.source_commit); require(digest(args.jar) == row["jar_sha256"], "JAR changed")
-            command = command_for(args, mode, cut, restart)
+            command = command_builder(args, mode, cut, restart)
             entry = dict(restart=restart, command=command, disk_space=common.disk_space(), memory=common.physical_memory())
             row["starts"].append(entry)
+            if started is not None: started(name, restart, entry)
             process = smoke.CapturedProcess(command, session, evidence / f"start-{restart}.log")
             process.wait_for(smoke.READY_MARKER, args.startup_timeout)
             if not restart:
@@ -235,7 +237,9 @@ def run_case(args, name, evidence):
                 if cut == "HOLD":
                     save(process)  # Held requests begin with a durable current D; never a save after the request.
                 row["expected_fuel"] = expected_fuel
-                start = len(process.lines); process.command("arce rocket release-test predecessor-launch")
+                start = len(process.lines)
+                if demand is None: process.command("arce rocket release-test predecessor-launch")
+                else: demand(process, dimension, destination_id, expected_fuel)
                 if cut in PRE:
                     label, _, ordinal = PRE[cut].partition(":")
                     boundary = "ARCE_N3_RETIREMENT_PAUSED boundary=" + label + " occurrence=" + (ordinal or "1")
@@ -271,7 +275,9 @@ def run_case(args, name, evidence):
             expected = "ARCE_TRANSFER_JOURNAL_UNACKNOWLEDGED retained dirty authority; dependent effects are blocked"
             require(all(cut == "UNKNOWN" and restart == 0 and line.rstrip().endswith(expected) for line in entry["errors"]), "Unexpected native error")
             process = None
-            retain_raw(world, evidence, restart); disk = read_disk(world)
+            observation = preserve(world, evidence, restart)
+            if observation is not None: entry["native_inputs"] = observation
+            disk = read_disk(world)
             disk["world_authority"] = world_authority(world, old)
             entry["landing_outbox"] = inspect_outbox(disk["journal"], old,
                     mode == "DESCENT" and cut == "STORE_D" and restart > 0)

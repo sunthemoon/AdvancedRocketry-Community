@@ -104,7 +104,7 @@ public final class RocketPropulsionGameTests {
             helper.succeed();
         }
     }
-    @GameTest(template = "rocket_test", timeoutTicks = 40)
+    @GameTest(template = "rocket_test", batch = "propulsion_disassembly_consent", timeoutTicks = 40)
     public static void wholeContainersRoundTripAndOxidizerOnlyRequiresFreshConsent(GameTestHelper helper) {
         BlockPos origin = new BlockPos(3, 2, 3);
         placeLegalRocket(helper, origin);
@@ -134,7 +134,10 @@ public final class RocketPropulsionGameTests {
             player.setItemInHand(hand, new net.minecraft.world.item.ItemStack(ModItems.OXYGEN_CANISTER.get()));
             helper.assertTrue(RocketPropulsionInteraction.exchange(player, rocket, hand)
                     == net.minecraft.world.InteractionResult.CONSUME, "Oxidizer fill refused");
-            var manager = new RocketManager(RocketBlockEntityAdapters.defaults());
+            // This 40-tick fixture keeps the historical synchronous adapter contract. The installed native route
+            // and the same complete fluid-consent/resource checks run in RocketSealedPropulsionGameTests.
+            var manager = io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketLandedDisassemblyGameTestSupport
+                    .legacyAdapters(helper, RocketBlockEntityAdapters.defaults());
             manager.requestDisassembly(player, rocket);
             helper.assertTrue(player.token != null && rocket.isAlive(), "Oxidizer-only bypassed consent");
             UUID stale = player.token;
@@ -157,8 +160,10 @@ public final class RocketPropulsionGameTests {
             helper.succeed();
         }, new GameTestTickPacer(helper.getLevel().getServer()), origin);
     }
-    private static final class ContainerPlayer extends net.minecraft.server.level.ServerPlayer {
+    static final class ContainerPlayer extends net.minecraft.server.level.ServerPlayer {
         UUID token;
+        String command;
+        long discarded;
         ContainerPlayer(ServerLevel level, UUID owner) {
             super(level.getServer(), level, new com.mojang.authlib.GameProfile(owner, "ARCEPropulsion"));
         }
@@ -166,8 +171,10 @@ public final class RocketPropulsionGameTests {
         @Override public void sendSystemMessage(net.minecraft.network.chat.Component message) {
             var click = message.getStyle().getClickEvent();
             if (click != null && click.getAction() == net.minecraft.network.chat.ClickEvent.Action.SUGGEST_COMMAND) {
-                String command = click.getValue(); token = UUID.fromString(command.substring(command.lastIndexOf(' ') + 1));
+                command = click.getValue(); token = UUID.fromString(command.substring(command.lastIndexOf(' ') + 1));
             }
+            if (message.getContents() instanceof net.minecraft.network.chat.contents.TranslatableContents text
+                    && text.getKey().endsWith("disassembly_fuel_discarded")) { discarded = ((Number) text.getArgs()[0]).longValue(); }
         }
     }
     private static void flight(GameTestHelper helper, GameTestTickDriver driver, Block motor, RocketPropulsion.Mode mode, long numerator, long denominator) {

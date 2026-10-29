@@ -70,8 +70,8 @@ final class RocketFillRetirementPacing {
     }
 
     /**
-     * An admitted attempt's checks, then its ticket step: the existing ordinary ticket on the old launch site's origin
-     * column, and D's refreshed. Returns the hold reason, or null once the tickets are placed. The first three holds never
+     * An admitted attempt's checks, then its ticket step: R124's existing ordinary tickets on both recorded checked
+     * discovery sets. Returns the hold reason, or null once the tickets are placed. The first three holds never
      * end by themselves and are read without loading anything (R59): either end's discovery region over its limit, a
      * census Level with saving off, and entity storage that gives no own-store proof (D2-4). Each WARNs once per Level.
      */

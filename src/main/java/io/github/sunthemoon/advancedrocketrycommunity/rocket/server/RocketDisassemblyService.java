@@ -19,20 +19,39 @@ import net.minecraft.server.level.ServerPlayer;
 
 /** Validates disassembly and binds deliberate fuel disposal to transient player consent. */
 final class RocketDisassemblyService {
-    private static final String MESSAGE = "message.advancedrocketrycommunity.rocket.";
-    private final RocketTransactionExecutor transactions;
+    static final String MESSAGE = "message.advancedrocketrycommunity.rocket.";
+    final RocketTransactionExecutor transactions;
     private final RocketFlightService flights;
+    final SealedDisassemblyCoordinator sealed;
     private final RocketDisassemblyConfirmations confirmations = new RocketDisassemblyConfirmations();
     private final RocketIntentRateLimiter limiter = new RocketIntentRateLimiter();
 
     RocketDisassemblyService(RocketTransactionExecutor transactions, RocketFlightService flights) {
+        this(transactions, flights, null);
+    }
+
+    RocketDisassemblyService(RocketTransactionExecutor transactions, RocketFlightService flights,
+                             SealedDisassemblyCoordinator sealed) {
         this.transactions = Objects.requireNonNull(transactions, "transactions");
         this.flights = Objects.requireNonNull(flights, "flights");
+        this.sealed = sealed;
     }
 
     void requestDisassembly(ServerPlayer player, RocketEntity rocket) {
         if (!allowRequest(player) || !validatePlayer(player, rocket)) {
             return;
+        }
+        if (sealed != null && io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate.retirementUnprotected(rocket)) {
+            var preparing = RocketDisassemblyRequest.of(this, player.serverLevel(), rocket, player, false);
+            if (preparing == null) { reject(player, RocketValidationCode.ENTITY_STATE_INVALID); return; }
+            var readiness = flights.transfers().prepareLandedDisassembly(rocket, preparing::preparationCurrent);
+            if (readiness != RocketValidationCode.SUCCESS) {
+                confirmations.forget(player.getUUID());
+                if (readiness == RocketValidationCode.DISASSEMBLY_PENDING) {
+                    player.sendSystemMessage(Component.translatable(MESSAGE + "disassembly_preparing"));
+                } else { reject(player, readiness); }
+                return;
+            }
         }
         long fuel = rocket.flightData().orElseThrow().fuel().totalAmount();
         if (fuel > 0L) {
@@ -104,7 +123,7 @@ final class RocketDisassemblyService {
         Objects.requireNonNull(rocket, "rocket");
         boolean actor = player.isAlive() && !player.isSpectator() && player.level() == rocket.level();
         boolean inRange = actor && RocketInteraction.withinRange(player, rocket.getX(), rocket.getY(), rocket.getZ());
-        if (flights.landedDisassemblyPending(rocket)) {
+        if (pending(rocket)) {
             return RocketLandedDisassemblyRules.status(actor, inRange, identity(rocket), authorized(player, rocket));
         }
         if (!actor) {
@@ -120,7 +139,7 @@ final class RocketDisassemblyService {
         return authorized(player, rocket) ? RocketValidationCode.SUCCESS : RocketValidationCode.UNAUTHORIZED;
     }
 
-    private static boolean authorized(ServerPlayer player, RocketEntity rocket) {
+    static boolean authorized(ServerPlayer player, RocketEntity rocket) {
         return rocket.ownerId().filter(player.getUUID()::equals).isPresent()
                 || player.isCreative() || player.hasPermissions(2);
     }
@@ -162,7 +181,7 @@ final class RocketDisassemblyService {
         ServerLevel level = player.serverLevel();
         RocketStructureSnapshot snapshot = rocket.snapshot().orElseThrow();
         long fuel = rocket.flightData().orElseThrow().fuel().totalAmount();
-        LandedRequest request = LandedRequest.of(this, level, rocket, player, false);
+        RocketDisassemblyRequest request = RocketDisassemblyRequest.of(this, level, rocket, player, false);
         if (request == null || consent != null && !request.snapshot.consented(consent)) {
             player.sendSystemMessage(Component.translatable(MESSAGE + "disassembly_confirmation_invalid"));
             return false;
@@ -177,6 +196,11 @@ final class RocketDisassemblyService {
         if (landed != RocketValidationCode.SUCCESS) {
             return reject(player, landed);
         }
+        if (request.retainedExecutor()) {
+            if (!request.beginRetained(request::finishedRetained)) { return reject(player, request.admissionRefusal()); }
+            player.displayClientMessage(Component.translatable(RocketValidationCode.DISASSEMBLY_PENDING.translationKey()), true);
+            return true;
+        }
         RocketTransactionResult result = execute(level, rocket, snapshot, fuel);
         reportTransaction(level, snapshot, player, result);
         if (result.success() && fuel > 0L) {
@@ -187,7 +211,7 @@ final class RocketDisassemblyService {
 
     RocketValidationCode disassembleForReleaseTest(RocketEntity rocket, long expectedDiscardFuel) {
         Objects.requireNonNull(rocket, "rocket");
-        if (flights.landedDisassemblyPending(rocket)) {
+        if (pending(rocket)) {
             return RocketLandedDisassemblyRules.status(true, true, identity(rocket), true);
         }
         RocketValidationCode code = validateRocket(rocket);
@@ -209,9 +233,13 @@ final class RocketDisassemblyService {
         }
         ServerLevel level = (ServerLevel) rocket.level();
         RocketStructureSnapshot snapshot = rocket.snapshot().orElseThrow();
-        LandedRequest request = LandedRequest.of(this, level, rocket, null, true);
+        RocketDisassemblyRequest request = RocketDisassemblyRequest.of(this, level, rocket, null, true);
         if (request == null) {
             return RocketValidationCode.ENTITY_STATE_INVALID;
+        }
+        if (request.retainedExecutor()) {
+            var readiness = flights.transfers().prepareLandedDisassembly(rocket, request::preparationCurrent);
+            if (readiness != RocketValidationCode.SUCCESS) { return readiness; }
         }
         // A landed arrival answers DISASSEMBLY_PENDING; its receipt line follows when M2 or M3 finishes.
         RocketValidationCode landed = flights.beginLandedDisassembly(rocket, () -> preflight(level, rocket, snapshot),
@@ -219,13 +247,17 @@ final class RocketDisassemblyService {
         if (landed != RocketValidationCode.SUCCESS) {
             return landed;
         }
+        if (request.retainedExecutor()) {
+            return request.beginRetained(request::finishedRetained)
+                    ? RocketValidationCode.DISASSEMBLY_PENDING : request.admissionRefusal();
+        }
         RocketTransactionResult result = execute(level, rocket, snapshot, fuel);
         logReleaseTest(rocket.getUUID(), rocket.assemblyTransactionId().orElse(null), result.code(),
                 result.changedBlocks(), result.rolledBackBlocks());
         return result.code();
     }
 
-    private static void logReleaseTest(UUID entity, UUID logical, RocketValidationCode code, int blocks, int rolledBack) {
+    static void logReleaseTest(UUID entity, UUID logical, RocketValidationCode code, int blocks, int rolledBack) {
         AdvancedRocketryCommunity.LOGGER.info(
                 "ARCE_RELEASE_TEST_DISASSEMBLY entity={} logical={} code={} blocks={} rolled_back={}",
                 entity, logical, code, blocks, rolledBack);
@@ -233,7 +265,7 @@ final class RocketDisassemblyService {
 
     /** W85 A1: the production request and preflight, for the GameTests that drive an isolated journal. */
     RocketLandedDisassemblies.Request landedRequest(RocketEntity rocket, ServerPlayer requester, boolean releaseTest) {
-        return LandedRequest.of(this, (ServerLevel) rocket.level(), rocket, requester, releaseTest);
+        return RocketDisassemblyRequest.of(this, (ServerLevel) rocket.level(), rocket, requester, releaseTest);
     }
 
     Optional<RocketValidationCode> preflight(ServerLevel level, RocketEntity rocket,
@@ -242,7 +274,7 @@ final class RocketDisassemblyService {
                 .map(io.github.sunthemoon.advancedrocketrycommunity.rocket.validation.RocketValidationIssue::code);
     }
 
-    private RocketTransactionResult execute(ServerLevel level, RocketEntity rocket,
+    RocketTransactionResult execute(ServerLevel level, RocketEntity rocket,
                                             RocketStructureSnapshot snapshot, long discardedFuel) {
         // Never zero fuel first: unsuccessful restoration must leave entity fuel intact.
         RocketTransactionResult result = transactions.disassemble(level, rocket.ownerId().orElseThrow(), rocket, snapshot);
@@ -268,7 +300,11 @@ final class RocketDisassemblyService {
         return player.serverLevel().getServer().overworld().getGameTime();
     }
 
-    private static boolean reject(ServerPlayer player, RocketValidationCode code) {
+    private boolean pending(RocketEntity rocket) {
+        return flights.landedDisassemblyPending(rocket) || sealed != null && sealed.frozen(rocket);
+    }
+
+    static boolean reject(ServerPlayer player, RocketValidationCode code) {
         player.displayClientMessage(Component.translatable(code.translationKey()), true);
         return false;
     }
@@ -283,7 +319,7 @@ final class RocketDisassemblyService {
     }
 
     /** The player is null when an asynchronous landed restoration finishes after its requester left. */
-    private static void reportTransaction(ServerLevel level, RocketStructureSnapshot snapshot,
+    static void reportTransaction(ServerLevel level, RocketStructureSnapshot snapshot,
                                           ServerPlayer player, RocketTransactionResult result) {
         var assembler = RocketInteraction.assembler(level, new net.minecraft.core.BlockPos(
                 snapshot.sourceOrigin().x(), snapshot.sourceOrigin().y() - 1, snapshot.sourceOrigin().z()));
@@ -305,109 +341,4 @@ final class RocketDisassemblyService {
                 result.rocketEntityId().map(UUID::toString).orElse("none"), diagnostic);
     }
 
-    /**
-     * W85: one landed request's world side. It keeps S and identifiers, never the entity, and finds E only through a
-     * lookup that never loads a chunk. The requester is notified while still connected, or through its new session.
-     */
-    private static final class LandedRequest implements RocketLandedDisassemblies.Request {
-        private final RocketDisassemblyService service;
-        private final ServerLevel level;
-        private final RocketStructureSnapshot structure;
-        private final RocketLandedDisassemblyRules.Snapshot snapshot;
-        private final UUID logical;
-        private final ServerPlayer requester;
-        private final boolean releaseTest;
-
-        private LandedRequest(RocketDisassemblyService service, ServerLevel level, RocketEntity rocket,
-                              ServerPlayer requester, boolean releaseTest) {
-            this.service = service;
-            this.level = level;
-            this.structure = rocket.snapshot().orElseThrow();
-            this.snapshot = pendingSnapshot(rocket);
-            this.logical = rocket.assemblyTransactionId().orElseThrow();
-            this.requester = requester;
-            this.releaseTest = releaseTest;
-        }
-
-        /** Null when S cannot be formed, which refuses the request before any mutation. */
-        static LandedRequest of(RocketDisassemblyService service, ServerLevel level, RocketEntity rocket,
-                                ServerPlayer requester, boolean releaseTest) {
-            try {
-                return new LandedRequest(service, level, rocket, requester, releaseTest);
-            } catch (IllegalArgumentException | java.util.NoSuchElementException invalid) {
-                return null;
-            }
-        }
-
-        private RocketEntity rocket() {
-            return level.getEntity(snapshot.entityId()) instanceof RocketEntity rocket ? rocket : null;
-        }
-
-        @Override
-        public boolean matches() {
-            RocketEntity rocket = rocket();
-            return rocket != null && rocket.isAlive() && rocket.operational()
-                    && snapshot.equals(pendingSnapshot(rocket));
-        }
-
-        @Override
-        public boolean restorable() {
-            RocketTransactionSavedData savedData = RocketTransactionSavedData.get(level.getServer());
-            return savedData.operational() && !service.transactions.hasPendingRecovery(savedData, structure);
-        }
-
-        @Override
-        public RocketLandedDisassemblyRules.Presence presence(
-                io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord record) {
-            RocketEntity rocket = rocket();
-            if (rocket != null && rocket.isAlive()) {
-                return RocketTransferEntities.isReplaceableLandedAuthority(rocket, record)
-                        ? RocketLandedDisassemblyRules.Presence.MATCHES : RocketLandedDisassemblyRules.Presence.CHANGED;
-            }
-            long section = net.minecraft.world.level.ChunkPos.asLong(
-                    net.minecraft.util.Mth.floor(snapshot.x()) >> 4, net.minecraft.util.Mth.floor(snapshot.z()) >> 4);
-            // An unloaded section stored E at its unload; ordinary recovery classifies T when it loads again.
-            return level.areEntitiesLoaded(section)
-                    ? RocketLandedDisassemblyRules.Presence.CHANGED : RocketLandedDisassemblyRules.Presence.UNLOADED;
-        }
-
-        @Override
-        public RocketTransactionResult restore() {
-            RocketEntity rocket = Objects.requireNonNull(rocket(), "rocket");
-            return service.execute(level, rocket, rocket.snapshot().orElseThrow(), snapshot.flight().fuel().totalAmount());
-        }
-
-        @Override
-        public void finished(RocketValidationCode code, RocketTransactionResult result) {
-            if (releaseTest) {
-                logReleaseTest(snapshot.entityId(), logical, code, result == null ? 0 : result.changedBlocks(),
-                        result == null ? 0 : result.rolledBackBlocks());
-                return;
-            }
-            ServerPlayer player = requester == null ? null
-                    : level.getServer().getPlayerList().getPlayer(requester.getUUID());
-            if (player == null && requester != null && !requester.hasDisconnected()) {
-                player = requester;
-            }
-            if (result == null) {
-                if (player != null) {
-                    reject(player, code);
-                }
-                return;
-            }
-            reportTransaction(level, structure, player, result);
-            long fuel = snapshot.flight().fuel().totalAmount();
-            if (player != null && result.success() && fuel > 0L) {
-                player.sendSystemMessage(Component.translatable(MESSAGE + "disassembly_fuel_discarded", fuel));
-            }
-        }
-    }
-
-    private static RocketLandedDisassemblyRules.Snapshot pendingSnapshot(RocketEntity rocket) {
-        var snapshot = rocket.snapshot().orElseThrow();
-        return new RocketLandedDisassemblyRules.Snapshot(rocket.getUUID(), rocket.ownerId().orElseThrow(),
-                snapshot.snapshotId(), snapshot.contentHash(), rocket.flightData().orElseThrow(),
-                rocket.getX(), rocket.getY(), rocket.getZ(),
-                io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.RocketFluidFuelRuntime.capture().signature());
-    }
 }

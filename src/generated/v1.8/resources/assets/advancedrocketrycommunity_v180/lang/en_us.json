@@ -439,6 +439,7 @@
   "message.advancedrocketrycommunity.rejoin.tickets": "waiting for chunk ticket capacity",
   "message.advancedrocketrycommunity.rejoin.unsafe": "no verified safe position",
   "message.advancedrocketrycommunity.rejoin.waiting": "waiting for recovery",
+  "message.advancedrocketrycommunity.rocket.disassembly_preparing": "Preparing this rocket's original launch site. Request disassembly again when preparation finishes and confirm fuel disposal again.",
   "message.advancedrocketrycommunity.rocket_cargo.admission_disabled": "Cargo transfer is not enabled; no cargo moved.",
   "message.advancedrocketrycommunity.rocket_cargo.cargo_full": "The rocket's cargo storage is full.",
   "message.advancedrocketrycommunity.rocket_cargo.cargo_too_large": "Cargo data exceeds the transfer limit; no cargo moved.",

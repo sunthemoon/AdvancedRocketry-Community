@@ -37,6 +37,7 @@ public final class RocketJournalLifecycle {
     }
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void stopping(ServerStoppingEvent event) {
+        io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime.cancelLandedHandoffsForStop();
         var journal = existing(event.getServer()); if (journal != null) { journal.stop(); }
         if (journal != null && journal.nativeProbe() != null) {
             try { journal.dumpNativeProbe(event.getServer()); }

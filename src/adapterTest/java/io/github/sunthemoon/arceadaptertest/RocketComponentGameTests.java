@@ -13,7 +13,6 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.level.block.Block;
@@ -28,6 +27,12 @@ import net.minecraftforge.registries.ForgeRegistries;
 @GameTestHolder(AdapterTestMod.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class RocketComponentGameTests {
+    @net.minecraft.gametest.framework.GameTestGenerator
+    public static java.util.Collection<net.minecraft.gametest.framework.TestFunction> asynchronousTransitions() {
+        return java.util.List.of(
+                AdapterAsyncFixture.test("w164_adapter_success", "RocketComponentGameTests.externalComponentsDriveActualAssemblyAndZeroFuelDisassembly",
+                        5, 1, false, RocketComponentGameTests::externalComponentsDriveActualAssemblyAndZeroFuelDisassembly));
+    }
     private static final String HOST = "advancedrocketrycommunity";
     private static final ResourceLocation ROCKET = ResourceLocation.tryParse(HOST + ":rocket");
 
@@ -49,14 +54,13 @@ public final class RocketComponentGameTests {
         helper.succeed();
     }
 
-    @GameTest(templateNamespace = HOST, template = "rocket_test", timeoutTicks = 40)
     public static void externalComponentsDriveActualAssemblyAndZeroFuelDisassembly(GameTestHelper helper) {
         BlockPos origin = new BlockPos(3, 2, 3);
         Map<BlockPos, Block> blocks = Map.of(origin, Blocks.DIAMOND_BLOCK, origin.west(), Blocks.EMERALD_BLOCK,
                 origin.above(), Blocks.OAK_PLANKS, origin.above(2), Blocks.GOLD_BLOCK, origin.east(), Blocks.QUARTZ_BLOCK);
         blocks.forEach(helper::setBlock);
         helper.setBlock(origin.below(), ForgeRegistries.BLOCKS.getValue(ResourceLocation.tryParse(HOST + ":rocket_assembler")));
-        FakePlayer owner = new FakePlayer(helper.getLevel(), new GameProfile(UUID.randomUUID(), "ComponentFixture"));
+        FakePlayer owner = new AdapterAsyncFixture.Player(helper.getLevel(), new GameProfile(UUID.randomUUID(), "ComponentFixture"));
         BlockPos absolute = helper.absolutePos(origin);
         owner.setPos(absolute.getX() + 0.5, absolute.getY(), absolute.getZ() + 0.5);
         BlockPos assembler = helper.absolutePos(origin.below());
@@ -69,10 +73,13 @@ public final class RocketComponentGameTests {
             throw new IllegalStateException(exception);
         }
         AABB region = new AABB(absolute).inflate(3);
+        Entity[] authority = new Entity[1];
+        AdapterAsyncFixture.Submission[] disassembly = new AdapterAsyncFixture.Submission[1];
         helper.startSequence().thenWaitUntil(() -> helper.assertTrue(rockets(helper, region).size() == 1,
                 "Production component assembly did not create exactly one rocket"))
                 .thenExecute(() -> {
                     Entity rocket = rockets(helper, region).get(0);
+                    authority[0] = rocket;
                     CompoundTag saved = new CompoundTag();
                     helper.assertTrue(rocket.save(saved), "Component rocket did not serialize");
                     CompoundTag data = saved.getCompound("RocketEntityData");
@@ -89,9 +96,14 @@ public final class RocketComponentGameTests {
                     helper.assertTrue(data.getCompound("flight_data").getCompound("fuel").getLong("capacity") == 1500
                                     && owner.getUUID().equals(data.getUUID("owner_id")), "Flight capacity or owner differs");
                     for (BlockPos pos : blocks.keySet()) { helper.assertTrue(helper.getBlockState(pos).isAir(), "Duplicate world block"); }
-                    owner.setPos(rocket.getX(), rocket.getY(), rocket.getZ());
-                    owner.setShiftKeyDown(true);
-                    try { rocket.interact(owner, InteractionHand.MAIN_HAND); } finally { owner.setShiftKeyDown(false); }
+                    disassembly[0] = new AdapterAsyncFixture.Submission(owner, rocket);
+                })
+                .thenWaitUntil(() -> helper.assertTrue(disassembly[0].advance(helper), "Component disassembly admission is busy"))
+                // DISASSEMBLY_PENDING -> BLOCKS_PUBLISHED, including every non-container member.
+                .thenWaitUntil(() -> blocks.forEach((pos, block) -> helper.assertTrue(helper.getBlockState(pos).is(block),
+                        "Original component block not yet published")))
+                .thenExecute(() -> {
+                    Entity rocket = authority[0];
                     helper.assertTrue(rocket.isRemoved() && rockets(helper, region).isEmpty(), "Zero-fuel disassembly failed");
                     blocks.forEach((pos, block) -> helper.assertTrue(helper.getBlockState(pos).is(block), "Original component block not restored"));
                     helper.assertTrue(helper.getLevel().getEntitiesOfClass(ItemEntity.class, region).isEmpty(), "Component operation dropped duplicates");

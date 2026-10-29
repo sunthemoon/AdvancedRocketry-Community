@@ -244,7 +244,7 @@ class SealedOrdinaryHandoffTest {
                             }
                             case "retryNextTick" -> { if (!retries.contains(args[0])) { retries.add((Runnable) args[0]); } yield null; }
                             case "projection" -> image.copy();
-                            case "bayClaimed", "saveOff" -> false;
+                            case "bayClaimed", "saveOff", "preparationOnly", "preparationReady" -> false;
                             case "escrowAllows" -> args[2] == null ? journal.actionable(record.logicalRocketId())
                                     : journal.actionable(record.logicalRocketId(), (RocketTransferSavedData.Reservation) args[2]);
                             case "sink" -> (Consumer<String>) label -> { };
