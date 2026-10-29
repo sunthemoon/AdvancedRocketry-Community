@@ -85,10 +85,14 @@ public final class LandingPadService {
     /** Reconcile a claim whose journal was not durably published, without scanning the world/index. */
     public static boolean claim(MinecraftServer server, LandingPadEntry entry, UUID transfer) {
         var journal = RocketTransferSavedData.get(server);
+        return journal.operational() && claim(journal, LandingPadIndex.get(server), entry, transfer);
+    }
+
+    static boolean claim(RocketTransferSavedData journal, LandingPadIndex index, LandingPadEntry entry, UUID transfer) {
         if (!journal.operational()) { return false; }
-        var index = LandingPadIndex.get(server);
         if (entry.claim() != null) {
             var previous = journal.find(entry.claim()).orElse(null);
+            if (previous == null && !journal.transferAbsenceAcknowledged(entry.claim())) { return false; }
             var plan = previous == null ? null : previous.sourceFlightData().plan().orElseThrow();
             if (previous == null || previous.phase() == RocketTransferPhase.COMMITTED
                     || !entry.reference().equals(plan.landingPad()) || !entry.stationId().equals(plan.destinationStationId())) {

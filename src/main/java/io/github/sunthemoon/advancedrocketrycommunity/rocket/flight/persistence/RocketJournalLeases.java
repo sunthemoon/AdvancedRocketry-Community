@@ -75,6 +75,19 @@ final class RocketJournalLeases {
     private final ArrayDeque<Removed> removed = new ArrayDeque<>();
     private long removedFloor;
     private volatile View view = View.NONE;
+    private long loadedSequence;
+
+    /** A validated disk load proves unchanged pad absences only, not a general session acknowledgement. */
+    void loaded(long sequence) { loadedSequence = sequence; }
+
+    /** Caller checks RAM absence and lifecycle; history prevents an older empty generation proving a later removal. */
+    boolean absenceAcknowledged(UUID transfer, boolean beforeWriterResult) {
+        var acknowledged = view.acknowledged();
+        if (acknowledged != null) {
+            return !acknowledged.records().containsKey(transfer) && transferUnchangedSince(transfer, acknowledged.sequence());
+        }
+        return beforeWriterResult && loadedSequence > 0 && transferUnchangedSince(transfer, loadedSequence);
+    }
 
     /** Owner thread, after the mutation sequence moved for a change of this logical rocket. */
     void changed(UUID logical, long sequence) {
@@ -126,6 +139,10 @@ final class RocketJournalLeases {
 
     /** Owner-thread scheduling reads the same published change history, including its conservative overflow floor. */
     boolean unchangedSince(UUID logical, long sequence) { return view.changed(logical) <= sequence; }
+    private boolean transferUnchangedSince(UUID transfer, long sequence) {
+        var current = view;
+        return current.transferChanges().getOrDefault(transfer, current.transfersForgotten()) <= sequence;
+    }
     boolean untouched(UUID logical) { return view.changed(logical) == 0; }
     boolean rootAcknowledged(long sequence) {
         var current = view;
