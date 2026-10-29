@@ -311,8 +311,7 @@ public final class RocketTransferSavedData extends SavedData {
             throw new IllegalArgumentException(kind + " transfer authority is unavailable");
         }
         ensureNoAuthorityConflict(record);
-        var candidate = new java.util.ArrayList<>(entries()); candidate.add(record);
-        try { encode(candidate, firstMoonLanding, new CompoundTag()); }
+        try { RocketJournalInsertionBudget.validate(entries(), record, firstMoonLanding); }
         catch (IllegalStateException invalid) { throw new IllegalArgumentException(kind + " transfer does not fit the journal", invalid); }
     }
 
