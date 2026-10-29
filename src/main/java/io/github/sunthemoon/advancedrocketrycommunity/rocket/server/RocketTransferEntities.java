@@ -380,8 +380,9 @@ final class RocketTransferEntities {
             RocketEntity destination,
             RocketPosition safeOrigin
     ) {
-        if (RocketReleaseAccess.fenced(destination)) { return; }
+        if (!passengerMoveAllowed(passenger, destination)) { return; }
         passenger.stopRiding();
+        if (!passengerMoveAllowed(passenger, destination)) { return; }
         passenger.setDeltaMovement(Vec3.ZERO);
         passenger.fallDistance = 0.0F;
         passenger.teleportTo(
@@ -392,9 +393,18 @@ final class RocketTransferEntities {
                 passenger.getYRot(),
                 passenger.getXRot()
         );
+        if (!passengerMoveAllowed(passenger, destination)) { return; }
         passenger.startRiding(destination, true);
         passenger.setDeltaMovement(Vec3.ZERO);
         passenger.fallDistance = 0.0F;
+    }
+
+    /** Re-entrant passenger callbacks cannot continue a bay move after its physical-authority hold changed. */
+    private static boolean passengerMoveAllowed(ServerPlayer passenger, RocketEntity destination) {
+        return !RocketReleaseAccess.fenced(destination)
+                && (!io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceipts.holdsRocket(
+                        destination.getServer(), destination.assemblyTransactionId().orElse(null))
+                    || RocketRuntime.bayMountAllowed(passenger, destination));
     }
 
     static void positionAscent(RocketEntity rocket, RocketPosition origin, long elapsed) {

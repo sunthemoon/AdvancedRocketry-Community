@@ -41,6 +41,7 @@ final class BayReleasedAuthority {
         String beforeSource = receipts.get(0).srcBefore(), beforeDestination = receipts.get(0).dstBefore();
         String afterSource = null, afterDestination = null;
         for (BayReceipt receipt : receipts) {
+            if (receipt.phase() == BayReceipt.Phase.REPAIR && !BayClaim.releaseEligibleRepair(receipt.reason())) { return Optional.empty(); }
             if (!receipt.pending() || !receipt.rocket().equals(record.logicalRocketId())
                     || !receipt.transfer().equals(record.transferId()) || !receipt.owner().equals(record.ownerId())
                     || !positions.add(receipt.bay()) || !operations.add(receipt.op())

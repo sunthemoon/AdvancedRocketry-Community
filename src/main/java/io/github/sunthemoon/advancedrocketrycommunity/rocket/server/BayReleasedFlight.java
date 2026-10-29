@@ -37,6 +37,7 @@ final class BayReleasedFlight {
     private long preparationTick = Long.MIN_VALUE;
 
     private static final class State {
+        BayClaim claim;
         BayReleasedAuthority authority;
         BayClaim consumption;
         List<BayReceipt> releasing;
@@ -56,6 +57,7 @@ final class BayReleasedFlight {
 
     /** Null means this is still an ordinary deployment claim. Release work uses the parent's 32-step queue. */
     BayStepQueue.Result step(BayClaim claim) {
+        if (claim.releaseRefusal().isPresent()) { conflict(claim.logical()); return BayStepQueue.Result.IDLE; }
         var receipts = session.receipts().stream().filter(r -> r.rocket().equals(claim.logical()) && r.pending()).toList();
         boolean alreadyReleased = !receipts.isEmpty() && receipts.stream().allMatch(BayReceipt::released);
         boolean blocked = claim.reason().equals("REGISTRY_BLOCKED");
@@ -63,6 +65,7 @@ final class BayReleasedFlight {
                 && (!blocked && receipts.stream().noneMatch(r -> r.phase() == BayReceipt.Phase.REPAIR)
                     || claim.members().stream().anyMatch(m -> m.awaiting() || m.state() == BayMember.State.PROVED))) { return null; }
         var state = states.computeIfAbsent(claim.logical(), ignored -> new State());
+        state.claim = claim;
         if (state.closed || state.writing) { return BayStepQueue.Result.IDLE; }
         var journal = RocketTransferSavedData.get(server);
         var record = journal.find(claim.transfer()).orElse(null);
@@ -87,12 +90,14 @@ final class BayReleasedFlight {
         var registered = receipts.stream().filter(r -> r.phase() == BayReceipt.Phase.REGISTERED).toList();
         if (!registered.isEmpty() && !alreadyReleased) {
             var result = consume(claim, state, record, registered);
+            if (claim.releaseRefusal().isPresent()) { return held(claim, state, claim.releaseRefusal().orElseThrow()); }
             if (result != null) { return result; }
             record = journal.find(claim.transfer()).orElseThrow();
         }
         var authority = BayReleasedAuthority.capture(record, receipts, blocked).orElse(null);
         if (authority == null) { return held(claim, state, "TRANSFER_AUTHORITY_CONFLICT"); }
-        String wait = resume.resume(record, alreadyReleased, receipts);
+        String wait = resume.resume(record, alreadyReleased, receipts, () -> !state.closed && claim.releaseRefusal().isEmpty());
+        if (claim.releaseRefusal().isPresent()) { return held(claim, state, claim.releaseRefusal().orElseThrow()); }
         if (wait != null) {
             if (wait.equals("END_LOADING") || wait.equals("END_UNAVAILABLE") || wait.equals("SOURCE_LOADING")) {
                 return BayStepQueue.Result.NEXT_TICK;
@@ -115,6 +120,7 @@ final class BayReleasedFlight {
         if (state.releasing != null && !receipts.equals(state.releasing)) {
             return held(claim, state, "TRANSFER_AUTHORITY_CONFLICT");
         }
+        if (state.closed || claim.releaseRefusal().isPresent()) { return BayStepQueue.Result.IDLE; }
         state.delegated = true;
         return BayStepQueue.Result.NEXT_TICK;
     }
@@ -131,17 +137,23 @@ final class BayReleasedFlight {
         if (work.hold() == BayClaim.Hold.REPAIR) { return held(claim, state, work.reason()); }
         if (work.stage() == BayClaim.Stage.RESUME) {
             sources.renew(work);
-            return sources.resume(work);
+            return sources.resume(work, () -> !state.closed && claim.releaseRefusal().isEmpty());
         }
-        if (work.stage() == BayClaim.Stage.CONSUME) { return consumption.consume(work); }
+        if (work.stage() == BayClaim.Stage.CONSUME) {
+            return consumption.consume(work, () -> !state.closed && claim.releaseRefusal().isEmpty());
+        }
         return work.stage() == BayClaim.Stage.PROVE ? null : held(claim, state, "CONSUMPTION_MISMATCH");
     }
 
     boolean delegated(RocketTransferRecord record) {
         var state = states.get(record.logicalRocketId());
-        return state != null && !state.closed && state.delegated && state.authority != null && state.authority.matches(record);
+        return state != null && !state.closed && state.delegated && state.claim != null && state.claim.releaseRefusal().isEmpty()
+                && state.authority != null && state.authority.matches(record);
     }
-    boolean active(UUID logical) { var state = states.get(logical); return state != null && state.delegated && !state.closed; }
+    boolean active(UUID logical) {
+        var state = states.get(logical);
+        return state != null && state.delegated && !state.closed && state.claim != null && state.claim.releaseRefusal().isEmpty();
+    }
 
     RocketTransferBayRecoveryGate.Boundary before(RocketTransferSavedData journal, RocketTransferRecord record,
                                                  RocketTransferBayRecoveryGate.Action action) {
@@ -163,7 +175,8 @@ final class BayReleasedFlight {
 
     private boolean valid(State state, RocketTransferSavedData journal, RocketTransferRecord record,
                           RocketTransferBayRecoveryGate.Action action) {
-        if (!server.isSameThread() || state.closed || !state.delegated || session.closed() || session.unavailable()
+        if (state.claim == null || state.claim.releaseRefusal().isPresent()
+                || !server.isSameThread() || state.closed || !state.delegated || session.closed() || session.unavailable()
                 || state.authority == null || !state.authority.matches(record)
                 || action != RocketTransferBayRecoveryGate.Action.TICK_SOURCE
                     && action != RocketTransferBayRecoveryGate.Action.SPAWN_DESTINATION
@@ -221,7 +234,8 @@ final class BayReleasedFlight {
     }
 
     boolean mountAllowed(Entity passenger, RocketEntity destination) {
-        return resume.mountAllowed(passenger, destination) || effectState != null && effectRecord != null && server.isSameThread() && passenger instanceof ServerPlayer player
+        return resume.mountAllowed(passenger, destination) || effectState != null && !effectState.closed
+                && effectState.claim.releaseRefusal().isEmpty() && effectRecord != null && server.isSameThread() && passenger instanceof ServerPlayer player
                 && server.getPlayerList().getPlayer(player.getUUID()) == player && player.isAlive()
                 && effectRecord.phase() == RocketTransferPhase.PASSENGERS_TRANSFERRED
                 && effectRecord.destinationFlightData().passengers().assignment(player.getUUID()).isPresent()
@@ -235,7 +249,7 @@ final class BayReleasedFlight {
                 || journal.find(record.transferId()).orElse(null) != record || !journal.actionable(record.logicalRocketId())
                 || record.sourceFlightData().passengers().assignment(player.getUUID()).isEmpty()) { return false; }
         var target = record.phase().destinationAuthoritative() ? exactDestination(record) : exactSource(record);
-        return target != null && resume.move(player, target, record);
+        return target != null && resume.move(player, target, record, () -> !state.closed && state.claim.releaseRefusal().isEmpty());
     }
 
     private boolean physical(RocketTransferRecord record, boolean effectPending) {

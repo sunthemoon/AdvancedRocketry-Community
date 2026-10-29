@@ -1889,6 +1889,32 @@
       "reason": "W27d1 (section 8.1 test 8): the claim ends RELEASED_TO_ORDINARY before any receipt, so exact ordinary source recovery restores and acknowledges the stationary source."
     },
     {
+      "id": "w196-r168-observed-copy-hold",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.server.BayTransferRecovery/",
+      "message": "ARCE_BAY_CLAIM transfer=[0-9a-f-]{36} logical=[0-9a-f-]{36} state=REPAIR reason=UNEXPECTED_COPY",
+      "counts": {
+        "bay_released_conflict_join_present": 1, "bay_released_conflict_join_absent": 1,
+        "bay_released_conflict_move_present": 1, "bay_released_conflict_move_absent": 1,
+        "bay_repair_conflict_join_present": 1, "bay_repair_conflict_join_absent": 1,
+        "bay_repair_conflict_move_present": 1, "bay_repair_conflict_move_absent": 1
+      },
+      "test": "BayReleasedConflictGameTests (all eight restart/cold-end cases)",
+      "reason": "R168 injects one outside-end join or move before release authority, with present or absent recorded source and released or unreleased receipts. The observed conflict remains held."
+    },
+    {
+      "id": "w196-r168-prior-registry-repair",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.server.BayTransferRecovery/",
+      "message": "ARCE_BAY_CLAIM transfer=[0-9a-f-]{36} logical=[0-9a-f-]{36} state=REPAIR reason=REGISTRY_SIGNATURE_CONFLICT",
+      "counts": {
+        "bay_repair_conflict_join_present": 1, "bay_repair_conflict_join_absent": 1,
+        "bay_repair_conflict_move_present": 1, "bay_repair_conflict_move_absent": 1
+      },
+      "test": "BayReleasedConflictGameTests.repairJoinWithSource, repairJoinWithoutSource, repairMoveWithSource and repairMoveWithoutSource",
+      "reason": "R168 starts these four cases with an acknowledged signature REPAIR receipt before observing a physical conflict; the earlier eligible reason must not mask that conflict."
+    },
+    {
       "id": "w196-released-repair",
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.server.BayTransferRecovery/",

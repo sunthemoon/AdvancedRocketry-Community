@@ -26,6 +26,7 @@ final class BayReleasedEffectTest {
         var stateType = Class.forName(BayReleasedFlight.class.getName() + "$State");
         var state = UnstartedServer.allocate(stateType);
         UnstartedServer.set(stateType, state, "authority", authority);
+        UnstartedServer.set(stateType, state, "claim", BayRestartRows.claims(authority.receipts()).get(0));
         UnstartedServer.set(stateType, state, "delegated", true);
         UnstartedServer.set(stateType, state, "proposed", passengers);
         UnstartedServer.set(stateType, state, "oldDigest", "checked-old-record");

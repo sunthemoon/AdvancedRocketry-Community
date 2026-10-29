@@ -44,6 +44,11 @@ final class BayConsumptionSteps {
     }
 
     BayStepQueue.Result consume(BayClaim claim) {
+        return consume(claim, () -> true);
+    }
+
+    BayStepQueue.Result consume(BayClaim claim, java.util.function.BooleanSupplier allowed) {
+        if (!allowed.getAsBoolean()) { return BayStepQueue.Result.IDLE; }
         if (claim.hold() == BayClaim.Hold.REPAIR) { return BayStepQueue.Result.IDLE; }
         BayGroup group = claim.group().orElseThrow();
         var journal = RocketTransferSavedData.get(server);
@@ -60,10 +65,12 @@ final class BayConsumptionSteps {
         RocketTransferRecord consumed = consumed(claim, group, record, journalHalf);
         if (consumed == null) { return claim.hold() == BayClaim.Hold.REPAIR ? BayStepQueue.Result.IDLE : BayStepQueue.Result.NEXT_TICK; }
         try {
+            if (!allowed.getAsBoolean()) { return BayStepQueue.Result.IDLE; }
             if (sourceHalf == BayGroup.Half.BEFORE) {
                 source.applyBayConsumption(new BaySourceConsumption(source.getUUID(), claim.logical(), record.ownerId(),
                         source.snapshot().orElseThrow(), consumed.sourceSnapshot()));
             }
+            if (!allowed.getAsBoolean()) { return BayStepQueue.Result.IDLE; }
             if (journalHalf == BayGroup.Half.BEFORE) {
                 var result = RocketTransferConsumption.apply(journal, record, consumed, group.srcBefore(), group.dstBefore(),
                         group.srcAfter(), group.dstAfter());
@@ -75,9 +82,10 @@ final class BayConsumptionSteps {
         } catch (RuntimeException refused) {
             return repair(claim, "CONSUMPTION_MISMATCH");
         }
+        if (!allowed.getAsBoolean()) { return BayStepQueue.Result.IDLE; }
         journal.flush(server); // a request: the checked writer persists T' off-thread and D6 waits for its acknowledgement
         if (!journal.actionable(claim.logical())) { return BayStepQueue.Result.NEXT_TICK; }
-        var normalized = copies.normalize(claim, journal.find(claim.transfer()).orElseThrow());
+        var normalized = copies.normalize(claim, journal.find(claim.transfer()).orElseThrow(), allowed);
         if (normalized != null) { return normalized; }
         jobs.remove(claim.logical());
         claim.advance(BayClaim.Stage.PROVE);

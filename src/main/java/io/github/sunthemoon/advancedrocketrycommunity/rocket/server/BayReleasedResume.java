@@ -7,6 +7,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightState;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferPhase;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord;
+import java.util.function.BooleanSupplier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 
@@ -16,11 +17,13 @@ final class BayReleasedResume {
     private final BaySourceResume sources;
     private net.minecraft.server.level.ServerPlayer permittedPlayer;
     private RocketEntity permittedRocket;
+    private BooleanSupplier permittedHold;
 
     BayReleasedResume(MinecraftServer server) { this.server = server; sources = new BaySourceResume(server); }
 
     /** No new end or ticket bound. The caller has checked T and the exact released receipt generation. */
-    String resume(RocketTransferRecord record, boolean alreadyReleased, java.util.List<BayReceipt> receipts) {
+    String resume(RocketTransferRecord record, boolean alreadyReleased, java.util.List<BayReceipt> receipts, BooleanSupplier allowed) {
+        if (!allowed.getAsBoolean()) { return "SOURCE_AUTHORITY_CONFLICT"; }
         if (BayDeploymentChecks.censusRefusal(record).isPresent()) { return "END_UNAVAILABLE"; }
         if (alreadyReleased) { BayCensusColumns.renewRestart(server, record); }
         if (!BaySourceProof.endsLoaded(server, record)) { return "END_LOADING"; }
@@ -41,7 +44,9 @@ final class BayReleasedResume {
             if (!before.contentHash().equals(after.contentHash())) {
                 if (registered == null || !BayReleasedAuthority.payloads(before, receipts, false)) { return "CONSUMPTION_MISMATCH"; }
                 if (!reserve()) { return "SOURCE_LOADING"; }
+                if (!allowed.getAsBoolean()) { return "SOURCE_AUTHORITY_CONFLICT"; }
                 rocket.applyBayConsumption(new BaySourceConsumption(rocket.getUUID(), record.logicalRocketId(), record.ownerId(), before, after));
+                if (!allowed.getAsBoolean()) { return "SOURCE_AUTHORITY_CONFLICT"; }
             }
             if (!BayReleasedAuthority.payloads(rocket.snapshot().orElseThrow(), receipts)) { return "CONSUMPTION_MISMATCH"; }
         }
@@ -51,12 +56,15 @@ final class BayReleasedResume {
                 if (!alreadyReleased) { return "SOURCE_LOADING"; }
                 if (sourceLevel.getEntity(record.sourceEntityId()) != null) { return "SOURCE_AUTHORITY_CONFLICT"; }
                 if (!reserve()) { return "SOURCE_LOADING"; }
+                if (!allowed.getAsBoolean()) { return "SOURCE_AUTHORITY_CONFLICT"; }
                 String refusal = sources.rebuild(sourceLevel, record);
+                if (!allowed.getAsBoolean()) { return "SOURCE_AUTHORITY_CONFLICT"; }
                 if (refusal != null) { return refusal; }
                 source = exact(sourceLevel, record.sourceEntityId());
             }
-            if (!RocketEscrowGate.bayNeutral(source, record.transferId())
-                    || !BaySourceResume.establishTransit(source, record, sourceLevel)) { return "SOURCE_AUTHORITY_CONFLICT"; }
+            if (!allowed.getAsBoolean() || !RocketEscrowGate.bayNeutral(source, record.transferId())
+                    || !BaySourceResume.establishTransit(source, record, sourceLevel)
+                    || !allowed.getAsBoolean()) { return "SOURCE_AUTHORITY_CONFLICT"; }
             authority = source;
         } else {
             if (!alreadyReleased) { return "TRANSFER_AUTHORITY_CONFLICT"; }
@@ -71,15 +79,18 @@ final class BayReleasedResume {
                 destination.initializeTransferred(record.destinationSnapshot(), record.logicalRocketId(), record.ownerId(),
                         RocketTransferEntities.currentArrival(record, destinationLevel.getGameTime()));
                 RocketTransferEntities.positionAtAltitude(destination, record.destinationSnapshot().sourceOrigin());
+                if (!allowed.getAsBoolean()) { return "SOURCE_AUTHORITY_CONFLICT"; }
                 if (!destinationCurrent(destination, record) || !destinationLevel.addFreshEntity(destination)) { return "SOURCE_REBUILD_REFUSED"; }
+                if (!allowed.getAsBoolean()) { return "SOURCE_AUTHORITY_CONFLICT"; }
             }
             if (!destinationCurrent(destination, record)) { return "SOURCE_AUTHORITY_CONFLICT"; }
             authority = destination;
-            if (source != null && !BaySourceResume.establishTransit(source, record, sourceLevel)) { return "SOURCE_AUTHORITY_CONFLICT"; }
+            if (!allowed.getAsBoolean() || source != null && !BaySourceResume.establishTransit(source, record, sourceLevel)
+                    || !allowed.getAsBoolean()) { return "SOURCE_AUTHORITY_CONFLICT"; }
         }
         if (source != null && record.phase().ordinal() >= RocketTransferPhase.PASSENGERS_TRANSFERRED.ordinal()) {
             for (var passenger : java.util.List.copyOf(source.getPassengers())) {
-                if (!(passenger instanceof net.minecraft.server.level.ServerPlayer player) || !move(player, authority, record)) {
+                if (!(passenger instanceof net.minecraft.server.level.ServerPlayer player) || !move(player, authority, record, allowed)) {
                     return "DUPLICATE_PASSENGERS";
                 }
             }
@@ -89,7 +100,7 @@ final class BayReleasedResume {
         if (record.phase() == RocketTransferPhase.PASSENGERS_TRANSFERRED) {
             for (var seat : record.destinationFlightData().passengers().assignments()) {
                 var player = server.getPlayerList().getPlayer(seat.passengerId());
-                if (player != null && player.getVehicle() != authority && !move(player, authority, record)) {
+                if (player != null && player.getVehicle() != authority && !move(player, authority, record, allowed)) {
                     return "DUPLICATE_PASSENGERS";
                 }
             }
@@ -103,30 +114,32 @@ final class BayReleasedResume {
                         || !assigned(player, record)) { return "DUPLICATE_PASSENGERS"; }
             }
             for (var passenger : java.util.List.copyOf(rocket.getPassengers())) {
-                if (!move((net.minecraft.server.level.ServerPlayer) passenger, authority, record)) { return "DUPLICATE_PASSENGERS"; }
+                if (!move((net.minecraft.server.level.ServerPlayer) passenger, authority, record, allowed)) { return "DUPLICATE_PASSENGERS"; }
             }
-            if (!RocketEscrowGate.bayNeutral(rocket, record.transferId()) || !RocketTransferEntities.loadedEntity(authority)
+            if (!allowed.getAsBoolean() || !RocketEscrowGate.bayNeutral(rocket, record.transferId()) || !RocketTransferEntities.loadedEntity(authority)
                     || !rocket.getPassengers().isEmpty()) { return "SOURCE_AUTHORITY_CONFLICT"; }
             rocket.discard();
+            if (!allowed.getAsBoolean()) { return "SOURCE_AUTHORITY_CONFLICT"; }
         }
-        return null;
+        return allowed.getAsBoolean() ? null : "SOURCE_AUTHORITY_CONFLICT";
     }
 
     boolean mountAllowed(net.minecraft.world.entity.Entity player, RocketEntity rocket) {
         return server.isSameThread() && player == permittedPlayer && rocket == permittedRocket
+                && permittedHold != null && permittedHold.getAsBoolean()
                 && RocketEscrowGate.escrowIdle(rocket) && !RocketReleaseAccess.fenced(rocket);
     }
 
-    boolean move(net.minecraft.server.level.ServerPlayer player, RocketEntity rocket, RocketTransferRecord record) {
-        if (permittedPlayer != null || !assigned(player, record) || !RocketTransferEntities.loadedEntity(rocket)
+    boolean move(net.minecraft.server.level.ServerPlayer player, RocketEntity rocket, RocketTransferRecord record, BooleanSupplier allowed) {
+        if (!allowed.getAsBoolean() || permittedPlayer != null || !assigned(player, record) || !RocketTransferEntities.loadedEntity(rocket)
                 || !RocketEscrowGate.bayNeutral(rocket, record.transferId()) || RocketReleaseAccess.fenced(rocket)
                 || !RocketTransferEntities.currentEntity(rocket, record, record.phase().destinationAuthoritative())) { return false; }
         try {
-            permittedPlayer = player; permittedRocket = rocket;
+            permittedPlayer = player; permittedRocket = rocket; permittedHold = allowed;
             RocketTransferEntities.movePassenger(player, rocket, (record.phase().destinationAuthoritative()
                     ? record.destinationSnapshot() : record.sourceSnapshot()).sourceOrigin());
-            return player.getVehicle() == rocket;
-        } finally { permittedPlayer = null; permittedRocket = null; }
+            return allowed.getAsBoolean() && player.getVehicle() == rocket;
+        } finally { permittedPlayer = null; permittedRocket = null; permittedHold = null; }
     }
 
     private boolean assigned(net.minecraft.server.level.ServerPlayer player, RocketTransferRecord record) {

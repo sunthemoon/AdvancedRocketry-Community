@@ -36,6 +36,7 @@ public final class BayClaim {
     private boolean checkpointRequested;
     private Hold hold = Hold.OWNED_WAIT;
     @Nullable private String repairReason;
+    @Nullable private String releaseRefusal;
     @Nullable private String waitReason;
     @Nullable private Handoff handoff;
     @Nullable private BayGroup group;
@@ -170,18 +171,28 @@ public final class BayClaim {
 
     /**
      * A REPAIR receipt, a conflict found in this session or a blocked registry (treated like REPAIR for the wait): the
-     * claim stays held until offline repair. The first reason is kept.
+     * claim stays held until offline repair. Keep the first diagnostic and independently latch the first reason
+     * that cannot release flight, so an earlier registry/signature problem cannot mask a physical conflict.
      */
     public void repair(String reason) {
         Objects.requireNonNull(reason, "reason");
         hold = Hold.REPAIR;
         if (repairReason == null) { repairReason = reason; }
+        if (releaseRefusal == null && !releaseEligibleRepair(reason)) { releaseRefusal = reason; }
     }
+
+    public static boolean releaseEligibleRepair(String reason) {
+        return reason.equals("REGISTRY_BLOCKED") || reason.equals("REGISTRY_SIGNATURE_CONFLICT");
+    }
+
+    /** Session-only, subordinate to this bounded claim; a released receipt never clears an observed conflict. */
+    public Optional<String> releaseRefusal() { return Optional.ofNullable(releaseRefusal); }
 
     public Hold hold() { return hold; }
 
     /** The claim's diagnostic reason: a repair or held member's reason, else what the claim is waiting for. */
     public String reason() {
+        if (releaseRefusal != null) { return releaseRefusal; }
         if (repairReason != null) { return repairReason; }
         var held = members.stream().filter(member -> member.state() == BayMember.State.HELD).findFirst();
         if (held.isPresent()) { return held.get().reason(); }

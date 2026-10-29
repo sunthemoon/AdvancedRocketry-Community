@@ -74,6 +74,11 @@ final class BaySourceResume {
 
     /** R1 and R2 at stage RESUME. */
     BayStepQueue.Result resume(BayClaim claim) {
+        return resume(claim, () -> true);
+    }
+
+    BayStepQueue.Result resume(BayClaim claim, java.util.function.BooleanSupplier allowed) {
+        if (!allowed.getAsBoolean()) { return BayStepQueue.Result.IDLE; }
         if (claim.hold() == BayClaim.Hold.REPAIR) { return BayStepQueue.Result.IDLE; }
         long now = server.getTickCount();
         if (stepTick == now) { return BayStepQueue.Result.NEXT_TICK; } // one group per tick
@@ -106,6 +111,7 @@ final class BaySourceResume {
             return repair(claim, copies);
         }
         Entity found = level.getEntity(uuid);
+        if (!allowed.getAsBoolean()) { return BayStepQueue.Result.IDLE; }
         if (found != null) {
             RocketEntity source = BayConsumptionSteps.exactSource(server, record, uuid, group);
             if (source == null || !RocketEscrowGate.bayNeutral(source, record.transferId()) || !establishTransit(source, record, level)) {
@@ -115,6 +121,7 @@ final class BaySourceResume {
             String refused = rebuild(level, record);
             if (refused != null) { return repair(claim, refused); } // never a second random source
         }
+        if (!allowed.getAsBoolean()) { return BayStepQueue.Result.IDLE; }
         claim.waiting(null);
         claim.establishSource(uuid);
         claim.advance(BayClaim.Stage.CONSUME);
