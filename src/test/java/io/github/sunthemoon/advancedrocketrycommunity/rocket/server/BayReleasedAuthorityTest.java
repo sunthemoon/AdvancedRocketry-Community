@@ -80,6 +80,9 @@ final class BayReleasedAuthorityTest {
                     authority.successor(t, spawned, action), action.name());
         }
         var passengers = spawned.advance(RocketTransferPhase.PASSENGERS_TRANSFERRED);
+        var restarted = BayReleasedAuthority.capture(spawned, List.of(r), false).orElseThrow();
+        assertFalse(restarted.matches(spawned.rebindDestination(UUID.randomUUID())));
+        assertFalse(restarted.matches(t));
         assertTrue(authority.successor(spawned, passengers, RocketTransferBayRecoveryGate.Action.TICK_SOURCE));
         assertFalse(authority.successor(t, passengers, RocketTransferBayRecoveryGate.Action.TICK_SOURCE));
         assertFalse(authority.successor(passengers, spawned, RocketTransferBayRecoveryGate.Action.TICK_SOURCE));

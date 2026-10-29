@@ -41,6 +41,7 @@ final class BayReleasedFlight {
         BayClaim consumption;
         List<BayReceipt> releasing;
         RocketTransferRecord proposed;
+        UUID destination;
         String oldDigest, nextDigest;
         long observation, proposedObservation, sourceSave, destinationSave;
         boolean delegated, writing, closed;
@@ -66,6 +67,10 @@ final class BayReleasedFlight {
         var journal = RocketTransferSavedData.get(server);
         var record = journal.find(claim.transfer()).orElse(null);
         if (record == null) { return held(claim, state, "TRANSFER_AUTHORITY_CONFLICT"); }
+        if (state.destination != null && record.destinationEntityId().isPresent()
+                && !record.destinationEntityId().get().equals(state.destination)) {
+            return held(claim, state, "TRANSFER_AUTHORITY_CONFLICT");
+        }
         if (session.unavailable() || !journal.actionable(claim.logical())) { return BayStepQueue.Result.NEXT_TICK; }
         var guard = journal.logicalGuard(claim.logical()).orElse(null);
         if (guard == null || !claim.transfer().equals(guard.transfer()) || guard.recordDigest() == null
@@ -94,6 +99,7 @@ final class BayReleasedFlight {
             return held(claim, state, wait);
         }
         state.authority = authority;
+        record.destinationEntityId().ifPresent(id -> state.destination = id);
         if (!alreadyReleased) {
             state.releasing = receipts.stream().map(BayReceipt::withReleased).toList();
             releasing.accept(state.releasing.get(0));
@@ -172,12 +178,14 @@ final class BayReleasedFlight {
         var guard = journal.logicalGuard(record.logicalRocketId()).orElse(null);
         if (current == null || guard == null || !journal.actionable(record.logicalRocketId())
                 || !record.transferId().equals(guard.transfer()) || guard.recordDigest() == null) { return false; }
+        if (current.destinationEntityId().isPresent() && !current.destinationEntityId().get().equals(state.destination)) { return false; }
         if (action == RocketTransferBayRecoveryGate.Action.SPAWN_DESTINATION && record.phase() != RocketTransferPhase.PREPARED
                 && !(record.phase() == RocketTransferPhase.DESTINATION_SPAWNED && (current != record || state.proposed == record))) { return false; }
         if (current != record) {
             if (!journal.actionable(record.logicalRocketId()) || !state.authority.successor(current, record, action)
                     || !physical(current, false)) { return false; }
             state.proposed = record; state.oldDigest = guard.recordDigest(); state.nextDigest = null;
+            record.destinationEntityId().ifPresent(id -> state.destination = id);
             state.proposedObservation = state.observation;
             state.sourceSave = observation(exactSource(current)); state.destinationSave = observation(exactDestination(current));
             return true;

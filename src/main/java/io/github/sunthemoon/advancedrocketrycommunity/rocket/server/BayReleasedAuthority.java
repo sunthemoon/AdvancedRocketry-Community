@@ -99,6 +99,8 @@ final class BayReleasedAuthority {
         return record != null && record.nativeTransfer().isEmpty() && record.schemaVersion() == base.schemaVersion()
                 && record.transferId().equals(base.transferId()) && record.logicalRocketId().equals(base.logicalRocketId())
                 && record.ownerId().equals(base.ownerId()) && record.sourceEntityId().equals(base.sourceEntityId())
+                && (base.destinationEntityId().isEmpty() || record.destinationEntityId().equals(base.destinationEntityId()))
+                && record.phase().ordinal() >= base.phase().ordinal()
                 && record.checksum().equals(base.checksum())
                 && sameSnapshot(record.sourceSnapshot(), base.sourceSnapshot())
                 && sameSnapshot(record.destinationSnapshot(), base.destinationSnapshot());
