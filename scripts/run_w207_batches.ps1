@@ -37,11 +37,18 @@ try {
     )
     if(!$batches.Count) { throw 'No batches selected' }
     $result.batches=$batches
+    # Cold-margin fixtures require no surviving flight ticket from an earlier legacy refusal.
+    # Keep every selected batch, but give these fixture families separate native worlds/processes.
+    $warm=@($batches | Where-Object { $_ -like 'rocket_warmup_*' })
+    $pads=@($batches | Where-Object { $_ -match 'pad' -and $_ -notin $warm })
+    $margin=@('machine_menu_channel','escrow_transfer_fence')
+    $launch=@($batches | Where-Object { $_ -notin $warm -and $_ -notin $pads -and $_ -notin $margin })
+    $groups=@(@{name='warmup';batches=$warm},@{name='pads';batches=$pads},
+              @{name='margin';batches=$margin},@{name='launch';batches=$launch})
     $env:JAVA_HOME='C:/Program Files/Java/jdk-17.0.7'
-    $env:JAVA_TOOL_OPTIONS="-Dadvancedrocketrycommunity.gameTestBatches=$($batches -join ',')"
     Set-Location $export
     for($iteration=1; $iteration -le 3; $iteration++) {
-        $out="$root/run-$iteration"; New-Item -ItemType Directory -Path $out | Out-Null
+        $iterationRoot="$root/run-$iteration"; New-Item -ItemType Directory -Path $iterationRoot | Out-Null
         $deadline=(Get-Date).AddHours(3)
         try {
             while($true) {
@@ -53,12 +60,17 @@ try {
                 Start-Sleep 60
             }
             Set-Content -LiteralPath "$lock/owner.txt" "$token $(Get-Date -Format o)"
-            foreach($drive in 'C','D') { if((Get-PSDrive $drive).Free -lt 10GB) { throw "Disk $drive below 10 GiB" } }
-            & .\gradlew.bat --offline --no-daemon --no-parallel --max-workers=1 --console=plain runGameTestServer *> "$out/gradle.log"
-            $code=$LASTEXITCODE
-            Copy-Item -LiteralPath 'build/gametest/logs/latest.log' -Destination "$out/latest.log"
-            $result.runs+=@{iteration=$iteration;exit_code=$code;finished=(Get-Date -Format o)}
-            if($code -ne 0) { throw "GameTest run $iteration failed" }
+            foreach($group in $groups) {
+                $out="$iterationRoot/$($group.name)"; New-Item -ItemType Directory -Path $out | Out-Null
+                foreach($drive in 'C','D') { if((Get-PSDrive $drive).Free -lt 10GB) { throw "Disk $drive below 10 GiB" } }
+                $env:JAVA_TOOL_OPTIONS="-Dadvancedrocketrycommunity.gameTestBatches=$($group.batches -join ',')"
+                & .\gradlew.bat --offline --no-daemon --no-parallel --max-workers=1 --console=plain runGameTestServer *> "$out/gradle.log"
+                $code=$LASTEXITCODE
+                Copy-Item -LiteralPath 'build/gametest/logs/latest.log' -Destination "$out/latest.log"
+                $result.runs+=@{iteration=$iteration;group=$group.name;exit_code=$code;finished=(Get-Date -Format o)}
+                Remove-Owned "$export/build/gametest/world"
+                if($code -ne 0) { throw "GameTest run $iteration group $($group.name) failed" }
+            }
         } finally {
             try { if($created) { Remove-Owned "$export/build/gametest/world" } }
             catch { $result.cleanup_error=$_.Exception.ToString() }
