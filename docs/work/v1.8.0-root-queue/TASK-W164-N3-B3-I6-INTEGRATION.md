@@ -350,6 +350,14 @@ for it. Root decision R162:
 W164 then merges only after a hosted run on its head (a failure that W194 has shown to be the same race does not count
 against W164) and a fresh independent persistence review.
 
+## Continuation under Root decision R164 (2026-10-29)
+
+The R162 session stopped as required after `PLAIN_MOVE` failed twice (3 counted starts, 0 of 14 rows). Both causes were in
+the harness: the elected-outbox reader, which it fixed, and the receipt oracle, which omits the required `source`.
+Root decision R164: fix the oracle, prove it with Python tests that fail first against the recorded failure, then
+continue tranche 2 with the same 66-start limit. The three counted starts stay counted. Stop and report again if a row
+fails twice for a reason in production code.
+
 ## Not in this task
 
 - N3-B4 (the combined cut evidence), W98-R1 and governed admission.
