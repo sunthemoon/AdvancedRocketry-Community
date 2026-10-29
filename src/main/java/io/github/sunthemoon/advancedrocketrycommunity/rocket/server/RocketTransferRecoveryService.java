@@ -274,6 +274,7 @@ final class RocketTransferRecoveryService {
             if (retirements.replacing(record.logicalRocketId())) { continue; }
             // A fenced assignment is intentionally finished for this login; it remains durably assigned.
             if (fences.ids().contains(record.transferId())) { continue; }
+            if (bays.reconnectReleased(server, journal, record, player)) { return true; }
             if (!bays.allowed(server, journal, record, RocketTransferBayRecoveryGate.Action.RECONNECT)) {
                 if (bays.retainsHeldLogin(record, player.getUUID())) { return false; }
                 continue;

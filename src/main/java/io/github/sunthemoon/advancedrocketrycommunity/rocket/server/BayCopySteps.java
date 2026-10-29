@@ -43,6 +43,11 @@ final class BayCopySteps {
 
     /** Null means all recognized copies are consumed and removed; D6 must still prove the complete disk census. */
     BayStepQueue.Result normalize(BayClaim claim, RocketTransferRecord record) {
+        return normalize(claim, record, () -> true);
+    }
+
+    BayStepQueue.Result normalize(BayClaim claim, RocketTransferRecord record, java.util.function.BooleanSupplier allowed) {
+        if (!allowed.getAsBoolean()) { return BayStepQueue.Result.IDLE; }
         var group = claim.group().orElseThrow();
         if (claim.hold() == BayClaim.Hold.REPAIR) { return BayStepQueue.Result.IDLE; }
         if (BayConsumptionSteps.half(record, group) != BayGroup.Half.AFTER) { return repair(claim, "TRANSFER_AUTHORITY_CONFLICT"); }
@@ -59,6 +64,7 @@ final class BayCopySteps {
         if (scan.refusal() != null) { return repair(claim, scan.refusal()); }
         // W185-R4: only a passenger riding a copy that this step removes is moved; nobody else is pulled back.
         for (var copy : scan.copies()) {
+            if (!allowed.getAsBoolean()) { return BayStepQueue.Result.IDLE; }
             var rocket = copy.rocket();
             if (!BayCopyCensus.recognizes(server, record, group, copy)) { return repair(claim, "UNEXPECTED_COPY"); }
             if (!RocketTransferEntities.loadedEntity(rocket) || !RocketEscrowGate.bayNeutral(rocket, record.transferId())) {
@@ -74,9 +80,11 @@ final class BayCopySteps {
                     rocket.applyBayConsumption(new BaySourceConsumption(rocket.getUUID(), claim.logical(), record.ownerId(), before, after));
                 }
             } catch (RuntimeException refused) { return repair(claim, "CONSUMPTION_MISMATCH"); }
-            if (!passengers.emptyCopy(claim, record, rocket, survivor)) {
+            if (!allowed.getAsBoolean()) { return BayStepQueue.Result.IDLE; }
+            if (!passengers.emptyCopy(claim, record, rocket, survivor, allowed)) {
                 claim.waiting("DUPLICATE_PASSENGERS"); return BayStepQueue.Result.NEXT_TICK;
             }
+            if (!allowed.getAsBoolean()) { return BayStepQueue.Result.IDLE; }
             // The scope never discards an unconsumed, foreign or protected image, and never drops its payload.
             if (!BayCopyCensus.recognizes(server, record, group, copy)) { return repair(claim, "UNEXPECTED_COPY"); }
             if (!RocketTransferEntities.loadedEntity(survivor) || !BayConsumptionSteps.inTransit(survivor, record)
@@ -87,6 +95,7 @@ final class BayCopySteps {
                 return repair(claim, "PROTECTED_DUPLICATE");
             }
             rocket.discard();
+            if (!allowed.getAsBoolean()) { return BayStepQueue.Result.IDLE; }
             group.invalidate();
         }
         claim.waiting(null);

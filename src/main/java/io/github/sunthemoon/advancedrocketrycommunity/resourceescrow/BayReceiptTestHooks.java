@@ -26,6 +26,11 @@ public final class BayReceiptTestHooks {
         EscrowTestEndpoints.requireEnabled(server);
         return Optional.ofNullable(EscrowRuntime.of(server).bayReceipts(server).store());
     }
+    /** Only GameTests can clean their own released fixture; gated dedicated servers cannot retire one. */
+    public static BayReceiptStore.Admission removeReleasedFixture(MinecraftServer server, UUID op) {
+        return store(server).map(store -> store.removeReleasedFixture(server, op, outcome -> { }))
+                .orElse(BayReceiptStore.Admission.of(BayReceiptStore.Status.INVALID));
+    }
     public static long nextSequence(MinecraftServer server) {
         return store(server).map(store -> store.issuedThrough() + 1).orElse(1L);
     }

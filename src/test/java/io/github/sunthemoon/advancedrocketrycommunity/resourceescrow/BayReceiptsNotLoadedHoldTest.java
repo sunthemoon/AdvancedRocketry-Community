@@ -21,16 +21,15 @@ import org.junit.jupiter.api.io.TempDir;
 
 /**
  * W128R-R2, R49 Q3: the NOT_LOADED part of the gate lock's bay part, on the real {@link BayReceipts} started from a real
- * receipt file that exists but did not load, over a real transfer journal. While the index is NOT_LOADED, exactly the
- * logical rockets with a PREPARED transfer record are held (only a rocket in flight can carry a blocking receipt), and
- * every rocket is held while the transfer journal itself is not operational. A proven-absent file holds none.
+ * receipt file that exists but did not load, over a real transfer journal. W196 strengthens NOT_LOADED to hold every
+ * logical rocket: a released receipt can name a landed rocket even without T. A proven-absent file holds none.
  */
 final class BayReceiptsNotLoadedHoldTest {
     @TempDir Path temp;
 
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
 
-    @Test void notLoadedHoldsOnlyPreparedRecordsAndEveryRocketWithoutAnOperationalJournal() throws Exception {
+    @Test void notLoadedHoldsEveryRocketIncludingLandedWithoutATransfer() throws Exception {
         Path file = temp.resolve("advancedrocketrycommunity_bay_receipts.dat");
         Files.write(file, new byte[] {0x1f, (byte) 0x8b, 0x08, 0x00, 0x13, 0x37}); // exists, and no root loads from it
         var presence = CheckedSavedDataFile.presence(file);
@@ -46,8 +45,8 @@ final class BayReceiptsNotLoadedHoldTest {
         receipts.start(null, presence, file, 0); // the storage lookup returned no root: the file did not load
         assertEquals(EscrowAdmissionAuthority.Delegate.State.NOT_LOADED, receipts.state());
         assertTrue(receipts.holds(inFlight, () -> journal), "a PREPARED record's rocket is held while NOT_LOADED");
-        assertFalse(receipts.holds(landing, () -> journal), "a record past PREPARED is not held");
-        assertFalse(receipts.holds(other, () -> journal), "a rocket without a record (landed or at rest) is free");
+        assertTrue(receipts.holds(landing, () -> journal), "W196: a released receipt can lock an advanced transfer");
+        assertTrue(receipts.holds(other, () -> journal), "W196: a released receipt can lock a landed rocket without T");
 
         CompoundTag invalid = new RocketTransferSavedData().save(new CompoundTag());
         invalid.putInt("schema_version", 99);

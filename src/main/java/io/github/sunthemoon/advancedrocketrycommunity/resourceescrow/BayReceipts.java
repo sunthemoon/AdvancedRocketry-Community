@@ -126,8 +126,8 @@ public final class BayReceipts {
     /**
      * W27A-DESIGN section 8's bay part of the gate lock (R49 Q3 and Q8), on the server thread: a coordinator claim on L
      * (including a pending handoff), or a blocking or released receipt naming L in any state. While the index is
-     * NOT_LOADED after startup, every PREPARED transfer record of L holds it, and every L while the transfer journal is
-     * not operational. Before ServerStartingEvent it is false: no login, command or tick runs then, and the startup
+     * NOT_LOADED after startup, every L is held: W196's released receipts may name landed rockets without T, so a
+     * journal cannot prove the absence of that lock. Before ServerStartingEvent it is false: no login, command or tick runs then, and the startup
      * classification supersedes it.
      */
     public boolean holds(MinecraftServer server, UUID logical) {
@@ -138,20 +138,10 @@ public final class BayReceipts {
         if (!started) { return false; }
         if (session != null && session.claimed(logical)) { return true; }
         return switch (bay.state()) {
-            case NOT_LOADED -> preparedTransfer(journal.get(), logical);
+            case NOT_LOADED -> true; // W196: a released receipt may lock a landed rocket even after T is absent.
             case NO_FILE -> false;
             case LOADED -> store == null || store.holdsRocket(logical);
         };
-    }
-    private static boolean preparedTransfer(RocketTransferSavedData journal, UUID logical) {
-        if (!journal.operational()) { return true; }
-        for (var record : journal.entries()) {
-            if (record.logicalRocketId().equals(logical)
-                    && record.phase() == RocketTransferPhase.PREPARED) {
-                return true;
-            }
-        }
-        return false;
     }
     /** The bay part of the gate lock for any caller; off the server thread it fails closed. */
     public static boolean holdsRocket(MinecraftServer server, UUID logical) {

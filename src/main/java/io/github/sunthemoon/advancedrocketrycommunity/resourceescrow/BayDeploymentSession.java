@@ -64,6 +64,13 @@ public final class BayDeploymentSession {
         return store().map(store -> store.putGroup(group, completion)).orElse(BayReceiptStore.Admission.of(BayReceiptStore.Status.INVALID));
     }
 
+    /** W196: one exact released-flag generation, with no phase, identity, payload authority or capacity change. */
+    public BayReceiptStore.Admission releaseGroup(List<BayReceipt> group, Consumer<BayReceiptWriter.Outcome> completion) {
+        if (unavailable()) { return BayReceiptStore.Admission.of(BayReceiptStore.Status.STORE_UNAVAILABLE); }
+        return store().map(store -> store.releaseGroup(group, completion))
+                .orElse(BayReceiptStore.Admission.of(BayReceiptStore.Status.INVALID));
+    }
+
     /** W170 D7: one group's guarded removal in one generation of a quiet store; see {@link BayReceiptStore#removeGroup}. */
     public BayReceiptStore.Admission removeGroup(List<UUID> group, java.util.function.BooleanSupplier guard,
             Consumer<BayReceiptWriter.Outcome> completion) {

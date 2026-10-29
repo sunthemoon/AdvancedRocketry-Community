@@ -66,6 +66,8 @@ final class BayRestartRows {
                 }
             }
             var claim = BayClaim.restart(entry.getKey(), transfer, members);
+            group.stream().filter(receipt -> receipt.phase() == BayReceipt.Phase.REPAIR
+                    && !BayClaim.releaseEligibleRepair(receipt.reason())).forEach(receipt -> claim.repair(receipt.reason()));
             var registered = members.stream().filter(member -> member.state() == BayMember.State.REGISTERED).toList();
             if (repair == null && !registered.isEmpty()) {
                 // A group retires in one generation, so REGISTERED never shares L with INTENT, and its hashes agree.

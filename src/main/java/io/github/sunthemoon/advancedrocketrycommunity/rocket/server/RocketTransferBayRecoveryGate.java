@@ -49,6 +49,14 @@ public interface RocketTransferBayRecoveryGate {
     Claim claim(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record);
     Boundary beforeAction(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record, Action action);
 
+    /** An acknowledged phase effect runs synchronously; an implementation may scope exact passenger/endpoint permits. */
+    default void phaseEffect(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
+                             Action action, Runnable effect) { effect.run(); }
+
+    /** A released assignment may route under its coordinator without entering ordinary reconnect settlement. */
+    default boolean reconnectReleased(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
+                                      net.minecraft.server.level.ServerPlayer player) { return false; }
+
     /** Join and leave both invalidate the group's physical proofs before another action may be authorized. */
     default void endpointChanged(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record) { }
     /** A bay permit never overrides an escrow conflict. W27d persists/owns the resulting REPAIR state. */

@@ -49,7 +49,7 @@ final class RocketTransferBayDispatch {
             case HELD -> hold(record, claim);
             case RELEASED_FLIGHT -> {
                 claimedTransfers.remove(id); claims.remove(id); fences.drop(id);
-                settled.remove(id); live.add(id); released.add(id);
+                if (released.add(id) || !settled.contains(id)) { settled.remove(id); live.add(id); }
             }
             case READY_SOURCE -> {
                 claimedTransfers.remove(id); claims.remove(id); fences.drop(id); released.remove(id);
@@ -94,6 +94,14 @@ final class RocketTransferBayDispatch {
     }
     boolean allowed(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
             RocketTransferBayRecoveryGate.Action action) { return before(server, journal, record, action) != null; }
+    void phaseEffect(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
+                     RocketTransferBayRecoveryGate.Action action, Runnable effect) {
+        gate.phaseEffect(server, journal, record, action, effect);
+    }
+    boolean reconnectReleased(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
+                              net.minecraft.server.level.ServerPlayer player) {
+        return released.contains(record.transferId()) && gate.reconnectReleased(server, journal, record, player);
+    }
     void conflict(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record) {
         gate.escrowConflict(server, journal, record);
         hold(record, RocketTransferBayRecoveryGate.Claim.held(RocketTransferBayRecoveryGate.State.REPAIR, "ESCROW_AUTHORITY_CONFLICT"));

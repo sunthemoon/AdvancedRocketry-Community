@@ -1916,6 +1916,77 @@
       "reason": "W27d1 (section 8.1 test 8): the claim ends RELEASED_TO_ORDINARY before any receipt, so exact ordinary source recovery restores and acknowledges the stationary source."
     },
     {
+      "id": "w196-r170-partial-capture-hold",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.server.BayTransferRecovery/",
+      "message": "ARCE_BAY_CLAIM transfer=[0-9a-f-]{36} logical=[0-9a-f-]{36} state=REPAIR reason=UNEXPECTED_COPY",
+      "counts": {"bay_held_proof_capture": 1},
+      "test": "BayHeldProofGameTests.outsideCopyDuringPartialCaptureHoldsOnlyItsClaim",
+      "reason": "R170 observes an outside copy during a real partial D6 capture; only that claim stays held while another finishes."
+    },
+    {
+      "id": "w196-r170-completed-proof-hold",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.server.BayTransferRecovery/",
+      "message": "ARCE_BAY_CLAIM transfer=[0-9a-f-]{36} logical=[0-9a-f-]{36} state=REPAIR reason=ESCROW_AUTHORITY_CONFLICT",
+      "counts": {"bay_held_proof_retire": 1},
+      "test": "BayHeldProofGameTests.escrowConflictBeforeRetirementHoldsOnlyItsClaim",
+      "reason": "R170 signals an escrow conflict after real D6 proofs complete but before D7 queues removal; the claim keeps its receipt and charge."
+    },
+    {
+      "id": "w196-r168-observed-copy-hold",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.server.BayTransferRecovery/",
+      "message": "ARCE_BAY_CLAIM transfer=[0-9a-f-]{36} logical=[0-9a-f-]{36} state=REPAIR reason=UNEXPECTED_COPY",
+      "counts": {
+        "bay_released_conflict_join_present": 1, "bay_released_conflict_join_absent": 1,
+        "bay_released_conflict_move_present": 1, "bay_released_conflict_move_absent": 1,
+        "bay_repair_conflict_join_present": 1, "bay_repair_conflict_join_absent": 1,
+        "bay_repair_conflict_move_present": 1, "bay_repair_conflict_move_absent": 1
+      },
+      "test": "BayReleasedConflictGameTests (all eight restart/cold-end cases)",
+      "reason": "R168 injects one outside-end join or move before release authority, with present or absent recorded source and released or unreleased receipts. The observed conflict remains held."
+    },
+    {
+      "id": "w196-r168-prior-registry-repair",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.server.BayTransferRecovery/",
+      "message": "ARCE_BAY_CLAIM transfer=[0-9a-f-]{36} logical=[0-9a-f-]{36} state=REPAIR reason=REGISTRY_SIGNATURE_CONFLICT",
+      "counts": {
+        "bay_repair_conflict_join_present": 1, "bay_repair_conflict_join_absent": 1,
+        "bay_repair_conflict_move_present": 1, "bay_repair_conflict_move_absent": 1
+      },
+      "test": "BayReleasedConflictGameTests.repairJoinWithSource, repairJoinWithoutSource, repairMoveWithSource and repairMoveWithoutSource",
+      "reason": "R168 starts these four cases with an acknowledged signature REPAIR receipt before observing a physical conflict; the earlier eligible reason must not mask that conflict."
+    },
+    {
+      "id": "w196-released-repair",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.server.BayTransferRecovery/",
+      "message": "ARCE_BAY_CLAIM transfer=[0-9a-f-]{36} logical=[0-9a-f-]{36} state=REPAIR reason=REGISTRY_SIGNATURE_CONFLICT",
+      "counts": {"bay_released_repair": 1, "bay_released_mixed": 1},
+      "test": "BayReleasedGameTests.coherentRepairFliesWithItsPackageAndStaysLocked and registeredMemberIsConsumedBeforeTheRepairPackageFlies",
+      "reason": "W196 starts from an exactly acknowledged REPAIR receipt and checks that its coherent released flight retains the package and lock."
+    },
+    {
+      "id": "w196-released-missing-journal",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.server.BayTransferRecovery/",
+      "message": "ARCE_BAY_CLAIM transfer=[0-9a-f-]{36} logical=[0-9a-f-]{36} state=REPAIR reason=TRANSFER_AUTHORITY_CONFLICT",
+      "counts": {"bay_released_missing": 1},
+      "test": "BayReleasedGameTests.releasedWithoutJournalStaysLockedForOfflineRepair",
+      "reason": "W196 deliberately seeds a released receipt without T and verifies an unchanged offline-repair lock."
+    },
+    {
+      "id": "w196-released-blocked",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.server.BayTransferRecovery/",
+      "message": "ARCE_BAY_CLAIM transfer=[0-9a-f-]{36} logical=[0-9a-f-]{36} state=REPAIR reason=REGISTRY_BLOCKED",
+      "counts": {"bay_released_blocked": 1},
+      "test": "BayReleasedGameTests.blockedRegistryFlightUsesExactPermitsAndKeepsItsPendingCharge",
+      "reason": "W196 injects an unavailable registry view for one coherent claim, then checks exact released-flight permits without registration or retirement."
+    },
+    {
       "id": "w128r-r126-bay-hold-registry-blocked",
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.server.BayTransferRecovery/",

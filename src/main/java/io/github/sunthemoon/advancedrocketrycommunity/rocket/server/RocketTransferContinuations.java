@@ -72,7 +72,7 @@ final class RocketTransferContinuations {
                 if (updated.phase() == RocketTransferPhase.COMMITTED) { LandingPadService.release(server, updated); }
                 RocketTransferAudit.auditPhase(updated, updated.phase().name().toLowerCase(java.util.Locale.ROOT),
                         updated.destinationEntityId().orElse(updated.sourceEntityId()));
-                effect.run();
+                bays.phaseEffect(server, journal, updated, action, effect);
             });
         }
     }
