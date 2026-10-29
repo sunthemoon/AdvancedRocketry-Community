@@ -18,7 +18,7 @@ def stats(values):
 def sample(raw, log):
     events = raw["events"]
     timings = {label: stats([e["ns"] / 1e6 for e in events if e["label"] == label])
-               for label in ("ROOT_capture", "ROOT_write", "ROOT_publish", "WRITE_REQUEST")}
+               for label in ("ROOT_capture", "ROOT_write", "ROOT_publish", "WRITE_REQUEST", "IO_JOIN")}
     deadlines = [line for line in log.splitlines() if "ARCE_DISASSEMBLY_DURABILITY_HELD" in line and "reason=DEADLINE" in line]
     captures = [e["tick"] for e in events if e["label"] == "ROOT_capture"]
     publishes = [e["tick"] for e in events if e["label"] == "ROOT_publish"]

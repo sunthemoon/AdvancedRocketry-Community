@@ -96,12 +96,15 @@ try {
     $result.status='MEASURING'; Persist
     foreach($case in $Cases) {
         DiskCheck
+        # An absent/unreadable result cannot prove that the native JVM terminated.
+        $live=$true
         & python -B scripts/run_w208_availability.py --case $case --jar $diagnostic --production-jar $production `
             --libraries 'D:/GitHub/ARCE-Task-Evidence/v1.8.0/guard-observation-04/native-04/server/libraries' `
             --evidence $out --source-commit $Commit --lock-owner $token *> "$out/$case-console.log"
         $code=$LASTEXITCODE; $result.cases+=@{case=$case;exit_code=$code}; Persist
         $caseResult=Get-Content -Raw "$out/$case/result.json" | ConvertFrom-Json
-        if($caseResult.live_process) { $live=$true; throw 'Live native process: world and lock retained' }
+        if($caseResult.live_process) { throw 'Live native process: world and lock retained' }
+        $live=$false
         if($code -ne 0) { throw "Native observation failed: $case" }
     }
     Snapshot 'host-after'; $result.status='MEASURED'

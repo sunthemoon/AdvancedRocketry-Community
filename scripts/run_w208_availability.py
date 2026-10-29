@@ -111,7 +111,7 @@ def jar_inventory(production, diagnostic):
     return dict(production_sha256=sha256(production), diagnostic_sha256=sha256(diagnostic), added=added, changed=[])
 
 
-def run_stage(args, session, output, stage):
+def run_stage(args, session, output, stage, active):
     require_lock(args.lock_owner)
     for drive in ("C:/", "D:/"):
         require(shutil.disk_usage(drive).free >= 10 * 1024**3, "Disk below 10 GiB")
@@ -125,10 +125,11 @@ def run_stage(args, session, output, stage):
     memory_api.argtypes = (ctypes.c_void_p, ctypes.POINTER(Memory), ctypes.c_ulong)
     memory_api.restype = ctypes.c_int
     process = smoke.CapturedProcess(command, session, output / (stage + ".log"))
+    active[0] = process
     row["pid"] = process.process.pid
-    write(output / (stage + "-launch.json"), row)
     samples = []; failure = None
     try:
+        write(output / (stage + "-launch.json"), row)
         deadline = time.monotonic() + OBSERVATION_SECONDS
         while process.process.poll() is None and time.monotonic() < deadline:
             memory = Memory(); memory.cb = ctypes.sizeof(memory)
@@ -190,6 +191,7 @@ def main():
     session = TEMP / ("W208-" + uuid.uuid4().hex); session.mkdir()
     marker = uuid.uuid4().hex; (session / ".w208-owned").write_text(marker)
     result["session"] = str(session)
+    active = [None]
     try:
         require(args.libraries.is_dir() and not smoke.is_link_or_junction(args.libraries)
                 and not any(smoke.is_link_or_junction(p) for p in args.libraries.rglob("*")), "Unsafe library template")
@@ -201,7 +203,7 @@ def main():
         (session / "server.properties").write_text("".join(f"{k}={v}\n" for k, v in sorted(props.items())))
         (session / "eula.txt").write_text("eula=true\n")
         for stage in ("start", "recover1", "recover2"):
-            row = run_stage(args, session, output, stage)
+            row = run_stage(args, session, output, stage, active)
             result["stages"].append({k: v for k, v in row.items() if k not in ("native", "rss_samples")})
             if row["live_process"]:
                 result["live_process"] = True
@@ -218,9 +220,10 @@ def main():
         result.update(status="BLOCKED" if result.get("live_process") else "FAILED", error=str(error))
     finally:
         # Do not delete or reopen a world whose JVM is still alive, even after a harness error.
-        processes = list(output.glob("*-process.json"))
-        live = any(json.loads(path.read_text()).get("live_process") for path in processes)
+        # In-memory process ownership is authoritative even when writing an evidence file itself fails.
+        live = active[0] is not None and active[0].process.poll() is None
         result["live_process"] = live
+        if live: result["status"] = "BLOCKED"
         if not live:
             require(session.resolve().parent == TEMP and not smoke.is_link_or_junction(session)
                     and (session / ".w208-owned").read_text() == marker, "Cleanup ownership changed")
