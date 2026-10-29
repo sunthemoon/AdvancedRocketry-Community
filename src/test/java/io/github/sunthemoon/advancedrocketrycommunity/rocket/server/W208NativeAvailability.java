@@ -141,7 +141,7 @@ public final class W208NativeAvailability {
                 var rocket = setup();
                 server.saveEverything(true, true, true);
                 // Fixture setup only: prove the saved baseline before measuring the real request.
-                RocketTransactionWriterCuts.awaitAcknowledged(server);
+                W208JournalFixture.baseline(server);
                 transaction = RocketRuntime.beginSealedForReleaseTest(rocket, result -> {
                     completion = result.name(); observe("COMPLETE_" + result);
                 });

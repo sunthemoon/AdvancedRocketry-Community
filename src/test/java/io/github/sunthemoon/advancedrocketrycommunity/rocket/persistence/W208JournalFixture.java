@@ -83,6 +83,18 @@ public final class W208JournalFixture {
         return RocketTransactionSavedData.get(server).requestWrite(ManagedRootSupplier.dataFile(server, TYPE), policy);
     }
 
+    public static void baseline(MinecraftServer server) {
+        baseline(RocketTransactionSavedData.get(server), ManagedRootSupplier.dataFile(server, TYPE));
+    }
+
+    static void baseline(RocketTransactionSavedData data, java.nio.file.Path file) {
+        if (!data.requestWrite(file, CheckedSavedDataPolicy.atomic(TYPE))) {
+            throw new IllegalStateException("W208 baseline write refused");
+        }
+        data.awaitWriter();
+        if (!data.acknowledgedCurrent()) { throw new IllegalStateException("W208 baseline is unacknowledged"); }
+    }
+
     public static Map<String, Object> observation(RocketTransactionSavedData data) {
         return Map.of("writes", data.completedWriteCount(), "writer_ns", data.lastWriterNanos(),
                 "writer_cpu_ns", data.lastWriterCpuNanos(), "sequence", data.mutationSequence(),
@@ -92,7 +104,11 @@ public final class W208JournalFixture {
 
     public static Map<String, Object> close(RocketTransactionSavedData data) {
         long start = System.nanoTime(); data.latchShutdown(); data.close();
-        var report = data.drainReport().orElseThrow();
+        var report = data.drainReport().orElse(null);
+        if (report == null) {
+            return Map.of("close_ns", System.nanoTime() - start, "success", false, "reason", "NO_WRITER",
+                    "interrupt_preserved", Thread.currentThread().isInterrupted(), "report", "No writer was started");
+        }
         return Map.of("close_ns", System.nanoTime() - start, "success", report.success(), "reason", report.reason(),
                 "interrupt_preserved", Thread.currentThread().isInterrupted(), "report", report.toString());
     }

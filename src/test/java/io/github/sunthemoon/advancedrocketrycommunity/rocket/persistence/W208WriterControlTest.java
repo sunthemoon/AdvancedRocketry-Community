@@ -15,6 +15,25 @@ class W208WriterControlTest {
     @TempDir Path directory;
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
 
+    @Test void cleanBaselineIsExplicitlyWrittenAndAcknowledged() {
+        var data = new RocketTransactionSavedData();
+        var file = directory.resolve(ManagedSavedDataType.ROCKET_TRANSACTIONS.fileName());
+        assertFalse(data.isDirty());
+        assertFalse(data.acknowledgedCurrent());
+        try {
+            W208JournalFixture.baseline(data, file);
+            assertTrue(java.nio.file.Files.isRegularFile(file));
+            assertTrue(data.acknowledgedCurrent());
+            assertEquals(1, data.completedWriteCount());
+        } finally { data.close(); }
+    }
+
+    @Test void cleanupReportsAnUnstartedWriterWithoutThrowing() {
+        var result = W208JournalFixture.close(new RocketTransactionSavedData());
+        assertEquals("NO_WRITER", result.get("reason"));
+        assertEquals(false, result.get("success"));
+    }
+
     @Test void oneShotUnknownClearsAuthorityThenRealAtomicRetryAcknowledges() {
         var data = data(); var control = new W208WriterControl("near-c1-unknown");
         var policy = control.policy("C1", () -> 0);
