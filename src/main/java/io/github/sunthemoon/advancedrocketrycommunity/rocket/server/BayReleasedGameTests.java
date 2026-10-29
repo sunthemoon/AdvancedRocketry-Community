@@ -169,6 +169,9 @@ public final class BayReleasedGameTests {
                         if (!current.released() || !coordinator.sessionForTests().acknowledged(receipt.op())) { return; }
                         helper.assertTrue(current.equals(receipt.withReleased()), "Release changed more than its flag");
                         var t = journal.find(receipt.transfer()).orElseThrow();
+                        // The ordinary executor may already have queued its next phase before this observer runs.
+                        // A permit must be tested only against an acknowledged journal generation.
+                        if (!journal.actionable(t.logicalRocketId())) { return; }
                         if (mixed) {
                             helper.assertTrue(coordinator.sessionForTests().current(registered.op()).orElseThrow().equals(registered.withReleased())
                                     && coordinator.sessionForTests().acknowledged(registered.op()), "Mixed flags were not one acknowledged group");
