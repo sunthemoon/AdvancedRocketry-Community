@@ -84,6 +84,17 @@ final class BayReleasedResume {
                 }
             }
         }
+        // The phase is durable before its effect. Reconcile every online assignment, including a rider who
+        // dismounted during that write; an empty source alone does not prove that the passenger effect completed.
+        if (record.phase() == RocketTransferPhase.PASSENGERS_TRANSFERRED) {
+            for (var seat : record.destinationFlightData().passengers().assignments()) {
+                var player = server.getPlayerList().getPlayer(seat.passengerId());
+                if (player != null && player.getVehicle() != authority && !move(player, authority, record)) {
+                    return "DUPLICATE_PASSENGERS";
+                }
+            }
+            if (!passengersTransferred(server, record, authority)) { return "DUPLICATE_PASSENGERS"; }
+        }
         for (var copy : candidates) {
             var rocket = copy.rocket();
             if (rocket == authority || rocket == source && record.phase().ordinal() < RocketTransferPhase.SOURCE_REMOVED.ordinal()) { continue; }
@@ -129,6 +140,13 @@ final class BayReleasedResume {
 
     static RocketEntity exact(ServerLevel level, java.util.UUID identity) {
         return level != null && level.getEntity(identity) instanceof RocketEntity rocket ? rocket : null;
+    }
+
+    static boolean passengersTransferred(MinecraftServer server, RocketTransferRecord record, RocketEntity destination) {
+        return record.destinationFlightData().passengers().assignments().stream().allMatch(seat -> {
+            var player = server.getPlayerList().getPlayer(seat.passengerId());
+            return player == null || player.isAlive() && player.getVehicle() == destination;
+        });
     }
 
     static boolean destinationCurrent(RocketEntity rocket, RocketTransferRecord record) {

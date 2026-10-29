@@ -75,13 +75,14 @@ final class BayReleasedFlight {
         var guard = journal.logicalGuard(claim.logical()).orElse(null);
         if (guard == null || !claim.transfer().equals(guard.transfer()) || guard.recordDigest() == null
                 || receipts.stream().anyMatch(r -> !session.acknowledged(r.op()))) { return BayStepQueue.Result.NEXT_TICK; }
-        if (state.delegated && state.authority != null && state.authority.matches(record) && physical(record, false)) {
+        if (state.delegated && state.proposed == null && state.authority != null && state.authority.matches(record) && physical(record, false)) {
             if (!receipts.equals(state.authority.receipts())) { return held(claim, state, "TRANSFER_AUTHORITY_CONFLICT"); }
             return BayStepQueue.Result.NEXT_TICK;
         }
         state.delegated = false;
         if (preparationTick == server.getTickCount()) { return BayStepQueue.Result.NEXT_TICK; }
         preparationTick = server.getTickCount(); // the existing one-group-per-tick reconstruction limit
+        state.proposed = null; // An acknowledged phase without a completed effect must reconcile, not retry its callback.
         if (!alreadyReleased && exactSource(record) == null) { return BayStepQueue.Result.IDLE; }
         var registered = receipts.stream().filter(r -> r.phase() == BayReceipt.Phase.REGISTERED).toList();
         if (!registered.isEmpty() && !alreadyReleased) {
@@ -202,9 +203,21 @@ final class BayReleasedFlight {
                 || state.proposedObservation != state.observation
                 || state.sourceSave != observation(exactSource(record))
                 || state.destinationSave != observation(exactDestination(record))
-                || !valid(state, journal, record, action) || state.nextDigest == null) { return; }
+                || !valid(state, journal, record, action) || state.nextDigest == null) {
+            reconcile(record.logicalRocketId(), state);
+            return;
+        }
         try { effectState = state; effectRecord = record; effect.run(); }
-        finally { effectState = null; effectRecord = null; state.proposed = null; }
+        finally {
+            effectState = null; effectRecord = null; state.proposed = null;
+            if (!physical(record, false)) { reconcile(record.logicalRocketId(), state); }
+        }
+    }
+
+    private void reconcile(UUID logical, State state) {
+        if (state == null) { return; }
+        state.delegated = false;
+        offer.accept(logical);
     }
 
     boolean mountAllowed(Entity passenger, RocketEntity destination) {
@@ -239,6 +252,8 @@ final class BayReleasedFlight {
         if (destination == null) { return effectPending && record.phase() == RocketTransferPhase.DESTINATION_SPAWNED && source != null; }
         return RocketTransferEntities.loadedEntity(destination) && BayReleasedResume.destinationCurrent(destination, record)
                 && passengers(destination, record)
+                && (effectPending || record.phase() != RocketTransferPhase.PASSENGERS_TRANSFERRED
+                    || BayReleasedResume.passengersTransferred(server, record, destination))
                 && (record.phase().ordinal() < RocketTransferPhase.SOURCE_REMOVED.ordinal() || source == null || effectPending);
     }
 
