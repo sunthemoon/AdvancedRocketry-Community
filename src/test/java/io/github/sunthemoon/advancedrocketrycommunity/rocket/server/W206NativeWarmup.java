@@ -196,6 +196,9 @@ public final class W206NativeWarmup {
     private void setup() throws Exception {
         if (data == null) {
             data = ResourceEscrowSavedData.forTests(server); data.bind(server); journal = RocketTransferSavedData.get(server);
+            // The synthetic empty ledger is otherwise never dirty before F1. Establish its checked
+            // durable identity in SETUP, so restart tests reload it rather than create a new ledger.
+            if (mode.equals("restart")) { data.bind(server).autosave(); }
             int count = mode.equals("capacity") ? 10 : 1;
             var extent = W206Observation.extent(shape);
             for (int i = 0; i < count; i++) {
@@ -213,6 +216,7 @@ public final class W206NativeWarmup {
         if (!rockets.stream().allMatch(rocket -> RocketTransferEntities.endAlreadyLoaded(server, rocket.snapshot().orElseThrow()))) { return; }
         for (var rocket : rockets) { if (!rocket.isAddedToWorld()) { require(earth.addFreshEntity(rocket), "Source publication failed"); return; } }
         if (age < 100 || !journal.retryChecked(server) || !data.bind(server).writerIdle()) { return; }
+        if (mode.equals("restart")) { require(data.ledger().writerGeneration() > 0, "Restart fixture ledger was not acknowledged"); }
         if (mode.equals("capacity")) {
             player = ReleaseTestPlayers.place(server, UUID.randomUUID(), "W206Pilot", earth, new Vec3(8192.5, 103, 8192.5));
         }
@@ -359,14 +363,18 @@ public final class W206NativeWarmup {
             for (var c : W206Observation.candidate(shape, 8200, 8200).columns()) {
                 earth.getChunkSource().addRegionTicket(SOURCE, c, 2, key);
             }
-            data = ResourceEscrowSavedData.forTests(server); data.bind(server); journal = RocketTransferSavedData.get(server);
+            data = ResourceEscrowSavedData.existing(server);
+            require(data != null, "Restart fixture lost its original ledger");
+            data.bind(server); journal = RocketTransferSavedData.get(server);
         }
         if (age <= 100) { return; }
         for (var entity : earth.getAllEntities()) {
             if (entity instanceof RocketEntity rocket && rocket.assemblyTransactionId().filter(logical::equals).isPresent()
                     && RocketTransferEntities.endAlreadyLoaded(server, rocket.snapshot().orElseThrow())
                     && journal.retryChecked(server) && data.bind(server).writerIdle()) {
+                require(data.ledger().id().equals(rocket.escrowSection().ledger()), "Restart source ledger identity changed");
                 rockets.add(rocket); result.put("restart_source_ready", true); result.put("restart_logical", logical.toString());
+                result.put("restart_ledger", data.ledger().id().toString());
                 snapshot("RESTART_SOURCE_READY"); phase("BASELINE"); return;
             }
         }
