@@ -28,6 +28,8 @@ final class RocketI6Retirement extends RocketDestinationRetirement {
     private Terminal terminal;
     private RocketLandedDisassemblies.Port continuation;
     private boolean preparation, prepared;
+    private BooleanSupplier preflight = () -> true;
+    private boolean preflightRefused;
 
     interface Terminal {
         boolean submit(RocketTransferSavedData journal, RocketTransferRecord record,
@@ -35,6 +37,7 @@ final class RocketI6Retirement extends RocketDestinationRetirement {
     }
 
     void prepareOnly(BooleanSupplier authorized) { this.authorized = authorized; preparation = true; }
+    void preflight(BooleanSupplier check) { preflight = java.util.Objects.requireNonNull(check); }
     void handoff(BooleanSupplier authorized, Terminal terminal, RocketLandedDisassemblies.Port continuation) {
         this.authorized = authorized; this.terminal = terminal; this.continuation = continuation;
     }
@@ -82,7 +85,7 @@ final class RocketI6Retirement extends RocketDestinationRetirement {
 
     @Override public boolean requestCurrent() {
         var rocket = rocket(predecessor, survivor); var origin = snapshot.sourceOrigin();
-        return authorized.getAsBoolean() && RocketTransferEntities.loadedEntity(rocket) && rocket.operational()
+        return !preflightRefused && authorized.getAsBoolean() && RocketTransferEntities.loadedEntity(rocket) && rocket.operational()
                 && rocket.ownerId().filter(predecessor.ownerId()::equals).isPresent()
                 && rocket.snapshot().filter(snapshot::equals).isPresent()
                 && rocket.flightData().filter(flight::equals).isPresent()
@@ -111,6 +114,9 @@ final class RocketI6Retirement extends RocketDestinationRetirement {
     }
 
     @Override public String prepare(RocketTransferRecord record, UUID survivor, List<RocketRetirementProof.Slot> census) {
+        // The coordinator admits at most one destructive I6 preflight per tick. Recheck before any discard authority.
+        if (!requestCurrent()) { return "REQUEST_CHANGED"; }
+        if (!preflight.getAsBoolean()) { preflightRefused = true; return "PREFLIGHT_REFUSED"; }
         // Recovery of U must not regain an obsolete end after its last transfer authority is forgotten.
         if (projection(record, survivor) == null) { return "SURVIVOR_CONFLICT"; }
         // A saturated bounded discovery is not a complete census and grants no discard authority.

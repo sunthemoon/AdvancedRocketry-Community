@@ -181,6 +181,7 @@ final class RocketOrdinaryRetirement {
     private Supplier<Set<UUID>> landedOwners = Set::of;
     private Predicate<UUID> sealedOwner = logical -> false;
     private final SealedProofTurns proofTurns = new SealedProofTurns();
+    private long i6AdmissionTick = Long.MIN_VALUE;
 
     RocketOrdinaryRetirement(Set<UUID> live, Set<UUID> settled, Supplier<Set<UUID>> fenced, Function<MinecraftServer, Port> ports) {
         this.live = live; this.settled = settled; this.fenced = fenced; this.ports = ports;
@@ -427,6 +428,12 @@ final class RocketOrdinaryRetirement {
         }
         // W98-R5: an attempt starts only when its first capture can run now, so no reservation waits for capture budget.
         if (supported && !port.captureAvailable(entry.census.get(0), now)) { captureBusy(entry, now); return; }
+        // I6 confirmations only enqueue intent. One global preflight turn per real tick, even on repeated visits.
+        // Deferral cannot retain a reservation, refresh consent, spend an attempt or authorize the destination scan.
+        if (entry.site == Site.BEFORE_RELEASE && !port.needsTicketStep()) {
+            if (i6AdmissionTick == now) { entry.notBefore = now + 1; entry.releaseToken(); return; }
+            i6AdmissionTick = now;
+        }
         // The destination scan may discard obsolete entities: reserve before that mutation, including on retries.
         if (entry.site.destination() && entry.token == null) {
             entry.token = entry.journal.reserve(entry.logical()).orElse(null);
@@ -642,5 +649,6 @@ final class RocketOrdinaryRetirement {
             if (entry.state != State.REMOVING) { entry.effects.discarded().run(); }
         }
         pending.clear(); holds.clear(); fills.clear(); proofTurns.clear();
+        i6AdmissionTick = Long.MIN_VALUE;
     }
 }
