@@ -6,6 +6,7 @@ import net.minecraft.gametest.framework.GameTestServer;
 
 /** GameTest-only scheduling fixtures, including a bounded root for product-entry capacity checks. */
 public final class RocketJournalSchedulingGameTestSupport {
+    public static final String RELEASE_PROPERTY = "advancedrocketrycommunity.n3cProbe";
     private RocketJournalSchedulingGameTestSupport() { }
 
     static ReleaseLimit lower(boolean allowed, java.util.function.Supplier<RocketTransferSavedData> current,
@@ -17,11 +18,17 @@ public final class RocketJournalSchedulingGameTestSupport {
 
     /** W204: native equivalent of boundedFixture; a normal server is rejected before its root is read. */
     public static ReleaseLimit lowerReleaseLimit(net.minecraft.server.MinecraftServer server, int limit) {
-        io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowTestEndpoints.requireEnabled(server);
+        requireReleaseSelection(io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowTestEndpoints.enabled(server));
         var previous = RocketTransferSavedData.get(server);
         if (!previous.clean()) { throw new IllegalStateException("Fixture replacement requires a settled root"); }
         return lower(true, () -> RocketTransferSavedData.existing(server),
                 bound -> replace(server, RocketTransferSavedData.get(server), bound), limit);
+    }
+
+    static void requireReleaseSelection(boolean endpointEnabled) {
+        if (!endpointEnabled || !Boolean.getBoolean(RELEASE_PROPERTY)) {
+            throw new IllegalStateException("W204 requires both the endpoint gate and its own release-test property");
+        }
     }
 
     public static final class ReleaseLimit implements AutoCloseable {

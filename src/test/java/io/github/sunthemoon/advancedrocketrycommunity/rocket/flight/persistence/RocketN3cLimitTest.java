@@ -23,6 +23,20 @@ class RocketN3cLimitTest {
         assertCapacity(RocketTransferSavedData.load(new RocketTransferSavedData().save(new CompoundTag())), 128);
     }
 
+    @Test void bothTheDedicatedEndpointGateAndOwnPropertyAreRequired() {
+        String property = RocketJournalSchedulingGameTestSupport.RELEASE_PROPERTY;
+        String previous = System.getProperty(property);
+        try {
+            System.clearProperty(property);
+            assertThrows(IllegalStateException.class, () -> RocketJournalSchedulingGameTestSupport.requireReleaseSelection(true));
+            System.setProperty(property, "true");
+            assertThrows(IllegalStateException.class, () -> RocketJournalSchedulingGameTestSupport.requireReleaseSelection(false));
+            assertDoesNotThrow(() -> RocketJournalSchedulingGameTestSupport.requireReleaseSelection(true));
+        } finally {
+            if (previous == null) { System.clearProperty(property); } else { System.setProperty(property, previous); }
+        }
+    }
+
     @Test void exceptionalExitRestoresTheFullBoundAndPayload() {
         var root = new AtomicReference<>(new RocketTransferSavedData());
         var payload = root.get().save(new CompoundTag());

@@ -469,6 +469,8 @@ def run_case(args, case, evidence):
             if digest(args.jar) != row["jar_sha256"]:
                 raise smoke.SmokeError("JAR changed between starts")
             command = _server_command(args.java); command[2] = "-Xmx4G"
+            if case in N3C_CASES:
+                command.insert(1, "-Dadvancedrocketrycommunity.n3cProbe=true")
             if case == "N2_GOVERNED":
                 command[1:1] = ["-Dadvancedrocketrycommunity.escrowCase=" + GOVERNED,
                                 "-Dadvancedrocketrycommunity.escrowScenario=" + ("start" if restart == 0 else "recover")]

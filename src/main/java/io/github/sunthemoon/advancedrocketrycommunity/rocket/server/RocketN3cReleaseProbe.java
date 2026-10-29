@@ -44,7 +44,8 @@ public final class RocketN3cReleaseProbe {
     }
 
     @SubscribeEvent public static void commands(RegisterCommandsEvent event) {
-        if (!Boolean.getBoolean(EscrowTestEndpoints.HOOKS)) { return; }
+        if (!Boolean.getBoolean(EscrowTestEndpoints.HOOKS)
+                || !Boolean.getBoolean(RocketJournalSchedulingGameTestSupport.RELEASE_PROPERTY)) { return; }
         event.getDispatcher().register(Commands.literal("arce-w204").requires(s -> s.hasPermission(4))
                 .then(Commands.literal("seed").then(Commands.argument("rocket", EntityArgument.entity())
                         .then(Commands.argument("mode", StringArgumentType.word()).executes(context -> {
