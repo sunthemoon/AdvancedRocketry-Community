@@ -99,6 +99,35 @@ def native_payload(be, payload):
     raise ValueError("Unmapped fixture payload: " + adapter)
 
 
+def check_census_payloads(roots, accounted):
+    """Reject resources/identities outside the exact payload subtrees already validated.
+
+    Unlike the labelled conservation sum, this walks nested inventories and item tags,
+    and also rejects unlabelled stacks. Empty unrelated hosts are not extra authorities.
+    Exempt decoded objects by identity, never by equality or claimed coordinates.
+    """
+    pending = [(root, 0) for root in roots]; visited = 0
+    while pending:
+        value, depth = pending.pop(); visited += 1
+        require(depth <= 64 and visited <= 262_144, "Native census payload walk bound exceeded")
+        if id(value) in accounted:
+            continue
+        if isinstance(value, dict):
+            require(not (isinstance(value.get("id"), str) and "Count" in value)
+                    and not (isinstance(value.get("FluidName"), str) and "Amount" in value)
+                    and value.get("id") not in ("minecraft:item", "minecraft:player")
+                    and ("arce_sealed_rocket_member" not in value
+                         or id(value["arce_sealed_rocket_member"]) in accounted),
+                    "Unaccounted census resource or sealed-member identity")
+            children = value.values()
+        elif isinstance(value, list):
+            children = value
+        else:
+            continue
+        require(visited + len(pending) + len(children) <= 262_144, "Native census payload walk bound exceeded")
+        pending.extend((child, depth + 1) for child in children)
+
+
 def inspect(world: Path, fixture: dict, row: dict, stage: str):
     old = fixture["transfer_root"]["transfers"][0]; expected = fixture["destination"]
     snapshot = old["destination_snapshot"]
@@ -118,15 +147,18 @@ def inspect(world: Path, fixture: dict, row: dict, stage: str):
                 and transaction["content_hash"] == snapshot["content_hash"], "Changed full U snapshot or identity")
     files = {TRANSFER: digest(world / TRANSFER)}
     if path.exists(): files[TRANSACTION] = digest(path)
-    entities = []; terrain = {}; recipients = []
+    entities = []; terrain = {}; recipients = []; census = []; accounted = set()
     for x in range(-1, 3):
         for z in range(-1, 3):
             for folder in ("region", "entities", "poi"):
                 path = world / folder / f"r.{x >> 5}.{z >> 5}.mca"
                 if path.exists(): files[path.relative_to(world).as_posix()] = digest(path)
-                if folder == "region": terrain[x, z] = chunk_record(path, x, z) or {}
+                if folder == "region":
+                    terrain[x, z] = chunk_record(path, x, z) or {}
+                    census.extend(terrain[x, z].get("block_entities", []))
                 if folder == "entities":
                     rows = (chunk_record(path, x, z) or {}).get("Entities", [])
+                    census.extend(rows)
                     entities.extend(rocket_census(rows))
                     recipients.extend(item for item in rows if item.get("id") == "minecraft:item")
     for path in (world / "playerdata").glob("*.dat"):
@@ -140,6 +172,7 @@ def inspect(world: Path, fixture: dict, row: dict, stage: str):
     survivors = [entity for entity in entities if entity["UUID"] != fixture["source"]["UUID"]]
     require(len(survivors) <= 1, "Duplicate destination authority")
     for entity in survivors: check_entity(entity, expected)
+    accounted.update(id(entity["RocketEntityData"]) for entity in entities)
     sealed = []; native = []; blocks = []
     for endpoint in ("source_snapshot", "destination_snapshot"):
         image = old[endpoint]
@@ -157,6 +190,7 @@ def inspect(world: Path, fixture: dict, row: dict, stage: str):
             if name == "advancedrocketrycommunity:sealed_rocket_block":
                 require(be is not None, "Carrier without payload")
                 check_member(be["arce_sealed_rocket_member"], block, snapshot, expected, transaction); sealed.append(be)
+                accounted.add(id(be["arce_sealed_rocket_member"]))
             else:
                 state = block_state_at(chunk, x, y, z); wanted = image["block_palette"][block["palette"]]
                 require(state["Name"] == wanted["id"] and state.get("Properties", {}) == wanted["properties"],
@@ -164,7 +198,10 @@ def inspect(world: Path, fixture: dict, row: dict, stage: str):
                 payload = block.get("block_entity")
                 require(be is None if payload is None else be is not None and native_payload(be, payload) == payload["data"],
                         "Changed complete native payload")
+                if payload:
+                    accounted.update(id(value) for value in native_payload(be, payload).values())
                 native.append(dict(state=state, block_entity=be))
+    check_census_payloads(census, accounted)
     phase = transaction["phase"] if transaction else None
     if stage == "start": require(phase == phase_at_cut(row["input"]["cut"]), "Wrong exact cut U phase")
     state = elect(phase, survivors, sealed, native, recipients, retained=snapshot if transaction else None)
