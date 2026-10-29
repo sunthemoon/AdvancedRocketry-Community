@@ -92,6 +92,44 @@ Host checked cleanup, payload readback and recovery apply to external providers.
 They do not compensate arbitrary side effects or guarantee cross-chunk fsync
 atomicity. Confirm entity removal before exposing restored block inventories.
 
+### v1.8 sealed publication implementation note (R107, ordinary consumer W164)
+
+The method signatures, payload envelope/version checks and callback trust boundary
+are unchanged. B2 prepares an external member by calling restore on the server
+thread with a host-created, detached target that does not yet belong to any Level.
+The provider must work from the target's owned data and supplied payload, without
+requiring an installed host or a Level. The inert carrier C remains in the world.
+After successful restoration and exact recapture, the host assigns the Level and
+publishes the target in one step, after the sealed transaction's authority checks.
+
+A preparation failure (exception, false return, required Level, recapture mismatch
+or returned-time overrun) marks the detached target removed and leaves C and its
+exact original payload intact. Built-in targets are also emptied. C exposes no
+inventory, capability, menu or drops; no successful publication is reported.
+The failure is latched in RAM for that loaded carrier. There is no same-call or
+in-session retry while it remains loaded, and no speculative T write-back or
+live-world rollback. Reloading that carrier, through chunk reload or server
+restart, permits one new attempt and at most one carrier WARN for that load.
+An incompatible provider can therefore keep the member unavailable indefinitely,
+including across restarts. Repair/reinstall the matching provider and payload
+version, then reload; restarting alone does not repair incompatible code.
+
+Missing or mismatched registrations still block restoration without interpreting
+or discarding opaque data. Transient unloaded-footprint and delayed-writer holds
+retain their existing 200-tick retries rather than the terminal-failure latch.
+The existing 5 ms returned-time budget and once-per-adapter overrun warning are
+unchanged; they do not preempt a blocked callback. Unsafe same-JVM side effects,
+retained removed-instance references and resource-moving capability callbacks
+remain outside the host guarantee. Do not delete U or replace C with air to force
+recovery; persistent data conflicts require the whole-world copy procedure in
+R-035. No new save veto, schema or callback timeout is introduced by this note.
+
+This implements outcome preservation, not the old same-call timing assumption:
+certified pre-election rollback may allow retry after its completion; an R107
+terminal publication failure retries only after carrier reload. W164's ordinary
+I6 and no-T consumers inherit this distinction. This is an implementation note,
+not release acceptance or approval of third-party providers.
+
 ## Artifacts and verification
 
 Increase API minor to 1.1. Preserve the three metadata types' JDK-only compilation

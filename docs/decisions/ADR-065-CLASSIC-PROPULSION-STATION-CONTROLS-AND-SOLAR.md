@@ -1877,13 +1877,16 @@ changes no decision status and accepts no risk. The risk is R-035.
   escrow rule and test pause moved out, with state-machine and contention coverage (W98-R10, R12). Root decision
   R42 keeps recovery waiting for an offline crew after a countdown cancellation killed before its proof: a source
   that recovery already returned, or a stale COUNTDOWN image, cannot be told from one that never left (W98-R6).
-- **Open:** W98-R1 (an ordinary capture invalidates a governed proof of the same entity slot, before governed
-  admission opens; W116 observed it on every run), W98-R6's offline-crew hold (R42; a durable cancellation intent
-  is reconsidered with N3-B), N3-B (I6, I7) and the player checkpoint adapter.
-- **N3-B design (W148, reviewed; Root decision R87, 2026-10-23; not yet implemented).** I6 (landed disassembly:
-  the pre-retirement gap and a second, independent terrain transaction) and I7 (a replacement that loses the old
-  end's exclusion authority) take N3-A1's pre-retirement proof, with R52 and R59's on-demand ticketing extended to
-  them inside the unchanged shared caps. Root's answers to W148 section 7: (1) the terrain dependency is accepted and
+- **Historical open list at N3-A2:** W98-R1 (ordinary capture invalidating a governed proof), W98-R6's
+  offline-crew hold (R42), N3-B (I6, I7) and the player checkpoint adapter were open at that checkpoint.
+  The subsequent N3-B notes below supersede its implementation status; this historical list does not close
+  passenger checkpoint or offline-crew residuals or approve governed admission.
+- **N3-B design (W148, reviewed; Root decision R87, 2026-10-23).** The original design below is implemented by
+  N3-B1 (W150), N3-B2 (the W152 series) and N3-B3 (W164), subject to the isolation and ticket amendments below.
+  I6 (landed disassembly: the pre-retirement proof and the independent terrain transaction) and I7 (replacement
+  retaining the old end's exclusion authority) use the ordinary pre-retirement proof inside the unchanged shared
+  caps. N3-B4's combined evidence and R165's performance qualification are still open; implementation is not
+  release acceptance. Root's answers to W148 section 7: (1) the terrain dependency is accepted and
   no pre-M1-only player path ships; (2) the demand ticketing extends to I6 and I7, including the non-destructive
   cold-disassembly preparation and a fresh confirmation; (3) a destination with unsupported entity storage refuses
   instead of R34's R5(c) unproved fallback, with the scoped pending-operation and footprint exclusions; (4) the
@@ -1960,12 +1963,68 @@ changes no decision status and accepts no risk. The risk is R-035.
     delay it by one tick. No record is lost. This is an availability residual, recorded in R-035, under these
     conditions: ordinary service continues, sealed attempts release, native capture becomes available and the
     64-entry bound has room. Endless new arrivals and native IO stalls are outside it. W152K-R1 is closed by this
-    residual. Player admission (N3-B3) still waits for W164.
+    residual. W164 enables the ordinary I6 and no-T player consumer described below, inheriting these availability residuals; governed, escrow and bay production admission remain closed.
   - **Stop condition:** W152's first commit probes the publication sequence, including an attachment listener that
     keeps the raw target, and stops if no one-step publication exists without a Mixin.
 
 No saved format changes except the N3-B2 carrier and the `SEALED_DISASSEMBLY` record type that R93 authorizes above.
 This is a development implementation note, not owner acceptance or a Gate result.
+
+### N3-B3 implementation note: ordinary landed disassembly uses the sealed executor (W164)
+
+This note records W164's implementation of R87 with the R118 adapter, R124 ticket and R165 evidence dispositions.
+The implementation and native evidence are in `records/W164.md`; the persistence review examined `a96d31d38`.
+R-035 and R-040 describe the protection, availability and recovery scope. No decision status or Gate is changed.
+
+- **Enabled scope.** Ordinary, unprotected landed I6 and ordinary no-T disassembly now use B2. Governed, escrow
+  and bay production admission, their receipt authority and their recovery residuals are not opened or changed.
+  I6a/FM12a remains a test hook: D1/exclusion proof precedes checked removal; pending precedes acknowledged
+  absence, outbox effects keep their existing acknowledgement order, and the hook restores no terrain.
+- **Cold preparation and consent.** The first authorized cold-site demand only prepares the server-recorded
+  discovery columns, reports pending preparation and leaves T and terrain intact. Once ready, disassembly needs
+  a fresh ordinary request, fresh fuel-disposal consent and fresh proof. The destructive request's original
+  200-tick age survives proof, M1 and the queued handoff; neither preparation nor a delayed callback renews it.
+  Completed preparation stops refreshing tickets while awaiting the next click. Readiness can expire before that
+  click, requiring preparation again; it is not an indefinite loading promise.
+- **R124 ticket amendment.** The common `RocketDestinationRetirement.keepLoaded` port refreshes W90's checked
+  discovery columns at both recorded ends, at most 16 per end including each origin, using the existing
+  `arce_rocket_flight` ticket (distance 2, keyed by transfer ID). This replaces the original origin-only proposal
+  in W148 section 2 and W130's description for this port, including BEFORE_FILL and I7, not only I6. It keeps
+  the three-step demand bound, at least 200 ticks between steps for one rocket, shared four-starts-per-tick
+  allowance, and expiry on the first cleanup with age greater than 400 ticks since the last refresh. Checks for
+  authority, bounds, save-off and supported storage precede ticketing. No client coordinate grants loading;
+  source-return recovery's separate ticket rule is unchanged. The shared 64-entry pending limit, 100-tick proof
+  deadline and 200-tick retry remain unchanged. Ticket exhaustion retains T and needs a new demand.
+- **M0 to M1.** M0 reports DISASSEMBLY_PENDING with T retained. Before M1 creates P and removes T, native
+  own-store/force/readback must prove exact current D1, not T's old fuel/cargo projection, and exclusion at the
+  recorded ends and every observed candidate slot. A shared end slot must contain exactly D. Full current
+  snapshot/flight identity, fuel/debit state, empty actual manifest and rider list, unresolved old delivery
+  obligations, U/identity/footprint exclusions, actor/consent and terrain preflight are rechecked. Saturated census,
+  unsupported destination storage or off-column conflict cannot grant deletion; there is no source-only unproved
+  fallback here. Per-L checked absence still precedes effects. P retains its slot and region until its own
+  budgeted owner turn starts B2, rather than consuming B2's spent allowance inside the journal END-tick callback.
+- **M3 and stop.** After mutation, only B2's ROLLBACK_PROVED certifies native rollback plus checked U absence;
+  matching D and the existing identical-T/schema-1 insertion checks still apply. RAM counts, REJECTED,
+  PROOF_PLAN_LIMIT, UNKNOWN and late callbacks do not certify rollback. Before mutation the guarded write-back
+  remains available. Stop cancels acknowledged but unstarted handoffs before the transfer writer stops; it does
+  not turn already-started or uncertain B2 work into speculative T write-back. Final save success is still subject
+  to the existing journal drain, not promised by cancellation.
+- **No T and retained authority.** A no-T rocket, including one previously retired by W130 or I6a, proves its
+  standalone current D1 in the origin slot and empty terrain before B2 retains U. It invents neither T nor an
+  unknown predecessor. C0-C5 keeps checked U and inert C until terrain election, D's proved absence and U's
+  checked absence; publication follows. WRITE_PENDING and UNKNOWN are not proofs. U/footprint holds can outlive
+  the request and have no completion-time bound under persistent storage, save-off or identity conflicts.
+  External-adapter publication failures use R107's detached target and carrier-reload retry contract (ADR-022),
+  not a same-call live-world rollback. Existing diagnostics, shared quotas and whole-world recovery apply.
+- **Open evidence.** Twenty B-PRE cases and fourteen separate B-PLAIN/B-M rows passed two restarts each; the latter
+  ledger retains 47 of 66 counted starts, including historical failures/interruption. This does not complete
+  N3-B4's 89-row combined terrain matrix (at least 356 starts), assigned separately after integration by R156.
+  R162's maximum-size sample completed only six of 64 proofs and did not drive the fresh production handoff;
+  active preparation ticks exceeded the docs/17 mean/P95/P99 targets. It is not worst-case or reference-load
+  qualification. R165 (2026-10-29, Root's W164 queue entry) makes that measurement a follow-up before the v1.8
+  release candidate rather than a merge blocker, without relaxing a budget or approving performance. Reference
+  workload, integrated regression and client/Required Gates remain separate. Playerdata checkpointing, off-end
+  bypass copies, power loss and partial-world rollback remain outside this entity/terrain proof.
 
 ### W80 implementation note: releasing a legacy rocket held by offline passengers (design frozen; all three leaves merged)
 
