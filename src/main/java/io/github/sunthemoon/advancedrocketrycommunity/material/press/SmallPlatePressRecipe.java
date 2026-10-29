@@ -6,6 +6,8 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.BoundedItemIngredientCodec;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeJsonSignature;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeRefusalLedger;
 import io.github.sunthemoon.advancedrocketrycommunity.material.MaterialContent;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
@@ -28,6 +30,7 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
+import net.minecraftforge.common.crafting.conditions.ICondition;
 
 /**
  * A small plate press recipe (ADR-063 section 3): one block, matched through its item form, becomes one output stack.
@@ -146,9 +149,17 @@ public final class SmallPlatePressRecipe implements Recipe<SimpleContainer> {
     }
 
     public static final class Serializer implements RecipeSerializer<SmallPlatePressRecipe> {
+        /** A data-pack reload records a refusal and skips the recipe (W193); see {@link RecipeRefusalLedger}. */
+        @Override
+        public SmallPlatePressRecipe fromJson(ResourceLocation id, JsonObject json, ICondition.IContext context) {
+            return RecipeRefusalLedger.decode(context, id, () -> fromJson(id, json));
+        }
+
         @Override
         public SmallPlatePressRecipe fromJson(ResourceLocation id, JsonObject json) {
             try {
+                // The bounded walk refuses an oversized tree before json.toString() copies it (W193, W179-F4).
+                RecipeJsonSignature.canonical(json);
                 if (json.toString().getBytes(StandardCharsets.UTF_8).length > MAX_RECIPE_BYTES) {
                     throw new IllegalArgumentException("recipe JSON exceeds " + MAX_RECIPE_BYTES + " bytes");
                 }

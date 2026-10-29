@@ -1,11 +1,14 @@
 package io.github.sunthemoon.advancedrocketrycommunity.gametest;
 
+import com.google.gson.JsonParser;
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.ClassicMachineRecipe;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.MultiblockPatternCatalog;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.service.MultiblockPatternReloadListener;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessInput;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.BoundedItemIngredientCodec;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeRefusalLedger;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.lang.reflect.Field;
@@ -20,6 +23,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
 import java.util.function.Function;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import net.minecraft.Util;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.HolderSet;
@@ -46,6 +50,11 @@ import org.apache.logging.log4j.Level;
  * item tags and multiblock patterns is selected and then deselected through the server's own data-pack reload, as
  * {@code /datapack enable} does. The reload completes; every bad recipe, tag and pattern is refused while the valid
  * content stays; each refusal logs exactly one bounded entry; and deselecting the pack restores the server.
+ *
+ * <p>W193 (W179-F4): the classic recipes that the mod's serializer refuses are logged together, in one summary of at
+ * most {@link RecipeRefusalLedger#MAX_SUMMARY_CHARS} characters, plus Forge's INFO line for each skipped file; vanilla
+ * still logs each file it refuses before any serializer. W179-F5: after the pack is deselected, the shared ingredient
+ * codec treats its vanished tag as absent.
  */
 @GameTestHolder(ModIdentity.MOD_ID)
 @PrefixGameTestTemplate(false)
@@ -57,6 +66,10 @@ public final class DataPackOverLimitReloadGameTests {
     static final int MAX_LOGGED_CHARS = 512;
     private static final ResourceLocation KNOWN_GOOD = ModIdentity.id("lathe_iron_rod");
     private static final Pattern PARSING = Pattern.compile("Parsing error loading recipe (\\S+)");
+    /** Forge's INFO line for a recipe whose serializer returned {@code null} (W193). */
+    private static final Pattern SKIPPED = Pattern.compile("Skipping loading recipe (\\S+) as it's serializer returned null");
+    private static final Pattern SUMMARY = Pattern.compile("Refused (\\d+) data-pack recipes of this mod; none is "
+            + "registered\\. Reasons: (.+)\\. First (\\d+) by id: (.+)");
     private static final Pattern UNREADABLE_FILE = Pattern.compile("Couldn't parse data file (\\S+) from \\S+");
     private static final Pattern MISSING_REFERENCE = Pattern.compile("Couldn't load tag "
             + Pattern.quote(OverLimitDataPack.MISSING_REFERENCE_TAG.toString())
@@ -73,6 +86,7 @@ public final class DataPackOverLimitReloadGameTests {
             "Accepted multiblock pattern catalog generation \\d+ with (\\d+) definitions");
     /** The two pattern catalogs: the mod's and the classic machines' ({@code ClassicRuntime}). */
     private static final int PATTERN_CATALOGS = 2;
+    private static final String NO_ALTERNATIVES = "machine ingredient has no bound alternatives";
 
     private DataPackOverLimitReloadGameTests() {
     }
@@ -208,6 +222,11 @@ public final class DataPackOverLimitReloadGameTests {
                 defects.add(id + " loaded");
             }
         }
+        for (ResourceLocation id : pack.refusedByVanilla.keySet()) {
+            if (recipes.byKey(id).isPresent()) {
+                defects.add(id + " loaded");
+            }
+        }
         for (ResourceLocation id : pack.unreadable) {
             if (recipes.byKey(id).isPresent()) {
                 defects.add(id + " loaded");
@@ -248,10 +267,11 @@ public final class DataPackOverLimitReloadGameTests {
         }
         defects.addAll(enabledLog(pack, logged));
         helper.assertTrue(defects.isEmpty(), "Over-limit reload defects: " + defects);
-        AdvancedRocketryCommunity.LOGGER.info("ARCE_W179_RELOAD stage=enable ms={} refused_at_load={} unreadable={} "
-                        + "refused_at_resolution={} problems_logged={} longest={}", millis, pack.refusedAtLoad.size(),
-                pack.unreadable.size(), pack.refusedAtResolution.size(),
-                logged.stream().filter(ReloadLogCapture.Event::problem).count(), longest(logged));
+        AdvancedRocketryCommunity.LOGGER.info("ARCE_W179_RELOAD stage=enable ms={} refused_at_load={} "
+                        + "refused_by_vanilla={} unreadable={} refused_at_resolution={} problems_logged={} longest={}",
+                millis, pack.refusedAtLoad.size(), pack.refusedByVanilla.size(), pack.unreadable.size(),
+                pack.refusedAtResolution.size(), logged.stream().filter(ReloadLogCapture.Event::problem).count(),
+                longest(logged));
     }
 
     private static void disabled(GameTestHelper helper, MinecraftServer server, OverLimitDataPack pack, Before before,
@@ -285,6 +305,17 @@ public final class DataPackOverLimitReloadGameTests {
         long members = BuiltInRegistries.ITEM.holders().filter(holder -> holder.is(oversized)).count();
         if (members != 0) {
             defects.add(members + " items are still members of the oversized tag");
+        }
+        // W193 (W179-F5): the shared ingredient codec treats the vanished tag as absent, as after a restart, instead of
+        // resolving its stale named set (which, at 33 items, it would refuse for the variant bound).
+        try {
+            BoundedItemIngredientCodec.resolveAlternatives(JsonParser.parseString("{\"tag\":\""
+                    + OverLimitDataPack.OVERSIZED_TAG + "\"}"));
+            defects.add("the vanished oversized tag still resolves");
+        } catch (IllegalArgumentException refused) {
+            if (!NO_ALTERNATIVES.equals(refused.getMessage())) {
+                defects.add("the vanished oversized tag was refused for " + refused.getMessage());
+            }
         }
         int accepted = 0;
         int forgotten = 0;
@@ -339,30 +370,45 @@ public final class DataPackOverLimitReloadGameTests {
         throw new IllegalStateException("The reloaded resources hold no command set");
     }
 
-    /** Each refusal of the pack logs exactly once, within {@link #MAX_LOGGED_CHARS}; nothing else warns. */
+    /**
+     * Each refusal of the pack logs exactly once, within {@link #MAX_LOGGED_CHARS}; nothing else warns. Since W193 the
+     * classic serializer's refusals log one summary together, within {@link RecipeRefusalLedger#MAX_SUMMARY_CHARS},
+     * and Forge's INFO line once for each of them.
+     */
     private static List<String> enabledLog(OverLimitDataPack pack, List<ReloadLogCapture.Event> logged) {
         List<String> defects = new ArrayList<>();
         Map<ResourceLocation, Integer> parsed = new TreeMap<>();
+        Map<ResourceLocation, Integer> skipped = new TreeMap<>();
+        List<String> summaries = new ArrayList<>();
         Map<ResourceLocation, Integer> unreadable = new TreeMap<>();
         Map<String, Integer> others = new LinkedHashMap<>();
         for (ReloadLogCapture.Event event : logged) {
             if (ACCEPTED.matcher(event.message()).matches()) {
                 defects.add("a pattern catalog was accepted: " + event.message());
             }
+            Matcher skip = SKIPPED.matcher(event.message());
+            if (event.level() == Level.INFO && skip.matches()) {
+                skipped.merge(new ResourceLocation(skip.group(1)), 1, Integer::sum);
+            }
             if (!event.problem()) {
                 continue;
             }
-            if (event.longest() > MAX_LOGGED_CHARS) {
-                defects.add("an entry is longer than " + MAX_LOGGED_CHARS + " characters: " + describe(event));
+            boolean summary = event.level() == Level.ERROR && event.message().startsWith("Refused ")
+                    && event.logger().equals(AdvancedRocketryCommunity.LOGGER.getName());
+            int bound = summary ? RecipeRefusalLedger.MAX_SUMMARY_CHARS : MAX_LOGGED_CHARS;
+            if (event.longest() > bound) {
+                defects.add("an entry is longer than " + bound + " characters: " + describe(event));
             }
             Matcher parsing = PARSING.matcher(event.message());
             Matcher file = UNREADABLE_FILE.matcher(event.message());
             if (event.level() != Level.ERROR) {
                 defects.add("unexpected " + describe(event));
+            } else if (summary) {
+                summaries.add(event.message());
             } else if (parsing.matches()) {
                 ResourceLocation id = new ResourceLocation(parsing.group(1));
                 parsed.merge(id, 1, Integer::sum);
-                String reason = pack.refusedAtLoad.get(id);
+                String reason = pack.refusedByVanilla.get(id);
                 if (reason != null && (event.causes().isEmpty() || !event.causes().get(0).equals(reason))) {
                     defects.add(id + " was refused for " + event.causes() + ", not " + reason);
                 }
@@ -379,9 +425,19 @@ public final class DataPackOverLimitReloadGameTests {
             }
         }
         Map<ResourceLocation, Integer> once = new TreeMap<>();
-        pack.refusedAtLoad.keySet().forEach(id -> once.put(id, 1));
+        pack.refusedByVanilla.keySet().forEach(id -> once.put(id, 1));
         if (!parsed.equals(once)) {
             defects.add("recipe refusals logged " + parsed + ", not once each for " + once.keySet());
+        }
+        Map<ResourceLocation, Integer> skippedOnce = new TreeMap<>();
+        pack.refusedAtLoad.keySet().forEach(id -> skippedOnce.put(id, 1));
+        if (!skipped.equals(skippedOnce)) {
+            defects.add("skipped recipes logged " + skipped + ", not once each for " + skippedOnce.keySet());
+        }
+        if (summaries.size() != 1) {
+            defects.add(summaries.size() + " recipe refusal summaries, not one: " + summaries);
+        } else {
+            defects.addAll(summaryDefects(pack, summaries.get(0)));
         }
         Map<ResourceLocation, Integer> files = new TreeMap<>();
         pack.unreadable.forEach(id -> files.put(id, 1));
@@ -394,6 +450,40 @@ public final class DataPackOverLimitReloadGameTests {
         expected.put("rejected pattern catalog", PATTERN_CATALOGS);
         if (!others.equals(expected)) {
             defects.add("tag and pattern refusals logged " + others + ", not " + expected);
+        }
+        return defects;
+    }
+
+    /**
+     * The summary counts every refusal of the classic serializer by its reason, and names the
+     * {@link RecipeRefusalLedger#MAX_IDS} smallest ids with theirs.
+     */
+    private static List<String> summaryDefects(OverLimitDataPack pack, String summary) {
+        Matcher matcher = SUMMARY.matcher(summary);
+        if (!matcher.matches()) {
+            return List.of("the recipe refusal summary does not read as expected: " + summary);
+        }
+        List<String> defects = new ArrayList<>();
+        if (Integer.parseInt(matcher.group(1)) != pack.refusedAtLoad.size()) {
+            defects.add("the summary counts " + matcher.group(1) + " refusals, not " + pack.refusedAtLoad.size());
+        }
+        Map<String, Integer> reasons = new TreeMap<>();
+        pack.refusedAtLoad.values().forEach(reason -> reasons.merge(reason, 1, Integer::sum));
+        Map<String, Integer> summarized = new TreeMap<>();
+        for (String part : matcher.group(2).split(", ")) {
+            int equals = part.lastIndexOf('=');
+            summarized.merge(equals < 0 ? part : part.substring(0, equals),
+                    equals < 0 ? -1 : Integer.parseInt(part.substring(equals + 1)), Integer::sum);
+        }
+        if (!summarized.equals(reasons)) {
+            defects.add("the summary counts reasons " + summarized + ", not " + reasons);
+        }
+        List<String> smallest = pack.refusedAtLoad.keySet().stream().map(ResourceLocation::toString).sorted()
+                .limit(RecipeRefusalLedger.MAX_IDS).toList();
+        String ids = smallest.stream().map(id -> id + " (" + pack.refusedAtLoad.get(new ResourceLocation(id)) + ")")
+                .collect(Collectors.joining(", "));
+        if (Integer.parseInt(matcher.group(3)) != smallest.size() || !matcher.group(4).equals(ids)) {
+            defects.add("the summary names " + matcher.group(3) + " ids: " + matcher.group(4) + ", not " + ids);
         }
         return defects;
     }

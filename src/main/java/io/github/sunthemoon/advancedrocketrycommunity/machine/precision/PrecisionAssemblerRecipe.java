@@ -15,6 +15,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessRes
 import io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.BoundedItemIngredientCodec;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.DeferredProcessDefinition;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeJsonSignature;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeRefusalLedger;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModRecipes;
 import io.netty.buffer.Unpooled;
 import java.math.BigDecimal;
@@ -39,6 +40,7 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
+import net.minecraftforge.common.crafting.conditions.ICondition;
 
 /** Exact-slot, multi-input recipe adapter for the shared process transaction kernel. */
 public final class PrecisionAssemblerRecipe implements Recipe<SimpleContainer> {
@@ -363,6 +365,12 @@ public final class PrecisionAssemblerRecipe implements Recipe<SimpleContainer> {
     }
 
     public static final class Serializer implements RecipeSerializer<PrecisionAssemblerRecipe> {
+        /** A data-pack reload records a refusal and skips the recipe (W193); see {@link RecipeRefusalLedger}. */
+        @Override
+        public PrecisionAssemblerRecipe fromJson(ResourceLocation id, JsonObject json, ICondition.IContext context) {
+            return RecipeRefusalLedger.decode(context, id, () -> fromJson(id, json));
+        }
+
         @Override
         public PrecisionAssemblerRecipe fromJson(ResourceLocation id, JsonObject json) {
             try {

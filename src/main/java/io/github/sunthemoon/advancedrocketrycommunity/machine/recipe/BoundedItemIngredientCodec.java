@@ -55,7 +55,12 @@ public final class BoundedItemIngredientCodec {
         return validate(raw).stream().anyMatch(entry -> entry.has("tag"));
     }
 
-    /** Enumerates at most 33 distinct entries; does not allocate an unbounded vanilla tag expansion. */
+    /**
+     * Enumerates at most 33 distinct entries; does not allocate an unbounded vanilla tag expansion. A tag whose named
+     * set holds an item that is not a member is absent (W193, W179-F5): after a reload whose data no longer defines a
+     * tag, vanilla's and Forge's registries keep its named set with the old items but rebind every item without it,
+     * and after a restart the named set is gone. Either way the tag contributes nothing.
+     */
     public static List<String> resolveAlternatives(JsonElement raw) {
         TreeSet<String> alternatives = new TreeSet<>();
         for (JsonObject entry : validate(raw)) {
@@ -64,17 +69,28 @@ public final class BoundedItemIngredientCodec {
                 alternatives.add(BuiltInRegistries.ITEM.getKey(item).toString());
             } else {
                 ResourceLocation id = ResourceLocation.tryParse(entry.get("tag").getAsString());
-                var holders = BuiltInRegistries.ITEM.getTag(TagKey.create(Registries.ITEM, id));
+                TagKey<Item> tag = TagKey.create(Registries.ITEM, id);
+                var holders = BuiltInRegistries.ITEM.getTag(tag);
                 if (holders.isPresent()) {
+                    // At most 32 alternatives so far, so the copy is bounded; it is kept only if the tag is defined.
+                    TreeSet<String> withTag = new TreeSet<>(alternatives);
+                    boolean defined = true;
                     for (Holder<Item> holder : holders.orElseThrow()) {
+                        if (!holder.is(tag)) {
+                            defined = false;
+                            break;
+                        }
                         Item item = holder.value();
                         ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(item);
                         if (item.getDefaultInstance().isEmpty() || itemId == null
                                 || itemId.toString().length() > ProcessResourceKey.MAX_RESOURCE_ID_CHARS) {
                             throw new IllegalArgumentException("ingredient tag contains an invalid item");
                         }
-                        alternatives.add(itemId.toString());
-                        requireVariantBound(alternatives.size());
+                        withTag.add(itemId.toString());
+                        requireVariantBound(withTag.size());
+                    }
+                    if (defined) {
+                        alternatives = withTag;
                     }
                 }
             }

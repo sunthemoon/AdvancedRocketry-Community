@@ -6,6 +6,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.machine.classic.adapter.Cl
 import io.github.sunthemoon.advancedrocketrycommunity.machine.classic.adapter.ClassicValidatedRecipe;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.*;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.BoundedItemIngredientCodec;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeJsonSignature;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeRefusalLedger;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModRecipes;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -24,6 +26,7 @@ import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraftforge.common.crafting.conditions.ICondition;
 
 /** Authored bounded JSON is synced unchanged; server tag expansion is deferred until lookup. */
 public final class ClassicMachineRecipe implements Recipe<Container> {
@@ -161,7 +164,13 @@ public final class ClassicMachineRecipe implements Recipe<Container> {
             return new ClassicMachineRecipe(rows);
         }
         @Override public ClassicMachineRecipe fromJson(ResourceLocation id, JsonObject json) {
+            // The bounded walk refuses an oversized tree before json.toString() copies it (W193, W179-F4).
+            RecipeJsonSignature.canonical(json);
             return decode(id, json.toString());
+        }
+        /** A data-pack reload records a refusal and skips the recipe (W193); see {@link RecipeRefusalLedger}. */
+        @Override public ClassicMachineRecipe fromJson(ResourceLocation id, JsonObject json, ICondition.IContext context) {
+            return RecipeRefusalLedger.decode(context, id, () -> fromJson(id, json));
         }
         @Override public ClassicMachineRecipe fromNetwork(ResourceLocation id, FriendlyByteBuf buffer) {
             return decode(id, buffer.readUtf(65_536));

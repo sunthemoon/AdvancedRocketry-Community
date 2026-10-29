@@ -932,94 +932,13 @@
       "reason": "The electrolyzer recipe must independently be disabled until tags reload."
     },
     {
-      "id": "w179-recipe-text-bound",
+      "id": "w193-recipe-refusal-summary",
       "level": "ERROR",
-      "logger": "net.minecraft.world.item.crafting.RecipeManager/",
-      "message": "Parsing error loading recipe arce_w179:[a-z_]+",
-      "exception": "java\\.lang\\.IllegalArgumentException: Recipe text bound",
-      "counts": {"datapack_overlimit": 7},
-      "test": "DataPackOverLimitReloadGameTests.anOverLimitPackIsRefusedEntryByEntryWithBoundedLoggingAndThenRemoved",
-      "reason": "W179 (VDOC 12.4): the generated over-limit pack holds one classic recipe per type whose text exceeds RecipeJsonSignature.MAX_BYTES (65,536). Vanilla's RecipeManager logs each refused file once, with the classic codec's own bounded message."
-    },
-    {
-      "id": "w179-recipe-structural-bound",
-      "level": "ERROR",
-      "logger": "net.minecraft.world.item.crafting.RecipeManager/",
-      "message": "Parsing error loading recipe arce_w179:[a-z_]+",
-      "exception": "java\\.lang\\.IllegalArgumentException: Recipe structural bound",
-      "counts": {"datapack_overlimit": 14},
-      "test": "DataPackOverLimitReloadGameTests.anOverLimitPackIsRefusedEntryByEntryWithBoundedLoggingAndThenRemoved",
-      "reason": "W179 (VDOC 12.4): the generated over-limit pack holds two classic recipes per type, one deeper than MAX_DEPTH (16) and one with more than MAX_NODES (4,096) nodes. Vanilla's RecipeManager logs each refused file once, with the classic codec's own bounded message."
-    },
-    {
-      "id": "w179-recipe-row-count",
-      "level": "ERROR",
-      "logger": "net.minecraft.world.item.crafting.RecipeManager/",
-      "message": "Parsing error loading recipe arce_w179:[a-z_]+",
-      "exception": "java\\.lang\\.IllegalArgumentException: Recipe row type/count",
-      "counts": {"datapack_overlimit": 8},
-      "test": "DataPackOverLimitReloadGameTests.anOverLimitPackIsRefusedEntryByEntryWithBoundedLoggingAndThenRemoved",
-      "reason": "W179 (VDOC 12.4): the generated over-limit pack holds one classic recipe per type with five item inputs (at most four) and one centrifuging recipe with three fluid inputs (at most two). Vanilla's RecipeManager logs each refused file once, with the classic codec's own bounded message."
-    },
-    {
-      "id": "w179-recipe-unknown-field",
-      "level": "ERROR",
-      "logger": "net.minecraft.world.item.crafting.RecipeManager/",
-      "message": "Parsing error loading recipe arce_w179:[a-z_]+",
-      "exception": "java\\.lang\\.IllegalArgumentException: Recipe missing/unknown field",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "Refused 36 data-pack recipes of this mod; none is registered\\. Reasons: Recipe row type/count=8, recipe JSON exceeds its structural bound=7, recipe JSON has too many array entries=7, recipe JSON text exceeds its bound=7, Recipe number range=2, Identifier exceeds limit=1, Noncanonical identifier=1, Recipe missing/unknown field=1, recipe JSON cannot contain null=1, recipe number must be a 32-bit integer=1\\. First 8 by id: arce_w179:arc_furnace_deep \\(recipe JSON exceeds its structural bound\\), arce_w179:arc_furnace_oversized \\(recipe JSON text exceeds its bound\\), arce_w179:arc_furnace_rows \\(Recipe row type/count\\), arce_w179:arc_furnace_schema \\(Recipe number range\\), arce_w179:arc_furnace_wide \\(recipe JSON has too many array entries\\), arce_w179:centrifuging_deep \\(recipe JSON exceeds its structural bound\\), arce_w179:centrifuging_fluid_rows \\(Recipe row type/count\\), arce_w179:centrifuging_oversized \\(recipe JSON text exceeds its bound\\)",
       "counts": {"datapack_overlimit": 1},
       "test": "DataPackOverLimitReloadGameTests.anOverLimitPackIsRefusedEntryByEntryWithBoundedLoggingAndThenRemoved",
-      "reason": "W179 (VDOC 12.4): the generated over-limit pack holds one lathe recipe with an unknown field. Vanilla's RecipeManager logs each refused file once, with the classic codec's own bounded message."
-    },
-    {
-      "id": "w179-recipe-number-range",
-      "level": "ERROR",
-      "logger": "net.minecraft.world.item.crafting.RecipeManager/",
-      "message": "Parsing error loading recipe arce_w179:[a-z_]+",
-      "exception": "java\\.lang\\.IllegalArgumentException: Recipe number range",
-      "counts": {"datapack_overlimit": 2},
-      "test": "DataPackOverLimitReloadGameTests.anOverLimitPackIsRefusedEntryByEntryWithBoundedLoggingAndThenRemoved",
-      "reason": "W179 (VDOC 12.4): the generated over-limit pack holds an arc furnace recipe with schema_version 2 and a laser etching recipe with an input count of 65. Vanilla's RecipeManager logs each refused file once, with the classic codec's own bounded message."
-    },
-    {
-      "id": "w179-recipe-fraction",
-      "level": "ERROR",
-      "logger": "net.minecraft.world.item.crafting.RecipeManager/",
-      "message": "Parsing error loading recipe arce_w179:[a-z_]+",
-      "exception": "java\\.lang\\.IllegalArgumentException: Recipe number is not an exact int",
-      "counts": {"datapack_overlimit": 1},
-      "test": "DataPackOverLimitReloadGameTests.anOverLimitPackIsRefusedEntryByEntryWithBoundedLoggingAndThenRemoved",
-      "reason": "W179 (VDOC 12.4): the generated over-limit pack holds one cutting recipe whose processing time is 1.5. Vanilla's RecipeManager logs each refused file once, with the classic codec's own bounded message."
-    },
-    {
-      "id": "w179-recipe-null-token",
-      "level": "ERROR",
-      "logger": "net.minecraft.world.item.crafting.RecipeManager/",
-      "message": "Parsing error loading recipe arce_w179:[a-z_]+",
-      "exception": "java\\.lang\\.IllegalArgumentException: Null or unexpected recipe token",
-      "counts": {"datapack_overlimit": 1},
-      "test": "DataPackOverLimitReloadGameTests.anOverLimitPackIsRefusedEntryByEntryWithBoundedLoggingAndThenRemoved",
-      "reason": "W179 (VDOC 12.4): the generated over-limit pack holds one crystallizing recipe whose energy per tick is null. Vanilla's RecipeManager logs each refused file once, with the classic codec's own bounded message."
-    },
-    {
-      "id": "w179-recipe-noncanonical-id",
-      "level": "ERROR",
-      "logger": "net.minecraft.world.item.crafting.RecipeManager/",
-      "message": "Parsing error loading recipe arce_w179:[a-z_]+",
-      "exception": "java\\.lang\\.IllegalArgumentException: Noncanonical identifier",
-      "counts": {"datapack_overlimit": 1},
-      "test": "DataPackOverLimitReloadGameTests.anOverLimitPackIsRefusedEntryByEntryWithBoundedLoggingAndThenRemoved",
-      "reason": "W179 (VDOC 12.4): the generated over-limit pack holds one chemical reacting recipe whose output names minecraft:Iron_Nugget. Vanilla's RecipeManager logs each refused file once, with the classic codec's own bounded message."
-    },
-    {
-      "id": "w179-recipe-identifier-bound",
-      "level": "ERROR",
-      "logger": "net.minecraft.world.item.crafting.RecipeManager/",
-      "message": "Parsing error loading recipe arce_w179:[a-z_]+",
-      "exception": "java\\.lang\\.IllegalArgumentException: Identifier exceeds limit",
-      "counts": {"datapack_overlimit": 1},
-      "test": "DataPackOverLimitReloadGameTests.anOverLimitPackIsRefusedEntryByEntryWithBoundedLoggingAndThenRemoved",
-      "reason": "W179 (VDOC 12.4): the generated over-limit pack holds one lathe recipe whose id is longer than 128 characters. Vanilla's RecipeManager logs each refused file once, with the classic codec's own bounded message."
+      "reason": "W193 (W179-F4, Root decision R161): the 36 classic recipes of the generated over-limit pack that the mod's serializer refuses are logged together, in one summary of at most 1,024 characters per reload, instead of one RecipeManager ERROR with a stack trace each (formerly w179-recipe-text-bound to w179-recipe-identifier-bound, 36 entries). Forge logs an INFO line for each skipped file. The serializer's bounded walk now refuses the oversized, deep, wide, fractional and null shapes with its own messages, before the codec copies the text."
     },
     {
       "id": "w179-recipe-top-level-array",

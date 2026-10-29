@@ -47,13 +47,16 @@ final class OverLimitDataPack {
 
     private record Shape(String name, String reason, UnaryOperator<JsonObject> apply) { }
 
-    /** Over the codec's text, depth, node and row bounds; each classic type gets all four. */
+    /**
+     * Over the codec's text, depth, node and row bounds; each classic type gets all four. Since W193 the serializer's
+     * bounded walk ({@link RecipeJsonSignature#canonical}) refuses the first three, before the codec copies the text.
+     */
     private static final List<Shape> OVER_LIMIT = List.of(
-            new Shape("oversized", "Recipe text bound", recipe -> {
+            new Shape("oversized", "recipe JSON text exceeds its bound", recipe -> {
                 first(recipe, "item_outputs").addProperty("pad", "x".repeat(RecipeJsonSignature.MAX_BYTES));
                 return recipe;
             }),
-            new Shape("deep", "Recipe structural bound", recipe -> {
+            new Shape("deep", "recipe JSON exceeds its structural bound", recipe -> {
                 JsonElement nested = item("minecraft:iron_ingot");
                 for (int depth = 0; depth < RecipeJsonSignature.MAX_DEPTH; depth++) {
                     JsonArray wrapper = new JsonArray();
@@ -63,7 +66,7 @@ final class OverLimitDataPack {
                 first(recipe, "item_inputs").add("ingredient", nested);
                 return recipe;
             }),
-            new Shape("wide", "Recipe structural bound", recipe -> {
+            new Shape("wide", "recipe JSON has too many array entries", recipe -> {
                 JsonArray pad = new JsonArray();
                 for (int node = 0; node <= RecipeJsonSignature.MAX_NODES; node++) {
                     pad.add(0);
@@ -79,7 +82,7 @@ final class OverLimitDataPack {
                 recipe.add("item_inputs", rows);
                 return recipe;
             }));
-    /** Invalid within the bounds; the classic types take one each, in order. */
+    /** Invalid within the bounds; the classic types take one each, in order. The bounded walk refuses two (W193). */
     private static final List<Shape> INVALID = List.of(
             new Shape("unknown_field", "Recipe missing/unknown field", recipe -> {
                 recipe.addProperty("extra", 1);
@@ -89,11 +92,11 @@ final class OverLimitDataPack {
                 recipe.addProperty("schema_version", 2);
                 return recipe;
             }),
-            new Shape("fraction", "Recipe number is not an exact int", recipe -> {
+            new Shape("fraction", "recipe number must be a 32-bit integer", recipe -> {
                 recipe.addProperty("processing_time", 1.5D);
                 return recipe;
             }),
-            new Shape("null", "Null or unexpected recipe token", recipe -> {
+            new Shape("null", "recipe JSON cannot contain null", recipe -> {
                 recipe.add("energy_per_tick", JsonNull.INSTANCE);
                 return recipe;
             }),
@@ -117,8 +120,10 @@ final class OverLimitDataPack {
                 return recipe;
             }));
 
-    /** Recipes the classic codec refuses while loading, with the refusal's message. */
+    /** Recipes the classic serializer refuses while loading, with the refusal's message (W193: into its summary). */
     final Map<ResourceLocation, String> refusedAtLoad = new TreeMap<>();
+    /** Recipes vanilla's RecipeManager refuses before any serializer runs, with its message. */
+    final Map<ResourceLocation, String> refusedByVanilla = new TreeMap<>();
     /** Recipe files that are not JSON objects at all; vanilla refuses them before any serializer. */
     final Set<ResourceLocation> unreadable = new TreeSet<>();
     /** Recipes that load and are refused when a machine resolves them, with the refusal's message. */
@@ -141,7 +146,8 @@ final class OverLimitDataPack {
         // The identifier bound: the classic codec refuses an id longer than 128 characters.
         refused("long_" + "x".repeat(120), "Identifier exceeds limit", base("lathe").toString());
         // Vanilla refuses a top-level array before the serializer runs.
-        refused("top_level_array", "Expected top element to be a JsonObject, was an array ([1])", "[1]");
+        recipeFile("top_level_array", "[1]");
+        refusedByVanilla.put(id("top_level_array"), "Expected top element to be a JsonObject, was an array ([1])");
         recipeFile("truncated", "{\"type\": ");
         unreadable.add(id("truncated"));
         recipeFile("not_json", "not json at all");
@@ -200,6 +206,7 @@ final class OverLimitDataPack {
     /** Every recipe id the pack names, loadable or not. */
     Set<ResourceLocation> recipes() {
         Set<ResourceLocation> all = new TreeSet<>(refusedAtLoad.keySet());
+        all.addAll(refusedByVanilla.keySet());
         all.addAll(unreadable);
         all.addAll(refusedAtResolution.keySet());
         return all;

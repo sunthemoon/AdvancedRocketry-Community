@@ -13,6 +13,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessRes
 import io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.BoundedItemIngredientCodec;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.DeferredProcessDefinition;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeJsonSignature;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeRefusalLedger;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModRecipes;
 import java.nio.charset.StandardCharsets;
@@ -39,6 +40,7 @@ import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraftforge.common.crafting.conditions.ICondition;
 import net.minecraftforge.registries.ForgeRegistries;
 
 /** Bounded two-output recipe decoded before it can be exposed to the machine. */
@@ -270,6 +272,12 @@ public final class ElectrolyzerRecipe implements Recipe<SimpleContainer> {
 
     public static final class Serializer implements RecipeSerializer<ElectrolyzerRecipe> {
         private static final String FLUID_FIELD = "fluid";
+
+        /** A data-pack reload records a refusal and skips the recipe (W193); see {@link RecipeRefusalLedger}. */
+        @Override
+        public ElectrolyzerRecipe fromJson(ResourceLocation id, JsonObject json, ICondition.IContext context) {
+            return RecipeRefusalLedger.decode(context, id, () -> fromJson(id, json));
+        }
 
         @Override
         public ElectrolyzerRecipe fromJson(ResourceLocation id, JsonObject json) {
