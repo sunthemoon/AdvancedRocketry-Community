@@ -75,7 +75,8 @@ final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
         proof = new BaySourceProof(server, session, this::offer, (claim, op) -> { if (cuts != null) { cuts.removing(claim, op); } },
                 claim -> cuts != null && cuts.stallAfterConsumption(claim), (claim, guard) -> cuts == null ? guard : cuts.guard(claim, guard));
         resume = new BaySourceResume(server);
-        released = new BayReleasedFlight(server, session, this::offer, resume, consumption);
+        released = new BayReleasedFlight(server, session, this::offer, resume, consumption,
+                receipt -> { if (cuts != null) { cuts.releasing(receipt); } });
     }
 
     private void offer(UUID logical) { if (!stopping) { queue.offer(logical); } }

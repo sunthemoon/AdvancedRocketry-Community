@@ -29,6 +29,7 @@ final class BayReleasedFlight {
     private final BaySourceResume sources;
     private final BayConsumptionSteps consumption;
     private final BayReleasedResume resume;
+    private final Consumer<BayReceipt> releasing;
     // Entries are subordinate to the existing bounded claim book, never an independent admission authority.
     private final Map<UUID, State> states = new HashMap<>();
     private State effectState;
@@ -46,9 +47,10 @@ final class BayReleasedFlight {
     }
 
     BayReleasedFlight(MinecraftServer server, BayDeploymentSession session, Consumer<UUID> offer,
-                      BaySourceResume sources, BayConsumptionSteps consumption) {
+                      BaySourceResume sources, BayConsumptionSteps consumption, Consumer<BayReceipt> releasing) {
         this.server = server; this.session = session; this.offer = offer;
         this.sources = sources; this.consumption = consumption; resume = new BayReleasedResume(server);
+        this.releasing = releasing;
     }
 
     /** Null means this is still an ordinary deployment claim. Release work uses the parent's 32-step queue. */
@@ -93,6 +95,7 @@ final class BayReleasedFlight {
         state.authority = authority;
         if (!alreadyReleased) {
             state.releasing = receipts.stream().map(BayReceipt::withReleased).toList();
+            releasing.accept(state.releasing.get(0));
             var admission = session.releaseGroup(state.releasing, outcome -> {
                 if (outcome == BayReceiptWriter.Outcome.UNKNOWN) { return; }
                 state.writing = false;

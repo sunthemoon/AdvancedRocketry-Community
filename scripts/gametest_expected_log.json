@@ -1893,8 +1893,8 @@
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.server.BayTransferRecovery/",
       "message": "ARCE_BAY_CLAIM transfer=[0-9a-f-]{36} logical=[0-9a-f-]{36} state=REPAIR reason=REGISTRY_SIGNATURE_CONFLICT",
-      "counts": {"bay_released_repair": 1},
-      "test": "BayReleasedGameTests.coherentRepairFliesWithItsPackageAndStaysLocked",
+      "counts": {"bay_released_repair": 1, "bay_released_mixed": 1},
+      "test": "BayReleasedGameTests.coherentRepairFliesWithItsPackageAndStaysLocked and registeredMemberIsConsumedBeforeTheRepairPackageFlies",
       "reason": "W196 starts from an exactly acknowledged REPAIR receipt and checks that its coherent released flight retains the package and lock."
     },
     {

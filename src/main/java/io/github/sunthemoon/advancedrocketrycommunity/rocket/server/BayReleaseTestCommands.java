@@ -54,6 +54,7 @@ public final class BayReleaseTestCommands {
     public void register(RegisterCommandsEvent event) {
         if (!Boolean.getBoolean(ReleaseTestCommands.PROPERTY)) { return; }
         BayCopyReleaseTestCommands.register(event);
+        BayReleasedTestCommands.register(event);
         event.getDispatcher().register(Commands.literal("arce").then(Commands.literal("bay").then(Commands.literal("release-test")
                 .requires(source -> source.hasPermission(2))
                 .then(Commands.literal("fixture").then(Commands.argument("pos", BlockPosArgument.blockPos())

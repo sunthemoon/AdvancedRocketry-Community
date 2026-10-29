@@ -53,4 +53,24 @@ final class BayReceiptReleaseGroupTest {
             assertEquals(BayReceiptStore.Status.INVALID, h.store().putGroup(List.of(r.withReleased()), outcome -> fail()).status());
         }
     }
+
+    @Test void unknownReleaseRetainsItsExactCandidateAndChargesUntilRetryAcknowledges() throws Exception {
+        try (var h = BayReceiptHarness.empty(temp)) {
+            var r = receipt(1, id(99), id(88), BayReceipt.Phase.REPAIR);
+            assertTrue(h.put(r).queued()); h.settle();
+            h.committer.set(BayReceiptHarness.AMBIGUOUS);
+            var outcomes = new ArrayList<BayReceiptWriter.Outcome>();
+            assertTrue(h.store().releaseGroup(List.of(r.withReleased()), outcomes::add).queued());
+            h.until(() -> outcomes.contains(BayReceiptWriter.Outcome.UNKNOWN));
+            assertFalse(h.store().acknowledged(r.op()));
+            assertEquals(List.of(r), h.store().durable().receipts());
+            assertEquals(List.of(r.withReleased()), h.store().receipts());
+            assertEquals(1, h.authority.pendingCount()); assertEquals(1, h.authority.retainedCount());
+            h.committer.set(io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile::atomicMove);
+            h.settle();
+            assertTrue(h.store().acknowledged(r.op()));
+            assertEquals(List.of(r.withReleased()), h.store().durable().receipts());
+            assertEquals(List.of(BayReceiptWriter.Outcome.UNKNOWN, BayReceiptWriter.Outcome.COMMITTED), outcomes);
+        }
+    }
 }

@@ -35,18 +35,29 @@ public final class BayReleasedGameTests {
         new FlightCheck(helper, true).start();
     }
 
+    @GameTest(template = TEMPLATE, batch = "bay_released_mixed", timeoutTicks = 1_200)
+    public static void registeredMemberIsConsumedBeforeTheRepairPackageFlies(GameTestHelper helper) {
+        new FlightCheck(helper, false, true).start();
+    }
+
     private static final class FlightCheck {
         private final GameTestHelper helper;
         private final boolean blocked;
+        private final boolean mixed;
         private final UUID owner = UUID.randomUUID();
         private final ItemStack pkg;
         private Flight fixture;
         private BayReceipt receipt;
+        private BayReceipt registered;
+        private List<CompoundTag> expectedPayloads;
         private int stage, pending, waits;
         private boolean closed;
 
         FlightCheck(GameTestHelper helper, boolean blocked) {
-            this.helper = helper; this.blocked = blocked; pkg = dataPackage(owner);
+            this(helper, blocked, false);
+        }
+        FlightCheck(GameTestHelper helper, boolean blocked, boolean mixed) {
+            this.helper = helper; this.blocked = blocked; this.mixed = mixed; pkg = dataPackage(owner);
         }
         void start() { helper.onEachTick(this::tick); }
         private void tick() {
@@ -60,11 +71,20 @@ public final class BayReleasedGameTests {
                     case 0 -> {
                         var origin = helper.absolutePos(new BlockPos(3, 2, 3));
                         if (!helper.getLevel().isPositionEntityTicking(origin)) { return; }
+                        var other = dataPackage(owner);
                         fixture = transit(helper, origin, helper.absolutePos(new BlockPos(14, 2, 3)), owner,
-                                List.of(pkg), RocketEscrowSectionPatch.NEUTRAL);
+                                mixed ? List.of(pkg, other) : List.of(pkg), RocketEscrowSectionPatch.NEUTRAL);
                         receipt = intent(server, fixture.record(), pkg, 0);
                         if (!blocked) { receipt = receipt.withPhase(BayReceipt.Phase.REPAIR, "REGISTRY_SIGNATURE_CONFLICT", server.getTickCount()); }
                         helper.assertTrue(BayReceiptTestHooks.put(server, receipt, outcome -> { }).queued(), "Fixture receipt refused");
+                        expectedPayloads = bayPayloads(fixture.record().sourceSnapshot());
+                        if (mixed) {
+                            var intent = BayRegisteredGameTests.sequenced(intent(server, fixture.record(), other, 1), receipt.seq() + 1);
+                            var after = BayRegisteredGameTests.consumed(fixture.record(), List.of(intent));
+                            registered = BayRegisteredGameTests.registered(intent, after.source().contentHash(), after.destination().contentHash());
+                            helper.assertTrue(BayReceiptTestHooks.put(server, registered, outcome -> { }).queued(), "REGISTERED fixture refused");
+                            expectedPayloads = bayPayloads(after.source());
+                        }
                         journal.put(fixture.record());
                         if (blocked) { coordinator.blockRegistryForTests(fixture.record().logicalRocketId()); }
                         stage = 1;
@@ -72,7 +92,7 @@ public final class BayReleasedGameTests {
                     case 1 -> {
                         if (!storeIdle(server) || !coordinator.sessionForTests().acknowledged(receipt.op())) { return; }
                         pending = BayReceiptTestHooks.authority(server).pendingCount();
-                        coordinator.restartForTests(List.of(receipt));
+                        coordinator.restartForTests(mixed ? List.of(receipt, registered) : List.of(receipt));
                         stage = 2;
                     }
                     case 2 -> {
@@ -80,6 +100,13 @@ public final class BayReleasedGameTests {
                         if (!current.released() || !coordinator.sessionForTests().acknowledged(receipt.op())) { return; }
                         helper.assertTrue(current.equals(receipt.withReleased()), "Release changed more than its flag");
                         var t = journal.find(receipt.transfer()).orElseThrow();
+                        if (mixed) {
+                            helper.assertTrue(coordinator.sessionForTests().current(registered.op()).orElseThrow().equals(registered.withReleased())
+                                    && coordinator.sessionForTests().acknowledged(registered.op()), "Mixed flags were not one acknowledged group");
+                            helper.assertTrue(BayReleasedAuthority.payloads(t.sourceSnapshot(), List.of(receipt, registered))
+                                    && BayReleasedAuthority.payloads(t.destinationSnapshot(), List.of(receipt, registered)),
+                                    "REGISTERED consumption was not complete before release");
+                        }
                         if (coordinator.claim(server, journal, t).kind() != RocketTransferBayRecoveryGate.Kind.RELEASED_FLIGHT) { return; }
                         var boundary = coordinator.beforeAction(server, journal, t, RocketTransferBayRecoveryGate.Action.TICK_SOURCE);
                         helper.assertTrue(boundary.kind() == RocketTransferBayRecoveryGate.BoundaryKind.PERMIT, "No exact flight permit");
@@ -101,8 +128,8 @@ public final class BayReleasedGameTests {
                         var destination = RocketTransferEntities.findDestination(server, t);
                         if (destination == null || destination.flightData().orElseThrow().state() != RocketFlightState.LANDED) { return; }
                         helper.assertTrue(fixture.source().isRemoved(), "Source survived the released flight");
-                        helper.assertTrue(bayPayloads(destination.snapshot().orElseThrow()).equals(bayPayloads(fixture.record().sourceSnapshot())),
-                                "Released package changed");
+                        helper.assertTrue(bayPayloads(destination.snapshot().orElseThrow()).equals(expectedPayloads),
+                                "Released package or consumed marker changed");
                         helper.assertTrue(BayReceipts.holdsRocket(server, receipt.rocket()) && !RocketEscrowGate.idle(destination)
                                 && !RocketEscrowGate.resourcesIdle(destination), "Landing unlocked the rocket");
                         helper.assertTrue(BayReceiptTestHooks.authority(server).pendingCount() == pending, "Pending charge ended");
@@ -112,6 +139,7 @@ public final class BayReleasedGameTests {
                                 .get(server).satellite(receipt.satellite()).isEmpty(), "Released recovery registered the package");
                         destination.discard(); coordinator.forgetForTests(receipt.rocket());
                         helper.assertTrue(BayReceiptTestHooks.removeReleasedFixture(server, receipt.op()).queued(), "Fixture cleanup refused");
+                        if (registered != null) { helper.assertTrue(BayReceiptTestHooks.removeReleasedFixture(server, registered.op()).queued(), "Mixed cleanup refused"); }
                         journal.remove(receipt.transfer()); stage = 4;
                     }
                     case 4 -> {
@@ -133,6 +161,13 @@ public final class BayReleasedGameTests {
             var server = helper.getLevel().getServer();
             bays(helper).forgetForTests(fixture.record().logicalRocketId());
             if (receipt != null) { BayReceiptTestHooks.removeReleasedFixture(server, receipt.op()); }
+            if (registered != null) { BayReceiptTestHooks.removeReleasedFixture(server, registered.op()); }
+            var journal = RocketTransferSavedData.get(server);
+            journal.find(fixture.record().transferId()).ifPresent(t -> {
+                var destination = RocketTransferEntities.findDestination(server, t);
+                if (destination != null) { destination.discard(); }
+                journal.remove(t.transferId());
+            });
             fixture.source().discard();
         }
     }

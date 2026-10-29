@@ -46,7 +46,9 @@ final class BayDeploymentCuts {
         B15_D7(null, BayReceiptCommitCut.Point.MOVED, BayReceiptCommitCut.Mode.UNKNOWN),
         B6_D5(null, null, null),
         // W170-R22: B16's pause of D7's guard on the IO thread, before it reads the proof, lease and group token.
-        B16_GUARD(null, null, null);
+        B16_GUARD(null, null, null),
+        B10_RELEASE_STAGED(null, BayReceiptCommitCut.Point.STAGED, BayReceiptCommitCut.Mode.PAUSE),
+        B10_RELEASE_MOVED(null, BayReceiptCommitCut.Point.MOVED, BayReceiptCommitCut.Mode.PAUSE);
 
         @Nullable final BayReceipt.Phase phase;
         @Nullable final BayReceiptCommitCut.Point point;
@@ -54,7 +56,8 @@ final class BayDeploymentCuts {
         Cut(@Nullable BayReceipt.Phase phase, @Nullable BayReceiptCommitCut.Point point, @Nullable BayReceiptCommitCut.Mode mode) {
             this.phase = phase; this.point = point; this.mode = mode;
         }
-        boolean removal() { return phase == null && point != null; }
+        boolean release() { return this == B10_RELEASE_STAGED || this == B10_RELEASE_MOVED; }
+        boolean removal() { return phase == null && point != null && !release(); }
     }
 
     private final Cut cut;
@@ -128,6 +131,13 @@ final class BayDeploymentCuts {
     /** Before an in-session claim's receipt write: the first write of the cut's phase arms the one-shot committer cut. */
     void writing(BayClaim claim, BayReceipt receipt) {
         if (fired || claim.origin() != BayClaim.Origin.CHECKPOINT || cut.phase == null || receipt.phase() != cut.phase) { return; }
+        fired = true;
+        committer.arm(cut.point, cut.mode, cut.name(), receipt.op());
+    }
+
+    /** W196 B10: cut only the existing released flag's checked replacement, including restart claims. */
+    void releasing(BayReceipt receipt) {
+        if (fired || !cut.release() || !receipt.released()) { return; }
         fired = true;
         committer.arm(cut.point, cut.mode, cut.name(), receipt.op());
     }
