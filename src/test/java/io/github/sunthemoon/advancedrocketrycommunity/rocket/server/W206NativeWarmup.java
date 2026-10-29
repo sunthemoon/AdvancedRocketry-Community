@@ -53,6 +53,7 @@ public final class W206NativeWarmup {
     private final Set<String> loadedUnion = new TreeSet<>(), ticketUnion = new TreeSet<>();
     private final ConcurrentLinkedQueue<Map<String, Object>> checkpoints = new ConcurrentLinkedQueue<>();
     private final BufferedWriter ticks, events, snapshots;
+    private final List<Map<String, Object>> tickRows = new ArrayList<>(4001);
     private final Runnable unsubscribe;
     private final Path root;
     private ResourceEscrowSavedData data;
@@ -64,7 +65,7 @@ public final class W206NativeWarmup {
     private UUID launch;
     private String phase = "SETUP", lastFlight = "";
     private int age, phaseAt, callbackCount;
-    private long endStart, requestNanos;
+    private long endStart, requestNanos, transitionObserverNanos;
     private boolean done, requested, seenF2, handover, landingWitness;
 
     @SubscribeEvent public static void started(ServerStartedEvent event) {
@@ -93,7 +94,7 @@ public final class W206NativeWarmup {
         if (done || event.phase != TickEvent.Phase.END) { return; }
         String measuredPhase = phase;
         boolean work = requested || !live().isEmpty() || journal != null && !journal.entries().isEmpty();
-        requested = false; callbackCount = 0;
+        requested = false; callbackCount = 0; transitionObserverNanos = 0;
         try {
             require(++age <= 4000, "External 4000-tick observation ceiling reached; not a product timeout");
             step();
@@ -124,10 +125,16 @@ public final class W206NativeWarmup {
     }
 
     private void captureTick(String measuredPhase, boolean work, long observed) throws Exception {
+        long recorderStart = System.nanoTime();
         long end = System.nanoTime() - endStart, core = server.tickTimes[server.getTickCount() % server.tickTimes.length];
-        write(ticks, Map.of("tick", server.getTickCount(), "phase", measuredPhase, "core_ns", core,
+        var row = new LinkedHashMap<String, Object>(Map.of("tick", server.getTickCount(), "phase", measuredPhase, "core_ns", core,
                 "end_ns", end, "tick_ns", W206Observation.fullTick(core, end), "work", work,
                 "callbacks", callbackCount, "column_observer_ns", observed, "epoch_ms", System.currentTimeMillis()));
+        row.put("transition_observer_ns", transitionObserverNanos);
+        require(tickRows.size() < 4001, "Tick recorder bound exceeded");
+        tickRows.add(row);
+        // Only this final clock/read and map insertion follow the measured recorder tail.
+        row.put("recorder_tail_ns", System.nanoTime() - recorderStart);
     }
 
     private Collection<RocketWarmupRegistry.Warmup> live() { return RocketRuntime.installedTransfers().warmups.registry().live(); }
@@ -140,11 +147,13 @@ public final class W206NativeWarmup {
     }
     private void phase(String next) throws Exception { event("PHASE", Map.of("from", phase, "to", next)); phase = next; phaseAt = age; snapshot(next); }
     private void snapshot(String label) throws Exception {
+        long start = System.nanoTime();
         var levels = new LinkedHashMap<String, Object>();
         for (var level : server.getAllLevels()) {
             levels.put(level.dimension().location().toString(), Map.of("tickets", W206Observation.tickets(level), "chunks", W206Observation.chunks(level)));
         }
         write(snapshots, Map.of("label", label, "tick", server.getTickCount(), "levels", levels));
+        transitionObserverNanos += System.nanoTime() - start;
     }
     private void observeWarmups() throws Exception {
         for (var warm : live()) {
@@ -379,6 +388,9 @@ public final class W206NativeWarmup {
 
     private void finish() throws Exception {
         done = true; unsubscribe.run();
+        // Export outside the measurement; no tick-row JSON or filesystem IO in captureTick.
+        for (var row : tickRows) { write(ticks, row); }
+        result.put("timing_boundary", "native core + END through capture entry; buffered recorder tail reported separately; final export excluded");
         result.put("loaded_columns_union", loadedUnion); result.put("ticketed_columns_union", ticketUnion);
         result.put("ticks", age); result.put("final_phase", phase);
         Files.writeString(root.resolve("w206-result.json"), new GsonBuilder().setPrettyPrinting().create().toJson(result));
