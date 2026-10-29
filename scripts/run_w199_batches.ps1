@@ -1,9 +1,10 @@
-param([Parameter(Mandatory=$true)][string]$Commit)
+param([Parameter(Mandatory=$true)][string]$Commit, [string]$Label='batches')
 $ErrorActionPreference='Stop'
 $workspace=(Resolve-Path "$PSScriptRoot/..").Path
-$root='D:/GitHub/ARCE-Task-Evidence/root-queue/W199/batches'
+if($Label -notmatch '^batches(?:-[a-z0-9-]+)?$') { throw 'Invalid evidence label' }
+$root="D:/GitHub/ARCE-Task-Evidence/root-queue/W199/$Label"
 $temp='D:/GitHub/ARCE-Task-Evidence/Temp'
-$export="$temp/W199-batches-export"; $archive="$temp/W199-batches.zip"
+$export="$temp/W199-$Label-export"; $archive="$temp/W199-$Label.zip"
 $lock='D:\GitHub\ARCE-Task-Evidence\locks\heavy-jvm'
 $token="W199-batches pid=$PID $([guid]::NewGuid())"
 $owned=$false; $created=$false; $archived=$false
