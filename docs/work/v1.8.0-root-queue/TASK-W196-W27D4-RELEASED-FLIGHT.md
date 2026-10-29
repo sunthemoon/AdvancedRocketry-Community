@@ -54,3 +54,23 @@ lock. Keep the evidence under 100 MB. Root's hosted run on the pushed branch sta
 
 Admission (W27e), ADRs, the risk register, status files and the ledger. Root updates R-043 before this slice merges,
 and an independent read-only review follows.
+
+## Review findings under Root decision R168 (2026-10-29)
+
+The review, `D:/GitHub/ARCE-Task-Evidence/root-queue/W196-review/REVIEW.md` (SHA-256 `07d50582…d613`), returned BLOCK.
+Its probe is in `probes/` in the same folder. A fresh session continues on `codex/v1.8.0-w196` from `c61480208`, one
+commit per finding, and appends a "Review fixes (R168)" section to the record:
+
+1. **W196-R1 (High).** A refused acknowledged effect must suspend delegation and schedule checked-phase reconciliation
+   before another live phase is permitted, and the passenger movement obligation must finish before source removal is
+   authorized. Start from the review's probe. Add a test with an assigned rider and an endpoint save or same-position
+   write between publication and acknowledgement, at both endpoints, through to flight completion.
+2. **W196-R2 (High).** Keep an observed physical or escrow conflict (UNEXPECTED_COPY and the other physical-authority
+   holds) from before release authority exists, in the bounded claim state; release eligibility must tell those apart
+   from an eligible registry or signature problem, and an existing release flag must not erase them. Recheck the hold
+   before and after recovery side effects and before delegation. Add restart and delayed-end tests where an outside
+   entity joins or moves before the first successful released resume, with the recorded authority present and absent;
+   each keeps the hold without spawning, moving passengers, removing copies or delegating.
+
+No format, bound, budget or timeout changes. Verification: the new tests alone, failing first; the whole unit suite;
+the bay batches three times; B10's native release cases again. A fresh review follows.
