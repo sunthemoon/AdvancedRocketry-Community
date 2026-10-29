@@ -1,9 +1,12 @@
 """I6 native cut admission and conservation, without launching a server."""
 import copy
+import gzip
 from pathlib import Path
 import sys
+import tempfile
 from types import SimpleNamespace
 import unittest
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
@@ -109,6 +112,39 @@ class W164I6OracleTests(unittest.TestCase):
 
 
 class W164I6HarnessTests(unittest.TestCase):
+    def test_elected_native_root_is_not_a_pre_f2_root(self):
+        import loader_cut_nbt as nbt
+        import run_w164_i6_native as native
+        def compound(**fields): return nbt.Tag(nbt.COMPOUND, fields)
+        def string(value): return nbt.Tag(nbt.STRING, value.encode("utf-8"))
+        outbox = compound(schema_version=nbt.Tag(nbt.INT, 1), state=string("ELECTED"),
+                          event=compound(event_id=nbt.Tag(nbt.INTS, [0, 0, 0, 9])))
+        root = compound(data=compound(schema_version=nbt.Tag(nbt.INT, 3),
+            format_epoch=string("v1.8.0-first-moon-landing"), transfers=nbt.Tag(nbt.LIST, (nbt.COMPOUND, [])),
+            classic_first_moon_landing=outbox))
+        with tempfile.TemporaryDirectory() as directory:
+            world = Path(directory); (world / "data").mkdir()
+            path = world / "data/advancedrocketrycommunity_rocket_transfers.dat"
+            path.write_bytes(gzip.compress(nbt.write(b"", root)))
+            with self.assertRaisesRegex(Exception, "nonempty landing outbox"):
+                native.predecessor.journal(world)
+            self.assertEqual(dict(schema_version=1, state="ELECTED", event=dict(event_id=[0, 0, 0, 9])),
+                             native.read_elected_outbox(world))
+
+    def test_landing_outbox_reader_accepts_elected_not_prelanding_empty(self):
+        import run_w164_i6_native as native
+        outbox = dict(schema_version=1, state="ELECTED", event=dict(event_id=[0, 0, 0, 9]))
+        root = dict(schema_version=3, format_epoch="v1.8.0-first-moon-landing",
+                    classic_first_moon_landing=outbox)
+        with patch.object(native.predecessor, "read_journal", return_value=root) as reader:
+            self.assertEqual(outbox, native.read_elected_outbox(Path("world")))
+            reader.assert_called_once_with(Path("world/data/advancedrocketrycommunity_rocket_transfers.dat"))
+        for changed in (dict(root, schema_version=2), dict(root, format_epoch="other"),
+                        dict(root, classic_first_moon_landing=dict(schema_version=1, state="EMPTY")),
+                        dict(root, classic_first_moon_landing=dict(outbox, schema_version=2))):
+            with patch.object(native.predecessor, "read_journal", return_value=changed):
+                with self.assertRaises(Exception): native.read_elected_outbox(Path("world"))
+
     def test_cut_and_fm12_properties_are_initial_start_only(self):
         import run_w164_i6_native as native
         for case in native.CASES:

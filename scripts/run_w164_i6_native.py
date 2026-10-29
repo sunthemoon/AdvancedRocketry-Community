@@ -36,6 +36,18 @@ CUTS["K9_LATE"] = "event=landed_reservation_restored"
 JOURNAL_ERROR = "ARCE_TRANSFER_JOURNAL_UNACKNOWLEDGED retained dirty authority; dependent effects are blocked"
 
 
+def read_elected_outbox(world):
+    # The inherited pre-F2 reader requires an EMPTY outbox. These plain cuts
+    # deliberately run after election, so use the bounded raw journal reader.
+    root = predecessor.read_journal(world / "data/advancedrocketrycommunity_rocket_transfers.dat")
+    require(root.get("schema_version") == 3 and root.get("format_epoch") == "v1.8.0-first-moon-landing",
+            "Changed checked landing journal envelope")
+    outbox = root.get("classic_first_moon_landing", {})
+    require(outbox.get("schema_version") == 1 and outbox.get("state") == "ELECTED",
+            "Missing checked initial landing event")
+    return outbox
+
+
 def command_for(args, case, restart):
     command = _server_command(args.java); command[2] = "-Xmx4G"
     if restart == 0:
@@ -149,7 +161,7 @@ def run_case(args, evidence, started):
                 row["expected_fuel"] = fuel
                 if case.startswith("PLAIN_"):
                     process.wait_for(re.compile("first_event_cut receipt_move_refused"), 120, start_at=index)
-                    outbox = predecessor.journal(world)["classic_first_moon_landing"]
+                    outbox = read_elected_outbox(world)
                     require(outbox["state"] == "ELECTED", "Missing checked initial landing event")
                     event = row["event"] = outbox["event"]
                 entry["requests"] = request(process, case, dimension, destination, fuel)
