@@ -3,9 +3,9 @@ package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.assembler.RocketAssemblerBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.assembler.RocketAssemblerReport;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.RocketFeedback;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.validation.RocketValidationCode;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.validation.RocketValidationIssue;
-import java.util.Locale;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -44,15 +44,19 @@ final class RocketInteraction {
             String detail,
             ServerLevel level
     ) {
-        assembler.setReport(new RocketAssemblerReport(code, stats, detail, level.getGameTime()));
+        boolean failure = code != RocketValidationCode.SUCCESS && code != RocketValidationCode.SCAN_IN_PROGRESS;
+        assembler.setReport(new RocketAssemblerReport(code, stats,
+                failure ? RocketFeedback.reason(code).getString() : detail, level.getGameTime()));
+        if (failure) {
+            StringBuilder diagnostic = new StringBuilder();
+            appendDiagnostic(diagnostic, detail);
+            assembler.setOperatorDetail(diagnostic.toString());
+        }
     }
 
     static void notify(ServerPlayer player, RocketValidationCode code, String detail) {
-        player.displayClientMessage(
-                Component.translatable(code.translationKey())
-                        .append(Component.literal(": " + detail)),
-                true
-        );
+        // The diagnostic is for logs/operators, never a literal suffix in a player's localized message.
+        player.displayClientMessage(Component.translatable(code.translationKey()), true);
     }
 
     static void notifyStats(ServerPlayer player, RocketStructureSnapshot snapshot, String action) {
@@ -70,10 +74,31 @@ final class RocketInteraction {
     }
 
     static String issueDetail(RocketValidationIssue issue) {
-        String position = issue.position()
-                .map(value -> " at " + value.x() + "," + value.y() + "," + value.z())
-                .orElse("");
-        String parameters = issue.parameters().isEmpty() ? "" : " " + issue.parameters();
-        return issue.code().name().toLowerCase(Locale.ROOT) + position + parameters;
+        // R153: schema-1 still stores a bounded string, now resolved in the server's language.
+        return RocketFeedback.reason(issue.code()).getString();
+    }
+
+    /** Bounded, single-line diagnostics without first allocating an unbounded Map.toString(). */
+    static String diagnosticDetail(RocketValidationIssue issue) {
+        StringBuilder text = new StringBuilder();
+        appendDiagnostic(text, issue.code().name());
+        issue.position().ifPresent(value -> appendDiagnostic(text, " at " + value.x() + "," + value.y() + "," + value.z()));
+        for (var entry : issue.parameters().entrySet()) {
+            if (text.length() >= RocketAssemblerBlockEntity.MAX_OPERATOR_DETAIL_LENGTH) { break; }
+            appendDiagnostic(text, " ");
+            appendDiagnostic(text, entry.getKey());
+            appendDiagnostic(text, "=");
+            appendDiagnostic(text, entry.getValue());
+        }
+        return text.toString();
+    }
+
+    private static void appendDiagnostic(StringBuilder target, String value) {
+        for (int index = 0; index < value.length()
+                && target.length() < RocketAssemblerBlockEntity.MAX_OPERATOR_DETAIL_LENGTH; index++) {
+            char character = value.charAt(index);
+            target.append(Character.isISOControl(character) || character == '\u2028' || character == '\u2029'
+                    ? ' ' : character);
+        }
     }
 }

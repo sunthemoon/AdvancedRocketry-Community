@@ -8,6 +8,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlight
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightState;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketPassengerPosition;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketFlightNbtCodec;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.RocketFeedback;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightMenu;
@@ -23,6 +24,7 @@ import java.util.UUID;
 import java.util.stream.IntStream;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -31,7 +33,6 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
@@ -78,6 +79,11 @@ public final class RocketEntity extends Entity implements MenuProvider {
         super(entityType, level);
         noPhysics = true;
         setNoGravity(true);
+    }
+
+    @Override
+    protected Component getTypeName() {
+        return RocketFeedback.entityName();
     }
 
     public void initialize(
@@ -500,6 +506,12 @@ public final class RocketEntity extends Entity implements MenuProvider {
         setDeltaMovement(Vec3.ZERO);
         io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowAudit.observe(this);
         setNoGravity(true);
+        // Vanilla's tracker consumes this hint even between the type's 20-tick parked updates.
+        // Only the two moving phases request a 2-tick cadence; no extra packet type or client authority.
+        if (!level().isClientSide && flightData != null && tickCount % 2 == 0
+                && (flightData.state() == RocketFlightState.ASCENT || flightData.state() == RocketFlightState.DESCENT)) {
+            hasImpulse = true;
+        }
         if (!level().isClientSide && !activeStateLogged) {
             activeStateLogged = true;
             AdvancedRocketryCommunity.LOGGER.info(
@@ -625,11 +637,6 @@ public final class RocketEntity extends Entity implements MenuProvider {
     @Override
     public Packet<ClientGamePacketListener> getAddEntityPacket() {
         return NetworkHooks.getEntitySpawningPacket(this);
-    }
-
-    @Override
-    public Component getDisplayName() {
-        return Component.translatable("menu.advancedrocketrycommunity.rocket_flight");
     }
 
     /** W182: vanilla opens a spectator's menu here directly, from {@code Player.interactOn}; a spectator gets none. */

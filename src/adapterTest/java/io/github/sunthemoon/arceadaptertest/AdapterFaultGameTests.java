@@ -3,8 +3,10 @@ package io.github.sunthemoon.arceadaptertest;
 import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.logging.LogUtils;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import net.minecraft.commands.CommandSource;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -105,10 +107,16 @@ public final class AdapterFaultGameTests {
                     reached(helper, probe);
                     helper.assertTrue(!report(helper).getString("detail").contains(FixtureAdapterFaults.PRIVATE_DETAIL),
                             "Host diagnostic exposed provider exception detail");
+                    helper.assertTrue(report(helper).getString("detail").equals("Rocket contains an unsupported block entity"),
+                            "Player report is not the translated reason: " + report(helper));
+                    String diagnostic = operatorReport(helper, fixture.owner);
+                    helper.assertTrue(diagnostic.contains("code=UNSUPPORTED_BLOCK_ENTITY")
+                                    && !diagnostic.contains(FixtureAdapterFaults.PRIVATE_DETAIL),
+                            "Operator report lost the failure or exposed provider exception detail: " + diagnostic);
                     if (mode == FixtureAdapterFaults.Mode.CAPTURE_OVERSIZED) {
-                        helper.assertTrue(report(helper).getString("detail").endsWith(
-                                        "detail=" + AdapterTestMod.CONTAINER_ID + ": RocketSnapshotException}"),
-                                "Oversized capture was not rejected by payload validation: " + report(helper));
+                        helper.assertTrue(diagnostic.endsWith(
+                                        "detail=" + AdapterTestMod.CONTAINER_ID + ": RocketSnapshotException"),
+                                "Oversized capture was not rejected by payload validation: " + diagnostic);
                     }
                     helper.assertTrue(rockets(helper).isEmpty(), "Failed scan created a rocket authority");
                     assertRestored(helper, fixture);
@@ -188,6 +196,25 @@ public final class AdapterFaultGameTests {
 
     private static CompoundTag report(GameTestHelper helper) {
         return helper.getBlockEntity(ORIGIN.below()).saveWithoutMetadata().getCompound("RocketAssemblerData");
+    }
+
+    private static String operatorReport(GameTestHelper helper, FakePlayer owner) {
+        var replies = new ArrayList<String>();
+        var output = new CommandSource() {
+            @Override public void sendSystemMessage(Component message) { replies.add(message.getString()); }
+            @Override public boolean acceptsSuccess() { return true; }
+            @Override public boolean acceptsFailure() { return true; }
+            @Override public boolean shouldInformAdmins() { return false; }
+        };
+        BlockPos assembler = helper.absolutePos(ORIGIN.below());
+        try {
+            int result = helper.getLevel().getServer().getCommands().getDispatcher().execute(
+                    "arce rocket status " + assembler.getX() + " " + assembler.getY() + " " + assembler.getZ(),
+                    owner.createCommandSourceStack().withPermission(2).withSource(output));
+            // Status returns the operation's failure code even when the diagnostic lookup succeeds.
+            helper.assertTrue(result == 0 && replies.size() == 1, "Operator failure status response differs: " + replies);
+        } catch (CommandSyntaxException exception) { throw new IllegalStateException(exception); }
+        return String.join("\n", replies);
     }
 
     private static void reached(GameTestHelper helper, FixtureAdapterFaults.Probe probe) {

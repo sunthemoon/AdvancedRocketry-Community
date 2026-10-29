@@ -180,10 +180,11 @@ final class RocketAssemblerScanService {
             RocketValidationIssue issue = result.issues().get(0);
             String detail = RocketInteraction.issueDetail(issue);
             RocketInteraction.update(assembler, issue.code(), result.stats().orElse(null), detail, level);
+            assembler.setOperatorDetail(RocketInteraction.diagnosticDetail(issue));
             if (player != null) {
                 RocketInteraction.notify(player, issue.code(), detail);
             }
-            logScanResult(level, key.position(), active, issue.code(), detail, null);
+            logScanResult(level, key.position(), active, issue.code(), assembler.operatorDetail(), null);
             return false;
         }
 
@@ -296,8 +297,10 @@ final class RocketAssemblerScanService {
         String detail = result.success()
                 ? operation + " committed blocks=" + result.changedBlocks()
                 : RocketInteraction.issueDetail(result.issue().orElseThrow());
+        String diagnostic = result.issue().map(RocketInteraction::diagnosticDetail).orElse("");
         if (assembler != null) {
             RocketInteraction.update(assembler, result.code(), snapshot.stats(), detail, level);
+            assembler.setOperatorDetail(diagnostic);
         }
         if (result.success()) {
             if (player != null) {
@@ -307,12 +310,13 @@ final class RocketAssemblerScanService {
             RocketInteraction.notify(player, result.code(), detail);
         }
         AdvancedRocketryCommunity.LOGGER.info(
-                "ARCE_ROCKET_TRANSACTION operation={} code={} blocks={} snapshot={} entity={}",
+                "ARCE_ROCKET_TRANSACTION operation={} code={} blocks={} snapshot={} entity={} detail={}",
                 operation,
                 result.code(),
                 result.changedBlocks(),
                 snapshot.contentHash(),
-                result.rocketEntityId().map(UUID::toString).orElse("none")
+                result.rocketEntityId().map(UUID::toString).orElse("none"),
+                diagnostic
         );
     }
 

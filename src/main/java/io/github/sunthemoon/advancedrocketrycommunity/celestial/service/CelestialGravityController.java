@@ -10,6 +10,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraftforge.common.ForgeMod;
@@ -24,6 +25,11 @@ import net.minecraftforge.event.entity.living.LivingFallEvent;
 public final class CelestialGravityController {
     public static final UUID MODIFIER_ID = UUID.fromString("6fef66cc-a721-4b58-9be5-c8b07831eb0f");
     private static final String MODIFIER_NAME = "ARCE celestial gravity";
+    // Forge 1.20.1's native slow-falling attribute modifier, installed by LivingEntity.travel.
+    static final UUID SLOW_FALLING_ID = UUID.fromString("a5b6cf2a-2f7c-31ef-9022-7c3e7d5e6aba");
+    // Transient only: no saved identity or migration. Keep the body modifier separate for fall-damage scaling.
+    static final UUID SLOW_FALL_FLOOR_ID = UUID.fromString("9d9af356-3dea-4c82-92ab-52e9d092201a");
+    static final double MIN_SLOW_FALL_GRAVITY = 0.0031D;
 
     private final CelestialEnvironmentService environments;
     private final PositionGravity override;
@@ -65,6 +71,52 @@ public final class CelestialGravityController {
         double multiplier = !(entity instanceof ServerPlayer) && !livingGravityEnabled.getAsBoolean()
                 ? 1.0D : multiplierAt(entity, level);
         applyMultiplier(gravity, multiplier);
+        applySlowFallFloor(gravity, multiplier > 0.0D && multiplier < 1.0D
+                && entity.hasEffect(MobEffects.SLOW_FALLING) && entity.getDeltaMovement().y <= 0.0D
+                && !entity.isNoGravity() && !entity.isInWaterOrBubble() && !entity.isInLava());
+    }
+
+    /**
+     * Lift only positive, scaled slow-fall gravity above aiStep's 0.003 dead zone, including travel's 0.98 drag.
+     * The native modifier can appear after our first tick; the next tick corrects it without touching foreign
+     * modifiers, the base, or the body's fall-damage factor. Zero gravity and ordinary/rising travel are unchanged.
+     */
+    static void applySlowFallFloor(AttributeInstance gravity, boolean active) {
+        AttributeModifier existing = gravity.getModifier(SLOW_FALL_FLOOR_ID);
+        if (existing != null && (existing.getOperation() != AttributeModifier.Operation.MULTIPLY_TOTAL
+                || !Double.isFinite(existing.getAmount()) || existing.getAmount() < 0.0D)) {
+            gravity.removeModifier(existing);
+            existing = null;
+        }
+        if (!active || gravity.getModifier(SLOW_FALLING_ID) == null) {
+            if (existing != null) { gravity.removeModifier(existing); }
+            return;
+        }
+        double scaled = existing == null ? gravity.getValue() : gravityWithoutFloor(gravity);
+        double amount = MIN_SLOW_FALL_GRAVITY / scaled - 1.0D;
+        if (scaled <= 0.0D || scaled >= MIN_SLOW_FALL_GRAVITY || !Double.isFinite(amount)) {
+            if (existing != null) { gravity.removeModifier(existing); }
+            return;
+        }
+        if (existing != null && Math.abs(existing.getAmount() - amount) <= 1.0E-12D * Math.max(1.0D, amount)
+                && !gravity.removePermanentModifier(SLOW_FALL_FLOOR_ID)) {
+            return; // Do not dirty/synchronize an unchanged attribute every tick due to round-off.
+        }
+        if (existing != null) { gravity.removeModifier(existing); }
+        gravity.addTransientModifier(new AttributeModifier(SLOW_FALL_FLOOR_ID, "ARCE slow-fall gravity floor", amount,
+                AttributeModifier.Operation.MULTIPLY_TOTAL));
+    }
+
+    /** Attribute operations without our floor. Dividing getValue loses information when the attribute was clamped. */
+    private static double gravityWithoutFloor(AttributeInstance gravity) {
+        double base = gravity.getBaseValue();
+        for (var modifier : gravity.getModifiers(AttributeModifier.Operation.ADDITION)) { base += modifier.getAmount(); }
+        double value = base;
+        for (var modifier : gravity.getModifiers(AttributeModifier.Operation.MULTIPLY_BASE)) { value += base * modifier.getAmount(); }
+        for (var modifier : gravity.getModifiers(AttributeModifier.Operation.MULTIPLY_TOTAL)) {
+            if (!modifier.getId().equals(SLOW_FALL_FLOOR_ID)) { value *= 1.0D + modifier.getAmount(); }
+        }
+        return gravity.getAttribute().sanitizeValue(value);
     }
 
     /**
