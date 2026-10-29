@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.resourceescrow;
 
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.EscrowGameTestProof;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestAutosave;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +21,10 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 @GameTestHolder(ModIdentity.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class EscrowSettlementEmptySlotGameTests {
+    // Two sequential native captures each need the Level's next 20-tick force; allow one more period for
+    // callback delivery and the joint-validity assertion. Both slots must be ready before the first capture.
+    private static final int PROOF_PAIR_WINDOW_TICKS = 60;
+
     private EscrowSettlementEmptySlotGameTests() { }
     @GameTest(template = "empty", batch = "escrow_settlement_empty_slots", timeoutTicks = 1_200)
     public static void twoTrulyEmptySlotsReceiveIndependentOwnStoreAbsenceProofs(GameTestHelper helper) {
@@ -46,8 +51,10 @@ public final class EscrowSettlementEmptySlotGameTests {
                     done = true; helper.succeed(); return;
                 }
                 var chunk = chunks.get(index);
-                var position = new BlockPos(chunk.getMinBlockX(), 100, chunk.getMinBlockZ());
-                if (!level.areEntitiesLoaded(chunk.toLong()) || !level.isPositionEntityTicking(position)) { return; }
+                for (var required : chunks) {
+                    var position = new BlockPos(required.getMinBlockX(), 100, required.getMinBlockZ());
+                    if (!level.areEntitiesLoaded(required.toLong()) || !level.isPositionEntityTicking(position)) { return; }
+                }
                 var bounds = new AABB(chunk.getMinBlockX(), level.getMinBuildHeight(), chunk.getMinBlockZ(),
                         chunk.getMaxBlockX() + 1, level.getMaxBuildHeight(), chunk.getMaxBlockZ() + 1);
                 helper.assertTrue(level.getEntities((net.minecraft.world.entity.Entity) null, bounds).isEmpty(), "Absence slot contains a padding entity");
@@ -58,7 +65,9 @@ public final class EscrowSettlementEmptySlotGameTests {
                 var frontier = new EscrowPrefix.State(ledger, 0, EscrowSettlementTombstones.observationDigest(observation), List.of());
                 var target = new EscrowBarrier.Target(endpoint, frontier, EscrowSettlementDisk.validator(observation, ledger));
                 pending = new EscrowGameTestProof<>(server::getTickCount,
-                        (tick, completed) -> runtime.barrier().beginJoint(runtime.store(level), List.of(target), tick, completed),
+                        // Recheck on every admission attempt, but never wait across an autosave holding the first proof.
+                        (tick, completed) -> (index != 0 || !GameTestAutosave.within(server, PROOF_PAIR_WINDOW_TICKS))
+                                && runtime.barrier().beginJoint(runtime.store(level), List.of(target), tick, completed),
                         EscrowBarrier.JointResult::confirmed, EscrowBarrier.JointResult::reason, result -> {
                             pending = null;
                             helper.assertTrue(result.confirmed(), "Empty-slot own-store refused: " + result.reason());
