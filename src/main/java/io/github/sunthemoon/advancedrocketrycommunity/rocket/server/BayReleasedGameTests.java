@@ -185,15 +185,18 @@ public final class BayReleasedGameTests {
                         helper.assertTrue(boundary.token().valid(server, journal, t, RocketTransferBayRecoveryGate.Action.TICK_SOURCE), "Fresh permit refused");
                         helper.assertTrue(!boundary.token().valid(server, journal, t, RocketTransferBayRecoveryGate.Action.TICK_SOURCE), "Permit reused");
                         if (restartPhase == null) {
+                            var observed = RocketTransferEntities.findSource(server, t);
+                            if (observed == null) { observed = RocketTransferEntities.findDestination(server, t); }
+                            helper.assertTrue(observed != null, "No live endpoint to test permit invalidation");
                             var saved = coordinator.beforeAction(server, journal, t, RocketTransferBayRecoveryGate.Action.TICK_SOURCE);
-                            fixture.source().saveWithoutId(new CompoundTag());
+                            observed.saveWithoutId(new CompoundTag());
                             helper.assertTrue(!saved.token().valid(server, journal, t, RocketTransferBayRecoveryGate.Action.TICK_SOURCE), "Save did not invalidate permit");
                             var moved = coordinator.beforeAction(server, journal, t, RocketTransferBayRecoveryGate.Action.TICK_SOURCE);
-                            double x = fixture.source().getX();
-                            fixture.source().setPos(x + 1, fixture.source().getY(), fixture.source().getZ());
+                            double x = observed.getX();
+                            observed.setPos(x + 1, observed.getY(), observed.getZ());
                             helper.assertTrue(!moved.token().valid(server, journal, t, RocketTransferBayRecoveryGate.Action.TICK_SOURCE),
                                     "Source motion did not invalidate permit");
-                            fixture.source().setPos(x, fixture.source().getY(), fixture.source().getZ());
+                            observed.setPos(x, observed.getY(), observed.getZ());
                         }
                         for (var action : List.of(RocketTransferBayRecoveryGate.Action.REMOVE_JOURNAL,
                                 RocketTransferBayRecoveryGate.Action.SETTLE_SOURCE, RocketTransferBayRecoveryGate.Action.RECOVER_BY_ID,
