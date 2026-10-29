@@ -122,6 +122,10 @@ final class RocketDestinationWarmups {
         return registry.startedBy(request);
     }
 
+    boolean canAllocate(UUID logical, UUID player) {
+        return registry.canAllocate(logical, player, settings.get());
+    }
+
     /** R22 amendment 1, surface pads only: the station and named pads have one candidate each. */
     RocketPosition kept(RocketFlightData countdown, RocketEntity rocket) {
         var plan = countdown.plan().orElseThrow();

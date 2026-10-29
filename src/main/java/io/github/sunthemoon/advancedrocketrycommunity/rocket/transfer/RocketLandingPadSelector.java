@@ -34,6 +34,8 @@ import net.minecraft.world.phys.AABB;
 public final class RocketLandingPadSelector {
     /** Audit-only refusal: terrain, bounds, budgets or a transfer reservation. */
     public static final String UNSAFE = "unsafe";
+    /** Read-only selection reached terrain that is not FULL; no surface or block read was attempted. */
+    public static final String TERRAIN_LOADING = "terrain_loading";
     /** W90 (R21 item 3): a governed destination whose checked margin is not admissible. */
     public static final String CHUNK_BUDGET = "message.advancedrocketrycommunity.pad.reason.chunk_budget";
     /** W83b (Root decision R32 item 1): a due arrival waits until its destination columns' entity sections load. */
@@ -89,6 +91,12 @@ public final class RocketLandingPadSelector {
             boolean governed,
             RocketPosition kept
     ) {
+        return select(target, source, transferId, reservations, gameTime, governed, kept, true);
+    }
+
+    /** A false {@code loadTerrain} never acquires chunks, including in the final terrain recheck. */
+    public RocketLandingPadSelection select(ServerLevel target, RocketStructureSnapshot source, UUID transferId,
+            List<RocketRegion> reservations, long gameTime, boolean governed, RocketPosition kept, boolean loadTerrain) {
         Objects.requireNonNull(target, "target");
         Objects.requireNonNull(source, "source");
         Objects.requireNonNull(transferId, "transferId");
@@ -122,7 +130,10 @@ public final class RocketLandingPadSelector {
             } else if (candidate.chunkCount() > RocketFlightLimits.MAX_LANDING_CHUNKS) {
                 continue;
             }
-            chunksLoaded += loadChunks(target, candidate.chunks());
+            if (!loadTerrain && !terrainLoaded(target, candidate.chunks())) {
+                return RocketLandingPadSelection.failure(candidates, chunksLoaded, TERRAIN_LOADING);
+            }
+            if (loadTerrain) { chunksLoaded += loadChunks(target, candidate.chunks()); }
             RocketPosition origin = originAtSurface(target, source, candidate.centerX(), candidate.centerZ());
             if (origin == null) {
                 continue;
@@ -141,7 +152,7 @@ public final class RocketLandingPadSelector {
                 continue;
             }
             // A new candidate always meets the support rule; the Moon's recheck threshold never applies here (ADR-075).
-            String refusal = unavailable(target, relocated, null, false, true, true);
+            String refusal = unavailable(target, relocated, null, false, loadTerrain, true);
             if (NamedLandingPadOccupancy.ENTITY_BUDGET.equals(refusal)) {
                 // The fixed pads share almost the same discovery box, so a later candidate cannot do better.
                 return RocketLandingPadSelection.failure(candidates, chunksLoaded, refusal);
@@ -177,6 +188,12 @@ public final class RocketLandingPadSelector {
             long gameTime,
             boolean governed
     ) {
+        return selectStation(target, source, transferId, station, reservations, gameTime, governed, true);
+    }
+
+    /** Loaded-only counterpart of surface selection; the station identity and bounds checks are identical. */
+    public RocketLandingPadSelection selectStation(ServerLevel target, RocketStructureSnapshot source, UUID transferId,
+            StationState station, List<RocketRegion> reservations, long gameTime, boolean governed, boolean loadTerrain) {
         Objects.requireNonNull(target, "target");
         Objects.requireNonNull(source, "source");
         Objects.requireNonNull(transferId, "transferId");
@@ -225,9 +242,12 @@ public final class RocketLandingPadSelector {
             } else if (chunks.size() > RocketFlightLimits.MAX_LANDING_CHUNKS) {
                 return RocketLandingPadSelection.failure(1, 0, "station landing exceeds chunk bound");
             }
-            int loaded = loadChunks(target, chunks);
+            if (!loadTerrain && !terrainLoaded(target, chunks)) {
+                return RocketLandingPadSelection.failure(1, 0, TERRAIN_LOADING);
+            }
+            int loaded = loadTerrain ? loadChunks(target, chunks) : 0;
             String refusal = reservations.stream().anyMatch(region::overlaps)
-                    ? UNSAFE : unavailable(target, relocated, null, false);
+                    ? UNSAFE : unavailable(target, relocated, null, false, loadTerrain, false);
             if (refusal != null) {
                 return RocketLandingPadSelection.failure(1, loaded,
                         refusal.equals(UNSAFE) ? "station pad is occupied or unsafe" : refusal);
@@ -461,6 +481,10 @@ public final class RocketLandingPadSelector {
             target.getChunk(chunk.x, chunk.z);
         }
         return chunks.size();
+    }
+
+    private static boolean terrainLoaded(ServerLevel target, Set<ChunkPos> chunks) {
+        return chunks.stream().allMatch(chunk -> target.getChunkSource().getChunkNow(chunk.x, chunk.z) != null);
     }
 
     private static boolean withinBorder(ServerLevel target, RocketRegion region) {

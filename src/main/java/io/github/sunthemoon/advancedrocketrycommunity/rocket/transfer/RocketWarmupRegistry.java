@@ -256,6 +256,14 @@ public final class RocketWarmupRegistry {
         return live.size() < settings.globalCap() && (player == null || count(player) < settings.perPlayer());
     }
 
+    /** Read-only pre-selection capacity check, including replacement of this logical rocket's unbound allocation. */
+    public boolean canAllocate(UUID logical, UUID player, RocketWarmupSettings settings) {
+        var own = live.get(logical);
+        int other = live.size() - (own == null ? 0 : 1);
+        int owners = count(player) - (own != null && Objects.equals(own.player(), player) ? 1 : 0);
+        return other < settings.globalCap() && (player == null || owners < settings.perPlayer());
+    }
+
     private Decision proceed(Request request, boolean bindable) {
         pending = new Decision(Outcome.PROCEED, request.logical(), request.requestId(), bindable);
         return pending;

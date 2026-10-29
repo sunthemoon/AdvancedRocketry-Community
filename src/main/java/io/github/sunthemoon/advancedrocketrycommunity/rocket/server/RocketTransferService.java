@@ -148,6 +148,7 @@ final class RocketTransferService {
         // W90: governed-only source and pad bounds. W90b: a live warm-up's starting request and its kept pad (R22 S1, S2).
         var admission = RocketGovernedAdmission.check(server, rocket, countdown, warmups);
         if (admission.refusal() != null) { return admission.refusal(); }
+        boolean loadTerrain = !admission.governed() || warmups.canAllocate(countdown.logicalRocketId(), completion.requester());
         List<RocketRegion> reservations = warmups.reservations(launchReservations(server, journal), countdown.logicalRocketId());
         RocketLandingPadSelection selected;
         if (plan.destinationStation().isPresent()) {
@@ -157,12 +158,15 @@ final class RocketTransferService {
                     rocket.snapshot().orElseThrow(), plan.requestId(), station, plan.landingPad(), reservations,
                     scheduledArrival(countdown), admission.governed()) : pads.selectStation(destinationLevel,
                     rocket.snapshot().orElseThrow(), plan.requestId(), station, reservations, scheduledArrival(countdown),
-                    admission.governed());
+                    admission.governed(), loadTerrain);
         } else {
             selected = pads.select(destinationLevel, rocket.snapshot().orElseThrow(), plan.requestId(), reservations,
-                    scheduledArrival(countdown), admission.governed(), admission.kept());
+                    scheduledArrival(countdown), admission.governed(), admission.kept(), loadTerrain);
         }
         if (!selected.success()) {
+            if (RocketLandingPadSelector.TERRAIN_LOADING.equals(selected.detail())) {
+                return RocketFlightRequestResult.failure(RocketFlightRequestCode.DESTINATION_LOADING_LIMIT, plan.requiredFuel());
+            }
             auditPrepare(rocket, plan, selected, RocketFlightRequestCode.LANDING_PAD_UNAVAILABLE);
             return new RocketFlightRequestResult(
                     RocketFlightRequestCode.LANDING_PAD_UNAVAILABLE,
