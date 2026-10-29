@@ -16,7 +16,7 @@ import net.minecraft.server.MinecraftServer;
 /** Diagnostic-only transparent port observer. No result, request, ticket, quota or deadline is replaced. */
 final class W197CostObserver {
     final List<String> ticks = new ArrayList<>(List.of(
-            "phase,round,tick,tick_ns,observed_ns,pending,active,vanilla_core_ns,forge_end_ns,late_start_interval_ns"));
+            "phase,round,tick,tick_ns,observed_ns,pending,active,vanilla_core_ns,forge_end_ns,late_start_interval_ns,end_epoch_ms"));
     final List<String> steps = new ArrayList<>(List.of("phase,round,tick,step,calls,exclusive_ns,max_inclusive_ns"));
     final List<String> proofs = new ArrayList<>(List.of(
             "round,index,admitted_tick,attempt,started_tick,terminal_tick,attempt_ticks,queue_ticks,slots,accepted"));
@@ -69,7 +69,7 @@ final class W197CostObserver {
         peakPending = Math.max(peakPending, pending); peakActive = Math.max(peakActive, active);
         if (measuring()) {
             ticks.add(phase + "," + round + "," + server.getTickCount() + "," + elapsed + "," + observed + "," + pending + "," + active
-                    + "," + vanillaCore + "," + forgeEnd + "," + lateStartInterval);
+                    + "," + vanillaCore + "," + forgeEnd + "," + lateStartInterval + "," + System.currentTimeMillis());
             costs.forEach((name, cost) -> steps.add(phase + "," + round + "," + server.getTickCount() + "," + name
                     + "," + cost[0] + "," + cost[1] + "," + cost[2]));
         }

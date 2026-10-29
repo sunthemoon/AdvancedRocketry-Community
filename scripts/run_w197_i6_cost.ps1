@@ -1,16 +1,19 @@
 param(
     [Parameter(Mandatory=$true)][string]$Commit,
     [Parameter(Mandatory=$true)][string]$Label,
-    [switch]$GameTest
+    [switch]$GameTest,
+    [switch]$Jfr,
+    [string]$TaskId='W197'
 )
 $ErrorActionPreference='Stop'
 $workspace=(Resolve-Path "$PSScriptRoot/..").Path
-$root='D:/GitHub/ARCE-Task-Evidence/root-queue/W197'
+if($TaskId -notmatch '^W[0-9]+$') { throw 'Invalid task id' }
+$root="D:/GitHub/ARCE-Task-Evidence/root-queue/$TaskId"
 $temp='D:/GitHub/ARCE-Task-Evidence/Temp'
 $lock='D:\GitHub\ARCE-Task-Evidence\locks\heavy-jvm'
 if($Label -notmatch '^native-[a-z0-9-]+$') { throw 'Invalid evidence label' }
-$out="$root/$Label"; $export="$temp/W197-$Label-export"; $archive="$temp/W197-$Label.zip"
-$token="W197 pid=$PID $([guid]::NewGuid())"
+$out="$root/$Label"; $export="$temp/$TaskId-$Label-export"; $archive="$temp/$TaskId-$Label.zip"
+$token="$TaskId pid=$PID $([guid]::NewGuid())"
 $owned=$false; $exportCreated=$false; $archiveCreated=$false; $gameTestStarted=$false
 if((Test-Path $out) -or (Test-Path $export) -or (Test-Path $archive)) { throw 'Output already exists' }
 New-Item -ItemType Directory -Path $out | Out-Null
@@ -76,7 +79,8 @@ try {
     Set-Location $workspace
     # No concurrent Gradle invocation is launched by this worker during the measurement.
     HostSnapshot 'before-native'
-    & python -B scripts/run_w197_i6_cost.py --jar $diagnostic --production-jar $production `
+    $profileArgs=@(); if($Jfr) { $profileArgs=@('--jfr') }
+    & python -B scripts/run_w197_i6_cost.py @profileArgs --jar $diagnostic --production-jar $production `
         --libraries 'D:/GitHub/ARCE-Task-Evidence/v1.8.0/guard-observation-04/native-04/server/libraries' `
         --evidence $out --source-commit $Commit --lock-owner $token *> "$out/native-console.log"
     $result.native_exit=$LASTEXITCODE
