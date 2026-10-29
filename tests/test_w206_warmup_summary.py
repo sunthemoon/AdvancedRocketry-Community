@@ -72,6 +72,13 @@ class SummaryTest(unittest.TestCase):
                   dict(kind="READY", logical="a", request="r", tick=125, ns=130_000_000)]
         self.assertEqual(readiness(events)[0]["request_to_ready_ms"], 50)
 
+    def test_deferred_selection_keeps_the_original_allocation_clock(self):
+        events = [dict(kind="STARTED", logical="a", request="r", tick=120, started=100, ns=1_000),
+                  dict(kind="READY", logical="a", request="r", tick=125, ns=2_000)]
+        row = readiness(events)[0]
+        self.assertEqual(row["ticks"], 5)
+        self.assertEqual(row["allocation_ticks"], 25)
+
     def test_phase_latency_keeps_unfinished_phase_censored(self):
         from w206_warmup_summary import phase_latencies
         events = [dict(kind="PHASE", to="WARMING", tick=10, ns=100_000_000),

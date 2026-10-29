@@ -8,10 +8,17 @@ import org.junit.jupiter.api.Test;
 
 /** Pins the cold-refusal integration boundary independently of native timing. */
 class RocketRequestCostTest {
+    @Test void governedColdSelectionCannotUseTheSynchronousTerrainPath() throws Exception {
+        var source = Files.readString(Path.of("src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferService.java"));
+        assertTrue(source.contains("boolean loadTerrain = !admission.governed();"),
+                "A free slot must not make a governed request synchronously load terrain");
+        assertTrue(source.contains("warmups.prepareTerrain("), "A checked cold demand must enter bounded preparation");
+    }
+
     @Test void exhaustedWarmupCapacityChoosesLoadedOnlySelectionBeforeTerrainAccess() throws Exception {
         var source = Files.readString(Path.of("src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/server/RocketTransferService.java"));
         int capacity = source.indexOf("warmups.canAllocate(");
-        int selection = source.indexOf("selected = plan.landingPad()");
+        int selection = source.indexOf("selected = selection.apply(");
         assertTrue(capacity >= 0 && capacity < selection, "Capacity must be known before choosing a terrain-loading selector");
         assertTrue(source.contains("RocketLandingPadSelector.TERRAIN_LOADING"));
         assertTrue(source.contains("RocketFlightRequestCode.DESTINATION_LOADING_LIMIT"));

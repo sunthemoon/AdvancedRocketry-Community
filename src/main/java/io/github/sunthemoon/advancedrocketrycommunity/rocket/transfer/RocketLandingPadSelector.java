@@ -97,6 +97,13 @@ public final class RocketLandingPadSelector {
     /** A false {@code loadTerrain} never acquires chunks, including in the final terrain recheck. */
     public RocketLandingPadSelection select(ServerLevel target, RocketStructureSnapshot source, UUID transferId,
             List<RocketRegion> reservations, long gameTime, boolean governed, RocketPosition kept, boolean loadTerrain) {
+        return select(target, source, transferId, reservations, gameTime, governed, kept, loadTerrain, -1);
+    }
+
+    /** Resume only the current or a later fixed candidate; earlier rejected candidates hold no terrain tickets. */
+    public RocketLandingPadSelection select(ServerLevel target, RocketStructureSnapshot source, UUID transferId,
+            List<RocketRegion> reservations, long gameTime, boolean governed, RocketPosition kept,
+            boolean loadTerrain, int resumeStep) {
         Objects.requireNonNull(target, "target");
         Objects.requireNonNull(source, "source");
         Objects.requireNonNull(transferId, "transferId");
@@ -110,7 +117,7 @@ public final class RocketLandingPadSelector {
         int candidates = 0;
         int chunksLoaded = 0;
         int first = keptIndex(target, source, base, kept);
-        for (int step = first < 0 ? 0 : -1; step < OFFSETS.length
+        for (int step = Math.max(resumeStep, first < 0 ? 0 : -1); step < OFFSETS.length
                 && step < RocketFlightLimits.MAX_LANDING_PAD_CANDIDATES; step++) {
             if (step == first) {
                 continue;
@@ -131,7 +138,7 @@ public final class RocketLandingPadSelector {
                 continue;
             }
             if (!loadTerrain && !terrainLoaded(target, candidate.chunks())) {
-                return RocketLandingPadSelection.failure(candidates, chunksLoaded, TERRAIN_LOADING);
+                return RocketLandingPadSelection.awaiting(candidates, candidate.chunks(), step);
             }
             if (loadTerrain) { chunksLoaded += loadChunks(target, candidate.chunks()); }
             RocketPosition origin = originAtSurface(target, source, candidate.centerX(), candidate.centerZ());
@@ -243,7 +250,7 @@ public final class RocketLandingPadSelector {
                 return RocketLandingPadSelection.failure(1, 0, "station landing exceeds chunk bound");
             }
             if (!loadTerrain && !terrainLoaded(target, chunks)) {
-                return RocketLandingPadSelection.failure(1, 0, TERRAIN_LOADING);
+                return RocketLandingPadSelection.awaiting(1, chunks, 0);
             }
             int loaded = loadTerrain ? loadChunks(target, chunks) : 0;
             String refusal = reservations.stream().anyMatch(region::overlaps)

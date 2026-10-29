@@ -122,10 +122,11 @@ def run_stage(args, session, output, mode, shape):
             summary = summarize(output)
             (output / "summary.json").write_text(json.dumps(summary, indent=2))
             expected = {"seed": "GENERATED_SEED", "flight": "MEASURED", "capacity": "LIFECYCLE_MEASURED",
-                        "replace": "REPLACEMENT_MEASURED", "restart": "RESTART_CUT", "recover": "RESTART_ABSENT"}[mode]
+                        "replace": "REPLACEMENT_MEASURED", "restart": "RESTART_CUT", "recover": "MEASURED"}[mode]
             if row["status"] == "COLLECTED":
                 row["status"] = "PASS" if result.get("outcome") == expected else "FAIL"
-            if mode == "flight" and not summary["flight_qualified"]: row["status"] = "FAIL"
+            if mode in ("flight", "recover") and not summary["flight_qualified"]: row["status"] = "FAIL"
+            if mode == "recover" and not all(result.get(k) for k in ("restart_absent", "restart_source_ready")): row["status"] = "FAIL"
             if mode not in ("seed", "recover") and not summary["timing"]["timing_qualified"]: row["status"] = "FAIL"
         else:
             row["status"] = "FAIL"; row["missing_result"] = True
