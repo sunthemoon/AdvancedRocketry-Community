@@ -95,6 +95,20 @@ class W198TerrainTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Unmapped"):
             terrain.native_payload({}, {"adapter": "mod:unknown"})
 
+    def test_unknown_injection_requires_one_exact_error_and_matching_writer_observation(self):
+        from run_w198_terrain import check_errors
+        line = "[22:22:11] [Server thread/ERROR] [io.gi.su.ad.ro.pe.RocketTransactionSavedData/]: " \
+               "ARCE_TRANSACTION_JOURNAL_UNACKNOWLEDGED outcome=UNKNOWN sequence=2 acknowledged=none"
+        for cut in ("C1_UNKNOWN", "C3_UNKNOWN", "C5_UNKNOWN"):
+            events = [{"label": cut.replace("_UNKNOWN", "_WRITE_UNKNOWN")}]
+            check_errors([line], cut, events)
+            for lines, observed in (([], events), ([line, line], events), ([line + " extra"], events),
+                                    ([line.replace("UNKNOWN", "NOT_COMMITTED")], events), ([line], [])):
+                with self.assertRaises(ValueError): check_errors(lines, cut, observed)
+        for cut in ("NONE", "C1_MOVE_AFTER", "RECOVERY_LOADED"):
+            with self.assertRaises(ValueError): check_errors([line], cut, [])
+        with self.assertRaises(ValueError): check_errors([line.replace("/ERROR]", "/FATAL]")], "C1_UNKNOWN", [])
+
 
 if __name__ == "__main__":
     unittest.main()

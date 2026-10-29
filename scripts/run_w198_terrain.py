@@ -6,6 +6,7 @@ import argparse
 import json
 import os
 from pathlib import Path
+import re
 import shutil
 import subprocess
 import uuid
@@ -44,6 +45,18 @@ def command_for(args, row, stage):
                     "-Dadvancedrocketrycommunity.w152PayloadHosts=ALL",
                     "-Dadvancedrocketrycommunity.w152Commit=" + args.source_commit]
     return command, cut
+
+
+def check_errors(lines, cut, events):
+    errors = [line.strip() for line in lines if "/ERROR]" in line or "/FATAL]" in line]
+    if cut in ("C1_UNKNOWN", "C3_UNKNOWN", "C5_UNKNOWN"):
+        pattern = (r"\[[0-9:]+\] \[Server thread/ERROR\] \[io\.gi\.su\.ad\.ro\.pe\.RocketTransactionSavedData/\]: "
+                   r"ARCE_TRANSACTION_JOURNAL_UNACKNOWLEDGED outcome=UNKNOWN sequence=\d+ acknowledged=(?:none|\d+)")
+        oracle.require(len(errors) == 1 and re.fullmatch(pattern, errors[0])
+                       and sum(event["label"] == cut.replace("_UNKNOWN", "_WRITE_UNKNOWN") for event in events) == 1,
+                       "Missing, repeated or unexpected injected UNKNOWN error/observation")
+    else:
+        oracle.require(not errors, "Unexpected native ERROR/FATAL")
 
 
 def preserve(world, evidence, stage):
@@ -114,7 +127,7 @@ def run(args):
                 write(ledger_file, ledger); write(evidence / "result.json", result)
             raw = json.loads((evidence / (stage + ".json")).read_text())
             oracle.require(raw["status"] == ("STABLE" if cut == "NONE" else "CUT"), f"{stage}: {raw.get('detail')}")
-            oracle.require(not any("/ERROR]" in line or "/FATAL]" in line for line in process.lines), "Unexpected native ERROR/FATAL")
+            check_errors(process.lines, cut, raw["events"])
             if fixture is None:
                 fixture = nbt_file(world / "w198-input.nbt", 8_388_608); write(evidence / "fixture.json", fixture)
             state = oracle.inspect(world, fixture, row, stage)
