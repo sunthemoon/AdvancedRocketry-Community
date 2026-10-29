@@ -95,6 +95,11 @@ class W198NativeOracleTest(unittest.TestCase):
         root["states"][tuple(at)] = name
         if be is not None: root["block_entities"].append(dict(id=name, x=x, y=y, z=z, **be))
 
+    def retain(self, phase):
+        self.transaction = dict(type="SEALED_DISASSEMBLY", phase=phase, snapshot=self.snapshot,
+                                rocket_entity_id=[0, 0, 0, 2], owner_id=[0, 0, 0, 3],
+                                snapshot_id=[0, 0, 0, 7], content_hash="fixture-hash", transaction_id=[0, 0, 0, 8])
+
     def write_region(self, folder, x, z, root):
         directory = self.world / folder; directory.mkdir(exist_ok=True)
         path = directory / f"r.{x >> 5}.{z >> 5}.mca"
@@ -168,6 +173,28 @@ class W198NativeOracleTest(unittest.TestCase):
         member["Items"] = [dict(id="minecraft:diamond", Count=7)]
         with self.assertRaisesRegex(ValueError, "Unaccounted census"):
             self.inspect("recovery-cut")
+
+    def test_pre_restored_missing_current_d1_cannot_elect_snapshot_or_dispose_fuel(self):
+        self.populate(members=0); self.retain("LOCKED")
+        for stage in ("start", "recovery-cut"):
+            with self.subTest(stage=stage):
+                self.entities = [copy.deepcopy(self.fixture["destination"])]
+                before = self.inspect(stage, "C1_MOVE_AFTER")
+                self.assertEqual("ENTITY", before["authority"])
+                self.assertEqual(dict(amount=1000, debit_history=[500]), before["fuel"])
+                self.entities = []
+                with self.assertRaisesRegex(ValueError, "Missing durable D1"):
+                    self.inspect(stage, "C1_MOVE_AFTER")
+
+    def test_current_d1_requires_exact_fuel_and_debit_history_with_partial_shadows(self):
+        self.populate(sealed=True, members=1); self.retain("LOCKED")
+        for field, replacement in (("amount", 0), ("debit_history", [])):
+            with self.subTest(field=field):
+                self.entities = [copy.deepcopy(self.fixture["destination"])]
+                self.assertEqual("ENTITY", self.inspect("recovery-cut")["authority"])
+                self.entities[0]["RocketEntityData"]["flight_data"]["fuel"][field] = replacement
+                with self.assertRaisesRegex(ValueError, "Changed full D1"):
+                    self.inspect("recovery-cut")
 
 
 class W198TerrainTest(unittest.TestCase):

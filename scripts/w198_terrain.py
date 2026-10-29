@@ -207,7 +207,11 @@ def inspect(world: Path, fixture: dict, row: dict, stage: str):
     check_census_payloads(census, accounted, members)
     phase = transaction["phase"] if transaction else None
     if stage == "start": require(phase == phase_at_cut(row["input"]["cut"]), "Wrong exact cut U phase")
-    state = elect(phase, survivors, sealed, native, recipients, retained=snapshot if transaction else None)
+    # I6's earlier U is not the current fuel/debit image. This matrix requires durable D1.
+    if phase is not None and phase not in ("RESTORED", "COMMITTED"):
+        require(len(survivors) == 1, "Missing durable D1 before block election")
+    state = elect(phase, survivors, sealed, native, recipients)
+    require(state["authority"] in ("ENTITY", "BLOCKS"), "Unsupported integrated authority")
     require_inventory(state, expected_resources("ALL"))
     # Empty fuel cannot be inferred from absence of D: successful block election is the sole disposal authority.
     if state["authority"] == "ENTITY": require(len(survivors) == 1, "Missing durable D1")
