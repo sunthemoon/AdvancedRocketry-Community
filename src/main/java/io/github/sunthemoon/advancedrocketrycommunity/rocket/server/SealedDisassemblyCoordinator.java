@@ -64,6 +64,7 @@ final class SealedDisassemblyCoordinator {
     private SealedMaterializer materializer;
     private SealedRecoverySelection recoverySelection;
     private MinecraftServer discoveryServer;
+    private SealedLoadedDiscovery discovery;
     private SealedLazyWork<SealedLoadedDiscovery.Hint> lazy;
     private SealedWorkScheduler scheduler;
     private long priorityTick = Long.MIN_VALUE;
@@ -235,7 +236,7 @@ final class SealedDisassemblyCoordinator {
         }
         if (lazy != null) { return; }
         discoveryServer = server;
-        var discovery = new SealedLoadedDiscovery(server);
+        discovery = new SealedLoadedDiscovery(server);
         lazy = new SealedLazyWork<>(new SealedLazyWork.Port<>() {
             public SealedLoadedDiscovery.Hint discover() { return discovery.advance(); }
             public void attempt(SealedLoadedDiscovery.Hint hint, SealedWorkBudget allowance) { attemptLazy(hint); }
@@ -252,7 +253,9 @@ final class SealedDisassemblyCoordinator {
         if (carrier.member().filter(member -> work.containsKey(member.transaction())).isPresent()) { return; }
         try {
             var result = unsealResult(level, carrier);
-            if (result == SealedMaterializer.Result.HELD) {
+            // Only this publication's own map edit may restart the discovery cursor's visit to its chunk (R155).
+            if (result == SealedMaterializer.Result.PUBLISHED) { discovery.published(hint.dimension(), pos); }
+            else if (result == SealedMaterializer.Result.HELD) {
                 carrier.deferUnsealUntil(server.getTickCount() + (long) RocketOrdinaryRetirement.RETRY_TICKS);
             }
             else if (result == SealedMaterializer.Result.PREPARATION_FAILED) {
@@ -401,7 +404,7 @@ final class SealedDisassemblyCoordinator {
         if (lazy != null) { lazy.clear(); }
         if (diagnostics != null) { diagnostics.clear(); diagnostics = null; }
         server = null; budget = null; writes = null; placement = null; materializer = null; recoverySelection = null; scheduler = null;
-        discoveryServer = null; lazy = null; lazyFailure = null;
+        discoveryServer = null; discovery = null; lazy = null; lazyFailure = null;
         priorityTick = Long.MIN_VALUE;
         nativeObserver = label -> { };
     }
