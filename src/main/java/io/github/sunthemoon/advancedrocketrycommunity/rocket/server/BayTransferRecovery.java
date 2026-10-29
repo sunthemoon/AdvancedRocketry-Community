@@ -242,6 +242,9 @@ final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
         BayClaim claim = claims.get(logical).orElse(null);
         if (claim == null || shuttingDown()) { return BayStepQueue.Result.IDLE; }
         if (claim.stage() == BayClaim.Stage.ENDED) { audit(claim); return BayStepQueue.Result.IDLE; } // D7 ends it in a completion
+        // A physical hold intercepts even ordinary D6/D7 claims. Drop only their RAM proof resources before the
+        // release shortcut; receipts, charges, conflict latches and already-issued write completions stay owned.
+        if (claim.releaseRefusal().isPresent()) { proof.forget(logical); }
         var releaseStep = released.step(claim);
         if (releaseStep != null) { audit(claim); return releaseStep; }
         BayStepQueue.Result result = switch (claim.stage()) {
