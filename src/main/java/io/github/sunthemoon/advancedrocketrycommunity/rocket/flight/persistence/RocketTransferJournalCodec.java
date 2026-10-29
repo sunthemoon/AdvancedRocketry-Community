@@ -25,10 +25,15 @@ final class RocketTransferJournalCodec {
     private RocketTransferJournalCodec() { }
     static CompoundTag encodeRoot(List<RocketTransferRecord> records, FirstEventOutbox firstMoonLanding,
                                   CompoundTag target) {
+        return encodeRoot(records, firstMoonLanding, target, RocketTransferJournalCodec::encodeRecord);
+    }
+
+    static CompoundTag encodeRoot(List<RocketTransferRecord> records, FirstEventOutbox firstMoonLanding,
+                                  CompoundTag target, java.util.function.Function<RocketTransferRecord, CompoundTag> encoder) {
         SavedDataSchemaMigrator.stampCurrent(ManagedSavedDataType.ROCKET_TRANSFERS, target);
         ListTag transfers = new ListTag();
         records.stream().sorted(Comparator.comparing(RocketTransferRecord::transferId)).forEach(record -> {
-            CompoundTag encoded = encodeRecord(record);
+            CompoundTag encoded = encoder.apply(record);
             if (RocketNbtSize.uncompressedBytes(encoded) > RocketFlightLimits.MAX_TRANSFER_RECORD_NBT_BYTES) {
                 throw new IllegalStateException("Encoded transfer record exceeds the fixed NBT limit");
             }
