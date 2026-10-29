@@ -329,6 +329,27 @@ bytes. Root decision R156:
 
 Then Root pushes the branch for a hosted run, and a fresh independent persistence review precedes the merge.
 
+## Continuation under Root decision R162 (2026-10-29)
+
+The R156 session (07:14 to 10:24, record `77ccb436d`) merged the shared head, added the gated I6 cut seams and the
+native harness with I6's durable-D1 oracles, and moved sealed evidence to the archive with a manifest. 5,506 unit
+tests, all 1,519 GameTests, runData and a clean build pass. It stopped before the natives because the unchanged log
+checker rejected one ERROR: `ARCE_SATELLITE_REGISTRY_UNACKNOWLEDGED outcome=FAILED` in batch `endgame_menu_member`,
+ending in `NoSuchFileException` for `advancedrocketrycommunity_satellite_missions.dat.arce-pending`.
+
+W164's own commits do not touch satellite persistence, so Root attributes the ERROR to the shared code and opens W194
+for it. Root decision R162:
+
+1. **Run tranche 2 now:** the 14 B-PLAIN and B-M rows, two restarts each (42 starts, within the 66-start limit), on
+   the qualified source `e70798963` or a later committed head. Stop and report if a case fails twice. The checker
+   finding stays open and is cited in the record as W194's; it is not added to the manifest.
+2. **Measure the native worst-case proof and preparation tick cost** and record it against docs/17. Qualify the
+   draft fixture first, or say why it cannot be.
+3. **Delete your own draft folder** `D:/GitHub/ARCE-Task-Evidence/Temp/W164-R156-cost-draft/` once its patch is kept.
+
+W164 then merges only after a hosted run on its head (a failure that W194 has shown to be the same race does not count
+against W164) and a fresh independent persistence review.
+
 ## Not in this task
 
 - N3-B4 (the combined cut evidence), W98-R1 and governed admission.
