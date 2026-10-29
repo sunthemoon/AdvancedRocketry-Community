@@ -155,3 +155,24 @@ happen in production between rockets on neighbouring pads. W185 captures every c
 Verification: the new tests alone, failing first; the whole unit suite; the bay batches three times; one complete
 local GameTest under the heavy-JVM lock; the native tranche. Root's hosted run on the pushed head then decides, and a
 fresh review of the R149, R150 and R154 changes follows.
+
+## Re-review findings under Root decision R160 (2026-10-29)
+
+The re-review, `D:/GitHub/ARCE-Task-Evidence/root-queue/W185-rereview/REVIEW.md` (SHA-256 `6d78f94a…56b8`), returned
+APPROVE-WITH-CHANGES: R149 and R150 are correct, and R154 removes the D6 capture livelock. A fresh session continues on
+`codex/v1.8.0-w185` from `f9e61b484`, one commit per finding, and appends a "Re-review fixes (R160)" section to the
+record:
+
+1. **W185-R21.** After a refused capture other than SUPERSEDING_SAVE, the holder gives up the turn (`turns.leave`) and
+   queues again behind the claims already waiting. It holds no proof then, so bay claims still cannot supersede each
+   other. Start from the review's reproduction (claim 0 refused every time, claim 1 never finishing); it fails first.
+2. **W185-R22.** If the barrier cannot accept the holder's retry request (its 64-entry first-slot list is full), the
+   holder gives up the turn and retries later, so nothing waits for a wake-up that never comes. Add a test.
+3. **W185-R25, the in-session part.** D0 refuses a bay whose end the low strip pushes past 16 columns, before any
+   INTENT, with an existing refusal reason, so an in-session claim never consumes packages it cannot retire. Add a test.
+
+No format, bound, budget, quota or timeout changes. Root registers R23 (the server-wide turn's wait), R24 (the park
+loop) and R25's restart case in R-043.
+
+Verification: the new tests alone, failing first; the whole unit suite; the bay batches three times; the native
+tranche. Root reviews the diff, and its hosted run on the pushed head decides the merge.
