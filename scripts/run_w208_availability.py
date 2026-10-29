@@ -185,14 +185,18 @@ def main():
     parser.add_argument("--source-commit", required=True)
     parser.add_argument("--lock-owner", required=True)
     parser.add_argument("--java", default="C:/Program Files/Java/jdk-17.0.7/bin/java.exe")
-    args = parser.parse_args(); require_lock(args.lock_owner)
+    args = parser.parse_args()
     output = args.evidence / args.case; output.mkdir()
-    result = dict(case=args.case, source=args.source_commit, jars=jar_inventory(args.production_jar, args.jar), stages=[], status="RUNNING")
-    session = TEMP / ("W208-" + uuid.uuid4().hex); session.mkdir()
-    marker = uuid.uuid4().hex; (session / ".w208-owned").write_text(marker)
-    result["session"] = str(session)
+    result = dict(case=args.case, source=args.source_commit, stages=[], status="RUNNING")
+    session = None
+    marker = uuid.uuid4().hex
     active = [None]
     try:
+        require_lock(args.lock_owner)
+        result["jars"] = jar_inventory(args.production_jar, args.jar)
+        session = TEMP / ("W208-" + uuid.uuid4().hex); session.mkdir()
+        (session / ".w208-owned").write_text(marker)
+        result["session"] = str(session)
         require(args.libraries.is_dir() and not smoke.is_link_or_junction(args.libraries)
                 and not any(smoke.is_link_or_junction(p) for p in args.libraries.rglob("*")), "Unsafe library template")
         shutil.copytree(args.libraries, session / "libraries")
@@ -224,7 +228,7 @@ def main():
         live = active[0] is not None and active[0].process.poll() is None
         result["live_process"] = live
         if live: result["status"] = "BLOCKED"
-        if not live:
+        if not live and session is not None:
             require(session.resolve().parent == TEMP and not smoke.is_link_or_junction(session)
                     and (session / ".w208-owned").read_text() == marker, "Cleanup ownership changed")
             shutil.rmtree(session)

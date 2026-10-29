@@ -49,7 +49,8 @@ try {
         }
         $result.status='WAITING_LOCK'; Persist; Start-Sleep 60
     }
-    Set-Content -LiteralPath "$lock/owner.txt" "$token $(Get-Date -Format o)"
+    $ownerRecord="$token $(Get-Date -Format o)"
+    Set-Content -LiteralPath "$lock/owner.txt" $ownerRecord
     $result.status='BUILDING'; Persist; DiskCheck; Snapshot 'host-before'
     $env:JAVA_HOME='C:/Program Files/Java/jdk-17.0.7'; $env:JAVA_TOOL_OPTIONS=''
     $gradle=@('--offline','--no-daemon','--no-parallel','--max-workers=1','--console=plain')
@@ -100,7 +101,7 @@ try {
         $live=$true
         & python -B scripts/run_w208_availability.py --case $case --jar $diagnostic --production-jar $production `
             --libraries 'D:/GitHub/ARCE-Task-Evidence/v1.8.0/guard-observation-04/native-04/server/libraries' `
-            --evidence $out --source-commit $Commit --lock-owner $token *> "$out/$case-console.log"
+            --evidence $out --source-commit $Commit --lock-owner $ownerRecord *> "$out/$case-console.log"
         $code=$LASTEXITCODE; $result.cases+=@{case=$case;exit_code=$code}; Persist
         $caseResult=Get-Content -Raw "$out/$case/result.json" | ConvertFrom-Json
         if($caseResult.live_process) { throw 'Live native process: world and lock retained' }

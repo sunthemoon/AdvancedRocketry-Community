@@ -2,6 +2,9 @@
 import sys
 from pathlib import Path
 import unittest
+import tempfile
+import json
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 import w208_availability as subject
@@ -10,6 +13,23 @@ import w208_summary as summary
 
 
 class AvailabilityTest(unittest.TestCase):
+    def test_prelaunch_failure_has_a_nonlive_result_without_starting_java(self):
+        with tempfile.TemporaryDirectory() as temp:
+            argv = ["runner", "--case", "small-quiet", "--jar", "diagnostic.jar", "--production-jar", "normal.jar",
+                    "--libraries", "libraries", "--evidence", temp, "--source-commit", "pin", "--lock-owner", "owner"]
+            with patch.object(sys, "argv", argv), patch.object(runner, "require_lock", side_effect=RuntimeError("changed lock")), \
+                    patch.object(runner.smoke, "CapturedProcess") as process:
+                self.assertEqual(runner.main(), 1)
+                process.assert_not_called()
+            result = json.loads((Path(temp) / "small-quiet/result.json").read_text())
+            self.assertFalse(result["live_process"])
+            self.assertEqual(result["status"], "FAILED")
+
+    def test_driver_passes_the_complete_lock_record(self):
+        source = (Path(__file__).resolve().parents[1] / "scripts/run_w208_availability.ps1").read_text()
+        self.assertIn('--lock-owner $ownerRecord', source)
+        self.assertIn('Set-Content -LiteralPath "$lock/owner.txt" $ownerRecord', source)
+
     def test_summary_does_not_turn_a_hold_into_completion(self):
         result = summary.sample(dict(status="NOT_COMPLETED", completion="NONE", observation_ticks=1200,
                                      observation_ns=60_000_000_000, events=[], ticks=[], stop_close={}), "")
