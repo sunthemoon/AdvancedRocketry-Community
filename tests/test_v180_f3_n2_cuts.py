@@ -109,9 +109,10 @@ class CutTests(unittest.TestCase):
         with self.assertRaises(cuts.smoke.SmokeError):
             cuts.verify_ordinary(disk, flights, "F3_HELD", 1, None)
 
-    def test_default_campaign_reports_unavailable_rows_not_passes(self):
+    def test_refusal_has_a_native_fixture_and_controls_remain_available(self):
         self.assertEqual(6, len(cuts.CASES))
-        self.assertEqual({"N2_REFUSED"}, set(cuts.BLOCKED))
+        self.assertEqual({}, cuts.BLOCKED)
+        self.assertEqual({"N2_REFUSED", "N2_STOPPED", "N2_PAD_MOVED", "N2_PAD_UNKNOWN"}, set(cuts.N3C_CASES))
         self.assertEqual("RT_CANCEL_SEPARATE_0_READBACK_AFTER", cuts.GOVERNED)
 
     def test_save_waits_for_its_own_marker(self):
@@ -190,6 +191,106 @@ class CutTests(unittest.TestCase):
     def test_n3_cuts_are_opt_in_and_name_existing_boundaries(self):
         self.assertEqual({"BARRIER_STORE_BEFORE", "BARRIER_FORCE_BEFORE", "ORDINARY_REMOVAL_BEFORE"}, set(cuts.N3_CUTS.values()))
         self.assertFalse(set(cuts.N3_CUTS) & set(cuts.CASES))
+
+    def test_named_unknown_is_armed_after_seed_not_at_process_start(self):
+        self.assertIsNone(cuts.initial_cut_property("N2_PAD_UNKNOWN"))
+        self.assertEqual(("removal", "unknown"), cuts.n3c_modes("N2_PAD_UNKNOWN"))
+        self.assertEqual(("removal", "removal"), cuts.n3c_modes("N2_PAD_MOVED"))
+        self.assertEqual(("refused", "refused"), cuts.n3c_modes("N2_REFUSED"))
+        self.assertEqual(("stopped", "stopped"), cuts.n3c_modes("N2_STOPPED"))
+        self.assertEqual("-Darce.releaseTest.firstEventCut=FP6", cuts.initial_cut_property("N2_UNKNOWN"))
+
+    def observation(self):
+        row, disk = self.removal()
+        return dict(source=disk["entities"][1]["entity"], journal=row["before_removal"]["journal"],
+                    pads={"entries": [{"pad": 4, "claim": ident(2)}]}, live=True, acknowledged=False, completions=0)
+
+    def test_n3c_refusal_compares_source_journal_pad_and_live_membership(self):
+        before = self.observation()
+        cuts.verify_n3c_observation(before, copy.deepcopy(before), "refused")
+        for key, value in (("source", {}), ("journal", {}), ("pads", {}), ("live", False)):
+            changed = copy.deepcopy(before); changed[key] = value
+            with self.subTest(key=key), self.assertRaises(cuts.smoke.SmokeError):
+                cuts.verify_n3c_observation(before, changed, "refused")
+
+    def test_n3c_pending_claim_cannot_be_reused_or_changed(self):
+        before = self.observation(); pending = copy.deepcopy(before)
+        pending.update(reuse=False, acknowledged=False)
+        cuts.verify_n3c_observation(before, pending, "pending")
+        for key, value in (("reuse", True), ("pads", {}), ("acknowledged", True), ("completions", 1)):
+            changed = copy.deepcopy(pending); changed[key] = value
+            with self.subTest(key=key), self.assertRaises(cuts.smoke.SmokeError):
+                cuts.verify_n3c_observation(before, changed, "pending")
+
+    def test_n3c_oracle_rejects_resource_uuid_owner_and_debit_mutations(self):
+        before = self.observation(); pending = copy.deepcopy(before)
+        pending.update(reuse=False, acknowledged=False)
+        for field in ("owner_id", "snapshot", "resource_escrow"):
+            changed = copy.deepcopy(pending); changed["source"]["RocketEntityData"][field] = {}
+            with self.subTest(field=field), self.assertRaises(cuts.smoke.SmokeError):
+                cuts.verify_n3c_observation(before, changed, "pending")
+        for edit in (lambda e: e.update(UUID=ident(99)),
+                     lambda e: e["RocketEntityData"]["flight_data"]["fuel"].update(committed_debits=[99])):
+            changed = copy.deepcopy(pending); edit(changed["source"])
+            with self.assertRaises(cuts.smoke.SmokeError):
+                cuts.verify_n3c_observation(before, changed, "pending")
+
+    def test_n3c_disk_requires_full_pad_authority_and_stationary_resources_on_both_restarts(self):
+        row, removed = self.removal(); row["case"] = "N2_PAD_MOVED"
+        row["before_removal"]["pads"] = dict(schema=1, next_epoch=1,
+                pads=[dict(pad=ident(4), owner=ident(30), physical=ident(5), epoch=0, claim=ident(2))])
+        removed["pads"] = copy.deepcopy(row["before_removal"]["pads"])
+        removed["pads"]["pads"][0].pop("claim")
+        returned = self.returned(removed, row)
+        for restart in (1, 2):
+            cuts.verify_n3c_disk(returned, row, restart)
+            for key, value in (("claim", ident(2)), ("owner", ident(99)), ("epoch", 9)):
+                broken = copy.deepcopy(returned); broken["pads"]["pads"][0][key] = value
+                with self.subTest(restart=restart, key=key), self.assertRaises(cuts.smoke.SmokeError):
+                    cuts.verify_n3c_disk(broken, row, restart)
+
+    def reconciliation(self):
+        before = dict(schema=1, next_epoch=1, pads=[dict(pad=ident(4), owner=ident(30),
+                physical=ident(5), epoch=0, claim=ident(2))])
+        after = copy.deepcopy(before); after["pads"][0]["claim"] = ident(88)
+        clean = copy.deepcopy(before); clean["pads"][0].pop("claim")
+        return dict(old_transfer=ident(2), contender=ident(88), absence_acknowledged=True,
+                    accepted=True, repeat=True, competing=False, old_release=False, cleanup=True,
+                    before=before, after_claim=after, after_retries=copy.deepcopy(after), after_cleanup=clean)
+
+    def test_reconciliation_counts_one_acknowledged_old_claim_transition(self):
+        proof = self.reconciliation()
+        self.assertEqual(1, cuts.verify_n3c_reconciliation(proof, proof["before"]))
+        for key in ("absence_acknowledged", "accepted", "repeat", "competing", "old_release", "cleanup"):
+            broken = copy.deepcopy(proof); broken[key] = not broken[key]
+            with self.subTest(key=key), self.assertRaises(cuts.smoke.SmokeError):
+                cuts.verify_n3c_reconciliation(broken, proof["before"])
+
+    def test_reconciliation_rejects_changed_authority_or_a_second_release(self):
+        proof = self.reconciliation()
+        for stage in ("before", "after_claim", "after_retries", "after_cleanup"):
+            for key, value in (("owner", ident(99)), ("claim", ident(99)), ("epoch", 9)):
+                broken = copy.deepcopy(proof); broken[stage]["pads"][0][key] = value
+                with self.subTest(stage=stage, key=key), self.assertRaises(cuts.smoke.SmokeError):
+                    cuts.verify_n3c_reconciliation(broken, proof["before"])
+        broken = copy.deepcopy(proof); broken["contender"] = broken["old_transfer"]
+        with self.assertRaises(cuts.smoke.SmokeError):
+            cuts.verify_n3c_reconciliation(broken, proof["before"])
+
+    def test_reconciliation_requires_one_transition_and_two_stable_restarts(self):
+        proof = self.reconciliation()
+        first = dict(reconciliation=proof, pads=proof["after_cleanup"])
+        second = dict(pads=copy.deepcopy(proof["after_cleanup"]))
+        row = dict(before_removal=dict(pads=proof["before"]),
+                   starts=[{}, dict(observation=first), dict(observation=second)])
+        self.assertEqual(1, cuts.verify_n3c_restarts(row))
+        for edit in (lambda r: r["starts"].pop(),
+                     lambda r: r["starts"][1]["observation"].pop("reconciliation"),
+                     lambda r: r["starts"][2]["observation"].update(reconciliation=proof),
+                     lambda r: r["starts"][2]["observation"]["pads"]["pads"][0].update(claim=ident(2))):
+            broken = copy.deepcopy(row); edit(broken)
+            with self.assertRaises(cuts.smoke.SmokeError):
+                cuts.verify_n3c_restarts(broken)
 
 
 if __name__ == "__main__":

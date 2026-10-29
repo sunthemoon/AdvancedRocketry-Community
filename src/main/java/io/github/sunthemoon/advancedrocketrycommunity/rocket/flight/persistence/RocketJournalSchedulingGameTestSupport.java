@@ -6,7 +6,48 @@ import net.minecraft.gametest.framework.GameTestServer;
 
 /** GameTest-only scheduling fixtures, including a bounded root for product-entry capacity checks. */
 public final class RocketJournalSchedulingGameTestSupport {
+    public static final String RELEASE_PROPERTY = "advancedrocketrycommunity.n3cProbe";
     private RocketJournalSchedulingGameTestSupport() { }
+
+    static ReleaseLimit lower(boolean allowed, java.util.function.Supplier<RocketTransferSavedData> current,
+                              java.util.function.IntFunction<RocketTransferSavedData> replace, int limit) {
+        if (!allowed) { throw new IllegalStateException("Not a release-test fixture"); }
+        if (limit < 1 || limit > RocketJournalSchedule.LIMIT) { throw new IllegalArgumentException("Invalid fixture limit"); }
+        return new ReleaseLimit(current, replace, replace.apply(limit));
+    }
+
+    /** W204: native equivalent of boundedFixture; a normal server is rejected before its root is read. */
+    public static ReleaseLimit lowerReleaseLimit(net.minecraft.server.MinecraftServer server, int limit) {
+        requireReleaseSelection(io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowTestEndpoints.enabled(server));
+        var previous = RocketTransferSavedData.get(server);
+        if (!previous.clean()) { throw new IllegalStateException("Fixture replacement requires a settled root"); }
+        return lower(true, () -> RocketTransferSavedData.existing(server),
+                bound -> replace(server, RocketTransferSavedData.get(server), bound), limit);
+    }
+
+    static void requireReleaseSelection(boolean endpointEnabled) {
+        if (!endpointEnabled || !Boolean.getBoolean(RELEASE_PROPERTY)) {
+            throw new IllegalStateException("W204 requires both the endpoint gate and its own release-test property");
+        }
+    }
+
+    public static final class ReleaseLimit implements AutoCloseable {
+        private final java.util.function.Supplier<RocketTransferSavedData> current;
+        private final java.util.function.IntFunction<RocketTransferSavedData> replace;
+        private final RocketTransferSavedData fixture;
+        private boolean closed;
+        private ReleaseLimit(java.util.function.Supplier<RocketTransferSavedData> current,
+                             java.util.function.IntFunction<RocketTransferSavedData> replace, RocketTransferSavedData fixture) {
+            this.current = current; this.replace = replace; this.fixture = fixture;
+        }
+        public RocketTransferSavedData journal() { return fixture; }
+        @Override public void close() {
+            if (!closed) {
+                if (current.get() == fixture) { replace.apply(RocketJournalSchedule.LIMIT); }
+                closed = true;
+            }
+        }
+    }
 
     /** Replace only a settled GameTest root, preserving its payload, to exercise product-entry capacity refusal. */
     public static RocketTransferSavedData boundedFixture(GameTestHelper helper, int limit) {

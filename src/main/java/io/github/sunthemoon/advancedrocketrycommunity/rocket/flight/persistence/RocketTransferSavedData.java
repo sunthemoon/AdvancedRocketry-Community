@@ -202,6 +202,7 @@ public final class RocketTransferSavedData extends SavedData {
                 data.mutationSequence++;
                 data.setDirty();
             }
+            data.leases.loaded(data.mutationSequence);
         } catch (RuntimeException exception) {
             data.entries.clear();
             data.firstMoonLanding = FirstEventOutbox.empty();
@@ -292,6 +293,12 @@ public final class RocketTransferSavedData extends SavedData {
 
     public Optional<RocketTransferRecord> find(UUID transferId) {
         return Optional.ofNullable(entries.get(Objects.requireNonNull(transferId, "transferId")));
+    }
+
+    /** Named-pad absence only: a validated load grants no writer checkpoint or other dependent effects. */
+    public boolean transferAbsenceAcknowledged(UUID transferId) {
+        return schedulingAvailable() && !failedWrite && find(transferId).isEmpty()
+                && leases.absenceAcknowledged(transferId, writeOutcome == WriteOutcome.UNACKNOWLEDGED);
     }
 
     public Optional<RocketTransferRecord> findByLogicalRocket(UUID logicalRocketId) {
