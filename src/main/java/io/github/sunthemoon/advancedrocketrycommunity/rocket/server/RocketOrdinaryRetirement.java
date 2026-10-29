@@ -392,7 +392,8 @@ final class RocketOrdinaryRetirement {
         }
         if (entry.site.destination() && entry.port.needsTicketStep()) {
             // On demand only and paced (RocketFillRetirementPacing); source-return sites keep their loaded-only order below.
-            long next = fills.admit(entry.logical(), now, activeAttempts() + sealedAttempts.getAsInt() > MAX_ATTEMPTS);
+            long next = fills.admit(entry.logical(), now, activeAttempts() + sealedAttempts.getAsInt() > MAX_ATTEMPTS,
+                    port.preparationOnly());
             if (next != now) { entry.notBefore = next; entry.releaseToken(); return; }
             entry.notBefore = now + RETRY_TICKS;
             // R89: I7's three opportunities also bound non-ticketable holds; a hold never grants an extra ticket.
