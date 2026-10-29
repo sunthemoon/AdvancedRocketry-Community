@@ -44,3 +44,21 @@ server. Delete the worktree's `build`, `.gradle` and `logs` afterwards.
 
 A verdict (APPROVE, APPROVE-WITH-CHANGES or BLOCK); findings with an ID (W199-R1, ...), severity, file and line,
 problem and suggested change; the commands you ran and their results; the SHA-256 of REVIEW.md on the last line.
+
+## Re-review of the R171 fixes (2026-10-29)
+
+A new session reviews `74aa6acbd..f896db873` (`6d8b61a2d`, `b4910fbb7`, `3806ef414` and the record) in the review
+worktree `D:/GitHub/arce-v180-w199-rereview`, a detached checkout of `f896db873`, and writes
+`D:/GitHub/ARCE-Task-Evidence/root-queue/W199-rereview/REVIEW.md`. The previous review is
+`D:/GitHub/ARCE-Task-Evidence/root-queue/W199-review/REVIEW.md` (SHA-256 `90232f45…7453`), with its probe in
+`review-tests/`.
+
+1. **W199-R1 is closed.** Rerun the probe: a loaded resident set without a witness falls back to the exact whole-root
+   validation and refuses as before. The witness is bounded, set only by a successful checked encode, kept by validated
+   mutations, and cleared by anything that could make it stale. Check `validateWriteBack` and `validateNewRecord`.
+2. **W199-R2:** the pacing keeps the 100-tick deadline, 200-tick retry, 400-tick timeout and assertions.
+3. **W199-R3:** the bootstrap order is explicit and the review's package selection passes in any order.
+4. **Nothing weakened**, and the measured gains still hold.
+
+Rerun the changed unit classes, the probe and the `rocket.flight.persistence`, `rocket.server` and `resourceescrow`
+packages. Output format as above, with findings numbered from W199-R11.
