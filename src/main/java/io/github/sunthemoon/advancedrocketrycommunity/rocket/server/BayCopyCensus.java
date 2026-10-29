@@ -41,6 +41,17 @@ final class BayCopyCensus {
 
     /** The predicate is the adapter's escrow-neutrality check; classification precedes those reads. */
     static Scan inspect(MinecraftServer server, RocketTransferRecord record, BayGroup group, Predicate<RocketEntity> neutral) {
+        return inspect(server, record, group, neutral, null);
+    }
+
+    /** Released receipts retain the same before/after authority while stale saved copies are normalized again. */
+    static Scan inspectReleased(MinecraftServer server, RocketTransferRecord record,
+                                io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceipt registered) {
+        return inspect(server, record, null, rocket -> RocketEscrowGate.bayNeutral(rocket, record.transferId()), registered);
+    }
+
+    private static Scan inspect(MinecraftServer server, RocketTransferRecord record, BayGroup group, Predicate<RocketEntity> neutral,
+                                io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceipt registered) {
         End source = End.of(server, record.sourceSnapshot(), false);
         End destination = End.of(server, record.destinationSnapshot(), true);
         var named = new IdentityHashMap<RocketEntity, List<End>>();
@@ -58,11 +69,12 @@ final class BayCopyCensus {
         for (var entry : named.entrySet()) {
             var rocket = entry.getKey();
             if (rocket.getUUID().equals(record.sourceEntityId()) && source != null && rocket.level() == source.level()) {
-                if (!source.recognizesSource(rocket, record, group)) { return Scan.refused("SOURCE_AUTHORITY_CONFLICT"); }
+                if (!source.recognizesSource(rocket, record, group, registered)) { return Scan.refused("SOURCE_AUTHORITY_CONFLICT"); }
                 continue;
             }
             if (rocket.getUUID().equals(record.sourceEntityId())) { return Scan.refused("UNEXPECTED_COPY"); }
-            var end = entry.getValue().stream().filter(value -> value.recognizes(rocket, record, group)).findFirst().orElse(null);
+            var end = entry.getValue().stream().filter(value -> value.contains(rocket) && value.authority(rocket, record, group, registered))
+                    .findFirst().orElse(null);
             if (end == null) { return Scan.refused("UNEXPECTED_COPY"); }
             copies.add(new Copy(rocket, end.destination()));
         }
@@ -127,13 +139,15 @@ final class BayCopyCensus {
             return named.size() >= RocketFlightLimits.MAX_TRANSFER_ENTITY_MATCHES;
         }
         boolean recognizes(RocketEntity rocket, RocketTransferRecord record, BayGroup group) {
-            return contains(rocket) && authority(rocket, record, group);
+            return contains(rocket) && authority(rocket, record, group, null);
         }
         /** W185-R1: T's exact source by its UUID, this Level, its exact column and altitude range; no box, no vertical clamp. */
-        boolean recognizesSource(RocketEntity rocket, RocketTransferRecord record, BayGroup group) {
-            return rocket.level() == level && rocket.getUUID().equals(record.sourceEntityId()) && authority(rocket, record, group);
+        boolean recognizesSource(RocketEntity rocket, RocketTransferRecord record, BayGroup group,
+                                 io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceipt registered) {
+            return rocket.level() == level && rocket.getUUID().equals(record.sourceEntityId()) && authority(rocket, record, group, registered);
         }
-        private boolean authority(RocketEntity rocket, RocketTransferRecord record, BayGroup group) {
+        private boolean authority(RocketEntity rocket, RocketTransferRecord record, BayGroup group,
+                                  io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceipt registered) {
             var origin = snapshot.sourceOrigin();
             return rocket.operational() && !rocket.isPassenger()
                     && rocket.assemblyTransactionId().filter(record.logicalRocketId()::equals).isPresent()
@@ -142,8 +156,10 @@ final class BayCopyCensus {
                     && rocket.getX() == origin.x() + .5D && rocket.getZ() == origin.z() + .5D
                     && rocket.getY() >= origin.y() && rocket.getY() <= origin.y() + RocketFlightLimits.FLIGHT_ALTITUDE_BLOCKS
                     && rocket.snapshot().filter(value -> value.snapshotId().equals(snapshot.snapshotId())
-                            && (destination ? group.destinationHalf(value.contentHash()) : group.sourceHalf(value.contentHash()))
-                            != BayGroup.Half.OUTSIDE).isPresent();
+                            && (group == null ? value.contentHash().equals(snapshot.contentHash()) || registered != null
+                                    && value.contentHash().equals(destination ? registered.dstBefore() : registered.srcBefore())
+                                    : (destination ? group.destinationHalf(value.contentHash()) : group.sourceHalf(value.contentHash()))
+                                            != BayGroup.Half.OUTSIDE)).isPresent();
         }
     }
 }

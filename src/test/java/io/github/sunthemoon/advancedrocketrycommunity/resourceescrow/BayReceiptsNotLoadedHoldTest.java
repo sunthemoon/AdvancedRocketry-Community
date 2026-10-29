@@ -46,8 +46,8 @@ final class BayReceiptsNotLoadedHoldTest {
         receipts.start(null, presence, file, 0); // the storage lookup returned no root: the file did not load
         assertEquals(EscrowAdmissionAuthority.Delegate.State.NOT_LOADED, receipts.state());
         assertTrue(receipts.holds(inFlight, () -> journal), "a PREPARED record's rocket is held while NOT_LOADED");
-        assertFalse(receipts.holds(landing, () -> journal), "a record past PREPARED is not held");
-        assertFalse(receipts.holds(other, () -> journal), "a rocket without a record (landed or at rest) is free");
+        assertTrue(receipts.holds(landing, () -> journal), "W196: a released receipt can lock an advanced transfer");
+        assertTrue(receipts.holds(other, () -> journal), "W196: a released receipt can lock a landed rocket without T");
 
         CompoundTag invalid = new RocketTransferSavedData().save(new CompoundTag());
         invalid.putInt("schema_version", 99);

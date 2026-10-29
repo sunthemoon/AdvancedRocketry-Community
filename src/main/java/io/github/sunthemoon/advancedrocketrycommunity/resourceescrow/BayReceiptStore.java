@@ -106,12 +106,24 @@ public final class BayReceiptStore implements EscrowAdmissionAuthority.Store {
 
     /** Removes the receipt of {@code op}; its slots end only at the exact removal acknowledgement. */
     Admission remove(UUID op, Consumer<BayReceiptWriter.Outcome> completion) {
+        return remove(op, completion, false);
+    }
+
+    /** Isolated A1 cleanup only; released receipts still have no production retirement API. */
+    Admission removeReleasedFixture(net.minecraft.server.MinecraftServer server, UUID op, Consumer<BayReceiptWriter.Outcome> completion) {
+        if (!(server instanceof net.minecraft.gametest.framework.GameTestServer) || !server.isSameThread()) {
+            throw new IllegalStateException("Released receipt cleanup requires the GameTest server");
+        }
+        return remove(op, completion, true);
+    }
+
+    private Admission remove(UUID op, Consumer<BayReceiptWriter.Outcome> completion, boolean fixture) {
         owner(); Objects.requireNonNull(completion);
         if (unavailable()) { return Admission.of(Status.STORE_UNAVAILABLE); }
         BayReceipt before = current.get(op);
         if (inFlight(op, before == null ? null : before.satellite())) { return Admission.of(Status.BUSY); }
         if (before == null) { return Admission.of(Status.INVALID); }
-        if (before.released()) { return Admission.of(Status.RELEASED_LOCKED); }
+        if (before.released() && !fixture) { return Admission.of(Status.RELEASED_LOCKED); }
         current.remove(op);
         queue(new Mutation(op, before, null, completion));
         return Admission.of(Status.QUEUED);
@@ -124,13 +136,23 @@ public final class BayReceiptStore implements EscrowAdmissionAuthority.Store {
      * {@code completion} runs once, with the generation's outcome.
      */
     Admission putGroup(List<BayReceipt> group, Consumer<BayReceiptWriter.Outcome> completion) {
+        return putGroup(group, completion, false);
+    }
+
+    /** W196: only the existing released flag changes; every member already owns its retained and pending slots. */
+    Admission releaseGroup(List<BayReceipt> group, Consumer<BayReceiptWriter.Outcome> completion) {
+        return putGroup(group, completion, true);
+    }
+
+    private Admission putGroup(List<BayReceipt> group, Consumer<BayReceiptWriter.Outcome> completion, boolean release) {
         owner(); Objects.requireNonNull(completion);
         if (group.isEmpty()) { return Admission.of(Status.INVALID); }
         if (unavailable()) { return Admission.of(Status.STORE_UNAVAILABLE); }
         var ops = new HashSet<UUID>();
         for (BayReceipt next : group) {
             BayReceipt before = current.get(next.op());
-            if (!ops.add(next.op()) || before == null || before.released() || next.released() || !before.key().equals(next.key())
+            if (!ops.add(next.op()) || before == null || before.released()
+                    || (release ? !before.pending() || !next.equals(before.withReleased()) : next.released()) || !before.key().equals(next.key())
                     || !before.satellite().equals(next.satellite()) || !before.owner().equals(next.owner())) {
                 return Admission.of(Status.INVALID);
             }

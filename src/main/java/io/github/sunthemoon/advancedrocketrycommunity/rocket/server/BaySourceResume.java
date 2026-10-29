@@ -125,7 +125,7 @@ final class BaySourceResume {
      * TRANSIT for T at the bound altitude: kept when already there; a lagging COUNTDOWN or ASCENT image of this flight is
      * set to T's TRANSIT flight data restamped to now, at altitude with zero velocity. Anything else refuses.
      */
-    private static boolean establishTransit(RocketEntity source, RocketTransferRecord record, ServerLevel level) {
+    static boolean establishTransit(RocketEntity source, RocketTransferRecord record, ServerLevel level) {
         if (BayConsumptionSteps.inTransit(source, record)) { return true; }
         var flight = source.flightData().orElseThrow();
         boolean lagging = (flight.state() == RocketFlightState.COUNTDOWN || flight.state() == RocketFlightState.ASCENT)
@@ -147,7 +147,7 @@ final class BaySourceResume {
      * tombstone, and an available escrow root). Null once published; else the repair reason, with nothing added.
      */
     @Nullable
-    private String rebuild(ServerLevel level, RocketTransferRecord record) {
+    String rebuild(ServerLevel level, RocketTransferRecord record) {
         RocketEntity source = ModEntities.ROCKET.get().create(level);
         if (source == null) { return "SOURCE_REBUILD_REFUSED"; }
         source.setUUID(record.sourceEntityId());

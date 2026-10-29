@@ -1889,6 +1889,24 @@
       "reason": "W27d1 (section 8.1 test 8): the claim ends RELEASED_TO_ORDINARY before any receipt, so exact ordinary source recovery restores and acknowledges the stationary source."
     },
     {
+      "id": "w196-released-repair",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.server.BayTransferRecovery/",
+      "message": "ARCE_BAY_CLAIM transfer=[0-9a-f-]{36} logical=[0-9a-f-]{36} state=REPAIR reason=REGISTRY_SIGNATURE_CONFLICT",
+      "counts": {"bay_released_repair": 1},
+      "test": "BayReleasedGameTests.coherentRepairFliesWithItsPackageAndStaysLocked",
+      "reason": "W196 starts from an exactly acknowledged REPAIR receipt and checks that its coherent released flight retains the package and lock."
+    },
+    {
+      "id": "w196-released-blocked",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.server.BayTransferRecovery/",
+      "message": "ARCE_BAY_CLAIM transfer=[0-9a-f-]{36} logical=[0-9a-f-]{36} state=REPAIR reason=REGISTRY_BLOCKED",
+      "counts": {"bay_released_blocked": 1},
+      "test": "BayReleasedGameTests.blockedRegistryFlightUsesExactPermitsAndKeepsItsPendingCharge",
+      "reason": "W196 injects an unavailable registry view for one coherent claim, then checks exact released-flight permits without registration or retirement."
+    },
+    {
       "id": "w128r-r126-bay-hold-registry-blocked",
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.server.BayTransferRecovery/",

@@ -57,6 +57,7 @@ final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
     private final BayCopySteps copies;
     private final BaySourceProof proof;
     private final BaySourceResume resume;
+    private final BayReleasedFlight released;
     private final Map<UUID, String> audited = new HashMap<>();
     // Gated seams (W128R-R2): GameTests name single rockets; the native B10 case blocks the registry view for the session.
     private final java.util.Set<UUID> registryBlockedForTests = new java.util.HashSet<>();
@@ -74,6 +75,7 @@ final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
         proof = new BaySourceProof(server, session, this::offer, (claim, op) -> { if (cuts != null) { cuts.removing(claim, op); } },
                 claim -> cuts != null && cuts.stallAfterConsumption(claim), (claim, guard) -> cuts == null ? guard : cuts.guard(claim, guard));
         resume = new BaySourceResume(server);
+        released = new BayReleasedFlight(server, session, this::offer, resume, consumption);
     }
 
     private void offer(UUID logical) { if (!stopping) { queue.offer(logical); } }
@@ -110,6 +112,7 @@ final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
                 claim.repair("TRANSFER_AUTHORITY_CONFLICT"); audit(claim);
                 return Claim.held(State.REPAIR, claim.reason());
             }
+            if (released.delegated(record)) { return Claim.releasedFlight(); }
             var handoff = claims.report(logical, record.transferId());
             if (handoff.isPresent()) {
                 audited.remove(logical); forgetState(claim);
@@ -123,20 +126,35 @@ final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
         return Claim.unclaimed();
     }
 
-    /** HELD exactly when section 8's bay part holds L, so an UNCLAIMED record never meets it (N1). No permits in W27d1. */
+    /** The bay lock stays closed; W196 delegates only one exact released-flight action, never a global bypass. */
     @Override
     public Boundary beforeAction(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record, Action action) {
-        return BayReceipts.holdsRocket(server, record.logicalRocketId()) ? Boundary.held() : Boundary.unclaimed();
+        return BayReceipts.holdsRocket(server, record.logicalRocketId()) ? released.before(journal, record, action) : Boundary.unclaimed();
+    }
+
+    @Override
+    public void phaseEffect(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
+                            Action action, Runnable effect) {
+        if (BayReceipts.holdsRocket(server, record.logicalRocketId())) { released.effect(journal, record, action, effect); }
+        else { effect.run(); }
+    }
+
+    @Override
+    public boolean reconnectReleased(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
+                                     net.minecraft.server.level.ServerPlayer player) {
+        return released.reconnect(journal, record, player);
     }
 
     @Override
     public void escrowConflict(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record) {
+        released.conflict(record.logicalRocketId());
         claims.get(record.logicalRocketId()).ifPresent(claim -> { claim.repair("ESCROW_AUTHORITY_CONFLICT"); audit(claim); });
     }
 
     /** A join or leave of L's endpoint invalidates its group's D6/D7 proof (B16); the coordinator repeats D6. */
     @Override
     public void endpointChanged(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record) {
+        released.endpointChanged(record.logicalRocketId());
         claims.get(record.logicalRocketId()).flatMap(BayClaim::group).ifPresent(group -> {
             group.invalidate(); offer(record.logicalRocketId());
         });
@@ -175,17 +193,21 @@ final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
     void sourceChanged(RocketEntity rocket) {
         if (stopping) { return; }
         proof.changed(rocket);
+        rocket.assemblyTransactionId().ifPresent(released::changed);
         if (rocket.isAddedToWorld()) { endpointSeen(rocket); }
     }
 
-    void endpointSeen(RocketEntity rocket) { if (!stopping) { copies.seen(rocket, claims, this::offer); } }
-    boolean mountAllowed(net.minecraft.world.entity.Entity player, RocketEntity source) { return copies.mountAllowed(player, source); }
+    void endpointSeen(RocketEntity rocket) { if (!stopping) { copies.seen(rocket, claims, this::offer); released.seen(rocket); } }
+    boolean mountAllowed(net.minecraft.world.entity.Entity player, RocketEntity source) {
+        return copies.mountAllowed(player, source) || released.mountAllowed(player, source);
+    }
 
     /** ServerStoppingEvent, or the first observed shutdown: discard every waiting step and run no further effect. */
     void stop() {
         if (stopping) { return; }
         stopping = true; queue.close(); checks.clear();
         registration.clear(); publication.clear(); consumption.clear(); proof.clear();
+        released.clear();
         LOGGER.info("ARCE_BAY_STOPPED claims={} unresolved={}", claims.size(),
                 claims.claims().stream().filter(claim -> claim.stage() != BayClaim.Stage.ENDED).count());
     }
@@ -219,6 +241,8 @@ final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
         BayClaim claim = claims.get(logical).orElse(null);
         if (claim == null || shuttingDown()) { return BayStepQueue.Result.IDLE; }
         if (claim.stage() == BayClaim.Stage.ENDED) { audit(claim); return BayStepQueue.Result.IDLE; } // D7 ends it in a completion
+        var releaseStep = released.step(claim);
+        if (releaseStep != null) { audit(claim); return releaseStep; }
         BayStepQueue.Result result = switch (claim.stage()) {
             case GROUP -> groupStep(claim);
             case BAYS -> bayStep(claim);
@@ -448,12 +472,12 @@ final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
 
     /** One {@code ARCE_BAY_CLAIM} line per claim transition: INFO, or WARN while it holds for offline repair. */
     private void audit(BayClaim claim) {
-        String state = claim.stage() == BayClaim.Stage.ENDED
+        String state = released.active(claim.logical()) ? "RELEASED_FLIGHT" : claim.stage() == BayClaim.Stage.ENDED
                 ? (claim.handoff().orElseThrow() == BayClaim.Handoff.READY_SOURCE ? "READY_SOURCE" : "RELEASED_TO_ORDINARY")
                 : claim.hold().name();
         String line = state + ' ' + claim.reason();
         if (line.equals(audited.put(claim.logical(), line))) { return; }
-        if (claim.hold() == BayClaim.Hold.REPAIR && claim.stage() != BayClaim.Stage.ENDED) {
+        if (claim.hold() == BayClaim.Hold.REPAIR && claim.stage() != BayClaim.Stage.ENDED && !released.active(claim.logical())) {
             LOGGER.warn("ARCE_BAY_CLAIM transfer={} logical={} state={} reason={}", claim.transfer(), claim.logical(), state, claim.reason());
         } else {
             LOGGER.info("ARCE_BAY_CLAIM transfer={} logical={} state={} reason={}", claim.transfer(), claim.logical(), state, claim.reason());
@@ -466,6 +490,7 @@ final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
     private void forgetState(BayClaim claim) {
         registration.forget(claim); publication.forget(claim.logical()); consumption.forget(claim.logical());
         proof.forget(claim.logical()); resume.forget(claim.logical());
+        released.forget(claim.logical());
     }
 
     /** The loaded registry, unless a gated seam blocks this coordinator's view of it for the session or for L. */
