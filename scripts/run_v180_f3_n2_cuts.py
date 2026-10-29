@@ -181,6 +181,22 @@ def n3c_observe(process, entity, label, session):
     return read_journal(session / f"w204-{label}.dat")
 
 
+def n3c_modes(case):
+    seed = {"N2_REFUSED": "refused", "N2_STOPPED": "stopped"}.get(case, "removal")
+    return seed, "unknown" if case == "N2_PAD_UNKNOWN" else seed
+
+
+def initial_cut_property(case):
+    # The named UNKNOWN fixture arms FP6 only after its seed is acknowledged, inside arce-w204 act unknown.
+    return {"F3_HELD": "-Dadvancedrocketrycommunity.rocketJournalFailure=HOLD",
+            "F3_UNKNOWN": "-Darce.releaseTest.firstEventCut=FM6b",
+            "N2_MOVED": "-Dadvancedrocketrycommunity.rocketJournalFailure=N2_REMOVAL_MOVED",
+            "N2_UNKNOWN": "-Darce.releaseTest.firstEventCut=FP6",
+            "N2_PAD_MOVED": "-Dadvancedrocketrycommunity.rocketJournalFailure=N2_REMOVAL_MOVED",
+            **{name: "-Dadvancedrocketrycommunity.ordinaryRetirementCut=" + label
+               for name, label in N3_CUTS.items()}}.get(case)
+
+
 def cut_n3c(process, world, case, row):
     a = assemble(process, 0); launch(process, a)
     landing = re.compile(r"ARCE_TRANSFER_PHASE transfer=\S+ logical=" + a["logical"]
@@ -195,9 +211,9 @@ def cut_n3c(process, world, case, row):
     b = assemble(process, 1); row["flights"] = [a, b]
     for i, flight in enumerate(row["flights"]):
         flight["source_position"] = [384.5 + 32 * i, 101.0, 384.5]
-    mode = {"N2_REFUSED": "refused", "N2_STOPPED": "stopped"}.get(case, "removal")
+    seed_mode, mode = n3c_modes(case)
     begin = len(process.lines)
-    process.command(f"arce-w204 seed {b['entity']} {mode}")
+    process.command(f"arce-w204 seed {b['entity']} {seed_mode}")
     seeded = re.compile(r"ARCE_W204_SEEDED logical=" + b["logical"] + r" transfer=(\S+)")
     at = process.wait_for(seeded, 30, start_at=begin)
     b["transfer"] = seeded.search(process.lines[at]).group(1)
@@ -216,7 +232,7 @@ def cut_n3c(process, world, case, row):
     begin = len(process.lines); process.command("arce-w204 act " + mode)
     at = process.wait_for(re.compile("ARCE_W204_ACT mode=" + mode), 30, start_at=begin)
     row["request"] = process.lines[at].strip()
-    if mode != "removal":
+    if mode in ("refused", "stopped"):
         code = process.finish(timeout=30)
         if code != 75:
             raise smoke.SmokeError("Refusal observation did not halt with status 75")
@@ -224,11 +240,9 @@ def cut_n3c(process, world, case, row):
         marker = re.compile("ARCE_N2_REMOVAL_PAUSED boundary=after_atomic_move" if case == "N2_PAD_MOVED"
                             else "ARCE_TRANSFER_JOURNAL_UNACKNOWLEDGED retained dirty authority")
         at = process.wait_for(marker, 60, start_at=begin); row["boundary"] = process.lines[at].strip()
-        if case == "N2_PAD_UNKNOWN":
-            start = len(process.lines); process.command("arce progression release-test journal-proof")
-            at = process.wait_for(re.compile("first_event_fixture journal_proof result=.*outcome=UNKNOWN"), 20, start_at=start)
-            row["unknown_proof"] = process.lines[at].strip()
         row["pending"] = n3c_observe(process, b["entity"], "pending", world.parent)
+        if case == "N2_PAD_UNKNOWN" and row["pending"]["write_outcome"] != "UNKNOWN":
+            raise smoke.SmokeError("Named-pad removal did not report an explicit UNKNOWN outcome")
         process.process.kill(); code = process.finish(timeout=30)
         if code == 0:
             raise smoke.SmokeError("Named-pad cut did not hard kill")
@@ -505,14 +519,7 @@ def run_case(args, case, evidence):
                 command[1:1] = ["-Dadvancedrocketrycommunity.escrowCase=" + GOVERNED,
                                 "-Dadvancedrocketrycommunity.escrowScenario=" + ("start" if restart == 0 else "recover")]
             elif restart == 0:
-                prop = {"F3_HELD": "-Dadvancedrocketrycommunity.rocketJournalFailure=HOLD",
-                                   "F3_UNKNOWN": "-Darce.releaseTest.firstEventCut=FM6b",
-                                   "N2_MOVED": "-Dadvancedrocketrycommunity.rocketJournalFailure=N2_REMOVAL_MOVED",
-                                   "N2_UNKNOWN": "-Darce.releaseTest.firstEventCut=FP6",
-                                   "N2_PAD_MOVED": "-Dadvancedrocketrycommunity.rocketJournalFailure=N2_REMOVAL_MOVED",
-                                   "N2_PAD_UNKNOWN": "-Darce.releaseTest.firstEventCut=FP6",
-                                   **{name: "-Dadvancedrocketrycommunity.ordinaryRetirementCut=" + label
-                                      for name, label in N3_CUTS.items()}}.get(case)
+                prop = initial_cut_property(case)
                 if prop:
                     command.insert(1, prop)
             entry = dict(restart=restart, command=command, at=utc(),

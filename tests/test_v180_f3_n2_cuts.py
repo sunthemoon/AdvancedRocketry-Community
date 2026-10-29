@@ -192,6 +192,14 @@ class CutTests(unittest.TestCase):
         self.assertEqual({"BARRIER_STORE_BEFORE", "BARRIER_FORCE_BEFORE", "ORDINARY_REMOVAL_BEFORE"}, set(cuts.N3_CUTS.values()))
         self.assertFalse(set(cuts.N3_CUTS) & set(cuts.CASES))
 
+    def test_named_unknown_is_armed_after_seed_not_at_process_start(self):
+        self.assertIsNone(cuts.initial_cut_property("N2_PAD_UNKNOWN"))
+        self.assertEqual(("removal", "unknown"), cuts.n3c_modes("N2_PAD_UNKNOWN"))
+        self.assertEqual(("removal", "removal"), cuts.n3c_modes("N2_PAD_MOVED"))
+        self.assertEqual(("refused", "refused"), cuts.n3c_modes("N2_REFUSED"))
+        self.assertEqual(("stopped", "stopped"), cuts.n3c_modes("N2_STOPPED"))
+        self.assertEqual("-Darce.releaseTest.firstEventCut=FP6", cuts.initial_cut_property("N2_UNKNOWN"))
+
     def observation(self):
         row, disk = self.removal()
         return dict(source=disk["entities"][1]["entity"], journal=row["before_removal"]["journal"],

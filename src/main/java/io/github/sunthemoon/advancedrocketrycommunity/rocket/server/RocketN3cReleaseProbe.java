@@ -4,6 +4,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
+import io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent.FirstEventCutSeams;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowTestEndpoints;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.*;
@@ -37,6 +38,7 @@ public final class RocketN3cReleaseProbe {
     private RocketEntity source;
     private LandingPadEntry pad;
     private int completions;
+    private boolean unknownArmed;
 
     private RocketN3cReleaseProbe(MinecraftServer server) {
         EscrowTestEndpoints.requireEnabled(server);
@@ -120,8 +122,16 @@ public final class RocketN3cReleaseProbe {
     private void act(String mode) {
         EscrowTestEndpoints.requireEnabled(server);
         if (!journal().acknowledgedCurrent()) { throw new IllegalStateException("W204 seed not acknowledged"); }
-        if (!mode.equals("refused") && !mode.equals("stopped") && !mode.equals("removal")) {
+        if (!mode.equals("refused") && !mode.equals("stopped") && !mode.equals("removal") && !mode.equals("unknown")) {
             throw new IllegalArgumentException("Unknown W204 mode");
+        }
+        if (mode.equals("unknown")) {
+            if (!System.getProperty(FirstEventCutSeams.PROPERTY, "").isEmpty()) {
+                throw new IllegalStateException("W204 cannot replace another selected cut");
+            }
+            // FP6 selects the next post-DELIVERED record change. Seed insertion must already be acknowledged.
+            System.setProperty(FirstEventCutSeams.PROPERTY, "FP6"); unknownArmed = true;
+            AdvancedRocketryCommunity.LOGGER.info("ARCE_W204_UNKNOWN_ARMED transfer={}", record.transferId());
         }
         seedToken.close(); seedToken = null;
         if (mode.equals("refused")) { filler = journal().reserve(UUID.randomUUID()).orElseThrow(); }
@@ -131,7 +141,7 @@ public final class RocketN3cReleaseProbe {
                 RocketTransferReturnReason.COUNTDOWN_CANCELLED, new RocketRequestCompletion(() -> completions++, () -> { }));
         var after = snapshot(); after.putBoolean("accepted", accepted); write("after", after);
         AdvancedRocketryCommunity.LOGGER.info("ARCE_W204_ACT mode={} accepted={}", mode, accepted);
-        if (!mode.equals("removal")) {
+        if (mode.equals("refused") || mode.equals("stopped")) {
             // The observation and halt share this owner-thread callback: no intervening recovery tick or save.
             Runtime.getRuntime().halt(75);
         }
@@ -144,6 +154,7 @@ public final class RocketN3cReleaseProbe {
         root.put("pads", LandingPadIndex.get(server).save(new CompoundTag()));
         root.putBoolean("live", record != null && RocketSourceRetirementFixtures.live(service).contains(record.transferId()));
         root.putBoolean("acknowledged", journal().acknowledgedCurrent());
+        root.putString("write_outcome", journal().checkedWriteResult().outcome().name());
         root.putInt("completions", completions);
         return root;
     }
@@ -198,6 +209,10 @@ public final class RocketN3cReleaseProbe {
     }
 
     private void close() {
+        if (unknownArmed && "FP6".equals(System.getProperty(FirstEventCutSeams.PROPERTY))) {
+            System.clearProperty(FirstEventCutSeams.PROPERTY);
+        }
+        unknownArmed = false;
         if (seedToken != null) { seedToken.close(); seedToken = null; }
         if (filler != null) { filler.close(); filler = null; }
         if (lowered != null) { lowered.close(); lowered = null; }
