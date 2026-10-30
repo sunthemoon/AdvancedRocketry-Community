@@ -30,6 +30,12 @@ final class EscrowLoaderS6SettlementProbe {
         return BEFORE.equals(cut) && "K1".equals(hook) || REPLACED.equals(cut) && "K2".equals(hook)
                 || ACK.equals(cut) && "O1_ACK".equals(hook);
     }
+    static boolean manualHoldDurable(EscrowReason reason) {
+        // Idle is not acknowledgement: the ordinary ten-tick writer pace can defer this transition.
+        if (reason == EscrowReason.NONE) { return false; }
+        EscrowTags.require(reason == EscrowReason.OTHER_STATE, "Settlement manual repair setup was not durable");
+        return true;
+    }
     EscrowLoaderS6SettlementProbe(MinecraftServer server, String cut, boolean recovery) {
         EscrowTestEndpoints.requireEnabled(server);
         EscrowTags.require(selected(Boolean.getBoolean(EscrowTestEndpoints.HOOKS), cut)
@@ -86,8 +92,8 @@ final class EscrowLoaderS6SettlementProbe {
             return;
         }
         if (!baseline) {
-            EscrowTags.require(data.ledger().records().size() == 1 && data.ledger().records().get(0).reason() == EscrowReason.OTHER_STATE,
-                    "Settlement manual repair setup was not durable");
+            EscrowTags.require(data.ledger().records().size() == 1, "Settlement lost its pending manual hold");
+            if (!manualHoldDurable(data.ledger().records().get(0).reason())) { return; }
             // Seed for the operator experiment, before O1: not a post-cut save or a repair of its oracle.
             EscrowTags.require(server.saveEverything(false, true, true), "Settlement pre-decision baseline save refused");
             baseline = true; return;

@@ -5,9 +5,62 @@ import static org.junit.jupiter.api.Assertions.*;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import java.nio.file.Path;
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile;
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataPolicy;
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
 
 class EscrowLoaderS6SettlementProbeTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
+    @TempDir Path directory;
+    @Test void idleWriterDoesNotAcknowledgeAPacedManualTransition() throws Exception {
+        var op = EscrowTestFixtures.operation(1);
+        var initial = EscrowTestFixtures.ledger(op).generation(1);
+        Path file = directory.resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName());
+        CheckedSavedDataPolicy.atomic(ManagedSavedDataType.RESOURCE_ESCROW).replace(file, () -> EscrowCodec.encode(initial));
+        var data = ResourceEscrowSavedData.load(EscrowCodec.encode(initial));
+        var io = new AwaitedLedgerIo();
+        try (var coordinator = new EscrowCoordinator(data, io.writer(file, 1, CheckedSavedDataFile::atomicMove))) {
+            coordinator.tick(10); data.setDirty(); coordinator.autosave();
+            io.awaitWrites(); coordinator.tick(11);
+            assertTrue(coordinator.writerIdle());
+            coordinator.transition(op.id(), EscrowReason.OTHER_STATE); coordinator.persistTransitions();
+            assertTrue(coordinator.writerIdle());
+            assertEquals(EscrowReason.OTHER_STATE, coordinator.currentReason(data.ledger().records().get(0)));
+            assertEquals(EscrowReason.NONE, data.ledger().records().get(0).reason());
+            assertFalse(EscrowLoaderS6SettlementProbe.manualHoldDurable(data.ledger().records().get(0).reason()));
+            coordinator.tick(20); coordinator.persistTransitions();
+            assertFalse(coordinator.writerIdle());
+            io.awaitWrites(); coordinator.tick(21);
+            assertTrue(coordinator.writerIdle());
+            assertTrue(EscrowLoaderS6SettlementProbe.manualHoldDurable(data.ledger().records().get(0).reason()));
+        }
+    }
+    @Test void nativeUnacknowledgedImagesAreNotManualBaselines() throws Exception {
+        String replay = System.getenv("ARCE_S6_SETTLEMENT_REPLAY");
+        var paths = replay == null ? java.util.List.of(Path.of("tests/fixtures/loader_s6/settlement-seed.json"))
+                : java.util.Arrays.stream(replay.split(";")).map(Path::of).toList();
+        int count = 0;
+        for (var path : paths) {
+            var document = com.google.gson.JsonParser.parseString(java.nio.file.Files.readString(path)).getAsJsonObject();
+            var images = new java.util.ArrayList<com.google.gson.JsonObject>();
+            if (document.has("starts")) {
+                for (var start : document.getAsJsonArray("starts")) { images.add(start.getAsJsonObject().getAsJsonObject("image")); }
+            } else { images.add(document); }
+            for (var image : images) {
+                assertEquals("KNOWN", image.get("read_status").getAsString());
+                var records = image.getAsJsonObject("native").getAsJsonObject("ledger").getAsJsonArray("records");
+                assertEquals(1, records.size());
+                var record = records.get(0).getAsJsonObject();
+                assertEquals("PREPARED", record.get("phase").getAsString());
+                assertEquals("NONE", record.get("reason").getAsString());
+                assertFalse(EscrowLoaderS6SettlementProbe.manualHoldDurable(EscrowReason.valueOf(record.get("reason").getAsString())));
+                count++;
+            }
+        }
+        System.out.println("S6 unacknowledged native-image predicate checks=" + count);
+    }
     @Test void exactReleaseGateAndNoOtherFamily() {
         for (String side : java.util.List.of("BEFORE", "REPLACED", "ACK")) {
             String cut = "LF_S6_O1_" + side;
