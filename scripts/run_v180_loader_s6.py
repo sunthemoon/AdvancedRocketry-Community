@@ -25,7 +25,7 @@ from run_v060_flight_server_smoke import _server_command
 CASES = (oracle.E3,)
 HOOKS = shared.HOOK_FILES + tuple(
     "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/resourceescrow/" + name + ".java"
-    for name in ("EscrowLoaderS6Probe", "EscrowCargoContentionProbe"))
+    for name in ("EscrowLoaderS6Probe", "EscrowLoaderS6Recovery", "EscrowLoaderS6Accounting", "EscrowCargoContentionProbe"))
 HARNESSES = shared.HARNESS_FILES + ("scripts/run_v180_loader_s6.py", "scripts/loader_s6_oracle.py")
 
 
@@ -79,7 +79,7 @@ def run_cut(args, cut, evidence, owner, pins):
             start["pid"] = process.process.pid
             try:
                 marker = (r"ARCE_LOADER_S6_PAUSED cut=" + re.escape(cut) + r" hook=PROPAGATED_CLOSE_FAILURE"
-                          if not restart else r"ARCE_LOADER_MATRIX_RESULT cut=LF_M_K7(?:\s|$)")
+                          if not restart else r"ARCE_LOADER_S6_RESULT cut=" + re.escape(cut) + r"(?:\s|$)")
                 process.wait_for(re.compile(marker), args.startup_timeout)
                 start["checkpoint_reached"] = True
                 if restart:
@@ -95,6 +95,9 @@ def run_cut(args, cut, evidence, owner, pins):
                 row["findings"].append(dict(restart=restart, kind="PROCESS", error=str(failure)))
                 process.abort()
             lines = list(process.lines)
+            if any("S6 native image is not explained by its durable record" in line
+                   or "S6 endpoint is not an exact record-backed BEFORE/AFTER prefix" in line for line in lines):
+                row["unexplained_image"] = True
             process = None
             start["observations"] = [line for line in lines if "ARCE_LOADER_" in line or "ARCE_CARGO_CACHE_" in line]
             start["image"] = oracle.inspect(session / "world")
@@ -105,6 +108,9 @@ def run_cut(args, cut, evidence, owner, pins):
                     if kind == "RAW":
                         start["oracle"] = result
                         identity = result["identity"]
+                        if not restart and getattr(args, "require_initial_prefix", None):
+                            oracle.legacy.require(result["prefix"] == args.require_initial_prefix,
+                                                  "Selected initial prefix not reached: " + result["prefix"])
                 except SmokeError as failure:
                     row["findings"].append(dict(restart=restart, kind=kind, error=str(failure)))
             write(evidence / "result.json", row)
@@ -149,6 +155,10 @@ def run(args):
             print(f"{cut} attempt {attempt}: {row['status']}", flush=True)
             # Even a failed cut gives other workers their normal acquisition window.
             time.sleep(90)
+            if row.get("unexplained_image"):
+                report["status"] = "STOPPED_UNEXPLAINED_IMAGE"
+                write(evidence / "results.json", report)
+                return report
             if row["status"] == "PASS":
                 break
         else:
@@ -170,6 +180,7 @@ def main():
     parser.add_argument("--java", required=True)
     parser.add_argument("--case", action="append", choices=CASES)
     parser.add_argument("--startup-timeout", type=float, default=240)
+    parser.add_argument("--require-initial-prefix", choices=("K2", "K4", "K5", "K6"))
     args = parser.parse_args()
     return 0 if run(args)["status"] == "PASS_SELECTED" else 1
 

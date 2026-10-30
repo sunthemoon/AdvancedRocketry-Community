@@ -48,8 +48,7 @@ def check_observations(lines: list[str], restart: int) -> None:
     """Require the selected propagated failure, not merely a checkpoint label."""
     import re
     if restart:
-        legacy.require(sum("ARCE_LOADER_MATRIX_RESULT cut=LF_M_K7" in line for line in lines) == 1,
-                       "Missing/repeated real-loader recovery completion")
+        check_recovery_observations(lines)
         legacy.require(not any("/ERROR]" in line or "/FATAL]" in line for line in lines),
                        "Recovery logged ERROR/FATAL")
         return
@@ -63,3 +62,48 @@ def check_observations(lines: list[str], restart: int) -> None:
                    "E3 native diagnostics differ from its one own-store failure: " + repr(errors))
     legacy.require(any("java.nio.channels.ClosedChannelException" in line for line in lines),
                    "E3 did not propagate the selected closed channel")
+
+
+def check_recovery_observations(lines: list[str]) -> None:
+    """Check every tick's partition independently of the JVM observer's verdict."""
+    def fields(line, marker):
+        return dict(token.split("=", 1) for token in line.split(marker, 1)[1].strip().split())
+    rows = [fields(line, "ARCE_LOADER_S6_ACCOUNT ") for line in lines if "ARCE_LOADER_S6_ACCOUNT " in line]
+    results = [fields(line, "ARCE_LOADER_S6_RESULT ") for line in lines if "ARCE_LOADER_S6_RESULT " in line]
+    legacy.require(rows and len(results) == 1, "Missing/repeated S6 accounting or completion")
+    ticks, known = [], []
+    try:
+        for row in rows:
+            ticks.append(int(row["tick"]))
+            if row["known"] == "false":
+                legacy.require(all(row[k] == "UNKNOWN" for k in ("raw", "available", "held")),
+                               "UNKNOWN observation converted to numeric resources")
+                continue
+            legacy.require(row["known"] == "true", "Invalid observation read status")
+            known.append(row)
+            numbers = {key: int(row[key]) for key in ("records", "source", "destination", "source_available",
+                       "source_held", "destination_available", "destination_held", "in_transit")}
+            s, d = numbers["source"], numbers["destination"]
+            legacy.require(numbers["records"] in (0, 1), "Wrong recovery record count")
+            if numbers["records"]:
+                legacy.require(row["q"] == "1000" and row["spendable"] == "UNKNOWN",
+                               "Changed record or tentative credit counted as spendable")
+                legacy.require(s in (4000, 5000) and d in (0, 1000), "Resource image exceeds record authority")
+                expected = (4000, 1000 if s == 5000 else 0, 0, 1000 if d == 1000 else 0,
+                            1000 if (s, d) == (4000, 0) else 0)
+            else:
+                legacy.require(row["q"] == "null" and row["spendable"] == "5000" and (s, d) == (4000, 1000),
+                               "Changed completed resource total or held amount without record")
+                expected = (4000, 0, 1000, 0, 0)
+            actual = tuple(numbers[k] for k in ("source_available", "source_held", "destination_available",
+                                               "destination_held", "in_transit"))
+            legacy.require(actual == expected and s == actual[0] + actual[1] and d == actual[2] + actual[3],
+                           "Raw native does not equal available plus record-derived held")
+        legacy.require(ticks == list(range(ticks[0], ticks[-1] + 1)), "Missing or repeated recovery tick")
+        result = results[0]
+        legacy.require(known and rows[-1] == known[-1] and known[-1]["records"] == "0"
+                       and result == dict(cut=E3, observations=str(len(known)), total="5000", records="0",
+                                          markers="0", source_epoch="1", destination_epoch="1"),
+                       "Completion lacks exact final resources, epochs or observation count")
+    except (KeyError, ValueError, TypeError) as failure:
+        raise SmokeError(f"Malformed S6 accounting observation: {failure}") from failure

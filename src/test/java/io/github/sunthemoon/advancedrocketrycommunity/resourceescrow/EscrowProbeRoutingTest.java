@@ -66,7 +66,8 @@ class EscrowProbeRoutingTest {
                 }
             }
         }
-        assertEquals(522, seen.size());
+        assertEquals(523, seen.size()); // R185 registers the S6 real-loader producer.
+        assertTrue(seen.contains(EscrowLoaderS6Probe.E3));
         var expected = new HashSet<>(EscrowItemSettlementCuts.CASES.keySet()); expected.addAll(EscrowItemRecoveryCuts.CASES);
         assertEquals(expected, items); assertEquals(18, items.size());
     }

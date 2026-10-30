@@ -10,6 +10,7 @@ final class EscrowLoaderS6Probe {
     private final MinecraftServer server;
     private final boolean recovery;
     private final EscrowLoaderCutProbe fixture;
+    private final EscrowLoaderS6Recovery observer;
     private boolean injected;
 
     static boolean selected(boolean hooks, String name) { return hooks && E3.equals(name); }
@@ -17,9 +18,10 @@ final class EscrowLoaderS6Probe {
     EscrowLoaderS6Probe(MinecraftServer server, boolean recovery) {
         EscrowTestEndpoints.requireEnabled(server);
         this.server = server; this.recovery = recovery;
-        // K7 supplies the unchanged real-loader baseline, per-device gate and restart assertions.
+        // K7 supplies the unchanged real-loader baseline and per-device gate, not S6 recovery assertions.
         // Its success pause is not forwarded: this cut waits for the first propagated failed proof.
         fixture = new EscrowLoaderCutProbe(server, "LF_M_K7", recovery);
+        observer = recovery ? new EscrowLoaderS6Recovery(server) : null;
     }
 
     void startTick() { fixture.startTick(); }
@@ -35,6 +37,7 @@ final class EscrowLoaderS6Probe {
     }
 
     void tick() {
+        if (recovery) { observer.tick(); return; }
         fixture.tick();
         if (recovery || !injected) { return; }
         var data = ResourceEscrowSavedData.existing(server);

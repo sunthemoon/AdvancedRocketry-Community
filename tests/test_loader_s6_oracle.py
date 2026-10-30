@@ -128,6 +128,48 @@ class LoaderS6OracleTest(unittest.TestCase):
             self.assertEqual(2, run_cut.call_count)
             self.assertEqual([90, 90], [call.args[0] for call in sleep.call_args_list])
 
+    def recovery_lines(self):
+        return [
+            "ARCE_LOADER_S6_ACCOUNT tick=1 known=false reason=UNLOADED raw=UNKNOWN available=UNKNOWN held=UNKNOWN",
+            "ARCE_LOADER_S6_ACCOUNT tick=2 known=true records=1 q=1000 source=5000 destination=1000 source_available=4000 source_held=1000 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+            "ARCE_LOADER_S6_ACCOUNT tick=3 known=true records=0 q=null source=4000 destination=1000 source_available=4000 source_held=0 destination_available=1000 destination_held=0 in_transit=0 spendable=5000",
+            "ARCE_LOADER_S6_RESULT cut=" + oracle.E3 + " observations=2 total=5000 records=0 markers=0 source_epoch=1 destination_epoch=1",
+        ]
+
+    def test_recovery_log_requires_record_backed_every_tick_partition(self):
+        oracle.check_observations(self.recovery_lines(), 1)
+
+    def test_recovery_log_rejects_overcredit_or_fabricated_held_or_unknown_zero(self):
+        for old, new in (("destination=1000", "destination=1001"), ("q=1000", "q=999"),
+                         ("source_held=0", "source_held=1"), ("source=4000", "source=3999"),
+                         ("raw=UNKNOWN", "raw=0"), ("tick=3", "tick=4"),
+                         ("observations=2", "observations=3"), ("spendable=UNKNOWN", "spendable=6000")):
+            lines = [line.replace(old, new) for line in self.recovery_lines()]
+            with self.subTest(change=new), self.assertRaises(SmokeError):
+                oracle.check_observations(lines, 1)
+
+    def test_runner_stops_on_unexplained_record_backed_image(self):
+        from contextlib import nullcontext
+        import tempfile
+        from types import SimpleNamespace
+        from unittest.mock import patch
+        import run_v180_loader_s6 as runner
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            sessions = root / "sessions"
+            sessions.mkdir()
+            args = SimpleNamespace(source_commit="pinned", jar=root / "a.jar", session_parent=sessions,
+                                   evidence_dir=root / "evidence", case=[oracle.E3])
+            row = dict(status="FAILED", starts=[dict(restart=i) for i in range(3)], unexplained_image=True)
+            with patch.object(runner.shared, "assert_pin"), patch.object(runner.shared, "digest", return_value="hash"), \
+                    patch.object(runner.shared, "heavy_lock", side_effect=lambda _: nullcontext()), \
+                    patch.object(runner, "run_cut", return_value=row) as run_cut, patch.object(runner.time, "sleep"):
+                result = runner.run(args)
+            self.assertEqual("STOPPED_UNEXPLAINED_IMAGE", result["status"])
+            self.assertEqual(3, result["starts"])
+            self.assertEqual(2, result["restarts"])
+            self.assertEqual(1, run_cut.call_count)
+
 
 if __name__ == "__main__":
     unittest.main()
