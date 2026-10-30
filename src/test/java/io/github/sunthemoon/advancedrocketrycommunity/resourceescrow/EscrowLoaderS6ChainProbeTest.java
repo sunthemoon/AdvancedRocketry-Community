@@ -4,6 +4,33 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 
 class EscrowLoaderS6ChainProbeTest {
+    @Test void neutralSetupDecodesOfflineBeforeReplacingTheLockedLiveFixture() {
+        var order = new java.util.ArrayList<String>();
+        // The retained native failure: loading a locked live entity leaves its 2,000 mB payload unchanged.
+        int[] live = {1, 2_000};
+        int[] restored = EscrowLoaderS6ChainProbe.replaceFixture(live, () -> new int[] {0, -1}, candidate -> {
+            if (candidate[0] == 0) { candidate[1] = 0; }
+            order.add("decode");
+        }, old -> {
+            assertSame(live, old); assertEquals(2_000, old[1]); old[0] = 0; order.add("remove");
+        }, candidate -> {
+            assertNotSame(live, candidate); assertEquals(0, live[0]); assertEquals(0, candidate[1]);
+            candidate[0] = 1; order.add("publish"); return true;
+        });
+        assertNotSame(live, restored);
+        assertEquals(0, restored[1]);
+        assertEquals(java.util.List.of("decode", "remove", "publish"), order);
+    }
+    @Test void invalidOfflineInputNeverRemovesTheOldFixtureAndPublicationFailureIsNotSuccess() {
+        Object live = new Object();
+        assertThrows(IllegalArgumentException.class, () -> EscrowLoaderS6ChainProbe.replaceFixture(live,
+                Object::new, candidate -> { throw new IllegalArgumentException("invalid fixture"); },
+                old -> fail("Removal preceded validated offline input"), candidate -> fail("Published invalid input")));
+        assertThrows(IllegalArgumentException.class, () -> EscrowLoaderS6ChainProbe.replaceFixture(live,
+                Object::new, candidate -> { }, old -> { }, candidate -> false));
+        assertThrows(IllegalArgumentException.class, () -> EscrowLoaderS6ChainProbe.replaceFixture(live,
+                () -> live, candidate -> fail("Live object was sent through offline decode"), old -> { }, candidate -> true));
+    }
     @Test void normalizationSelectorsDoNotPauseAtTheO1BeforeCut() {
         for (String side : new String[] {"BEFORE", "AFTER"}) {
             for (String suffix : new String[] {"", "_BI"}) {

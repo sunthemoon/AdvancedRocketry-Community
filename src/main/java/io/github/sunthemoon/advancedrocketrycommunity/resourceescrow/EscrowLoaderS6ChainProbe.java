@@ -53,6 +53,16 @@ final class EscrowLoaderS6ChainProbe {
         EscrowTags.require(records <= 2 && epoch <= 2 && (epoch < 2 || records == 2), "S6 chain lost or added a fill before its hold");
         return records == 2 && epoch == 2;
     }
+    static <T> T replaceFixture(T current, java.util.function.Supplier<T> create,
+            java.util.function.Consumer<T> decode, java.util.function.Consumer<T> remove,
+            java.util.function.Predicate<T> publish) {
+        T replacement = java.util.Objects.requireNonNull(create.get());
+        EscrowTags.require(replacement != current, "S6 offline replacement reused the live fixture");
+        decode.accept(replacement);
+        remove.accept(current);
+        EscrowTags.require(publish.test(replacement), "S6 neutral fixture publication failed");
+        return replacement;
+    }
     EscrowLoaderS6ChainProbe(MinecraftServer server, String cut, boolean recovery) {
         EscrowTestEndpoints.requireEnabled(server);
         EscrowTags.require(selected(Boolean.getBoolean(EscrowTestEndpoints.HOOKS), cut)
@@ -169,9 +179,19 @@ final class EscrowLoaderS6ChainProbe {
             if (normalize) {
                 EscrowTags.require(neutral != null, "S6 normalization lost its pre-fill fixture");
                 // Deliberate manual-conflict input, before O1; never a recovery action or repair save.
-                rocket.load(neutral.copy());
-                EscrowTags.require(rocket.operational() && rocket.escrowSection().equals(RocketEscrowSection.neutral()),
-                        "S6 normalization input is not the unchanged neutral wrapper");
+                // A locked live entity correctly rejects Entity.load. Decode offline, then replace only this fixture.
+                replaceFixture(rocket, () -> io.github.sunthemoon.advancedrocketrycommunity.registry.ModEntities.ROCKET.get().create(level),
+                        candidate -> {
+                            candidate.load(neutral.copy());
+                            EscrowTags.require(!candidate.isAddedToWorld() && candidate.operational()
+                                    && candidate.getUUID().equals(rocket.getUUID())
+                                    && candidate.assemblyTransactionId().equals(rocket.assemblyTransactionId())
+                                    && candidate.ownerId().equals(rocket.ownerId())
+                                    && EscrowLoaderS6R2Probe.sameSnapshot(candidate.snapshot().orElseThrow(), rocket.snapshot().orElseThrow())
+                                    && candidate.escrowSection().equals(RocketEscrowSection.neutral())
+                                    && bank(candidate, false) == 0 && bank(candidate, true) == 0,
+                                    "S6 normalization offline input changed its neutral image or identity");
+                        }, RocketEntity::discard, level::addFreshEntity);
             }
             EscrowTags.require(server.saveEverything(false, true, true), "S6 chain pre-decision baseline refused");
             if (veto) { installVeto(); }
