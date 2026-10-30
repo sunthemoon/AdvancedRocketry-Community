@@ -1,7 +1,9 @@
 """S6 raw-state rejection tests; no native server is needed."""
 from pathlib import Path
+import copy
 import sys
 import unittest
+import uuid
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 import loader_s6_oracle as oracle
@@ -10,6 +12,10 @@ from run_dedicated_server_smoke import SmokeError
 
 
 class LoaderS6OracleTest(unittest.TestCase):
+    # Exact native op_id from R186 E5 attempt 1, start 0, healthy pair.
+    # Retained result.json SHA-256 is recorded in W211's R188 continuation.
+    NATIVE_OP = [1142397210, -1093579555, -2135548581, -1618621573]
+
     def image(self, cut="LF_M_K6", restart=0):
         return dict(read_status="KNOWN", native=fixture(cut, restart))
 
@@ -254,6 +260,98 @@ class LoaderS6OracleTest(unittest.TestCase):
         image = self.fairness_image(1)
         image["native"]["pairs"][1]["rocket"]["RocketEntityData"]["resource_escrow"]["markers"] = source["markers"]
         with self.assertRaises(SmokeError): oracle.check_e5(image, 1)
+
+    def native_markers_image(self):
+        image = self.fairness_image()
+        pair = image["native"]["pairs"][1]
+        for section, role in ((pair["loaders"][0]["arce_fluid_fuel_loader"]["resource_escrow"], "SOURCE"),
+                              (pair["rocket"]["RocketEntityData"]["resource_escrow"], "DESTINATION")):
+            section["markers"] = [dict(op_id=list(self.NATIVE_OP), seq=2, role=role, epoch_after=1)]
+        return image
+
+    def test_retained_native_integer_array_markers_are_counted_without_mutation(self):
+        image = self.native_markers_image()
+        original = copy.deepcopy(image)
+        result = oracle.check_e5(image, 0)
+        self.assertEqual([5000, 5000], result["pair_totals"])
+        self.assertIsNone(result["available_total"])
+        self.assertEqual(original, image)
+
+    def test_uuid_canonical_value_preserves_signed_bits_and_string_form(self):
+        # Independently computed from the four signed big-endian words, not by the oracle.
+        expected = str(uuid.UUID(bytes=b"".join(x.to_bytes(4, "big", signed=True) for x in self.NATIVE_OP)))
+        self.assertEqual(expected, oracle.canonical_uuid(self.NATIVE_OP))
+        self.assertEqual(expected, oracle.canonical_uuid(expected.upper()))
+        self.assertEqual(expected, oracle.canonical_uuid(tuple(self.NATIVE_OP)))
+        self.assertNotEqual(expected, oracle.canonical_uuid([*self.NATIVE_OP[:3], self.NATIVE_OP[3] + 1]))
+
+    def test_malformed_integer_arrays_cannot_alias_a_uuid(self):
+        for value in ([], self.NATIVE_OP[:3], self.NATIVE_OP + [0], [True, 0, 0, 0],
+                      [1.0, 0, 0, 0], [2**32, 0, 0, 0], [-2**31-1, 0, 0, 0], None):
+            with self.subTest(value=value), self.assertRaises(SmokeError):
+                oracle.canonical_uuid(value)
+
+    def test_mixed_native_and_text_markers_still_reject_conflicts_and_live_ids(self):
+        image = self.native_markers_image()
+        far_op = image["native"]["ledger"]["records"][0]
+        destination = image["native"]["pairs"][1]["rocket"]["RocketEntityData"]["resource_escrow"]["markers"][0]
+        text = str(uuid.UUID(bytes=b"".join(x.to_bytes(4, "big", signed=True) for x in self.NATIVE_OP)))
+        destination["op_id"] = text
+        oracle.check_e5(image, 0)
+        destination["op_id"] = str(uuid.UUID(int=uuid.UUID(text).int + 1))
+        with self.assertRaises(SmokeError): oracle.check_e5(image, 0)
+        destination["op_id"] = text
+        far_op["op_id"] = text
+        far = image["native"]["pairs"][0]
+        far["loaders"][0]["arce_fluid_fuel_loader"]["resource_escrow"]["markers"][0]["op_id"] = list(self.NATIVE_OP)
+        far["rocket"]["RocketEntityData"]["resource_escrow"]["markers"][0]["op_id"] = text
+        with self.assertRaises(SmokeError): oracle.check_e5(image, 0)
+
+    def test_all_identity_fields_normalize_without_changing_nonidentity_arrays(self):
+        # Includes native_binding and the string-form snapshot ID found in native images,
+        # plus the returned identity envelope used across JSON replay/restarts.
+        keys = ("UUID", "ledger_id", "op_id", "identity", "owner", "owner_id", "device",
+                "physical_rocket", "logical_rocket", "logical_rocket_id", "assembly_transaction_id",
+                "rocket_id", "physical", "logical", "snapshot", "snapshot_id", "ledger")
+        text = str(uuid.UUID(bytes=b"".join(x.to_bytes(4, "big", signed=True) for x in self.NATIVE_OP)))
+        raw = dict(nested=[{k: list(self.NATIVE_OP) for k in keys}], amount=list(self.NATIVE_OP),
+                   snapshot=dict(snapshot_id=text.upper()), hash=[1, 2, 3, 4])
+        result = oracle.normalize_ids(raw)
+        self.assertEqual({k: text for k in keys}, result["nested"][0])
+        self.assertEqual(dict(snapshot_id=text), result["snapshot"])
+        self.assertEqual(raw["amount"], result["amount"])
+        self.assertEqual(raw["hash"], result["hash"])
+        self.assertEqual(self.NATIVE_OP, raw["nested"][0]["op_id"])
+
+    def test_e3_and_e5_normalize_every_identity_before_legacy_checks_and_restart_comparison(self):
+        def convert(value, as_array):
+            # The synthetic fixture's labels stand for UUIDs. Keep non-ID strings unchanged.
+            labels = ("ledger", "op", "owner", "device0", "physical", "logical",
+                      "healthy-device", "healthy-physical", "healthy-logical")
+            if isinstance(value, dict): return {k: convert(v, as_array) for k, v in value.items()}
+            if isinstance(value, list): return [convert(v, as_array) for v in value]
+            if isinstance(value, str) and value in labels:
+                ident = uuid.uuid5(uuid.NAMESPACE_OID, value)
+                return [int.from_bytes(ident.bytes[i:i+4], "big", signed=True) for i in range(0, 16, 4)] if as_array else str(ident)
+            return value
+        for check, make in ((oracle.check_e3, lambda r: self.image("LF_M_K7" if r else "LF_M_K6", r)),
+                            (oracle.check_e5, self.fairness_image)):
+            with self.subTest(oracle=check.__name__):
+                initial = check(convert(make(0), True), 0)
+                expected = check(convert(make(0), False), 0)["identity"]
+                self.assertEqual(expected, initial["identity"])
+                for restart in (1, 2):
+                    result = check(convert(make(restart), False), restart, initial["identity"])
+                    self.assertEqual(expected, result["identity"])
+                # A consistently changed, valid native identity must still fail.
+                changed = convert(make(1), True)
+                old = convert("owner", True)
+                def replace(v):
+                    if v == old: return list(self.NATIVE_OP)
+                    if isinstance(v, dict): return {k: replace(x) for k, x in v.items()}
+                    if isinstance(v, list): return [replace(x) for x in v]
+                    return v
+                with self.assertRaises(SmokeError): check(replace(changed), 1, initial["identity"])
 
 
 if __name__ == "__main__":

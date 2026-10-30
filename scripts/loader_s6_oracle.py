@@ -6,11 +6,48 @@ record still owns the entire component: a raw sum is not spendable accounting.
 from __future__ import annotations
 
 from pathlib import Path
+from uuid import UUID
 import loader_cut_oracle as legacy
 from run_dedicated_server_smoke import SmokeError
 
 E3 = "LF_S6_E3_CACHE_CLOSE"
 E5 = "LF_S6_E5_UNLOADED"
+
+# UUID-valued native fields and the identity envelope returned by these oracles.
+# Do not recognize UUIDs by array length: coordinates, quantities and hashes are
+# not identities. `snapshot`, `ledger` and `identity` can also contain compounds.
+UUID_FIELDS = frozenset((
+    "UUID", "ledger_id", "op_id", "identity", "owner", "owner_id", "device",
+    "physical_rocket", "logical_rocket", "logical_rocket_id", "assembly_transaction_id",
+    "rocket_id", "physical", "logical", "snapshot", "snapshot_id", "ledger",
+    "transfer_id", "entity_id", "destination_entity_id", "active_transfer_id",
+))
+
+
+def canonical_uuid(value):
+    """Preserve the 128 bits of native signed int[4] and textual UUIDs exactly."""
+    if isinstance(value, str):
+        try:
+            return str(UUID(value))
+        except ValueError:
+            # Legacy opaque string identities retain exact equality. They cannot
+            # alias an int-array UUID; representation normalization adds no IDs.
+            return value
+    legacy.require(isinstance(value, (list, tuple)) and len(value) == 4
+                   and all(type(word) is int and -(2**31) <= word < 2**31 for word in value),
+                   "Malformed native UUID; expected four signed 32-bit integers")
+    return str(UUID(bytes=b"".join(word.to_bytes(4, "big", signed=True) for word in value)))
+
+
+def normalize_ids(value):
+    """Copy an observation, canonicalizing only named identity fields."""
+    if isinstance(value, dict):
+        return {key: (canonical_uuid(item) if key in UUID_FIELDS and not isinstance(item, dict)
+                      and not (key == "ledger" and item is None) else normalize_ids(item))
+                for key, item in value.items()}
+    if isinstance(value, list):
+        return [normalize_ids(item) for item in value]
+    return value
 
 
 def inspect(world: Path, cut=E3) -> dict:
@@ -25,7 +62,8 @@ def check_e3(image, restart, identity=None):
     legacy.require(restart in (0, 1, 2), "Invalid restart index")
     legacy.require(image.get("read_status") == "KNOWN" and isinstance(image.get("native"), dict),
                    "UNKNOWN native read cannot establish availability or zero loss")
-    disk = image["native"]
+    disk = normalize_ids(image["native"])
+    identity = normalize_ids(identity)
     try:
         legacy.require(len(disk["loaders"]) == 1, "E3 requires exactly one real fuel loader")
         tank = disk["loaders"][0]["arce_fluid_fuel_loader"]["tank"]["Amount"]
@@ -145,7 +183,8 @@ def check_e5(image, restart, identity=None):
     legacy.require(restart in (0, 1, 2) and image.get("read_status") == "KNOWN"
                    and isinstance(image.get("native"), dict), "E5 UNKNOWN is not zero loss")
     try:
-        disk = image["native"]
+        disk = normalize_ids(image["native"])
+        identity = normalize_ids(identity)
         ledger, pairs = disk["ledger"], disk["pairs"]
         legacy.require(len(pairs) == 2 and ledger["issued_through"] == 2 and ledger["writer_generation"] >= 2
                        and len(ledger["records"]) == (0 if restart else 1), "E5 did not retain only the unloaded fill")
