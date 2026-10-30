@@ -191,7 +191,7 @@ def run_cut(args, cut, evidence, owner, pins):
                 raw_check = lambda image, restart, identity: chain.check(image, restart, identity, cut)
             if cut in flight.CASES:
                 raw_check = lambda image, restart, identity: flight.check(image, restart, identity, cut,
-                        flight.witness(lines, cut) if not restart else None)
+                        flight.witness(lines, cut) if not restart else flight.recovery_witness(lines, cut))
             for kind, check in (("LOG", lambda: check_log(lines, restart, cut,
                                       identity["op_id"] if cut == oracle.G3_L2 and restart and identity else None, start["image"])),
                                 ("RAW", lambda: raw_check(start["image"], restart, identity))):

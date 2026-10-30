@@ -66,7 +66,7 @@ class EscrowProbeRoutingTest {
                 }
             }
         }
-        assertEquals(581, seen.size()); // R200: nine F1 cuts and pre-replacement F2, with the existing producer rules.
+        assertEquals(583, seen.size()); // R201: adds F2 REPLACED/ACK under the unchanged producer rules.
         assertTrue(seen.contains(EscrowLoaderS6Probe.E3));
         var expected = new HashSet<>(EscrowItemSettlementCuts.CASES.keySet()); expected.addAll(EscrowItemRecoveryCuts.CASES);
         assertEquals(expected, items); assertEquals(18, items.size());

@@ -104,6 +104,12 @@ final class EscrowLoaderS6FlightProbe {
             AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_S6_FLIGHT_ARMED cut={} digest={}", cut, stagedArmDigest(payload));
             armedObserved = true;
         }
+        if (cut.equals("LF_S6_F2_ACK") && point.equals("F2_PREPARED_ACK")) {
+            var journalFile = server.getWorldPath(LevelResource.ROOT).resolve("data")
+                    .resolve(ManagedSavedDataType.ROCKET_TRANSFERS.fileName());
+            EscrowLoaderS6JournalProbe.observeTransfer(cut,
+                    CheckedSavedDataFile.readPayload(journalFile, ManagedSavedDataType.ROCKET_TRANSFERS).orElseThrow());
+        }
         if (boundary(cut, point, proof, arm)) { EscrowLoaderS6JournalProbe.pause(cut, point); }
     }
 
@@ -172,6 +178,10 @@ final class EscrowLoaderS6FlightProbe {
                 && flight.state() == (forward ? RocketFlightState.LANDED : RocketFlightState.ASSEMBLED)
                 && survivor.getX() == (forward ? 80.5 : 64.5) && survivor.getY() == 100 && survivor.getZ() == 64.5
                 && RocketEscrowGate.idle(survivor), "S6 flight restart changed its authorized survivor");
+        if (forward) {
+            AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_S6_FLIGHT_SURVIVOR cut={} landed_time={} digest={}",
+                    cut, flight.stateStartedGameTime(), EscrowGovernedEnvelope.digest(EscrowGovernedEnvelope.capture(survivor)));
+        }
         AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_S6_FLIGHT_RESULT cut={} source={} logical={} owner={} ledger={} bank={} epoch={} debits={} journal=0 armed=0",
                 cut, survivor.getUUID(), flight.logicalRocketId(), survivor.ownerId().orElseThrow(), data.ledger().id(),
                 bank(survivor, false), survivor.escrowSection().epoch(), flight.fuel().committedDebits().size());

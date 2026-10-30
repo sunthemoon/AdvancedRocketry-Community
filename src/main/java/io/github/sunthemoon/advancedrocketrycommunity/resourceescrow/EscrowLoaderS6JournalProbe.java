@@ -18,6 +18,19 @@ public final class EscrowLoaderS6JournalProbe {
             "LF_S6_F8_JOURNAL_BEFORE", "LF_S6_F8_JOURNAL_REPLACED");
     private EscrowLoaderS6JournalProbe() { }
 
+    static String transferDigest(CompoundTag payload) {
+        var rows = payload.getList("transfers", Tag.TAG_COMPOUND);
+        EscrowTags.require(rows.size() == 1, "S6 PREPARED observation requires exactly one T");
+        var row = rows.getCompound(0);
+        EscrowTags.require(row.getInt("schema_version") == 3 && row.getString("phase").equals("PREPARED")
+                && row.contains("native_transfer", Tag.TAG_COMPOUND), "S6 PREPARED observation changed its authority");
+        return EscrowNativeEnvelope.digest(row);
+    }
+
+    static void observeTransfer(String cut, CompoundTag payload) {
+        AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_S6_FLIGHT_TRANSFER cut={} digest={}", cut, transferDigest(payload));
+    }
+
     public static CheckedSavedDataPolicy journalPolicy(MinecraftServer server, CheckedSavedDataPolicy policy) {
         if (server == null) { return policy; }
         return policy(policy, Boolean.getBoolean(EscrowTestEndpoints.HOOKS),
@@ -37,6 +50,7 @@ public final class EscrowLoaderS6JournalProbe {
             boolean matches = transition(cut, previous, candidate);
             if (matches && cut.endsWith("_BEFORE")) { pause.accept(cut); }
             policy.committer().commit(staged, target);
+            if (matches && cut.equals("LF_S6_F2_REPLACED")) { observeTransfer(cut, candidate); }
             if (matches && cut.endsWith("_REPLACED")) { pause.accept(cut); }
         });
     }

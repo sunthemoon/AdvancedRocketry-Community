@@ -14,11 +14,15 @@ F1 = tuple("LF_S6_F1_" + side for side in (
     "STORE_BEFORE", "STORE_AFTER", "FORCE_BEFORE", "FORCE_AFTER", "READBACK_BEFORE", "READBACK_AFTER",
     "ARM_BEFORE", "ARM_REPLACED", "ARM_ACK"))
 F2 = ("LF_S6_F2_BEFORE", "LF_S6_F2_REPLACED", "LF_S6_F2_ACK")
-CASES = F1 + F2[:1]
+CASES = F1 + F2
 
 
 def armed_digest(arm):
     """Codec-defined full Armed NBT; the witness is captured from the checked staged file."""
+    return integrity.digest(armed_tag(arm))
+
+
+def armed_tag(arm):
     expected = {"v", "ledger", "l", "o", "src", "epoch", "t", "serial", "g", "binding", "launch", "source",
                 "dest", "d", "j", "release", "outcome"}
     legacy.require(set(arm) == expected and set(arm["j"]) == {"rocket_id", "journal_generation", "journal_digest"},
@@ -37,10 +41,13 @@ def armed_digest(arm):
                 journal_digest=nbt.Tag(nbt.BYTES, bytes(value["journal_digest"]))))
         else:
             fields[key] = integrity.scalar(value, nbt.STRING if key == "outcome" else nbt.INT if key == "v" else nbt.LONG)
-    return integrity.digest(integrity.compound(fields))
+    return integrity.compound(fields)
 
 
 def check(image, restart, identity=None, cut=F1[0], witness=None):
+    if cut in F2[1:]:
+        import loader_s6_forward
+        return loader_s6_forward.check(image, restart, identity, cut, witness)
     legacy.require(cut in F1 + F2[:1] and restart in (0, 1, 2), "Unimplemented flight selection")
     legacy.require(image.get("read_status") == "KNOWN" and isinstance(image.get("native"), dict),
                    "UNKNOWN flight read is not zero loss")
@@ -161,6 +168,9 @@ def witness(lines, cut):
         legacy.require(len(staged) == len(baselines) == len(pauses) == 1 and staged[0][1]
                        and baselines[0] < staged[0][0] < pauses[0], "Missing/misordered checked staged ARMED witness")
         result["armed_digest"] = staged[0][1].group(1)
+    if cut in F2[1:]:
+        import loader_s6_forward
+        result["transfer_digest"] = loader_s6_forward.transfer_witness(lines, cut)
     return result
 
 
@@ -168,9 +178,18 @@ def check_logs(lines, restart, cut):
     legacy.require(not any("/ERROR]" in line or "/FATAL]" in line for line in lines), "Unexpected flight ERROR/FATAL")
     prefix = "ARCE_LOADER_S6_FLIGHT_" + ("RESULT" if restart else "PAUSED") + " cut=" + cut + " "
     legacy.require(sum(prefix in line for line in lines) == 1, "Missing/duplicate selected flight observation")
+    if restart and cut in F2[1:]:
+        recovery_witness(lines, cut)
     if not restart:
         witness(lines, cut)
         hook = {"LF_S6_F1_ARM_BEFORE": "K8", "LF_S6_F1_ARM_REPLACED": "K9", "LF_S6_F1_ARM_ACK": "F1_ARM_ACK",
-                "LF_S6_F2_BEFORE": "JOURNAL_COMMIT"}.get(cut, "BARRIER_" + cut.removeprefix("LF_S6_F1_"))
+                "LF_S6_F2_BEFORE": "JOURNAL_COMMIT", "LF_S6_F2_REPLACED": "JOURNAL_COMMIT",
+                "LF_S6_F2_ACK": "F2_PREPARED_ACK"}.get(cut, "BARRIER_" + cut.removeprefix("LF_S6_F1_"))
         legacy.require(sum(line.rstrip("\r\n").endswith(prefix + "hook=" + hook) for line in lines) == 1,
                        "Wrong flight checkpoint hook")
+
+
+def recovery_witness(lines, cut):
+    if cut not in F2[1:]: return None
+    import loader_s6_forward
+    return loader_s6_forward.recovery_witness(lines, cut)
