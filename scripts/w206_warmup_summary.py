@@ -69,7 +69,7 @@ def summarize(root):
     data = json.loads((root / "w206-result.json").read_text())
     ticks = [json.loads(line) for line in (root / "w206-ticks.jsonl").read_text().splitlines()]
     events = [json.loads(line) for line in (root / "w206-events.jsonl").read_text().splitlines()]
-    measured = [r for r in ticks if r["phase"] not in ("SETUP", "SEED", "RECOVER")]
+    measured = [r for r in ticks if r["phase"] not in ("SETUP", "SEED", "RECOVER", "REPEAT_SETUP")]
     samples = json.loads((root / "host-samples.json").read_text())
     host = host_load(samples)
     host["scope"] = "One-second samples over the entire native process, including startup/setup and shutdown; not only measured phases."

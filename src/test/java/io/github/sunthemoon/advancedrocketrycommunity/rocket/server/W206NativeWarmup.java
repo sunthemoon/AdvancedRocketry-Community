@@ -40,6 +40,7 @@ import net.minecraftforge.fml.common.Mod;
 @Mod.EventBusSubscriber(modid = ModIdentity.MOD_ID)
 public final class W206NativeWarmup {
     private static final TicketType<UUID> SOURCE = TicketType.create("w206_source_only", UUID::compareTo);
+    private static final TicketType<UUID> RESET = TicketType.create("w212_terminal_reset", UUID::compareTo);
     private final MinecraftServer server;
     private final ServerLevel earth, moon;
     private final String mode = System.getProperty("advancedrocketrycommunity.w206Mode", "flight");
@@ -365,15 +366,18 @@ public final class W206NativeWarmup {
         var end = record.destinationSnapshot().sourceOrigin();
         if (!resetLoaded) {
             // Reload only the completed fixture's end to remove its terminal survivor, then let it evict.
-            // This is setup, not preparation or measured product work, and adds no persistent/support ticket.
-            moon.getChunk(end.x() >> 4, end.z() >> 4); resetLoaded = true; return;
+            // A temporary entity-ticking ticket belongs only to RESET, never a measured request/end.
+            moon.getChunkSource().addRegionTicket(RESET, new ChunkPos(end.x() >> 4, end.z() >> 4), 2, key);
+            resetLoaded = true; return;
         }
         if (!resetRemoved) {
             var arrival = moon.getEntity(record.nativeTransfer().orElseThrow().armed().destination());
             if (arrival == null) { return; }
             require(arrival instanceof RocketEntity landed && landed.flightData().orElseThrow().state() == RocketFlightState.LANDED,
                     "Repeated-flight reset is not terminal");
-            arrival.discard(); resetRemoved = true; return;
+            arrival.discard();
+            moon.getChunkSource().removeRegionTicket(RESET, new ChunkPos(end.x() >> 4, end.z() >> 4), 2, key);
+            resetRemoved = true; return;
         }
         if (!W206Observation.chunks(moon).isEmpty() || !journal.retryChecked(server) || !data.bind(server).writerIdle()) { return; }
         var extent = W206Observation.extent(shape);
