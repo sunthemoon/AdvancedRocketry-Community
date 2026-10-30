@@ -252,6 +252,8 @@ HOLD and CLEANUP routes and the legacy fences add no ticket, and unloaded ends w
 
 ### 7.1 Purpose and what it keeps
 
+> **W207 implementation note (2026-10-30).** The synchronous surface/station terrain loading described below is historical W90 behavior, not W207's governed request behavior. W207 uses loaded-only selection and, when needed, bounded pre-selection TERRAIN preparation; non-governed loading and named-pad loaded-only selection remain unchanged. The original proposal below is retained as history. See [W207](W207.md) and the W207 amendment in [R-035](../../../11-RISK-REGISTER.md); neither note grants admission or Gate approval.
+
 - **The problem.** F1's preflight evaluates the whole launch boundary synchronously at request time
   (`EscrowFlightCheckpoint:49-57`, `:106-108`). F1 repeats it at ARMED capture and in the arm callback (`:57`, `:63`),
   and F2 repeats it before publication and the countdown permit (`EscrowGovernedPreparation:42-49`).
@@ -271,6 +273,8 @@ HOLD and CLEANUP routes and the legacy fences add no ticket, and unloaded ends w
   part of option (a).
 
 ### 7.2 When it starts and what it allocates
+
+> **W207 implementation note (2026-10-30).** The selected rectangle, distance-2 tickets and decision table below describe the selected stage. A governed request may first allocate TERRAIN capacity for the server-owned candidate footprint, using plain distance-0 (level-33) tickets with no selected-region reservation, named-pad claim or F1 acceptance. At most one pending selection advances per server tick. Selection success removes those tickets and starts the distance-2 (level-31) selected-margin WARMING stage, retaining the original allocation start, captured lifetime and initiating request. It does not launch; a later fresh launch request still repeats full admission and selection.
 
 The decision runs in `RocketTransferService.prepareLaunch`, governed branch, immediately before
 `EscrowGovernedPreparation.begin`, after all the existing validation:
@@ -337,6 +341,8 @@ becomes a checked pre-F2 cancellation after ARMED was written (question 1).
 
 ### 7.3 Cap, one per rocket, lifetime and repeated requests
 
+> **W207 implementation note (2026-10-30).** TERRAIN counts with WARMING/READY/BOUND toward the same eight-global/two-per-owner ceilings and configured lower caps. The captured 200-to-600-tick allocation deadline spans both stages without renewal. Adding the selected set once means once on entering that stage, not once for all stages: candidate-set changes and promotion remove and add tickets. Vanilla expiry is a per-ticket backstop measured from that ticket's addition, so the historical allocation-age-601 conclusion below does not hold across stages; explicit release still uses the original allocation deadline. Matching unresolved TERRAIN requests return loading without repeating unavailable terrain checks, renewing or launching; its initiating request ID remains rejected through promotion. Lifecycle release also covers TERRAIN. The original proposal below is retained, not a replacement for R-035's scoped amendment.
+
 - **Global cap:** `MAX_DESTINATION_WARMUPS` = 8, counting every live state. Like the other flight limits it is a fixed
   constant in `RocketFlightLimits`. Eight matches the eight fixed pads per surface Level and the eight-flight reference
   workload.
@@ -358,6 +364,8 @@ becomes a checked pre-F2 cancellation after ARMED was written (question 1).
   after the old one has ended, and only from a new request.
 
 ### 7.4 Keeping the pad, and continuation 53's pending reservations
+
+> **W207 implementation note (2026-10-30).** The reservation, kept-pad recheck and no-gap statements below apply only once selection succeeds and the selected warm-up starts. TERRAIN owns capacity and candidate-footprint tickets, not a reserved landing region or named-pad claim. Promotion establishes the selected reservation without resetting the allocation clock; the earlier TERRAIN interval is not part of the reserved interval. The later fresh request still revalidates terrain, occupancy, reservations and admission. Named-pad rules below are unchanged.
 
 - **Reservation.** W reserves its exact destination region in RAM. Continuation 53 (`453094c3`) feeds every pad path
   from `RocketTransferService.landingReservations(journal, pending)`: the journal's destination regions plus
