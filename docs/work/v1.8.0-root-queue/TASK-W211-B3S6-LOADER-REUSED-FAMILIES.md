@@ -108,9 +108,8 @@ The third session (11:28 to 12:43) delivered `588c90ef6`: the diagnosis showed t
 complete unloaded state within a fixed 20-tick bound. Both revised E5 attempts then reached the fairness checkpoint
 (the healthy fill retired behind the unloaded far record) and all four restarts completed with exact totals and
 unchanged identities, but both failed in `scripts/loader_s6_oracle.py` `check_e5`: native UUIDs decode as integer
-lists, and `set(retired_ids)` raises `unhashable type: 'list'`. Root pushed the branch at 12:45 so that the hosted
-governance run judges the whole Python suite (the local discovery's 8 failures and 117 errors are to be compared with
-it).
+lists, and `set(retired_ids)` raises `unhashable type: 'list'`. Root pushed the branch at 12:45. (Correction, 13:30: the governance workflow, which runs the whole Python suite,
+runs only on the shared branch and main, so the branch gets only the regression run; see point 4.)
 
 A fresh session continues on the same branch and worktree from `588c90ef6`:
 
@@ -123,7 +122,9 @@ A fresh session continues on the same branch and worktree from `588c90ef6`:
 3. **Then a renewed E5 budget** (two attempts) on a fresh native run from committed source, then R2 and the tranches
    A3 to C as the TASK, R185 and R186 describe, committing tranche C's concrete selections and counts before its first
    launch.
-4. Read the hosted governance and regression results on the pushed branch: a Python failure that the shared head does
-   not have is yours to fix; one it already has is recorded, not fixed here.
+4. Read the hosted regression result on the pushed branch. For the whole Python suite, which only the shared branch's
+   governance runs (on Linux): compare your local discovery's failures and errors, test by test, with the same
+   discovery on your base `e00ef1ff2` in a detached checkout on this machine. A failure only on your branch is yours to
+   fix; one the base also has is recorded, not fixed here.
 
 The rest of this TASK is unchanged.
