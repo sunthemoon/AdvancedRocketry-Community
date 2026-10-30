@@ -9,6 +9,7 @@ import time
 import uuid
 import zipfile
 import hashlib
+import subprocess
 
 import run_dedicated_server_smoke as smoke
 from run_v060_flight_server_smoke import _server_command
@@ -35,15 +36,22 @@ def archive_timing(session, output):
         source.unlink()
 
 
-def inventory(production, diagnostic):
+def inventory(production, diagnostic, attribution=False):
     with zipfile.ZipFile(production) as a, zipfile.ZipFile(diagnostic) as b:
         aa = {n: hashlib.sha256(a.read(n)).hexdigest() for n in a.namelist()}
         bb = {n: hashlib.sha256(b.read(n)).hexdigest() for n in b.namelist()}
     additions = sorted(bb.keys() - aa.keys())
     changed = sorted(n for n in aa.keys() & bb.keys() if aa[n] != bb[n])
     require(not any("/W206" in n for n in aa), "Normal JAR contains diagnostic fixture")
-    require(additions and all("/W206" in n for n in additions), "Unexpected diagnostic additions")
-    require(not changed and not aa.keys() - bb.keys(), "Production entries differ")
+    require(additions and all("/W206" in n or attribution and "/W212Timing" in n for n in additions), "Unexpected diagnostic additions")
+    allowed = set()
+    if attribution:
+        from w212_instrument import PACKAGE, TARGETS
+        stems = {PACKAGE + "/" + p.removesuffix(".java") for p in TARGETS}
+        # Nested classes inherit changed source line tables even when their own bodies are untouched.
+        allowed = {n for n in changed if n.endswith(".class") and
+                   any(n == stem + ".class" or n.startswith(stem + "$") for stem in stems)}
+    require(set(changed) <= allowed and not aa.keys() - bb.keys(), "Unlisted production entries differ: " + repr(changed))
     return dict(production_sha256=sha256(production), diagnostic_sha256=sha256(diagnostic), added=additions, changed=changed)
 
 
@@ -84,8 +92,16 @@ def run_stage(args, session, output, mode, shape):
                     "-Dadvancedrocketrycommunity.w206Shape=" + shape,
                     "-Dadvancedrocketrycommunity.escrowConsumerTiming=true",
                     "-Xlog:gc*:file=gc.log:time,uptime,level,tags"]
+    command[1:1] = ["-Dadvancedrocketrycommunity.w212TimingOnly=" + str(args.transition_mode == "timing-only").lower(),
+                    "-Dadvancedrocketrycommunity.w212Repetitions=" + str(args.repetitions if mode == "flight" else 1)]
     if args.jfr:
-        command.insert(1, "-XX:StartFlightRecording=filename=profile.jfr,settings=profile,dumponexit=true")
+        settings = "profile"
+        if args.attribution:
+            settings = str(output.resolve() / "attribution.jfc")
+            jdk = Path(args.java).parent.parent
+            subprocess.run([str(jdk / "bin/jfr.exe"), "configure", "--input", str(jdk / "lib/jfr/profile.jfc"),
+                            "--output", settings, "jdk.ClassLoad#enabled=true", "jdk.ClassLoad#threshold=0ms"], check=True)
+        command.insert(1, f"-XX:StartFlightRecording=filename=profile.jfr,settings={settings},dumponexit=true")
     row = dict(source_commit=args.source_commit, mode=mode, shape=shape, command=command, status="RUNNING",
                started=time.time(), destination_region_files_before=sorted(str(p.relative_to(session)) for p in
                    (session / "world/dimensions/advancedrocketrycommunity/moon/region").glob("*.mca")))
@@ -107,6 +123,8 @@ def run_stage(args, session, output, mode, shape):
         if process is not None: process.abort()
         (output / "host-samples.json").write_text(json.dumps(samples, indent=2))
         for path in (session / "world").glob("w206-*"):
+            shutil.copy2(path, output / path.name)
+        for path in (session / "world").glob("w212-*"):
             shutil.copy2(path, output / path.name)
         for path in (session / "gc.log", session / "logs/latest.log", session / "logs/debug.log", session / "profile.jfr"):
             if path.is_file(): shutil.copy2(path, output / ("server-" + path.name))
@@ -144,11 +162,14 @@ def main():
     parser.add_argument("--source-commit", required=True)
     parser.add_argument("--lock-owner", required=True)
     parser.add_argument("--jfr", action="store_true")
+    parser.add_argument("--attribution", action="store_true")
+    parser.add_argument("--transition-mode", choices=("full", "timing-only"), default="full")
+    parser.add_argument("--repetitions", type=int, choices=range(1, 5), default=1)
     parser.add_argument("--cases", default="new-contained,new-border,new-square,new-strip,generated-contained,generated-border,generated-square,generated-strip,capacity,replace,restart")
     parser.add_argument("--java", default="C:/Program Files/Java/jdk-17.0.7/bin/java.exe")
     args = parser.parse_args(); require_lock(args.lock_owner)
     args.evidence.mkdir(parents=True, exist_ok=True)
-    jars = inventory(args.production_jar, args.jar)
+    jars = inventory(args.production_jar, args.jar, args.attribution)
     (args.evidence / "jar-inventory.json").write_text(json.dumps(jars, indent=2))
     require(not smoke.is_link_or_junction(args.libraries)
             and not any(smoke.is_link_or_junction(p) for p in args.libraries.rglob("*")), "Unsafe library template")

@@ -40,10 +40,14 @@ import net.minecraftforge.fml.common.Mod;
 @Mod.EventBusSubscriber(modid = ModIdentity.MOD_ID)
 public final class W206NativeWarmup {
     private static final TicketType<UUID> SOURCE = TicketType.create("w206_source_only", UUID::compareTo);
+    private static final TicketType<UUID> RESET = TicketType.create("w212_terminal_reset", UUID::compareTo);
     private final MinecraftServer server;
     private final ServerLevel earth, moon;
     private final String mode = System.getProperty("advancedrocketrycommunity.w206Mode", "flight");
     private final String shape = System.getProperty("advancedrocketrycommunity.w206Shape", "contained");
+    private final boolean timingOnly = Boolean.getBoolean("advancedrocketrycommunity.w212TimingOnly");
+    private final int repetitions = Integer.getInteger("advancedrocketrycommunity.w212Repetitions", 1);
+    private final List<Map<String, Object>> rounds = new ArrayList<>();
     private final UUID key = UUID.randomUUID();
     private final Gson gson = new GsonBuilder().serializeNulls().create();
     private final List<RocketEntity> rockets = new ArrayList<>();
@@ -64,9 +68,10 @@ public final class W206NativeWarmup {
     private RocketTransferRecord record;
     private UUID launch;
     private String phase = "SETUP", lastFlight = "";
-    private int age, phaseAt, callbackCount;
+    private int age, phaseAt, callbackCount, measuredRound;
     private long endStart, requestNanos, transitionObserverNanos;
     private boolean done, requested, seenF2, handover, landingWitness;
+    private boolean resetLoaded, resetRemoved;
 
     @SubscribeEvent public static void started(ServerStartedEvent event) {
         if (!Boolean.getBoolean("advancedrocketrycommunity.w206")) { return; }
@@ -77,12 +82,14 @@ public final class W206NativeWarmup {
 
     private W206NativeWarmup(MinecraftServer server) throws Exception {
         this.server = server; earth = server.overworld(); moon = server.getLevel(CelestialIds.MOON_LEVEL);
+        require(repetitions >= 1 && repetitions <= 4, "Diagnostic repetitions outside 1..4");
         root = server.getWorldPath(LevelResource.ROOT);
         ticks = Files.newBufferedWriter(root.resolve("w206-ticks.jsonl"));
         events = Files.newBufferedWriter(root.resolve("w206-events.jsonl"));
         snapshots = Files.newBufferedWriter(root.resolve("w206-columns.jsonl"));
         unsubscribe = W206NativeFixtures.observe(server, checkpoints);
         result.put("mode", mode); result.put("shape", shape);
+        result.put("transition_mode", timingOnly ? "timing-only" : "full");
         result.put("expected_columns", W206Observation.candidate(shape, 8, 8).count());
     }
 
@@ -93,6 +100,7 @@ public final class W206NativeWarmup {
     @SubscribeEvent(priority = EventPriority.LOWEST) public void tick(TickEvent.ServerTickEvent event) {
         if (done || event.phase != TickEvent.Phase.END) { return; }
         String measuredPhase = phase;
+        measuredRound = rounds.size();
         boolean work = requested || allocations() > 0 || journal != null && !journal.entries().isEmpty();
         requested = false; callbackCount = 0; transitionObserverNanos = 0;
         try {
@@ -131,6 +139,9 @@ public final class W206NativeWarmup {
                 "end_ns", end, "tick_ns", W206Observation.fullTick(core, end), "work", work,
                 "callbacks", callbackCount, "column_observer_ns", observed, "epoch_ms", System.currentTimeMillis()));
         row.put("transition_observer_ns", transitionObserverNanos);
+        row.put("window_start_ns", endStart - core);
+        row.put("window_end_ns", endStart + end);
+        row.put("round", measuredRound);
         require(tickRows.size() < 4001, "Tick recorder bound exceeded");
         tickRows.add(row);
         // Only this final clock/read and map insertion follow the measured recorder tail.
@@ -152,6 +163,11 @@ public final class W206NativeWarmup {
     private void phase(String next) throws Exception { event("PHASE", Map.of("from", phase, "to", next)); phase = next; phaseAt = age; snapshot(next); }
     private void snapshot(String label) throws Exception {
         long start = System.nanoTime();
+        if (timingOnly) {
+            // The paired diagnostic omits only transition JSON/column snapshots. Assertions remain live.
+            transitionObserverNanos += System.nanoTime() - start;
+            return;
+        }
         var levels = new LinkedHashMap<String, Object>();
         for (var level : server.getAllLevels()) {
             levels.put(level.dimension().location().toString(), Map.of("tickets", W206Observation.tickets(level), "chunks", W206Observation.chunks(level)));
@@ -173,6 +189,7 @@ public final class W206NativeWarmup {
     }
 
     private void step() throws Exception {
+        if (phase.equals("REPEAT_SETUP")) { repeatSetup(); return; }
         if (mode.equals("seed")) { seed(); return; }
         if (mode.equals("recover") && !Boolean.TRUE.equals(result.get("restart_source_ready"))) { recover(); return; }
         if (phase.equals("SETUP")) { setup(); return; }
@@ -338,6 +355,41 @@ public final class W206NativeWarmup {
                 "F8 lacks a landing witness or retained tickets; chunk eviction is independent");
         result.put("f8", true); event("F8", Map.of("latency_ns", System.nanoTime() - requestNanos));
         phase("F8_RELEASED"); result.put("outcome", "MEASURED");
+        if (rounds.size() + 1 < repetitions) {
+            rounds.add(new LinkedHashMap<>(result));
+            result.remove("outcome"); phase("REPEAT_SETUP");
+        }
+    }
+
+    /** Separate diagnostic reset after proven F8; never used by the eight first-flight comparisons. */
+    private void repeatSetup() throws Exception {
+        var end = record.destinationSnapshot().sourceOrigin();
+        if (!resetLoaded) {
+            // Reload only the completed fixture's end to remove its terminal survivor, then let it evict.
+            // A temporary entity-ticking ticket belongs only to RESET, never a measured request/end.
+            moon.getChunkSource().addRegionTicket(RESET, new ChunkPos(end.x() >> 4, end.z() >> 4), 2, key);
+            resetLoaded = true; return;
+        }
+        if (!resetRemoved) {
+            var arrival = moon.getEntity(record.nativeTransfer().orElseThrow().armed().destination());
+            if (arrival == null) { return; }
+            require(arrival instanceof RocketEntity landed && landed.flightData().orElseThrow().state() == RocketFlightState.LANDED,
+                    "Repeated-flight reset is not terminal");
+            arrival.discard();
+            moon.getChunkSource().removeRegionTicket(RESET, new ChunkPos(end.x() >> 4, end.z() >> 4), 2, key);
+            resetRemoved = true; return;
+        }
+        if (!W206Observation.chunks(moon).isEmpty() || !journal.retryChecked(server) || !data.bind(server).writerIdle()) { return; }
+        var extent = W206Observation.extent(shape);
+        rockets.clear(); rockets.add(W206NativeFixtures.rocket(earth,
+                new BlockPos(8200 - extent[0] / 2, 100, 8200 - extent[1] / 2), data.ledger().id(), shape));
+        require(earth.addFreshEntity(rockets.get(0)), "Repeated source publication failed");
+        seenF2 = false; handover = false; landingWitness = false; record = null; first = null; lastFlight = "";
+        resetLoaded = false; resetRemoved = false; states.clear();
+        result.clear(); result.put("mode", mode); result.put("shape", shape);
+        result.put("transition_mode", timingOnly ? "timing-only" : "full");
+        result.put("expected_columns", W206Observation.candidate(shape, 8, 8).count());
+        phase("BASELINE");
     }
 
     private void seed() throws Exception {
@@ -446,6 +498,7 @@ public final class W206NativeWarmup {
         result.put("timing_boundary", "native core + END through capture entry; buffered recorder tail reported separately; final export excluded");
         result.put("loaded_columns_union", loadedUnion); result.put("ticketed_columns_union", ticketUnion);
         result.put("ticks", age); result.put("final_phase", phase);
+        result.put("completed_prior_rounds", rounds);
         Files.writeString(root.resolve("w206-result.json"), new GsonBuilder().setPrettyPrinting().create().toJson(result));
         ticks.close(); events.close(); snapshots.close();
         server.halt(false);
