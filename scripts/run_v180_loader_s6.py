@@ -32,7 +32,8 @@ HOOKS = shared.HOOK_FILES + tuple(
                  "EscrowLoaderS6UnloadObservation", "EscrowLoaderS6R2Probe", "EscrowLoaderS6ShutdownProbe", "EscrowLoaderS6GuardProbe", "EscrowLoaderS6SettlementProbe", "EscrowLoaderS6ChainProbe", "EscrowLoaderS6NamedSetup", "EscrowLoaderS6FlightProbe", "EscrowLoaderS6JournalProbe", "EscrowCargoContentionProbe", "EscrowNamedFillTestHook")) + tuple(
     "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/persistence/" + name + ".java"
     for name in ("RocketI6NativeCut", "RocketJournalFailurePolicy", "RocketTransferSavedData"))
-HARNESSES = shared.HARNESS_FILES + ("scripts/run_v180_loader_s6.py", "scripts/loader_s6_oracle.py", "scripts/loader_s6_integrity.py", "scripts/loader_s6_chain.py", "scripts/loader_s6_abandon.py", "scripts/loader_s6_normalize.py", "scripts/loader_s6_flight.py")
+HOOKS += ("src/main/java/io/github/sunthemoon/advancedrocketrycommunity/resourceescrow/EscrowLoaderS6StoredProbe.java",)
+HARNESSES = shared.HARNESS_FILES + ("scripts/run_v180_loader_s6.py", "scripts/loader_s6_oracle.py", "scripts/loader_s6_integrity.py", "scripts/loader_s6_chain.py", "scripts/loader_s6_abandon.py", "scripts/loader_s6_normalize.py", "scripts/loader_s6_flight.py", "scripts/loader_s6_forward.py", "scripts/loader_s6_progress.py")
 
 
 def write(path: Path, data: dict) -> None:

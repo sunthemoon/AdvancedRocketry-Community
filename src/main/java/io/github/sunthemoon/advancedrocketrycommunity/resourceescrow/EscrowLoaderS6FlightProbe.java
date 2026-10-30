@@ -26,7 +26,7 @@ final class EscrowLoaderS6FlightProbe {
     private static final List<String> CASES = List.of("LF_S6_F1_STORE_BEFORE", "LF_S6_F1_STORE_AFTER",
             "LF_S6_F1_FORCE_BEFORE", "LF_S6_F1_FORCE_AFTER", "LF_S6_F1_READBACK_BEFORE", "LF_S6_F1_READBACK_AFTER",
             "LF_S6_F1_ARM_BEFORE", "LF_S6_F1_ARM_REPLACED", "LF_S6_F1_ARM_ACK",
-            "LF_S6_F2_BEFORE", "LF_S6_F2_REPLACED", "LF_S6_F2_ACK");
+            "LF_S6_F2_BEFORE", "LF_S6_F2_REPLACED", "LF_S6_F2_ACK", "LF_S6_F3_ASCENT", "LF_S6_F3_TRANSIT");
     private static final BlockPos SOURCE = new BlockPos(64, 100, 64), DEVICE = SOURCE.offset(2, 0, 0),
             DESTINATION = new BlockPos(80, 100, 64);
     private final MinecraftServer server;
@@ -39,6 +39,7 @@ final class EscrowLoaderS6FlightProbe {
     private boolean launching, discarded, done;
     private volatile boolean proof, arm;
     private boolean armedObserved;
+    private boolean phaseStorePending;
     private long began = -1;
 
     static boolean selected(boolean hooks, String cut) { return hooks && cut != null && CASES.contains(cut); }
@@ -104,7 +105,7 @@ final class EscrowLoaderS6FlightProbe {
             AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_S6_FLIGHT_ARMED cut={} digest={}", cut, stagedArmDigest(payload));
             armedObserved = true;
         }
-        if (cut.equals("LF_S6_F2_ACK") && point.equals("F2_PREPARED_ACK")) {
+        if ((cut.equals("LF_S6_F2_ACK") || cut.startsWith("LF_S6_F3_")) && point.equals("F2_PREPARED_ACK")) {
             var journalFile = server.getWorldPath(LevelResource.ROOT).resolve("data")
                     .resolve(ManagedSavedDataType.ROCKET_TRANSFERS.fileName());
             EscrowLoaderS6JournalProbe.observeTransfer(cut,
@@ -128,7 +129,13 @@ final class EscrowLoaderS6FlightProbe {
             EscrowTags.require(server.saveEverything(false, true, true), "S6 pre-fill baseline save failed");
             return;
         }
-        if (launching) { return; }
+        if (launching) {
+            if (!phaseStorePending && EscrowLoaderS6StoredProbe.ready(cut,
+                    rocket.flightData().orElseThrow().state(), rocket.getY() - SOURCE.getY())) {
+                phaseStorePending = EscrowLoaderS6StoredProbe.begin(server, cut, rocket);
+            }
+            return;
+        }
         var runtime = EscrowRuntime.of(server);
         if (bank(rocket, false) == 0) {
             runtime.loaderAdmissionForTests(server, device(loader), true);
@@ -171,7 +178,7 @@ final class EscrowLoaderS6FlightProbe {
         if (rockets.isEmpty()) { return; }
         EscrowTags.require(rockets.size() == 1, "S6 native image is not explained by its durable record: extra survivor");
         var survivor = rockets.get(0); var flight = survivor.flightData().orElseThrow();
-        boolean forward = cut.equals("LF_S6_F2_REPLACED") || cut.equals("LF_S6_F2_ACK");
+        boolean forward = cut.equals("LF_S6_F2_REPLACED") || cut.equals("LF_S6_F2_ACK") || cut.startsWith("LF_S6_F3_");
         EscrowTags.require(bank(survivor, false) == (forward ? 500 : 1_000) && bank(survivor, true) == 0
                 && survivor.escrowSection().epoch() == (forward ? 0 : 1) && survivor.escrowSection().markers().isEmpty()
                 && flight.fuel().committedDebits().size() == (forward ? 1 : 0) && flight.passengers().assignments().isEmpty()
