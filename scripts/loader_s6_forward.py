@@ -9,6 +9,17 @@ from loader_s6_flight import integrity, legacy, s6, SmokeError
 CASES = flight.F2[1:]
 
 
+def normalize(value):
+    """Extend S6 identity normalization for the native committed-debit codec's UUID field."""
+    def debits(node):
+        if isinstance(node, dict):
+            return {key: s6.canonical_uuid(item) if key == "transaction_id" else debits(item)
+                    for key, item in node.items()}
+        if isinstance(node, list): return [debits(item) for item in node]
+        return node
+    return debits(s6.normalize_ids(value))
+
+
 def native_tag(value, key=""):
     """Additional types from RocketTransferJournalCodec and RocketFlightNbtCodec."""
     if key == "armed": return flight.armed_tag(value)
@@ -49,7 +60,7 @@ def check(image, restart, identity, cut, witness):
     try:
         if not restart: return prepared(image, cut, witness)
         legacy.require(identity is not None and witness is not None, "Forward restart lost its initial/live witness")
-        disk = s6.normalize_ids(image["native"]); initial = identity["initial"]; row = identity["transfer"]
+        disk = normalize(image["native"]); initial = identity["initial"]; row = identity["transfer"]
         expected_root = copy.deepcopy(identity["root"]); expected_root.update(writer_generation=6, armed_flights=[])
         legacy.require(disk["ledger"] == expected_root and disk["journal"] == identity["empty_journal"]
                        and disk["source"] is None and disk["destination"] is not None, "Forward terminal authority changed")
@@ -75,7 +86,7 @@ def check(image, restart, identity, cut, witness):
 
 
 def prepared(image, cut, witness):
-    disk = s6.normalize_ids(image["native"]); journal = disk["journal"]
+    disk = normalize(image["native"]); journal = disk["journal"]
     legacy.require(witness is not None and len(journal["transfers"]) == 1, "F2 lost its checked T witness")
     row = journal["transfers"][0]
     legacy.require(transfer_digest(row) == witness["transfer_digest"], "Changed complete checked PREPARED T")

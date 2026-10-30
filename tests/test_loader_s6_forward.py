@@ -63,6 +63,17 @@ def fixture():
 
 
 class ForwardOracleTests(unittest.TestCase):
+    def test_native_debit_uuid_arrays_are_canonicalized_on_initial_and_both_restarts(self):
+        retained = json.loads((Path(__file__).parent / "fixtures/loader_s6/forward-replaced-native.json").read_text())
+        row = retained["images"][0]["native"]["journal"]["transfers"][0]
+        self.assertIsInstance(row["destination_flight"]["fuel"]["committed_debits"][0]["transaction_id"], list)
+        identity = None
+        for restart, image in enumerate(retained["images"]):
+            identity = flight.check(image, restart, identity, forward.CASES[0], retained["witnesses"][restart])["identity"]
+        changed = copy.deepcopy(retained["images"][0])
+        changed["native"]["journal"]["transfers"][0]["destination_flight"]["fuel"]["committed_debits"][0]["transaction_id"][0] ^= 1
+        with self.assertRaises(SmokeError): flight.check(changed, 0, cut=forward.CASES[0], witness=retained["witnesses"][0])
+
     def test_complete_record_digest_matches_the_independent_java_codec_bytes(self):
         sample = json.loads((Path(__file__).parent / "fixtures/loader_s6/forward-codec.json").read_text())
         raw = base64.b64decode(sample["nbt_base64"])
