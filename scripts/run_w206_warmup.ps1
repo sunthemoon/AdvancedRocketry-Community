@@ -1,6 +1,8 @@
 param([Parameter(Mandatory=$true)][string]$Commit, [string]$Label='native-01',
       [string]$Cases='new-contained,new-border,new-square,new-strip,generated-contained,generated-border,generated-square,generated-strip,capacity,replace,restart',
-      [switch]$Batches, [ValidatePattern('^W[0-9]+$')][string]$TaskId='W206', [switch]$Jfr)
+      [switch]$Batches, [ValidatePattern('^W[0-9]+$')][string]$TaskId='W206', [switch]$Jfr,
+      [switch]$Attribution, [ValidateSet('full','timing-only')][string]$TransitionMode='full',
+      [ValidateRange(1,4)][int]$Repetitions=1)
 $ErrorActionPreference='Stop'
 $workspace=(Resolve-Path "$PSScriptRoot/..").Path
 if($Label -notmatch '^native-[a-z0-9-]+$') { throw 'Invalid label' }
@@ -66,11 +68,19 @@ try {
         if(!$from.StartsWith($prefix) -or !$to.StartsWith($prefix)) { throw 'Diagnostic move escaped export' }
         Move-Item -LiteralPath $from -Destination $to
     }
+    if($Attribution) {
+        Copy-Item -LiteralPath "$export/src/test/java/$package/resourceescrow/W212Timing.java" -Destination "$export/src/main/java/$package/resourceescrow/W212Timing.java"
+        Remove-Item -LiteralPath "$export/src/test/java/$package/resourceescrow/W212Timing.java"
+        & python -B "$workspace/scripts/w212_instrument.py" $export $root *> "$root/instrumentation.log"
+        if($LASTEXITCODE -ne 0) { throw 'Diagnostic instrumentation failed' }
+    }
     & .\gradlew.bat @gradle test --tests '*W206ObservationTest' jar *> "$root/diagnostic-build.log"
     if($LASTEXITCODE -ne 0) { throw 'Diagnostic build failed' }
     Copy-Item -LiteralPath "build/libs/$jar" -Destination "$root/diagnostic.jar"
     Set-Location $workspace
     $profileArgs=@(); if($Jfr) { $profileArgs += '--jfr' }
+    if($Attribution) { $profileArgs += '--attribution' }
+    $profileArgs += @('--transition-mode',$TransitionMode,'--repetitions',"$Repetitions")
     & python -B scripts/run_w206_warmup.py --jar "$root/diagnostic.jar" --production-jar "$root/production.jar" `
         --libraries 'D:/GitHub/ARCE-Task-Evidence/v1.8.0/guard-observation-04/native-04/server/libraries' `
         --evidence $root --source-commit $Commit --lock-owner $token --cases $Cases @profileArgs *> "$root/native-console.log"
