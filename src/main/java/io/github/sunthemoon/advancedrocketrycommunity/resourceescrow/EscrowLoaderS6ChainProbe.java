@@ -16,22 +16,25 @@ import net.minecraft.server.MinecraftServer;
 final class EscrowLoaderS6ChainProbe {
     private static final List<String> CASES = List.of("LF_S6_CHAIN_BEFORE", "LF_S6_CHAIN_REPLACED", "LF_S6_CHAIN_ACK",
             "LF_S6_CHAIN_BEFORE_BI", "LF_S6_CHAIN_REPLACED_BI", "LF_S6_CHAIN_ACK_BI",
-            "LF_S6_CHAIN_VETO", "LF_S6_CHAIN_VETO_BI");
+            "LF_S6_CHAIN_VETO", "LF_S6_CHAIN_VETO_BI",
+            "LF_S6_CHAIN_ABANDON_BEFORE", "LF_S6_CHAIN_ABANDON_REPLACED", "LF_S6_CHAIN_ABANDON_ACK",
+            "LF_S6_CHAIN_ABANDON_BEFORE_BI", "LF_S6_CHAIN_ABANDON_REPLACED_BI", "LF_S6_CHAIN_ABANDON_ACK_BI");
     private static final UUID ACTOR = UUID.nameUUIDFromBytes("arce:escrow:server-console".getBytes(java.nio.charset.StandardCharsets.US_ASCII));
     private final MinecraftServer server;
     private final String cut;
-    private final boolean recovery, bi, before, veto;
+    private final boolean recovery, bi, before, veto, abandon;
     private final EscrowLoaderCutProbe setup;
     private boolean held, baseline, queued, done;
     private boolean vetoInstalled, holdObserved;
     private volatile boolean writingIntent;
     private long began = -1;
+    private EscrowSettlementIntent preview;
 
     static boolean selected(boolean hooks, String cut) { return hooks && cut != null && CASES.contains(cut); }
     static boolean veto(String cut) { return "LF_S6_CHAIN_VETO".equals(cut) || "LF_S6_CHAIN_VETO_BI".equals(cut); }
     static boolean boundary(String cut, String hook) {
         if (!selected(true, cut)) { return false; }
-        String side = cut.replace("_BI", "").substring("LF_S6_CHAIN_".length());
+        String side = cut.replace("_BI", "").substring("LF_S6_CHAIN_".length()).replace("ABANDON_", "");
         return switch (side) {
             case "BEFORE" -> hook.equals("K1");
             case "REPLACED" -> hook.equals("K2");
@@ -48,7 +51,7 @@ final class EscrowLoaderS6ChainProbe {
         EscrowTags.require(selected(Boolean.getBoolean(EscrowTestEndpoints.HOOKS), cut)
                 && !Boolean.getBoolean(EscrowLoaderAdmission.SWITCH), "S6 chain requires its exact per-device release gate");
         this.server = server; this.cut = cut; this.recovery = recovery;
-        bi = cut.endsWith("_BI"); before = cut.contains("_BEFORE"); veto = veto(cut);
+        bi = cut.endsWith("_BI"); before = cut.contains("_BEFORE"); veto = veto(cut); abandon = cut.contains("_ABANDON_");
         setup = recovery ? null : new EscrowLoaderCutProbe(server, "LF_M_CHAIN_REPLACED" + (bi ? "_BI" : ""), false);
     }
     void startTick() {
@@ -83,14 +86,17 @@ final class EscrowLoaderS6ChainProbe {
         EscrowTags.require(server.getTickCount() - began <= 2_400, "S6 chain exceeded the existing fixture bound");
         if (!recovery && !held) { setup.tick(); return; }
         var level = server.overworld(); var a = new BlockPos(66, 100, 64); var b = a.offset(1, 0, 0);
-        if (!level.isPositionEntityTicking(a) || !(level.getBlockEntity(a) instanceof FluidFuelLoaderBlockEntity first)
-                || !(level.getBlockEntity(b) instanceof FluidFuelLoaderBlockEntity second)) { return; }
+        if (!level.isPositionEntityTicking(a) || !(level.getBlockEntity(a) instanceof FluidFuelLoaderBlockEntity first)) { return; }
+        var second = level.getBlockEntity(b) instanceof FluidFuelLoaderBlockEntity value ? value : null;
+        boolean missing = abandon && (baseline || recovery);
+        if (!missing && second == null) { return; }
+        EscrowTags.require(!missing || level.getBlockEntity(b) == null && level.isEmptyBlock(b), "S6 absent source returned or changed type");
         if (!(level.getEntity(first.root().orElseThrow().binding().physicalRocket()) instanceof RocketEntity rocket)) { return; }
         var data = ResourceEscrowSavedData.existing(server);
         EscrowTags.require(data != null, "S6 chain lost its ledger"); var coordinator = data.bind(server);
-        EscrowTags.require(amount(first) == 4_000 && amount(second) == 4_000
+        EscrowTags.require(amount(first) == 4_000 && (missing || amount(second) == 4_000)
                 && bank(rocket, false) == (bi ? 1_000 : 2_000) && bank(rocket, true) == (bi ? 1_000 : 0)
-                && section(first).epoch() == 1 && section(second).epoch() == 1 && rocket.escrowSection().epoch() == 2
+                && section(first).epoch() == 1 && (missing || section(second).epoch() == 1) && rocket.escrowSection().epoch() == 2
                 && data.ledger().issuedThrough() == 2, "S6 chain changed resources or epochs");
         if (!coordinator.writerIdle()) { return; }
         if (veto && (recovery || queued)) {
@@ -113,18 +119,25 @@ final class EscrowLoaderS6ChainProbe {
             if (before) {
                 EscrowTags.require(data.ledger().records().size() == 2 && data.ledger().tombstones().isEmpty()
                         && data.ledger().records().stream().allMatch(op -> op.settlement().isEmpty() && op.reason() == EscrowReason.OTHER_STATE)
-                        && first.escrowLocked() && second.escrowLocked() && !RocketEscrowGate.idle(rocket), "S6 pre-O1 chain changed its hold");
+                        && first.escrowLocked() && (missing || second.escrowLocked()) && !RocketEscrowGate.idle(rocket), "S6 pre-O1 chain changed its hold");
             } else {
                 if (!data.ledger().records().isEmpty() || !section(first).markers().isEmpty()
-                        || !section(second).markers().isEmpty() || !rocket.escrowSection().markers().isEmpty()) { return; }
+                        || !missing && !section(second).markers().isEmpty() || !rocket.escrowSection().markers().isEmpty()) { return; }
                 EscrowTags.require(data.ledger().tombstones().size() == 2
                         && data.ledger().tombstones().stream().allMatch(t -> t.getBoolean("released"))
-                        && !first.escrowLocked() && !second.escrowLocked() && RocketEscrowGate.idle(rocket), "S6 chain did not release its complete decision");
+                        && !first.escrowLocked() && (missing || !second.escrowLocked()) && RocketEscrowGate.idle(rocket), "S6 chain did not release its complete decision");
+                if (missing) {
+                    var absent = data.ledger().tombstones().stream().flatMap(t -> t.getList("missing", 10).stream())
+                            .map(t -> EscrowCodec.endpoint((net.minecraft.nbt.CompoundTag) t)).toList();
+                    EscrowTags.require(absent.size() == 1 && absent.get(0).x() == b.getX()
+                            && coordinator.locked(absent.get(0).key()), "S6 abandon released its absent identity");
+                }
             }
             if (server.getTickCount() - began < 100) { return; }
             done = true;
-            AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_S6_CHAIN_RESULT cut={} tanks=4000,4000 banks={} epochs=1,1,2 records={} receipts={} state={}",
-                    cut, bi ? "1000,1000" : "2000,0", before ? 2 : 0, before ? 0 : 2, before ? "PRE_O1" : "RELEASED");
+            AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_S6_CHAIN_RESULT cut={} tanks=4000,{} banks={} epochs=1,{},2 records={} receipts={} state={}",
+                    cut, missing ? "MISSING" : "4000", bi ? "1000,1000" : "2000,0", missing ? "MISSING" : "1",
+                    before ? 2 : 0, before ? 0 : 2, before ? "PRE_O1" : "RELEASED");
             return;
         }
         if (!baseline) {
@@ -133,14 +146,19 @@ final class EscrowLoaderS6ChainProbe {
                 if (!EscrowLoaderS6SettlementProbe.manualHoldDurable(op.reason())) { return; }
             }
             // Pre-operator experiment baseline only; no endpoint save is added after any selected cut.
+            if (abandon) { clear(level, b); }
             EscrowTags.require(server.saveEverything(false, true, true), "S6 chain pre-decision baseline refused");
             if (veto) { installVeto(); }
             baseline = true; return;
         }
         if (queued) { return; }
         var selected = data.ledger().records().get(0).id(); var operator = EscrowRuntime.of(server).settlement();
-        var preview = operator.preview(server, selected, EscrowSettlementIntent.Choice.ACCEPT_CURRENT, ACTOR, "Server");
+        if (preview == null) {
+            preview = operator.preview(server, selected, abandon ? EscrowSettlementIntent.Choice.ABANDON
+                    : EscrowSettlementIntent.Choice.ACCEPT_CURRENT, ACTOR, "Server");
+        }
         EscrowTags.require(preview.members().size() == 2 && preview.observations().size() == 3, "S6 chain preview omitted a member or endpoint");
+        if (abandon && server.getTickCount() - preview.previewTick() < 200) { return; }
         writingIntent = true;
         queued = operator.confirm(server, selected, preview.choice(), ACTOR, preview.digest(), committed -> {
             EscrowTags.require(committed, "S6 chain operator intent was not acknowledged");

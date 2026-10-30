@@ -328,6 +328,12 @@ LF_M_R52_UNKNOWN	scripts/run_v180_retire_before_fill.py
 LF_M_W133F_ASSEMBLED	scripts/run_v180_fill_countdown.py
 LF_M_W133F_LANDED	scripts/run_v180_fill_countdown.py
 LF_S6_CHAIN_	tests/test_loader_s6_chain.py
+LF_S6_CHAIN_ABANDON_ACK	scripts/run_v180_loader_s6.py
+LF_S6_CHAIN_ABANDON_ACK_BI	scripts/run_v180_loader_s6.py
+LF_S6_CHAIN_ABANDON_BEFORE	scripts/run_v180_loader_s6.py
+LF_S6_CHAIN_ABANDON_BEFORE_BI	scripts/run_v180_loader_s6.py
+LF_S6_CHAIN_ABANDON_REPLACED	scripts/run_v180_loader_s6.py
+LF_S6_CHAIN_ABANDON_REPLACED_BI	scripts/run_v180_loader_s6.py
 LF_S6_CHAIN_ACK	scripts/run_v180_loader_s6.py
 LF_S6_CHAIN_ACK_BI	scripts/run_v180_loader_s6.py
 LF_S6_CHAIN_BEFORE	scripts/run_v180_loader_s6.py

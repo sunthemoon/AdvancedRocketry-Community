@@ -66,7 +66,7 @@ class EscrowProbeRoutingTest {
                 }
             }
         }
-        assertEquals(561, seen.size()); // R199 adds six chain cases, two checkpointed vetoes and the test prefix token.
+        assertEquals(567, seen.size()); // R199: six accept, two veto and six abandon chain cases, plus the test prefix.
         assertTrue(seen.contains(EscrowLoaderS6Probe.E3));
         var expected = new HashSet<>(EscrowItemSettlementCuts.CASES.keySet()); expected.addAll(EscrowItemRecoveryCuts.CASES);
         assertEquals(expected, items); assertEquals(18, items.size());

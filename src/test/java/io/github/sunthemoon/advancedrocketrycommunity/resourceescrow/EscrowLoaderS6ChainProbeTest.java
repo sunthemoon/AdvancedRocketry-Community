@@ -4,6 +4,19 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 
 class EscrowLoaderS6ChainProbeTest {
+    @Test void abandonUsesTheSameExactDurableO1Sides() {
+        String[] sides = {"BEFORE", "REPLACED", "ACK"}, hooks = {"K1", "K2", "O1_ACK"};
+        for (String suffix : new String[] {"", "_BI"}) {
+            for (int i = 0; i < sides.length; i++) {
+                String cut = "LF_S6_CHAIN_ABANDON_" + sides[i] + suffix;
+                assertTrue(EscrowLoaderS6ChainProbe.selected(true, cut));
+                assertFalse(EscrowLoaderS6ChainProbe.selected(false, cut));
+                for (int j = 0; j < hooks.length; j++) {
+                    assertEquals(i == j, EscrowLoaderS6ChainProbe.boundary(cut, hooks[j]));
+                }
+            }
+        }
+    }
     @Test void checkpointedVetoUsesAnExactReleaseSelectorNotAnO1Pause() {
         for (String cut : new String[] {"LF_S6_CHAIN_VETO", "LF_S6_CHAIN_VETO_BI"}) {
             assertTrue(EscrowLoaderS6ChainProbe.selected(true, cut));

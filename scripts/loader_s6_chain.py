@@ -8,8 +8,10 @@ import loader_s6_integrity as i
 from run_dedicated_server_smoke import SmokeError
 
 VETO = ("LF_S6_CHAIN_VETO", "LF_S6_CHAIN_VETO_BI")
+ABANDON = tuple("LF_S6_CHAIN_ABANDON_" + side + suffix for suffix in ("", "_BI")
+                for side in ("BEFORE", "REPLACED", "ACK"))
 CASES = tuple("LF_S6_CHAIN_" + side + suffix for suffix in ("", "_BI")
-              for side in ("BEFORE", "REPLACED", "ACK")) + VETO
+              for side in ("BEFORE", "REPLACED", "ACK")) + VETO + ABANDON
 
 
 def descriptor(bi):
@@ -174,6 +176,9 @@ def head(root, generation):
 
 
 def check(image, restart, identity=None, cut=CASES[0]):
+    if cut in ABANDON:
+        import loader_s6_abandon
+        return loader_s6_abandon.check(image, restart, identity, cut)
     from loader_s6_oracle import normalize_ids, canonical_uuid
     from run_v180_rocket_settlement_intent import ACTOR
     legacy.require(cut in CASES and restart in (0, 1, 2) and image.get("read_status") == "KNOWN"
@@ -231,8 +236,9 @@ def check(image, restart, identity=None, cut=CASES[0]):
 def check_logs(lines, restart, cut):
     lines = [line.rstrip("\r\n") for line in lines]; before = "_BEFORE" in cut; veto = cut in VETO
     if restart:
-        marker = (f"ARCE_LOADER_S6_CHAIN_RESULT cut={cut} tanks=4000,4000 banks={'1000,1000' if cut.endswith('_BI') else '2000,0'} "
-                  f"epochs=1,1,2 records={2 if before or veto else 0} receipts={0 if before or veto else 2} state={'PRE_O1' if before else 'HELD' if veto else 'RELEASED'}")
+        tank, epoch = ("MISSING", "MISSING") if cut in ABANDON else ("4000", "1")
+        marker = (f"ARCE_LOADER_S6_CHAIN_RESULT cut={cut} tanks=4000,{tank} banks={'1000,1000' if cut.endswith('_BI') else '2000,0'} "
+                  f"epochs=1,{epoch},2 records={2 if before or veto else 0} receipts={0 if before or veto else 2} state={'PRE_O1' if before else 'HELD' if veto else 'RELEASED'}")
     else:
         hook = "O_VETO" if veto else "K1" if before else "K2" if "_REPLACED" in cut else "O1_ACK"
         marker = f"ARCE_LOADER_S6_CHAIN_PAUSED cut={cut} hook={hook}"

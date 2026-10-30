@@ -19,6 +19,7 @@ import uuid
 
 import loader_s6_oracle as oracle
 import loader_s6_chain as chain
+import loader_s6_abandon as abandon
 import run_v180_loader_cuts as shared
 from run_dedicated_server_smoke import CapturedProcess, SmokeError, allocate_port, write_server_configuration, expected_server_properties
 from run_v060_flight_server_smoke import _server_command
@@ -30,7 +31,7 @@ HOOKS = shared.HOOK_FILES + tuple(
                  "EscrowLoaderS6UnloadObservation", "EscrowLoaderS6R2Probe", "EscrowLoaderS6ShutdownProbe", "EscrowLoaderS6GuardProbe", "EscrowLoaderS6SettlementProbe", "EscrowLoaderS6ChainProbe", "EscrowLoaderS6NamedSetup", "EscrowCargoContentionProbe", "EscrowNamedFillTestHook")) + tuple(
     "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/persistence/" + name + ".java"
     for name in ("RocketI6NativeCut", "RocketJournalFailurePolicy", "RocketTransferSavedData"))
-HARNESSES = shared.HARNESS_FILES + ("scripts/run_v180_loader_s6.py", "scripts/loader_s6_oracle.py", "scripts/loader_s6_integrity.py", "scripts/loader_s6_chain.py")
+HARNESSES = shared.HARNESS_FILES + ("scripts/run_v180_loader_s6.py", "scripts/loader_s6_oracle.py", "scripts/loader_s6_integrity.py", "scripts/loader_s6_chain.py", "scripts/loader_s6_abandon.py")
 
 
 def write(path: Path, data: dict) -> None:
@@ -158,7 +159,7 @@ def run_cut(args, cut, evidence, owner, pins):
                 row["unexplained_image"] = True
             process = None
             start["observations"] = [line for line in lines if "ARCE_LOADER_" in line or "ARCE_CARGO_CACHE_" in line or "ARCE_W164_CUT" in line]
-            start["image"] = oracle.inspect(session / "world", cut)
+            start["image"] = abandon.inspect(session / "world") if cut in chain.ABANDON else oracle.inspect(session / "world", cut)
             if diagnostic:
                 # The healthy pair is deliberately never queued. Its image is retained,
                 # not passed through the completed-fairness oracle or reported as PASS.
