@@ -355,3 +355,34 @@ after governed F8 the old T is gone; W204's N2 setup uses a scalar debit and a p
 
 A fresh session continues on the same branch and worktree from `22b08fe46`. R201's renewal rule applies. The rest
 of this TASK and R185 to R202 are unchanged. When C is complete, deliver for the final independent review.
+
+## Root decision R204 (2026-10-31 06:25): an actual ordinary flight as the setup for F9, P1-F8 and N2
+
+The thirteenth session (05:28 to 06:24) delivered `ec5969106`: the sticky reservation passed (capacity unit tests
+plus one native real-loader representative with two restarts), so C stands at 39 of 50; F9 failed both attempts
+because R203's setup seeded a separate historical ordinary T beside the settled, still present source rocket, and
+`RocketTransferRecoveryDecision.decide` then correctly keeps the source (`KEEP_SOURCE`) instead of trying a
+destination respawn; the six images are explained in `r203/f9-explanation.json`. Both attempts stay FAILED. P1-F8
+(six) and N2 (four) were not launched.
+
+**Decision.** R203's seeded-T setup is replaced. In the product, a COMMITTED ordinary transfer has no source because
+the product itself removes the source at departure. So the setup for all three families is an actual ordinary flight
+of the settled loader-funded rocket through the product's own ordinary launch path (with the typed fluid debit and
+the real player confirmation), started from the settled arrival of a completed real loader-funded governed flight:
+
+1. **F9:** that ordinary flight, with W77's existing destination-respawn failure selector (no new seam), so that
+   recovery meets a missing source and a failed respawn as W77 did; two restarts.
+2. **P1-F8:** the landed disassembly cuts on that ordinary flight's landed record, through the real player
+   confirmation path.
+3. **N2:** that ordinary flight to a named pad, with the N2 cuts and the pad's persistence as W204 defined them, but
+   with the typed fluid debit.
+
+Commit the design first: the stages, what is persisted and when (only the committed stores and R202's three; name any
+other store here before using it), and each row's restart oracle. F9 gets a new two-attempt budget under this new
+design; P1-F8 and N2 keep theirs. Never hide or remove the source, clear the wrapper, strip authority, seed a schema the
+product refuses or bypass a recovery, fence or confirmation check. If the product's ordinary launch path refuses a
+loader-funded rocket, record that refusal, the rule that makes it and the tests that pin it: it means these three
+families are out of reach for loader-funded rockets in this product, and the session stops there and reports.
+
+A fresh session continues on the same branch and worktree from `ec5969106`. R201's renewal rule applies. The rest of
+this TASK and R185 to R203 are unchanged. When C is complete, deliver for the final independent review.
