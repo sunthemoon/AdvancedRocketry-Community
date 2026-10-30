@@ -938,7 +938,7 @@ class SettlementStagedOracleTest(unittest.TestCase):
                 oracle.check_o1(dict(read_status="UNKNOWN", native=None), 0, cut=cut)
 
     def test_staged_logs_require_the_actual_boundary(self):
-        hooks = ("O2_BEFORE_0", "O2_AFTER_0", "O2_BEFORE_1", "O2_AFTER_1", "K1", "K2", "O3_AFTER", "K1")
+        hooks = ("O2_BEFORE_0", "O2_AFTER_0", "O2_BEFORE_1", "O2_AFTER_1", "K1", "K2", "O3_AFTER", "K8")
         for cut, hook in zip(self.CUTS, hooks):
             line = f"ARCE_LOADER_S6_O_PAUSED cut={cut} hook={hook}\r\n"
             oracle.check_observations([line], 0, cut)
@@ -974,6 +974,58 @@ class SettlementStagedOracleTest(unittest.TestCase):
             changed["native"]["ledger"]["tombstones"][0][key] = value
             with self.subTest(key=key), self.assertRaises(SmokeError):
                 oracle.check_o1(changed, 1, identity, "LF_S6_O1_REPLACED")
+
+
+class SettlementReleaseOracleTest(unittest.TestCase):
+    def image(self, restart=0):
+        import json
+        image = json.loads((Path(__file__).parent / "fixtures/loader_s6/settlement-o1-native.json").read_text())[1]
+        if not restart:
+            receipt = image["native"]["ledger"]["tombstones"][0]
+            source = image["native"]["loaders"][0]["arce_fluid_fuel_loader"]["resource_escrow"]
+            destination = image["native"]["rocket"]["RocketEntityData"]["resource_escrow"]
+            for observation in receipt["before_choice"]:
+                section = source if observation["endpoint"]["kind"] == "BLOCK_ENTITY" else destination
+                section["markers"] = copy.deepcopy(observation["state"]["markers"])
+        return image
+
+    def test_replaced_and_acknowledged_o4_allow_only_retired_metadata_until_restart(self):
+        for cut in ("LF_S6_O4_REPLACED", "LF_S6_O4_ACK"):
+            identity = None
+            for restart in range(3):
+                with self.subTest(cut=cut, restart=restart):
+                    checked = oracle.check_o1(self.image(restart), restart, identity, cut)
+                    identity = checked["identity"]
+                    self.assertEqual(5000, checked["raw_total"])
+                    self.assertIsNone(checked["loss"])
+                    self.assertIsNone(checked["available_total"])
+
+    def test_o4_checks_raw_state_and_the_whole_receipt(self):
+        cut = "LF_S6_O4_REPLACED"
+        image = self.image()
+        identity = oracle.check_o1(image, 0, cut=cut)["identity"]
+        mutations = [lambda d: d["loaders"][0]["arce_fluid_fuel_loader"]["tank"].update(Amount=3999),
+                     lambda d: d["loaders"][0]["arce_fluid_fuel_loader"]["resource_escrow"].update(resource_epoch=2),
+                     lambda d: d["rocket"]["RocketEntityData"]["resource_escrow"]["markers"][0].update(op_id="other"),
+                     lambda d: d["ledger"]["tombstones"][0]["before_choice"][0].update(extra=1)]
+        for key, value in (("actor", "other"), ("payload_hash", "c" * 64), ("survivors", []), ("released", 0),
+                           ("accounting_status", "EXACT"), ("extra", 1)):
+            mutations.append(lambda d, k=key, v=value: d["ledger"]["tombstones"][0].update({k: v}))
+        for mutation in mutations:
+            damaged = copy.deepcopy(image); mutation(damaged["native"])
+            with self.assertRaises(SmokeError): oracle.check_o1(damaged, 0, cut=cut)
+        for field in ("device", "owner", "binding"):
+            damaged = self.image(1)
+            damaged["native"]["loaders"][0]["arce_fluid_fuel_loader"][field] = "other"
+            with self.assertRaises(SmokeError): oracle.check_o1(damaged, 1, identity, cut)
+        with self.assertRaises(SmokeError): oracle.check_o1(dict(read_status="UNKNOWN", native=None), 0, cut=cut)
+        with self.assertRaises(SmokeError): oracle.check_o1(image, 1, identity, cut)
+
+    def test_o4_logs_pin_empty_record_writer_and_owner_ack(self):
+        for cut, hook in (("LF_S6_O4_REPLACED", "K9"), ("LF_S6_O4_ACK", "O4_AFTER")):
+            line = f"ARCE_LOADER_S6_O_PAUSED cut={cut} hook={hook}"
+            oracle.check_observations([line], 0, cut)
+            with self.assertRaises(SmokeError): oracle.check_observations([line.replace(hook, "K2")], 0, cut)
 
 
 if __name__ == "__main__":

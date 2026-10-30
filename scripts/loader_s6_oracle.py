@@ -353,10 +353,11 @@ O1_BEFORE, O1_REPLACED, O1_ACK = "LF_S6_O1_BEFORE", "LF_S6_O1_REPLACED", "LF_S6_
 O1 = (O1_BEFORE, O1_REPLACED, O1_ACK)
 O_STAGED = tuple("LF_S6_" + hook for hook in ("O2_BEFORE_0", "O2_AFTER_0", "O2_BEFORE_1", "O2_AFTER_1",
                                                "O3_BEFORE", "O3_REPLACED", "O3_ACK", "O4_BEFORE"))
-OPERATOR = O1 + O_STAGED
+O_RELEASED = ("LF_S6_O4_REPLACED", "LF_S6_O4_ACK")
+OPERATOR = O1 + O_STAGED + O_RELEASED
 O_INSTALLED = O_STAGED[-3:]
 O_HOOKS = dict(zip(OPERATOR, ("K1", "K2", "O1_ACK", "O2_BEFORE_0", "O2_AFTER_0", "O2_BEFORE_1", "O2_AFTER_1",
-                            "K1", "K2", "O3_AFTER", "K1")))
+                            "K1", "K2", "O3_AFTER", "K8", "K9", "O4_AFTER")))
 
 
 def pending_receipt(operation):
@@ -376,6 +377,8 @@ def pending_receipt(operation):
 
 def check_o1(image, restart, identity=None, cut=O1_BEFORE):
     """Frozen operator intent/receipt is authority; its UNKNOWN loss is never zero."""
+    if cut in O_RELEASED:
+        return check_o4_released(image, restart, identity, cut)
     import copy
     import re
     from run_v180_rocket_settlement_completion import require_progress
@@ -471,6 +474,76 @@ def check_o1(image, restart, identity=None, cut=O1_BEFORE):
                     state="RELEASED" if released else "PRE_O1" if cut == O1_BEFORE else "INSTALLED_UNRELEASED" if installed else "FROZEN_O1")
     except (KeyError, TypeError, IndexError, ValueError) as failure:
         raise SmokeError(f"Malformed operator settlement observation: {failure}") from failure
+
+
+def check_o4_released(image, restart, identity, cut):
+    """Late O4 has receipt authority, not a fabricated earlier native O1 image."""
+    import copy
+    import hashlib
+    import re
+    import struct
+    from run_v180_rocket_settlement_intent import ACTOR
+    legacy.require(cut in O_RELEASED and restart in (0, 1, 2) and image.get("read_status") == "KNOWN"
+                   and isinstance(image.get("native"), dict), "O4 UNKNOWN is not zero loss")
+    try:
+        disk = normalize_ids(image["native"]); identity = normalize_ids(identity)
+        root = disk["ledger"]
+        legacy.require(root is not None and root["issued_through"] == 1 and root["issued_launch_serial"] == 0
+                       and not root["records"] and not root["floors"] and not root["armed_flights"]
+                       and len(root["tombstones"]) == 1 and len(root["rocket_authorities"]) == 1, "Wrong O4 authority tables")
+        receipt = root["tombstones"][0]; operation = receipt["op_id"]
+        legacy.require(str(UUID(operation)) == operation, "O4 operation identity is not a UUID")
+        resources = copy.deepcopy(disk)
+        resources["ledger"]["tombstones"] = []; resources["ledger"]["rocket_authorities"] = []
+        # Reuse only its exact raw/retired-metadata checks, not its normal-retirement accounting claim.
+        checked = check_g3_l2(dict(read_status="KNOWN", native=resources), restart, operation=operation)
+        observed = dict(checked["identity"], snapshot=disk["rocket"]["RocketEntityData"]["snapshot"])
+        legacy.require(identity is None or identity["resources"] == observed, "O4 changed resource or snapshot identity")
+        observations = receipt["before_choice"]
+        legacy.require(len(observations) == 2 and {o["endpoint"]["kind"] for o in observations} == {"BLOCK_ENTITY", "ENTITY"},
+                       "O4 lost an audited survivor")
+        for o in observations:
+            legacy.require(set(o) == {"endpoint", "missing", "bound", "quantity", "signature_kind", "invariant_digest", "state"},
+                           "O4 changed the audit observation fields")
+            endpoint = o["endpoint"]; entity = endpoint["kind"] == "ENTITY"
+            expected = dict(kind=endpoint["kind"], level="minecraft:overworld", identity=observed["physical"] if entity else observed["loaders"][0]["device"],
+                type=legacy.ROCKET if entity else legacy.LOADER, x=4 if entity else 66, y=0 if entity else 100,
+                z=4 if entity else 64, unit="PRIMARY" if entity else "TANK", before_epoch=0, after_epoch=1,
+                before_signature=endpoint["before_signature"], after_signature=endpoint["after_signature"])
+            if entity: expected["logical_rocket"] = observed["logical"]
+            legacy.require(endpoint == expected and all(re.fullmatch(r"[0-9a-f]{64}", endpoint[k]) for k in ("before_signature", "after_signature"))
+                           and o["missing"] == 0 and o["bound"] == 1 and o["quantity"] == (1000 if entity else 4000)
+                           and o["signature_kind"] == ("FUEL_VECTOR_V1" if entity else "FLUID_TANK_V1")
+                           and re.fullmatch(r"[0-9a-f]{64}", o["invariant_digest"]), "O4 changed its chosen endpoint or quantity")
+            legacy.require(o["state"] == dict(ledger_id=root["ledger_id"], epoch=1, signature=endpoint["after_signature"],
+                markers=[dict(op_id=operation, seq=1, epoch_after=1, role="DESTINATION" if entity else "SOURCE")]), "O4 changed audited markers/epochs")
+        # NC1 for this fixture's fixed standard compound: Amount:int and FluidName:string, ASCII sorted keys.
+        def utf(value): return struct.pack(">H", len(value)) + value.encode("ascii")
+        payload_hash = hashlib.sha256(b"\x0a\0\0\x03" + utf("Amount") + struct.pack(">i", 1000)
+                                      + b"\x08" + utf("FluidName") + utf(legacy.FUEL) + b"\0").hexdigest()
+        legacy.require(len(receipt["guards"]) == 1, "O4 changed the named guard count")
+        guard = receipt["guards"][0]
+        legacy.require(guard == dict(rocket_id=observed["logical"], journal_generation=1, journal_digest=guard["journal_digest"])
+                       and re.fullmatch(r"[0-9a-f]{64}", guard["journal_digest"])
+                       and re.fullmatch(r"[0-9a-f]{64}", receipt["decision_digest"])
+                       and type(receipt["confirmed_tick"]) is int and receipt["confirmed_tick"] >= 0
+                       and 0 < receipt["release_generation"] <= root["writer_generation"], "O4 changed its audit guard or generation")
+        # This is an expected receipt projection only, never presented as an observed pre-O4 record.
+        expected = pending_receipt(dict(op_id=operation, transfer_guard=guard, payload_hash=payload_hash,
+            settlement=dict(actor=canonical_uuid(ACTOR), actor_name="Server", choice="ACCEPT_CURRENT",
+                digest=receipt["decision_digest"], confirmed_tick=receipt["confirmed_tick"], observations=observations)))
+        legacy.require(receipt == dict(expected, released=1, release_generation=receipt["release_generation"]), "O4 changed its complete receipt")
+        chosen = next(o for o in observations if o["endpoint"]["kind"] == "ENTITY")
+        head = root["rocket_authorities"][0]
+        decoded_head = dict(head, **{key: canonical_uuid(head[key]) for key in ("l", "o", "a", "p")})
+        legacy.require(decoded_head == dict(v=1, l=observed["logical"], o=observed["owner"], a=operation, g=receipt["release_generation"],
+            p=observed["physical"], e=1, k="FUEL_VECTOR_V1", s=list(bytes.fromhex(chosen["state"]["signature"])),
+            i=list(bytes.fromhex(chosen["invariant_digest"])), issued=0, completed=0, outcome="READY"), "O4 changed READY authority")
+        authority = dict(receipts=root["tombstones"], heads=root["rocket_authorities"])
+        legacy.require(identity is None or identity["authority"] == authority, "Restart changed the complete O4 authority")
+        return dict(identity=dict(resources=observed, authority=authority), raw_total=5000, available_total=None, loss=None, state="RELEASED")
+    except (KeyError, TypeError, IndexError, ValueError) as failure:
+        raise SmokeError(f"Malformed released O4 observation: {failure}") from failure
 
 
 def check_o1_logs(lines, restart, cut):

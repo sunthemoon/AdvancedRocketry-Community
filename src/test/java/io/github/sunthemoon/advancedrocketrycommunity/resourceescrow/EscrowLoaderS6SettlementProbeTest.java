@@ -90,7 +90,7 @@ class EscrowLoaderS6SettlementProbeTest {
             }
         }
         for (String[] row : new String[][] {{"O3_BEFORE", "K1", "O3"}, {"O3_REPLACED", "K2", "O3"},
-                {"O3_ACK", "O3_AFTER", "O3"}, {"O4_BEFORE", "K1", "O4"}}) {
+                {"O3_ACK", "O3_AFTER", "O3"}, {"O4_BEFORE", "K8", "O4"}}) {
             String cut = "LF_S6_" + row[0];
             assertTrue(EscrowLoaderS6SettlementProbe.selected(true, cut));
             assertTrue(EscrowLoaderS6SettlementProbe.completionBoundary(cut, row[1], row[2]));
@@ -98,5 +98,29 @@ class EscrowLoaderS6SettlementProbeTest {
             assertFalse(EscrowLoaderS6SettlementProbe.completionBoundary(cut, "unrelated", row[2]));
         }
         assertFalse(EscrowLoaderS6SettlementProbe.selected(true, "LF_S6_O2_BEFORE_2"));
+    }
+    @Test void actualEmptyRecordWriterUsesTheRetirementHookForO4() throws Exception {
+        var initial = EscrowTestFixtures.ledger(EscrowTestFixtures.operation(1)).generation(1);
+        Path file = directory.resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName());
+        CheckedSavedDataPolicy.atomic(ManagedSavedDataType.RESOURCE_ESCROW).replace(file, () -> EscrowCodec.encode(initial));
+        var io = new AwaitedLedgerIo();
+        var hooks = new java.util.concurrent.CopyOnWriteArrayList<String>();
+        try (var writer = io.writer(file, 1, CheckedSavedDataFile::atomicMove, hooks::add)) {
+            var empty = initial.replace(java.util.List.of(), java.util.List.of(), java.util.List.of()).generation(2);
+            assertTrue(writer.request(() -> writer.snapshot(empty, java.util.Set.of()), ignored -> { }));
+            io.awaitWrites();
+            assertEquals(java.util.List.of("K8", "K9"), hooks);
+            assertTrue(EscrowLoaderS6SettlementProbe.completionBoundary("LF_S6_O4_BEFORE", hooks.get(0), "O4"));
+            assertFalse(EscrowLoaderS6SettlementProbe.completionBoundary("LF_S6_O4_BEFORE", "K1", "O4"));
+        }
+    }
+    @Test void o4ReplacementAndAcknowledgementRemainSeparate() {
+        for (String[] row : new String[][] {{"LF_S6_O4_REPLACED", "K9"}, {"LF_S6_O4_ACK", "O4_AFTER"}}) {
+            assertTrue(EscrowLoaderS6SettlementProbe.selected(true, row[0]));
+            assertFalse(EscrowLoaderS6SettlementProbe.selected(false, row[0]));
+            assertTrue(EscrowLoaderS6SettlementProbe.completionBoundary(row[0], row[1], "O4"));
+            assertFalse(EscrowLoaderS6SettlementProbe.completionBoundary(row[0], row[1], "O3"));
+            assertFalse(EscrowLoaderS6SettlementProbe.completionBoundary(row[0], "K2", "O4"));
+        }
     }
 }

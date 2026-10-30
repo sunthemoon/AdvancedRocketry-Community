@@ -16,7 +16,8 @@ final class EscrowLoaderS6SettlementProbe {
     static final String BEFORE = "LF_S6_O1_BEFORE", REPLACED = "LF_S6_O1_REPLACED", ACK = "LF_S6_O1_ACK";
     private static final List<String> CASES = List.of(BEFORE, REPLACED, ACK,
             "LF_S6_O2_BEFORE_0", "LF_S6_O2_AFTER_0", "LF_S6_O2_BEFORE_1", "LF_S6_O2_AFTER_1",
-            "LF_S6_O3_BEFORE", "LF_S6_O3_REPLACED", "LF_S6_O3_ACK", "LF_S6_O4_BEFORE");
+            "LF_S6_O3_BEFORE", "LF_S6_O3_REPLACED", "LF_S6_O3_ACK", "LF_S6_O4_BEFORE",
+            "LF_S6_O4_REPLACED", "LF_S6_O4_ACK");
     private static final UUID ACTOR = UUID.nameUUIDFromBytes("arce:escrow:server-console".getBytes(java.nio.charset.StandardCharsets.US_ASCII));
     private static final BlockPos DEVICE = new BlockPos(66, 100, 64);
     private final MinecraftServer server;
@@ -46,7 +47,9 @@ final class EscrowLoaderS6SettlementProbe {
             case "LF_S6_O3_BEFORE" -> phase.equals("O3") && hook.equals("K1");
             case "LF_S6_O3_REPLACED" -> phase.equals("O3") && hook.equals("K2");
             case "LF_S6_O3_ACK" -> phase.equals("O3") && hook.equals("O3_AFTER");
-            case "LF_S6_O4_BEFORE" -> phase.equals("O4") && hook.equals("K1");
+            case "LF_S6_O4_BEFORE" -> phase.equals("O4") && hook.equals("K8");
+            case "LF_S6_O4_REPLACED" -> phase.equals("O4") && hook.equals("K9");
+            case "LF_S6_O4_ACK" -> phase.equals("O4") && hook.equals("O4_AFTER");
             default -> false;
         };
     }
