@@ -117,12 +117,20 @@ final class EscrowLoaderS6UnloadedProbe {
             // Diagnosis deliberately does not enter or pass the ordinary fairness assertions/admission below.
             return;
         }
-        boolean unloaded = level.getChunkSource().getChunkNow(128, 128) == null && !level.areEntitiesLoaded(area.chunk.toLong());
+        boolean unloaded = unloadObservation.awaitComplete(server.getTickCount(),
+                level.getChunkSource().getChunkNow(128, 128) == null, !level.areEntitiesLoaded(area.chunk.toLong()),
+                farLoader.isRemoved(), farRocket.isRemoved());
         if (!unloaded) {
             EscrowTags.require(unloadedAt < 0, "S6 fairness forced the unloaded work back in"); return;
         }
         EscrowTags.require(farLoader.isRemoved() && farRocket.isRemoved(), "S6 fairness slot unloaded without endpoint removal");
-        if (unloadedAt < 0) { unloadedAt = server.getTickCount(); }
+        if (unloadedAt < 0) {
+            unloadedAt = server.getTickCount();
+            AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_S6_FAIR_UNLOADED tick={} first_chunk_absent={} first_entities_unloaded={}"
+                            + " first_loader_removed={} first_rocket_removed={} removal_bound={}", unloadedAt,
+                    unloadObservation.chunkAbsentAt(), unloadObservation.entitiesUnloadedAt(),
+                    unloadObservation.loaderRemovedAt(), unloadObservation.rocketRemovedAt(), EscrowLoaderS6UnloadObservation.REMOVAL_WAIT_TICKS);
+        }
         if (!queued) { queued = true; queue(healthyLoader); }
         if (server.getTickCount() - unloadedAt < 20 || !coordinator.writerIdle()
                 || data.ledger().records().size() != 1 || data.ledger().issuedThrough() != 2) { return; }

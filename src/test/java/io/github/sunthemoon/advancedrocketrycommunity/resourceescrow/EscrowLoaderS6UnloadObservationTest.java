@@ -37,4 +37,41 @@ class EscrowLoaderS6UnloadObservationTest {
         assertFalse(observation.windowComplete(2_419));
         assertTrue(observation.windowComplete(2_420));
     }
+
+    @Test void completeStateWaitsForBothReferences() {
+        var observation = new EscrowLoaderS6UnloadObservation();
+        assertFalse(observation.awaitComplete(44, false, false, false, false));
+        assertFalse(observation.awaitComplete(45, true, true, false, true));
+        assertFalse(observation.awaitComplete(46, true, true, false, true));
+        assertTrue(observation.awaitComplete(47, true, true, true, true));
+        assertTrue(observation.awaitComplete(100, true, true, true, true));
+    }
+
+    @Test void eitherReferenceNeverRemovedFailsAtTheFixedBound() {
+        for (boolean loaderRemoved : new boolean[] {false, true}) {
+            var observation = new EscrowLoaderS6UnloadObservation();
+            for (long tick = 45; tick < 65; tick++) {
+                assertFalse(observation.awaitComplete(tick, true, true, loaderRemoved, !loaderRemoved));
+            }
+            assertThrows(IllegalStateException.class,
+                    () -> observation.awaitComplete(65, true, true, loaderRemoved, !loaderRemoved));
+        }
+    }
+
+    @Test void losingSpatialUnloadCannotResetTheRemovalDeadline() {
+        var observation = new EscrowLoaderS6UnloadObservation();
+        assertFalse(observation.awaitComplete(45, true, true, false, true));
+        assertFalse(observation.awaitComplete(64, false, false, false, true));
+        assertThrows(IllegalStateException.class,
+                () -> observation.awaitComplete(65, false, false, true, true));
+    }
+
+    @Test void lateCompleteStateOrRegainedLiveReferenceCannotPass() {
+        var late = new EscrowLoaderS6UnloadObservation();
+        assertFalse(late.awaitComplete(45, true, true, false, true));
+        assertThrows(IllegalStateException.class, () -> late.awaitComplete(66, true, true, true, true));
+        var lost = new EscrowLoaderS6UnloadObservation();
+        assertTrue(lost.awaitComplete(45, true, true, true, true));
+        assertThrows(IllegalStateException.class, () -> lost.awaitComplete(46, true, true, false, true));
+    }
 }
