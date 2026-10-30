@@ -10,6 +10,21 @@ import org.junit.jupiter.api.io.TempDir;
 class W212TimingTest {
     @TempDir Path directory;
 
+    @Test void combinedMetaspaceDoesNotCountItsCompressedClassSubsetTwice() {
+        assertEquals(1_000, W212Timing.metadataUsed(java.util.List.of(
+                pool("Metaspace", 1_000), pool("Compressed Class Space", 200), pool("CodeHeap", 500))));
+    }
+
+    private static java.lang.management.MemoryPoolMXBean pool(String name, long used) {
+        return (java.lang.management.MemoryPoolMXBean) java.lang.reflect.Proxy.newProxyInstance(
+                W212TimingTest.class.getClassLoader(), new Class<?>[]{java.lang.management.MemoryPoolMXBean.class},
+                (proxy, method, args) -> switch (method.getName()) {
+                    case "getName" -> name;
+                    case "getUsage" -> new java.lang.management.MemoryUsage(0, used, used, -1);
+                    default -> throw new AssertionError("Unexpected pool query: " + method);
+                });
+    }
+
     @Test void startupMetricsAreSeparateFromTheTickRecorder() {
         var bytes = new java.io.ByteArrayOutputStream();
         var original = System.out;
@@ -25,7 +40,9 @@ class W212TimingTest {
         assertTrue(row.has("loaded_classes_delta"));
         assertTrue(row.has("thread_allocated_bytes"));
         assertTrue(row.has("heap_used_delta_bytes"));
-        assertTrue(row.has("metadata_used_delta_bytes"));
+        assertTrue(row.has("metaspace_used_delta_bytes"));
+        assertTrue(row.has("compressed_class_space_used_delta_bytes"));
+        assertFalse(row.has("metadata_used_delta_bytes"));
     }
 
     @Test void nestedElapsedSpansRetainTheirDepthAndContainment() throws Exception {

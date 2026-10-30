@@ -18,6 +18,18 @@ public final class W212Timing {
     /** Diagnostic export only; measurement queries and output are outside the timed initialization body. */
     public static Startup startup() { return new Startup(); }
 
+    static long metadataUsed(List<MemoryPoolMXBean> pools) {
+        // HotSpot's Metaspace pool already includes Compressed Class Space; never add its subset again.
+        return poolUsed(pools, "Metaspace");
+    }
+
+    private static long poolUsed(List<MemoryPoolMXBean> pools, String name) {
+        for (var pool : pools) {
+            if (pool.getName().equals(name)) { return pool.getUsage().getUsed(); }
+        }
+        throw new IllegalStateException("Missing diagnostic memory pool: " + name);
+    }
+
     public static final class Startup implements AutoCloseable {
         private final com.sun.management.ThreadMXBean threads =
                 (com.sun.management.ThreadMXBean) ManagementFactory.getThreadMXBean();
@@ -28,17 +40,12 @@ public final class W212Timing {
         private final int loadedBefore = classes.getLoadedClassCount();
         private final long heapBefore = memory.getHeapMemoryUsage().getUsed();
         private final long metadataBefore = metadata();
+        private final long classSpaceBefore = poolUsed(pools, "Compressed Class Space");
         private final long allocatedBefore = allocated();
         private final long start = System.nanoTime();
 
         private long metadata() {
-            long bytes = 0;
-            for (var pool : pools) {
-                if (pool.getName().equals("Metaspace") || pool.getName().equals("Compressed Class Space")) {
-                    bytes += pool.getUsage().getUsed();
-                }
-            }
-            return bytes;
+            return metadataUsed(pools);
         }
         private long allocated() {
             return threads.isThreadAllocatedMemorySupported() && threads.isThreadAllocatedMemoryEnabled()
@@ -53,7 +60,8 @@ public final class W212Timing {
             result.put("loaded_classes_delta", classes.getLoadedClassCount() - loadedBefore);
             result.put("thread_allocated_bytes", allocatedBefore < 0 || allocatedAfter < 0 ? -1 : allocatedAfter - allocatedBefore);
             result.put("heap_used_delta_bytes", memory.getHeapMemoryUsage().getUsed() - heapBefore);
-            result.put("metadata_used_delta_bytes", metadata() - metadataBefore);
+            result.put("metaspace_used_delta_bytes", metadata() - metadataBefore);
+            result.put("compressed_class_space_used_delta_bytes", poolUsed(pools, "Compressed Class Space") - classSpaceBefore);
             System.out.println("W215_STARTUP " + new GsonBuilder().create().toJson(result));
         }
     }
