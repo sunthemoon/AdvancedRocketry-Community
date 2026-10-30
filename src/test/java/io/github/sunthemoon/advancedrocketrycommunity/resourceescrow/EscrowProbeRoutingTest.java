@@ -66,7 +66,7 @@ class EscrowProbeRoutingTest {
                 }
             }
         }
-        assertEquals(571, seen.size()); // R199: six accept, two veto, six abandon and four normalization chain cases, plus the test prefix.
+        assertEquals(581, seen.size()); // R200: nine F1 cuts and pre-replacement F2, with the existing producer rules.
         assertTrue(seen.contains(EscrowLoaderS6Probe.E3));
         var expected = new HashSet<>(EscrowItemSettlementCuts.CASES.keySet()); expected.addAll(EscrowItemRecoveryCuts.CASES);
         assertEquals(expected, items); assertEquals(18, items.size());

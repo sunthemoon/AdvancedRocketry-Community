@@ -20,18 +20,19 @@ import uuid
 import loader_s6_oracle as oracle
 import loader_s6_chain as chain
 import loader_s6_abandon as abandon
+import loader_s6_flight as flight
 import run_v180_loader_cuts as shared
 from run_dedicated_server_smoke import CapturedProcess, SmokeError, allocate_port, write_server_configuration, expected_server_properties
 from run_v060_flight_server_smoke import _server_command
 
-CASES = (oracle.E3, oracle.E5) + oracle.R2 + oracle.G3 + oracle.G1 + oracle.OPERATOR + chain.CASES
+CASES = (oracle.E3, oracle.E5) + oracle.R2 + oracle.G3 + oracle.G1 + oracle.OPERATOR + chain.CASES + flight.CASES
 HOOKS = shared.HOOK_FILES + tuple(
     "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/resourceescrow/" + name + ".java"
     for name in ("EscrowLoaderS6Probe", "EscrowLoaderS6Recovery", "EscrowLoaderS6Accounting", "EscrowLoaderS6UnloadedProbe",
-                 "EscrowLoaderS6UnloadObservation", "EscrowLoaderS6R2Probe", "EscrowLoaderS6ShutdownProbe", "EscrowLoaderS6GuardProbe", "EscrowLoaderS6SettlementProbe", "EscrowLoaderS6ChainProbe", "EscrowLoaderS6NamedSetup", "EscrowCargoContentionProbe", "EscrowNamedFillTestHook")) + tuple(
+                 "EscrowLoaderS6UnloadObservation", "EscrowLoaderS6R2Probe", "EscrowLoaderS6ShutdownProbe", "EscrowLoaderS6GuardProbe", "EscrowLoaderS6SettlementProbe", "EscrowLoaderS6ChainProbe", "EscrowLoaderS6NamedSetup", "EscrowLoaderS6FlightProbe", "EscrowLoaderS6JournalProbe", "EscrowCargoContentionProbe", "EscrowNamedFillTestHook")) + tuple(
     "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/persistence/" + name + ".java"
     for name in ("RocketI6NativeCut", "RocketJournalFailurePolicy", "RocketTransferSavedData"))
-HARNESSES = shared.HARNESS_FILES + ("scripts/run_v180_loader_s6.py", "scripts/loader_s6_oracle.py", "scripts/loader_s6_integrity.py", "scripts/loader_s6_chain.py", "scripts/loader_s6_abandon.py", "scripts/loader_s6_normalize.py")
+HARNESSES = shared.HARNESS_FILES + ("scripts/run_v180_loader_s6.py", "scripts/loader_s6_oracle.py", "scripts/loader_s6_integrity.py", "scripts/loader_s6_chain.py", "scripts/loader_s6_abandon.py", "scripts/loader_s6_normalize.py", "scripts/loader_s6_flight.py")
 
 
 def write(path: Path, data: dict) -> None:
@@ -39,6 +40,8 @@ def write(path: Path, data: dict) -> None:
 
 
 def check_log(lines, restart, cut=oracle.E3, retired_operation=None, image=None):
+    if cut in flight.CASES:
+        return flight.check_logs(lines, restart, cut)
     if cut in chain.CASES:
         return chain.check_logs(lines, restart, cut)
     oracle.check_observations(lines, restart, cut, retired_operation)
@@ -141,6 +144,8 @@ def run_cut(args, cut, evidence, owner, pins):
                         marker = r"ARCE_W164_CUT boundary=" + oracle.O_HOOKS[cut] + r"(?:\s|$)"
                 elif cut in chain.CASES:
                     marker = r"ARCE_LOADER_S6_CHAIN_" + ("RESULT" if restart else "PAUSED") + r" cut=" + re.escape(cut) + r"(?:\s|$)"
+                elif cut in flight.CASES:
+                    marker = r"ARCE_LOADER_S6_FLIGHT_" + ("RESULT" if restart else "PAUSED") + r" cut=" + re.escape(cut) + r"(?:\s|$)"
                 process.wait_for(re.compile(marker), args.startup_timeout)
                 start["checkpoint_reached"] = True
                 if restart and cut not in oracle.G1 and cut not in chain.VETO:
@@ -159,7 +164,8 @@ def run_cut(args, cut, evidence, owner, pins):
                 row["unexplained_image"] = True
             process = None
             start["observations"] = [line for line in lines if "ARCE_LOADER_" in line or "ARCE_CARGO_CACHE_" in line or "ARCE_W164_CUT" in line]
-            start["image"] = abandon.inspect(session / "world") if cut in chain.ABANDON else oracle.inspect(session / "world", cut)
+            start["image"] = (flight.inspect(session / "world") if cut in flight.CASES else
+                              abandon.inspect(session / "world") if cut in chain.ABANDON else oracle.inspect(session / "world", cut))
             if diagnostic:
                 # The healthy pair is deliberately never queued. Its image is retained,
                 # not passed through the completed-fairness oracle or reported as PASS.
@@ -183,6 +189,9 @@ def run_cut(args, cut, evidence, owner, pins):
                 raw_check = lambda image, restart, identity: oracle.check_o1(image, restart, identity, cut)
             if cut in chain.CASES:
                 raw_check = lambda image, restart, identity: chain.check(image, restart, identity, cut)
+            if cut in flight.CASES:
+                raw_check = lambda image, restart, identity: flight.check(image, restart, identity, cut,
+                        flight.witness(lines, cut) if not restart else None)
             for kind, check in (("LOG", lambda: check_log(lines, restart, cut,
                                       identity["op_id"] if cut == oracle.G3_L2 and restart and identity else None, start["image"])),
                                 ("RAW", lambda: raw_check(start["image"], restart, identity))):
