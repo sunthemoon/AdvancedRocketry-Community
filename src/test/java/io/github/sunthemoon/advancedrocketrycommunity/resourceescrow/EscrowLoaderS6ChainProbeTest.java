@@ -4,6 +4,21 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 
 class EscrowLoaderS6ChainProbeTest {
+    @Test void normalizationSelectorsDoNotPauseAtTheO1BeforeCut() {
+        for (String side : new String[] {"BEFORE", "AFTER"}) {
+            for (String suffix : new String[] {"", "_BI"}) {
+                String cut = "LF_S6_CHAIN_NORMALIZE_" + side + suffix;
+                assertTrue(EscrowLoaderS6ChainProbe.selected(true, cut));
+                assertFalse(EscrowLoaderS6ChainProbe.selected(false, cut));
+                assertFalse(EscrowLoaderS6ChainProbe.selected(true, cut + "_OTHER"));
+                assertEquals(side.equals("BEFORE"), EscrowLoaderS6ChainProbe.normalizationBoundary(cut, "O_BIND_BEFORE"));
+                assertEquals(side.equals("AFTER"), EscrowLoaderS6ChainProbe.normalizationBoundary(cut, "O_BIND_AFTER"));
+                for (String hook : new String[] {"K1", "K2", "O1_ACK"}) {
+                    assertFalse(EscrowLoaderS6ChainProbe.boundary(cut, hook));
+                }
+            }
+        }
+    }
     @Test void abandonUsesTheSameExactDurableO1Sides() {
         String[] sides = {"BEFORE", "REPLACED", "ACK"}, hooks = {"K1", "K2", "O1_ACK"};
         for (String suffix : new String[] {"", "_BI"}) {

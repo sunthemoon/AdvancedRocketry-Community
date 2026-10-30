@@ -142,6 +142,7 @@ class ChainOracleTest(unittest.TestCase):
         for cut in chain.CASES:
             if "_VETO" in cut: continue  # The dedicated diagnostic test also checks the held reason.
             hook = "K1" if "_BEFORE" in cut else "K2" if "_REPLACED" in cut else "O1_ACK"
+            if "_NORMALIZE" in cut: hook = "O_BIND_BEFORE" if "_BEFORE" in cut else "O_BIND_AFTER"
             line = f"ARCE_LOADER_S6_CHAIN_PAUSED cut={cut} hook={hook}\n"
             chain.check_logs([line], 0, cut)
             for lines in ([], [line, line], [line, "[Server/ERROR] test"]):

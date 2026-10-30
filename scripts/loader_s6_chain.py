@@ -10,8 +10,9 @@ from run_dedicated_server_smoke import SmokeError
 VETO = ("LF_S6_CHAIN_VETO", "LF_S6_CHAIN_VETO_BI")
 ABANDON = tuple("LF_S6_CHAIN_ABANDON_" + side + suffix for suffix in ("", "_BI")
                 for side in ("BEFORE", "REPLACED", "ACK"))
+NORMALIZE = tuple("LF_S6_CHAIN_NORMALIZE_" + side + suffix for suffix in ("", "_BI") for side in ("BEFORE", "AFTER"))
 CASES = tuple("LF_S6_CHAIN_" + side + suffix for suffix in ("", "_BI")
-              for side in ("BEFORE", "REPLACED", "ACK")) + VETO + ABANDON
+              for side in ("BEFORE", "REPLACED", "ACK")) + VETO + ABANDON + NORMALIZE
 
 
 def descriptor(bi):
@@ -176,6 +177,9 @@ def head(root, generation):
 
 
 def check(image, restart, identity=None, cut=CASES[0]):
+    if cut in NORMALIZE:
+        import loader_s6_normalize
+        return loader_s6_normalize.check(image, restart, identity, cut)
     if cut in ABANDON:
         import loader_s6_abandon
         return loader_s6_abandon.check(image, restart, identity, cut)
@@ -234,13 +238,16 @@ def check(image, restart, identity=None, cut=CASES[0]):
 
 
 def check_logs(lines, restart, cut):
-    lines = [line.rstrip("\r\n") for line in lines]; before = "_BEFORE" in cut; veto = cut in VETO
+    lines = [line.rstrip("\r\n") for line in lines]; normal = cut in NORMALIZE
+    before = "_BEFORE" in cut and not normal; veto = cut in VETO
     if restart:
         tank, epoch = ("MISSING", "MISSING") if cut in ABANDON else ("4000", "1")
-        marker = (f"ARCE_LOADER_S6_CHAIN_RESULT cut={cut} tanks=4000,{tank} banks={'1000,1000' if cut.endswith('_BI') else '2000,0'} "
-                  f"epochs=1,{epoch},2 records={2 if before or veto else 0} receipts={0 if before or veto else 2} state={'PRE_O1' if before else 'HELD' if veto else 'RELEASED'}")
+        banks = "0,0" if normal else "1000,1000" if cut.endswith("_BI") else "2000,0"
+        marker = (f"ARCE_LOADER_S6_CHAIN_RESULT cut={cut} tanks=4000,{tank} banks={banks} "
+                  f"epochs=1,{epoch},{0 if normal else 2} records={2 if before or veto else 0} receipts={0 if before or veto else 2} state={'PRE_O1' if before else 'HELD' if veto else 'RELEASED'}")
     else:
         hook = "O_VETO" if veto else "K1" if before else "K2" if "_REPLACED" in cut else "O1_ACK"
+        if normal: hook = "O_BIND_BEFORE" if "_BEFORE" in cut else "O_BIND_AFTER"
         marker = f"ARCE_LOADER_S6_CHAIN_PAUSED cut={cut} hook={hook}"
     legacy.require(sum(line.endswith(marker) for line in lines) == 1, "Missing/repeated chain operator boundary")
     if veto:
