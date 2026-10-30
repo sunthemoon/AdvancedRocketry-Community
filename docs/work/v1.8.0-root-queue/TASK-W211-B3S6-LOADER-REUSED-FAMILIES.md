@@ -324,3 +324,34 @@ committed rule (the pre-fill fixture save, F1's ordinary checkpoint, F6's proofs
 
 A fresh session continues on the same branch and worktree from `a72bd1041` with the remaining 38 C selections,
 under R201's renewal rule. The rest of this TASK and R185 to R201 are unchanged.
+
+## Root decision R203 (2026-10-31 05:27): the setup for the last twelve C selections
+
+The twelfth session (03:08 to 05:25) delivered `22b08fe46` (tested source `6f5bf2ee0`): 26 more C selections
+(F3 with R202's fixture-owned stores, F4 to F8, and mono and bipropellant successor refill), so C stands at 38 of 50;
+the retained replay passes 261 of 261. It left F9 (one), sticky reservation (one), P1-F8 (six) and real-loader N2 (four)
+unlaunched, with `r202/remaining-setup-review.md` explaining why the F1 to F8 setup does not carry over: a completed
+real fill leaves a protected source that `EscrowRecoveryFence` refuses to replace or discard; W77's respawn retry
+is an ordinary-record path the governed executor does not take; landed disassembly admits only ordinary schemas, and
+after governed F8 the old T is gone; W204's N2 setup uses a scalar debit and a post-seed save.
+
+**Decision.**
+
+1. **F9, P1-F8 and N2.** Use the setup the review proposes: first complete a real loader-funded governed flight; its
+   settled arrival (source epoch back to zero, operation and markers retired) is then the start of an explicitly
+   labelled ordinary historical setup, with the typed fluid debit and the real player confirmation path, on which the
+   ordinary F9, P1-F8 and N2 cuts run. Commit, before the first launch: the multi-stage setup, what is persisted and
+   when (no store beyond the committed rule unless named here), the named pad's persistence, and the restart oracle
+   for each row. Never clear the escrow wrapper, strip governed authority, seed a schema the product refuses, or
+   bypass `EscrowRecoveryFence`, `landedRecordAdmitted` or the disassembly confirmation. If no such setup can reach
+   a row inside the product's own rules, record that row as structurally out of reach, with the product rule that
+   prevents it and the unit tests that pin it, and stop on that row; do not manufacture it.
+2. **Sticky reservation.** Reuse the existing capacity and transition unit tests (including
+   `EscrowReservationTransitionTest.admittedOperationsCanPersistTheirStickyRepairReasons`, 62 admitted operations with
+   `JOURNAL_GUARD_MISMATCH`) as the capacity evidence, named with their hashes in the matrix, and add one native
+   real-loader representative that persists a sticky repair reason through checked persistence and two restarts. The
+   capacity sequence is not repeated natively.
+3. Correct C's sticky wording in the committed enumeration to W11B3 Root-R3's capacity meaning before launch.
+
+A fresh session continues on the same branch and worktree from `22b08fe46`. R201's renewal rule applies. The rest
+of this TASK and R185 to R202 are unchanged. When C is complete, deliver for the final independent review.
