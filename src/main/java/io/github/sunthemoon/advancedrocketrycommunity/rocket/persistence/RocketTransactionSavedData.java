@@ -42,6 +42,7 @@ public final class RocketTransactionSavedData extends SavedData {
     private static final org.slf4j.Logger LOGGER = com.mojang.logging.LogUtils.getLogger();
 
     private final Map<UUID, RocketPersistedTransaction> entries = new LinkedHashMap<>();
+    private final RocketTransactionAdmission admission = new RocketTransactionAdmission();
     private CompoundTag preservedBlockedData;
     private final Thread owner = Thread.currentThread();
     private final long createdNanos = System.nanoTime();
@@ -119,24 +120,7 @@ public final class RocketTransactionSavedData extends SavedData {
         requireOwner(); Objects.requireNonNull(candidate);
         if (!operational() || entries.containsKey(candidate.record().transactionId())
                 || entries.size() >= RocketLimits.MAX_ACTIVE_TRANSACTIONS) { return false; }
-        int maximum = Math.toIntExact(TYPE.maxUncompressedBytes());
-        var header = new CompoundTag(); SavedDataSchemaMigrator.stampCurrent(TYPE, header);
-        header.put("transactions", new ListTag());
-        var measured = io.github.sunthemoon.advancedrocketrycommunity.persistence.BoundedNbt.measure(
-                header, maximum, RocketTransactionWriter.DIGEST_DEPTH, maximum);
-        if (measured == null) { return false; }
-        long bytes = measured.bytes();
-        // One bounded entry at a time, rather than allocating another whole 64 MiB root.
-        for (var entry : java.util.stream.Stream.concat(entries.values().stream(), java.util.stream.Stream.of(candidate)).toList()) {
-            try {
-                var size = io.github.sunthemoon.advancedrocketrycommunity.persistence.BoundedNbt.measure(
-                        RocketTransactionCodec.encodeEntry(entry), maximum, RocketTransactionWriter.DIGEST_DEPTH - 2, maximum);
-                if (size == null) { return false; }
-                bytes += size.bytes() - 3; // List children have no named-root header.
-                if (bytes > maximum) { return false; }
-            } catch (IllegalArgumentException invalid) { return false; }
-        }
-        return true;
+        return admission.canAppend(entries.values(), candidate);
     }
 
     /** Exact W123 presence: current entries, current sequence and the acknowledged full entry digest must agree. */
@@ -419,12 +403,14 @@ public final class RocketTransactionSavedData extends SavedData {
                 if (data.entries.put(entry.record().transactionId(), entry) != null) {
                     throw new IllegalArgumentException("Duplicate rocket transaction ID");
                 }
+                data.admission.replace(entry);
             }
             if (migration.changed()) {
                 data.setDirty();
             }
         } catch (RuntimeException exception) {
             data.entries.clear();
+            data.admission.clear();
             data.preservedBlockedData = source.copy();
         }
         return data;
@@ -510,13 +496,16 @@ public final class RocketTransactionSavedData extends SavedData {
                 || existing.record().type() != record.type())) {
             throw new IllegalArgumentException("Transaction ID was rebound to different authority data");
         }
-        entries.put(record.transactionId(), new RocketPersistedTransaction(record, snapshot, ownerId));
+        var entry = new RocketPersistedTransaction(record, snapshot, ownerId);
+        entries.put(record.transactionId(), entry);
+        admission.replace(entry);
         setDirty();
     }
 
     private void remove(UUID transactionId) {
         requireOwner();
         if (entries.remove(transactionId) != null) {
+            admission.remove(transactionId);
             setDirty();
         }
     }

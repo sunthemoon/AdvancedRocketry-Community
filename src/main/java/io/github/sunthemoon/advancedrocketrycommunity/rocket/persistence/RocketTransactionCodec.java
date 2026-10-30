@@ -16,6 +16,13 @@ final class RocketTransactionCodec {
     private RocketTransactionCodec() { }
 
     static CompoundTag encodeEntry(RocketPersistedTransaction entry) {
+        CompoundTag data = encodeMetadata(entry);
+        data.put("snapshot", RocketSnapshotNbtCodec.encode(entry.snapshot()));
+        return data;
+    }
+
+    /** Shared exact record framing for encoding and same-snapshot admission-size updates. */
+    static CompoundTag encodeMetadata(RocketPersistedTransaction entry) {
         RocketTransactionRecord record = entry.record();
         CompoundTag data = new CompoundTag();
         data.putUUID("transaction_id", record.transactionId());
@@ -29,7 +36,6 @@ final class RocketTransactionCodec {
         data.putInt("progress", record.progress());
         record.rocketEntityIdOptional().ifPresent(id -> data.putUUID("rocket_entity_id", id));
         data.putUUID("owner_id", entry.ownerId());
-        data.put("snapshot", RocketSnapshotNbtCodec.encode(entry.snapshot()));
         return data;
     }
 
