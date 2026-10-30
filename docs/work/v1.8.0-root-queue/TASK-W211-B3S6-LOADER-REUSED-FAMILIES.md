@@ -128,3 +128,26 @@ A fresh session continues on the same branch and worktree from `588c90ef6`:
    fix; one the base also has is recorded, not fixed here.
 
 The rest of this TASK is unchanged.
+
+## Root decision R190 (2026-10-30 14:01): snapshot comparison, and fixture defects without stopping
+
+The fourth session (12:46 to 14:00) delivered `ab2f17b9e`: native UUIDs canonicalized throughout the oracle
+(`fd3ef6bbd`), both retained E5 images replayed, a fresh E5 run passed, and R2's KEEP_SOURCE cut passed; R2's
+destructive-source cut failed twice because the new fixture compares independently decoded snapshots with object
+equality, while the raw images stayed unchanged. The whole Python suite passes locally (2,325 tests, four skips).
+
+A fresh session continues on the same branch and worktree from `ab2f17b9e`:
+
+1. **Compare snapshots by value:** compare the canonical encodings (or a field-by-field value comparison covering every
+   field), never object identity, with a test that fails first for two equal snapshots decoded separately and one that
+   still rejects a snapshot differing in any block, state, payload or anchor. Replay the two retained destructive-source
+   images, recorded as a replay, then give the row a renewed two-attempt budget.
+2. **From now on in W211, a fixture or oracle defect does not stop the campaign** when all of these hold: the retained
+   raw images are unchanged and explained by the records; the defect is in test code; the fix comes with a test that
+   fails first; the retained images of the failed attempts are replayed through the fix; and the failed attempts stay
+   recorded as failed. The row then gets one renewed two-attempt budget. A second defect in the same row, a production
+   cause, or an image the records cannot explain still stops the campaign for Root.
+3. Then the duplicate-reconnect row and the tranches A3 to C, committing tranche C's concrete selections and counts
+   before its first launch.
+
+The rest of this TASK, R185, R186 and R188 are unchanged.
