@@ -13,6 +13,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFu
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNativeResources;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketSnapshotNbtCodec;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime;
 import java.util.List;
 import java.util.Set;
@@ -130,7 +131,7 @@ final class EscrowLoaderS6R2Probe {
         EscrowTags.require(copies.size() == (KEEP.equals(cut) ? 1 : 2), "S6 R2 created or discarded a physical copy");
         for (var copy : copies) {
             if (copy == rocket) { continue; }
-            EscrowTags.require(copy.snapshot().orElseThrow().equals(record.destinationSnapshot())
+            EscrowTags.require(sameSnapshot(copy.snapshot().orElseThrow(), record.destinationSnapshot())
                     && copy.assemblyTransactionId().orElseThrow().equals(record.logicalRocketId())
                     && bank(copy, false) == 0 && bank(copy, true) == 0 && copy.escrowSection().epoch() == 0
                     && copy.escrowSection().markers().isEmpty(), "S6 R2 changed its empty historical copy");
@@ -147,6 +148,12 @@ final class EscrowLoaderS6R2Probe {
     }
 
     private List<RocketEntity> rockets() { return server.overworld().getEntitiesOfClass(RocketEntity.class, new AABB(ORIGIN).inflate(14)); }
+
+    static boolean sameSnapshot(RocketStructureSnapshot actual, RocketStructureSnapshot expected) {
+        // Entity and journal are decoded independently on restart. Include every persisted field,
+        // including payloads and creation time, rather than identity or a partial digest.
+        return RocketSnapshotNbtCodec.encode(actual).equals(RocketSnapshotNbtCodec.encode(expected));
+    }
 
     private void preparePassengerBeforeJournal() {
         EscrowTags.require(RocketTransferSavedData.get(server).entries().isEmpty(), "R2 passenger setup encountered installed history");
