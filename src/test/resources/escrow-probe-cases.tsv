@@ -371,6 +371,10 @@ LF_S6_F5_PASSENGERS_ACK	scripts/run_v180_loader_s6.py
 LF_S6_F5_SOURCE_ACK	scripts/run_v180_loader_s6.py
 LF_S6_F5_SOURCE_REMOVAL_AFTER	scripts/run_v180_loader_s6.py
 LF_S6_F5_SOURCE_REMOVAL_BEFORE	scripts/run_v180_loader_s6.py
+LF_S6_F6_PROOF_AFTER_0	scripts/run_v180_loader_s6.py
+LF_S6_F6_PROOF_AFTER_1	scripts/run_v180_loader_s6.py
+LF_S6_F6_PROOF_BEFORE_0	scripts/run_v180_loader_s6.py
+LF_S6_F6_PROOF_BEFORE_1	scripts/run_v180_loader_s6.py
 LF_S6_G1_SATURATION	scripts/run_v180_loader_s6.py;tests/test_loader_s6_oracle.py
 LF_S6_G1_VETO	scripts/run_v180_loader_s6.py;tests/test_loader_s6_oracle.py
 LF_S6_G3_FAILED_CLOSE	scripts/run_v180_loader_s6.py;tests/test_loader_s6_oracle.py
