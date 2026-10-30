@@ -9,6 +9,36 @@ import org.junit.jupiter.api.Test;
 class EscrowLoaderS6ShutdownProbeTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
 
+    @Test void furtherShutdownRowsKeepTheirExactNativeFaultSelectorPairs() {
+        for (var pair : java.util.Map.of("LF_S6_G3_L1_QUEUED", "LF_M_K7", "LF_S6_G3_FAILED_CLOSE", "LF_M_K7",
+                "LF_S6_G3_L1_UNKNOWN", "LF_M_E4L1_UNKNOWN", "LF_S6_G3_L2_UNKNOWN", "LF_M_E4L2_UNKNOWN").entrySet()) {
+            assertTrue(EscrowLoaderS6ShutdownProbe.selected(true, pair.getValue(), pair.getKey()));
+            assertFalse(EscrowLoaderS6ShutdownProbe.selected(false, pair.getValue(), pair.getKey()));
+            assertFalse(EscrowLoaderS6ShutdownProbe.selected(true, pair.getValue() + "_OTHER", pair.getKey()));
+        }
+    }
+
+    @Test void queuedObservationRequiresAnActualRunningL1AndUncapturedSuccessor() {
+        String state = "active:true,successor:true,completions:0,running:true,unknown:false,generation:2,durable:1";
+        assertTrue(EscrowLoaderS6ShutdownProbe.queuedReady(state));
+        for (String changed : java.util.List.of(state.replace("successor:true", "successor:false"),
+                state.replace("active:true", "active:false"), state.replace("running:true", "running:false"),
+                state.replace("unknown:false", "unknown:true"), state.replace("generation:2", "generation:3"),
+                state.replace("completions:0", "completions:1"))) {
+            assertFalse(EscrowLoaderS6ShutdownProbe.queuedReady(changed));
+        }
+    }
+
+    @Test void unknownObservationPinsTheActualCandidateAndPreviousDurableGeneration() {
+        String l1 = "active:true,successor:false,completions:0,running:false,unknown:true,generation:2,durable:1";
+        String l2 = l1.replace("generation:2,durable:1", "generation:3,durable:2");
+        assertTrue(EscrowLoaderS6ShutdownProbe.unknownReady("LF_S6_G3_L1_UNKNOWN", l1));
+        assertTrue(EscrowLoaderS6ShutdownProbe.unknownReady("LF_S6_G3_L2_UNKNOWN", l2));
+        assertFalse(EscrowLoaderS6ShutdownProbe.unknownReady("LF_S6_G3_L1_UNKNOWN", l2));
+        assertFalse(EscrowLoaderS6ShutdownProbe.unknownReady("LF_S6_G3_L2_UNKNOWN", l1));
+        assertFalse(EscrowLoaderS6ShutdownProbe.unknownReady("LF_S6_G3_L1_UNKNOWN", l1.replace("unknown:true", "unknown:false")));
+    }
+
     @Test void onlyTheExactReleaseGatedNativeCaseAndSelectorPairIsAccepted() {
         var cut = EscrowLoaderS6ShutdownProbe.L1_INFLIGHT;
         assertTrue(EscrowLoaderS6ShutdownProbe.selected(true, "LF_M_K7", cut));

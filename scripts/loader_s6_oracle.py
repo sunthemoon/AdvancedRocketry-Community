@@ -18,7 +18,13 @@ R2_RECONNECT = "LF_S6_R2_DUPLICATE_RECONNECT"
 R2 = (R2_KEEP, R2_DESTRUCTIVE, R2_RECONNECT)
 G3_L1 = "LF_S6_G3_L1_INFLIGHT"
 G3_L2 = "LF_S6_G3_L2_INFLIGHT"
-G3 = (G3_L1, G3_L2)
+G3_QUEUED = "LF_S6_G3_L1_QUEUED"
+G3_U1 = "LF_S6_G3_L1_UNKNOWN"
+G3_U2 = "LF_S6_G3_L2_UNKNOWN"
+G3_CLOSE = "LF_S6_G3_FAILED_CLOSE"
+G3_UNKNOWN = (G3_U1, G3_U2)
+G3_SELF_STOP = G3_UNKNOWN + (G3_CLOSE,)
+G3 = (G3_L1, G3_L2, G3_QUEUED) + G3_SELF_STOP
 
 # UUID-valued native fields and the identity envelope returned by these oracles.
 # Do not recognize UUIDs by array length: coordinates, quantities and hashes are
@@ -97,6 +103,24 @@ def check_g3_l1(image, restart, identity=None):
     return result
 
 
+def check_g3_unknown(image, restart, identity=None, cut=G3_U1):
+    legacy.require(cut in G3_UNKNOWN and restart in (0, 1, 2), "Invalid UNKNOWN shutdown selection")
+    if cut == G3_U2:
+        result = check_e3(image, restart, identity)
+        legacy.require(restart != 0 or result["prefix"] == "K6", "UNKNOWN L2 changed its proved native prefix")
+        return result
+    legacy.require(image.get("read_status") == "KNOWN" and isinstance(image.get("native"), dict),
+                   "UNKNOWN read cannot establish the L1 shutdown baseline")
+    try:
+        disk = normalize_ids(image["native"])
+        observed = legacy.check(disk, "LF_M_E4L1_UNKNOWN", restart)
+        observed["ledger"] = disk["ledger"]["ledger_id"]
+        legacy.require(identity is None or observed == normalize_ids(identity), "UNKNOWN L1 changed native identity")
+        return dict(identity=observed, raw_total=5000, available_total=5000 if restart else None, loss=0 if restart else None)
+    except (KeyError, TypeError, IndexError) as failure:
+        raise SmokeError(f"Malformed UNKNOWN L1 shutdown state: {failure}") from failure
+
+
 def check_g3_l2(image, restart, identity=None, operation=None):
     legacy.require(restart in (0, 1, 2) and image.get("read_status") == "KNOWN"
                    and isinstance(image.get("native"), dict), "G3 L2 UNKNOWN is not zero loss")
@@ -149,10 +173,36 @@ def check_observations(lines: list[str], restart: int, cut=E3, retired_operation
     import re
     if cut in G3:
         if restart:
-            check_recovery_observations(lines, retired_operation if cut == G3_L2 else None)
+            if cut == G3_U1:
+                expected = "ARCE_LOADER_MATRIX_STATE cut=LF_M_E4L1_UNKNOWN phase=recovered tanks=[5000] banks=0,0 epochs=[0] rocket_epoch=0 source_markers=[0] rocket_markers=0 issued=0 records=0 pending=0"
+                legacy.require(sum(expected in line for line in lines) == 1 and
+                               sum("ARCE_LOADER_MATRIX_RESULT cut=LF_M_E4L1_UNKNOWN" in line for line in lines) == 1,
+                               "UNKNOWN L1 restart did not retain the exact unfilled baseline")
+            else:
+                check_recovery_observations(lines, retired_operation if cut == G3_L2 else None)
         else:
-            boundary = "K8" if cut == G3_L2 else "K1"
+            boundary = "K8" if cut == G3_L2 else "WRITE_UNKNOWN" if cut in G3_UNKNOWN else "BARRIER_IO" if cut == G3_CLOSE else "K1"
             suffix = " operation=" + shutdown_operation(lines, cut) if cut == G3_L2 else ""
+            if cut in G3_UNKNOWN or cut == G3_QUEUED:
+                matches = [match for line in lines if (match := re.search(
+                    r"ARCE_LOADER_S6_DRAIN_READY cut=" + re.escape(cut) + r" boundary=" + boundary
+                    + r" running=true state=(\S+)", line))]
+                legacy.require(len(matches) == 1, "Missing/repeated actual shutdown writer state")
+                state = matches[0][1]
+                suffix = " state=" + state
+                if cut == G3_QUEUED:
+                    legacy.require(state == "active:true,successor:true,completions:0,running:true,unknown:false,generation:2,durable:1",
+                                   "Shutdown did not observe the uncaptured L1 successor")
+                else:
+                    match = re.fullmatch(r"active:true,successor:(true|false),completions:0,running:false,unknown:true,generation:(\d+),durable:(\d+)", state)
+                    legacy.require(match is not None, "Shutdown was not in actual UNKNOWN state")
+                    generation, durable = int(match[2]), int(match[3])
+                    legacy.require(generation == durable + 1 and (durable == 1 if cut == G3_U1 else durable >= 2),
+                                   "UNKNOWN shutdown changed the candidate/durable generation")
+                    abandoned = f"Escrow ledger shutdown stopped retrying generation {generation} after 3 unknown outcomes; restart uses the durable ledger file"
+                    resolved = f"Escrow ledger generation {generation} resolved as FAILED_BEFORE_REPLACE after an unknown outcome"
+                    legacy.require(sum(abandoned in line or cut == G3_U2 and resolved in line for line in lines) == 1,
+                                   "UNKNOWN shutdown lacks its bounded drain result")
             ready = "ARCE_LOADER_S6_DRAIN_READY cut=" + cut + " boundary=" + boundary + " running=true" + suffix
             released = "ARCE_LOADER_S6_DRAIN_RELEASE cut=" + cut + " boundary=" + boundary + " running=false" + suffix
             positions = []
@@ -162,7 +212,17 @@ def check_observations(lines: list[str], restart: int, cut=E3, retired_operation
                 positions.append(found[0])
             legacy.require(positions[0] < positions[1] and any("Stopping server" in line for line in lines),
                            "Shutdown lacks ordered writer observations and a normal stop")
-        legacy.require(not any("/ERROR]" in line or "/FATAL]" in line for line in lines), "G3 ERROR/FATAL")
+        errors = [line for line in lines if "/ERROR]" in line or "/FATAL]" in line]
+        if cut == G3_CLOSE and not restart:
+            legacy.require(1 <= len(errors) <= 2 and all("/ERROR]" in line and "Failed to store chunk [4, 4]" in line for line in errors),
+                           "Failed-close shutdown has unrelated or repeated native errors")
+            expected = "ARCE_LOADER_S6_CLOSE_FAILURE records=1 pending=1 issued=1 io_failures=1 reason=BARRIER_IO proof=false"
+            legacy.require(sum(expected in line for line in lines) == 1
+                           and sum("ARCE_LOADER_S6_CACHE regions=256 own_region_cached=false" in line for line in lines) == 1
+                           and any("java.nio.channels.ClosedChannelException" in line for line in lines),
+                           "Shutdown lacks the propagated own-close failure and retained authority")
+        else:
+            legacy.require(not errors, "G3 ERROR/FATAL")
         return
     if cut in R2:
         tag = "RESULT" if restart else "PAUSED"

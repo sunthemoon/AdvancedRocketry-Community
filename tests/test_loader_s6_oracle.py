@@ -527,6 +527,86 @@ class LoaderS6OracleTest(unittest.TestCase):
                 oracle.check_recovery_observations([row.replace(before, after) for row in rows], retired_operation=operation)
         with self.assertRaises(SmokeError): oracle.check_recovery_observations(rows)
 
+    def test_unknown_l1_has_no_durable_fill_while_unknown_l2_replays_only_its_l1(self):
+        for cut, prefix in (("LF_S6_G3_L1_UNKNOWN", "LF_M_E4L1_UNKNOWN"),
+                            ("LF_S6_G3_L2_UNKNOWN", "LF_M_E4L2_UNKNOWN")):
+            first = oracle.check_g3_unknown(self.image(prefix), 0, cut=cut)
+            self.assertIsNone(first["loss"])
+            self.assertIsNone(first["available_total"])
+            for restart in (1, 2):
+                result = oracle.check_g3_unknown(self.image(prefix, restart), restart, first["identity"], cut)
+                self.assertEqual(5000, result["available_total"])
+            for mutation in ("quantity", "marker", "epoch", "identity", "unknown"):
+                changed = self.image(prefix, 1)
+                source = changed["native"]["loaders"][0]["arce_fluid_fuel_loader"]
+                if mutation == "quantity": source["tank"]["Amount"] += 1
+                elif mutation == "marker": source["resource_escrow"]["markers"].append(dict(op_id="foreign", seq=1, role="SOURCE", epoch_after=1))
+                elif mutation == "epoch": source["resource_escrow"]["resource_epoch"] += 1
+                elif mutation == "identity": source["device"] = "foreign"
+                else: changed["read_status"] = "UNKNOWN"
+                with self.subTest(cut=cut, mutation=mutation), self.assertRaises(SmokeError):
+                    oracle.check_g3_unknown(changed, 1, first["identity"], cut)
+
+    def test_unknown_shutdown_logs_require_actual_unknown_state_and_bounded_resolution(self):
+        cut = "LF_S6_G3_L1_UNKNOWN"
+        state = "active:true,successor:false,completions:0,running:false,unknown:true,generation:2,durable:1"
+        lines = [f"ARCE_LOADER_S6_DRAIN_READY cut={cut} boundary=WRITE_UNKNOWN running=true state={state}",
+                 f"ARCE_LOADER_S6_DRAIN_RELEASE cut={cut} boundary=WRITE_UNKNOWN running=false state={state}",
+                 "Escrow ledger shutdown stopped retrying generation 2 after 3 unknown outcomes; restart uses the durable ledger file",
+                 "Stopping server"]
+        oracle.check_observations(lines, 0, cut)
+        for wrong in (lines[:2] + lines[3:], [x.replace("unknown:true", "unknown:false") for x in lines],
+                      [x.replace("after 3", "after 2") for x in lines], lines + [lines[0]], lines + ["[Server/ERROR] foreign"]):
+            with self.subTest(wrong=wrong), self.assertRaises(SmokeError): oracle.check_observations(wrong, 0, cut)
+
+    def test_server_thread_shutdown_cases_wait_for_normal_exit_without_sending_another_command(self):
+        from unittest.mock import Mock
+        import run_v180_loader_s6 as runner
+        for cut in ("LF_S6_G3_L1_UNKNOWN", "LF_S6_G3_L2_UNKNOWN", "LF_S6_G3_FAILED_CLOSE"):
+            process = Mock(); process.finish.return_value = 0
+            result = runner.finish_initial(process, cut, False)
+            self.assertEqual("NORMAL_DRAIN_FROM_SELECTED_WRITER_STATE", result["stop"])
+            process.command.assert_not_called()
+            process.process.kill.assert_not_called()
+            process.abort.assert_not_called()
+
+    def test_queued_shutdown_logs_require_a_real_successor_not_just_an_active_writer(self):
+        cut = "LF_S6_G3_L1_QUEUED"
+        state = "active:true,successor:true,completions:0,running:true,unknown:false,generation:2,durable:1"
+        lines = [f"ARCE_LOADER_S6_DRAIN_READY cut={cut} boundary=K1 running=true state={state}",
+                 f"ARCE_LOADER_S6_DRAIN_RELEASE cut={cut} boundary=K1 running=false state={state}", "Stopping server"]
+        oracle.check_observations(lines, 0, cut)
+        for before, after in (("successor:true", "successor:false"), ("unknown:false", "unknown:true"),
+                              ("generation:2", "generation:3"), ("completions:0", "completions:1")):
+            with self.subTest(before=before), self.assertRaises(SmokeError):
+                oracle.check_observations([line.replace(before, after) for line in lines], 0, cut)
+
+    def test_failed_close_shutdown_allows_only_its_exact_propagated_native_failure(self):
+        cut = "LF_S6_G3_FAILED_CLOSE"
+        error = "[IO/ERROR] [minecraft/IOWorker]: Failed to store chunk [4, 4]"
+        lines = ["ARCE_LOADER_S6_CACHE regions=256 own_region_cached=false", error,
+                 "java.nio.channels.ClosedChannelException",
+                 "ARCE_LOADER_S6_CLOSE_FAILURE records=1 pending=1 issued=1 io_failures=1 reason=BARRIER_IO proof=false",
+                 f"ARCE_LOADER_S6_DRAIN_READY cut={cut} boundary=BARRIER_IO running=true",
+                 f"ARCE_LOADER_S6_DRAIN_RELEASE cut={cut} boundary=BARRIER_IO running=false", "Stopping server"]
+        oracle.check_observations(lines, 0, cut)
+        oracle.check_observations(lines + [error], 0, cut)
+        for wrong in (lines + [error, error], lines + ["[Server/FATAL] foreign"],
+                      [line.replace("[4, 4]", "[5, 4]") for line in lines],
+                      [line.replace("proof=false", "proof=true") for line in lines], lines[1:]):
+            with self.subTest(wrong=wrong), self.assertRaises(SmokeError): oracle.check_observations(wrong, 0, cut)
+
+    def test_unknown_l2_can_resolve_guard_refusal_without_claiming_l2_committed(self):
+        cut = "LF_S6_G3_L2_UNKNOWN"
+        state = "active:true,successor:false,completions:0,running:false,unknown:true,generation:4,durable:3"
+        lines = [f"ARCE_LOADER_S6_DRAIN_READY cut={cut} boundary=WRITE_UNKNOWN running=true state={state}",
+                 f"ARCE_LOADER_S6_DRAIN_RELEASE cut={cut} boundary=WRITE_UNKNOWN running=false state={state}",
+                 "Escrow ledger generation 4 resolved as FAILED_BEFORE_REPLACE after an unknown outcome", "Stopping server"]
+        oracle.check_observations(lines, 0, cut)
+        for wrong in ([x.replace("FAILED_BEFORE_REPLACE", "COMMITTED") for x in lines],
+                      [x.replace("generation 4", "generation 3") for x in lines]):
+            with self.assertRaises(SmokeError): oracle.check_observations(wrong, 0, cut)
+
     def test_r2_logs_require_fence_copy_count_and_unmounted_reconnect(self):
         cut = "LF_S6_R2_DUPLICATE_RECONNECT"
         line = "ARCE_LOADER_S6_R2_RESULT cut=" + cut + " tank=4000 bank=1000 total=5000 epochs=1,1 records=0 markers=0 journal=1 copies=2 reason=FLOOR_CONFLICT passenger=unmounted"

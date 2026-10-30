@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Counted S6 loader tranches, with two restarts and no changes to shared runners.
 
-Implements A1, A2's unloaded E5 and R2, and A3's L1/L2 in-flight shutdown rows. Other matrix rows
+Implements A1, A2's unloaded E5 and R2, and six A3 shutdown rows. Other matrix rows
 remain missing; PASS_SELECTED never means B3-S6 acceptance. Run as a detached
 process so its own finally releases its lock and removes its disposable world.
 """
@@ -40,7 +40,8 @@ def check_log(lines, restart, cut=oracle.E3, retired_operation=None):
 
 def finish_initial(process, cut, diagnostic):
     if cut in oracle.G3:
-        process.command("stop")
+        if cut not in oracle.G3_SELF_STOP:
+            process.command("stop")
         code = process.finish()
         oracle.legacy.require(code == 0, "Selected normal shutdown exited abnormally")
         return dict(stop="NORMAL_DRAIN_FROM_SELECTED_WRITER_STATE", exit_code=code)
@@ -83,6 +84,8 @@ def run_cut(args, cut, evidence, owner, pins):
             command = _server_command(args.java)
             command[2] = "-Xmx4G"
             native_case = "LF_M_K7" if cut in oracle.G3 else cut
+            if cut in oracle.G3_UNKNOWN:
+                native_case = "LF_M_E4L1_UNKNOWN" if cut == oracle.G3_U1 else "LF_M_E4L2_UNKNOWN"
             command[1:1] = ["-Dadvancedrocketrycommunity.escrowScenario=" + ("recover" if restart else "start"),
                             "-Dadvancedrocketrycommunity.escrowCase=" + native_case]
             if cut in oracle.G3:
@@ -111,6 +114,8 @@ def run_cut(args, cut, evidence, owner, pins):
                 elif cut in oracle.G3:
                     marker = (r"ARCE_LOADER_S6_RESULT cut=" + re.escape(oracle.E3) + r"(?:\s|$)" if restart
                               else r"ARCE_LOADER_S6_DRAIN_READY cut=" + re.escape(cut) + r"(?:\s|$)")
+                    if cut == oracle.G3_U1 and restart:
+                        marker = r"ARCE_LOADER_MATRIX_RESULT cut=LF_M_E4L1_UNKNOWN(?:\s|$)"
                 process.wait_for(re.compile(marker), args.startup_timeout)
                 start["checkpoint_reached"] = True
                 if restart:
@@ -136,11 +141,13 @@ def run_cut(args, cut, evidence, owner, pins):
                 write(evidence / "result.json", row)
                 continue
             raw_check = oracle.check_e5 if cut == oracle.E5 else oracle.check_e3
-            if cut == oracle.G3_L1:
+            if cut in (oracle.G3_L1, oracle.G3_QUEUED):
                 raw_check = oracle.check_g3_l1
             elif cut == oracle.G3_L2:
                 raw_check = lambda image, restart, identity: oracle.check_g3_l2(
                     image, restart, identity, operation=oracle.shutdown_operation(lines, cut) if not restart else None)
+            elif cut in oracle.G3_UNKNOWN:
+                raw_check = lambda image, restart, identity: oracle.check_g3_unknown(image, restart, identity, cut)
             if cut in oracle.R2:
                 raw_check = lambda image, restart, identity: oracle.check_r2(image, restart, identity, cut)
             for kind, check in (("LOG", lambda: check_log(lines, restart, cut,
