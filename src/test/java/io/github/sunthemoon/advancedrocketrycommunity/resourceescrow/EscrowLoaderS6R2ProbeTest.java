@@ -28,6 +28,18 @@ class EscrowLoaderS6R2ProbeTest {
         assertFalse(EscrowLoaderS6R2Probe.selected(true, "LF_M_K7"));
     }
 
+    @Test void reconnectObservationDoesNotTeleportAfterLoginOrAdoptItsResultAsTheBaseline() throws Exception {
+        var source = java.nio.file.Files.readString(java.nio.file.Path.of(
+                "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/resourceescrow/EscrowLoaderS6R2Probe.java"));
+        var start = source.indexOf("if (RECONNECT.equals(cut) && joinedAt < 0");
+        var observation = source.substring(start, source.indexOf("if (joinedAt >= 0)", start));
+        assertTrue(observation.contains("ReleaseTestPlayers.login("));
+        assertFalse(observation.contains("ReleaseTestPlayers.place("));
+        assertFalse(observation.contains("teleportTo("));
+        assertFalse(observation.contains("passengerPosition = player.position()"));
+        assertTrue(observation.contains("requirePassengerUnmoved(player)"));
+    }
+
     @Test void staleRecordNamesTheRealSourceAndAnEmptyDistinctDestination() {
         var propulsion = FluidFuelLoaderEscrowFixtures.mono(2_000);
         var state = new RocketBlockState(ResourceLocation.tryParse("minecraft:iron_block"), Map.of());

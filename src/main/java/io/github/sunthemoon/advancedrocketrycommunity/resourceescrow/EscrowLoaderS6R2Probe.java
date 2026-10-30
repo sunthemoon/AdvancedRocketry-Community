@@ -30,6 +30,7 @@ final class EscrowLoaderS6R2Probe {
     static final Set<String> CASES = Set.of(KEEP, DESTRUCTIVE, RECONNECT);
     static final UUID PASSENGER = UUID.nameUUIDFromBytes("arce:w211:r2-passenger".getBytes(java.nio.charset.StandardCharsets.US_ASCII));
     private static final BlockPos ORIGIN = new BlockPos(64, 100, 64), DEVICE = ORIGIN.offset(2, 0, 0);
+    private static final Vec3 PASSENGER_POSITION = new Vec3(66.5, 100, 66.5);
     private final MinecraftServer server;
     private final String cut;
     private final boolean recovery;
@@ -38,7 +39,6 @@ final class EscrowLoaderS6R2Probe {
     private RocketTransferRecord record;
     private long began = -1, installedAt = -1, joinedAt = -1;
     private boolean queued, done;
-    private Vec3 passengerPosition;
 
     static boolean selected(boolean hooks, String cut) { return hooks && cut != null && CASES.contains(cut); }
 
@@ -102,20 +102,20 @@ final class EscrowLoaderS6R2Probe {
                             .advance(RocketTransferPhase.SOURCE_REMOVED).advance(RocketTransferPhase.COMMITTED);
                 }
             }
+            if (RECONNECT.equals(cut)) { preparePassengerBeforeJournal(); }
             EscrowTags.require(server.saveEverything(false, true, true), "S6 R2 native setup baseline refused");
             journal.put(record); journal.flushChecked(server); installedAt = server.getTickCount();
             return;
         }
         if (!journal.acknowledgedCurrent()) { return; }
         if (RECONNECT.equals(cut) && joinedAt < 0 && server.getTickCount() - installedAt >= 100) {
-            var player = ReleaseTestPlayers.place(server, PASSENGER, "W211Passenger", level, new Vec3(66.5, 100, 66.5));
-            passengerPosition = player.position(); joinedAt = server.getTickCount();
+            // Login fires production reconnect. Never teleport afterwards or adopt its result as a baseline.
+            var player = ReleaseTestPlayers.login(server, PASSENGER, "W211Passenger", level);
+            requirePassengerUnmoved(player); joinedAt = server.getTickCount();
         }
         if (joinedAt >= 0) {
             ReleaseTestPlayers.pump(server);
-            var player = server.getPlayerList().getPlayer(PASSENGER);
-            EscrowTags.require(player != null && player.getVehicle() == null && player.position().distanceTo(passengerPosition) < 0.01,
-                    "S6 R2 stale history remounted or moved the passenger");
+            requirePassengerUnmoved(server.getPlayerList().getPlayer(PASSENGER));
         }
         if (server.getTickCount() - installedAt < 200 || RECONNECT.equals(cut) && server.getTickCount() - joinedAt < 100) { return; }
         var report = RocketRuntime.recoverTransfer(server, record.transferId());
@@ -147,6 +147,22 @@ final class EscrowLoaderS6R2Probe {
     }
 
     private List<RocketEntity> rockets() { return server.overworld().getEntitiesOfClass(RocketEntity.class, new AABB(ORIGIN).inflate(14)); }
+
+    private void preparePassengerBeforeJournal() {
+        EscrowTags.require(RocketTransferSavedData.get(server).entries().isEmpty(), "R2 passenger setup encountered installed history");
+        var player = ReleaseTestPlayers.place(server, PASSENGER, "W211Passenger", server.overworld(), PASSENGER_POSITION);
+        requirePassengerUnmoved(player);
+        EscrowTags.require(ReleaseTestPlayers.ownsAllConnectedPlayers(server), "R2 cannot remove a foreign player");
+        server.getPlayerList().remove(player); // Native logout saves the disembarked baseline before stale history exists.
+        ReleaseTestPlayers.pump(server); // Close only the facility's departed channel.
+        EscrowTags.require(server.getPlayerList().getPlayer(PASSENGER) == null, "R2 baseline passenger did not log out");
+    }
+
+    private void requirePassengerUnmoved(net.minecraft.server.level.ServerPlayer player) {
+        EscrowTags.require(player != null && player.serverLevel() == server.overworld() && player.getVehicle() == null
+                && player.position().distanceTo(PASSENGER_POSITION) < 0.01,
+                "S6 R2 stale history remounted or moved the passenger");
+    }
 
     private void conserved(ResourceEscrowSavedData data) {
         EscrowTags.require(amount(loader) == 4_000 && bank(rocket, false) == 1_000 && bank(rocket, true) == 0
