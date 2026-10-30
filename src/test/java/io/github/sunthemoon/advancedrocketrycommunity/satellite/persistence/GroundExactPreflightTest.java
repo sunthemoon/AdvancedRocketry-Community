@@ -30,6 +30,7 @@ final class GroundExactPreflightTest {
         long before = bean.getThreadAllocatedBytes(thread);
         var result = registry.groundSurveys().start(GroundPreflightBenchmark.start(), 0);
         long allocated = bean.getThreadAllocatedBytes(thread) - before;
+        System.out.printf("W216_START_ALLOCATION reload=%s bytes=%d%n", reload, allocated);
         assertEquals(GroundSurveys.Code.SUCCESS, result.code());
         assertTrue(allocated < 1024 * 1024, "START allocated " + allocated + " bytes; no resident root encode allowed");
     }
@@ -128,6 +129,39 @@ final class GroundExactPreflightTest {
                 false, registry.account(OWNER), 31));
     }
 
+    @ParameterizedTest @ValueSource(ints = {-1, 0, 1})
+    void accountCompletionAtTheByteEdgesMatchesTheNativeOracle(int excess) {
+        var registry = SatelliteMissionRegistry.restore(0, 0, 2, CodecRecordSizer.INSTANCE);
+        var job = running(0, OWNER, device(300));
+        job = job.analyzed(job.analysis().with(GroundSurveyJob.AnalysisState.RUNNING, 1,
+                job.analysis().claim()), 20);
+        registry.groundSurveys().restore(job);
+        registry.restoreInstance(instance(job, InstanceState.AVAILABLE));
+        var next = job.analyzed(job.analysis().with(GroundSurveyJob.AnalysisState.CREDITED, 2,
+                job.analysis().claim()), 30);
+        var account = registry.account(OWNER).creditAndSpend(120, 0);
+        int added = bytes(WholeRootGroundPreflight.edited(registry, next, null, false, account, 30, 30))
+                - bytes(encoded(registry));
+        fillTo(registry, SatelliteLimits.MAX_REGISTRY_NBT_BYTES + excess - added);
+        assertEquals(excess <= 0, equivalent(registry, next, null, false, account, 30));
+        var before = encoded(registry);
+        var result = registry.groundSurveys().advanceAnalysis(job.jobId(), device(300), 30);
+        assertEquals(excess <= 0 ? GroundSurveys.Code.SUCCESS : GroundSurveys.Code.STORAGE_BUDGET, result.code());
+        if (excess > 0) { assertEquals(before, encoded(registry)); }
+    }
+
+    @Test void removalCanBringAnOversizedOriginalBackUnderTheBound() {
+        var registry = SatelliteMissionRegistry.restore(0, 0, 2, CodecRecordSizer.INSTANCE);
+        var job = active(0, OWNER);
+        var instance = instance(job, InstanceState.PENDING);
+        registry.groundSurveys().restore(job);
+        registry.restoreInstance(instance);
+        fillTo(registry, SatelliteLimits.MAX_REGISTRY_NBT_BYTES + 1);
+        assertTrue(equivalent(registry, job.cancelled(1), instance, true, null, 1));
+        assertEquals(GroundSurveys.Code.SUCCESS, registry.groundSurveys().cancel(job.jobId(), OWNER, false, 1).code());
+        assertTrue(bytes(encoded(registry)) < SatelliteLimits.MAX_REGISTRY_NBT_BYTES);
+    }
+
     static boolean equivalent(SatelliteMissionRegistry registry, GroundSurveyJob job, AsteroidInstance instance,
             boolean remove, ResearchAccount account, long time) {
         boolean expected = WholeRootGroundPreflight.fits(registry, job, instance, remove, account, time, time);
@@ -152,7 +186,7 @@ final class GroundExactPreflightTest {
         CompoundTag last = SatelliteNbtCodec.encodeMission(GroundPreflightBenchmark.claimed(count - 1));
         DecoderPreflightTest.resizeVersion(last, bytes(last) + remaining);
         registry.restoreMission(SatelliteNbtCodec.decodeMission(last));
-        assertEquals(target, bytes(encoded(registry)));
+        assertEquals(target, bytes(SatelliteRegistryPayload.encodeUnchecked(registry, new CompoundTag())));
     }
 
     static CompoundTag encoded(SatelliteMissionRegistry registry) {

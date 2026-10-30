@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 
 /**
  * W21b review F1, W168: ground changes cost O(touched records) when reservations prove the candidate fits;
- * otherwise they encode and read back the whole root. Budgets: one advance on the review's registry stays below
+ * otherwise they use exact resident measurements, with whole-root fallback for failed sizing. One advance stays below
  * 1 ms, and START on a root near the 16 MiB bound stays within the 500 ms single-spike budget (docs/17), measured
  * as its server-thread cost ({@link SpikeCost}).
  */
