@@ -1,10 +1,41 @@
 package io.github.sunthemoon.advancedrocketrycommunity.resourceescrow;
 
 import static org.junit.jupiter.api.Assertions.*;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.*;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition;
+import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
 import java.util.List;
+import java.util.UUID;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 class EscrowLoaderS6FlightProbeTest {
+    @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
+
+    @Test void loaderFilledStationarySourceUsesTheProductLaunchPromotionWithoutChangingItsCapture() {
+        var empty = RocketFlightData.initial(UUID.randomUUID(), 2_000, 1, RocketFlightPlanner.EARTH.bodyId(),
+                RocketFlightPlanner.EARTH.dimensionId(), new RocketPosition(64, 100, 64), 10);
+        var fuel = empty.fuel().fill(1_000).state();
+        var plan = new RocketFlightPlan(3, UUID.randomUUID(), empty.currentBody(), RocketFlightPlanner.MOON.bodyId(),
+                empty.currentDimension(), empty.currentDimension(), 500, 20);
+        for (var state : List.of(RocketFlightState.ASSEMBLED, RocketFlightState.LANDED, RocketFlightState.FUELED)) {
+            var base = RocketFlightData.restore(empty.schemaVersion(), empty.logicalRocketId(), state, fuel, null,
+                    empty.passengers(), empty.currentBody(), empty.currentDimension(), empty.currentOrigin(), 10, null);
+            assertTrue(base.launchReady());
+            if (state != RocketFlightState.FUELED) { assertThrows(IllegalStateException.class, () -> base.withPlan(plan)); }
+            var countdown = EscrowLoaderS6FlightProbe.launchCountdown(base, plan, 20);
+            assertEquals(base.withFuel(fuel, 20).withPlan(plan).startCountdown(20), countdown);
+            assertEquals(RocketFlightState.COUNTDOWN, countdown.state());
+            assertSame(fuel, countdown.fuel());
+            assertEquals(state, base.state());
+            assertTrue(base.plan().isEmpty());
+            assertEquals(10, base.stateStartedGameTime());
+        }
+        assertThrows(IllegalArgumentException.class, () -> EscrowLoaderS6FlightProbe.launchCountdown(empty, plan, 20));
+        var active = empty.withFuel(fuel, 20).withPlan(plan).startCountdown(20);
+        assertThrows(IllegalArgumentException.class, () -> EscrowLoaderS6FlightProbe.launchCountdown(active, plan, 21));
+    }
+
     @Test void exactSelectedBoundariesCannotInterceptThePrecedingLoaderFill() {
         for (var side : List.of("STORE_BEFORE", "STORE_AFTER", "FORCE_BEFORE", "FORCE_AFTER", "READBACK_BEFORE", "READBACK_AFTER")) {
             var cut = "LF_S6_F1_" + side;

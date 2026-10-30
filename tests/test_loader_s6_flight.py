@@ -16,12 +16,29 @@ def seed():
     disk = s6.normalize_ids(copy.deepcopy(fixture["e3"]["images"][1]["native"]))
     disk["source"] = disk.pop("rocket")
     disk["destination"] = None
-    disk["journal"] = dict(schema_version=3, transfers=[], classic_first_moon_landing=dict(schema_version=1, state="EMPTY"))
+    disk["journal"] = dict(schema_version=3, transfers=[], classic_first_moon_landing=dict(schema_version=1, state="EMPTY"),
+                           format_epoch="v1.8.0-first-moon-landing")
     disk["source"]["RocketEntityData"]["flight_data"].pop("plan", None)
     return dict(read_status="KNOWN", native=disk)
 
 
 class FlightOracleTests(unittest.TestCase):
+    def test_complete_native_empty_journal_is_required(self):
+        native = json.loads((Path(__file__).parent / "fixtures/loader_s6/flight-setup-native.json").read_text())
+        image = native["image"]
+        identity = flight.check(image, 0)["identity"]
+        for restart in (1, 2):
+            flight.check(image, restart, identity)
+        for mutate in (
+                lambda journal: journal.pop("format_epoch"),
+                lambda journal: journal.update(format_epoch="other"),
+                lambda journal: journal.update(extra=1),
+                lambda journal: journal["classic_first_moon_landing"].update(state="CLAIMED"),
+                lambda journal: journal["transfers"].append({})):
+            changed = copy.deepcopy(image)
+            mutate(changed["native"]["journal"])
+            with self.assertRaises(SmokeError): flight.check(changed, 0)
+
     def test_prelaunch_digest_and_retired_markers_are_bound_to_the_observed_fill(self):
         image = seed(); disk = image["native"]; data = disk["source"]["RocketEntityData"]
         witness = dict(operation="00000000-0000-0000-0000-000000000001", source=disk["source"]["UUID"],

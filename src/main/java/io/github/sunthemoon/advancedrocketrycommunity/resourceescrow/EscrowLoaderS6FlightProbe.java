@@ -37,6 +37,11 @@ final class EscrowLoaderS6FlightProbe {
     private long began = -1;
 
     static boolean selected(boolean hooks, String cut) { return hooks && cut != null && CASES.contains(cut); }
+    static RocketFlightData launchCountdown(RocketFlightData base, RocketFlightPlan plan, long now) {
+        EscrowTags.require(base.launchReady(), "S6 flight source is not launch-ready");
+        var fueled = base.state() == RocketFlightState.FUELED ? base : base.withFuel(base.fuel(), now);
+        return fueled.withPlan(plan).startCountdown(now);
+    }
     static boolean boundary(String cut, String point, boolean proof, boolean arm) {
         if (!selected(true, cut)) { return false; }
         if (cut.startsWith("LF_S6_F1_") && !cut.startsWith("LF_S6_F1_ARM_")) {
@@ -119,7 +124,7 @@ final class EscrowLoaderS6FlightProbe {
                 cut, fill, rocket.getUUID(), base.logicalRocketId(), rocket.ownerId().orElseThrow(), data.ledger().id(),
                 EscrowGovernedEnvelope.digest(EscrowGovernedEnvelope.capture(rocket)));
         launching = true;
-        EscrowTags.require(EscrowGovernedPreparation.begin(rocket, base.withPlan(plan).startCountdown(now), to,
+        EscrowTags.require(EscrowGovernedPreparation.begin(rocket, launchCountdown(base, plan, now), to,
                 record -> loaded(), record -> { }, () -> discarded = true), "S6 loader-funded F1 refused");
     }
 

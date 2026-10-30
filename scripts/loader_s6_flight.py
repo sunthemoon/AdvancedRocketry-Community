@@ -28,7 +28,8 @@ def check(image, restart, identity=None, cut=F1[0], witness=None):
         native = integrity.pair_identity(pair, root)
         device = disk["loaders"][0]; loader = device["arce_fluid_fuel_loader"]
         legacy.require(disk["destination"] is None and disk["journal"] == dict(schema_version=3, transfers=[],
-                       classic_first_moon_landing=dict(schema_version=1, state="EMPTY")), "Pre-F2 acquired a destination or T")
+                       classic_first_moon_landing=dict(schema_version=1, state="EMPTY"),
+                       format_epoch="v1.8.0-first-moon-landing"), "Pre-F2 acquired a destination or T")
         armed_cut = cut in F1[-2:] + F2[:1]
         legacy.require(root["schema_version"] == 2 and root["format_epoch"] == "v1.8.0-resource-escrow" and root["issued_through"] == 1
                        and not any(root[key] for key in ("records", "floors", "tombstones", "rocket_authorities"))
