@@ -5,6 +5,7 @@ import unittest
 import tempfile
 import json
 import re
+import struct
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
@@ -14,6 +15,32 @@ import w208_summary as summary
 
 
 class AvailabilityTest(unittest.TestCase):
+    def test_journal_reader_accepts_only_the_fixture_byte_array_bound(self):
+        def root(size):
+            return b'\x0a\x00\x00\x07\x00\x09benchmark' + struct.pack('>i', size) + bytes(size) + b'\x00'
+        self.assertEqual(len(runner.JournalReader(root(43_950)).read_root()['benchmark']), 43_950)
+        self.assertEqual(len(runner.JournalReader(root(125_000)).read_root()['benchmark']), 125_000)
+        with self.assertRaises(ValueError):
+            runner.JournalReader(root(125_001)).read_root()
+        with self.assertRaises(ValueError):
+            runner.JournalReader(b'\x0a\x00\x00\x0b\x00\x01a' + struct.pack('>i', 4097)).read_root()
+
+    def test_summary_pairs_only_observed_captures_and_reports_completion_separately(self):
+        raw = dict(status='COMPLETED', completion='SEALED', request_tick=10, observation_ticks=40,
+                   observation_ns=2_000_000_000, stop_close={}, events=[
+                       dict(label='REQUEST', tick=10, ns=1_000_000_000),
+                       dict(label='ROOT_publish', tick=11, ns=10),
+                       dict(label='ROOT_capture', tick=12, ns=10),
+                       dict(label='ROOT_publish', tick=22, ns=10),
+                       dict(label='COMPLETE_SEALED', tick=30, ns=2_000_000_000)],
+                   ticks=[dict(tick=10, tick_ns=900_000_000), dict(tick=11, tick_ns=2_000_000)])
+        result = summary.sample(raw, '')
+        self.assertEqual(result['capture_to_publish_ticks'], [10])
+        self.assertEqual(result['completion_ticks'], 20)
+        self.assertEqual(result['completion_seconds'], 1)
+        self.assertEqual(result['workload_tick_ms']['maximum'], 2)
+        self.assertEqual(result['tick_ms']['maximum'], 900)
+
     def test_native_request_runs_before_end_tick_discovery_spends_the_budget(self):
         source = (Path(__file__).resolve().parents[1] / 'src/test/java/io/github/sunthemoon/'
                   'advancedrocketrycommunity/rocket/server/W208NativeAvailability.java').read_text()

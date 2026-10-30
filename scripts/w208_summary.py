@@ -20,14 +20,29 @@ def sample(raw, log):
     timings = {label: stats([e["ns"] / 1e6 for e in events if e["label"] == label])
                for label in ("ROOT_capture", "ROOT_write", "ROOT_publish", "WRITE_REQUEST", "IO_JOIN")}
     deadlines = [line for line in log.splitlines() if "ARCE_DISASSEMBLY_DURABILITY_HELD" in line and "reason=DEADLINE" in line]
-    captures = [e["tick"] for e in events if e["label"] == "ROOT_capture"]
-    publishes = [e["tick"] for e in events if e["label"] == "ROOT_publish"]
+    capture = None
+    latencies = []
+    for event in events:
+        if event["label"] == "ROOT_capture":
+            capture = event["tick"]
+        elif event["label"] == "ROOT_publish" and capture is not None:
+            latencies.append(event["tick"] - capture)
+            capture = None
+    request = next((e for e in events if e["label"] == "REQUEST"), None)
+    completion = next((e for e in events if e["label"].startswith("COMPLETE_")), None)
+    fixture_ticks = {raw.get("request_tick")}
+    if "c3" in raw.get("case", "") and raw.get("stage") == "start":
+        fixture_ticks.update(e["tick"] for e in events if e["label"] == "C3_ELECT_AFTER")
     return dict(status=raw["status"], completion=raw.get("completion"), observed_ticks=raw["observation_ticks"],
                 observed_seconds=raw["observation_ns"] / 1e9, timing_ms=timings,
                 tick_ms=stats([row["tick_ns"] / 1e6 for row in raw["ticks"]]), deadline_warnings=deadlines,
+                workload_tick_ms=stats([row["tick_ns"] / 1e6 for row in raw["ticks"] if row["tick"] not in fixture_ticks]),
+                fixture_tick_ms=stats([row["tick_ns"] / 1e6 for row in raw["ticks"] if row["tick"] in fixture_ticks]),
+                completion_ticks=completion["tick"] - request["tick"] if completion and request else None,
+                completion_seconds=(completion["ns"] - request["ns"]) / 1e9 if completion and request else None,
                 stop_close=raw["stop_close"], near_root_bytes=raw.get("near_root_bytes"), traffic=raw.get("traffic"),
                 unknown_publications=sum(e["label"] == "PUBLISHED_UNKNOWN" for e in events),
-                capture_to_publish_ticks=[b - a for a, b in zip(captures, publishes)],
+                capture_to_publish_ticks=latencies,
                 checkpoint_request_ticks=[e["tick"] for e in events if e["label"] == "WRITE_REQUEST"],
                 effect_checks=sum("authorized" in e for e in events))
 

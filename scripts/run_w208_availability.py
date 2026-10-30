@@ -12,7 +12,7 @@ import uuid
 import zipfile
 
 import run_dedicated_server_smoke as smoke
-from inspect_celestial_saved_data import NbtReader
+from inspect_celestial_saved_data import NbtReader, NbtError
 from run_v060_flight_server_smoke import _server_command
 from run_v180_landed_disassembly_cuts import chunk_record
 from run_v180_rocket_settlement_completion import require_lock
@@ -32,6 +32,16 @@ def write(path, value):
 
 class JournalReader(NbtReader):
     """Fixed 256-entry/64 MiB journal; retain each entry hash, decode one bounded snapshot at a time."""
+    def _length(self, description):
+        if description != "byte array":
+            return super()._length(description)
+        # W208JournalFixture splits at most 500,000 padding bytes among four payloads.
+        # Keep the imported reader's collection limits for every other tag kind.
+        count = self._unpack(">i", 4)
+        if not 0 <= count <= 125_000:
+            raise NbtError("W208 byte array exceeds fixture bound")
+        return count
+
     def _payload(self, kind, depth):
         if kind == 9 and depth == 2:
             child, count = self._u8(), self._length("transactions")
