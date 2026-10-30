@@ -196,3 +196,28 @@ R190's rule applies again from here.
 
 A fresh session continues on the same branch and worktree from `fedd1874b`. The rest of this TASK and R185 to R192
 are unchanged.
+
+## Root decision R197 (2026-10-30 21:00): the interim review's oracle findings come first
+
+An interim independent review of `e00ef1ff2..fedd1874b` ([TASK-W211-INTERIM-REVIEW](TASK-W211-INTERIM-REVIEW.md);
+`D:/GitHub/ARCE-Task-Evidence/root-queue/W211-interim-review/REVIEW.md`, SHA-256 `3fad14a4…5f67c745c`) found the
+completed observations and counts sound (79 starts, 52 restarts; no concealed failure, unexplained image or production
+change; every passed image also passes its stricter supplemental checks), but the raw-image oracle accepts wrong
+states: W211-I1 (High) cross-restart comparisons omit the complete snapshot and the typed fuel state; W211-I2 (Medium)
+a record's endpoint epochs and complete native binding are not checked against the image; W211-I3 (Medium) the G3 L2
+check does not enforce the writer generation; W211-I4 (Medium) the real-loader N2 crash-window representative has no
+row; W211-I5 (Low) the per-tick log check cannot detect a missing prefix. The reviewer's in-memory mutation witnesses
+are in `mutation_checks.py` and `mutation-results.json` beside the review.
+
+**Decision.** The session running when this was written continues to its end; its images are kept. The next session,
+before any further native launch:
+
+1. fixes I1, I2, I3 and I5 in the S6 oracle, each with tests that fail first on the reviewer's mutations of retained
+   native images (no legacy oracle is relaxed or modified);
+2. replays every retained passed image of W211, including those produced after `fedd1874b`, through the corrected
+   oracle and records each replay; a passed row that now fails is reported as failed, not re-run silently;
+3. for I4, splits W204's shared N2 evidence from the real-loader representative, marks the latter missing and adds its
+   cut and restarts to tranche C's committed enumeration.
+
+Then it continues with whatever remains of A4, B and C. R190's rule applies. The rest of this TASK and R185 to R194
+are unchanged.
