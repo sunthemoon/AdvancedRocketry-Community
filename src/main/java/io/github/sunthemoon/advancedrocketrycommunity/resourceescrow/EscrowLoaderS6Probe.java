@@ -20,6 +20,7 @@ final class EscrowLoaderS6Probe {
     private final EscrowLoaderS6FlightProbe flight;
     private final EscrowLoaderS6RefillProbe refill;
     private final EscrowLoaderS6StickyProbe sticky;
+    private final EscrowLoaderS6OrdinaryProbe ordinary;
     private boolean injected;
 
     static boolean selected(boolean hooks, String name) {
@@ -27,7 +28,8 @@ final class EscrowLoaderS6Probe {
                 || EscrowLoaderS6ShutdownProbe.selected(hooks, name, System.getProperty(EscrowLoaderS6ShutdownProbe.PROPERTY))
                 || EscrowLoaderS6GuardProbe.selected(hooks, name) || EscrowLoaderS6SettlementProbe.selected(hooks, name)
                 || EscrowLoaderS6ChainProbe.selected(hooks, name) || EscrowLoaderS6FlightProbe.selected(hooks, name)
-                || EscrowLoaderS6RefillProbe.selected(hooks, name) || EscrowLoaderS6StickyProbe.selected(hooks, name));
+                || EscrowLoaderS6RefillProbe.selected(hooks, name) || EscrowLoaderS6StickyProbe.selected(hooks, name)
+                || EscrowLoaderS6OrdinaryProbe.selected(hooks, name));
     }
 
     EscrowLoaderS6Probe(MinecraftServer server, boolean recovery) {
@@ -36,6 +38,8 @@ final class EscrowLoaderS6Probe {
         unloaded = EscrowLoaderS6UnloadedProbe.CASE.equals(System.getProperty("advancedrocketrycommunity.escrowCase"))
                 ? new EscrowLoaderS6UnloadedProbe(server, recovery) : null;
         String cut = System.getProperty("advancedrocketrycommunity.escrowCase");
+        ordinary = EscrowLoaderS6OrdinaryProbe.selected(Boolean.getBoolean(EscrowTestEndpoints.HOOKS), cut)
+                ? new EscrowLoaderS6OrdinaryProbe(server, recovery) : null;
         sticky = EscrowLoaderS6StickyProbe.selected(Boolean.getBoolean(EscrowTestEndpoints.HOOKS), cut)
                 ? new EscrowLoaderS6StickyProbe(server, recovery) : null;
         refill = EscrowLoaderS6RefillProbe.selected(Boolean.getBoolean(EscrowTestEndpoints.HOOKS), cut)
@@ -54,13 +58,14 @@ final class EscrowLoaderS6Probe {
                 System.getProperty(EscrowLoaderS6ShutdownProbe.PROPERTY)) ? new EscrowLoaderS6ShutdownProbe(server, recovery) : null;
         // K7 supplies the unchanged real-loader baseline and per-device gate, not S6 recovery assertions.
         // Its success pause is not forwarded: this cut waits for the first propagated failed proof.
-        fixture = unloaded == null && stale == null && shutdown == null && guard == null && settlement == null && chain == null && flight == null && refill == null && sticky == null ? new EscrowLoaderCutProbe(server, "LF_M_K7", recovery) : null;
-        observer = unloaded == null && stale == null && shutdown == null && guard == null && settlement == null && chain == null && flight == null && refill == null && sticky == null && recovery ? new EscrowLoaderS6Recovery(server) : null;
+        fixture = unloaded == null && stale == null && shutdown == null && guard == null && settlement == null && chain == null && flight == null && refill == null && sticky == null && ordinary == null ? new EscrowLoaderCutProbe(server, "LF_M_K7", recovery) : null;
+        observer = unloaded == null && stale == null && shutdown == null && guard == null && settlement == null && chain == null && flight == null && refill == null && sticky == null && ordinary == null && recovery ? new EscrowLoaderS6Recovery(server) : null;
     }
 
     void startTick() { if (sticky != null) { sticky.startTick(); } else if (chain != null) { chain.startTick(); } else if (settlement != null) { settlement.startTick(); } else if (shutdown != null) { shutdown.startTick(); } else if (fixture != null) { fixture.startTick(); } }
 
     void checkpoint(String name) {
+        if (ordinary != null) { ordinary.checkpoint(name); return; }
         if (sticky != null) { sticky.checkpoint(name); return; }
         if (refill != null) { refill.checkpoint(name); return; }
         if (flight != null) { flight.checkpoint(name); return; }
@@ -80,6 +85,7 @@ final class EscrowLoaderS6Probe {
     }
 
     void tick() {
+        if (ordinary != null) { ordinary.tick(); return; }
         if (sticky != null) { sticky.tick(); return; }
         if (refill != null) { refill.tick(); return; }
         if (flight != null) { flight.tick(); return; }

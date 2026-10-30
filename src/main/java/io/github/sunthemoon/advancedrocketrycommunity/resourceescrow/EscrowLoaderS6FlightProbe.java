@@ -35,6 +35,8 @@ final class EscrowLoaderS6FlightProbe {
     private final java.nio.file.Path stagedLedger;
     private final EscrowLoaderS6TerminalProbe terminal;
     private final EscrowLoaderS6CleanupProbe cleanup;
+    private final java.util.function.Consumer<RocketEntity> settled;
+    private boolean pruned;
     private RocketEntity rocket;
     private FluidFuelLoaderBlockEntity loader;
     private UUID fill;
@@ -80,12 +82,19 @@ final class EscrowLoaderS6FlightProbe {
     }
 
     EscrowLoaderS6FlightProbe(MinecraftServer server, String cut, boolean recovery) {
+        this(server, cut, recovery, null);
+    }
+    EscrowLoaderS6FlightProbe(MinecraftServer server, String cut, java.util.function.Consumer<RocketEntity> settled) {
+        this(server, cut, false, java.util.Objects.requireNonNull(settled));
+    }
+    private EscrowLoaderS6FlightProbe(MinecraftServer server, String cut, boolean recovery, java.util.function.Consumer<RocketEntity> settled) {
         EscrowTestEndpoints.requireEnabled(server);
-        EscrowTags.require(selected(Boolean.getBoolean(EscrowTestEndpoints.HOOKS), cut)
+        EscrowTags.require((selected(Boolean.getBoolean(EscrowTestEndpoints.HOOKS), cut)
+                || settled != null && EscrowLoaderS6OrdinaryProbe.selected(Boolean.getBoolean(EscrowTestEndpoints.HOOKS), cut))
                 && !Boolean.getBoolean(EscrowLoaderAdmission.SWITCH), "S6 flight requires exact per-device test gates");
-        this.server = server; this.cut = cut; this.recovery = recovery;
+        this.server = server; this.cut = cut; this.recovery = recovery; this.settled = settled;
         cleanup = !recovery && EscrowLoaderS6CleanupProbe.selected(cut) ? new EscrowLoaderS6CleanupProbe(server, cut) : null;
-        terminal = !recovery && (EscrowLoaderS6TerminalProbe.selected(cut) || cleanup != null)
+        terminal = !recovery && (EscrowLoaderS6TerminalProbe.selected(cut) || cleanup != null || settled != null)
                 ? new EscrowLoaderS6TerminalProbe(server, cut) : null;
         stagedLedger = server.getWorldPath(LevelResource.ROOT).resolve("data")
                 .resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName() + ".arce-pending");
@@ -98,6 +107,7 @@ final class EscrowLoaderS6FlightProbe {
 
     void checkpoint(String point) {
         if (recovery || done) { return; }
+        if (settled != null && point.equals("F8_PRUNE_ACK")) { pruned = true; }
         if (!launching) {
             if (point.equals("C2_DESTINATION_AFTER")) {
                 var rows = ResourceEscrowSavedData.existing(server).ledger().records();
@@ -155,6 +165,20 @@ final class EscrowLoaderS6FlightProbe {
             return;
         }
         if (launching) {
+            if (settled != null && pruned) {
+                var root = ResourceEscrowSavedData.existing(server);
+                if (!root.bind(server).writerIdle() || !journal.actionAuthorityAvailable()) { return; }
+                var arrivals = level.getEntitiesOfClass(RocketEntity.class, new AABB(79, 99, 63, 83, 104, 67));
+                EscrowTags.require(arrivals.size() == 1 && journal.entries().isEmpty() && root.ledger().writerGeneration() == 6
+                        && root.ledger().armedFlights().isEmpty() && root.ledger().records().isEmpty() && rocket.isRemoved(),
+                        "Ordinary setup did not complete governed F8");
+                var arrival = arrivals.get(0);
+                EscrowTags.require(arrival.flightData().orElseThrow().state() == RocketFlightState.LANDED && bank(arrival, false) == 500
+                        && arrival.escrowSection().epoch() == 0 && arrival.escrowSection().markers().isEmpty()
+                        && root.ledger().id().equals(arrival.escrowSection().ledger()) && RocketEscrowGate.idle(arrival),
+                        "Ordinary setup changed its settled governed arrival");
+                done = true; settled.accept(arrival); return;
+            }
             if (!phaseStorePending && cut.equals("LF_S6_F4_STORED")) {
                 phaseStorePending = EscrowLoaderS6PhaseProbe.store(server, cut);
             }
