@@ -221,3 +221,24 @@ before any further native launch:
 
 Then it continues with whatever remains of A4, B and C. R190's rule applies. The rest of this TASK and R185 to R194
 are unchanged.
+
+## Root decision R198 (2026-10-30 21:31): the O3J allowlist entries, and the order of the next session
+
+The seventh session (19:04 to 21:29) delivered `943d29ccd`: the three G1 oracle fixes, fresh G1 veto and saturation
+runs, and thirteen O1 to O4 operator rows with two restarts each (52 more starts; 131 starts, 86 restarts, 28 passed
+and 16 failed attempts in all). O3J was designed but not launched, because `EscrowNamedFillTestHook.CASES` (the
+release-gated allowlist that lets historical named-fill fixtures run without opening named production admission)
+rejects S6 selectors; its draft is kept as `o3j-unlaunched-draft.patch`.
+
+**Decision.** Add exactly `LF_S6_O3J_BEFORE`, `LF_S6_O3J_REPLACED` and `LF_S6_O3J_ACK` to
+`EscrowNamedFillTestHook.CASES` and nothing else. The hook's three conditions stay as they are (the hooks property,
+the exact case name, the release gate). Add a unit test that fails first: each new name is refused without the hooks
+property and without the release gate, and any other `LF_S6_` name is refused. Name this in the record as a gated
+test seam in production source, for the final review. Named production admission stays closed.
+
+The next session continues on the same branch and worktree from `943d29ccd`, in this order: R197 (fix I1, I2, I3
+and I5 with failing-first tests on the reviewer's mutations, replay every retained passed image including R194's, and
+map the real-loader N2 cut into tranche C); then O3J under this decision; then the rest of B (chains, abandon,
+normalization, O-veto) and C (governed F1 to F8, F9, real-loader N2, sticky reservations and P1-F8, successor refill),
+committing C's concrete selections and counts before its first launch. R190's rule applies. The rest of this TASK and
+R185 to R197 are unchanged.
