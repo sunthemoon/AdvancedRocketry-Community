@@ -48,3 +48,29 @@ stands in for a complete local GameTest. An independent review of the matrix, th
 The bay's B1 to B18, C or D acceptance by analogy, the settlement accounting schema, a forced save to repair an oracle,
 escrow writer or recovery logic, any production change, enabling admission, budgets, timeouts, ADRs, status files and
 the ledger.
+
+## Root decision R185 (2026-10-30 10:25): continue after the A1 blockers
+
+The first session (09:39 to 10:21) delivered `c05847631` as BLOCKED/partial: the matrix and cut plan
+(`4f67f826e`), the strict S6 oracle and the E3 cache-close cut (`395529b3a`), and A1's native results (two attempts,
+six starts: the source-first K4 image passed both restarts; the destination-first K5 image failed both on
+`EscrowLoaderCutProbe.recover`'s "Native restart violated raw control total"). It names two blockers, both decided
+here:
+
+1. **Inventory registration is authorized.** Add the new producer `run_v180_loader_s6` to
+   `scripts/inventory_escrow_probe_cases.py`, its pinned `src/test/resources/escrow-probe-cases.tsv` and their
+   focused tests, exactly as the other producers are registered; no other change to the inventory or its rules.
+2. **An S6 recovery observer is authorized, test-side, under these conditions.** The reused K7 check sums native
+   resources plus source-debit-only held resources, so it cannot represent a destination-first image whose
+   destination is credited while the source debit is still held under the lock. Keep `EscrowLoaderCutProbe` and its
+   assertion unchanged for its own cases. The S6 observer must classify every store on every tick as available or
+   held under the durable record, with the held amounts taken from the record (never inferred from the raw sum), and
+   require: raw native equals available plus held exactly; nothing is held without a record; the completed image's
+   totals equal the initial totals exactly, with no record or markers left. Its tests fail first and reject a
+   destination credit larger than the record holds, a held amount with no record, a final total that differs, and
+   UNKNOWN read as zero. Write the observer's rule in the record before the native rerun. If the image cannot be
+   explained by the record, stop: that is a production finding, not a fixture change.
+
+A fresh session continues on the same branch and worktree from `c05847631`: read the record first and keep every
+retained result. Rerun A1's destination-first image with two restarts, then the remaining tranches A2 to C, committing
+tranche C's concrete selections and counts before its first launch. The rest of this TASK is unchanged.
