@@ -386,3 +386,17 @@ families are out of reach for loader-funded rockets in this product, and the ses
 
 A fresh session continues on the same branch and worktree from `ec5969106`. R201's renewal rule applies. The rest of
 this TASK and R185 to R203 are unchanged. When C is complete, deliver for the final independent review.
+
+## Root decision R205 (2026-10-31 07:02): the eleven ordinary-form rows are out of reach; final review
+
+The fourteenth session (06:26 to 07:00) delivered `27f820f0e`: R204's design, then a stop with no native start,
+because a settled loader-funded rocket keeps its ledger binding and the product routes it to the governed launch,
+never the ordinary one; three routing regression tests pin that. C stands at 39 of 50; the retained replay passes
+264 of 264.
+
+**Decision.** The eleven ordinary-form rows (F9, P1-F8 and real-loader N2) are recorded in the matrix as **out of
+reach for loader-funded rockets in this product**, citing the routing rule and the three tests; they are not passes,
+and their earlier failed attempts stay failed. W211's campaign ends here. Its final independent review
+([TASK-W211-REVIEW](TASK-W211-REVIEW.md)) also judges whether the governed analogues of F9 and N2 are covered by the
+passed rows; an uncovered governed analogue becomes a follow-up slice, not part of this one. After an approving review,
+Root trial-merges with the whole unit suite (R198 and R200 touch production source) and merges after the branch run.
