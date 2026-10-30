@@ -3,6 +3,8 @@ package io.github.sunthemoon.advancedrocketrycommunity.resourceescrow;
 import static io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.FluidFuelLoaderEscrowFixtures.*;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile;
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.*;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
@@ -16,6 +18,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.TicketType;
 import net.minecraft.util.Unit;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.storage.LevelResource;
 import net.minecraft.world.phys.AABB;
 
 /** Dedicated native loader-funded flight fixture. */
@@ -29,14 +32,28 @@ final class EscrowLoaderS6FlightProbe {
     private final MinecraftServer server;
     private final String cut;
     private final boolean recovery;
+    private final java.nio.file.Path stagedLedger;
     private RocketEntity rocket;
     private FluidFuelLoaderBlockEntity loader;
     private UUID fill;
     private boolean launching, discarded, done;
     private volatile boolean proof, arm;
+    private boolean armedObserved;
     private long began = -1;
 
     static boolean selected(boolean hooks, String cut) { return hooks && cut != null && CASES.contains(cut); }
+    static String stagedArmDigest(net.minecraft.nbt.CompoundTag payload) {
+        var root = EscrowCodec.decode(payload);
+        EscrowTags.require(root.issuedThrough() == 1 && root.writerGeneration() == 4 && root.issuedLaunchSerial() == 1
+                && root.records().isEmpty() && root.floors().isEmpty() && root.tombstones().isEmpty()
+                && root.rocketAuthorities().isEmpty() && root.armedFlights().size() == 1,
+                "S6 staged ARMED observation has unexpected authority");
+        var value = root.armedFlights().get(0);
+        EscrowTags.require(value.generation() == 4 && value.serial() == 1 && value.anchor() == null
+                && value.releaseGeneration() == 0 && value.outcome() == EscrowFlightTables.Outcome.ARMED,
+                "S6 staged ARMED observation has unexpected tuple");
+        return EscrowNativeEnvelope.digest(value.encode());
+    }
     static RocketFlightData launchCountdown(RocketFlightData base, RocketFlightPlan plan, long now) {
         EscrowTags.require(base.launchReady(), "S6 flight source is not launch-ready");
         var fueled = base.state() == RocketFlightState.FUELED ? base : base.withFuel(base.fuel(), now);
@@ -61,6 +78,8 @@ final class EscrowLoaderS6FlightProbe {
         EscrowTags.require(selected(Boolean.getBoolean(EscrowTestEndpoints.HOOKS), cut)
                 && !Boolean.getBoolean(EscrowLoaderAdmission.SWITCH), "S6 flight requires exact per-device test gates");
         this.server = server; this.cut = cut; this.recovery = recovery;
+        stagedLedger = server.getWorldPath(LevelResource.ROOT).resolve("data")
+                .resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName() + ".arce-pending");
         for (var pos : List.of(SOURCE, DESTINATION)) {
             var chunk = new ChunkPos(pos);
             server.overworld().getChunkSource().addRegionTicket(TicketType.START, chunk, 2, Unit.INSTANCE);
@@ -80,6 +99,11 @@ final class EscrowLoaderS6FlightProbe {
         }
         if (point.equals("F1_STORE_BEFORE")) { proof = true; }
         if (point.equals("F1_ARM_CAPTURE")) { proof = false; arm = true; }
+        if (arm && !armedObserved && point.equals("K8")) {
+            var payload = CheckedSavedDataFile.readPayload(stagedLedger, ManagedSavedDataType.RESOURCE_ESCROW).orElseThrow();
+            AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_S6_FLIGHT_ARMED cut={} digest={}", cut, stagedArmDigest(payload));
+            armedObserved = true;
+        }
         if (boundary(cut, point, proof, arm)) { EscrowLoaderS6JournalProbe.pause(cut, point); }
     }
 

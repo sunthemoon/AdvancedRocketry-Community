@@ -23,6 +23,50 @@ def seed():
 
 
 class FlightOracleTests(unittest.TestCase):
+    def test_armed_cuts_require_one_complete_staged_witness_before_the_pause(self):
+        cut = "LF_S6_F1_ARM_REPLACED"
+        baseline = "ARCE_LOADER_S6_FLIGHT_FILLED cut=" + cut + " operation=o source=s logical=l owner=u ledger=d source_digest=" + "a"*64 + " tank=4000 bank=1000 epoch=1"
+        staged = "ARCE_LOADER_S6_FLIGHT_ARMED cut=" + cut + " digest=" + "b"*64
+        pause = "ARCE_LOADER_S6_FLIGHT_PAUSED cut=" + cut + " hook=K9"
+        flight.check_logs([baseline, staged, pause], 0, cut)
+        for lines in ([baseline, pause], [baseline, staged, staged, pause], [baseline, pause, staged],
+                      [staged, baseline, pause], [baseline, staged[:-1], pause]):
+            with self.subTest(lines=lines), self.assertRaises(SmokeError): flight.check_logs(lines, 0, cut)
+
+    def test_every_armed_field_is_bound_to_the_checked_staged_witness(self):
+        image = seed(); disk = image["native"]; root = disk["ledger"]
+        data = disk["source"]["RocketEntityData"]
+        arm = dict(v=1, ledger=root["ledger_id"], l=data["assembly_transaction_id"], o=data["owner_id"],
+            src=disk["source"]["UUID"], epoch=1, t="00000000-0000-0000-0000-000000000011", serial=1, g=4,
+            binding=[1]*32, launch=[2]*32, source=list(bytes.fromhex(flight.source_digest(disk["source"]))),
+            dest=[3]*32, d="00000000-0000-0000-0000-000000000012",
+            j=dict(rocket_id=data["assembly_transaction_id"], journal_generation=1, journal_digest=[4]*32),
+            release=0, outcome="ARMED")
+        root.update(writer_generation=4, issued_launch_serial=1, armed_flights=[arm])
+        witness = dict(operation="00000000-0000-0000-0000-000000000001", source=disk["source"]["UUID"],
+            logical=data["assembly_transaction_id"], owner=data["owner_id"], ledger=root["ledger_id"],
+            source_digest=flight.source_digest(disk["source"]), armed_digest=flight.armed_digest(arm))
+        cut = "LF_S6_F1_ARM_REPLACED"
+        identity = flight.check(image, 0, cut=cut, witness=witness)["identity"]
+        for key in arm:
+            changed = copy.deepcopy(image); altered = changed["native"]["ledger"]["armed_flights"][0]
+            if isinstance(altered[key], list): altered[key][0] ^= 1
+            elif isinstance(altered[key], int): altered[key] += 1
+            elif isinstance(altered[key], dict): altered[key]["journal_generation"] += 1
+            else: altered[key] = "00000000-0000-0000-0000-000000000099"
+            with self.subTest(key=key), self.assertRaises(SmokeError): flight.check(changed, 0, cut=cut, witness=witness)
+        for key in arm["j"]:
+            changed = copy.deepcopy(image); guard = changed["native"]["ledger"]["armed_flights"][0]["j"]
+            if key == "journal_digest": guard[key][0] ^= 1
+            elif key == "rocket_id": guard[key] = "00000000-0000-0000-0000-000000000099"
+            else: guard[key] += 1
+            with self.subTest(guard=key), self.assertRaises(SmokeError): flight.check(changed, 0, cut=cut, witness=witness)
+        with self.assertRaises(SmokeError): flight.check(image, 0, cut=cut)
+        changed = copy.deepcopy(image); changed["native"]["ledger"]["armed_flights"][0]["extra"] = 1
+        with self.assertRaises(SmokeError): flight.check(changed, 0, cut=cut, witness=witness)
+        recovered = copy.deepcopy(image); recovered["native"]["ledger"].update(writer_generation=6, armed_flights=[])
+        for restart in (1, 2): flight.check(recovered, restart, identity, cut)
+
     def test_complete_native_empty_journal_is_required(self):
         native = json.loads((Path(__file__).parent / "fixtures/loader_s6/flight-setup-native.json").read_text())
         image = native["image"]

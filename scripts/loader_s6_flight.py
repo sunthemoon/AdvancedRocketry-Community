@@ -17,6 +17,29 @@ F2 = ("LF_S6_F2_BEFORE", "LF_S6_F2_REPLACED", "LF_S6_F2_ACK")
 CASES = F1 + F2[:1]
 
 
+def armed_digest(arm):
+    """Codec-defined full Armed NBT; the witness is captured from the checked staged file."""
+    expected = {"v", "ledger", "l", "o", "src", "epoch", "t", "serial", "g", "binding", "launch", "source",
+                "dest", "d", "j", "release", "outcome"}
+    legacy.require(set(arm) == expected and set(arm["j"]) == {"rocket_id", "journal_generation", "journal_digest"},
+                   "Changed complete ordinary ARMED shape")
+    fields = {}
+    for key, value in arm.items():
+        if key in ("ledger", "l", "o", "src", "t", "d"):
+            fields[key] = integrity.uid(s6.canonical_uuid(value))
+        elif key in ("binding", "launch", "source", "dest"):
+            legacy.require(len(value) == 32, "Invalid ARMED digest")
+            fields[key] = nbt.Tag(nbt.BYTES, bytes(value))
+        elif key == "j":
+            legacy.require(len(value["journal_digest"]) == 32, "Invalid ARMED journal digest")
+            fields[key] = integrity.compound(dict(rocket_id=integrity.uid(s6.canonical_uuid(value["rocket_id"])),
+                journal_generation=integrity.scalar(value["journal_generation"], nbt.LONG),
+                journal_digest=nbt.Tag(nbt.BYTES, bytes(value["journal_digest"]))))
+        else:
+            fields[key] = integrity.scalar(value, nbt.STRING if key == "outcome" else nbt.INT if key == "v" else nbt.LONG)
+    return integrity.digest(integrity.compound(fields))
+
+
 def check(image, restart, identity=None, cut=F1[0], witness=None):
     legacy.require(cut in F1 + F2[:1] and restart in (0, 1, 2), "Unimplemented flight selection")
     legacy.require(image.get("read_status") == "KNOWN" and isinstance(image.get("native"), dict),
@@ -53,7 +76,12 @@ def check(image, restart, identity=None, cut=F1[0], witness=None):
         clean_source = projection(source)
         clean_source["RocketEntityData"]["resource_escrow"]["markers"] = []
         clean_loader = copy.deepcopy(loader); clean_loader["resource_escrow"]["markers"] = []
-        observed = dict(native=native, ledger=root["ledger_id"], source=clean_source, loader=clean_loader, operation=operation)
+        armed_witness = witness.get("armed_digest") if witness else identity.get("armed_digest") if identity else None
+        if not restart and cut in F1[-3:] + F2[:1]:
+            legacy.require(isinstance(armed_witness, str) and re.fullmatch("[0-9a-f]{64}", armed_witness),
+                           "Missing checked staged ARMED witness")
+        observed = dict(native=native, ledger=root["ledger_id"], source=clean_source, loader=clean_loader,
+                        operation=operation, armed_digest=armed_witness)
         if witness:
             legacy.require(witness["source"] == source["UUID"] and witness["logical"] == native["logical"]
                            and witness["owner"] == native["owner"] and witness["ledger"] == root["ledger_id"]
@@ -65,6 +93,10 @@ def check(image, restart, identity=None, cut=F1[0], witness=None):
                            and arm["epoch"] == 1 and arm["serial"] == 1 and arm["g"] == 4 and arm["outcome"] == "ARMED"
                            and arm["release"] == 0 and "a" not in arm and bytes(arm["source"]).hex() == source_digest(clean_source),
                            "F1 ARMED disagrees with the complete native source")
+            legacy.require(s6.canonical_uuid(arm["d"]) != native["physical"]
+                           and s6.canonical_uuid(arm["j"]["rocket_id"]) == native["logical"]
+                           and arm["j"]["journal_generation"] > 0 and armed_digest(arm) == armed_witness,
+                           "F1 changed the complete checked staged ARMED tuple")
         if identity is not None:
             legacy.require(observed == identity, "Changed complete F1 restart identity")
         return dict(identity=observed, raw_total=5000, available_total=5000 if restart else None, loss=0 if restart else None)
@@ -119,7 +151,17 @@ def witness(lines, cut):
         line.rstrip("\r\n")) for line in lines]
     matches = [m for m in matches if m]
     legacy.require(len(matches) == 1, "Missing/duplicate prelaunch flight witness")
-    return dict(zip(("operation", "source", "logical", "owner", "ledger", "source_digest"), matches[0].groups()))
+    result = dict(zip(("operation", "source", "logical", "owner", "ledger", "source_digest"), matches[0].groups()))
+    if cut in F1[-3:] + F2:
+        prefix = "ARCE_LOADER_S6_FLIGHT_ARMED cut=" + cut + " "
+        staged = [(i, re.search(re.escape(prefix) + r"digest=([0-9a-f]{64})$", line.rstrip("\r\n")))
+                  for i, line in enumerate(lines) if prefix in line]
+        baselines = [i for i, line in enumerate(lines) if "ARCE_LOADER_S6_FLIGHT_FILLED cut=" + cut + " " in line]
+        pauses = [i for i, line in enumerate(lines) if "ARCE_LOADER_S6_FLIGHT_PAUSED cut=" + cut + " " in line]
+        legacy.require(len(staged) == len(baselines) == len(pauses) == 1 and staged[0][1]
+                       and baselines[0] < staged[0][0] < pauses[0], "Missing/misordered checked staged ARMED witness")
+        result["armed_digest"] = staged[0][1].group(1)
+    return result
 
 
 def check_logs(lines, restart, cut):

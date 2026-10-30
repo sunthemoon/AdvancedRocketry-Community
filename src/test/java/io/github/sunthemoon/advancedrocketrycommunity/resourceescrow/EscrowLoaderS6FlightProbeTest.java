@@ -12,6 +12,20 @@ import org.junit.jupiter.api.Test;
 class EscrowLoaderS6FlightProbeTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
 
+    @Test void stagedArmObservationHashesTheCompleteValidatedTupleWithoutMutation() {
+        var root = new EscrowLedger(UUID.randomUUID(), 1, 3, List.of(), List.of(), List.of());
+        var armed = EscrowFlightAuthority.arm(root, EscrowFlightAuthorityTest.launch(root, 1), 4).generation(4);
+        var payload = EscrowCodec.encode(armed); var original = payload.copy();
+        assertEquals(EscrowNativeEnvelope.digest(armed.armedFlights().get(0).encode()),
+                EscrowLoaderS6FlightProbe.stagedArmDigest(payload));
+        assertEquals(original, payload);
+        assertThrows(IllegalArgumentException.class, () -> EscrowLoaderS6FlightProbe.stagedArmDigest(EscrowCodec.encode(root)));
+        var extra = payload.copy(); extra.getList("armed_flights", 10).getCompound(0).putInt("extra", 1);
+        assertThrows(IllegalArgumentException.class, () -> EscrowLoaderS6FlightProbe.stagedArmDigest(extra));
+        var generation = payload.copy(); generation.putLong("writer_generation", 5);
+        assertThrows(IllegalArgumentException.class, () -> EscrowLoaderS6FlightProbe.stagedArmDigest(generation));
+    }
+
     @Test void loaderFilledStationarySourceUsesTheProductLaunchPromotionWithoutChangingItsCapture() {
         var empty = RocketFlightData.initial(UUID.randomUUID(), 2_000, 1, RocketFlightPlanner.EARTH.bodyId(),
                 RocketFlightPlanner.EARTH.dimensionId(), new RocketPosition(64, 100, 64), 10);
