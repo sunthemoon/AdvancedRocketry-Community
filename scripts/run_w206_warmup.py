@@ -47,8 +47,11 @@ def inventory(production, diagnostic, attribution=False):
     allowed = set()
     if attribution:
         from w212_instrument import PACKAGE, TARGETS
-        allowed = {PACKAGE + "/" + p.removesuffix(".java") + ".class" for p in TARGETS}
-    require(set(changed) <= allowed and not aa.keys() - bb.keys(), "Unlisted production entries differ")
+        stems = {PACKAGE + "/" + p.removesuffix(".java") for p in TARGETS}
+        # Nested classes inherit changed source line tables even when their own bodies are untouched.
+        allowed = {n for n in changed if n.endswith(".class") and
+                   any(n == stem + ".class" or n.startswith(stem + "$") for stem in stems)}
+    require(set(changed) <= allowed and not aa.keys() - bb.keys(), "Unlisted production entries differ: " + repr(changed))
     return dict(production_sha256=sha256(production), diagnostic_sha256=sha256(diagnostic), added=additions, changed=changed)
 
 
