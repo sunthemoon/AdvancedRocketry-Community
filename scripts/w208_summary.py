@@ -29,10 +29,11 @@ def sample(raw, log):
             latencies.append(event["tick"] - capture)
             capture = None
     request = next((e for e in events if e["label"] == "REQUEST"), None)
-    completion = next((e for e in events if e["label"].startswith("COMPLETE_")), None)
+    completion = next((e for e in events if e["label"] == "COMPLETE_" + raw.get("completion", "NONE")), None)
     fixture_ticks = {raw.get("request_tick")}
     if "c3" in raw.get("case", "") and raw.get("stage") == "start":
-        fixture_ticks.update(e["tick"] for e in events if e["label"] == "C3_ELECT_AFTER")
+        growth = next((e["tick"] for e in events if e["label"] == "C3_ELECT_AFTER"), None)
+        fixture_ticks.add(growth)
     return dict(status=raw["status"], completion=raw.get("completion"), observed_ticks=raw["observation_ticks"],
                 observed_seconds=raw["observation_ns"] / 1e9, timing_ms=timings,
                 tick_ms=stats([row["tick_ns"] / 1e6 for row in raw["ticks"]]), deadline_warnings=deadlines,

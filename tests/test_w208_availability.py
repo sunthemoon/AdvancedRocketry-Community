@@ -32,6 +32,7 @@ class AvailabilityTest(unittest.TestCase):
                        dict(label='ROOT_publish', tick=11, ns=10),
                        dict(label='ROOT_capture', tick=12, ns=10),
                        dict(label='ROOT_publish', tick=22, ns=10),
+                       dict(label='COMPLETE_PROOF_CURRENT', tick=23, ns=1_600_000_000),
                        dict(label='COMPLETE_SEALED', tick=30, ns=2_000_000_000)],
                    ticks=[dict(tick=10, tick_ns=900_000_000), dict(tick=11, tick_ns=2_000_000)])
         result = summary.sample(raw, '')
@@ -40,6 +41,17 @@ class AvailabilityTest(unittest.TestCase):
         self.assertEqual(result['completion_seconds'], 1)
         self.assertEqual(result['workload_tick_ms']['maximum'], 2)
         self.assertEqual(result['tick_ms']['maximum'], 900)
+
+    def test_only_first_c3_election_tick_contains_fixture_growth(self):
+        raw = dict(case='near-c3-unknown', stage='start', status='COMPLETED', completion='SEALED',
+                   request_tick=10, observation_ticks=20, observation_ns=1, stop_close={},
+                   events=[dict(label='C3_ELECT_AFTER', tick=12), dict(label='C3_ELECT_AFTER', tick=13)],
+                   ticks=[dict(tick=10, tick_ns=900_000_000), dict(tick=12, tick_ns=800_000_000),
+                          dict(tick=13, tick_ns=7_000_000), dict(tick=14, tick_ns=2_000_000)])
+        result = summary.sample(raw, '')
+        self.assertEqual(result['workload_tick_ms']['maximum'], 7)
+        self.assertEqual(result['workload_tick_ms']['samples'], 2)
+        self.assertEqual(result['fixture_tick_ms']['samples'], 2)
 
     def test_native_request_runs_before_end_tick_discovery_spends_the_budget(self):
         source = (Path(__file__).resolve().parents[1] / 'src/test/java/io/github/sunthemoon/'

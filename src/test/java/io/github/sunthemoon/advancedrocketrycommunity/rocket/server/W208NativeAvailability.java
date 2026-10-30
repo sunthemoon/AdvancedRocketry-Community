@@ -182,7 +182,7 @@ public final class W208NativeAvailability {
         var d = server.overworld().getEntity(W208JournalFixture.id("entity"));
         boolean stable = u.isEmpty() && !carriers && data.acknowledgedCurrent()
                 && (!(d instanceof RocketEntity rocket) || !RocketRuntime.sealedFrozen(rocket));
-        if (stable && (!scenario.equals("near-traffic") || traffic >= 20 || completion != null)) { settled++; } else { settled = 0; }
+        if (stable && trafficObserved(scenario, stage, traffic, completion)) { settled++; } else { settled = 0; }
         if (settled >= 20) { finish("COMPLETED"); }
         else if (age - requestTick >= 1200) { finish("NOT_COMPLETED"); }
     }
@@ -199,6 +199,10 @@ public final class W208NativeAvailability {
         rocket.initialize(snapshot, W208JournalFixture.id("logical"), W208JournalFixture.id("owner"));
         RocketTransferEntities.positionAtOrigin(rocket, snapshot.sourceOrigin());
         require(level.addFreshEntity(rocket), "Rocket insertion failed"); return rocket;
+    }
+
+    static boolean trafficObserved(String scenario, String stage, int traffic, String completion) {
+        return !stage.equals("start") || !scenario.equals("near-traffic") || traffic >= 20 || completion != null;
     }
 
     private void finish(String status) {
