@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Counted S6 loader tranches, with two restarts and no changes to shared runners.
 
-Implements A1, A2's unloaded E5 and R2, and six A3 shutdown rows. Other matrix rows
+Implements A1, A2's unloaded E5 and R2, and seven A3 shutdown rows. Other matrix rows
 remain missing; PASS_SELECTED never means B3-S6 acceptance. Run as a detached
 process so its own finally releases its lock and removes its disposable world.
 """
@@ -143,6 +143,8 @@ def run_cut(args, cut, evidence, owner, pins):
             raw_check = oracle.check_e5 if cut == oracle.E5 else oracle.check_e3
             if cut in (oracle.G3_L1, oracle.G3_QUEUED):
                 raw_check = oracle.check_g3_l1
+            elif cut == oracle.G3_L2_QUEUED:
+                raw_check = oracle.check_g3_l2_queued
             elif cut == oracle.G3_L2:
                 raw_check = lambda image, restart, identity: oracle.check_g3_l2(
                     image, restart, identity, operation=oracle.shutdown_operation(lines, cut) if not restart else None)

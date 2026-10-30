@@ -226,7 +226,7 @@ K5	scripts/run_v180_escrow_forced_stop.py;tests/test_cargo_s4_s5_cuts_runner.py;
 K6	scripts/run_v180_escrow_forced_stop.py;tests/test_loader_s6_oracle.py;tests/test_v180_loader_cuts.py
 K7	scripts/run_v180_escrow_forced_stop.py;tests/test_v180_loader_cuts.py
 K8	scripts/run_v180_escrow_forced_stop.py;tests/test_loader_s6_oracle.py;tests/test_v180_loader_cuts.py
-K9	scripts/run_v180_escrow_forced_stop.py;tests/test_cargo_cuts_runner.py;tests/test_item_cuts_runner.py;tests/test_loader_follow_up_observations.py;tests/test_retire_before_fill_cuts.py;tests/test_v180_loader_cuts.py
+K9	scripts/run_v180_escrow_forced_stop.py;tests/test_cargo_cuts_runner.py;tests/test_item_cuts_runner.py;tests/test_loader_follow_up_observations.py;tests/test_loader_s6_oracle.py;tests/test_retire_before_fill_cuts.py;tests/test_v180_loader_cuts.py
 LF_C2_SOURCE_AFTER	scripts/run_v180_fluid_loader_restart.py
 LF_C2_SOURCE_BEFORE	scripts/run_v180_fluid_loader_restart.py
 LF_M_	tests/test_loader_s6_oracle.py;tests/test_v180_loader_cuts.py
@@ -334,6 +334,7 @@ LF_S6_G3_L1_INFLIGHT	scripts/run_v180_loader_s6.py;tests/test_loader_s6_oracle.p
 LF_S6_G3_L1_QUEUED	scripts/run_v180_loader_s6.py;tests/test_loader_s6_oracle.py
 LF_S6_G3_L1_UNKNOWN	scripts/run_v180_loader_s6.py;tests/test_loader_s6_oracle.py
 LF_S6_G3_L2_INFLIGHT	scripts/run_v180_loader_s6.py;tests/test_loader_s6_oracle.py
+LF_S6_G3_L2_QUEUED	scripts/run_v180_loader_s6.py;tests/test_loader_s6_oracle.py
 LF_S6_G3_L2_UNKNOWN	scripts/run_v180_loader_s6.py;tests/test_loader_s6_oracle.py
 LF_S6_R2_DESTRUCTIVE_SOURCE	scripts/run_v180_loader_s6.py;tests/test_loader_s6_oracle.py
 LF_S6_R2_DUPLICATE_RECONNECT	scripts/run_v180_loader_s6.py;tests/test_loader_s6_oracle.py

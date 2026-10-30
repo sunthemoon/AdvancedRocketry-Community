@@ -19,12 +19,13 @@ R2 = (R2_KEEP, R2_DESTRUCTIVE, R2_RECONNECT)
 G3_L1 = "LF_S6_G3_L1_INFLIGHT"
 G3_L2 = "LF_S6_G3_L2_INFLIGHT"
 G3_QUEUED = "LF_S6_G3_L1_QUEUED"
+G3_L2_QUEUED = "LF_S6_G3_L2_QUEUED"
 G3_U1 = "LF_S6_G3_L1_UNKNOWN"
 G3_U2 = "LF_S6_G3_L2_UNKNOWN"
 G3_CLOSE = "LF_S6_G3_FAILED_CLOSE"
 G3_UNKNOWN = (G3_U1, G3_U2)
 G3_SELF_STOP = G3_UNKNOWN + (G3_CLOSE,)
-G3 = (G3_L1, G3_L2, G3_QUEUED) + G3_SELF_STOP
+G3 = (G3_L1, G3_L2, G3_QUEUED, G3_L2_QUEUED) + G3_SELF_STOP
 
 # UUID-valued native fields and the identity envelope returned by these oracles.
 # Do not recognize UUIDs by array length: coordinates, quantities and hashes are
@@ -100,6 +101,14 @@ def check_e3(image, restart, identity=None):
 def check_g3_l1(image, restart, identity=None):
     result = check_e3(image, restart, identity)
     legacy.require(restart != 0 or result["prefix"] == "K2", "Shutdown did not drain the held L1 without applying it")
+    return result
+
+
+def check_g3_l2_queued(image, restart, identity=None):
+    result = check_e3(image, restart, identity)
+    legacy.require(result["prefix"] == "K6", "Pending native retirement changed its proved fill")
+    legacy.require(image["native"]["ledger"]["writer_generation"] == (4 if restart else 3),
+                   "Pending native retirement changed the stopped/recovered durable generation")
     return result
 
 
@@ -181,16 +190,22 @@ def check_observations(lines: list[str], restart: int, cut=E3, retired_operation
             else:
                 check_recovery_observations(lines, retired_operation if cut == G3_L2 else None)
         else:
-            boundary = "K8" if cut == G3_L2 else "WRITE_UNKNOWN" if cut in G3_UNKNOWN else "BARRIER_IO" if cut == G3_CLOSE else "K1"
+            boundary = "C6_PENDING" if cut == G3_L2_QUEUED else "K8" if cut == G3_L2 else "WRITE_UNKNOWN" if cut in G3_UNKNOWN else "BARRIER_IO" if cut == G3_CLOSE else "K1"
             suffix = " operation=" + shutdown_operation(lines, cut) if cut == G3_L2 else ""
-            if cut in G3_UNKNOWN or cut == G3_QUEUED:
+            if cut in G3_UNKNOWN or cut in (G3_QUEUED, G3_L2_QUEUED):
                 matches = [match for line in lines if (match := re.search(
                     r"ARCE_LOADER_S6_DRAIN_READY cut=" + re.escape(cut) + r" boundary=" + boundary
                     + r" running=true state=(\S+)", line))]
                 legacy.require(len(matches) == 1, "Missing/repeated actual shutdown writer state")
                 state = matches[0][1]
                 suffix = " state=" + state
-                if cut == G3_QUEUED:
+                if cut == G3_L2_QUEUED:
+                    legacy.require(state == "active:true,successor:false,completions:0,running:true,unknown:false,generation:3,durable:2",
+                                   "Pending native retirement lacks the busy second L1")
+                    expected = "ARCE_LOADER_S6_L2_PENDING records=1 pending=1 issued=1 proved=true locked=true tank=4000 bank=1000 epochs=1,1 markers=1,1"
+                    legacy.require(sum(re.search(re.escape(expected) + r"(?:\s|$)", line) is not None for line in lines) == 1,
+                                   "Missing/repeated proved pending retirement and exact resources")
+                elif cut == G3_QUEUED:
                     legacy.require(state == "active:true,successor:true,completions:0,running:true,unknown:false,generation:2,durable:1",
                                    "Shutdown did not observe the uncaptured L1 successor")
                 else:

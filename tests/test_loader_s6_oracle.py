@@ -596,6 +596,48 @@ class LoaderS6OracleTest(unittest.TestCase):
                       [line.replace("proof=false", "proof=true") for line in lines], lines[1:]):
             with self.subTest(wrong=wrong), self.assertRaises(SmokeError): oracle.check_observations(wrong, 0, cut)
 
+    def test_l2_queued_requires_native_proof_and_busy_other_write_before_normal_stop(self):
+        cut = "LF_S6_G3_L2_QUEUED"
+        state = "active:true,successor:false,completions:0,running:true,unknown:false,generation:3,durable:2"
+        lines = ["ARCE_LOADER_S6_L2_PENDING records=1 pending=1 issued=1 proved=true locked=true tank=4000 bank=1000 epochs=1,1 markers=1,1",
+                 f"ARCE_LOADER_S6_DRAIN_READY cut={cut} boundary=C6_PENDING running=true state={state}",
+                 f"ARCE_LOADER_S6_DRAIN_RELEASE cut={cut} boundary=C6_PENDING running=false state={state}", "Stopping server"]
+        oracle.check_observations(lines, 0, cut)
+        for before, after in (("proved=true", "proved=false"), ("locked=true", "locked=false"),
+                              ("pending=1", "pending=0"), ("running:true", "running:false"),
+                              ("generation:3", "generation:2"), ("durable:2", "durable:3"),
+                              ("tank=4000", "tank=5000"), ("markers=1,1", "markers=0,0")):
+            with self.subTest(before=before), self.assertRaises(SmokeError):
+                oracle.check_observations([line.replace(before, after) for line in lines], 0, cut)
+        for wrong in (lines[1:], lines + [lines[0]], lines + ["[Server/ERROR] unrelated"]):
+            with self.assertRaises(SmokeError): oracle.check_observations(wrong, 0, cut)
+
+    def test_l2_queued_stopped_authority_keeps_exact_fill_until_both_restarts(self):
+        image = self.image("LF_M_K6")
+        image["native"]["ledger"]["writer_generation"] = 3
+        initial = oracle.check_g3_l2_queued(image, 0)
+        self.assertIsNone(initial["loss"])
+        for restart in (1, 2):
+            final = self.image("LF_M_K7", restart)
+            final["native"]["ledger"]["writer_generation"] = 4
+            self.assertEqual(5000, oracle.check_g3_l2_queued(final, restart, initial["identity"])["available_total"])
+        for prefix in ("K2", "K4", "K5", "K9"):
+            changed = self.image("LF_M_" + prefix)
+            changed["native"]["ledger"]["writer_generation"] = 3
+            with self.subTest(prefix=prefix), self.assertRaises(SmokeError): oracle.check_g3_l2_queued(changed, 0)
+        for key, value in (("read_status", "UNKNOWN"),):
+            changed = copy.deepcopy(image); changed[key] = value
+            with self.assertRaises(SmokeError): oracle.check_g3_l2_queued(changed, 0)
+
+    def test_l2_queued_runner_uses_normal_stop(self):
+        from unittest.mock import Mock
+        import run_v180_loader_s6 as runner
+        process = Mock(); process.finish.return_value = 0
+        result = runner.finish_initial(process, "LF_S6_G3_L2_QUEUED", False)
+        self.assertEqual("NORMAL_DRAIN_FROM_SELECTED_WRITER_STATE", result["stop"])
+        process.command.assert_called_once_with("stop")
+        process.process.kill.assert_not_called()
+
     def test_unknown_l2_can_resolve_guard_refusal_without_claiming_l2_committed(self):
         cut = "LF_S6_G3_L2_UNKNOWN"
         state = "active:true,successor:false,completions:0,running:false,unknown:true,generation:4,durable:3"

@@ -1,6 +1,10 @@
 package io.github.sunthemoon.advancedrocketrycommunity.resourceescrow;
 
+import static io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.FluidFuelLoaderEscrowFixtures.*;
+
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderBlockEntity;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -13,6 +17,7 @@ final class EscrowLoaderS6ShutdownProbe {
     static final String L1_INFLIGHT = "LF_S6_G3_L1_INFLIGHT";
     static final String L2_INFLIGHT = "LF_S6_G3_L2_INFLIGHT";
     static final String L1_QUEUED = "LF_S6_G3_L1_QUEUED";
+    static final String L2_QUEUED = "LF_S6_G3_L2_QUEUED";
     static final String L1_UNKNOWN = "LF_S6_G3_L1_UNKNOWN";
     static final String L2_UNKNOWN = "LF_S6_G3_L2_UNKNOWN";
     static final String FAILED_CLOSE = "LF_S6_G3_FAILED_CLOSE";
@@ -28,17 +33,22 @@ final class EscrowLoaderS6ShutdownProbe {
     private volatile boolean ioHeld;
     private volatile String queuedState = "";
     private boolean injected;
+    private volatile boolean firstSuccessorObserved;
+    private final java.util.concurrent.atomic.AtomicInteger preparations = new java.util.concurrent.atomic.AtomicInteger();
 
     static boolean selected(boolean hooks, String nativeCase, String selection) {
         if (!hooks) { return false; }
         if (L1_UNKNOWN.equals(selection)) { return "LF_M_E4L1_UNKNOWN".equals(nativeCase); }
         if (L2_UNKNOWN.equals(selection)) { return "LF_M_E4L2_UNKNOWN".equals(nativeCase); }
         return NATIVE_CASE.equals(nativeCase) && (L1_INFLIGHT.equals(selection) || L2_INFLIGHT.equals(selection)
-                || L1_QUEUED.equals(selection) || FAILED_CLOSE.equals(selection));
+                || L1_QUEUED.equals(selection) || L2_QUEUED.equals(selection) || FAILED_CLOSE.equals(selection));
     }
 
     static boolean queuedReady(String state) {
         return "active:true,successor:true,completions:0,running:true,unknown:false,generation:2,durable:1".equals(state);
+    }
+    static boolean l2QueuedReady(String state, boolean proved) {
+        return proved && "active:true,successor:false,completions:0,running:true,unknown:false,generation:3,durable:2".equals(state);
     }
     static boolean unknownReady(String cut, String state) {
         var match = java.util.regex.Pattern.compile("active:true,successor:(true|false),completions:0,running:false,unknown:true,generation:([0-9]{1,18}),durable:([0-9]{1,18})").matcher(state);
@@ -70,6 +80,30 @@ final class EscrowLoaderS6ShutdownProbe {
     void tick() {
         if (observer != null) { observer.tick(); } else { fixture.tick(); }
         if (recovery || selected.get()) { return; }
+        if (L2_QUEUED.equals(cut) && ioHeld) {
+            String state = writerState();
+            if (!firstSuccessorObserved && queuedReady(state)) { firstSuccessorObserved = true; }
+            var data = ResourceEscrowSavedData.existing(server);
+            var coordinator = data.bind(server);
+            if (preparations.get() == 2 && operation != null
+                    && l2QueuedReady(state, coordinator.reconciliationCheckpointProved(operation))) {
+                var op = data.ledger().records().get(0);
+                var loader = (FluidFuelLoaderBlockEntity) server.overworld().getBlockEntity(new net.minecraft.core.BlockPos(66, 100, 64));
+                var rocket = (RocketEntity) server.overworld().getEntity(op.destination().identity());
+                EscrowTags.require(data.ledger().records().size() == 1 && data.ledger().issuedThrough() == 1
+                        && op.id().equals(operation) && coordinator.admissionAuthority().pendingCount() == 1
+                        && coordinator.locked(op.source().key()) && coordinator.locked(op.destination().key())
+                        && amount(loader) == 4_000 && bank(rocket, false) == 1_000 && bank(rocket, true) == 0
+                        && section(loader).epoch() == 1 && rocket.escrowSection().epoch() == 1
+                        && section(loader).markers().equals(java.util.List.of(new EscrowPrefix.Marker(operation, 1, "SOURCE", 1)))
+                        && rocket.escrowSection().markers().equals(java.util.List.of(new EscrowPrefix.Marker(operation, 1, "DESTINATION", 1))),
+                        "S6 pending retirement changed its proved resources or authority");
+                queuedState = state;
+                AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_S6_L2_PENDING records=1 pending=1 issued=1 proved=true locked=true tank=4000 bank=1000 epochs=1,1 markers=1,1");
+                selected.set(true);
+                AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_S6_DRAIN_READY cut={} boundary=C6_PENDING running=true state={}", cut, state);
+            }
+        }
         if (L1_QUEUED.equals(cut) && ioHeld) {
             String state = writerState();
             if (queuedReady(state) && selected.compareAndSet(false, true)) {
@@ -100,7 +134,7 @@ final class EscrowLoaderS6ShutdownProbe {
             int size = EscrowCargoContentionProbe.injectCacheClose(true, server.overworld().getChunkSource().chunkMap.worker);
             AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_S6_CACHE regions={} own_region_cached=false", size);
         }
-        if (L2_INFLIGHT.equals(cut) && "C6_JOINT_READBACK".equals(label)) {
+        if ((L2_INFLIGHT.equals(cut) || L2_QUEUED.equals(cut)) && "C6_JOINT_READBACK".equals(label)) {
             EscrowTags.require(server.isSameThread(), "S6 L2 operation capture requires the server thread");
             var data = ResourceEscrowSavedData.existing(server);
             EscrowTags.require(data != null && data.ledger().records().size() == 1, "S6 L2 lost its proved operation");
@@ -108,6 +142,26 @@ final class EscrowLoaderS6ShutdownProbe {
         }
         // K7 is setup only: never enter its forced-stop pause at the successful proof.
         if (!"C6_JOINT_READBACK".equals(label)) { fixture.checkpoint(label); }
+        if (L2_QUEUED.equals(cut) && "K1".equals(label)) {
+            EscrowTags.require(!server.isSameThread() && server.isRunning(), "S6 pending retirement missed the live writer");
+            int ordinal = preparations.incrementAndGet();
+            EscrowTags.require(ordinal <= 2, "S6 pending retirement observed an extra preparation write");
+            ioHeld = true;
+            if (ordinal == 1) {
+                long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(30);
+                while (!firstSuccessorObserved && server.isRunning() && System.nanoTime() < deadline) {
+                    try { TimeUnit.MILLISECONDS.sleep(10); }
+                    catch (InterruptedException failure) { Thread.currentThread().interrupt(); throw new IllegalStateException(failure); }
+                }
+                EscrowTags.require(firstSuccessorObserved && server.isRunning(), "S6 normal successor was not observed within the checkpoint bound");
+                ioHeld = false;
+            } else {
+                awaitStop();
+                EscrowTags.require(selected.get() && l2QueuedReady(queuedState, true), "S6 stop preceded the proved pending retirement");
+                AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_S6_DRAIN_RELEASE cut={} boundary=C6_PENDING running=false state={}", cut, queuedState);
+            }
+            return;
+        }
         if ((L1_UNKNOWN.equals(cut) || L2_UNKNOWN.equals(cut)) && "WRITE_UNKNOWN".equals(label) && !selected.get()) {
             String state = writerState();
             EscrowTags.require(unknownReady(cut, state), "S6 stop missed the selected UNKNOWN candidate");
