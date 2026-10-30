@@ -45,7 +45,7 @@ UUID_FIELDS = frozenset((
     "physical_rocket", "logical_rocket", "logical_rocket_id", "assembly_transaction_id",
     "rocket_id", "physical", "logical", "snapshot", "snapshot_id", "ledger",
     "transfer_id", "entity_id", "source_entity_id", "destination_entity_id", "active_transfer_id",
-    "request_id", "passenger_id", "destination_station_id", "station", "assembly_snapshot",
+    "request_id", "passenger_id", "destination_station_id", "station", "assembly_snapshot", "actor", "anchor_op",
 ))
 
 
@@ -190,6 +190,9 @@ def shutdown_operation(lines, cut):
 def check_observations(lines: list[str], restart: int, cut=E3, retired_operation=None) -> None:
     """Require the selected propagated failure, not merely a checkpoint label."""
     import re
+    if cut in O1:
+        check_o1_logs(lines, restart, cut)
+        return
     if cut in G1:
         check_g1_logs(lines, restart, cut)
         return
@@ -344,6 +347,112 @@ def check_recovery_observations(lines: list[str], retired_operation=None) -> Non
                        "Completion lacks exact final resources, epochs or observation count")
     except (KeyError, ValueError, TypeError) as failure:
         raise SmokeError(f"Malformed S6 accounting observation: {failure}") from failure
+
+
+O1_BEFORE, O1_REPLACED, O1_ACK = "LF_S6_O1_BEFORE", "LF_S6_O1_REPLACED", "LF_S6_O1_ACK"
+O1 = (O1_BEFORE, O1_REPLACED, O1_ACK)
+
+
+def check_o1(image, restart, identity=None, cut=O1_BEFORE):
+    """Frozen operator intent/receipt is authority; its UNKNOWN loss is never zero."""
+    import copy
+    import re
+    from run_v180_rocket_settlement_completion import require_progress
+    from run_v180_rocket_settlement_intent import ACTOR
+    legacy.require(cut in O1 and restart in (0, 1, 2) and image.get("read_status") == "KNOWN"
+                   and isinstance(image.get("native"), dict), "Settlement UNKNOWN is not zero loss")
+    try:
+        disk = normalize_ids(image["native"]); identity = normalize_ids(identity)
+        root = disk["ledger"]
+        released = bool(restart and cut != O1_BEFORE)
+        legacy.require(root is not None and root["issued_through"] == 1 and root["issued_launch_serial"] == 0
+                       and not root["floors"] and not root["armed_flights"], "Settlement changed unrelated authority")
+        legacy.require(len(root["records"]) == int(not released) and len(root["tombstones"]) == int(released)
+                       and len(root["rocket_authorities"]) == int(released), "Settlement lost or prematurely released authority")
+        # Validate the exact ordinary resource envelopes separately from the operator
+        # tables. This private projection is not a modified native image or a verdict.
+        resources = copy.deepcopy(disk)
+        for field in ("tombstones", "rocket_authorities"):
+            resources["ledger"][field] = []
+        resource_identity = legacy.check(resources, "LF_M_K6", int(released))
+        resource_identity["ledger"] = root["ledger_id"]
+        resource_identity["snapshot"] = disk["rocket"]["RocketEntityData"]["snapshot"]
+        legacy.require(identity is None or identity["resources"] == resource_identity,
+                       "Settlement changed endpoint/ledger identity")
+        actor = canonical_uuid(ACTOR)
+        authority = root["tombstones"][0] if released else root["records"][0]
+        operation = authority["op_id"]
+        if not released:
+            binding = authority["native_binding"]
+            legacy.require(binding["physical"] == resource_identity["physical"] and binding["logical"] == resource_identity["logical"]
+                           and binding["owner"] == resource_identity["owner"] == authority["owner"]
+                           and binding["snapshot"] == resource_identity["snapshot"]["snapshot_id"], "Changed native settlement binding")
+            legacy.require(authority["seq"] == 1 and authority["phase"] == ("REPAIR" if cut == O1_BEFORE else "SETTLING_ACCEPT")
+                           and authority["reason"] == "OTHER_STATE", "Wrong operator boundary or manual cause")
+            intent = authority.get("settlement", {})
+            if cut == O1_BEFORE:
+                legacy.require(not intent, "Pre-O1 invented an operator decision")
+            else:
+                legacy.require(intent["schema_version"] == 2 and intent["choice"] == "ACCEPT_CURRENT"
+                               and intent["ledger_id"] == root["ledger_id"] and intent["actor"] == actor
+                               and intent["actor_name"] == "Server" and re.fullmatch(r"[0-9a-f]{64}", intent["digest"])
+                               and intent["confirmed_tick"] >= intent["preview_tick"] >= 0,
+                               "Wrong frozen decision identity/choice/actor")
+                legacy.require(len(intent["members"]) == 1 and intent["members"][0]["op_id"] == operation
+                               and intent["members"][0]["phase"] == "REPAIR" and intent["members"][0]["reason"] == "OTHER_STATE"
+                               and re.fullmatch(r"[0-9a-f]{64}", intent["members"][0]["digest"]), "Wrong frozen member")
+                observations = intent["observations"]
+                legacy.require(len(observations) == 2 and all(not o["missing"] and o["bound"] for o in observations),
+                               "Missing/changed chosen survivor")
+                for endpoint, quantity, role in ((authority["source"], 4000, "SOURCE"), (authority["destination"], 1000, "DESTINATION")):
+                    chosen = [o for o in observations if o["endpoint"] == endpoint]
+                    legacy.require(len(chosen) == 1 and chosen[0]["quantity"] == quantity, "Wrong frozen endpoint/quantity")
+                    state = chosen[0]["state"]
+                    legacy.require(state["ledger_id"] == root["ledger_id"] and state["epoch"] == 1 and state["signature"] == endpoint["after_signature"]
+                                   and state["markers"] == [dict(op_id=operation, seq=1, role=role, epoch_after=1)],
+                                   "Wrong frozen survivor marker/epoch")
+        else:
+            legacy.require(authority["schema_version"] == 3 and authority["released"] == 1
+                           and authority["accounting_status"] == "UNKNOWN" and "audited_loss" not in authority
+                           and "loss_known" not in authority and authority["choice"] == "ACCEPT_CURRENT"
+                           and authority["actor"] == actor and authority["actor_name"] == "Server"
+                           and authority["payload_amount"] == 1000 and 0 < authority["release_generation"] <= root["writer_generation"],
+                           "Wrong returning-identity receipt or invented accounting")
+            legacy.require(identity is not None, "Released receipt needs its initial frozen decision")
+            require_progress(identity["authority"], root)
+            initial = identity["authority"]["records"][0]
+            legacy.require(authority["retired"] == [dict(op_id=initial["op_id"])] and authority["anchor_op"] == initial["op_id"]
+                           and authority["payload_hash"] == initial["payload_hash"] and not authority["missing"],
+                           "Receipt changed its retired identity or payload")
+            chosen = next(o for o in initial["settlement"]["observations"] if o["endpoint"]["kind"] == "ENTITY")
+            head = root["rocket_authorities"][0]
+            expected = dict(v=1, l=resource_identity["logical"], o=resource_identity["owner"], a=initial["op_id"],
+                            g=authority["release_generation"], p=resource_identity["physical"], e=1, k="FUEL_VECTOR_V1",
+                            s=list(bytes.fromhex(chosen["state"]["signature"])), i=list(bytes.fromhex(chosen["invariant_digest"])),
+                            issued=0, completed=0, outcome="READY")
+            decoded_head = dict(head, **{key: canonical_uuid(head[key]) for key in ("l", "o", "a", "p")})
+            legacy.require(decoded_head == expected, "Settlement changed the READY authority")
+            if "completed" in identity:
+                legacy.require(identity["completed"] == dict(receipts=root["tombstones"], heads=root["rocket_authorities"]),
+                               "Second restart changed the complete released authority")
+        if identity is not None and cut == O1_BEFORE:
+            legacy.require(root["records"] == identity["authority"]["records"], "Pre-O1 changed the held record")
+        observed = identity or dict(resources=resource_identity, authority=root)
+        if released:
+            observed = dict(observed, completed=dict(receipts=root["tombstones"], heads=root["rocket_authorities"]))
+        return dict(identity=observed, raw_total=5000, available_total=None, loss=None,
+                    state="RELEASED" if released else "PRE_O1" if cut == O1_BEFORE else "FROZEN_O1")
+    except (KeyError, TypeError, IndexError, ValueError) as failure:
+        raise SmokeError(f"Malformed operator settlement observation: {failure}") from failure
+
+
+def check_o1_logs(lines, restart, cut):
+    lines = [line.rstrip("\r\n") for line in lines]
+    marker = (f"ARCE_LOADER_S6_O_RESULT cut={cut} tank=4000 bank=1000 epochs=1,1 "
+              f"records={int(cut == O1_BEFORE)} receipts={int(cut != O1_BEFORE)} state={'PRE_O1' if cut == O1_BEFORE else 'RELEASED'}"
+              if restart else f"ARCE_LOADER_S6_O_PAUSED cut={cut} hook=" + {O1_BEFORE: "K1", O1_REPLACED: "K2", O1_ACK: "O1_ACK"}[cut])
+    legacy.require(sum(line.endswith(marker) for line in lines) == 1, "Missing/repeated operator boundary")
+    legacy.require(not any("/ERROR" in line or "/FATAL" in line for line in lines), "Unexpected operator settlement error")
 
 
 def guard_position(index):

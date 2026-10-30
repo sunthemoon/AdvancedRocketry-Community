@@ -805,5 +805,98 @@ class GuardOracleTest(unittest.TestCase):
         with self.assertRaises(SmokeError): oracle.block_at(chunk, (67, 100, 64))
 
 
+class SettlementOracleTest(unittest.TestCase):
+    def image(self, cut="LF_S6_O1_REPLACED", restart=0):
+        import json
+        from run_v180_rocket_settlement_intent import ACTOR
+        image = json.loads((Path(__file__).parent / "fixtures/loader_s6/settlement-seed.json").read_text())
+        root = image["native"]["ledger"]
+        op = root["records"][0]
+        op.update(phase="REPAIR" if cut == "LF_S6_O1_BEFORE" else "SETTLING_ACCEPT", reason="OTHER_STATE")
+        observations = []
+        for key, quantity, kind, role in (("source", 4000, "FLUID_TANK_V1", "SOURCE"), ("destination", 1000, "FUEL_VECTOR_V1", "DESTINATION")):
+            observations.append(dict(endpoint=copy.deepcopy(op[key]), missing=0, bound=1, quantity=quantity,
+                signature_kind=kind, invariant_digest="1" * 64,
+                state=dict(ledger_id=root["ledger_id"], epoch=1, signature=op[key]["after_signature"],
+                           markers=[dict(op_id=op["op_id"], seq=1, role=role, epoch_after=1)])))
+        if cut != "LF_S6_O1_BEFORE":
+            op["settlement"] = dict(schema_version=2, choice="ACCEPT_CURRENT", ledger_id=root["ledger_id"], actor=ACTOR,
+                actor_name="Server", preview_tick=100, confirmed_tick=100, digest="a" * 64,
+                members=[dict(op_id=op["op_id"], phase="REPAIR", reason="OTHER_STATE", digest="b" * 64)], observations=observations)
+        if restart and cut != "LF_S6_O1_BEFORE":
+            root["records"] = []
+            root["writer_generation"] = 6
+            root["tombstones"] = [dict(schema_version=3, op_id=op["op_id"], retired=[dict(op_id=op["op_id"])],
+                guards=[op["transfer_guard"]], before_choice=observations, payload_amount=1000, payload_hash=op["payload_hash"],
+                accounting_status="UNKNOWN", decision_digest="a" * 64, actor=ACTOR, actor_name="Server", choice="ACCEPT_CURRENT",
+                confirmed_tick=100, released=1, release_generation=6, anchor_op=op["op_id"], missing=[],
+                survivors=[dict(endpoint=o["endpoint"], epoch=1, signature=o["state"]["signature"], signature_kind=o["signature_kind"],
+                                invariant_digest=o["invariant_digest"], quantity=o["quantity"], bound=True) for o in observations])]
+            data = image["native"]["rocket"]["RocketEntityData"]
+            root["rocket_authorities"] = [dict(v=1, l=data["assembly_transaction_id"], o=data["owner_id"], a=op["op_id"],
+                p=image["native"]["rocket"]["UUID"], e=1, g=6, k="FUEL_VECTOR_V1", s=list(bytes.fromhex(op["destination"]["after_signature"])),
+                i=list(bytes.fromhex("1" * 64)), issued=0, completed=0, outcome="READY")]
+            data["resource_escrow"]["markers"] = []
+            image["native"]["loaders"][0]["arce_fluid_fuel_loader"]["resource_escrow"]["markers"] = []
+        return image
+
+    def test_operator_boundaries_and_two_restarts_preserve_exact_authority(self):
+        for cut in ("LF_S6_O1_BEFORE", "LF_S6_O1_REPLACED", "LF_S6_O1_ACK"):
+            identity = None
+            for restart in range(3):
+                result = oracle.check_o1(self.image(cut, restart), restart, identity, cut)
+                identity = result["identity"]
+                self.assertEqual(5000, result["raw_total"])
+                self.assertIsNone(result["available_total"])
+                self.assertIsNone(result["loss"])
+
+    def test_operator_rejects_changed_quantity_epoch_marker_and_frozen_fields(self):
+        cut = "LF_S6_O1_REPLACED"
+        baseline = self.image(cut)
+        changes = [
+            lambda d: d["loaders"][0]["arce_fluid_fuel_loader"]["tank"].update(Amount=5000),
+            lambda d: d["loaders"][0]["arce_fluid_fuel_loader"]["resource_escrow"].update(resource_epoch=2),
+            lambda d: d["rocket"]["RocketEntityData"]["resource_escrow"]["markers"][0].update(op_id="other"),
+            lambda d: d["ledger"]["records"][0]["settlement"].update(actor="other"),
+            lambda d: d["ledger"]["records"][0]["settlement"]["members"][0].update(op_id="other"),
+            lambda d: d["ledger"]["records"][0]["settlement"]["observations"][0].update(quantity=999),
+            lambda d: d["ledger"]["records"][0]["settlement"]["observations"][1]["state"].update(epoch=2),
+        ]
+        for change in changes:
+            damaged = copy.deepcopy(baseline); change(damaged["native"])
+            with self.subTest(change=change), self.assertRaises(SmokeError): oracle.check_o1(damaged, 0, None, cut)
+        with self.assertRaises(SmokeError): oracle.check_o1(dict(read_status="UNKNOWN", native=None), 0, None, cut)
+
+    def test_receipt_and_ready_head_must_match_the_complete_initial_choice(self):
+        cut = "LF_S6_O1_ACK"
+        identity = oracle.check_o1(self.image(cut), 0, None, cut)["identity"]
+        final = self.image(cut, 1)
+        for field, value in (("actor", "other"), ("decision_digest", "c" * 64), ("accounting_status", "EXACT"),
+                             ("payload_amount", 999), ("anchor_op", "other"), ("payload_hash", "c" * 64)):
+            damaged = copy.deepcopy(final); damaged["native"]["ledger"]["tombstones"][0][field] = value
+            with self.subTest(field=field), self.assertRaises(SmokeError): oracle.check_o1(damaged, 1, identity, cut)
+        for field in ("l", "o", "a", "p", "e", "g", "s", "i", "issued", "completed", "outcome"):
+            damaged = copy.deepcopy(final); damaged["native"]["ledger"]["rocket_authorities"][0][field] = "changed"
+            with self.subTest(field=field), self.assertRaises(SmokeError): oracle.check_o1(damaged, 1, identity, cut)
+
+    def test_operator_native_binding_and_snapshot_cannot_change_identity(self):
+        cut = "LF_S6_O1_REPLACED"
+        for field in ("physical", "logical", "owner", "snapshot"):
+            image = self.image(cut)
+            image["native"]["ledger"]["records"][0]["native_binding"][field] = "changed"
+            with self.subTest(field=field), self.assertRaises(SmokeError): oracle.check_o1(image, 0, None, cut)
+        identity = oracle.check_o1(self.image(cut), 0, None, cut)["identity"]
+        image = self.image(cut, 1)
+        image["native"]["rocket"]["RocketEntityData"]["snapshot"]["created_at_game_time"] += 1
+        with self.assertRaises(SmokeError): oracle.check_o1(image, 1, identity, cut)
+
+    def test_operator_logs_pin_each_actual_cut_and_reject_errors(self):
+        for cut, hook in (("LF_S6_O1_BEFORE", "K1"), ("LF_S6_O1_REPLACED", "K2"), ("LF_S6_O1_ACK", "O1_ACK")):
+            line = f"ARCE_LOADER_S6_O_PAUSED cut={cut} hook={hook}\n"
+            oracle.check_observations([line], 0, cut)
+            for lines in ([], [line, line], [line.replace(hook, "OTHER")], [line, "[Server/ERROR] unrelated"]):
+                with self.assertRaises(SmokeError): oracle.check_observations(lines, 0, cut)
+
+
 if __name__ == "__main__":
     unittest.main()
