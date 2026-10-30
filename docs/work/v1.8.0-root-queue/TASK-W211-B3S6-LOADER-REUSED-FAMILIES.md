@@ -151,3 +151,26 @@ A fresh session continues on the same branch and worktree from `ab2f17b9e`:
    before its first launch.
 
 The rest of this TASK, R185, R186 and R188 are unchanged.
+
+## Root decision R192 (2026-10-30 17:30): the meaning of G3 L2 queued, then A4 to C
+
+The fifth session (14:02 to 17:28) delivered `9e574e587` (tested source `3428aa1fa`): snapshots compared by
+canonical encoding with the retained images replayed; R2's destructive-source and duplicate-reconnect rows; and six G3
+normal-shutdown rows (L1 in flight, L2 in flight after one observer correction, L1 queued, L1 UNKNOWN, L2 UNKNOWN,
+failed close), each passing with two restarts; 30 more starts. It asked what "G3 L2 queued" means, because
+`EscrowCoordinator.retireNative` (lines 443 to 447) refuses unless the writer is idle and nothing is queued.
+
+**Decision.** In this product an L2 native retirement can never wait in the writer's successor slot: `retireNative`
+is refused while the writer is busy or another request is queued, and the caller keeps its checkpoint and retries. So
+"L2 queued" is **the native reconciliation checkpoint pending retirement while the writer is busy**: send the normal
+stop while that checkpoint is proved and waiting for the idle writer (with an actual L1 or other write in flight or
+queued), inspect the stopped durable authority, and restart twice; the pending checkpoint must neither retire early nor
+lose the fill. The writer-successor form is structurally excluded, not a missing cut: pin it with a unit test that
+`retireNative` returns false for a busy writer and for a non-empty queue, leaving ledger, generation and markers
+unchanged, and record the exclusion with that test in the matrix. Do not call a legacy or model retirement API to
+manufacture the other form.
+
+A fresh session continues on the same branch and worktree from `9e574e587`: the L2-queued row as decided, then A4
+(native G1 veto and saturation), B (loader operator settlement) and C (governed flight, F8, F9 and successor refill
+after F8), committing tranche C's concrete selections and counts before its first launch. R190's rule for test-side
+defects still applies. The rest of this TASK, R185, R186, R188 and R190 are unchanged.
