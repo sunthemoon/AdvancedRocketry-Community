@@ -1,0 +1,4819 @@
+{
+  "e3": {
+    "origin": "r185/native-a1/LF_S6_E3_CACHE_CLOSE-attempt-1/result.json",
+    "sha256": "5093ab1e19bfaf7ad13e50025c309e249d0f59100d5de598119eafaa4e4a2dc2",
+    "images": [
+      {
+        "read_status": "KNOWN",
+        "native": {
+          "ledger": {
+            "schema_version": 2,
+            "issued_through": 1,
+            "rocket_authorities": [],
+            "floors": [],
+            "tombstones": [],
+            "records": [
+              {
+                "owner": [
+                  -1028911775,
+                  -712749164,
+                  -1896779971,
+                  -1117218547
+                ],
+                "phase": "PREPARED",
+                "reason": "NONE",
+                "kind": "FLUID_PROPULSION_FILL",
+                "destination": {
+                  "level": "minecraft:overworld",
+                  "kind": "ENTITY",
+                  "type": "advancedrocketrycommunity:rocket",
+                  "after_epoch": 1,
+                  "before_epoch": 0,
+                  "unit": "PRIMARY",
+                  "before_signature": "b11deaee17b199a3324bef5463176eb60697b71f6ccb5023246a623fdaaa69bb",
+                  "logical_rocket": [
+                    -822331506,
+                    490818586,
+                    -1434627353,
+                    1741141694
+                  ],
+                  "identity": [
+                    -57968261,
+                    -230340556,
+                    -1349993430,
+                    1840836943
+                  ],
+                  "x": 4,
+                  "y": 0,
+                  "after_signature": "0a0cd215021b27769fa765699b98ad8518def4557fa2c05219537281544a2ef8",
+                  "z": 4
+                },
+                "op_id": [
+                  726206409,
+                  993346775,
+                  -1087862937,
+                  660051828
+                ],
+                "native_binding": {
+                  "owner": [
+                    -1028911775,
+                    -712749164,
+                    -1896779971,
+                    -1117218547
+                  ],
+                  "dst_ref": [
+                    3,
+                    9,
+                    136,
+                    181,
+                    150,
+                    17,
+                    3,
+                    228,
+                    12,
+                    32,
+                    131,
+                    31,
+                    134,
+                    112,
+                    115,
+                    241,
+                    252,
+                    170,
+                    59,
+                    118,
+                    206,
+                    198,
+                    44,
+                    83,
+                    125,
+                    31,
+                    111,
+                    154,
+                    140,
+                    46,
+                    253,
+                    199
+                  ],
+                  "kind": "FUEL_VECTOR_V1",
+                  "snapshot_hash": [
+                    17,
+                    182,
+                    219,
+                    243,
+                    41,
+                    89,
+                    38,
+                    232,
+                    82,
+                    217,
+                    57,
+                    33,
+                    183,
+                    44,
+                    186,
+                    144,
+                    2,
+                    43,
+                    220,
+                    177,
+                    51,
+                    220,
+                    174,
+                    19,
+                    188,
+                    169,
+                    131,
+                    56,
+                    100,
+                    142,
+                    94,
+                    212
+                  ],
+                  "src_ref": [
+                    33,
+                    213,
+                    17,
+                    64,
+                    215,
+                    46,
+                    109,
+                    241,
+                    93,
+                    118,
+                    91,
+                    243,
+                    54,
+                    124,
+                    48,
+                    216,
+                    218,
+                    70,
+                    200,
+                    130,
+                    1,
+                    81,
+                    196,
+                    233,
+                    23,
+                    209,
+                    244,
+                    145,
+                    107,
+                    111,
+                    17,
+                    17
+                  ],
+                  "after_frontier": [
+                    10,
+                    12,
+                    210,
+                    21,
+                    2,
+                    27,
+                    39,
+                    118,
+                    159,
+                    167,
+                    101,
+                    105,
+                    155,
+                    152,
+                    173,
+                    133,
+                    24,
+                    222,
+                    244,
+                    85,
+                    127,
+                    162,
+                    192,
+                    82,
+                    25,
+                    83,
+                    114,
+                    129,
+                    84,
+                    74,
+                    46,
+                    248
+                  ],
+                  "logical": [
+                    -822331506,
+                    490818586,
+                    -1434627353,
+                    1741141694
+                  ],
+                  "invariant": [
+                    196,
+                    189,
+                    13,
+                    240,
+                    148,
+                    187,
+                    159,
+                    205,
+                    91,
+                    185,
+                    64,
+                    179,
+                    168,
+                    94,
+                    115,
+                    127,
+                    110,
+                    217,
+                    238,
+                    107,
+                    251,
+                    149,
+                    13,
+                    92,
+                    102,
+                    238,
+                    200,
+                    220,
+                    84,
+                    210,
+                    113,
+                    167
+                  ],
+                  "destination_before": [
+                    113,
+                    101,
+                    166,
+                    39,
+                    18,
+                    129,
+                    212,
+                    45,
+                    246,
+                    234,
+                    222,
+                    177,
+                    40,
+                    86,
+                    174,
+                    113,
+                    242,
+                    172,
+                    12,
+                    82,
+                    41,
+                    65,
+                    165,
+                    232,
+                    226,
+                    211,
+                    226,
+                    181,
+                    108,
+                    90,
+                    228,
+                    193
+                  ],
+                  "before_frontier": [
+                    177,
+                    29,
+                    234,
+                    238,
+                    23,
+                    177,
+                    153,
+                    163,
+                    50,
+                    75,
+                    239,
+                    84,
+                    99,
+                    23,
+                    110,
+                    182,
+                    6,
+                    151,
+                    183,
+                    31,
+                    108,
+                    203,
+                    80,
+                    35,
+                    36,
+                    106,
+                    98,
+                    63,
+                    218,
+                    170,
+                    105,
+                    187
+                  ],
+                  "before_wrapper": [
+                    190,
+                    73,
+                    149,
+                    240,
+                    92,
+                    46,
+                    103,
+                    144,
+                    145,
+                    76,
+                    26,
+                    250,
+                    89,
+                    8,
+                    95,
+                    87,
+                    107,
+                    63,
+                    190,
+                    72,
+                    66,
+                    166,
+                    181,
+                    200,
+                    11,
+                    157,
+                    28,
+                    60,
+                    51,
+                    161,
+                    249,
+                    137
+                  ],
+                  "v": 1,
+                  "source_after": [
+                    97,
+                    79,
+                    209,
+                    140,
+                    190,
+                    187,
+                    5,
+                    67,
+                    23,
+                    253,
+                    216,
+                    4,
+                    38,
+                    146,
+                    66,
+                    206,
+                    69,
+                    220,
+                    232,
+                    11,
+                    128,
+                    107,
+                    22,
+                    36,
+                    55,
+                    16,
+                    164,
+                    210,
+                    175,
+                    40,
+                    223,
+                    40
+                  ],
+                  "destination_after": [
+                    218,
+                    194,
+                    180,
+                    62,
+                    65,
+                    237,
+                    228,
+                    75,
+                    117,
+                    199,
+                    13,
+                    209,
+                    6,
+                    6,
+                    147,
+                    118,
+                    94,
+                    221,
+                    122,
+                    157,
+                    88,
+                    48,
+                    204,
+                    150,
+                    60,
+                    119,
+                    224,
+                    22,
+                    80,
+                    196,
+                    183,
+                    70
+                  ],
+                  "source_before": [
+                    220,
+                    23,
+                    166,
+                    238,
+                    82,
+                    206,
+                    228,
+                    174,
+                    43,
+                    126,
+                    32,
+                    47,
+                    42,
+                    110,
+                    47,
+                    68,
+                    223,
+                    97,
+                    178,
+                    95,
+                    100,
+                    175,
+                    30,
+                    221,
+                    2,
+                    19,
+                    83,
+                    32,
+                    203,
+                    149,
+                    167,
+                    138
+                  ],
+                  "after_wrapper": [
+                    33,
+                    122,
+                    113,
+                    80,
+                    96,
+                    192,
+                    8,
+                    237,
+                    246,
+                    2,
+                    143,
+                    177,
+                    162,
+                    153,
+                    25,
+                    28,
+                    190,
+                    59,
+                    163,
+                    1,
+                    247,
+                    94,
+                    108,
+                    173,
+                    139,
+                    123,
+                    227,
+                    44,
+                    83,
+                    41,
+                    64,
+                    99
+                  ],
+                  "physical": [
+                    -57968261,
+                    -230340556,
+                    -1349993430,
+                    1840836943
+                  ],
+                  "complete": 1,
+                  "snapshot": [
+                    -1752983610,
+                    1298811828,
+                    -1383071275,
+                    2028981242
+                  ]
+                },
+                "source": {
+                  "level": "minecraft:overworld",
+                  "kind": "BLOCK_ENTITY",
+                  "type": "advancedrocketrycommunity:fluid_fuel_loader",
+                  "after_epoch": 1,
+                  "before_epoch": 0,
+                  "unit": "TANK",
+                  "before_signature": "719a6fc40320a38ea553e3446b025bef76d650857b7b3320c7fa22e8c7706448",
+                  "identity": [
+                    1271428603,
+                    -1930933788,
+                    -1462177286,
+                    -1996330469
+                  ],
+                  "x": 66,
+                  "y": 100,
+                  "after_signature": "81abbfbf7d046bde32ff53c22ebf1cd8b4fc3b17491e235611aa0a4f55e71f22",
+                  "z": 64
+                },
+                "schema_version": 2,
+                "created_tick": 3,
+                "payload": {
+                  "FluidName": "advancedrocketrycommunity:rocket_fuel",
+                  "Amount": 1000
+                },
+                "payload_hash": "a318dd53df128d556d1ea9a109ef118bfcd7eefd0c29e8e0380ec7f6caa92c70",
+                "transfer_guard": {
+                  "journal_generation": 1,
+                  "journal_digest": "83f98b331eab56d2f662ae0631acd6e8ee3b4cab463d5d805d294d5b9f1b8f8c",
+                  "rocket_id": [
+                    -822331506,
+                    490818586,
+                    -1434627353,
+                    1741141694
+                  ]
+                },
+                "seq": 1
+              }
+            ],
+            "writer_generation": 2,
+            "armed_flights": [],
+            "ledger_id": [
+              -839948084,
+              -1585428402,
+              -1670575464,
+              1250576024
+            ],
+            "format_epoch": "v1.8.0-resource-escrow",
+            "issued_launch_serial": 0
+          },
+          "loaders": [
+            {
+              "keepPacked": 0,
+              "x": 66,
+              "y": 100,
+              "z": 64,
+              "arce_fluid_fuel_loader": {
+                "schema_version": 1,
+                "owner": [
+                  -1028911775,
+                  -712749164,
+                  -1896779971,
+                  -1117218547
+                ],
+                "binding": {
+                  "schema_version": 1,
+                  "logical_rocket": [
+                    -822331506,
+                    490818586,
+                    -1434627353,
+                    1741141694
+                  ],
+                  "physical_rocket": [
+                    -57968261,
+                    -230340556,
+                    -1349993430,
+                    1840836943
+                  ],
+                  "level": "minecraft:overworld",
+                  "x": 64,
+                  "y": 100,
+                  "z": 64
+                },
+                "resource_escrow": {
+                  "schema_version": 1,
+                  "resource_epoch": 0,
+                  "markers": []
+                },
+                "tank": {
+                  "FluidName": "advancedrocketrycommunity:rocket_fuel",
+                  "Amount": 5000
+                },
+                "device": [
+                  1271428603,
+                  -1930933788,
+                  -1462177286,
+                  -1996330469
+                ]
+              },
+              "id": "advancedrocketrycommunity:fluid_fuel_loader"
+            }
+          ],
+          "rocket": {
+            "NoGravity": 1,
+            "RocketEntityData": {
+              "schema_version": 3,
+              "flight_data": {
+                "schema_version": 2,
+                "logical_rocket_id": [
+                  -822331506,
+                  490818586,
+                  -1434627353,
+                  1741141694
+                ],
+                "passengers": {
+                  "assignments": [],
+                  "seat_capacity": 1
+                },
+                "state_started_game_time": 2,
+                "current_target": {
+                  "schema_version": 1,
+                  "type": "advancedrocketrycommunity:body_surface",
+                  "body_id": "advancedrocketrycommunity:earth"
+                },
+                "fuel": {
+                  "amount": 1000,
+                  "propulsion": {
+                    "schema": 1,
+                    "descriptor": {
+                      "schema": 1,
+                      "core_units": 72057594037927936,
+                      "fuels": {
+                        "OXIDIZER": [
+                          "advancedrocketrycommunity:oxygen"
+                        ],
+                        "BIPROPELLANT_FUEL": [
+                          "advancedrocketrycommunity:hydrogen"
+                        ],
+                        "MONO": [
+                          "advancedrocketrycommunity:rocket_fuel"
+                        ],
+                        "WORKING_FLUID": [
+                          "advancedrocketrycommunity:hydrogen"
+                        ]
+                      },
+                      "required": 1,
+                      "oxidizer": 0,
+                      "numerator": 1,
+                      "denominator": 1,
+                      "mode": "MONO",
+                      "thrust_units": 72057594037927936,
+                      "gravity": 1,
+                      "capacity_units": 72057594037927936,
+                      "primary": 2000,
+                      "hand": 1
+                    },
+                    "primary": {
+                      "amount": 1000,
+                      "fluid": "advancedrocketrycommunity:rocket_fuel",
+                      "branch": "FLUID"
+                    },
+                    "oxidizer": {
+                      "amount": 0,
+                      "branch": "EMPTY"
+                    },
+                    "revision": 1
+                  },
+                  "committed_debits": [],
+                  "capacity": 2000
+                },
+                "current_dimension": "minecraft:overworld",
+                "current_origin": [
+                  64,
+                  100,
+                  64
+                ],
+                "state": "ASSEMBLED",
+                "current_body": "advancedrocketrycommunity:earth"
+              },
+              "assembly_transaction_id": [
+                -822331506,
+                490818586,
+                -1434627353,
+                1741141694
+              ],
+              "owner_id": [
+                -1028911775,
+                -712749164,
+                -1896779971,
+                -1117218547
+              ],
+              "resource_escrow": {
+                "schema_version": 1,
+                "resource_epoch": 1,
+                "markers": [
+                  {
+                    "epoch_after": 1,
+                    "role": "DESTINATION",
+                    "op_id": [
+                      726206409,
+                      993346775,
+                      -1087862937,
+                      660051828
+                    ],
+                    "seq": 1
+                  }
+                ],
+                "ledger_id": [
+                  -839948084,
+                  -1585428402,
+                  -1670575464,
+                  1250576024
+                ]
+              },
+              "snapshot": {
+                "schema_version": 2,
+                "source_origin": [
+                  64,
+                  100,
+                  64
+                ],
+                "passenger_anchors": [
+                  [
+                    0,
+                    1,
+                    0
+                  ]
+                ],
+                "bounding_box": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  1,
+                  0
+                ],
+                "snapshot_id": "978397c6-4d6a-4bb4-ad90-01d578efcbfa",
+                "relative_blocks": [
+                  {
+                    "palette": 0,
+                    "position": [
+                      0,
+                      0,
+                      0
+                    ]
+                  },
+                  {
+                    "palette": 0,
+                    "position": [
+                      0,
+                      1,
+                      0
+                    ]
+                  }
+                ],
+                "propulsion": {
+                  "schema": 1,
+                  "core_units": 72057594037927936,
+                  "fuels": {
+                    "OXIDIZER": [
+                      "advancedrocketrycommunity:oxygen"
+                    ],
+                    "BIPROPELLANT_FUEL": [
+                      "advancedrocketrycommunity:hydrogen"
+                    ],
+                    "MONO": [
+                      "advancedrocketrycommunity:rocket_fuel"
+                    ],
+                    "WORKING_FLUID": [
+                      "advancedrocketrycommunity:hydrogen"
+                    ]
+                  },
+                  "required": 1,
+                  "oxidizer": 0,
+                  "numerator": 1,
+                  "denominator": 1,
+                  "mode": "MONO",
+                  "thrust_units": 72057594037927936,
+                  "gravity": 1,
+                  "capacity_units": 72057594037927936,
+                  "primary": 2000,
+                  "hand": 1
+                },
+                "source_dimension": "minecraft:overworld",
+                "content_hash": "11b6dbf3295926e852d93921b72cba90022bdcb133dcae13bca98338648e5ed4",
+                "mass_inputs": {
+                  "engine_count": 1,
+                  "guidance_count": 1,
+                  "seat_count": 1,
+                  "block_entity_count": 0,
+                  "fuel_capacity": 2000,
+                  "mass": 100,
+                  "thrust": 1000,
+                  "block_count": 2
+                },
+                "block_palette": [
+                  {
+                    "id": "minecraft:iron_block",
+                    "properties": {}
+                  }
+                ],
+                "created_at_game_time": 2
+              }
+            },
+            "Motion": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "Invulnerable": 0,
+            "Air": 300,
+            "OnGround": 0,
+            "PortalCooldown": 0,
+            "Rotation": [
+              0.0,
+              0.0
+            ],
+            "FallDistance": 0.0,
+            "CanUpdate": 1,
+            "Pos": [
+              64.5,
+              100.0,
+              64.5
+            ],
+            "Fire": -1,
+            "id": "advancedrocketrycommunity:rocket",
+            "UUID": [
+              -57968261,
+              -230340556,
+              -1349993430,
+              1840836943
+            ]
+          },
+          "files": {
+            "data/advancedrocketrycommunity_resource_escrow.dat": "f20b84859ce25557007ed454efbbc65c22931fac2f84d6cb412e362580e1629c",
+            "region/r.0.0.mca": "c0d3fe05daab532af8424f4dcf720d2812381b35fe2040d54951f36ad736725d",
+            "entities/r.0.0.mca": "b7a836e9104a743c865dd167bcc2b87276caac4a6c9e8a93891f33294c6643d3"
+          }
+        }
+      },
+      {
+        "read_status": "KNOWN",
+        "native": {
+          "ledger": {
+            "schema_version": 2,
+            "issued_through": 1,
+            "rocket_authorities": [],
+            "floors": [],
+            "tombstones": [],
+            "records": [],
+            "writer_generation": 3,
+            "armed_flights": [],
+            "ledger_id": [
+              -839948084,
+              -1585428402,
+              -1670575464,
+              1250576024
+            ],
+            "format_epoch": "v1.8.0-resource-escrow",
+            "issued_launch_serial": 0
+          },
+          "loaders": [
+            {
+              "keepPacked": 0,
+              "x": 66,
+              "y": 100,
+              "z": 64,
+              "arce_fluid_fuel_loader": {
+                "schema_version": 1,
+                "owner": [
+                  -1028911775,
+                  -712749164,
+                  -1896779971,
+                  -1117218547
+                ],
+                "binding": {
+                  "schema_version": 1,
+                  "logical_rocket": [
+                    -822331506,
+                    490818586,
+                    -1434627353,
+                    1741141694
+                  ],
+                  "physical_rocket": [
+                    -57968261,
+                    -230340556,
+                    -1349993430,
+                    1840836943
+                  ],
+                  "level": "minecraft:overworld",
+                  "x": 64,
+                  "y": 100,
+                  "z": 64
+                },
+                "resource_escrow": {
+                  "schema_version": 1,
+                  "resource_epoch": 1,
+                  "markers": [],
+                  "ledger_id": [
+                    -839948084,
+                    -1585428402,
+                    -1670575464,
+                    1250576024
+                  ]
+                },
+                "tank": {
+                  "FluidName": "advancedrocketrycommunity:rocket_fuel",
+                  "Amount": 4000
+                },
+                "device": [
+                  1271428603,
+                  -1930933788,
+                  -1462177286,
+                  -1996330469
+                ]
+              },
+              "id": "advancedrocketrycommunity:fluid_fuel_loader"
+            }
+          ],
+          "rocket": {
+            "NoGravity": 1,
+            "RocketEntityData": {
+              "schema_version": 3,
+              "flight_data": {
+                "schema_version": 2,
+                "logical_rocket_id": [
+                  -822331506,
+                  490818586,
+                  -1434627353,
+                  1741141694
+                ],
+                "passengers": {
+                  "assignments": [],
+                  "seat_capacity": 1
+                },
+                "state_started_game_time": 2,
+                "current_target": {
+                  "schema_version": 1,
+                  "type": "advancedrocketrycommunity:body_surface",
+                  "body_id": "advancedrocketrycommunity:earth"
+                },
+                "fuel": {
+                  "amount": 1000,
+                  "propulsion": {
+                    "schema": 1,
+                    "descriptor": {
+                      "schema": 1,
+                      "core_units": 72057594037927936,
+                      "fuels": {
+                        "OXIDIZER": [
+                          "advancedrocketrycommunity:oxygen"
+                        ],
+                        "BIPROPELLANT_FUEL": [
+                          "advancedrocketrycommunity:hydrogen"
+                        ],
+                        "MONO": [
+                          "advancedrocketrycommunity:rocket_fuel"
+                        ],
+                        "WORKING_FLUID": [
+                          "advancedrocketrycommunity:hydrogen"
+                        ]
+                      },
+                      "required": 1,
+                      "oxidizer": 0,
+                      "numerator": 1,
+                      "denominator": 1,
+                      "mode": "MONO",
+                      "thrust_units": 72057594037927936,
+                      "gravity": 1,
+                      "capacity_units": 72057594037927936,
+                      "primary": 2000,
+                      "hand": 1
+                    },
+                    "primary": {
+                      "amount": 1000,
+                      "fluid": "advancedrocketrycommunity:rocket_fuel",
+                      "branch": "FLUID"
+                    },
+                    "oxidizer": {
+                      "amount": 0,
+                      "branch": "EMPTY"
+                    },
+                    "revision": 1
+                  },
+                  "committed_debits": [],
+                  "capacity": 2000
+                },
+                "current_dimension": "minecraft:overworld",
+                "current_origin": [
+                  64,
+                  100,
+                  64
+                ],
+                "state": "ASSEMBLED",
+                "current_body": "advancedrocketrycommunity:earth"
+              },
+              "assembly_transaction_id": [
+                -822331506,
+                490818586,
+                -1434627353,
+                1741141694
+              ],
+              "owner_id": [
+                -1028911775,
+                -712749164,
+                -1896779971,
+                -1117218547
+              ],
+              "resource_escrow": {
+                "schema_version": 1,
+                "resource_epoch": 1,
+                "markers": [],
+                "ledger_id": [
+                  -839948084,
+                  -1585428402,
+                  -1670575464,
+                  1250576024
+                ]
+              },
+              "snapshot": {
+                "schema_version": 2,
+                "source_origin": [
+                  64,
+                  100,
+                  64
+                ],
+                "passenger_anchors": [
+                  [
+                    0,
+                    1,
+                    0
+                  ]
+                ],
+                "bounding_box": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  1,
+                  0
+                ],
+                "snapshot_id": "978397c6-4d6a-4bb4-ad90-01d578efcbfa",
+                "relative_blocks": [
+                  {
+                    "palette": 0,
+                    "position": [
+                      0,
+                      0,
+                      0
+                    ]
+                  },
+                  {
+                    "palette": 0,
+                    "position": [
+                      0,
+                      1,
+                      0
+                    ]
+                  }
+                ],
+                "propulsion": {
+                  "schema": 1,
+                  "core_units": 72057594037927936,
+                  "fuels": {
+                    "OXIDIZER": [
+                      "advancedrocketrycommunity:oxygen"
+                    ],
+                    "BIPROPELLANT_FUEL": [
+                      "advancedrocketrycommunity:hydrogen"
+                    ],
+                    "MONO": [
+                      "advancedrocketrycommunity:rocket_fuel"
+                    ],
+                    "WORKING_FLUID": [
+                      "advancedrocketrycommunity:hydrogen"
+                    ]
+                  },
+                  "required": 1,
+                  "oxidizer": 0,
+                  "numerator": 1,
+                  "denominator": 1,
+                  "mode": "MONO",
+                  "thrust_units": 72057594037927936,
+                  "gravity": 1,
+                  "capacity_units": 72057594037927936,
+                  "primary": 2000,
+                  "hand": 1
+                },
+                "source_dimension": "minecraft:overworld",
+                "content_hash": "11b6dbf3295926e852d93921b72cba90022bdcb133dcae13bca98338648e5ed4",
+                "mass_inputs": {
+                  "engine_count": 1,
+                  "guidance_count": 1,
+                  "seat_count": 1,
+                  "block_entity_count": 0,
+                  "fuel_capacity": 2000,
+                  "mass": 100,
+                  "thrust": 1000,
+                  "block_count": 2
+                },
+                "block_palette": [
+                  {
+                    "id": "minecraft:iron_block",
+                    "properties": {}
+                  }
+                ],
+                "created_at_game_time": 2
+              }
+            },
+            "Motion": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "Invulnerable": 0,
+            "Air": 300,
+            "OnGround": 0,
+            "PortalCooldown": 0,
+            "Rotation": [
+              0.0,
+              0.0
+            ],
+            "FallDistance": 0.0,
+            "CanUpdate": 1,
+            "Pos": [
+              64.5,
+              100.0,
+              64.5
+            ],
+            "Fire": -1,
+            "id": "advancedrocketrycommunity:rocket",
+            "UUID": [
+              -57968261,
+              -230340556,
+              -1349993430,
+              1840836943
+            ]
+          },
+          "files": {
+            "data/advancedrocketrycommunity_resource_escrow.dat": "6f0697dc3d012a0089bcc2c41128c021e0ae70fcc1029c0afc16a5e39089d7fe",
+            "region/r.0.0.mca": "b48fb68897f62aeba9c09ffeb359b96f442e6a387f6317f0025e95b6991b56aa",
+            "entities/r.0.0.mca": "610925297b4233a4d2b7b8222a9e6d0c3e1dbea6c778db64f4874d1fadea16cc"
+          }
+        }
+      },
+      {
+        "read_status": "KNOWN",
+        "native": {
+          "ledger": {
+            "schema_version": 2,
+            "issued_through": 1,
+            "rocket_authorities": [],
+            "floors": [],
+            "tombstones": [],
+            "records": [],
+            "writer_generation": 3,
+            "armed_flights": [],
+            "ledger_id": [
+              -839948084,
+              -1585428402,
+              -1670575464,
+              1250576024
+            ],
+            "format_epoch": "v1.8.0-resource-escrow",
+            "issued_launch_serial": 0
+          },
+          "loaders": [
+            {
+              "keepPacked": 0,
+              "x": 66,
+              "y": 100,
+              "z": 64,
+              "arce_fluid_fuel_loader": {
+                "schema_version": 1,
+                "owner": [
+                  -1028911775,
+                  -712749164,
+                  -1896779971,
+                  -1117218547
+                ],
+                "binding": {
+                  "schema_version": 1,
+                  "logical_rocket": [
+                    -822331506,
+                    490818586,
+                    -1434627353,
+                    1741141694
+                  ],
+                  "physical_rocket": [
+                    -57968261,
+                    -230340556,
+                    -1349993430,
+                    1840836943
+                  ],
+                  "level": "minecraft:overworld",
+                  "x": 64,
+                  "y": 100,
+                  "z": 64
+                },
+                "resource_escrow": {
+                  "schema_version": 1,
+                  "resource_epoch": 1,
+                  "markers": [],
+                  "ledger_id": [
+                    -839948084,
+                    -1585428402,
+                    -1670575464,
+                    1250576024
+                  ]
+                },
+                "tank": {
+                  "FluidName": "advancedrocketrycommunity:rocket_fuel",
+                  "Amount": 4000
+                },
+                "device": [
+                  1271428603,
+                  -1930933788,
+                  -1462177286,
+                  -1996330469
+                ]
+              },
+              "id": "advancedrocketrycommunity:fluid_fuel_loader"
+            }
+          ],
+          "rocket": {
+            "NoGravity": 1,
+            "RocketEntityData": {
+              "schema_version": 3,
+              "flight_data": {
+                "schema_version": 2,
+                "logical_rocket_id": [
+                  -822331506,
+                  490818586,
+                  -1434627353,
+                  1741141694
+                ],
+                "passengers": {
+                  "assignments": [],
+                  "seat_capacity": 1
+                },
+                "state_started_game_time": 2,
+                "current_target": {
+                  "schema_version": 1,
+                  "type": "advancedrocketrycommunity:body_surface",
+                  "body_id": "advancedrocketrycommunity:earth"
+                },
+                "fuel": {
+                  "amount": 1000,
+                  "propulsion": {
+                    "schema": 1,
+                    "descriptor": {
+                      "schema": 1,
+                      "core_units": 72057594037927936,
+                      "fuels": {
+                        "OXIDIZER": [
+                          "advancedrocketrycommunity:oxygen"
+                        ],
+                        "BIPROPELLANT_FUEL": [
+                          "advancedrocketrycommunity:hydrogen"
+                        ],
+                        "MONO": [
+                          "advancedrocketrycommunity:rocket_fuel"
+                        ],
+                        "WORKING_FLUID": [
+                          "advancedrocketrycommunity:hydrogen"
+                        ]
+                      },
+                      "required": 1,
+                      "oxidizer": 0,
+                      "numerator": 1,
+                      "denominator": 1,
+                      "mode": "MONO",
+                      "thrust_units": 72057594037927936,
+                      "gravity": 1,
+                      "capacity_units": 72057594037927936,
+                      "primary": 2000,
+                      "hand": 1
+                    },
+                    "primary": {
+                      "amount": 1000,
+                      "fluid": "advancedrocketrycommunity:rocket_fuel",
+                      "branch": "FLUID"
+                    },
+                    "oxidizer": {
+                      "amount": 0,
+                      "branch": "EMPTY"
+                    },
+                    "revision": 1
+                  },
+                  "committed_debits": [],
+                  "capacity": 2000
+                },
+                "current_dimension": "minecraft:overworld",
+                "current_origin": [
+                  64,
+                  100,
+                  64
+                ],
+                "state": "ASSEMBLED",
+                "current_body": "advancedrocketrycommunity:earth"
+              },
+              "assembly_transaction_id": [
+                -822331506,
+                490818586,
+                -1434627353,
+                1741141694
+              ],
+              "owner_id": [
+                -1028911775,
+                -712749164,
+                -1896779971,
+                -1117218547
+              ],
+              "resource_escrow": {
+                "schema_version": 1,
+                "resource_epoch": 1,
+                "markers": [],
+                "ledger_id": [
+                  -839948084,
+                  -1585428402,
+                  -1670575464,
+                  1250576024
+                ]
+              },
+              "snapshot": {
+                "schema_version": 2,
+                "source_origin": [
+                  64,
+                  100,
+                  64
+                ],
+                "passenger_anchors": [
+                  [
+                    0,
+                    1,
+                    0
+                  ]
+                ],
+                "bounding_box": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  1,
+                  0
+                ],
+                "snapshot_id": "978397c6-4d6a-4bb4-ad90-01d578efcbfa",
+                "relative_blocks": [
+                  {
+                    "palette": 0,
+                    "position": [
+                      0,
+                      0,
+                      0
+                    ]
+                  },
+                  {
+                    "palette": 0,
+                    "position": [
+                      0,
+                      1,
+                      0
+                    ]
+                  }
+                ],
+                "propulsion": {
+                  "schema": 1,
+                  "core_units": 72057594037927936,
+                  "fuels": {
+                    "OXIDIZER": [
+                      "advancedrocketrycommunity:oxygen"
+                    ],
+                    "BIPROPELLANT_FUEL": [
+                      "advancedrocketrycommunity:hydrogen"
+                    ],
+                    "MONO": [
+                      "advancedrocketrycommunity:rocket_fuel"
+                    ],
+                    "WORKING_FLUID": [
+                      "advancedrocketrycommunity:hydrogen"
+                    ]
+                  },
+                  "required": 1,
+                  "oxidizer": 0,
+                  "numerator": 1,
+                  "denominator": 1,
+                  "mode": "MONO",
+                  "thrust_units": 72057594037927936,
+                  "gravity": 1,
+                  "capacity_units": 72057594037927936,
+                  "primary": 2000,
+                  "hand": 1
+                },
+                "source_dimension": "minecraft:overworld",
+                "content_hash": "11b6dbf3295926e852d93921b72cba90022bdcb133dcae13bca98338648e5ed4",
+                "mass_inputs": {
+                  "engine_count": 1,
+                  "guidance_count": 1,
+                  "seat_count": 1,
+                  "block_entity_count": 0,
+                  "fuel_capacity": 2000,
+                  "mass": 100,
+                  "thrust": 1000,
+                  "block_count": 2
+                },
+                "block_palette": [
+                  {
+                    "id": "minecraft:iron_block",
+                    "properties": {}
+                  }
+                ],
+                "created_at_game_time": 2
+              }
+            },
+            "Motion": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "Invulnerable": 0,
+            "Air": 300,
+            "OnGround": 0,
+            "PortalCooldown": 0,
+            "Rotation": [
+              0.0,
+              0.0
+            ],
+            "FallDistance": 0.0,
+            "CanUpdate": 1,
+            "Pos": [
+              64.5,
+              100.0,
+              64.5
+            ],
+            "Fire": -1,
+            "id": "advancedrocketrycommunity:rocket",
+            "UUID": [
+              -57968261,
+              -230340556,
+              -1349993430,
+              1840836943
+            ]
+          },
+          "files": {
+            "data/advancedrocketrycommunity_resource_escrow.dat": "6f0697dc3d012a0089bcc2c41128c021e0ae70fcc1029c0afc16a5e39089d7fe",
+            "region/r.0.0.mca": "84067d70aa524b2884cd9d8f52d7332bfb98f1ad104f8d7527e5c7be99d94808",
+            "entities/r.0.0.mca": "1b668624abcd5dc7b88e11a4bb6967318dc37e7fcd825589ed4aa7740f336c4c"
+          }
+        }
+      }
+    ]
+  },
+  "e5": {
+    "origin": "r188/native-verification/native/LF_S6_E5_UNLOADED-attempt-1/result.json",
+    "sha256": "72af5d8ee2d52f83d679075a64d737aa597264814bef46fb8c53eb158a5c58c4",
+    "images": [
+      {
+        "read_status": "KNOWN",
+        "native": {
+          "ledger": {
+            "schema_version": 2,
+            "issued_through": 2,
+            "rocket_authorities": [],
+            "floors": [],
+            "tombstones": [],
+            "records": [
+              {
+                "owner": [
+                  -341142268,
+                  -448508516,
+                  -1121344222,
+                  1128040018
+                ],
+                "phase": "PREPARED",
+                "reason": "NONE",
+                "kind": "FLUID_PROPULSION_FILL",
+                "destination": {
+                  "level": "minecraft:overworld",
+                  "kind": "ENTITY",
+                  "type": "advancedrocketrycommunity:rocket",
+                  "after_epoch": 1,
+                  "before_epoch": 0,
+                  "unit": "PRIMARY",
+                  "before_signature": "b11deaee17b199a3324bef5463176eb60697b71f6ccb5023246a623fdaaa69bb",
+                  "logical_rocket": [
+                    1174158694,
+                    -1211612096,
+                    -1695576739,
+                    15299993
+                  ],
+                  "identity": [
+                    399862751,
+                    23153252,
+                    -2090601690,
+                    1351191271
+                  ],
+                  "x": 128,
+                  "y": 0,
+                  "after_signature": "0a0cd215021b27769fa765699b98ad8518def4557fa2c05219537281544a2ef8",
+                  "z": 128
+                },
+                "op_id": [
+                  -348061046,
+                  -1580973441,
+                  -1150964390,
+                  -1906055276
+                ],
+                "native_binding": {
+                  "owner": [
+                    -341142268,
+                    -448508516,
+                    -1121344222,
+                    1128040018
+                  ],
+                  "dst_ref": [
+                    194,
+                    84,
+                    155,
+                    119,
+                    206,
+                    161,
+                    51,
+                    164,
+                    111,
+                    40,
+                    111,
+                    182,
+                    165,
+                    179,
+                    125,
+                    2,
+                    151,
+                    5,
+                    167,
+                    201,
+                    242,
+                    182,
+                    7,
+                    32,
+                    30,
+                    92,
+                    89,
+                    156,
+                    16,
+                    165,
+                    126,
+                    29
+                  ],
+                  "kind": "FUEL_VECTOR_V1",
+                  "snapshot_hash": [
+                    37,
+                    40,
+                    95,
+                    5,
+                    84,
+                    54,
+                    215,
+                    184,
+                    88,
+                    238,
+                    242,
+                    119,
+                    64,
+                    194,
+                    60,
+                    213,
+                    32,
+                    33,
+                    92,
+                    139,
+                    248,
+                    70,
+                    16,
+                    206,
+                    133,
+                    26,
+                    231,
+                    213,
+                    37,
+                    250,
+                    232,
+                    30
+                  ],
+                  "src_ref": [
+                    89,
+                    116,
+                    95,
+                    176,
+                    236,
+                    88,
+                    164,
+                    181,
+                    89,
+                    73,
+                    125,
+                    75,
+                    30,
+                    185,
+                    74,
+                    63,
+                    185,
+                    237,
+                    135,
+                    57,
+                    103,
+                    74,
+                    35,
+                    54,
+                    81,
+                    92,
+                    81,
+                    244,
+                    232,
+                    238,
+                    255,
+                    206
+                  ],
+                  "after_frontier": [
+                    10,
+                    12,
+                    210,
+                    21,
+                    2,
+                    27,
+                    39,
+                    118,
+                    159,
+                    167,
+                    101,
+                    105,
+                    155,
+                    152,
+                    173,
+                    133,
+                    24,
+                    222,
+                    244,
+                    85,
+                    127,
+                    162,
+                    192,
+                    82,
+                    25,
+                    83,
+                    114,
+                    129,
+                    84,
+                    74,
+                    46,
+                    248
+                  ],
+                  "logical": [
+                    1174158694,
+                    -1211612096,
+                    -1695576739,
+                    15299993
+                  ],
+                  "invariant": [
+                    147,
+                    142,
+                    202,
+                    217,
+                    157,
+                    231,
+                    105,
+                    253,
+                    216,
+                    209,
+                    67,
+                    234,
+                    29,
+                    184,
+                    152,
+                    246,
+                    171,
+                    147,
+                    112,
+                    96,
+                    43,
+                    214,
+                    30,
+                    197,
+                    70,
+                    212,
+                    207,
+                    241,
+                    96,
+                    186,
+                    69,
+                    148
+                  ],
+                  "destination_before": [
+                    240,
+                    143,
+                    68,
+                    132,
+                    130,
+                    182,
+                    26,
+                    62,
+                    61,
+                    75,
+                    129,
+                    24,
+                    14,
+                    59,
+                    155,
+                    170,
+                    76,
+                    70,
+                    218,
+                    215,
+                    98,
+                    155,
+                    234,
+                    94,
+                    188,
+                    244,
+                    223,
+                    172,
+                    114,
+                    235,
+                    110,
+                    143
+                  ],
+                  "before_frontier": [
+                    177,
+                    29,
+                    234,
+                    238,
+                    23,
+                    177,
+                    153,
+                    163,
+                    50,
+                    75,
+                    239,
+                    84,
+                    99,
+                    23,
+                    110,
+                    182,
+                    6,
+                    151,
+                    183,
+                    31,
+                    108,
+                    203,
+                    80,
+                    35,
+                    36,
+                    106,
+                    98,
+                    63,
+                    218,
+                    170,
+                    105,
+                    187
+                  ],
+                  "before_wrapper": [
+                    190,
+                    73,
+                    149,
+                    240,
+                    92,
+                    46,
+                    103,
+                    144,
+                    145,
+                    76,
+                    26,
+                    250,
+                    89,
+                    8,
+                    95,
+                    87,
+                    107,
+                    63,
+                    190,
+                    72,
+                    66,
+                    166,
+                    181,
+                    200,
+                    11,
+                    157,
+                    28,
+                    60,
+                    51,
+                    161,
+                    249,
+                    137
+                  ],
+                  "v": 1,
+                  "source_after": [
+                    93,
+                    148,
+                    147,
+                    230,
+                    183,
+                    158,
+                    174,
+                    108,
+                    153,
+                    119,
+                    58,
+                    98,
+                    63,
+                    237,
+                    19,
+                    170,
+                    166,
+                    55,
+                    170,
+                    24,
+                    181,
+                    82,
+                    140,
+                    205,
+                    191,
+                    230,
+                    33,
+                    106,
+                    47,
+                    247,
+                    187,
+                    214
+                  ],
+                  "destination_after": [
+                    86,
+                    192,
+                    51,
+                    93,
+                    179,
+                    109,
+                    94,
+                    70,
+                    15,
+                    189,
+                    68,
+                    99,
+                    123,
+                    80,
+                    232,
+                    27,
+                    101,
+                    216,
+                    89,
+                    69,
+                    71,
+                    37,
+                    203,
+                    21,
+                    131,
+                    93,
+                    130,
+                    245,
+                    122,
+                    126,
+                    17,
+                    152
+                  ],
+                  "source_before": [
+                    17,
+                    132,
+                    137,
+                    52,
+                    170,
+                    138,
+                    77,
+                    81,
+                    42,
+                    253,
+                    67,
+                    174,
+                    71,
+                    41,
+                    95,
+                    18,
+                    49,
+                    77,
+                    47,
+                    214,
+                    148,
+                    167,
+                    24,
+                    33,
+                    199,
+                    152,
+                    71,
+                    39,
+                    62,
+                    139,
+                    243,
+                    117
+                  ],
+                  "after_wrapper": [
+                    9,
+                    227,
+                    234,
+                    99,
+                    14,
+                    92,
+                    24,
+                    173,
+                    55,
+                    205,
+                    214,
+                    32,
+                    11,
+                    29,
+                    60,
+                    44,
+                    94,
+                    58,
+                    12,
+                    239,
+                    179,
+                    56,
+                    227,
+                    200,
+                    50,
+                    104,
+                    43,
+                    26,
+                    155,
+                    206,
+                    217,
+                    238
+                  ],
+                  "physical": [
+                    399862751,
+                    23153252,
+                    -2090601690,
+                    1351191271
+                  ],
+                  "complete": 1,
+                  "snapshot": [
+                    -2055438128,
+                    1013075966,
+                    -1562477398,
+                    472464452
+                  ]
+                },
+                "source": {
+                  "level": "minecraft:overworld",
+                  "kind": "BLOCK_ENTITY",
+                  "type": "advancedrocketrycommunity:fluid_fuel_loader",
+                  "after_epoch": 1,
+                  "before_epoch": 0,
+                  "unit": "TANK",
+                  "before_signature": "a44ecad55cb0c609a7c73bc5aa2631669d2ef7bd4b0c24150469049502998a7f",
+                  "identity": [
+                    -966179820,
+                    1688423257,
+                    -1419697521,
+                    1703507355
+                  ],
+                  "x": 2050,
+                  "y": 100,
+                  "after_signature": "622d0a83763b9a15f0d13b52048717065e88d791b468a355a51216b6c9b301ed",
+                  "z": 2048
+                },
+                "schema_version": 2,
+                "created_tick": 10,
+                "payload": {
+                  "FluidName": "advancedrocketrycommunity:rocket_fuel",
+                  "Amount": 1000
+                },
+                "payload_hash": "a318dd53df128d556d1ea9a109ef118bfcd7eefd0c29e8e0380ec7f6caa92c70",
+                "transfer_guard": {
+                  "journal_generation": 1,
+                  "journal_digest": "83f98b331eab56d2f662ae0631acd6e8ee3b4cab463d5d805d294d5b9f1b8f8c",
+                  "rocket_id": [
+                    1174158694,
+                    -1211612096,
+                    -1695576739,
+                    15299993
+                  ]
+                },
+                "seq": 1
+              }
+            ],
+            "writer_generation": 4,
+            "armed_flights": [],
+            "ledger_id": [
+              -1808797653,
+              159466627,
+              -2083363109,
+              -1481131821
+            ],
+            "format_epoch": "v1.8.0-resource-escrow",
+            "issued_launch_serial": 0
+          },
+          "pairs": [
+            {
+              "loaders": [
+                {
+                  "keepPacked": 0,
+                  "x": 2050,
+                  "y": 100,
+                  "z": 2048,
+                  "arce_fluid_fuel_loader": {
+                    "schema_version": 1,
+                    "owner": [
+                      -341142268,
+                      -448508516,
+                      -1121344222,
+                      1128040018
+                    ],
+                    "binding": {
+                      "schema_version": 1,
+                      "logical_rocket": [
+                        1174158694,
+                        -1211612096,
+                        -1695576739,
+                        15299993
+                      ],
+                      "physical_rocket": [
+                        399862751,
+                        23153252,
+                        -2090601690,
+                        1351191271
+                      ],
+                      "level": "minecraft:overworld",
+                      "x": 2048,
+                      "y": 100,
+                      "z": 2048
+                    },
+                    "resource_escrow": {
+                      "schema_version": 1,
+                      "resource_epoch": 1,
+                      "markers": [
+                        {
+                          "epoch_after": 1,
+                          "op_id": [
+                            -348061046,
+                            -1580973441,
+                            -1150964390,
+                            -1906055276
+                          ],
+                          "role": "SOURCE",
+                          "seq": 1
+                        }
+                      ],
+                      "ledger_id": [
+                        -1808797653,
+                        159466627,
+                        -2083363109,
+                        -1481131821
+                      ]
+                    },
+                    "tank": {
+                      "FluidName": "advancedrocketrycommunity:rocket_fuel",
+                      "Amount": 4000
+                    },
+                    "device": [
+                      -966179820,
+                      1688423257,
+                      -1419697521,
+                      1703507355
+                    ]
+                  },
+                  "id": "advancedrocketrycommunity:fluid_fuel_loader"
+                }
+              ],
+              "rocket": {
+                "NoGravity": 1,
+                "RocketEntityData": {
+                  "schema_version": 3,
+                  "flight_data": {
+                    "schema_version": 2,
+                    "logical_rocket_id": [
+                      1174158694,
+                      -1211612096,
+                      -1695576739,
+                      15299993
+                    ],
+                    "passengers": {
+                      "assignments": [],
+                      "seat_capacity": 1
+                    },
+                    "state_started_game_time": 9,
+                    "current_target": {
+                      "schema_version": 1,
+                      "type": "advancedrocketrycommunity:body_surface",
+                      "body_id": "advancedrocketrycommunity:earth"
+                    },
+                    "fuel": {
+                      "amount": 1000,
+                      "propulsion": {
+                        "schema": 1,
+                        "descriptor": {
+                          "schema": 1,
+                          "core_units": 72057594037927936,
+                          "fuels": {
+                            "OXIDIZER": [
+                              "advancedrocketrycommunity:oxygen"
+                            ],
+                            "BIPROPELLANT_FUEL": [
+                              "advancedrocketrycommunity:hydrogen"
+                            ],
+                            "MONO": [
+                              "advancedrocketrycommunity:rocket_fuel"
+                            ],
+                            "WORKING_FLUID": [
+                              "advancedrocketrycommunity:hydrogen"
+                            ]
+                          },
+                          "required": 1,
+                          "oxidizer": 0,
+                          "numerator": 1,
+                          "denominator": 1,
+                          "mode": "MONO",
+                          "thrust_units": 72057594037927936,
+                          "gravity": 1,
+                          "capacity_units": 72057594037927936,
+                          "primary": 2000,
+                          "hand": 1
+                        },
+                        "primary": {
+                          "amount": 1000,
+                          "fluid": "advancedrocketrycommunity:rocket_fuel",
+                          "branch": "FLUID"
+                        },
+                        "oxidizer": {
+                          "amount": 0,
+                          "branch": "EMPTY"
+                        },
+                        "revision": 1
+                      },
+                      "committed_debits": [],
+                      "capacity": 2000
+                    },
+                    "current_dimension": "minecraft:overworld",
+                    "current_origin": [
+                      2048,
+                      100,
+                      2048
+                    ],
+                    "state": "ASSEMBLED",
+                    "current_body": "advancedrocketrycommunity:earth"
+                  },
+                  "assembly_transaction_id": [
+                    1174158694,
+                    -1211612096,
+                    -1695576739,
+                    15299993
+                  ],
+                  "owner_id": [
+                    -341142268,
+                    -448508516,
+                    -1121344222,
+                    1128040018
+                  ],
+                  "resource_escrow": {
+                    "schema_version": 1,
+                    "resource_epoch": 1,
+                    "markers": [
+                      {
+                        "epoch_after": 1,
+                        "role": "DESTINATION",
+                        "op_id": [
+                          -348061046,
+                          -1580973441,
+                          -1150964390,
+                          -1906055276
+                        ],
+                        "seq": 1
+                      }
+                    ],
+                    "ledger_id": [
+                      -1808797653,
+                      159466627,
+                      -2083363109,
+                      -1481131821
+                    ]
+                  },
+                  "snapshot": {
+                    "schema_version": 2,
+                    "source_origin": [
+                      2048,
+                      100,
+                      2048
+                    ],
+                    "passenger_anchors": [
+                      [
+                        0,
+                        1,
+                        0
+                      ]
+                    ],
+                    "bounding_box": [
+                      0,
+                      0,
+                      0,
+                      0,
+                      1,
+                      0
+                    ],
+                    "snapshot_id": "857c80d0-3c62-4ffe-a2de-7caa1c293c44",
+                    "relative_blocks": [
+                      {
+                        "palette": 0,
+                        "position": [
+                          0,
+                          0,
+                          0
+                        ]
+                      },
+                      {
+                        "palette": 0,
+                        "position": [
+                          0,
+                          1,
+                          0
+                        ]
+                      }
+                    ],
+                    "propulsion": {
+                      "schema": 1,
+                      "core_units": 72057594037927936,
+                      "fuels": {
+                        "OXIDIZER": [
+                          "advancedrocketrycommunity:oxygen"
+                        ],
+                        "BIPROPELLANT_FUEL": [
+                          "advancedrocketrycommunity:hydrogen"
+                        ],
+                        "MONO": [
+                          "advancedrocketrycommunity:rocket_fuel"
+                        ],
+                        "WORKING_FLUID": [
+                          "advancedrocketrycommunity:hydrogen"
+                        ]
+                      },
+                      "required": 1,
+                      "oxidizer": 0,
+                      "numerator": 1,
+                      "denominator": 1,
+                      "mode": "MONO",
+                      "thrust_units": 72057594037927936,
+                      "gravity": 1,
+                      "capacity_units": 72057594037927936,
+                      "primary": 2000,
+                      "hand": 1
+                    },
+                    "source_dimension": "minecraft:overworld",
+                    "content_hash": "25285f055436d7b858eef27740c23cd520215c8bf84610ce851ae7d525fae81e",
+                    "mass_inputs": {
+                      "engine_count": 1,
+                      "guidance_count": 1,
+                      "seat_count": 1,
+                      "block_entity_count": 0,
+                      "fuel_capacity": 2000,
+                      "mass": 100,
+                      "thrust": 1000,
+                      "block_count": 2
+                    },
+                    "block_palette": [
+                      {
+                        "id": "minecraft:iron_block",
+                        "properties": {}
+                      }
+                    ],
+                    "created_at_game_time": 9
+                  }
+                },
+                "Motion": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "Invulnerable": 0,
+                "Air": 300,
+                "OnGround": 0,
+                "PortalCooldown": 0,
+                "Rotation": [
+                  0.0,
+                  0.0
+                ],
+                "FallDistance": 0.0,
+                "CanUpdate": 1,
+                "Pos": [
+                  2048.5,
+                  100.0,
+                  2048.5
+                ],
+                "Fire": -1,
+                "id": "advancedrocketrycommunity:rocket",
+                "UUID": [
+                  399862751,
+                  23153252,
+                  -2090601690,
+                  1351191271
+                ]
+              }
+            },
+            {
+              "loaders": [
+                {
+                  "keepPacked": 0,
+                  "x": 66,
+                  "y": 100,
+                  "z": 64,
+                  "arce_fluid_fuel_loader": {
+                    "schema_version": 1,
+                    "owner": [
+                      -341142268,
+                      -448508516,
+                      -1121344222,
+                      1128040018
+                    ],
+                    "binding": {
+                      "schema_version": 1,
+                      "logical_rocket": [
+                        -796812063,
+                        -919779549,
+                        -1570680460,
+                        1441625676
+                      ],
+                      "physical_rocket": [
+                        1191297047,
+                        659769109,
+                        -1542024833,
+                        1858115402
+                      ],
+                      "level": "minecraft:overworld",
+                      "x": 64,
+                      "y": 100,
+                      "z": 64
+                    },
+                    "resource_escrow": {
+                      "schema_version": 1,
+                      "resource_epoch": 1,
+                      "markers": [
+                        {
+                          "epoch_after": 1,
+                          "op_id": [
+                            -1017527492,
+                            -1831319107,
+                            -2010655933,
+                            1986094985
+                          ],
+                          "role": "SOURCE",
+                          "seq": 2
+                        }
+                      ],
+                      "ledger_id": [
+                        -1808797653,
+                        159466627,
+                        -2083363109,
+                        -1481131821
+                      ]
+                    },
+                    "tank": {
+                      "FluidName": "advancedrocketrycommunity:rocket_fuel",
+                      "Amount": 4000
+                    },
+                    "device": [
+                      726165063,
+                      612189319,
+                      -1875741297,
+                      -595233527
+                    ]
+                  },
+                  "id": "advancedrocketrycommunity:fluid_fuel_loader"
+                }
+              ],
+              "rocket": {
+                "NoGravity": 1,
+                "RocketEntityData": {
+                  "schema_version": 3,
+                  "flight_data": {
+                    "schema_version": 2,
+                    "logical_rocket_id": [
+                      -796812063,
+                      -919779549,
+                      -1570680460,
+                      1441625676
+                    ],
+                    "passengers": {
+                      "assignments": [],
+                      "seat_capacity": 1
+                    },
+                    "state_started_game_time": 9,
+                    "current_target": {
+                      "schema_version": 1,
+                      "type": "advancedrocketrycommunity:body_surface",
+                      "body_id": "advancedrocketrycommunity:earth"
+                    },
+                    "fuel": {
+                      "amount": 1000,
+                      "propulsion": {
+                        "schema": 1,
+                        "descriptor": {
+                          "schema": 1,
+                          "core_units": 72057594037927936,
+                          "fuels": {
+                            "OXIDIZER": [
+                              "advancedrocketrycommunity:oxygen"
+                            ],
+                            "BIPROPELLANT_FUEL": [
+                              "advancedrocketrycommunity:hydrogen"
+                            ],
+                            "MONO": [
+                              "advancedrocketrycommunity:rocket_fuel"
+                            ],
+                            "WORKING_FLUID": [
+                              "advancedrocketrycommunity:hydrogen"
+                            ]
+                          },
+                          "required": 1,
+                          "oxidizer": 0,
+                          "numerator": 1,
+                          "denominator": 1,
+                          "mode": "MONO",
+                          "thrust_units": 72057594037927936,
+                          "gravity": 1,
+                          "capacity_units": 72057594037927936,
+                          "primary": 2000,
+                          "hand": 1
+                        },
+                        "primary": {
+                          "amount": 1000,
+                          "fluid": "advancedrocketrycommunity:rocket_fuel",
+                          "branch": "FLUID"
+                        },
+                        "oxidizer": {
+                          "amount": 0,
+                          "branch": "EMPTY"
+                        },
+                        "revision": 1
+                      },
+                      "committed_debits": [],
+                      "capacity": 2000
+                    },
+                    "current_dimension": "minecraft:overworld",
+                    "current_origin": [
+                      64,
+                      100,
+                      64
+                    ],
+                    "state": "ASSEMBLED",
+                    "current_body": "advancedrocketrycommunity:earth"
+                  },
+                  "assembly_transaction_id": [
+                    -796812063,
+                    -919779549,
+                    -1570680460,
+                    1441625676
+                  ],
+                  "owner_id": [
+                    -341142268,
+                    -448508516,
+                    -1121344222,
+                    1128040018
+                  ],
+                  "resource_escrow": {
+                    "schema_version": 1,
+                    "resource_epoch": 1,
+                    "markers": [
+                      {
+                        "epoch_after": 1,
+                        "role": "DESTINATION",
+                        "op_id": [
+                          -1017527492,
+                          -1831319107,
+                          -2010655933,
+                          1986094985
+                        ],
+                        "seq": 2
+                      }
+                    ],
+                    "ledger_id": [
+                      -1808797653,
+                      159466627,
+                      -2083363109,
+                      -1481131821
+                    ]
+                  },
+                  "snapshot": {
+                    "schema_version": 2,
+                    "source_origin": [
+                      64,
+                      100,
+                      64
+                    ],
+                    "passenger_anchors": [
+                      [
+                        0,
+                        1,
+                        0
+                      ]
+                    ],
+                    "bounding_box": [
+                      0,
+                      0,
+                      0,
+                      0,
+                      1,
+                      0
+                    ],
+                    "snapshot_id": "2b48b0ec-a304-41a4-ba23-456545b84481",
+                    "relative_blocks": [
+                      {
+                        "palette": 0,
+                        "position": [
+                          0,
+                          0,
+                          0
+                        ]
+                      },
+                      {
+                        "palette": 0,
+                        "position": [
+                          0,
+                          1,
+                          0
+                        ]
+                      }
+                    ],
+                    "propulsion": {
+                      "schema": 1,
+                      "core_units": 72057594037927936,
+                      "fuels": {
+                        "OXIDIZER": [
+                          "advancedrocketrycommunity:oxygen"
+                        ],
+                        "BIPROPELLANT_FUEL": [
+                          "advancedrocketrycommunity:hydrogen"
+                        ],
+                        "MONO": [
+                          "advancedrocketrycommunity:rocket_fuel"
+                        ],
+                        "WORKING_FLUID": [
+                          "advancedrocketrycommunity:hydrogen"
+                        ]
+                      },
+                      "required": 1,
+                      "oxidizer": 0,
+                      "numerator": 1,
+                      "denominator": 1,
+                      "mode": "MONO",
+                      "thrust_units": 72057594037927936,
+                      "gravity": 1,
+                      "capacity_units": 72057594037927936,
+                      "primary": 2000,
+                      "hand": 1
+                    },
+                    "source_dimension": "minecraft:overworld",
+                    "content_hash": "11b6dbf3295926e852d93921b72cba90022bdcb133dcae13bca98338648e5ed4",
+                    "mass_inputs": {
+                      "engine_count": 1,
+                      "guidance_count": 1,
+                      "seat_count": 1,
+                      "block_entity_count": 0,
+                      "fuel_capacity": 2000,
+                      "mass": 100,
+                      "thrust": 1000,
+                      "block_count": 2
+                    },
+                    "block_palette": [
+                      {
+                        "id": "minecraft:iron_block",
+                        "properties": {}
+                      }
+                    ],
+                    "created_at_game_time": 9
+                  }
+                },
+                "Motion": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "Invulnerable": 0,
+                "Air": 300,
+                "OnGround": 0,
+                "PortalCooldown": 0,
+                "Rotation": [
+                  0.0,
+                  0.0
+                ],
+                "FallDistance": 0.0,
+                "CanUpdate": 1,
+                "Pos": [
+                  64.5,
+                  100.0,
+                  64.5
+                ],
+                "Fire": -1,
+                "id": "advancedrocketrycommunity:rocket",
+                "UUID": [
+                  1191297047,
+                  659769109,
+                  -1542024833,
+                  1858115402
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "read_status": "KNOWN",
+        "native": {
+          "ledger": {
+            "schema_version": 2,
+            "issued_through": 2,
+            "rocket_authorities": [],
+            "floors": [],
+            "tombstones": [],
+            "records": [],
+            "writer_generation": 5,
+            "armed_flights": [],
+            "ledger_id": [
+              -1808797653,
+              159466627,
+              -2083363109,
+              -1481131821
+            ],
+            "format_epoch": "v1.8.0-resource-escrow",
+            "issued_launch_serial": 0
+          },
+          "pairs": [
+            {
+              "loaders": [
+                {
+                  "keepPacked": 0,
+                  "x": 2050,
+                  "y": 100,
+                  "z": 2048,
+                  "arce_fluid_fuel_loader": {
+                    "schema_version": 1,
+                    "owner": [
+                      -341142268,
+                      -448508516,
+                      -1121344222,
+                      1128040018
+                    ],
+                    "binding": {
+                      "schema_version": 1,
+                      "logical_rocket": [
+                        1174158694,
+                        -1211612096,
+                        -1695576739,
+                        15299993
+                      ],
+                      "physical_rocket": [
+                        399862751,
+                        23153252,
+                        -2090601690,
+                        1351191271
+                      ],
+                      "level": "minecraft:overworld",
+                      "x": 2048,
+                      "y": 100,
+                      "z": 2048
+                    },
+                    "resource_escrow": {
+                      "schema_version": 1,
+                      "resource_epoch": 1,
+                      "markers": [],
+                      "ledger_id": [
+                        -1808797653,
+                        159466627,
+                        -2083363109,
+                        -1481131821
+                      ]
+                    },
+                    "tank": {
+                      "FluidName": "advancedrocketrycommunity:rocket_fuel",
+                      "Amount": 4000
+                    },
+                    "device": [
+                      -966179820,
+                      1688423257,
+                      -1419697521,
+                      1703507355
+                    ]
+                  },
+                  "id": "advancedrocketrycommunity:fluid_fuel_loader"
+                }
+              ],
+              "rocket": {
+                "NoGravity": 1,
+                "RocketEntityData": {
+                  "schema_version": 3,
+                  "flight_data": {
+                    "schema_version": 2,
+                    "logical_rocket_id": [
+                      1174158694,
+                      -1211612096,
+                      -1695576739,
+                      15299993
+                    ],
+                    "passengers": {
+                      "assignments": [],
+                      "seat_capacity": 1
+                    },
+                    "state_started_game_time": 9,
+                    "current_target": {
+                      "schema_version": 1,
+                      "type": "advancedrocketrycommunity:body_surface",
+                      "body_id": "advancedrocketrycommunity:earth"
+                    },
+                    "fuel": {
+                      "amount": 1000,
+                      "propulsion": {
+                        "schema": 1,
+                        "descriptor": {
+                          "schema": 1,
+                          "core_units": 72057594037927936,
+                          "fuels": {
+                            "OXIDIZER": [
+                              "advancedrocketrycommunity:oxygen"
+                            ],
+                            "BIPROPELLANT_FUEL": [
+                              "advancedrocketrycommunity:hydrogen"
+                            ],
+                            "MONO": [
+                              "advancedrocketrycommunity:rocket_fuel"
+                            ],
+                            "WORKING_FLUID": [
+                              "advancedrocketrycommunity:hydrogen"
+                            ]
+                          },
+                          "required": 1,
+                          "oxidizer": 0,
+                          "numerator": 1,
+                          "denominator": 1,
+                          "mode": "MONO",
+                          "thrust_units": 72057594037927936,
+                          "gravity": 1,
+                          "capacity_units": 72057594037927936,
+                          "primary": 2000,
+                          "hand": 1
+                        },
+                        "primary": {
+                          "amount": 1000,
+                          "fluid": "advancedrocketrycommunity:rocket_fuel",
+                          "branch": "FLUID"
+                        },
+                        "oxidizer": {
+                          "amount": 0,
+                          "branch": "EMPTY"
+                        },
+                        "revision": 1
+                      },
+                      "committed_debits": [],
+                      "capacity": 2000
+                    },
+                    "current_dimension": "minecraft:overworld",
+                    "current_origin": [
+                      2048,
+                      100,
+                      2048
+                    ],
+                    "state": "ASSEMBLED",
+                    "current_body": "advancedrocketrycommunity:earth"
+                  },
+                  "assembly_transaction_id": [
+                    1174158694,
+                    -1211612096,
+                    -1695576739,
+                    15299993
+                  ],
+                  "owner_id": [
+                    -341142268,
+                    -448508516,
+                    -1121344222,
+                    1128040018
+                  ],
+                  "resource_escrow": {
+                    "schema_version": 1,
+                    "resource_epoch": 1,
+                    "markers": [],
+                    "ledger_id": [
+                      -1808797653,
+                      159466627,
+                      -2083363109,
+                      -1481131821
+                    ]
+                  },
+                  "snapshot": {
+                    "schema_version": 2,
+                    "source_origin": [
+                      2048,
+                      100,
+                      2048
+                    ],
+                    "passenger_anchors": [
+                      [
+                        0,
+                        1,
+                        0
+                      ]
+                    ],
+                    "bounding_box": [
+                      0,
+                      0,
+                      0,
+                      0,
+                      1,
+                      0
+                    ],
+                    "snapshot_id": "857c80d0-3c62-4ffe-a2de-7caa1c293c44",
+                    "relative_blocks": [
+                      {
+                        "palette": 0,
+                        "position": [
+                          0,
+                          0,
+                          0
+                        ]
+                      },
+                      {
+                        "palette": 0,
+                        "position": [
+                          0,
+                          1,
+                          0
+                        ]
+                      }
+                    ],
+                    "propulsion": {
+                      "schema": 1,
+                      "core_units": 72057594037927936,
+                      "fuels": {
+                        "OXIDIZER": [
+                          "advancedrocketrycommunity:oxygen"
+                        ],
+                        "BIPROPELLANT_FUEL": [
+                          "advancedrocketrycommunity:hydrogen"
+                        ],
+                        "MONO": [
+                          "advancedrocketrycommunity:rocket_fuel"
+                        ],
+                        "WORKING_FLUID": [
+                          "advancedrocketrycommunity:hydrogen"
+                        ]
+                      },
+                      "required": 1,
+                      "oxidizer": 0,
+                      "numerator": 1,
+                      "denominator": 1,
+                      "mode": "MONO",
+                      "thrust_units": 72057594037927936,
+                      "gravity": 1,
+                      "capacity_units": 72057594037927936,
+                      "primary": 2000,
+                      "hand": 1
+                    },
+                    "source_dimension": "minecraft:overworld",
+                    "content_hash": "25285f055436d7b858eef27740c23cd520215c8bf84610ce851ae7d525fae81e",
+                    "mass_inputs": {
+                      "engine_count": 1,
+                      "guidance_count": 1,
+                      "seat_count": 1,
+                      "block_entity_count": 0,
+                      "fuel_capacity": 2000,
+                      "mass": 100,
+                      "thrust": 1000,
+                      "block_count": 2
+                    },
+                    "block_palette": [
+                      {
+                        "id": "minecraft:iron_block",
+                        "properties": {}
+                      }
+                    ],
+                    "created_at_game_time": 9
+                  }
+                },
+                "Motion": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "Invulnerable": 0,
+                "Air": 300,
+                "OnGround": 0,
+                "PortalCooldown": 0,
+                "Rotation": [
+                  0.0,
+                  0.0
+                ],
+                "FallDistance": 0.0,
+                "CanUpdate": 1,
+                "Pos": [
+                  2048.5,
+                  100.0,
+                  2048.5
+                ],
+                "Fire": -1,
+                "id": "advancedrocketrycommunity:rocket",
+                "UUID": [
+                  399862751,
+                  23153252,
+                  -2090601690,
+                  1351191271
+                ]
+              }
+            },
+            {
+              "loaders": [
+                {
+                  "keepPacked": 0,
+                  "x": 66,
+                  "y": 100,
+                  "z": 64,
+                  "arce_fluid_fuel_loader": {
+                    "schema_version": 1,
+                    "owner": [
+                      -341142268,
+                      -448508516,
+                      -1121344222,
+                      1128040018
+                    ],
+                    "binding": {
+                      "schema_version": 1,
+                      "logical_rocket": [
+                        -796812063,
+                        -919779549,
+                        -1570680460,
+                        1441625676
+                      ],
+                      "physical_rocket": [
+                        1191297047,
+                        659769109,
+                        -1542024833,
+                        1858115402
+                      ],
+                      "level": "minecraft:overworld",
+                      "x": 64,
+                      "y": 100,
+                      "z": 64
+                    },
+                    "resource_escrow": {
+                      "schema_version": 1,
+                      "resource_epoch": 1,
+                      "markers": [],
+                      "ledger_id": [
+                        -1808797653,
+                        159466627,
+                        -2083363109,
+                        -1481131821
+                      ]
+                    },
+                    "tank": {
+                      "FluidName": "advancedrocketrycommunity:rocket_fuel",
+                      "Amount": 4000
+                    },
+                    "device": [
+                      726165063,
+                      612189319,
+                      -1875741297,
+                      -595233527
+                    ]
+                  },
+                  "id": "advancedrocketrycommunity:fluid_fuel_loader"
+                }
+              ],
+              "rocket": {
+                "NoGravity": 1,
+                "RocketEntityData": {
+                  "schema_version": 3,
+                  "flight_data": {
+                    "schema_version": 2,
+                    "logical_rocket_id": [
+                      -796812063,
+                      -919779549,
+                      -1570680460,
+                      1441625676
+                    ],
+                    "passengers": {
+                      "assignments": [],
+                      "seat_capacity": 1
+                    },
+                    "state_started_game_time": 9,
+                    "current_target": {
+                      "schema_version": 1,
+                      "type": "advancedrocketrycommunity:body_surface",
+                      "body_id": "advancedrocketrycommunity:earth"
+                    },
+                    "fuel": {
+                      "amount": 1000,
+                      "propulsion": {
+                        "schema": 1,
+                        "descriptor": {
+                          "schema": 1,
+                          "core_units": 72057594037927936,
+                          "fuels": {
+                            "OXIDIZER": [
+                              "advancedrocketrycommunity:oxygen"
+                            ],
+                            "BIPROPELLANT_FUEL": [
+                              "advancedrocketrycommunity:hydrogen"
+                            ],
+                            "MONO": [
+                              "advancedrocketrycommunity:rocket_fuel"
+                            ],
+                            "WORKING_FLUID": [
+                              "advancedrocketrycommunity:hydrogen"
+                            ]
+                          },
+                          "required": 1,
+                          "oxidizer": 0,
+                          "numerator": 1,
+                          "denominator": 1,
+                          "mode": "MONO",
+                          "thrust_units": 72057594037927936,
+                          "gravity": 1,
+                          "capacity_units": 72057594037927936,
+                          "primary": 2000,
+                          "hand": 1
+                        },
+                        "primary": {
+                          "amount": 1000,
+                          "fluid": "advancedrocketrycommunity:rocket_fuel",
+                          "branch": "FLUID"
+                        },
+                        "oxidizer": {
+                          "amount": 0,
+                          "branch": "EMPTY"
+                        },
+                        "revision": 1
+                      },
+                      "committed_debits": [],
+                      "capacity": 2000
+                    },
+                    "current_dimension": "minecraft:overworld",
+                    "current_origin": [
+                      64,
+                      100,
+                      64
+                    ],
+                    "state": "ASSEMBLED",
+                    "current_body": "advancedrocketrycommunity:earth"
+                  },
+                  "assembly_transaction_id": [
+                    -796812063,
+                    -919779549,
+                    -1570680460,
+                    1441625676
+                  ],
+                  "owner_id": [
+                    -341142268,
+                    -448508516,
+                    -1121344222,
+                    1128040018
+                  ],
+                  "resource_escrow": {
+                    "schema_version": 1,
+                    "resource_epoch": 1,
+                    "markers": [],
+                    "ledger_id": [
+                      -1808797653,
+                      159466627,
+                      -2083363109,
+                      -1481131821
+                    ]
+                  },
+                  "snapshot": {
+                    "schema_version": 2,
+                    "source_origin": [
+                      64,
+                      100,
+                      64
+                    ],
+                    "passenger_anchors": [
+                      [
+                        0,
+                        1,
+                        0
+                      ]
+                    ],
+                    "bounding_box": [
+                      0,
+                      0,
+                      0,
+                      0,
+                      1,
+                      0
+                    ],
+                    "snapshot_id": "2b48b0ec-a304-41a4-ba23-456545b84481",
+                    "relative_blocks": [
+                      {
+                        "palette": 0,
+                        "position": [
+                          0,
+                          0,
+                          0
+                        ]
+                      },
+                      {
+                        "palette": 0,
+                        "position": [
+                          0,
+                          1,
+                          0
+                        ]
+                      }
+                    ],
+                    "propulsion": {
+                      "schema": 1,
+                      "core_units": 72057594037927936,
+                      "fuels": {
+                        "OXIDIZER": [
+                          "advancedrocketrycommunity:oxygen"
+                        ],
+                        "BIPROPELLANT_FUEL": [
+                          "advancedrocketrycommunity:hydrogen"
+                        ],
+                        "MONO": [
+                          "advancedrocketrycommunity:rocket_fuel"
+                        ],
+                        "WORKING_FLUID": [
+                          "advancedrocketrycommunity:hydrogen"
+                        ]
+                      },
+                      "required": 1,
+                      "oxidizer": 0,
+                      "numerator": 1,
+                      "denominator": 1,
+                      "mode": "MONO",
+                      "thrust_units": 72057594037927936,
+                      "gravity": 1,
+                      "capacity_units": 72057594037927936,
+                      "primary": 2000,
+                      "hand": 1
+                    },
+                    "source_dimension": "minecraft:overworld",
+                    "content_hash": "11b6dbf3295926e852d93921b72cba90022bdcb133dcae13bca98338648e5ed4",
+                    "mass_inputs": {
+                      "engine_count": 1,
+                      "guidance_count": 1,
+                      "seat_count": 1,
+                      "block_entity_count": 0,
+                      "fuel_capacity": 2000,
+                      "mass": 100,
+                      "thrust": 1000,
+                      "block_count": 2
+                    },
+                    "block_palette": [
+                      {
+                        "id": "minecraft:iron_block",
+                        "properties": {}
+                      }
+                    ],
+                    "created_at_game_time": 9
+                  }
+                },
+                "Motion": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "Invulnerable": 0,
+                "Air": 300,
+                "OnGround": 0,
+                "PortalCooldown": 0,
+                "Rotation": [
+                  0.0,
+                  0.0
+                ],
+                "FallDistance": 0.0,
+                "CanUpdate": 1,
+                "Pos": [
+                  64.5,
+                  100.0,
+                  64.5
+                ],
+                "Fire": -1,
+                "id": "advancedrocketrycommunity:rocket",
+                "UUID": [
+                  1191297047,
+                  659769109,
+                  -1542024833,
+                  1858115402
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "read_status": "KNOWN",
+        "native": {
+          "ledger": {
+            "schema_version": 2,
+            "issued_through": 2,
+            "rocket_authorities": [],
+            "floors": [],
+            "tombstones": [],
+            "records": [],
+            "writer_generation": 5,
+            "armed_flights": [],
+            "ledger_id": [
+              -1808797653,
+              159466627,
+              -2083363109,
+              -1481131821
+            ],
+            "format_epoch": "v1.8.0-resource-escrow",
+            "issued_launch_serial": 0
+          },
+          "pairs": [
+            {
+              "loaders": [
+                {
+                  "keepPacked": 0,
+                  "x": 2050,
+                  "y": 100,
+                  "z": 2048,
+                  "arce_fluid_fuel_loader": {
+                    "schema_version": 1,
+                    "owner": [
+                      -341142268,
+                      -448508516,
+                      -1121344222,
+                      1128040018
+                    ],
+                    "binding": {
+                      "schema_version": 1,
+                      "logical_rocket": [
+                        1174158694,
+                        -1211612096,
+                        -1695576739,
+                        15299993
+                      ],
+                      "physical_rocket": [
+                        399862751,
+                        23153252,
+                        -2090601690,
+                        1351191271
+                      ],
+                      "level": "minecraft:overworld",
+                      "x": 2048,
+                      "y": 100,
+                      "z": 2048
+                    },
+                    "resource_escrow": {
+                      "schema_version": 1,
+                      "resource_epoch": 1,
+                      "markers": [],
+                      "ledger_id": [
+                        -1808797653,
+                        159466627,
+                        -2083363109,
+                        -1481131821
+                      ]
+                    },
+                    "tank": {
+                      "FluidName": "advancedrocketrycommunity:rocket_fuel",
+                      "Amount": 4000
+                    },
+                    "device": [
+                      -966179820,
+                      1688423257,
+                      -1419697521,
+                      1703507355
+                    ]
+                  },
+                  "id": "advancedrocketrycommunity:fluid_fuel_loader"
+                }
+              ],
+              "rocket": {
+                "NoGravity": 1,
+                "RocketEntityData": {
+                  "schema_version": 3,
+                  "flight_data": {
+                    "schema_version": 2,
+                    "logical_rocket_id": [
+                      1174158694,
+                      -1211612096,
+                      -1695576739,
+                      15299993
+                    ],
+                    "passengers": {
+                      "assignments": [],
+                      "seat_capacity": 1
+                    },
+                    "state_started_game_time": 9,
+                    "current_target": {
+                      "schema_version": 1,
+                      "type": "advancedrocketrycommunity:body_surface",
+                      "body_id": "advancedrocketrycommunity:earth"
+                    },
+                    "fuel": {
+                      "amount": 1000,
+                      "propulsion": {
+                        "schema": 1,
+                        "descriptor": {
+                          "schema": 1,
+                          "core_units": 72057594037927936,
+                          "fuels": {
+                            "OXIDIZER": [
+                              "advancedrocketrycommunity:oxygen"
+                            ],
+                            "BIPROPELLANT_FUEL": [
+                              "advancedrocketrycommunity:hydrogen"
+                            ],
+                            "MONO": [
+                              "advancedrocketrycommunity:rocket_fuel"
+                            ],
+                            "WORKING_FLUID": [
+                              "advancedrocketrycommunity:hydrogen"
+                            ]
+                          },
+                          "required": 1,
+                          "oxidizer": 0,
+                          "numerator": 1,
+                          "denominator": 1,
+                          "mode": "MONO",
+                          "thrust_units": 72057594037927936,
+                          "gravity": 1,
+                          "capacity_units": 72057594037927936,
+                          "primary": 2000,
+                          "hand": 1
+                        },
+                        "primary": {
+                          "amount": 1000,
+                          "fluid": "advancedrocketrycommunity:rocket_fuel",
+                          "branch": "FLUID"
+                        },
+                        "oxidizer": {
+                          "amount": 0,
+                          "branch": "EMPTY"
+                        },
+                        "revision": 1
+                      },
+                      "committed_debits": [],
+                      "capacity": 2000
+                    },
+                    "current_dimension": "minecraft:overworld",
+                    "current_origin": [
+                      2048,
+                      100,
+                      2048
+                    ],
+                    "state": "ASSEMBLED",
+                    "current_body": "advancedrocketrycommunity:earth"
+                  },
+                  "assembly_transaction_id": [
+                    1174158694,
+                    -1211612096,
+                    -1695576739,
+                    15299993
+                  ],
+                  "owner_id": [
+                    -341142268,
+                    -448508516,
+                    -1121344222,
+                    1128040018
+                  ],
+                  "resource_escrow": {
+                    "schema_version": 1,
+                    "resource_epoch": 1,
+                    "markers": [],
+                    "ledger_id": [
+                      -1808797653,
+                      159466627,
+                      -2083363109,
+                      -1481131821
+                    ]
+                  },
+                  "snapshot": {
+                    "schema_version": 2,
+                    "source_origin": [
+                      2048,
+                      100,
+                      2048
+                    ],
+                    "passenger_anchors": [
+                      [
+                        0,
+                        1,
+                        0
+                      ]
+                    ],
+                    "bounding_box": [
+                      0,
+                      0,
+                      0,
+                      0,
+                      1,
+                      0
+                    ],
+                    "snapshot_id": "857c80d0-3c62-4ffe-a2de-7caa1c293c44",
+                    "relative_blocks": [
+                      {
+                        "palette": 0,
+                        "position": [
+                          0,
+                          0,
+                          0
+                        ]
+                      },
+                      {
+                        "palette": 0,
+                        "position": [
+                          0,
+                          1,
+                          0
+                        ]
+                      }
+                    ],
+                    "propulsion": {
+                      "schema": 1,
+                      "core_units": 72057594037927936,
+                      "fuels": {
+                        "OXIDIZER": [
+                          "advancedrocketrycommunity:oxygen"
+                        ],
+                        "BIPROPELLANT_FUEL": [
+                          "advancedrocketrycommunity:hydrogen"
+                        ],
+                        "MONO": [
+                          "advancedrocketrycommunity:rocket_fuel"
+                        ],
+                        "WORKING_FLUID": [
+                          "advancedrocketrycommunity:hydrogen"
+                        ]
+                      },
+                      "required": 1,
+                      "oxidizer": 0,
+                      "numerator": 1,
+                      "denominator": 1,
+                      "mode": "MONO",
+                      "thrust_units": 72057594037927936,
+                      "gravity": 1,
+                      "capacity_units": 72057594037927936,
+                      "primary": 2000,
+                      "hand": 1
+                    },
+                    "source_dimension": "minecraft:overworld",
+                    "content_hash": "25285f055436d7b858eef27740c23cd520215c8bf84610ce851ae7d525fae81e",
+                    "mass_inputs": {
+                      "engine_count": 1,
+                      "guidance_count": 1,
+                      "seat_count": 1,
+                      "block_entity_count": 0,
+                      "fuel_capacity": 2000,
+                      "mass": 100,
+                      "thrust": 1000,
+                      "block_count": 2
+                    },
+                    "block_palette": [
+                      {
+                        "id": "minecraft:iron_block",
+                        "properties": {}
+                      }
+                    ],
+                    "created_at_game_time": 9
+                  }
+                },
+                "Motion": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "Invulnerable": 0,
+                "Air": 300,
+                "OnGround": 0,
+                "PortalCooldown": 0,
+                "Rotation": [
+                  0.0,
+                  0.0
+                ],
+                "FallDistance": 0.0,
+                "CanUpdate": 1,
+                "Pos": [
+                  2048.5,
+                  100.0,
+                  2048.5
+                ],
+                "Fire": -1,
+                "id": "advancedrocketrycommunity:rocket",
+                "UUID": [
+                  399862751,
+                  23153252,
+                  -2090601690,
+                  1351191271
+                ]
+              }
+            },
+            {
+              "loaders": [
+                {
+                  "keepPacked": 0,
+                  "x": 66,
+                  "y": 100,
+                  "z": 64,
+                  "arce_fluid_fuel_loader": {
+                    "schema_version": 1,
+                    "owner": [
+                      -341142268,
+                      -448508516,
+                      -1121344222,
+                      1128040018
+                    ],
+                    "binding": {
+                      "schema_version": 1,
+                      "logical_rocket": [
+                        -796812063,
+                        -919779549,
+                        -1570680460,
+                        1441625676
+                      ],
+                      "physical_rocket": [
+                        1191297047,
+                        659769109,
+                        -1542024833,
+                        1858115402
+                      ],
+                      "level": "minecraft:overworld",
+                      "x": 64,
+                      "y": 100,
+                      "z": 64
+                    },
+                    "resource_escrow": {
+                      "schema_version": 1,
+                      "resource_epoch": 1,
+                      "markers": [],
+                      "ledger_id": [
+                        -1808797653,
+                        159466627,
+                        -2083363109,
+                        -1481131821
+                      ]
+                    },
+                    "tank": {
+                      "FluidName": "advancedrocketrycommunity:rocket_fuel",
+                      "Amount": 4000
+                    },
+                    "device": [
+                      726165063,
+                      612189319,
+                      -1875741297,
+                      -595233527
+                    ]
+                  },
+                  "id": "advancedrocketrycommunity:fluid_fuel_loader"
+                }
+              ],
+              "rocket": {
+                "NoGravity": 1,
+                "RocketEntityData": {
+                  "schema_version": 3,
+                  "flight_data": {
+                    "schema_version": 2,
+                    "logical_rocket_id": [
+                      -796812063,
+                      -919779549,
+                      -1570680460,
+                      1441625676
+                    ],
+                    "passengers": {
+                      "assignments": [],
+                      "seat_capacity": 1
+                    },
+                    "state_started_game_time": 9,
+                    "current_target": {
+                      "schema_version": 1,
+                      "type": "advancedrocketrycommunity:body_surface",
+                      "body_id": "advancedrocketrycommunity:earth"
+                    },
+                    "fuel": {
+                      "amount": 1000,
+                      "propulsion": {
+                        "schema": 1,
+                        "descriptor": {
+                          "schema": 1,
+                          "core_units": 72057594037927936,
+                          "fuels": {
+                            "OXIDIZER": [
+                              "advancedrocketrycommunity:oxygen"
+                            ],
+                            "BIPROPELLANT_FUEL": [
+                              "advancedrocketrycommunity:hydrogen"
+                            ],
+                            "MONO": [
+                              "advancedrocketrycommunity:rocket_fuel"
+                            ],
+                            "WORKING_FLUID": [
+                              "advancedrocketrycommunity:hydrogen"
+                            ]
+                          },
+                          "required": 1,
+                          "oxidizer": 0,
+                          "numerator": 1,
+                          "denominator": 1,
+                          "mode": "MONO",
+                          "thrust_units": 72057594037927936,
+                          "gravity": 1,
+                          "capacity_units": 72057594037927936,
+                          "primary": 2000,
+                          "hand": 1
+                        },
+                        "primary": {
+                          "amount": 1000,
+                          "fluid": "advancedrocketrycommunity:rocket_fuel",
+                          "branch": "FLUID"
+                        },
+                        "oxidizer": {
+                          "amount": 0,
+                          "branch": "EMPTY"
+                        },
+                        "revision": 1
+                      },
+                      "committed_debits": [],
+                      "capacity": 2000
+                    },
+                    "current_dimension": "minecraft:overworld",
+                    "current_origin": [
+                      64,
+                      100,
+                      64
+                    ],
+                    "state": "ASSEMBLED",
+                    "current_body": "advancedrocketrycommunity:earth"
+                  },
+                  "assembly_transaction_id": [
+                    -796812063,
+                    -919779549,
+                    -1570680460,
+                    1441625676
+                  ],
+                  "owner_id": [
+                    -341142268,
+                    -448508516,
+                    -1121344222,
+                    1128040018
+                  ],
+                  "resource_escrow": {
+                    "schema_version": 1,
+                    "resource_epoch": 1,
+                    "markers": [],
+                    "ledger_id": [
+                      -1808797653,
+                      159466627,
+                      -2083363109,
+                      -1481131821
+                    ]
+                  },
+                  "snapshot": {
+                    "schema_version": 2,
+                    "source_origin": [
+                      64,
+                      100,
+                      64
+                    ],
+                    "passenger_anchors": [
+                      [
+                        0,
+                        1,
+                        0
+                      ]
+                    ],
+                    "bounding_box": [
+                      0,
+                      0,
+                      0,
+                      0,
+                      1,
+                      0
+                    ],
+                    "snapshot_id": "2b48b0ec-a304-41a4-ba23-456545b84481",
+                    "relative_blocks": [
+                      {
+                        "palette": 0,
+                        "position": [
+                          0,
+                          0,
+                          0
+                        ]
+                      },
+                      {
+                        "palette": 0,
+                        "position": [
+                          0,
+                          1,
+                          0
+                        ]
+                      }
+                    ],
+                    "propulsion": {
+                      "schema": 1,
+                      "core_units": 72057594037927936,
+                      "fuels": {
+                        "OXIDIZER": [
+                          "advancedrocketrycommunity:oxygen"
+                        ],
+                        "BIPROPELLANT_FUEL": [
+                          "advancedrocketrycommunity:hydrogen"
+                        ],
+                        "MONO": [
+                          "advancedrocketrycommunity:rocket_fuel"
+                        ],
+                        "WORKING_FLUID": [
+                          "advancedrocketrycommunity:hydrogen"
+                        ]
+                      },
+                      "required": 1,
+                      "oxidizer": 0,
+                      "numerator": 1,
+                      "denominator": 1,
+                      "mode": "MONO",
+                      "thrust_units": 72057594037927936,
+                      "gravity": 1,
+                      "capacity_units": 72057594037927936,
+                      "primary": 2000,
+                      "hand": 1
+                    },
+                    "source_dimension": "minecraft:overworld",
+                    "content_hash": "11b6dbf3295926e852d93921b72cba90022bdcb133dcae13bca98338648e5ed4",
+                    "mass_inputs": {
+                      "engine_count": 1,
+                      "guidance_count": 1,
+                      "seat_count": 1,
+                      "block_entity_count": 0,
+                      "fuel_capacity": 2000,
+                      "mass": 100,
+                      "thrust": 1000,
+                      "block_count": 2
+                    },
+                    "block_palette": [
+                      {
+                        "id": "minecraft:iron_block",
+                        "properties": {}
+                      }
+                    ],
+                    "created_at_game_time": 9
+                  }
+                },
+                "Motion": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "Invulnerable": 0,
+                "Air": 300,
+                "OnGround": 0,
+                "PortalCooldown": 0,
+                "Rotation": [
+                  0.0,
+                  0.0
+                ],
+                "FallDistance": 0.0,
+                "CanUpdate": 1,
+                "Pos": [
+                  64.5,
+                  100.0,
+                  64.5
+                ],
+                "Fire": -1,
+                "id": "advancedrocketrycommunity:rocket",
+                "UUID": [
+                  1191297047,
+                  659769109,
+                  -1542024833,
+                  1858115402
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "l2": {
+    "origin": "r190/g3-l2-renewed/native/LF_S6_G3_L2_INFLIGHT-attempt-1/result.json",
+    "sha256": "563e9e2fb9be67bf666a570fb72ecb2c4b40d31cd9e16df14cf4a0ad64a92641",
+    "images": [
+      {
+        "read_status": "KNOWN",
+        "native": {
+          "ledger": {
+            "schema_version": 2,
+            "issued_through": 1,
+            "rocket_authorities": [],
+            "floors": [],
+            "tombstones": [],
+            "records": [],
+            "writer_generation": 3,
+            "armed_flights": [],
+            "ledger_id": [
+              968592415,
+              -418035033,
+              -1704568928,
+              842052945
+            ],
+            "format_epoch": "v1.8.0-resource-escrow",
+            "issued_launch_serial": 0
+          },
+          "loaders": [
+            {
+              "keepPacked": 0,
+              "x": 66,
+              "y": 100,
+              "z": 64,
+              "arce_fluid_fuel_loader": {
+                "schema_version": 1,
+                "owner": [
+                  1151996762,
+                  -1674425348,
+                  -1109964308,
+                  581505989
+                ],
+                "binding": {
+                  "schema_version": 1,
+                  "logical_rocket": [
+                    -591517589,
+                    837700678,
+                    -1321038019,
+                    -1517403538
+                  ],
+                  "physical_rocket": [
+                    -1332434630,
+                    1269386325,
+                    -1713708756,
+                    -885802197
+                  ],
+                  "level": "minecraft:overworld",
+                  "x": 64,
+                  "y": 100,
+                  "z": 64
+                },
+                "resource_escrow": {
+                  "schema_version": 1,
+                  "resource_epoch": 1,
+                  "markers": [
+                    {
+                      "epoch_after": 1,
+                      "op_id": [
+                        1792264249,
+                        140529521,
+                        -1554356588,
+                        -167817291
+                      ],
+                      "role": "SOURCE",
+                      "seq": 1
+                    }
+                  ],
+                  "ledger_id": [
+                    968592415,
+                    -418035033,
+                    -1704568928,
+                    842052945
+                  ]
+                },
+                "tank": {
+                  "FluidName": "advancedrocketrycommunity:rocket_fuel",
+                  "Amount": 4000
+                },
+                "device": [
+                  11774212,
+                  -1809693228,
+                  -2074227836,
+                  -410717265
+                ]
+              },
+              "id": "advancedrocketrycommunity:fluid_fuel_loader"
+            }
+          ],
+          "rocket": {
+            "NoGravity": 1,
+            "RocketEntityData": {
+              "schema_version": 3,
+              "flight_data": {
+                "schema_version": 2,
+                "logical_rocket_id": [
+                  -591517589,
+                  837700678,
+                  -1321038019,
+                  -1517403538
+                ],
+                "passengers": {
+                  "assignments": [],
+                  "seat_capacity": 1
+                },
+                "state_started_game_time": 2,
+                "current_target": {
+                  "schema_version": 1,
+                  "type": "advancedrocketrycommunity:body_surface",
+                  "body_id": "advancedrocketrycommunity:earth"
+                },
+                "fuel": {
+                  "amount": 1000,
+                  "propulsion": {
+                    "schema": 1,
+                    "descriptor": {
+                      "schema": 1,
+                      "core_units": 72057594037927936,
+                      "fuels": {
+                        "OXIDIZER": [
+                          "advancedrocketrycommunity:oxygen"
+                        ],
+                        "BIPROPELLANT_FUEL": [
+                          "advancedrocketrycommunity:hydrogen"
+                        ],
+                        "MONO": [
+                          "advancedrocketrycommunity:rocket_fuel"
+                        ],
+                        "WORKING_FLUID": [
+                          "advancedrocketrycommunity:hydrogen"
+                        ]
+                      },
+                      "required": 1,
+                      "oxidizer": 0,
+                      "numerator": 1,
+                      "denominator": 1,
+                      "mode": "MONO",
+                      "thrust_units": 72057594037927936,
+                      "gravity": 1,
+                      "capacity_units": 72057594037927936,
+                      "primary": 2000,
+                      "hand": 1
+                    },
+                    "primary": {
+                      "amount": 1000,
+                      "fluid": "advancedrocketrycommunity:rocket_fuel",
+                      "branch": "FLUID"
+                    },
+                    "oxidizer": {
+                      "amount": 0,
+                      "branch": "EMPTY"
+                    },
+                    "revision": 1
+                  },
+                  "committed_debits": [],
+                  "capacity": 2000
+                },
+                "current_dimension": "minecraft:overworld",
+                "current_origin": [
+                  64,
+                  100,
+                  64
+                ],
+                "state": "ASSEMBLED",
+                "current_body": "advancedrocketrycommunity:earth"
+              },
+              "assembly_transaction_id": [
+                -591517589,
+                837700678,
+                -1321038019,
+                -1517403538
+              ],
+              "owner_id": [
+                1151996762,
+                -1674425348,
+                -1109964308,
+                581505989
+              ],
+              "resource_escrow": {
+                "schema_version": 1,
+                "resource_epoch": 1,
+                "markers": [
+                  {
+                    "epoch_after": 1,
+                    "role": "DESTINATION",
+                    "op_id": [
+                      1792264249,
+                      140529521,
+                      -1554356588,
+                      -167817291
+                    ],
+                    "seq": 1
+                  }
+                ],
+                "ledger_id": [
+                  968592415,
+                  -418035033,
+                  -1704568928,
+                  842052945
+                ]
+              },
+              "snapshot": {
+                "schema_version": 2,
+                "source_origin": [
+                  64,
+                  100,
+                  64
+                ],
+                "passenger_anchors": [
+                  [
+                    0,
+                    1,
+                    0
+                  ]
+                ],
+                "bounding_box": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  1,
+                  0
+                ],
+                "snapshot_id": "5f8d798c-d3aa-4193-a5b5-79fd1016cd73",
+                "relative_blocks": [
+                  {
+                    "palette": 0,
+                    "position": [
+                      0,
+                      0,
+                      0
+                    ]
+                  },
+                  {
+                    "palette": 0,
+                    "position": [
+                      0,
+                      1,
+                      0
+                    ]
+                  }
+                ],
+                "propulsion": {
+                  "schema": 1,
+                  "core_units": 72057594037927936,
+                  "fuels": {
+                    "OXIDIZER": [
+                      "advancedrocketrycommunity:oxygen"
+                    ],
+                    "BIPROPELLANT_FUEL": [
+                      "advancedrocketrycommunity:hydrogen"
+                    ],
+                    "MONO": [
+                      "advancedrocketrycommunity:rocket_fuel"
+                    ],
+                    "WORKING_FLUID": [
+                      "advancedrocketrycommunity:hydrogen"
+                    ]
+                  },
+                  "required": 1,
+                  "oxidizer": 0,
+                  "numerator": 1,
+                  "denominator": 1,
+                  "mode": "MONO",
+                  "thrust_units": 72057594037927936,
+                  "gravity": 1,
+                  "capacity_units": 72057594037927936,
+                  "primary": 2000,
+                  "hand": 1
+                },
+                "source_dimension": "minecraft:overworld",
+                "content_hash": "11b6dbf3295926e852d93921b72cba90022bdcb133dcae13bca98338648e5ed4",
+                "mass_inputs": {
+                  "engine_count": 1,
+                  "guidance_count": 1,
+                  "seat_count": 1,
+                  "block_entity_count": 0,
+                  "fuel_capacity": 2000,
+                  "mass": 100,
+                  "thrust": 1000,
+                  "block_count": 2
+                },
+                "block_palette": [
+                  {
+                    "id": "minecraft:iron_block",
+                    "properties": {}
+                  }
+                ],
+                "created_at_game_time": 2
+              }
+            },
+            "Motion": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "Invulnerable": 0,
+            "Air": 300,
+            "OnGround": 0,
+            "PortalCooldown": 0,
+            "Rotation": [
+              0.0,
+              0.0
+            ],
+            "FallDistance": 0.0,
+            "CanUpdate": 1,
+            "Pos": [
+              64.5,
+              100.0,
+              64.5
+            ],
+            "Fire": -1,
+            "id": "advancedrocketrycommunity:rocket",
+            "UUID": [
+              -1332434630,
+              1269386325,
+              -1713708756,
+              -885802197
+            ]
+          },
+          "files": {
+            "data/advancedrocketrycommunity_resource_escrow.dat": "c2acf36753c52c1d6a329d4db76e157bc0ec61cbf1b415550722ac73f6294efe",
+            "region/r.0.0.mca": "47e77c2c68449eff60111a76fbcf5dec505be637082c51d65a7d66a34b7e2912",
+            "entities/r.0.0.mca": "8191b90219ea6995dda5e22b62796cf7ebe92eabc3979b996da0fc992afac7c0"
+          }
+        }
+      },
+      {
+        "read_status": "KNOWN",
+        "native": {
+          "ledger": {
+            "schema_version": 2,
+            "issued_through": 1,
+            "rocket_authorities": [],
+            "floors": [],
+            "tombstones": [],
+            "records": [],
+            "writer_generation": 3,
+            "armed_flights": [],
+            "ledger_id": [
+              968592415,
+              -418035033,
+              -1704568928,
+              842052945
+            ],
+            "format_epoch": "v1.8.0-resource-escrow",
+            "issued_launch_serial": 0
+          },
+          "loaders": [
+            {
+              "keepPacked": 0,
+              "x": 66,
+              "y": 100,
+              "z": 64,
+              "arce_fluid_fuel_loader": {
+                "schema_version": 1,
+                "owner": [
+                  1151996762,
+                  -1674425348,
+                  -1109964308,
+                  581505989
+                ],
+                "binding": {
+                  "schema_version": 1,
+                  "logical_rocket": [
+                    -591517589,
+                    837700678,
+                    -1321038019,
+                    -1517403538
+                  ],
+                  "physical_rocket": [
+                    -1332434630,
+                    1269386325,
+                    -1713708756,
+                    -885802197
+                  ],
+                  "level": "minecraft:overworld",
+                  "x": 64,
+                  "y": 100,
+                  "z": 64
+                },
+                "resource_escrow": {
+                  "schema_version": 1,
+                  "resource_epoch": 1,
+                  "markers": [],
+                  "ledger_id": [
+                    968592415,
+                    -418035033,
+                    -1704568928,
+                    842052945
+                  ]
+                },
+                "tank": {
+                  "FluidName": "advancedrocketrycommunity:rocket_fuel",
+                  "Amount": 4000
+                },
+                "device": [
+                  11774212,
+                  -1809693228,
+                  -2074227836,
+                  -410717265
+                ]
+              },
+              "id": "advancedrocketrycommunity:fluid_fuel_loader"
+            }
+          ],
+          "rocket": {
+            "NoGravity": 1,
+            "RocketEntityData": {
+              "schema_version": 3,
+              "flight_data": {
+                "schema_version": 2,
+                "logical_rocket_id": [
+                  -591517589,
+                  837700678,
+                  -1321038019,
+                  -1517403538
+                ],
+                "passengers": {
+                  "assignments": [],
+                  "seat_capacity": 1
+                },
+                "state_started_game_time": 2,
+                "current_target": {
+                  "schema_version": 1,
+                  "type": "advancedrocketrycommunity:body_surface",
+                  "body_id": "advancedrocketrycommunity:earth"
+                },
+                "fuel": {
+                  "amount": 1000,
+                  "propulsion": {
+                    "schema": 1,
+                    "descriptor": {
+                      "schema": 1,
+                      "core_units": 72057594037927936,
+                      "fuels": {
+                        "OXIDIZER": [
+                          "advancedrocketrycommunity:oxygen"
+                        ],
+                        "BIPROPELLANT_FUEL": [
+                          "advancedrocketrycommunity:hydrogen"
+                        ],
+                        "MONO": [
+                          "advancedrocketrycommunity:rocket_fuel"
+                        ],
+                        "WORKING_FLUID": [
+                          "advancedrocketrycommunity:hydrogen"
+                        ]
+                      },
+                      "required": 1,
+                      "oxidizer": 0,
+                      "numerator": 1,
+                      "denominator": 1,
+                      "mode": "MONO",
+                      "thrust_units": 72057594037927936,
+                      "gravity": 1,
+                      "capacity_units": 72057594037927936,
+                      "primary": 2000,
+                      "hand": 1
+                    },
+                    "primary": {
+                      "amount": 1000,
+                      "fluid": "advancedrocketrycommunity:rocket_fuel",
+                      "branch": "FLUID"
+                    },
+                    "oxidizer": {
+                      "amount": 0,
+                      "branch": "EMPTY"
+                    },
+                    "revision": 1
+                  },
+                  "committed_debits": [],
+                  "capacity": 2000
+                },
+                "current_dimension": "minecraft:overworld",
+                "current_origin": [
+                  64,
+                  100,
+                  64
+                ],
+                "state": "ASSEMBLED",
+                "current_body": "advancedrocketrycommunity:earth"
+              },
+              "assembly_transaction_id": [
+                -591517589,
+                837700678,
+                -1321038019,
+                -1517403538
+              ],
+              "owner_id": [
+                1151996762,
+                -1674425348,
+                -1109964308,
+                581505989
+              ],
+              "resource_escrow": {
+                "schema_version": 1,
+                "resource_epoch": 1,
+                "markers": [],
+                "ledger_id": [
+                  968592415,
+                  -418035033,
+                  -1704568928,
+                  842052945
+                ]
+              },
+              "snapshot": {
+                "schema_version": 2,
+                "source_origin": [
+                  64,
+                  100,
+                  64
+                ],
+                "passenger_anchors": [
+                  [
+                    0,
+                    1,
+                    0
+                  ]
+                ],
+                "bounding_box": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  1,
+                  0
+                ],
+                "snapshot_id": "5f8d798c-d3aa-4193-a5b5-79fd1016cd73",
+                "relative_blocks": [
+                  {
+                    "palette": 0,
+                    "position": [
+                      0,
+                      0,
+                      0
+                    ]
+                  },
+                  {
+                    "palette": 0,
+                    "position": [
+                      0,
+                      1,
+                      0
+                    ]
+                  }
+                ],
+                "propulsion": {
+                  "schema": 1,
+                  "core_units": 72057594037927936,
+                  "fuels": {
+                    "OXIDIZER": [
+                      "advancedrocketrycommunity:oxygen"
+                    ],
+                    "BIPROPELLANT_FUEL": [
+                      "advancedrocketrycommunity:hydrogen"
+                    ],
+                    "MONO": [
+                      "advancedrocketrycommunity:rocket_fuel"
+                    ],
+                    "WORKING_FLUID": [
+                      "advancedrocketrycommunity:hydrogen"
+                    ]
+                  },
+                  "required": 1,
+                  "oxidizer": 0,
+                  "numerator": 1,
+                  "denominator": 1,
+                  "mode": "MONO",
+                  "thrust_units": 72057594037927936,
+                  "gravity": 1,
+                  "capacity_units": 72057594037927936,
+                  "primary": 2000,
+                  "hand": 1
+                },
+                "source_dimension": "minecraft:overworld",
+                "content_hash": "11b6dbf3295926e852d93921b72cba90022bdcb133dcae13bca98338648e5ed4",
+                "mass_inputs": {
+                  "engine_count": 1,
+                  "guidance_count": 1,
+                  "seat_count": 1,
+                  "block_entity_count": 0,
+                  "fuel_capacity": 2000,
+                  "mass": 100,
+                  "thrust": 1000,
+                  "block_count": 2
+                },
+                "block_palette": [
+                  {
+                    "id": "minecraft:iron_block",
+                    "properties": {}
+                  }
+                ],
+                "created_at_game_time": 2
+              }
+            },
+            "Motion": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "Invulnerable": 0,
+            "Air": 300,
+            "OnGround": 0,
+            "PortalCooldown": 0,
+            "Rotation": [
+              0.0,
+              0.0
+            ],
+            "FallDistance": 0.0,
+            "CanUpdate": 1,
+            "Pos": [
+              64.5,
+              100.0,
+              64.5
+            ],
+            "Fire": -1,
+            "id": "advancedrocketrycommunity:rocket",
+            "UUID": [
+              -1332434630,
+              1269386325,
+              -1713708756,
+              -885802197
+            ]
+          },
+          "files": {
+            "data/advancedrocketrycommunity_resource_escrow.dat": "c2acf36753c52c1d6a329d4db76e157bc0ec61cbf1b415550722ac73f6294efe",
+            "region/r.0.0.mca": "f3c23f9cad825b67efc3cf4f42b628e0eca032ba3dc614096bb94f7a53ac09c4",
+            "entities/r.0.0.mca": "f752513ed5d21cf6b3d8a8f423bebdafae916727e3c0c9730c4223810f506fe9"
+          }
+        }
+      },
+      {
+        "read_status": "KNOWN",
+        "native": {
+          "ledger": {
+            "schema_version": 2,
+            "issued_through": 1,
+            "rocket_authorities": [],
+            "floors": [],
+            "tombstones": [],
+            "records": [],
+            "writer_generation": 3,
+            "armed_flights": [],
+            "ledger_id": [
+              968592415,
+              -418035033,
+              -1704568928,
+              842052945
+            ],
+            "format_epoch": "v1.8.0-resource-escrow",
+            "issued_launch_serial": 0
+          },
+          "loaders": [
+            {
+              "keepPacked": 0,
+              "x": 66,
+              "y": 100,
+              "z": 64,
+              "arce_fluid_fuel_loader": {
+                "schema_version": 1,
+                "owner": [
+                  1151996762,
+                  -1674425348,
+                  -1109964308,
+                  581505989
+                ],
+                "binding": {
+                  "schema_version": 1,
+                  "logical_rocket": [
+                    -591517589,
+                    837700678,
+                    -1321038019,
+                    -1517403538
+                  ],
+                  "physical_rocket": [
+                    -1332434630,
+                    1269386325,
+                    -1713708756,
+                    -885802197
+                  ],
+                  "level": "minecraft:overworld",
+                  "x": 64,
+                  "y": 100,
+                  "z": 64
+                },
+                "resource_escrow": {
+                  "schema_version": 1,
+                  "resource_epoch": 1,
+                  "markers": [],
+                  "ledger_id": [
+                    968592415,
+                    -418035033,
+                    -1704568928,
+                    842052945
+                  ]
+                },
+                "tank": {
+                  "FluidName": "advancedrocketrycommunity:rocket_fuel",
+                  "Amount": 4000
+                },
+                "device": [
+                  11774212,
+                  -1809693228,
+                  -2074227836,
+                  -410717265
+                ]
+              },
+              "id": "advancedrocketrycommunity:fluid_fuel_loader"
+            }
+          ],
+          "rocket": {
+            "NoGravity": 1,
+            "RocketEntityData": {
+              "schema_version": 3,
+              "flight_data": {
+                "schema_version": 2,
+                "logical_rocket_id": [
+                  -591517589,
+                  837700678,
+                  -1321038019,
+                  -1517403538
+                ],
+                "passengers": {
+                  "assignments": [],
+                  "seat_capacity": 1
+                },
+                "state_started_game_time": 2,
+                "current_target": {
+                  "schema_version": 1,
+                  "type": "advancedrocketrycommunity:body_surface",
+                  "body_id": "advancedrocketrycommunity:earth"
+                },
+                "fuel": {
+                  "amount": 1000,
+                  "propulsion": {
+                    "schema": 1,
+                    "descriptor": {
+                      "schema": 1,
+                      "core_units": 72057594037927936,
+                      "fuels": {
+                        "OXIDIZER": [
+                          "advancedrocketrycommunity:oxygen"
+                        ],
+                        "BIPROPELLANT_FUEL": [
+                          "advancedrocketrycommunity:hydrogen"
+                        ],
+                        "MONO": [
+                          "advancedrocketrycommunity:rocket_fuel"
+                        ],
+                        "WORKING_FLUID": [
+                          "advancedrocketrycommunity:hydrogen"
+                        ]
+                      },
+                      "required": 1,
+                      "oxidizer": 0,
+                      "numerator": 1,
+                      "denominator": 1,
+                      "mode": "MONO",
+                      "thrust_units": 72057594037927936,
+                      "gravity": 1,
+                      "capacity_units": 72057594037927936,
+                      "primary": 2000,
+                      "hand": 1
+                    },
+                    "primary": {
+                      "amount": 1000,
+                      "fluid": "advancedrocketrycommunity:rocket_fuel",
+                      "branch": "FLUID"
+                    },
+                    "oxidizer": {
+                      "amount": 0,
+                      "branch": "EMPTY"
+                    },
+                    "revision": 1
+                  },
+                  "committed_debits": [],
+                  "capacity": 2000
+                },
+                "current_dimension": "minecraft:overworld",
+                "current_origin": [
+                  64,
+                  100,
+                  64
+                ],
+                "state": "ASSEMBLED",
+                "current_body": "advancedrocketrycommunity:earth"
+              },
+              "assembly_transaction_id": [
+                -591517589,
+                837700678,
+                -1321038019,
+                -1517403538
+              ],
+              "owner_id": [
+                1151996762,
+                -1674425348,
+                -1109964308,
+                581505989
+              ],
+              "resource_escrow": {
+                "schema_version": 1,
+                "resource_epoch": 1,
+                "markers": [],
+                "ledger_id": [
+                  968592415,
+                  -418035033,
+                  -1704568928,
+                  842052945
+                ]
+              },
+              "snapshot": {
+                "schema_version": 2,
+                "source_origin": [
+                  64,
+                  100,
+                  64
+                ],
+                "passenger_anchors": [
+                  [
+                    0,
+                    1,
+                    0
+                  ]
+                ],
+                "bounding_box": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  1,
+                  0
+                ],
+                "snapshot_id": "5f8d798c-d3aa-4193-a5b5-79fd1016cd73",
+                "relative_blocks": [
+                  {
+                    "palette": 0,
+                    "position": [
+                      0,
+                      0,
+                      0
+                    ]
+                  },
+                  {
+                    "palette": 0,
+                    "position": [
+                      0,
+                      1,
+                      0
+                    ]
+                  }
+                ],
+                "propulsion": {
+                  "schema": 1,
+                  "core_units": 72057594037927936,
+                  "fuels": {
+                    "OXIDIZER": [
+                      "advancedrocketrycommunity:oxygen"
+                    ],
+                    "BIPROPELLANT_FUEL": [
+                      "advancedrocketrycommunity:hydrogen"
+                    ],
+                    "MONO": [
+                      "advancedrocketrycommunity:rocket_fuel"
+                    ],
+                    "WORKING_FLUID": [
+                      "advancedrocketrycommunity:hydrogen"
+                    ]
+                  },
+                  "required": 1,
+                  "oxidizer": 0,
+                  "numerator": 1,
+                  "denominator": 1,
+                  "mode": "MONO",
+                  "thrust_units": 72057594037927936,
+                  "gravity": 1,
+                  "capacity_units": 72057594037927936,
+                  "primary": 2000,
+                  "hand": 1
+                },
+                "source_dimension": "minecraft:overworld",
+                "content_hash": "11b6dbf3295926e852d93921b72cba90022bdcb133dcae13bca98338648e5ed4",
+                "mass_inputs": {
+                  "engine_count": 1,
+                  "guidance_count": 1,
+                  "seat_count": 1,
+                  "block_entity_count": 0,
+                  "fuel_capacity": 2000,
+                  "mass": 100,
+                  "thrust": 1000,
+                  "block_count": 2
+                },
+                "block_palette": [
+                  {
+                    "id": "minecraft:iron_block",
+                    "properties": {}
+                  }
+                ],
+                "created_at_game_time": 2
+              }
+            },
+            "Motion": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "Invulnerable": 0,
+            "Air": 300,
+            "OnGround": 0,
+            "PortalCooldown": 0,
+            "Rotation": [
+              0.0,
+              0.0
+            ],
+            "FallDistance": 0.0,
+            "CanUpdate": 1,
+            "Pos": [
+              64.5,
+              100.0,
+              64.5
+            ],
+            "Fire": -1,
+            "id": "advancedrocketrycommunity:rocket",
+            "UUID": [
+              -1332434630,
+              1269386325,
+              -1713708756,
+              -885802197
+            ]
+          },
+          "files": {
+            "data/advancedrocketrycommunity_resource_escrow.dat": "c2acf36753c52c1d6a329d4db76e157bc0ec61cbf1b415550722ac73f6294efe",
+            "region/r.0.0.mca": "75f9b0cde5f04a868b6e4c91302560efe0eff700a5c62425526ff6ed16464970",
+            "entities/r.0.0.mca": "a9f8fbaf7e67efc61f3818db9205b636d19b141fb7306b18bd3b0e9083e90cc8"
+          }
+        }
+      }
+    ]
+  },
+  "recovery_log": {
+    "origin": "r185\\native-a1\\LF_S6_E3_CACHE_CLOSE-attempt-1\\start-1.log",
+    "sha256": "0b54a6b52a48456d7b3227263fd733e49a7407e9436d009dad6e42ac85b0ad25",
+    "lines": [
+      "[10:48:37] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=1 known=true records=1 q=1000 source=5000 destination=1000 source_available=4000 source_held=1000 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:37] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=2 known=true records=1 q=1000 source=5000 destination=1000 source_available=4000 source_held=1000 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:37] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=3 known=true records=1 q=1000 source=5000 destination=1000 source_available=4000 source_held=1000 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:37] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=4 known=true records=1 q=1000 source=5000 destination=1000 source_available=4000 source_held=1000 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:37] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=5 known=true records=1 q=1000 source=5000 destination=1000 source_available=4000 source_held=1000 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:37] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=6 known=true records=1 q=1000 source=5000 destination=1000 source_available=4000 source_held=1000 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:37] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=7 known=true records=1 q=1000 source=5000 destination=1000 source_available=4000 source_held=1000 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:37] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=8 known=true records=1 q=1000 source=5000 destination=1000 source_available=4000 source_held=1000 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:37] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=9 known=true records=1 q=1000 source=5000 destination=1000 source_available=4000 source_held=1000 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:37] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=10 known=true records=1 q=1000 source=5000 destination=1000 source_available=4000 source_held=1000 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:37] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=11 known=true records=1 q=1000 source=5000 destination=1000 source_available=4000 source_held=1000 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:37] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=12 known=true records=1 q=1000 source=5000 destination=1000 source_available=4000 source_held=1000 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:37] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=13 known=true records=1 q=1000 source=5000 destination=1000 source_available=4000 source_held=1000 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:37] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=14 known=true records=1 q=1000 source=5000 destination=1000 source_available=4000 source_held=1000 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:37] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=15 known=true records=1 q=1000 source=5000 destination=1000 source_available=4000 source_held=1000 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:38] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=16 known=true records=1 q=1000 source=5000 destination=1000 source_available=4000 source_held=1000 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:38] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=17 known=true records=1 q=1000 source=5000 destination=1000 source_available=4000 source_held=1000 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:38] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=18 known=true records=1 q=1000 source=5000 destination=1000 source_available=4000 source_held=1000 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:38] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=19 known=true records=1 q=1000 source=5000 destination=1000 source_available=4000 source_held=1000 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:38] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=20 known=true records=1 q=1000 source=5000 destination=1000 source_available=4000 source_held=1000 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:38] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=21 known=true records=1 q=1000 source=4000 destination=1000 source_available=4000 source_held=0 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:38] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=22 known=true records=1 q=1000 source=4000 destination=1000 source_available=4000 source_held=0 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:38] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=23 known=true records=1 q=1000 source=4000 destination=1000 source_available=4000 source_held=0 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:38] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=24 known=true records=1 q=1000 source=4000 destination=1000 source_available=4000 source_held=0 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:38] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=25 known=true records=1 q=1000 source=4000 destination=1000 source_available=4000 source_held=0 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:38] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=26 known=true records=1 q=1000 source=4000 destination=1000 source_available=4000 source_held=0 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:38] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=27 known=true records=1 q=1000 source=4000 destination=1000 source_available=4000 source_held=0 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:38] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=28 known=true records=1 q=1000 source=4000 destination=1000 source_available=4000 source_held=0 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:38] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=29 known=true records=1 q=1000 source=4000 destination=1000 source_available=4000 source_held=0 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:38] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=30 known=true records=1 q=1000 source=4000 destination=1000 source_available=4000 source_held=0 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:38] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=31 known=true records=1 q=1000 source=4000 destination=1000 source_available=4000 source_held=0 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:38] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=32 known=true records=1 q=1000 source=4000 destination=1000 source_available=4000 source_held=0 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:38] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=33 known=true records=1 q=1000 source=4000 destination=1000 source_available=4000 source_held=0 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:38] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=34 known=true records=1 q=1000 source=4000 destination=1000 source_available=4000 source_held=0 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:38] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=35 known=true records=1 q=1000 source=4000 destination=1000 source_available=4000 source_held=0 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:39] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=36 known=true records=1 q=1000 source=4000 destination=1000 source_available=4000 source_held=0 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:39] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=37 known=true records=1 q=1000 source=4000 destination=1000 source_available=4000 source_held=0 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:39] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=38 known=true records=1 q=1000 source=4000 destination=1000 source_available=4000 source_held=0 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:39] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=39 known=true records=1 q=1000 source=4000 destination=1000 source_available=4000 source_held=0 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:39] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=40 known=true records=1 q=1000 source=4000 destination=1000 source_available=4000 source_held=0 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:39] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=41 known=true records=1 q=1000 source=4000 destination=1000 source_available=4000 source_held=0 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:39] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=42 known=true records=1 q=1000 source=4000 destination=1000 source_available=4000 source_held=0 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:39] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=43 known=true records=1 q=1000 source=4000 destination=1000 source_available=4000 source_held=0 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:39] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=44 known=true records=1 q=1000 source=4000 destination=1000 source_available=4000 source_held=0 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:39] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=45 known=true records=1 q=1000 source=4000 destination=1000 source_available=4000 source_held=0 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:39] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=46 known=true records=1 q=1000 source=4000 destination=1000 source_available=4000 source_held=0 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:39] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=47 known=true records=1 q=1000 source=4000 destination=1000 source_available=4000 source_held=0 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:39] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=48 known=true records=1 q=1000 source=4000 destination=1000 source_available=4000 source_held=0 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:39] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=49 known=true records=1 q=1000 source=4000 destination=1000 source_available=4000 source_held=0 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:39] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=50 known=true records=1 q=1000 source=4000 destination=1000 source_available=4000 source_held=0 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:39] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=51 known=true records=1 q=1000 source=4000 destination=1000 source_available=4000 source_held=0 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:39] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=52 known=true records=1 q=1000 source=4000 destination=1000 source_available=4000 source_held=0 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:39] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=53 known=true records=1 q=1000 source=4000 destination=1000 source_available=4000 source_held=0 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:39] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=54 known=true records=1 q=1000 source=4000 destination=1000 source_available=4000 source_held=0 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:39] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=55 known=true records=1 q=1000 source=4000 destination=1000 source_available=4000 source_held=0 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:40] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=56 known=true records=1 q=1000 source=4000 destination=1000 source_available=4000 source_held=0 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:40] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=57 known=true records=1 q=1000 source=4000 destination=1000 source_available=4000 source_held=0 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:40] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=58 known=true records=1 q=1000 source=4000 destination=1000 source_available=4000 source_held=0 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:40] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=59 known=true records=1 q=1000 source=4000 destination=1000 source_available=4000 source_held=0 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:40] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=60 known=true records=1 q=1000 source=4000 destination=1000 source_available=4000 source_held=0 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:40] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=61 known=true records=1 q=1000 source=4000 destination=1000 source_available=4000 source_held=0 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:40] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=62 known=true records=1 q=1000 source=4000 destination=1000 source_available=4000 source_held=0 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:40] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=63 known=true records=1 q=1000 source=4000 destination=1000 source_available=4000 source_held=0 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
+      "[10:48:40] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=64 known=true records=0 q=null source=4000 destination=1000 source_available=4000 source_held=0 destination_available=1000 destination_held=0 in_transit=0 spendable=5000",
+      "[10:48:40] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=65 known=true records=0 q=null source=4000 destination=1000 source_available=4000 source_held=0 destination_available=1000 destination_held=0 in_transit=0 spendable=5000",
+      "[10:48:40] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=66 known=true records=0 q=null source=4000 destination=1000 source_available=4000 source_held=0 destination_available=1000 destination_held=0 in_transit=0 spendable=5000",
+      "[10:48:40] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=67 known=true records=0 q=null source=4000 destination=1000 source_available=4000 source_held=0 destination_available=1000 destination_held=0 in_transit=0 spendable=5000",
+      "[10:48:40] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=68 known=true records=0 q=null source=4000 destination=1000 source_available=4000 source_held=0 destination_available=1000 destination_held=0 in_transit=0 spendable=5000",
+      "[10:48:40] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=69 known=true records=0 q=null source=4000 destination=1000 source_available=4000 source_held=0 destination_available=1000 destination_held=0 in_transit=0 spendable=5000",
+      "[10:48:40] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=70 known=true records=0 q=null source=4000 destination=1000 source_available=4000 source_held=0 destination_available=1000 destination_held=0 in_transit=0 spendable=5000",
+      "[10:48:40] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=71 known=true records=0 q=null source=4000 destination=1000 source_available=4000 source_held=0 destination_available=1000 destination_held=0 in_transit=0 spendable=5000",
+      "[10:48:40] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=72 known=true records=0 q=null source=4000 destination=1000 source_available=4000 source_held=0 destination_available=1000 destination_held=0 in_transit=0 spendable=5000",
+      "[10:48:40] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=73 known=true records=0 q=null source=4000 destination=1000 source_available=4000 source_held=0 destination_available=1000 destination_held=0 in_transit=0 spendable=5000",
+      "[10:48:40] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=74 known=true records=0 q=null source=4000 destination=1000 source_available=4000 source_held=0 destination_available=1000 destination_held=0 in_transit=0 spendable=5000",
+      "[10:48:40] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=75 known=true records=0 q=null source=4000 destination=1000 source_available=4000 source_held=0 destination_available=1000 destination_held=0 in_transit=0 spendable=5000",
+      "[10:48:41] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=76 known=true records=0 q=null source=4000 destination=1000 source_available=4000 source_held=0 destination_available=1000 destination_held=0 in_transit=0 spendable=5000",
+      "[10:48:41] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=77 known=true records=0 q=null source=4000 destination=1000 source_available=4000 source_held=0 destination_available=1000 destination_held=0 in_transit=0 spendable=5000",
+      "[10:48:41] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=78 known=true records=0 q=null source=4000 destination=1000 source_available=4000 source_held=0 destination_available=1000 destination_held=0 in_transit=0 spendable=5000",
+      "[10:48:41] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=79 known=true records=0 q=null source=4000 destination=1000 source_available=4000 source_held=0 destination_available=1000 destination_held=0 in_transit=0 spendable=5000",
+      "[10:48:41] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=80 known=true records=0 q=null source=4000 destination=1000 source_available=4000 source_held=0 destination_available=1000 destination_held=0 in_transit=0 spendable=5000",
+      "[10:48:41] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=81 known=true records=0 q=null source=4000 destination=1000 source_available=4000 source_held=0 destination_available=1000 destination_held=0 in_transit=0 spendable=5000",
+      "[10:48:41] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=82 known=true records=0 q=null source=4000 destination=1000 source_available=4000 source_held=0 destination_available=1000 destination_held=0 in_transit=0 spendable=5000",
+      "[10:48:41] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=83 known=true records=0 q=null source=4000 destination=1000 source_available=4000 source_held=0 destination_available=1000 destination_held=0 in_transit=0 spendable=5000",
+      "[10:48:41] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=84 known=true records=0 q=null source=4000 destination=1000 source_available=4000 source_held=0 destination_available=1000 destination_held=0 in_transit=0 spendable=5000",
+      "[10:48:41] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=85 known=true records=0 q=null source=4000 destination=1000 source_available=4000 source_held=0 destination_available=1000 destination_held=0 in_transit=0 spendable=5000",
+      "[10:48:41] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=86 known=true records=0 q=null source=4000 destination=1000 source_available=4000 source_held=0 destination_available=1000 destination_held=0 in_transit=0 spendable=5000",
+      "[10:48:41] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=87 known=true records=0 q=null source=4000 destination=1000 source_available=4000 source_held=0 destination_available=1000 destination_held=0 in_transit=0 spendable=5000",
+      "[10:48:41] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=88 known=true records=0 q=null source=4000 destination=1000 source_available=4000 source_held=0 destination_available=1000 destination_held=0 in_transit=0 spendable=5000",
+      "[10:48:41] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=89 known=true records=0 q=null source=4000 destination=1000 source_available=4000 source_held=0 destination_available=1000 destination_held=0 in_transit=0 spendable=5000",
+      "[10:48:41] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=90 known=true records=0 q=null source=4000 destination=1000 source_available=4000 source_held=0 destination_available=1000 destination_held=0 in_transit=0 spendable=5000",
+      "[10:48:41] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=91 known=true records=0 q=null source=4000 destination=1000 source_available=4000 source_held=0 destination_available=1000 destination_held=0 in_transit=0 spendable=5000",
+      "[10:48:41] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=92 known=true records=0 q=null source=4000 destination=1000 source_available=4000 source_held=0 destination_available=1000 destination_held=0 in_transit=0 spendable=5000",
+      "[10:48:41] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=93 known=true records=0 q=null source=4000 destination=1000 source_available=4000 source_held=0 destination_available=1000 destination_held=0 in_transit=0 spendable=5000",
+      "[10:48:41] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=94 known=true records=0 q=null source=4000 destination=1000 source_available=4000 source_held=0 destination_available=1000 destination_held=0 in_transit=0 spendable=5000",
+      "[10:48:41] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=95 known=true records=0 q=null source=4000 destination=1000 source_available=4000 source_held=0 destination_available=1000 destination_held=0 in_transit=0 spendable=5000",
+      "[10:48:42] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=96 known=true records=0 q=null source=4000 destination=1000 source_available=4000 source_held=0 destination_available=1000 destination_held=0 in_transit=0 spendable=5000",
+      "[10:48:42] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=97 known=true records=0 q=null source=4000 destination=1000 source_available=4000 source_held=0 destination_available=1000 destination_held=0 in_transit=0 spendable=5000",
+      "[10:48:42] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=98 known=true records=0 q=null source=4000 destination=1000 source_available=4000 source_held=0 destination_available=1000 destination_held=0 in_transit=0 spendable=5000",
+      "[10:48:42] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=99 known=true records=0 q=null source=4000 destination=1000 source_available=4000 source_held=0 destination_available=1000 destination_held=0 in_transit=0 spendable=5000",
+      "[10:48:42] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=100 known=true records=0 q=null source=4000 destination=1000 source_available=4000 source_held=0 destination_available=1000 destination_held=0 in_transit=0 spendable=5000",
+      "[10:48:42] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_ACCOUNT tick=101 known=true records=0 q=null source=4000 destination=1000 source_available=4000 source_held=0 destination_available=1000 destination_held=0 in_transit=0 spendable=5000",
+      "[10:48:42] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_LOADER_S6_RESULT cut=LF_S6_E3_CACHE_CLOSE observations=101 total=5000 records=0 markers=0 source_epoch=1 destination_epoch=1"
+    ]
+  }
+}

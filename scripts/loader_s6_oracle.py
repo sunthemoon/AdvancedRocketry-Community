@@ -11,6 +11,7 @@ import gzip
 import io
 import json
 import loader_cut_oracle as legacy
+import loader_s6_integrity as integrity
 from run_dedicated_server_smoke import SmokeError
 
 E3 = "LF_S6_E3_CACHE_CLOSE"
@@ -83,7 +84,7 @@ def inspect(world: Path, cut=E3) -> dict:
                     error=f"{type(failure).__name__}: {failure}")
 
 
-def check_e3(image, restart, identity=None):
+def check_e3(image, restart, identity=None, generations=(2, 3, 3)):
     legacy.require(restart in (0, 1, 2), "Invalid restart index")
     legacy.require(image.get("read_status") == "KNOWN" and isinstance(image.get("native"), dict),
                    "UNKNOWN native read cannot establish availability or zero loss")
@@ -100,6 +101,8 @@ def check_e3(image, restart, identity=None):
         observed = legacy.check(disk, "LF_M_" + ("K7" if restart else prefix), restart)
         # Legacy identity omits the ledger because its runner compares it separately.
         observed["ledger"] = disk["ledger"]["ledger_id"]
+        observed["native"] = integrity.pair_identity(disk, disk["ledger"])
+        legacy.require(disk["ledger"]["writer_generation"] == generations[restart], "S6 changed durable generation")
         legacy.require(identity is None or observed == identity, "Changed native identity across restarts")
         return dict(prefix=prefix, raw_total=tank + bank,
                     available_total=5000 if restart else None,
@@ -108,14 +111,15 @@ def check_e3(image, restart, identity=None):
         raise SmokeError(f"Malformed/missing raw loader state: {failure}") from failure
 
 
-def check_g3_l1(image, restart, identity=None):
-    result = check_e3(image, restart, identity)
+def check_g3_l1(image, restart, identity=None, cut=G3_L1):
+    legacy.require(cut in (G3_L1, G3_QUEUED), "Invalid L1 shutdown selection")
+    result = check_e3(image, restart, identity, (3, 4, 4) if cut == G3_QUEUED else (2, 3, 3))
     legacy.require(restart != 0 or result["prefix"] == "K2", "Shutdown did not drain the held L1 without applying it")
     return result
 
 
 def check_g3_l2_queued(image, restart, identity=None):
-    result = check_e3(image, restart, identity)
+    result = check_e3(image, restart, identity, (3, 4, 4))
     legacy.require(result["prefix"] == "K6", "Pending native retirement changed its proved fill")
     legacy.require(image["native"]["ledger"]["writer_generation"] == (4 if restart else 3),
                    "Pending native retirement changed the stopped/recovered durable generation")
@@ -134,6 +138,8 @@ def check_g3_unknown(image, restart, identity=None, cut=G3_U1):
         disk = normalize_ids(image["native"])
         observed = legacy.check(disk, "LF_M_E4L1_UNKNOWN", restart)
         observed["ledger"] = disk["ledger"]["ledger_id"]
+        observed["native"] = integrity.pair_identity(disk, disk["ledger"])
+        legacy.require(disk["ledger"]["writer_generation"] == 1, "UNKNOWN L1 changed durable generation")
         legacy.require(identity is None or observed == normalize_ids(identity), "UNKNOWN L1 changed native identity")
         return dict(identity=observed, raw_total=5000, available_total=5000 if restart else None, loss=0 if restart else None)
     except (KeyError, TypeError, IndexError) as failure:
@@ -141,6 +147,13 @@ def check_g3_unknown(image, restart, identity=None, cut=G3_U1):
 
 
 def check_g3_l2(image, restart, identity=None, operation=None):
+    legacy.require(image.get("read_status") == "KNOWN" and isinstance(image.get("native"), dict)
+                   and image["native"].get("ledger", {}).get("writer_generation") == 3,
+                   "L2 retirement changed its durable generation")
+    return _retired_resources(image, restart, identity, operation)
+
+
+def _retired_resources(image, restart, identity=None, operation=None):
     legacy.require(restart in (0, 1, 2) and image.get("read_status") == "KNOWN"
                    and isinstance(image.get("native"), dict), "G3 L2 UNKNOWN is not zero loss")
     try:
@@ -166,6 +179,7 @@ def check_g3_l2(image, restart, identity=None, operation=None):
             section["markers"] = []
         observed = legacy.check(disk, "LF_M_K7", 1)
         observed.update(ledger=ledger["ledger_id"], op_id=observed_op)
+        observed["native"] = integrity.pair_identity(disk, ledger)
         legacy.require(identity is None or observed == identity, "L2 changed native identity across restarts")
         return dict(identity=observed, raw_total=5000, available_total=5000 if restart else None,
                     loss=0 if restart else None)
@@ -302,7 +316,8 @@ def check_recovery_observations(lines: list[str], retired_operation=None) -> Non
         return dict(token.split("=", 1) for token in line.split(marker, 1)[1].strip().split())
     rows = [fields(line, "ARCE_LOADER_S6_ACCOUNT ") for line in lines if "ARCE_LOADER_S6_ACCOUNT " in line]
     results = [fields(line, "ARCE_LOADER_S6_RESULT ") for line in lines if "ARCE_LOADER_S6_RESULT " in line]
-    legacy.require(rows and len(results) == 1, "Missing/repeated S6 accounting or completion")
+    begins = [fields(line, "ARCE_LOADER_S6_BEGIN ") for line in lines if "ARCE_LOADER_S6_BEGIN " in line]
+    legacy.require(rows and len(results) == 1 and len(begins) == 1, "Missing/repeated S6 accounting interval or completion")
     ticks, known = [], []
     try:
         for row in rows:
@@ -340,10 +355,18 @@ def check_recovery_observations(lines: list[str], retired_operation=None) -> Non
                            "Raw native does not equal available plus record-derived held")
         legacy.require(ticks == list(range(ticks[0], ticks[-1] + 1)), "Missing or repeated recovery tick")
         result = results[0]
+        start_tick, end_tick = int(begins[0]["tick"]), int(result["end_tick"])
+        order = ["BEGIN" if "ARCE_LOADER_S6_BEGIN " in line else "ACCOUNT" if "ARCE_LOADER_S6_ACCOUNT " in line
+                 else "RESULT" for line in lines if any("ARCE_LOADER_S6_" + key + " " in line for key in ("BEGIN", "ACCOUNT", "RESULT"))]
+        legacy.require(begins[0] == dict(tick=str(start_tick)) and 100 <= end_tick - start_tick <= 2400
+                       and ticks == list(range(start_tick, end_tick + 1))
+                       and order == ["BEGIN"] + ["ACCOUNT"] * len(rows) + ["RESULT"],
+                       "Missing prefix/suffix or misplaced S6 observation interval")
         legacy.require(known and rows[-1] == known[-1] and known[-1]["records"] == "0"
                        and int(known[-1].get("retired", "0")) == 0
                        and result == dict(cut=E3, observations=str(len(known)), total="5000", records="0",
-                                          markers="0", source_epoch="1", destination_epoch="1"),
+                                          markers="0", source_epoch="1", destination_epoch="1", start_tick=str(start_tick),
+                                          end_tick=str(end_tick), total_observations=str(len(rows))),
                        "Completion lacks exact final resources, epochs or observation count")
     except (KeyError, ValueError, TypeError) as failure:
         raise SmokeError(f"Malformed S6 accounting observation: {failure}") from failure
@@ -402,6 +425,7 @@ def check_o1(image, restart, identity=None, cut=O1_BEFORE):
         resource_identity = legacy.check(resources, "LF_M_K6", int(released))
         resource_identity["ledger"] = root["ledger_id"]
         resource_identity["snapshot"] = disk["rocket"]["RocketEntityData"]["snapshot"]
+        resource_identity["native"] = integrity.pair_identity(disk, root)
         legacy.require(identity is None or identity["resources"] == resource_identity,
                        "Settlement changed endpoint/ledger identity")
         actor = canonical_uuid(ACTOR)
@@ -496,7 +520,7 @@ def check_o4_released(image, restart, identity, cut):
         resources = copy.deepcopy(disk)
         resources["ledger"]["tombstones"] = []; resources["ledger"]["rocket_authorities"] = []
         # Reuse only its exact raw/retired-metadata checks, not its normal-retirement accounting claim.
-        checked = check_g3_l2(dict(read_status="KNOWN", native=resources), restart, operation=operation)
+        checked = _retired_resources(dict(read_status="KNOWN", native=resources), restart, operation=operation)
         observed = dict(checked["identity"], snapshot=disk["rocket"]["RocketEntityData"]["snapshot"])
         legacy.require(identity is None or identity["resources"] == observed, "O4 changed resource or snapshot identity")
         observations = receipt["before_choice"]
@@ -693,6 +717,7 @@ def check_e5(image, restart, identity=None):
         disk = normalize_ids(image["native"])
         identity = normalize_ids(identity)
         ledger, pairs = disk["ledger"], disk["pairs"]
+        legacy.require(ledger["writer_generation"] == (5 if restart else 4), "E5 changed durable generation")
         legacy.require(len(pairs) == 2 and ledger["issued_through"] == 2 and ledger["writer_generation"] >= 2
                        and len(ledger["records"]) == (0 if restart else 1), "E5 did not retain only the unloaded fill")
         legacy.require(not any(ledger[k] for k in ("floors", "tombstones", "armed_flights", "rocket_authorities", "issued_launch_serial")),
@@ -740,7 +765,8 @@ def check_e5(image, restart, identity=None):
                                and op["native_binding"]["complete"] == 1 and op["native_binding"]["kind"] == "FUEL_VECTOR_V1",
                                "E5 held image has no matching native record")
             identities.append(dict(device=source["device"], owner=source["owner"], binding=source["binding"],
-                                   physical=rocket["UUID"], logical=flight["logical_rocket_id"]))
+                                   physical=rocket["UUID"], logical=flight["logical_rocket_id"],
+                                   native=integrity.pair_identity(pair, ledger)))
             totals.append(tank + bank)
         legacy.require(all(identities[0][k] != identities[1][k] for k in ("device", "physical", "logical")),
                        "E5's healthy work is not independent")

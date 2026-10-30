@@ -2,6 +2,7 @@
 from pathlib import Path
 import copy
 import gzip
+import json
 import struct
 import tempfile
 from unittest.mock import patch
@@ -21,7 +22,27 @@ class LoaderS6OracleTest(unittest.TestCase):
     NATIVE_OP = [1142397210, -1093579555, -2135548581, -1618621573]
 
     def image(self, cut="LF_M_K6", restart=0):
-        return dict(read_status="KNOWN", native=fixture(cut, restart))
+        # Full native-form seed, with only the selected prefix varied in memory.
+        native = json.loads((Path(__file__).parent / "fixtures/loader_s6/integrity-native.json").read_text())
+        image = oracle.normalize_ids(copy.deepcopy(native["e3"]["images"][0]))
+        disk = image["native"]; exp = oracle.legacy.expected(cut, restart)
+        op = disk["ledger"]["records"][0]
+        root = disk["ledger"]
+        root.update(issued_through=exp["issued"], records=[op] if exp["records"] else [],
+                    writer_generation=1 if not exp["issued"] else 2 if exp["records"] else 3)
+        source = disk["loaders"][0]["arce_fluid_fuel_loader"]
+        data = disk["rocket"]["RocketEntityData"]; fuel = data["flight_data"]["fuel"]
+        source["tank"]["Amount"] = 5000 - 1000 * exp["source"]
+        fuel["amount"] = 1000 * exp["destination"]
+        fuel["propulsion"].update(primary=oracle.integrity.mono_bank(fuel["amount"]), revision=exp["destination"])
+        for section, after, role in ((source["resource_escrow"], exp["source"], "SOURCE"),
+                                     (data["resource_escrow"], exp["destination"], "DESTINATION")):
+            section.clear(); section.update(schema_version=1, resource_epoch=after, markers=[])
+            if after:
+                section["ledger_id"] = root["ledger_id"]
+                if exp["markers"]:
+                    section["markers"] = [dict(op_id=op["op_id"], seq=1, epoch_after=1, role=role)]
+        return image
 
     def test_all_four_locked_durable_prefixes_are_distinguished(self):
         for name, available in (("K2", 5000), ("K4", 4000), ("K5", 6000), ("K6", 5000)):
@@ -139,11 +160,11 @@ class LoaderS6OracleTest(unittest.TestCase):
             self.assertEqual([90, 90], [call.args[0] for call in sleep.call_args_list])
 
     def recovery_lines(self):
-        return [
+        return ["ARCE_LOADER_S6_BEGIN tick=1",
             "ARCE_LOADER_S6_ACCOUNT tick=1 known=false reason=UNLOADED raw=UNKNOWN available=UNKNOWN held=UNKNOWN",
-            "ARCE_LOADER_S6_ACCOUNT tick=2 known=true records=1 q=1000 source=5000 destination=1000 source_available=4000 source_held=1000 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN",
-            "ARCE_LOADER_S6_ACCOUNT tick=3 known=true records=0 q=null source=4000 destination=1000 source_available=4000 source_held=0 destination_available=1000 destination_held=0 in_transit=0 spendable=5000",
-            "ARCE_LOADER_S6_RESULT cut=" + oracle.E3 + " observations=2 total=5000 records=0 markers=0 source_epoch=1 destination_epoch=1",
+        ] + [f"ARCE_LOADER_S6_ACCOUNT tick={tick} known=true records=1 q=1000 source=5000 destination=1000 source_available=4000 source_held=1000 destination_available=0 destination_held=1000 in_transit=0 spendable=UNKNOWN" for tick in range(2, 101)] + [
+            "ARCE_LOADER_S6_ACCOUNT tick=101 known=true records=0 q=null source=4000 destination=1000 source_available=4000 source_held=0 destination_available=1000 destination_held=0 in_transit=0 spendable=5000",
+            "ARCE_LOADER_S6_RESULT cut=" + oracle.E3 + " observations=100 total=5000 records=0 markers=0 source_epoch=1 destination_epoch=1 start_tick=1 end_tick=101 total_observations=101",
         ]
 
     def test_recovery_log_requires_record_backed_every_tick_partition(self):
@@ -153,7 +174,7 @@ class LoaderS6OracleTest(unittest.TestCase):
         for old, new in (("destination=1000", "destination=1001"), ("q=1000", "q=999"),
                          ("source_held=0", "source_held=1"), ("source=4000", "source=3999"),
                          ("raw=UNKNOWN", "raw=0"), ("tick=3", "tick=4"),
-                         ("observations=2", "observations=3"), ("spendable=UNKNOWN", "spendable=6000")):
+                         ("observations=100", "observations=99"), ("spendable=UNKNOWN", "spendable=6000")):
             lines = [line.replace(old, new) for line in self.recovery_lines()]
             with self.subTest(change=new), self.assertRaises(SmokeError):
                 oracle.check_observations(lines, 1)
@@ -205,20 +226,13 @@ class LoaderS6OracleTest(unittest.TestCase):
                 self.assertIn("not fairness", result["coverage"])
 
     def fairness_image(self, restart=0):
-        far = fixture("LF_M_K6" if not restart else "LF_M_K7", restart)
-        healthy = fixture("LF_M_K7", 1)
-        far["loaders"][0].update(x=2050, z=2048)
-        far["rocket"]["Pos"] = [2048.5, 100.0, 2048.5]
-        h = healthy["loaders"][0]["arce_fluid_fuel_loader"]
-        h.update(device="healthy-device", binding=dict(physical_rocket="healthy-physical", logical_rocket="healthy-logical"))
-        healthy["rocket"]["UUID"] = "healthy-physical"
-        healthy["rocket"]["RocketEntityData"]["assembly_transaction_id"] = "healthy-logical"
-        healthy["rocket"]["RocketEntityData"]["flight_data"]["logical_rocket_id"] = "healthy-logical"
-        ledger = far["ledger"]
-        ledger["issued_through"] = 2
-        if ledger["records"]:
-            ledger["records"][0]["seq"] = 1
-        return dict(read_status="KNOWN", native=dict(ledger=ledger, pairs=[far, healthy]))
+        native = json.loads((Path(__file__).parent / "fixtures/loader_s6/integrity-native.json").read_text())
+        image = oracle.normalize_ids(copy.deepcopy(native["e5"]["images"][restart]))
+        # Live healthy completion may be saved before or after retired metadata pruning.
+        healthy = image["native"]["pairs"][1]
+        healthy["loaders"][0]["arce_fluid_fuel_loader"]["resource_escrow"]["markers"] = []
+        healthy["rocket"]["RocketEntityData"]["resource_escrow"]["markers"] = []
+        return image
 
     def test_fairness_counts_each_pair_and_preserves_distinct_identities(self):
         initial = oracle.check_e5(self.fairness_image(), 0)
@@ -330,12 +344,10 @@ class LoaderS6OracleTest(unittest.TestCase):
     def test_e3_and_e5_normalize_every_identity_before_legacy_checks_and_restart_comparison(self):
         def convert(value, as_array):
             # The synthetic fixture's labels stand for UUIDs. Keep non-ID strings unchanged.
-            labels = ("ledger", "op", "owner", "device0", "physical", "logical",
-                      "healthy-device", "healthy-physical", "healthy-logical")
             if isinstance(value, dict): return {k: convert(v, as_array) for k, v in value.items()}
             if isinstance(value, list): return [convert(v, as_array) for v in value]
-            if isinstance(value, str) and value in labels:
-                ident = uuid.uuid5(uuid.NAMESPACE_OID, value)
+            if isinstance(value, str) and len(value) == 36 and value.count("-") == 4:
+                ident = uuid.UUID(value)
                 return [int.from_bytes(ident.bytes[i:i+4], "big", signed=True) for i in range(0, 16, 4)] if as_array else str(ident)
             return value
         for check, make in ((oracle.check_e3, lambda r: self.image("LF_M_K7" if r else "LF_M_K6", r)),
@@ -349,7 +361,8 @@ class LoaderS6OracleTest(unittest.TestCase):
                     self.assertEqual(expected, result["identity"])
                 # A consistently changed, valid native identity must still fail.
                 changed = convert(make(1), True)
-                old = convert("owner", True)
+                raw = make(1)["native"]
+                old = convert((raw.get("pairs", [raw]))[0]["rocket"]["RocketEntityData"]["owner_id"], True)
                 def replace(v):
                     if v == old: return list(self.NATIVE_OP)
                     if isinstance(v, dict): return {k: replace(x) for k, x in v.items()}
@@ -365,7 +378,7 @@ class LoaderS6OracleTest(unittest.TestCase):
         arrival = copy.deepcopy(data["flight_data"])
         arrival["fuel"]["propulsion"]["primary"]["amount"] = 0
         record = dict(transfer_id="transfer", phase="COMMITTED" if "DESTRUCTIVE" in cut else "PREPARED",
-                      source_entity_id="physical", logical_rocket_id="logical", owner_id="owner",
+                      source_entity_id=disk["rocket"]["UUID"], logical_rocket_id=data["assembly_transaction_id"], owner_id=data["owner_id"],
                       source_snapshot=copy.deepcopy(data["snapshot"]),
                       destination_snapshot=dict(snapshot_id="destination-snapshot", source_origin=[72, 100, 64]),
                       source_flight=copy.deepcopy(data["flight_data"]), destination_flight=arrival)
@@ -519,10 +532,9 @@ class LoaderS6OracleTest(unittest.TestCase):
     def test_retired_metadata_is_not_held_fuel_or_spendable_before_pruning(self):
         operation = oracle.canonical_uuid(self.NATIVE_OP)
         base = "ARCE_LOADER_S6_ACCOUNT tick={tick} known=true records=0 q=null source=4000 destination=1000 source_available=4000 source_held=0 destination_available=1000 destination_held=0 in_transit=0 spendable={spendable} retired={retired} retired_operation=" + operation
-        rows = [base.format(tick=1, spendable="UNKNOWN", retired=2),
-                base.format(tick=2, spendable="UNKNOWN", retired=1),
-                base.format(tick=3, spendable="5000", retired=0),
-                "ARCE_LOADER_S6_RESULT cut=" + oracle.E3 + " observations=3 total=5000 records=0 markers=0 source_epoch=1 destination_epoch=1"]
+        rows = ["ARCE_LOADER_S6_BEGIN tick=1", base.format(tick=1, spendable="UNKNOWN", retired=2),
+                base.format(tick=2, spendable="UNKNOWN", retired=1)] + [base.format(tick=tick, spendable="5000", retired=0)
+                for tick in range(3, 102)] + ["ARCE_LOADER_S6_RESULT cut=" + oracle.E3 + " observations=101 total=5000 records=0 markers=0 source_epoch=1 destination_epoch=1 start_tick=1 end_tick=101 total_observations=101"]
         oracle.check_recovery_observations(rows, retired_operation=operation)
         for before, after in (("retired=2", "retired=3"), ("spendable=UNKNOWN", "spendable=5000"),
                               ("retired_operation=" + operation, "retired_operation=foreign"),

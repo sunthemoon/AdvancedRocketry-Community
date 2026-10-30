@@ -48,7 +48,10 @@ final class EscrowLoaderS6Recovery {
 
     void tick() {
         if (done) { return; }
-        if (began < 0) { began = server.getTickCount(); }
+        if (began < 0) {
+            began = server.getTickCount();
+            AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_S6_BEGIN tick={}", began);
+        }
         EscrowTags.require(server.getTickCount() - began <= 2_400, "S6 recovery exceeded the existing fixture bound");
         var level = server.overworld();
         if (level.getChunkSource().getChunkNow(4, 4) == null
@@ -116,8 +119,8 @@ final class EscrowLoaderS6Recovery {
         if (server.getTickCount() - began < 100 || !coordinator.writerIdle() || q != null || markerCount != 0) { return; }
         EscrowTags.require(!loader.escrowLocked() && RocketEscrowGate.idle(rocket)
                 && coordinator.admissionAuthority().pendingCount() == 0, "S6 completed image still reserved");
-        AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_S6_RESULT cut={} observations={} total=5000 records=0 markers=0 source_epoch=1 destination_epoch=1",
-                EscrowLoaderS6Probe.E3, observations);
+        AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_S6_RESULT cut={} observations={} total=5000 records=0 markers=0 source_epoch=1 destination_epoch=1 start_tick={} end_tick={} total_observations={}",
+                EscrowLoaderS6Probe.E3, observations, began, server.getTickCount(), server.getTickCount() - began + 1);
         done = true;
     }
 

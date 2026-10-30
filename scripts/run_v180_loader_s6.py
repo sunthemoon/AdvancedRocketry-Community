@@ -27,7 +27,7 @@ HOOKS = shared.HOOK_FILES + tuple(
     "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/resourceescrow/" + name + ".java"
     for name in ("EscrowLoaderS6Probe", "EscrowLoaderS6Recovery", "EscrowLoaderS6Accounting", "EscrowLoaderS6UnloadedProbe",
                  "EscrowLoaderS6UnloadObservation", "EscrowLoaderS6R2Probe", "EscrowLoaderS6ShutdownProbe", "EscrowLoaderS6GuardProbe", "EscrowLoaderS6SettlementProbe", "EscrowCargoContentionProbe"))
-HARNESSES = shared.HARNESS_FILES + ("scripts/run_v180_loader_s6.py", "scripts/loader_s6_oracle.py")
+HARNESSES = shared.HARNESS_FILES + ("scripts/run_v180_loader_s6.py", "scripts/loader_s6_oracle.py", "scripts/loader_s6_integrity.py")
 
 
 def write(path: Path, data: dict) -> None:
@@ -148,7 +148,7 @@ def run_cut(args, cut, evidence, owner, pins):
                 continue
             raw_check = oracle.check_e5 if cut == oracle.E5 else oracle.check_e3
             if cut in (oracle.G3_L1, oracle.G3_QUEUED):
-                raw_check = oracle.check_g3_l1
+                raw_check = lambda image, restart, identity: oracle.check_g3_l1(image, restart, identity, cut)
             elif cut == oracle.G3_L2_QUEUED:
                 raw_check = oracle.check_g3_l2_queued
             elif cut == oracle.G3_L2:
