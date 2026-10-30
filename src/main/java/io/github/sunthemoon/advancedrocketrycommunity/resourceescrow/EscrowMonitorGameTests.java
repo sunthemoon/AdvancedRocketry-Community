@@ -4,6 +4,7 @@ import static io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.Escr
 
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestAutosave;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
@@ -64,6 +65,8 @@ public final class EscrowMonitorGameTests {
     }
     private enum Revocation { NONE, BEFORE, AFTER }
     private static final class Flight implements net.minecraft.gametest.framework.GameTestListener {
+        // Three force periods cover F1's source proof and ARMED capture, as in the Moon landing fixture.
+        private static final int F1_WINDOW_TICKS = 3 * EscrowBarrierBudget.CADENCE;
         final GameTestHelper helper;
         final ServerLevel earth, destinationLevel;
         final GameTestTickPacer pacer;
@@ -186,6 +189,8 @@ public final class EscrowMonitorGameTests {
             }
             if (step == 2) {
                 if (!coldDestination && !RocketMarginGameTestSupport.endReady(server, destination) || !journal.retryChecked(server)) { return; }
+                // An autosave can supersede F1 and legitimately discard this edge before PREPARED exists.
+                if (GameTestAutosave.within(server, F1_WINDOW_TICKS)) { return; }
                 quote = RocketRuntime.monitorFlights().orElseThrow().quote(monitor, target);
                 helper.assertTrue(quote.ready() && monitor.configure(quote, true, 0), "Cannot arm governed monitor: " + quote.code());
                 helper.assertTrue(quote.cost() == quote.plan().propulsionDebit().primary(), "Quote does not display the native primary debit");
@@ -207,6 +212,7 @@ public final class EscrowMonitorGameTests {
                 helper.assertTrue(journal.findByLogicalRocket(logical(rocket)).isEmpty()
                         && rocket.flightData().orElseThrow().fuel().equals(quote.source().fuel()), "Held edge launched or debited");
                 if (!warming.state().equals("READY") || server.getTickCount() - warmupStarted < 20) { return; }
+                if (GameTestAutosave.within(server, F1_WINDOW_TICKS)) { return; }
                 earth.setBlockAndUpdate(device.east(), Blocks.AIR.defaultBlockState()); monitor.signal(false);
                 earth.setBlockAndUpdate(device.east(), Blocks.REDSTONE_BLOCK.defaultBlockState()); monitor.signal(true);
                 helper.assertTrue(monitor.lastFlight() == RocketFlightRequestCode.JOURNAL_PENDING,
@@ -215,7 +221,11 @@ public final class EscrowMonitorGameTests {
             }
             if (step == 3) {
                 prepared = journal.findByLogicalRocket(logical(rocket)).orElse(null);
-                if (prepared == null) { return; }
+                if (prepared == null) {
+                    helper.assertTrue(EscrowRuntime.of(server).flightCheckpoint().locked(logical(rocket)),
+                            "Monitor launch ended before PREPARED: " + monitor.lastFlight());
+                    return;
+                }
                 helper.assertTrue(prepared.nativeTransfer().isPresent(), "Monitor bypassed governed preparation");
                 helper.assertTrue(!prepared.transferId().equals(quote.plan().requestId()), "Preview ID became a flight request");
                 if (disarmAfterPrepared) {
