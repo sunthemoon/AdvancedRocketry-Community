@@ -92,8 +92,13 @@ final class GroundExactPreflightTest {
                     registry.groundSurveys().advanceAnalysis(job.jobId(), device(300), 21 + tick).code());
         }
         var second = active(1, OWNER);
+        var pending = instance(second, InstanceState.PENDING);
+        var created = new AsteroidInstance(pending.schemaVersion(), pending.instanceId(), pending.ownerId(),
+                pending.system(), pending.asteroidType(), pending.tableVersion(), pending.candidateFingerprint(),
+                pending.seed(), pending.yield(), 24, pending.expiresAt(), pending.state(), pending.origin(),
+                pending.allocatedMission());
         var other = new GroundSurveys.Start(second.jobId(), OWNER, second.source(),
-                instance(second, InstanceState.PENDING), 20, 20, 2, 20, 120);
+                created, 20, 20, 2, 20, 120);
         assertEquals(GroundSurveys.Code.SUCCESS, registry.groundSurveys().start(other, 24).code());
         var resident = registry.groundSurveys().job(second.jobId()).orElseThrow();
         assertTrue(equivalent(registry, resident.cancelled(25), registry.instance(second.instanceId()).orElseThrow(),
