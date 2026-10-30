@@ -1,0 +1,178 @@
+#!/usr/bin/env python3
+"""Counted S6 loader tranches, with two restarts and no changes to shared runners.
+
+Currently implements A1 (E3 propagated cache-close failure). Other matrix rows
+remain missing; PASS_SELECTED never means B3-S6 acceptance. Run as a detached
+process so its own finally releases its lock and removes its disposable world.
+"""
+from __future__ import annotations
+
+import argparse
+from datetime import datetime, timezone
+import json
+import os
+from pathlib import Path
+import re
+import shutil
+import time
+import uuid
+
+import loader_s6_oracle as oracle
+import run_v180_loader_cuts as shared
+from run_dedicated_server_smoke import CapturedProcess, SmokeError, allocate_port, write_server_configuration, expected_server_properties
+from run_v060_flight_server_smoke import _server_command
+
+CASES = (oracle.E3,)
+HOOKS = shared.HOOK_FILES + tuple(
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/resourceescrow/" + name + ".java"
+    for name in ("EscrowLoaderS6Probe", "EscrowCargoContentionProbe"))
+HARNESSES = shared.HARNESS_FILES + ("scripts/run_v180_loader_s6.py", "scripts/loader_s6_oracle.py")
+
+
+def write(path: Path, data: dict) -> None:
+    path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+
+
+def check_log(lines, restart):
+    oracle.check_observations(lines, restart)
+
+
+def run_cut(args, cut, evidence, owner, pins):
+    session = args.session_parent.resolve() / ("W211-" + uuid.uuid4().hex)
+    token = uuid.uuid4().hex
+    session.mkdir()
+    (session / ".w97-owned").write_text(token, encoding="ascii")
+    evidence.mkdir()
+    row = dict(cut=cut, pins=pins, status="IN_PROGRESS", starts=[], findings=[],
+               session=str(session), cleanup=False)
+    process = None
+    try:
+        libraries = args.source_server.resolve() / "libraries"
+        oracle.legacy.require(libraries.is_dir() and not any(p.is_symlink() for p in libraries.rglob("*")),
+                              "Unsafe Forge template")
+        shutil.copytree(libraries, session / "libraries")
+        (session / "mods").mkdir()
+        shutil.copy2(args.jar, session / "mods" / args.jar.name)
+        port = allocate_port()
+        write_server_configuration(session, port, True)
+        properties = expected_server_properties(port, True)
+        properties.update({"level-name": "world", "level-type": "minecraft:flat", "max-tick-time": "60000",
+                           "generator-settings": json.dumps({"layers": [{"block": "minecraft:bedrock", "height": 1}],
+                                                              "biome": "minecraft:plains"})})
+        (session / "server.properties").write_text("".join(f"{k}={v}\n" for k, v in sorted(properties.items())), encoding="ascii")
+        identity = None
+        for restart in range(3):
+            shared.assert_pin(args.source_commit)
+            shared.require_lock(owner)
+            oracle.legacy.require(shared.digest(args.jar) == pins["jar_sha256"] == shared.digest(session / "mods" / args.jar.name),
+                                  "JAR changed during campaign")
+            command = _server_command(args.java)
+            command[2] = "-Xmx4G"
+            command[1:1] = ["-Dadvancedrocketrycommunity.escrowScenario=" + ("recover" if restart else "start"),
+                            "-Dadvancedrocketrycommunity.escrowCase=" + cut]
+            start = dict(restart=restart, command=command, free_bytes=shared.disk_space(),
+                         free_physical_memory=shared.physical_memory(), lock_owner=owner)
+            row["starts"].append(start)
+            write(evidence / "result.json", row)
+            # Count before launch, including failed startup attempts.
+            process = CapturedProcess(command, session, evidence / f"start-{restart}.log")
+            start["pid"] = process.process.pid
+            try:
+                marker = (r"ARCE_LOADER_S6_PAUSED cut=" + re.escape(cut) + r" hook=PROPAGATED_CLOSE_FAILURE"
+                          if not restart else r"ARCE_LOADER_MATRIX_RESULT cut=LF_M_K7(?:\s|$)")
+                process.wait_for(re.compile(marker), args.startup_timeout)
+                start["checkpoint_reached"] = True
+                if restart:
+                    process.command("stop")
+                    start["exit_code"] = process.finish()
+                    oracle.legacy.require(start["exit_code"] == 0, "Restart stopped abnormally")
+                else:
+                    process.process.kill()
+                    process.abort()
+                    start["stop"] = "FORCED_AT_SELECTED_CHECKPOINT"
+            except Exception as failure:
+                start["process_error"] = str(failure)
+                row["findings"].append(dict(restart=restart, kind="PROCESS", error=str(failure)))
+                process.abort()
+            lines = list(process.lines)
+            process = None
+            start["observations"] = [line for line in lines if "ARCE_LOADER_" in line or "ARCE_CARGO_CACHE_" in line]
+            start["image"] = oracle.inspect(session / "world")
+            for kind, check in (("LOG", lambda: check_log(lines, restart)),
+                                ("RAW", lambda: oracle.check_e3(start["image"], restart, identity))):
+                try:
+                    result = check()
+                    if kind == "RAW":
+                        start["oracle"] = result
+                        identity = result["identity"]
+                except SmokeError as failure:
+                    row["findings"].append(dict(restart=restart, kind=kind, error=str(failure)))
+            write(evidence / "result.json", row)
+        row["status"] = "FAILED" if row["findings"] else "PASS"
+    except Exception as failure:
+        row["status"] = "FAILED"
+        row["findings"].append(dict(kind="HARNESS", error=f"{type(failure).__name__}: {failure}"))
+    finally:
+        if process is not None:
+            process.abort()
+        try:
+            shared.cleanup(session, token, args.session_parent)
+            row["cleanup"] = True
+        except OSError as failure:
+            row.update(status="FAILED", cleanup_error=str(failure))
+        write(evidence / "result.json", row)
+    return row
+
+
+def run(args):
+    shared.assert_pin(args.source_commit)
+    parent, evidence = args.session_parent.resolve(), args.evidence_dir.resolve()
+    oracle.legacy.require(parent.is_dir() and not parent.is_symlink() and not evidence.exists()
+                          and parent not in evidence.parents and evidence not in parent.parents,
+                          "Evidence must be new and outside disposable sessions")
+    evidence.mkdir(parents=True)
+    pins = dict(source_commit=args.source_commit, jar_sha256=shared.digest(args.jar),
+                hooks={p: shared.digest(shared.REPO / p) for p in HOOKS},
+                harness={p: shared.digest(shared.REPO / p) for p in HARNESSES})
+    report = dict(status="IN_PROGRESS", coverage="A1 only; not all B3-S6", pins=pins, cases=[], starts=0, restarts=0)
+    write(evidence / "results.json", report)
+    for cut in args.case or CASES:
+        for attempt in (1, 2):
+            owner = f"W211 {cut} attempt={attempt} pid={os.getpid()} {datetime.now(timezone.utc).isoformat()}"
+            print(f"Waiting for heavy-JVM lock: {owner}", flush=True)
+            with shared.heavy_lock(owner):
+                row = run_cut(args, cut, evidence / f"{cut}-attempt-{attempt}", owner, pins)
+            report["cases"].append(row)
+            report["starts"] += len(row["starts"])
+            report["restarts"] += sum(s["restart"] > 0 for s in row["starts"])
+            write(evidence / "results.json", report)
+            print(f"{cut} attempt {attempt}: {row['status']}", flush=True)
+            # Even a failed cut gives other workers their normal acquisition window.
+            time.sleep(90)
+            if row["status"] == "PASS":
+                break
+        else:
+            report["status"] = "STOPPED_AFTER_TWO_FAILURES"
+            write(evidence / "results.json", report)
+            return report
+    report["status"] = "PASS_SELECTED" if all(r["status"] == "PASS" for r in report["cases"]) else "FINDINGS"
+    shared.assert_pin(args.source_commit)
+    write(evidence / "results.json", report)
+    return report
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("source_server", type=Path)
+    for key in ("jar", "session-parent", "evidence-dir"):
+        parser.add_argument("--" + key, type=Path, required=True)
+    parser.add_argument("--source-commit", required=True)
+    parser.add_argument("--java", required=True)
+    parser.add_argument("--case", action="append", choices=CASES)
+    parser.add_argument("--startup-timeout", type=float, default=240)
+    args = parser.parse_args()
+    return 0 if run(args)["status"] == "PASS_SELECTED" else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
