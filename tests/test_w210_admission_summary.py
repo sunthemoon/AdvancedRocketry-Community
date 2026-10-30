@@ -42,6 +42,18 @@ class SummaryTest(unittest.TestCase):
         self.assertEqual({"admission-encoder": 1, "admission-bounded-measurer": 1, "ram-write": 1, "other-retain": 1}, row["samples"])
         self.assertEqual(1, row["gc_overlap_ms"])
 
+    def test_top_frames_use_count_then_name_at_equal_count_cutoff(self):
+        frames = [f"Frame{index:02d}" for index in reversed(range(30))]
+        # A duplicated frame in one stack still counts only once per sample.
+        stacks = frames + ["Z.hot;Z.hot", "Z.hot"]
+        expected = [("Z.hot", 2)] + [(f"Frame{index:02d}", 1) for index in range(24)]
+        for order in (stacks, list(reversed(stacks))):
+            with self.subTest(first_stack=order[0]):
+                lines = [f"jdk.ExecutionSample\t102000000\t102000000\tServer thread\t{stack}\n"
+                         for stack in order]
+                row = profile_intervals(c1_intervals(self.raw()), lines)[0]
+                self.assertEqual(expected, row["frames"])
+
 
 if __name__ == "__main__":
     unittest.main()

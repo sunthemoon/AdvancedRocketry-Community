@@ -59,7 +59,8 @@ def profile_intervals(intervals, events):
                 row["frames"].update(set(stack.split(";")) - {""})
             elif kind == "jdk.GCPhasePause":
                 row["gc_overlap_ns"] += max(0, min(end, hi) - max(start, lo))
-    return [dict(samples=dict(row["samples"]), frames=row["frames"].most_common(25),
+    return [dict(samples=dict(row["samples"]),
+                 frames=sorted(row["frames"].items(), key=lambda item: (-item[1], item[0]))[:25],
                  gc_overlap_ms=row["gc_overlap_ns"] / 1e6) for row in rows]
 
 
