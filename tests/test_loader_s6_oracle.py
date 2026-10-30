@@ -170,6 +170,30 @@ class LoaderS6OracleTest(unittest.TestCase):
             self.assertEqual(2, result["restarts"])
             self.assertEqual(1, run_cut.call_count)
 
+    def test_unload_diagnostic_is_one_start_without_fairness_pass_or_retry(self):
+        from contextlib import nullcontext
+        import tempfile
+        from types import SimpleNamespace
+        from unittest.mock import patch
+        import run_v180_loader_s6 as runner
+        for outcome in ("DIAGNOSTIC_OBSERVED", "FAILED"):
+            with self.subTest(outcome=outcome), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                sessions = root / "sessions"
+                sessions.mkdir()
+                args = SimpleNamespace(source_commit="pinned", jar=root / "a.jar", session_parent=sessions,
+                                       evidence_dir=root / "evidence", case=[oracle.E5], diagnose_unload=True)
+                row = dict(status=outcome, starts=[dict(restart=0)])
+                with patch.object(runner.shared, "assert_pin"), patch.object(runner.shared, "digest", return_value="hash"), \
+                        patch.object(runner.shared, "heavy_lock", side_effect=lambda _: nullcontext()), \
+                        patch.object(runner, "run_cut", return_value=row) as run_cut, patch.object(runner.time, "sleep"):
+                    result = runner.run(args)
+                self.assertEqual(outcome, result["status"])
+                self.assertEqual(1, result["starts"])
+                self.assertEqual(0, result["restarts"])
+                self.assertEqual(1, run_cut.call_count)
+                self.assertIn("not fairness", result["coverage"])
+
     def fairness_image(self, restart=0):
         far = fixture("LF_M_K6" if not restart else "LF_M_K7", restart)
         healthy = fixture("LF_M_K7", 1)

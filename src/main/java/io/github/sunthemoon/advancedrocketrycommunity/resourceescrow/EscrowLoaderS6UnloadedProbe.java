@@ -19,6 +19,8 @@ final class EscrowLoaderS6UnloadedProbe {
     private static final BlockPos FAR = new BlockPos(2048, 100, 2048), HEALTHY = new BlockPos(64, 100, 64);
     private final MinecraftServer server;
     private final boolean recovery;
+    private final boolean diagnostic;
+    private final EscrowLoaderS6UnloadObservation unloadObservation = new EscrowLoaderS6UnloadObservation();
     private final Area area;
     private RocketEntity farRocket, healthyRocket;
     private FluidFuelLoaderBlockEntity farLoader, healthyLoader;
@@ -30,6 +32,7 @@ final class EscrowLoaderS6UnloadedProbe {
         EscrowTestEndpoints.requireEnabled(server);
         EscrowTags.require(!Boolean.getBoolean(EscrowLoaderAdmission.SWITCH), "S6 uses per-device admission only");
         this.server = server; this.recovery = recovery;
+        diagnostic = !recovery && Boolean.getBoolean("advancedrocketrycommunity.escrowS6UnloadDiagnostic");
         area = new Area(server.overworld(), 128, 128);
         area.hold(); // Fixed disposable fixture area, not a client-supplied endpoint.
     }
@@ -75,9 +78,11 @@ final class EscrowLoaderS6UnloadedProbe {
                 farLoader = loader(level, FAR.offset(2, 0, 0), owner, tank(ROCKET_FUEL, 5_000), binding(farRocket));
                 healthyLoader = loader(level, HEALTHY.offset(2, 0, 0), owner, tank(ROCKET_FUEL, 5_000), binding(healthyRocket));
                 EscrowTags.require(server.saveEverything(false, true, true), "S6 fairness pre-admission baseline refused");
+                if (diagnostic) { observeUnload(); }
                 queue(farLoader); return;
             }
         }
+        if (diagnostic) { observeUnload(); }
         var data = ResourceEscrowSavedData.existing(server);
         if (data == null) { return; }
         var coordinator = data.bind(server);
@@ -101,6 +106,17 @@ final class EscrowLoaderS6UnloadedProbe {
         if (!released) { return; }
         EscrowTags.require(data.ledger().records().stream().anyMatch(op -> op.id().equals(heldId)),
                 "S6 fairness selection lost its record before unloaded competition");
+        if (diagnostic) {
+            if (unloadObservation.windowComplete(server.getTickCount())) {
+                AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_S6_UNLOAD_DIAGNOSTIC_END cut={} tick={} window={} healthy_queued=false",
+                        CASE, server.getTickCount(), EscrowLoaderS6UnloadObservation.WINDOW);
+                try { TimeUnit.SECONDS.sleep(30); }
+                catch (InterruptedException failure) { Thread.currentThread().interrupt(); throw new IllegalStateException(failure); }
+                throw new IllegalStateException("S6 diagnostic forced stop did not arrive within 30 seconds");
+            }
+            // Diagnosis deliberately does not enter or pass the ordinary fairness assertions/admission below.
+            return;
+        }
         boolean unloaded = level.getChunkSource().getChunkNow(128, 128) == null && !level.areEntitiesLoaded(area.chunk.toLong());
         if (!unloaded) {
             EscrowTags.require(unloadedAt < 0, "S6 fairness forced the unloaded work back in"); return;
@@ -118,6 +134,38 @@ final class EscrowLoaderS6UnloadedProbe {
         try { TimeUnit.SECONDS.sleep(30); }
         catch (InterruptedException failure) { Thread.currentThread().interrupt(); throw new IllegalStateException(failure); }
         throw new IllegalStateException("S6 fairness forced stop did not arrive within 30 seconds");
+    }
+
+    private void observeUnload() {
+        var level = server.overworld();
+        var chunk = level.getChunkSource().getChunkNow(128, 128);
+        boolean chunkAbsent = chunk == null, entitiesUnloaded = !level.areEntitiesLoaded(area.chunk.toLong());
+        // Inspect the existing map only: Level.getBlockEntity could load this absent chunk.
+        var loaderHeld = chunkAbsent ? null : chunk.getBlockEntities().get(farLoader.getBlockPos());
+        var rocketHeld = level.getEntity(farRocket.getUUID());
+        var rocketIdHeld = level.getEntity(farRocket.getId());
+        long tick = server.getTickCount();
+        unloadObservation.observe(tick, chunkAbsent, entitiesUnloaded, farLoader.isRemoved(), farRocket.isRemoved());
+        AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_S6_UNLOAD tick={} released={} chunk_absent={} entities_unloaded={}"
+                        + " loader_ref={} loader_pos={},{},{} loader_device={} loader_removed={} loader_reason=NOT_APPLICABLE"
+                        + " loader_holder={} loader_held_ref={} rocket_ref={} rocket_uuid={} rocket_id={} rocket_removed={}"
+                        + " rocket_reason={} rocket_holder={} rocket_held_ref={} rocket_id_holder={} rocket_id_held_ref={}"
+                        + " first_chunk_absent={} first_entities_unloaded={} first_loader_removed={} first_rocket_removed={}",
+                tick, released, chunkAbsent, entitiesUnloaded, objectToken(farLoader),
+                farLoader.getBlockPos().getX(), farLoader.getBlockPos().getY(), farLoader.getBlockPos().getZ(), device(farLoader),
+                farLoader.isRemoved(), chunkAbsent ? "CHUNK_ABSENT" : holder(farLoader, loaderHeld), objectToken(loaderHeld),
+                objectToken(farRocket), farRocket.getUUID(), farRocket.getId(), farRocket.isRemoved(), farRocket.getRemovalReason(),
+                holder(farRocket, rocketHeld), objectToken(rocketHeld), holder(farRocket, rocketIdHeld), objectToken(rocketIdHeld),
+                unloadObservation.chunkAbsentAt(), unloadObservation.entitiesUnloadedAt(),
+                unloadObservation.loaderRemovedAt(), unloadObservation.rocketRemovedAt());
+    }
+
+    private static String holder(Object retained, Object held) {
+        return held == null ? "ABSENT" : held == retained ? "SAME" : "OTHER";
+    }
+
+    private static String objectToken(Object object) {
+        return object == null ? "NONE" : object.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(object));
     }
 
     private void queue(FluidFuelLoaderBlockEntity loader) {

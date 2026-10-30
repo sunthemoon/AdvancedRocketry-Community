@@ -25,7 +25,8 @@ from run_v060_flight_server_smoke import _server_command
 CASES = (oracle.E3, oracle.E5)
 HOOKS = shared.HOOK_FILES + tuple(
     "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/resourceescrow/" + name + ".java"
-    for name in ("EscrowLoaderS6Probe", "EscrowLoaderS6Recovery", "EscrowLoaderS6Accounting", "EscrowLoaderS6UnloadedProbe", "EscrowCargoContentionProbe"))
+    for name in ("EscrowLoaderS6Probe", "EscrowLoaderS6Recovery", "EscrowLoaderS6Accounting", "EscrowLoaderS6UnloadedProbe",
+                 "EscrowLoaderS6UnloadObservation", "EscrowCargoContentionProbe"))
 HARNESSES = shared.HARNESS_FILES + ("scripts/run_v180_loader_s6.py", "scripts/loader_s6_oracle.py")
 
 
@@ -38,12 +39,14 @@ def check_log(lines, restart, cut=oracle.E3):
 
 
 def run_cut(args, cut, evidence, owner, pins):
+    diagnostic = getattr(args, "diagnose_unload", False)
+    oracle.legacy.require(not diagnostic or cut == oracle.E5, "Unload diagnosis is only defined for E5")
     session = args.session_parent.resolve() / ("W211-" + uuid.uuid4().hex)
     token = uuid.uuid4().hex
     session.mkdir()
     (session / ".w97-owned").write_text(token, encoding="ascii")
     evidence.mkdir()
-    row = dict(cut=cut, pins=pins, status="IN_PROGRESS", starts=[], findings=[],
+    row = dict(cut=cut, diagnostic=diagnostic, pins=pins, status="IN_PROGRESS", starts=[], findings=[],
                session=str(session), cleanup=False)
     process = None
     try:
@@ -61,7 +64,7 @@ def run_cut(args, cut, evidence, owner, pins):
                                                               "biome": "minecraft:plains"})})
         (session / "server.properties").write_text("".join(f"{k}={v}\n" for k, v in sorted(properties.items())), encoding="ascii")
         identity = None
-        for restart in range(3):
+        for restart in range(1 if diagnostic else 3):
             shared.assert_pin(args.source_commit)
             shared.require_lock(owner)
             oracle.legacy.require(shared.digest(args.jar) == pins["jar_sha256"] == shared.digest(session / "mods" / args.jar.name),
@@ -70,6 +73,8 @@ def run_cut(args, cut, evidence, owner, pins):
             command[2] = "-Xmx4G"
             command[1:1] = ["-Dadvancedrocketrycommunity.escrowScenario=" + ("recover" if restart else "start"),
                             "-Dadvancedrocketrycommunity.escrowCase=" + cut]
+            if diagnostic:
+                command[1:1] = ["-Dadvancedrocketrycommunity.escrowS6UnloadDiagnostic=true"]
             start = dict(restart=restart, command=command, free_bytes=shared.disk_space(),
                          free_physical_memory=shared.physical_memory(), lock_owner=owner)
             row["starts"].append(start)
@@ -82,6 +87,8 @@ def run_cut(args, cut, evidence, owner, pins):
                 result_marker = "ARCE_LOADER_S6_FAIR_RESULT" if cut == oracle.E5 else "ARCE_LOADER_S6_RESULT"
                 marker = (r"ARCE_LOADER_S6_PAUSED cut=" + re.escape(cut) + r" hook=" + hook
                           if not restart else result_marker + r" cut=" + re.escape(cut) + r"(?:\s|$)")
+                if diagnostic:
+                    marker = r"ARCE_LOADER_S6_UNLOAD_DIAGNOSTIC_END cut=" + re.escape(cut) + r"(?:\s|$)"
                 process.wait_for(re.compile(marker), args.startup_timeout)
                 start["checkpoint_reached"] = True
                 if restart:
@@ -91,7 +98,7 @@ def run_cut(args, cut, evidence, owner, pins):
                 else:
                     process.process.kill()
                     process.abort()
-                    start["stop"] = "FORCED_AT_SELECTED_CHECKPOINT"
+                    start["stop"] = "FORCED_AFTER_DIAGNOSTIC_WINDOW" if diagnostic else "FORCED_AT_SELECTED_CHECKPOINT"
             except Exception as failure:
                 start["process_error"] = str(failure)
                 row["findings"].append(dict(restart=restart, kind="PROCESS", error=str(failure)))
@@ -103,6 +110,11 @@ def run_cut(args, cut, evidence, owner, pins):
             process = None
             start["observations"] = [line for line in lines if "ARCE_LOADER_" in line or "ARCE_CARGO_CACHE_" in line]
             start["image"] = oracle.inspect(session / "world", cut)
+            if diagnostic:
+                # The healthy pair is deliberately never queued. Its image is retained,
+                # not passed through the completed-fairness oracle or reported as PASS.
+                write(evidence / "result.json", row)
+                continue
             raw_check = oracle.check_e5 if cut == oracle.E5 else oracle.check_e3
             for kind, check in (("LOG", lambda: check_log(lines, restart, cut)),
                                 ("RAW", lambda: raw_check(start["image"], restart, identity))):
@@ -117,7 +129,7 @@ def run_cut(args, cut, evidence, owner, pins):
                 except SmokeError as failure:
                     row["findings"].append(dict(restart=restart, kind=kind, error=str(failure)))
             write(evidence / "result.json", row)
-        row["status"] = "FAILED" if row["findings"] else "PASS"
+        row["status"] = "FAILED" if row["findings"] else ("DIAGNOSTIC_OBSERVED" if diagnostic else "PASS")
     except Exception as failure:
         row["status"] = "FAILED"
         row["findings"].append(dict(kind="HARNESS", error=f"{type(failure).__name__}: {failure}"))
@@ -135,6 +147,9 @@ def run_cut(args, cut, evidence, owner, pins):
 
 def run(args):
     shared.assert_pin(args.source_commit)
+    diagnostic = getattr(args, "diagnose_unload", False)
+    cuts = args.case or ((oracle.E5,) if diagnostic else CASES)
+    oracle.legacy.require(not diagnostic or list(cuts) == [oracle.E5], "Diagnose exactly one E5 start")
     parent, evidence = args.session_parent.resolve(), args.evidence_dir.resolve()
     oracle.legacy.require(parent.is_dir() and not parent.is_symlink() and not evidence.exists()
                           and parent not in evidence.parents and evidence not in parent.parents,
@@ -144,8 +159,10 @@ def run(args):
                 hooks={p: shared.digest(shared.REPO / p) for p in HOOKS},
                 harness={p: shared.digest(shared.REPO / p) for p in HARNESSES})
     report = dict(status="IN_PROGRESS", coverage="Selected A1/E5 rows only; not all B3-S6", pins=pins, cases=[], starts=0, restarts=0)
+    if diagnostic:
+        report["coverage"] = "R186 unload lifecycle diagnosis only; not fairness or restart coverage"
     write(evidence / "results.json", report)
-    for cut in args.case or CASES:
+    for cut in cuts:
         for attempt in (1, 2):
             owner = f"W211 {cut} attempt={attempt} pid={os.getpid()} {datetime.now(timezone.utc).isoformat()}"
             print(f"Waiting for heavy-JVM lock: {owner}", flush=True)
@@ -158,6 +175,11 @@ def run(args):
             print(f"{cut} attempt {attempt}: {row['status']}", flush=True)
             # Even a failed cut gives other workers their normal acquisition window.
             time.sleep(90)
+            if diagnostic:
+                report["status"] = row["status"]
+                shared.assert_pin(args.source_commit)
+                write(evidence / "results.json", report)
+                return report
             if row.get("unexplained_image"):
                 report["status"] = "STOPPED_UNEXPLAINED_IMAGE"
                 write(evidence / "results.json", report)
@@ -184,6 +206,7 @@ def main():
     parser.add_argument("--case", action="append", choices=CASES)
     parser.add_argument("--startup-timeout", type=float, default=240)
     parser.add_argument("--require-initial-prefix", choices=("K2", "K4", "K5", "K6"))
+    parser.add_argument("--diagnose-unload", action="store_true", help="One E5 lifecycle observation, never a fairness PASS")
     args = parser.parse_args()
     return 0 if run(args)["status"] == "PASS_SELECTED" else 1
 
