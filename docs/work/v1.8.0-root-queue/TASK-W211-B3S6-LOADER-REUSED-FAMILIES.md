@@ -281,3 +281,27 @@ A fresh session continues on the same branch and worktree from `169bccaf3`: comm
 and counts (F1 to F8, F9, the real-loader N2 cut, sticky reservations and P1-F8, successor refill after F8) before
 its first launch, add the observer under this decision, then run C. R190's rule applies; a production cause or an
 unexplained image still stops. The rest of this TASK and R185 to R199 are unchanged.
+
+## Root decision R201 (2026-10-31 01:42): the two F1 setup defects, and C's renewal rule
+
+The tenth session (00:48 to 01:41) delivered `8503c0cc4`: C's committed enumeration (50 selections), R200's gated
+journal observer with its tests, and the F1 fixture and oracle; F1 STORE BEFORE failed both attempts before the cut,
+on two test-side defects explained by unchanged images (`r200/f1-diagnosis.json`): the fixture passed a filled but
+still `ASSEMBLED` rocket to `RocketFlightData.withPlan`, which correctly refuses it, without the documented launch
+promotion (`RocketFlightData.launchReady`); and the oracle's expected empty journal omits the native
+`format_epoch` field. 221 starts, 146 restarts, 49 passed and 25 failed attempts in all.
+
+**Decision.** Fix both, each with a test that fails first: the fixture takes the missing step through the product's
+own launch-promotion path, never by bypassing or weakening the product's check; the oracle expects the complete native
+empty journal, including `format_epoch`. Replay the six retained images through the corrected oracle as a replay;
+the two attempts stay FAILED; F1 STORE BEFORE gets a renewed two-attempt budget.
+
+For the rest of tranche C, R190's rule is extended: a row whose failed attempts are all explained by unchanged
+retained images and caused only by test-side defects (a fixture that skipped a step the product requires, taken
+through the product's own path; or an oracle that misreads the native form) may be fixed once, with failing-first
+tests and a replay, even when two such defects appear in the same row; the row then gets one renewed two-attempt
+budget. A production cause, an image the records cannot explain, a fix that would bypass or weaken a product check,
+or a failure after that renewal still stops the campaign for Root.
+
+A fresh session continues on the same branch and worktree from `8503c0cc4` with the rest of C as committed. The rest
+of this TASK and R185 to R200 are unchanged.
