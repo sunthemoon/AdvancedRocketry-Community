@@ -305,3 +305,22 @@ or a failure after that renewal still stops the campaign for Root.
 
 A fresh session continues on the same branch and worktree from `8503c0cc4` with the rest of C as committed. The rest
 of this TASK and R185 to R200 are unchanged.
+
+## Root decision R202 (2026-10-31 03:08): fixture-owned stores for the persisted-phase cuts
+
+The eleventh session (01:43 to 03:06) delivered `a72bd1041` (tested source `223d8a43b`): R201's fixes with
+failing-first tests and replays, and all twelve F1 and F2 selections passing with two restarts each; the retained
+replay passes 183 of 183 images; 263 starts, 174 restarts, 61 passed and 27 failed attempts in all. It asked whether
+`LF_S6_F3_ASCENT`, `LF_S6_F3_TRANSIT` and `LF_S6_F4_STORED` may use the fixture-owned native barrier that the
+established representatives already use (`EscrowSourceClockProbe.tick` for ASCENT and TRANSIT,
+`EscrowDestinationProbe.tick` for `DP_STORED`), which stores, forces and reads back the selected live phase.
+
+**Decision.** Yes, for exactly these three selections and with exactly that existing barrier mechanism: no new seam,
+no change to what the product writes, and no store at any other point. A phase on disk at these points is a state the
+product reaches through its own saves (autosave or a normal save at any tick); only the moment is chosen by the
+fixture. Each row's record and evidence label the store as fixture-owned, keep the read-back image as the stored
+state's witness, and claim nothing about when production would write that phase. Every other C row keeps the
+committed rule (the pre-fill fixture save, F1's ordinary checkpoint, F6's proofs and normal shutdown only).
+
+A fresh session continues on the same branch and worktree from `a72bd1041` with the remaining 38 C selections,
+under R201's renewal rule. The rest of this TASK and R185 to R201 are unchanged.
