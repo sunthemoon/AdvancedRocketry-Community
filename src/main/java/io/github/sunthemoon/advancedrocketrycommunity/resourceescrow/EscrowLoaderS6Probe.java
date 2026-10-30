@@ -13,10 +13,12 @@ final class EscrowLoaderS6Probe {
     private final EscrowLoaderS6Recovery observer;
     private final EscrowLoaderS6UnloadedProbe unloaded;
     private final EscrowLoaderS6R2Probe stale;
+    private final EscrowLoaderS6ShutdownProbe shutdown;
     private boolean injected;
 
     static boolean selected(boolean hooks, String name) {
-        return hooks && (E3.equals(name) || EscrowLoaderS6UnloadedProbe.CASE.equals(name) || EscrowLoaderS6R2Probe.selected(hooks, name));
+        return hooks && (E3.equals(name) || EscrowLoaderS6UnloadedProbe.CASE.equals(name) || EscrowLoaderS6R2Probe.selected(hooks, name)
+                || EscrowLoaderS6ShutdownProbe.selected(hooks, name, System.getProperty(EscrowLoaderS6ShutdownProbe.PROPERTY)));
     }
 
     EscrowLoaderS6Probe(MinecraftServer server, boolean recovery) {
@@ -27,15 +29,18 @@ final class EscrowLoaderS6Probe {
         String cut = System.getProperty("advancedrocketrycommunity.escrowCase");
         stale = EscrowLoaderS6R2Probe.selected(Boolean.getBoolean(EscrowTestEndpoints.HOOKS), cut)
                 ? new EscrowLoaderS6R2Probe(server, cut, recovery) : null;
+        shutdown = EscrowLoaderS6ShutdownProbe.selected(Boolean.getBoolean(EscrowTestEndpoints.HOOKS), cut,
+                System.getProperty(EscrowLoaderS6ShutdownProbe.PROPERTY)) ? new EscrowLoaderS6ShutdownProbe(server, recovery) : null;
         // K7 supplies the unchanged real-loader baseline and per-device gate, not S6 recovery assertions.
         // Its success pause is not forwarded: this cut waits for the first propagated failed proof.
-        fixture = unloaded == null && stale == null ? new EscrowLoaderCutProbe(server, "LF_M_K7", recovery) : null;
-        observer = unloaded == null && stale == null && recovery ? new EscrowLoaderS6Recovery(server) : null;
+        fixture = unloaded == null && stale == null && shutdown == null ? new EscrowLoaderCutProbe(server, "LF_M_K7", recovery) : null;
+        observer = unloaded == null && stale == null && shutdown == null && recovery ? new EscrowLoaderS6Recovery(server) : null;
     }
 
-    void startTick() { if (fixture != null) { fixture.startTick(); } }
+    void startTick() { if (shutdown != null) { shutdown.startTick(); } else if (fixture != null) { fixture.startTick(); } }
 
     void checkpoint(String name) {
+        if (shutdown != null) { shutdown.checkpoint(name); return; }
         if (stale != null) { stale.checkpoint(name); return; }
         if (unloaded != null) { unloaded.checkpoint(name); return; }
         if (!recovery && !injected && name.equals("C4_SOURCE_SELECTED")) {
@@ -48,6 +53,7 @@ final class EscrowLoaderS6Probe {
     }
 
     void tick() {
+        if (shutdown != null) { shutdown.tick(); return; }
         if (stale != null) { stale.tick(); return; }
         if (unloaded != null) { unloaded.tick(); return; }
         if (recovery) { observer.tick(); return; }

@@ -16,6 +16,7 @@ R2_KEEP = "LF_S6_R2_KEEP_SOURCE"
 R2_DESTRUCTIVE = "LF_S6_R2_DESTRUCTIVE_SOURCE"
 R2_RECONNECT = "LF_S6_R2_DUPLICATE_RECONNECT"
 R2 = (R2_KEEP, R2_DESTRUCTIVE, R2_RECONNECT)
+G3_L1 = "LF_S6_G3_L1_INFLIGHT"
 
 # UUID-valued native fields and the identity envelope returned by these oracles.
 # Do not recognize UUIDs by array length: coordinates, quantities and hashes are
@@ -88,9 +89,30 @@ def check_e3(image, restart, identity=None):
         raise SmokeError(f"Malformed/missing raw loader state: {failure}") from failure
 
 
+def check_g3_l1(image, restart, identity=None):
+    result = check_e3(image, restart, identity)
+    legacy.require(restart != 0 or result["prefix"] == "K2", "Shutdown did not drain the held L1 without applying it")
+    return result
+
+
 def check_observations(lines: list[str], restart: int, cut=E3) -> None:
     """Require the selected propagated failure, not merely a checkpoint label."""
     import re
+    if cut == G3_L1:
+        if restart:
+            check_recovery_observations(lines)
+        else:
+            ready = "ARCE_LOADER_S6_DRAIN_READY cut=" + cut + " boundary=K1 running=true"
+            released = "ARCE_LOADER_S6_DRAIN_RELEASE cut=" + cut + " boundary=K1 running=false"
+            positions = []
+            for marker in (ready, released):
+                found = [i for i, line in enumerate(lines) if re.search(re.escape(marker) + r"(?:\s|$)", line)]
+                legacy.require(len(found) == 1, "Missing/repeated exact shutdown writer observation")
+                positions.append(found[0])
+            legacy.require(positions[0] < positions[1] and any("Stopping server" in line for line in lines),
+                           "Shutdown lacks ordered writer observations and a normal stop")
+        legacy.require(not any("/ERROR]" in line or "/FATAL]" in line for line in lines), "G3 ERROR/FATAL")
+        return
     if cut in R2:
         tag = "RESULT" if restart else "PAUSED"
         wanted = ("ARCE_LOADER_S6_R2_" + tag + " cut=" + cut

@@ -49,7 +49,7 @@ final class EscrowLoaderReleaseProbe {
         // W107C: cut R1's floor fixture runs beside, never inside, the W97 matrix.
         named = EscrowLoaderNamedProbe.selected(cut) ? new EscrowLoaderNamedProbe(server, cut, recovery) : null;
         floors = EscrowLoaderFloorProbe.selected(cut) ? new EscrowLoaderFloorProbe(server, cut, recovery) : null;
-        matrix = countdown == null && retirement == null && named == null && floors == null && EscrowLoaderCutProbe.selected(cut) ? new EscrowLoaderCutProbe(server, cut, recovery) : null;
+        matrix = s6 == null && countdown == null && retirement == null && named == null && floors == null && EscrowLoaderCutProbe.selected(cut) ? new EscrowLoaderCutProbe(server, cut, recovery) : null;
         if (s6 != null || matrix != null || floors != null || named != null || retirement != null || countdown != null) { return; }
         EscrowTags.require(cut.startsWith(PREFIX) && (recovery || Boolean.getBoolean(EscrowLoaderAdmission.SWITCH)),
                 "The loader restart fixture starts only through the gated switch");

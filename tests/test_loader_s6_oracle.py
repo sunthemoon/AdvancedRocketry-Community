@@ -400,6 +400,57 @@ class LoaderS6OracleTest(unittest.TestCase):
             else: image["read_status"] = "UNKNOWN"
             with self.subTest(mutation=mutation), self.assertRaises(SmokeError): oracle.check_r2(image, 1, before, cut)
 
+    def test_g3_inflight_stop_requires_the_drained_l1_then_two_exact_completions(self):
+        before = oracle.check_g3_l1(self.image("LF_M_K2"), 0)
+        self.assertEqual(5000, before["raw_total"])
+        self.assertIsNone(before["available_total"])
+        for restart in (1, 2):
+            result = oracle.check_g3_l1(self.image("LF_M_K7", restart), restart, before["identity"])
+            self.assertEqual(5000, result["available_total"])
+        for wrong in ("LF_M_K1", "LF_M_K4", "LF_M_K5", "LF_M_K6", "LF_M_K9"):
+            with self.subTest(wrong=wrong), self.assertRaises(SmokeError):
+                oracle.check_g3_l1(self.image(wrong), 0)
+
+    def test_g3_rejects_changed_quantities_markers_epochs_identity_and_unknown(self):
+        baseline = oracle.check_g3_l1(self.image("LF_M_K2"), 0)["identity"]
+        for mutation in ("quantity", "marker", "epoch", "identity", "unknown"):
+            image = self.image("LF_M_K7", 1)
+            loader = image["native"]["loaders"][0]["arce_fluid_fuel_loader"]
+            if mutation == "quantity": loader["tank"]["Amount"] += 1
+            elif mutation == "marker": loader["resource_escrow"]["markers"].append(dict(op_id="foreign", seq=1, role="SOURCE", epoch_after=1))
+            elif mutation == "epoch": loader["resource_escrow"]["resource_epoch"] += 1
+            elif mutation == "identity": loader["device"] = "foreign"
+            else: image["read_status"] = "UNKNOWN"
+            with self.subTest(mutation=mutation), self.assertRaises(SmokeError):
+                oracle.check_g3_l1(image, 1, baseline)
+
+    def test_g3_requires_stop_during_the_selected_writer_state_and_normal_exit_log(self):
+        cut = "LF_S6_G3_L1_INFLIGHT"
+        lines = ["ARCE_LOADER_S6_DRAIN_READY cut=" + cut + " boundary=K1 running=true",
+                 "ARCE_LOADER_S6_DRAIN_RELEASE cut=" + cut + " boundary=K1 running=false",
+                 "[Server thread/INFO] [minecraft/MinecraftServer]: Stopping server"]
+        oracle.check_observations(lines, 0, cut)
+        for wrong in (lines[1:], lines[:-1], lines + [lines[0]],
+                      [line.replace("running=false", "running=true") for line in lines],
+                      lines + ["[Server/ERROR] unexpected"]):
+            with self.subTest(wrong=wrong), self.assertRaises(SmokeError):
+                oracle.check_observations(wrong, 0, cut)
+
+    def test_g3_runner_requests_normal_stop_and_rejects_abnormal_exit_without_killing(self):
+        from unittest.mock import Mock
+        import run_v180_loader_s6 as runner
+        process = Mock()
+        process.finish.return_value = 0
+        result = runner.finish_initial(process, "LF_S6_G3_L1_INFLIGHT", False)
+        process.command.assert_called_once_with("stop")
+        process.finish.assert_called_once_with()
+        process.process.kill.assert_not_called()
+        process.abort.assert_not_called()
+        self.assertEqual(dict(stop="NORMAL_DRAIN_FROM_SELECTED_WRITER_STATE", exit_code=0), result)
+        process.finish.return_value = 1
+        with self.assertRaises(SmokeError): runner.finish_initial(process, "LF_S6_G3_L1_INFLIGHT", False)
+        process.process.kill.assert_not_called()
+
     def test_r2_logs_require_fence_copy_count_and_unmounted_reconnect(self):
         cut = "LF_S6_R2_DUPLICATE_RECONNECT"
         line = "ARCE_LOADER_S6_R2_RESULT cut=" + cut + " tank=4000 bank=1000 total=5000 epochs=1,1 records=0 markers=0 journal=1 copies=2 reason=FLOOR_CONFLICT passenger=unmounted"
