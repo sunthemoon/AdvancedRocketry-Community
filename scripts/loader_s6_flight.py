@@ -19,7 +19,8 @@ F45 = tuple("LF_S6_" + side for side in ("F4_ACK", "F4_PUBLICATION_BEFORE", "F4_
     "F5_PASSENGERS_ACK", "F5_SOURCE_ACK", "F5_SOURCE_REMOVAL_BEFORE", "F5_SOURCE_REMOVAL_AFTER", "F5_COMMITTED_ACK"))
 F6 = tuple("LF_S6_F6_PROOF_" + side + "_" + str(index) for index in (0, 1) for side in ("BEFORE", "AFTER"))
 F78 = tuple("LF_S6_" + group + "_" + side for group in ("F7", "F8_JOURNAL", "F8_PRUNE") for side in ("BEFORE", "REPLACED", "ACK"))
-CASES = F1 + F2 + F3 + F45 + F6 + F78
+REFILL = ("LF_S6_REFILL", "LF_S6_REFILL_BI")
+CASES = F1 + F2 + F3 + F45 + F6 + F78 + REFILL
 
 
 def armed_digest(arm):
@@ -50,6 +51,9 @@ def armed_tag(arm):
 
 
 def check(image, restart, identity=None, cut=F1[0], witness=None):
+    if cut in REFILL:
+        import loader_s6_refill
+        return loader_s6_refill.check(image, restart, identity, cut, witness)
     if cut in F78:
         import loader_s6_cleanup
         return loader_s6_cleanup.check(image, restart, identity, cut, witness)
@@ -170,6 +174,9 @@ def inspect(world):
 
 
 def witness(lines, cut):
+    if cut in REFILL:
+        import loader_s6_refill
+        return loader_s6_refill.witness(lines, cut)
     matches = [re.search(r"ARCE_LOADER_S6_FLIGHT_FILLED cut=" + re.escape(cut)
         + r" operation=(\S+) source=(\S+) logical=(\S+) owner=(\S+) ledger=(\S+) source_digest=([0-9a-f]{64}) tank=4000 bank=1000 epoch=1$",
         line.rstrip("\r\n")) for line in lines]
@@ -204,6 +211,9 @@ def witness(lines, cut):
 
 
 def check_logs(lines, restart, cut):
+    if cut in REFILL:
+        import loader_s6_refill
+        return loader_s6_refill.check_logs(lines, restart, cut)
     legacy.require(not any("/ERROR]" in line or "/FATAL]" in line for line in lines), "Unexpected flight ERROR/FATAL")
     prefix = "ARCE_LOADER_S6_FLIGHT_" + ("RESULT" if restart else "PAUSED") + " cut=" + cut + " "
     legacy.require(sum(prefix in line for line in lines) == 1, "Missing/duplicate selected flight observation")
@@ -229,6 +239,9 @@ def check_logs(lines, restart, cut):
 
 
 def recovery_witness(lines, cut):
+    if cut in REFILL:
+        import loader_s6_refill
+        return loader_s6_refill.witness(lines, cut, True)
     if cut not in F2[1:] + F3 + F45 + F6 + F78: return None
     import loader_s6_forward
     return loader_s6_forward.recovery_witness(lines, cut)
