@@ -102,13 +102,20 @@ public final class W208NativeAvailability {
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST) public void beginEnd(TickEvent.ServerTickEvent event) {
-        if (event.phase == TickEvent.Phase.END) { endStart = System.nanoTime(); }
+        if (event.phase != TickEvent.Phase.END || done) { return; }
+        endStart = System.nanoTime();
+        // Admit the diagnostic request before the installed coordinator's END discovery spends the shared budget.
+        try { step(); }
+        catch (Exception error) {
+            report.put("failure", error.toString());
+            AdvancedRocketryCommunity.LOGGER.error("W208_FIXTURE_FAILED", error);
+            finish("FAILED");
+        }
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST) public void end(TickEvent.ServerTickEvent event) {
         if (event.phase != TickEvent.Phase.END || done) { return; }
         try {
-            step();
             if (requestTick >= 0) {
                 var row = new LinkedHashMap<>(W208JournalFixture.observation(data)); row.put("tick", age);
                 long core = server.tickTimes[server.getTickCount() % server.tickTimes.length];

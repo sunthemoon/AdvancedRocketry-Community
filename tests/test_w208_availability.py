@@ -4,6 +4,7 @@ from pathlib import Path
 import unittest
 import tempfile
 import json
+import re
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
@@ -13,6 +14,15 @@ import w208_summary as summary
 
 
 class AvailabilityTest(unittest.TestCase):
+    def test_native_request_runs_before_end_tick_discovery_spends_the_budget(self):
+        source = (Path(__file__).resolve().parents[1] / 'src/test/java/io/github/sunthemoon/'
+                  'advancedrocketrycommunity/rocket/server/W208NativeAvailability.java').read_text()
+        early = re.search(r'@SubscribeEvent\(priority = EventPriority.HIGHEST\) public void beginEnd\b(.*?)'
+                          r'@SubscribeEvent', source, re.S).group(1)
+        late = re.search(r'public void end\(TickEvent.ServerTickEvent event\)(.*?)private void step', source, re.S).group(1)
+        self.assertIn('step();', early)
+        self.assertNotIn('step();', late)
+
     def test_prelaunch_failure_has_a_nonlive_result_without_starting_java(self):
         with tempfile.TemporaryDirectory() as temp:
             argv = ["runner", "--case", "small-quiet", "--jar", "diagnostic.jar", "--production-jar", "normal.jar",
