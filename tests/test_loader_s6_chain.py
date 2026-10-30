@@ -16,6 +16,16 @@ def native():
     return normalize_ids(json.loads((Path(__file__).parent / "fixtures/loader_s6/chain-native.json").read_text())["images"][0])
 
 
+def veto_log():
+    return (Path(__file__).parent / "fixtures/loader_s6/veto-event.log").read_text().splitlines()
+
+
+def veto_error():
+    lines = veto_log(); start = next(n for n, line in enumerate(lines) if "/ERROR" in line)
+    end = next(n for n in range(start + 1, len(lines)) if lines[n].startswith("["))
+    return lines[start:end]
+
+
 def decision(bi=False):
     image = native(); d = image["native"]; root = d["ledger"]; records = root["records"]
     if bi:
@@ -71,10 +81,27 @@ class ChainOracleTest(unittest.TestCase):
         marker = f"ARCE_LOADER_S6_CHAIN_PAUSED cut={cut} hook=O_VETO"
         diagnostic = f"ARCE_LOADER_S6_CHAIN_VETO cut={cut} reason=BARRIER_VETO records=2 checkpointed=true recovery=false"
         actual = "ARCE_ESCROW_SETTLEMENT_HELD reason=BARRIER_VETO records=retained"
-        chain.check_logs([marker, diagnostic, actual], 0, cut)
+        chain.check_logs(veto_error() + [marker, diagnostic, actual], 0, cut)
         for lines in ([marker], [marker, diagnostic], [marker, actual], [marker, diagnostic, diagnostic, actual],
                       [marker, diagnostic.replace("BARRIER_VETO", "Frozen settlement endpoint changed"), actual]):
             with self.assertRaises(SmokeError): chain.check_logs(lines, 0, cut)
+
+    def test_retained_veto_own_store_error_is_exact_and_bounded(self):
+        original = veto_log(); cut = "LF_S6_CHAIN_VETO"
+        chain.check_logs(original, 1, cut)
+        start = next(n for n, line in enumerate(original) if "/ERROR" in line)
+        for changed in (
+            original[:start] + original[start + 1:],
+            original + [original[start]],
+            [line.replace("/ERROR]", "/FATAL]") for line in original],
+            [line.replace("Release-test S6 chain O-veto source chunk", "another failure") for line in original],
+            [line for line in original if "GuardedChunkSaves.fail(" not in line],
+            [line for line in original if "EscrowChunkStore.terrain(" not in line],
+            [line for line in original if "EscrowSettlementRecovery.begin(" not in line],
+            original[:start + 1] + ["Caused by: an unrelated exception"] + original[start + 1:],
+            original[:start + 1] + ["stack padding"] * 97 + original[start + 1:],
+        ):
+            with self.assertRaises(SmokeError): chain.check_logs(changed, 1, cut)
 
     def test_frozen_mono_and_bipropellant_components_release_twice(self):
         for bi in (False, True):

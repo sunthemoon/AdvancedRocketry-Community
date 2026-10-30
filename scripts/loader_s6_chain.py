@@ -242,4 +242,23 @@ def check_logs(lines, restart, cut):
         legacy.require(sum(line.endswith(diagnostic) for line in lines) == 1
             and any("ARCE_ESCROW_SETTLEMENT_HELD" in line and "reason=BARRIER_VETO records=retained" in line for line in lines),
             "Missing/repeated actual checkpointed O-veto diagnostic")
-    legacy.require(not any("/ERROR" in line or "/FATAL" in line for line in lines), "Unexpected chain operator error")
+        check_veto_error(lines)
+    else:
+        legacy.require(not any("/ERROR" in line or "/FATAL" in line for line in lines), "Unexpected chain operator error")
+
+
+def check_veto_error(lines):
+    """Exactly the intentional own-store guard rejection, not an ERROR wildcard."""
+    errors = [index for index, line in enumerate(lines) if "/ERROR" in line or "/FATAL" in line]
+    legacy.require(len(errors) == 1, "O-veto requires exactly one intentional guard ERROR")
+    start = errors[0]; reason = "Release-test S6 chain O-veto source chunk"
+    legacy.require(lines[start].endswith("[Server thread/ERROR] [ne.mi.ev.EventBus/EVENTBUS]: Exception caught during firing event: " + reason),
+                   "Unexpected O-veto ERROR/FATAL")
+    end = next((index for index in range(start + 1, len(lines)) if lines[index].startswith("[")), len(lines))
+    block = lines[start + 1:end]
+    legacy.require(len(block) <= 96 and block.count("java.lang.IllegalStateException: " + reason) == 1
+                   and not any("Caused by:" in line or "Suppressed:" in line for line in block), "Changed O-veto throwable")
+    for method in ("GuardedChunkSaves.fail", "GuardedChunkSaves.beforeSave", "EscrowSaveMonitor.postOwn",
+                   "EscrowChunkStore.terrain", "EscrowBarrier.beginJoint", "EscrowSettlementRecovery.begin", "EscrowSettlementRecovery.tick"):
+        legacy.require(sum(line.lstrip().startswith("at ") and ("." + method + "(") in line for line in block) == 1,
+                       "O-veto ERROR is not the selected own-store guard stack: " + method)
