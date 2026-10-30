@@ -116,6 +116,11 @@ public final class RocketWarmupRegistry {
     }
 
     private final Map<UUID, Warmup> live = new LinkedHashMap<>();
+    /** Capacity only. An unresolved terrain demand has no region, reservation or launch authority. */
+    public record Terrain(UUID logical, UUID player, UUID request, long started, RocketWarmupSettings settings) {
+        public boolean expired(long now) { return now - started >= settings.lifetimeTicks(); }
+    }
+    private final Map<UUID, Terrain> terrain = new LinkedHashMap<>();
     private final Tickets tickets;
     private final Consumer<String> log;
     private Decision pending;
@@ -152,7 +157,7 @@ public final class RocketWarmupRegistry {
             var columns = RocketDiscoveryColumns.of(request.destination()).refreshSet();
             // Selection admits only checked destinations; anything else continues exactly as without a warm-up.
             if (columns.isEmpty() || !tickets.present(request.destination().sourceDimension())) { return proceed(request, false); }
-            start(request, columns, now, settings);
+            start(request, columns, now, settings, now);
         }
         return destinationReady ? proceed(request, true) : new Decision(Outcome.LOADING, request.logical(), request.requestId(), false);
     }
@@ -210,6 +215,7 @@ public final class RocketWarmupRegistry {
     /** Stop: {@code releaseTickets} while the Levels stay loaded (in-process fixtures); otherwise the map is dropped. */
     public void clear(boolean releaseTickets, long now) {
         pending = null;
+        terrain.clear(); // The Forge preparation owner releases its tickets before clearing the registry.
         for (var current : List.copyOf(live.values())) {
             if (releaseTickets) {
                 release(current, Release.STOPPED, now);
@@ -222,7 +228,8 @@ public final class RocketWarmupRegistry {
 
     /** R22 amendment 2: while a warm-up lives, its starting request is refused, whatever the operation ledger kept. */
     public boolean startedBy(UUID request) {
-        return live.values().stream().anyMatch(current -> current.request().equals(request));
+        return live.values().stream().anyMatch(current -> current.request().equals(request))
+                || terrain.values().stream().anyMatch(current -> current.request().equals(request));
     }
 
     /** The third reservation input: every live warm-up's region except the requester's own (design 7.4). */
@@ -249,11 +256,53 @@ public final class RocketWarmupRegistry {
     public Collection<Warmup> live() { return List.copyOf(live.values()); }
 
     public int count(UUID player) {
-        return (int) live.values().stream().filter(current -> Objects.equals(current.player(), player)).count();
+        return (int) (live.values().stream().filter(current -> Objects.equals(current.player(), player)).count()
+                + terrain.values().stream().filter(current -> Objects.equals(current.player(), player)).count());
     }
 
+    public int allocationCount() { return live.size() + terrain.size(); }
+
     private boolean slot(UUID player, RocketWarmupSettings settings) {
-        return live.size() < settings.globalCap() && (player == null || count(player) < settings.perPlayer());
+        return allocationCount() < settings.globalCap() && (player == null || count(player) < settings.perPlayer());
+    }
+
+    /** Read-only pre-selection capacity check, including replacement of this logical rocket's unbound allocation. */
+    public boolean canAllocate(UUID logical, UUID player, RocketWarmupSettings settings) {
+        var own = live.get(logical);
+        var preparing = terrain.get(logical);
+        int other = allocationCount() - (own == null && preparing == null ? 0 : 1);
+        int owners = count(player) - (own != null && Objects.equals(own.player(), player)
+                || preparing != null && Objects.equals(preparing.player(), player) ? 1 : 0);
+        return other < settings.globalCap() && (player == null || owners < settings.perPlayer());
+    }
+
+    /** Acquire the same quota before any terrain ticket; an accepted fresh replacement retires its old unbound W. */
+    public Optional<Terrain> claimTerrain(UUID logical, UUID player, UUID request, long now, RocketWarmupSettings settings) {
+        Objects.requireNonNull(logical); Objects.requireNonNull(request); Objects.requireNonNull(settings);
+        var own = live.get(logical);
+        if (terrain.containsKey(logical) || own != null && own.state() == State.BOUND
+                || !canAllocate(logical, player, settings)) { return Optional.empty(); }
+        if (own != null) { release(own, Release.REPLACED, now); }
+        var slot = new Terrain(logical, player, request, now, settings);
+        terrain.put(logical, slot);
+        return Optional.of(slot);
+    }
+
+    public boolean releaseTerrain(Terrain slot) {
+        if (terrain.get(slot.logical()) != slot) { return false; }
+        terrain.remove(slot.logical()); return true;
+    }
+
+    /** All candidate checks have succeeded. Keep the original allocation deadline, but grant no F1 acceptance. */
+    public boolean completeTerrain(Terrain slot, Request request, long now) {
+        if (terrain.get(slot.logical()) != slot || slot.expired(now)
+                || !slot.logical().equals(request.logical()) || !slot.request().equals(request.requestId())
+                || !Objects.equals(slot.player(), request.player())) { return false; }
+        var columns = RocketDiscoveryColumns.of(request.destination()).refreshSet();
+        if (columns.isEmpty() || !tickets.present(request.destination().sourceDimension())) { return false; }
+        terrain.remove(slot.logical());
+        start(request, columns, slot.started(), slot.settings(), now);
+        return true;
     }
 
     private Decision proceed(Request request, boolean bindable) {
@@ -261,10 +310,10 @@ public final class RocketWarmupRegistry {
         return pending;
     }
 
-    private void start(Request request, List<ChunkPos> columns, long now, RocketWarmupSettings settings) {
+    private void start(Request request, List<ChunkPos> columns, long startedAt, RocketWarmupSettings settings, long now) {
         var started = new Warmup(request.logical(), request.player(), request.requestId(), request.sourceLevel(),
                 request.sourceEntity(), request.source().snapshotId(), request.source().contentHash(), request.target(),
-                request.destination(), List.copyOf(columns), now, settings.lifetimeTicks(), State.WARMING, null, request.requiresOnline());
+                request.destination(), List.copyOf(columns), startedAt, settings.lifetimeTicks(), State.WARMING, null, request.requiresOnline());
         live.put(started.logical(), started);
         // Exactly once: no repeated request, poll, bind or handover adds these tickets again.
         for (var column : started.columns()) { tickets.add(started.level(), column, started.logical()); }

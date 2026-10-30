@@ -49,10 +49,11 @@ public final class W206NativeWarmup {
     private final List<RocketEntity> rockets = new ArrayList<>();
     private final Map<String, Object> result = new LinkedHashMap<>();
     private final Map<UUID, String> states = new HashMap<>();
-    private final Map<UUID, RocketWarmupRegistry.Warmup> abandoned = new HashMap<>();
+    private final Map<UUID, Long> abandoned = new HashMap<>();
     private final Set<String> loadedUnion = new TreeSet<>(), ticketUnion = new TreeSet<>();
     private final ConcurrentLinkedQueue<Map<String, Object>> checkpoints = new ConcurrentLinkedQueue<>();
     private final BufferedWriter ticks, events, snapshots;
+    private final List<Map<String, Object>> tickRows = new ArrayList<>(4001);
     private final Runnable unsubscribe;
     private final Path root;
     private ResourceEscrowSavedData data;
@@ -64,7 +65,7 @@ public final class W206NativeWarmup {
     private UUID launch;
     private String phase = "SETUP", lastFlight = "";
     private int age, phaseAt, callbackCount;
-    private long endStart, requestNanos;
+    private long endStart, requestNanos, transitionObserverNanos;
     private boolean done, requested, seenF2, handover, landingWitness;
 
     @SubscribeEvent public static void started(ServerStartedEvent event) {
@@ -92,8 +93,8 @@ public final class W206NativeWarmup {
     @SubscribeEvent(priority = EventPriority.LOWEST) public void tick(TickEvent.ServerTickEvent event) {
         if (done || event.phase != TickEvent.Phase.END) { return; }
         String measuredPhase = phase;
-        boolean work = requested || !live().isEmpty() || journal != null && !journal.entries().isEmpty();
-        requested = false; callbackCount = 0;
+        boolean work = requested || allocations() > 0 || journal != null && !journal.entries().isEmpty();
+        requested = false; callbackCount = 0; transitionObserverNanos = 0;
         try {
             require(++age <= 4000, "External 4000-tick observation ceiling reached; not a product timeout");
             step();
@@ -101,7 +102,7 @@ public final class W206NativeWarmup {
             while (!checkpoints.isEmpty()) { var point = checkpoints.remove(); write(events, point); delivered.add(point); }
             callbackCount = W206Observation.ownerCallbacks(delivered, server.getTickCount());
             observeWarmups();
-            work |= requested || !live().isEmpty() || journal != null && !journal.entries().isEmpty();
+            work |= requested || allocations() > 0 || journal != null && !journal.entries().isEmpty();
             long observationStart = System.nanoTime();
             for (var level : server.getAllLevels()) {
                 String dimension = level.dimension().location().toString();
@@ -124,13 +125,23 @@ public final class W206NativeWarmup {
     }
 
     private void captureTick(String measuredPhase, boolean work, long observed) throws Exception {
+        long recorderStart = System.nanoTime();
         long end = System.nanoTime() - endStart, core = server.tickTimes[server.getTickCount() % server.tickTimes.length];
-        write(ticks, Map.of("tick", server.getTickCount(), "phase", measuredPhase, "core_ns", core,
+        var row = new LinkedHashMap<String, Object>(Map.of("tick", server.getTickCount(), "phase", measuredPhase, "core_ns", core,
                 "end_ns", end, "tick_ns", W206Observation.fullTick(core, end), "work", work,
                 "callbacks", callbackCount, "column_observer_ns", observed, "epoch_ms", System.currentTimeMillis()));
+        row.put("transition_observer_ns", transitionObserverNanos);
+        require(tickRows.size() < 4001, "Tick recorder bound exceeded");
+        tickRows.add(row);
+        // Only this final clock/read and map insertion follow the measured recorder tail.
+        row.put("recorder_tail_ns", System.nanoTime() - recorderStart);
     }
 
     private Collection<RocketWarmupRegistry.Warmup> live() { return RocketRuntime.installedTransfers().warmups.registry().live(); }
+    private int allocations() { return RocketRuntime.installedTransfers().warmups.registry().allocationCount(); }
+    private boolean preparing(RocketEntity rocket) {
+        return RocketRuntime.installedTransfers().warmups.terrain.contains(rocket.assemblyTransactionId().orElseThrow());
+    }
     private RocketWarmupRegistry.Warmup warm(RocketEntity rocket) {
         return RocketRuntime.installedTransfers().warmups.registry().warmup(rocket.assemblyTransactionId().orElseThrow()).orElse(null);
     }
@@ -140,11 +151,13 @@ public final class W206NativeWarmup {
     }
     private void phase(String next) throws Exception { event("PHASE", Map.of("from", phase, "to", next)); phase = next; phaseAt = age; snapshot(next); }
     private void snapshot(String label) throws Exception {
+        long start = System.nanoTime();
         var levels = new LinkedHashMap<String, Object>();
         for (var level : server.getAllLevels()) {
             levels.put(level.dimension().location().toString(), Map.of("tickets", W206Observation.tickets(level), "chunks", W206Observation.chunks(level)));
         }
         write(snapshots, Map.of("label", label, "tick", server.getTickCount(), "levels", levels));
+        transitionObserverNanos += System.nanoTime() - start;
     }
     private void observeWarmups() throws Exception {
         for (var warm : live()) {
@@ -161,7 +174,7 @@ public final class W206NativeWarmup {
 
     private void step() throws Exception {
         if (mode.equals("seed")) { seed(); return; }
-        if (mode.equals("recover")) { recover(); return; }
+        if (mode.equals("recover") && !Boolean.TRUE.equals(result.get("restart_source_ready"))) { recover(); return; }
         if (phase.equals("SETUP")) { setup(); return; }
         if (phase.equals("BASELINE")) {
             if (age - phaseAt < 100) { return; }
@@ -170,9 +183,10 @@ public final class W206NativeWarmup {
         }
         if (mode.equals("capacity")) { lifecycle(); return; }
         if (mode.equals("restart")) {
-            require(first != null && warm(rockets.get(0)) != null, "Restart cut lost live warm-up");
-            result.put("warmup_before_stop", first.logical().toString());
-            Files.writeString(root.resolve("w206-restart-id.txt"), first.logical().toString());
+            var rocket = rockets.get(0); var logical = rocket.assemblyTransactionId().orElseThrow();
+            require(preparing(rocket) || warm(rocket) != null, "Restart cut lost live preparation/warm-up");
+            result.put("warmup_before_stop", logical.toString());
+            Files.writeString(root.resolve("w206-restart-id.txt"), logical.toString());
             result.put("outcome", "RESTART_CUT"); return;
         }
         if (mode.equals("replace")) { replace(); return; }
@@ -182,6 +196,9 @@ public final class W206NativeWarmup {
     private void setup() throws Exception {
         if (data == null) {
             data = ResourceEscrowSavedData.forTests(server); data.bind(server); journal = RocketTransferSavedData.get(server);
+            // The synthetic empty ledger is otherwise never dirty before F1. Establish its checked
+            // durable identity in SETUP, so restart tests reload it rather than create a new ledger.
+            if (mode.equals("restart")) { data.setDirty(); data.bind(server).autosave(); }
             int count = mode.equals("capacity") ? 10 : 1;
             var extent = W206Observation.extent(shape);
             for (int i = 0; i < count; i++) {
@@ -199,6 +216,7 @@ public final class W206NativeWarmup {
         if (!rockets.stream().allMatch(rocket -> RocketTransferEntities.endAlreadyLoaded(server, rocket.snapshot().orElseThrow()))) { return; }
         for (var rocket : rockets) { if (!rocket.isAddedToWorld()) { require(earth.addFreshEntity(rocket), "Source publication failed"); return; } }
         if (age < 100 || !journal.retryChecked(server) || !data.bind(server).writerIdle()) { return; }
+        if (mode.equals("restart")) { require(data.ledger().writerGeneration() > 0, "Restart fixture ledger was not acknowledged"); }
         if (mode.equals("capacity")) {
             player = ReleaseTestPlayers.place(server, UUID.randomUUID(), "W206Pilot", earth, new Vec3(8192.5, 103, 8192.5));
         }
@@ -226,7 +244,19 @@ public final class W206NativeWarmup {
                 && data.ledger().armedFlights().isEmpty() && RocketEscrowGate.idle(rocket);
         result.put("source_unchanged", unchanged);
         require(unchanged, "Cold request crossed F1");
-        require(answer.code() == RocketFlightRequestCode.DESTINATION_LOADING && first != null, "Cold entry refused before warm-up: " + answer);
+        require(answer.code() == RocketFlightRequestCode.DESTINATION_LOADING && (first != null || preparing(rocket)),
+                "Cold entry refused before bounded preparation: " + answer);
+        result.put("logical", rocket.assemblyTransactionId().orElseThrow().toString());
+        if (first == null) {
+            require(RocketRuntime.installedTransfers().warmups.registry().reservations(UUID.randomUUID()).isEmpty(),
+                    "Unresolved terrain acquired a reservation");
+            result.put("unresolved_has_no_reservation", true); phase("TERRAIN"); return;
+        }
+        selected();
+    }
+
+    private void selected() throws Exception {
+        var predicted = W206Observation.candidate(shape, 8, 8);
         result.put("selected_columns", first.columns().size());
         result.put("selected_region", first.region().toString()); result.put("logical", first.logical().toString());
         result.put("selected_ticket_columns", W206Observation.owned(server, "arce_rocket_warmup", first.logical()));
@@ -247,6 +277,12 @@ public final class W206NativeWarmup {
 
     private void flight() throws Exception {
         var rocket = rockets.get(0); var warm = warm(rocket);
+        if (phase.equals("TERRAIN")) {
+            require(journal.entries().isEmpty() && data.ledger().armedFlights().isEmpty() && RocketEscrowGate.idle(rocket),
+                    "Terrain preparation crossed F1");
+            if (warm == null) { require(preparing(rocket), "Terrain preparation ended before selection"); return; }
+            first = warm; selected(); return;
+        }
         if (phase.equals("WARMING")) {
             require(warm != null, "Warm-up expired or disappeared before READY");
             if (warm.state() != RocketWarmupRegistry.State.READY) { return; }
@@ -318,10 +354,30 @@ public final class W206NativeWarmup {
     private void recover() throws Exception {
         phase = "RECOVER";
         var logical = UUID.fromString(Files.readString(root.resolve("w206-restart-id.txt")).trim());
-        require(live().isEmpty() && W206Observation.owned(server, "arce_rocket_warmup", logical).isEmpty(), "Warm-up persisted across JVMs");
+        require(allocations() == 0 && W206Observation.owned(server, "arce_rocket_warmup", logical).isEmpty(), "Preparation/warm-up persisted across JVMs");
         require(RocketTransferSavedData.get(server).entries().isEmpty(), "Unbound warm-up launched on restart");
         if (age == 1) { snapshot("FIRST_RESTART_TICK"); }
-        if (age == 100) { snapshot("RESTART_100"); result.put("outcome", "RESTART_ABSENT"); result.put("restart_absent", true); }
+        if (age == 100) {
+            snapshot("RESTART_100"); result.put("restart_absent", true);
+            // Recover only the original source; the destination gets no fixture/support ticket.
+            for (var c : W206Observation.candidate(shape, 8200, 8200).columns()) {
+                earth.getChunkSource().addRegionTicket(SOURCE, c, 2, key);
+            }
+            data = ResourceEscrowSavedData.existing(server);
+            require(data != null, "Restart fixture lost its original ledger");
+            data.bind(server); journal = RocketTransferSavedData.get(server);
+        }
+        if (age <= 100) { return; }
+        for (var entity : earth.getAllEntities()) {
+            if (entity instanceof RocketEntity rocket && rocket.assemblyTransactionId().filter(logical::equals).isPresent()
+                    && RocketTransferEntities.endAlreadyLoaded(server, rocket.snapshot().orElseThrow())
+                    && journal.retryChecked(server) && data.bind(server).writerIdle()) {
+                require(data.ledger().id().equals(rocket.escrowSection().ledger()), "Restart source ledger identity changed");
+                rockets.add(rocket); result.put("restart_source_ready", true); result.put("restart_logical", logical.toString());
+                result.put("restart_ledger", data.ledger().id().toString());
+                snapshot("RESTART_SOURCE_READY"); phase("BASELINE"); return;
+            }
+        }
     }
 
     private void capacity() throws Exception {
@@ -335,50 +391,59 @@ public final class W206NativeWarmup {
             require(RocketFlightConsoleFixtures.send(player, rocket, () -> RocketRuntime.requestFlightIntent(player,
                     rocket.getId(), RocketFlightAction.LAUNCH, RocketDestination.MOON, request)), "Player console refused");
             event("PLAYER_REQUEST", Map.of("index", i, "request", request.toString()));
-            require(i < 2 ? warm(rocket) != null : warm(rocket) == null, "Per-player cap changed");
+            require(i < 2 ? warm(rocket) != null || preparing(rocket) : warm(rocket) == null && !preparing(rocket), "Per-player cap changed");
         }
-        result.put("per_player_cap", live().size()); require(live().size() == 2, "Two player warm-ups not observed");
+        result.put("per_player_cap", allocations()); require(allocations() == 2, "Two player allocations not observed");
         for (int i = 3; i < 9; i++) { require(request(rockets.get(i), false).code() == RocketFlightRequestCode.DESTINATION_LOADING, "Cap allocation failed"); }
-        require(live().size() == 8, "Eight warm-ups not live"); result.put("peak_warmups", live().size());
+        require(allocations() == 8, "Eight preparation/warm-up slots not live"); result.put("peak_warmups", allocations());
+        result.put("initial_selected_warmups", live().size());
         require(request(rockets.get(9), true).code() == RocketFlightRequestCode.DESTINATION_LOADING_LIMIT
-                && warm(rockets.get(9)) == null && W206Observation.owned(server, "arce_rocket_warmup", rockets.get(9).assemblyTransactionId().orElseThrow()).isEmpty(), "Ninth was not refused");
+                && warm(rockets.get(9)) == null && !preparing(rockets.get(9))
+                && W206Observation.owned(server, "arce_rocket_warmup", rockets.get(9).assemblyTransactionId().orElseThrow()).isEmpty(), "Ninth was not refused");
         result.put("ninth_refused", true); observeWarmups(); snapshot("EIGHT_AND_NINTH");
-        for (int i = 4; i < 9; i++) { var warm = warm(rockets.get(i)); abandoned.put(warm.logical(), warm); }
+        for (int i = 4; i < 9; i++) { abandoned.put(rockets.get(i).assemblyTransactionId().orElseThrow(), (long) server.getTickCount()); }
         server.getPlayerList().remove(player); player = null; rockets.get(3).discard(); phase("EXPIRY");
     }
 
     private void lifecycle() throws Exception {
         if (player != null) { ReleaseTestPlayers.pump(server); }
-        for (var started : abandoned.values()) {
-            var current = RocketRuntime.installedTransfers().warmups.registry().warmup(started.logical()).orElse(null);
-            if (server.getTickCount() - started.started() < started.lifetime()) {
-                require(current != null && current.started() == started.started() && current.lifetime() == 600,
-                        "An abandoned warm-up ended early or changed its lifetime");
-            } else { require(current == null, "An abandoned warm-up outlived its captured deadline"); }
+        for (var started : abandoned.entrySet()) {
+            var current = RocketRuntime.installedTransfers().warmups.registry().warmup(started.getKey()).orElse(null);
+            boolean terrain = RocketRuntime.installedTransfers().warmups.terrain.contains(started.getKey());
+            if (server.getTickCount() - started.getValue() < 600) {
+                require(terrain || current != null && current.started() == started.getValue() && current.lifetime() == 600,
+                        "An abandoned allocation ended early or changed its lifetime");
+            } else { require(current == null && !terrain, "An abandoned allocation outlived its captured deadline"); }
         }
         if (age - phaseAt == 2) {
             for (int i : List.of(0, 1, 3)) {
-                require(warm(rockets.get(i)) == null && W206Observation.owned(server, "arce_rocket_warmup", rockets.get(i).assemblyTransactionId().orElseThrow()).isEmpty(), "Disconnect/removal ticket leak");
+                require(warm(rockets.get(i)) == null && !preparing(rockets.get(i)) && W206Observation.owned(server, "arce_rocket_warmup", rockets.get(i).assemblyTransactionId().orElseThrow()).isEmpty(), "Disconnect/removal ticket leak");
             }
             result.put("disconnect_removal", true); snapshot("DISCONNECT_REMOVAL");
         }
         if (age - phaseAt < 602) { return; }
-        require(live().isEmpty(), "600-tick expiry retained warm-ups");
+        require(allocations() == 0, "600-tick expiry retained allocations");
         for (var rocket : rockets) { require(W206Observation.owned(server, "arce_rocket_warmup", rocket.assemblyTransactionId().orElseThrow()).isEmpty(), "Expired ticket retained"); }
         result.put("expiry", true); snapshot("EXPIRED"); result.put("outcome", "LIFECYCLE_MEASURED");
     }
 
     private void replace() throws Exception {
-        var old = first;
-        require(request(rockets.get(0), true).code() == RocketFlightRequestCode.DESTINATION_LOADING, "Replacement refused");
+        if (!phase.equals("REPLACING")) {
+            require(request(rockets.get(0), true).code() == RocketFlightRequestCode.DESTINATION_LOADING, "Replacement refused");
+            phase("REPLACING");
+        }
         var replacement = warm(rockets.get(0));
-        require(replacement != null && !replacement.level().equals(old.level()), "Replacement did not change Level");
-        require(W206Observation.owned(server, "arce_rocket_warmup", old.logical()).stream().noneMatch(s -> s.startsWith(old.level() + ":")), "Old destination tickets retained");
+        if (replacement == null) { require(preparing(rockets.get(0)), "Replacement preparation disappeared"); return; }
+        require(replacement.level().equals(CelestialIds.SPACE_LEVEL.location()), "Replacement did not change Level");
+        require(W206Observation.owned(server, "arce_rocket_warmup", replacement.logical()).stream().noneMatch(s -> s.startsWith(CelestialIds.MOON_LEVEL.location() + ":")), "Old destination tickets retained");
         result.put("replacement", true); snapshot("REPLACED"); result.put("outcome", "REPLACEMENT_MEASURED");
     }
 
     private void finish() throws Exception {
         done = true; unsubscribe.run();
+        // Export outside the measurement; no tick-row JSON or filesystem IO in captureTick.
+        for (var row : tickRows) { write(ticks, row); }
+        result.put("timing_boundary", "native core + END through capture entry; buffered recorder tail reported separately; final export excluded");
         result.put("loaded_columns_union", loadedUnion); result.put("ticketed_columns_union", ticketUnion);
         result.put("ticks", age); result.put("final_phase", phase);
         Files.writeString(root.resolve("w206-result.json"), new GsonBuilder().setPrettyPrinting().create().toJson(result));

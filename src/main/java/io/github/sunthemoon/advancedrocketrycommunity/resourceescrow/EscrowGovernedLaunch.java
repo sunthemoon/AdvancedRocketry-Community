@@ -25,6 +25,8 @@ final class EscrowGovernedLaunch {
     private final RocketFlightData transit;
     private final RocketFlightData descent;
     private final long started;
+    // One immutable projection per preparation, never a root/authority or durable-acknowledgement cache.
+    private RocketTransferRecord projected;
 
     private EscrowGovernedLaunch(EscrowFlightAuthority.Launch launch, CompoundTag source, CompoundTag destination,
             RocketStructureSnapshot sourceSnapshot, RocketStructureSnapshot destinationSnapshot,
@@ -117,7 +119,7 @@ final class EscrowGovernedLaunch {
     }
 
     /** The caller must still prove this exact arm belongs to an acknowledged root before publishing F2. */
-    RocketTransferRecord record(EscrowFlightTables.Armed arm) {
+    synchronized RocketTransferRecord record(EscrowFlightTables.Armed arm) {
         EscrowTags.require(arm.outcome() == EscrowFlightTables.Outcome.ARMED
                 && arm.ledger().equals(launch.wrapper().ledger()) && arm.logical().equals(launch.logical())
                 && arm.owner().equals(launch.owner()) && arm.source().equals(launch.source())
@@ -126,9 +128,11 @@ final class EscrowGovernedLaunch {
                 && arm.binding().equals(launch.binding()) && arm.launch().equals(launch.launch())
                 && arm.sourceEnvelope().equals(launch.sourceEnvelope()) && arm.destinationEnvelope().equals(launch.destinationEnvelope()),
                 "ARMED no longer names this complete launch");
+        if (projected != null && projected.nativeTransfer().orElseThrow().armed().equals(arm)) { return projected; }
         var envelope = EscrowTransferEnvelope.capture(arm, source, destination, sourceSnapshot, destinationSnapshot, transit, descent);
-        return RocketTransferRecord.createGoverned(launch.transfer(), launch.logical(), launch.owner(), launch.source(),
+        projected = RocketTransferRecord.createGoverned(launch.transfer(), launch.logical(), launch.owner(), launch.source(),
                 sourceSnapshot, destinationSnapshot, transit, descent, transit.plan().orElseThrow().requiredFuel(), started, envelope);
+        return projected;
     }
 
     private static CompoundTag destination(CompoundTag source, UUID ledger, UUID physical,

@@ -85,6 +85,7 @@ public final class EscrowGovernedWarmupRefusalGameTests {
         RocketWarmupGameTestSupport.View warming;
         RocketTransferRecord prepared;
         long observedAt = -1;
+        long requestedAt;
         int step;
 
         Launch(GameTestHelper helper, BlockPos source) {
@@ -110,12 +111,24 @@ public final class EscrowGovernedWarmupRefusalGameTests {
                 if (!rocket.isAddedToWorld()) { helper.assertTrue(earth.addFreshEntity(rocket), "Warm-up source publication failed"); return; }
                 if (!journal.retryChecked(server) || !RocketWarmupGameTestSupport.live(server).isEmpty() || !prepare(server)) { return; }
                 departure = rocket.flightData().orElseThrow();
+                requestedAt = server.getTickCount();
                 var result = request(start);
+                helper.assertTrue(result.code() == RocketFlightRequestCode.DESTINATION_LOADING,
+                        "The cold launch did not wait: " + result.code() + " " + result.detailKey());
+                step = 10;
+            }
+            if (step == 10) {
+                unlaunched(journal);
                 warming = warmup(server, rocket);
-                helper.assertTrue(result.code() == RocketFlightRequestCode.DESTINATION_LOADING && warming != null
-                        && warming.state().equals("WARMING") && warming.request().equals(start)
+                if (warming == null) {
+                    helper.assertTrue(RocketWarmupGameTestSupport.preparing(server, logical(rocket)),
+                            "The cold request lost its bounded terrain allocation");
+                    return;
+                }
+                helper.assertTrue(warming.state().equals("WARMING") && warming.request().equals(start)
+                        && warming.started() == requestedAt
                         && tickets(server, rocket).equals(RocketWarmupGameTestSupport.columns(warming)),
-                        "The cold launch did not start a warm-up: " + result.code() + " " + result.detailKey());
+                        "The cold launch did not preserve its request, deadline or selected warm-up tickets");
                 unlaunched(journal);
                 afterWarming(server); step = 2; return;
             }

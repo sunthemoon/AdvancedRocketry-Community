@@ -33,10 +33,12 @@ def readiness(events):
         key = event.get("logical"), event.get("request")
         if event["kind"] == "STARTED":
             starts[key] = dict(logical=key[0], request=key[1], tick=event["tick"], ns=event["ns"],
+                               allocation_tick=event.get("started", event["tick"]), allocation_ticks=None,
                                ticks=None, ms=None, request_to_ready_ms=None, status="NOT_READY")
         elif event["kind"] == "READY" and key in starts:
             row = starts[key]
             row.update(ticks=event["tick"] - row["tick"], ms=(event["ns"] - row["ns"]) / 1e6, status="READY")
+            row["allocation_ticks"] = event["tick"] - row["allocation_tick"]
             if key in requests:
                 row["request_to_ready_ms"] = (event["ns"] - requests[key]) / 1e6
     return list(starts.values())

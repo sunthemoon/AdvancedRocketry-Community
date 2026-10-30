@@ -1,14 +1,14 @@
 param([Parameter(Mandatory=$true)][string]$Commit, [string]$Label='native-01',
       [string]$Cases='new-contained,new-border,new-square,new-strip,generated-contained,generated-border,generated-square,generated-strip,capacity,replace,restart',
-      [switch]$Batches)
+      [switch]$Batches, [ValidatePattern('^W[0-9]+$')][string]$TaskId='W206', [switch]$Jfr)
 $ErrorActionPreference='Stop'
 $workspace=(Resolve-Path "$PSScriptRoot/..").Path
 if($Label -notmatch '^native-[a-z0-9-]+$') { throw 'Invalid label' }
-$root="D:/GitHub/ARCE-Task-Evidence/root-queue/W206/$Label"
+$root="D:/GitHub/ARCE-Task-Evidence/root-queue/$TaskId/$Label"
 $temp='D:/GitHub/ARCE-Task-Evidence/Temp'
-$export="$temp/W206-$Label-export"; $archive="$temp/W206-$Label.zip"
+$export="$temp/$TaskId-$Label-export"; $archive="$temp/$TaskId-$Label.zip"
 $lock='D:\GitHub\ARCE-Task-Evidence\locks\heavy-jvm'
-$token="W206 pid=$PID $([guid]::NewGuid())"
+$token="$TaskId pid=$PID $([guid]::NewGuid())"
 $owned=$false; $created=$false; $archived=$false
 $result=@{source_commit=$Commit;started=(Get-Date -Format o);status='RUNNING'}
 if((Test-Path $root) -or (Test-Path $export) -or (Test-Path $archive)) { throw 'Existing output is immutable' }
@@ -70,9 +70,10 @@ try {
     if($LASTEXITCODE -ne 0) { throw 'Diagnostic build failed' }
     Copy-Item -LiteralPath "build/libs/$jar" -Destination "$root/diagnostic.jar"
     Set-Location $workspace
+    $profileArgs=@(); if($Jfr) { $profileArgs += '--jfr' }
     & python -B scripts/run_w206_warmup.py --jar "$root/diagnostic.jar" --production-jar "$root/production.jar" `
         --libraries 'D:/GitHub/ARCE-Task-Evidence/v1.8.0/guard-observation-04/native-04/server/libraries' `
-        --evidence $root --source-commit $Commit --lock-owner $token --cases $Cases *> "$root/native-console.log"
+        --evidence $root --source-commit $Commit --lock-owner $token --cases $Cases @profileArgs *> "$root/native-console.log"
     $result.native_exit=$LASTEXITCODE
     if($LASTEXITCODE -ne 0) { throw 'Native case failed; retained evidence; production unchanged' }
     $result.status='PASS'

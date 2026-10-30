@@ -156,7 +156,7 @@ public final class EscrowGovernedMarginGameTests {
         private RocketFlightData departure;
         private RocketWarmupGameTestSupport.View warming;
         private Set<String> ticketed;
-        private long moonEmptySince = -1, restartedAt, observedAt = -1;
+        private long moonEmptySince = -1, restartedAt, observedAt = -1, requestedAt;
         private int step;
 
         Flight(GameTestHelper helper) {
@@ -184,6 +184,7 @@ public final class EscrowGovernedMarginGameTests {
                 case 6 -> restart(server, journal);
                 case 7 -> reticketed(server);
                 case 8 -> landed(server, journal);
+                case 9 -> selectedWarmup(server, journal);
                 default -> { }
             }
         }
@@ -217,12 +218,26 @@ public final class EscrowGovernedMarginGameTests {
             if (!rocket.isAddedToWorld()) { helper.assertTrue(earth.addFreshEntity(rocket), "Margin fixture publication failed"); return; }
             if (!journal.retryChecked(server)) { return; }
             departure = rocket.flightData().orElseThrow();
-            var logical = rocket.assemblyTransactionId().orElseThrow();
+            requestedAt = server.getTickCount();
             var result = RocketRuntime.requestAdminFlight(rocket, RocketDestination.MOON, first);
             helper.assertTrue(result.code() == RocketFlightRequestCode.DESTINATION_LOADING,
                     "The cold governed launch was not refused for warming: " + result.code() + " " + result.detailKey());
+            step = 9;
+            selectedWarmup(server, journal);
+        }
+
+        /** Selection can now acquire FULL terrain asynchronously, within the original warm-up deadline. */
+        private void selectedWarmup(MinecraftServer server, RocketTransferSavedData journal) {
+            var logical = rocket.assemblyTransactionId().orElseThrow();
+            unlaunched(journal, logical, first);
             warming = RocketWarmupGameTestSupport.warmup(server, logical).orElse(null);
-            helper.assertTrue(warming != null && warming.state().equals("WARMING") && warming.request().equals(first)
+            if (warming == null) {
+                helper.assertTrue(RocketWarmupGameTestSupport.preparing(server, logical),
+                        "The cold margin request lost its bounded terrain allocation");
+                return;
+            }
+            helper.assertTrue(warming.state().equals("WARMING") && warming.request().equals(first)
+                    && warming.started() == requestedAt
                     && warming.player() == null && warming.region().equals(RocketRegion.fromSnapshot(destination)),
                     "The warm-up did not start on the predicted pad: " + warming);
             var expected = RocketWarmupGameTestSupport.columns(warming);

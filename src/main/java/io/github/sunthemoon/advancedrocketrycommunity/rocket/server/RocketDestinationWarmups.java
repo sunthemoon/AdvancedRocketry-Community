@@ -40,6 +40,7 @@ final class RocketDestinationWarmups {
     static final String READY_MESSAGE = "message.advancedrocketrycommunity.flight.destination_ready";
     private final Supplier<RocketWarmupSettings> settings;
     private final RocketWarmupRegistry registry;
+    final RocketPadTerrainPreparation terrain;
     private MinecraftServer server;
     private RocketWarmupRegistry.Decision decision;
 
@@ -50,6 +51,7 @@ final class RocketDestinationWarmups {
     RocketDestinationWarmups(Supplier<RocketWarmupSettings> settings) {
         this.settings = Objects.requireNonNull(settings, "settings");
         registry = new RocketWarmupRegistry(new LevelTickets(), line -> AdvancedRocketryCommunity.LOGGER.info("{}", line));
+        terrain = new RocketPadTerrainPreparation(registry);
     }
 
     /** R22 amendment 4: the launch's discard releases the warm-up bound to it, and nothing else. */
@@ -89,6 +91,7 @@ final class RocketDestinationWarmups {
     /** Every tick, before the transfer journal's early returns, so a blocked journal never keeps a warm-up alive. */
     void tick(MinecraftServer current) {
         server = current;
+        terrain.tick(current);
         if (registry.live().isEmpty()) { return; }
         registry.tick(current.getTickCount(), new RocketWarmupRegistry.Probe() {
             @Override public boolean online(UUID player) { return current.getPlayerList().getPlayer(player) != null; }
@@ -122,6 +125,21 @@ final class RocketDestinationWarmups {
         return registry.startedBy(request);
     }
 
+    boolean canAllocate(UUID logical, UUID player) {
+        return registry.canAllocate(logical, player, settings.get());
+    }
+
+    RocketFlightRequestResult prepareTerrain(MinecraftServer current, RocketEntity rocket, RocketFlightData countdown,
+            RocketRequestCompletion completion, net.minecraft.server.level.ServerLevel target,
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.RocketLandingPadSelection demand,
+            java.util.function.IntFunction<io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.RocketLandingPadSelection> select) {
+        server = current;
+        var code = !EscrowGovernedPreparation.available(rocket, countdown) ? RocketFlightRequestCode.TRANSFER_JOURNAL_BLOCKED
+                : terrain.start(rocket, countdown, completion, target, demand, select, settings.get())
+                ? RocketFlightRequestCode.DESTINATION_LOADING : RocketFlightRequestCode.DESTINATION_LOADING_LIMIT;
+        return RocketFlightRequestResult.failure(code, countdown.plan().orElseThrow().requiredFuel());
+    }
+
     /** R22 amendment 1, surface pads only: the station and named pads have one candidate each. */
     RocketPosition kept(RocketFlightData countdown, RocketEntity rocket) {
         var plan = countdown.plan().orElseThrow();
@@ -134,6 +152,7 @@ final class RocketDestinationWarmups {
     void clear() {
         var current = server;
         boolean live = current != null && current.isRunning() && current.isSameThread();
+        terrain.clear(live);
         registry.clear(live, current == null ? 0L : current.getTickCount());
         server = null;
         decision = null;
@@ -146,7 +165,8 @@ final class RocketDestinationWarmups {
                 + " request=" + warmup.request() + " transfer=" + (warmup.transfer() == null ? "none" : warmup.transfer())
                 + " level=" + warmup.level() + " columns=" + readyColumns(current, warmup) + "/" + warmup.columns().size()
                 + " age=" + warmup.age(now) + " remaining=" + warmup.remaining(now)
-                + " player=" + (warmup.player() == null ? "none" : warmup.player()));
+                + " player=" + (warmup.player() == null ? "none" : warmup.player()))
+                .or(() -> terrain.inspect(logical, now));
     }
 
     /** The transfer line's field: {@code BOUND remaining=<ticks>} until the handover, then {@code none}. */

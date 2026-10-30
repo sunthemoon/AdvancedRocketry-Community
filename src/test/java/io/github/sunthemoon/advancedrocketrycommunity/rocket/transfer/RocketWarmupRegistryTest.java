@@ -98,6 +98,26 @@ class RocketWarmupRegistryTest {
     /** A border-crossing pad: origin at x and z = 15 + 64n gives 2 x 2 columns. */
     static RocketStructureSnapshot pad(ResourceLocation level, int index) { return snapshot(level, 15 + 64 * index, 15); }
 
+    @Test void preselectionCapacityCountsBothQuotasAndAllowsAnExistingLogicalReplacement() {
+        UUID player = UUID.randomUUID();
+        var first = new Rocket(player); var second = new Rocket(player);
+        first.decide(pad(MOON, 0), false, 10); second.decide(pad(MOON, 1), false, 10);
+        assertFalse(registry.canAllocate(UUID.randomUUID(), player, DEFAULTS));
+        assertTrue(registry.canAllocate(first.logical, player, DEFAULTS));
+        for (int i = 2; i < 8; i++) { new Rocket(null).decide(pad(MOON, i), false, 10); }
+        var calls = List.copyOf(tickets.calls);
+        assertFalse(registry.canAllocate(UUID.randomUUID(), null, DEFAULTS));
+        assertTrue(registry.canAllocate(first.logical, player, DEFAULTS));
+        assertEquals(calls, tickets.calls, "Capacity probing is read-only");
+        assertEquals(8, registry.live().size());
+        assertEquals(10, registry.warmup(first.logical).orElseThrow().started());
+        var ready = new Rocket(null);
+        var decision = ready.decide(pad(MOON, 9), true, 11);
+        assertEquals(Outcome.PROCEED, decision.outcome(), "A ready destination can proceed without a ninth warm-up");
+        assertFalse(decision.bindable());
+        assertEquals(calls, tickets.calls);
+    }
+
     @Test void aFailingReplacementDiagnosticDoesNotInterruptTicketReplacement() {
         var guarded = new RocketWarmupRegistry(tickets, message -> {
             if (message.startsWith("ARCE_GOVERNED_WARMUP_REPLACED ")) {

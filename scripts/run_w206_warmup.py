@@ -84,6 +84,8 @@ def run_stage(args, session, output, mode, shape):
                     "-Dadvancedrocketrycommunity.w206Shape=" + shape,
                     "-Dadvancedrocketrycommunity.escrowConsumerTiming=true",
                     "-Xlog:gc*:file=gc.log:time,uptime,level,tags"]
+    if args.jfr:
+        command.insert(1, "-XX:StartFlightRecording=filename=profile.jfr,settings=profile,dumponexit=true")
     row = dict(source_commit=args.source_commit, mode=mode, shape=shape, command=command, status="RUNNING",
                started=time.time(), destination_region_files_before=sorted(str(p.relative_to(session)) for p in
                    (session / "world/dimensions/advancedrocketrycommunity/moon/region").glob("*.mca")))
@@ -106,7 +108,7 @@ def run_stage(args, session, output, mode, shape):
         (output / "host-samples.json").write_text(json.dumps(samples, indent=2))
         for path in (session / "world").glob("w206-*"):
             shutil.copy2(path, output / path.name)
-        for path in (session / "gc.log", session / "logs/latest.log", session / "logs/debug.log"):
+        for path in (session / "gc.log", session / "logs/latest.log", session / "logs/debug.log", session / "profile.jfr"):
             if path.is_file(): shutil.copy2(path, output / ("server-" + path.name))
         archive_timing(session, output)
         for path in (session / "crash-reports").glob("*.txt"):
@@ -120,10 +122,11 @@ def run_stage(args, session, output, mode, shape):
             summary = summarize(output)
             (output / "summary.json").write_text(json.dumps(summary, indent=2))
             expected = {"seed": "GENERATED_SEED", "flight": "MEASURED", "capacity": "LIFECYCLE_MEASURED",
-                        "replace": "REPLACEMENT_MEASURED", "restart": "RESTART_CUT", "recover": "RESTART_ABSENT"}[mode]
+                        "replace": "REPLACEMENT_MEASURED", "restart": "RESTART_CUT", "recover": "MEASURED"}[mode]
             if row["status"] == "COLLECTED":
                 row["status"] = "PASS" if result.get("outcome") == expected else "FAIL"
-            if mode == "flight" and not summary["flight_qualified"]: row["status"] = "FAIL"
+            if mode in ("flight", "recover") and not summary["flight_qualified"]: row["status"] = "FAIL"
+            if mode == "recover" and not all(result.get(k) for k in ("restart_absent", "restart_source_ready")): row["status"] = "FAIL"
             if mode not in ("seed", "recover") and not summary["timing"]["timing_qualified"]: row["status"] = "FAIL"
         else:
             row["status"] = "FAIL"; row["missing_result"] = True
@@ -140,6 +143,7 @@ def main():
         parser.add_argument("--" + flag, required=True, type=Path)
     parser.add_argument("--source-commit", required=True)
     parser.add_argument("--lock-owner", required=True)
+    parser.add_argument("--jfr", action="store_true")
     parser.add_argument("--cases", default="new-contained,new-border,new-square,new-strip,generated-contained,generated-border,generated-square,generated-strip,capacity,replace,restart")
     parser.add_argument("--java", default="C:/Program Files/Java/jdk-17.0.7/bin/java.exe")
     args = parser.parse_args(); require_lock(args.lock_owner)

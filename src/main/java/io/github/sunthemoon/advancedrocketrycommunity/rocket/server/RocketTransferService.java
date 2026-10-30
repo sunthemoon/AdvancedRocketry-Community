@@ -23,8 +23,6 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketR
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.RocketLandingPadSelection;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.RocketLandingPadSelector;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.validation.RocketValidationCode;
-import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState;
-import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -148,21 +146,24 @@ final class RocketTransferService {
         // W90: governed-only source and pad bounds. W90b: a live warm-up's starting request and its kept pad (R22 S1, S2).
         var admission = RocketGovernedAdmission.check(server, rocket, countdown, warmups);
         if (admission.refusal() != null) { return admission.refusal(); }
-        List<RocketRegion> reservations = warmups.reservations(launchReservations(server, journal), countdown.logicalRocketId());
-        RocketLandingPadSelection selected;
-        if (plan.destinationStation().isPresent()) {
-            StationState station = StationRegistrySavedData.get(server).find(plan.destinationStation().orElseThrow()).orElse(null);
-            if (station == null) { return RocketFlightRequestResult.failure(RocketFlightRequestCode.INVALID_DESTINATION); }
-            selected = plan.landingPad() != null ? namedPads.select(destinationLevel,
-                    rocket.snapshot().orElseThrow(), plan.requestId(), station, plan.landingPad(), reservations,
-                    scheduledArrival(countdown), admission.governed()) : pads.selectStation(destinationLevel,
-                    rocket.snapshot().orElseThrow(), plan.requestId(), station, reservations, scheduledArrival(countdown),
-                    admission.governed());
-        } else {
-            selected = pads.select(destinationLevel, rocket.snapshot().orElseThrow(), plan.requestId(), reservations,
-                    scheduledArrival(countdown), admission.governed(), admission.kept());
+        if (admission.governed() && warmups.terrain.waiting(rocket, countdown, completion)) {
+            return RocketFlightRequestResult.failure(RocketFlightRequestCode.DESTINATION_LOADING, plan.requiredFuel());
         }
+        boolean capacity = !admission.governed() || warmups.canAllocate(countdown.logicalRocketId(), completion.requester());
+        boolean loadTerrain = !admission.governed();
+        var selector = new RocketLaunchPadSelection(pads, namedPads);
+        java.util.function.IntFunction<RocketLandingPadSelection> selection = cursor -> selector.select(rocket, countdown, destinationLevel,
+                warmups.reservations(launchReservations(server, journal), countdown.logicalRocketId()),
+                admission.governed(), admission.kept(), loadTerrain, cursor);
+        RocketLandingPadSelection selected = selection.apply(-1);
         if (!selected.success()) {
+            if (RocketLandingPadSelector.TERRAIN_LOADING.equals(selected.detail())) {
+                return capacity ? warmups.prepareTerrain(server, rocket, countdown, completion, destinationLevel, selected, selection)
+                        : RocketFlightRequestResult.failure(RocketFlightRequestCode.DESTINATION_LOADING_LIMIT, plan.requiredFuel());
+            }
+            if (RocketLaunchPadSelection.INVALID_DESTINATION.equals(selected.detail())) {
+                return RocketFlightRequestResult.failure(RocketFlightRequestCode.INVALID_DESTINATION);
+            }
             auditPrepare(rocket, plan, selected, RocketFlightRequestCode.LANDING_PAD_UNAVAILABLE);
             return new RocketFlightRequestResult(
                     RocketFlightRequestCode.LANDING_PAD_UNAVAILABLE,
