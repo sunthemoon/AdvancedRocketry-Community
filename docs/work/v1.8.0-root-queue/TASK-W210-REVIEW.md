@@ -9,7 +9,7 @@ not commit, change nothing outside your review worktree and output folder, and d
 | Task it answers | [TASK-W210](TASK-W210-C1-ADMISSION-SIZING.md), Root decisions R181 and R183 (finding W208-R2) |
 | Record | `docs/work/v1.8.0-root-queue/records/W210.md` on the branch (the design note at its top) |
 | Evidence | `D:/GitHub/ARCE-Task-Evidence/root-queue/W210/` |
-| Hosted run | the run on `66386d5b8` (Root pushed the branch at 11:27); read its result if it has finished |
+| Hosted run | the run on `66386d5b8` (Root pushed the branch at 11:25); read its result if it has finished |
 | Output | `D:/GitHub/ARCE-Task-Evidence/root-queue/W210-review/REVIEW.md`, and its SHA-256 on the last line of your answer |
 
 W210 reports the near-bound C1 retain down from 318.235 ms to 0.518 ms and its allocation from 390 MB to 27 KB, with

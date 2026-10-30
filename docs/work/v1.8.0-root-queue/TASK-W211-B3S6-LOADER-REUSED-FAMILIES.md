@@ -74,3 +74,29 @@ here:
 A fresh session continues on the same branch and worktree from `c05847631`: read the record first and keep every
 retained result. Rerun A1's destination-first image with two restarts, then the remaining tranches A2 to C, committing
 tranche C's concrete selections and counts before its first launch. The rest of this TASK is unchanged.
+
+## Root decision R186 (2026-10-30 11:27): diagnose E5's unload observation, then continue
+
+The second session (10:23 to 11:25) delivered `068d10bd1`: the inventory registration, the record-backed S6 recovery
+observer (`9f8e0fe59`), A1's destination-first K5 image passing both restarts, and E5's unloaded-fairness cut
+(`9a3ad49f9`), which failed twice and stopped. In both attempts `EscrowLoaderS6UnloadedProbe.tick` threw "S6
+fairness slot unloaded without endpoint removal": `getChunkNow(128,128)` was null and `areEntitiesLoaded` false, but
+the retained loader and rocket references were not both `isRemoved()`; the log does not say which. The healthy request
+was never queued, so nothing about fairness or resources was observed.
+
+A fresh session continues on the same branch and worktree from `068d10bd1`:
+
+1. **Diagnose first, test-side.** Add observation only: for each retained reference, its type, `isRemoved()`, its
+   removal reason where the type has one, and the tick on which each of the three conditions (chunk absent, entities
+   unloaded, reference removed) first holds; and whether the reference is still the object the level holds at that
+   position or id. Run E5 once natively and record the sequence.
+2. **If both references are removed within a few ticks after the chunk and entity conditions,** the probe asserted
+   too early: make it wait for the complete unloaded state (all three conditions) within a fixed bound stated in the
+   record, failing if the bound passes, with a test that fails first for a reference that never becomes removed. The
+   failed attempts stay recorded; the revised E5 gets a new two-attempt budget.
+3. **If a reference stays live after its chunk and entities have unloaded,** or the probe held a stale object, say
+   which. A stale fixture reference is fixed in the fixture. A live block entity or entity after unload is a production
+   finding: stop and report it with the evidence.
+
+Then run E5 and continue R2 and the tranches A3 to C as the TASK and R185 describe, committing tranche C's concrete
+selections and counts before its first launch. The rest of this TASK is unchanged.
