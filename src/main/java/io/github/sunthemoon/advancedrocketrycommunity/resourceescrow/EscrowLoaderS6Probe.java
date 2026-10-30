@@ -11,22 +11,28 @@ final class EscrowLoaderS6Probe {
     private final boolean recovery;
     private final EscrowLoaderCutProbe fixture;
     private final EscrowLoaderS6Recovery observer;
+    private final EscrowLoaderS6UnloadedProbe unloaded;
     private boolean injected;
 
-    static boolean selected(boolean hooks, String name) { return hooks && E3.equals(name); }
+    static boolean selected(boolean hooks, String name) {
+        return hooks && (E3.equals(name) || EscrowLoaderS6UnloadedProbe.CASE.equals(name));
+    }
 
     EscrowLoaderS6Probe(MinecraftServer server, boolean recovery) {
         EscrowTestEndpoints.requireEnabled(server);
         this.server = server; this.recovery = recovery;
+        unloaded = EscrowLoaderS6UnloadedProbe.CASE.equals(System.getProperty("advancedrocketrycommunity.escrowCase"))
+                ? new EscrowLoaderS6UnloadedProbe(server, recovery) : null;
         // K7 supplies the unchanged real-loader baseline and per-device gate, not S6 recovery assertions.
         // Its success pause is not forwarded: this cut waits for the first propagated failed proof.
-        fixture = new EscrowLoaderCutProbe(server, "LF_M_K7", recovery);
-        observer = recovery ? new EscrowLoaderS6Recovery(server) : null;
+        fixture = unloaded == null ? new EscrowLoaderCutProbe(server, "LF_M_K7", recovery) : null;
+        observer = unloaded == null && recovery ? new EscrowLoaderS6Recovery(server) : null;
     }
 
-    void startTick() { fixture.startTick(); }
+    void startTick() { if (fixture != null) { fixture.startTick(); } }
 
     void checkpoint(String name) {
+        if (unloaded != null) { unloaded.checkpoint(name); return; }
         if (!recovery && !injected && name.equals("C4_SOURCE_SELECTED")) {
             injected = true;
             int size = EscrowCargoContentionProbe.injectCacheClose(true,
@@ -37,6 +43,7 @@ final class EscrowLoaderS6Probe {
     }
 
     void tick() {
+        if (unloaded != null) { unloaded.tick(); return; }
         if (recovery) { observer.tick(); return; }
         fixture.tick();
         if (recovery || !injected) { return; }

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Counted S6 loader tranches, with two restarts and no changes to shared runners.
 
-Currently implements A1 (E3 propagated cache-close failure). Other matrix rows
+Implements A1 (E3 propagated cache-close failure) and A2's unloaded E5 row. Other matrix rows
 remain missing; PASS_SELECTED never means B3-S6 acceptance. Run as a detached
 process so its own finally releases its lock and removes its disposable world.
 """
@@ -22,10 +22,10 @@ import run_v180_loader_cuts as shared
 from run_dedicated_server_smoke import CapturedProcess, SmokeError, allocate_port, write_server_configuration, expected_server_properties
 from run_v060_flight_server_smoke import _server_command
 
-CASES = (oracle.E3,)
+CASES = (oracle.E3, oracle.E5)
 HOOKS = shared.HOOK_FILES + tuple(
     "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/resourceescrow/" + name + ".java"
-    for name in ("EscrowLoaderS6Probe", "EscrowLoaderS6Recovery", "EscrowLoaderS6Accounting", "EscrowCargoContentionProbe"))
+    for name in ("EscrowLoaderS6Probe", "EscrowLoaderS6Recovery", "EscrowLoaderS6Accounting", "EscrowLoaderS6UnloadedProbe", "EscrowCargoContentionProbe"))
 HARNESSES = shared.HARNESS_FILES + ("scripts/run_v180_loader_s6.py", "scripts/loader_s6_oracle.py")
 
 
@@ -33,8 +33,8 @@ def write(path: Path, data: dict) -> None:
     path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
 
 
-def check_log(lines, restart):
-    oracle.check_observations(lines, restart)
+def check_log(lines, restart, cut=oracle.E3):
+    oracle.check_observations(lines, restart, cut)
 
 
 def run_cut(args, cut, evidence, owner, pins):
@@ -78,8 +78,10 @@ def run_cut(args, cut, evidence, owner, pins):
             process = CapturedProcess(command, session, evidence / f"start-{restart}.log")
             start["pid"] = process.process.pid
             try:
-                marker = (r"ARCE_LOADER_S6_PAUSED cut=" + re.escape(cut) + r" hook=PROPAGATED_CLOSE_FAILURE"
-                          if not restart else r"ARCE_LOADER_S6_RESULT cut=" + re.escape(cut) + r"(?:\s|$)")
+                hook = "UNLOADED_COMPETITOR_RETIRED" if cut == oracle.E5 else "PROPAGATED_CLOSE_FAILURE"
+                result_marker = "ARCE_LOADER_S6_FAIR_RESULT" if cut == oracle.E5 else "ARCE_LOADER_S6_RESULT"
+                marker = (r"ARCE_LOADER_S6_PAUSED cut=" + re.escape(cut) + r" hook=" + hook
+                          if not restart else result_marker + r" cut=" + re.escape(cut) + r"(?:\s|$)")
                 process.wait_for(re.compile(marker), args.startup_timeout)
                 start["checkpoint_reached"] = True
                 if restart:
@@ -100,15 +102,16 @@ def run_cut(args, cut, evidence, owner, pins):
                 row["unexplained_image"] = True
             process = None
             start["observations"] = [line for line in lines if "ARCE_LOADER_" in line or "ARCE_CARGO_CACHE_" in line]
-            start["image"] = oracle.inspect(session / "world")
-            for kind, check in (("LOG", lambda: check_log(lines, restart)),
-                                ("RAW", lambda: oracle.check_e3(start["image"], restart, identity))):
+            start["image"] = oracle.inspect(session / "world", cut)
+            raw_check = oracle.check_e5 if cut == oracle.E5 else oracle.check_e3
+            for kind, check in (("LOG", lambda: check_log(lines, restart, cut)),
+                                ("RAW", lambda: raw_check(start["image"], restart, identity))):
                 try:
                     result = check()
                     if kind == "RAW":
                         start["oracle"] = result
                         identity = result["identity"]
-                        if not restart and getattr(args, "require_initial_prefix", None):
+                        if cut == oracle.E3 and not restart and getattr(args, "require_initial_prefix", None):
                             oracle.legacy.require(result["prefix"] == args.require_initial_prefix,
                                                   "Selected initial prefix not reached: " + result["prefix"])
                 except SmokeError as failure:
@@ -140,7 +143,7 @@ def run(args):
     pins = dict(source_commit=args.source_commit, jar_sha256=shared.digest(args.jar),
                 hooks={p: shared.digest(shared.REPO / p) for p in HOOKS},
                 harness={p: shared.digest(shared.REPO / p) for p in HARNESSES})
-    report = dict(status="IN_PROGRESS", coverage="A1 only; not all B3-S6", pins=pins, cases=[], starts=0, restarts=0)
+    report = dict(status="IN_PROGRESS", coverage="Selected A1/E5 rows only; not all B3-S6", pins=pins, cases=[], starts=0, restarts=0)
     write(evidence / "results.json", report)
     for cut in args.case or CASES:
         for attempt in (1, 2):

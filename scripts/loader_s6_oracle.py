@@ -10,11 +10,12 @@ import loader_cut_oracle as legacy
 from run_dedicated_server_smoke import SmokeError
 
 E3 = "LF_S6_E3_CACHE_CLOSE"
+E5 = "LF_S6_E5_UNLOADED"
 
 
-def inspect(world: Path) -> dict:
+def inspect(world: Path, cut=E3) -> dict:
     try:
-        return dict(read_status="KNOWN", native=legacy.inspect(world))
+        return dict(read_status="KNOWN", native=inspect_e5(world) if cut == E5 else legacy.inspect(world))
     except (OSError, ValueError, KeyError, TypeError, SmokeError) as failure:
         return dict(read_status="UNKNOWN", native=None,
                     error=f"{type(failure).__name__}: {failure}")
@@ -44,9 +45,24 @@ def check_e3(image, restart, identity=None):
         raise SmokeError(f"Malformed/missing raw loader state: {failure}") from failure
 
 
-def check_observations(lines: list[str], restart: int) -> None:
+def check_observations(lines: list[str], restart: int, cut=E3) -> None:
     """Require the selected propagated failure, not merely a checkpoint label."""
     import re
+    if cut == E5:
+        if restart:
+            wanted = "ARCE_LOADER_S6_FAIR_RESULT cut=" + E5 + " pairs=2 totals=5000,5000 records=0 markers=0 epochs=1,1,1,1"
+            legacy.require(sum(wanted in line for line in lines) == 1, "Missing/repeated E5 completed pairs")
+            legacy.require(not any("/ERROR]" in line or "/FATAL]" in line for line in lines), "E5 recovery ERROR/FATAL")
+        else:
+            wanted = r"ARCE_LOADER_S6_FAIR cut=" + E5 + r" unloaded_ticks=(\d+) records=1 issued=2 pending=1 healthy_tank=4000 healthy_bank=1000 healthy_markers=0"
+            matches = [m for line in lines if (m := re.search(wanted, line))]
+            legacy.require(len(matches) == 1 and int(matches[0][1]) >= 20, "Missing actual unloaded-work fairness")
+            legacy.require(sum("ARCE_LOADER_S6_FAIR_CACHE regions=256" in line for line in lines) == 1,
+                           "Missing first loader's propagated close fixture")
+            errors = [line for line in lines if "/ERROR]" in line or "/FATAL]" in line]
+            legacy.require(len(errors) == 1 and "Failed to store chunk [128, 128]" in errors[0], "Unexpected E5 native errors")
+            legacy.require(any("java.nio.channels.ClosedChannelException" in line for line in lines), "Missing E5 own-close failure")
+        return
     if restart:
         check_recovery_observations(lines)
         legacy.require(not any("/ERROR]" in line or "/FATAL]" in line for line in lines),
@@ -107,3 +123,84 @@ def check_recovery_observations(lines: list[str]) -> None:
                        "Completion lacks exact final resources, epochs or observation count")
     except (KeyError, ValueError, TypeError) as failure:
         raise SmokeError(f"Malformed S6 accounting observation: {failure}") from failure
+
+
+def inspect_e5(world):
+    ledger = legacy.ledger(world / "data" / legacy.LEDGER)
+    legacy.require(not legacy.journal(world)["transfers"], "E5 created a transfer")
+    pairs = []
+    for chunk in (128, 4):
+        region = f"r.{chunk // 32}.{chunk // 32}.mca"
+        slot = chunk % 32 + 32 * (chunk % 32)
+        terrain = legacy.record(world / "region" / region, slot)
+        entities = legacy.record(world / "entities" / region, slot)["Entities"]
+        rockets = [e for e in entities if e.get("id") == legacy.ROCKET or "RocketEntityData" in e]
+        loaders = [e for e in terrain["block_entities"] if e.get("id") == legacy.LOADER]
+        legacy.require(len(rockets) == 1 and len(loaders) == 1, "E5 missing/duplicate native pair")
+        pairs.append(dict(loaders=loaders, rocket=rockets[0]))
+    return dict(ledger=ledger, pairs=pairs)
+
+
+def check_e5(image, restart, identity=None):
+    legacy.require(restart in (0, 1, 2) and image.get("read_status") == "KNOWN"
+                   and isinstance(image.get("native"), dict), "E5 UNKNOWN is not zero loss")
+    try:
+        disk = image["native"]
+        ledger, pairs = disk["ledger"], disk["pairs"]
+        legacy.require(len(pairs) == 2 and ledger["issued_through"] == 2 and ledger["writer_generation"] >= 2
+                       and len(ledger["records"]) == (0 if restart else 1), "E5 did not retain only the unloaded fill")
+        legacy.require(not any(ledger[k] for k in ("floors", "tombstones", "armed_flights", "rocket_authorities", "issued_launch_serial")),
+                       "E5 introduced unrelated flight/settlement authority")
+        identities, totals = [], []
+        for index, (pair, at) in enumerate(zip(pairs, (2048, 64))):
+            legacy.require(len(pair["loaders"]) == 1, "E5 native loader count changed")
+            device, rocket = pair["loaders"][0], pair["rocket"]
+            source, destination = device["arce_fluid_fuel_loader"], rocket["RocketEntityData"]
+            flight = destination["flight_data"]
+            held = not restart and index == 0
+            tank, bank = source["tank"]["Amount"], flight["fuel"]["propulsion"]["primary"]["amount"]
+            legacy.require((tank in (4000, 5000) and bank in (0, 1000)) if held else (tank, bank) == (4000, 1000),
+                           "E5 changed a pair's exact native quantities")
+            legacy.require(source["tank"] == dict(FluidName=legacy.FUEL, Amount=tank)
+                           and flight["fuel"]["propulsion"]["oxidizer"]["amount"] == 0, "E5 changed fluid vector")
+            legacy.require(device["id"] == legacy.LOADER and tuple(device[k] for k in ("x", "y", "z")) == (at + 2, 100, at)
+                           and rocket["id"] == legacy.ROCKET and rocket["Pos"] == [at + .5, 100., at + .5], "E5 moved/replaced a native endpoint")
+            legacy.require(source["owner"] == destination["owner_id"] and source["binding"]["physical_rocket"] == rocket["UUID"]
+                           and source["binding"]["logical_rocket"] == destination["assembly_transaction_id"] == flight["logical_rocket_id"],
+                           "E5 changed owner or identity binding")
+            legacy.require(not rocket.get("Passengers") and not flight["passengers"]["assignments"]
+                           and "active_transfer_id" not in flight and "plan" not in flight
+                           and not flight["fuel"].get("committed_debits"), "E5 created flight/passenger effects")
+            source_after, destination_after = int(tank == 4000), int(bank == 1000)
+            retired_ids = []
+            for section, after, role in ((source["resource_escrow"], source_after, "SOURCE"),
+                                         (destination["resource_escrow"], destination_after, "DESTINATION")):
+                if not restart and index == 1:
+                    # C8 prunes live markers, not an extra forced fixture save. Native stores may still carry
+                    # precisely the retired sequence-2 marker; it is not held fuel or a surviving record.
+                    count = len(section["markers"])
+                    legacy.require(count in (0, 1), "Unexpected healthy retired marker count")
+                    legacy.check_section(section, 1, count, dict(ledger, records=[]), role, 2)
+                    retired_ids.extend(m["op_id"] for m in section["markers"])
+                else:
+                    legacy.check_section(section, after, int(held) * after, ledger, role, index + 1)
+            legacy.require(len(set(retired_ids)) <= 1 and not any(m in [op["op_id"] for op in ledger["records"]] for m in retired_ids),
+                           "Healthy native marker belongs to another operation")
+            if held:
+                op = ledger["records"][0]
+                legacy.require(op["seq"] == 1 and op["source"]["identity"] == source["device"]
+                               and op["source"]["type"] == legacy.LOADER and op["destination"]["identity"] == rocket["UUID"]
+                               and op["payload"] == dict(FluidName=legacy.FUEL, Amount=1000)
+                               and op["native_binding"]["complete"] == 1 and op["native_binding"]["kind"] == "FUEL_VECTOR_V1",
+                               "E5 held image has no matching native record")
+            identities.append(dict(device=source["device"], owner=source["owner"], binding=source["binding"],
+                                   physical=rocket["UUID"], logical=flight["logical_rocket_id"]))
+            totals.append(tank + bank)
+        legacy.require(all(identities[0][k] != identities[1][k] for k in ("device", "physical", "logical")),
+                       "E5's healthy work is not independent")
+        observed = dict(ledger=ledger["ledger_id"], pairs=identities)
+        legacy.require(identity is None or observed == identity, "E5 changed identity across restarts")
+        return dict(identity=observed, pair_totals=totals, available_total=10000 if restart else None,
+                    loss=0 if restart else None)
+    except (KeyError, TypeError, IndexError) as failure:
+        raise SmokeError(f"Malformed E5 native state: {failure}") from failure

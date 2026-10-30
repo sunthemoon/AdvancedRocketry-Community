@@ -328,6 +328,7 @@ LF_M_R52_UNKNOWN	scripts/run_v180_retire_before_fill.py
 LF_M_W133F_ASSEMBLED	scripts/run_v180_fill_countdown.py
 LF_M_W133F_LANDED	scripts/run_v180_fill_countdown.py
 LF_S6_E3_CACHE_CLOSE	scripts/run_v180_loader_s6.py
+LF_S6_E5_UNLOADED	scripts/run_v180_loader_s6.py
 PF_ARM_ACK	scripts/run_v180_escrow_pre_f2.py;tests/test_v180_escrow_pre_f2.py
 PF_ARM_BEFORE	scripts/run_v180_escrow_pre_f2.py
 PF_ARM_REPLACED	scripts/run_v180_escrow_pre_f2.py;tests/test_v180_escrow_pre_f2.py

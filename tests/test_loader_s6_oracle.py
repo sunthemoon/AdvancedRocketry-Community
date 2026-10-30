@@ -170,6 +170,67 @@ class LoaderS6OracleTest(unittest.TestCase):
             self.assertEqual(2, result["restarts"])
             self.assertEqual(1, run_cut.call_count)
 
+    def fairness_image(self, restart=0):
+        far = fixture("LF_M_K6" if not restart else "LF_M_K7", restart)
+        healthy = fixture("LF_M_K7", 1)
+        far["loaders"][0].update(x=2050, z=2048)
+        far["rocket"]["Pos"] = [2048.5, 100.0, 2048.5]
+        h = healthy["loaders"][0]["arce_fluid_fuel_loader"]
+        h.update(device="healthy-device", binding=dict(physical_rocket="healthy-physical", logical_rocket="healthy-logical"))
+        healthy["rocket"]["UUID"] = "healthy-physical"
+        healthy["rocket"]["RocketEntityData"]["assembly_transaction_id"] = "healthy-logical"
+        healthy["rocket"]["RocketEntityData"]["flight_data"]["logical_rocket_id"] = "healthy-logical"
+        ledger = far["ledger"]
+        ledger["issued_through"] = 2
+        if ledger["records"]:
+            ledger["records"][0]["seq"] = 1
+        return dict(read_status="KNOWN", native=dict(ledger=ledger, pairs=[far, healthy]))
+
+    def test_fairness_counts_each_pair_and_preserves_distinct_identities(self):
+        initial = oracle.check_e5(self.fairness_image(), 0)
+        self.assertIsNone(initial["available_total"])
+        for restart in (1, 2):
+            result = oracle.check_e5(self.fairness_image(restart), restart, initial["identity"])
+            self.assertEqual([5000, 5000], result["pair_totals"])
+            self.assertEqual(10000, result["available_total"])
+
+    def test_fairness_cannot_offset_loss_between_loaders_or_accept_unknown(self):
+        image = self.fairness_image(1)
+        image["native"]["pairs"][0]["loaders"][0]["arce_fluid_fuel_loader"]["tank"]["Amount"] += 1
+        image["native"]["pairs"][1]["loaders"][0]["arce_fluid_fuel_loader"]["tank"]["Amount"] -= 1
+        with self.assertRaises(SmokeError):
+            oracle.check_e5(image, 1)
+        image = self.fairness_image()
+        image["read_status"] = "UNKNOWN"
+        with self.assertRaises(SmokeError):
+            oracle.check_e5(image, 0)
+
+    def test_fairness_rejects_changed_identity_marker_epoch_and_payload(self):
+        before = oracle.check_e5(self.fairness_image(), 0)["identity"]
+        for field in ("device", "marker", "epoch", "payload"):
+            image = self.fairness_image()
+            source = image["native"]["pairs"][0]["loaders"][0]["arce_fluid_fuel_loader"]
+            if field == "device": source["device"] = "changed"
+            elif field == "marker": source["resource_escrow"]["markers"][0]["seq"] = 2
+            elif field == "epoch": source["resource_escrow"]["resource_epoch"] = 2
+            else: image["native"]["ledger"]["records"][0]["payload"]["Amount"] = 1001
+            with self.subTest(field=field), self.assertRaises(SmokeError):
+                oracle.check_e5(image, 0, before)
+
+    def test_fairness_distinguishes_retired_native_markers_from_live_completion(self):
+        image = self.fairness_image()
+        pair = image["native"]["pairs"][1]
+        source = pair["loaders"][0]["arce_fluid_fuel_loader"]["resource_escrow"]
+        destination = pair["rocket"]["RocketEntityData"]["resource_escrow"]
+        for section, role in ((source, "SOURCE"), (destination, "DESTINATION")):
+            section["markers"] = [dict(op_id="healthy-op", seq=2, role=role, epoch_after=1)]
+        oracle.check_e5(image, 0)
+        destination["markers"][0]["op_id"] = "other"
+        with self.assertRaises(SmokeError): oracle.check_e5(image, 0)
+        image = self.fairness_image(1)
+        image["native"]["pairs"][1]["rocket"]["RocketEntityData"]["resource_escrow"]["markers"] = source["markers"]
+        with self.assertRaises(SmokeError): oracle.check_e5(image, 1)
+
 
 if __name__ == "__main__":
     unittest.main()

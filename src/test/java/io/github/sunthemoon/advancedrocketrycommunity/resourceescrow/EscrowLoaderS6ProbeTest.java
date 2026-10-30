@@ -11,6 +11,8 @@ class EscrowLoaderS6ProbeTest {
 
     @Test void selectionRequiresTheExactDedicatedCaseAndReleaseGate() {
         assertTrue(EscrowLoaderS6Probe.selected(true, "LF_S6_E3_CACHE_CLOSE"));
+        assertTrue(EscrowLoaderS6Probe.selected(true, "LF_S6_E5_UNLOADED"));
+        assertFalse(EscrowLoaderS6Probe.selected(false, "LF_S6_E5_UNLOADED"));
         assertFalse(EscrowLoaderS6Probe.selected(false, "LF_S6_E3_CACHE_CLOSE"));
         for (String name : new String[] {null, "", "LF_M_K7", "FC_LOAD_E3_CACHE_CLOSE", "LF_S6_OTHER"}) {
             assertFalse(EscrowLoaderS6Probe.selected(true, name));
