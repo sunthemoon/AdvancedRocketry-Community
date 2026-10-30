@@ -1,6 +1,10 @@
 """S6 raw-state rejection tests; no native server is needed."""
 from pathlib import Path
 import copy
+import gzip
+import struct
+import tempfile
+from unittest.mock import patch
 import sys
 import unittest
 import uuid
@@ -663,6 +667,8 @@ class GuardOracleTest(unittest.TestCase):
         disk = fixture("LF_M_N0", 0)
         original = disk["loaders"][0]
         original["arce_fluid_fuel_loader"]["schema_version"] = 1
+        original["arce_fluid_fuel_loader"]["binding"].update(
+            schema_version=1, level="minecraft:overworld", x=64, y=100, z=64)
         disk["loaders"] = []
         for index in range(257 if cut.endswith("SATURATION") else 1):
             loader = copy.deepcopy(original)
@@ -716,10 +722,75 @@ class GuardOracleTest(unittest.TestCase):
                  "[Server thread/ERROR]: Failed to save chunk 21,4",
                  "java.lang.IllegalStateException: Refusing chunk save after denial capacity exhausted; back up and repair first"]
         oracle.check_observations(lines, 0, cut)
+        for ending in ("\n", "\r\n"):
+            captured = ["[18:21:49] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: " + line + ending
+                        if line.startswith("ARCE_") else line + ending for line in lines]
+            oracle.check_observations(captured, 0, cut)
+            with self.assertRaises(SmokeError):
+                oracle.check_observations([line.rstrip("\r\n") + " extra" + ending for line in captured], 0, cut)
         for wrong in (lines[1:], lines + [lines[1]], lines + ["[Server/ERROR] unrelated"],
                       [line.replace("7fc00001", "7fc00000") for line in lines],
                       [line.replace("capacity exhausted", "something else") for line in lines]):
             with self.assertRaises(SmokeError): oracle.check_observations(wrong, 0, cut)
+
+    def test_native_binding_checks_every_field_without_accepting_extensions(self):
+        image = self.image()
+        oracle.check_g1(image, 0)
+        binding = image["native"]["loaders"][0]["arce_fluid_fuel_loader"]["binding"]
+        for field in binding:
+            for remove in (False, True):
+                damaged = copy.deepcopy(image)
+                target = damaged["native"]["loaders"][0]["arce_fluid_fuel_loader"]["binding"]
+                if remove:
+                    del target[field]
+                else:
+                    target[field] = target[field] + 1 if type(target[field]) is int else "changed"
+                with self.subTest(field=field, remove=remove), self.assertRaises(SmokeError):
+                    oracle.check_g1(damaged, 0)
+        binding["unexpected"] = 1
+        with self.assertRaises(SmokeError): oracle.check_g1(image, 0)
+
+    def test_native_level_dat_exceeds_celestial_tags_but_not_s6_bounds(self):
+        from inspect_celestial_saved_data import NbtReader, NbtError
+        path = Path(__file__).parent / "fixtures/loader_s6/native-level.dat.gz"
+        payload = gzip.decompress(path.read_bytes())
+        with self.assertRaises(NbtError): NbtReader(payload).read_root()
+        self.assertEqual(4495, oracle.read_g1_day_time(path))
+        # The independently configured evidence reader must not change the default.
+        with self.assertRaises(NbtError): NbtReader(payload).read_root()
+
+    def test_global_read_and_bound_failures_remain_unknown(self):
+        from inspect_celestial_saved_data import NbtError
+        path = Path(__file__).parent / "fixtures/loader_s6/native-level.dat.gz"
+        with tempfile.TemporaryDirectory() as directory:
+            bad = Path(directory) / "level.dat"
+            for payload in (b"not gzip", path.read_bytes()[:20], gzip.compress(b"x" * 4_194_305)):
+                bad.write_bytes(payload)
+                with self.subTest(size=len(payload)), self.assertRaises((OSError, ValueError, SmokeError)):
+                    oracle.read_g1_day_time(bad)
+        with patch.object(oracle, "inspect_g1", side_effect=NbtError("tag bound")):
+            image = oracle.inspect(Path("unused"), oracle.G1_VETO)
+            self.assertEqual("UNKNOWN", image["read_status"])
+            self.assertIsNone(image["native"])
+            with self.assertRaises(SmokeError): oracle.check_g1(image, 0)
+
+    def test_global_tag_limit_is_enforced_and_unknown_has_no_numeric_total(self):
+        # One root, one Data compound and 65,535 scalar children exceed 65,536 tags.
+        fields = []
+        for index in range(65_535):
+            name = str(index).encode("ascii")
+            fields.append(b"\x03" + struct.pack(">H", len(name)) + name + struct.pack(">i", index))
+        payload = b"\x0a\0\0\x0a\0\x04Data" + b"".join(fields) + b"\0\0"
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "level.dat"
+            path.write_bytes(gzip.compress(payload))
+            with self.assertRaisesRegex(ValueError, "65536 tags"):
+                oracle.read_g1_day_time(path)
+            with patch.object(oracle, "inspect_g1", side_effect=lambda *args: oracle.read_g1_day_time(path)):
+                image = oracle.inspect(Path(directory), oracle.G1_VETO)
+            self.assertEqual("UNKNOWN", image["read_status"])
+            self.assertIsNone(image["native"])
+            with self.assertRaises(SmokeError): oracle.check_g1(image, 0)
 
 
     def test_guard_palette_decodes_cross_word_padded_indices(self):

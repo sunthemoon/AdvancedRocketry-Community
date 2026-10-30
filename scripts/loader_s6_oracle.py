@@ -8,6 +8,7 @@ from __future__ import annotations
 from pathlib import Path
 from uuid import UUID
 import gzip
+import io
 import json
 import loader_cut_oracle as legacy
 from run_dedicated_server_smoke import SmokeError
@@ -30,6 +31,11 @@ G3_SELF_STOP = G3_UNKNOWN + (G3_CLOSE,)
 G3 = (G3_L1, G3_L2, G3_QUEUED, G3_L2_QUEUED) + G3_SELF_STOP
 G1_VETO, G1_SATURATION = "LF_S6_G1_VETO", "LF_S6_G1_SATURATION"
 G1 = (G1_VETO, G1_SATURATION)
+
+# Evidence-only level.dat envelope, independent of the celestial SavedData budget.
+G1_LEVEL_COMPRESSED_BYTES = 1_048_576
+G1_LEVEL_DECODED_BYTES = 4_194_304
+G1_LEVEL_TAGS = 65_536
 
 # UUID-valued native fields and the identity envelope returned by these oracles.
 # Do not recognize UUIDs by array length: coordinates, quantities and hashes are
@@ -361,8 +367,26 @@ def block_at(chunk, at):
     return palette[value]["Name"]
 
 
-def inspect_g1(world, cut):
+def read_g1_day_time(path):
     from inspect_celestial_saved_data import NbtReader
+    legacy.require(not path.is_symlink() and path.is_file(), "Missing/unsafe global control")
+    with path.open("rb") as stream:
+        compressed = stream.read(G1_LEVEL_COMPRESSED_BYTES + 1)
+    legacy.require(len(compressed) <= G1_LEVEL_COMPRESSED_BYTES, "Global control exceeds compressed bound")
+    try:
+        with gzip.GzipFile(fileobj=io.BytesIO(compressed)) as stream:
+            payload = stream.read(G1_LEVEL_DECODED_BYTES + 1)
+    except (OSError, EOFError) as failure:
+        raise SmokeError("Global control is not complete gzip NBT") from failure
+    legacy.require(len(payload) <= G1_LEVEL_DECODED_BYTES, "Global control exceeds decoded bound")
+    # A separate reader instance with a fixed, evidence-specific tag limit. The
+    # celestial default and its depth/collection/string limits are not modified.
+    value = NbtReader(payload, max_tags=G1_LEVEL_TAGS).read_root()["Data"]["DayTime"]
+    legacy.require(type(value) is int, "Global DayTime is not an integer")
+    return value
+
+
+def inspect_g1(world, cut):
     disk = legacy.inspect(world)
     chunks = {}
     for index in range(257 if cut == G1_SATURATION else 1):
@@ -372,10 +396,7 @@ def inspect_g1(world, cut):
     disk["protected_block"] = block_at(chunks[4, 4], (67, 100, 64))
     control = legacy.record(world / "region" / "r.0.0.mca", 21 + 32 * 4)
     disk["control_block"] = block_at(control, (338, 100, 64))
-    with gzip.open(world / "level.dat", "rb") as stream:
-        payload = stream.read(4_194_305)
-    legacy.require(len(payload) <= 4_194_304, "Global control exceeds decoded bound")
-    disk["day_time"] = NbtReader(payload).read_root()["Data"]["DayTime"]
+    disk["day_time"] = read_g1_day_time(world / "level.dat")
     disk["files"]["level.dat"] = legacy.digest(world / "level.dat")
     return disk
 
@@ -399,6 +420,7 @@ def check_g1(image, restart, identity=None, cut=G1_VETO):
                            "Guard failed to retain the valid disk baseline")
             legacy.check_section(source["resource_escrow"], 0, 0, None, "SOURCE", 0)
             legacy.require(source["owner"] == data["owner_id"] and source["binding"] == dict(
+                schema_version=1, level="minecraft:overworld", x=64, y=100, z=64,
                 physical_rocket=disk["rocket"]["UUID"], logical_rocket=data["assembly_transaction_id"]), "Guard changed owner/binding")
             legacy.require(source["device"] not in devices, "Guard duplicated a native device identity")
             devices.add(source["device"]); roots.append(source)
@@ -417,6 +439,7 @@ def check_g1(image, restart, identity=None, cut=G1_VETO):
 
 def check_g1_logs(lines, restart, cut):
     import re
+    lines = [line.rstrip("\r\n") for line in lines]
     saturated = cut == G1_SATURATION
     result = (f"ARCE_LOADER_S6_G1_RESULT cut={cut} round={restart} loaders={257 if saturated else 1} "
               f"denials={256 if saturated else 1} scope={'LEVEL' if saturated else 'CHUNK'} retained_bits=7fc00001 save_attempted=true")
