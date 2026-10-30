@@ -80,4 +80,23 @@ class EscrowLoaderS6SettlementProbeTest {
             assertFalse(EscrowLoaderS6SettlementProbe.boundary(cuts[i], "K9"));
         }
     }
+    @Test void survivorProofAndReceiptCutsRequireTheirOwnPhase() {
+        for (String side : java.util.List.of("BEFORE", "AFTER")) {
+            for (int index = 0; index < 2; index++) {
+                String hook = "O2_" + side + "_" + index, cut = "LF_S6_" + hook;
+                assertTrue(EscrowLoaderS6SettlementProbe.selected(true, cut));
+                assertTrue(EscrowLoaderS6SettlementProbe.completionBoundary(cut, hook, ""));
+                assertFalse(EscrowLoaderS6SettlementProbe.completionBoundary(cut, "O2_" + side + "_" + (1 - index), ""));
+            }
+        }
+        for (String[] row : new String[][] {{"O3_BEFORE", "K1", "O3"}, {"O3_REPLACED", "K2", "O3"},
+                {"O3_ACK", "O3_AFTER", "O3"}, {"O4_BEFORE", "K1", "O4"}}) {
+            String cut = "LF_S6_" + row[0];
+            assertTrue(EscrowLoaderS6SettlementProbe.selected(true, cut));
+            assertTrue(EscrowLoaderS6SettlementProbe.completionBoundary(cut, row[1], row[2]));
+            assertFalse(EscrowLoaderS6SettlementProbe.completionBoundary(cut, row[1], "O1"));
+            assertFalse(EscrowLoaderS6SettlementProbe.completionBoundary(cut, "unrelated", row[2]));
+        }
+        assertFalse(EscrowLoaderS6SettlementProbe.selected(true, "LF_S6_O2_BEFORE_2"));
+    }
 }

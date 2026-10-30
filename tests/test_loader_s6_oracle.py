@@ -898,5 +898,83 @@ class SettlementOracleTest(unittest.TestCase):
                 with self.assertRaises(SmokeError): oracle.check_observations(lines, 0, cut)
 
 
+class SettlementStagedOracleTest(unittest.TestCase):
+    CUTS = ("LF_S6_O2_BEFORE_0", "LF_S6_O2_AFTER_0", "LF_S6_O2_BEFORE_1", "LF_S6_O2_AFTER_1",
+            "LF_S6_O3_BEFORE", "LF_S6_O3_REPLACED", "LF_S6_O3_ACK", "LF_S6_O4_BEFORE")
+
+    def image(self, cut, restart=0):
+        source = SettlementOracleTest()
+        image = source.image(restart=restart)
+        if not restart and cut in self.CUTS[-3:]:
+            receipt = source.image(restart=1)["native"]["ledger"]["tombstones"][0]
+            receipt.update(released=0, release_generation=0)
+            image["native"]["ledger"]["tombstones"] = [receipt]
+        return image
+
+    def test_each_survivor_and_install_boundary_then_two_restarts(self):
+        for cut in self.CUTS:
+            identity = None
+            for restart in range(3):
+                with self.subTest(cut=cut, restart=restart):
+                    checked = oracle.check_o1(self.image(cut, restart), restart, identity, cut)
+                    identity = checked["identity"]
+                    self.assertEqual(5000, checked["raw_total"])
+                    self.assertIsNone(checked["available_total"])
+                    self.assertIsNone(checked["loss"])
+
+    def test_installed_receipt_is_exact_and_not_a_release(self):
+        cut = "LF_S6_O3_REPLACED"
+        baseline = self.image(cut)
+        for key in baseline["native"]["ledger"]["tombstones"][0]:
+            damaged = copy.deepcopy(baseline)
+            del damaged["native"]["ledger"]["tombstones"][0][key]
+            with self.subTest(key=key), self.assertRaises(SmokeError): oracle.check_o1(damaged, 0, cut=cut)
+        for key, value in (("released", 1), ("release_generation", 1), ("survivors", []), ("unknown_extra", 1)):
+            damaged = copy.deepcopy(baseline)
+            damaged["native"]["ledger"]["tombstones"][0][key] = value
+            with self.subTest(key=key), self.assertRaises(SmokeError): oracle.check_o1(damaged, 0, cut=cut)
+        for cut in self.CUTS:
+            with self.subTest(cut=cut), self.assertRaises(SmokeError):
+                oracle.check_o1(dict(read_status="UNKNOWN", native=None), 0, cut=cut)
+
+    def test_staged_logs_require_the_actual_boundary(self):
+        hooks = ("O2_BEFORE_0", "O2_AFTER_0", "O2_BEFORE_1", "O2_AFTER_1", "K1", "K2", "O3_AFTER", "K1")
+        for cut, hook in zip(self.CUTS, hooks):
+            line = f"ARCE_LOADER_S6_O_PAUSED cut={cut} hook={hook}\r\n"
+            oracle.check_observations([line], 0, cut)
+            for bad in ([], [line, line], [line.replace(hook, "unrelated")], [line, "[Server/ERROR] unrelated"]):
+                with self.subTest(cut=cut), self.assertRaises(SmokeError): oracle.check_observations(bad, 0, cut)
+
+    def test_native_o1_receipt_shape_and_staged_mutations(self):
+        import json
+        initial, completed = json.loads((Path(__file__).parent / "fixtures/loader_s6/settlement-o1-native.json").read_text())
+        original = copy.deepcopy([initial, completed])
+        identity = oracle.check_o1(initial, 0, cut="LF_S6_O1_REPLACED")["identity"]
+        oracle.check_o1(completed, 1, identity, "LF_S6_O1_REPLACED")
+        staged = copy.deepcopy(initial)
+        staged["native"]["ledger"]["tombstones"] = copy.deepcopy(completed["native"]["ledger"]["tombstones"])
+        staged["native"]["ledger"]["tombstones"][0].update(released=0, release_generation=0)
+        oracle.check_o1(staged, 0, cut="LF_S6_O3_REPLACED")
+        for cut in self.CUTS:
+            image = staged if cut in self.CUTS[-3:] else initial
+            for change in (
+                lambda d: d["loaders"][0]["arce_fluid_fuel_loader"]["tank"].update(Amount=3999),
+                lambda d: d["loaders"][0]["arce_fluid_fuel_loader"]["resource_escrow"].update(resource_epoch=2),
+                lambda d: d["rocket"]["RocketEntityData"]["resource_escrow"]["markers"][0].update(op_id="other"),
+                lambda d: d["ledger"]["records"][0]["native_binding"].update(owner="other")):
+                damaged = copy.deepcopy(image); change(damaged["native"])
+                with self.subTest(cut=cut), self.assertRaises(SmokeError): oracle.check_o1(damaged, 0, cut=cut)
+        self.assertEqual(original, [initial, completed])
+
+    def test_release_preserves_all_receipt_fields_not_only_before_choice(self):
+        initial = SettlementOracleTest().image()
+        identity = oracle.check_o1(initial, 0, cut="LF_S6_O1_REPLACED")["identity"]
+        for key, value in (("survivors", []), ("unrecognized", 1)):
+            changed = SettlementOracleTest().image(restart=1)
+            changed["native"]["ledger"]["tombstones"][0][key] = value
+            with self.subTest(key=key), self.assertRaises(SmokeError):
+                oracle.check_o1(changed, 1, identity, "LF_S6_O1_REPLACED")
+
+
 if __name__ == "__main__":
     unittest.main()

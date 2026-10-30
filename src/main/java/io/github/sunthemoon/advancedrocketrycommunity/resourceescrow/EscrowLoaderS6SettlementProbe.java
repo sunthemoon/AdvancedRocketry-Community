@@ -14,7 +14,9 @@ import net.minecraft.server.MinecraftServer;
 /** Real-loader operator decisions on a deliberately held, fully applied fill. Release-gated fixture only. */
 final class EscrowLoaderS6SettlementProbe {
     static final String BEFORE = "LF_S6_O1_BEFORE", REPLACED = "LF_S6_O1_REPLACED", ACK = "LF_S6_O1_ACK";
-    private static final List<String> CASES = List.of(BEFORE, REPLACED, ACK);
+    private static final List<String> CASES = List.of(BEFORE, REPLACED, ACK,
+            "LF_S6_O2_BEFORE_0", "LF_S6_O2_AFTER_0", "LF_S6_O2_BEFORE_1", "LF_S6_O2_AFTER_1",
+            "LF_S6_O3_BEFORE", "LF_S6_O3_REPLACED", "LF_S6_O3_ACK", "LF_S6_O4_BEFORE");
     private static final UUID ACTOR = UUID.nameUUIDFromBytes("arce:escrow:server-console".getBytes(java.nio.charset.StandardCharsets.US_ASCII));
     private static final BlockPos DEVICE = new BlockPos(66, 100, 64);
     private final MinecraftServer server;
@@ -23,6 +25,7 @@ final class EscrowLoaderS6SettlementProbe {
     private final EscrowLoaderCutProbe setup;
     private boolean held, baseline, queued, done;
     private volatile boolean writingIntent;
+    private volatile String ledgerPhase = "";
     private long began = -1;
 
     static boolean selected(boolean hooks, String cut) { return hooks && cut != null && CASES.contains(cut); }
@@ -36,6 +39,17 @@ final class EscrowLoaderS6SettlementProbe {
         EscrowTags.require(reason == EscrowReason.OTHER_STATE, "Settlement manual repair setup was not durable");
         return true;
     }
+    static boolean completionBoundary(String cut, String hook, String phase) {
+        if (!selected(true, cut)) { return false; }
+        if (cut.startsWith("LF_S6_O2_")) { return cut.equals("LF_S6_" + hook); }
+        return switch (cut) {
+            case "LF_S6_O3_BEFORE" -> phase.equals("O3") && hook.equals("K1");
+            case "LF_S6_O3_REPLACED" -> phase.equals("O3") && hook.equals("K2");
+            case "LF_S6_O3_ACK" -> phase.equals("O3") && hook.equals("O3_AFTER");
+            case "LF_S6_O4_BEFORE" -> phase.equals("O4") && hook.equals("K1");
+            default -> false;
+        };
+    }
     EscrowLoaderS6SettlementProbe(MinecraftServer server, String cut, boolean recovery) {
         EscrowTestEndpoints.requireEnabled(server);
         EscrowTags.require(selected(Boolean.getBoolean(EscrowTestEndpoints.HOOKS), cut)
@@ -47,7 +61,13 @@ final class EscrowLoaderS6SettlementProbe {
     void checkpoint(String hook) {
         if (recovery || done) { return; }
         if (writingIntent && boundary(cut, hook)) { pause(hook); }
-        if (held) { return; }
+        if (held) {
+            if (!writingIntent && queued) {
+                if (hook.equals("O3_CAPTURE") || hook.equals("O4_CAPTURE")) { ledgerPhase = hook.substring(0, 2); }
+                if (completionBoundary(cut, hook, ledgerPhase)) { pause(hook); }
+            }
+            return;
+        }
         setup.checkpoint(hook);
         if (hook.equals("C2_DESTINATION_AFTER")) {
             var data = ResourceEscrowSavedData.existing(server);

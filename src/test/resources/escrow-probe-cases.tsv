@@ -341,6 +341,14 @@ LF_S6_G3_L2_UNKNOWN	scripts/run_v180_loader_s6.py;tests/test_loader_s6_oracle.py
 LF_S6_O1_ACK	scripts/run_v180_loader_s6.py;tests/test_loader_s6_oracle.py
 LF_S6_O1_BEFORE	scripts/run_v180_loader_s6.py;tests/test_loader_s6_oracle.py
 LF_S6_O1_REPLACED	scripts/run_v180_loader_s6.py;tests/test_loader_s6_oracle.py
+LF_S6_O2_AFTER_0	scripts/run_v180_loader_s6.py;tests/test_loader_s6_oracle.py
+LF_S6_O2_AFTER_1	scripts/run_v180_loader_s6.py;tests/test_loader_s6_oracle.py
+LF_S6_O2_BEFORE_0	scripts/run_v180_loader_s6.py;tests/test_loader_s6_oracle.py
+LF_S6_O2_BEFORE_1	scripts/run_v180_loader_s6.py;tests/test_loader_s6_oracle.py
+LF_S6_O3_ACK	scripts/run_v180_loader_s6.py;tests/test_loader_s6_oracle.py
+LF_S6_O3_BEFORE	scripts/run_v180_loader_s6.py;tests/test_loader_s6_oracle.py
+LF_S6_O3_REPLACED	scripts/run_v180_loader_s6.py;tests/test_loader_s6_oracle.py
+LF_S6_O4_BEFORE	scripts/run_v180_loader_s6.py;tests/test_loader_s6_oracle.py
 LF_S6_R2_DESTRUCTIVE_SOURCE	scripts/run_v180_loader_s6.py;tests/test_loader_s6_oracle.py
 LF_S6_R2_DUPLICATE_RECONNECT	scripts/run_v180_loader_s6.py;tests/test_loader_s6_oracle.py
 LF_S6_R2_KEEP_SOURCE	scripts/run_v180_loader_s6.py;tests/test_loader_s6_oracle.py
