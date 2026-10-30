@@ -33,8 +33,7 @@ final class EscrowLoaderS6ShutdownProbe {
     private volatile boolean ioHeld;
     private volatile String queuedState = "";
     private boolean injected;
-    private volatile boolean firstSuccessorObserved;
-    private final java.util.concurrent.atomic.AtomicInteger preparations = new java.util.concurrent.atomic.AtomicInteger();
+    private volatile boolean otherWriteStarted;
 
     static boolean selected(boolean hooks, String nativeCase, String selection) {
         if (!hooks) { return false; }
@@ -49,6 +48,9 @@ final class EscrowLoaderS6ShutdownProbe {
     }
     static boolean l2QueuedReady(String state, boolean proved) {
         return proved && "active:true,successor:false,completions:0,running:true,unknown:false,generation:3,durable:2".equals(state);
+    }
+    static boolean otherWriteBoundary(String cut, String label, boolean recovery) {
+        return L2_QUEUED.equals(cut) && "C6_JOINT_READBACK".equals(label) && !recovery;
     }
     static boolean unknownReady(String cut, String state) {
         var match = java.util.regex.Pattern.compile("active:true,successor:(true|false),completions:0,running:false,unknown:true,generation:([0-9]{1,18}),durable:([0-9]{1,18})").matcher(state);
@@ -82,10 +84,9 @@ final class EscrowLoaderS6ShutdownProbe {
         if (recovery || selected.get()) { return; }
         if (L2_QUEUED.equals(cut) && ioHeld) {
             String state = writerState();
-            if (!firstSuccessorObserved && queuedReady(state)) { firstSuccessorObserved = true; }
             var data = ResourceEscrowSavedData.existing(server);
             var coordinator = data.bind(server);
-            if (preparations.get() == 2 && operation != null
+            if (otherWriteStarted && operation != null
                     && l2QueuedReady(state, coordinator.reconciliationCheckpointProved(operation))) {
                 var op = data.ledger().records().get(0);
                 var loader = (FluidFuelLoaderBlockEntity) server.overworld().getBlockEntity(new net.minecraft.core.BlockPos(66, 100, 64));
@@ -140,26 +141,26 @@ final class EscrowLoaderS6ShutdownProbe {
             EscrowTags.require(data != null && data.ledger().records().size() == 1, "S6 L2 lost its proved operation");
             operation = data.ledger().records().get(0).id();
         }
+        if (otherWriteBoundary(cut, label, recovery) && !otherWriteStarted) {
+            var data = ResourceEscrowSavedData.existing(server);
+            var coordinator = data.bind(server);
+            EscrowTags.require(coordinator.reconciliationCheckpointProved(operation) && coordinator.checkedWriteReady()
+                    && data.ledger().writerGeneration() == 2, "S6 other write must follow the native proof with idle authority");
+            var before = EscrowCodec.encode(data.ledger());
+            otherWriteStarted = true;
+            // Real, non-retiring ledger IO is the competing workload, after C6. No native endpoint save is requested.
+            data.setDirty(); coordinator.autosave();
+            EscrowTags.require(!coordinator.writerIdle() && before.equals(EscrowCodec.encode(data.ledger()))
+                    && coordinator.reconciliationCheckpointProved(operation), "S6 other write changed the pending checkpoint");
+        }
         // K7 is setup only: never enter its forced-stop pause at the successful proof.
         if (!"C6_JOINT_READBACK".equals(label)) { fixture.checkpoint(label); }
-        if (L2_QUEUED.equals(cut) && "K1".equals(label)) {
+        if (L2_QUEUED.equals(cut) && "K1".equals(label) && otherWriteStarted && held.compareAndSet(false, true)) {
             EscrowTags.require(!server.isSameThread() && server.isRunning(), "S6 pending retirement missed the live writer");
-            int ordinal = preparations.incrementAndGet();
-            EscrowTags.require(ordinal <= 2, "S6 pending retirement observed an extra preparation write");
             ioHeld = true;
-            if (ordinal == 1) {
-                long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(30);
-                while (!firstSuccessorObserved && server.isRunning() && System.nanoTime() < deadline) {
-                    try { TimeUnit.MILLISECONDS.sleep(10); }
-                    catch (InterruptedException failure) { Thread.currentThread().interrupt(); throw new IllegalStateException(failure); }
-                }
-                EscrowTags.require(firstSuccessorObserved && server.isRunning(), "S6 normal successor was not observed within the checkpoint bound");
-                ioHeld = false;
-            } else {
-                awaitStop();
-                EscrowTags.require(selected.get() && l2QueuedReady(queuedState, true), "S6 stop preceded the proved pending retirement");
-                AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_S6_DRAIN_RELEASE cut={} boundary=C6_PENDING running=false state={}", cut, queuedState);
-            }
+            awaitStop();
+            EscrowTags.require(selected.get() && l2QueuedReady(queuedState, true), "S6 stop preceded the proved pending retirement");
+            AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_S6_DRAIN_RELEASE cut={} boundary=C6_PENDING running=false state={}", cut, queuedState);
             return;
         }
         if ((L1_UNKNOWN.equals(cut) || L2_UNKNOWN.equals(cut)) && "WRITE_UNKNOWN".equals(label) && !selected.get()) {

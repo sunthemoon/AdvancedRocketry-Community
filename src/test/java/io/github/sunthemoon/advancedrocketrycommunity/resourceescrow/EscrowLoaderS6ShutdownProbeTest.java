@@ -9,7 +9,18 @@ import org.junit.jupiter.api.Test;
 class EscrowLoaderS6ShutdownProbeTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
 
-    @Test void l2QueuedMeansProvedCheckpointWaitingBehindTheActualSecondL1() {
+    @Test void pendingRetirementStartsOtherWriteOnlyAfterTheNativeProofNotBeforeReconciliation() {
+        String cut = "LF_S6_G3_L2_QUEUED";
+        assertFalse(EscrowLoaderS6ShutdownProbe.otherWriteBoundary(cut, "K1", false));
+        assertTrue(EscrowLoaderS6ShutdownProbe.otherWriteBoundary(cut, "C6_JOINT_READBACK", false));
+        assertFalse(EscrowLoaderS6ShutdownProbe.otherWriteBoundary(cut, "C6_JOINT_READBACK", true));
+        for (String label : java.util.List.of("C2_SOURCE_AFTER", "C3_FROZEN", "C7_ACKNOWLEDGED", "K8")) {
+            assertFalse(EscrowLoaderS6ShutdownProbe.otherWriteBoundary(cut, label, false));
+        }
+        assertFalse(EscrowLoaderS6ShutdownProbe.otherWriteBoundary("LF_S6_G3_L1_QUEUED", "C6_JOINT_READBACK", false));
+    }
+
+    @Test void l2QueuedMeansProvedCheckpointWaitingBehindAnActualOtherWrite() {
         String cut = "LF_S6_G3_L2_QUEUED";
         assertTrue(EscrowLoaderS6ShutdownProbe.selected(true, "LF_M_K7", cut));
         assertFalse(EscrowLoaderS6ShutdownProbe.selected(false, "LF_M_K7", cut));

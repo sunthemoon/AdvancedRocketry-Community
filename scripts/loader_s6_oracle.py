@@ -201,7 +201,7 @@ def check_observations(lines: list[str], restart: int, cut=E3, retired_operation
                 suffix = " state=" + state
                 if cut == G3_L2_QUEUED:
                     legacy.require(state == "active:true,successor:false,completions:0,running:true,unknown:false,generation:3,durable:2",
-                                   "Pending native retirement lacks the busy second L1")
+                                   "Pending native retirement lacks the busy non-retiring write")
                     expected = "ARCE_LOADER_S6_L2_PENDING records=1 pending=1 issued=1 proved=true locked=true tank=4000 bank=1000 epochs=1,1 markers=1,1"
                     legacy.require(sum(re.search(re.escape(expected) + r"(?:\s|$)", line) is not None for line in lines) == 1,
                                    "Missing/repeated proved pending retirement and exact resources")
