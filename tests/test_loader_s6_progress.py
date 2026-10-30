@@ -1,5 +1,7 @@
 """Persisted phase fixtures and complete native mutation controls, not native evidence."""
 import copy
+import json
+from pathlib import Path
 import unittest
 from test_loader_s6_forward import fixture
 import loader_s6_progress as progress
@@ -14,6 +16,7 @@ def stored(cut):
     phase = cut.removeprefix("LF_S6_F3_")
     state = copy.deepcopy(row["source_flight"])
     state.update(state=phase, state_started_game_time=80 if phase == "ASCENT" else 160)
+    if phase == "ASCENT": state.pop("active_transfer_id")
     source["RocketEntityData"]["flight_data"] = state
     source["Pos"][1] = 112. if phase == "ASCENT" else 148.
     witness = dict(witness, stored=dict(owner="FIXTURE", phase=phase,
@@ -22,6 +25,21 @@ def stored(cut):
 
 
 class ProgressOracleTests(unittest.TestCase):
+    def test_retained_native_ascent_has_no_transfer_field_until_transit(self):
+        retained = json.loads((Path(__file__).parent / "fixtures/loader_s6/ascent-native.json").read_text())
+        cut = "LF_S6_F3_ASCENT"
+        actual = retained["images"][0]["native"]["source"]["RocketEntityData"]["flight_data"]
+        self.assertNotIn("active_transfer_id", actual)
+        identity = None
+        for index, image in enumerate(retained["images"]):
+            identity = progress.check(image, index, identity, cut, retained["witnesses"][index])["identity"]
+        changed = copy.deepcopy(retained["images"][0])
+        state = changed["native"]["source"]["RocketEntityData"]["flight_data"]
+        state["active_transfer_id"] = changed["native"]["journal"]["transfers"][0]["transfer_id"]
+        witness = copy.deepcopy(retained["witnesses"][0])
+        witness["stored"]["digest"] = forward.survivor_digest(forward.normalize(changed["native"]["source"]))
+        with self.assertRaises(SmokeError): progress.check(changed, 0, None, cut, witness)
+
     def test_fixture_readback_witness_requires_exact_framing_and_order(self):
         for cut in progress.CASES:
             transfer = "ARCE_LOADER_S6_FLIGHT_TRANSFER cut=" + cut + " digest=" + "a"*64

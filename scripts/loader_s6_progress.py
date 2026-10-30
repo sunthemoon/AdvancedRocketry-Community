@@ -30,6 +30,7 @@ def check(image, restart, identity, cut, witness):
                        "Stored phase witness changed its ownership, phase or clock")
         state = copy.deepcopy(row["source_flight"])
         state.update(state=phase, state_started_game_time=observed["phase_time"])
+        if phase == "ASCENT": state.pop("active_transfer_id")
         expected["RocketEntityData"]["flight_data"] = state
         height = actual["Pos"][1]
         legacy.require(112 <= height <= 148 if phase == "ASCENT" else height == 148,
