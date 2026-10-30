@@ -5,6 +5,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryPoolMXBean;
 
 /** Diagnostic-JAR-only nested elapsed spans. Owner-thread scope; no authority or world references. */
 public final class W212Timing {
@@ -12,6 +14,57 @@ public final class W212Timing {
     private static final ThreadLocal<Recorder> ACTIVE = new ThreadLocal<>();
     private static final Span NONE = new Span(null, "", 0, 0);
     private W212Timing() { }
+
+    /** Diagnostic export only; measurement queries and output are outside the timed initialization body. */
+    public static Startup startup() { return new Startup(); }
+
+    static long metadataUsed(List<MemoryPoolMXBean> pools) {
+        // HotSpot's Metaspace pool already includes Compressed Class Space; never add its subset again.
+        return poolUsed(pools, "Metaspace");
+    }
+
+    private static long poolUsed(List<MemoryPoolMXBean> pools, String name) {
+        for (var pool : pools) {
+            if (pool.getName().equals(name)) { return pool.getUsage().getUsed(); }
+        }
+        throw new IllegalStateException("Missing diagnostic memory pool: " + name);
+    }
+
+    public static final class Startup implements AutoCloseable {
+        private final com.sun.management.ThreadMXBean threads =
+                (com.sun.management.ThreadMXBean) ManagementFactory.getThreadMXBean();
+        private final java.lang.management.ClassLoadingMXBean classes = ManagementFactory.getClassLoadingMXBean();
+        private final java.lang.management.MemoryMXBean memory = ManagementFactory.getMemoryMXBean();
+        private final List<MemoryPoolMXBean> pools = ManagementFactory.getMemoryPoolMXBeans();
+        private final long thread = Thread.currentThread().getId();
+        private final int loadedBefore = classes.getLoadedClassCount();
+        private final long heapBefore = memory.getHeapMemoryUsage().getUsed();
+        private final long metadataBefore = metadata();
+        private final long classSpaceBefore = poolUsed(pools, "Compressed Class Space");
+        private final long allocatedBefore = allocated();
+        private final long start = System.nanoTime();
+
+        private long metadata() {
+            return metadataUsed(pools);
+        }
+        private long allocated() {
+            return threads.isThreadAllocatedMemorySupported() && threads.isThreadAllocatedMemoryEnabled()
+                    ? threads.getThreadAllocatedBytes(thread) : -1;
+        }
+        @Override public void close() {
+            long end = System.nanoTime();
+            long allocatedAfter = allocated();
+            var result = new java.util.LinkedHashMap<String, Object>();
+            result.put("elapsed_ns", end - start);
+            result.put("thread", Thread.currentThread().getName());
+            result.put("loaded_classes_delta", classes.getLoadedClassCount() - loadedBefore);
+            result.put("thread_allocated_bytes", allocatedBefore < 0 || allocatedAfter < 0 ? -1 : allocatedAfter - allocatedBefore);
+            result.put("heap_used_delta_bytes", memory.getHeapMemoryUsage().getUsed() - heapBefore);
+            result.put("metaspace_used_delta_bytes", metadata() - metadataBefore);
+            result.put("compressed_class_space_used_delta_bytes", poolUsed(pools, "Compressed Class Space") - classSpaceBefore);
+            System.out.println("W215_STARTUP " + new GsonBuilder().create().toJson(result));
+        }
+    }
 
     public static void start() {
         if (ACTIVE.get() != null) { throw new IllegalStateException("Recorder already active"); }

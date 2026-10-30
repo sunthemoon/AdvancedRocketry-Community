@@ -71,7 +71,7 @@ try {
     if($Attribution) {
         Copy-Item -LiteralPath "$export/src/test/java/$package/resourceescrow/W212Timing.java" -Destination "$export/src/main/java/$package/resourceescrow/W212Timing.java"
         Remove-Item -LiteralPath "$export/src/test/java/$package/resourceescrow/W212Timing.java"
-        & python -B "$workspace/scripts/w212_instrument.py" $export $root *> "$root/instrumentation.log"
+        & python -B "$export/scripts/w212_instrument.py" $export $root *> "$root/instrumentation.log"
         if($LASTEXITCODE -ne 0) { throw 'Diagnostic instrumentation failed' }
     }
     & .\gradlew.bat @gradle test --tests '*W206ObservationTest' jar *> "$root/diagnostic-build.log"

@@ -9,7 +9,9 @@ import re
 
 PACKAGE = "io/github/sunthemoon/advancedrocketrycommunity"
 PROBE = "io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.W212Timing"
+STARTUP_TARGET = "resourceescrow/EscrowRelaunchClasses.java"
 TARGETS = {
+    STARTUP_TARGET: [("static void initialize()", "startup.initialize")],
     "resourceescrow/EscrowGovernedPreparation.java": [
         ("public static boolean begin(RocketEntity rocket,", "preparation.begin")],
     "resourceescrow/EscrowGovernedLaunch.java": [
@@ -59,7 +61,8 @@ def wrap(source, anchor, label):
         raise ValueError(f"Expected exactly one declaration: {anchor}")
     start = source.index("{", source.index(anchor))
     end = body_end(source, start)
-    return (source[:start + 1] + f'\n        try (var w212Span = {PROBE}.open("{label}")) {{'
+    scope = f'{PROBE}.startup()' if label == "startup.initialize" else f'{PROBE}.open("{label}")'
+    return (source[:start + 1] + f'\n        try (var w212Span = {scope}) {{'
             + source[start + 1:end] + "\n        }\n    " + source[end:])
 
 
@@ -69,6 +72,9 @@ def instrument(export, output):
     manifest, patch = [], []
     for relative, spans in TARGETS.items():
         path = export / "src/main/java" / PACKAGE / relative
+        # The committed before-remedy source predates W215; do not add a startup step to that control.
+        if relative == STARTUP_TARGET and not path.exists():
+            continue
         before_hash = hashlib.sha256(path.read_bytes()).hexdigest()
         before = path.read_text(encoding="utf-8")
         after = before
