@@ -66,7 +66,7 @@ class EscrowProbeRoutingTest {
                 }
             }
         }
-        assertEquals(609, seen.size()); // R202: adds F3-F8 and successor refill under unchanged producer rules.
+        assertEquals(610, seen.size()); // R203: adds the native sticky representative under unchanged producer rules.
         assertTrue(seen.contains(EscrowLoaderS6Probe.E3));
         var expected = new HashSet<>(EscrowItemSettlementCuts.CASES.keySet()); expected.addAll(EscrowItemRecoveryCuts.CASES);
         assertEquals(expected, items); assertEquals(18, items.size());

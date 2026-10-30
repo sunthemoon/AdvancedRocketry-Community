@@ -414,6 +414,7 @@ LF_S6_R2_DUPLICATE_RECONNECT	scripts/run_v180_loader_s6.py;tests/test_loader_s6_
 LF_S6_R2_KEEP_SOURCE	scripts/run_v180_loader_s6.py;tests/test_loader_s6_oracle.py
 LF_S6_REFILL	scripts/run_v180_loader_s6.py
 LF_S6_REFILL_BI	scripts/run_v180_loader_s6.py
+LF_S6_STICKY_RESERVATION	scripts/run_v180_loader_s6.py
 PF_ARM_ACK	scripts/run_v180_escrow_pre_f2.py;tests/test_v180_escrow_pre_f2.py
 PF_ARM_BEFORE	scripts/run_v180_escrow_pre_f2.py
 PF_ARM_REPLACED	scripts/run_v180_escrow_pre_f2.py;tests/test_v180_escrow_pre_f2.py
