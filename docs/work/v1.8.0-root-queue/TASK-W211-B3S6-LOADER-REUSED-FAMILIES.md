@@ -174,3 +174,25 @@ A fresh session continues on the same branch and worktree from `9e574e587`: the 
 (native G1 veto and saturation), B (loader operator settlement) and C (governed flight, F8, F9 and successor refill
 after F8), committing tranche C's concrete selections and counts before its first launch. R190's rule for test-side
 defects still applies. The rest of this TASK, R185, R186, R188 and R190 are unchanged.
+
+## Root decision R194 (2026-10-30 18:59): the three G1 oracle defects, then fresh G1 attempts
+
+The sixth session (17:30 to 18:57) delivered `fedd1874b`: R192's L2-pending retirement passed with two restarts
+(after one fixture correction), with the writer-successor form pinned as excluded by unit tests; A4's G1 veto reached
+its native save experiment on all six starts but failed qualification twice on three independent test-side defects:
+the log matcher compares lines with their trailing newline, the global-data inspection reads the whole native
+`level.dat` with the celestial reader's 4,096-tag bound (205,682 bytes fail at tag 4,097, so every image became
+UNKNOWN), and the binding comparison expects two UUID fields where native bindings also carry schema, Level and x, y
+and z. No production failure is shown.
+
+**Decision.** All three are test-side and may be fixed, each with a test that fails first on the real native form:
+strip line endings once where lines are captured or matched (not by loosening a marker); read `level.dat` for the
+evidence oracle with its own reader and an explicit bound stated in the record and large enough for a native
+`level.dat`, never by enlarging the product's celestial bound, and still reporting UNKNOWN, never zero, when a bound
+or read fails; compare the complete native binding (every field), not two UUIDs. Because the failed attempts kept
+UNKNOWN images, they cannot be replayed: they stay FAILED, and G1 veto gets a fresh two-attempt budget on committed
+source. Then G1 saturation, B and C, committing tranche C's concrete selections and counts before its first launch.
+R190's rule applies again from here.
+
+A fresh session continues on the same branch and worktree from `fedd1874b`. The rest of this TASK and R185 to R192
+are unchanged.
