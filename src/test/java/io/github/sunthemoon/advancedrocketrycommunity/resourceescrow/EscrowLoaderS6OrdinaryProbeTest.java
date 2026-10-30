@@ -46,6 +46,24 @@ class EscrowLoaderS6OrdinaryProbeTest {
         assertThrows(IllegalArgumentException.class, () -> EscrowLoaderS6OrdinaryProbe.historical(from, base, bound,
                 UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), 239));
     }
+    @Test void retainedSettledSourceMakesHistoricalCommittedRespawnStructurallyUnreachable() {
+        var base = settled(); var source = UUID.randomUUID(); var logical = base.logicalRocketId();
+        var wrapper = new RocketEscrowSection(UUID.randomUUID(), 0, List.of());
+        var record = EscrowLoaderS6OrdinaryProbe.historical(snapshot(), base, wrapper, UUID.randomUUID(), source,
+                UUID.randomUUID(), UUID.randomUUID(), 300);
+        var action = RocketTransferRecoveryDecision.decide(record.phase(), new RocketTransferPresence(true, false));
+        assertEquals(RocketTransferRecoveryAction.KEEP_SOURCE, action);
+        assertNotEquals(RocketTransferRecoveryAction.REBUILD_DESTINATION, action);
+        var ledger = new EscrowLedger(wrapper.ledger(), 1, 6, List.of(), List.of(), List.of(), 1, List.of(), List.of());
+        assertNull(EscrowRecoveryFence.reason(ledger, logical, record.transferId(), action,
+                List.of(new EscrowRecoveryFence.Rocket(source, wrapper.epoch(), false, true)), List.of()),
+                "The epoch-zero source return is permitted; this is not an escrow-fence failure");
+        assertEquals(500, record.sourceFlightData().fuel().amount());
+        assertEquals(1, record.sourceFlightData().fuel().committedDebits().size());
+        assertEquals(RocketTransferRecoveryAction.REBUILD_DESTINATION,
+                RocketTransferRecoveryDecision.decide(record.phase(), new RocketTransferPresence(false, false)),
+                "W77's missing-source setup has a different product action");
+    }
     private static RocketStructureSnapshot snapshot() {
         return RocketStructureSnapshot.create(UUID.randomUUID(), RocketFlightPlanner.EARTH.dimensionId(), new RocketPosition(80, 100, 64),
                 List.of(new RocketBlock(new RocketPosition(0, 0, 0), new RocketBlockState(ResourceLocation.tryParse("minecraft:iron_block"), Map.of()))),
