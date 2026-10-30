@@ -3,7 +3,9 @@ package io.github.sunthemoon.advancedrocketrycommunity.resourceescrow;
 import static io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.FluidFuelLoaderEscrowFixtures.*;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderBlockEntity;
 import java.util.List;
 import java.util.UUID;
@@ -17,13 +19,14 @@ final class EscrowLoaderS6SettlementProbe {
     private static final List<String> CASES = List.of(BEFORE, REPLACED, ACK,
             "LF_S6_O2_BEFORE_0", "LF_S6_O2_AFTER_0", "LF_S6_O2_BEFORE_1", "LF_S6_O2_AFTER_1",
             "LF_S6_O3_BEFORE", "LF_S6_O3_REPLACED", "LF_S6_O3_ACK", "LF_S6_O4_BEFORE",
-            "LF_S6_O4_REPLACED", "LF_S6_O4_ACK");
+            "LF_S6_O4_REPLACED", "LF_S6_O4_ACK", "LF_S6_O3J_BEFORE", "LF_S6_O3J_REPLACED", "LF_S6_O3J_ACK");
     private static final UUID ACTOR = UUID.nameUUIDFromBytes("arce:escrow:server-console".getBytes(java.nio.charset.StandardCharsets.US_ASCII));
     private static final BlockPos DEVICE = new BlockPos(66, 100, 64);
     private final MinecraftServer server;
     private final String cut;
-    private final boolean recovery;
+    private final boolean recovery, named;
     private final EscrowLoaderCutProbe setup;
+    private final EscrowLoaderNamedProbe namedSetup;
     private boolean held, baseline, queued, done;
     private volatile boolean writingIntent;
     private volatile String ledgerPhase = "";
@@ -50,6 +53,7 @@ final class EscrowLoaderS6SettlementProbe {
             case "LF_S6_O4_BEFORE" -> phase.equals("O4") && hook.equals("K8");
             case "LF_S6_O4_REPLACED" -> phase.equals("O4") && hook.equals("K9");
             case "LF_S6_O4_ACK" -> phase.equals("O4") && hook.equals("O4_AFTER");
+            case "LF_S6_O3J_ACK" -> phase.equals("O3") && hook.equals("O3J_AFTER");
             default -> false;
         };
     }
@@ -57,10 +61,16 @@ final class EscrowLoaderS6SettlementProbe {
         EscrowTestEndpoints.requireEnabled(server);
         EscrowTags.require(selected(Boolean.getBoolean(EscrowTestEndpoints.HOOKS), cut)
                 && !Boolean.getBoolean(EscrowLoaderAdmission.SWITCH), "Settlement requires its exact per-device release gate");
-        this.server = server; this.cut = cut; this.recovery = recovery;
-        setup = recovery ? null : new EscrowLoaderCutProbe(server, "LF_M_K7", false);
+        this.server = server; this.cut = cut; this.recovery = recovery; named = cut.startsWith("LF_S6_O3J_");
+        setup = recovery || named ? null : new EscrowLoaderCutProbe(server, "LF_M_K7", false);
+        namedSetup = recovery || !named ? null : new EscrowLoaderNamedProbe(server, "LF_M_NAMED_CROSS_K9", false);
     }
-    void startTick() { if (setup != null && !held) { setup.startTick(); } }
+    void startTick() {
+        if (!held) {
+            if (setup != null) { setup.startTick(); }
+            if (namedSetup != null) { namedSetup.startTick(); }
+        }
+    }
     void checkpoint(String hook) {
         if (recovery || done) { return; }
         if (writingIntent && boundary(cut, hook)) { pause(hook); }
@@ -71,7 +81,7 @@ final class EscrowLoaderS6SettlementProbe {
             }
             return;
         }
-        setup.checkpoint(hook);
+        if (setup != null) { setup.checkpoint(hook); } else { namedSetup.checkpoint(hook); }
         if (hook.equals("C2_DESTINATION_AFTER")) {
             var data = ResourceEscrowSavedData.existing(server);
             EscrowTags.require(data != null && data.ledger().records().size() == 1, "Settlement setup lost its real fill");
@@ -84,7 +94,15 @@ final class EscrowLoaderS6SettlementProbe {
         if (done) { return; }
         if (began < 0) { began = server.getTickCount(); }
         EscrowTags.require(server.getTickCount() - began <= 2_400, "S6 settlement exceeded the existing fixture bound");
-        if (!recovery && !held) { setup.tick(); return; }
+        if (named) {
+            var moon = server.getLevel(CelestialIds.MOON_LEVEL);
+            EscrowTags.require(moon != null && moon.getChunkSource().getChunkNow(4096, 4096) == null,
+                    "Named operator fixture loaded its old source chunk");
+        }
+        if (!recovery && !held) {
+            if (setup != null) { setup.tick(); } else { namedSetup.tick(); }
+            return;
+        }
         var level = server.overworld();
         if (!level.isPositionEntityTicking(DEVICE) || !(level.getBlockEntity(DEVICE) instanceof FluidFuelLoaderBlockEntity loader)) { return; }
         var root = loader.root().orElseThrow();
@@ -107,6 +125,7 @@ final class EscrowLoaderS6SettlementProbe {
                         || !section(loader).markers().isEmpty() || !rocket.escrowSection().markers().isEmpty()) { return; }
                 EscrowTags.require(data.ledger().tombstones().size() == 1 && data.ledger().tombstones().get(0).getBoolean("released")
                         && !loader.escrowLocked() && RocketEscrowGate.idle(rocket), "Settlement failed to release its chosen survivors");
+                if (named) { EscrowTags.require(RocketTransferSavedData.get(server).entries().isEmpty(), "O3J retained its named journal"); }
             }
             if (server.getTickCount() - began < 100) { return; }
             done = true;
@@ -117,6 +136,18 @@ final class EscrowLoaderS6SettlementProbe {
         if (!baseline) {
             EscrowTags.require(data.ledger().records().size() == 1, "Settlement lost its pending manual hold");
             if (!manualHoldDurable(data.ledger().records().get(0).reason())) { return; }
+            if (named) {
+                var op = data.ledger().records().get(0);
+                var journal = RocketTransferSavedData.get(server);
+                var guard = journal.acknowledgedGuard(op.guard().rocket()).orElseThrow();
+                EscrowTags.require(guard.transfer() != null && guard.transfer().equals(op.guard().transfer())
+                        && guard.recordDigest().equals(op.guard().journalDigest())
+                        && journal.find(guard.transfer()).orElseThrow().phase()
+                        == io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferPhase.COMMITTED,
+                        "Named operator baseline differs from its acknowledged journal guard");
+                AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_S6_O3J_BASELINE cut={} transfer={} generation={} digest={} phase=COMMITTED",
+                        cut, op.guard().transfer(), op.guard().journalGeneration(), op.guard().journalDigest());
+            }
             // Seed for the operator experiment, before O1: not a post-cut save or a repair of its oracle.
             EscrowTags.require(server.saveEverything(false, true, true), "Settlement pre-decision baseline save refused");
             baseline = true; return;

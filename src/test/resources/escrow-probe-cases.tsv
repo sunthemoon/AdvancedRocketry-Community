@@ -345,6 +345,9 @@ LF_S6_O2_AFTER_0	scripts/run_v180_loader_s6.py;tests/test_loader_s6_oracle.py
 LF_S6_O2_AFTER_1	scripts/run_v180_loader_s6.py;tests/test_loader_s6_oracle.py
 LF_S6_O2_BEFORE_0	scripts/run_v180_loader_s6.py;tests/test_loader_s6_oracle.py
 LF_S6_O2_BEFORE_1	scripts/run_v180_loader_s6.py;tests/test_loader_s6_oracle.py
+LF_S6_O3J_ACK	scripts/run_v180_loader_s6.py;tests/test_loader_s6_oracle.py
+LF_S6_O3J_BEFORE	scripts/run_v180_loader_s6.py;tests/test_loader_s6_oracle.py
+LF_S6_O3J_REPLACED	scripts/run_v180_loader_s6.py;tests/test_loader_s6_oracle.py
 LF_S6_O3_ACK	scripts/run_v180_loader_s6.py;tests/test_loader_s6_oracle.py
 LF_S6_O3_BEFORE	scripts/run_v180_loader_s6.py;tests/test_loader_s6_oracle.py
 LF_S6_O3_REPLACED	scripts/run_v180_loader_s6.py;tests/test_loader_s6_oracle.py

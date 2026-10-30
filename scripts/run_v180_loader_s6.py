@@ -26,7 +26,9 @@ CASES = (oracle.E3, oracle.E5) + oracle.R2 + oracle.G3 + oracle.G1 + oracle.OPER
 HOOKS = shared.HOOK_FILES + tuple(
     "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/resourceescrow/" + name + ".java"
     for name in ("EscrowLoaderS6Probe", "EscrowLoaderS6Recovery", "EscrowLoaderS6Accounting", "EscrowLoaderS6UnloadedProbe",
-                 "EscrowLoaderS6UnloadObservation", "EscrowLoaderS6R2Probe", "EscrowLoaderS6ShutdownProbe", "EscrowLoaderS6GuardProbe", "EscrowLoaderS6SettlementProbe", "EscrowCargoContentionProbe"))
+                 "EscrowLoaderS6UnloadObservation", "EscrowLoaderS6R2Probe", "EscrowLoaderS6ShutdownProbe", "EscrowLoaderS6GuardProbe", "EscrowLoaderS6SettlementProbe", "EscrowCargoContentionProbe", "EscrowNamedFillTestHook")) + tuple(
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/persistence/" + name + ".java"
+    for name in ("RocketI6NativeCut", "RocketJournalFailurePolicy", "RocketTransferSavedData"))
 HARNESSES = shared.HARNESS_FILES + ("scripts/run_v180_loader_s6.py", "scripts/loader_s6_oracle.py", "scripts/loader_s6_integrity.py")
 
 
@@ -34,8 +36,16 @@ def write(path: Path, data: dict) -> None:
     path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
 
 
-def check_log(lines, restart, cut=oracle.E3, retired_operation=None):
+def check_log(lines, restart, cut=oracle.E3, retired_operation=None, image=None):
     oracle.check_observations(lines, restart, cut, retired_operation)
+    if cut in oracle.O3J:
+        oracle.check_named_baseline(lines, restart, cut, image)
+
+
+def journal_cut_properties(cut, restart):
+    if not restart and cut in oracle.O3J[:2]:
+        return ["-Dadvancedrocketrycommunity.i6NativeCut=" + oracle.O_HOOKS[cut]]
+    return []
 
 
 def finish_initial(process, cut, diagnostic):
@@ -88,6 +98,7 @@ def run_cut(args, cut, evidence, owner, pins):
                 native_case = "LF_M_E4L1_UNKNOWN" if cut == oracle.G3_U1 else "LF_M_E4L2_UNKNOWN"
             command[1:1] = ["-Dadvancedrocketrycommunity.escrowScenario=" + ("recover" if restart else "start"),
                             "-Dadvancedrocketrycommunity.escrowCase=" + native_case]
+            command[1:1] = journal_cut_properties(cut, restart)
             if cut in oracle.G3:
                 command[1:1] = ["-Dadvancedrocketrycommunity.escrowS6Shutdown=" + cut]
             if cut in oracle.G1:
@@ -122,6 +133,8 @@ def run_cut(args, cut, evidence, owner, pins):
                     marker = r"ARCE_LOADER_S6_G1_RESULT cut=" + re.escape(cut) + " round=" + str(restart) + r"(?:\s|$)"
                 elif cut in oracle.OPERATOR:
                     marker = r"ARCE_LOADER_S6_O_" + ("RESULT" if restart else "PAUSED") + r" cut=" + re.escape(cut) + r"(?:\s|$)"
+                    if not restart and cut in oracle.O3J[:2]:
+                        marker = r"ARCE_W164_CUT boundary=" + oracle.O_HOOKS[cut] + r"(?:\s|$)"
                 process.wait_for(re.compile(marker), args.startup_timeout)
                 start["checkpoint_reached"] = True
                 if restart and cut not in oracle.G1:
@@ -139,7 +152,7 @@ def run_cut(args, cut, evidence, owner, pins):
                    or "S6 endpoint is not an exact record-backed BEFORE/AFTER prefix" in line for line in lines):
                 row["unexplained_image"] = True
             process = None
-            start["observations"] = [line for line in lines if "ARCE_LOADER_" in line or "ARCE_CARGO_CACHE_" in line]
+            start["observations"] = [line for line in lines if "ARCE_LOADER_" in line or "ARCE_CARGO_CACHE_" in line or "ARCE_W164_CUT" in line]
             start["image"] = oracle.inspect(session / "world", cut)
             if diagnostic:
                 # The healthy pair is deliberately never queued. Its image is retained,
@@ -163,7 +176,7 @@ def run_cut(args, cut, evidence, owner, pins):
             if cut in oracle.OPERATOR:
                 raw_check = lambda image, restart, identity: oracle.check_o1(image, restart, identity, cut)
             for kind, check in (("LOG", lambda: check_log(lines, restart, cut,
-                                      identity["op_id"] if cut == oracle.G3_L2 and restart and identity else None)),
+                                      identity["op_id"] if cut == oracle.G3_L2 and restart and identity else None, start["image"])),
                                 ("RAW", lambda: raw_check(start["image"], restart, identity))):
                 try:
                     result = check()

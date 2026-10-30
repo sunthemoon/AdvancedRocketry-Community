@@ -8,7 +8,8 @@ import net.minecraft.server.MinecraftServer;
 final class EscrowNamedFillTestHook {
     private static final Set<String> CASES = Set.of("LF_M_NAMED_E5", "LF_M_NAMED_CROSS_K2", "LF_M_NAMED_CROSS_K9",
             "LF_M_R1_FLOORS_255_DISTINCT", "LF_M_R1_FLOORS_255_DISTINCT_ACK", "LF_M_R1_FLOORS_255_COALESCED",
-            "LF_M_R1_FLOORS_255_COALESCED_ACK", "LF_M_R1_FLOORS_256");
+            "LF_M_R1_FLOORS_255_COALESCED_ACK", "LF_M_R1_FLOORS_256",
+            "LF_S6_O3J_BEFORE", "LF_S6_O3J_REPLACED", "LF_S6_O3J_ACK");
     private EscrowNamedFillTestHook() { }
 
     static boolean allowed(MinecraftServer server) {

@@ -78,6 +78,9 @@ def normalize_ids(value):
 
 def inspect(world: Path, cut=E3) -> dict:
     try:
+        if cut in O3J:
+            import loader_named_cut_oracle
+            return dict(read_status="KNOWN", native=loader_named_cut_oracle.inspect(world, "LF_M_NAMED_CROSS_K2"))
         return dict(read_status="KNOWN", native=inspect_g1(world, cut) if cut in G1 else inspect_r2(world) if cut in R2 else inspect_e5(world) if cut == E5 else legacy.inspect(world))
     except (OSError, ValueError, KeyError, TypeError, SmokeError) as failure:
         return dict(read_status="UNKNOWN", native=None,
@@ -377,10 +380,11 @@ O1 = (O1_BEFORE, O1_REPLACED, O1_ACK)
 O_STAGED = tuple("LF_S6_" + hook for hook in ("O2_BEFORE_0", "O2_AFTER_0", "O2_BEFORE_1", "O2_AFTER_1",
                                                "O3_BEFORE", "O3_REPLACED", "O3_ACK", "O4_BEFORE"))
 O_RELEASED = ("LF_S6_O4_REPLACED", "LF_S6_O4_ACK")
-OPERATOR = O1 + O_STAGED + O_RELEASED
-O_INSTALLED = O_STAGED[-3:]
+O3J = ("LF_S6_O3J_BEFORE", "LF_S6_O3J_REPLACED", "LF_S6_O3J_ACK")
+OPERATOR = O1 + O_STAGED + O_RELEASED + O3J
+O_INSTALLED = O_STAGED[-3:] + O3J
 O_HOOKS = dict(zip(OPERATOR, ("K1", "K2", "O1_ACK", "O2_BEFORE_0", "O2_AFTER_0", "O2_BEFORE_1", "O2_AFTER_1",
-                            "K1", "K2", "O3_AFTER", "K8", "K9", "O4_AFTER")))
+                            "K1", "K2", "O3_AFTER", "K8", "K9", "O4_AFTER", "PLAIN_MOVE", "PLAIN_MOVED", "O3J_AFTER")))
 
 
 def pending_receipt(operation):
@@ -491,6 +495,8 @@ def check_o1(image, restart, identity=None, cut=O1_BEFORE):
                                "Second restart changed the complete released authority")
         if identity is not None and cut == O1_BEFORE:
             legacy.require(root["records"] == identity["authority"]["records"], "Pre-O1 changed the held record")
+        if cut in O3J:
+            check_named_journal(disk, restart, cut, resource_identity)
         observed = identity or dict(resources=resource_identity, authority=root)
         if released:
             observed = dict(observed, completed=dict(receipts=root["tombstones"], heads=root["rocket_authorities"]))
@@ -570,11 +576,47 @@ def check_o4_released(image, restart, identity, cut):
         raise SmokeError(f"Malformed released O4 observation: {failure}") from failure
 
 
+def check_named_journal(disk, restart, cut, resources):
+    root = disk["ledger"]
+    guard = root["tombstones"][0]["guards"][0] if restart else root["records"][0]["transfer_guard"]
+    legacy.require("transfer_id" in guard and str(UUID(guard["transfer_id"])) == guard["transfer_id"]
+                   and guard["rocket_id"] == resources["logical"], "O3J lost its exact named guard")
+    transfers = disk["transfers"]
+    legacy.require(len(transfers) == int(not restart and cut == O3J[0]), "Journal removed before or retained after selected O3J boundary")
+    legacy.require(disk["healthy"] is None, "O3J introduced another loader pair")
+    if transfers:
+        transfer = transfers[0]
+        legacy.require(transfer["schema_version"] == 2 and transfer["phase"] == "COMMITTED" and "native_transfer" not in transfer
+                       and transfer["transfer_id"] == guard["transfer_id"] and transfer["logical_rocket_id"] == resources["logical"]
+                       and transfer["owner_id"] == resources["owner"] and transfer["destination_entity_id"] == resources["physical"]
+                       and transfer["source_entity_id"] != resources["physical"] and transfer["destination_snapshot"] == resources["snapshot"]
+                       and transfer["source_snapshot"]["source_dimension"] == "advancedrocketrycommunity:moon"
+                       and transfer["source_snapshot"]["source_origin"] == [65536, 100, 65536],
+                       "O3J substituted or changed its committed named journal")
+
+
+def check_named_baseline(lines, restart, cut, image):
+    lines = [line.rstrip("\r\n") for line in lines]
+    baseline = [line for line in lines if "ARCE_LOADER_S6_O3J_BASELINE" in line]
+    legacy.require(len(baseline) == int(not restart), "Missing/repeated named pre-decision baseline")
+    if restart: return
+    legacy.require(image is not None and image.get("read_status") == "KNOWN", "UNKNOWN named baseline is not a guard")
+    try:
+        guard = normalize_ids(image["native"]["ledger"]["records"][0]["transfer_guard"])
+        expected = (f"ARCE_LOADER_S6_O3J_BASELINE cut={cut} transfer={guard['transfer_id']} generation={guard['journal_generation']} "
+                    f"digest={guard['journal_digest']} phase=COMMITTED")
+        legacy.require(baseline[0].endswith(expected), "Named baseline differs from the durable guard")
+    except (KeyError, TypeError, IndexError, ValueError) as failure:
+        raise SmokeError(f"Malformed named baseline: {failure}") from failure
+
+
 def check_o1_logs(lines, restart, cut):
     lines = [line.rstrip("\r\n") for line in lines]
     marker = (f"ARCE_LOADER_S6_O_RESULT cut={cut} tank=4000 bank=1000 epochs=1,1 "
               f"records={int(cut == O1_BEFORE)} receipts={int(cut != O1_BEFORE)} state={'PRE_O1' if cut == O1_BEFORE else 'RELEASED'}"
               if restart else f"ARCE_LOADER_S6_O_PAUSED cut={cut} hook=" + O_HOOKS[cut])
+    if not restart and cut in O3J[:2]:
+        marker = "ARCE_W164_CUT boundary=" + O_HOOKS[cut]
     legacy.require(sum(line.endswith(marker) for line in lines) == 1, "Missing/repeated operator boundary")
     legacy.require(not any("/ERROR" in line or "/FATAL" in line for line in lines), "Unexpected operator settlement error")
 

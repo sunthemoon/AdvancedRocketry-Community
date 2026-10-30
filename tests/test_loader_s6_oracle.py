@@ -1040,5 +1040,64 @@ class SettlementReleaseOracleTest(unittest.TestCase):
             with self.assertRaises(SmokeError): oracle.check_observations([line.replace(hook, "K2")], 0, cut)
 
 
+class SettlementJournalOracleTest(unittest.TestCase):
+    CUTS = ("LF_S6_O3J_BEFORE", "LF_S6_O3J_REPLACED", "LF_S6_O3J_ACK")
+
+    def image(self, cut, restart=0):
+        import json
+        image = SettlementStagedOracleTest().image("LF_S6_O3_REPLACED", restart)
+        transfer = json.loads((Path(__file__).parent / "fixtures/loader_s6/named-transfer.json").read_text())
+        disk = image["native"]; root = disk["ledger"]; data = disk["rocket"]["RocketEntityData"]
+        transfer.update(owner_id=data["owner_id"], logical_rocket_id=data["assembly_transaction_id"],
+                        destination_entity_id=disk["rocket"]["UUID"], destination_snapshot=copy.deepcopy(data["snapshot"]))
+        for op in root["records"]: op["transfer_guard"]["transfer_id"] = transfer["transfer_id"]
+        root["tombstones"][0]["guards"][0]["transfer_id"] = transfer["transfer_id"]
+        disk["transfers"] = [transfer] if cut == self.CUTS[0] and not restart else []
+        disk["healthy"] = None
+        return image
+
+    def test_named_journal_replacement_sides_and_two_restarts(self):
+        for cut in self.CUTS:
+            identity = None
+            for restart in range(3):
+                with self.subTest(cut=cut, restart=restart):
+                    checked = oracle.check_o1(self.image(cut, restart), restart, identity, cut)
+                    identity = checked["identity"]
+                    self.assertEqual(5000, checked["raw_total"])
+                    self.assertIsNone(checked["loss"])
+
+    def test_named_guard_and_durable_removal_cannot_be_substituted(self):
+        cut = self.CUTS[0]
+        image = self.image(cut)
+        for key, value in (("phase", "PREPARED"), ("destination_entity_id", "other"), ("logical_rocket_id", "other"),
+                           ("owner_id", "other"), ("transfer_id", "other"), ("destination_snapshot", {})):
+            damaged = copy.deepcopy(image); damaged["native"]["transfers"][0][key] = value
+            with self.subTest(key=key), self.assertRaises(SmokeError): oracle.check_o1(damaged, 0, cut=cut)
+        for wrong_cut in self.CUTS[1:]:
+            with self.assertRaises(SmokeError): oracle.check_o1(image, 0, cut=wrong_cut)
+        with self.assertRaises(SmokeError): oracle.check_o1(self.image(self.CUTS[1]), 0, cut=cut)
+        with self.assertRaises(SmokeError): oracle.check_o1(dict(read_status="UNKNOWN", native=None), 0, cut=cut)
+
+    def test_reused_i6_flags_are_initial_only_and_select_no_other_boundary(self):
+        import run_v180_loader_s6 as runner
+        for cut, mode in zip(self.CUTS, ("PLAIN_MOVE", "PLAIN_MOVED", None)):
+            self.assertEqual([] if mode is None else ["-Dadvancedrocketrycommunity.i6NativeCut=" + mode], runner.journal_cut_properties(cut, 0))
+            self.assertEqual([], runner.journal_cut_properties(cut, 1))
+        self.assertEqual([], runner.journal_cut_properties("LF_S6_O4_ACK", 0))
+
+    def test_named_baseline_log_matches_the_durable_guard(self):
+        import run_v180_loader_s6 as runner
+        for cut, hook in zip(self.CUTS, ("PLAIN_MOVE", "PLAIN_MOVED", "O3J_AFTER")):
+            image = self.image(cut)
+            guard = oracle.normalize_ids(image["native"]["ledger"]["records"][0]["transfer_guard"])
+            baseline = f"ARCE_LOADER_S6_O3J_BASELINE cut={cut} transfer={guard['transfer_id']} generation={guard['journal_generation']} digest={guard['journal_digest']} phase=COMMITTED"
+            marker = (f"ARCE_W164_CUT boundary={hook}" if cut != self.CUTS[2]
+                      else f"ARCE_LOADER_S6_O_PAUSED cut={cut} hook={hook}")
+            runner.check_log([baseline, marker], 0, cut, image=image)
+            for lines in ([marker], [baseline, baseline, marker], [baseline.replace("COMMITTED", "PREPARED"), marker],
+                          [baseline.replace(guard["transfer_id"], "other"), marker]):
+                with self.assertRaises(SmokeError): runner.check_log(lines, 0, cut, image=image)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -123,4 +123,13 @@ class EscrowLoaderS6SettlementProbeTest {
             assertFalse(EscrowLoaderS6SettlementProbe.completionBoundary(row[0], "K2", "O4"));
         }
     }
+    @Test void namedJournalCutsUseExactGatesAndAcknowledgementHook() {
+        for (String side : java.util.List.of("BEFORE", "REPLACED", "ACK")) {
+            String cut = "LF_S6_O3J_" + side;
+            assertTrue(EscrowLoaderS6SettlementProbe.selected(true, cut));
+            assertFalse(EscrowLoaderS6SettlementProbe.selected(false, cut));
+            assertEquals(side.equals("ACK"), EscrowLoaderS6SettlementProbe.completionBoundary(cut, "O3J_AFTER", "O3"));
+            assertFalse(EscrowLoaderS6SettlementProbe.completionBoundary(cut, "K2", "O3"));
+        }
+    }
 }
