@@ -740,6 +740,7 @@ public final class RocketTransferSavedData extends SavedData {
         policy = io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowCargoCutProbe.journalPolicy(ownerServer,
                 io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowTerminalProbe.journalPolicy(ownerServer, policy));
         policy = io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowItemCutProbe.journalPolicy(ownerServer, policy);
+        policy = io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowLoaderS6JournalProbe.journalPolicy(ownerServer, policy);
         return writer.request(capture(), presence == ManagedRootPresence.PROVEN_ABSENT ? firstWriteChecked(policy) : policy);
     }
 
