@@ -63,9 +63,16 @@ branch. Each merge records its hosted run and independent review in
   W11b3's loader, binding and disabled admission implementation is merged (W82, W93 and W95/W95F);
   W153 delivered the full linker and monitor (`8dee8680`). N3-A and N3-B1/B2/B3, including
   W98-R1's fix (W151, `8cc3a0ed1`), are merged. N3-B4 (W198, reviewed at `ca25c912e`) merged at `be0570136`;
-  its fixture evidence does not qualify a later integrated source. The remaining pre-admission work is
-  N3-C's refusal and named-pad native cuts (W204), B3-S6's real-loader representatives, and W90's
-  cold, border-crossing and maximum-margin readiness/cost measurements plus a warm-up process restart.
+  its fixture evidence does not qualify a later integrated source. W204's N3-C refusal, stop and
+  named-pad native cuts and acknowledged-absence fix are merged (`06f33d02e`), as recorded in
+  [W204](../work/v1.8.0-root-queue/records/W204.md). W90 now has scoped cold, border-crossing and
+  maximum-margin readiness/cost measurements and a fresh request after a clean process restart:
+  [W206](../work/v1.8.0-root-queue/records/W206.md) supplies the baseline, and
+  [W207](../work/v1.8.0-root-queue/records/W207.md), merged at `3d9894def`, supplies the request-cost
+  remedy and closes W206-R1's missing fresh-request check. Pre-admission evidence still includes
+  B3-S6's real-loader representatives under W211 and W90's remaining first-use checkpoint budget:
+  after W215, the full-observation new-strip and generated-contained cases still exceed 100 ms.
+  The detailed evidence boundaries and later follow-ups are retained under the open items below.
   W176 (`7c9e5f7e9`) ran nine B3-D S1 rows: six passed and three historical-JAR downgrade rows failed;
   the full S1 campaign and downgrade-risk disposition remain open. Accounting-policy reconciliation,
   applicable risk dispositions, the reference-node workload, joint four-hour soak and real V1/V2
@@ -101,7 +108,11 @@ What is still open:
   backlog is in QUEUE.md.
 - **Assets.** 154 legacy assets are still under REVIEW (ADR-066 section 7.3).
 - **S1.** W11b1 and W44 have native dedicated-server restart evidence as development evidence.
-  No S1 campaign has run.
+  [W176](../work/v1.8.0-root-queue/records/W176.md), merged at `7c9e5f7e9`, also ran nine B3-D
+  S1 rows: six passed and three historical-JAR downgrade rows failed. Those downgrade rows rewrote
+  level.dat/level.dat_old metadata before journal refusal; preserved terrain, entities and journals
+  do not turn them into passes. The full S1 campaign, current-candidate integrated evidence and
+  R-044's downgrade-risk disposition remain open; the partial rows are not campaign completion.
 - **P1-N3 implementation and evidence.** N3-A1 (W98, `8f6dd016`) and N3-A2 (W116, `81c987f9`)
   are merged; their W91K reruns retain a stationary FUELED survivor over both restarts. W151
   (`8cc3a0ed1`) implements W98-R1's generation-scoped governed capture exclusion. N3-B1/I7
@@ -110,8 +121,18 @@ What is still open:
   merged at `be0570136`: the strengthened oracle replays 357 retained archives across 89 rows,
   with 178 clean-restart observations; the original harness failure remains a failed attempt.
   This same-Level, already-loaded, schema-1/scalar-fuel fixture is not a maximum modern propulsion
-  bank or real-player campaign, and is not evidence for a later integrated JAR. N3-C remains open
-  under W204: N2 refusal and named-pad retention/release cuts are not supplied by N3-A or N3-B4.
+  bank or real-player campaign, and is not evidence for a later integrated JAR. N3-C's assigned
+  shared-chain cuts are now supplied by [W204](../work/v1.8.0-root-queue/records/W204.md), merged
+  at `06f33d02e`: N2_REFUSED and N2_STOPPED preserve source, T, pad and live membership, and the
+  final N2_PAD_MOVED and N2_PAD_UNKNOWN cuts each pass with two restarts. The original MOVED
+  finding remains historical: a contender reused a pad before the old transfer's absence was
+  acknowledged. The merged fix keeps the old claim until absence is proved by the acknowledged
+  journal view or, before the session's first write, the validated load; failed or UNKNOWN writes
+  cannot use that load fallback. The named-pad evidence proves one request-driven old-claim
+  reconciliation, not an automatic index sweep or replay of a lost return-completion callback.
+  The failed UNKNOWN fixture start remains failed. This uncrewed assembled-rocket/persisted-pad
+  fixture is not a player-built physical pad, station UI, maximum-resource or real-client campaign,
+  and does not replace W211's missing real-loader N2 representative or later integrated-JAR checks.
   W98-R6's offline-crew wait, unsupported-storage R5(c), external-save and playerdata limitations
   remain named residuals. W96 records the original ordinary fail-back crash finding and its design;
   [QUEUE.md](../work/v1.8.0-root-queue/QUEUE.md) records the successor fixes and scoped evidence.
@@ -127,9 +148,41 @@ What is still open:
   `f1223c02` came from delay, not supersession: fixture generation and queued chunk writes inside the
   200 ticks. W111 (merged `ead8d323`) prepares every remote fixture area before the batch and gives the two
   retry tests their own batch; the hosted runs at `d9f031d4`, `2e44edcc` and `dcebe3a8` passed them.
+  Separately, [W209](../work/v1.8.0-root-queue/records/W209.md), merged at `bbfb43249`, corrects
+  the monitor disarm fixture: periodic autosave could discard F1 before PREPARED, after which
+  the test waited to its 2,400-tick deadline. The shared fixture now avoids that launch window
+  and fails immediately if the request ends before PREPARED, keeping all original assertions
+  and timeouts. The autosave-boundary reproduction went from 0 of 3 to 10 of 10 passes; shared
+  hosted run 40997060383 at `c2cd7d14` also passed the batch, as recorded in
+  [QUEUE.md](../work/v1.8.0-root-queue/QUEUE.md). This is a test-side correction, not a repair
+  of an accepted flight's outcome. It does not prevent arbitrary explicit saves or IO stalls,
+  close the earlier proof/relogin residuals, or erase their failed historical runs.
 - **S2.** W11b2's crash cuts passed natively as development evidence (the W11b2 records). Of
   W11b3's loader cut families, B3-S1 and B3-S2 (all 21 cuts, two restarts each) have native
-  evidence (W97 and W97B, merged `fe25244b`); B3-S3 matched 22 of its 23 cuts (W105, merged `bd1c78b9`, and W107's D2-C4-before, merged `9f6668aa`); W107 also passed 15 B3-S4 and B3-S5 cuts. C1 then passed with R36's gated fixture save (W107B, merged `d6319f9f`), and W107C (merged `f2df941c`) passed E1, E2, R1's saturated floors and all seven R3 cases natively; E4 is an in-process residual. W107C found **F1**, a production defect that blocks fuel admission: a named fill is held at L1 forever because the transfer fence locks the rocket's own landed record while loader reconciliation waits for it to settle, with no persisted reason; W121's design, amended by Root decision R48 after its review, is implemented by W125 (merged with W125F as `88bcebfc`), and D2 (W130, merged as `3bce8373`) retires a landed rocket's transfer record before its first fill, so a rocket refuelled away from its launch site no longer needs that site loaded to launch (F1b); W130F (merged as `6d1230f0`, R59) bounds the retirement's tickets. W125F found **F3**: an assembled rocket filled through escrow keeps `ASSEMBLED`, so its launch returned `INVALID_STATE`; W133 fixed it at the launch boundary (R55; merged as `695f76b0`), and W133F (merged as `49d9629c`) showed natively that an escrow-filled assembled rocket and a landed rocket whose record W130 retired both pass `prepare` and reach a governed COUNTDOWN that survives two restarts. B3-S6 remains.
+  evidence (W97 and W97B, merged `fe25244b`); B3-S3 matched 22 of its 23 cuts (W105, merged `bd1c78b9`, and W107's D2-C4-before, merged `9f6668aa`); W107 also passed 15 B3-S4 and B3-S5 cuts. C1 then passed with R36's gated fixture save (W107B, merged `d6319f9f`), and W107C (merged `f2df941c`) passed E1, E2, R1's saturated floors and all seven R3 cases natively; E4 is an in-process residual. W107C found **F1**, a production defect that blocked fuel admission before the fixes described below: a named fill is held at L1 forever because the transfer fence locks the rocket's own landed record while loader reconciliation waits for it to settle, with no persisted reason; W121's design, amended by Root decision R48 after its review, is implemented by W125 (merged with W125F as `88bcebfc`), and D2 (W130, merged as `3bce8373`) retires a landed rocket's transfer record before its first fill, so a rocket refuelled away from its launch site no longer needs that site loaded to launch (F1b); W130F (merged as `6d1230f0`, R59) bounds the retirement's tickets. W125F found **F3**: an assembled rocket filled through escrow keeps `ASSEMBLED`, so its launch returned `INVALID_STATE`; W133 fixed it at the launch boundary (R55; merged as `695f76b0`), and W133F (merged as `49d9629c`) showed natively that an escrow-filled assembled rocket and a landed rocket whose record W130 retired both pass `prepare` and reach a governed COUNTDOWN that survives two restarts. B3-S6 remains in progress under
+  [W211](../work/v1.8.0-root-queue/TASK-W211-B3S6-LOADER-REUSED-FAMILIES.md), not merged or qualified
+  as a whole. Its branch record `docs/work/v1.8.0-root-queue/records/W211.md` at `943d29ccd` on
+  `codex/v1.8.0-w211` reports E3, unloaded E5, the three R2 selections, seven G3 shutdown rows,
+  G1 veto/saturation and selected O1-O4 cuts, with two restarts for each passed attempt. The R194
+  delivery is later than the shared QUEUE's session-start checkpoint, not a shared-head merge.
+  O3J has no native starts; Root decision R198 authorizes exactly its three release-gated allowlist entries, and the
+  eighth session (started 21:31) performs R197's oracle fixes and replays before O3J;
+  chain accept/abandon/normalization, O-veto, required two-loader/bipropellant extensions,
+  governed F1-F8/F9, real-loader N2, sticky reservations/P1-F8 and successor refill remain unfinished.
+  Tranche C still needs its concrete committed enumeration before any launch.
+  The [interim review task](../work/v1.8.0-root-queue/TASK-W211-INTERIM-REVIEW.md) and
+  [QUEUE.md](../work/v1.8.0-root-queue/QUEUE.md) record SOUND WITH CHANGES at `fedd1874b`:
+  W211-I1 (High) finds missing cross-restart snapshot and complete typed-fuel comparisons;
+  I2 (Medium) finds unchecked record epochs and native binding against the observed image;
+  I3 (Medium) finds the G3 L2 durable generation unenforced; I4 (Medium) finds the real-loader
+  N2 row unmapped; I5 (Low) finds a missing observation-log prefix undetected. The reviewed
+  passed images also pass the reviewer's stricter supplemental checks, so these are false-positive
+  oracle/matrix findings, not demonstrated production loss or duplication. They remain open:
+  R197 requires failing-first I1/I2/I3/I5 fixes, replay of every retained passed image including
+  R194, and I4's explicit real-loader N2 cut in tranche C before further native launches.
+  The later partial delivery is not covered by that interim review. Its independent review,
+  hosted integration and remaining B/C qualification are still required; original failed attempts,
+  E4's in-process residual and W176's three failed downgrade rows retain their recorded status.
 - **V1 and V2.** No slice has real-GPU or two-client evidence.
 - **C19.** W58 audited it (`records/W58.md`). Merged since: the validator chain and the G4 fix
   (C19-A), the portable evidence links (W60), correction files in the Markdown check and the
@@ -156,8 +209,73 @@ What is still open:
   [W129bc](../work/v1.8.0-root-queue/records/W129bc.md) reports B1's worst request/publication
   P99 14.020 ms and B3's development-host measurements in both modes. Request cost is not
   completion latency: at the 64 MiB bound, a sealed journal step can outlast its unchanged
-  100-tick proof window and retry. R-040's near-bound completion-latency and availability risk,
-  reference-node qualification and joint soak remain open; low request times do not close them.
+  100-tick proof window and retry. R-040's previously unmeasured availability is now partly
+  characterized by [W208](../work/v1.8.0-root-queue/records/W208.md), merged at `4cd9ada9d`:
+  quiet small/near-bound roots reached SEALED in 3.063/12.056 seconds, while near-bound bounded
+  traffic, C1 UNKNOWN and C1 expiry reached ROLLBACK_PROVED in 34.497/22.195/19.309 seconds.
+  Those are safe rollbacks, not successful disassemblies. C3 UNKNOWN/expiry controls reached
+  SEALED in 25.155/22.961 seconds but started small and grew at election, so they are not
+  end-to-end near-bound samples. The interrupted drain had no completion callback and did not
+  drain the final target; recovery restored D and removed U. Its workload P99 was 315.868 ms,
+  still over 100 ms. W208's corrected payload auditor replays all 27 observations, and its
+  C1/C3 expiry regression checks release at entered+120; these close W208-R1/R3, not availability.
+  [W210](../work/v1.8.0-root-queue/records/W210.md), merged at `cf90b64ef`, addresses W208-R2's
+  synchronous C1 sizing by keeping exact identity-bound resident sizes and encoding the candidate.
+  Near-bound first retain fell from 318.235 to 0.518 ms, with allocation 390,304,672 to 26,864 bytes.
+  Cost moves to first writes, loads and metadata updates rather than disappearing; the small-root
+  retain sample increased from 0.826 to 1.312 ms. W210 reran only quiet small/near roots and two
+  recoveries each: completion was 3.074/3.082 seconds and 11.915/11.850 seconds before/after,
+  while near-root IO remained about three seconds per write, three writes per operation.
+  Setup-inclusive small-root P99 131.037 ms and near-root maximum 5,463.814 ms remain recorded.
+  W210 did not rerun interrupted, traffic, UNKNOWN or expiry native cases; it does not close
+  W208's interrupted P99, sustained storage-fault, stuck-IO, watchdog or power-loss gaps.
+  [W214](../work/v1.8.0-root-queue/records/W214.md), merged at `a4ae5ecaf`, fixes the diagnostic
+  top-frame tie-break; its applied R-040/ADR-074 notes distinguish off-thread checked-file writing
+  from synchronous admission/write/load sizing and retain these limits and historical results.
+  Persistent U can still be held without a time bound; low request cost is not a completion guarantee.
+
+  W90's governed destination work is separate from the earlier I6 benchmarks.
+  [W206](../work/v1.8.0-root-queue/records/W206.md), merged at `c01c37336`, measured cold,
+  border-crossing and maximum-margin product entries but found request and checkpoint overruns.
+  [W207](../work/v1.8.0-root-queue/records/W207.md), merged at `3d9894def`, moves cold landing
+  terrain preparation into the existing bounded warm-up quotas, refuses a cold request at capacity
+  before terrain loading and reuses the exact F1 projection. New-terrain request ticks fell from
+  458-872 to 52-70 ms and the refused ninth allocation from about 210 to 1.7 ms; its fresh request
+  after clean process restart closes W206-R1, not crash-durability or full reference qualification.
+  W207's 119-164 ms checkpoint-bearing P99 remains its historical failure, not a current all-pass.
+  [W212](../work/v1.8.0-root-queue/records/W212.md), merged at `4fe1298ee`, attributes the remaining
+  excess to first use in a process, including about 30-38 ms of ClassLoad intervals; recurring
+  serialization work was small and no production cache remedy was made. Its first-use checkpoint
+  P99 remained about 99-125 ms, while all 48 later cohorts met the numeric budgets.
+  [W215](../work/v1.8.0-root-queue/records/W215.md), merged at `a95a8d543`, initializes 55 audited
+  mod classes on ServerStarted before logins, without executing a launch. The hook runs in every
+  world, including admission-disabled worlds; a missing class deliberately aborts startup.
+  Measured startup cost is 17.6-87.3 ms and corrected Metaspace growth about 335 KB, not a retained-heap
+  guarantee. First relaunch API cost fell from 80.159-117.557 to 46.279-65.358 ms. All nine timing-only
+  first-flight checkpoint cases and seven of nine full-observation cases meet 100 ms; new strip
+  102.789 ms and generated contained 103.517 ms still fail. Each first checkpoint cohort has only
+  23 ticks, so nearest-rank P99 equals its maximum; observation cost is not subtracted and the
+  timing-only results do not erase the failures. [W217](../work/v1.8.0-root-queue/records/W217.md),
+  merged at `c3406e85d`, closes W215-R1 with a bounded bytecode-derived dependency regression and
+  applied R-035 wording. It detects a newly reachable unlisted class or a listed class no longer
+  used, requires initializer re-audit, and does not claim that static reachability proves first-use cost.
+
+  [W213](../work/v1.8.0-root-queue/records/W213.md), merged at `6b8002e84`, found that the ground-survey
+  START spike was real whole-root encoding/compression/readback work, not a faulty timer. Its hosted
+  570.710 ms median over the unchanged 500 ms limit remains a historical failed result, even though
+  the rerun passed. [W216](../work/v1.8.0-root-queue/records/W216.md), merged at `15f9e052e`, retains
+  the reservation proof when sufficient, otherwise uses exact known resident sizes and encodes only
+  changed candidates, with the original whole-root fallback when any resident measurement is UNKNOWN.
+  In its near-bound START fixture the idle wall median fell from 286.2 to 1.4 ms, with over 99.9 percent
+  less allocation and unchanged limits. Eager per-record measurements move cost to writes/restores:
+  R-030 records a diagnostic restore increase from about 171 to 296 ms and about 339 to 584 MB allocated;
+  that comparison disables eager sizing in the same current registry, not in an old production binary.
+  [W218](../work/v1.8.0-root-queue/records/W218.md), merged at `be87c6386`, closes W216-R1/R2 with
+  applied R-030 wording and an ordinary-survey/analysis regression using real known resident sizing.
+  Its isolated medians are 131.3/81.0 microseconds under the unchanged 1 ms limit; the original scale
+  test is unchanged. The fallback's cost/frequency, per-tick concurrency, native startup, reference
+  load and long-soak effects remain unqualified. These Windows development-host observations do not
+  establish the Debian reference-node workload, joint four-hour soak or any Required Gate.
 - **Risks.** The [risk register](../11-RISK-REGISTER.md) controls each risk's scope and disposition;
   R-021 and the applicable W-slice risks are not closed by implementation or CI. The fuel/bay chain
   includes R-035, R-039's receipt store, R-040's checked transaction journal and unreadable-root hold,
@@ -166,8 +284,18 @@ What is still open:
   measured capacities and P1-F8 crash-window residuals, with W83 and W90 as prerequisites, as
   recorded in [QUEUE.md](../work/v1.8.0-root-queue/QUEUE.md). It is not blanket acceptance of later
   risk additions, closure of R-035, or admission approval. The signed-accounting prerequisite still
-  needs scoped reconciliation; R-040's near-bound latency and R-044's three failed downgrade rows
-  retain their evidence and outstanding disposition.
+  needs scoped reconciliation; neither W204's shared-chain cuts nor W207/W215's narrower cost
+  remedies authorize admission. R-040's limited W208/W210 measurements narrow the formerly
+  unmeasured near-bound gap but leave interrupted, traffic, UNKNOWN/expiry, persistent storage-fault
+  and shutdown availability plus owner disposition open. R-030 retains the unknown-size whole-root
+  fallback, eager restore costs and concurrency/reference/native/soak limits after W216/W218.
+  R-035 retains W215's unconditional startup and fatal missing-class policy and its two failing
+  full-observation first-use cases after W217. R-044's three failed downgrade rows remain failed.
+  The owner's separate per-interaction acceptance or continued-disable decision is still pending
+  for fuel, each cargo kind and the bay; the earlier scoped acceptance is not reopened or broadened.
+  W27e still needs the neutral-source, passenger-exit and per-owner-limit decisions and its integrated
+  evidence. The full S1 campaign, current-source integration, reference workload, joint four-hour
+  soak and real V1/V2 remain open; no Required Gate is approved by these implementations or tests.
 - **Earlier intermittent GameTests.** W73 fixed the landing-pad cancellation test, W74 the
   six-host natural-beds test, W76 the first-Moon-landing and spawn-egg tests, and W78 the sealed
   sleep-room test. Hosted runs confirm each fix as they accumulate. The open ones are the escrow
