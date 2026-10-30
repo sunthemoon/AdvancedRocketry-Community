@@ -12,7 +12,9 @@ import java.util.Set;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.Handle;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
 
 /** The preload inventory is an audited code boundary, not authority or a simulated launch. */
@@ -53,6 +55,94 @@ class EscrowRelaunchClassesTest {
             for (String name : expected) {
                 assertNotNull(Class.forName(PACKAGE + name, false, getClass().getClassLoader()));
             }
+        }
+    }
+
+    @Test void inventoryTracksActualRelaunchDependencies() throws Exception {
+        var actual = new RelaunchDependencyInventory(RelaunchDependencyInventory::read).inventory();
+        assertInventory(actual);
+    }
+
+    @Test void newDependencyInPrepareRequiresInitializerReaudit() throws Exception {
+        String extra = RelaunchDependencyInventory.PREFIX + "resourceescrow/NewRelaunchDependency";
+        var actual = new RelaunchDependencyInventory(name -> {
+            if (name.equals(extra)) { return inertDependency(extra); }
+            var type = RelaunchDependencyInventory.read(name);
+            if (name.equals(RelaunchDependencyInventory.PREFIX + "resourceescrow/EscrowGovernedLaunch")) {
+                type.methods.stream().filter(m -> m.name.equals("prepare")).forEach(m ->
+                        m.instructions.insert(new MethodInsnNode(Opcodes.INVOKESTATIC, extra, "touch", "()V", false)));
+            }
+            return type;
+        }).inventory();
+        var failure = assertThrows(AssertionError.class, () -> assertInventory(actual));
+        assertTrue(failure.getMessage().contains("resourceescrow.NewRelaunchDependency"));
+        assertTrue(failure.getMessage().contains("initializer re-audit"));
+    }
+
+    @Test void lambdaDependencyInPrepareRequiresInitializerReaudit() throws Exception {
+        String extra = RelaunchDependencyInventory.PREFIX + "resourceescrow/NewLambdaDependency";
+        var actual = new RelaunchDependencyInventory(name -> {
+            if (name.equals(extra)) { return inertDependency(extra); }
+            var type = RelaunchDependencyInventory.read(name);
+            if (name.equals(RelaunchDependencyInventory.PREFIX + "resourceescrow/EscrowGovernedLaunch")) {
+                type.methods.stream().filter(m -> m.name.equals("prepare")).forEach(m -> {
+                    var call = new InvokeDynamicInsnNode("run", "()Ljava/lang/Runnable;",
+                            new Handle(Opcodes.H_INVOKESTATIC, "java/lang/invoke/LambdaMetafactory", "metafactory",
+                                    "(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;"
+                                            + "Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;"
+                                            + "Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;", false),
+                            Type.getMethodType("()V"), new Handle(Opcodes.H_INVOKESTATIC, extra, "touch", "()V", false),
+                            Type.getMethodType("()V"));
+                    m.instructions.insert(new InsnNode(Opcodes.POP));
+                    m.instructions.insert(call);
+                });
+            }
+            return type;
+        }).inventory();
+        var failure = assertThrows(AssertionError.class, () -> assertInventory(actual));
+        assertTrue(failure.getMessage().contains("resourceescrow.NewLambdaDependency"));
+        assertTrue(failure.getMessage().contains("initializer re-audit"));
+    }
+
+    @Test void unusedListedClassFailsEvenIfAnUnreachableMethodStillReferencesIt() throws Exception {
+        String removed = RelaunchDependencyInventory.PREFIX + "resourceescrow/EscrowLaunchTrace";
+        var actual = new RelaunchDependencyInventory(name -> {
+            var type = RelaunchDependencyInventory.read(name);
+            for (var method : type.methods) {
+                for (var instruction : method.instructions.toArray()) {
+                    if (instruction instanceof MethodInsnNode call && call.owner.equals(removed)) {
+                        // This is an inspection-only tree, never defined or executed by a classloader.
+                        method.instructions.remove(call);
+                    }
+                }
+            }
+            if (name.equals(RelaunchDependencyInventory.PREFIX + "resourceescrow/EscrowGovernedLaunch")) {
+                var unused = new MethodNode(Opcodes.ACC_STATIC, "unused", "()V", null, null);
+                unused.instructions.add(new MethodInsnNode(Opcodes.INVOKESTATIC, removed, "unused", "()V", false));
+                type.methods.add(unused);
+            }
+            return type;
+        }).inventory();
+        assertFalse(actual.contains("resourceescrow.EscrowLaunchTrace"));
+        var failure = assertThrows(AssertionError.class, () -> assertInventory(actual));
+        assertTrue(failure.getMessage().contains("classes no longer used: [resourceescrow.EscrowLaunchTrace]"));
+        assertTrue(failure.getMessage().contains("initializer re-audit"));
+    }
+
+    private static ClassNode inertDependency(String name) {
+        var type = new ClassNode(); type.name = name; type.superName = "java/lang/Object";
+        var touch = new MethodNode(Opcodes.ACC_STATIC, "touch", "()V", null, null);
+        touch.instructions.add(new InsnNode(Opcodes.RETURN)); type.methods.add(touch);
+        return type;
+    }
+
+    private static void assertInventory(Set<String> actual) throws IOException {
+        try (var input = EscrowRelaunchClassesTest.class.getResourceAsStream("/relaunch-existing-dependencies.txt")) {
+            assertNotNull(input);
+            var other = new String(input.readAllBytes(), StandardCharsets.UTF_8).lines()
+                    .filter(line -> !line.isBlank() && !line.startsWith("#")).toList();
+            assertEquals(other.size(), new HashSet<>(other).size(), "Duplicate existing dependency");
+            RelaunchDependencyInventory.assertMatches(actual, Set.copyOf(EscrowRelaunchClasses.classNames()), Set.copyOf(other));
         }
     }
 
