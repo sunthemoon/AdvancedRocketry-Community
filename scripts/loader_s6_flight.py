@@ -18,7 +18,8 @@ F3 = ("LF_S6_F3_ASCENT", "LF_S6_F3_TRANSIT")
 F45 = tuple("LF_S6_" + side for side in ("F4_ACK", "F4_PUBLICATION_BEFORE", "F4_PUBLICATION_AFTER", "F4_STORED",
     "F5_PASSENGERS_ACK", "F5_SOURCE_ACK", "F5_SOURCE_REMOVAL_BEFORE", "F5_SOURCE_REMOVAL_AFTER", "F5_COMMITTED_ACK"))
 F6 = tuple("LF_S6_F6_PROOF_" + side + "_" + str(index) for index in (0, 1) for side in ("BEFORE", "AFTER"))
-CASES = F1 + F2 + F3 + F45 + F6
+F78 = tuple("LF_S6_" + group + "_" + side for group in ("F7", "F8_JOURNAL", "F8_PRUNE") for side in ("BEFORE", "REPLACED", "ACK"))
+CASES = F1 + F2 + F3 + F45 + F6 + F78
 
 
 def armed_digest(arm):
@@ -49,6 +50,9 @@ def armed_tag(arm):
 
 
 def check(image, restart, identity=None, cut=F1[0], witness=None):
+    if cut in F78:
+        import loader_s6_cleanup
+        return loader_s6_cleanup.check(image, restart, identity, cut, witness)
     if cut in F6:
         import loader_s6_terminal
         return loader_s6_terminal.check(image, restart, identity, cut, witness)
@@ -172,7 +176,7 @@ def witness(lines, cut):
     matches = [m for m in matches if m]
     legacy.require(len(matches) == 1, "Missing/duplicate prelaunch flight witness")
     result = dict(zip(("operation", "source", "logical", "owner", "ledger", "source_digest"), matches[0].groups()))
-    if cut in F1[-3:] + F2 + F3 + F45 + F6:
+    if cut in F1[-3:] + F2 + F3 + F45 + F6 + F78:
         prefix = "ARCE_LOADER_S6_FLIGHT_ARMED cut=" + cut + " "
         staged = [(i, re.search(re.escape(prefix) + r"digest=([0-9a-f]{64})$", line.rstrip("\r\n")))
                   for i, line in enumerate(lines) if prefix in line]
@@ -181,7 +185,7 @@ def witness(lines, cut):
         legacy.require(len(staged) == len(baselines) == len(pauses) == 1 and staged[0][1]
                        and baselines[0] < staged[0][0] < pauses[0], "Missing/misordered checked staged ARMED witness")
         result["armed_digest"] = staged[0][1].group(1)
-    if cut in F2[1:] + F3 + F45 + F6:
+    if cut in F2[1:] + F3 + F45 + F6 + F78:
         import loader_s6_forward
         result["transfer_digest"] = loader_s6_forward.transfer_witness(lines, cut)
     if cut in F3:
@@ -193,6 +197,9 @@ def witness(lines, cut):
     if cut in F6:
         import loader_s6_terminal
         result.update(loader_s6_terminal.witness(lines, cut))
+    if cut in F78:
+        import loader_s6_cleanup
+        result.update(loader_s6_cleanup.witness(lines, cut))
     return result
 
 
@@ -200,7 +207,7 @@ def check_logs(lines, restart, cut):
     legacy.require(not any("/ERROR]" in line or "/FATAL]" in line for line in lines), "Unexpected flight ERROR/FATAL")
     prefix = "ARCE_LOADER_S6_FLIGHT_" + ("RESULT" if restart else "PAUSED") + " cut=" + cut + " "
     legacy.require(sum(prefix in line for line in lines) == 1, "Missing/duplicate selected flight observation")
-    if restart and cut in F2[1:] + F3 + F45 + F6:
+    if restart and cut in F2[1:] + F3 + F45 + F6 + F78:
         recovery_witness(lines, cut)
     if not restart:
         witness(lines, cut)
@@ -214,11 +221,14 @@ def check_logs(lines, restart, cut):
         if cut in F6:
             import loader_s6_terminal
             hook = loader_s6_terminal.hook(cut)
+        if cut in F78:
+            import loader_s6_cleanup
+            hook = loader_s6_cleanup.hook(cut)
         legacy.require(sum(line.rstrip("\r\n").endswith(prefix + "hook=" + hook) for line in lines) == 1,
                        "Wrong flight checkpoint hook")
 
 
 def recovery_witness(lines, cut):
-    if cut not in F2[1:] + F3 + F45 + F6: return None
+    if cut not in F2[1:] + F3 + F45 + F6 + F78: return None
     import loader_s6_forward
     return loader_s6_forward.recovery_witness(lines, cut)

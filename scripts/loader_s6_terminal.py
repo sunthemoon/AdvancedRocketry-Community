@@ -11,7 +11,7 @@ CASES = tuple("LF_S6_F6_PROOF_" + side + "_" + str(index) for index in (0, 1) fo
 def check(image, restart, identity, cut, witness):
     legacy.require(cut in CASES and restart in (0, 1, 2) and image.get("read_status") == "KNOWN",
                    "UNKNOWN or unsupported F6 prefix")
-    if restart: return forward.check(image, restart, identity, forward.CASES[0], witness)
+    if restart: return recover(image, restart, identity, witness)
     try:
         disk = forward.normalize(image["native"]); capture = forward.normalize(witness["capture"])
         legacy.require(len(capture["transfers"]) == 1, "Missing complete PREPARED capture")
@@ -34,11 +34,18 @@ def check(image, restart, identity, cut, witness):
             landed = copy.deepcopy(image)
             landed["native"]["ledger"].update(writer_generation=6, armed_flights=[])
             landed["native"]["journal"]["transfers"] = []
-            forward.check(landed, 1, checked["identity"], forward.CASES[0], witness["landed"])
+            checked["identity"] = forward.check(landed, 1, checked["identity"], forward.CASES[0], witness["landed"])["identity"]
         else: legacy.require(disk["destination"] is None, "F6 acquired a premature native survivor")
         return dict(checked, raw_total=5000 if cut.endswith("BEFORE_0") else 4500 if cut.endswith("AFTER_1") else 4000)
     except (KeyError, TypeError, IndexError, ValueError, OverflowError) as failure:
         raise SmokeError("Malformed F6 observation: " + str(failure)) from failure
+
+
+def recover(image, restart, identity, witness):
+    result = forward.check(image, restart, identity, forward.CASES[0], witness)
+    if identity is not None and "survivor" in identity:
+        legacy.require(result["identity"] == identity, "Already-landed prefix changed its complete survivor on restart")
+    return result
 
 
 def decode_capture(encoded):

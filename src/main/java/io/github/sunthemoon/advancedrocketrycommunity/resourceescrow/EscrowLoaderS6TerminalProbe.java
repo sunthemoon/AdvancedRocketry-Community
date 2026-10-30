@@ -32,6 +32,10 @@ final class EscrowLoaderS6TerminalProbe {
 
     static String capture(CompoundTag payload) {
         EscrowLoaderS6JournalProbe.transferDigest(payload);
+        return encode(payload);
+    }
+
+    static String encode(CompoundTag payload) {
         try {
             var bytes = new ByteArrayOutputStream();
             NbtIo.write(payload, new DataOutputStream(bytes));

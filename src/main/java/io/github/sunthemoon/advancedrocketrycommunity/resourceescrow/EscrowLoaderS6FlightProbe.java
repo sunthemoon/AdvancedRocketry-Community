@@ -34,6 +34,7 @@ final class EscrowLoaderS6FlightProbe {
     private final boolean recovery;
     private final java.nio.file.Path stagedLedger;
     private final EscrowLoaderS6TerminalProbe terminal;
+    private final EscrowLoaderS6CleanupProbe cleanup;
     private RocketEntity rocket;
     private FluidFuelLoaderBlockEntity loader;
     private UUID fill;
@@ -45,7 +46,7 @@ final class EscrowLoaderS6FlightProbe {
 
     static boolean selected(boolean hooks, String cut) {
         return hooks && cut != null && (CASES.contains(cut) || EscrowLoaderS6PhaseProbe.selected(cut)
-                || EscrowLoaderS6TerminalProbe.selected(cut));
+                || EscrowLoaderS6TerminalProbe.selected(cut) || EscrowLoaderS6CleanupProbe.selected(cut));
     }
     static String stagedArmDigest(net.minecraft.nbt.CompoundTag payload) {
         var root = EscrowCodec.decode(payload);
@@ -83,7 +84,9 @@ final class EscrowLoaderS6FlightProbe {
         EscrowTags.require(selected(Boolean.getBoolean(EscrowTestEndpoints.HOOKS), cut)
                 && !Boolean.getBoolean(EscrowLoaderAdmission.SWITCH), "S6 flight requires exact per-device test gates");
         this.server = server; this.cut = cut; this.recovery = recovery;
-        terminal = !recovery && EscrowLoaderS6TerminalProbe.selected(cut) ? new EscrowLoaderS6TerminalProbe(server, cut) : null;
+        cleanup = !recovery && EscrowLoaderS6CleanupProbe.selected(cut) ? new EscrowLoaderS6CleanupProbe(server, cut) : null;
+        terminal = !recovery && (EscrowLoaderS6TerminalProbe.selected(cut) || cleanup != null)
+                ? new EscrowLoaderS6TerminalProbe(server, cut) : null;
         stagedLedger = server.getWorldPath(LevelResource.ROOT).resolve("data")
                 .resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName() + ".arce-pending");
         for (var pos : List.of(SOURCE, DESTINATION)) {
@@ -122,6 +125,7 @@ final class EscrowLoaderS6FlightProbe {
             if (point.equals("F4_PUBLICATION_BEFORE")) { EscrowLoaderS6PhaseProbe.source(cut, rocket); }
             terminal.checkpoint(point);
         }
+        if (cleanup != null) { cleanup.checkpoint(point); }
         if (EscrowLoaderS6PhaseProbe.selected(cut)) {
             if (point.equals("F4_PUBLICATION_BEFORE")) { EscrowLoaderS6PhaseProbe.source(cut, rocket); }
             if (point.equals("F4_PUBLICATION_AFTER") && !phaseStorePending) {
@@ -203,7 +207,8 @@ final class EscrowLoaderS6FlightProbe {
         EscrowTags.require(rockets.size() == 1, "S6 native image is not explained by its durable record: extra survivor");
         var survivor = rockets.get(0); var flight = survivor.flightData().orElseThrow();
         boolean forward = cut.equals("LF_S6_F2_REPLACED") || cut.equals("LF_S6_F2_ACK") || cut.startsWith("LF_S6_F3_")
-                || EscrowLoaderS6PhaseProbe.selected(cut) || EscrowLoaderS6TerminalProbe.selected(cut);
+                || EscrowLoaderS6PhaseProbe.selected(cut) || EscrowLoaderS6TerminalProbe.selected(cut)
+                || EscrowLoaderS6CleanupProbe.selected(cut);
         EscrowTags.require(bank(survivor, false) == (forward ? 500 : 1_000) && bank(survivor, true) == 0
                 && survivor.escrowSection().epoch() == (forward ? 0 : 1) && survivor.escrowSection().markers().isEmpty()
                 && flight.fuel().committedDebits().size() == (forward ? 1 : 0) && flight.passengers().assignments().isEmpty()

@@ -66,7 +66,7 @@ class EscrowProbeRoutingTest {
                 }
             }
         }
-        assertEquals(598, seen.size()); // R202: adds F3-F6 cuts under the unchanged producer rules.
+        assertEquals(607, seen.size()); // R202: adds F3-F8 cuts under the unchanged producer rules.
         assertTrue(seen.contains(EscrowLoaderS6Probe.E3));
         var expected = new HashSet<>(EscrowItemSettlementCuts.CASES.keySet()); expected.addAll(EscrowItemRecoveryCuts.CASES);
         assertEquals(expected, items); assertEquals(18, items.size());

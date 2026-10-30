@@ -35,9 +35,11 @@ HOOKS = shared.HOOK_FILES + tuple(
 HOOKS += ("src/main/java/io/github/sunthemoon/advancedrocketrycommunity/resourceescrow/EscrowLoaderS6StoredProbe.java",)
 HOOKS += ("src/main/java/io/github/sunthemoon/advancedrocketrycommunity/resourceescrow/EscrowLoaderS6PhaseProbe.java",)
 HOOKS += ("src/main/java/io/github/sunthemoon/advancedrocketrycommunity/resourceescrow/EscrowLoaderS6TerminalProbe.java",)
+HOOKS += ("src/main/java/io/github/sunthemoon/advancedrocketrycommunity/resourceescrow/EscrowLoaderS6CleanupProbe.java",)
 HARNESSES = shared.HARNESS_FILES + ("scripts/run_v180_loader_s6.py", "scripts/loader_s6_oracle.py", "scripts/loader_s6_integrity.py", "scripts/loader_s6_chain.py", "scripts/loader_s6_abandon.py", "scripts/loader_s6_normalize.py", "scripts/loader_s6_flight.py", "scripts/loader_s6_forward.py", "scripts/loader_s6_progress.py")
 HARNESSES += ("scripts/loader_s6_phases.py",)
 HARNESSES += ("scripts/loader_s6_terminal.py",)
+HARNESSES += ("scripts/loader_s6_cleanup.py",)
 
 
 def write(path: Path, data: dict) -> None:

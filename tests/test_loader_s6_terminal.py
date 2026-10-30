@@ -18,6 +18,14 @@ def proof(cut):
 
 
 class TerminalOracleTests(unittest.TestCase):
+    def test_already_landed_prefix_cannot_change_its_clock_on_first_restart(self):
+        cut = terminal.CASES[-1]; image, witness, recovered, end = proof(cut)
+        identity = terminal.check(image, 0, None, cut, witness)["identity"]
+        recovered["native"]["destination"]["RocketEntityData"]["flight_data"]["state_started_game_time"] += 1
+        end["landed_time"] += 1
+        end["survivor_digest"] = forward.survivor_digest(recovered["native"]["destination"])
+        with self.assertRaises(SmokeError): terminal.check(recovered, 1, identity, cut, end)
+
     def test_bounded_capture_and_log_order_require_complete_checked_bytes(self):
         cut = terminal.CASES[0]; image, witness, _, _ = proof(cut)
         raw = flight.nbt.write(b"", forward.native_tag(witness["capture"]))
