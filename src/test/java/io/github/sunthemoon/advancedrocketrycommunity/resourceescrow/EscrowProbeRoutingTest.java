@@ -66,7 +66,7 @@ class EscrowProbeRoutingTest {
                 }
             }
         }
-        assertEquals(528, seen.size()); // R190 adds the S6 L1 in-flight normal shutdown selection.
+        assertEquals(529, seen.size()); // R190 adds the S6 L1/L2 in-flight normal shutdown selections.
         assertTrue(seen.contains(EscrowLoaderS6Probe.E3));
         var expected = new HashSet<>(EscrowItemSettlementCuts.CASES.keySet()); expected.addAll(EscrowItemRecoveryCuts.CASES);
         assertEquals(expected, items); assertEquals(18, items.size());

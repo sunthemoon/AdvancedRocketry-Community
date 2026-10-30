@@ -17,6 +17,8 @@ R2_DESTRUCTIVE = "LF_S6_R2_DESTRUCTIVE_SOURCE"
 R2_RECONNECT = "LF_S6_R2_DUPLICATE_RECONNECT"
 R2 = (R2_KEEP, R2_DESTRUCTIVE, R2_RECONNECT)
 G3_L1 = "LF_S6_G3_L1_INFLIGHT"
+G3_L2 = "LF_S6_G3_L2_INFLIGHT"
+G3 = (G3_L1, G3_L2)
 
 # UUID-valued native fields and the identity envelope returned by these oracles.
 # Do not recognize UUIDs by array length: coordinates, quantities and hashes are
@@ -95,15 +97,64 @@ def check_g3_l1(image, restart, identity=None):
     return result
 
 
+def check_g3_l2(image, restart, identity=None, operation=None):
+    legacy.require(restart in (0, 1, 2) and image.get("read_status") == "KNOWN"
+                   and isinstance(image.get("native"), dict), "G3 L2 UNKNOWN is not zero loss")
+    try:
+        disk = normalize_ids(image["native"])
+        identity = normalize_ids(identity)
+        observed_op = identity["op_id"] if restart and identity else operation
+        legacy.require(observed_op is not None, "Missing observed L2 operation")
+        observed_op = canonical_uuid(observed_op)
+        ledger = disk["ledger"]
+        legacy.require(ledger is not None and ledger["issued_through"] == 1 and not ledger["records"],
+                       "L2 normal drain did not retire its one operation")
+        legacy.require(len(disk["loaders"]) == 1, "L2 requires one real loader")
+        source = disk["loaders"][0]["arce_fluid_fuel_loader"]["resource_escrow"]
+        destination = disk["rocket"]["RocketEntityData"]["resource_escrow"]
+        for section, role in ((source, "SOURCE"), (destination, "DESTINATION")):
+            count = len(section["markers"])
+            legacy.require(count == 0 if restart else count in (0, 1), "Unexpected retired L2 marker count")
+            legacy.check_section(section, 1, count, ledger, role, 1)
+            if count:
+                legacy.require(section["markers"][0]["op_id"] == observed_op, "Retired marker names another L2 operation")
+            # Only the already validated retired metadata is projected away on
+            # this private copy, to reuse the exact completed quantity/binding checks.
+            section["markers"] = []
+        observed = legacy.check(disk, "LF_M_K7", 1)
+        observed.update(ledger=ledger["ledger_id"], op_id=observed_op)
+        legacy.require(identity is None or observed == identity, "L2 changed native identity across restarts")
+        return dict(identity=observed, raw_total=5000, available_total=5000 if restart else None,
+                    loss=0 if restart else None)
+    except (KeyError, TypeError, IndexError) as failure:
+        raise SmokeError(f"Malformed G3 L2 state: {failure}") from failure
+
+
+def shutdown_operation(lines, cut):
+    import re
+    matches = [match for line in lines if (match := re.search(
+        r"ARCE_LOADER_S6_DRAIN_READY cut=" + re.escape(cut)
+        + r" boundary=K8 running=true operation=([0-9a-f-]{36})(?:\s|$)", line))]
+    legacy.require(len(matches) == 1, "Missing/repeated L2 writer operation observation")
+    operation = matches[0][1]
+    try:
+        legacy.require(str(UUID(operation)) == operation, "Noncanonical L2 operation observation")
+    except ValueError as failure:
+        raise SmokeError("Malformed L2 operation observation") from failure
+    return operation
+
+
 def check_observations(lines: list[str], restart: int, cut=E3) -> None:
     """Require the selected propagated failure, not merely a checkpoint label."""
     import re
-    if cut == G3_L1:
+    if cut in G3:
         if restart:
             check_recovery_observations(lines)
         else:
-            ready = "ARCE_LOADER_S6_DRAIN_READY cut=" + cut + " boundary=K1 running=true"
-            released = "ARCE_LOADER_S6_DRAIN_RELEASE cut=" + cut + " boundary=K1 running=false"
+            boundary = "K8" if cut == G3_L2 else "K1"
+            suffix = " operation=" + shutdown_operation(lines, cut) if cut == G3_L2 else ""
+            ready = "ARCE_LOADER_S6_DRAIN_READY cut=" + cut + " boundary=" + boundary + " running=true" + suffix
+            released = "ARCE_LOADER_S6_DRAIN_RELEASE cut=" + cut + " boundary=" + boundary + " running=false" + suffix
             positions = []
             for marker in (ready, released):
                 found = [i for i, line in enumerate(lines) if re.search(re.escape(marker) + r"(?:\s|$)", line)]

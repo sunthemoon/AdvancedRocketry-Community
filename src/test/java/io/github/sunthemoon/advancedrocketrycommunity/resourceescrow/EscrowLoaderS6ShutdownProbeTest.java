@@ -26,6 +26,14 @@ class EscrowLoaderS6ShutdownProbeTest {
         }
     }
 
+    @Test void l2SelectionWaitsForItsOwnPreReplacementWriterBoundary() {
+        String cut = EscrowLoaderS6ShutdownProbe.L2_INFLIGHT;
+        assertTrue(EscrowLoaderS6ShutdownProbe.selected(true, "LF_M_K7", cut));
+        assertTrue(EscrowLoaderS6ShutdownProbe.stopBoundary(cut, "K8", false));
+        assertFalse(EscrowLoaderS6ShutdownProbe.stopBoundary(cut, "K1", false));
+        assertFalse(EscrowLoaderS6ShutdownProbe.stopBoundary(cut, "K8", true));
+    }
+
     @Test void observationPropertyRoutesOnlyItsExactPairAndSuppressesTheUnusedMatrix() throws Exception {
         String previous = System.getProperty(EscrowLoaderS6ShutdownProbe.PROPERTY);
         try {

@@ -451,6 +451,67 @@ class LoaderS6OracleTest(unittest.TestCase):
         with self.assertRaises(SmokeError): runner.finish_initial(process, "LF_S6_G3_L1_INFLIGHT", False)
         process.process.kill.assert_not_called()
 
+    def test_g3_l2_retired_markers_require_the_observed_operation_and_exact_frontiers(self):
+        image = self.image("LF_M_K9")
+        operation = image["native"]["loaders"][0]["arce_fluid_fuel_loader"]["resource_escrow"]["markers"][0]["op_id"]
+        before = oracle.check_g3_l2(image, 0, operation=operation)
+        self.assertEqual(5000, before["raw_total"])
+        for restart in (1, 2):
+            result = oracle.check_g3_l2(self.image("LF_M_K7", restart), restart, before["identity"])
+            self.assertEqual(5000, result["available_total"])
+        for mutation in ("id", "sequence", "role", "epoch", "quantity", "record", "unknown"):
+            changed = copy.deepcopy(image)
+            root = changed["native"]["loaders"][0]["arce_fluid_fuel_loader"]
+            marker = root["resource_escrow"]["markers"][0]
+            if mutation == "id": marker["op_id"] = "foreign"
+            elif mutation == "sequence": marker["seq"] = 2
+            elif mutation == "role": marker["role"] = "DESTINATION"
+            elif mutation == "epoch": root["resource_escrow"]["resource_epoch"] = 2
+            elif mutation == "quantity": root["tank"]["Amount"] += 1
+            elif mutation == "record": changed["native"]["ledger"]["records"] = self.image("LF_M_K6")["native"]["ledger"]["records"]
+            else: changed["read_status"] = "UNKNOWN"
+            with self.subTest(mutation=mutation), self.assertRaises(SmokeError):
+                oracle.check_g3_l2(changed, 0, operation=operation)
+
+    def test_g3_l2_checks_each_retired_marker_independently_without_changing_input(self):
+        for source_count, destination_count in ((0, 0), (0, 1), (1, 0), (1, 1)):
+            image = self.image("LF_M_K9")
+            source = image["native"]["loaders"][0]["arce_fluid_fuel_loader"]["resource_escrow"]
+            destination = image["native"]["rocket"]["RocketEntityData"]["resource_escrow"]
+            operation = source["markers"][0]["op_id"]
+            source["markers"] = source["markers"][:source_count]
+            destination["markers"] = destination["markers"][:destination_count]
+            preserved = copy.deepcopy(image)
+            with self.subTest(source=source_count, destination=destination_count):
+                oracle.check_g3_l2(image, 0, operation=operation)
+                self.assertEqual(preserved, image)
+                with self.assertRaises(SmokeError): oracle.check_g3_l2(image, 0)
+
+    def test_g3_l2_logs_pin_the_same_observed_operation_before_and_after_normal_stop(self):
+        cut = "LF_S6_G3_L2_INFLIGHT"
+        operation = oracle.canonical_uuid(self.NATIVE_OP)
+        lines = [f"ARCE_LOADER_S6_DRAIN_READY cut={cut} boundary=K8 running=true operation={operation}",
+                 f"ARCE_LOADER_S6_DRAIN_RELEASE cut={cut} boundary=K8 running=false operation={operation}",
+                 "[Server thread/INFO] Stopping server"]
+        oracle.check_observations(lines, 0, cut)
+        self.assertEqual(operation, oracle.shutdown_operation(lines, cut))
+        for wrong in (lines[1:], lines + [lines[0]], lines[::-1],
+                      [line.replace("K8", "K1") for line in lines],
+                      [lines[0], lines[1].replace(operation, "foreign"), lines[2]]):
+            with self.subTest(wrong=wrong), self.assertRaises(SmokeError):
+                oracle.check_observations(wrong, 0, cut)
+
+    def test_g3_l2_uses_normal_stop_not_the_forced_cut_transport(self):
+        from unittest.mock import Mock
+        import run_v180_loader_s6 as runner
+        process = Mock()
+        process.finish.return_value = 0
+        self.assertEqual("NORMAL_DRAIN_FROM_SELECTED_WRITER_STATE",
+                         runner.finish_initial(process, "LF_S6_G3_L2_INFLIGHT", False)["stop"])
+        process.command.assert_called_once_with("stop")
+        process.process.kill.assert_not_called()
+        process.abort.assert_not_called()
+
     def test_r2_logs_require_fence_copy_count_and_unmounted_reconnect(self):
         cut = "LF_S6_R2_DUPLICATE_RECONNECT"
         line = "ARCE_LOADER_S6_R2_RESULT cut=" + cut + " tank=4000 bank=1000 total=5000 epochs=1,1 records=0 markers=0 journal=1 copies=2 reason=FLOOR_CONFLICT passenger=unmounted"
