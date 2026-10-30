@@ -18,18 +18,19 @@ import time
 import uuid
 
 import loader_s6_oracle as oracle
+import loader_s6_chain as chain
 import run_v180_loader_cuts as shared
 from run_dedicated_server_smoke import CapturedProcess, SmokeError, allocate_port, write_server_configuration, expected_server_properties
 from run_v060_flight_server_smoke import _server_command
 
-CASES = (oracle.E3, oracle.E5) + oracle.R2 + oracle.G3 + oracle.G1 + oracle.OPERATOR
+CASES = (oracle.E3, oracle.E5) + oracle.R2 + oracle.G3 + oracle.G1 + oracle.OPERATOR + chain.CASES
 HOOKS = shared.HOOK_FILES + tuple(
     "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/resourceescrow/" + name + ".java"
     for name in ("EscrowLoaderS6Probe", "EscrowLoaderS6Recovery", "EscrowLoaderS6Accounting", "EscrowLoaderS6UnloadedProbe",
-                 "EscrowLoaderS6UnloadObservation", "EscrowLoaderS6R2Probe", "EscrowLoaderS6ShutdownProbe", "EscrowLoaderS6GuardProbe", "EscrowLoaderS6SettlementProbe", "EscrowLoaderS6NamedSetup", "EscrowCargoContentionProbe", "EscrowNamedFillTestHook")) + tuple(
+                 "EscrowLoaderS6UnloadObservation", "EscrowLoaderS6R2Probe", "EscrowLoaderS6ShutdownProbe", "EscrowLoaderS6GuardProbe", "EscrowLoaderS6SettlementProbe", "EscrowLoaderS6ChainProbe", "EscrowLoaderS6NamedSetup", "EscrowCargoContentionProbe", "EscrowNamedFillTestHook")) + tuple(
     "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/persistence/" + name + ".java"
     for name in ("RocketI6NativeCut", "RocketJournalFailurePolicy", "RocketTransferSavedData"))
-HARNESSES = shared.HARNESS_FILES + ("scripts/run_v180_loader_s6.py", "scripts/loader_s6_oracle.py", "scripts/loader_s6_integrity.py")
+HARNESSES = shared.HARNESS_FILES + ("scripts/run_v180_loader_s6.py", "scripts/loader_s6_oracle.py", "scripts/loader_s6_integrity.py", "scripts/loader_s6_chain.py")
 
 
 def write(path: Path, data: dict) -> None:
@@ -37,6 +38,8 @@ def write(path: Path, data: dict) -> None:
 
 
 def check_log(lines, restart, cut=oracle.E3, retired_operation=None, image=None):
+    if cut in chain.CASES:
+        return chain.check_logs(lines, restart, cut)
     oracle.check_observations(lines, restart, cut, retired_operation)
     if cut in oracle.O3J:
         oracle.check_named_baseline(lines, restart, cut, image)
@@ -135,6 +138,8 @@ def run_cut(args, cut, evidence, owner, pins):
                     marker = r"ARCE_LOADER_S6_O_" + ("RESULT" if restart else "PAUSED") + r" cut=" + re.escape(cut) + r"(?:\s|$)"
                     if not restart and cut in oracle.O3J[:2]:
                         marker = r"ARCE_W164_CUT boundary=" + oracle.O_HOOKS[cut] + r"(?:\s|$)"
+                elif cut in chain.CASES:
+                    marker = r"ARCE_LOADER_S6_CHAIN_" + ("RESULT" if restart else "PAUSED") + r" cut=" + re.escape(cut) + r"(?:\s|$)"
                 process.wait_for(re.compile(marker), args.startup_timeout)
                 start["checkpoint_reached"] = True
                 if restart and cut not in oracle.G1:
@@ -175,6 +180,8 @@ def run_cut(args, cut, evidence, owner, pins):
                 raw_check = lambda image, restart, identity: oracle.check_g1(image, restart, identity, cut)
             if cut in oracle.OPERATOR:
                 raw_check = lambda image, restart, identity: oracle.check_o1(image, restart, identity, cut)
+            if cut in chain.CASES:
+                raw_check = lambda image, restart, identity: chain.check(image, restart, identity, cut)
             for kind, check in (("LOG", lambda: check_log(lines, restart, cut,
                                       identity["op_id"] if cut == oracle.G3_L2 and restart and identity else None, start["image"])),
                                 ("RAW", lambda: raw_check(start["image"], restart, identity))):
