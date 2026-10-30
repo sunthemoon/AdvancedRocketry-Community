@@ -12,6 +12,25 @@ public interface RecordSizer {
     /** Accounting bytes are retained even when sizing cannot prove the canonical lifecycle encoding fits. */
     record Reservation(int bytes, boolean proven) { }
 
+    /** Exact native list-element bytes/reader charges; UNKNOWN never authorizes the exact-size shortcut. */
+    record EncodingSize(long bytes, long heapBytes) {
+        public static final EncodingSize UNKNOWN = new EncodingSize(-1, -1);
+        public static final EncodingSize ZERO = new EncodingSize(0, 0);
+        public boolean known() { return bytes >= 0 && heapBytes >= 0; }
+        public EncodingSize plus(EncodingSize other) {
+            return new EncodingSize(Math.addExact(bytes, other.bytes), Math.addExact(heapBytes, other.heapBytes));
+        }
+        public EncodingSize minus(EncodingSize other) {
+            return new EncodingSize(Math.subtractExact(bytes, other.bytes), Math.subtractExact(heapBytes, other.heapBytes));
+        }
+    }
+
+    /**
+     * Optional canonical current-state measurement for the five immutable registry record types. Domain-only
+     * sizers need not implement it. A failed eager measurement must not change mutation/load acceptance.
+     */
+    default EncodingSize encodingSize(Object record) { return EncodingSize.UNKNOWN; }
+
     int ACCOUNT_BYTES = 128;
     /**
      * Upper bound of the root's fixed fields and list headers. A record inside a list encodes without the
@@ -48,7 +67,7 @@ public interface RecordSizer {
     }
 
     /**
-     * Detached full-root/read preflight; the persisted implementation uses the same disk codec. Ground
+     * Detached preflight; the persisted implementation uses exact resident sizes or the full disk codec. Ground
      * operations call it when the existing reservations plus any candidate additions cannot bound the root.
      */
     default boolean groundMutationFits(SatelliteMissionRegistry registry, GroundSurveyJob job,

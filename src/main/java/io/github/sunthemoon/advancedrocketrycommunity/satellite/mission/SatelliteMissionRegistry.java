@@ -44,6 +44,7 @@ public final class SatelliteMissionRegistry {
     private final ResourceMissions resources = new ResourceMissions(this);
     private final GroundSurveys groundSurveys = new GroundSurveys(this);
     final RecordSizer sizer;
+    final RecordEncodingIndex encodings;
     private RegistryLimits limits = RegistryLimits.DEFAULTS;
     private RestoreReport restoreReport = new RestoreReport(0, 0, 0, 0);
     /**
@@ -56,6 +57,7 @@ public final class SatelliteMissionRegistry {
     private SatelliteMissionRegistry(MonotonicMissionClock clock, long saveEpoch, RecordSizer sizer) {
         this.clock = Objects.requireNonNull(clock, "clock");
         this.sizer = Objects.requireNonNull(sizer, "sizer");
+        this.encodings = new RecordEncodingIndex(sizer);
         this.epochs = new RegistryEpochs(saveEpoch);
     }
 
@@ -107,6 +109,7 @@ public final class SatelliteMissionRegistry {
             throw new IllegalArgumentException("Duplicate satellite id " + state.satelliteId());
         }
         satellitesByOwner.merge(state.ownerId(), 1, Integer::sum);
+        encodings.changed(null, state);
         receiverLinks.update(null, state);
         budget.reserve(StorageBudget.Section.SATELLITES, state.satelliteId(), sizer.satelliteReservation(state));
     }
@@ -133,6 +136,7 @@ public final class SatelliteMissionRegistry {
             throw new IllegalArgumentException("Duplicate research account " + account.ownerId());
         }
         budget.reserveAccount(account.ownerId());
+        encodings.changed(null, account);
     }
 
     public synchronized void restoreInstance(AsteroidInstance instance) {
@@ -145,6 +149,7 @@ public final class SatelliteMissionRegistry {
         }
         budget.reserve(StorageBudget.Section.INSTANCES, instance.instanceId(), sizer.instanceReservation(instance));
         ledger.changed(null, instance);
+        encodings.changed(null, instance);
     }
 
     /**
@@ -156,11 +161,12 @@ public final class SatelliteMissionRegistry {
      */
     public synchronized RestoreReport finishRestore() {
         int accountsAdded = AccountRecovery.restore(satellites.values(), groundSurveys.all(), accounts, budget);
+        accounts.values().forEach(account -> encodings.changed(account, account));
         RegistryInvariants.Plan plan = RegistryInvariants.plan(satellites, missions, instances, groundSurveys.records());
         plan.groundQuarantines().forEach((id, reason) -> groundSurveys.put(
                 groundSurveys.job(id).orElseThrow().quarantine(reason)));
         plan.missionQuarantines().forEach((id, reason) -> putMission(missions.get(id).quarantine(reason, false)));
-        plan.recoveries().forEach(id -> satellites.put(id, satellites.get(id).requireRecovery()));
+        plan.recoveries().forEach(id -> storeSatellite(satellites.get(id).requireRecovery()));
         plan.instanceQuarantines().forEach(id -> storeInstance(instances.get(id).quarantine()));
         scheduler.rebuild(missions.values());
         RestoreReport report = new RestoreReport(plan.missionQuarantines().size(), plan.recoveries().size(),
@@ -241,7 +247,7 @@ public final class SatelliteMissionRegistry {
                 && solar.receiver().isPresent() && !receiverMissing) {
             return result(SatelliteOperationCode.MISSION_BUSY, false, satellite, null);
         }
-        satellites.remove(satelliteId);
+        encodings.changed(satellites.remove(satelliteId), null);
         satellitesByOwner.computeIfPresent(satellite.ownerId(), (owner, count) -> count <= 1 ? null : count - 1);
         receiverLinks.update(satellite, null);
         budget.release(StorageBudget.Section.SATELLITES, satelliteId);
@@ -258,7 +264,7 @@ public final class SatelliteMissionRegistry {
             return result(SatelliteOperationCode.IDEMPOTENT, false, satellite, null);
         }
         SatelliteState updated = satellite.withKindState(next);
-        satellites.put(satelliteId, updated);
+        encodings.changed(satellites.put(satelliteId, updated), updated);
         receiverLinks.update(satellite, updated);
         return result(SatelliteOperationCode.SUCCESS, true, updated, null);
     }
@@ -287,7 +293,7 @@ public final class SatelliteMissionRegistry {
             return result(SatelliteOperationCode.NO_POWER, false, satellite, null);
         }
         SatelliteState paid = satellite.withKindState(after.get());
-        satellites.put(satelliteId, paid);
+        encodings.changed(satellites.put(satelliteId, paid), paid);
         return result(SatelliteOperationCode.SUCCESS, true, paid, null);
     }
 
@@ -357,7 +363,7 @@ public final class SatelliteMissionRegistry {
             return result(refused, false, satellite, null);
         }
         SatelliteState updated = satellite.startMission(missionId);
-        satellites.put(satelliteId, updated);
+        encodings.changed(satellites.put(satelliteId, updated), updated);
         putMission(mission);
         budget.reserve(StorageBudget.Section.MISSIONS, missionId, sizer.missionReservation(mission));
         scheduler.schedule(mission);
@@ -438,7 +444,7 @@ public final class SatelliteMissionRegistry {
             return result(SatelliteOperationCode.CAPACITY_REACHED, completedNow, satellite, mission);
         }
         MissionState claimed = mission.beginClaim(logicalTime);
-        accounts.put(ownerId, updated);
+        encodings.changed(accounts.put(ownerId, updated), updated);
         putMission(claimed);
         if (claimed.status() == MissionStatus.CLAIMED) {
             satellite = finishSatelliteMission(satellite, missionId);
@@ -513,6 +519,10 @@ public final class SatelliteMissionRegistry {
     public synchronized ResearchAccount account(UUID ownerId) {
         return accounts.getOrDefault(ownerId, ResearchAccount.empty(ownerId));
     }
+
+    /** Exact current-resident measurements only; never persisted or used as durability evidence. */
+    public synchronized RecordSizer.EncodingSize residentEncoding() { return encodings.total(); }
+    public synchronized RecordSizer.EncodingSize residentEncoding(Object record) { return encodings.resident(record); }
 
     public synchronized List<SatelliteState> satellites() {
         return sorted(satellites);
@@ -647,20 +657,21 @@ public final class SatelliteMissionRegistry {
 
     private void admitAccount(UUID ownerId) {
         if (!accounts.containsKey(ownerId)) {
-            accounts.put(ownerId, ResearchAccount.empty(ownerId));
+            ResearchAccount account = ResearchAccount.empty(ownerId);
+            encodings.changed(accounts.put(ownerId, account), account);
             budget.reserveAccount(ownerId);
         }
     }
 
     /** Every mission write goes through here, so counters, queues and indexes never drift. */
     void putMission(MissionState next) {
-        MissionState previous = missions.put(next.missionId(), next);
+        MissionState previous = encodings.changed(missions.put(next.missionId(), next), next);
         retention.changed(previous, next, epochs.durable());
         terminals.changed(previous, next);
     }
 
     void removeMission(MissionState mission) {
-        missions.remove(mission.missionId());
+        encodings.changed(missions.remove(mission.missionId()), null);
         retention.changed(mission, null, epochs.durable());
         terminals.changed(mission, null);
         budget.release(StorageBudget.Section.MISSIONS, mission.missionId());
@@ -685,15 +696,15 @@ public final class SatelliteMissionRegistry {
     }
 
     void storeSatellite(SatelliteState satellite) {
-        receiverLinks.update(satellites.put(satellite.satelliteId(), satellite), satellite);
+        receiverLinks.update(encodings.changed(satellites.put(satellite.satelliteId(), satellite), satellite), satellite);
     }
 
     void storeInstance(AsteroidInstance instance) {
-        ledger.changed(instances.put(instance.instanceId(), instance), instance);
+        ledger.changed(encodings.changed(instances.put(instance.instanceId(), instance), instance), instance);
     }
 
     void dropInstance(UUID instanceId) {
-        AsteroidInstance previous = instances.remove(instanceId);
+        AsteroidInstance previous = encodings.changed(instances.remove(instanceId), null);
         if (previous != null) {
             ledger.changed(previous, null);
             budget.release(StorageBudget.Section.INSTANCES, instanceId);
@@ -774,7 +785,7 @@ public final class SatelliteMissionRegistry {
             throw new IllegalStateException("Mission satellite is missing");
         }
         SatelliteState updated = satellite.finishMission(missionId);
-        satellites.put(updated.satelliteId(), updated);
+        encodings.changed(satellites.put(updated.satelliteId(), updated), updated);
         return updated;
     }
 

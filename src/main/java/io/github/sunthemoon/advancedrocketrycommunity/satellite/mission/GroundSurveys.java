@@ -78,7 +78,7 @@ public final class GroundSurveys {
     Map<UUID, GroundSurveyJob> records() { return java.util.Collections.unmodifiableMap(jobs); }
 
     void put(GroundSurveyJob job) {
-        ledger.changed(jobs.put(job.jobId(), job), job, !hasInstanceReference(job));
+        ledger.changed(registry.encodings.changed(jobs.put(job.jobId(), job), job), job, !hasInstanceReference(job));
         version++;
     }
 
@@ -326,7 +326,7 @@ public final class GroundSurveys {
                 ledger.unqueue(head.id());
                 continue;
             }
-            jobs.remove(job.jobId());
+            registry.encodings.changed(jobs.remove(job.jobId()), null);
             version++;
             ledger.changed(job, null, true);
             registry.budget.release(StorageBudget.Section.GROUND_SURVEYS, job.jobId());
@@ -383,7 +383,7 @@ public final class GroundSurveys {
         return null;
     }
 
-    /** A change that adds no record fits when the reservations bound the root; otherwise the root is encoded. */
+    /** A change that adds no record fits by reservation or exact canonical preflight. */
     boolean fitsWithoutNewRecord(GroundSurveyJob job, AsteroidInstance instance, long now, long observedTime) {
         return reservationsBoundRoot(0L)
                 || registry.sizer.groundMutationFits(registry, job, instance, false, null, now, observedTime);
@@ -393,7 +393,7 @@ public final class GroundSurveys {
      * Proven reservations cover the largest encoding their records can reach; an account encodes in at most
      * {@link RecordSizer#ACCOUNT_BYTES}. Their sum plus framing bounds the encoded root, but a restored root
      * above its section budgets can exceed the root byte limit. Failed sizing also invalidates the proof,
-     * even if its capped accounting bytes fit; both cases take the unchanged whole-root preflight.
+     * even if its capped accounting bytes fit; both cases take the canonical preflight.
      * Candidate additions are counted before publication reserves them; existing reservations are not subtracted.
      */
     private boolean reservationsBoundRoot(long addedBytes) {
@@ -446,7 +446,7 @@ public final class GroundSurveys {
             else { registry.storeInstance(instance); }
         }
         if (account != null) {
-            registry.accounts.put(account.ownerId(), account);
+            registry.encodings.changed(registry.accounts.put(account.ownerId(), account), account);
             registry.budget.reserveAccount(account.ownerId());
         }
         put(job);

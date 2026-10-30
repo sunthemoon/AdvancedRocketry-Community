@@ -127,9 +127,18 @@ public final class CodecRecordSizer implements RecordSizer {
     }
 
     @Override
+    public EncodingSize encodingSize(Object record) { return ExactGroundPreflight.measure(record); }
+
+    @Override
     public boolean groundMutationFits(SatelliteMissionRegistry registry, GroundSurveyJob job,
             AsteroidInstance instance, boolean removeInstance, ResearchAccount account, long now, long observedTime) {
         try {
+            if (registry.residentEncoding().known()) {
+                // Match the original encoder/edited-root epoch checks even though the fields are fixed width.
+                registry.epochToWrite();
+                Math.addExact(registry.epochs().ceiling(), 1L);
+                return ExactGroundPreflight.fits(registry, job, instance, removeInstance, account);
+            }
             // The root bound is checked once, on the edited root, by the validation write below.
             var root = SatelliteRegistryPayload.encodeUnchecked(registry, new net.minecraft.nbt.CompoundTag());
             root.getCompound("clock").putLong("logical_game_time", now);
