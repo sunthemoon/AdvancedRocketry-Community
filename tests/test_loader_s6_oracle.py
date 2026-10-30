@@ -512,6 +512,21 @@ class LoaderS6OracleTest(unittest.TestCase):
         process.process.kill.assert_not_called()
         process.abort.assert_not_called()
 
+    def test_retired_metadata_is_not_held_fuel_or_spendable_before_pruning(self):
+        operation = oracle.canonical_uuid(self.NATIVE_OP)
+        base = "ARCE_LOADER_S6_ACCOUNT tick={tick} known=true records=0 q=null source=4000 destination=1000 source_available=4000 source_held=0 destination_available=1000 destination_held=0 in_transit=0 spendable={spendable} retired={retired} retired_operation=" + operation
+        rows = [base.format(tick=1, spendable="UNKNOWN", retired=2),
+                base.format(tick=2, spendable="UNKNOWN", retired=1),
+                base.format(tick=3, spendable="5000", retired=0),
+                "ARCE_LOADER_S6_RESULT cut=" + oracle.E3 + " observations=3 total=5000 records=0 markers=0 source_epoch=1 destination_epoch=1"]
+        oracle.check_recovery_observations(rows, retired_operation=operation)
+        for before, after in (("retired=2", "retired=3"), ("spendable=UNKNOWN", "spendable=5000"),
+                              ("retired_operation=" + operation, "retired_operation=foreign"),
+                              ("source_held=0", "source_held=1000"), ("retired=0", "retired=1")):
+            with self.subTest(change=before), self.assertRaises(SmokeError):
+                oracle.check_recovery_observations([row.replace(before, after) for row in rows], retired_operation=operation)
+        with self.assertRaises(SmokeError): oracle.check_recovery_observations(rows)
+
     def test_r2_logs_require_fence_copy_count_and_unmounted_reconnect(self):
         cut = "LF_S6_R2_DUPLICATE_RECONNECT"
         line = "ARCE_LOADER_S6_R2_RESULT cut=" + cut + " tank=4000 bank=1000 total=5000 epochs=1,1 records=0 markers=0 journal=1 copies=2 reason=FLOOR_CONFLICT passenger=unmounted"

@@ -9,6 +9,7 @@ import net.minecraft.server.MinecraftServer;
 /** Exact, release-only selection of a native stop/drain observation. */
 final class EscrowLoaderS6ShutdownProbe {
     static final String PROPERTY = "advancedrocketrycommunity.escrowS6Shutdown";
+    static final String RETIRED_OPERATION = "advancedrocketrycommunity.escrowS6RetiredOperation";
     static final String L1_INFLIGHT = "LF_S6_G3_L1_INFLIGHT";
     static final String L2_INFLIGHT = "LF_S6_G3_L2_INFLIGHT";
     static final String NATIVE_CASE = "LF_M_K7";
@@ -38,7 +39,8 @@ final class EscrowLoaderS6ShutdownProbe {
         this.server = server; this.recovery = recovery;
         cut = System.getProperty(PROPERTY);
         fixture = recovery ? null : new EscrowLoaderCutProbe(server, NATIVE_CASE, false);
-        observer = recovery ? new EscrowLoaderS6Recovery(server) : null;
+        observer = recovery ? new EscrowLoaderS6Recovery(server,
+                L2_INFLIGHT.equals(cut) ? UUID.fromString(System.getProperty(RETIRED_OPERATION)) : null) : null;
     }
 
     void startTick() { if (fixture != null) { fixture.startTick(); } }

@@ -17,17 +17,33 @@ final class EscrowLoaderS6Recovery {
     private static final BlockPos ORIGIN = new BlockPos(64, 100, 64);
     private static final BlockPos SOURCE = new BlockPos(66, 100, 64);
     private final MinecraftServer server;
+    private final UUID retiredOperation;
     private Identity identity;
     private long began = -1;
     private boolean done;
     private int observations;
 
+    static int activeMarkers(UUID retiredOperation, UUID ledger, long generation, long issued, int records,
+            UUID bound, long epoch, String role, List<EscrowPrefix.Marker> markers) {
+        if (retiredOperation == null || records != 0) { return markers.size(); }
+        EscrowTags.require(generation >= 3 && issued == 1 && Objects.equals(ledger, bound) && epoch == 1
+                && markers.size() <= 1, "S6 retired metadata lacks exact durable retirement authority");
+        EscrowTags.require(markers.isEmpty() || markers.get(0).equals(new EscrowPrefix.Marker(retiredOperation, 1, role, 1)),
+                "S6 retired marker differs from the observed operation/frontier");
+        return 0;
+    }
+
     private record Identity(UUID ledger, UUID device, UUID physical, UUID logical, UUID owner,
                             UUID snapshot, String snapshotHash, Object binding) { }
 
     EscrowLoaderS6Recovery(MinecraftServer server) {
+        this(server, null);
+    }
+
+    EscrowLoaderS6Recovery(MinecraftServer server, UUID retiredOperation) {
         EscrowTestEndpoints.requireEnabled(server);
         this.server = server;
+        this.retiredOperation = retiredOperation;
     }
 
     void tick() {
@@ -83,14 +99,21 @@ final class EscrowLoaderS6Recovery {
             EscrowTags.require(ledger.id().equals(source.ledger()) && ledger.id().equals(destination.ledger()),
                     "S6 completed ledger binding changed");
         }
+        int markerCount = source.markers().size() + destination.markers().size();
+        int activeMarkers = activeMarkers(retiredOperation, ledger.id(), ledger.writerGeneration(), ledger.issuedThrough(),
+                ledger.records().size(), source.ledger(), source.epoch(), "SOURCE", source.markers())
+                + activeMarkers(retiredOperation, ledger.id(), ledger.writerGeneration(), ledger.issuedThrough(),
+                ledger.records().size(), destination.ledger(), destination.epoch(), "DESTINATION", destination.markers());
         var partition = EscrowLoaderS6Accounting.classify(true, amount(loader), bank(rocket, false), q,
-                sourceAfter, destinationAfter, source.markers().size() + destination.markers().size());
+                sourceAfter, destinationAfter, activeMarkers);
+        String retired = retiredOperation == null ? "" : " retired=" + (markerCount - activeMarkers)
+                + " retired_operation=" + retiredOperation;
         observations++;
-        AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_S6_ACCOUNT tick={} known=true records={} q={} source={} destination={} source_available={} source_held={} destination_available={} destination_held={} in_transit={} spendable={}",
+        AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_S6_ACCOUNT tick={} known=true records={} q={} source={} destination={} source_available={} source_held={} destination_available={} destination_held={} in_transit={} spendable={}{}",
                 server.getTickCount(), ledger.records().size(), q, amount(loader), bank(rocket, false),
                 partition.sourceAvailable(), partition.sourceHeld(), partition.destinationAvailable(),
-                partition.destinationHeld(), partition.inTransit(), q == null ? "5000" : "UNKNOWN");
-        if (server.getTickCount() - began < 100 || !coordinator.writerIdle() || q != null) { return; }
+                partition.destinationHeld(), partition.inTransit(), q == null && markerCount == 0 ? "5000" : "UNKNOWN", retired);
+        if (server.getTickCount() - began < 100 || !coordinator.writerIdle() || q != null || markerCount != 0) { return; }
         EscrowTags.require(!loader.escrowLocked() && RocketEscrowGate.idle(rocket)
                 && coordinator.admissionAuthority().pendingCount() == 0, "S6 completed image still reserved");
         AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_S6_RESULT cut={} observations={} total=5000 records=0 markers=0 source_epoch=1 destination_epoch=1",

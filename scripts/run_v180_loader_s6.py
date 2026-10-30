@@ -34,8 +34,8 @@ def write(path: Path, data: dict) -> None:
     path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
 
 
-def check_log(lines, restart, cut=oracle.E3):
-    oracle.check_observations(lines, restart, cut)
+def check_log(lines, restart, cut=oracle.E3, retired_operation=None):
+    oracle.check_observations(lines, restart, cut, retired_operation)
 
 
 def finish_initial(process, cut, diagnostic):
@@ -87,6 +87,9 @@ def run_cut(args, cut, evidence, owner, pins):
                             "-Dadvancedrocketrycommunity.escrowCase=" + native_case]
             if cut in oracle.G3:
                 command[1:1] = ["-Dadvancedrocketrycommunity.escrowS6Shutdown=" + cut]
+            if cut == oracle.G3_L2 and restart:
+                oracle.legacy.require(identity is not None and "op_id" in identity, "Missing confirmed L2 operation for recovery")
+                command[1:1] = ["-Dadvancedrocketrycommunity.escrowS6RetiredOperation=" + identity["op_id"]]
             if diagnostic:
                 command[1:1] = ["-Dadvancedrocketrycommunity.escrowS6UnloadDiagnostic=true"]
             start = dict(restart=restart, command=command, free_bytes=shared.disk_space(),
@@ -140,7 +143,8 @@ def run_cut(args, cut, evidence, owner, pins):
                     image, restart, identity, operation=oracle.shutdown_operation(lines, cut) if not restart else None)
             if cut in oracle.R2:
                 raw_check = lambda image, restart, identity: oracle.check_r2(image, restart, identity, cut)
-            for kind, check in (("LOG", lambda: check_log(lines, restart, cut)),
+            for kind, check in (("LOG", lambda: check_log(lines, restart, cut,
+                                      identity["op_id"] if cut == oracle.G3_L2 and restart and identity else None)),
                                 ("RAW", lambda: raw_check(start["image"], restart, identity))):
                 try:
                     result = check()

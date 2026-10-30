@@ -144,12 +144,12 @@ def shutdown_operation(lines, cut):
     return operation
 
 
-def check_observations(lines: list[str], restart: int, cut=E3) -> None:
+def check_observations(lines: list[str], restart: int, cut=E3, retired_operation=None) -> None:
     """Require the selected propagated failure, not merely a checkpoint label."""
     import re
     if cut in G3:
         if restart:
-            check_recovery_observations(lines)
+            check_recovery_observations(lines, retired_operation if cut == G3_L2 else None)
         else:
             boundary = "K8" if cut == G3_L2 else "K1"
             suffix = " operation=" + shutdown_operation(lines, cut) if cut == G3_L2 else ""
@@ -205,7 +205,7 @@ def check_observations(lines: list[str], restart: int, cut=E3) -> None:
                    "E3 did not propagate the selected closed channel")
 
 
-def check_recovery_observations(lines: list[str]) -> None:
+def check_recovery_observations(lines: list[str], retired_operation=None) -> None:
     """Check every tick's partition independently of the JVM observer's verdict."""
     def fields(line, marker):
         return dict(token.split("=", 1) for token in line.split(marker, 1)[1].strip().split())
@@ -226,14 +226,21 @@ def check_recovery_observations(lines: list[str]) -> None:
                        "source_held", "destination_available", "destination_held", "in_transit")}
             s, d = numbers["source"], numbers["destination"]
             legacy.require(numbers["records"] in (0, 1), "Wrong recovery record count")
+            retired = int(row.get("retired", "0"))
+            legacy.require(0 <= retired <= 2, "Wrong retired metadata count")
+            if "retired" in row or "retired_operation" in row:
+                legacy.require(retired_operation is not None and row.get("retired_operation") == canonical_uuid(retired_operation),
+                               "Retired metadata lacks the observed operation identity")
             if numbers["records"]:
+                legacy.require(retired == 0, "Active record markers misclassified as retired metadata")
                 legacy.require(row["q"] == "1000" and row["spendable"] == "UNKNOWN",
                                "Changed record or tentative credit counted as spendable")
                 legacy.require(s in (4000, 5000) and d in (0, 1000), "Resource image exceeds record authority")
                 expected = (4000, 1000 if s == 5000 else 0, 0, 1000 if d == 1000 else 0,
                             1000 if (s, d) == (4000, 0) else 0)
             else:
-                legacy.require(row["q"] == "null" and row["spendable"] == "5000" and (s, d) == (4000, 1000),
+                legacy.require(row["q"] == "null" and row["spendable"] == ("UNKNOWN" if retired else "5000")
+                               and (s, d) == (4000, 1000),
                                "Changed completed resource total or held amount without record")
                 expected = (4000, 0, 1000, 0, 0)
             actual = tuple(numbers[k] for k in ("source_available", "source_held", "destination_available",
@@ -243,6 +250,7 @@ def check_recovery_observations(lines: list[str]) -> None:
         legacy.require(ticks == list(range(ticks[0], ticks[-1] + 1)), "Missing or repeated recovery tick")
         result = results[0]
         legacy.require(known and rows[-1] == known[-1] and known[-1]["records"] == "0"
+                       and int(known[-1].get("retired", "0")) == 0
                        and result == dict(cut=E3, observations=str(len(known)), total="5000", records="0",
                                           markers="0", source_epoch="1", destination_epoch="1"),
                        "Completion lacks exact final resources, epochs or observation count")
