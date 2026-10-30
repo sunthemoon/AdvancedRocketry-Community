@@ -61,6 +61,20 @@ server thread against 515 ms for in-place encoding.
    - Publication applies one completion per tick at `ServerTickEvent` START.
    - Neither step may cost more than docs/17's tick budgets at the bounds (item 13).
 
+   **Implementation note (2026-10-30, W210).** "The server thread captures and publishes only" describes the
+   checked file writer's capture and completion publication, not every transaction-journal operation.
+   "A capture builds no NBT" remains true: capture still copies immutable entry references and does not capture
+   the RAM-only size table. W210's journal-owned admission table holds an exact size for each successfully
+   measured immutable resident and is used only for the identical entry object. Load measures each decoded
+   resident, successful RAM writes refresh its row, removal drops it, and failed decode clears the table.
+   On the owner thread, a first write or a different snapshot object encodes and measures one full entry;
+   replacement with an already measured identical snapshot object encodes and measures metadata only, reusing
+   that snapshot field's exact contribution. Admission still fully encodes candidates; an unmeasured resident
+   uses the original encoding/check fallback. These synchronous costs are outside capture/publication and are
+   reported, including the small-root increase, in [W210](../work/v1.8.0-root-queue/records/W210.md).
+   The table retains no candidate or NBT and is never a disk acknowledgement. This note changes no accepted
+   decision, schema, bound, budget, timeout, refusal or recovery policy, and approves no risk or Gate.
+
 3. **The IO thread does the rest.** It encodes the capture byte-identically to today's encoder, checks the bound,
    computes the NC1 record and root digests (journal only; the registry keeps no digest), stages, forces, reads the
    staging file back, replaces atomically without fallback and forces the directory per policy. After a committer
@@ -71,6 +85,16 @@ server thread against 515 ms for in-place encoding.
      force always runs, and a failure there gives UNKNOWN.
    - Any `Throwable` other than a `RuntimeException` gives UNKNOWN.
    - The IO thread touches no Level, server or live SavedData.
+
+   **Implementation note (2026-10-30, W210).** "The IO thread does the rest" refers to the checked file write
+   from the immutable capture: encoding, bound and digest checks, staging, force, readback, replacement and
+   outcome classification remain on IO as specified above. It does not move all journal admission, RAM-write
+   or load encoding to IO. The writer neither reads nor trusts W210's owner-thread size table and still
+   independently encodes and checks its captured entries. Publication and acknowledgement remain unchanged;
+   cached sizes cannot make failed or UNKNOWN writes acknowledged. "A capture builds no NBT" remains true.
+   This is an implementation clarification, not a change to the accepted decision or a performance/availability
+   guarantee; R-040 and the remaining interruption, traffic, expiry and storage-fault evidence stay open for
+   owner disposition. No risk or Gate is approved.
 
 4. **The writer.**
    - At most one capture exists. A request while one is in flight sets a pending flag.
