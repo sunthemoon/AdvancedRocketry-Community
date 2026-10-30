@@ -26,7 +26,7 @@ final class EscrowLoaderS6SettlementProbe {
     private final String cut;
     private final boolean recovery, named;
     private final EscrowLoaderCutProbe setup;
-    private final EscrowLoaderNamedProbe namedSetup;
+    private final EscrowLoaderS6NamedSetup namedSetup;
     private boolean held, baseline, queued, done;
     private volatile boolean writingIntent;
     private volatile String ledgerPhase = "";
@@ -63,7 +63,7 @@ final class EscrowLoaderS6SettlementProbe {
                 && !Boolean.getBoolean(EscrowLoaderAdmission.SWITCH), "Settlement requires its exact per-device release gate");
         this.server = server; this.cut = cut; this.recovery = recovery; named = cut.startsWith("LF_S6_O3J_");
         setup = recovery || named ? null : new EscrowLoaderCutProbe(server, "LF_M_K7", false);
-        namedSetup = recovery || !named ? null : new EscrowLoaderNamedProbe(server, "LF_M_NAMED_CROSS_K9", false);
+        namedSetup = recovery || !named ? null : new EscrowLoaderS6NamedSetup(server);
     }
     void startTick() {
         if (!held) {
@@ -81,7 +81,7 @@ final class EscrowLoaderS6SettlementProbe {
             }
             return;
         }
-        if (setup != null) { setup.checkpoint(hook); } else { namedSetup.checkpoint(hook); }
+        if (setup != null) { setup.checkpoint(hook); }
         if (hook.equals("C2_DESTINATION_AFTER")) {
             var data = ResourceEscrowSavedData.existing(server);
             EscrowTags.require(data != null && data.ledger().records().size() == 1, "Settlement setup lost its real fill");
@@ -94,10 +94,11 @@ final class EscrowLoaderS6SettlementProbe {
         if (done) { return; }
         if (began < 0) { began = server.getTickCount(); }
         EscrowTags.require(server.getTickCount() - began <= 2_400, "S6 settlement exceeded the existing fixture bound");
-        if (named) {
+        if (named && (recovery || namedSetup.observing())) {
             var moon = server.getLevel(CelestialIds.MOON_LEVEL);
-            EscrowTags.require(moon != null && moon.getChunkSource().getChunkNow(4096, 4096) == null,
-                    "Named operator fixture loaded its old source chunk");
+            EscrowTags.require(moon != null, "Named operator fixture lost its old source Level");
+            EscrowLoaderS6NamedSetup.sourceReady(true, moon.getChunkSource().getChunkNow(4096, 4096) == null,
+                    !moon.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(4096, 4096)));
         }
         if (!recovery && !held) {
             if (setup != null) { setup.tick(); } else { namedSetup.tick(); }

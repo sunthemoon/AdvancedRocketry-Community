@@ -10,6 +10,7 @@ from uuid import UUID
 import gzip
 import io
 import json
+import re
 import loader_cut_oracle as legacy
 import loader_s6_integrity as integrity
 from run_dedicated_server_smoke import SmokeError
@@ -598,8 +599,12 @@ def check_named_journal(disk, restart, cut, resources):
 def check_named_baseline(lines, restart, cut, image):
     lines = [line.rstrip("\r\n") for line in lines]
     baseline = [line for line in lines if "ARCE_LOADER_S6_O3J_BASELINE" in line]
+    reserved = [line for line in lines if "ARCE_LOADER_S6_NAMED_RESERVED" in line]
     legacy.require(len(baseline) == int(not restart), "Missing/repeated named pre-decision baseline")
+    legacy.require(len(reserved) == int(not restart), "Missing/repeated named unloaded-source admission")
     if restart: return
+    legacy.require(re.search(r"ARCE_LOADER_S6_NAMED_RESERVED tick=\d+ pending=1 source_chunk=UNLOADED source_entities=UNLOADED$", reserved[0])
+                   and lines.index(reserved[0]) < lines.index(baseline[0]), "Named source was not unloaded before its operator baseline")
     legacy.require(image is not None and image.get("read_status") == "KNOWN", "UNKNOWN named baseline is not a guard")
     try:
         guard = normalize_ids(image["native"]["ledger"]["records"][0]["transfer_guard"])

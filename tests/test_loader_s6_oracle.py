@@ -1093,9 +1093,13 @@ class SettlementJournalOracleTest(unittest.TestCase):
             baseline = f"ARCE_LOADER_S6_O3J_BASELINE cut={cut} transfer={guard['transfer_id']} generation={guard['journal_generation']} digest={guard['journal_digest']} phase=COMMITTED"
             marker = (f"ARCE_W164_CUT boundary={hook}" if cut != self.CUTS[2]
                       else f"ARCE_LOADER_S6_O_PAUSED cut={cut} hook={hook}")
-            runner.check_log([baseline, marker], 0, cut, image=image)
-            for lines in ([marker], [baseline, baseline, marker], [baseline.replace("COMMITTED", "PREPARED"), marker],
-                          [baseline.replace(guard["transfer_id"], "other"), marker]):
+            reserved = "ARCE_LOADER_S6_NAMED_RESERVED tick=420 pending=1 source_chunk=UNLOADED source_entities=UNLOADED"
+            runner.check_log([reserved, baseline, marker], 0, cut, image=image)
+            for lines in ([marker], [reserved, baseline, baseline, marker], [reserved, baseline.replace("COMMITTED", "PREPARED"), marker],
+                          [reserved, baseline.replace(guard["transfer_id"], "other"), marker], [baseline, marker],
+                          [reserved, reserved, baseline, marker], [baseline, reserved, marker],
+                          [reserved.replace("source_chunk=UNLOADED", "source_chunk=LOADED"), baseline, marker],
+                          [reserved.replace("source_entities=UNLOADED", "source_entities=LOADED"), baseline, marker]):
                 with self.assertRaises(SmokeError): runner.check_log(lines, 0, cut, image=image)
 
 
