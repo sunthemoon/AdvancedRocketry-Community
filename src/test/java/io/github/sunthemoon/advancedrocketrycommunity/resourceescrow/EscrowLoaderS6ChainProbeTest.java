@@ -4,6 +4,16 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 
 class EscrowLoaderS6ChainProbeTest {
+    @Test void checkpointedVetoUsesAnExactReleaseSelectorNotAnO1Pause() {
+        for (String cut : new String[] {"LF_S6_CHAIN_VETO", "LF_S6_CHAIN_VETO_BI"}) {
+            assertTrue(EscrowLoaderS6ChainProbe.selected(true, cut));
+            assertFalse(EscrowLoaderS6ChainProbe.selected(false, cut));
+            assertFalse(EscrowLoaderS6ChainProbe.selected(true, cut + "_OTHER"));
+            for (String hook : new String[] {"K1", "K2", "O1_ACK"}) {
+                assertFalse(EscrowLoaderS6ChainProbe.boundary(cut, hook));
+            }
+        }
+    }
     @Test void exactReleaseSelectors() {
         for (String suffix : new String[] {"", "_BI"}) {
             for (String side : new String[] {"BEFORE", "REPLACED", "ACK"}) {

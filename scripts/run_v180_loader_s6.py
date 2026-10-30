@@ -142,7 +142,7 @@ def run_cut(args, cut, evidence, owner, pins):
                     marker = r"ARCE_LOADER_S6_CHAIN_" + ("RESULT" if restart else "PAUSED") + r" cut=" + re.escape(cut) + r"(?:\s|$)"
                 process.wait_for(re.compile(marker), args.startup_timeout)
                 start["checkpoint_reached"] = True
-                if restart and cut not in oracle.G1:
+                if restart and cut not in oracle.G1 and cut not in chain.VETO:
                     process.command("stop")
                     start["exit_code"] = process.finish()
                     oracle.legacy.require(start["exit_code"] == 0, "Restart stopped abnormally")

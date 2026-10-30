@@ -7,8 +7,9 @@ import loader_cut_oracle as legacy
 import loader_s6_integrity as i
 from run_dedicated_server_smoke import SmokeError
 
+VETO = ("LF_S6_CHAIN_VETO", "LF_S6_CHAIN_VETO_BI")
 CASES = tuple("LF_S6_CHAIN_" + side + suffix for suffix in ("", "_BI")
-              for side in ("BEFORE", "REPLACED", "ACK"))
+              for side in ("BEFORE", "REPLACED", "ACK")) + VETO
 
 
 def descriptor(bi):
@@ -179,7 +180,8 @@ def check(image, restart, identity=None, cut=CASES[0]):
                    and isinstance(image.get("native"), dict), "Chain UNKNOWN is not zero loss")
     try:
         disk = normalize_ids(image["native"]); identity = normalize_ids(identity); root = disk["ledger"]
-        before = "_BEFORE" in cut; released = bool(restart and not before); bi = cut.endswith("_BI")
+        before = "_BEFORE" in cut; veto = cut in VETO
+        released = bool(restart and not before and not veto); bi = cut.endswith("_BI")
         resources = check_resources(disk, bi, released)
         legacy.require(identity is None or resources == identity["resources"], "Chain changed a complete native identity/snapshot")
         if not released:
@@ -221,18 +223,23 @@ def check(image, restart, identity=None, cut=CASES[0]):
         observed = identity or dict(resources=resources, authority=root)
         if released: observed = dict(observed, completed=root)
         return dict(identity=observed, raw_total=10000, per_fluid={legacy.HYDROGEN: 5000, legacy.OXYGEN: 5000} if bi else {legacy.FUEL: 10000},
-                    available_total=None, loss=None, state="RELEASED" if released else "PRE_O1" if before else "FROZEN_O1")
+                    available_total=None, loss=None, state="RELEASED" if released else "PRE_O1" if before else "HELD" if veto else "FROZEN_O1")
     except (KeyError, TypeError, IndexError, ValueError) as failure:
         raise SmokeError(f"Malformed S6 chain observation: {failure}") from failure
 
 
 def check_logs(lines, restart, cut):
-    lines = [line.rstrip("\r\n") for line in lines]; before = "_BEFORE" in cut
+    lines = [line.rstrip("\r\n") for line in lines]; before = "_BEFORE" in cut; veto = cut in VETO
     if restart:
         marker = (f"ARCE_LOADER_S6_CHAIN_RESULT cut={cut} tanks=4000,4000 banks={'1000,1000' if cut.endswith('_BI') else '2000,0'} "
-                  f"epochs=1,1,2 records={2 if before else 0} receipts={0 if before else 2} state={'PRE_O1' if before else 'RELEASED'}")
+                  f"epochs=1,1,2 records={2 if before or veto else 0} receipts={0 if before or veto else 2} state={'PRE_O1' if before else 'HELD' if veto else 'RELEASED'}")
     else:
-        hook = "K1" if before else "K2" if "_REPLACED" in cut else "O1_ACK"
+        hook = "O_VETO" if veto else "K1" if before else "K2" if "_REPLACED" in cut else "O1_ACK"
         marker = f"ARCE_LOADER_S6_CHAIN_PAUSED cut={cut} hook={hook}"
     legacy.require(sum(line.endswith(marker) for line in lines) == 1, "Missing/repeated chain operator boundary")
+    if veto:
+        diagnostic = f"ARCE_LOADER_S6_CHAIN_VETO cut={cut} reason=BARRIER_VETO records=2 checkpointed=true recovery={str(bool(restart)).lower()}"
+        legacy.require(sum(line.endswith(diagnostic) for line in lines) == 1
+            and any("ARCE_ESCROW_SETTLEMENT_HELD" in line and "reason=BARRIER_VETO records=retained" in line for line in lines),
+            "Missing/repeated actual checkpointed O-veto diagnostic")
     legacy.require(not any("/ERROR" in line or "/FATAL" in line for line in lines), "Unexpected chain operator error")

@@ -48,6 +48,34 @@ def completed(image):
 
 
 class ChainOracleTest(unittest.TestCase):
+    def test_checkpointed_veto_retains_complete_frozen_authority_twice(self):
+        for bi in (False, True):
+            cut = "LF_S6_CHAIN_VETO" + ("_BI" if bi else "")
+            image = decision(bi)
+            initial = chain.check(image, 0, cut=cut)
+            self.assertEqual(initial["state"], "HELD")
+            first = chain.check(image, 1, initial["identity"], cut)
+            chain.check(image, 2, first["identity"], cut)
+            for mutate in (
+                lambda d: d["ledger"].update(writer_generation=d["ledger"]["writer_generation"] + 1),
+                lambda d: d["ledger"]["records"].pop(),
+                lambda d: d["ledger"]["records"][0]["settlement"].update(confirmed_tick=102),
+                lambda d: d["loaders"][0]["arce_fluid_fuel_loader"]["resource_escrow"]["markers"].clear(),
+            ):
+                changed = copy.deepcopy(image); mutate(changed["native"])
+                with self.assertRaises(SmokeError): chain.check(changed, 1, initial["identity"], cut)
+            with self.assertRaises(SmokeError): chain.check(completed(image), 1, initial["identity"], cut)
+
+    def test_checkpointed_veto_requires_the_actual_diagnostic(self):
+        cut = "LF_S6_CHAIN_VETO"
+        marker = f"ARCE_LOADER_S6_CHAIN_PAUSED cut={cut} hook=O_VETO"
+        diagnostic = f"ARCE_LOADER_S6_CHAIN_VETO cut={cut} reason=BARRIER_VETO records=2 checkpointed=true recovery=false"
+        actual = "ARCE_ESCROW_SETTLEMENT_HELD reason=BARRIER_VETO records=retained"
+        chain.check_logs([marker, diagnostic, actual], 0, cut)
+        for lines in ([marker], [marker, diagnostic], [marker, actual], [marker, diagnostic, diagnostic, actual],
+                      [marker, diagnostic.replace("BARRIER_VETO", "Frozen settlement endpoint changed"), actual]):
+            with self.assertRaises(SmokeError): chain.check_logs(lines, 0, cut)
+
     def test_frozen_mono_and_bipropellant_components_release_twice(self):
         for bi in (False, True):
             for side in ("REPLACED", "ACK"):
@@ -85,6 +113,7 @@ class ChainOracleTest(unittest.TestCase):
 
     def test_log_boundaries_require_one_exact_marker_and_no_errors(self):
         for cut in chain.CASES:
+            if "_VETO" in cut: continue  # The dedicated diagnostic test also checks the held reason.
             hook = "K1" if "_BEFORE" in cut else "K2" if "_REPLACED" in cut else "O1_ACK"
             line = f"ARCE_LOADER_S6_CHAIN_PAUSED cut={cut} hook={hook}\n"
             chain.check_logs([line], 0, cut)
