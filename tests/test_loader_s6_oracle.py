@@ -658,5 +658,81 @@ class LoaderS6OracleTest(unittest.TestCase):
             with self.subTest(lines=changed), self.assertRaises(SmokeError): oracle.check_observations(changed, 1, cut)
 
 
+class GuardOracleTest(unittest.TestCase):
+    def image(self, cut="LF_S6_G1_VETO", restart=0):
+        disk = fixture("LF_M_N0", 0)
+        original = disk["loaders"][0]
+        original["arce_fluid_fuel_loader"]["schema_version"] = 1
+        disk["loaders"] = []
+        for index in range(257 if cut.endswith("SATURATION") else 1):
+            loader = copy.deepcopy(original)
+            loader.update(x=(4 + index % 16) * 16 + 2, z=(4 + index // 16) * 16)
+            loader["arce_fluid_fuel_loader"]["device"] = str(uuid.UUID(int=index + 1))
+            disk["loaders"].append(loader)
+        disk.update(day_time=(restart + 1) * 10000, protected_block="minecraft:stone",
+                    control_block="minecraft:stone" if cut.endswith("SATURATION") else
+                    "minecraft:diamond_block" if restart == 1 else "minecraft:gold_block")
+        disk["rocket"]["CustomName"] = '{"text":"W211_G1_' + str(restart + 1) + '"}'
+        return dict(read_status="KNOWN", native=disk)
+
+    def test_native_guard_preserves_baseline_and_independent_stores_on_two_restarts(self):
+        for cut in ("LF_S6_G1_VETO", "LF_S6_G1_SATURATION"):
+            identity = None
+            for restart in range(3):
+                result = oracle.check_g1(self.image(cut, restart), restart, identity, cut)
+                identity = result["identity"]
+                self.assertEqual(5000 * (257 if cut.endswith("SATURATION") else 1), result["raw_total"])
+                self.assertIsNone(result["available_total"])
+
+    def test_native_guard_rejects_changed_resource_identity_and_save_scope(self):
+        cut = "LF_S6_G1_SATURATION"
+        baseline = self.image(cut)
+        identity = oracle.check_g1(baseline, 0, None, cut)["identity"]
+        changes = (
+            lambda d: d.update(day_time=0), lambda d: d.update(protected_block="minecraft:gold_block"),
+            lambda d: d.update(control_block="minecraft:diamond_block"), lambda d: d["loaders"].pop(),
+            lambda d: d["rocket"].update(CustomName='{"text":"other"}'),
+            lambda d: d["loaders"][0]["arce_fluid_fuel_loader"]["tank"].update(Amount=4999),
+            lambda d: d["loaders"][0]["arce_fluid_fuel_loader"]["resource_escrow"].update(resource_epoch=1),
+            lambda d: d["loaders"][0]["arce_fluid_fuel_loader"]["resource_escrow"].update(markers=[{}]),
+            lambda d: d["loaders"][0]["arce_fluid_fuel_loader"].update(owner="another"),
+            lambda d: d["loaders"][0]["arce_fluid_fuel_loader"]["binding"].update(physical_rocket="another"),
+            lambda d: d["loaders"][0]["arce_fluid_fuel_loader"].update(device=str(uuid.UUID(int=2))),
+            lambda d: d["loaders"][0]["arce_fluid_fuel_loader"].update(extra="changed"),
+        )
+        for change in changes:
+            damaged = copy.deepcopy(baseline); change(damaged["native"])
+            with self.subTest(change=change), self.assertRaises(SmokeError):
+                oracle.check_g1(damaged, 0, identity, cut)
+        with self.assertRaises(SmokeError): oracle.check_g1(dict(read_status="UNKNOWN", native=None), 0, None, cut)
+
+    def test_guard_logs_require_real_capacity_and_exact_save_refusal(self):
+        cut = "LF_S6_G1_SATURATION"
+        lines = ["ARCE_LOADER_S6_G1_CAPACITY entries=256 duplicate_stable=true unrelated_allowed=true",
+                 "ARCE_LOADER_S6_G1_RESULT cut=" + cut + " round=0 loaders=257 denials=256 scope=LEVEL retained_bits=7fc00001 save_attempted=true",
+                 "[Server thread/ERROR]: Exception caught during firing event: Refusing chunk save with a fluid fuel loader root that native serialization cannot keep; back up and repair offline",
+                 "[Server thread/ERROR]: Failed to save chunk 4,4",
+                 "java.lang.IllegalStateException: Refusing chunk save with a fluid fuel loader root that native serialization cannot keep; back up and repair offline",
+                 "[Server thread/ERROR]: Failed to save chunk 21,4",
+                 "java.lang.IllegalStateException: Refusing chunk save after denial capacity exhausted; back up and repair first"]
+        oracle.check_observations(lines, 0, cut)
+        for wrong in (lines[1:], lines + [lines[1]], lines + ["[Server/ERROR] unrelated"],
+                      [line.replace("7fc00001", "7fc00000") for line in lines],
+                      [line.replace("capacity exhausted", "something else") for line in lines]):
+            with self.assertRaises(SmokeError): oracle.check_observations(wrong, 0, cut)
+
+
+    def test_guard_palette_decodes_cross_word_padded_indices(self):
+        palette = [{"Name": "minecraft:stone"}, {"Name": "minecraft:gold_block"}]
+        data = [0] * 256
+        index = 4 * 256 + 3
+        data[index // 16] = 1 << (index % 16 * 4)
+        chunk = dict(sections=[dict(Y=6, block_states=dict(palette=palette, data=data))])
+        self.assertEqual("minecraft:gold_block", oracle.block_at(chunk, (67, 100, 64)))
+        self.assertEqual("minecraft:stone", oracle.block_at(chunk, (66, 100, 64)))
+        data[index // 16] = 2 << (index % 16 * 4)
+        with self.assertRaises(SmokeError): oracle.block_at(chunk, (67, 100, 64))
+
+
 if __name__ == "__main__":
     unittest.main()

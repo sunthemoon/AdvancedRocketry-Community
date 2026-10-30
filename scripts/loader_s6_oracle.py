@@ -7,6 +7,8 @@ from __future__ import annotations
 
 from pathlib import Path
 from uuid import UUID
+import gzip
+import json
 import loader_cut_oracle as legacy
 from run_dedicated_server_smoke import SmokeError
 
@@ -26,6 +28,8 @@ G3_CLOSE = "LF_S6_G3_FAILED_CLOSE"
 G3_UNKNOWN = (G3_U1, G3_U2)
 G3_SELF_STOP = G3_UNKNOWN + (G3_CLOSE,)
 G3 = (G3_L1, G3_L2, G3_QUEUED, G3_L2_QUEUED) + G3_SELF_STOP
+G1_VETO, G1_SATURATION = "LF_S6_G1_VETO", "LF_S6_G1_SATURATION"
+G1 = (G1_VETO, G1_SATURATION)
 
 # UUID-valued native fields and the identity envelope returned by these oracles.
 # Do not recognize UUIDs by array length: coordinates, quantities and hashes are
@@ -67,7 +71,7 @@ def normalize_ids(value):
 
 def inspect(world: Path, cut=E3) -> dict:
     try:
-        return dict(read_status="KNOWN", native=inspect_r2(world) if cut in R2 else inspect_e5(world) if cut == E5 else legacy.inspect(world))
+        return dict(read_status="KNOWN", native=inspect_g1(world, cut) if cut in G1 else inspect_r2(world) if cut in R2 else inspect_e5(world) if cut == E5 else legacy.inspect(world))
     except (OSError, ValueError, KeyError, TypeError, SmokeError) as failure:
         return dict(read_status="UNKNOWN", native=None,
                     error=f"{type(failure).__name__}: {failure}")
@@ -180,6 +184,9 @@ def shutdown_operation(lines, cut):
 def check_observations(lines: list[str], restart: int, cut=E3, retired_operation=None) -> None:
     """Require the selected propagated failure, not merely a checkpoint label."""
     import re
+    if cut in G1:
+        check_g1_logs(lines, restart, cut)
+        return
     if cut in G3:
         if restart:
             if cut == G3_U1:
@@ -331,6 +338,104 @@ def check_recovery_observations(lines: list[str], retired_operation=None) -> Non
                        "Completion lacks exact final resources, epochs or observation count")
     except (KeyError, ValueError, TypeError) as failure:
         raise SmokeError(f"Malformed S6 accounting observation: {failure}") from failure
+
+
+def guard_position(index):
+    legacy.require(0 <= index < 257, "Guard coordinate outside its fixed bound")
+    return ((4 + index % 16) * 16 + 2, 100, (4 + index // 16) * 16)
+
+
+def block_at(chunk, at):
+    x, y, z = at
+    sections = [section for section in chunk["sections"] if section["Y"] == y // 16]
+    legacy.require(len(sections) == 1, "Missing/duplicate terrain section")
+    states = sections[0]["block_states"]
+    palette = states["palette"]
+    legacy.require(0 < len(palette) <= 4096, "Invalid native block palette")
+    if len(palette) == 1:
+        return palette[0]["Name"]
+    bits = max(4, (len(palette) - 1).bit_length()); per_word = 64 // bits
+    index = (y & 15) * 256 + (z & 15) * 16 + (x & 15)
+    value = (states["data"][index // per_word] >> (index % per_word * bits)) & ((1 << bits) - 1)
+    legacy.require(value < len(palette), "Native block palette index out of bounds")
+    return palette[value]["Name"]
+
+
+def inspect_g1(world, cut):
+    from inspect_celestial_saved_data import NbtReader
+    disk = legacy.inspect(world)
+    chunks = {}
+    for index in range(257 if cut == G1_SATURATION else 1):
+        x, _, z = guard_position(index); cx, cz = x // 16, z // 16
+        chunks[cx, cz] = legacy.record(world / "region" / f"r.{cx // 32}.{cz // 32}.mca", cx % 32 + 32 * (cz % 32))
+    disk["loaders"] = [entry for chunk in chunks.values() for entry in chunk["block_entities"] if entry.get("id") == legacy.LOADER]
+    disk["protected_block"] = block_at(chunks[4, 4], (67, 100, 64))
+    control = legacy.record(world / "region" / "r.0.0.mca", 21 + 32 * 4)
+    disk["control_block"] = block_at(control, (338, 100, 64))
+    with gzip.open(world / "level.dat", "rb") as stream:
+        payload = stream.read(4_194_305)
+    legacy.require(len(payload) <= 4_194_304, "Global control exceeds decoded bound")
+    disk["day_time"] = NbtReader(payload).read_root()["Data"]["DayTime"]
+    disk["files"]["level.dat"] = legacy.digest(world / "level.dat")
+    return disk
+
+
+def check_g1(image, restart, identity=None, cut=G1_VETO):
+    legacy.require(cut in G1 and restart in (0, 1, 2) and image.get("read_status") == "KNOWN"
+                   and isinstance(image.get("native"), dict), "Guard UNKNOWN is not zero loss")
+    try:
+        disk = normalize_ids(image["native"])
+        count = 257 if cut == G1_SATURATION else 1
+        legacy.require(disk["ledger"] is None and len(disk["loaders"]) == count, "Guard admitted escrow or changed loader count")
+        # The first device and the rocket must retain the exact never-admitted native baseline.
+        legacy.check(dict(disk, loaders=[disk["loaders"][0]]), "LF_M_N0", 0)
+        data = disk["rocket"]["RocketEntityData"]
+        roots, devices = [], set()
+        for index, loader in enumerate(disk["loaders"]):
+            source = loader["arce_fluid_fuel_loader"]
+            legacy.require(loader["id"] == legacy.LOADER and tuple(loader[k] for k in ("x", "y", "z")) == guard_position(index),
+                           "Guard changed native loader type/position")
+            legacy.require(source["schema_version"] == 1 and source["tank"] == dict(FluidName=legacy.FUEL, Amount=5000),
+                           "Guard failed to retain the valid disk baseline")
+            legacy.check_section(source["resource_escrow"], 0, 0, None, "SOURCE", 0)
+            legacy.require(source["owner"] == data["owner_id"] and source["binding"] == dict(
+                physical_rocket=disk["rocket"]["UUID"], logical_rocket=data["assembly_transaction_id"]), "Guard changed owner/binding")
+            legacy.require(source["device"] not in devices, "Guard duplicated a native device identity")
+            devices.add(source["device"]); roots.append(source)
+        legacy.require(disk["protected_block"] == "minecraft:stone", "Protected terrain was saved despite veto")
+        expected = "minecraft:stone" if cut == G1_SATURATION else "minecraft:diamond_block" if restart == 1 else "minecraft:gold_block"
+        legacy.require(disk["control_block"] == expected and disk["day_time"] == (restart + 1) * 10000
+                       and json.loads(disk["rocket"]["CustomName"]) == {"text": "W211_G1_" + str(restart + 1)},
+                       "Terrain/global/entity save scopes differ from the selected guard")
+        observed = dict(roots=roots, rocket_data=data, physical=disk["rocket"]["UUID"])
+        legacy.require(identity is None or observed == normalize_ids(identity), "Guard changed retained root/rocket identity across restarts")
+        return dict(identity=observed, raw_total=5000 * count, available_total=None, loss=None,
+                    scope="LEVEL_TERRAIN" if cut == G1_SATURATION else "ONE_CHUNK_TERRAIN")
+    except (KeyError, TypeError, IndexError, ValueError) as failure:
+        raise SmokeError(f"Malformed native guard observation: {failure}") from failure
+
+
+def check_g1_logs(lines, restart, cut):
+    import re
+    saturated = cut == G1_SATURATION
+    result = (f"ARCE_LOADER_S6_G1_RESULT cut={cut} round={restart} loaders={257 if saturated else 1} "
+              f"denials={256 if saturated else 1} scope={'LEVEL' if saturated else 'CHUNK'} retained_bits=7fc00001 save_attempted=true")
+    capacity = "ARCE_LOADER_S6_G1_CAPACITY entries=256 duplicate_stable=true unrelated_allowed=true"
+    legacy.require(sum(line.endswith(result) for line in lines) == 1
+                   and sum(line.endswith(capacity) for line in lines) == int(saturated), "Missing/repeated native guard result or capacity proof")
+    refusal = "Refusing chunk save with a fluid fuel loader root that native serialization cannot keep; back up and repair offline"
+    overflow = "Refusing chunk save after denial capacity exhausted; back up and repair first"
+    legacy.require(any(refusal in line for line in lines) and any(overflow in line for line in lines) == saturated,
+                   "Missing selected native save refusal")
+    errors = [index for index, line in enumerate(lines) if "/ERROR" in line or "/FATAL" in line]
+    legacy.require(0 < len(errors) <= 4096, "Missing or excessive native guard error diagnostics")
+    for index in errors:
+        reasons = (refusal, overflow) if saturated else (refusal,)
+        bus = any(lines[index].endswith("Exception caught during firing event: " + reason) for reason in reasons)
+        chunk = (re.search(r"Failed to save chunk \d+,\d+\s*$", lines[index]) is not None and index + 1 < len(lines)
+                 and any(lines[index + 1].endswith("java.lang.IllegalStateException: " + reason) for reason in reasons))
+        legacy.require(bus or chunk,
+                       "Unexpected error during native guard experiment")
 
 
 def inspect_e5(world):

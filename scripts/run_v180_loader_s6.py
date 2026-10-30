@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Counted S6 loader tranches, with two restarts and no changes to shared runners.
 
-Implements A1, A2's unloaded E5 and R2, and seven A3 shutdown rows. Other matrix rows
+Implements A1, A2's unloaded E5 and R2, seven A3 shutdown rows and A4 guards. Other matrix rows
 remain missing; PASS_SELECTED never means B3-S6 acceptance. Run as a detached
 process so its own finally releases its lock and removes its disposable world.
 """
@@ -22,11 +22,11 @@ import run_v180_loader_cuts as shared
 from run_dedicated_server_smoke import CapturedProcess, SmokeError, allocate_port, write_server_configuration, expected_server_properties
 from run_v060_flight_server_smoke import _server_command
 
-CASES = (oracle.E3, oracle.E5) + oracle.R2 + oracle.G3
+CASES = (oracle.E3, oracle.E5) + oracle.R2 + oracle.G3 + oracle.G1
 HOOKS = shared.HOOK_FILES + tuple(
     "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/resourceescrow/" + name + ".java"
     for name in ("EscrowLoaderS6Probe", "EscrowLoaderS6Recovery", "EscrowLoaderS6Accounting", "EscrowLoaderS6UnloadedProbe",
-                 "EscrowLoaderS6UnloadObservation", "EscrowLoaderS6R2Probe", "EscrowLoaderS6ShutdownProbe", "EscrowCargoContentionProbe"))
+                 "EscrowLoaderS6UnloadObservation", "EscrowLoaderS6R2Probe", "EscrowLoaderS6ShutdownProbe", "EscrowLoaderS6GuardProbe", "EscrowCargoContentionProbe"))
 HARNESSES = shared.HARNESS_FILES + ("scripts/run_v180_loader_s6.py", "scripts/loader_s6_oracle.py")
 
 
@@ -90,6 +90,8 @@ def run_cut(args, cut, evidence, owner, pins):
                             "-Dadvancedrocketrycommunity.escrowCase=" + native_case]
             if cut in oracle.G3:
                 command[1:1] = ["-Dadvancedrocketrycommunity.escrowS6Shutdown=" + cut]
+            if cut in oracle.G1:
+                command[1:1] = ["-Dadvancedrocketrycommunity.escrowS6G1Round=" + str(restart)]
             if cut == oracle.G3_L2 and restart:
                 oracle.legacy.require(identity is not None and "op_id" in identity, "Missing confirmed L2 operation for recovery")
                 command[1:1] = ["-Dadvancedrocketrycommunity.escrowS6RetiredOperation=" + identity["op_id"]]
@@ -116,9 +118,11 @@ def run_cut(args, cut, evidence, owner, pins):
                               else r"ARCE_LOADER_S6_DRAIN_READY cut=" + re.escape(cut) + r"(?:\s|$)")
                     if cut == oracle.G3_U1 and restart:
                         marker = r"ARCE_LOADER_MATRIX_RESULT cut=LF_M_E4L1_UNKNOWN(?:\s|$)"
+                elif cut in oracle.G1:
+                    marker = r"ARCE_LOADER_S6_G1_RESULT cut=" + re.escape(cut) + " round=" + str(restart) + r"(?:\s|$)"
                 process.wait_for(re.compile(marker), args.startup_timeout)
                 start["checkpoint_reached"] = True
-                if restart:
+                if restart and cut not in oracle.G1:
                     process.command("stop")
                     start["exit_code"] = process.finish()
                     oracle.legacy.require(start["exit_code"] == 0, "Restart stopped abnormally")
@@ -152,6 +156,8 @@ def run_cut(args, cut, evidence, owner, pins):
                 raw_check = lambda image, restart, identity: oracle.check_g3_unknown(image, restart, identity, cut)
             if cut in oracle.R2:
                 raw_check = lambda image, restart, identity: oracle.check_r2(image, restart, identity, cut)
+            if cut in oracle.G1:
+                raw_check = lambda image, restart, identity: oracle.check_g1(image, restart, identity, cut)
             for kind, check in (("LOG", lambda: check_log(lines, restart, cut,
                                       identity["op_id"] if cut == oracle.G3_L2 and restart and identity else None)),
                                 ("RAW", lambda: raw_check(start["image"], restart, identity))):
@@ -195,7 +201,7 @@ def run(args):
     pins = dict(source_commit=args.source_commit, jar_sha256=shared.digest(args.jar),
                 hooks={p: shared.digest(shared.REPO / p) for p in HOOKS},
                 harness={p: shared.digest(shared.REPO / p) for p in HARNESSES})
-    report = dict(status="IN_PROGRESS", coverage="Selected A1/E5/R2/G3 rows only; not all B3-S6", pins=pins, cases=[], starts=0, restarts=0)
+    report = dict(status="IN_PROGRESS", coverage="Selected A1/E5/R2/G3/G1 rows only; not all B3-S6", pins=pins, cases=[], starts=0, restarts=0)
     if diagnostic:
         report["coverage"] = "R186 unload lifecycle diagnosis only; not fairness or restart coverage"
     write(evidence / "results.json", report)
