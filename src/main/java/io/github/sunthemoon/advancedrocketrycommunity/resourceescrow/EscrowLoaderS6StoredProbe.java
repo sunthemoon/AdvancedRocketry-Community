@@ -30,6 +30,7 @@ final class EscrowLoaderS6StoredProbe {
                     var phase = frozen.envelope.getCompound("flight");
                     AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_S6_FLIGHT_STORED cut={} owner=FIXTURE phase={} phase_time={} digest={}",
                             cut, phase.getString("state"), phase.getLong("state_started_game_time"), frozen.digest);
+                    if (cut.equals("LF_S6_F4_STORED")) { EscrowLoaderS6PhaseProbe.checked(server, cut); }
                     EscrowLoaderS6JournalProbe.pause(cut, "FIXTURE_PHASE_READBACK");
                 });
     }

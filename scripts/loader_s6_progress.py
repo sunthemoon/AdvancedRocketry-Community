@@ -61,7 +61,7 @@ def prelaunch(actual, row, ledger):
 
 def stored_witness(lines, cut):
     prefix = "ARCE_LOADER_S6_FLIGHT_STORED cut=" + cut + " "
-    found = [(i, re.search(re.escape(prefix) + r"owner=FIXTURE phase=(ASCENT|TRANSIT) phase_time=(\d+) digest=([0-9a-f]{64})$",
+    found = [(i, re.search(re.escape(prefix) + r"owner=FIXTURE phase=(ASCENT|TRANSIT|DESCENT) phase_time=(\d+) digest=([0-9a-f]{64})$",
                            line.rstrip("\r\n"))) for i, line in enumerate(lines) if prefix in line]
     transfers = [i for i, line in enumerate(lines) if "ARCE_LOADER_S6_FLIGHT_TRANSFER cut=" + cut + " " in line]
     pauses = [i for i, line in enumerate(lines) if "ARCE_LOADER_S6_FLIGHT_PAUSED cut=" + cut + " " in line]

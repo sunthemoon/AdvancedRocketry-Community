@@ -42,7 +42,9 @@ final class EscrowLoaderS6FlightProbe {
     private boolean phaseStorePending;
     private long began = -1;
 
-    static boolean selected(boolean hooks, String cut) { return hooks && cut != null && CASES.contains(cut); }
+    static boolean selected(boolean hooks, String cut) {
+        return hooks && cut != null && (CASES.contains(cut) || EscrowLoaderS6PhaseProbe.selected(cut));
+    }
     static String stagedArmDigest(net.minecraft.nbt.CompoundTag payload) {
         var root = EscrowCodec.decode(payload);
         EscrowTags.require(root.issuedThrough() == 1 && root.writerGeneration() == 4 && root.issuedLaunchSerial() == 1
@@ -105,11 +107,22 @@ final class EscrowLoaderS6FlightProbe {
             AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_S6_FLIGHT_ARMED cut={} digest={}", cut, stagedArmDigest(payload));
             armedObserved = true;
         }
-        if ((cut.equals("LF_S6_F2_ACK") || cut.startsWith("LF_S6_F3_")) && point.equals("F2_PREPARED_ACK")) {
+        if ((cut.equals("LF_S6_F2_ACK") || cut.startsWith("LF_S6_F3_") || EscrowLoaderS6PhaseProbe.selected(cut))
+                && point.equals("F2_PREPARED_ACK")) {
             var journalFile = server.getWorldPath(LevelResource.ROOT).resolve("data")
                     .resolve(ManagedSavedDataType.ROCKET_TRANSFERS.fileName());
             EscrowLoaderS6JournalProbe.observeTransfer(cut,
                     CheckedSavedDataFile.readPayload(journalFile, ManagedSavedDataType.ROCKET_TRANSFERS).orElseThrow());
+        }
+        if (EscrowLoaderS6PhaseProbe.selected(cut)) {
+            if (point.equals("F4_PUBLICATION_BEFORE")) { EscrowLoaderS6PhaseProbe.source(cut, rocket); }
+            if (point.equals("F4_PUBLICATION_AFTER") && !phaseStorePending) {
+                phaseStorePending = EscrowLoaderS6PhaseProbe.store(server, cut);
+            }
+            if (EscrowLoaderS6PhaseProbe.boundary(cut, point)) {
+                EscrowLoaderS6PhaseProbe.checked(server, cut);
+                EscrowLoaderS6JournalProbe.pause(cut, point);
+            }
         }
         if (boundary(cut, point, proof, arm)) { EscrowLoaderS6JournalProbe.pause(cut, point); }
     }
@@ -130,6 +143,9 @@ final class EscrowLoaderS6FlightProbe {
             return;
         }
         if (launching) {
+            if (!phaseStorePending && cut.equals("LF_S6_F4_STORED")) {
+                phaseStorePending = EscrowLoaderS6PhaseProbe.store(server, cut);
+            }
             if (!phaseStorePending && EscrowLoaderS6StoredProbe.ready(cut,
                     rocket.flightData().orElseThrow().state(), rocket.getY() - SOURCE.getY())) {
                 phaseStorePending = EscrowLoaderS6StoredProbe.begin(server, cut, rocket);
@@ -178,7 +194,8 @@ final class EscrowLoaderS6FlightProbe {
         if (rockets.isEmpty()) { return; }
         EscrowTags.require(rockets.size() == 1, "S6 native image is not explained by its durable record: extra survivor");
         var survivor = rockets.get(0); var flight = survivor.flightData().orElseThrow();
-        boolean forward = cut.equals("LF_S6_F2_REPLACED") || cut.equals("LF_S6_F2_ACK") || cut.startsWith("LF_S6_F3_");
+        boolean forward = cut.equals("LF_S6_F2_REPLACED") || cut.equals("LF_S6_F2_ACK") || cut.startsWith("LF_S6_F3_")
+                || EscrowLoaderS6PhaseProbe.selected(cut);
         EscrowTags.require(bank(survivor, false) == (forward ? 500 : 1_000) && bank(survivor, true) == 0
                 && survivor.escrowSection().epoch() == (forward ? 0 : 1) && survivor.escrowSection().markers().isEmpty()
                 && flight.fuel().committedDebits().size() == (forward ? 1 : 0) && flight.passengers().assignments().isEmpty()
