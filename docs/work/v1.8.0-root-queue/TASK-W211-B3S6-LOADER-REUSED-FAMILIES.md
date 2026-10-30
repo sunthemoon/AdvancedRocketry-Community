@@ -100,3 +100,30 @@ A fresh session continues on the same branch and worktree from `068d10bd1`:
 
 Then run E5 and continue R2 and the tranches A3 to C as the TASK and R185 describe, committing tranche C's concrete
 selections and counts before its first launch. The rest of this TASK is unchanged.
+
+## Root decision R188 (2026-10-30 12:45): fix the oracle's native UUID handling, then continue
+
+The third session (11:28 to 12:43) delivered `588c90ef6`: the diagnosis showed the probe asserted two ticks too early
+(the rocket is removed with the chunk, the loader block entity two to three ticks later), so `598b487a6` waits for the
+complete unloaded state within a fixed 20-tick bound. Both revised E5 attempts then reached the fairness checkpoint
+(the healthy fill retired behind the unloaded far record) and all four restarts completed with exact totals and
+unchanged identities, but both failed in `scripts/loader_s6_oracle.py` `check_e5`: native UUIDs decode as integer
+lists, and `set(retired_ids)` raises `unhashable type: 'list'`. Root pushed the branch at 12:45 so that the hosted
+governance run judges the whole Python suite (the local discovery's 8 failures and 117 errors are to be compared with
+it).
+
+A fresh session continues on the same branch and worktree from `588c90ef6`:
+
+1. **Fix the oracle's representation only:** normalize native UUIDs (the four-integer array form, and any other form
+   the native images carry) to one canonical value before comparing or counting, everywhere the oracle reads an
+   operation, record, marker or entity ID, not only in `check_e5`. Tests that fail first use the native integer-array
+   form taken from a retained image. No check is removed or relaxed.
+2. **Replay the retained images** of both revised E5 attempts through the corrected oracle and record the result as a
+   replay, not as new attempts.
+3. **Then a renewed E5 budget** (two attempts) on a fresh native run from committed source, then R2 and the tranches
+   A3 to C as the TASK, R185 and R186 describe, committing tranche C's concrete selections and counts before its first
+   launch.
+4. Read the hosted governance and regression results on the pushed branch: a Python failure that the shared head does
+   not have is yours to fix; one it already has is recorded, not fixed here.
+
+The rest of this TASK is unchanged.
