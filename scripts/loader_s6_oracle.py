@@ -12,6 +12,10 @@ from run_dedicated_server_smoke import SmokeError
 
 E3 = "LF_S6_E3_CACHE_CLOSE"
 E5 = "LF_S6_E5_UNLOADED"
+R2_KEEP = "LF_S6_R2_KEEP_SOURCE"
+R2_DESTRUCTIVE = "LF_S6_R2_DESTRUCTIVE_SOURCE"
+R2_RECONNECT = "LF_S6_R2_DUPLICATE_RECONNECT"
+R2 = (R2_KEEP, R2_DESTRUCTIVE, R2_RECONNECT)
 
 # UUID-valued native fields and the identity envelope returned by these oracles.
 # Do not recognize UUIDs by array length: coordinates, quantities and hashes are
@@ -20,7 +24,8 @@ UUID_FIELDS = frozenset((
     "UUID", "ledger_id", "op_id", "identity", "owner", "owner_id", "device",
     "physical_rocket", "logical_rocket", "logical_rocket_id", "assembly_transaction_id",
     "rocket_id", "physical", "logical", "snapshot", "snapshot_id", "ledger",
-    "transfer_id", "entity_id", "destination_entity_id", "active_transfer_id",
+    "transfer_id", "entity_id", "source_entity_id", "destination_entity_id", "active_transfer_id",
+    "request_id", "passenger_id", "destination_station_id", "station", "assembly_snapshot",
 ))
 
 
@@ -52,7 +57,7 @@ def normalize_ids(value):
 
 def inspect(world: Path, cut=E3) -> dict:
     try:
-        return dict(read_status="KNOWN", native=inspect_e5(world) if cut == E5 else legacy.inspect(world))
+        return dict(read_status="KNOWN", native=inspect_r2(world) if cut in R2 else inspect_e5(world) if cut == E5 else legacy.inspect(world))
     except (OSError, ValueError, KeyError, TypeError, SmokeError) as failure:
         return dict(read_status="UNKNOWN", native=None,
                     error=f"{type(failure).__name__}: {failure}")
@@ -86,6 +91,15 @@ def check_e3(image, restart, identity=None):
 def check_observations(lines: list[str], restart: int, cut=E3) -> None:
     """Require the selected propagated failure, not merely a checkpoint label."""
     import re
+    if cut in R2:
+        tag = "RESULT" if restart else "PAUSED"
+        wanted = ("ARCE_LOADER_S6_R2_" + tag + " cut=" + cut
+                  + " tank=4000 bank=1000 total=5000 epochs=1,1 records=0 markers=0 journal=1 copies="
+                  + ("1" if cut == R2_KEEP else "2") + " reason=FLOOR_CONFLICT passenger="
+                  + ("unmounted" if cut == R2_RECONNECT else "none"))
+        legacy.require(sum(wanted in line for line in lines) == 1, "Missing/repeated R2 retained authority result")
+        legacy.require(not any("/ERROR]" in line or "/FATAL]" in line for line in lines), "R2 ERROR/FATAL")
+        return
     if cut == E5:
         if restart:
             wanted = "ARCE_LOADER_S6_FAIR_RESULT cut=" + E5 + " pairs=2 totals=5000,5000 records=0 markers=0 epochs=1,1,1,1"
@@ -243,3 +257,53 @@ def check_e5(image, restart, identity=None):
                     loss=0 if restart else None)
     except (KeyError, TypeError, IndexError) as failure:
         raise SmokeError(f"Malformed E5 native state: {failure}") from failure
+
+
+def inspect_r2(world):
+    root = legacy.ledger(world / "data" / legacy.LEDGER)
+    terrain = legacy.record(world / "region" / "r.0.0.mca", 132)
+    entities = legacy.record(world / "entities" / "r.0.0.mca", 132)["Entities"]
+    loaders = [e for e in terrain["block_entities"] if e.get("id") == legacy.LOADER]
+    rockets = [e for e in entities if e.get("id") == legacy.ROCKET or "RocketEntityData" in e]
+    source = [e for e in rockets if e["Pos"] == [64.5, 100., 64.5]]
+    legacy.require(len(source) == 1, "R2 missing/duplicate source")
+    return dict(ledger=root, loaders=loaders, rocket=source[0], copies=[e for e in rockets if e is not source[0]],
+                journal=legacy.journal(world))
+
+
+def check_r2(image, restart, identity=None, cut=R2_KEEP):
+    legacy.require(cut in R2 and restart in (0, 1, 2) and image.get("read_status") == "KNOWN"
+                   and isinstance(image.get("native"), dict), "R2 UNKNOWN is not zero loss")
+    try:
+        disk = normalize_ids(image["native"])
+        # Each R2 seed is after exactly one completed real fill. Stale history never authorizes a rewrite.
+        observed = legacy.check(disk, "LF_M_K7", 1)
+        data = disk["rocket"]["RocketEntityData"]
+        copies, records = disk["copies"], disk["journal"]["transfers"]
+        legacy.require(len(records) == 1 and len(copies) == (0 if cut == R2_KEEP else 1), "R2 changed journal or copy count")
+        record = records[0]
+        legacy.require(record["phase"] == ("COMMITTED" if cut == R2_DESTRUCTIVE else "PREPARED")
+                       and record["source_entity_id"] == observed["physical"]
+                       and record["logical_rocket_id"] == observed["logical"] and record["owner_id"] == observed["owner"]
+                       and record["source_snapshot"] == data["snapshot"], "R2 changed stale record/source identity")
+        legacy.require(record["source_flight"]["fuel"]["propulsion"]["primary"]["amount"] == 1000
+                       and record["destination_flight"]["fuel"]["propulsion"]["primary"]["amount"] == 0,
+                       "R2 changed historical fuel vector")
+        for copy in copies:
+            duplicate = copy["RocketEntityData"]
+            legacy.require(copy["id"] == legacy.ROCKET and copy["UUID"] != observed["physical"]
+                           and copy["Pos"] == [72.5, 100., 64.5] and not copy.get("Passengers")
+                           and duplicate["owner_id"] == observed["owner"]
+                           and duplicate["assembly_transaction_id"] == observed["logical"]
+                           and duplicate["snapshot"] == record["destination_snapshot"], "R2 changed the historical copy")
+            legacy.check_section(duplicate["resource_escrow"], 0, 0, disk["ledger"], "DESTINATION", 1)
+            fuel = duplicate["flight_data"]["fuel"]["propulsion"]
+            legacy.require([fuel[k]["amount"] for k in ("primary", "oxidizer")] == [0, 0], "R2 copy gained resources")
+            if cut == R2_DESTRUCTIVE:
+                legacy.require(record["destination_entity_id"] == copy["UUID"], "R2 changed acknowledged destination")
+        observed.update(ledger=disk["ledger"]["ledger_id"], journal=records, source_data=data,
+                        copies=[dict(physical=c["UUID"], data=c["RocketEntityData"]) for c in copies])
+        legacy.require(identity is None or observed == normalize_ids(identity), "R2 changed retained state across restarts")
+        return dict(identity=observed, raw_total=5000, available_total=None, loss=None)
+    except (KeyError, TypeError, IndexError) as failure:
+        raise SmokeError(f"Malformed R2 native state: {failure}") from failure

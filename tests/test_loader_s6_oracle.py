@@ -353,6 +353,61 @@ class LoaderS6OracleTest(unittest.TestCase):
                     return v
                 with self.assertRaises(SmokeError): check(replace(changed), 1, initial["identity"])
 
+    def r2_image(self, cut):
+        image = self.image("LF_M_K7", 1)
+        disk = image["native"]
+        data = disk["rocket"]["RocketEntityData"]
+        data["snapshot"] = dict(snapshot_id="source-snapshot", source_origin=[64, 100, 64])
+        arrival = copy.deepcopy(data["flight_data"])
+        arrival["fuel"]["propulsion"]["primary"]["amount"] = 0
+        record = dict(transfer_id="transfer", phase="COMMITTED" if "DESTRUCTIVE" in cut else "PREPARED",
+                      source_entity_id="physical", logical_rocket_id="logical", owner_id="owner",
+                      source_snapshot=copy.deepcopy(data["snapshot"]),
+                      destination_snapshot=dict(snapshot_id="destination-snapshot", source_origin=[72, 100, 64]),
+                      source_flight=copy.deepcopy(data["flight_data"]), destination_flight=arrival)
+        disk["journal"] = dict(transfers=[record])
+        disk["copies"] = []
+        if cut != "LF_S6_R2_KEEP_SOURCE":
+            duplicate = copy.deepcopy(disk["rocket"])
+            duplicate.update(UUID="copy", Pos=[72.5, 100., 64.5])
+            duplicate["RocketEntityData"].update(snapshot=copy.deepcopy(record["destination_snapshot"]),
+                flight_data=copy.deepcopy(arrival), resource_escrow=dict(schema_version=1, resource_epoch=0, markers=[]))
+            disk["copies"].append(duplicate)
+            if "DESTRUCTIVE" in cut: record["destination_entity_id"] = "copy"
+        return image
+
+    def test_r2_keeps_exact_retired_fill_and_stale_history_on_both_restarts(self):
+        for cut in ("LF_S6_R2_KEEP_SOURCE", "LF_S6_R2_DESTRUCTIVE_SOURCE", "LF_S6_R2_DUPLICATE_RECONNECT"):
+            with self.subTest(cut=cut):
+                first = oracle.check_r2(self.r2_image(cut), 0, cut=cut)
+                self.assertEqual(5000, first["raw_total"])
+                self.assertIsNone(first["available_total"])
+                for restart in (1, 2):
+                    self.assertEqual(first, oracle.check_r2(self.r2_image(cut), restart, first["identity"], cut))
+
+    def test_r2_rejects_mutated_resources_epochs_markers_identities_or_stale_record(self):
+        cut = "LF_S6_R2_DESTRUCTIVE_SOURCE"
+        before = oracle.check_r2(self.r2_image(cut), 0, cut=cut)["identity"]
+        for mutation in ("quantity", "epoch", "marker", "owner", "record", "copy", "unknown"):
+            image = self.r2_image(cut); disk = image["native"]
+            source = disk["loaders"][0]["arce_fluid_fuel_loader"]
+            if mutation == "quantity": source["tank"]["Amount"] += 1
+            elif mutation == "epoch": source["resource_escrow"]["resource_epoch"] += 1
+            elif mutation == "marker": source["resource_escrow"]["markers"].append(dict(op_id=self.NATIVE_OP, seq=1, role="SOURCE", epoch_after=1))
+            elif mutation == "owner": source["owner"] = "other"
+            elif mutation == "record": disk["journal"]["transfers"][0]["transfer_id"] = "changed"
+            elif mutation == "copy": disk["copies"][0]["UUID"] = disk["journal"]["transfers"][0]["destination_entity_id"] = "changed"
+            else: image["read_status"] = "UNKNOWN"
+            with self.subTest(mutation=mutation), self.assertRaises(SmokeError): oracle.check_r2(image, 1, before, cut)
+
+    def test_r2_logs_require_fence_copy_count_and_unmounted_reconnect(self):
+        cut = "LF_S6_R2_DUPLICATE_RECONNECT"
+        line = "ARCE_LOADER_S6_R2_RESULT cut=" + cut + " tank=4000 bank=1000 total=5000 epochs=1,1 records=0 markers=0 journal=1 copies=2 reason=FLOOR_CONFLICT passenger=unmounted"
+        oracle.check_observations([line], 1, cut)
+        for changed in ([], [line, line], [line.replace("copies=2", "copies=1")],
+                        [line.replace("unmounted", "mounted")], [line, "[Server/ERROR] unrelated"]):
+            with self.subTest(lines=changed), self.assertRaises(SmokeError): oracle.check_observations(changed, 1, cut)
+
 
 if __name__ == "__main__":
     unittest.main()

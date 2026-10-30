@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Counted S6 loader tranches, with two restarts and no changes to shared runners.
 
-Implements A1 (E3 propagated cache-close failure) and A2's unloaded E5 row. Other matrix rows
+Implements A1 (E3 propagated cache-close failure) and A2's unloaded E5 and R2 rows. Other matrix rows
 remain missing; PASS_SELECTED never means B3-S6 acceptance. Run as a detached
 process so its own finally releases its lock and removes its disposable world.
 """
@@ -22,11 +22,11 @@ import run_v180_loader_cuts as shared
 from run_dedicated_server_smoke import CapturedProcess, SmokeError, allocate_port, write_server_configuration, expected_server_properties
 from run_v060_flight_server_smoke import _server_command
 
-CASES = (oracle.E3, oracle.E5)
+CASES = (oracle.E3, oracle.E5) + oracle.R2
 HOOKS = shared.HOOK_FILES + tuple(
     "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/resourceescrow/" + name + ".java"
     for name in ("EscrowLoaderS6Probe", "EscrowLoaderS6Recovery", "EscrowLoaderS6Accounting", "EscrowLoaderS6UnloadedProbe",
-                 "EscrowLoaderS6UnloadObservation", "EscrowCargoContentionProbe"))
+                 "EscrowLoaderS6UnloadObservation", "EscrowLoaderS6R2Probe", "EscrowCargoContentionProbe"))
 HARNESSES = shared.HARNESS_FILES + ("scripts/run_v180_loader_s6.py", "scripts/loader_s6_oracle.py")
 
 
@@ -89,6 +89,8 @@ def run_cut(args, cut, evidence, owner, pins):
                           if not restart else result_marker + r" cut=" + re.escape(cut) + r"(?:\s|$)")
                 if diagnostic:
                     marker = r"ARCE_LOADER_S6_UNLOAD_DIAGNOSTIC_END cut=" + re.escape(cut) + r"(?:\s|$)"
+                elif cut in oracle.R2:
+                    marker = r"ARCE_LOADER_S6_R2_" + ("RESULT" if restart else "PAUSED") + r" cut=" + re.escape(cut) + r"(?:\s|$)"
                 process.wait_for(re.compile(marker), args.startup_timeout)
                 start["checkpoint_reached"] = True
                 if restart:
@@ -116,6 +118,8 @@ def run_cut(args, cut, evidence, owner, pins):
                 write(evidence / "result.json", row)
                 continue
             raw_check = oracle.check_e5 if cut == oracle.E5 else oracle.check_e3
+            if cut in oracle.R2:
+                raw_check = lambda image, restart, identity: oracle.check_r2(image, restart, identity, cut)
             for kind, check in (("LOG", lambda: check_log(lines, restart, cut)),
                                 ("RAW", lambda: raw_check(start["image"], restart, identity))):
                 try:
@@ -158,7 +162,7 @@ def run(args):
     pins = dict(source_commit=args.source_commit, jar_sha256=shared.digest(args.jar),
                 hooks={p: shared.digest(shared.REPO / p) for p in HOOKS},
                 harness={p: shared.digest(shared.REPO / p) for p in HARNESSES})
-    report = dict(status="IN_PROGRESS", coverage="Selected A1/E5 rows only; not all B3-S6", pins=pins, cases=[], starts=0, restarts=0)
+    report = dict(status="IN_PROGRESS", coverage="Selected A1/E5/R2 rows only; not all B3-S6", pins=pins, cases=[], starts=0, restarts=0)
     if diagnostic:
         report["coverage"] = "R186 unload lifecycle diagnosis only; not fairness or restart coverage"
     write(evidence / "results.json", report)
