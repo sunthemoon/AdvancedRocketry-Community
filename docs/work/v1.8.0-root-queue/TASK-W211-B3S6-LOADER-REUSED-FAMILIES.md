@@ -256,3 +256,28 @@ normalization, O-veto, and the required two-loader and bipropellant extensions),
 real-loader N2 cut, sticky reservations and P1-F8, successor refill after F8), committing C's concrete selections and
 counts before its first launch. R190's rule applies; a production cause or an unexplained image still stops. The rest
 of this TASK and R185 to R198 are unchanged.
+
+## Root decision R200 (2026-10-31 00:48): the C journal observer, then tranche C
+
+The ninth session (22:37 to 00:46) delivered `169bccaf3`: eighteen B selections (two-loader operator chains,
+checkpointed veto, chain abandon, neutral chain normalization) each passing with two restarts, and the retained replay
+at 147 of 147; 215 starts, 142 restarts, 49 passed and 23 failed attempts in all. It found that C's F2 and F8 journal
+REPLACED boundaries (after the checked replacement, before the owner's acknowledgement) have no S6 observer:
+`EscrowTerminalProbe.journalPolicy` serves only its exact `FT_JOURNAL_*` selectors, and the chain that applies
+such policies is in `RocketTransferSavedData.requestWrite` (lines 740 to 742), outside the listed write scope. The
+first BI O-veto attempt stays FAILED (sixteen extra guarded ChunkMap save attempts before the selected denial in its
+restart logs; resources and authority unchanged; its second attempt passed); that residual is carried into status.
+
+**Decision.** Add exactly one link to the existing journal-policy chain in `RocketTransferSavedData.requestWrite`,
+calling a new S6 probe's `journalPolicy` built like `EscrowTerminalProbe.journalPolicy`: it returns the given policy
+unchanged unless the hooks property is set, the scenario is `start`, the case is one of C's exact committed S6
+selectors and the release gate passes (`EscrowTestEndpoints.requireEnabled`); then it only wraps the committer to
+pause before or after the existing commit when a read-only check of the staged and previous payloads matches the
+selected F2 or F8 replacement. No failure injection, no change to what is written, no forced save, no reflection. A
+unit test that fails first shows the identical policy object comes back when any condition fails and for any other
+selector. Name it in the record as a gated test seam in production source, for the final review.
+
+A fresh session continues on the same branch and worktree from `169bccaf3`: commit C's complete concrete selections
+and counts (F1 to F8, F9, the real-loader N2 cut, sticky reservations and P1-F8, successor refill after F8) before
+its first launch, add the observer under this decision, then run C. R190's rule applies; a production cause or an
+unexplained image still stops. The rest of this TASK and R185 to R199 are unchanged.
