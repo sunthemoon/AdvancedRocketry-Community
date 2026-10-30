@@ -242,3 +242,17 @@ map the real-loader N2 cut into tranche C); then O3J under this decision; then t
 normalization, O-veto) and C (governed F1 to F8, F9, real-loader N2, sticky reservations and P1-F8, successor refill),
 committing C's concrete selections and counts before its first launch. R190's rule applies. The rest of this TASK and
 R185 to R197 are unchanged.
+
+## Root decision R199 (2026-10-30 22:37): continue with the rest of B, then C
+
+The eighth session (21:31 to 22:35) delivered `beda0b4b4`: R197's oracle fixes (I1, I2, I3, I5) with failing-first
+tests, the real-loader N2 cut mapped into tranche C (I4), a final replay of all 93 retained images from the 31 passed
+attempts through the corrected oracle (all pass; the failed attempts stay failed), the three O3J allowlist entries
+under R198, and O3J BEFORE (after one setup correction under R190), REPLACED and ACK, each passing with two restarts;
+146 starts, 96 restarts, 31 passed and 18 failed attempts in all.
+
+A fresh session continues on the same branch and worktree from `beda0b4b4`: the rest of B (chain accept, abandon and
+normalization, O-veto, and the required two-loader and bipropellant extensions), then C (governed F1 to F8, F9, the
+real-loader N2 cut, sticky reservations and P1-F8, successor refill after F8), committing C's concrete selections and
+counts before its first launch. R190's rule applies; a production cause or an unexplained image still stops. The rest
+of this TASK and R185 to R198 are unchanged.
