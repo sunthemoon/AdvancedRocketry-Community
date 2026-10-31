@@ -31,7 +31,7 @@
     "shade_quads": true,
     "emissive_ambient": false,
     "automatic_culling": false,
-    "light_cell_above_controller": 1
+    "light_cell_above_controller": 2
   },
   "fallback_texture": "advancedrocketrycommunity:textures/block/crystallizer.png",
   "bounding_volume": {

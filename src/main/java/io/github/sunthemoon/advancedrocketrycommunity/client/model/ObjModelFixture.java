@@ -18,20 +18,28 @@ import net.minecraft.resources.ResourceLocation;
  * @param fallbackTexture the NEW or project-owned texture drawn instead of a missing or unusable one
  * @param renderType the render type of every mesh; only {@code entity_cutout} exists today
  * @param modelYRotationDegrees the model-space rotation, after mirroring and before the offset/facing rotation
+ * @param lightCellAboveController the sample height above the controller, outside occupied pattern cells
  */
 public record ObjModelFixture(String id, ResourceLocation kind, ResourceLocation model, boolean mirrorX, boolean flipV,
         double scale, double offsetX, double offsetY, double offsetZ, ObjModelCheck.Bounds modelBounds,
-        ResourceLocation fallbackTexture, String renderType, double modelYRotationDegrees) {
+        ResourceLocation fallbackTexture, String renderType, double modelYRotationDegrees, int lightCellAboveController) {
     /** Existing fixtures have no model-space rotation. */
     public ObjModelFixture(String id, ResourceLocation kind, ResourceLocation model, boolean mirrorX, boolean flipV,
             double scale, double offsetX, double offsetY, double offsetZ, ObjModelCheck.Bounds modelBounds,
             ResourceLocation fallbackTexture, String renderType) {
-        this(id, kind, model, mirrorX, flipV, scale, offsetX, offsetY, offsetZ, modelBounds, fallbackTexture, renderType, 0);
+        this(id, kind, model, mirrorX, flipV, scale, offsetX, offsetY, offsetZ, modelBounds, fallbackTexture, renderType, 0, LIGHT_CELL_ABOVE);
+    }
+
+    public ObjModelFixture(String id, ResourceLocation kind, ResourceLocation model, boolean mirrorX, boolean flipV,
+            double scale, double offsetX, double offsetY, double offsetZ, ObjModelCheck.Bounds modelBounds,
+            ResourceLocation fallbackTexture, String renderType, double modelYRotationDegrees) {
+        this(id, kind, model, mirrorX, flipV, scale, offsetX, offsetY, offsetZ, modelBounds, fallbackTexture, renderType,
+                modelYRotationDegrees, LIGHT_CELL_ABOVE);
     }
     public static final String ENTITY_CUTOUT = "entity_cutout";
     /** Forge OBJ settings shared by every catalogued model; the quads take the given light, not the material's. */
     public static final boolean AUTOMATIC_CULLING = false, SHADE_QUADS = true, EMISSIVE_AMBIENT = false;
-    /** The light cell, counted up from the controller; every catalogued pattern keeps it empty. */
+    /** The default light sample height, counted up from the controller. */
     public static final int LIGHT_CELL_ABOVE = 1;
 
     /**
@@ -48,7 +56,7 @@ public record ObjModelFixture(String id, ResourceLocation kind, ResourceLocation
             new ObjModelCheck.Bounds(-3, 0, 0, 0, 2, 2), ModIdentity.id("textures/block/chemical_reactor.png"), ENTITY_CUTOUT);
     public static final ObjModelFixture CRYSTALLIZER = new ObjModelFixture("crystallizer", ModIdentity.id("crystallizer"),
             ModIdentity.id("models/crystalliser.obj"), true, true, 1, -1, 0, 0,
-            new ObjModelCheck.Bounds(0, 0, 0, 2, 2, 3), ModIdentity.id("textures/block/crystallizer.png"), ENTITY_CUTOUT, 90);
+            new ObjModelCheck.Bounds(0, 0, 0, 2, 2, 3), ModIdentity.id("textures/block/crystallizer.png"), ENTITY_CUTOUT, 90, 2);
     public static final ObjModelFixture CUTTING_MACHINE = new ObjModelFixture("cutting_machine", ModIdentity.id("cutting_machine"),
             ModIdentity.id("models/cuttingmachine.obj"), true, true, 1, -1, 0, 0,
             new ObjModelCheck.Bounds(0, 0, 0, 2, 1.505879, 3), ModIdentity.id("textures/block/cutting_machine.png"), ENTITY_CUTOUT, 90);

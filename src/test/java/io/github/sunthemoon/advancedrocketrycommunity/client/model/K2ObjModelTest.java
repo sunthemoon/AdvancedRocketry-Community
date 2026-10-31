@@ -152,7 +152,7 @@ class K2ObjModelTest {
         assertEquals(rendering.get("shade_quads").getAsBoolean(), ObjModelFixture.SHADE_QUADS);
         assertEquals(rendering.get("emissive_ambient").getAsBoolean(), ObjModelFixture.EMISSIVE_AMBIENT);
         assertEquals(rendering.get("automatic_culling").getAsBoolean(), ObjModelFixture.AUTOMATIC_CULLING);
-        assertEquals(rendering.get("light_cell_above_controller").getAsInt(), ObjModelFixture.LIGHT_CELL_ABOVE);
+        assertEquals(rendering.get("light_cell_above_controller").getAsInt(), f.lightCellAboveController());
         byte[] bytes = resource(f.model());
         var summary = ObjModelCheck.checkObj(bytes, kind, ObjModelIdleGeometry.hiddenParts(f));
         var bounds = f.modelBounds();
@@ -213,6 +213,8 @@ class K2ObjModelTest {
         assertEquals(new PatternPosition(pattern.size().x(), pattern.size().y(), pattern.size().z()),
                 new PatternPosition(footprint.sizeX(), footprint.sizeY(), footprint.sizeZ()));
         assertEquals(pattern.controllerAnchor(), footprint.anchor());
+        var lightCell = pattern.cells().get(pattern.controllerAnchor().add(new PatternPosition(0, f.lightCellAboveController(), 0)));
+        assertTrue(lightCell == null || lightCell instanceof PatternMatcher.Air, "light sample is inside an occupied pattern cell");
         var size = unchanged.getAsJsonArray("pattern_size"); var anchor = unchanged.getAsJsonArray("controller_anchor");
         assertEquals(new PatternPosition(size.get(0).getAsInt(), size.get(1).getAsInt(), size.get(2).getAsInt()),
                 new PatternPosition(footprint.sizeX(), footprint.sizeY(), footprint.sizeZ()));
