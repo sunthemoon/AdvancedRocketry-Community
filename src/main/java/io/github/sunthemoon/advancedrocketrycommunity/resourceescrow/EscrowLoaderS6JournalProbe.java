@@ -33,6 +33,7 @@ public final class EscrowLoaderS6JournalProbe {
 
     public static CheckedSavedDataPolicy journalPolicy(MinecraftServer server, CheckedSavedDataPolicy policy) {
         if (server == null) { return policy; }
+        policy = EscrowLoaderS6PadJournalProbe.journalPolicy(server, policy);
         return policy(policy, Boolean.getBoolean(EscrowTestEndpoints.HOOKS),
                 System.getProperty("advancedrocketrycommunity.escrowScenario", ""),
                 System.getProperty("advancedrocketrycommunity.escrowCase", ""),
