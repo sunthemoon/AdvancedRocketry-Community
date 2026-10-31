@@ -1,0 +1,183 @@
+{
+  "asset_coverage": "docs/work/v1.8.0-c18-contract/proposals/revision-03/asset-coverage.csv",
+  "batch_id": "v1.8.0-c18d-k2",
+  "entries": [
+    {
+      "asset_coverage_row": null,
+      "source": "community",
+      "source_path": "src/main/resources/assets/advancedrocketrycommunity/models/chemical_reactor.mtl",
+      "source_sha256": "010e9f4949bf2f634c5ece6705ec7b534e2853c0a837a6cc7ebe310be9b4ea7e",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/chemical_reactor.mtl",
+      "transformation": {
+        "kind": "copy"
+      },
+      "units": [
+        "block:chemicalReactor"
+      ]
+    },
+    {
+      "asset_coverage_row": 15,
+      "source": "ar",
+      "source_path": "src/main/resources/assets/advancedrocketry/models/chemicalreactor.obj",
+      "source_sha256": "65591ad3cbe498db4c7978a52e54a467e9b9423530d2a64944986165e871ffc6",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/chemicalreactor.obj",
+      "transformation": {
+        "kind": "copy"
+      },
+      "units": [
+        "block:chemicalReactor"
+      ]
+    },
+    {
+      "asset_coverage_row": null,
+      "source": "community",
+      "source_path": "src/main/resources/assets/advancedrocketrycommunity/models/crystalliser.mtl",
+      "source_sha256": "72af467db6a6dfc7c3b3c6a705af463db8b119b6a25a26b576568b58e1ad13f8",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/crystalliser.mtl",
+      "transformation": {
+        "kind": "copy"
+      },
+      "units": [
+        "block:crystallizer"
+      ]
+    },
+    {
+      "asset_coverage_row": 16,
+      "source": "ar",
+      "source_path": "src/main/resources/assets/advancedrocketry/models/crystalliser.obj",
+      "source_sha256": "0b84a27cb217a5e9085943aa327eb16f79b7ed1c9c5bb6c01fed9dc236ae054b",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/crystalliser.obj",
+      "transformation": {
+        "kind": "copy"
+      },
+      "units": [
+        "block:crystallizer"
+      ]
+    },
+    {
+      "asset_coverage_row": null,
+      "source": "community",
+      "source_path": "src/main/resources/assets/advancedrocketrycommunity/models/cuttingmachine.mtl",
+      "source_sha256": "92d9a0561abf40a05e543a89ff1d737d06eda3626af42ac5023fbf2d5fe766ce",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/cuttingmachine.mtl",
+      "transformation": {
+        "kind": "copy"
+      },
+      "units": [
+        "block:cuttingMachine"
+      ]
+    },
+    {
+      "asset_coverage_row": 17,
+      "source": "ar",
+      "source_path": "src/main/resources/assets/advancedrocketry/models/cuttingmachine.obj",
+      "source_sha256": "e013369db0aa3bf3e41e2b4be4bb11a311fe2816807a3fe3d1356583199a6101",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/cuttingmachine.obj",
+      "transformation": {
+        "kind": "copy"
+      },
+      "units": [
+        "block:cuttingMachine"
+      ]
+    },
+    {
+      "asset_coverage_row": null,
+      "source": "community",
+      "source_path": "src/main/resources/assets/advancedrocketrycommunity/models/lathe.mtl",
+      "source_sha256": "23ebc41f763d230a421d582627669eaf0dca5250897342c14a54aa8a4882546d",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/lathe.mtl",
+      "transformation": {
+        "kind": "copy"
+      },
+      "units": [
+        "block:lathe"
+      ]
+    },
+    {
+      "asset_coverage_row": 19,
+      "source": "ar",
+      "source_path": "src/main/resources/assets/advancedrocketry/models/lathe.obj",
+      "source_sha256": "316c1c5c792961dd29109d7c3c72c9d425cc52f607f8529f888f08afb5c375a0",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/lathe.obj",
+      "transformation": {
+        "kind": "copy"
+      },
+      "units": [
+        "block:lathe"
+      ]
+    },
+    {
+      "asset_coverage_row": 92,
+      "source": "ar",
+      "source_path": "src/main/resources/assets/advancedrocketry/textures/models/chemicalreactor.png",
+      "source_sha256": "57dfbad3664234fecba33014bc7f487d088072c0699a4a985f4eaef0a2ab333c",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/models/chemicalreactor.png",
+      "transformation": {
+        "kind": "copy"
+      },
+      "units": [
+        "block:chemicalReactor"
+      ]
+    },
+    {
+      "asset_coverage_row": 93,
+      "source": "ar",
+      "source_path": "src/main/resources/assets/advancedrocketry/textures/models/crystalliser.png",
+      "source_sha256": "6a467f4d54b1b4a533349d52f380a0069ee1505cb00c22ece3f7b82a910a7b8d",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/models/crystalliser.png",
+      "transformation": {
+        "kind": "copy"
+      },
+      "units": [
+        "block:crystallizer"
+      ]
+    },
+    {
+      "asset_coverage_row": 94,
+      "source": "ar",
+      "source_path": "src/main/resources/assets/advancedrocketry/textures/models/cuttingmachine.png",
+      "source_sha256": "87ad3a50397ce233138eb8f023ee54edd1b32f005431668b32465e663513eb31",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/models/cuttingmachine.png",
+      "transformation": {
+        "kind": "copy"
+      },
+      "units": [
+        "block:cuttingMachine"
+      ]
+    },
+    {
+      "asset_coverage_row": 100,
+      "source": "ar",
+      "source_path": "src/main/resources/assets/advancedrocketry/textures/models/lathe.png",
+      "source_sha256": "4fce4658d898134acec54f1e9dc6a925669e2524ade8ec8540a5c71e2a18faaf",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/models/lathe.png",
+      "transformation": {
+        "kind": "copy"
+      },
+      "units": [
+        "block:lathe"
+      ]
+    }
+  ],
+  "schema_version": 1,
+  "sources": {
+    "ar": {
+      "copyright_notice": "Copyright (c) 2017",
+      "license": "MIT",
+      "source_branch": "1.12",
+      "source_commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+      "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
+      "status": "UPSTREAM_AR_MIT"
+    },
+    "community": {
+      "authoring_commit": "faa0238169803db40596c0fddac5f3f8e5a38657",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-w233",
+      "source_commit": "766a1b4db1bafc159878e444e8010557bb5493af",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "status": "NEW"
+    }
+  },
+  "target_version": "v1.8.0"
+}
