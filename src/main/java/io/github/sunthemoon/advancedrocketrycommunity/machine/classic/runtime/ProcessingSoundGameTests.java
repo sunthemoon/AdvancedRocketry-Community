@@ -111,7 +111,12 @@ public final class ProcessingSoundGameTests {
         helper.assertTrue(controller.processingActive() == active && ProcessingFlagCodec.decode(controller.getUpdateTag()) == active,
                 "Controller and update tag differ from expected processing state: " + controller.reason());
         helper.assertTrue(controller.activeProcessingSound() == (active ? sound : null), "Processing sound mapping differs");
-        helper.assertTrue(controller.getUpdateTag().getAllKeys().equals(Set.of("active")), "Update tag exposed saved roots");
+        Set<String> keys = ClassicModelProjection.projects(controller.definition().kind()) && controller.formed()
+                ? Set.of("active", "formed") : Set.of("active");
+        helper.assertTrue(controller.getUpdateTag().getAllKeys().equals(keys), "Update tag exposed saved roots");
+        helper.assertTrue(ClassicModelProjection.decode(controller.getUpdateTag())
+                == (ClassicModelProjection.projects(controller.definition().kind()) && controller.formed()),
+                "Sound projection changed the formed projection");
         var packet = controller.getUpdatePacket();
         helper.assertTrue(packet.getPos().equals(controller.getBlockPos()) && packet.getTag().equals(controller.getUpdateTag()),
                 "Vanilla block-entity packet did not carry the projection");

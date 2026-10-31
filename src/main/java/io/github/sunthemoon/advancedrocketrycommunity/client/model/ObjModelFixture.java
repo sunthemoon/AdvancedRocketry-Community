@@ -17,10 +17,17 @@ import net.minecraft.resources.ResourceLocation;
  * @param modelBounds the box the OBJ's positions must lie in, in model units before the mirror
  * @param fallbackTexture the NEW or project-owned texture drawn instead of a missing or unusable one
  * @param renderType the render type of every mesh; only {@code entity_cutout} exists today
+ * @param modelYRotationDegrees the model-space rotation, after mirroring and before the offset/facing rotation
  */
 public record ObjModelFixture(String id, ResourceLocation kind, ResourceLocation model, boolean mirrorX, boolean flipV,
         double scale, double offsetX, double offsetY, double offsetZ, ObjModelCheck.Bounds modelBounds,
-        ResourceLocation fallbackTexture, String renderType) {
+        ResourceLocation fallbackTexture, String renderType, double modelYRotationDegrees) {
+    /** Existing fixtures have no model-space rotation. */
+    public ObjModelFixture(String id, ResourceLocation kind, ResourceLocation model, boolean mirrorX, boolean flipV,
+            double scale, double offsetX, double offsetY, double offsetZ, ObjModelCheck.Bounds modelBounds,
+            ResourceLocation fallbackTexture, String renderType) {
+        this(id, kind, model, mirrorX, flipV, scale, offsetX, offsetY, offsetZ, modelBounds, fallbackTexture, renderType, 0);
+    }
     public static final String ENTITY_CUTOUT = "entity_cutout";
     /** Forge OBJ settings shared by every catalogued model; the quads take the given light, not the material's. */
     public static final boolean AUTOMATIC_CULLING = false, SHADE_QUADS = true, EMISSIVE_AMBIENT = false;
@@ -36,7 +43,20 @@ public record ObjModelFixture(String id, ResourceLocation kind, ResourceLocation
             ModIdentity.id("models/centrifuge.obj"), true, true, 1, 1, -1, 2,
             new ObjModelCheck.Bounds(-2, 0, -2, 1, 4, 1), ModIdentity.id("textures/block/centrifuge.png"), ENTITY_CUTOUT);
 
-    public static final List<ObjModelFixture> CATALOG = List.of(CENTRIFUGE);
+    public static final ObjModelFixture CHEMICAL_REACTOR = new ObjModelFixture("chemical_reactor", ModIdentity.id("chemical_reactor"),
+            ModIdentity.id("models/chemicalreactor.obj"), true, true, 1, -1, -1, 0,
+            new ObjModelCheck.Bounds(-3, 0, 0, 0, 2, 2), ModIdentity.id("textures/block/chemical_reactor.png"), ENTITY_CUTOUT);
+    public static final ObjModelFixture CRYSTALLIZER = new ObjModelFixture("crystallizer", ModIdentity.id("crystallizer"),
+            ModIdentity.id("models/crystalliser.obj"), true, true, 1, -1, 0, 0,
+            new ObjModelCheck.Bounds(0, 0, 0, 2, 2, 3), ModIdentity.id("textures/block/crystallizer.png"), ENTITY_CUTOUT, 90);
+    public static final ObjModelFixture CUTTING_MACHINE = new ObjModelFixture("cutting_machine", ModIdentity.id("cutting_machine"),
+            ModIdentity.id("models/cuttingmachine.obj"), true, true, 1, -1, 0, 0,
+            new ObjModelCheck.Bounds(0, 0, 0, 2, 1.505879, 3), ModIdentity.id("textures/block/cutting_machine.png"), ENTITY_CUTOUT, 90);
+    public static final ObjModelFixture LATHE = new ObjModelFixture("lathe", ModIdentity.id("lathe"),
+            ModIdentity.id("models/lathe.obj"), true, true, 1, 1, -1, 0,
+            new ObjModelCheck.Bounds(-0.054134, -0.054134, -1, 1, 1.625, 3), ModIdentity.id("textures/block/lathe.png"), ENTITY_CUTOUT, 90);
+
+    public static final List<ObjModelFixture> CATALOG = List.of(CENTRIFUGE, CHEMICAL_REACTOR, CRYSTALLIZER, CUTTING_MACHINE, LATHE);
 
     /** The rotation around +Y that matches the controller's pattern transform (clockwise viewed from above). */
     public static float yRotationDegrees(Direction facing) {
@@ -48,7 +68,10 @@ public record ObjModelFixture(String id, ResourceLocation kind, ResourceLocation
 
     /** A source-model point relative to the controller block's corner: mirror, scale, offset, then rotation. */
     public double[] toController(Direction facing, double x, double y, double z) {
-        double px = (mirrorX ? -x : x) * scale + offsetX - 0.5, py = y * scale + offsetY, pz = z * scale + offsetZ - 0.5;
+        double modelRadians = Math.toRadians(modelYRotationDegrees), mx = mirrorX ? -x : x;
+        double px = (Math.cos(modelRadians) * mx + Math.sin(modelRadians) * z) * scale + offsetX - 0.5;
+        double py = y * scale + offsetY;
+        double pz = (-Math.sin(modelRadians) * mx + Math.cos(modelRadians) * z) * scale + offsetZ - 0.5;
         double radians = Math.toRadians(yRotationDegrees(facing));
         double cos = Math.cos(radians), sin = Math.sin(radians);
         return new double[] {cos * px + sin * pz + 0.5, py, -sin * px + cos * pz + 0.5};

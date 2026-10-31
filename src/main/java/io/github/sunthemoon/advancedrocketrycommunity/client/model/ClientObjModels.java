@@ -47,5 +47,13 @@ public final class ClientObjModels {
     public static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerBlockEntityRenderer(ModBlockEntities.CENTRIFUGE.get(),
                 context -> new ClassicObjModelRenderer(ObjModelFixture.CENTRIFUGE, CACHE));
+        event.registerBlockEntityRenderer(ModBlockEntities.CHEMICAL_REACTOR.get(),
+                context -> new ClassicObjModelRenderer(ObjModelFixture.CHEMICAL_REACTOR, CACHE));
+        event.registerBlockEntityRenderer(ModBlockEntities.CRYSTALLIZER.get(),
+                context -> new ClassicObjModelRenderer(ObjModelFixture.CRYSTALLIZER, CACHE));
+        event.registerBlockEntityRenderer(ModBlockEntities.CUTTING_MACHINE.get(),
+                context -> new ClassicObjModelRenderer(ObjModelFixture.CUTTING_MACHINE, CACHE));
+        event.registerBlockEntityRenderer(ModBlockEntities.LATHE.get(),
+                context -> new ClassicObjModelRenderer(ObjModelFixture.LATHE, CACHE));
     }
 }

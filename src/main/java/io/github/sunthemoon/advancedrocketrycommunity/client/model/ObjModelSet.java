@@ -43,7 +43,7 @@ public final class ObjModelSet {
             String label = fixture.model().toString();
             var obj = read(source, fixture.model(), budget);
             if (obj.isEmpty()) { absent.add(fixture.id()); continue; }
-            var summary = ObjModelCheck.checkObj(obj.get(), label);
+            var summary = ObjModelCheck.checkObj(obj.get(), label, ObjModelIdleGeometry.hiddenParts(fixture));
             budget.vertices += summary.budgetVertices();
             if (budget.vertices > ObjModelCheck.MAX_SET_VERTICES) {
                 throw new ObjModelException("the model set has more than " + ObjModelCheck.MAX_SET_VERTICES + " vertices");
@@ -78,7 +78,10 @@ public final class ObjModelSet {
                         () -> new ObjModelException(label + ": fallback texture " + fixture.fallbackTexture() + " is missing"));
                 ObjModelCheck.checkPng(fallback, fixture.fallbackTexture().toString());
             }
-            byte[] input = fixture.mirrorX() ? ObjModelCheck.mirrorX(obj.get(), label) : obj.get();
+            byte[] idle = ObjModelIdleGeometry.prepare(fixture, obj.get());
+            // A hidden legacy Rod has no UVs. It still counts above, but never reaches Forge's strict parser.
+            if (idle != obj.get()) { ObjModelCheck.checkObj(idle, label + " idle geometry"); }
+            byte[] input = fixture.mirrorX() ? ObjModelCheck.mirrorX(idle, label) : idle;
             models.put(fixture.id(), new Model(fixture, input, summary, Collections.unmodifiableMap(textures)));
         }
         return new Result(Collections.unmodifiableMap(models), Collections.unmodifiableSet(absent), budget.vertices, budget.bytes);

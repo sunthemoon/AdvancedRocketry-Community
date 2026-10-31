@@ -51,6 +51,7 @@ public final class ClassicObjModelRenderer implements BlockEntityRenderer<Classi
         pose.mulPose(Axis.YP.rotationDegrees(ObjModelFixture.yRotationDegrees(facing)));
         pose.translate(-0.5, 0, -0.5);
         pose.translate(fixture.offsetX(), fixture.offsetY(), fixture.offsetZ());
+        pose.mulPose(Axis.YP.rotationDegrees((float) fixture.modelYRotationDegrees()));
         pose.scale((float) fixture.scale(), (float) fixture.scale(), (float) fixture.scale());
     }
 }

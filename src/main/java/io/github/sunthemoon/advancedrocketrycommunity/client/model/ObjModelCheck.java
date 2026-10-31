@@ -85,9 +85,14 @@ public final class ObjModelCheck {
     }
 
     public static ObjSummary checkObj(byte[] data, String label) throws ObjModelException {
+        return checkObj(data, label, Set.of());
+    }
+
+    /** Full source validation/budgets; only permanently omitted idle faces need not be Forge-UV-compatible. */
+    static ObjSummary checkObj(byte[] data, String label, Set<String> omittedIdleParts) throws ObjModelException {
         int positions = 0, coordinates = 0, normals = 0, faces = 0, lines = 0;
         boolean emptyCoordinate = false;
-        String library = null, current = null;
+        String library = null, current = null, part = "";
         var materials = new TreeSet<String>();
         double[] box = {Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, -Double.MAX_VALUE, -Double.MAX_VALUE, -Double.MAX_VALUE};
         List<String> text = lines(data, label);
@@ -122,7 +127,7 @@ public final class ObjModelCheck {
                         if (parts.length > 3 || parts[0].isEmpty()) { throw new ObjModelException(where + ": malformed corner " + corner); }
                         index(parts[0], positions, "position", where);
                         if (parts.length > 1 && !parts[1].isEmpty()) { index(parts[1], coordinates, "texture coordinate", where); }
-                        emptyCoordinate |= parts.length > 1 && parts[1].isEmpty();
+                        emptyCoordinate |= !omittedIdleParts.contains(part) && parts.length > 1 && parts[1].isEmpty();
                         if (parts.length > 2) {
                             if (parts[2].isEmpty()) { throw new ObjModelException(where + ": malformed corner " + corner); }
                             index(parts[2], normals, "normal", where);
@@ -144,6 +149,7 @@ public final class ObjModelCheck {
                 }
                 case "s", "o", "g" -> {
                     if (arguments.length != 1) { throw new ObjModelException(where + ": " + keyword + " takes exactly one name"); }
+                    if (!keyword.equals("s")) { part = arguments[0]; }
                 }
                 case "mtllib" -> {
                     if (arguments.length != 1) { throw new ObjModelException(where + ": mtllib takes exactly one library"); }

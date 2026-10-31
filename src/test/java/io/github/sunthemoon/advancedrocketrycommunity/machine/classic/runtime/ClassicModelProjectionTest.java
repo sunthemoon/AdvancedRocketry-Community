@@ -18,18 +18,50 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.phys.AABB;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 /** The formed projection's bounded wire form and the render volume of a catalogued controller (ADR-066 section 7.1). */
 class ClassicModelProjectionTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
 
-    @Test void onlyTheCentrifugeProjectsAModelFlag() {
-        assertTrue(ClassicModelProjection.projects(ModIdentity.id("centrifuge")));
-        for (String kind : new String[] {"lathe", "crystallizer", "chemical_reactor", "precision_laser_etcher", "rolling_machine",
-                "observatory", "astrobody_data_processor", "cutting_machine"}) {
+    @Test void onlyK1AndK2ProjectAModelFlag() {
+        for (String kind : new String[] {"centrifuge", "lathe", "crystallizer", "chemical_reactor", "cutting_machine"}) {
+            assertTrue(ClassicModelProjection.projects(ModIdentity.id(kind)), kind);
+            assertTrue(ClassicModelProjection.footprint(ModIdentity.id(kind)).isPresent(), kind);
+        }
+        for (String kind : new String[] {"precision_laser_etcher", "rolling_machine", "arc_furnace",
+                "observatory", "astrobody_data_processor"}) {
             assertFalse(ClassicModelProjection.projects(ModIdentity.id(kind)), kind);
             assertTrue(ClassicModelProjection.footprint(ModIdentity.id(kind)).isEmpty(), kind);
         }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"chemical_reactor", "crystallizer", "cutting_machine", "lathe"})
+    void clientProjectionIsStrictTransientAndNotAuthorityForEveryK2Kind(String kind) {
+        var definition = switch (kind) {
+            case "chemical_reactor" -> ClassicMachineDefinition.CHEMICAL_REACTOR;
+            case "crystallizer" -> ClassicMachineDefinition.CRYSTALLIZER;
+            case "cutting_machine" -> ClassicMachineDefinition.CUTTING;
+            default -> ClassicMachineDefinition.LATHE;
+        };
+        var state = new ClassicControllerBlock(BlockBehaviour.Properties.of()).defaultBlockState();
+        var replica = new ClassicControllerBlockEntity(null, BlockPos.ZERO, state, definition);
+        var saved = replica.saveWithoutMetadata();
+        var tag = new CompoundTag();
+        tag.putBoolean("formed", true); tag.putBoolean("active", true);
+        replica.handleUpdateTag(tag);
+        assertTrue(replica.modelFormed());
+        assertFalse(replica.formed(), "client projection must not form a machine");
+        assertEquals(saved, replica.saveWithoutMetadata(), "projection must never enter the save schema");
+        replica.handleUpdateTag(new CompoundTag());
+        assertFalse(replica.modelFormed());
+        tag.putInt("formed", 1); replica.handleUpdateTag(tag);
+        assertFalse(replica.modelFormed());
+        replica.handleUpdateTag(null);
+        assertFalse(replica.modelFormed());
+        assertEquals(saved, replica.saveWithoutMetadata());
     }
 
     @Test void encodesOneCanonicalByteAndDecodesNothingElse() {
