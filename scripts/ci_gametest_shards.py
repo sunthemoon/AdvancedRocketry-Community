@@ -26,9 +26,10 @@ SHARD_COUNT = 4
 RUNTIME_SETS = ("main", "adapterTest", "ciGameTest")
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MANIFEST = ROOT / "scripts/gametest_expected_log.json"
-# The manifest explicitly describes this unscoped warning as once per server
-# start: it can fall in startup OR the first batch, depending on tick timing.
-PER_PROCESS_CEILINGS = frozenset({"w44-first-moon-landing-startup-baseline"})
+# These unscoped ceilings apply to each server run and are enforced by
+# check_shard's unchanged log checker. The moon warning is once per server start;
+# ADR-072's host-lag ceiling is per run, not the sum of independent shard runs.
+PER_PROCESS_CEILINGS = frozenset({"w44-first-moon-landing-startup-baseline", "server-overloaded"})
 
 
 def read_json(path: Path) -> dict:
@@ -129,8 +130,8 @@ def slice_manifest(manifest: dict, batches: set[str]) -> dict:
 
 
 def check_global_ceilings(manifest: dict, observations: list[dict]) -> None:
-    # Startup warnings arise independently for each JVM. Other existing ceilings
-    # remain whole-suite ceilings, not SHARD_COUNT times their reviewed value.
+    # Startup and explicitly per-process warnings arise independently for each
+    # JVM. Other ceilings remain whole-suite ceilings at their reviewed value.
     for entry in manifest["expectations"]:
         if ("max" in entry and entry.get("batches") != [logcheck.STARTUP_BATCH]
                 and entry["id"] not in PER_PROCESS_CEILINGS):
@@ -325,6 +326,10 @@ def main(argv: list[str] | None = None) -> int:
                 counts.append(observed)
             check_global_ceilings(read_json(args.manifest), counts)
             result = check_union(reports, digest)
+            result["server_overloaded"] = {
+                "per_shard": {str(i): observed.get("server-overloaded", 0) for i, observed in enumerate(counts)},
+                "total": sum(observed.get("server-overloaded", 0) for observed in counts),
+            }
             write_json(args.evidence / "union.json", result)
         print(f"[PASS] {args.command}: {json.dumps(result, sort_keys=True)}")
         return 0

@@ -1,5 +1,7 @@
+import contextlib
 import copy
 import hashlib
+import io
 import json
 import tempfile
 import unittest
@@ -158,6 +160,12 @@ class EvidenceTests(unittest.TestCase):
         temporary = tempfile.TemporaryDirectory()
         self.addCleanup(temporary.cleanup)
         self.root = Path(temporary.name)
+        self.bundle = self.root / "bundle"
+        self.bundle.mkdir()
+        for name in (*shards.RUNTIME_SETS, "release"):
+            (self.bundle / f"{name}.jar").write_bytes(name.encode("ascii"))
+        shards.seal(self.bundle, "a" * 40)
+        self.bundle_sha256 = shards.sha256(self.bundle / "identity.json")
         self.manifest = self.root / "manifest.json"
         shards.write_json(self.manifest, {"schema": 1, "expectations": [{
             "id": "startup", "level": "WARN", "logger": "fixture/", "message": "fixture warning",
@@ -167,7 +175,7 @@ class EvidenceTests(unittest.TestCase):
         for index, tests in shards.partition(self.inventory).items():
             folder = self.root / f"shard-{index}"
             report = {"schema": 1, "shard": index, "inventory": self.inventory, "executed": tests,
-                      "complete": True, "failed": [], "bundle_sha256": "a" * 64}
+                      "complete": True, "failed": [], "bundle_sha256": self.bundle_sha256}
             shards.write_json(folder / "result.json", report)
             (folder / "native-exit.txt").write_text("0\n")
             lines = [LAUNCH, line("WARN", "fixture/", "fixture warning")]
@@ -187,7 +195,109 @@ class EvidenceTests(unittest.TestCase):
 
     def test_native_logs_and_terminal_callbacks_agree(self):
         reports = [self.check(index)[0] for index in range(4)]
-        self.assertEqual(40, shards.check_union(reports, "a" * 64)["tests"])
+        self.assertEqual(40, shards.check_union(reports, self.bundle_sha256)["tests"])
+
+    def union(self, job_result="success"):
+        stdout, stderr = io.StringIO(), io.StringIO()
+        with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+            code = shards.main([
+                "union", "--evidence", str(self.root), "--bundle", str(self.bundle),
+                "--commit", "a" * 40, "--job-result", job_result,
+                "--manifest", str(self.manifest),
+            ])
+        return code, stdout.getvalue() + stderr.getvalue()
+
+    def host_lag(self, counts):
+        manifest = shards.read_json(self.manifest)
+        manifest["expectations"].append(next(
+            entry for entry in shards.read_json(shards.DEFAULT_MANIFEST)["expectations"]
+            if entry["id"] == "server-overloaded"))
+        shards.write_json(self.manifest, manifest)
+        from test_check_gametest_log import line
+        for index, count in enumerate(counts):
+            path = self.root / f"shard-{index}/logs/latest.log"
+            lines = path.read_text().splitlines()
+            lines[3:3] = [line("WARN", "net.minecraft.server.MinecraftServer/",
+                               "Can't keep up! Is the server overloaded? Running 2000ms or 40 ticks behind")] * count
+            path.write_text("\n".join(lines) + "\n")
+
+    def test_union_rejects_nine_host_lag_notices_in_any_one_run(self):
+        self.host_lag([8] * shards.SHARD_COUNT)
+        for index in range(shards.SHARD_COUNT):
+            with self.subTest(shard=index):
+                path = self.root / f"shard-{index}/logs/latest.log"
+                original = path.read_text()
+                lines = original.splitlines()
+                lines.insert(3, lines[3])
+                path.write_text("\n".join(lines) + "\n")
+                try:
+                    code, output = self.union()
+                    self.assertEqual(1, code, output)
+                    self.assertIn("server-overloaded: expected at most 8 WARN entries, observed 9", output)
+                    self.assertIn(f"shard {index} GameTest log check failed", output)
+                    self.assertFalse((self.root / "union.json").exists())
+                finally:
+                    path.write_text(original)
+
+    def test_union_allows_eight_host_lag_notices_per_run_and_reports_total(self):
+        self.host_lag([8] * shards.SHARD_COUNT)
+        code, output = self.union()
+        self.assertEqual(0, code, output)
+        result = shards.read_json(self.root / "union.json")
+        self.assertEqual(40, result["tests"])
+        self.assertEqual({"per_shard": {str(i): 8 for i in range(4)}, "total": 32},
+                         result["server_overloaded"])
+        self.assertIn('"total": 32', output)
+
+    def test_union_fifth_hosted_run_host_lag_counts_pass_and_report_total(self):
+        self.host_lag([5, 3, 1, 2])
+        code, output = self.union()
+        self.assertEqual(0, code, output)
+        result = shards.read_json(self.root / "union.json")
+        self.assertEqual({"per_shard": {"0": 5, "1": 3, "2": 1, "3": 2}, "total": 11},
+                         result["server_overloaded"])
+        self.assertIn('"total": 11', output)
+
+    def test_union_other_whole_suite_warning_ceiling_still_fails(self):
+        from test_check_gametest_log import line
+        self.host_lag([5, 3, 1, 2])
+        manifest = shards.read_json(self.manifest)
+        manifest["expectations"].append({
+            "id": "other", "level": "WARN", "logger": "fixture/", "message": "other warning",
+            "max": 1, "test": "environment", "reason": "Whole-suite ceiling fixture."
+        })
+        shards.write_json(self.manifest, manifest)
+        for index in range(shards.SHARD_COUNT):
+            path = self.root / f"shard-{index}/logs/latest.log"
+            lines = path.read_text().splitlines()
+            lines.insert(3, line("WARN", "fixture/", "other warning"))
+            path.write_text("\n".join(lines) + "\n")
+        code, output = self.union()
+        self.assertEqual(1, code, output)
+        self.assertIn("whole-suite warning ceiling other: 4 > 1", output)
+
+    def test_union_host_lag_does_not_bypass_failure_propagation(self):
+        self.host_lag([5, 3, 1, 2])
+        for field, value, message in (
+                ("complete", False, "failed or incomplete native shard result"),
+                ("failed", ["case"], "failed or incomplete native shard result"),
+                ("bundle_sha256", "b" * 64, "used another artifact"),
+                ("executed", [], "executed inventory mismatch")):
+            with self.subTest(field=field):
+                path = self.root / "shard-0/result.json"
+                original = shards.read_json(path)
+                report = copy.deepcopy(original)
+                report[field] = value
+                shards.write_json(path, report)
+                try:
+                    code, output = self.union()
+                    self.assertEqual(1, code, output)
+                    self.assertIn(message, output)
+                finally:
+                    shards.write_json(path, original)
+        code, output = self.union("cancelled")
+        self.assertEqual(1, code, output)
+        self.assertIn("matrix job result: cancelled", output)
 
     def test_unexpected_warn_still_fails_unchanged_checker(self):
         path = self.root / "shard-0/logs/latest.log"
