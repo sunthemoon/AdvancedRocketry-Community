@@ -72,20 +72,18 @@ public final class SatelliteRegistryPayload {
         }
         for (Tag raw : jobs) { restored.groundSurveys().restore(GroundSurveyCodec.decode((CompoundTag) raw)); }
         restored.finishRestore();
-        if (!schema3 && restored.restoreReport().changed()) {
-            // A repair is usable only when the same encoder used by a flush accepts its full root.
+        if (!schema3) {
+            // D15 / W224: every loaded current root, repaired or not, must be canonically saveable.
             encodeCurrent(restored, new CompoundTag());
         }
         BoundedSavedDataIo.validatePayload(payload, ManagedSavedDataType.SATELLITE_MISSIONS);
         return restored;
     }
 
-    /** Shared by repair validation and SavedData writes. */
+    /** Shared by current-root load validation and SavedData writes. */
     static CompoundTag encodeCurrent(SatelliteMissionRegistry registry, CompoundTag target) {
         encodeUnchecked(registry, target);
-        if (SatelliteNbtSize.uncompressedBytes(target) > SatelliteLimits.MAX_REGISTRY_NBT_BYTES) {
-            throw new IllegalStateException("Encoded satellite registry exceeds its fixed NBT bound");
-        }
+        SatelliteCanonicalBoundsException.checkRoot(target, SatelliteLimits.MAX_REGISTRY_NBT_BYTES);
         return target;
     }
 

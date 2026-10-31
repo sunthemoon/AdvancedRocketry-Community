@@ -25,7 +25,11 @@ final class ManagedSavedDataPayloadValidator {
                 case ROCKET_TRANSACTIONS -> RocketTransactionSavedData.load(payload).operational();
                 case ROCKET_TRANSFERS -> RocketTransferSavedData.load(payload).operational();
                 case STATIONS -> StationRegistrySavedData.load(payload).operational();
-                case SATELLITE_MISSIONS -> SatelliteMissionSavedData.load(payload).operational();
+                case SATELLITE_MISSIONS -> {
+                    var loaded = SatelliteMissionSavedData.load(payload);
+                    loaded.canonicalBoundsFailure().ifPresent(failure -> { throw failure; });
+                    yield loaded.operational();
+                }
                 case ENDGAME -> EndgameSavedData.load(payload).operational();
                 case ROCKET_REJOINS -> {
                     io.github.sunthemoon.advancedrocketrycommunity.rocket.rejoin.RocketRejoinCodec.decode(payload);
@@ -50,9 +54,11 @@ final class ManagedSavedDataPayloadValidator {
                 }
             };
         } catch (RuntimeException exception) {
+            var bounds = io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence
+                    .SatelliteCanonicalBoundsException.find(exception);
             throw new SavedDataMigrationException(
                     MigrationDiagnosticId.INVALID_SCHEMA,
-                    type.dataName() + " failed semantic validation",
+                    bounds.map(Throwable::getMessage).orElse(type.dataName() + " failed semantic validation"),
                     exception
             );
         }

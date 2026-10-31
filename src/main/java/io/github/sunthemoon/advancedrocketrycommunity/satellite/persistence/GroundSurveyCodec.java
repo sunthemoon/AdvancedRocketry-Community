@@ -65,7 +65,8 @@ public final class GroundSurveyCodec {
             raw.putString("previous_phase", lower(held.previousPhase()));
             tag.put("quarantine", raw);
         });
-        requireBound(tag, SatelliteLimits.MAX_GROUND_SURVEY_RECORD_NBT_BYTES);
+        SatelliteCanonicalBoundsException.check(SatelliteCanonicalBoundsException.Kind.GROUND_SURVEY,
+                job.jobId(), tag, SatelliteLimits.MAX_GROUND_SURVEY_RECORD_NBT_BYTES);
         return tag;
     }
 
