@@ -68,7 +68,13 @@ public final class BeaconReloadGameTests {
             BeaconRecord before = fixture.index().get(id).orElseThrow();
             fixture.index().setDirty(false);
             fixture.forceChunk(at, false);
-            fixture.await(300, "the isolated chunk to unload", () -> !fixture.level.hasChunkAt(at), () -> {
+            GameTestTickPacer unloadPacer = new GameTestTickPacer(fixture.server);
+            fixture.await(300, "the isolated chunk to unload", () -> {
+                // The chunk disappears from getChunkNow before its asynchronous unload removes the block entities.
+                boolean unloaded = !fixture.level.hasChunkAt(at) && original.isRemoved();
+                if (!unloaded) { unloadPacer.pace(); }
+                return unloaded;
+            }, () -> {
                 helper.assertTrue(original.isRemoved() && fixture.index().get(id).equals(Optional.of(before))
                         && !fixture.index().isDirty(), "Unloading changed or rewrote the active index record: removed="
                         + original.isRemoved() + ", dirty=" + fixture.index().isDirty() + ", before=" + before
