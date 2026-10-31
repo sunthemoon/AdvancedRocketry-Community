@@ -161,7 +161,11 @@ def check(image, restart, identity, cut, events):
                 physical_pads=disk["physical_pads"], loader=first["loader"], root=first["ledger"], journal=first["journal"])
         require(identity is not None and len(disk["loaders"]) == len(disk["physical_pads"]) == 1, "Lost loader or physical pad")
         require(disk["physical_pads"] == identity["physical_pads"], "Changed physical pad binding")
-        loader = copy.deepcopy(disk["loaders"][0]); expected_loader = copy.deepcopy(identity["loader"])
+        loader = copy.deepcopy(disk["loaders"][0])
+        # Vanilla LevelChunk.getBlockEntityNbtForSaving adds keepPacked=false to
+        # instantiated block entities; the live saveWithFullMetadata capture does not.
+        # Require that exact native field, rather than discarding packing metadata.
+        expected_loader = dict(copy.deepcopy(identity["loader"]), keepPacked=0)
         # F1 can leave the retired fill marker on disk; it is checked against the exact captured marker.
         if not restart:
             wrapper = loader["arce_fluid_fuel_loader"]["resource_escrow"]

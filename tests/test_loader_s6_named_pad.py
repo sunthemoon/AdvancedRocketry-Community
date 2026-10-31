@@ -66,9 +66,12 @@ def native_sample():
     disk["pads"] = dict(schema=1, next_epoch=1, pads=[entry])
     disk["physical_pads"] = [dict(id="advancedrocketrycommunity:landing_pad", x=32, y=99, z=0,
         landing_pad=dict(schema=1, physical=entry["physical"], station=entry["station"], pad=entry["pad"], epoch=0))]
+    # LevelChunk adds this byte to serialized, instantiated block entities.
+    disk["loaders"][0]["keepPacked"] = 0
     for state in (row["source_flight"], row["destination_flight"]):
         state["plan"].update(destination_station_id=entry["station"], landing_pad=dict(id=entry["pad"], epoch=0))
     loader = copy.deepcopy(disk["loaders"][0]); markers = loader["arce_fluid_fuel_loader"]["resource_escrow"].pop("markers")
+    loader.pop("keepPacked")  # The live saveWithFullMetadata capture is not chunk serialization.
     loader["arce_fluid_fuel_loader"]["resource_escrow"]["markers"] = []
     event = dict(seq=0, label="PREPARED", releases=0, absence=0, baseline=baseline,
                  source=baseline, loader=loader, retired_loader_markers=markers, ledger=copy.deepcopy(disk["ledger"]),
@@ -77,6 +80,16 @@ def native_sample():
 
 
 class NamedPadNativeTest(unittest.TestCase):
+    def test_chunk_packing_flag_is_exact_not_discarded_or_optional(self):
+        image, events = native_sample()
+        pad.check(image, 0, None, "LF_S6_PAD_PREPARED", events)
+        for flag in (None, 1, "0"):
+            bad = copy.deepcopy(image)
+            if flag is None: bad["native"]["loaders"][0].pop("keepPacked")
+            else: bad["native"]["loaders"][0]["keepPacked"] = flag
+            with self.subTest(flag=flag), self.assertRaises(SmokeError):
+                pad.check(bad, 0, None, "LF_S6_PAD_PREPARED", events)
+
     def test_complete_prepared_control(self):
         image, events = native_sample()
         result = pad.check(image, 0, None, "LF_S6_PAD_PREPARED", events)
