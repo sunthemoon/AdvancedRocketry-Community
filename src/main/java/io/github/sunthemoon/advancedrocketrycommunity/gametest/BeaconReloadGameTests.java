@@ -70,6 +70,8 @@ public final class BeaconReloadGameTests {
             fixture.forceChunk(at, false);
             GameTestTickPacer unloadPacer = new GameTestTickPacer(fixture.server);
             fixture.await(300, "the isolated chunk to unload", () -> {
+                // Early paced ticks can have no spare time for ChunkMap's ready unload callbacks.
+                GameTestChunkUnloadPump.drainReady(fixture.level);
                 // The chunk disappears from getChunkNow before its asynchronous unload removes the block entities.
                 boolean unloaded = !fixture.level.hasChunkAt(at) && original.isRemoved();
                 if (!unloaded) { unloadPacer.pace(); }
