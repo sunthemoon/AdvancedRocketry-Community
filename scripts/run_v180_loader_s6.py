@@ -131,7 +131,7 @@ def run_cut(args, cut, evidence, owner, pins):
                             "-Dadvancedrocketrycommunity.escrowCase=" + native_case]
             command[1:1] = journal_cut_properties(cut, restart)
             if cut in publication.CASES:
-                command[1:1] = ["-Dadvancedrocketrycommunity.escrowS6PublicationRound=" + str(restart)]
+                command[1:1] = publication.properties(cut, restart, identity)
             if cut in oracle.G3:
                 command[1:1] = ["-Dadvancedrocketrycommunity.escrowS6Shutdown=" + cut]
             if cut in oracle.G1:

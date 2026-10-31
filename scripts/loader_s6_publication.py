@@ -1,6 +1,7 @@
 """W220: exact failed publication, returned source, and record-backed held retry."""
 import copy
 import re
+import uuid
 import loader_s6_phases as phases
 from loader_s6_phases import forward, flight, legacy, SmokeError
 from loader_s6_terminal import decode_capture
@@ -8,6 +9,27 @@ from loader_s6_terminal import decode_capture
 RETURN = "LF_S6_PUBLICATION_RETURN"
 HELD = "LF_S6_PUBLICATION_HELD"
 CASES = (RETURN, HELD)
+
+
+def properties(cut, restart, identity=None):
+    """Carry only the independently checked F2 tuple; never seed native authority."""
+    legacy.require(cut in CASES and type(restart) is int and restart in (0, 1, 2),
+                   "Unsupported publication process round")
+    result = ["-Dadvancedrocketrycommunity.escrowS6PublicationRound=" + str(restart)]
+    if not restart:
+        return result
+    try:
+        row = identity["transfer"]
+        arm = row["native_transfer"]["armed"]
+        values = [row["transfer_id"], row["source_entity_id"], arm["d"]]
+        legacy.require(row["phase"] == "PREPARED" and arm["t"] == values[0] and arm["src"] == values[1]
+                       and identity["initial"]["native"]["physical"] == values[1]
+                       and values[1] != values[2]
+                       and all(isinstance(value, str) and str(uuid.UUID(value)) == value for value in values),
+                       "Publication recovery lost its checked F2 identity")
+        return result + ["-Dadvancedrocketrycommunity.escrowS6PublicationIdentity=" + ",".join(values)]
+    except (KeyError, TypeError, ValueError, AttributeError) as failure:
+        raise SmokeError("Missing or malformed publication F2 identity: " + str(failure)) from failure
 
 
 def normalize(value):

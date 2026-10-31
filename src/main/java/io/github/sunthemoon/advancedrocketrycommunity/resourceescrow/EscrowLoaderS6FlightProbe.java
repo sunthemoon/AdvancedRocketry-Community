@@ -133,6 +133,7 @@ final class EscrowLoaderS6FlightProbe {
             var payload = CheckedSavedDataFile.readPayload(journalFile, ManagedSavedDataType.ROCKET_TRANSFERS).orElseThrow();
             EscrowLoaderS6JournalProbe.observeTransfer(cut, payload);
             if (terminal != null || publication != null) { EscrowLoaderS6TerminalProbe.observeCapture(cut, payload); }
+            if (publication != null) { publication.capture(payload, rocket.getUUID()); }
         }
         if (publication != null) { publication.checkpoint(point, rocket); }
         if (terminal != null) {

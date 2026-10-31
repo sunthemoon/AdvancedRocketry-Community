@@ -17,6 +17,45 @@ from run_dedicated_server_smoke import SmokeError
 
 
 class LoaderS6OracleTest(unittest.TestCase):
+    def test_runner_passes_the_initial_identity_to_both_recovery_processes(self):
+        from test_loader_s6_publication import controls
+        import loader_s6_publication as publication
+        import tempfile
+        from pathlib import Path
+        from types import SimpleNamespace
+        from unittest.mock import Mock, patch
+        import run_v180_loader_s6 as runner
+        for cut in publication.CASES:
+            image, witness, recovered, end = controls(cut)
+            identity = publication.check(image, 0, cut=cut, witness=witness)["identity"]
+            images = [image, image if cut == publication.HELD else recovered, recovered]
+            witnesses = [witness, dict(veto=witness["veto"]) if cut == publication.HELD else end, end]
+            with tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary); sessions = root / "sessions"; sessions.mkdir()
+                template = root / "template"; (template / "libraries").mkdir(parents=True)
+                jar = root / "fixture.jar"; jar.write_bytes(b"test-only")
+                args = SimpleNamespace(source_commit="pinned", java="java", jar=jar, session_parent=sessions,
+                                       source_server=template, startup_timeout=240)
+                process = Mock(lines=[], **{"finish.return_value": 0})
+                process.process.pid = 123
+                with patch.object(runner.shared, "assert_pin"), patch.object(runner.shared, "require_lock"), \
+                        patch.object(runner.shared, "digest", return_value="hash"), \
+                        patch.object(runner.shared, "disk_space", return_value={}), \
+                        patch.object(runner.shared, "physical_memory", return_value=0), \
+                        patch.object(runner, "allocate_port", return_value=25565), \
+                        patch.object(runner, "_server_command", side_effect=lambda _: ["java", "-Xms1G", "-Xmx4G"]), \
+                        patch.object(runner, "CapturedProcess", return_value=process) as start, \
+                        patch.object(runner.flight, "inspect", side_effect=images), \
+                        patch.object(runner, "check_log"), \
+                        patch.object(publication, "witness", side_effect=witnesses):
+                    result = runner.run_cut(args, cut, root / "evidence", "test-owner", {"jar_sha256": "hash"})
+                self.assertEqual("PASS", result["status"], result["findings"])
+                self.assertEqual(3, start.call_count)
+                for restart, call in enumerate(start.call_args_list):
+                    carried = [arg for arg in call.args[0] if "escrowS6Publication" in arg]
+                    self.assertEqual(publication.properties(cut, restart, identity), carried)
+                self.assertTrue(result["cleanup"])
+
     # Exact native op_id from R186 E5 attempt 1, start 0, healthy pair.
     # Retained result.json SHA-256 is recorded in W211's R188 continuation.
     NATIVE_OP = [1142397210, -1093579555, -2135548581, -1618621573]

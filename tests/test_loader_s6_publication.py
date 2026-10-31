@@ -36,6 +36,34 @@ def controls(cut):
 
 
 class PublicationOracleTests(unittest.TestCase):
+    def test_restart_properties_carry_the_checked_f2_tuple_without_changing_authority(self):
+        for cut in publication.CASES:
+            image, witness, _, _ = controls(cut)
+            identity = publication.check(image, 0, cut=cut, witness=witness)["identity"]
+            before = copy.deepcopy(identity)
+            row = identity["transfer"]
+            expected = ",".join((row["transfer_id"], row["source_entity_id"], row["native_transfer"]["armed"]["d"]))
+            self.assertEqual(["-Dadvancedrocketrycommunity.escrowS6PublicationRound=0"], publication.properties(cut, 0))
+            for restart in (1, 2):
+                self.assertEqual(["-Dadvancedrocketrycommunity.escrowS6PublicationRound=" + str(restart),
+                    "-Dadvancedrocketrycommunity.escrowS6PublicationIdentity=" + expected],
+                    publication.properties(cut, restart, identity))
+                for invalid in (None, {}, dict(transfer={})):
+                    with self.assertRaises(SmokeError): publication.properties(cut, restart, invalid)
+            self.assertEqual(before, identity)
+            mutations = [lambda x: x["transfer"].update(phase="PASSENGERS_TRANSFERRED"),
+                lambda x: x["transfer"].update(transfer_id="bad"),
+                lambda x: x["transfer"]["native_transfer"]["armed"].update(t="00000000-0000-0000-0000-000000000099"),
+                lambda x: x["transfer"]["native_transfer"]["armed"].update(src="00000000-0000-0000-0000-000000000099"),
+                lambda x: x["transfer"]["native_transfer"]["armed"].update(d=x["transfer"]["source_entity_id"]),
+                lambda x: x["initial"]["native"].update(physical="00000000-0000-0000-0000-000000000099")]
+            for mutate in mutations:
+                bad = copy.deepcopy(identity); mutate(bad)
+                with self.assertRaises(SmokeError): publication.properties(cut, 1, bad)
+            for restart in (-1, 3, True):
+                with self.assertRaises(SmokeError): publication.properties(cut, restart, identity)
+            with self.assertRaises(SmokeError): publication.properties(cut + "_OTHER", 1, identity)
+
     def test_complete_log_witnesses_are_ordered_unique_and_bound_to_both_rounds(self):
         for cut in publication.CASES:
             image, w, recovered, end = controls(cut)

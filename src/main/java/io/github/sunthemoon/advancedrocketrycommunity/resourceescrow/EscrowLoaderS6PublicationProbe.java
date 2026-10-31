@@ -12,6 +12,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransf
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderBlockEntity;
 import java.util.UUID;
+import java.util.List;
 import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -26,10 +27,12 @@ import net.minecraftforge.eventbus.api.EventPriority;
 final class EscrowLoaderS6PublicationProbe {
     static final String RETURN = "LF_S6_PUBLICATION_RETURN", HELD = "LF_S6_PUBLICATION_HELD";
     static final String ROUND = "advancedrocketrycommunity.escrowS6PublicationRound";
+    static final String IDENTITY = "advancedrocketrycommunity.escrowS6PublicationIdentity";
     private final MinecraftServer server;
     private final String cut;
     private final int round;
     private final Consumer<EntityJoinLevelEvent> listener = this::join;
+    private Identity expected;
     private RocketTransferRecord vetoed;
     private CompoundTag vetoSource;
     private int vetoes;
@@ -44,13 +47,86 @@ final class EscrowLoaderS6PublicationProbe {
                 && phase == (RETURN.equals(cut) ? RocketTransferPhase.DESTINATION_SPAWNED : RocketTransferPhase.PASSENGERS_TRANSFERRED);
     }
 
+    /** Frozen from F2, never inferred from the row offered by a join. */
+    record Identity(UUID transfer, UUID source, UUID destination) {
+        Identity {
+            java.util.Objects.requireNonNull(transfer); java.util.Objects.requireNonNull(source);
+            java.util.Objects.requireNonNull(destination);
+            EscrowTags.require(!source.equals(destination), "Publication identity aliases its endpoints");
+        }
+        static Identity of(RocketTransferRecord row) {
+            return new Identity(row.transferId(), row.sourceEntityId(), row.nativeTransfer().orElseThrow().armed().destination());
+        }
+        static Identity parse(String value) {
+            EscrowTags.require(value != null && value.length() == 110, "Missing or malformed publication identity");
+            var parts = value.split(",", -1);
+            EscrowTags.require(parts.length == 3, "Malformed publication identity tuple");
+            var ids = java.util.Arrays.stream(parts).map(UUID::fromString).toList();
+            for (int i = 0; i < 3; i++) {
+                EscrowTags.require(ids.get(i).toString().equals(parts[i]), "Noncanonical publication identity");
+            }
+            return new Identity(ids.get(0), ids.get(1), ids.get(2));
+        }
+        boolean matches(RocketTransferRecord row) {
+            return row.nativeTransfer().isPresent() && equals(of(row));
+        }
+    }
+
+    static boolean target(boolean hooks, boolean enabled, String cut, int round, boolean fromDisk,
+                          UUID candidate, Identity expected, List<RocketTransferRecord> rows) {
+        if (expected == null || rows.size() != 1 || !expected.matches(rows.get(0))) { return false; }
+        return target(hooks, enabled, cut, round, fromDisk, candidate, expected.destination(), rows.get(0).phase());
+    }
+
+    private static RocketTransferRecord checkedRow(CompoundTag payload) {
+        var decoded = RocketTransferSavedData.load(payload);
+        try {
+            EscrowTags.require(decoded.operational() && decoded.entries().size() == 1
+                    && decoded.entries().get(0).nativeTransfer().isPresent(), "Publication requires one valid checked governed T");
+            return decoded.entries().get(0);
+        } finally { decoded.stop(); }
+    }
+
+    static Identity capturedIdentity(CompoundTag payload, UUID source) {
+        var row = checkedRow(payload);
+        EscrowTags.require(row.phase() == RocketTransferPhase.PREPARED && row.sourceEntityId().equals(source),
+                "Publication F2 capture is not the selected loader source");
+        return Identity.of(row);
+    }
+
+    static Identity recoveryIdentity(String value, CompoundTag journal, CompoundTag ledger) {
+        var identity = Identity.parse(value); var row = checkedRow(journal); var root = EscrowCodec.decode(ledger);
+        EscrowTags.require(identity.matches(row) && row.phase() == RocketTransferPhase.PASSENGERS_TRANSFERRED
+                && root.id().equals(row.nativeTransfer().orElseThrow().armed().ledger())
+                && root.armedFlights().equals(List.of(row.nativeTransfer().orElseThrow().armed())),
+                "Publication recovery identity differs from checked native authority");
+        return identity;
+    }
+
+    void capture(CompoundTag payload, UUID source) {
+        EscrowTags.require(round == 0 && expected == null, "Publication identity is already frozen");
+        arm(capturedIdentity(payload, source));
+    }
+
+    private void arm(Identity identity) {
+        expected = identity;
+        if (vetoRound(cut, round)) {
+            MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, false, EntityJoinLevelEvent.class, listener);
+        }
+    }
+
     EscrowLoaderS6PublicationProbe(MinecraftServer server, String cut, boolean recovery) {
         EscrowTestEndpoints.requireEnabled(server);
         this.server = server; this.cut = cut; round = Integer.getInteger(ROUND, -1);
         EscrowTags.require(selected(cut) && round >= 0 && round <= 2 && recovery == (round != 0),
                 "Publication fixture requires its exact process round");
-        if (vetoRound(cut, round)) {
-            MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, false, EntityJoinLevelEvent.class, listener);
+        if (recovery && vetoRound(cut, round)) {
+            var data = server.getWorldPath(LevelResource.ROOT).resolve("data");
+            arm(recoveryIdentity(System.getProperty(IDENTITY),
+                    CheckedSavedDataFile.readPayload(data.resolve(ManagedSavedDataType.ROCKET_TRANSFERS.fileName()),
+                            ManagedSavedDataType.ROCKET_TRANSFERS).orElseThrow(),
+                    CheckedSavedDataFile.readPayload(data.resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName()),
+                            ManagedSavedDataType.RESOURCE_ESCROW).orElseThrow()));
         }
     }
 
@@ -59,10 +135,9 @@ final class EscrowLoaderS6PublicationProbe {
                 || !(event.getEntity() instanceof RocketEntity created)) { return; }
         var journal = RocketTransferSavedData.get(server);
         var rows = journal.entries();
-        if (rows.size() != 1 || rows.get(0).nativeTransfer().isEmpty()) { return; }
-        var row = rows.get(0); var arm = row.nativeTransfer().orElseThrow().armed();
         if (!target(Boolean.getBoolean(EscrowTestEndpoints.HOOKS), EscrowTestEndpoints.enabled(server), cut, round,
-                event.loadedFromDisk(), created.getUUID(), arm.destination(), row.phase())) { return; }
+                event.loadedFromDisk(), created.getUUID(), expected, rows)) { return; }
+        var row = rows.get(0); var arm = row.nativeTransfer().orElseThrow().armed();
         var source = (RocketEntity) server.overworld().getEntity(row.sourceEntityId());
         var data = ResourceEscrowSavedData.existing(server);
         EscrowTags.require(vetoes == 0 && source != null && journal.acknowledgedCurrent()
@@ -70,12 +145,13 @@ final class EscrowLoaderS6PublicationProbe {
                 && !RocketEscrowGate.resourcesIdle(source)
                 && row.nativeTransfer().orElseThrow().destinationEnvelope(row).equals(EscrowGovernedEnvelope.capture(created)),
                 "Publication veto lacks its exact checked authority or created envelope");
-        vetoed = row; vetoSource = EscrowGovernedEnvelope.capture(source); vetoes++;
         var checked = CheckedSavedDataFile.readPayload(server.getWorldPath(LevelResource.ROOT).resolve("data")
                 .resolve(ManagedSavedDataType.ROCKET_TRANSFERS.fileName()), ManagedSavedDataType.ROCKET_TRANSFERS).orElseThrow();
         var stored = checked.getList("transfers", 10);
-        EscrowTags.require(stored.size() == 1 && stored.getCompound(0).getUUID("transfer_id").equals(row.transferId())
-                && stored.getCompound(0).getString("phase").equals(row.phase().name()), "Veto lost its checked journal phase");
+        var checkedRow = checkedRow(checked);
+        EscrowTags.require(expected.matches(checkedRow) && checkedRow.phase() == row.phase()
+                && checkedRow.checksum().equals(row.checksum()), "Veto lost its checked journal identity or phase");
+        vetoed = row; vetoSource = EscrowGovernedEnvelope.capture(source); vetoes++;
         AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_S6_PUBLICATION_VETO cut={} phase={} transfer={} destination={} source_time={} source_digest={} transfer_digest={} count=1",
                 cut, row.phase(), row.transferId(), arm.destination(), source.flightData().orElseThrow().stateStartedGameTime(),
                 EscrowGovernedEnvelope.digest(vetoSource), EscrowNativeEnvelope.digest(stored.getCompound(0)));
