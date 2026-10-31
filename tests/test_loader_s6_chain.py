@@ -1,5 +1,6 @@
 """Native-form two-loader mutations; model decisions are not native evidence."""
 import copy
+import hashlib
 import json
 from pathlib import Path
 import sys
@@ -24,6 +25,19 @@ def veto_error():
     lines = veto_log(); start = next(n for n, line in enumerate(lines) if "/ERROR" in line)
     end = next(n for n in range(start + 1, len(lines)) if lines[n].startswith("["))
     return lines[start:end]
+
+
+def veto_restart_log():
+    # W211/r199/veto-renewed/native/LF_S6_CHAIN_VETO_BI-attempt-1/start-1.log, unchanged.
+    path = Path(__file__).parent / "fixtures/loader_s6/veto-restart-bi.log"
+    data = path.read_bytes()
+    assert hashlib.sha256(data).hexdigest() == "14323143d78fdde11167c834644b316f2d35223992bfd290129c5258ad13b481"
+    return data.decode().splitlines()
+
+
+def log_events(lines):
+    starts = [index for index, line in enumerate(lines) if line.startswith("[")]
+    return [lines[start:end] for start, end in zip(starts, starts[1:] + [len(lines)])]
 
 
 def decision(bi=False):
@@ -58,6 +72,91 @@ def completed(image):
 
 
 class ChainOracleTest(unittest.TestCase):
+    def test_retained_bi_restart_checks_every_guarded_incremental_pair(self):
+        original = veto_restart_log()
+        for restart in (1, 2):
+            chain.check_logs(original, restart, chain.VETO[1])
+        self.assertEqual(chain.check_veto_error(original), dict(own_store=1, incremental=16))
+
+    def test_incremental_refusals_are_not_a_fixed_count_or_fuel_property(self):
+        errors = [event for event in log_events(veto_restart_log()) if "/ERROR" in event[0]]
+        pair = errors[0] + errors[1]
+        for cut in chain.VETO:
+            for restart in (0, 1, 2):
+                boundary = (f"ARCE_LOADER_S6_CHAIN_RESULT cut={cut} tanks=4000,4000 "
+                    f"banks={'1000,1000' if cut.endswith('_BI') else '2000,0'} "
+                    "epochs=1,1,2 records=2 receipts=0 state=HELD") if restart else f"ARCE_LOADER_S6_CHAIN_PAUSED cut={cut} hook=O_VETO"
+                markers = [f"ARCE_LOADER_S6_CHAIN_VETO cut={cut} reason=BARRIER_VETO records=2 "
+                    f"checkpointed=true recovery={str(bool(restart)).lower()}",
+                    "ARCE_ESCROW_SETTLEMENT_HELD reason=BARRIER_VETO records=retained", boundary]
+                for count in (0, 1, 2, 16, 17):
+                    with self.subTest(cut=cut, restart=restart, count=count):
+                        # Both sides of the own attempt are possible before the runner force-stops.
+                        for lines in (pair * count + veto_error(), veto_error() + pair * count):
+                            chain.check_logs(lines + markers, restart, cut)
+
+    def test_incremental_pairs_reject_foreign_unguarded_and_unpaired_errors(self):
+        events = [event for event in log_events(veto_restart_log()) if "/ERROR" in event[0]]
+        event, caught = events[:2]; own = veto_error()
+        mutations = {
+            "event-only": event,
+            "catch-only": caught,
+            "duplicate-event": event + event + caught,
+            "duplicate-catch": event + caught + caught,
+            "reversed": caught + event,
+            "foreign-chunk": event + [line.replace("chunk 4,4", "chunk 4,5") for line in caught],
+            "foreign-reason": [line.replace("O-veto source chunk", "another failure") for line in event + caught],
+            "different-stacks": event + [line.replace("ChunkMap.java:796", "ChunkMap.java:797") for line in caught],
+            "missing-guard": [line for line in event + caught if "GuardedChunkSaves.fail(" not in line],
+            "unload-callback": [line.replace("ChunkMap.m_198874_", "ChunkMap.lambda$scheduleUnload$14") for line in event + caught],
+            "full-autosave": [line.replace("ChunkMap.m_198874_", "ChunkMap.saveAllChunks") for line in event + caught],
+            "nested": event + [caught[0], "Caused by: java.lang.IllegalStateException: foreign"] + caught[1:],
+            "suppressed": [event[0], "Suppressed: java.lang.IllegalStateException: foreign"] + event[1:] + caught,
+            "long-event": event + ["padding"] * 97 + caught,
+            "long-catch": event + caught + ["padding"] * 97,
+            "write-in-stack": event + caught + ["\tat net.minecraft.server.level.ChunkMap.write(ChunkMap.java:831)"],
+            "fatal": [line.replace("/ERROR]", "/FATAL]") for line in event + caught],
+        }
+        for name, lines in mutations.items():
+            with self.subTest(name=name), self.assertRaises(SmokeError):
+                chain.check_veto_error(lines + own)
+        for line in ("[Server thread/ERROR] [foreign/]: another error", "[Server thread/FATAL] [foreign/]: failure"):
+            with self.subTest(line=line), self.assertRaises(SmokeError):
+                chain.check_veto_error(event + caught + own + [line])
+        for lines in (event + caught, event + caught + own + own, own + caught):
+            with self.subTest(own_attempts=lines), self.assertRaises(SmokeError):
+                chain.check_veto_error(lines)
+        with self.assertRaises(SmokeError):
+            cut = chain.CASES[0]
+            chain.check_logs(event + caught + [f"ARCE_LOADER_S6_CHAIN_PAUSED cut={cut} hook=K1"], 0, cut)
+
+    def test_selected_guard_error_does_not_allow_store_or_foreign_throwable_frames(self):
+        for extra in (
+            "\tat net.minecraft.server.level.ChunkMap.write(ChunkMap.java:831)",
+            "\tat net.minecraft.world.level.chunk.storage.IOWorker.store(IOWorker.java:70)",
+            "java.lang.RuntimeException: unrelated failure",
+        ):
+            with self.subTest(extra=extra), self.assertRaises(SmokeError):
+                chain.check_veto_error(veto_error() + [extra])
+
+    def test_guard_refusal_logs_do_not_qualify_changed_native_store_state(self):
+        for bi in (False, True):
+            cut = "LF_S6_CHAIN_VETO" + ("_BI" if bi else "")
+            initial = decision(bi)
+            held = chain.check(initial, 0, cut=cut)
+            for mutate in (
+                lambda d: d["loaders"][0]["arce_fluid_fuel_loader"]["tank"].update(Amount=3999),
+                lambda d: d["loaders"][1]["arce_fluid_fuel_loader"]["tank"].update(Amount=4001),
+                lambda d: d["loaders"][0]["arce_fluid_fuel_loader"]["resource_escrow"].update(resource_epoch=2),
+                lambda d: d["loaders"][1]["arce_fluid_fuel_loader"]["resource_escrow"]["markers"].clear(),
+                lambda d: d["rocket"]["RocketEntityData"]["flight_data"]["fuel"]["propulsion"]["oxidizer"].update(amount=999),
+                lambda d: d["ledger"].update(writer_generation=d["ledger"]["writer_generation"] + 1),
+            ):
+                for restart in (1, 2):
+                    with self.subTest(bi=bi, restart=restart, mutation=mutate):
+                        image = copy.deepcopy(initial); mutate(image["native"])
+                        with self.assertRaises(SmokeError): chain.check(image, restart, held["identity"], cut)
+
     def test_checkpointed_veto_retains_complete_frozen_authority_twice(self):
         for bi in (False, True):
             cut = "LF_S6_CHAIN_VETO" + ("_BI" if bi else "")

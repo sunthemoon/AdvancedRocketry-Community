@@ -260,18 +260,79 @@ def check_logs(lines, restart, cut):
         legacy.require(not any("/ERROR" in line or "/FATAL" in line for line in lines), "Unexpected chain operator error")
 
 
+_VETO_REASON = "Release-test S6 chain O-veto source chunk"
+_VETO_EVENT = "[ne.mi.ev.EventBus/EVENTBUS]: Exception caught during firing event: " + _VETO_REASON
+_VETO_CATCH = "[minecraft/ChunkMap]: Failed to save chunk 4,4"
+_VETO_HEADER = re.compile(r"(?:\[\d{2}:\d{2}:\d{2}\] )?\[Server thread/ERROR\] (.*)")
+_VETO_FRAME = re.compile(r"\s+at (?:[^/\s]+/)*([\w.$]+)\(([^()\r\n]+)\)(?: ~\[[^\]\r\n]*\](?: \{[^}\r\n]*\})?)?")
+_ROOT_PACKAGE = "io.github.sunthemoon.advancedrocketrycommunity."
+_EVENT_BUS = ("net.minecraftforge.eventbus.ASMEventHandler.invoke", "net.minecraftforge.eventbus.EventBus.post",
+              "net.minecraftforge.eventbus.EventBus.post")
+_GUARD_STACK = tuple(_ROOT_PACKAGE + "persistence." + method for method in
+    ("GuardedChunkSaves.fail", "GuardedChunkSaves.beforeSave", "__GuardedChunkSaves_beforeSave_Save.invoke")) + _EVENT_BUS
+_SERVER_TAIL = ("net.minecraft.server.MinecraftServer.m_130011_", "net.minecraft.server.MinecraftServer.m_206580_", "java.lang.Thread.run")
+# Forge 47.4.10 / Minecraft 1.20.1's incremental visible-chunk sweep, not scheduleUnload or saveAllChunks.
+_INCREMENTAL_STACK = _GUARD_STACK + tuple("net.minecraft.server.level." + method for method in
+    ("ChunkMap.m_140258_", "ChunkMap.m_198874_", "ChunkMap.m_140353_", "ChunkMap.m_140280_",
+     "ServerChunkCache.m_201698_", "ServerLevel.m_8793_")) + (
+    "net.minecraft.server.MinecraftServer.m_5703_", "net.minecraft.server.dedicated.DedicatedServer.m_5703_",
+    "net.minecraft.server.MinecraftServer.m_5705_") + _SERVER_TAIL
+_OWN_STACK = _GUARD_STACK + tuple(_ROOT_PACKAGE + "resourceescrow." + method for method in
+    ("EscrowSaveMonitor.postOwn", "EscrowChunkStore.terrain", "EscrowChunkStore.captureAndStore", "EscrowBarrier.begin",
+     "EscrowBarrier.beginJoint", "EscrowSettlementRecovery.lambda$tick", "EscrowSettlementRecovery.begin",
+     "EscrowSettlementRecovery.tick", "EscrowRuntime.tick", "__EscrowRuntime_tick_ServerTickEvent.invoke")) + _EVENT_BUS + (
+    "net.minecraftforge.event.ForgeEventFactory.onPostServerTick", "net.minecraft.server.MinecraftServer.m_5705_") + _SERVER_TAIL
+
+
+def _veto_exception(block, event_bus):
+    """One bounded throwable with a complete stack; no nested exception or hidden write frame."""
+    throwable = "java.lang.IllegalStateException: " + _VETO_REASON
+    legacy.require(len(block) <= 96 and block.count(throwable) == 1, "Changed O-veto throwable or event bound")
+    root = block.index(throwable)
+    legacy.require((event_bus or root == 0) and all(not line.strip() or re.fullmatch(
+        r"\t(?:Index: [0-9]+|Listeners:)|\t\t[0-9]+: .+", line) for line in block[:root]), "Foreign O-veto exception preamble")
+    frames = []
+    for line in block[root + 1:]:
+        if not line.strip(): continue
+        frame = _VETO_FRAME.fullmatch(line)
+        legacy.require(frame is not None, "Foreign/nested O-veto throwable or malformed stack")
+        frames.append(frame.groups())
+    return frames
+
+
+def _veto_methods(frames):
+    # Lambda indices depend on compilation; class, enclosing method and complete call order do not.
+    return tuple(re.sub(r"(\.EscrowSettlementRecovery\.lambda\$tick)\$[0-9]+$", r"\1", method) for method, site in frames)
+
+
 def check_veto_error(lines):
-    """Exactly the intentional own-store guard rejection, not an ERROR wildcard."""
-    errors = [index for index, line in enumerate(lines) if "/ERROR" in line or "/FATAL" in line]
-    legacy.require(len(errors) == 1, "O-veto requires exactly one intentional guard ERROR")
-    start = errors[0]; reason = "Release-test S6 chain O-veto source chunk"
-    legacy.require(lines[start].endswith("[Server thread/ERROR] [ne.mi.ev.EventBus/EVENTBUS]: Exception caught during firing event: " + reason),
-                   "Unexpected O-veto ERROR/FATAL")
-    end = next((index for index in range(start + 1, len(lines)) if lines[index].startswith("[")), len(lines))
-    block = lines[start + 1:end]
-    legacy.require(len(block) <= 96 and block.count("java.lang.IllegalStateException: " + reason) == 1
-                   and not any("Caused by:" in line or "Suppressed:" in line for line in block), "Changed O-veto throwable")
-    for method in ("GuardedChunkSaves.fail", "GuardedChunkSaves.beforeSave", "EscrowSaveMonitor.postOwn",
-                   "EscrowChunkStore.terrain", "EscrowBarrier.beginJoint", "EscrowSettlementRecovery.begin", "EscrowSettlementRecovery.tick"):
-        legacy.require(sum(line.lstrip().startswith("at ") and ("." + method + "(") in line for line in block) == 1,
-                       "O-veto ERROR is not the selected own-store guard stack: " + method)
+    """One own-store refusal, plus only matched pre-store (4,4) incremental refusal pairs.
+
+    The Level denial restores dirty after each refusal. ChunkMap can retry on subsequent ticks
+    (including before recovery is ready); the number of pairs is not a fuel-specific invariant.
+    This log proof is used alongside, never instead of, the unchanged native held-state oracle.
+    """
+    lines = [line.rstrip("\r\n") for line in lines]
+    starts = [n for n, line in enumerate(lines) if line.startswith(("[", "ARCE_"))]
+    ends = dict(zip(starts, starts[1:] + [len(lines)]))
+    errors = [n for n, line in enumerate(lines) if "/ERROR" in line or "/FATAL" in line]
+    own = pairs = 0
+    pending = None
+    for start in errors:
+        header = _VETO_HEADER.fullmatch(lines[start])
+        legacy.require(header is not None and header[1] in (_VETO_EVENT, _VETO_CATCH), "Unexpected O-veto ERROR/FATAL")
+        event_bus = header[1] == _VETO_EVENT
+        frames = _veto_exception(lines[start + 1:ends[start]], event_bus)
+        methods = _veto_methods(frames)
+        if event_bus and methods == _OWN_STACK:
+            legacy.require(pending is None, "Unpaired incremental O-veto exception before own store")
+            own += 1
+        elif event_bus and methods == _INCREMENTAL_STACK:
+            legacy.require(pending is None, "Repeated unpaired incremental O-veto exception")
+            pending = (ends[start], frames)
+        else:
+            legacy.require(not event_bus and methods == _INCREMENTAL_STACK and pending == (start, frames),
+                           "O-veto refusal is not a matched guarded incremental save of chunk 4,4")
+            pending = None; pairs += 1
+    legacy.require(own == 1 and pending is None, "O-veto requires one own-store refusal and complete incremental pairs")
+    return dict(own_store=own, incremental=pairs)
