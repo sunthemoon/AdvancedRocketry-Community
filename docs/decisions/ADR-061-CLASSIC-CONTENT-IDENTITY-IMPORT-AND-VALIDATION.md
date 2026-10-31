@@ -422,9 +422,13 @@ must handle:
    itself, a link to another project. Only HTTP versus HTTPS, optional `www.`,
    ASCII letter case, an optional trailing `.git` and an optional trailing
    `/` may vary. Credentials, ports, other hosts/owners/repositories, subpaths,
-   queries, fragments and escaped spellings do not qualify. URL ends must be
-   explicit (end of message, ASCII whitespace, quotes, backticks or angle
-   brackets); no punctuation is stripped or URL normalization performed.
+   queries, fragments and escaped spellings do not qualify. Both boundaries
+   of the whole URL token must be explicit: the start or end of the message,
+   respectively, or ASCII whitespace, quotes, backticks or angle brackets.
+   Glued prefixes do not qualify. Only the exemption compares addresses and
+   delimiters using ASCII matching; the original URL-start detector retains
+   its Unicode case-insensitive behaviour. No punctuation is stripped or
+   URL normalization performed.
    Every URL in the subject and body is checked independently. Other URLs
    and all other history triggers, including material "taken from" another
    source and the AR 16x set below, still require review. Every file retains
