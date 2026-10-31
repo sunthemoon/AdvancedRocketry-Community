@@ -11,6 +11,7 @@ import struct
 import subprocess
 import tempfile
 import unittest
+from unittest import mock
 import zipfile
 import zlib
 from pathlib import Path
@@ -607,6 +608,83 @@ class ImportV180AssetsTests(unittest.TestCase):
 
 
 TEXT = "".join(f"line {number:02d} of the fixture text\n" for number in range(1, 21))
+
+
+class UpstreamHistoryMessageTests(unittest.TestCase):
+    """Exercise message classification through upstream_history, independently of the graph walk."""
+
+    def triggers(self, subject: str, body: str = "") -> list[str]:
+        checks = MODULE.checks
+        identifier = "0c0017bcc06aa291e9d23cb0d6ceda56f7aff863"
+        output = "\x1f".join((identifier, "1619590470", "2021-04-28T02:14:30-04:00",
+                                "Fixture Author", subject, body)) + "\x1e"
+        with (mock.patch.object(checks, "_graph", return_value=([], {})),
+              mock.patch.object(checks, "_Blobs"),
+              mock.patch.object(checks, "_touching", return_value=[identifier]),
+              mock.patch.object(checks, "_git", return_value=output.encode("utf-8"))):
+            history, triggers = checks.upstream_history(Path("unused"), identifier, "fixture.obj")
+        self.assertEqual([subject], [entry["subject"] for entry in history])
+        return triggers
+
+    def test_upstream_merge_0c0017bc_has_no_foreign_url_trigger(self) -> None:
+        self.assertEqual([], self.triggers(
+            "Merge branch '1.12' of https://github.com/zmaster587/AdvancedRocketry into 1.12"))
+
+    def test_only_documented_upstream_url_variations_are_accepted(self) -> None:
+        for owner in ("Advanced-Rocketry", "zmaster587"):
+            for scheme in ("http", "https"):
+                for www in ("", "www."):
+                    for suffix in ("", "/", ".git", ".git/"):
+                        url = f"{scheme}://{www}github.com/{owner}/AdvancedRocketry{suffix}"
+                        for variant in (url, url.upper()):
+                            with self.subTest(url=variant):
+                                self.assertEqual([], self.triggers(f"Merge '{variant}'"))
+
+    def test_other_urls_and_lookalikes_remain_review_triggers(self) -> None:
+        urls = (
+            "https://github.com/another/AdvancedRocketry",
+            "https://github.com/zmaster587/AdvancedRocketry-fork",
+            "https://github.com/zmaster587/AdvancedRocketryAddons",
+            "https://github.com/zmaster587/LibVulpes",
+            "https://github.com.example/zmaster587/AdvancedRocketry",
+            "https://github.com/another/repository/Advanced-Rocketry/AdvancedRocketry",
+            "https://user@github.com/Advanced-Rocketry/AdvancedRocketry",
+            "https://user:password@github.com/Advanced-Rocketry/AdvancedRocketry",
+            "https://github.com:443/Advanced-Rocketry/AdvancedRocketry",
+            "https://github.com/Advanced-Rocketry/AdvancedRocketry/pull/1",
+            "https://github.com/Advanced-Rocketry/AdvancedRocketry?ref=main",
+            "https://github.com/Advanced-Rocketry/AdvancedRocketry#fragment",
+            "https://github.com/Advanced-Rocketry/AdvancedRocketry//",
+            "https://github.com/Advanced-Rocketry/AdvancedRocketry.git.git",
+            "https://github.com/Advanced-Rocketry/AdvancedRocketry%2f",
+            "https://github.com/Advanced-Rocketry/AdvancedRoc\N{KELVIN SIGN}etry",
+            "https://github.com/Advanced-Rocketry/AdvancedRocketry.",
+            "https://",
+        )
+        for url in urls:
+            with self.subTest(url=url):
+                self.assertTrue(any("a link to another project" in trigger for trigger in self.triggers(url)))
+
+    def test_own_url_does_not_suppress_other_urls_in_subject_or_body(self) -> None:
+        own = "https://github.com/Advanced-Rocketry/AdvancedRocketry"
+        other = "https://github.com/another/AdvancedRocketry"
+        for subject, body in ((f"{own} {other}", ""), (f"{other} {own}", ""), (own, other), (other, own)):
+            with self.subTest(subject=subject, body=body):
+                self.assertTrue(any("a link to another project" in trigger
+                                    for trigger in self.triggers(subject, body)))
+
+    def test_own_url_does_not_suppress_other_history_rules(self) -> None:
+        own = "https://github.com/zmaster587/AdvancedRocketry"
+        for text, reason in (("taken from", "material from another source"),
+                             ("from issue #1527", "material from an issue or pull request"),
+                             ("unmerged", "an unmerged contribution"),
+                             ("thanks", "a contributor credit"),
+                             ("#1811", "AR 16x texture set")):
+            for subject, body in ((f"{text} {own}", ""), (own, text)):
+                with self.subTest(subject=subject, body=body):
+                    triggers = self.triggers(subject, body)
+                    self.assertEqual(1, len(triggers))
+                    self.assertIn(reason, triggers[0])
 
 
 class UpstreamHistoryWalkTests(unittest.TestCase):

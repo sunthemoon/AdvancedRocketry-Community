@@ -65,7 +65,12 @@ THIRD_PARTY_MESSAGES = (
     ("material from another source",
      re.compile(r"\b(?:taken|copied|borrowed|ported|adapted|imported)\s+from\b|\bcourtesy\s+of\b", re.I)),
     ("a contributor credit", re.compile(r"\bthanks?\b|\bcredits?\b|\bpr\s+by\b", re.I)),
-    ("a link to another project", re.compile(r"https?://", re.I)),
+    # Owner D8 (2026-10-31): only these two upstream repository roots are not foreign links.
+    # Check every URL start, not the message as a whole. No credentials, port, subpath, query,
+    # fragment, escaping or punctuation normalization; ASCII case folding avoids Unicode lookalikes.
+    ("a link to another project", re.compile(
+        r"https?://(?!(?:www\.)?github\.com/(?:Advanced-Rocketry|zmaster587)/AdvancedRocketry"
+        r"(?:\.git)?/?(?=$|[\s<>\"'`]))", re.I | re.ASCII)),
 )
 
 
