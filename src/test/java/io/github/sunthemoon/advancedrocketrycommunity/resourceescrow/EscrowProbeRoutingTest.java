@@ -66,7 +66,7 @@ class EscrowProbeRoutingTest {
                 }
             }
         }
-        assertEquals(611, seen.size()); // R203: adds sticky and ordinary F9 under unchanged producer rules.
+        assertEquals(618, seen.size()); // W221: seven named-pad selections under unchanged producer rules.
         assertTrue(seen.contains(EscrowLoaderS6Probe.E3));
         var expected = new HashSet<>(EscrowItemSettlementCuts.CASES.keySet()); expected.addAll(EscrowItemRecoveryCuts.CASES);
         assertEquals(expected, items); assertEquals(18, items.size());
