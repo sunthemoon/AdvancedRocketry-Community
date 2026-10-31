@@ -1,6 +1,7 @@
 """W221 named-pad observations and native restart oracle; UNKNOWN is never absence."""
 import copy
 import gzip
+import math
 import re
 import struct
 import zlib
@@ -46,6 +47,10 @@ def check_interval(events, cut, restart):
         if event["label"] == "UNKNOWN": require(event.get("outcome") == "UNKNOWN", "Missing UNKNOWN write")
         previous = event
     require(events[-1]["label"] == ("RESULT" if restart else cut.removeprefix("LF_S6_PAD_")), "Wrong named-pad boundary")
+    if restart or cut == CASES[-1]:
+        require("claim" not in events[-1]["pads"]["pads"][0], "Claimed terminal live pad after release")
+        expected_releases = int(initial["pads"]["pads"][0].get("claim") is not None)
+        require(releases == expected_releases, "Wrong terminal pad release count")
 
 
 def normalize(value):
@@ -62,10 +67,36 @@ def payload(path):
     return nbt.plain(nbt.read(gzip.decompress(path.read_bytes()))[1])["data"]
 
 
+def native_location(world, path, slot, data):
+    """Keep storage coordinates independently of the object's self-reported NBT."""
+    relative = path.relative_to(world)
+    level = relative.parts[:-2]
+    vanilla = {(): "minecraft:overworld", ("DIM-1",): "minecraft:the_nether", ("DIM1",): "minecraft:the_end"}
+    dimension = vanilla.get(level)
+    if dimension is None:
+        require(len(level) >= 3 and level[0] == "dimensions", "Unknown native dimension directory")
+        dimension = level[1] + ":" + "/".join(level[2:])
+    match = re.fullmatch(r"r\.(-?\d+)\.(-?\d+)\.mca", path.name)
+    require(match is not None, "Unknown native region filename")
+    chunk = [int(match[1]) * 32 + slot % 32, int(match[2]) * 32 + slot // 32]
+    record_chunk = data.get("Position") if path.parent.name == "entities" else [data.get("xPos"), data.get("zPos")]
+    return dict(dimension=dimension, region=relative.as_posix(), slot=slot, chunk=chunk, record_chunk=record_chunk)
+
+
+def check_native_location(disk, kind, dimension, storage, pos):
+    x, z = math.floor(pos[0]) // 16, math.floor(pos[2]) // 16
+    directory = {"minecraft:overworld": "", "minecraft:the_nether": "DIM-1/", "minecraft:the_end": "DIM1/"}.get(dimension)
+    if directory is None: directory = "dimensions/" + dimension.replace(":", "/", 1) + "/"
+    expected = dict(dimension=dimension, region=f"{directory}{storage}/r.{x // 32}.{z // 32}.mca",
+                    slot=(x % 32) + (z % 32) * 32, chunk=[x, z], record_chunk=[x, z])
+    require(len(disk[kind]) == 1 and disk["locations"].get(kind) == [expected], "Changed native location for " + kind)
+
+
 def inspect(world):
     path = world; slot = None; files = {}
     try:
         rockets, devices, pads = [], [], []
+        locations = dict(rockets=[], loaders=[], physical_pads=[])
         # Census every native region, not just the expected two entity slots.
         for path in sorted(world.rglob("*.mca")):
             if path.parent.name not in ("entities", "region"): continue
@@ -82,10 +113,13 @@ def inspect(world):
                 if not struct.unpack_from(">I", header, slot * 4)[0]: continue
                 data = record(path, slot)
                 for entity in data.get("Entities", []):
-                    if entity.get("id") == ROCKET or "RocketEntityData" in entity: rockets.append(entity)
+                    if entity.get("id") == ROCKET or "RocketEntityData" in entity:
+                        rockets.append(entity); locations["rockets"].append(native_location(world, path, slot, data))
                 for entity in data.get("block_entities", []):
-                    if entity.get("id") == LOADER: devices.append(entity)
-                    if entity.get("id") == "advancedrocketrycommunity:landing_pad": pads.append(entity)
+                    if entity.get("id") == LOADER:
+                        devices.append(entity); locations["loaders"].append(native_location(world, path, slot, data))
+                    if entity.get("id") == "advancedrocketrycommunity:landing_pad":
+                        pads.append(entity); locations["physical_pads"].append(native_location(world, path, slot, data))
         slot = None
         path = world / "data" / LEDGER
         root = ledger(path); files[path.relative_to(world).as_posix()] = digest(path)
@@ -95,7 +129,7 @@ def inspect(world):
         index = payload(path); files[path.relative_to(world).as_posix()] = digest(path)
         return dict(read_status="KNOWN", native=dict(ledger=root,
             journal=journal, pads=index,
-            rockets=rockets, loaders=devices, physical_pads=pads, files=files))
+            rockets=rockets, loaders=devices, physical_pads=pads, locations=locations, files=files))
     except (OSError, ValueError, KeyError, TypeError, IndexError, EOFError, struct.error, zlib.error, SmokeError) as failure:
         reason = f"{type(failure).__name__}: {failure}"
         diagnostic = dict(file=path.relative_to(world).as_posix(), length=None,
@@ -176,6 +210,11 @@ def check(image, restart, identity, cut, events):
         root = disk["ledger"]; expected_root = copy.deepcopy(identity["root"])
         row = identity["transfer"]; prepared = not restart and cut in CASES[:3]
         released = restart or cut == CASES[-1]
+        plan = row["source_flight"]["plan"]; entry = identity["pads"]["pads"][0]
+        require([disk["physical_pads"][0][k] for k in ("x", "y", "z")] == [entry[k] for k in ("x", "y", "z")],
+                "Physical pad position disagrees with the named binding")
+        check_native_location(disk, "loaders", plan["source_dimension"], "region", [identity["loader"][k] for k in ("x", "y", "z")])
+        check_native_location(disk, "physical_pads", plan["destination_dimension"], "region", [entry[k] for k in ("x", "y", "z")])
         expected_root["writer_generation"] = 4 if prepared else 6 if released else 5
         if released: expected_root["armed_flights"] = []
         elif not prepared: expected_root["armed_flights"][0]["outcome"] = "HANDED_OFF"
@@ -188,6 +227,7 @@ def check(image, restart, identity, cut, events):
         expected_pad = copy.deepcopy(identity["pads"])
         if released: expected_pad["pads"][0].pop("claim")
         require(disk["pads"] == expected_pad, "Changed durable named pad identity/epoch/claim")
+        require(last["pads"] == disk["pads"], "Changed terminal live/durable named pad state")
         require(len(disk["rockets"]) == 1, "Missing or duplicated native rocket")
         survivor = disk["rockets"][0]; expected = copy.deepcopy(identity["baseline"])
         if not prepared:
@@ -201,6 +241,7 @@ def check(image, restart, identity, cut, events):
                 resource_escrow=dict(schema_version=1, ledger_id=root["ledger_id"], resource_epoch=0, markers=[]))
             require(flight.projection(last["arrival"]) == expected, "Changed complete live arrival")
         require(flight.projection(survivor) == expected, "Changed complete native snapshot, typed fuel, pose or identity")
+        check_native_location(disk, "rockets", expected["RocketEntityData"]["flight_data"]["current_dimension"], "entities", expected["Pos"])
         if restart:
             if "survivor" in identity: require(expected == identity["survivor"], "Second restart changed survivor")
             identity = dict(identity, survivor=expected)
