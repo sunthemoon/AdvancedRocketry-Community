@@ -117,8 +117,12 @@ public final class BeaconReloadGameTests {
         fixture.await(40, "the fixture chunk's native ticker readiness", () -> {
             boolean ready = tickReady(fixture, at);
             if (!ready) {
-                // Entity sections load asynchronously; give each unchanged tick the normal server's 50 ms.
+                // Entity deserialization runs on the server's task queue, not the chunk-source queue paced below.
+                // Pump it within one normal tick; keep the same 40 attempts and the enclosing 600-tick timeout.
+                EntitySections.loadNow(fixture.level, new ChunkPos(at),
+                        System.nanoTime() + GameTestTickPacer.SERVER_TICK_NANOS);
                 pacer.pace();
+                ready = tickReady(fixture, at);
             }
             if (--attempts[0] == 0 && !ready) {
                 fixture.helper.assertTrue(false, "Fixture chunk is not ticker-ready: status="
