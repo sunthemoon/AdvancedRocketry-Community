@@ -410,6 +410,13 @@ LF_S6_O3_REPLACED	scripts/run_v180_loader_s6.py;tests/test_loader_s6_oracle.py
 LF_S6_O4_ACK	scripts/run_v180_loader_s6.py;tests/test_loader_s6_oracle.py
 LF_S6_O4_BEFORE	scripts/run_v180_loader_s6.py;tests/test_loader_s6_oracle.py
 LF_S6_O4_REPLACED	scripts/run_v180_loader_s6.py;tests/test_loader_s6_oracle.py
+LF_S6_PAD_BEFORE	scripts/run_v180_loader_s6.py
+LF_S6_PAD_MOVED	scripts/run_v180_loader_s6.py
+LF_S6_PAD_PREPARED	scripts/run_v180_loader_s6.py;tests/test_loader_s6_named_pad.py;tests/test_loader_s6_native_reader.py
+LF_S6_PAD_REFUSED	scripts/run_v180_loader_s6.py;tests/test_loader_s6_named_pad.py
+LF_S6_PAD_RELEASED	scripts/run_v180_loader_s6.py;tests/test_loader_s6_named_pad.py
+LF_S6_PAD_STOPPED	scripts/run_v180_loader_s6.py
+LF_S6_PAD_UNKNOWN	scripts/run_v180_loader_s6.py;tests/test_loader_s6_named_pad.py
 LF_S6_R2_DESTRUCTIVE_SOURCE	scripts/run_v180_loader_s6.py;tests/test_loader_s6_oracle.py
 LF_S6_R2_DUPLICATE_RECONNECT	scripts/run_v180_loader_s6.py;tests/test_loader_s6_oracle.py
 LF_S6_R2_KEEP_SOURCE	scripts/run_v180_loader_s6.py;tests/test_loader_s6_oracle.py

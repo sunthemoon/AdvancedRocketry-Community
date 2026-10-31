@@ -14,10 +14,11 @@ class EscrowProbeInventoryTest(unittest.TestCase):
 
     def test_committed_inventory_matches_all_reviewed_producers_and_test_tokens(self):
         self.assertEqual(inventory.TARGET.read_text(encoding="utf-8"), inventory.render(self.rows))
-        self.assertEqual(611, len(self.rows))
+        self.assertEqual(618, len(self.rows))  # W221: seven governed named-pad selectors.
         self.assertEqual(23, len(self.coverage["direct"]))
         self.assertEqual(4, len(self.coverage["delegated"]))
-        self.assertEqual(33, len(self.coverage["tests"]))
+        self.assertEqual(35, len(self.coverage["tests"]))  # W221 R208: native-reader/runner regressions.
+        self.assertIn("tests/test_loader_s6_native_reader.py", self.coverage["tests"])
 
     def test_s6_producer_and_related_tests_are_registered(self):
         self.assertIn("run_v180_loader_s6", self.coverage["direct"])
