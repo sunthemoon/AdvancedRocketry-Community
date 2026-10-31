@@ -6,6 +6,7 @@ import importlib.util
 import io
 import json
 import os
+import re
 import shutil
 import struct
 import subprocess
@@ -685,6 +686,54 @@ class UpstreamHistoryMessageTests(unittest.TestCase):
                     triggers = self.triggers(subject, body)
                     self.assertEqual(1, len(triggers))
                     self.assertIn(reason, triggers[0])
+
+    def baseline_triggers(self, subject: str, body: str = "") -> list[str]:
+        patterns = tuple((reason, re.compile(r"https?://", re.I)
+                          if reason == "a link to another project" else pattern)
+                         for reason, pattern in MODULE.checks.THIRD_PARTY_MESSAGES)
+        with mock.patch.object(MODULE.checks, "THIRD_PARTY_MESSAGES", patterns):
+            return self.triggers(subject, body)
+
+    def test_glued_prefixes_keep_baseline_trigger_in_subject_and_body(self) -> None:
+        for owner in ("Advanced-Rocketry", "zmaster587"):
+            own = f"https://github.com/{owner}/AdvancedRocketry"
+            for prefix in ("prefix", "x", "%20", "\N{GREEK SMALL LETTER ALPHA}", "not-a-scheme:", "x-"):
+                for subject, body in ((prefix + own, ""), ("ordinary subject", prefix + own)):
+                    with self.subTest(subject=subject, body=body):
+                        baseline = self.baseline_triggers(subject, body)
+                        self.assertEqual(1, len(baseline))
+                        self.assertEqual(baseline, self.triggers(subject, body))
+
+    def test_upstream_tokens_accept_explicit_ascii_boundaries_in_subject_and_body(self) -> None:
+        boundaries = ("", " ", "\t", "\n", "\r", "\f", "\v", "<", ">", '"', "'", "`")
+        for owner in ("Advanced-Rocketry", "zmaster587"):
+            own = f"HTTPS://WWW.GITHUB.COM/{owner}/ADVANCEDROCKETRY.GIT/"
+            for left in boundaries:
+                for right in boundaries:
+                    token = left + own + right
+                    for subject, body in ((token, ""), ("ordinary subject", token)):
+                        with self.subTest(subject=subject, body=body):
+                            self.assertEqual([], self.triggers(subject, body))
+
+    def test_non_ascii_whitespace_does_not_delimit_exemption(self) -> None:
+        own = "https://github.com/Advanced-Rocketry/AdvancedRocketry"
+        for boundary in ("\u0085", "\u00a0", "\u2003", "\u2028", "\u2029", "\u3000"):
+            for token in (boundary + own, own + boundary):
+                for subject, body in ((token, ""), ("ordinary subject", token)):
+                    with self.subTest(subject=subject, body=body):
+                        self.assertEqual(self.baseline_triggers(subject, body), self.triggers(subject, body))
+                        self.assertEqual(1, len(self.triggers(subject, body)))
+
+    def test_unicode_scheme_lookalikes_keep_baseline_trigger_in_subject_and_body(self) -> None:
+        for url in ("http\N{LATIN SMALL LETTER LONG S}://example.org/other",
+                    "HTTP\N{LATIN SMALL LETTER LONG S}://github.com/another/AdvancedRocketry",
+                    "http\N{LATIN SMALL LETTER LONG S}://github.com/Advanced-Rocketry/AdvancedRocketry",
+                    "HTTP\N{LATIN SMALL LETTER LONG S}://github.com/zmaster587/AdvancedRocketry"):
+            for subject, body in ((url, ""), ("ordinary subject", url)):
+                with self.subTest(subject=subject, body=body):
+                    baseline = self.baseline_triggers(subject, body)
+                    self.assertEqual(1, len(baseline))
+                    self.assertEqual(baseline, self.triggers(subject, body))
 
 
 class UpstreamHistoryWalkTests(unittest.TestCase):
