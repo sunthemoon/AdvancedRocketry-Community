@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 from datetime import datetime, timezone
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -16,6 +17,7 @@ import re
 import shutil
 import time
 import uuid
+import zipfile
 
 import loader_s6_oracle as oracle
 import loader_s6_chain as chain
@@ -91,6 +93,36 @@ def finish_initial(process, cut, diagnostic):
     process.process.kill()
     process.abort()
     return dict(stop="FORCED_AFTER_DIAGNOSTIC_WINDOW" if diagnostic else "FORCED_AT_SELECTED_CHECKPOINT")
+
+
+def preserve_native_inputs(world, evidence, restart, image):
+    """Keep byte-identical reader inputs before disposable-world cleanup, including failures."""
+    names = set((image.get("native") or image).get("files", {}))
+    if image.get("failure"):
+        names.add(image["failure"]["file"])
+    oracle.legacy.require(len(names) <= 128, "Native input count exceeds evidence bound")
+    archive = evidence / f"native-{restart}.zip"
+    files = {}; absent = []; total = 0
+    with zipfile.ZipFile(archive, "x", compression=zipfile.ZIP_DEFLATED) as output:
+        for name in sorted(names):
+            path = world / name
+            oracle.legacy.require(not path.is_symlink() and path.resolve().is_relative_to(world.resolve()),
+                                  "Native input escaped owned world")
+            if not path.exists():
+                absent.append(name); continue
+            oracle.legacy.require(path.is_file(), "Native input is not a regular file")
+            total += path.stat().st_size
+            oracle.legacy.require(total <= 100_000_000, "Native inputs exceed evidence byte bound")
+            files[name] = dict(length=path.stat().st_size, sha256=shared.digest(path))
+            output.write(path, name)
+    oracle.legacy.require(archive.stat().st_size <= 50_000_000, "Native archive exceeds evidence file bound")
+    with zipfile.ZipFile(archive) as stored:
+        oracle.legacy.require(set(stored.namelist()) == set(files), "Native input archive list differs")
+        for name, expected in files.items():
+            with stored.open(name) as stream:
+                oracle.legacy.require(hashlib.file_digest(stream, "sha256").hexdigest() == expected["sha256"],
+                                      "Native input archive bytes differ")
+    return dict(file=archive.name, sha256=shared.digest(archive), files=files, absent=absent)
 
 
 def run_cut(args, cut, evidence, owner, pins):
@@ -201,6 +233,20 @@ def run_cut(args, cut, evidence, owner, pins):
                 row["unexplained_image"] = True
             start["image"] = (named_pad.inspect(session / "world") if cut in named_pad.CASES else ordinary.inspect(session / "world") if cut in ordinary.CASES else flight.inspect(session / "world") if cut in flight.CASES else
                               abandon.inspect(session / "world") if cut in chain.ABANDON else oracle.inspect(session / "world", cut))
+            if start["image"].get("read_status") != "KNOWN":
+                row["raw_read_failed"] = True
+                row["findings"].append(dict(restart=restart, kind="RAW_READ", error=start["image"].get("error")))
+            if cut in named_pad.CASES or row.get("raw_read_failed"):
+                try:
+                    key = "failed_read_inputs" if row.get("raw_read_failed") else "native_inputs"
+                    start[key] = preserve_native_inputs(session / "world", evidence, restart, start["image"])
+                except Exception as failure:
+                    # Never discard the only copy when evidence storage itself fails.
+                    row["preservation_error"] = str(failure)
+                    raise
+            if row.get("raw_read_failed"):
+                write(evidence / "result.json", row)
+                break
             if diagnostic:
                 # The healthy pair is deliberately never queued. Its image is retained,
                 # not passed through the completed-fairness oracle or reported as PASS.
@@ -255,8 +301,9 @@ def run_cut(args, cut, evidence, owner, pins):
         if process is not None:
             process.abort()
         try:
-            shared.cleanup(session, token, args.session_parent)
-            row["cleanup"] = True
+            if not row.get("preservation_error"):
+                shared.cleanup(session, token, args.session_parent)
+                row["cleanup"] = True
         except OSError as failure:
             row.update(status="FAILED", cleanup_error=str(failure))
         write(evidence / "result.json", row)
@@ -293,6 +340,10 @@ def run(args):
             print(f"{cut} attempt {attempt}: {row['status']}", flush=True)
             # Even a failed cut gives other workers their normal acquisition window.
             time.sleep(90)
+            if row.get("raw_read_failed"):
+                report["status"] = "STOPPED_RAW_READ_FAILURE"
+                write(evidence / "results.json", report)
+                return report
             if diagnostic:
                 report["status"] = row["status"]
                 shared.assert_pin(args.source_commit)

@@ -3,6 +3,7 @@ import copy
 import gzip
 import re
 import struct
+import zlib
 
 import loader_cut_nbt as nbt
 import loader_s6_flight as flight
@@ -12,6 +13,7 @@ import loader_s6_terminal as terminal
 from loader_cut_oracle import require, FUEL, ROCKET, LOADER
 from run_dedicated_server_smoke import SmokeError
 from run_v180_escrow_forced_stop import LEDGER, ledger, record, digest
+from run_v180_rocket_settlement_completion import JOURNAL
 
 CASES = tuple("LF_S6_PAD_" + suffix for suffix in (
     "PREPARED", "REFUSED", "STOPPED", "BEFORE", "MOVED", "UNKNOWN", "RELEASED"))
@@ -61,15 +63,21 @@ def payload(path):
 
 
 def inspect(world):
+    path = world; slot = None; files = {}
     try:
         rockets, devices, pads = [], [], []
-        files = {}
         # Census every native region, not just the expected two entity slots.
         for path in sorted(world.rglob("*.mca")):
             if path.parent.name not in ("entities", "region"): continue
-            with path.open("rb") as stream: header = stream.read(4096)
-            require(len(header) == 4096, "Truncated native region header")
-            files[str(path.relative_to(world))] = digest(path)
+            slot = None
+            size = path.stat().st_size
+            with path.open("rb") as stream: header = stream.read(8192)
+            files[path.relative_to(world).as_posix()] = digest(path)
+            # Vanilla 1.20.1 RegionFile's constructor leaves its zeroed offsets
+            # untouched on EOF (-1). A nonempty short header emits a truncation
+            # warning, not an empty-file classification. See W221 R208's code citation.
+            if size == 0: continue
+            require(size >= 8192 and len(header) == 8192, "Truncated native region header")
             for slot in range(1024):
                 if not struct.unpack_from(">I", header, slot * 4)[0]: continue
                 data = record(path, slot)
@@ -78,11 +86,27 @@ def inspect(world):
                 for entity in data.get("block_entities", []):
                     if entity.get("id") == LOADER: devices.append(entity)
                     if entity.get("id") == "advancedrocketrycommunity:landing_pad": pads.append(entity)
-        return dict(read_status="KNOWN", native=dict(ledger=ledger(world / "data" / LEDGER),
-            journal=flight.legacy.journal(world), pads=payload(world / "data/advancedrocketrycommunity_landing_pads.dat"),
+        slot = None
+        path = world / "data" / LEDGER
+        root = ledger(path); files[path.relative_to(world).as_posix()] = digest(path)
+        path = world / "data" / JOURNAL
+        journal = flight.legacy.journal(world); files[path.relative_to(world).as_posix()] = digest(path)
+        path = world / "data/advancedrocketrycommunity_landing_pads.dat"
+        index = payload(path); files[path.relative_to(world).as_posix()] = digest(path)
+        return dict(read_status="KNOWN", native=dict(ledger=root,
+            journal=journal, pads=index,
             rockets=rockets, loaders=devices, physical_pads=pads, files=files))
-    except (OSError, ValueError, KeyError, TypeError, SmokeError) as failure:
-        return dict(read_status="UNKNOWN", native=None, error=str(failure))
+    except (OSError, ValueError, KeyError, TypeError, IndexError, EOFError, struct.error, zlib.error, SmokeError) as failure:
+        reason = f"{type(failure).__name__}: {failure}"
+        diagnostic = dict(file=path.relative_to(world).as_posix(), length=None,
+                          header_length=None, header_hex=None, slot=slot, reason=reason)
+        try:
+            diagnostic["length"] = path.stat().st_size
+            with path.open("rb") as stream: header = stream.read(8192)
+            diagnostic.update(header_length=len(header), header_hex=header.hex())
+        except OSError as unavailable:
+            diagnostic["diagnostic_error"] = str(unavailable)
+        return dict(read_status="UNKNOWN", native=None, error=reason, failure=diagnostic, files=files)
 
 
 def witness(lines, restart, cut):
