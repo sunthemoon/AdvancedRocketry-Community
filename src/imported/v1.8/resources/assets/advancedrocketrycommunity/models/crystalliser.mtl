@@ -1,0 +1,11 @@
+# Copyright (c) 2026 Advanced Rocketry: Community Edition contributors
+# SPDX-License-Identifier: MIT
+# Original material bindings for the upstream OBJ's missing material library.
+
+newmtl Body
+Kd 1.0 1.0 1.0
+map_Kd advancedrocketrycommunity:models/crystalliser
+
+newmtl None
+Kd 1.0 1.0 1.0
+map_Kd advancedrocketrycommunity:models/crystalliser

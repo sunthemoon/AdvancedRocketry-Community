@@ -1,0 +1,111 @@
+{
+  "schema_version": 1,
+  "id": "chemical_reactor",
+  "kind": "advancedrocketrycommunity:chemical_reactor",
+  "model": "advancedrocketrycommunity:models/chemicalreactor.obj",
+  "orientation": {
+    "mirror_x": true,
+    "model_y_rotation_degrees": 0,
+    "pattern_rotation": {
+      "north": "ZERO",
+      "east": "CLOCKWISE_90",
+      "south": "CLOCKWISE_180",
+      "west": "CLOCKWISE_270"
+    },
+    "y_rotation_degrees": {
+      "north": 0,
+      "east": -90,
+      "south": 180,
+      "west": 90
+    }
+  },
+  "scale": 1.0,
+  "offset_north": [
+    -1,
+    -1,
+    0
+  ],
+  "rendering": {
+    "render_type": "entity_cutout",
+    "flip_v": true,
+    "shade_quads": true,
+    "emissive_ambient": false,
+    "automatic_culling": false,
+    "light_cell_above_controller": 1
+  },
+  "fallback_texture": "advancedrocketrycommunity:textures/block/chemical_reactor.png",
+  "bounding_volume": {
+    "model": [
+      -3,
+      0,
+      0,
+      0,
+      2,
+      2
+    ],
+    "hull_model": [
+      -3,
+      0,
+      0,
+      0,
+      2,
+      2
+    ],
+    "controller_relative": {
+      "north": [
+        -1,
+        -1,
+        0,
+        2,
+        1,
+        2
+      ],
+      "east": [
+        -1,
+        -1,
+        -1,
+        1,
+        1,
+        2
+      ],
+      "south": [
+        -1,
+        -1,
+        -1,
+        2,
+        1,
+        1
+      ],
+      "west": [
+        0,
+        -1,
+        -1,
+        2,
+        1,
+        2
+      ]
+    }
+  },
+  "idle_geometry": {},
+  "unchanged": {
+    "pattern": "advancedrocketrycommunity:chemical_reactor",
+    "pattern_canonical_sha256": "26772f6aedb5a1137ca60871a25bd0f18d9654d22bc262d4c8bc3322a80795ed",
+    "pattern_size": [
+      3,
+      2,
+      2
+    ],
+    "controller_anchor": [
+      1,
+      1,
+      0
+    ],
+    "controller_collision": "full_block"
+  },
+  "imported": {
+    "obj_sha256": "65591ad3cbe498db4c7978a52e54a467e9b9423530d2a64944986165e871ffc6",
+    "texture_sha256": "57dfbad3664234fecba33014bc7f487d088072c0699a4a985f4eaef0a2ab333c",
+    "source_baked_vertices": 1736,
+    "source_positions": 384
+  }
+}

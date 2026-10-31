@@ -20,11 +20,17 @@ import net.minecraft.world.phys.AABB;
 public final class ClassicModelProjection {
     public static final String FORMED = "formed";
 
-    /** The generated pattern's size and controller anchor, which the model covers exactly. */
-    public record Footprint(int sizeX, int sizeY, int sizeZ, PatternPosition anchor) { }
+    /** The unchanged pattern dimensions/anchor and the visual height, including any detail above its cells. */
+    public record Footprint(int sizeX, int sizeY, int sizeZ, PatternPosition anchor, double renderHeight) {
+        public Footprint(int sizeX, int sizeY, int sizeZ, PatternPosition anchor) { this(sizeX, sizeY, sizeZ, anchor, sizeY); }
+    }
 
     private static final Map<ResourceLocation, Footprint> FOOTPRINTS = Map.of(
-            ModIdentity.id("centrifuge"), new Footprint(3, 4, 3, new PatternPosition(0, 1, 0)));
+            ModIdentity.id("centrifuge"), new Footprint(3, 4, 3, new PatternPosition(0, 1, 0)),
+            ModIdentity.id("chemical_reactor"), new Footprint(3, 2, 2, new PatternPosition(1, 1, 0)),
+            ModIdentity.id("crystallizer"), new Footprint(3, 2, 2, new PatternPosition(1, 0, 0)),
+            ModIdentity.id("cutting_machine"), new Footprint(3, 1, 2, new PatternPosition(1, 0, 0), 1.505879),
+            ModIdentity.id("lathe"), new Footprint(4, 2, 1, new PatternPosition(0, 1, 0)));
 
     private ClassicModelProjection() { }
 
@@ -55,6 +61,6 @@ public final class ClassicModelProjection {
                 }
             }
         }
-        return new AABB(minX, minY, minZ, maxX + 1, maxY + 1, maxZ + 1);
+        return new AABB(minX, minY, minZ, maxX + 1, maxY + 1 + Math.max(0, footprint.renderHeight() - footprint.sizeY()), maxZ + 1);
     }
 }

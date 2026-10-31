@@ -106,7 +106,8 @@ class ObjModelFixtureTest {
         var model = box(fixture.getAsJsonObject("bounding_volume").getAsJsonArray("model"));
         var bounds = CENTRIFUGE.modelBounds();
         assertEquals(model, new AABB(bounds.minX(), bounds.minY(), bounds.minZ(), bounds.maxX(), bounds.maxY(), bounds.maxZ()));
-        assertEquals(List.of(CENTRIFUGE), ObjModelFixture.CATALOG);
+        assertEquals(List.of(CENTRIFUGE, ObjModelFixture.CHEMICAL_REACTOR, ObjModelFixture.CRYSTALLIZER,
+                ObjModelFixture.CUTTING_MACHINE, ObjModelFixture.LATHE), ObjModelFixture.CATALOG);
     }
 
     @Test void catalogLocationsAreCompiledResourcesInTheModNamespace() throws Exception {

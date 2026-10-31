@@ -1,0 +1,15 @@
+# Copyright (c) 2026 Advanced Rocketry: Community Edition contributors
+# SPDX-License-Identifier: MIT
+# Original material bindings for the upstream OBJ's missing material library.
+
+newmtl None
+Kd 1.0 1.0 1.0
+map_Kd advancedrocketrycommunity:models/lathe
+
+newmtl None_lathe.png
+Kd 1.0 1.0 1.0
+map_Kd advancedrocketrycommunity:models/lathe
+
+newmtl Body
+Kd 1.0 1.0 1.0
+map_Kd advancedrocketrycommunity:models/lathe

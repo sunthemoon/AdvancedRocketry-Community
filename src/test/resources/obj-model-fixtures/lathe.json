@@ -1,0 +1,120 @@
+{
+  "schema_version": 1,
+  "id": "lathe",
+  "kind": "advancedrocketrycommunity:lathe",
+  "model": "advancedrocketrycommunity:models/lathe.obj",
+  "orientation": {
+    "mirror_x": true,
+    "model_y_rotation_degrees": 90,
+    "pattern_rotation": {
+      "north": "ZERO",
+      "east": "CLOCKWISE_90",
+      "south": "CLOCKWISE_180",
+      "west": "CLOCKWISE_270"
+    },
+    "y_rotation_degrees": {
+      "north": 0,
+      "east": -90,
+      "south": 180,
+      "west": 90
+    }
+  },
+  "scale": 1.0,
+  "offset_north": [
+    1,
+    -1,
+    0
+  ],
+  "rendering": {
+    "render_type": "entity_cutout",
+    "flip_v": true,
+    "shade_quads": true,
+    "emissive_ambient": false,
+    "automatic_culling": false,
+    "light_cell_above_controller": 1
+  },
+  "fallback_texture": "advancedrocketrycommunity:textures/block/lathe.png",
+  "bounding_volume": {
+    "model": [
+      -0.054134,
+      -0.054134,
+      -1,
+      1,
+      1.625,
+      3
+    ],
+    "hull_model": [
+      0,
+      0,
+      -1,
+      1,
+      1.625,
+      3
+    ],
+    "controller_relative": {
+      "north": [
+        0,
+        -1,
+        0,
+        4,
+        1,
+        1
+      ],
+      "east": [
+        0,
+        -1,
+        0,
+        1,
+        1,
+        4
+      ],
+      "south": [
+        -3,
+        -1,
+        0,
+        1,
+        1,
+        1
+      ],
+      "west": [
+        0,
+        -1,
+        -3,
+        1,
+        1,
+        1
+      ]
+    }
+  },
+  "idle_geometry": {
+    "hidden": [
+      "Rod"
+    ],
+    "shaft_translation": [
+      0.375,
+      0.9375,
+      0
+    ]
+  },
+  "unchanged": {
+    "pattern": "advancedrocketrycommunity:lathe",
+    "pattern_canonical_sha256": "a7ca37bb42c22ba849a7449b87e2e40174de2c90d7fc7bcb1f8e414bf472fbb2",
+    "pattern_size": [
+      4,
+      2,
+      1
+    ],
+    "controller_anchor": [
+      0,
+      1,
+      0
+    ],
+    "controller_collision": "full_block"
+  },
+  "imported": {
+    "obj_sha256": "316c1c5c792961dd29109d7c3c72c9d425cc52f607f8529f888f08afb5c375a0",
+    "texture_sha256": "4fce4658d898134acec54f1e9dc6a925669e2524ade8ec8540a5c71e2a18faaf",
+    "source_baked_vertices": 1232,
+    "source_positions": 268
+  }
+}

@@ -1,0 +1,111 @@
+{
+  "schema_version": 1,
+  "id": "cutting_machine",
+  "kind": "advancedrocketrycommunity:cutting_machine",
+  "model": "advancedrocketrycommunity:models/cuttingmachine.obj",
+  "orientation": {
+    "mirror_x": true,
+    "model_y_rotation_degrees": 90,
+    "pattern_rotation": {
+      "north": "ZERO",
+      "east": "CLOCKWISE_90",
+      "south": "CLOCKWISE_180",
+      "west": "CLOCKWISE_270"
+    },
+    "y_rotation_degrees": {
+      "north": 0,
+      "east": -90,
+      "south": 180,
+      "west": 90
+    }
+  },
+  "scale": 1.0,
+  "offset_north": [
+    -1,
+    0,
+    0
+  ],
+  "rendering": {
+    "render_type": "entity_cutout",
+    "flip_v": true,
+    "shade_quads": true,
+    "emissive_ambient": false,
+    "automatic_culling": false,
+    "light_cell_above_controller": 1
+  },
+  "fallback_texture": "advancedrocketrycommunity:textures/block/cutting_machine.png",
+  "bounding_volume": {
+    "model": [
+      0,
+      0,
+      0,
+      2,
+      1.505879,
+      3
+    ],
+    "hull_model": [
+      0,
+      0,
+      0,
+      2,
+      1.5,
+      3
+    ],
+    "controller_relative": {
+      "north": [
+        -1,
+        0,
+        0,
+        2,
+        1.505879,
+        2
+      ],
+      "east": [
+        -1,
+        0,
+        -1,
+        1,
+        1.505879,
+        2
+      ],
+      "south": [
+        -1,
+        0,
+        -1,
+        2,
+        1.505879,
+        1
+      ],
+      "west": [
+        0,
+        0,
+        -1,
+        2,
+        1.505879,
+        2
+      ]
+    }
+  },
+  "idle_geometry": {},
+  "unchanged": {
+    "pattern": "advancedrocketrycommunity:cutting_machine",
+    "pattern_canonical_sha256": "ed7af4e2f29c19997cc60151d27b384592fe6213c7e6064828f7567d6c4b621c",
+    "pattern_size": [
+      3,
+      1,
+      2
+    ],
+    "controller_anchor": [
+      1,
+      0,
+      0
+    ],
+    "controller_collision": "full_block"
+  },
+  "imported": {
+    "obj_sha256": "e013369db0aa3bf3e41e2b4be4bb11a311fe2816807a3fe3d1356583199a6101",
+    "texture_sha256": "87ad3a50397ce233138eb8f023ee54edd1b32f005431668b32465e663513eb31",
+    "source_baked_vertices": 1672,
+    "source_positions": 366
+  }
+}

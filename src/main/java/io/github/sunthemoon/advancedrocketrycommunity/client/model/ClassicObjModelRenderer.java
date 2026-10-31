@@ -36,8 +36,8 @@ public final class ClassicObjModelRenderer implements BlockEntityRenderer<Classi
         var state = controller.getBlockState();
         var entry = cache.get(fixture.id()).orElse(null);
         if (level == null || entry == null || !controller.modelFormed() || !state.hasProperty(ClassicControllerBlock.FACING)) { return; }
-        // The pattern keeps the cell above the controller empty; the controller block itself is unlit.
-        int light = LevelRenderer.getLightColor(level, controller.getBlockPos().above(ObjModelFixture.LIGHT_CELL_ABOVE));
+        // The fixture samples outside occupied pattern cells; the controller block itself is unlit.
+        int light = LevelRenderer.getLightColor(level, controller.getBlockPos().above(fixture.lightCellAboveController()));
         pose.pushPose();
         place(pose, fixture, state.getValue(ClassicControllerBlock.FACING));
         entry.model().render(pose, buffers, texture -> RenderType.entityCutout(entry.texture(texture)), light,
@@ -51,6 +51,7 @@ public final class ClassicObjModelRenderer implements BlockEntityRenderer<Classi
         pose.mulPose(Axis.YP.rotationDegrees(ObjModelFixture.yRotationDegrees(facing)));
         pose.translate(-0.5, 0, -0.5);
         pose.translate(fixture.offsetX(), fixture.offsetY(), fixture.offsetZ());
+        pose.mulPose(Axis.YP.rotationDegrees((float) fixture.modelYRotationDegrees()));
         pose.scale((float) fixture.scale(), (float) fixture.scale(), (float) fixture.scale());
     }
 }

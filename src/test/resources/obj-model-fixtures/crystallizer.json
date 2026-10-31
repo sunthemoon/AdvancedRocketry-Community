@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "id": "crystallizer",
+  "kind": "advancedrocketrycommunity:crystallizer",
+  "model": "advancedrocketrycommunity:models/crystalliser.obj",
+  "orientation": {
+    "mirror_x": true,
+    "model_y_rotation_degrees": 90,
+    "pattern_rotation": {
+      "north": "ZERO",
+      "east": "CLOCKWISE_90",
+      "south": "CLOCKWISE_180",
+      "west": "CLOCKWISE_270"
+    },
+    "y_rotation_degrees": {
+      "north": 0,
+      "east": -90,
+      "south": 180,
+      "west": 90
+    }
+  },
+  "scale": 1.0,
+  "offset_north": [
+    -1,
+    0,
+    0
+  ],
+  "rendering": {
+    "render_type": "entity_cutout",
+    "flip_v": true,
+    "shade_quads": true,
+    "emissive_ambient": false,
+    "automatic_culling": false,
+    "light_cell_above_controller": 2
+  },
+  "fallback_texture": "advancedrocketrycommunity:textures/block/crystallizer.png",
+  "bounding_volume": {
+    "model": [
+      0,
+      0,
+      0,
+      2,
+      2,
+      3
+    ],
+    "hull_model": [
+      0,
+      0,
+      0,
+      2,
+      2,
+      3
+    ],
+    "controller_relative": {
+      "north": [
+        -1,
+        0,
+        0,
+        2,
+        2,
+        2
+      ],
+      "east": [
+        -1,
+        0,
+        -1,
+        1,
+        2,
+        2
+      ],
+      "south": [
+        -1,
+        0,
+        -1,
+        2,
+        2,
+        1
+      ],
+      "west": [
+        0,
+        0,
+        -1,
+        2,
+        2,
+        2
+      ]
+    }
+  },
+  "idle_geometry": {
+    "hidden": [
+      "Liquid"
+    ]
+  },
+  "unchanged": {
+    "pattern": "advancedrocketrycommunity:crystallizer",
+    "pattern_canonical_sha256": "6f85802bfaef66c25407277c53bd66ad442d6cf4358db4e08297cc04f1260aaf",
+    "pattern_size": [
+      3,
+      2,
+      2
+    ],
+    "controller_anchor": [
+      1,
+      0,
+      0
+    ],
+    "controller_collision": "full_block"
+  },
+  "imported": {
+    "obj_sha256": "0b84a27cb217a5e9085943aa327eb16f79b7ed1c9c5bb6c01fed9dc236ae054b",
+    "texture_sha256": "6a467f4d54b1b4a533349d52f380a0069ee1505cb00c22ece3f7b82a910a7b8d",
+    "source_baked_vertices": 1320,
+    "source_positions": 304
+  }
+}
