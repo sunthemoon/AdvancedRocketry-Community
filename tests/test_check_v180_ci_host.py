@@ -11,6 +11,8 @@ from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 
+from scripts.validate_repository import parse_workflow_jobs
+
 
 SCRIPT = Path(__file__).resolve().parents[1] / "scripts/check_v180_ci_host.py"
 SPEC = importlib.util.spec_from_file_location("v180_ci_host", SCRIPT)
@@ -95,6 +97,12 @@ class HostCapacityTests(unittest.TestCase):
 class WorkflowWiringTests(unittest.TestCase):
     def setUp(self):
         self.workflow = (SCRIPT.parent.parent / ".github/workflows/v180-development.yml").read_text(encoding="utf-8")
+        self.jobs = parse_workflow_jobs(self.workflow)
+
+    def step(self, job, name):
+        matches = [step for step in self.jobs[job].steps if step.fields.get("name") == name]
+        self.assertEqual(1, len(matches), f"{job}: {name}")
+        return matches[0].fields
 
     def test_clean_build_disables_task_output_cache(self):
         command = next(line.strip() for line in self.workflow.splitlines()
@@ -117,8 +125,7 @@ class WorkflowWiringTests(unittest.TestCase):
         self.assertNotIn("runner.", env)
 
     def test_repeat_datagen_checks_tracked_and_untracked_output(self):
-        step = self.workflow.split("- name: Generate data and require a clean tracked and untracked tree", 1)[1]
-        step = step.split("- name: Run all Forge GameTests", 1)[0]
+        step = self.step("build", "Generate data and require a clean tracked and untracked tree")["run"]
         self.assertEqual(2, step.count("./gradlew runData --no-daemon --stacktrace"))
         self.assertEqual(2, step.count("git diff --exit-code"))
         self.assertEqual(2, step.count("python -B scripts/check_clean_worktree.py"))
@@ -126,17 +133,38 @@ class WorkflowWiringTests(unittest.TestCase):
             self.assertIn(log, step)
 
     def test_failure_upload_is_bounded_without_checkout_or_preflight_exports(self):
-        upload = re.search(r"      - name: Upload raw regression evidence, including failed runs\n(.*?)"
-                           r"      - name: Upload the single external build artifact\n",
-                           self.workflow, re.DOTALL).group(1)
-        self.assertIn("        if: always()\n", upload)
-        paths = re.search(r"          path: \|\n(.*)", upload, re.DOTALL).group(1)
+        upload = self.step("build", "Upload raw regression evidence, including failed runs")
+        self.assertEqual("always()", upload["if"])
+        self.assertTrue(upload["uses"].startswith("actions/upload-artifact@"))
+        self.assertEqual("error", upload["with.if-no-files-found"])
+        self.assertEqual("v180-build-evidence-${{ github.sha }}-${{ github.run_attempt }}", upload["with.name"])
+        # Native logs now belong to shard evidence, not the once-only build.
+        # An exact allowlist still rejects checkout roots and preflight exports.
         self.assertEqual([
             "${{ runner.temp }}/arce-v180-regression/",
             "build/reports/tests/test/",
             "build/test-results/test/",
-            "build/gametest/logs/",
-        ], [line.strip() for line in paths.splitlines() if line.strip()])
+        ], upload["with.path"].splitlines())
+
+    def test_each_shard_preserves_raw_logs_and_uploads_failed_or_incomplete_evidence(self):
+        shard = self.jobs["gametest"]
+        self.assertEqual("${{ github.workspace }}/build/ci-gametest-result", self.step(
+            "gametest", "Verify checkout and execution host before setup")["env.EVIDENCE_DIR"])
+        collect = self.step("gametest", "Verify unchanged runtime and check this shard's raw logs")
+        upload = self.step("gametest", "Upload this shard including failed or incomplete evidence")
+        self.assertEqual("always()", collect["if"])
+        self.assertEqual("always()", upload["if"])
+        steps = [step.fields for step in shard.steps]
+        self.assertLess(steps.index(collect), steps.index(upload))
+        self.assertIn('mkdir -p "$EVIDENCE_DIR"', collect["run"])
+        self.assertIn('if [ -d build/gametest/logs ]; then cp -a build/gametest/logs "$EVIDENCE_DIR/logs"; fi',
+                      collect["run"])
+        self.assertTrue(upload["uses"].startswith("actions/upload-artifact@"))
+        self.assertEqual("v180-shard-${{ matrix.shard }}-${{ github.sha }}-${{ github.run_attempt }}",
+                         upload["with.name"])
+        self.assertEqual("error", upload["with.if-no-files-found"])
+        # Upload only the evidence directory (including rolled raw logs), never the checkout.
+        self.assertEqual(["build/ci-gametest-result/"], upload["with.path"].splitlines())
 
 
 if __name__ == "__main__":

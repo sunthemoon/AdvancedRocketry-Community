@@ -1,0 +1,6 @@
+[INFO] 1 game tests complete; 1 required tests failed :(
+[FAIL] line 104: unsuccessful or unrecognized required-test summary: 1 required tests failed :(
+[INFO] FATAL 0, ERROR 1, WARN 22
+[FAIL] line 132: shutdown before successful required-test summary
+[FAIL] the log has no successful required-test summary
+[FAIL] line 101: unexpected ERROR, batch 'beacon_native_reload', logger 'net.minecraft.gametest.framework.LogTestReporter/': unloadandpendingreloadkeeptheactiverecordandfindermarker failed! Unloading changed or rewrote the active index record: removed=false, dirty=false, before=BeaconRecord[beaconId=3eb2e3c1-2010-4685-a5f2-beec00027cb7, owner=cb9c93f8-53af-4693-9 [no GameTest frame]

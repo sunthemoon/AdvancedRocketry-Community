@@ -1,0 +1,172 @@
+{
+  "source": "88125943994423fbb1d385ce76a7747c7304cbac",
+  "source_status": "",
+  "command": ".\\gradlew.bat --offline --no-daemon --console=plain -I scripts/ci_gametest/init.gradle -I D:\\GitHub\\arce-v180-w225\\build\\w225-fix3\\trace.gradle -PciShard=1 -PtraceOrder=endgame_destruction_blast,beacon_native_reload,propulsion_bipropellant,propulsion_advanced_bipropellant,propulsion_basic,propulsion_mono,propulsion_waiver,propulsion_nuclear,fluid_fuel_loader_escrow runGameTestServer",
+  "native_exit": 1,
+  "checker_exit": 1,
+  "disk_before": [
+    {
+      "Name": "C",
+      "Free": 53593702400
+    },
+    {
+      "Name": "D",
+      "Free": 294366683136
+    }
+  ],
+  "raw_log_sha256": "7b77b0539f9aa222dc0608439b9f6c256d921eba5ab53b77aeddc3c95ae347c1",
+  "retained_log_sha256": "443f5fceb3f7c8408cf196689bb1595748d32765689420ab57bb65e7ec8e9605",
+  "log_encoding": "Gzip of the original captured bytes; no content or newline normalization",
+  "inventory_sha256": "e4d4b6a6561be946e14337184949d4d0f5458ea31b911f699683e7080b0c4747",
+  "inventory_count": 1557,
+  "observer_receipt_without_inventory": {
+    "schema": 1,
+    "shard": 1,
+    "bundle_sha256": "86168ffff7892bcb1b50caa1eb4a04ac5892d2f19a4433146a2e2b033877a271",
+    "executed": [
+      {
+        "batch": "endgame_destruction_blast",
+        "name": "achargedcreeperblastleaveseveryendpoint",
+        "structure": "advancedrocketrycommunity:empty",
+        "required": true,
+        "timeout_ticks": 100,
+        "setup_ticks": 0,
+        "max_attempts": 1,
+        "required_successes": 1
+      },
+      {
+        "batch": "beacon_native_reload",
+        "name": "unloadandpendingreloadkeeptheactiverecordandfindermarker",
+        "structure": "advancedrocketrycommunity:empty",
+        "required": true,
+        "timeout_ticks": 600,
+        "setup_ticks": 0,
+        "max_attempts": 1,
+        "required_successes": 1
+      },
+      {
+        "batch": "propulsion_bipropellant",
+        "name": "bipropellantlaunchdebitshydrogenandoxygen",
+        "structure": "advancedrocketrycommunity:rocket_test",
+        "required": true,
+        "timeout_ticks": 800,
+        "setup_ticks": 0,
+        "max_attempts": 1,
+        "required_successes": 1
+      },
+      {
+        "batch": "propulsion_advanced_bipropellant",
+        "name": "advancedbipropellantlaunchdebitsbothbanks",
+        "structure": "advancedrocketrycommunity:rocket_test",
+        "required": true,
+        "timeout_ticks": 800,
+        "setup_ticks": 0,
+        "max_attempts": 1,
+        "required_successes": 1
+      },
+      {
+        "batch": "propulsion_basic",
+        "name": "basicrocketkeepsitsmetricsandabstractfuellaunch",
+        "structure": "advancedrocketrycommunity:rocket_test",
+        "required": true,
+        "timeout_ticks": 800,
+        "setup_ticks": 0,
+        "max_attempts": 1,
+        "required_successes": 1
+      },
+      {
+        "batch": "propulsion_mono",
+        "name": "advancedmonolaunchdebitsactualrocketfuel",
+        "structure": "advancedrocketrycommunity:rocket_test",
+        "required": true,
+        "timeout_ticks": 800,
+        "setup_ticks": 0,
+        "max_attempts": 1,
+        "required_successes": 1
+      },
+      {
+        "batch": "propulsion_waiver",
+        "name": "capturedfuelwaiverlaunchesemptybanksandkeepslandedmenuready",
+        "structure": "advancedrocketrycommunity:rocket_test",
+        "required": true,
+        "timeout_ticks": 800,
+        "setup_ticks": 0,
+        "max_attempts": 1,
+        "required_successes": 1
+      },
+      {
+        "batch": "propulsion_nuclear",
+        "name": "nuclearlaunchdebitsworkingfluid",
+        "structure": "advancedrocketrycommunity:rocket_test",
+        "required": true,
+        "timeout_ticks": 800,
+        "setup_ticks": 0,
+        "max_attempts": 1,
+        "required_successes": 1
+      },
+      {
+        "batch": "fluid_fuel_loader_escrow",
+        "name": "everyrefusalleavesbothenvelopesthequeueandthecountsunchanged",
+        "structure": "advancedrocketrycommunity:empty",
+        "required": true,
+        "timeout_ticks": 400,
+        "setup_ticks": 0,
+        "max_attempts": 1,
+        "required_successes": 1
+      },
+      {
+        "batch": "fluid_fuel_loader_escrow",
+        "name": "amissingloaderstaysrepairwithoutreconstruction",
+        "structure": "advancedrocketrycommunity:empty",
+        "required": true,
+        "timeout_ticks": 600,
+        "setup_ticks": 0,
+        "max_attempts": 1,
+        "required_successes": 1
+      },
+      {
+        "batch": "fluid_fuel_loader_escrow",
+        "name": "fiveloadersfillonerocketandthesixthisrefusedwithnothingchanged",
+        "structure": "advancedrocketrycommunity:empty",
+        "required": true,
+        "timeout_ticks": 2400,
+        "setup_ticks": 0,
+        "max_attempts": 1,
+        "required_successes": 1
+      },
+      {
+        "batch": "fluid_fuel_loader_escrow",
+        "name": "heldandreloadedendpointsrecoverthroughproductionreconciliation",
+        "structure": "advancedrocketrycommunity:empty",
+        "required": true,
+        "timeout_ticks": 2400,
+        "setup_ticks": 0,
+        "max_attempts": 1,
+        "required_successes": 1
+      },
+      {
+        "batch": "fluid_fuel_loader_escrow",
+        "name": "twocompetingloadersfillmixedbanksthroughonerocketprefix",
+        "structure": "advancedrocketrycommunity:empty",
+        "required": true,
+        "timeout_ticks": 2400,
+        "setup_ticks": 0,
+        "max_attempts": 1,
+        "required_successes": 1
+      }
+    ],
+    "failed": [
+      {
+        "batch": "beacon_native_reload",
+        "name": "unloadandpendingreloadkeeptheactiverecordandfindermarker",
+        "structure": "advancedrocketrycommunity:empty",
+        "required": true,
+        "timeout_ticks": 600,
+        "setup_ticks": 0,
+        "max_attempts": 1,
+        "required_successes": 1
+      }
+    ],
+    "complete": true
+  }
+}

@@ -1,0 +1,3 @@
+[INFO] 42 game tests complete; All 42 required tests passed :)
+[INFO] FATAL 0, ERROR 17, WARN 32
+[PASS] Every ERROR and WARN entry of D:\GitHub\arce-v180-w225\build\w225-fix3\green-9\logs\latest.log matches one of 43 expectations with its declared count; no FATAL entry

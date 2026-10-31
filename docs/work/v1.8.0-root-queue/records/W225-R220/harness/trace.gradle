@@ -1,0 +1,16 @@
+gradle.beforeProject { p ->
+    p.pluginManager.withPlugin('net.minecraftforge.gradle') {
+        def trace = p.sourceSets.create('journalTrace') {
+            java.srcDir(p.file('build/w225-fix3/trace/java'))
+            resources.srcDir(p.file('build/w225-fix3/trace/resources'))
+            compileClasspath = p.sourceSets.main.output + p.files({ p.sourceSets.main.compileClasspath })
+            runtimeClasspath = output + compileClasspath
+        }
+        p.minecraft.runs.all { run ->
+            if (run.name == 'gameTestServer') {
+                run.mods.create('arce_journal_trace') { source(trace) }
+                run.property('arce.trace.order', p.property('traceOrder').toString())
+            }
+        }
+    }
+}

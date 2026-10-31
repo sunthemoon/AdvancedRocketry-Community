@@ -1,0 +1,6 @@
+[FAIL] line 580: unsuccessful or unrecognized required-test summary: 1 required tests failed :(
+[INFO] 42 game tests complete; 1 required tests failed :(
+[INFO] FATAL 0, ERROR 18, WARN 32
+[FAIL] line 612: shutdown before successful required-test summary
+[FAIL] the log has no successful required-test summary
+[FAIL] line 397: unexpected ERROR, batch 'bay_copies_riding', logger 'net.minecraft.gametest.framework.LogTestReporter/': bordercrossingmarginslandonanemptymoonandarestartreticketsthesamecolumns failed! Another ticket keeps the margin entity-ticking: Ticket[arce_rocket_flight 31 (80c80e1a-c04a-486b-86f8-56d756581600)] at 1164 force ticks false [no GameTest frame]

@@ -1,0 +1,2618 @@
+[
+  {
+    "file": "D:\\GitHub\\ARCE-Task-Evidence\\root-queue\\tools\\job-124511315921.log",
+    "sha256": "f49ab7e6dd79e18ad9eb5be29a91de555ca1f7d0e8c12207dfa174e3178c3d17",
+    "levels": {
+      "WARN": 314,
+      "ERROR": 31
+    },
+    "error_expectations": {
+      "w33-unlit-torch-chunk-save-refused": 1,
+      "w159-player-backup-retries": 20,
+      "w159-player-backup-abort": 2,
+      "w129c-satellite-registry-unacknowledged": 1,
+      "w37b-earlier-time-check-interruption": 1,
+      "satellite-idle-launch-flush-failed": 1,
+      "rolling-recipe-disabled-unbound-tag": 1,
+      "precision-recipe-disabled-unbound-tag": 1,
+      "electrolyzer-recipe-disabled-unbound-tag": 1,
+      "w129a-transaction-journal-unacknowledged": 1
+    },
+    "unexpected": [
+      {
+        "line": 4671,
+        "level": "ERROR",
+        "batch": "w164_adapter_fault",
+        "logger": "minecraft/LogTestReporter",
+        "message": "adapterfaultgametests.throwingrestorecleanspartialinventoryandretries failed! Duplicate inventory drops found: [16 cobbled_deepslate at (24.88815433792779, -59.707463299478825, 3.4197371619566614) age=33]",
+        "expectation": null,
+        "in_batch": false
+      }
+    ],
+    "count_mismatches": [
+      {
+        "id": "w164-adapter-r107-holds",
+        "batch": "w164_adapter_fault",
+        "expected": 4,
+        "actual": 3
+      }
+    ],
+    "checker": [
+      "[FAIL] check-shard: [Errno 2] No such file or directory: '/home/runner/work/AdvancedRocketry-Community/AdvancedRocketry-Community/build/ci-gametest-result/native-exit.txt'"
+    ],
+    "errors": [
+      {
+        "line": 4671,
+        "level": "ERROR",
+        "batch": "w164_adapter_fault",
+        "logger": "minecraft/LogTestReporter",
+        "message": "adapterfaultgametests.throwingrestorecleanspartialinventoryandretries failed! Duplicate inventory drops found: [16 cobbled_deepslate at (24.88815433792779, -59.707463299478825, 3.4197371619566614) age=33]",
+        "expectation": null,
+        "in_batch": false
+      },
+      {
+        "line": 5109,
+        "level": "ERROR",
+        "batch": "unlit_torch",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Refusing non-lossless unlit torch root; back up and repair offline",
+        "expectation": "w33-unlit-torch-chunk-save-refused",
+        "in_batch": true
+      },
+      {
+        "line": 5205,
+        "level": "ERROR",
+        "batch": "rocket_rejoin_replace_failure",
+        "logger": "minecraft/Util",
+        "message": "Failed to create backup ./world/playerdata/f9efd8a0-067a-445c-b411-2cc51396cf37.dat_old, retrying 0/10",
+        "expectation": "w159-player-backup-retries",
+        "in_batch": true
+      },
+      {
+        "line": 5234,
+        "level": "ERROR",
+        "batch": "rocket_rejoin_replace_failure",
+        "logger": "minecraft/Util",
+        "message": "Failed to create backup ./world/playerdata/f9efd8a0-067a-445c-b411-2cc51396cf37.dat_old, retrying 1/10",
+        "expectation": "w159-player-backup-retries",
+        "in_batch": true
+      },
+      {
+        "line": 5263,
+        "level": "ERROR",
+        "batch": "rocket_rejoin_replace_failure",
+        "logger": "minecraft/Util",
+        "message": "Failed to create backup ./world/playerdata/f9efd8a0-067a-445c-b411-2cc51396cf37.dat_old, retrying 2/10",
+        "expectation": "w159-player-backup-retries",
+        "in_batch": true
+      },
+      {
+        "line": 5292,
+        "level": "ERROR",
+        "batch": "rocket_rejoin_replace_failure",
+        "logger": "minecraft/Util",
+        "message": "Failed to create backup ./world/playerdata/f9efd8a0-067a-445c-b411-2cc51396cf37.dat_old, retrying 3/10",
+        "expectation": "w159-player-backup-retries",
+        "in_batch": true
+      },
+      {
+        "line": 5321,
+        "level": "ERROR",
+        "batch": "rocket_rejoin_replace_failure",
+        "logger": "minecraft/Util",
+        "message": "Failed to create backup ./world/playerdata/f9efd8a0-067a-445c-b411-2cc51396cf37.dat_old, retrying 4/10",
+        "expectation": "w159-player-backup-retries",
+        "in_batch": true
+      },
+      {
+        "line": 5350,
+        "level": "ERROR",
+        "batch": "rocket_rejoin_replace_failure",
+        "logger": "minecraft/Util",
+        "message": "Failed to create backup ./world/playerdata/f9efd8a0-067a-445c-b411-2cc51396cf37.dat_old, retrying 5/10",
+        "expectation": "w159-player-backup-retries",
+        "in_batch": true
+      },
+      {
+        "line": 5379,
+        "level": "ERROR",
+        "batch": "rocket_rejoin_replace_failure",
+        "logger": "minecraft/Util",
+        "message": "Failed to create backup ./world/playerdata/f9efd8a0-067a-445c-b411-2cc51396cf37.dat_old, retrying 6/10",
+        "expectation": "w159-player-backup-retries",
+        "in_batch": true
+      },
+      {
+        "line": 5408,
+        "level": "ERROR",
+        "batch": "rocket_rejoin_replace_failure",
+        "logger": "minecraft/Util",
+        "message": "Failed to create backup ./world/playerdata/f9efd8a0-067a-445c-b411-2cc51396cf37.dat_old, retrying 7/10",
+        "expectation": "w159-player-backup-retries",
+        "in_batch": true
+      },
+      {
+        "line": 5437,
+        "level": "ERROR",
+        "batch": "rocket_rejoin_replace_failure",
+        "logger": "minecraft/Util",
+        "message": "Failed to create backup ./world/playerdata/f9efd8a0-067a-445c-b411-2cc51396cf37.dat_old, retrying 8/10",
+        "expectation": "w159-player-backup-retries",
+        "in_batch": true
+      },
+      {
+        "line": 5466,
+        "level": "ERROR",
+        "batch": "rocket_rejoin_replace_failure",
+        "logger": "minecraft/Util",
+        "message": "Failed to create backup ./world/playerdata/f9efd8a0-067a-445c-b411-2cc51396cf37.dat_old, retrying 9/10",
+        "expectation": "w159-player-backup-retries",
+        "in_batch": true
+      },
+      {
+        "line": 5467,
+        "level": "ERROR",
+        "batch": "rocket_rejoin_replace_failure",
+        "logger": "minecraft/Util",
+        "message": "Failed to create backup ./world/playerdata/f9efd8a0-067a-445c-b411-2cc51396cf37.dat_old, aborting, progress might be lost",
+        "expectation": "w159-player-backup-abort",
+        "in_batch": true
+      },
+      {
+        "line": 5534,
+        "level": "ERROR",
+        "batch": "rocket_rejoin_replace_ordinary",
+        "logger": "minecraft/Util",
+        "message": "Failed to create backup ./world/playerdata/4d2af552-8db2-4527-90b0-1bbcb048301b.dat_old, retrying 0/10",
+        "expectation": "w159-player-backup-retries",
+        "in_batch": true
+      },
+      {
+        "line": 5563,
+        "level": "ERROR",
+        "batch": "rocket_rejoin_replace_ordinary",
+        "logger": "minecraft/Util",
+        "message": "Failed to create backup ./world/playerdata/4d2af552-8db2-4527-90b0-1bbcb048301b.dat_old, retrying 1/10",
+        "expectation": "w159-player-backup-retries",
+        "in_batch": true
+      },
+      {
+        "line": 5592,
+        "level": "ERROR",
+        "batch": "rocket_rejoin_replace_ordinary",
+        "logger": "minecraft/Util",
+        "message": "Failed to create backup ./world/playerdata/4d2af552-8db2-4527-90b0-1bbcb048301b.dat_old, retrying 2/10",
+        "expectation": "w159-player-backup-retries",
+        "in_batch": true
+      },
+      {
+        "line": 5621,
+        "level": "ERROR",
+        "batch": "rocket_rejoin_replace_ordinary",
+        "logger": "minecraft/Util",
+        "message": "Failed to create backup ./world/playerdata/4d2af552-8db2-4527-90b0-1bbcb048301b.dat_old, retrying 3/10",
+        "expectation": "w159-player-backup-retries",
+        "in_batch": true
+      },
+      {
+        "line": 5650,
+        "level": "ERROR",
+        "batch": "rocket_rejoin_replace_ordinary",
+        "logger": "minecraft/Util",
+        "message": "Failed to create backup ./world/playerdata/4d2af552-8db2-4527-90b0-1bbcb048301b.dat_old, retrying 4/10",
+        "expectation": "w159-player-backup-retries",
+        "in_batch": true
+      },
+      {
+        "line": 5679,
+        "level": "ERROR",
+        "batch": "rocket_rejoin_replace_ordinary",
+        "logger": "minecraft/Util",
+        "message": "Failed to create backup ./world/playerdata/4d2af552-8db2-4527-90b0-1bbcb048301b.dat_old, retrying 5/10",
+        "expectation": "w159-player-backup-retries",
+        "in_batch": true
+      },
+      {
+        "line": 5708,
+        "level": "ERROR",
+        "batch": "rocket_rejoin_replace_ordinary",
+        "logger": "minecraft/Util",
+        "message": "Failed to create backup ./world/playerdata/4d2af552-8db2-4527-90b0-1bbcb048301b.dat_old, retrying 6/10",
+        "expectation": "w159-player-backup-retries",
+        "in_batch": true
+      },
+      {
+        "line": 5737,
+        "level": "ERROR",
+        "batch": "rocket_rejoin_replace_ordinary",
+        "logger": "minecraft/Util",
+        "message": "Failed to create backup ./world/playerdata/4d2af552-8db2-4527-90b0-1bbcb048301b.dat_old, retrying 7/10",
+        "expectation": "w159-player-backup-retries",
+        "in_batch": true
+      },
+      {
+        "line": 5766,
+        "level": "ERROR",
+        "batch": "rocket_rejoin_replace_ordinary",
+        "logger": "minecraft/Util",
+        "message": "Failed to create backup ./world/playerdata/4d2af552-8db2-4527-90b0-1bbcb048301b.dat_old, retrying 8/10",
+        "expectation": "w159-player-backup-retries",
+        "in_batch": true
+      },
+      {
+        "line": 5795,
+        "level": "ERROR",
+        "batch": "rocket_rejoin_replace_ordinary",
+        "logger": "minecraft/Util",
+        "message": "Failed to create backup ./world/playerdata/4d2af552-8db2-4527-90b0-1bbcb048301b.dat_old, retrying 9/10",
+        "expectation": "w159-player-backup-retries",
+        "in_batch": true
+      },
+      {
+        "line": 5796,
+        "level": "ERROR",
+        "batch": "rocket_rejoin_replace_ordinary",
+        "logger": "minecraft/Util",
+        "message": "Failed to create backup ./world/playerdata/4d2af552-8db2-4527-90b0-1bbcb048301b.dat_old, aborting, progress might be lost",
+        "expectation": "w159-player-backup-abort",
+        "in_batch": true
+      },
+      {
+        "line": 6099,
+        "level": "ERROR",
+        "batch": "planetary_discovery_recovery",
+        "logger": "io.gi.su.ad.sa.pe.SatelliteRegistryWriter/",
+        "message": "ARCE_SATELLITE_REGISTRY_UNACKNOWLEDGED outcome=FAILED sequence=9 epoch=3 durable=2; retained dirty state",
+        "expectation": "w129c-satellite-registry-unacknowledged",
+        "in_batch": true
+      },
+      {
+        "line": 6647,
+        "level": "ERROR",
+        "batch": "natural_beds_start",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: W37B injected earlier time-check listener interruption",
+        "expectation": "w37b-earlier-time-check-interruption",
+        "in_batch": true
+      },
+      {
+        "line": 7246,
+        "level": "ERROR",
+        "batch": "satellite_blocked",
+        "logger": "io.gi.su.ad.AdvancedRocketryCommunity/",
+        "message": "Satellite idle launch operation failed",
+        "expectation": "satellite-idle-launch-flush-failed",
+        "in_batch": true
+      },
+      {
+        "line": 7273,
+        "level": "ERROR",
+        "batch": "recipe_signatures",
+        "logger": "io.gi.su.ad.AdvancedRocketryCommunity/",
+        "message": "Disabling machine recipe advancedrocketrycommunity:rolling_iron_bars until tag reload: machine ingredient has no bound alternatives",
+        "expectation": "rolling-recipe-disabled-unbound-tag",
+        "in_batch": true
+      },
+      {
+        "line": 7274,
+        "level": "ERROR",
+        "batch": "recipe_signatures",
+        "logger": "io.gi.su.ad.AdvancedRocketryCommunity/",
+        "message": "Disabling machine recipe advancedrocketrycommunity:precision_control_circuit until tag reload: machine ingredient has no bound alternatives",
+        "expectation": "precision-recipe-disabled-unbound-tag",
+        "in_batch": true
+      },
+      {
+        "line": 7275,
+        "level": "ERROR",
+        "batch": "recipe_signatures",
+        "logger": "io.gi.su.ad.AdvancedRocketryCommunity/",
+        "message": "Disabling machine recipe advancedrocketrycommunity:electrolyzer_water until tag reload: machine ingredient has no bound alternatives",
+        "expectation": "electrolyzer-recipe-disabled-unbound-tag",
+        "in_batch": true
+      },
+      {
+        "line": 7528,
+        "level": "ERROR",
+        "batch": "rocket_transaction_proof",
+        "logger": "io.gi.su.ad.ro.pe.RocketTransactionSavedData/",
+        "message": "ARCE_TRANSACTION_JOURNAL_UNACKNOWLEDGED outcome=NOT_COMMITTED sequence=1 acknowledged=none",
+        "expectation": "w129a-transaction-journal-unacknowledged",
+        "in_batch": true
+      }
+    ]
+  },
+  {
+    "file": "D:\\GitHub\\ARCE-Task-Evidence\\root-queue\\tools\\job-124511316018.log",
+    "sha256": "223cd318a690719add90b0ca1bce1ca141bbff24cbc0bdf08ce78c8424ad4fe8",
+    "levels": {
+      "WARN": 247,
+      "ERROR": 45
+    },
+    "error_expectations": {
+      "precision-energy-binding-injected-save-failure": 3,
+      "precision-energy-binding-chunk-save-failed": 3,
+      "w129c-satellite-registry-unacknowledged": 1,
+      "w91f-journal-scheduling-write-failures": 1,
+      "w37i-respawn-listener-interruption-logout": 2,
+      "w37f-respawn-listener-interruption": 1,
+      "precision-energy-binding-roots-unconfirmed": 1,
+      "solar-array-chunk-save-refused": 1,
+      "combustion-chunk-save-refused": 1,
+      "solar-chunk-save-refused": 1,
+      "recipe-chunk-save-refused": 24,
+      "classic-controls-unknown-index-dropped": 1,
+      "w92-isolated-landed-journal-unacknowledged": 4
+    },
+    "unexpected": [
+      {
+        "line": 5859,
+        "level": "ERROR",
+        "batch": "escrow_live_blocked_return_shared",
+        "logger": "minecraft/LogTestReporter",
+        "message": "unloadandpendingreloadkeeptheactiverecordandfindermarker failed! Fixture chunk is not ticker-ready: status=ENTITY_TICKING, entities=false, blockTick=true",
+        "expectation": null,
+        "in_batch": false
+      }
+    ],
+    "count_mismatches": [],
+    "checker": [
+      "[FAIL] check-shard: [Errno 2] No such file or directory: '/home/runner/work/AdvancedRocketry-Community/AdvancedRocketry-Community/build/ci-gametest-result/native-exit.txt'"
+    ],
+    "errors": [
+      {
+        "line": 4680,
+        "level": "ERROR",
+        "batch": "precision_energy_binding_retry",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Intentional Energy-only migration binding save failure",
+        "expectation": "precision-energy-binding-injected-save-failure",
+        "in_batch": true
+      },
+      {
+        "line": 4743,
+        "level": "ERROR",
+        "batch": "precision_energy_binding_retry",
+        "logger": "minecraft/ChunkMap",
+        "message": "Failed to save chunk 40002,40001",
+        "expectation": "precision-energy-binding-chunk-save-failed",
+        "in_batch": true
+      },
+      {
+        "line": 4847,
+        "level": "ERROR",
+        "batch": "satellite_flush_failure",
+        "logger": "io.gi.su.ad.sa.pe.SatelliteRegistryWriter/",
+        "message": "ARCE_SATELLITE_REGISTRY_UNACKNOWLEDGED outcome=FAILED sequence=2 epoch=2 durable=1; retained dirty state",
+        "expectation": "w129c-satellite-registry-unacknowledged",
+        "in_batch": true
+      },
+      {
+        "line": 5750,
+        "level": "ERROR",
+        "batch": "journal_fail_back_admission",
+        "logger": "io.gi.su.ad.ro.fl.pe.RocketTransferSavedData/",
+        "message": "ARCE_TRANSFER_JOURNAL_UNACKNOWLEDGED retained dirty authority; dependent effects are blocked",
+        "expectation": "w91f-journal-scheduling-write-failures",
+        "in_batch": true
+      },
+      {
+        "line": 5859,
+        "level": "ERROR",
+        "batch": "escrow_live_blocked_return_shared",
+        "logger": "minecraft/LogTestReporter",
+        "message": "unloadandpendingreloadkeeptheactiverecordandfindermarker failed! Fixture chunk is not ticker-ready: status=ENTITY_TICKING, entities=false, blockTick=true",
+        "expectation": null,
+        "in_batch": false
+      },
+      {
+        "line": 5957,
+        "level": "ERROR",
+        "batch": "respawn_recovery",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: W37F injected respawn listener interruption",
+        "expectation": "w37i-respawn-listener-interruption-logout",
+        "in_batch": true
+      },
+      {
+        "line": 5998,
+        "level": "ERROR",
+        "batch": "respawn_recovery",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: W37F injected respawn listener interruption",
+        "expectation": "w37f-respawn-listener-interruption",
+        "in_batch": true
+      },
+      {
+        "line": 6041,
+        "level": "ERROR",
+        "batch": "respawn_recovery",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: W37F injected respawn listener interruption",
+        "expectation": "w37i-respawn-listener-interruption-logout",
+        "in_batch": true
+      },
+      {
+        "line": 7186,
+        "level": "ERROR",
+        "batch": "precision_energy_binding_gate",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Intentional Energy-only migration binding save failure",
+        "expectation": "precision-energy-binding-injected-save-failure",
+        "in_batch": true
+      },
+      {
+        "line": 7249,
+        "level": "ERROR",
+        "batch": "precision_energy_binding_gate",
+        "logger": "minecraft/ChunkMap",
+        "message": "Failed to save chunk 40026,40007",
+        "expectation": "precision-energy-binding-chunk-save-failed",
+        "in_batch": true
+      },
+      {
+        "line": 7286,
+        "level": "ERROR",
+        "batch": "precision_energy_binding_gate",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Intentional Energy-only migration binding save failure",
+        "expectation": "precision-energy-binding-injected-save-failure",
+        "in_batch": true
+      },
+      {
+        "line": 7349,
+        "level": "ERROR",
+        "batch": "precision_energy_binding_gate",
+        "logger": "minecraft/ChunkMap",
+        "message": "Failed to save chunk 40026,40007",
+        "expectation": "precision-energy-binding-chunk-save-failed",
+        "in_batch": true
+      },
+      {
+        "line": 7386,
+        "level": "ERROR",
+        "batch": "precision_energy_binding_gate",
+        "logger": "io.gi.su.ad.AdvancedRocketryCommunity/",
+        "message": "Precision Assembler migration port marker roots are not confirmed on disk at BlockPos{x=640415, y=20, z=640109} in minecraft:overworld: BlockPos{x=640416, y=20, z=640112}: arce_part_binding differs (expected hash=1763592157, saved hash=1763592156)",
+        "expectation": "precision-energy-binding-roots-unconfirmed",
+        "in_batch": true
+      },
+      {
+        "line": 7520,
+        "level": "ERROR",
+        "batch": "defaultBatch",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Refusing chunk save with non-admissible solar input; back up and repair first",
+        "expectation": "solar-array-chunk-save-refused",
+        "in_batch": true
+      },
+      {
+        "line": 7588,
+        "level": "ERROR",
+        "batch": "defaultBatch",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Refusing chunk save with oversized combustion input; back up and repair first",
+        "expectation": "combustion-chunk-save-refused",
+        "in_batch": true
+      },
+      {
+        "line": 7676,
+        "level": "ERROR",
+        "batch": "defaultBatch",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Refusing chunk save with non-admissible solar input; back up and repair first",
+        "expectation": "solar-chunk-save-refused",
+        "in_batch": true
+      },
+      {
+        "line": 7739,
+        "level": "ERROR",
+        "batch": "defaultBatch",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "expectation": "recipe-chunk-save-refused",
+        "in_batch": true
+      },
+      {
+        "line": 7792,
+        "level": "ERROR",
+        "batch": "defaultBatch",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "expectation": "recipe-chunk-save-refused",
+        "in_batch": true
+      },
+      {
+        "line": 7844,
+        "level": "ERROR",
+        "batch": "defaultBatch",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "expectation": "recipe-chunk-save-refused",
+        "in_batch": true
+      },
+      {
+        "line": 7897,
+        "level": "ERROR",
+        "batch": "defaultBatch",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "expectation": "recipe-chunk-save-refused",
+        "in_batch": true
+      },
+      {
+        "line": 7949,
+        "level": "ERROR",
+        "batch": "defaultBatch",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "expectation": "recipe-chunk-save-refused",
+        "in_batch": true
+      },
+      {
+        "line": 8002,
+        "level": "ERROR",
+        "batch": "defaultBatch",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "expectation": "recipe-chunk-save-refused",
+        "in_batch": true
+      },
+      {
+        "line": 8054,
+        "level": "ERROR",
+        "batch": "defaultBatch",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "expectation": "recipe-chunk-save-refused",
+        "in_batch": true
+      },
+      {
+        "line": 8107,
+        "level": "ERROR",
+        "batch": "defaultBatch",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "expectation": "recipe-chunk-save-refused",
+        "in_batch": true
+      },
+      {
+        "line": 8159,
+        "level": "ERROR",
+        "batch": "defaultBatch",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "expectation": "recipe-chunk-save-refused",
+        "in_batch": true
+      },
+      {
+        "line": 8212,
+        "level": "ERROR",
+        "batch": "defaultBatch",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "expectation": "recipe-chunk-save-refused",
+        "in_batch": true
+      },
+      {
+        "line": 8264,
+        "level": "ERROR",
+        "batch": "defaultBatch",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "expectation": "recipe-chunk-save-refused",
+        "in_batch": true
+      },
+      {
+        "line": 8317,
+        "level": "ERROR",
+        "batch": "defaultBatch",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "expectation": "recipe-chunk-save-refused",
+        "in_batch": true
+      },
+      {
+        "line": 8369,
+        "level": "ERROR",
+        "batch": "defaultBatch",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "expectation": "recipe-chunk-save-refused",
+        "in_batch": true
+      },
+      {
+        "line": 8422,
+        "level": "ERROR",
+        "batch": "defaultBatch",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "expectation": "recipe-chunk-save-refused",
+        "in_batch": true
+      },
+      {
+        "line": 8474,
+        "level": "ERROR",
+        "batch": "defaultBatch",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "expectation": "recipe-chunk-save-refused",
+        "in_batch": true
+      },
+      {
+        "line": 8527,
+        "level": "ERROR",
+        "batch": "defaultBatch",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "expectation": "recipe-chunk-save-refused",
+        "in_batch": true
+      },
+      {
+        "line": 8579,
+        "level": "ERROR",
+        "batch": "defaultBatch",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "expectation": "recipe-chunk-save-refused",
+        "in_batch": true
+      },
+      {
+        "line": 8632,
+        "level": "ERROR",
+        "batch": "defaultBatch",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "expectation": "recipe-chunk-save-refused",
+        "in_batch": true
+      },
+      {
+        "line": 8684,
+        "level": "ERROR",
+        "batch": "defaultBatch",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "expectation": "recipe-chunk-save-refused",
+        "in_batch": true
+      },
+      {
+        "line": 8737,
+        "level": "ERROR",
+        "batch": "defaultBatch",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "expectation": "recipe-chunk-save-refused",
+        "in_batch": true
+      },
+      {
+        "line": 8789,
+        "level": "ERROR",
+        "batch": "defaultBatch",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "expectation": "recipe-chunk-save-refused",
+        "in_batch": true
+      },
+      {
+        "line": 8842,
+        "level": "ERROR",
+        "batch": "defaultBatch",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "expectation": "recipe-chunk-save-refused",
+        "in_batch": true
+      },
+      {
+        "line": 8894,
+        "level": "ERROR",
+        "batch": "defaultBatch",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "expectation": "recipe-chunk-save-refused",
+        "in_batch": true
+      },
+      {
+        "line": 8947,
+        "level": "ERROR",
+        "batch": "defaultBatch",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "expectation": "recipe-chunk-save-refused",
+        "in_batch": true
+      },
+      {
+        "line": 9243,
+        "level": "ERROR",
+        "batch": "classic_controls_channel",
+        "logger": "ne.mi.ne.si.IndexedMessageCodec/SIMPLENET",
+        "message": "Received invalid discriminator byte 3 on channel advancedrocketrycommunity:classic_controls",
+        "expectation": "classic-controls-unknown-index-dropped",
+        "in_batch": true
+      },
+      {
+        "line": 9704,
+        "level": "ERROR",
+        "batch": "landed_disassembly_writer",
+        "logger": "io.gi.su.ad.ro.fl.pe.RocketTransferSavedData/",
+        "message": "ARCE_TRANSFER_JOURNAL_UNACKNOWLEDGED retained dirty authority; dependent effects are blocked",
+        "expectation": "w92-isolated-landed-journal-unacknowledged",
+        "in_batch": true
+      },
+      {
+        "line": 9721,
+        "level": "ERROR",
+        "batch": "landed_disassembly_writer",
+        "logger": "io.gi.su.ad.ro.fl.pe.RocketTransferSavedData/",
+        "message": "ARCE_TRANSFER_JOURNAL_UNACKNOWLEDGED retained dirty authority; dependent effects are blocked",
+        "expectation": "w92-isolated-landed-journal-unacknowledged",
+        "in_batch": true
+      },
+      {
+        "line": 9738,
+        "level": "ERROR",
+        "batch": "landed_disassembly_writer",
+        "logger": "io.gi.su.ad.ro.fl.pe.RocketTransferSavedData/",
+        "message": "ARCE_TRANSFER_JOURNAL_UNACKNOWLEDGED retained dirty authority; dependent effects are blocked",
+        "expectation": "w92-isolated-landed-journal-unacknowledged",
+        "in_batch": true
+      },
+      {
+        "line": 9746,
+        "level": "ERROR",
+        "batch": "landed_disassembly_writer",
+        "logger": "io.gi.su.ad.ro.fl.pe.RocketTransferSavedData/",
+        "message": "ARCE_TRANSFER_JOURNAL_UNACKNOWLEDGED retained dirty authority; dependent effects are blocked",
+        "expectation": "w92-isolated-landed-journal-unacknowledged",
+        "in_batch": true
+      }
+    ]
+  },
+  {
+    "file": "D:\\GitHub\\ARCE-Task-Evidence\\root-queue\\tools\\job-124511315928.log",
+    "sha256": "16041264b10fa2db4caaae4345b9c0fd729a9abe25d50be44a7b39b4c6e1e009",
+    "levels": {
+      "WARN": 209,
+      "ERROR": 30
+    },
+    "error_expectations": {
+      "w91f-journal-scheduling-write-failures": 3,
+      "machine-menu-server-version-rejected": 8,
+      "machine-menu-client-version-rejected": 8,
+      "w21cf-research-debit-shortfall": 1,
+      "w37b-earlier-time-check-interruption": 4,
+      "precision-migration-injected-save-failure": 1,
+      "precision-one-shot-chunk-save-failed": 1,
+      "precision-controller-roots-unconfirmed": 1,
+      "w44-a1-refused-first-warp-replacement": 1
+    },
+    "unexpected": [
+      {
+        "line": 5474,
+        "level": "ERROR",
+        "batch": "bay_copies_riding",
+        "logger": "minecraft/LogTestReporter",
+        "message": "bordercrossingmarginslandonanemptymoonandarestartreticketsthesamecolumns failed! Another ticket keeps the margin entity-ticking: Ticket[arce_rocket_flight 31 (d325b0aa-184e-4404-bd17-6f0ab6aa62db)] at 5424 force ticks false",
+        "expectation": null,
+        "in_batch": false
+      },
+      {
+        "line": 5593,
+        "level": "ERROR",
+        "batch": "fluid_fuel_loader_escrow",
+        "logger": "minecraft/LogTestReporter",
+        "message": "fiveloadersfillonerocketandthesixthisrefusedwithnothingchanged failed! Fill 0 was not admitted: TRANSFER_JOURNAL_UNPROVED",
+        "expectation": null,
+        "in_batch": false
+      },
+      {
+        "line": 5645,
+        "level": "WARN",
+        "batch": "fluid_fuel_loader_escrow",
+        "logger": "io.gi.su.ad.AdvancedRocketryCommunity/",
+        "message": "ARCE_W95_AFTER_BATCH batch=fluid_fuel_loader_escrow unfinished=1 held_operations=1 cleanup_failed=false; the fixtures of a failed or timed-out test were removed",
+        "expectation": null,
+        "in_batch": false
+      }
+    ],
+    "count_mismatches": [],
+    "checker": [
+      "[FAIL] check-shard: [Errno 2] No such file or directory: '/home/runner/work/AdvancedRocketry-Community/AdvancedRocketry-Community/build/ci-gametest-result/native-exit.txt'"
+    ],
+    "errors": [
+      {
+        "line": 4797,
+        "level": "ERROR",
+        "batch": "journal_concurrent_flight",
+        "logger": "io.gi.su.ad.ro.fl.pe.RocketTransferSavedData/",
+        "message": "ARCE_TRANSFER_JOURNAL_UNACKNOWLEDGED retained dirty authority; dependent effects are blocked",
+        "expectation": "w91f-journal-scheduling-write-failures",
+        "in_batch": true
+      },
+      {
+        "line": 4798,
+        "level": "ERROR",
+        "batch": "journal_concurrent_flight",
+        "logger": "io.gi.su.ad.ro.fl.pe.RocketTransferSavedData/",
+        "message": "ARCE_TRANSFER_JOURNAL_UNACKNOWLEDGED retained dirty authority; dependent effects are blocked",
+        "expectation": "w91f-journal-scheduling-write-failures",
+        "in_batch": true
+      },
+      {
+        "line": 4821,
+        "level": "ERROR",
+        "batch": "journal_concurrent_flight",
+        "logger": "io.gi.su.ad.ro.fl.pe.RocketTransferSavedData/",
+        "message": "ARCE_TRANSFER_JOURNAL_UNACKNOWLEDGED retained dirty authority; dependent effects are blocked",
+        "expectation": "w91f-journal-scheduling-write-failures",
+        "in_batch": true
+      },
+      {
+        "line": 5436,
+        "level": "ERROR",
+        "batch": "machine_menu_channel",
+        "logger": "ne.mi.ne.NetworkRegistry/NETREGISTRY",
+        "message": "Channels [advancedrocketrycommunity:machine_menu] rejected their server side version number",
+        "expectation": "machine-menu-server-version-rejected",
+        "in_batch": true
+      },
+      {
+        "line": 5437,
+        "level": "ERROR",
+        "batch": "machine_menu_channel",
+        "logger": "ne.mi.ne.NetworkRegistry/NETREGISTRY",
+        "message": "Channels [advancedrocketrycommunity:machine_menu] rejected their server side version number",
+        "expectation": "machine-menu-server-version-rejected",
+        "in_batch": true
+      },
+      {
+        "line": 5438,
+        "level": "ERROR",
+        "batch": "machine_menu_channel",
+        "logger": "ne.mi.ne.NetworkRegistry/NETREGISTRY",
+        "message": "Channels [advancedrocketrycommunity:machine_menu] rejected their server side version number",
+        "expectation": "machine-menu-server-version-rejected",
+        "in_batch": true
+      },
+      {
+        "line": 5439,
+        "level": "ERROR",
+        "batch": "machine_menu_channel",
+        "logger": "ne.mi.ne.NetworkRegistry/NETREGISTRY",
+        "message": "Channels [advancedrocketrycommunity:machine_menu] rejected their server side version number",
+        "expectation": "machine-menu-server-version-rejected",
+        "in_batch": true
+      },
+      {
+        "line": 5440,
+        "level": "ERROR",
+        "batch": "machine_menu_channel",
+        "logger": "ne.mi.ne.NetworkRegistry/NETREGISTRY",
+        "message": "Channels [advancedrocketrycommunity:machine_menu] rejected their server side version number",
+        "expectation": "machine-menu-server-version-rejected",
+        "in_batch": true
+      },
+      {
+        "line": 5441,
+        "level": "ERROR",
+        "batch": "machine_menu_channel",
+        "logger": "ne.mi.ne.NetworkRegistry/NETREGISTRY",
+        "message": "Channels [advancedrocketrycommunity:machine_menu] rejected their server side version number",
+        "expectation": "machine-menu-server-version-rejected",
+        "in_batch": true
+      },
+      {
+        "line": 5442,
+        "level": "ERROR",
+        "batch": "machine_menu_channel",
+        "logger": "ne.mi.ne.NetworkRegistry/NETREGISTRY",
+        "message": "Channels [advancedrocketrycommunity:machine_menu] rejected their server side version number",
+        "expectation": "machine-menu-server-version-rejected",
+        "in_batch": true
+      },
+      {
+        "line": 5443,
+        "level": "ERROR",
+        "batch": "machine_menu_channel",
+        "logger": "ne.mi.ne.NetworkRegistry/NETREGISTRY",
+        "message": "Channels [advancedrocketrycommunity:machine_menu] rejected their server side version number",
+        "expectation": "machine-menu-server-version-rejected",
+        "in_batch": true
+      },
+      {
+        "line": 5444,
+        "level": "ERROR",
+        "batch": "machine_menu_channel",
+        "logger": "ne.mi.ne.NetworkRegistry/NETREGISTRY",
+        "message": "Channels [advancedrocketrycommunity:machine_menu] rejected their client side version number",
+        "expectation": "machine-menu-client-version-rejected",
+        "in_batch": true
+      },
+      {
+        "line": 5445,
+        "level": "ERROR",
+        "batch": "machine_menu_channel",
+        "logger": "ne.mi.ne.NetworkRegistry/NETREGISTRY",
+        "message": "Channels [advancedrocketrycommunity:machine_menu] rejected their client side version number",
+        "expectation": "machine-menu-client-version-rejected",
+        "in_batch": true
+      },
+      {
+        "line": 5446,
+        "level": "ERROR",
+        "batch": "machine_menu_channel",
+        "logger": "ne.mi.ne.NetworkRegistry/NETREGISTRY",
+        "message": "Channels [advancedrocketrycommunity:machine_menu] rejected their client side version number",
+        "expectation": "machine-menu-client-version-rejected",
+        "in_batch": true
+      },
+      {
+        "line": 5447,
+        "level": "ERROR",
+        "batch": "machine_menu_channel",
+        "logger": "ne.mi.ne.NetworkRegistry/NETREGISTRY",
+        "message": "Channels [advancedrocketrycommunity:machine_menu] rejected their client side version number",
+        "expectation": "machine-menu-client-version-rejected",
+        "in_batch": true
+      },
+      {
+        "line": 5448,
+        "level": "ERROR",
+        "batch": "machine_menu_channel",
+        "logger": "ne.mi.ne.NetworkRegistry/NETREGISTRY",
+        "message": "Channels [advancedrocketrycommunity:machine_menu] rejected their client side version number",
+        "expectation": "machine-menu-client-version-rejected",
+        "in_batch": true
+      },
+      {
+        "line": 5449,
+        "level": "ERROR",
+        "batch": "machine_menu_channel",
+        "logger": "ne.mi.ne.NetworkRegistry/NETREGISTRY",
+        "message": "Channels [advancedrocketrycommunity:machine_menu] rejected their client side version number",
+        "expectation": "machine-menu-client-version-rejected",
+        "in_batch": true
+      },
+      {
+        "line": 5450,
+        "level": "ERROR",
+        "batch": "machine_menu_channel",
+        "logger": "ne.mi.ne.NetworkRegistry/NETREGISTRY",
+        "message": "Channels [advancedrocketrycommunity:machine_menu] rejected their client side version number",
+        "expectation": "machine-menu-client-version-rejected",
+        "in_batch": true
+      },
+      {
+        "line": 5451,
+        "level": "ERROR",
+        "batch": "machine_menu_channel",
+        "logger": "ne.mi.ne.NetworkRegistry/NETREGISTRY",
+        "message": "Channels [advancedrocketrycommunity:machine_menu] rejected their client side version number",
+        "expectation": "machine-menu-client-version-rejected",
+        "in_batch": true
+      },
+      {
+        "line": 5474,
+        "level": "ERROR",
+        "batch": "bay_copies_riding",
+        "logger": "minecraft/LogTestReporter",
+        "message": "bordercrossingmarginslandonanemptymoonandarestartreticketsthesamecolumns failed! Another ticket keeps the margin entity-ticking: Ticket[arce_rocket_flight 31 (d325b0aa-184e-4404-bd17-6f0ab6aa62db)] at 5424 force ticks false",
+        "expectation": null,
+        "in_batch": false
+      },
+      {
+        "line": 5585,
+        "level": "ERROR",
+        "batch": "research_debit",
+        "logger": "io.gi.su.ad.AdvancedRocketryCommunity/",
+        "message": "ARCE_RESEARCH_DEBIT_SHORTFALL level=minecraft:overworld pos=285, 308, 33 required=20 missing=10; paid research stops until the controller reloads",
+        "expectation": "w21cf-research-debit-shortfall",
+        "in_batch": true
+      },
+      {
+        "line": 5593,
+        "level": "ERROR",
+        "batch": "fluid_fuel_loader_escrow",
+        "logger": "minecraft/LogTestReporter",
+        "message": "fiveloadersfillonerocketandthesixthisrefusedwithnothingchanged failed! Fill 0 was not admitted: TRANSFER_JOURNAL_UNPROVED",
+        "expectation": null,
+        "in_batch": false
+      },
+      {
+        "line": 5651,
+        "level": "ERROR",
+        "batch": "natural_beds_command",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: W37B injected earlier time-check listener interruption",
+        "expectation": "w37b-earlier-time-check-interruption",
+        "in_batch": true
+      },
+      {
+        "line": 5679,
+        "level": "ERROR",
+        "batch": "natural_beds_command",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: W37B injected earlier time-check listener interruption",
+        "expectation": "w37b-earlier-time-check-interruption",
+        "in_batch": true
+      },
+      {
+        "line": 5707,
+        "level": "ERROR",
+        "batch": "natural_beds_command",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: W37B injected earlier time-check listener interruption",
+        "expectation": "w37b-earlier-time-check-interruption",
+        "in_batch": true
+      },
+      {
+        "line": 5735,
+        "level": "ERROR",
+        "batch": "natural_beds_command",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: W37B injected earlier time-check listener interruption",
+        "expectation": "w37b-earlier-time-check-interruption",
+        "in_batch": true
+      },
+      {
+        "line": 6219,
+        "level": "ERROR",
+        "batch": "precision_migration_controller_failure",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Intentional one-shot Precision migration save failure",
+        "expectation": "precision-migration-injected-save-failure",
+        "in_batch": true
+      },
+      {
+        "line": 6282,
+        "level": "ERROR",
+        "batch": "precision_migration_controller_failure",
+        "logger": "minecraft/ChunkMap",
+        "message": "Failed to save chunk 32011,32003",
+        "expectation": "precision-one-shot-chunk-save-failed",
+        "in_batch": true
+      },
+      {
+        "line": 6319,
+        "level": "ERROR",
+        "batch": "precision_migration_controller_failure",
+        "logger": "io.gi.su.ad.AdvancedRocketryCommunity/",
+        "message": "Precision Assembler migration controller snapshot roots are not confirmed on disk at BlockPos{x=512191, y=20, z=512063} in minecraft:overworld: BlockPos{x=512191, y=20, z=512063}: arce_precision_resources differs (expected hash=1412498357, saved hash=0)",
+        "expectation": "precision-controller-roots-unconfirmed",
+        "in_batch": true
+      },
+      {
+        "line": 7361,
+        "level": "ERROR",
+        "batch": "classic_first_event",
+        "logger": "io.gi.su.ad.AdvancedRocketryCommunity/",
+        "message": "ARCE_STATION_UPDATE_WRITE_FAILED station=8d9e98d6-7517-4305-a347-cebfe8067e5c stage=replace file_present=true",
+        "expectation": "w44-a1-refused-first-warp-replacement",
+        "in_batch": true
+      }
+    ]
+  },
+  {
+    "file": "D:\\GitHub\\ARCE-Task-Evidence\\root-queue\\W225-hosted\\job-124497458595.log",
+    "sha256": "2795b7efa064c34991362eafafe836bd8fe596767633e83566a6b0b9c22df1ac",
+    "levels": {
+      "WARN": 229,
+      "ERROR": 41
+    },
+    "error_expectations": {
+      "precision-migration-injected-save-failure": 1,
+      "precision-one-shot-chunk-save-failed": 1,
+      "precision-port-roots-unconfirmed": 1,
+      "classic-controls-server-version-rejected": 11,
+      "classic-controls-client-version-rejected": 11,
+      "w179-tag-unreadable": 1,
+      "w179-tag-missing-reference": 1,
+      "w179-recipe-file-unparsable": 2,
+      "w179-recipe-top-level-array": 1,
+      "w179-pattern-catalog-rejected": 2,
+      "w193-recipe-refusal-summary": 1,
+      "w37j-respawn-save-listener-interruptions": 7,
+      "w90b-post-publication-discard-effect-failed": 1
+    },
+    "unexpected": [
+      {
+        "line": 4540,
+        "level": "WARN",
+        "batch": "<startup>",
+        "logger": "minecraft/Pack",
+        "message": "Missing metadata in pack mod:arce_ci_gametest",
+        "expectation": null,
+        "in_batch": false
+      },
+      {
+        "line": 4541,
+        "level": "WARN",
+        "batch": "<startup>",
+        "logger": "minecraft/MinecraftServer",
+        "message": "Missing data pack mod:arce_ci_gametest",
+        "expectation": null,
+        "in_batch": false
+      },
+      {
+        "line": 5761,
+        "level": "WARN",
+        "batch": "datapack_overlimit",
+        "logger": "minecraft/Pack",
+        "message": "Missing metadata in pack mod:arce_ci_gametest",
+        "expectation": null,
+        "in_batch": false
+      },
+      {
+        "line": 5939,
+        "level": "WARN",
+        "batch": "datapack_overlimit",
+        "logger": "minecraft/Pack",
+        "message": "Missing metadata in pack mod:arce_ci_gametest",
+        "expectation": null,
+        "in_batch": false
+      },
+      {
+        "line": 5941,
+        "level": "WARN",
+        "batch": "datapack_overlimit",
+        "logger": "minecraft/Pack",
+        "message": "Missing metadata in pack mod:arce_ci_gametest",
+        "expectation": null,
+        "in_batch": false
+      }
+    ],
+    "count_mismatches": [],
+    "checker": [
+      "[FAIL] line 156: unexpected WARN, batch '<startup>', logger 'net.minecraft.server.packs.repository.Pack/': Missing metadata in pack mod:arce_ci_gametest [no GameTest frame]",
+      "[FAIL] line 157: unexpected WARN, batch '<startup>', logger 'net.minecraft.server.MinecraftServer/': Missing data pack mod:arce_ci_gametest [no GameTest frame]",
+      "[FAIL] line 1377: unexpected WARN, batch 'datapack_overlimit', logger 'net.minecraft.server.packs.repository.Pack/': Missing metadata in pack mod:arce_ci_gametest [no GameTest frame]",
+      "[FAIL] line 1555: unexpected WARN, batch 'datapack_overlimit', logger 'net.minecraft.server.packs.repository.Pack/': Missing metadata in pack mod:arce_ci_gametest [no GameTest frame]",
+      "[FAIL] line 1557: unexpected WARN, batch 'datapack_overlimit', logger 'net.minecraft.server.packs.repository.Pack/': Missing metadata in pack mod:arce_ci_gametest [no GameTest frame]",
+      "[FAIL] check-shard: shard 3 GameTest log check failed"
+    ],
+    "errors": [
+      {
+        "line": 4879,
+        "level": "ERROR",
+        "batch": "precision_migration_port_failure",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Intentional one-shot Precision migration save failure",
+        "expectation": "precision-migration-injected-save-failure",
+        "in_batch": true
+      },
+      {
+        "line": 4942,
+        "level": "ERROR",
+        "batch": "precision_migration_port_failure",
+        "logger": "minecraft/ChunkMap",
+        "message": "Failed to save chunk 32003,32001",
+        "expectation": "precision-one-shot-chunk-save-failed",
+        "in_batch": true
+      },
+      {
+        "line": 4979,
+        "level": "ERROR",
+        "batch": "precision_migration_port_failure",
+        "logger": "io.gi.su.ad.AdvancedRocketryCommunity/",
+        "message": "Precision Assembler migration port marker roots are not confirmed on disk at BlockPos{x=512047, y=36, z=512031} in minecraft:overworld: BlockPos{x=512048, y=36, z=512031}: arce_precision_port_migration differs (expected hash=13115482, saved hash=0)",
+        "expectation": "precision-port-roots-unconfirmed",
+        "in_batch": true
+      },
+      {
+        "line": 5593,
+        "level": "ERROR",
+        "batch": "classic_controls_version",
+        "logger": "ne.mi.ne.NetworkRegistry/NETREGISTRY",
+        "message": "Channels [advancedrocketrycommunity:classic_controls] rejected their server side version number",
+        "expectation": "classic-controls-server-version-rejected",
+        "in_batch": true
+      },
+      {
+        "line": 5594,
+        "level": "ERROR",
+        "batch": "classic_controls_version",
+        "logger": "ne.mi.ne.NetworkRegistry/NETREGISTRY",
+        "message": "Channels [advancedrocketrycommunity:classic_controls] rejected their server side version number",
+        "expectation": "classic-controls-server-version-rejected",
+        "in_batch": true
+      },
+      {
+        "line": 5595,
+        "level": "ERROR",
+        "batch": "classic_controls_version",
+        "logger": "ne.mi.ne.NetworkRegistry/NETREGISTRY",
+        "message": "Channels [advancedrocketrycommunity:classic_controls] rejected their server side version number",
+        "expectation": "classic-controls-server-version-rejected",
+        "in_batch": true
+      },
+      {
+        "line": 5596,
+        "level": "ERROR",
+        "batch": "classic_controls_version",
+        "logger": "ne.mi.ne.NetworkRegistry/NETREGISTRY",
+        "message": "Channels [advancedrocketrycommunity:classic_controls] rejected their server side version number",
+        "expectation": "classic-controls-server-version-rejected",
+        "in_batch": true
+      },
+      {
+        "line": 5597,
+        "level": "ERROR",
+        "batch": "classic_controls_version",
+        "logger": "ne.mi.ne.NetworkRegistry/NETREGISTRY",
+        "message": "Channels [advancedrocketrycommunity:classic_controls] rejected their server side version number",
+        "expectation": "classic-controls-server-version-rejected",
+        "in_batch": true
+      },
+      {
+        "line": 5598,
+        "level": "ERROR",
+        "batch": "classic_controls_version",
+        "logger": "ne.mi.ne.NetworkRegistry/NETREGISTRY",
+        "message": "Channels [advancedrocketrycommunity:classic_controls] rejected their server side version number",
+        "expectation": "classic-controls-server-version-rejected",
+        "in_batch": true
+      },
+      {
+        "line": 5599,
+        "level": "ERROR",
+        "batch": "classic_controls_version",
+        "logger": "ne.mi.ne.NetworkRegistry/NETREGISTRY",
+        "message": "Channels [advancedrocketrycommunity:classic_controls] rejected their server side version number",
+        "expectation": "classic-controls-server-version-rejected",
+        "in_batch": true
+      },
+      {
+        "line": 5600,
+        "level": "ERROR",
+        "batch": "classic_controls_version",
+        "logger": "ne.mi.ne.NetworkRegistry/NETREGISTRY",
+        "message": "Channels [advancedrocketrycommunity:classic_controls] rejected their server side version number",
+        "expectation": "classic-controls-server-version-rejected",
+        "in_batch": true
+      },
+      {
+        "line": 5601,
+        "level": "ERROR",
+        "batch": "classic_controls_version",
+        "logger": "ne.mi.ne.NetworkRegistry/NETREGISTRY",
+        "message": "Channels [advancedrocketrycommunity:classic_controls] rejected their server side version number",
+        "expectation": "classic-controls-server-version-rejected",
+        "in_batch": true
+      },
+      {
+        "line": 5602,
+        "level": "ERROR",
+        "batch": "classic_controls_version",
+        "logger": "ne.mi.ne.NetworkRegistry/NETREGISTRY",
+        "message": "Channels [advancedrocketrycommunity:classic_controls] rejected their server side version number",
+        "expectation": "classic-controls-server-version-rejected",
+        "in_batch": true
+      },
+      {
+        "line": 5603,
+        "level": "ERROR",
+        "batch": "classic_controls_version",
+        "logger": "ne.mi.ne.NetworkRegistry/NETREGISTRY",
+        "message": "Channels [advancedrocketrycommunity:classic_controls] rejected their server side version number",
+        "expectation": "classic-controls-server-version-rejected",
+        "in_batch": true
+      },
+      {
+        "line": 5604,
+        "level": "ERROR",
+        "batch": "classic_controls_version",
+        "logger": "ne.mi.ne.NetworkRegistry/NETREGISTRY",
+        "message": "Channels [advancedrocketrycommunity:classic_controls] rejected their client side version number",
+        "expectation": "classic-controls-client-version-rejected",
+        "in_batch": true
+      },
+      {
+        "line": 5605,
+        "level": "ERROR",
+        "batch": "classic_controls_version",
+        "logger": "ne.mi.ne.NetworkRegistry/NETREGISTRY",
+        "message": "Channels [advancedrocketrycommunity:classic_controls] rejected their client side version number",
+        "expectation": "classic-controls-client-version-rejected",
+        "in_batch": true
+      },
+      {
+        "line": 5606,
+        "level": "ERROR",
+        "batch": "classic_controls_version",
+        "logger": "ne.mi.ne.NetworkRegistry/NETREGISTRY",
+        "message": "Channels [advancedrocketrycommunity:classic_controls] rejected their client side version number",
+        "expectation": "classic-controls-client-version-rejected",
+        "in_batch": true
+      },
+      {
+        "line": 5607,
+        "level": "ERROR",
+        "batch": "classic_controls_version",
+        "logger": "ne.mi.ne.NetworkRegistry/NETREGISTRY",
+        "message": "Channels [advancedrocketrycommunity:classic_controls] rejected their client side version number",
+        "expectation": "classic-controls-client-version-rejected",
+        "in_batch": true
+      },
+      {
+        "line": 5608,
+        "level": "ERROR",
+        "batch": "classic_controls_version",
+        "logger": "ne.mi.ne.NetworkRegistry/NETREGISTRY",
+        "message": "Channels [advancedrocketrycommunity:classic_controls] rejected their client side version number",
+        "expectation": "classic-controls-client-version-rejected",
+        "in_batch": true
+      },
+      {
+        "line": 5609,
+        "level": "ERROR",
+        "batch": "classic_controls_version",
+        "logger": "ne.mi.ne.NetworkRegistry/NETREGISTRY",
+        "message": "Channels [advancedrocketrycommunity:classic_controls] rejected their client side version number",
+        "expectation": "classic-controls-client-version-rejected",
+        "in_batch": true
+      },
+      {
+        "line": 5610,
+        "level": "ERROR",
+        "batch": "classic_controls_version",
+        "logger": "ne.mi.ne.NetworkRegistry/NETREGISTRY",
+        "message": "Channels [advancedrocketrycommunity:classic_controls] rejected their client side version number",
+        "expectation": "classic-controls-client-version-rejected",
+        "in_batch": true
+      },
+      {
+        "line": 5611,
+        "level": "ERROR",
+        "batch": "classic_controls_version",
+        "logger": "ne.mi.ne.NetworkRegistry/NETREGISTRY",
+        "message": "Channels [advancedrocketrycommunity:classic_controls] rejected their client side version number",
+        "expectation": "classic-controls-client-version-rejected",
+        "in_batch": true
+      },
+      {
+        "line": 5612,
+        "level": "ERROR",
+        "batch": "classic_controls_version",
+        "logger": "ne.mi.ne.NetworkRegistry/NETREGISTRY",
+        "message": "Channels [advancedrocketrycommunity:classic_controls] rejected their client side version number",
+        "expectation": "classic-controls-client-version-rejected",
+        "in_batch": true
+      },
+      {
+        "line": 5613,
+        "level": "ERROR",
+        "batch": "classic_controls_version",
+        "logger": "ne.mi.ne.NetworkRegistry/NETREGISTRY",
+        "message": "Channels [advancedrocketrycommunity:classic_controls] rejected their client side version number",
+        "expectation": "classic-controls-client-version-rejected",
+        "in_batch": true
+      },
+      {
+        "line": 5614,
+        "level": "ERROR",
+        "batch": "classic_controls_version",
+        "logger": "ne.mi.ne.NetworkRegistry/NETREGISTRY",
+        "message": "Channels [advancedrocketrycommunity:classic_controls] rejected their client side version number",
+        "expectation": "classic-controls-client-version-rejected",
+        "in_batch": true
+      },
+      {
+        "line": 5768,
+        "level": "ERROR",
+        "batch": "datapack_overlimit",
+        "logger": "minecraft/TagLoader",
+        "message": "Couldn't read tag list arce_w179:unreadable from arce_w179:tags/items/unreadable.json in data pack file/arce_w179_overlimit",
+        "expectation": "w179-tag-unreadable",
+        "in_batch": true
+      },
+      {
+        "line": 5792,
+        "level": "ERROR",
+        "batch": "datapack_overlimit",
+        "logger": "minecraft/TagLoader",
+        "message": "Couldn't load tag arce_w179:missing_reference as it is missing following references: arce_w179:does_not_exist (from file/arce_w179_overlimit)",
+        "expectation": "w179-tag-missing-reference",
+        "in_batch": true
+      },
+      {
+        "line": 5795,
+        "level": "ERROR",
+        "batch": "datapack_overlimit",
+        "logger": "minecraft/SimpleJsonResourceReloadListener",
+        "message": "Couldn't parse data file arce_w179:not_json from arce_w179:recipes/not_json.json",
+        "expectation": "w179-recipe-file-unparsable",
+        "in_batch": true
+      },
+      {
+        "line": 5821,
+        "level": "ERROR",
+        "batch": "datapack_overlimit",
+        "logger": "minecraft/SimpleJsonResourceReloadListener",
+        "message": "Couldn't parse data file arce_w179:truncated from arce_w179:recipes/truncated.json",
+        "expectation": "w179-recipe-file-unparsable",
+        "in_batch": true
+      },
+      {
+        "line": 5875,
+        "level": "ERROR",
+        "batch": "datapack_overlimit",
+        "logger": "minecraft/RecipeManager",
+        "message": "Parsing error loading recipe arce_w179:top_level_array",
+        "expectation": "w179-recipe-top-level-array",
+        "in_batch": true
+      },
+      {
+        "line": 5914,
+        "level": "ERROR",
+        "batch": "datapack_overlimit",
+        "logger": "io.gi.su.ad.AdvancedRocketryCommunity/",
+        "message": "Rejected multiblock pattern catalog; last valid generation remains active: pattern catalog: exceeds 256 definitions",
+        "expectation": "w179-pattern-catalog-rejected",
+        "in_batch": true
+      },
+      {
+        "line": 5915,
+        "level": "ERROR",
+        "batch": "datapack_overlimit",
+        "logger": "io.gi.su.ad.AdvancedRocketryCommunity/",
+        "message": "Refused 36 data-pack recipes of this mod; none is registered. Reasons: Recipe row type/count=8, recipe JSON exceeds its structural bound=7, recipe JSON has too many array entries=7, recipe JSON text exceeds its bound=7, Recipe number range=2, Identifier exceeds limit=1, Noncanonical identifier=1, Recipe missing/unknown field=1, recipe JSON cannot contain null=1, recipe number must be a 32-bit integer=1. First 8 by id: arce_w179:arc_furnace_deep (recipe JSON exceeds its structural bound), arce_w179:arc_furnace_oversized (recipe JSON text exceeds its bound), arce_w179:arc_furnace_rows (Recipe row type/count), arce_w179:arc_furnace_schema (Recipe number range), arce_w179:arc_furnace_wide (recipe JSON has too many array entries), arce_w179:centrifuging_deep (recipe JSON exceeds its structural bound), arce_w179:centrifuging_fluid_rows (Recipe row type/count), arce_w179:centrifuging_oversized (recipe JSON text exceeds its bound)",
+        "expectation": "w193-recipe-refusal-summary",
+        "in_batch": true
+      },
+      {
+        "line": 5916,
+        "level": "ERROR",
+        "batch": "datapack_overlimit",
+        "logger": "io.gi.su.ad.AdvancedRocketryCommunity/",
+        "message": "Rejected multiblock pattern catalog; last valid generation remains active: pattern catalog: exceeds 256 definitions",
+        "expectation": "w179-pattern-catalog-rejected",
+        "in_batch": true
+      },
+      {
+        "line": 6324,
+        "level": "ERROR",
+        "batch": "respawn_save_reconciliation",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: W37J injected respawn listener interruption",
+        "expectation": "w37j-respawn-save-listener-interruptions",
+        "in_batch": true
+      },
+      {
+        "line": 6371,
+        "level": "ERROR",
+        "batch": "respawn_save_reconciliation",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: W37J injected respawn listener interruption",
+        "expectation": "w37j-respawn-save-listener-interruptions",
+        "in_batch": true
+      },
+      {
+        "line": 6419,
+        "level": "ERROR",
+        "batch": "respawn_save_reconciliation",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: W37J injected respawn listener interruption",
+        "expectation": "w37j-respawn-save-listener-interruptions",
+        "in_batch": true
+      },
+      {
+        "line": 6461,
+        "level": "ERROR",
+        "batch": "respawn_save_reconciliation",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: W37J injected respawn listener interruption",
+        "expectation": "w37j-respawn-save-listener-interruptions",
+        "in_batch": true
+      },
+      {
+        "line": 6507,
+        "level": "ERROR",
+        "batch": "respawn_save_reconciliation",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: W37J injected respawn listener interruption",
+        "expectation": "w37j-respawn-save-listener-interruptions",
+        "in_batch": true
+      },
+      {
+        "line": 6549,
+        "level": "ERROR",
+        "batch": "respawn_save_reconciliation",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: W37J injected respawn listener interruption",
+        "expectation": "w37j-respawn-save-listener-interruptions",
+        "in_batch": true
+      },
+      {
+        "line": 6591,
+        "level": "ERROR",
+        "batch": "respawn_save_reconciliation",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: W37J injected respawn listener interruption",
+        "expectation": "w37j-respawn-save-listener-interruptions",
+        "in_batch": true
+      },
+      {
+        "line": 7161,
+        "level": "ERROR",
+        "batch": "rocket_warmup_discard",
+        "logger": "io.gi.su.ad.ro.fl.pe.RocketJournalSchedule/",
+        "message": "ARCE_TRANSFER_EFFECT_FAILED logical=693d1416-6e8d-4b47-8266-7e64f194e8ed generation=145; retain journal authority for recovery",
+        "expectation": "w90b-post-publication-discard-effect-failed",
+        "in_batch": true
+      }
+    ]
+  },
+  {
+    "file": "D:\\GitHub\\ARCE-Task-Evidence\\root-queue\\W225-hosted\\job-124497458605.log",
+    "sha256": "f43ca68cc89df44e07bb1a26cdd2453ac5bd1369994243682d1c463bc7f68136",
+    "levels": {
+      "WARN": 246,
+      "ERROR": 44
+    },
+    "error_expectations": {
+      "precision-energy-binding-injected-save-failure": 3,
+      "precision-energy-binding-chunk-save-failed": 3,
+      "w129c-satellite-registry-unacknowledged": 1,
+      "w91f-journal-scheduling-write-failures": 1,
+      "w37i-respawn-listener-interruption-logout": 2,
+      "w37f-respawn-listener-interruption": 1,
+      "precision-energy-binding-roots-unconfirmed": 1,
+      "solar-array-chunk-save-refused": 1,
+      "combustion-chunk-save-refused": 1,
+      "solar-chunk-save-refused": 1,
+      "recipe-chunk-save-refused": 24,
+      "classic-controls-unknown-index-dropped": 1,
+      "w92-isolated-landed-journal-unacknowledged": 4
+    },
+    "unexpected": [
+      {
+        "line": 4535,
+        "level": "WARN",
+        "batch": "<startup>",
+        "logger": "minecraft/Pack",
+        "message": "Missing metadata in pack mod:arce_ci_gametest",
+        "expectation": null,
+        "in_batch": false
+      },
+      {
+        "line": 4536,
+        "level": "WARN",
+        "batch": "<startup>",
+        "logger": "minecraft/MinecraftServer",
+        "message": "Missing data pack mod:arce_ci_gametest",
+        "expectation": null,
+        "in_batch": false
+      },
+      {
+        "line": 7492,
+        "level": "WARN",
+        "batch": "bay_registered_unavailable",
+        "logger": "io.gi.su.ad.AdvancedRocketryCommunity/",
+        "message": "ARCE_TRANSFER_FENCED transfer=08a99677-2afd-4f26-877f-4fe7c732938d reason=ESCROW_PENDING_OR_TOMBSTONE repair=offline-whole-world",
+        "expectation": null,
+        "in_batch": false
+      }
+    ],
+    "count_mismatches": [],
+    "checker": [
+      "[FAIL] line 156: unexpected WARN, batch '<startup>', logger 'net.minecraft.server.packs.repository.Pack/': Missing metadata in pack mod:arce_ci_gametest [no GameTest frame]",
+      "[FAIL] line 157: unexpected WARN, batch '<startup>', logger 'net.minecraft.server.MinecraftServer/': Missing data pack mod:arce_ci_gametest [no GameTest frame]",
+      "[FAIL] line 3112: WARN of w132-item-cargo-named-hold in an undeclared batch, batch 'bay_registered_unavailable', logger 'io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/': ARCE_TRANSFER_FENCED transfer=08a99677-2afd-4f26-877f-4fe7c732938d reason=ESCROW_PENDING_OR_TOMBSTONE repair=offline-whole-world [no GameTest frame]",
+      "[FAIL] check-shard: shard 1 GameTest log check failed"
+    ],
+    "errors": [
+      {
+        "line": 4653,
+        "level": "ERROR",
+        "batch": "precision_energy_binding_retry",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Intentional Energy-only migration binding save failure",
+        "expectation": "precision-energy-binding-injected-save-failure",
+        "in_batch": true
+      },
+      {
+        "line": 4716,
+        "level": "ERROR",
+        "batch": "precision_energy_binding_retry",
+        "logger": "minecraft/ChunkMap",
+        "message": "Failed to save chunk 40002,40001",
+        "expectation": "precision-energy-binding-chunk-save-failed",
+        "in_batch": true
+      },
+      {
+        "line": 4819,
+        "level": "ERROR",
+        "batch": "satellite_flush_failure",
+        "logger": "io.gi.su.ad.sa.pe.SatelliteRegistryWriter/",
+        "message": "ARCE_SATELLITE_REGISTRY_UNACKNOWLEDGED outcome=FAILED sequence=2 epoch=2 durable=1; retained dirty state",
+        "expectation": "w129c-satellite-registry-unacknowledged",
+        "in_batch": true
+      },
+      {
+        "line": 5721,
+        "level": "ERROR",
+        "batch": "journal_fail_back_admission",
+        "logger": "io.gi.su.ad.ro.fl.pe.RocketTransferSavedData/",
+        "message": "ARCE_TRANSFER_JOURNAL_UNACKNOWLEDGED retained dirty authority; dependent effects are blocked",
+        "expectation": "w91f-journal-scheduling-write-failures",
+        "in_batch": true
+      },
+      {
+        "line": 5927,
+        "level": "ERROR",
+        "batch": "respawn_recovery",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: W37F injected respawn listener interruption",
+        "expectation": "w37i-respawn-listener-interruption-logout",
+        "in_batch": true
+      },
+      {
+        "line": 5968,
+        "level": "ERROR",
+        "batch": "respawn_recovery",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: W37F injected respawn listener interruption",
+        "expectation": "w37f-respawn-listener-interruption",
+        "in_batch": true
+      },
+      {
+        "line": 6011,
+        "level": "ERROR",
+        "batch": "respawn_recovery",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: W37F injected respawn listener interruption",
+        "expectation": "w37i-respawn-listener-interruption-logout",
+        "in_batch": true
+      },
+      {
+        "line": 7157,
+        "level": "ERROR",
+        "batch": "precision_energy_binding_gate",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Intentional Energy-only migration binding save failure",
+        "expectation": "precision-energy-binding-injected-save-failure",
+        "in_batch": true
+      },
+      {
+        "line": 7220,
+        "level": "ERROR",
+        "batch": "precision_energy_binding_gate",
+        "logger": "minecraft/ChunkMap",
+        "message": "Failed to save chunk 40026,40007",
+        "expectation": "precision-energy-binding-chunk-save-failed",
+        "in_batch": true
+      },
+      {
+        "line": 7257,
+        "level": "ERROR",
+        "batch": "precision_energy_binding_gate",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Intentional Energy-only migration binding save failure",
+        "expectation": "precision-energy-binding-injected-save-failure",
+        "in_batch": true
+      },
+      {
+        "line": 7320,
+        "level": "ERROR",
+        "batch": "precision_energy_binding_gate",
+        "logger": "minecraft/ChunkMap",
+        "message": "Failed to save chunk 40026,40007",
+        "expectation": "precision-energy-binding-chunk-save-failed",
+        "in_batch": true
+      },
+      {
+        "line": 7357,
+        "level": "ERROR",
+        "batch": "precision_energy_binding_gate",
+        "logger": "io.gi.su.ad.AdvancedRocketryCommunity/",
+        "message": "Precision Assembler migration port marker roots are not confirmed on disk at BlockPos{x=640415, y=20, z=640109} in minecraft:overworld: BlockPos{x=640416, y=20, z=640112}: arce_part_binding differs (expected hash=-1998288290, saved hash=-1998288291)",
+        "expectation": "precision-energy-binding-roots-unconfirmed",
+        "in_batch": true
+      },
+      {
+        "line": 7496,
+        "level": "ERROR",
+        "batch": "defaultBatch",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Refusing chunk save with non-admissible solar input; back up and repair first",
+        "expectation": "solar-array-chunk-save-refused",
+        "in_batch": true
+      },
+      {
+        "line": 7564,
+        "level": "ERROR",
+        "batch": "defaultBatch",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Refusing chunk save with oversized combustion input; back up and repair first",
+        "expectation": "combustion-chunk-save-refused",
+        "in_batch": true
+      },
+      {
+        "line": 7652,
+        "level": "ERROR",
+        "batch": "defaultBatch",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Refusing chunk save with non-admissible solar input; back up and repair first",
+        "expectation": "solar-chunk-save-refused",
+        "in_batch": true
+      },
+      {
+        "line": 7715,
+        "level": "ERROR",
+        "batch": "defaultBatch",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "expectation": "recipe-chunk-save-refused",
+        "in_batch": true
+      },
+      {
+        "line": 7768,
+        "level": "ERROR",
+        "batch": "defaultBatch",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "expectation": "recipe-chunk-save-refused",
+        "in_batch": true
+      },
+      {
+        "line": 7820,
+        "level": "ERROR",
+        "batch": "defaultBatch",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "expectation": "recipe-chunk-save-refused",
+        "in_batch": true
+      },
+      {
+        "line": 7873,
+        "level": "ERROR",
+        "batch": "defaultBatch",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "expectation": "recipe-chunk-save-refused",
+        "in_batch": true
+      },
+      {
+        "line": 7925,
+        "level": "ERROR",
+        "batch": "defaultBatch",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "expectation": "recipe-chunk-save-refused",
+        "in_batch": true
+      },
+      {
+        "line": 7978,
+        "level": "ERROR",
+        "batch": "defaultBatch",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "expectation": "recipe-chunk-save-refused",
+        "in_batch": true
+      },
+      {
+        "line": 8030,
+        "level": "ERROR",
+        "batch": "defaultBatch",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "expectation": "recipe-chunk-save-refused",
+        "in_batch": true
+      },
+      {
+        "line": 8083,
+        "level": "ERROR",
+        "batch": "defaultBatch",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "expectation": "recipe-chunk-save-refused",
+        "in_batch": true
+      },
+      {
+        "line": 8135,
+        "level": "ERROR",
+        "batch": "defaultBatch",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "expectation": "recipe-chunk-save-refused",
+        "in_batch": true
+      },
+      {
+        "line": 8188,
+        "level": "ERROR",
+        "batch": "defaultBatch",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "expectation": "recipe-chunk-save-refused",
+        "in_batch": true
+      },
+      {
+        "line": 8240,
+        "level": "ERROR",
+        "batch": "defaultBatch",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "expectation": "recipe-chunk-save-refused",
+        "in_batch": true
+      },
+      {
+        "line": 8293,
+        "level": "ERROR",
+        "batch": "defaultBatch",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "expectation": "recipe-chunk-save-refused",
+        "in_batch": true
+      },
+      {
+        "line": 8345,
+        "level": "ERROR",
+        "batch": "defaultBatch",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "expectation": "recipe-chunk-save-refused",
+        "in_batch": true
+      },
+      {
+        "line": 8398,
+        "level": "ERROR",
+        "batch": "defaultBatch",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "expectation": "recipe-chunk-save-refused",
+        "in_batch": true
+      },
+      {
+        "line": 8450,
+        "level": "ERROR",
+        "batch": "defaultBatch",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "expectation": "recipe-chunk-save-refused",
+        "in_batch": true
+      },
+      {
+        "line": 8503,
+        "level": "ERROR",
+        "batch": "defaultBatch",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "expectation": "recipe-chunk-save-refused",
+        "in_batch": true
+      },
+      {
+        "line": 8555,
+        "level": "ERROR",
+        "batch": "defaultBatch",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "expectation": "recipe-chunk-save-refused",
+        "in_batch": true
+      },
+      {
+        "line": 8608,
+        "level": "ERROR",
+        "batch": "defaultBatch",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "expectation": "recipe-chunk-save-refused",
+        "in_batch": true
+      },
+      {
+        "line": 8660,
+        "level": "ERROR",
+        "batch": "defaultBatch",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "expectation": "recipe-chunk-save-refused",
+        "in_batch": true
+      },
+      {
+        "line": 8713,
+        "level": "ERROR",
+        "batch": "defaultBatch",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "expectation": "recipe-chunk-save-refused",
+        "in_batch": true
+      },
+      {
+        "line": 8765,
+        "level": "ERROR",
+        "batch": "defaultBatch",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "expectation": "recipe-chunk-save-refused",
+        "in_batch": true
+      },
+      {
+        "line": 8818,
+        "level": "ERROR",
+        "batch": "defaultBatch",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "expectation": "recipe-chunk-save-refused",
+        "in_batch": true
+      },
+      {
+        "line": 8870,
+        "level": "ERROR",
+        "batch": "defaultBatch",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "expectation": "recipe-chunk-save-refused",
+        "in_batch": true
+      },
+      {
+        "line": 8923,
+        "level": "ERROR",
+        "batch": "defaultBatch",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "expectation": "recipe-chunk-save-refused",
+        "in_batch": true
+      },
+      {
+        "line": 9213,
+        "level": "ERROR",
+        "batch": "classic_controls_channel",
+        "logger": "ne.mi.ne.si.IndexedMessageCodec/SIMPLENET",
+        "message": "Received invalid discriminator byte 3 on channel advancedrocketrycommunity:classic_controls",
+        "expectation": "classic-controls-unknown-index-dropped",
+        "in_batch": true
+      },
+      {
+        "line": 9670,
+        "level": "ERROR",
+        "batch": "landed_disassembly_writer",
+        "logger": "io.gi.su.ad.ro.fl.pe.RocketTransferSavedData/",
+        "message": "ARCE_TRANSFER_JOURNAL_UNACKNOWLEDGED retained dirty authority; dependent effects are blocked",
+        "expectation": "w92-isolated-landed-journal-unacknowledged",
+        "in_batch": true
+      },
+      {
+        "line": 9687,
+        "level": "ERROR",
+        "batch": "landed_disassembly_writer",
+        "logger": "io.gi.su.ad.ro.fl.pe.RocketTransferSavedData/",
+        "message": "ARCE_TRANSFER_JOURNAL_UNACKNOWLEDGED retained dirty authority; dependent effects are blocked",
+        "expectation": "w92-isolated-landed-journal-unacknowledged",
+        "in_batch": true
+      },
+      {
+        "line": 9704,
+        "level": "ERROR",
+        "batch": "landed_disassembly_writer",
+        "logger": "io.gi.su.ad.ro.fl.pe.RocketTransferSavedData/",
+        "message": "ARCE_TRANSFER_JOURNAL_UNACKNOWLEDGED retained dirty authority; dependent effects are blocked",
+        "expectation": "w92-isolated-landed-journal-unacknowledged",
+        "in_batch": true
+      },
+      {
+        "line": 9712,
+        "level": "ERROR",
+        "batch": "landed_disassembly_writer",
+        "logger": "io.gi.su.ad.ro.fl.pe.RocketTransferSavedData/",
+        "message": "ARCE_TRANSFER_JOURNAL_UNACKNOWLEDGED retained dirty authority; dependent effects are blocked",
+        "expectation": "w92-isolated-landed-journal-unacknowledged",
+        "in_batch": true
+      }
+    ]
+  },
+  {
+    "file": "D:\\GitHub\\ARCE-Task-Evidence\\root-queue\\W225-hosted\\job-124497458616.log",
+    "sha256": "20040ef417e218cc94d3e6d98535b8ced8bd486273d8a697a2fc816dbc1c3a17",
+    "levels": {
+      "WARN": 212,
+      "ERROR": 28
+    },
+    "error_expectations": {
+      "w91f-journal-scheduling-write-failures": 3,
+      "machine-menu-server-version-rejected": 8,
+      "machine-menu-client-version-rejected": 8,
+      "w21cf-research-debit-shortfall": 1,
+      "w37b-earlier-time-check-interruption": 4,
+      "precision-migration-injected-save-failure": 1,
+      "precision-one-shot-chunk-save-failed": 1,
+      "precision-controller-roots-unconfirmed": 1,
+      "w44-a1-refused-first-warp-replacement": 1
+    },
+    "unexpected": [
+      {
+        "line": 4540,
+        "level": "WARN",
+        "batch": "<startup>",
+        "logger": "minecraft/Pack",
+        "message": "Missing metadata in pack mod:arce_ci_gametest",
+        "expectation": null,
+        "in_batch": false
+      },
+      {
+        "line": 4541,
+        "level": "WARN",
+        "batch": "<startup>",
+        "logger": "minecraft/MinecraftServer",
+        "message": "Missing data pack mod:arce_ci_gametest",
+        "expectation": null,
+        "in_batch": false
+      }
+    ],
+    "count_mismatches": [],
+    "checker": [
+      "[FAIL] line 156: unexpected WARN, batch '<startup>', logger 'net.minecraft.server.packs.repository.Pack/': Missing metadata in pack mod:arce_ci_gametest [no GameTest frame]",
+      "[FAIL] line 157: unexpected WARN, batch '<startup>', logger 'net.minecraft.server.MinecraftServer/': Missing data pack mod:arce_ci_gametest [no GameTest frame]",
+      "[FAIL] check-shard: shard 2 GameTest log check failed"
+    ],
+    "errors": [
+      {
+        "line": 4798,
+        "level": "ERROR",
+        "batch": "journal_concurrent_flight",
+        "logger": "io.gi.su.ad.ro.fl.pe.RocketTransferSavedData/",
+        "message": "ARCE_TRANSFER_JOURNAL_UNACKNOWLEDGED retained dirty authority; dependent effects are blocked",
+        "expectation": "w91f-journal-scheduling-write-failures",
+        "in_batch": true
+      },
+      {
+        "line": 4799,
+        "level": "ERROR",
+        "batch": "journal_concurrent_flight",
+        "logger": "io.gi.su.ad.ro.fl.pe.RocketTransferSavedData/",
+        "message": "ARCE_TRANSFER_JOURNAL_UNACKNOWLEDGED retained dirty authority; dependent effects are blocked",
+        "expectation": "w91f-journal-scheduling-write-failures",
+        "in_batch": true
+      },
+      {
+        "line": 4823,
+        "level": "ERROR",
+        "batch": "journal_concurrent_flight",
+        "logger": "io.gi.su.ad.ro.fl.pe.RocketTransferSavedData/",
+        "message": "ARCE_TRANSFER_JOURNAL_UNACKNOWLEDGED retained dirty authority; dependent effects are blocked",
+        "expectation": "w91f-journal-scheduling-write-failures",
+        "in_batch": true
+      },
+      {
+        "line": 5437,
+        "level": "ERROR",
+        "batch": "machine_menu_channel",
+        "logger": "ne.mi.ne.NetworkRegistry/NETREGISTRY",
+        "message": "Channels [advancedrocketrycommunity:machine_menu] rejected their server side version number",
+        "expectation": "machine-menu-server-version-rejected",
+        "in_batch": true
+      },
+      {
+        "line": 5438,
+        "level": "ERROR",
+        "batch": "machine_menu_channel",
+        "logger": "ne.mi.ne.NetworkRegistry/NETREGISTRY",
+        "message": "Channels [advancedrocketrycommunity:machine_menu] rejected their server side version number",
+        "expectation": "machine-menu-server-version-rejected",
+        "in_batch": true
+      },
+      {
+        "line": 5439,
+        "level": "ERROR",
+        "batch": "machine_menu_channel",
+        "logger": "ne.mi.ne.NetworkRegistry/NETREGISTRY",
+        "message": "Channels [advancedrocketrycommunity:machine_menu] rejected their server side version number",
+        "expectation": "machine-menu-server-version-rejected",
+        "in_batch": true
+      },
+      {
+        "line": 5440,
+        "level": "ERROR",
+        "batch": "machine_menu_channel",
+        "logger": "ne.mi.ne.NetworkRegistry/NETREGISTRY",
+        "message": "Channels [advancedrocketrycommunity:machine_menu] rejected their server side version number",
+        "expectation": "machine-menu-server-version-rejected",
+        "in_batch": true
+      },
+      {
+        "line": 5441,
+        "level": "ERROR",
+        "batch": "machine_menu_channel",
+        "logger": "ne.mi.ne.NetworkRegistry/NETREGISTRY",
+        "message": "Channels [advancedrocketrycommunity:machine_menu] rejected their server side version number",
+        "expectation": "machine-menu-server-version-rejected",
+        "in_batch": true
+      },
+      {
+        "line": 5442,
+        "level": "ERROR",
+        "batch": "machine_menu_channel",
+        "logger": "ne.mi.ne.NetworkRegistry/NETREGISTRY",
+        "message": "Channels [advancedrocketrycommunity:machine_menu] rejected their server side version number",
+        "expectation": "machine-menu-server-version-rejected",
+        "in_batch": true
+      },
+      {
+        "line": 5443,
+        "level": "ERROR",
+        "batch": "machine_menu_channel",
+        "logger": "ne.mi.ne.NetworkRegistry/NETREGISTRY",
+        "message": "Channels [advancedrocketrycommunity:machine_menu] rejected their server side version number",
+        "expectation": "machine-menu-server-version-rejected",
+        "in_batch": true
+      },
+      {
+        "line": 5444,
+        "level": "ERROR",
+        "batch": "machine_menu_channel",
+        "logger": "ne.mi.ne.NetworkRegistry/NETREGISTRY",
+        "message": "Channels [advancedrocketrycommunity:machine_menu] rejected their server side version number",
+        "expectation": "machine-menu-server-version-rejected",
+        "in_batch": true
+      },
+      {
+        "line": 5445,
+        "level": "ERROR",
+        "batch": "machine_menu_channel",
+        "logger": "ne.mi.ne.NetworkRegistry/NETREGISTRY",
+        "message": "Channels [advancedrocketrycommunity:machine_menu] rejected their client side version number",
+        "expectation": "machine-menu-client-version-rejected",
+        "in_batch": true
+      },
+      {
+        "line": 5446,
+        "level": "ERROR",
+        "batch": "machine_menu_channel",
+        "logger": "ne.mi.ne.NetworkRegistry/NETREGISTRY",
+        "message": "Channels [advancedrocketrycommunity:machine_menu] rejected their client side version number",
+        "expectation": "machine-menu-client-version-rejected",
+        "in_batch": true
+      },
+      {
+        "line": 5447,
+        "level": "ERROR",
+        "batch": "machine_menu_channel",
+        "logger": "ne.mi.ne.NetworkRegistry/NETREGISTRY",
+        "message": "Channels [advancedrocketrycommunity:machine_menu] rejected their client side version number",
+        "expectation": "machine-menu-client-version-rejected",
+        "in_batch": true
+      },
+      {
+        "line": 5448,
+        "level": "ERROR",
+        "batch": "machine_menu_channel",
+        "logger": "ne.mi.ne.NetworkRegistry/NETREGISTRY",
+        "message": "Channels [advancedrocketrycommunity:machine_menu] rejected their client side version number",
+        "expectation": "machine-menu-client-version-rejected",
+        "in_batch": true
+      },
+      {
+        "line": 5449,
+        "level": "ERROR",
+        "batch": "machine_menu_channel",
+        "logger": "ne.mi.ne.NetworkRegistry/NETREGISTRY",
+        "message": "Channels [advancedrocketrycommunity:machine_menu] rejected their client side version number",
+        "expectation": "machine-menu-client-version-rejected",
+        "in_batch": true
+      },
+      {
+        "line": 5450,
+        "level": "ERROR",
+        "batch": "machine_menu_channel",
+        "logger": "ne.mi.ne.NetworkRegistry/NETREGISTRY",
+        "message": "Channels [advancedrocketrycommunity:machine_menu] rejected their client side version number",
+        "expectation": "machine-menu-client-version-rejected",
+        "in_batch": true
+      },
+      {
+        "line": 5451,
+        "level": "ERROR",
+        "batch": "machine_menu_channel",
+        "logger": "ne.mi.ne.NetworkRegistry/NETREGISTRY",
+        "message": "Channels [advancedrocketrycommunity:machine_menu] rejected their client side version number",
+        "expectation": "machine-menu-client-version-rejected",
+        "in_batch": true
+      },
+      {
+        "line": 5452,
+        "level": "ERROR",
+        "batch": "machine_menu_channel",
+        "logger": "ne.mi.ne.NetworkRegistry/NETREGISTRY",
+        "message": "Channels [advancedrocketrycommunity:machine_menu] rejected their client side version number",
+        "expectation": "machine-menu-client-version-rejected",
+        "in_batch": true
+      },
+      {
+        "line": 5605,
+        "level": "ERROR",
+        "batch": "research_debit",
+        "logger": "io.gi.su.ad.AdvancedRocketryCommunity/",
+        "message": "ARCE_RESEARCH_DEBIT_SHORTFALL level=minecraft:overworld pos=285, 308, 33 required=20 missing=10; paid research stops until the controller reloads",
+        "expectation": "w21cf-research-debit-shortfall",
+        "in_batch": true
+      },
+      {
+        "line": 5657,
+        "level": "ERROR",
+        "batch": "natural_beds_command",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: W37B injected earlier time-check listener interruption",
+        "expectation": "w37b-earlier-time-check-interruption",
+        "in_batch": true
+      },
+      {
+        "line": 5685,
+        "level": "ERROR",
+        "batch": "natural_beds_command",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: W37B injected earlier time-check listener interruption",
+        "expectation": "w37b-earlier-time-check-interruption",
+        "in_batch": true
+      },
+      {
+        "line": 5713,
+        "level": "ERROR",
+        "batch": "natural_beds_command",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: W37B injected earlier time-check listener interruption",
+        "expectation": "w37b-earlier-time-check-interruption",
+        "in_batch": true
+      },
+      {
+        "line": 5741,
+        "level": "ERROR",
+        "batch": "natural_beds_command",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: W37B injected earlier time-check listener interruption",
+        "expectation": "w37b-earlier-time-check-interruption",
+        "in_batch": true
+      },
+      {
+        "line": 6223,
+        "level": "ERROR",
+        "batch": "precision_migration_controller_failure",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Intentional one-shot Precision migration save failure",
+        "expectation": "precision-migration-injected-save-failure",
+        "in_batch": true
+      },
+      {
+        "line": 6286,
+        "level": "ERROR",
+        "batch": "precision_migration_controller_failure",
+        "logger": "minecraft/ChunkMap",
+        "message": "Failed to save chunk 32011,32003",
+        "expectation": "precision-one-shot-chunk-save-failed",
+        "in_batch": true
+      },
+      {
+        "line": 6323,
+        "level": "ERROR",
+        "batch": "precision_migration_controller_failure",
+        "logger": "io.gi.su.ad.AdvancedRocketryCommunity/",
+        "message": "Precision Assembler migration controller snapshot roots are not confirmed on disk at BlockPos{x=512191, y=20, z=512063} in minecraft:overworld: BlockPos{x=512191, y=20, z=512063}: arce_precision_resources differs (expected hash=-1702278132, saved hash=0)",
+        "expectation": "precision-controller-roots-unconfirmed",
+        "in_batch": true
+      },
+      {
+        "line": 7366,
+        "level": "ERROR",
+        "batch": "classic_first_event",
+        "logger": "io.gi.su.ad.AdvancedRocketryCommunity/",
+        "message": "ARCE_STATION_UPDATE_WRITE_FAILED station=1500120b-4916-4a1d-90ea-b6934eeaeffd stage=replace file_present=true",
+        "expectation": "w44-a1-refused-first-warp-replacement",
+        "in_batch": true
+      }
+    ]
+  },
+  {
+    "file": "D:\\GitHub\\ARCE-Task-Evidence\\root-queue\\W225-hosted\\job-124497458642.log",
+    "sha256": "9f26ebe9dfd52b1b57bd0c28f4933192fa0084ab7a3855b94f7bc3dab9b91385",
+    "levels": {
+      "WARN": 318,
+      "ERROR": 30
+    },
+    "error_expectations": {
+      "w33-unlit-torch-chunk-save-refused": 1,
+      "w159-player-backup-retries": 20,
+      "w159-player-backup-abort": 2,
+      "w129c-satellite-registry-unacknowledged": 1,
+      "w37b-earlier-time-check-interruption": 1,
+      "satellite-idle-launch-flush-failed": 1,
+      "rolling-recipe-disabled-unbound-tag": 1,
+      "precision-recipe-disabled-unbound-tag": 1,
+      "electrolyzer-recipe-disabled-unbound-tag": 1,
+      "w129a-transaction-journal-unacknowledged": 1
+    },
+    "unexpected": [
+      {
+        "line": 4540,
+        "level": "WARN",
+        "batch": "<startup>",
+        "logger": "minecraft/Pack",
+        "message": "Missing metadata in pack mod:arce_ci_gametest",
+        "expectation": null,
+        "in_batch": false
+      },
+      {
+        "line": 4541,
+        "level": "WARN",
+        "batch": "<startup>",
+        "logger": "minecraft/MinecraftServer",
+        "message": "Missing data pack mod:arce_ci_gametest",
+        "expectation": null,
+        "in_batch": false
+      }
+    ],
+    "count_mismatches": [],
+    "checker": [
+      "[FAIL] line 156: unexpected WARN, batch '<startup>', logger 'net.minecraft.server.packs.repository.Pack/': Missing metadata in pack mod:arce_ci_gametest [no GameTest frame]",
+      "[FAIL] line 157: unexpected WARN, batch '<startup>', logger 'net.minecraft.server.MinecraftServer/': Missing data pack mod:arce_ci_gametest [no GameTest frame]",
+      "[FAIL] check-shard: shard 0 GameTest log check failed"
+    ],
+    "errors": [
+      {
+        "line": 5121,
+        "level": "ERROR",
+        "batch": "unlit_torch",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: Refusing non-lossless unlit torch root; back up and repair offline",
+        "expectation": "w33-unlit-torch-chunk-save-refused",
+        "in_batch": true
+      },
+      {
+        "line": 5217,
+        "level": "ERROR",
+        "batch": "rocket_rejoin_replace_failure",
+        "logger": "minecraft/Util",
+        "message": "Failed to create backup ./world/playerdata/f73799e3-448a-4663-bcb8-68880338e641.dat_old, retrying 0/10",
+        "expectation": "w159-player-backup-retries",
+        "in_batch": true
+      },
+      {
+        "line": 5246,
+        "level": "ERROR",
+        "batch": "rocket_rejoin_replace_failure",
+        "logger": "minecraft/Util",
+        "message": "Failed to create backup ./world/playerdata/f73799e3-448a-4663-bcb8-68880338e641.dat_old, retrying 1/10",
+        "expectation": "w159-player-backup-retries",
+        "in_batch": true
+      },
+      {
+        "line": 5275,
+        "level": "ERROR",
+        "batch": "rocket_rejoin_replace_failure",
+        "logger": "minecraft/Util",
+        "message": "Failed to create backup ./world/playerdata/f73799e3-448a-4663-bcb8-68880338e641.dat_old, retrying 2/10",
+        "expectation": "w159-player-backup-retries",
+        "in_batch": true
+      },
+      {
+        "line": 5304,
+        "level": "ERROR",
+        "batch": "rocket_rejoin_replace_failure",
+        "logger": "minecraft/Util",
+        "message": "Failed to create backup ./world/playerdata/f73799e3-448a-4663-bcb8-68880338e641.dat_old, retrying 3/10",
+        "expectation": "w159-player-backup-retries",
+        "in_batch": true
+      },
+      {
+        "line": 5333,
+        "level": "ERROR",
+        "batch": "rocket_rejoin_replace_failure",
+        "logger": "minecraft/Util",
+        "message": "Failed to create backup ./world/playerdata/f73799e3-448a-4663-bcb8-68880338e641.dat_old, retrying 4/10",
+        "expectation": "w159-player-backup-retries",
+        "in_batch": true
+      },
+      {
+        "line": 5362,
+        "level": "ERROR",
+        "batch": "rocket_rejoin_replace_failure",
+        "logger": "minecraft/Util",
+        "message": "Failed to create backup ./world/playerdata/f73799e3-448a-4663-bcb8-68880338e641.dat_old, retrying 5/10",
+        "expectation": "w159-player-backup-retries",
+        "in_batch": true
+      },
+      {
+        "line": 5391,
+        "level": "ERROR",
+        "batch": "rocket_rejoin_replace_failure",
+        "logger": "minecraft/Util",
+        "message": "Failed to create backup ./world/playerdata/f73799e3-448a-4663-bcb8-68880338e641.dat_old, retrying 6/10",
+        "expectation": "w159-player-backup-retries",
+        "in_batch": true
+      },
+      {
+        "line": 5420,
+        "level": "ERROR",
+        "batch": "rocket_rejoin_replace_failure",
+        "logger": "minecraft/Util",
+        "message": "Failed to create backup ./world/playerdata/f73799e3-448a-4663-bcb8-68880338e641.dat_old, retrying 7/10",
+        "expectation": "w159-player-backup-retries",
+        "in_batch": true
+      },
+      {
+        "line": 5449,
+        "level": "ERROR",
+        "batch": "rocket_rejoin_replace_failure",
+        "logger": "minecraft/Util",
+        "message": "Failed to create backup ./world/playerdata/f73799e3-448a-4663-bcb8-68880338e641.dat_old, retrying 8/10",
+        "expectation": "w159-player-backup-retries",
+        "in_batch": true
+      },
+      {
+        "line": 5478,
+        "level": "ERROR",
+        "batch": "rocket_rejoin_replace_failure",
+        "logger": "minecraft/Util",
+        "message": "Failed to create backup ./world/playerdata/f73799e3-448a-4663-bcb8-68880338e641.dat_old, retrying 9/10",
+        "expectation": "w159-player-backup-retries",
+        "in_batch": true
+      },
+      {
+        "line": 5479,
+        "level": "ERROR",
+        "batch": "rocket_rejoin_replace_failure",
+        "logger": "minecraft/Util",
+        "message": "Failed to create backup ./world/playerdata/f73799e3-448a-4663-bcb8-68880338e641.dat_old, aborting, progress might be lost",
+        "expectation": "w159-player-backup-abort",
+        "in_batch": true
+      },
+      {
+        "line": 5545,
+        "level": "ERROR",
+        "batch": "rocket_rejoin_replace_ordinary",
+        "logger": "minecraft/Util",
+        "message": "Failed to create backup ./world/playerdata/5711379e-8a79-421d-a26b-aa7b4e605a2f.dat_old, retrying 0/10",
+        "expectation": "w159-player-backup-retries",
+        "in_batch": true
+      },
+      {
+        "line": 5574,
+        "level": "ERROR",
+        "batch": "rocket_rejoin_replace_ordinary",
+        "logger": "minecraft/Util",
+        "message": "Failed to create backup ./world/playerdata/5711379e-8a79-421d-a26b-aa7b4e605a2f.dat_old, retrying 1/10",
+        "expectation": "w159-player-backup-retries",
+        "in_batch": true
+      },
+      {
+        "line": 5603,
+        "level": "ERROR",
+        "batch": "rocket_rejoin_replace_ordinary",
+        "logger": "minecraft/Util",
+        "message": "Failed to create backup ./world/playerdata/5711379e-8a79-421d-a26b-aa7b4e605a2f.dat_old, retrying 2/10",
+        "expectation": "w159-player-backup-retries",
+        "in_batch": true
+      },
+      {
+        "line": 5632,
+        "level": "ERROR",
+        "batch": "rocket_rejoin_replace_ordinary",
+        "logger": "minecraft/Util",
+        "message": "Failed to create backup ./world/playerdata/5711379e-8a79-421d-a26b-aa7b4e605a2f.dat_old, retrying 3/10",
+        "expectation": "w159-player-backup-retries",
+        "in_batch": true
+      },
+      {
+        "line": 5661,
+        "level": "ERROR",
+        "batch": "rocket_rejoin_replace_ordinary",
+        "logger": "minecraft/Util",
+        "message": "Failed to create backup ./world/playerdata/5711379e-8a79-421d-a26b-aa7b4e605a2f.dat_old, retrying 4/10",
+        "expectation": "w159-player-backup-retries",
+        "in_batch": true
+      },
+      {
+        "line": 5690,
+        "level": "ERROR",
+        "batch": "rocket_rejoin_replace_ordinary",
+        "logger": "minecraft/Util",
+        "message": "Failed to create backup ./world/playerdata/5711379e-8a79-421d-a26b-aa7b4e605a2f.dat_old, retrying 5/10",
+        "expectation": "w159-player-backup-retries",
+        "in_batch": true
+      },
+      {
+        "line": 5719,
+        "level": "ERROR",
+        "batch": "rocket_rejoin_replace_ordinary",
+        "logger": "minecraft/Util",
+        "message": "Failed to create backup ./world/playerdata/5711379e-8a79-421d-a26b-aa7b4e605a2f.dat_old, retrying 6/10",
+        "expectation": "w159-player-backup-retries",
+        "in_batch": true
+      },
+      {
+        "line": 5748,
+        "level": "ERROR",
+        "batch": "rocket_rejoin_replace_ordinary",
+        "logger": "minecraft/Util",
+        "message": "Failed to create backup ./world/playerdata/5711379e-8a79-421d-a26b-aa7b4e605a2f.dat_old, retrying 7/10",
+        "expectation": "w159-player-backup-retries",
+        "in_batch": true
+      },
+      {
+        "line": 5777,
+        "level": "ERROR",
+        "batch": "rocket_rejoin_replace_ordinary",
+        "logger": "minecraft/Util",
+        "message": "Failed to create backup ./world/playerdata/5711379e-8a79-421d-a26b-aa7b4e605a2f.dat_old, retrying 8/10",
+        "expectation": "w159-player-backup-retries",
+        "in_batch": true
+      },
+      {
+        "line": 5806,
+        "level": "ERROR",
+        "batch": "rocket_rejoin_replace_ordinary",
+        "logger": "minecraft/Util",
+        "message": "Failed to create backup ./world/playerdata/5711379e-8a79-421d-a26b-aa7b4e605a2f.dat_old, retrying 9/10",
+        "expectation": "w159-player-backup-retries",
+        "in_batch": true
+      },
+      {
+        "line": 5807,
+        "level": "ERROR",
+        "batch": "rocket_rejoin_replace_ordinary",
+        "logger": "minecraft/Util",
+        "message": "Failed to create backup ./world/playerdata/5711379e-8a79-421d-a26b-aa7b4e605a2f.dat_old, aborting, progress might be lost",
+        "expectation": "w159-player-backup-abort",
+        "in_batch": true
+      },
+      {
+        "line": 6111,
+        "level": "ERROR",
+        "batch": "planetary_discovery_recovery",
+        "logger": "io.gi.su.ad.sa.pe.SatelliteRegistryWriter/",
+        "message": "ARCE_SATELLITE_REGISTRY_UNACKNOWLEDGED outcome=FAILED sequence=9 epoch=3 durable=2; retained dirty state",
+        "expectation": "w129c-satellite-registry-unacknowledged",
+        "in_batch": true
+      },
+      {
+        "line": 6658,
+        "level": "ERROR",
+        "batch": "natural_beds_start",
+        "logger": "ne.mi.ev.EventBus/EVENTBUS",
+        "message": "Exception caught during firing event: W37B injected earlier time-check listener interruption",
+        "expectation": "w37b-earlier-time-check-interruption",
+        "in_batch": true
+      },
+      {
+        "line": 7254,
+        "level": "ERROR",
+        "batch": "satellite_blocked",
+        "logger": "io.gi.su.ad.AdvancedRocketryCommunity/",
+        "message": "Satellite idle launch operation failed",
+        "expectation": "satellite-idle-launch-flush-failed",
+        "in_batch": true
+      },
+      {
+        "line": 7282,
+        "level": "ERROR",
+        "batch": "recipe_signatures",
+        "logger": "io.gi.su.ad.AdvancedRocketryCommunity/",
+        "message": "Disabling machine recipe advancedrocketrycommunity:rolling_iron_bars until tag reload: machine ingredient has no bound alternatives",
+        "expectation": "rolling-recipe-disabled-unbound-tag",
+        "in_batch": true
+      },
+      {
+        "line": 7283,
+        "level": "ERROR",
+        "batch": "recipe_signatures",
+        "logger": "io.gi.su.ad.AdvancedRocketryCommunity/",
+        "message": "Disabling machine recipe advancedrocketrycommunity:precision_control_circuit until tag reload: machine ingredient has no bound alternatives",
+        "expectation": "precision-recipe-disabled-unbound-tag",
+        "in_batch": true
+      },
+      {
+        "line": 7284,
+        "level": "ERROR",
+        "batch": "recipe_signatures",
+        "logger": "io.gi.su.ad.AdvancedRocketryCommunity/",
+        "message": "Disabling machine recipe advancedrocketrycommunity:electrolyzer_water until tag reload: machine ingredient has no bound alternatives",
+        "expectation": "electrolyzer-recipe-disabled-unbound-tag",
+        "in_batch": true
+      },
+      {
+        "line": 7531,
+        "level": "ERROR",
+        "batch": "rocket_transaction_proof",
+        "logger": "io.gi.su.ad.ro.pe.RocketTransactionSavedData/",
+        "message": "ARCE_TRANSACTION_JOURNAL_UNACKNOWLEDGED outcome=NOT_COMMITTED sequence=1 acknowledged=none",
+        "expectation": "w129a-transaction-journal-unacknowledged",
+        "in_batch": true
+      }
+    ]
+  }
+]

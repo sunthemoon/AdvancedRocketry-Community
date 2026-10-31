@@ -1,0 +1,52 @@
+{
+  "tests": 5879,
+  "failures": 8,
+  "errors": 0,
+  "skipped": 0,
+  "classes": 1073,
+  "failure_types": {
+    "java.lang.NoClassDefFoundError": 8
+  },
+  "failures_list": [
+    {
+      "class": "io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationCheckedUpdateTest",
+      "test": "aQuarantinedRegistryStopsTheSkyContextAndTheClockButStillResolvesReads()",
+      "failure": "java.lang.NoClassDefFoundError: io/github/sunthemoon/advancedrocketrycommunity/station/orbit/StationSkyContextService"
+    },
+    {
+      "class": "io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationFirstWarpTest",
+      "test": "anUnreadableRegistryIsNeverWrittenAndAnAppearedFileIsKept()",
+      "failure": "java.lang.NoClassDefFoundError: io/github/sunthemoon/advancedrocketrycommunity/station/persistence/StationOrdinaryWriter"
+    },
+    {
+      "class": "io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationFirstWriteTest",
+      "test": "failedInitialOrdinarySaveKeepsTheGuardForTheNextCheckedSave()",
+      "failure": "java.lang.NoClassDefFoundError: io/github/sunthemoon/advancedrocketrycommunity/station/persistence/StationOrdinaryWriter"
+    },
+    {
+      "class": "io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationFirstWriteTest",
+      "test": "aFirstSaveFailingAfterStagingLeavesNoTornTargetAndTheNextSaveOwnsTheRegistry()",
+      "failure": "java.lang.NoClassDefFoundError: io/github/sunthemoon/advancedrocketrycommunity/station/persistence/StationOrdinaryWriter"
+    },
+    {
+      "class": "io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationFirstWriteTest",
+      "test": "aFirstSaveFailingAfterItsMoveIsOwnedThroughItsReadback()",
+      "failure": "java.lang.NoClassDefFoundError: io/github/sunthemoon/advancedrocketrycommunity/station/persistence/StationOrdinaryWriter"
+    },
+    {
+      "class": "io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationFirstWriteTest",
+      "test": "failedInitialOrdinarySaveKeepsTheGuardForTheNextOrdinarySave()",
+      "failure": "java.lang.NoClassDefFoundError: io/github/sunthemoon/advancedrocketrycommunity/station/persistence/StationOrdinaryWriter"
+    },
+    {
+      "class": "io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationFirstWriteTest",
+      "test": "failedInitialOrdinarySaveCanRetryIfTheTargetRemainsAbsent()",
+      "failure": "java.lang.NoClassDefFoundError: io/github/sunthemoon/advancedrocketrycommunity/station/persistence/StationOrdinaryWriter"
+    },
+    {
+      "class": "io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationFirstWriteTest",
+      "test": "successfulOrdinarySavePreservesTheLiveClockWithoutRaisingTheCheckedFloor()",
+      "failure": "java.lang.NoClassDefFoundError: io/github/sunthemoon/advancedrocketrycommunity/station/persistence/StationOrdinaryWriter"
+    }
+  ]
+}

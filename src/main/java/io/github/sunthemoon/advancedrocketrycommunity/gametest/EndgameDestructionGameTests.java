@@ -5,6 +5,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.endgame.EndgameModule;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTest;
@@ -13,11 +14,16 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.PushReaction;
+import net.minecraft.world.phys.AABB;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -88,8 +94,26 @@ public final class EndgameDestructionGameTests {
             placed.add(pos);
         }
         for (BlockPos pos : placed) {
-            level.explode(null, pos.getX() + 1.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, 6.0F,
-                    Level.ExplosionInteraction.TNT);
+            // Explosion drops are published synchronously, but may fall into a later test's cell many ticks later.
+            // Capture joins as in ForceFieldPlacementGameTests: a fresh chunk may not expose its items to queries yet.
+            AABB blastArea = new AABB(pos.east()).inflate(13.0D);
+            List<ItemEntity> spawned = new ArrayList<>();
+            Consumer<EntityJoinLevelEvent> capture = event -> {
+                if (event.getLevel() == level && level.getServer().isSameThread() && !event.loadedFromDisk()
+                        && event.getEntity() instanceof ItemEntity item && blastArea.contains(item.position())) {
+                    spawned.add(item);
+                }
+            };
+            MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, false, EntityJoinLevelEvent.class, capture);
+            try {
+                level.explode(null, pos.getX() + 1.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, 6.0F,
+                        Level.ExplosionInteraction.TNT);
+            } finally {
+                MinecraftForge.EVENT_BUS.unregister(capture);
+                spawned.forEach(ItemEntity::discard);
+            }
+            helper.assertTrue(spawned.stream().allMatch(ItemEntity::isRemoved),
+                    "The blast left item drops for another test");
         }
         for (int i = 0; i < placed.size(); i++) {
             BlockPos pos = placed.get(i);

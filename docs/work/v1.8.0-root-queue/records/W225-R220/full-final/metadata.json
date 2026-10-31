@@ -1,0 +1,20 @@
+{
+  "source": "ba789707fd538b6ffeafcb5f2dfce6fcc1654d34",
+  "source_status": "",
+  "command": ".\\gradlew.bat --offline --no-daemon --console=plain runGameTestServer",
+  "native_exit": 0,
+  "checker_exit": 0,
+  "disk_before": [
+    {
+      "Name": "C",
+      "Free": 53849182208
+    },
+    {
+      "Name": "D",
+      "Free": 294372966400
+    }
+  ],
+  "raw_log_sha256": "ac11c024558afef2ebcb20ccef743a7958a42d01f52f4752671d3b2b43be066e",
+  "retained_log_sha256": "6cb1e08a1b6bd8963f9fdc947a1ff5d05803be23d8c976b9e15210c11e808eba",
+  "log_encoding": "Gzip of the original captured bytes; no content or newline normalization"
+}

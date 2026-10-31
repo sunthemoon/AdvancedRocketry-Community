@@ -237,6 +237,9 @@ public final class FluidFuelLoaderEscrowGameTests {
                 step = 1; return;
             }
             if (step == 1) {
+                // Setup's proof was acquired on the previous tick. Another flight may have changed T since then.
+                // Wait before opening any device gate; the five captures still run as one owner-thread action.
+                if (!RocketTransferSavedData.get(server).retryChecked(server)) { return; }
                 // The gate opens for this one owner-thread action only, so no paced attempt can join the queue meanwhile.
                 loaders.forEach(loader -> gate(loader, true));
                 var logical = rocket.assemblyTransactionId().orElseThrow();

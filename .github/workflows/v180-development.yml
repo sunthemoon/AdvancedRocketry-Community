@@ -30,12 +30,10 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  regression:
+  build:
     runs-on: ubuntu-latest
-    # A hang guard for the whole job, not a test budget: every GameTest keeps its own tick timeout. Root raised it from
-    # 45 on 2026-10-20, after run 39266165628 at efdd7f23 passed every step and was cancelled at 45.0 minutes; runs
-    # since 2026-10-18 took 39 to 44 minutes (7 for the build, 31 to 35 for about 1,227 GameTests).
-    timeout-minutes: 75
+    # Build, unit tests, artifact audits and deterministic DataGen run once before the matrix.
+    timeout-minutes: 35
     env:
       REVIEW_COMMIT: ${{ github.sha }}
       PYTHONDONTWRITEBYTECODE: "1"
@@ -87,7 +85,7 @@ jobs:
           java -XshowSettings:properties -version 2>&1 | tee "$EVIDENCE_DIR/java-version.txt"
           python -B -c 'import tempfile; print(tempfile.gettempdir())' | tee "$EVIDENCE_DIR/python-temp.txt"
           python -B -m unittest discover -s tests -p test_check_v180_ci_host.py -v 2>&1 | tee "$EVIDENCE_DIR/host-tests.log"
-          python -B -m unittest discover -s tests -p test_check_gametest_log.py -v 2>&1 | tee "$EVIDENCE_DIR/gametest-log-tests.log"
+          python -B -m unittest discover -s tests -p '*gametest*.py' -v 2>&1 | tee "$EVIDENCE_DIR/gametest-log-tests.log"
           python -B scripts/validate_v1plus_planning.py | tee "$EVIDENCE_DIR/planning.log"
           python -B scripts/validate_v180_content_ledger.py --require-accepted | tee "$EVIDENCE_DIR/ledger.log"
 
@@ -115,24 +113,32 @@ jobs:
           git diff --exit-code 2>&1 | tee "$EVIDENCE_DIR/repeat-datagen-diff.log"
           python -B scripts/check_clean_worktree.py | tee "$EVIDENCE_DIR/repeat-datagen-status.log"
 
-      - name: Run all Forge GameTests
+      - name: Build and seal the single GameTest runtime bundle
         run: |
-          python -B scripts/check_v180_ci_host.py | tee "$EVIDENCE_DIR/host-gametest.json"
-          ./gradlew runGameTestServer --no-daemon --stacktrace 2>&1 | tee "$EVIDENCE_DIR/gametest.log"
-          python -B scripts/check_gametest_log.py build/gametest/logs/latest.log 2>&1 | tee "$EVIDENCE_DIR/gametest-log-check.log"
+          ./gradlew -I scripts/ci_gametest/init.gradle ciGameTestJars --no-daemon --stacktrace 2>&1 | tee "$EVIDENCE_DIR/runtime-jars.log"
+          cp "$ARCE_ARTIFACT" build/ci-gametest/release.jar
+          python -B scripts/ci_gametest_shards.py seal --bundle build/ci-gametest --commit "$REVIEW_COMMIT" | tee "$EVIDENCE_DIR/runtime-seal.log"
+          cp build/ci-gametest/identity.json "$EVIDENCE_DIR/runtime-identity.json"
+
+      - name: Upload the immutable runtime bundle for every shard
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: v180-gametest-runtime-${{ github.sha }}-${{ github.run_attempt }}
+          if-no-files-found: error
+          retention-days: 14
+          path: build/ci-gametest/
 
       - name: Upload raw regression evidence, including failed runs
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          name: v180-regression-${{ github.sha }}-${{ github.run_attempt }}
+          name: v180-build-evidence-${{ github.sha }}-${{ github.run_attempt }}
           if-no-files-found: error
           retention-days: 14
           path: |
             ${{ runner.temp }}/arce-v180-regression/
             build/reports/tests/test/
             build/test-results/test/
-            build/gametest/logs/
 
       - name: Upload the single external build artifact
         if: success()
@@ -142,3 +148,149 @@ jobs:
           if-no-files-found: error
           retention-days: 14
           path: ${{ env.ARCE_ARTIFACT }}
+
+  gametest:
+    needs: build
+    runs-on: ubuntu-latest
+    # Job hang guard only. Existing per-case tick timeouts/budgets are unchanged.
+    # SHA-256 batch partition: four shards, targeting <30 minutes including setup.
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3]
+    env:
+      REVIEW_COMMIT: ${{ github.sha }}
+      PYTHONDONTWRITEBYTECODE: "1"
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Check out the exact built commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ env.REVIEW_COMMIT }}
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Verify checkout and execution host before setup
+        env:
+          EVIDENCE_DIR: ${{ github.workspace }}/build/ci-gametest-result
+          TMPDIR: ${{ runner.temp }}
+          TMP: ${{ runner.temp }}
+          TEMP: ${{ runner.temp }}
+          JAVA_TOOL_OPTIONS: -Djava.io.tmpdir=${{ runner.temp }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$REVIEW_COMMIT"
+          python3 -B scripts/check_v180_ci_host.py
+          printf '%s\n' "EVIDENCE_DIR=$EVIDENCE_DIR" "TMPDIR=$TMPDIR" "TMP=$TMP" "TEMP=$TEMP" "JAVA_TOOL_OPTIONS=$JAVA_TOOL_OPTIONS" >> "$GITHUB_ENV"
+          mkdir -p "$EVIDENCE_DIR"
+          git rev-parse HEAD > "$EVIDENCE_DIR/tested-commit.txt"
+          python3 -B scripts/check_v180_ci_host.py > "$EVIDENCE_DIR/host-setup.json"
+
+      - name: Set up Java 17
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: "3.12"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6
+        with:
+          cache-read-only: true
+
+      - name: Download the once-built runtime bundle
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        with:
+          name: v180-gametest-runtime-${{ github.sha }}-${{ github.run_attempt }}
+          path: build/ci-gametest
+
+      - name: Verify JAR identity and restore only the sealed runtime bytes
+        run: |
+          python -B scripts/ci_gametest_shards.py restore --bundle build/ci-gametest --commit "$REVIEW_COMMIT" | tee "$EVIDENCE_DIR/runtime-restore.log"
+
+      - name: Run this shard in its own fresh Forge world
+        run: |
+          python -B scripts/check_v180_ci_host.py | tee "$EVIDENCE_DIR/host-gametest.json"
+          ./gradlew -I scripts/ci_gametest/init.gradle -PciShard=${{ matrix.shard }} runGameTestServer --no-build-cache --no-daemon --stacktrace -x compileJava -x processResources -x compileAdapterTestJava -x processAdapterTestResources -x compileCiGameTestJava -x processCiGameTestResources 2>&1 | tee "$EVIDENCE_DIR/gametest.log"
+          printf '0\n' > "$EVIDENCE_DIR/native-exit.txt"
+
+      - name: Verify unchanged runtime and check this shard's raw logs
+        if: always()
+        run: |
+          mkdir -p "$EVIDENCE_DIR"
+          if [ -d build/gametest/logs ]; then cp -a build/gametest/logs "$EVIDENCE_DIR/logs"; fi
+          python -B scripts/ci_gametest_shards.py verify-runtime --bundle build/ci-gametest --commit "$REVIEW_COMMIT" | tee "$EVIDENCE_DIR/runtime-after.log"
+          python -B scripts/ci_gametest_shards.py check-shard --evidence "$EVIDENCE_DIR" 2>&1 | tee "$EVIDENCE_DIR/log-check.log"
+
+      - name: Upload this shard including failed or incomplete evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: v180-shard-${{ matrix.shard }}-${{ github.sha }}-${{ github.run_attempt }}
+          if-no-files-found: error
+          retention-days: 14
+          path: build/ci-gametest-result/
+
+  regression:
+    # Keep the original required-check job name. Missing, cancelled and failed
+    # dependencies must fail this job, never silently skip the regression check.
+    needs: [build, gametest]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      REVIEW_COMMIT: ${{ github.sha }}
+      PYTHONDONTWRITEBYTECODE: "1"
+      EVIDENCE_DIR: ${{ github.workspace }}/build/ci-gametest-union
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Check out the exact tested commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ env.REVIEW_COMMIT }}
+          persist-credentials: false
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: "3.12"
+
+      - name: Require the build and audit job
+        run: test '${{ needs.build.result }}' = success
+
+      - name: Download the sealed artifact identity
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        with:
+          name: v180-gametest-runtime-${{ github.sha }}-${{ github.run_attempt }}
+          path: build/ci-gametest
+
+      - name: Download all shard evidence without merging filenames
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        with:
+          pattern: v180-shard-*-${{ github.sha }}-${{ github.run_attempt }}
+          path: ${{ env.EVIDENCE_DIR }}
+          merge-multiple: false
+
+      - name: Require every native shard, exact executed union and unchanged log budgets
+        run: |
+          for i in 0 1 2 3; do
+            mv "$EVIDENCE_DIR/v180-shard-$i-$REVIEW_COMMIT-${{ github.run_attempt }}" "$EVIDENCE_DIR/shard-$i"
+          done
+          python -B scripts/ci_gametest_shards.py union --evidence "$EVIDENCE_DIR" --bundle build/ci-gametest --commit "$REVIEW_COMMIT" --job-result '${{ needs.gametest.result }}' 2>&1 | tee "$EVIDENCE_DIR/union.log"
+
+      - name: Upload union checks including failures
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: v180-regression-${{ github.sha }}-${{ github.run_attempt }}
+          if-no-files-found: error
+          retention-days: 14
+          path: ${{ env.EVIDENCE_DIR }}/

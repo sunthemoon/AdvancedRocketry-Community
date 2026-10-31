@@ -294,18 +294,31 @@ final class BeaconGameTestFixture implements AutoCloseable {
         return position;
     }
 
-    /** Test-owned tickets for an isolated chunk; releasing them permits a native unload. */
-    void forceChunk(BlockPos at, boolean force) {
-        ChunkPos chunk = new ChunkPos(at);
+    private void ownChunk(ChunkPos chunk, boolean force) {
         if (!fixtureChunks.contains(chunk)) {
             helper.assertTrue(force && !level.getForcedChunks().contains(chunk.toLong()),
                     "The fixture does not own this chunk's forced ticket");
             fixtureChunks.add(chunk);
         }
+    }
+
+    /** Let native FULL promotion request entity storage before requesting the larger ticking neighbourhood. */
+    void prepareChunk(BlockPos at) {
+        ChunkPos chunk = new ChunkPos(at);
+        ownChunk(chunk, true);
+        level.getChunkSource().addRegionTicket(TICKET, chunk, 0, ticketId);
+        level.getChunkAt(at);
+    }
+
+    /** Test-owned tickets for an isolated chunk; releasing them permits a native unload. */
+    void forceChunk(BlockPos at, boolean force) {
+        ChunkPos chunk = new ChunkPos(at);
+        ownChunk(chunk, force);
         if (force) {
             level.getChunkSource().addRegionTicket(TICKET, chunk, 2, ticketId);
         } else {
             level.getChunkSource().removeRegionTicket(TICKET, chunk, 2, ticketId);
+            level.getChunkSource().removeRegionTicket(TICKET, chunk, 0, ticketId);
         }
         level.setChunkForced(chunk.x, chunk.z, force);
         if (force) {
@@ -369,6 +382,7 @@ final class BeaconGameTestFixture implements AutoCloseable {
         } finally {
             for (ChunkPos chunk : fixtureChunks) {
                 level.getChunkSource().removeRegionTicket(TICKET, chunk, 2, ticketId);
+                level.getChunkSource().removeRegionTicket(TICKET, chunk, 0, ticketId);
                 level.setChunkForced(chunk.x, chunk.z, false);
             }
             for (ServerPlayer operator : operators) {

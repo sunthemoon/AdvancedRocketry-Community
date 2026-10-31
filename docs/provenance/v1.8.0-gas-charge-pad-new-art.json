@@ -52,6 +52,59 @@
         "Draw an original 16x16 grid initialized to palette digit 3, a digit-8 inset border, and two digit-9 indicator strips at x=3..5 and x=10..12, y=5..10.",
         "Encode with V180MaterialArt.png and tint 0x85C8B5; no upstream, Minecraft, Mojang, Microsoft, Forge, LibVulpes or third-party bitmap is read, traced, copied or transformed."
       ]
+    },
+    {
+      "status": "NEW",
+      "revision": 1,
+      "recorded_at": "2026-11-01",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w232",
+      "source_commit": "92070ab9ca6d459c6fb5b3237f7ef099a901b0d8",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180GasChargePadData.java",
+      "source_sha256": "81597752f5a75d6f833b81765b1137d81a7bcf5919460979d0e6974a6b24e1d8",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/gas_charge_pad_top.png",
+      "target_bytes": 183,
+      "target_sha256": "d421386f4e63eae8ad899a9826b96762819f6d4a25d312c3c67793c9e816bf7b",
+      "supersedes_target_sha256": "92c4fc325902e91d13b5e21ce70de34aa7134824482e2da98eaa292d9ab606cf",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "reason": "W232, Root decision R233: the original border and diamond produce a SUSPECT whole-image luminance-rank match to the 1.12.2 footprint at 2x downsampling (IoU 1.0, rank 0.7525, zero shared colours). Replace the diamond with original charging hardware rather than changing the screen or its thresholds. The original entries above remain historical; the side texture is unchanged.",
+      "grid": [
+        "3333333333333333",
+        "3888888888888883",
+        "3813333333333183",
+        "3833333333333383",
+        "3836999633777383",
+        "3836900633505383",
+        "3836000633777383",
+        "3836000633505383",
+        "3836444633777383",
+        "3833363333353383",
+        "3833363333353383",
+        "3833365555553383",
+        "3833334444433383",
+        "3813333333333183",
+        "3888888888888883",
+        "3333333333333333"
+      ],
+      "transformation": [
+        "Draw the listed original opaque 16x16 grid: a recessed charging coupling on the left, a three-bar manifold on the right, a connecting hose below, and four recessed bolts inside the inset plate border.",
+        "Encode with the unchanged V180MaterialArt.png encoder and tint 0x85C8B5. No upstream, Minecraft, Mojang, Microsoft, Forge, LibVulpes or third-party bitmap is read, traced, copied or transformed to produce this texture. Vanilla client images are read only by the separate verification screen."
+      ]
+    }
+  ],
+  "review_history": [
+    {
+      "recorded_at": "2026-10-31",
+      "superseded_at": "2026-11-01",
+      "reason": "Preserve the original pending review and its content digest before appending W232 revision 1.",
+      "review": {
+        "status": "PENDING_HUMAN_REVIEW",
+        "content_digest": "8c65e37089ec083a1205683a8d3bf81e10f4852bbde132a773b10e5bf565753e",
+        "reviewer": null,
+        "reviewed_at": null,
+        "findings": []
+      }
     }
   ],
   "outstanding_review": [
@@ -60,7 +113,7 @@
   ],
   "review": {
     "status": "PENDING_HUMAN_REVIEW",
-    "content_digest": "8c65e37089ec083a1205683a8d3bf81e10f4852bbde132a773b10e5bf565753e",
+    "content_digest": "80c49ba029ec7d0a56033a51dc30b5c585a7d5d31b52e47df1aa320a00eeb124",
     "reviewer": null,
     "reviewed_at": null,
     "findings": []

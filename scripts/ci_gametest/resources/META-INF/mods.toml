@@ -1,0 +1,8 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="MIT"
+[[mods]]
+modId="arce_ci_gametest"
+version="1"
+displayName="ARCE CI GameTest observer"
+description="Development-only batch inventory and terminal-result evidence."
