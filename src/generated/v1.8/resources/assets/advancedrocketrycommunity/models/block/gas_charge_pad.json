@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "bottom": "advancedrocketrycommunity:block/gas_charge_pad_side",
+    "side": "advancedrocketrycommunity:block/gas_charge_pad_side",
+    "top": "advancedrocketrycommunity:block/gas_charge_pad_top"
+  }
+}

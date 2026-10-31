@@ -328,6 +328,10 @@ public final class ModBlockEntities {
     private ModBlockEntities() {
     }
 
+    public static final RegistryObject<BlockEntityType<io.github.sunthemoon.advancedrocketrycommunity.atmosphere.device.GasChargePadBlockEntity>>
+            GAS_CHARGE_PAD = BLOCK_ENTITIES.register("gas_charge_pad", () -> BlockEntityType.Builder.of(
+            io.github.sunthemoon.advancedrocketrycommunity.atmosphere.device.GasChargePadBlockEntity::new, ModBlocks.GAS_CHARGE_PAD.get()).build(null));
+
     public static final RegistryObject<BlockEntityType<io.github.sunthemoon.advancedrocketrycommunity.rocket.monitor.RocketMonitorBlockEntity>>
             ROCKET_MONITORING_STATION = BLOCK_ENTITIES.register("rocket_monitoring_station", () -> BlockEntityType.Builder.of(
                     io.github.sunthemoon.advancedrocketrycommunity.rocket.monitor.RocketMonitorBlockEntity::new,

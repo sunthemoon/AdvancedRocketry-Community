@@ -28,11 +28,13 @@ public final class SuitEquipmentService {
     private static final EquipmentSlot[] ARMOR_SLOTS = {
             EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET};
     private final SuitEquipmentCatalog catalog;
+    private final SuitCanisterRefill canisters;
     private final SuitOxygenAccess oxygen = new SuitOxygenAccess();
     private boolean operating;
 
     public SuitEquipmentService(SuitEquipmentCatalog catalog) {
         this.catalog = Objects.requireNonNull(catalog, "catalog");
+        canisters = new SuitCanisterRefill(catalog);
     }
 
     public int countPieces(LivingEntity entity) {
@@ -139,6 +141,22 @@ public final class SuitEquipmentService {
         } finally {
             operating = false;
         }
+    }
+
+    public SuitCanisterRefill.Prepared prepareTankCanister(ServerPlayer player, InteractionHand hand) {
+        enter(player);
+        try { return canisters.prepare(player, hand); }
+        finally { operating = false; }
+    }
+
+    public boolean commitTankCanister(ServerPlayer player, SuitCanisterRefill.Prepared prepared) {
+        enter(player);
+        try { return canisters.commit(player, prepared); }
+        finally { operating = false; }
+    }
+
+    public boolean fillTankCanister(ServerPlayer player, InteractionHand hand) {
+        return commitTankCanister(player, prepareTankCanister(player, hand));
     }
 
     public void clear() {

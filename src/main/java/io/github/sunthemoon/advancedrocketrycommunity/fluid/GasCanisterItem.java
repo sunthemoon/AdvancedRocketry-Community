@@ -10,6 +10,11 @@ import org.jetbrains.annotations.Nullable;
 public final class GasCanisterItem extends Item {
     public GasCanisterItem(Properties properties) { super(properties); }
 
+    @Override public net.minecraft.world.InteractionResultHolder<ItemStack> use(net.minecraft.world.level.Level level,
+            net.minecraft.world.entity.player.Player player, net.minecraft.world.InteractionHand hand) {
+        return TankCanisterUse.use(level, player, hand);
+    }
+
     @Override
     public ICapabilityProvider initCapabilities(ItemStack stack, @Nullable CompoundTag nbt) {
         return GasCanisterCapabilities.create(stack);

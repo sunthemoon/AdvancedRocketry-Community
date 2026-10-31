@@ -20,14 +20,16 @@ import net.minecraftforge.fml.common.Mod;
 public final class DeviceProtection {
     private static final Map<String, String> ROOTS = Map.of("advancedrocketrycommunity:oxygen_vent", OxygenVentPersistence.DATA_KEY,
             "advancedrocketrycommunity:co2_scrubber", ScrubberBlockEntity.KEY,
-            "advancedrocketrycommunity:atmosphere_detector", AtmosphereDetectorBlockEntity.KEY);
+            "advancedrocketrycommunity:atmosphere_detector", AtmosphereDetectorBlockEntity.KEY,
+            "advancedrocketrycommunity:gas_charge_pad", GasChargePadBlockEntity.KEY);
     public static boolean bounded(Tag raw) { return BoundedNbt.fits(raw, 65_536, 16, 1_024); }
     private static boolean protectedAt(LevelAccessor level, BlockPos pos) {
         if (!level.hasChunkAt(pos)) { return false; }
         var entity = level.getBlockEntity(pos);
         return entity instanceof OxygenVentBlockEntity vent && vent.protectedDeviceData()
                 || entity instanceof ScrubberBlockEntity scrubber && scrubber.protectedData()
-                || entity instanceof AtmosphereDetectorBlockEntity detector && detector.protectedData();
+                || entity instanceof AtmosphereDetectorBlockEntity detector && detector.protectedData()
+                || entity instanceof GasChargePadBlockEntity pad && pad.protectedData();
     }
     @SubscribeEvent public static void breaking(BlockEvent.BreakEvent event) {
         if (protectedAt(event.getLevel(), event.getPos())) { event.setCanceled(true); }

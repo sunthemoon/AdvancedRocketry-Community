@@ -43,6 +43,9 @@ public final class OxygenCanisterItem extends Item {
         if (!(player instanceof ServerPlayer serverPlayer)) {
             return InteractionResultHolder.fail(held);
         }
+        if (player.isShiftKeyDown()) {
+            return io.github.sunthemoon.advancedrocketrycommunity.fluid.TankCanisterUse.use(level, player, hand);
+        }
         OxygenTransferResult transfer = SuitEquipmentRuntime.fillOneCanister(serverPlayer, hand);
         if (!transfer.accepted()) {
             player.displayClientMessage(Component.translatable(
