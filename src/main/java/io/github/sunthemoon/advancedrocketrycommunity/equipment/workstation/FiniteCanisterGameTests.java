@@ -82,21 +82,25 @@ public final class FiniteCanisterGameTests {
     @GameTest(template = "empty", batch = "finite_canister", timeoutTicks = 100)
     public static void playerRefillsEachGasAndEmptyTankFromStackedFiniteCanisters(GameTestHelper helper) {
         try (var f = new EquipmentFixture(helper)) {
-            var service = service();
-            for (var gas : new TankData.Gas[]{TankData.Gas.OXYGEN, TankData.Gas.HYDROGEN}) {
-                f.player.getInventory().clearContent(); f.player.setItemSlot(EquipmentSlot.CHEST, chest(TankData.Gas.EMPTY, 0)); held(f, gas, 3);
-                f.player.getAbilities().instabuild = true;
-                helper.assertTrue(service.fillTankCanister(f.player, InteractionHand.MAIN_HAND), "EMPTY tank refused actual gas");
-                helper.assertTrue(service.fillTankCanister(f.player, InteractionHand.MAIN_HAND), "Exact capacity refused");
-                helper.assertTrue(!service.fillTankCanister(f.player, InteractionHand.MAIN_HAND), "Full tank accepted excess");
-                var tank = gas == TankData.Gas.OXYGEN ? ArmorEquipment.reserve(f.player.getItemBySlot(EquipmentSlot.CHEST))
-                        : ArmorEquipment.hydrogen(f.player.getItemBySlot(EquipmentSlot.CHEST));
-                helper.assertTrue(tank.stored() == 2000 && f.player.getItemInHand(InteractionHand.MAIN_HAND).getCount() == 1
-                        && f.player.getInventory().countItem(ModItems.EMPTY_CANISTER.get()) == 2, "Finite refill did not conserve even in creative");
-                helper.assertTrue(SpaceSuitOxygen.read(f.player.getItemBySlot(EquipmentSlot.CHEST)).oxygenUnits() == 0, "Tank refill edited active buffer");
+            for (var mode : new net.minecraft.world.level.GameType[]{net.minecraft.world.level.GameType.SURVIVAL, net.minecraft.world.level.GameType.CREATIVE}) {
+                f.player.gameMode.changeGameModeForPlayer(mode); f.player.setShiftKeyDown(true);
+                for (var gas : new TankData.Gas[]{TankData.Gas.OXYGEN, TankData.Gas.HYDROGEN}) {
+                    f.player.getInventory().clearContent(); f.player.setItemSlot(EquipmentSlot.CHEST, chest(TankData.Gas.EMPTY, 0)); held(f, gas, 3);
+                    helper.assertTrue(use(f), "EMPTY tank refused actual gas");
+                    helper.assertTrue(use(f), "Exact capacity refused");
+                    helper.assertTrue(!use(f), "Full tank accepted excess");
+                    var tank = gas == TankData.Gas.OXYGEN ? ArmorEquipment.reserve(f.player.getItemBySlot(EquipmentSlot.CHEST))
+                            : ArmorEquipment.hydrogen(f.player.getItemBySlot(EquipmentSlot.CHEST));
+                    helper.assertTrue(tank.stored() == 2000 && f.player.getItemInHand(InteractionHand.MAIN_HAND).getCount() == 1
+                            && f.player.getInventory().countItem(ModItems.EMPTY_CANISTER.get()) == 2, "Finite refill did not conserve even in creative");
+                    helper.assertTrue(SpaceSuitOxygen.read(f.player.getItemBySlot(EquipmentSlot.CHEST)).oxygenUnits() == 0, "Tank refill edited active buffer");
+                }
             }
         }
         helper.succeed();
+    }
+    private static boolean use(EquipmentFixture f) {
+        return f.player.gameMode.useItem(f.player, f.level, f.player.getItemInHand(InteractionHand.MAIN_HAND), InteractionHand.MAIN_HAND).consumesAction();
     }
     @GameTest(template = "empty", batch = "finite_canister", timeoutTicks = 100)
     public static void fullInventoryAndStalePreparationsRefuseWithoutDebitOrDrops(GameTestHelper helper) {

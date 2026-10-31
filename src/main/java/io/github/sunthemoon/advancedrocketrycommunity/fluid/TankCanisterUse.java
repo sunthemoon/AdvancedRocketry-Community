@@ -19,7 +19,10 @@ public final class TankCanisterUse {
         boolean accepted = player instanceof ServerPlayer server && SuitEquipmentRuntime.fillTankCanister(server, hand);
         player.displayClientMessage(Component.translatable("message.advancedrocketrycommunity.gas_charge_pad."
                 + (accepted ? "refilled" : "refused")), true);
-        return accepted ? InteractionResultHolder.consume(player.getItemInHand(hand)) : InteractionResultHolder.fail(held);
+        // Inventory is already published. Return the untouched pre-use stack so vanilla's
+        // ServerPlayerGameMode fast path does not reinstall a result and restore its creative count.
+        // Normal container broadcasting synchronizes the actual native slots on the next player tick.
+        return accepted ? InteractionResultHolder.consume(held) : InteractionResultHolder.fail(held);
     }
     private TankCanisterUse() { }
 }
