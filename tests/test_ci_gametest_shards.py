@@ -1,5 +1,6 @@
 import copy
 import hashlib
+import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -108,6 +109,12 @@ class ManifestTests(unittest.TestCase):
 
 
 class ArtifactTests(unittest.TestCase):
+    def test_observer_has_minecraft_1201_pack_metadata(self):
+        root = Path(__file__).resolve().parents[1]
+        metadata = json.loads((root / "scripts/ci_gametest/resources/pack.mcmeta").read_text(encoding="utf-8"))
+        self.assertEqual(15, metadata["pack"]["pack_format"])
+        self.assertTrue(metadata["pack"]["description"].strip())
+
     def test_restore_checks_identity_and_exact_runtime_contents(self):
         import zipfile
         with tempfile.TemporaryDirectory() as temporary:
