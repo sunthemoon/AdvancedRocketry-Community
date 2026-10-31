@@ -178,7 +178,7 @@ Hosted run 38400162712 passed on the shared branch at `01e6b457` (on rerun), whi
 
 Root cannot make these; each blocks only the work named.
 
-2026-10-31: the owner took sixteen decisions in the Root session (D2, D3, D6, D8, D1a to D1c, D9, D15, D16, D17, PAD-D4, D18, D11, D12, D4); each is quoted with its scope in [OWNER-DECISIONS-20261031](records/OWNER-DECISIONS-20261031.md). Still open: D5, D7, W203-Q4, D14, D13 (Root's log sweep first), the final campaign and the release. Applied so far: D2, D3, D4, D6, D9, D11 and D12 (W227, `e7303ba15`), D15 (W224, merged at `b0b28bd2f`), and D16 (ADR-025-R1 set to ACCEPTED with the owner's words; ADR-025's 2026-10-15 note now points to it). D17 is recorded once W228's independent review of ADR-076 passes, as docs/17 section 10 item 6 requires.
+2026-10-31: the owner took sixteen decisions in the Root session (D2, D3, D6, D8, D1a to D1c, D9, D15, D16, D17, PAD-D4, D18, D11, D12, D4); each is quoted with its scope in [OWNER-DECISIONS-20261031](records/OWNER-DECISIONS-20261031.md). Still open: D5, D7, W203-Q4, D14, the final campaign and the release. D13 is closed by Root's log sweep ([D13-BOUNDARY-SWEEP](records/D13-BOUNDARY-SWEEP.md), Root decision R226): no `force_field_boundary` rejection since 2026-10-13 09:03 in 385 hosted job logs and 30,562 local logs (the known W11b1 failure is the positive control); the 5 ms budget is unchanged, with no waiver. Applied so far: D2, D3, D4, D6, D9, D11 and D12 (W227, `e7303ba15`), D15 (W224, merged at `b0b28bd2f`), and D16 (ADR-025-R1 set to ACCEPTED with the owner's words; ADR-025's 2026-10-15 note now points to it). D17 is recorded once W228's independent review of ADR-076 passes, as docs/17 section 10 item 6 requires.
 
 | Decision | Blocks | Source |
 |---|---|---|
