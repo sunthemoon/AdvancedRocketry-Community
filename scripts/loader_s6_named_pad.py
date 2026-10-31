@@ -107,7 +107,7 @@ def check_logs(lines, restart, cut):
     errors = [line for line in lines if "/ERROR]" in line or "/FATAL]" in line]
     # The existing UNKNOWN injector intentionally produces this checked-write diagnostic only.
     allowed = not restart and cut == "LF_S6_PAD_UNKNOWN"
-    require(not errors or allowed and len(errors) == 1 and "ARCE_ROCKET_JOURNAL_WRITE_FAILED" in errors[0],
+    require(not errors or allowed and len(errors) == 1 and "ARCE_TRANSFER_JOURNAL_UNACKNOWLEDGED retained dirty authority; dependent effects are blocked" in errors[0],
             "Unexpected named-pad ERROR/FATAL: " + str(errors))
     return events
 
