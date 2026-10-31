@@ -1,0 +1,68 @@
+{
+  "schema_version": 2,
+  "batch_id": "v1.8.0-gas-charge-pad-new-art",
+  "target_version": "v1.8.0",
+  "recorded_at": "2026-10-31",
+  "declaration": "Retrospective NEW-art declaration for W226-R1, recorded after authoring; not a pre-authoring registration or a review approval.",
+  "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+  "source_branch": "codex/v1.8.0-w226",
+  "source_commit": "7bf27913c81626f687ca49ea3023f7b5c3a71b9e",
+  "authoring_commit": "a30ba93931c5c94749e3cd27c05ce1cc20dfc574",
+  "license": "MIT",
+  "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+  "encoder": {
+    "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180MaterialArt.java",
+    "source_commit": "a30ba93931c5c94749e3cd27c05ce1cc20dfc574",
+    "source_sha256": "d2f3b864a574ae57a062c32ad21de5706b62b559a67fd7f403dfeda72d16b9c3",
+    "method": "V180MaterialArt.png: deterministic 16x16 RGBA PNG encoding using the existing grayscale/tint palette; no input bitmap."
+  },
+  "entries": [
+    {
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w226",
+      "source_commit": "7bf27913c81626f687ca49ea3023f7b5c3a71b9e",
+      "authoring_commit": "a30ba93931c5c94749e3cd27c05ce1cc20dfc574",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180GasChargePadData.java",
+      "source_sha256": "f9bb7bd7c9783b5be01d0b260adb14617c25c1bbe8bd5346f20fd0bc0ceaff0c",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/gas_charge_pad_top.png",
+      "target_bytes": 146,
+      "target_sha256": "92c4fc325902e91d13b5e21ce70de34aa7134824482e2da98eaa292d9ab606cf",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Draw an original 16x16 grid initialized to palette digit 3, a digit-8 inset border, and a digit-5 Manhattan-distance diamond centered at (7,7), radius 5.",
+        "Encode with V180MaterialArt.png and tint 0x85C8B5; no upstream, Minecraft, Mojang, Microsoft, Forge, LibVulpes or third-party bitmap is read, traced, copied or transformed."
+      ]
+    },
+    {
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w226",
+      "source_commit": "7bf27913c81626f687ca49ea3023f7b5c3a71b9e",
+      "authoring_commit": "a30ba93931c5c94749e3cd27c05ce1cc20dfc574",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180GasChargePadData.java",
+      "source_sha256": "f9bb7bd7c9783b5be01d0b260adb14617c25c1bbe8bd5346f20fd0bc0ceaff0c",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/gas_charge_pad_side.png",
+      "target_bytes": 109,
+      "target_sha256": "77e6a63497d208f32acd5f5c7fb01bfeee3fa80b3af0473e2a665314ef90f17a",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Draw an original 16x16 grid initialized to palette digit 3, a digit-8 inset border, and two digit-9 indicator strips at x=3..5 and x=10..12, y=5..10.",
+        "Encode with V180MaterialArt.png and tint 0x85C8B5; no upstream, Minecraft, Mojang, Microsoft, Forge, LibVulpes or third-party bitmap is read, traced, copied or transformed."
+      ]
+    }
+  ],
+  "outstanding_review": [
+    "D7 originality and license review, including comparison of every face against vanilla machine/casing art under ADR-061 section 4.5, remains outstanding.",
+    "The final campaign's true-client V1/V2 presentation and visual acceptance remain outstanding; deterministic generation and this declaration do not approve the art or any Gate."
+  ],
+  "review": {
+    "status": "PENDING_HUMAN_REVIEW",
+    "content_digest": "8c65e37089ec083a1205683a8d3bf81e10f4852bbde132a773b10e5bf565753e",
+    "reviewer": null,
+    "reviewed_at": null,
+    "findings": []
+  }
+}
