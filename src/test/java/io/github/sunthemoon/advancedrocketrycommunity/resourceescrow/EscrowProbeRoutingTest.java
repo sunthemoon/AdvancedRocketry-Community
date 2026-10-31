@@ -66,7 +66,8 @@ class EscrowProbeRoutingTest {
                 }
             }
         }
-        assertEquals(611, seen.size()); // R203: adds sticky and ordinary F9 under unchanged producer rules.
+        assertEquals(613, seen.size()); // W220: two governed publication cases; producer rules are unchanged.
+        assertTrue(seen.containsAll(List.of(EscrowLoaderS6PublicationProbe.RETURN, EscrowLoaderS6PublicationProbe.HELD)));
         assertTrue(seen.contains(EscrowLoaderS6Probe.E3));
         var expected = new HashSet<>(EscrowItemSettlementCuts.CASES.keySet()); expected.addAll(EscrowItemRecoveryCuts.CASES);
         assertEquals(expected, items); assertEquals(18, items.size());
