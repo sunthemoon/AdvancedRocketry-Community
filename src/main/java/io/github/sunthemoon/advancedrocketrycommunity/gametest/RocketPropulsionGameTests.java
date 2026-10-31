@@ -259,9 +259,15 @@ public final class RocketPropulsionGameTests {
             }
             helper.assertTrue(RocketFlightNbtCodec.decode(RocketFlightNbtCodec.encode(flight)).data().orElseThrow().equals(flight), "Native flight codec lost resources");
             helper.assertTrue(findLogicalRocket(earth, logical) == null, "Source retained duplicate authority");
-            helper.assertTrue(RocketTransferSavedData.get(earth.getServer()).find(request).orElseThrow().phase()
+            var journal = RocketTransferSavedData.get(earth.getServer());
+            helper.assertTrue(journal.find(request).orElseThrow().phase()
                     == RocketTransferPhase.COMMITTED, "Transfer not terminal");
-            arrived.discard(); helper.succeed(); return;
+            arrived.discard();
+            // Production retains a landed reservation; this fixture must retire its own record before another batch.
+            journal.remove(request);
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport.acknowledgeFixture(helper);
+            helper.assertTrue(journal.transferAbsenceAcknowledged(request), "Propulsion fixture transfer removal was not acknowledged");
+            helper.succeed(); return;
         }
         helper.assertTrue(attempts < 350, "Propulsion flight did not land"); pacer.pace();
         driver.after(1, () -> awaitLanding(helper, driver, earth, moon, logical, request, mode, expected, pacer, attempts + 1));
