@@ -28,7 +28,7 @@ SPECIAL = ("cargo_native_benchmark", "cargo_reconciliation", "escrow_benchmark",
 DELEGATED = {"run_v180_" + name for name in ("escrow_arrival", "escrow_terminal", "escrow_returns", "escrow_pruning")}
 SUPPLIERS = {"run_v180_" + name for name in DECLARED + SPECIAL}
 RELATED = SUPPLIERS | {"loader_cut_oracle", "cargo_storage_oracle", "cargo_contention_oracle",
-                       "cargo_recovery_oracle", "item_cuts_oracle", "item_cut_fixture"}
+                       "cargo_recovery_oracle", "item_cuts_oracle", "item_cut_fixture", "loader_s6_named_pad"}
 TOKEN = re.compile(r"(?:K\d+|C[123]|E[1-5](?:_[A-Z0-9_]+|L[12]_[A-Z0-9_]+)?|G3(?:L2)?|BENCH|GOVERNED_BENCH|"
                    r"(?:FC|FS|FF|IC|LF|FT|RT|FP|FD|DP|SC|PF|SR|SO|RA|IS|IR)_[A-Z0-9_]+)")
 
