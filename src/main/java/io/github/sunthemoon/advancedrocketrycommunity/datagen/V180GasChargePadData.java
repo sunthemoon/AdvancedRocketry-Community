@@ -20,6 +20,25 @@ public final class V180GasChargePadData implements DataProvider {
     private static final String NS = "advancedrocketrycommunity";
     private static final String ASSETS = "assets/" + NS + "/";
     private static final String DATA = "data/" + NS + "/";
+    // Recessed charging coupling, three-bar manifold and a connecting hose on a bolted plate.
+    private static final String[] TOP = {
+            "3333333333333333",
+            "3888888888888883",
+            "3813333333333183",
+            "3833333333333383",
+            "3836999633777383",
+            "3836900633505383",
+            "3836000633777383",
+            "3836000633505383",
+            "3836444633777383",
+            "3833363333353383",
+            "3833363333353383",
+            "3833365555553383",
+            "3833334444433383",
+            "3813333333333183",
+            "3888888888888883",
+            "3333333333333333",
+    };
     private final PackOutput output;
     private final boolean client;
     private final boolean server;
@@ -50,16 +69,14 @@ public final class V180GasChargePadData implements DataProvider {
     }
     public static Map<String, byte[]> textures() {
         Map<String, byte[]> files = new LinkedHashMap<>();
-        for (String side : List.of("top", "side")) {
-            char[][] grid = new char[16][16]; for (char[] row : grid) { Arrays.fill(row, '3'); }
-            for (int y = 1; y < 15; y++) { for (int x = 1; x < 15; x++) {
-                if (x == 1 || x == 14 || y == 1 || y == 14) { grid[y][x] = '8'; }
-                if (side.equals("top") && Math.abs(x - 7) + Math.abs(y - 7) <= 5) { grid[y][x] = '5'; }
-                if (side.equals("side") && y >= 5 && y <= 10 && (x >= 3 && x <= 5 || x >= 10 && x <= 12)) { grid[y][x] = '9'; }
-            } }
-            files.put(ASSETS + "textures/block/gas_charge_pad_" + side + ".png",
-                    V180MaterialArt.png(Arrays.stream(grid).map(String::new).toArray(String[]::new), 0x85C8B5));
-        }
+        files.put(ASSETS + "textures/block/gas_charge_pad_top.png", V180MaterialArt.png(TOP, 0x85C8B5));
+        char[][] grid = new char[16][16]; for (char[] row : grid) { Arrays.fill(row, '3'); }
+        for (int y = 1; y < 15; y++) { for (int x = 1; x < 15; x++) {
+            if (x == 1 || x == 14 || y == 1 || y == 14) { grid[y][x] = '8'; }
+            if (y >= 5 && y <= 10 && (x >= 3 && x <= 5 || x >= 10 && x <= 12)) { grid[y][x] = '9'; }
+        } }
+        files.put(ASSETS + "textures/block/gas_charge_pad_side.png",
+                V180MaterialArt.png(Arrays.stream(grid).map(String::new).toArray(String[]::new), 0x85C8B5));
         return files;
     }
     @Override public CompletableFuture<?> run(CachedOutput cache) {
