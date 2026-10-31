@@ -25,12 +25,13 @@ import loader_s6_abandon as abandon
 import loader_s6_flight as flight
 import loader_s6_sticky as sticky
 import loader_s6_ordinary as ordinary
+import loader_s6_publication as publication
 import loader_s6_named_pad as named_pad
 import run_v180_loader_cuts as shared
 from run_dedicated_server_smoke import CapturedProcess, SmokeError, allocate_port, write_server_configuration, expected_server_properties
 from run_v060_flight_server_smoke import _server_command
 
-CASES = (oracle.E3, oracle.E5) + oracle.R2 + oracle.G3 + oracle.G1 + oracle.OPERATOR + chain.CASES + flight.CASES + (sticky.CASE,) + ordinary.CASES + named_pad.CASES
+CASES = (oracle.E3, oracle.E5) + oracle.R2 + oracle.G3 + oracle.G1 + oracle.OPERATOR + chain.CASES + flight.CASES + (sticky.CASE,) + ordinary.CASES + publication.CASES + named_pad.CASES
 HOOKS = shared.HOOK_FILES + tuple(
     "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/resourceescrow/" + name + ".java"
     for name in ("EscrowLoaderS6Probe", "EscrowLoaderS6Recovery", "EscrowLoaderS6Accounting", "EscrowLoaderS6UnloadedProbe",
@@ -44,6 +45,7 @@ HOOKS += ("src/main/java/io/github/sunthemoon/advancedrocketrycommunity/resource
 HOOKS += ("src/main/java/io/github/sunthemoon/advancedrocketrycommunity/resourceescrow/EscrowLoaderS6RefillProbe.java",)
 HOOKS += ("src/main/java/io/github/sunthemoon/advancedrocketrycommunity/resourceescrow/EscrowLoaderS6StickyProbe.java",)
 HOOKS += ("src/main/java/io/github/sunthemoon/advancedrocketrycommunity/resourceescrow/EscrowLoaderS6OrdinaryProbe.java",)
+HOOKS += ("src/main/java/io/github/sunthemoon/advancedrocketrycommunity/resourceescrow/EscrowLoaderS6PublicationProbe.java",)
 HARNESSES = shared.HARNESS_FILES + ("scripts/run_v180_loader_s6.py", "scripts/loader_s6_oracle.py", "scripts/loader_s6_integrity.py", "scripts/loader_s6_chain.py", "scripts/loader_s6_abandon.py", "scripts/loader_s6_normalize.py", "scripts/loader_s6_flight.py", "scripts/loader_s6_forward.py", "scripts/loader_s6_progress.py")
 HARNESSES += ("scripts/loader_s6_phases.py",)
 HARNESSES += ("scripts/loader_s6_terminal.py",)
@@ -51,6 +53,7 @@ HARNESSES += ("scripts/loader_s6_cleanup.py",)
 HARNESSES += ("scripts/loader_s6_refill.py",)
 HARNESSES += ("scripts/loader_s6_sticky.py",)
 HARNESSES += ("scripts/loader_s6_ordinary.py",)
+HARNESSES += ("scripts/loader_s6_publication.py",)
 HARNESSES += ("scripts/loader_s6_named_pad.py",)
 HOOKS += tuple("src/main/java/io/github/sunthemoon/advancedrocketrycommunity/" + path for path in (
     "resourceescrow/EscrowLoaderS6PadProbe.java", "resourceescrow/EscrowLoaderS6PadJournalProbe.java",
@@ -62,6 +65,8 @@ def write(path: Path, data: dict) -> None:
 
 
 def check_log(lines, restart, cut=oracle.E3, retired_operation=None, image=None):
+    if cut in publication.CASES:
+        return publication.check_logs(lines, restart, cut)
     if cut in named_pad.CASES:
         return named_pad.check_logs(lines, restart, cut)
     if cut in ordinary.CASES:
@@ -164,6 +169,8 @@ def run_cut(args, cut, evidence, owner, pins):
             command[1:1] = ["-Dadvancedrocketrycommunity.escrowScenario=" + ("recover" if restart else "start"),
                             "-Dadvancedrocketrycommunity.escrowCase=" + native_case]
             command[1:1] = journal_cut_properties(cut, restart)
+            if cut in publication.CASES:
+                command[1:1] = publication.properties(cut, restart, identity)
             if cut in oracle.G3:
                 command[1:1] = ["-Dadvancedrocketrycommunity.escrowS6Shutdown=" + cut]
             if cut in oracle.G1:
@@ -208,11 +215,14 @@ def run_cut(args, cut, evidence, owner, pins):
                     marker = r"ARCE_LOADER_S6_STICKY_" + ("RESULT" if restart else "PAUSED") + r" cut=" + re.escape(cut) + r"(?:\s|$)"
                 elif cut in ordinary.CASES:
                     marker = r"ARCE_LOADER_S6_ORDINARY_" + ("RESULT" if restart else "PAUSED") + r" cut=" + re.escape(cut) + r"(?:\s|$)"
+                elif cut in publication.CASES:
+                    label = "FLIGHT_PAUSED" if not restart or cut == publication.HELD and restart == 1 else "PUBLICATION_RESULT"
+                    marker = r"ARCE_LOADER_S6_" + label + r" cut=" + re.escape(cut) + r"(?:\s|$)"
                 elif cut in named_pad.CASES:
                     marker = r"ARCE_LOADER_S6_PAD_" + ("RESULT" if restart else "PAUSED") + r" cut=" + re.escape(cut) + r"(?:\s|$)"
                 process.wait_for(re.compile(marker), args.startup_timeout)
                 start["checkpoint_reached"] = True
-                if restart and cut not in oracle.G1 and cut not in chain.VETO:
+                if restart and cut not in oracle.G1 and cut not in chain.VETO and not (cut == publication.HELD and restart == 1):
                     process.command("stop")
                     start["exit_code"] = process.finish()
                     oracle.legacy.require(start["exit_code"] == 0, "Restart stopped abnormally")
@@ -231,7 +241,7 @@ def run_cut(args, cut, evidence, owner, pins):
             if cut in named_pad.CASES and any("Named-pad claim released before acknowledged absence" in line
                     or "Named-pad refused cancellation changed source, journal or claim" in line for line in lines):
                 row["unexplained_image"] = True
-            start["image"] = (named_pad.inspect(session / "world") if cut in named_pad.CASES else ordinary.inspect(session / "world") if cut in ordinary.CASES else flight.inspect(session / "world") if cut in flight.CASES else
+            start["image"] = (named_pad.inspect(session / "world") if cut in named_pad.CASES else ordinary.inspect(session / "world") if cut in ordinary.CASES else flight.inspect(session / "world") if cut in flight.CASES + publication.CASES else
                               abandon.inspect(session / "world") if cut in chain.ABANDON else oracle.inspect(session / "world", cut))
             if start["image"].get("read_status") != "KNOWN":
                 row["raw_read_failed"] = True
@@ -277,6 +287,8 @@ def run_cut(args, cut, evidence, owner, pins):
                 raw_check = sticky.check
             if cut in ordinary.CASES:
                 raw_check = lambda image, restart, identity: ordinary.check(image, restart, identity, ordinary.witness(lines, restart))
+            if cut in publication.CASES:
+                raw_check = lambda image, restart, identity: publication.check(image, restart, identity, cut, publication.witness(lines, restart, cut))
             if cut in named_pad.CASES:
                 raw_check = lambda image, restart, identity: named_pad.check(image, restart, identity, cut, named_pad.witness(lines, restart, cut))
             for kind, check in (("LOG", lambda: check_log(lines, restart, cut,

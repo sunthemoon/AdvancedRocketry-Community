@@ -35,6 +35,7 @@ final class EscrowLoaderS6FlightProbe {
     private final java.nio.file.Path stagedLedger;
     private final EscrowLoaderS6TerminalProbe terminal;
     private final EscrowLoaderS6CleanupProbe cleanup;
+    private final EscrowLoaderS6PublicationProbe publication;
     private final java.util.function.Consumer<RocketEntity> settled;
     private boolean pruned;
     private RocketEntity rocket;
@@ -48,7 +49,8 @@ final class EscrowLoaderS6FlightProbe {
 
     static boolean selected(boolean hooks, String cut) {
         return hooks && cut != null && (CASES.contains(cut) || EscrowLoaderS6PhaseProbe.selected(cut)
-                || EscrowLoaderS6TerminalProbe.selected(cut) || EscrowLoaderS6CleanupProbe.selected(cut));
+                || EscrowLoaderS6TerminalProbe.selected(cut) || EscrowLoaderS6CleanupProbe.selected(cut)
+                || EscrowLoaderS6PublicationProbe.selected(cut));
     }
     static String stagedArmDigest(net.minecraft.nbt.CompoundTag payload) {
         var root = EscrowCodec.decode(payload);
@@ -93,6 +95,7 @@ final class EscrowLoaderS6FlightProbe {
                 || settled != null && EscrowLoaderS6OrdinaryProbe.selected(Boolean.getBoolean(EscrowTestEndpoints.HOOKS), cut))
                 && !Boolean.getBoolean(EscrowLoaderAdmission.SWITCH), "S6 flight requires exact per-device test gates");
         this.server = server; this.cut = cut; this.recovery = recovery; this.settled = settled;
+        publication = EscrowLoaderS6PublicationProbe.selected(cut) ? new EscrowLoaderS6PublicationProbe(server, cut, recovery) : null;
         cleanup = !recovery && EscrowLoaderS6CleanupProbe.selected(cut) ? new EscrowLoaderS6CleanupProbe(server, cut) : null;
         terminal = !recovery && (EscrowLoaderS6TerminalProbe.selected(cut) || cleanup != null || settled != null)
                 ? new EscrowLoaderS6TerminalProbe(server, cut) : null;
@@ -123,14 +126,16 @@ final class EscrowLoaderS6FlightProbe {
             AdvancedRocketryCommunity.LOGGER.info("ARCE_LOADER_S6_FLIGHT_ARMED cut={} digest={}", cut, stagedArmDigest(payload));
             armedObserved = true;
         }
-        if ((cut.equals("LF_S6_F2_ACK") || cut.startsWith("LF_S6_F3_") || EscrowLoaderS6PhaseProbe.selected(cut) || terminal != null)
+        if ((cut.equals("LF_S6_F2_ACK") || cut.startsWith("LF_S6_F3_") || EscrowLoaderS6PhaseProbe.selected(cut) || terminal != null || publication != null)
                 && point.equals("F2_PREPARED_ACK")) {
             var journalFile = server.getWorldPath(LevelResource.ROOT).resolve("data")
                     .resolve(ManagedSavedDataType.ROCKET_TRANSFERS.fileName());
             var payload = CheckedSavedDataFile.readPayload(journalFile, ManagedSavedDataType.ROCKET_TRANSFERS).orElseThrow();
             EscrowLoaderS6JournalProbe.observeTransfer(cut, payload);
-            if (terminal != null) { EscrowLoaderS6TerminalProbe.observeCapture(cut, payload); }
+            if (terminal != null || publication != null) { EscrowLoaderS6TerminalProbe.observeCapture(cut, payload); }
+            if (publication != null) { publication.capture(payload, rocket.getUUID()); }
         }
+        if (publication != null) { publication.checkpoint(point, rocket); }
         if (terminal != null) {
             if (point.equals("F4_PUBLICATION_BEFORE")) { EscrowLoaderS6PhaseProbe.source(cut, rocket); }
             terminal.checkpoint(point);
@@ -155,7 +160,10 @@ final class EscrowLoaderS6FlightProbe {
         EscrowTags.require(server.getTickCount() - began <= 2_400, "S6 flight exceeded the existing fixture bound");
         var level = server.overworld(); var journal = RocketTransferSavedData.get(server);
         if (!journal.retryChecked(server)) { return; }
-        if (recovery) { recover(journal); return; }
+        if (recovery) {
+            if (publication != null) { publication.recover(journal); } else { recover(journal); }
+            return;
+        }
         EscrowTags.require(!discarded, "S6 loader-funded launch discarded its callback");
         if (rocket == null) {
             rocket = rocket(level, SOURCE, UUID.randomUUID(), mono(2_000));

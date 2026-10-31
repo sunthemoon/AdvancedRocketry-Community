@@ -14,7 +14,9 @@ class EscrowProbeInventoryTest(unittest.TestCase):
 
     def test_committed_inventory_matches_all_reviewed_producers_and_test_tokens(self):
         self.assertEqual(inventory.TARGET.read_text(encoding="utf-8"), inventory.render(self.rows))
-        self.assertEqual(618, len(self.rows))  # W221: seven governed named-pad selectors.
+        # W220 adds two governed publication cases.
+        # W221: seven governed named-pad selectors.
+        self.assertEqual(620, len(self.rows))
         self.assertEqual(23, len(self.coverage["direct"]))
         self.assertEqual(4, len(self.coverage["delegated"]))
         self.assertEqual(35, len(self.coverage["tests"]))  # W221 R208: native-reader/runner regressions.
