@@ -1,0 +1,2169 @@
+{
+  "source": "D:\\GitHub\\ARCE-Task-Evidence\\root-queue\\W105\\native-03\\LF_M_C2\\result.json",
+  "sha256": "478db9f714127d10311c3c5e17ee5641366d9bd1d1587d89c43e00859d08d40c",
+  "images": [
+    {
+      "read_status": "KNOWN",
+      "native": {
+        "ledger": {
+          "schema_version": 2,
+          "issued_through": 2,
+          "rocket_authorities": [],
+          "floors": [],
+          "tombstones": [],
+          "records": [
+            {
+              "owner": [
+                -698497241,
+                526533906,
+                -1377779048,
+                213918008
+              ],
+              "phase": "PREPARED",
+              "reason": "NONE",
+              "kind": "FLUID_PROPULSION_FILL",
+              "destination": {
+                "level": "minecraft:overworld",
+                "kind": "ENTITY",
+                "type": "advancedrocketrycommunity:rocket",
+                "after_epoch": 1,
+                "before_epoch": 0,
+                "unit": "PRIMARY",
+                "before_signature": "b11deaee17b199a3324bef5463176eb60697b71f6ccb5023246a623fdaaa69bb",
+                "logical_rocket": [
+                  -1741387495,
+                  383664668,
+                  -1257756632,
+                  252341209
+                ],
+                "identity": [
+                  2084590527,
+                  -155170096,
+                  -1850442040,
+                  -360479391
+                ],
+                "x": 4,
+                "y": 0,
+                "after_signature": "0a0cd215021b27769fa765699b98ad8518def4557fa2c05219537281544a2ef8",
+                "z": 4
+              },
+              "op_id": [
+                800666216,
+                683886291,
+                -1134225176,
+                -446729640
+              ],
+              "native_binding": {
+                "owner": [
+                  -698497241,
+                  526533906,
+                  -1377779048,
+                  213918008
+                ],
+                "dst_ref": [
+                  64,
+                  45,
+                  247,
+                  134,
+                  197,
+                  205,
+                  193,
+                  5,
+                  181,
+                  112,
+                  88,
+                  196,
+                  41,
+                  68,
+                  204,
+                  158,
+                  120,
+                  201,
+                  7,
+                  138,
+                  232,
+                  162,
+                  14,
+                  62,
+                  238,
+                  169,
+                  69,
+                  133,
+                  66,
+                  202,
+                  115,
+                  60
+                ],
+                "kind": "FUEL_VECTOR_V1",
+                "snapshot_hash": [
+                  17,
+                  182,
+                  219,
+                  243,
+                  41,
+                  89,
+                  38,
+                  232,
+                  82,
+                  217,
+                  57,
+                  33,
+                  183,
+                  44,
+                  186,
+                  144,
+                  2,
+                  43,
+                  220,
+                  177,
+                  51,
+                  220,
+                  174,
+                  19,
+                  188,
+                  169,
+                  131,
+                  56,
+                  100,
+                  142,
+                  94,
+                  212
+                ],
+                "src_ref": [
+                  50,
+                  105,
+                  164,
+                  113,
+                  96,
+                  20,
+                  239,
+                  19,
+                  140,
+                  169,
+                  133,
+                  119,
+                  210,
+                  189,
+                  109,
+                  181,
+                  100,
+                  191,
+                  197,
+                  198,
+                  244,
+                  223,
+                  50,
+                  225,
+                  47,
+                  252,
+                  64,
+                  188,
+                  95,
+                  71,
+                  89,
+                  85
+                ],
+                "after_frontier": [
+                  10,
+                  12,
+                  210,
+                  21,
+                  2,
+                  27,
+                  39,
+                  118,
+                  159,
+                  167,
+                  101,
+                  105,
+                  155,
+                  152,
+                  173,
+                  133,
+                  24,
+                  222,
+                  244,
+                  85,
+                  127,
+                  162,
+                  192,
+                  82,
+                  25,
+                  83,
+                  114,
+                  129,
+                  84,
+                  74,
+                  46,
+                  248
+                ],
+                "logical": [
+                  -1741387495,
+                  383664668,
+                  -1257756632,
+                  252341209
+                ],
+                "invariant": [
+                  156,
+                  36,
+                  155,
+                  203,
+                  168,
+                  48,
+                  121,
+                  236,
+                  8,
+                  35,
+                  7,
+                  30,
+                  171,
+                  82,
+                  173,
+                  133,
+                  34,
+                  2,
+                  142,
+                  24,
+                  54,
+                  0,
+                  249,
+                  218,
+                  143,
+                  8,
+                  235,
+                  39,
+                  153,
+                  27,
+                  51,
+                  37
+                ],
+                "destination_before": [
+                  29,
+                  209,
+                  235,
+                  42,
+                  91,
+                  50,
+                  231,
+                  169,
+                  77,
+                  76,
+                  114,
+                  80,
+                  205,
+                  137,
+                  91,
+                  252,
+                  143,
+                  219,
+                  90,
+                  208,
+                  176,
+                  39,
+                  149,
+                  160,
+                  67,
+                  108,
+                  219,
+                  136,
+                  177,
+                  16,
+                  93,
+                  20
+                ],
+                "before_frontier": [
+                  177,
+                  29,
+                  234,
+                  238,
+                  23,
+                  177,
+                  153,
+                  163,
+                  50,
+                  75,
+                  239,
+                  84,
+                  99,
+                  23,
+                  110,
+                  182,
+                  6,
+                  151,
+                  183,
+                  31,
+                  108,
+                  203,
+                  80,
+                  35,
+                  36,
+                  106,
+                  98,
+                  63,
+                  218,
+                  170,
+                  105,
+                  187
+                ],
+                "before_wrapper": [
+                  190,
+                  73,
+                  149,
+                  240,
+                  92,
+                  46,
+                  103,
+                  144,
+                  145,
+                  76,
+                  26,
+                  250,
+                  89,
+                  8,
+                  95,
+                  87,
+                  107,
+                  63,
+                  190,
+                  72,
+                  66,
+                  166,
+                  181,
+                  200,
+                  11,
+                  157,
+                  28,
+                  60,
+                  51,
+                  161,
+                  249,
+                  137
+                ],
+                "v": 1,
+                "source_after": [
+                  16,
+                  178,
+                  162,
+                  97,
+                  93,
+                  38,
+                  187,
+                  205,
+                  161,
+                  252,
+                  13,
+                  68,
+                  236,
+                  172,
+                  9,
+                  116,
+                  1,
+                  120,
+                  200,
+                  29,
+                  160,
+                  66,
+                  219,
+                  241,
+                  187,
+                  23,
+                  245,
+                  69,
+                  2,
+                  58,
+                  179,
+                  54
+                ],
+                "destination_after": [
+                  181,
+                  35,
+                  29,
+                  189,
+                  171,
+                  217,
+                  89,
+                  198,
+                  103,
+                  155,
+                  115,
+                  26,
+                  75,
+                  73,
+                  160,
+                  116,
+                  74,
+                  41,
+                  104,
+                  56,
+                  51,
+                  46,
+                  103,
+                  193,
+                  160,
+                  36,
+                  17,
+                  154,
+                  31,
+                  219,
+                  213,
+                  80
+                ],
+                "source_before": [
+                  6,
+                  191,
+                  52,
+                  26,
+                  141,
+                  179,
+                  69,
+                  32,
+                  191,
+                  118,
+                  166,
+                  181,
+                  87,
+                  17,
+                  238,
+                  9,
+                  83,
+                  166,
+                  75,
+                  24,
+                  168,
+                  23,
+                  156,
+                  173,
+                  5,
+                  111,
+                  59,
+                  122,
+                  78,
+                  195,
+                  91,
+                  131
+                ],
+                "after_wrapper": [
+                  233,
+                  158,
+                  155,
+                  79,
+                  165,
+                  68,
+                  196,
+                  143,
+                  24,
+                  156,
+                  157,
+                  210,
+                  79,
+                  22,
+                  31,
+                  107,
+                  200,
+                  117,
+                  14,
+                  102,
+                  162,
+                  3,
+                  92,
+                  182,
+                  37,
+                  221,
+                  26,
+                  219,
+                  34,
+                  167,
+                  165,
+                  196
+                ],
+                "physical": [
+                  2084590527,
+                  -155170096,
+                  -1850442040,
+                  -360479391
+                ],
+                "complete": 1,
+                "snapshot": [
+                  2029265439,
+                  2116110888,
+                  -1811920984,
+                  1472396689
+                ]
+              },
+              "source": {
+                "level": "minecraft:overworld",
+                "kind": "BLOCK_ENTITY",
+                "type": "advancedrocketrycommunity:fluid_fuel_loader",
+                "after_epoch": 1,
+                "before_epoch": 0,
+                "unit": "TANK",
+                "before_signature": "cf8404482838fa02807ee1e788e4958dbec398ebe8eff830c02581d4d9a229b3",
+                "identity": [
+                  -631359081,
+                  -838579475,
+                  -1933775484,
+                  1408266401
+                ],
+                "x": 66,
+                "y": 100,
+                "after_signature": "2ef43091bf24d6cb00fc92b882134cfbfc73ed268a53002144166ea83d6d0c85",
+                "z": 64
+              },
+              "schema_version": 2,
+              "created_tick": 3,
+              "payload": {
+                "FluidName": "advancedrocketrycommunity:rocket_fuel",
+                "Amount": 1000
+              },
+              "payload_hash": "a318dd53df128d556d1ea9a109ef118bfcd7eefd0c29e8e0380ec7f6caa92c70",
+              "transfer_guard": {
+                "journal_generation": 1,
+                "journal_digest": "83f98b331eab56d2f662ae0631acd6e8ee3b4cab463d5d805d294d5b9f1b8f8c",
+                "rocket_id": [
+                  -1741387495,
+                  383664668,
+                  -1257756632,
+                  252341209
+                ]
+              },
+              "seq": 1
+            },
+            {
+              "owner": [
+                -698497241,
+                526533906,
+                -1377779048,
+                213918008
+              ],
+              "phase": "PREPARED",
+              "reason": "NONE",
+              "kind": "FLUID_PROPULSION_FILL",
+              "destination": {
+                "level": "minecraft:overworld",
+                "kind": "ENTITY",
+                "type": "advancedrocketrycommunity:rocket",
+                "after_epoch": 2,
+                "before_epoch": 1,
+                "unit": "PRIMARY",
+                "before_signature": "0a0cd215021b27769fa765699b98ad8518def4557fa2c05219537281544a2ef8",
+                "logical_rocket": [
+                  -1741387495,
+                  383664668,
+                  -1257756632,
+                  252341209
+                ],
+                "identity": [
+                  2084590527,
+                  -155170096,
+                  -1850442040,
+                  -360479391
+                ],
+                "x": 4,
+                "y": 0,
+                "after_signature": "7559ced251b04cd69d3e499ae958daaf175d14be34b30648969671412a4590ef",
+                "z": 4
+              },
+              "op_id": [
+                -523629436,
+                -713142425,
+                -1769958820,
+                -1428956674
+              ],
+              "native_binding": {
+                "owner": [
+                  -698497241,
+                  526533906,
+                  -1377779048,
+                  213918008
+                ],
+                "dst_ref": [
+                  166,
+                  24,
+                  153,
+                  215,
+                  156,
+                  82,
+                  157,
+                  233,
+                  4,
+                  72,
+                  189,
+                  111,
+                  38,
+                  7,
+                  21,
+                  250,
+                  29,
+                  214,
+                  43,
+                  2,
+                  134,
+                  14,
+                  113,
+                  88,
+                  102,
+                  173,
+                  231,
+                  187,
+                  119,
+                  212,
+                  21,
+                  32
+                ],
+                "kind": "FUEL_VECTOR_V1",
+                "snapshot_hash": [
+                  17,
+                  182,
+                  219,
+                  243,
+                  41,
+                  89,
+                  38,
+                  232,
+                  82,
+                  217,
+                  57,
+                  33,
+                  183,
+                  44,
+                  186,
+                  144,
+                  2,
+                  43,
+                  220,
+                  177,
+                  51,
+                  220,
+                  174,
+                  19,
+                  188,
+                  169,
+                  131,
+                  56,
+                  100,
+                  142,
+                  94,
+                  212
+                ],
+                "src_ref": [
+                  90,
+                  79,
+                  89,
+                  166,
+                  46,
+                  193,
+                  209,
+                  183,
+                  230,
+                  211,
+                  85,
+                  174,
+                  154,
+                  178,
+                  119,
+                  112,
+                  14,
+                  70,
+                  183,
+                  68,
+                  183,
+                  223,
+                  95,
+                  179,
+                  144,
+                  246,
+                  152,
+                  230,
+                  181,
+                  107,
+                  118,
+                  44
+                ],
+                "after_frontier": [
+                  117,
+                  89,
+                  206,
+                  210,
+                  81,
+                  176,
+                  76,
+                  214,
+                  157,
+                  62,
+                  73,
+                  154,
+                  233,
+                  88,
+                  218,
+                  175,
+                  23,
+                  93,
+                  20,
+                  190,
+                  52,
+                  179,
+                  6,
+                  72,
+                  150,
+                  150,
+                  113,
+                  65,
+                  42,
+                  69,
+                  144,
+                  239
+                ],
+                "logical": [
+                  -1741387495,
+                  383664668,
+                  -1257756632,
+                  252341209
+                ],
+                "invariant": [
+                  156,
+                  36,
+                  155,
+                  203,
+                  168,
+                  48,
+                  121,
+                  236,
+                  8,
+                  35,
+                  7,
+                  30,
+                  171,
+                  82,
+                  173,
+                  133,
+                  34,
+                  2,
+                  142,
+                  24,
+                  54,
+                  0,
+                  249,
+                  218,
+                  143,
+                  8,
+                  235,
+                  39,
+                  153,
+                  27,
+                  51,
+                  37
+                ],
+                "destination_before": [
+                  181,
+                  35,
+                  29,
+                  189,
+                  171,
+                  217,
+                  89,
+                  198,
+                  103,
+                  155,
+                  115,
+                  26,
+                  75,
+                  73,
+                  160,
+                  116,
+                  74,
+                  41,
+                  104,
+                  56,
+                  51,
+                  46,
+                  103,
+                  193,
+                  160,
+                  36,
+                  17,
+                  154,
+                  31,
+                  219,
+                  213,
+                  80
+                ],
+                "before_frontier": [
+                  10,
+                  12,
+                  210,
+                  21,
+                  2,
+                  27,
+                  39,
+                  118,
+                  159,
+                  167,
+                  101,
+                  105,
+                  155,
+                  152,
+                  173,
+                  133,
+                  24,
+                  222,
+                  244,
+                  85,
+                  127,
+                  162,
+                  192,
+                  82,
+                  25,
+                  83,
+                  114,
+                  129,
+                  84,
+                  74,
+                  46,
+                  248
+                ],
+                "before_wrapper": [
+                  233,
+                  158,
+                  155,
+                  79,
+                  165,
+                  68,
+                  196,
+                  143,
+                  24,
+                  156,
+                  157,
+                  210,
+                  79,
+                  22,
+                  31,
+                  107,
+                  200,
+                  117,
+                  14,
+                  102,
+                  162,
+                  3,
+                  92,
+                  182,
+                  37,
+                  221,
+                  26,
+                  219,
+                  34,
+                  167,
+                  165,
+                  196
+                ],
+                "v": 1,
+                "source_after": [
+                  19,
+                  183,
+                  174,
+                  50,
+                  112,
+                  120,
+                  24,
+                  252,
+                  182,
+                  127,
+                  190,
+                  28,
+                  101,
+                  39,
+                  102,
+                  249,
+                  0,
+                  208,
+                  47,
+                  21,
+                  76,
+                  236,
+                  238,
+                  30,
+                  20,
+                  184,
+                  164,
+                  167,
+                  41,
+                  39,
+                  153,
+                  138
+                ],
+                "destination_after": [
+                  147,
+                  46,
+                  195,
+                  245,
+                  40,
+                  91,
+                  38,
+                  11,
+                  205,
+                  15,
+                  38,
+                  183,
+                  41,
+                  18,
+                  159,
+                  168,
+                  34,
+                  115,
+                  123,
+                  80,
+                  15,
+                  4,
+                  43,
+                  212,
+                  174,
+                  205,
+                  188,
+                  238,
+                  166,
+                  65,
+                  96,
+                  79
+                ],
+                "source_before": [
+                  219,
+                  53,
+                  57,
+                  241,
+                  183,
+                  120,
+                  236,
+                  235,
+                  60,
+                  243,
+                  218,
+                  60,
+                  229,
+                  206,
+                  126,
+                  74,
+                  237,
+                  141,
+                  35,
+                  10,
+                  223,
+                  211,
+                  69,
+                  194,
+                  224,
+                  47,
+                  43,
+                  18,
+                  6,
+                  35,
+                  73,
+                  134
+                ],
+                "after_wrapper": [
+                  21,
+                  126,
+                  171,
+                  214,
+                  181,
+                  235,
+                  10,
+                  13,
+                  44,
+                  36,
+                  171,
+                  195,
+                  121,
+                  36,
+                  107,
+                  89,
+                  143,
+                  180,
+                  153,
+                  78,
+                  80,
+                  152,
+                  23,
+                  212,
+                  175,
+                  50,
+                  98,
+                  184,
+                  248,
+                  56,
+                  31,
+                  81
+                ],
+                "physical": [
+                  2084590527,
+                  -155170096,
+                  -1850442040,
+                  -360479391
+                ],
+                "complete": 1,
+                "snapshot": [
+                  2029265439,
+                  2116110888,
+                  -1811920984,
+                  1472396689
+                ]
+              },
+              "source": {
+                "level": "minecraft:overworld",
+                "kind": "BLOCK_ENTITY",
+                "type": "advancedrocketrycommunity:fluid_fuel_loader",
+                "after_epoch": 1,
+                "before_epoch": 0,
+                "unit": "TANK",
+                "before_signature": "47d81b7120471caa8698fedf4bcf9bcfff48dc7e23d4280f95db6f2705a85a7f",
+                "identity": [
+                  -1725355476,
+                  1476742756,
+                  -1529577236,
+                  -1616307091
+                ],
+                "x": 67,
+                "y": 100,
+                "after_signature": "4be569e22d13f31d5de3bdb2f0404d4b2295ecd4b5d3f1c8da43cea18540a443",
+                "z": 64
+              },
+              "schema_version": 2,
+              "created_tick": 18,
+              "payload": {
+                "FluidName": "advancedrocketrycommunity:rocket_fuel",
+                "Amount": 1000
+              },
+              "payload_hash": "a318dd53df128d556d1ea9a109ef118bfcd7eefd0c29e8e0380ec7f6caa92c70",
+              "transfer_guard": {
+                "journal_generation": 1,
+                "journal_digest": "83f98b331eab56d2f662ae0631acd6e8ee3b4cab463d5d805d294d5b9f1b8f8c",
+                "rocket_id": [
+                  -1741387495,
+                  383664668,
+                  -1257756632,
+                  252341209
+                ]
+              },
+              "seq": 2
+            }
+          ],
+          "writer_generation": 3,
+          "armed_flights": [],
+          "ledger_id": [
+            338382459,
+            541215171,
+            -2121238014,
+            1020939915
+          ],
+          "format_epoch": "v1.8.0-resource-escrow",
+          "issued_launch_serial": 0
+        },
+        "loaders": [
+          {
+            "keepPacked": 0,
+            "x": 66,
+            "y": 100,
+            "z": 64,
+            "arce_fluid_fuel_loader": {
+              "schema_version": 1,
+              "owner": [
+                -698497241,
+                526533906,
+                -1377779048,
+                213918008
+              ],
+              "binding": {
+                "schema_version": 1,
+                "logical_rocket": [
+                  -1741387495,
+                  383664668,
+                  -1257756632,
+                  252341209
+                ],
+                "physical_rocket": [
+                  2084590527,
+                  -155170096,
+                  -1850442040,
+                  -360479391
+                ],
+                "level": "minecraft:overworld",
+                "x": 64,
+                "y": 100,
+                "z": 64
+              },
+              "resource_escrow": {
+                "schema_version": 1,
+                "resource_epoch": 1,
+                "markers": [
+                  {
+                    "epoch_after": 1,
+                    "op_id": [
+                      800666216,
+                      683886291,
+                      -1134225176,
+                      -446729640
+                    ],
+                    "role": "SOURCE",
+                    "seq": 1
+                  }
+                ],
+                "ledger_id": [
+                  338382459,
+                  541215171,
+                  -2121238014,
+                  1020939915
+                ]
+              },
+              "tank": {
+                "FluidName": "advancedrocketrycommunity:rocket_fuel",
+                "Amount": 4000
+              },
+              "device": [
+                -631359081,
+                -838579475,
+                -1933775484,
+                1408266401
+              ]
+            },
+            "id": "advancedrocketrycommunity:fluid_fuel_loader"
+          },
+          {
+            "keepPacked": 0,
+            "x": 67,
+            "y": 100,
+            "z": 64,
+            "arce_fluid_fuel_loader": {
+              "schema_version": 1,
+              "owner": [
+                -698497241,
+                526533906,
+                -1377779048,
+                213918008
+              ],
+              "binding": {
+                "schema_version": 1,
+                "logical_rocket": [
+                  -1741387495,
+                  383664668,
+                  -1257756632,
+                  252341209
+                ],
+                "physical_rocket": [
+                  2084590527,
+                  -155170096,
+                  -1850442040,
+                  -360479391
+                ],
+                "level": "minecraft:overworld",
+                "x": 64,
+                "y": 100,
+                "z": 64
+              },
+              "resource_escrow": {
+                "schema_version": 1,
+                "resource_epoch": 1,
+                "markers": [
+                  {
+                    "epoch_after": 1,
+                    "op_id": [
+                      -523629436,
+                      -713142425,
+                      -1769958820,
+                      -1428956674
+                    ],
+                    "role": "SOURCE",
+                    "seq": 2
+                  }
+                ],
+                "ledger_id": [
+                  338382459,
+                  541215171,
+                  -2121238014,
+                  1020939915
+                ]
+              },
+              "tank": {
+                "FluidName": "advancedrocketrycommunity:rocket_fuel",
+                "Amount": 4000
+              },
+              "device": [
+                -1725355476,
+                1476742756,
+                -1529577236,
+                -1616307091
+              ]
+            },
+            "id": "advancedrocketrycommunity:fluid_fuel_loader"
+          }
+        ],
+        "rocket": {
+          "NoGravity": 1,
+          "RocketEntityData": {
+            "schema_version": 3,
+            "flight_data": {
+              "schema_version": 2,
+              "logical_rocket_id": [
+                -1741387495,
+                383664668,
+                -1257756632,
+                252341209
+              ],
+              "passengers": {
+                "assignments": [],
+                "seat_capacity": 1
+              },
+              "state_started_game_time": 2,
+              "current_target": {
+                "schema_version": 1,
+                "type": "advancedrocketrycommunity:body_surface",
+                "body_id": "advancedrocketrycommunity:earth"
+              },
+              "fuel": {
+                "amount": 2000,
+                "propulsion": {
+                  "schema": 1,
+                  "descriptor": {
+                    "schema": 1,
+                    "core_units": 72057594037927936,
+                    "fuels": {
+                      "OXIDIZER": [
+                        "advancedrocketrycommunity:oxygen"
+                      ],
+                      "BIPROPELLANT_FUEL": [
+                        "advancedrocketrycommunity:hydrogen"
+                      ],
+                      "MONO": [
+                        "advancedrocketrycommunity:rocket_fuel"
+                      ],
+                      "WORKING_FLUID": [
+                        "advancedrocketrycommunity:hydrogen"
+                      ]
+                    },
+                    "required": 1,
+                    "oxidizer": 0,
+                    "numerator": 1,
+                    "denominator": 1,
+                    "mode": "MONO",
+                    "thrust_units": 72057594037927936,
+                    "gravity": 1,
+                    "capacity_units": 72057594037927936,
+                    "primary": 2000,
+                    "hand": 1
+                  },
+                  "primary": {
+                    "amount": 2000,
+                    "fluid": "advancedrocketrycommunity:rocket_fuel",
+                    "branch": "FLUID"
+                  },
+                  "oxidizer": {
+                    "amount": 0,
+                    "branch": "EMPTY"
+                  },
+                  "revision": 2
+                },
+                "committed_debits": [],
+                "capacity": 2000
+              },
+              "current_dimension": "minecraft:overworld",
+              "current_origin": [
+                64,
+                100,
+                64
+              ],
+              "state": "ASSEMBLED",
+              "current_body": "advancedrocketrycommunity:earth"
+            },
+            "assembly_transaction_id": [
+              -1741387495,
+              383664668,
+              -1257756632,
+              252341209
+            ],
+            "owner_id": [
+              -698497241,
+              526533906,
+              -1377779048,
+              213918008
+            ],
+            "resource_escrow": {
+              "schema_version": 1,
+              "resource_epoch": 2,
+              "markers": [
+                {
+                  "epoch_after": 1,
+                  "role": "DESTINATION",
+                  "op_id": [
+                    800666216,
+                    683886291,
+                    -1134225176,
+                    -446729640
+                  ],
+                  "seq": 1
+                },
+                {
+                  "epoch_after": 2,
+                  "role": "DESTINATION",
+                  "op_id": [
+                    -523629436,
+                    -713142425,
+                    -1769958820,
+                    -1428956674
+                  ],
+                  "seq": 2
+                }
+              ],
+              "ledger_id": [
+                338382459,
+                541215171,
+                -2121238014,
+                1020939915
+              ]
+            },
+            "snapshot": {
+              "schema_version": 2,
+              "source_origin": [
+                64,
+                100,
+                64
+              ],
+              "passenger_anchors": [
+                [
+                  0,
+                  1,
+                  0
+                ]
+              ],
+              "bounding_box": [
+                0,
+                0,
+                0,
+                0,
+                1,
+                0
+              ],
+              "snapshot_id": "78f4221f-7e21-4a28-9400-47a857c2fd91",
+              "relative_blocks": [
+                {
+                  "palette": 0,
+                  "position": [
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "palette": 0,
+                  "position": [
+                    0,
+                    1,
+                    0
+                  ]
+                }
+              ],
+              "propulsion": {
+                "schema": 1,
+                "core_units": 72057594037927936,
+                "fuels": {
+                  "OXIDIZER": [
+                    "advancedrocketrycommunity:oxygen"
+                  ],
+                  "BIPROPELLANT_FUEL": [
+                    "advancedrocketrycommunity:hydrogen"
+                  ],
+                  "MONO": [
+                    "advancedrocketrycommunity:rocket_fuel"
+                  ],
+                  "WORKING_FLUID": [
+                    "advancedrocketrycommunity:hydrogen"
+                  ]
+                },
+                "required": 1,
+                "oxidizer": 0,
+                "numerator": 1,
+                "denominator": 1,
+                "mode": "MONO",
+                "thrust_units": 72057594037927936,
+                "gravity": 1,
+                "capacity_units": 72057594037927936,
+                "primary": 2000,
+                "hand": 1
+              },
+              "source_dimension": "minecraft:overworld",
+              "content_hash": "11b6dbf3295926e852d93921b72cba90022bdcb133dcae13bca98338648e5ed4",
+              "mass_inputs": {
+                "engine_count": 1,
+                "guidance_count": 1,
+                "seat_count": 1,
+                "block_entity_count": 0,
+                "fuel_capacity": 2000,
+                "mass": 100,
+                "thrust": 1000,
+                "block_count": 2
+              },
+              "block_palette": [
+                {
+                  "id": "minecraft:iron_block",
+                  "properties": {}
+                }
+              ],
+              "created_at_game_time": 2
+            }
+          },
+          "Motion": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "Invulnerable": 0,
+          "Air": 300,
+          "OnGround": 0,
+          "PortalCooldown": 0,
+          "Rotation": [
+            0.0,
+            0.0
+          ],
+          "FallDistance": 0.0,
+          "CanUpdate": 1,
+          "Pos": [
+            64.5,
+            100.0,
+            64.5
+          ],
+          "Fire": -1,
+          "id": "advancedrocketrycommunity:rocket",
+          "UUID": [
+            2084590527,
+            -155170096,
+            -1850442040,
+            -360479391
+          ]
+        },
+        "files": {
+          "data/advancedrocketrycommunity_resource_escrow.dat": "35a9ab3e3ca9ae2436062e68afb57f6215e403698d691746828a3ce2e5acbb7d",
+          "region/r.0.0.mca": "9c9ba6067f65357b46083baa60a83732ad973ba7aa022ac6feff1dff2f85b3e8",
+          "entities/r.0.0.mca": "f03ad2add1e1578538fb0cf3b006b35f3bb301479a0a05d370fa643cd219aa83"
+        }
+      }
+    },
+    {
+      "read_status": "KNOWN",
+      "native": {
+        "ledger": {
+          "schema_version": 2,
+          "issued_through": 2,
+          "rocket_authorities": [],
+          "floors": [],
+          "tombstones": [],
+          "records": [],
+          "writer_generation": 5,
+          "armed_flights": [],
+          "ledger_id": [
+            338382459,
+            541215171,
+            -2121238014,
+            1020939915
+          ],
+          "format_epoch": "v1.8.0-resource-escrow",
+          "issued_launch_serial": 0
+        },
+        "loaders": [
+          {
+            "keepPacked": 0,
+            "x": 66,
+            "y": 100,
+            "z": 64,
+            "arce_fluid_fuel_loader": {
+              "schema_version": 1,
+              "owner": [
+                -698497241,
+                526533906,
+                -1377779048,
+                213918008
+              ],
+              "binding": {
+                "schema_version": 1,
+                "logical_rocket": [
+                  -1741387495,
+                  383664668,
+                  -1257756632,
+                  252341209
+                ],
+                "physical_rocket": [
+                  2084590527,
+                  -155170096,
+                  -1850442040,
+                  -360479391
+                ],
+                "level": "minecraft:overworld",
+                "x": 64,
+                "y": 100,
+                "z": 64
+              },
+              "resource_escrow": {
+                "schema_version": 1,
+                "resource_epoch": 1,
+                "markers": [],
+                "ledger_id": [
+                  338382459,
+                  541215171,
+                  -2121238014,
+                  1020939915
+                ]
+              },
+              "tank": {
+                "FluidName": "advancedrocketrycommunity:rocket_fuel",
+                "Amount": 4000
+              },
+              "device": [
+                -631359081,
+                -838579475,
+                -1933775484,
+                1408266401
+              ]
+            },
+            "id": "advancedrocketrycommunity:fluid_fuel_loader"
+          },
+          {
+            "keepPacked": 0,
+            "x": 67,
+            "y": 100,
+            "z": 64,
+            "arce_fluid_fuel_loader": {
+              "schema_version": 1,
+              "owner": [
+                -698497241,
+                526533906,
+                -1377779048,
+                213918008
+              ],
+              "binding": {
+                "schema_version": 1,
+                "logical_rocket": [
+                  -1741387495,
+                  383664668,
+                  -1257756632,
+                  252341209
+                ],
+                "physical_rocket": [
+                  2084590527,
+                  -155170096,
+                  -1850442040,
+                  -360479391
+                ],
+                "level": "minecraft:overworld",
+                "x": 64,
+                "y": 100,
+                "z": 64
+              },
+              "resource_escrow": {
+                "schema_version": 1,
+                "resource_epoch": 1,
+                "markers": [],
+                "ledger_id": [
+                  338382459,
+                  541215171,
+                  -2121238014,
+                  1020939915
+                ]
+              },
+              "tank": {
+                "FluidName": "advancedrocketrycommunity:rocket_fuel",
+                "Amount": 4000
+              },
+              "device": [
+                -1725355476,
+                1476742756,
+                -1529577236,
+                -1616307091
+              ]
+            },
+            "id": "advancedrocketrycommunity:fluid_fuel_loader"
+          }
+        ],
+        "rocket": {
+          "NoGravity": 1,
+          "RocketEntityData": {
+            "schema_version": 3,
+            "flight_data": {
+              "schema_version": 2,
+              "logical_rocket_id": [
+                -1741387495,
+                383664668,
+                -1257756632,
+                252341209
+              ],
+              "passengers": {
+                "assignments": [],
+                "seat_capacity": 1
+              },
+              "state_started_game_time": 2,
+              "current_target": {
+                "schema_version": 1,
+                "type": "advancedrocketrycommunity:body_surface",
+                "body_id": "advancedrocketrycommunity:earth"
+              },
+              "fuel": {
+                "amount": 2000,
+                "propulsion": {
+                  "schema": 1,
+                  "descriptor": {
+                    "schema": 1,
+                    "core_units": 72057594037927936,
+                    "fuels": {
+                      "OXIDIZER": [
+                        "advancedrocketrycommunity:oxygen"
+                      ],
+                      "BIPROPELLANT_FUEL": [
+                        "advancedrocketrycommunity:hydrogen"
+                      ],
+                      "MONO": [
+                        "advancedrocketrycommunity:rocket_fuel"
+                      ],
+                      "WORKING_FLUID": [
+                        "advancedrocketrycommunity:hydrogen"
+                      ]
+                    },
+                    "required": 1,
+                    "oxidizer": 0,
+                    "numerator": 1,
+                    "denominator": 1,
+                    "mode": "MONO",
+                    "thrust_units": 72057594037927936,
+                    "gravity": 1,
+                    "capacity_units": 72057594037927936,
+                    "primary": 2000,
+                    "hand": 1
+                  },
+                  "primary": {
+                    "amount": 2000,
+                    "fluid": "advancedrocketrycommunity:rocket_fuel",
+                    "branch": "FLUID"
+                  },
+                  "oxidizer": {
+                    "amount": 0,
+                    "branch": "EMPTY"
+                  },
+                  "revision": 2
+                },
+                "committed_debits": [],
+                "capacity": 2000
+              },
+              "current_dimension": "minecraft:overworld",
+              "current_origin": [
+                64,
+                100,
+                64
+              ],
+              "state": "ASSEMBLED",
+              "current_body": "advancedrocketrycommunity:earth"
+            },
+            "assembly_transaction_id": [
+              -1741387495,
+              383664668,
+              -1257756632,
+              252341209
+            ],
+            "owner_id": [
+              -698497241,
+              526533906,
+              -1377779048,
+              213918008
+            ],
+            "resource_escrow": {
+              "schema_version": 1,
+              "resource_epoch": 2,
+              "markers": [],
+              "ledger_id": [
+                338382459,
+                541215171,
+                -2121238014,
+                1020939915
+              ]
+            },
+            "snapshot": {
+              "schema_version": 2,
+              "source_origin": [
+                64,
+                100,
+                64
+              ],
+              "passenger_anchors": [
+                [
+                  0,
+                  1,
+                  0
+                ]
+              ],
+              "bounding_box": [
+                0,
+                0,
+                0,
+                0,
+                1,
+                0
+              ],
+              "snapshot_id": "78f4221f-7e21-4a28-9400-47a857c2fd91",
+              "relative_blocks": [
+                {
+                  "palette": 0,
+                  "position": [
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "palette": 0,
+                  "position": [
+                    0,
+                    1,
+                    0
+                  ]
+                }
+              ],
+              "propulsion": {
+                "schema": 1,
+                "core_units": 72057594037927936,
+                "fuels": {
+                  "OXIDIZER": [
+                    "advancedrocketrycommunity:oxygen"
+                  ],
+                  "BIPROPELLANT_FUEL": [
+                    "advancedrocketrycommunity:hydrogen"
+                  ],
+                  "MONO": [
+                    "advancedrocketrycommunity:rocket_fuel"
+                  ],
+                  "WORKING_FLUID": [
+                    "advancedrocketrycommunity:hydrogen"
+                  ]
+                },
+                "required": 1,
+                "oxidizer": 0,
+                "numerator": 1,
+                "denominator": 1,
+                "mode": "MONO",
+                "thrust_units": 72057594037927936,
+                "gravity": 1,
+                "capacity_units": 72057594037927936,
+                "primary": 2000,
+                "hand": 1
+              },
+              "source_dimension": "minecraft:overworld",
+              "content_hash": "11b6dbf3295926e852d93921b72cba90022bdcb133dcae13bca98338648e5ed4",
+              "mass_inputs": {
+                "engine_count": 1,
+                "guidance_count": 1,
+                "seat_count": 1,
+                "block_entity_count": 0,
+                "fuel_capacity": 2000,
+                "mass": 100,
+                "thrust": 1000,
+                "block_count": 2
+              },
+              "block_palette": [
+                {
+                  "id": "minecraft:iron_block",
+                  "properties": {}
+                }
+              ],
+              "created_at_game_time": 2
+            }
+          },
+          "Motion": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "Invulnerable": 0,
+          "Air": 300,
+          "OnGround": 0,
+          "PortalCooldown": 0,
+          "Rotation": [
+            0.0,
+            0.0
+          ],
+          "FallDistance": 0.0,
+          "CanUpdate": 1,
+          "Pos": [
+            64.5,
+            100.0,
+            64.5
+          ],
+          "Fire": -1,
+          "id": "advancedrocketrycommunity:rocket",
+          "UUID": [
+            2084590527,
+            -155170096,
+            -1850442040,
+            -360479391
+          ]
+        },
+        "files": {
+          "data/advancedrocketrycommunity_resource_escrow.dat": "594d5fe3862651a3f871d608e4450a935f79d4edd40b9a2327530beb4943555f",
+          "region/r.0.0.mca": "3791f50d0865bb1cead8d831876b7c9b603ad8df1c27332c52d89d63f3836bb4",
+          "entities/r.0.0.mca": "56f7df74c2e8baeb68f82e4c517483230197edc14401ede4a970364dbb081ea8"
+        }
+      }
+    },
+    {
+      "read_status": "KNOWN",
+      "native": {
+        "ledger": {
+          "schema_version": 2,
+          "issued_through": 2,
+          "rocket_authorities": [],
+          "floors": [],
+          "tombstones": [],
+          "records": [],
+          "writer_generation": 5,
+          "armed_flights": [],
+          "ledger_id": [
+            338382459,
+            541215171,
+            -2121238014,
+            1020939915
+          ],
+          "format_epoch": "v1.8.0-resource-escrow",
+          "issued_launch_serial": 0
+        },
+        "loaders": [
+          {
+            "keepPacked": 0,
+            "x": 66,
+            "y": 100,
+            "z": 64,
+            "arce_fluid_fuel_loader": {
+              "schema_version": 1,
+              "owner": [
+                -698497241,
+                526533906,
+                -1377779048,
+                213918008
+              ],
+              "binding": {
+                "schema_version": 1,
+                "logical_rocket": [
+                  -1741387495,
+                  383664668,
+                  -1257756632,
+                  252341209
+                ],
+                "physical_rocket": [
+                  2084590527,
+                  -155170096,
+                  -1850442040,
+                  -360479391
+                ],
+                "level": "minecraft:overworld",
+                "x": 64,
+                "y": 100,
+                "z": 64
+              },
+              "resource_escrow": {
+                "schema_version": 1,
+                "resource_epoch": 1,
+                "markers": [],
+                "ledger_id": [
+                  338382459,
+                  541215171,
+                  -2121238014,
+                  1020939915
+                ]
+              },
+              "tank": {
+                "FluidName": "advancedrocketrycommunity:rocket_fuel",
+                "Amount": 4000
+              },
+              "device": [
+                -631359081,
+                -838579475,
+                -1933775484,
+                1408266401
+              ]
+            },
+            "id": "advancedrocketrycommunity:fluid_fuel_loader"
+          },
+          {
+            "keepPacked": 0,
+            "x": 67,
+            "y": 100,
+            "z": 64,
+            "arce_fluid_fuel_loader": {
+              "schema_version": 1,
+              "owner": [
+                -698497241,
+                526533906,
+                -1377779048,
+                213918008
+              ],
+              "binding": {
+                "schema_version": 1,
+                "logical_rocket": [
+                  -1741387495,
+                  383664668,
+                  -1257756632,
+                  252341209
+                ],
+                "physical_rocket": [
+                  2084590527,
+                  -155170096,
+                  -1850442040,
+                  -360479391
+                ],
+                "level": "minecraft:overworld",
+                "x": 64,
+                "y": 100,
+                "z": 64
+              },
+              "resource_escrow": {
+                "schema_version": 1,
+                "resource_epoch": 1,
+                "markers": [],
+                "ledger_id": [
+                  338382459,
+                  541215171,
+                  -2121238014,
+                  1020939915
+                ]
+              },
+              "tank": {
+                "FluidName": "advancedrocketrycommunity:rocket_fuel",
+                "Amount": 4000
+              },
+              "device": [
+                -1725355476,
+                1476742756,
+                -1529577236,
+                -1616307091
+              ]
+            },
+            "id": "advancedrocketrycommunity:fluid_fuel_loader"
+          }
+        ],
+        "rocket": {
+          "NoGravity": 1,
+          "RocketEntityData": {
+            "schema_version": 3,
+            "flight_data": {
+              "schema_version": 2,
+              "logical_rocket_id": [
+                -1741387495,
+                383664668,
+                -1257756632,
+                252341209
+              ],
+              "passengers": {
+                "assignments": [],
+                "seat_capacity": 1
+              },
+              "state_started_game_time": 2,
+              "current_target": {
+                "schema_version": 1,
+                "type": "advancedrocketrycommunity:body_surface",
+                "body_id": "advancedrocketrycommunity:earth"
+              },
+              "fuel": {
+                "amount": 2000,
+                "propulsion": {
+                  "schema": 1,
+                  "descriptor": {
+                    "schema": 1,
+                    "core_units": 72057594037927936,
+                    "fuels": {
+                      "OXIDIZER": [
+                        "advancedrocketrycommunity:oxygen"
+                      ],
+                      "BIPROPELLANT_FUEL": [
+                        "advancedrocketrycommunity:hydrogen"
+                      ],
+                      "MONO": [
+                        "advancedrocketrycommunity:rocket_fuel"
+                      ],
+                      "WORKING_FLUID": [
+                        "advancedrocketrycommunity:hydrogen"
+                      ]
+                    },
+                    "required": 1,
+                    "oxidizer": 0,
+                    "numerator": 1,
+                    "denominator": 1,
+                    "mode": "MONO",
+                    "thrust_units": 72057594037927936,
+                    "gravity": 1,
+                    "capacity_units": 72057594037927936,
+                    "primary": 2000,
+                    "hand": 1
+                  },
+                  "primary": {
+                    "amount": 2000,
+                    "fluid": "advancedrocketrycommunity:rocket_fuel",
+                    "branch": "FLUID"
+                  },
+                  "oxidizer": {
+                    "amount": 0,
+                    "branch": "EMPTY"
+                  },
+                  "revision": 2
+                },
+                "committed_debits": [],
+                "capacity": 2000
+              },
+              "current_dimension": "minecraft:overworld",
+              "current_origin": [
+                64,
+                100,
+                64
+              ],
+              "state": "ASSEMBLED",
+              "current_body": "advancedrocketrycommunity:earth"
+            },
+            "assembly_transaction_id": [
+              -1741387495,
+              383664668,
+              -1257756632,
+              252341209
+            ],
+            "owner_id": [
+              -698497241,
+              526533906,
+              -1377779048,
+              213918008
+            ],
+            "resource_escrow": {
+              "schema_version": 1,
+              "resource_epoch": 2,
+              "markers": [],
+              "ledger_id": [
+                338382459,
+                541215171,
+                -2121238014,
+                1020939915
+              ]
+            },
+            "snapshot": {
+              "schema_version": 2,
+              "source_origin": [
+                64,
+                100,
+                64
+              ],
+              "passenger_anchors": [
+                [
+                  0,
+                  1,
+                  0
+                ]
+              ],
+              "bounding_box": [
+                0,
+                0,
+                0,
+                0,
+                1,
+                0
+              ],
+              "snapshot_id": "78f4221f-7e21-4a28-9400-47a857c2fd91",
+              "relative_blocks": [
+                {
+                  "palette": 0,
+                  "position": [
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "palette": 0,
+                  "position": [
+                    0,
+                    1,
+                    0
+                  ]
+                }
+              ],
+              "propulsion": {
+                "schema": 1,
+                "core_units": 72057594037927936,
+                "fuels": {
+                  "OXIDIZER": [
+                    "advancedrocketrycommunity:oxygen"
+                  ],
+                  "BIPROPELLANT_FUEL": [
+                    "advancedrocketrycommunity:hydrogen"
+                  ],
+                  "MONO": [
+                    "advancedrocketrycommunity:rocket_fuel"
+                  ],
+                  "WORKING_FLUID": [
+                    "advancedrocketrycommunity:hydrogen"
+                  ]
+                },
+                "required": 1,
+                "oxidizer": 0,
+                "numerator": 1,
+                "denominator": 1,
+                "mode": "MONO",
+                "thrust_units": 72057594037927936,
+                "gravity": 1,
+                "capacity_units": 72057594037927936,
+                "primary": 2000,
+                "hand": 1
+              },
+              "source_dimension": "minecraft:overworld",
+              "content_hash": "11b6dbf3295926e852d93921b72cba90022bdcb133dcae13bca98338648e5ed4",
+              "mass_inputs": {
+                "engine_count": 1,
+                "guidance_count": 1,
+                "seat_count": 1,
+                "block_entity_count": 0,
+                "fuel_capacity": 2000,
+                "mass": 100,
+                "thrust": 1000,
+                "block_count": 2
+              },
+              "block_palette": [
+                {
+                  "id": "minecraft:iron_block",
+                  "properties": {}
+                }
+              ],
+              "created_at_game_time": 2
+            }
+          },
+          "Motion": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "Invulnerable": 0,
+          "Air": 300,
+          "OnGround": 0,
+          "PortalCooldown": 0,
+          "Rotation": [
+            0.0,
+            0.0
+          ],
+          "FallDistance": 0.0,
+          "CanUpdate": 1,
+          "Pos": [
+            64.5,
+            100.0,
+            64.5
+          ],
+          "Fire": -1,
+          "id": "advancedrocketrycommunity:rocket",
+          "UUID": [
+            2084590527,
+            -155170096,
+            -1850442040,
+            -360479391
+          ]
+        },
+        "files": {
+          "data/advancedrocketrycommunity_resource_escrow.dat": "594d5fe3862651a3f871d608e4450a935f79d4edd40b9a2327530beb4943555f",
+          "region/r.0.0.mca": "621c6ea3f51a41ebdb27cf006e649b7fcbfbbfb03330594d3e58e9d8206f8adc",
+          "entities/r.0.0.mca": "f8c2b1ee62a96fee1b6b39c1b70dbd3a4e8b58006aa817c155a9effd558de17d"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,319 @@
+{
+  "source": "D:\\GitHub\\ARCE-Task-Evidence\\root-queue\\W211\\r200\\c-f1-first\\native\\LF_S6_F1_STORE_BEFORE-attempt-1\\result.json",
+  "sha256": "86606971af539794340baa88ae3e18969e458ecb9ac345ba499ed3ed9b850eab",
+  "image": {
+    "read_status": "KNOWN",
+    "native": {
+      "ledger": {
+        "schema_version": 2,
+        "issued_through": 1,
+        "rocket_authorities": [],
+        "floors": [],
+        "tombstones": [],
+        "records": [],
+        "writer_generation": 3,
+        "armed_flights": [],
+        "ledger_id": [
+          1692273686,
+          -841923845,
+          -2055977101,
+          -1153465973
+        ],
+        "format_epoch": "v1.8.0-resource-escrow",
+        "issued_launch_serial": 0
+      },
+      "journal": {
+        "schema_version": 3,
+        "transfers": [],
+        "classic_first_moon_landing": {
+          "schema_version": 1,
+          "state": "EMPTY"
+        },
+        "format_epoch": "v1.8.0-first-moon-landing"
+      },
+      "loaders": [
+        {
+          "keepPacked": 0,
+          "x": 66,
+          "y": 100,
+          "z": 64,
+          "arce_fluid_fuel_loader": {
+            "schema_version": 1,
+            "owner": [
+              884602678,
+              775375383,
+              -1445048208,
+              33138547
+            ],
+            "binding": {
+              "schema_version": 1,
+              "logical_rocket": [
+                310644773,
+                1787186611,
+                -1753237490,
+                -431823589
+              ],
+              "physical_rocket": [
+                -263546741,
+                526928600,
+                -1253093461,
+                879614133
+              ],
+              "level": "minecraft:overworld",
+              "x": 64,
+              "y": 100,
+              "z": 64
+            },
+            "resource_escrow": {
+              "schema_version": 1,
+              "resource_epoch": 1,
+              "markers": [],
+              "ledger_id": [
+                1692273686,
+                -841923845,
+                -2055977101,
+                -1153465973
+              ]
+            },
+            "tank": {
+              "FluidName": "advancedrocketrycommunity:rocket_fuel",
+              "Amount": 4000
+            },
+            "device": [
+              498956362,
+              -544452925,
+              -1168306428,
+              -2074658557
+            ]
+          },
+          "id": "advancedrocketrycommunity:fluid_fuel_loader"
+        }
+      ],
+      "source": {
+        "NoGravity": 1,
+        "RocketEntityData": {
+          "schema_version": 3,
+          "flight_data": {
+            "schema_version": 2,
+            "logical_rocket_id": [
+              310644773,
+              1787186611,
+              -1753237490,
+              -431823589
+            ],
+            "passengers": {
+              "assignments": [],
+              "seat_capacity": 1
+            },
+            "state_started_game_time": 2,
+            "current_target": {
+              "schema_version": 1,
+              "type": "advancedrocketrycommunity:body_surface",
+              "body_id": "advancedrocketrycommunity:earth"
+            },
+            "fuel": {
+              "amount": 1000,
+              "propulsion": {
+                "schema": 1,
+                "descriptor": {
+                  "schema": 1,
+                  "core_units": 72057594037927936,
+                  "fuels": {
+                    "OXIDIZER": [
+                      "advancedrocketrycommunity:oxygen"
+                    ],
+                    "BIPROPELLANT_FUEL": [
+                      "advancedrocketrycommunity:hydrogen"
+                    ],
+                    "MONO": [
+                      "advancedrocketrycommunity:rocket_fuel"
+                    ],
+                    "WORKING_FLUID": [
+                      "advancedrocketrycommunity:hydrogen"
+                    ]
+                  },
+                  "required": 1,
+                  "oxidizer": 0,
+                  "numerator": 1,
+                  "denominator": 1,
+                  "mode": "MONO",
+                  "thrust_units": 72057594037927936,
+                  "gravity": 1,
+                  "capacity_units": 72057594037927936,
+                  "primary": 2000,
+                  "hand": 1
+                },
+                "primary": {
+                  "amount": 1000,
+                  "fluid": "advancedrocketrycommunity:rocket_fuel",
+                  "branch": "FLUID"
+                },
+                "oxidizer": {
+                  "amount": 0,
+                  "branch": "EMPTY"
+                },
+                "revision": 1
+              },
+              "committed_debits": [],
+              "capacity": 2000
+            },
+            "current_dimension": "minecraft:overworld",
+            "current_origin": [
+              64,
+              100,
+              64
+            ],
+            "state": "ASSEMBLED",
+            "current_body": "advancedrocketrycommunity:earth"
+          },
+          "assembly_transaction_id": [
+            310644773,
+            1787186611,
+            -1753237490,
+            -431823589
+          ],
+          "owner_id": [
+            884602678,
+            775375383,
+            -1445048208,
+            33138547
+          ],
+          "resource_escrow": {
+            "schema_version": 1,
+            "resource_epoch": 1,
+            "markers": [],
+            "ledger_id": [
+              1692273686,
+              -841923845,
+              -2055977101,
+              -1153465973
+            ]
+          },
+          "snapshot": {
+            "schema_version": 2,
+            "source_origin": [
+              64,
+              100,
+              64
+            ],
+            "passenger_anchors": [
+              [
+                0,
+                1,
+                0
+              ]
+            ],
+            "bounding_box": [
+              0,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            "snapshot_id": "d180cdbc-c076-48c5-9d28-edbfb2c4bed6",
+            "relative_blocks": [
+              {
+                "palette": 0,
+                "position": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "palette": 0,
+                "position": [
+                  0,
+                  1,
+                  0
+                ]
+              }
+            ],
+            "propulsion": {
+              "schema": 1,
+              "core_units": 72057594037927936,
+              "fuels": {
+                "OXIDIZER": [
+                  "advancedrocketrycommunity:oxygen"
+                ],
+                "BIPROPELLANT_FUEL": [
+                  "advancedrocketrycommunity:hydrogen"
+                ],
+                "MONO": [
+                  "advancedrocketrycommunity:rocket_fuel"
+                ],
+                "WORKING_FLUID": [
+                  "advancedrocketrycommunity:hydrogen"
+                ]
+              },
+              "required": 1,
+              "oxidizer": 0,
+              "numerator": 1,
+              "denominator": 1,
+              "mode": "MONO",
+              "thrust_units": 72057594037927936,
+              "gravity": 1,
+              "capacity_units": 72057594037927936,
+              "primary": 2000,
+              "hand": 1
+            },
+            "source_dimension": "minecraft:overworld",
+            "content_hash": "11b6dbf3295926e852d93921b72cba90022bdcb133dcae13bca98338648e5ed4",
+            "mass_inputs": {
+              "engine_count": 1,
+              "guidance_count": 1,
+              "seat_count": 1,
+              "block_entity_count": 0,
+              "fuel_capacity": 2000,
+              "mass": 100,
+              "thrust": 1000,
+              "block_count": 2
+            },
+            "block_palette": [
+              {
+                "id": "minecraft:iron_block",
+                "properties": {}
+              }
+            ],
+            "created_at_game_time": 2
+          }
+        },
+        "Motion": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "Invulnerable": 0,
+        "Air": 300,
+        "OnGround": 0,
+        "PortalCooldown": 0,
+        "Rotation": [
+          0.0,
+          0.0
+        ],
+        "FallDistance": 0.0,
+        "CanUpdate": 1,
+        "Pos": [
+          64.5,
+          100.0,
+          64.5
+        ],
+        "Fire": -1,
+        "id": "advancedrocketrycommunity:rocket",
+        "UUID": [
+          -263546741,
+          526928600,
+          -1253093461,
+          879614133
+        ]
+      },
+      "destination": null,
+      "files": {
+        "entities\\r.0.0.mca": "a8ba8be5d42753b346a7cf944cb921cc8a02e83833a9a98dd5ded96efd003843",
+        "region\\r.0.0.mca": "71ac1d12c5ef5ff8a78ee1003681b51a4bb83ee34e53cf071f3ac0192c1b1c19",
+        "data\\advancedrocketrycommunity_resource_escrow.dat": "4097523a9c1d841afddd15117d8c6dbe29eb571d4479d2f2673485a8feae2119"
+      }
+    }
+  }
+}
