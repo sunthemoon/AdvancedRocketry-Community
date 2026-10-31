@@ -1,0 +1,587 @@
+{
+  "batch_id": "v1.8.0-c18d-k3",
+  "copyright_notice": "Copyright (c) 2017; Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+  "derivation_results_sha256": "97aaee71137312d535d129e5b7b42acd07609cb61fa717b27e5cbcd7d4bb882b",
+  "entries": [
+    {
+      "asset_coverage_row": null,
+      "authoring_commit": "b44b6af9d11c602beb067f63be1eda5f052049d9",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "derivation": {
+        "related": [],
+        "verdicts": {
+          "source": "CLEAR"
+        }
+      },
+      "format_check": {
+        "format": "mtl",
+        "materials": [
+          "None"
+        ],
+        "textures": [
+          "advancedrocketrycommunity:models/astrobodydataprocessor"
+        ]
+      },
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-w236",
+      "source_commit": "0f23b8ff558dea7219d7ba6588c6f19041b61331",
+      "source_path": "src/main/resources/assets/advancedrocketrycommunity/models/astrobody_data_processor.mtl",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "4e29ab08e26911609c6f4f5a8de86a543de0e1a8f2bcf3722a12d953ddf12def",
+      "status": "NEW",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/astrobody_data_processor.mtl",
+      "target_sha256": "4e29ab08e26911609c6f4f5a8de86a543de0e1a8f2bcf3722a12d953ddf12def",
+      "transformation": [
+        "Byte copy of the repository-owned file at its authoring commit."
+      ],
+      "units": [
+        "block:planetAnalyser"
+      ]
+    },
+    {
+      "asset_coverage_row": 9,
+      "copyright_notice": "Copyright (c) 2017",
+      "derivation": {
+        "related": [],
+        "verdicts": {
+          "recorded": "CLEAR",
+          "source": "CLEAR"
+        }
+      },
+      "format_check": {
+        "baked_vertices": 1088,
+        "faces": 272,
+        "format": "obj",
+        "ignored_lines": 0,
+        "material_library": "astrobody_data_processor.mtl",
+        "materials": [
+          "None"
+        ],
+        "normals": 6,
+        "positions": 240,
+        "texture_coordinates": 535
+      },
+      "license": "MIT",
+      "source_branch": "1.12",
+      "source_commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+      "source_path": "src/main/resources/assets/advancedrocketry/models/astrobodydataprocessor.obj",
+      "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
+      "source_sha256": "4f02c835d6aca49ec796e7d7253a4eec83a30c459acdb0df0c054a1b653e40d5",
+      "status": "UPSTREAM_AR_MIT",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/astrobodydataprocessor.obj",
+      "target_sha256": "4f02c835d6aca49ec796e7d7253a4eec83a30c459acdb0df0c054a1b653e40d5",
+      "transformation": [
+        "Byte copy into the mod namespace: assets/advancedrocketry/models/astrobodydataprocessor.obj to assets/advancedrocketrycommunity/models/astrobodydataprocessor.obj."
+      ],
+      "units": [
+        "block:planetAnalyser"
+      ],
+      "upstream_history": [
+        {
+          "author": "Silfryi Kalsandryn",
+          "authored_at": "2021-01-30T01:00:08-05:00",
+          "commit": "965e2df2a9056551f0502a6119a7905be6e4d579",
+          "subject": "Model update, part 1"
+        },
+        {
+          "author": "dmodoomsirius",
+          "authored_at": "2021-04-28T02:14:30-04:00",
+          "commit": "0c0017bcc06aa291e9d23cb0d6ceda56f7aff863",
+          "subject": "Merge branch '1.12' of https://github.com/zmaster587/AdvancedRocketry into 1.12"
+        }
+      ]
+    },
+    {
+      "asset_coverage_row": null,
+      "authoring_commit": "b44b6af9d11c602beb067f63be1eda5f052049d9",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "derivation": {
+        "related": [],
+        "verdicts": {
+          "source": "CLEAR"
+        }
+      },
+      "format_check": {
+        "format": "mtl",
+        "materials": [
+          "None"
+        ],
+        "textures": [
+          "advancedrocketrycommunity:models/beacon_new"
+        ]
+      },
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-w236",
+      "source_commit": "0f23b8ff558dea7219d7ba6588c6f19041b61331",
+      "source_path": "src/main/resources/assets/advancedrocketrycommunity/models/beacon.mtl",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "8c766153dcd5a5caff20bdd5b6f4c8deec77f29a1ef525cd8bddfdce286a78d3",
+      "status": "NEW",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/beacon.mtl",
+      "target_sha256": "8c766153dcd5a5caff20bdd5b6f4c8deec77f29a1ef525cd8bddfdce286a78d3",
+      "transformation": [
+        "Byte copy of the repository-owned file at its authoring commit."
+      ],
+      "units": [
+        "block:beacon"
+      ]
+    },
+    {
+      "asset_coverage_row": 12,
+      "copyright_notice": "Copyright (c) 2017",
+      "derivation": {
+        "related": [],
+        "verdicts": {
+          "recorded": "CLEAR",
+          "source": "CLEAR"
+        }
+      },
+      "format_check": {
+        "baked_vertices": 1808,
+        "faces": 452,
+        "format": "obj",
+        "ignored_lines": 0,
+        "material_library": "beacon.mtl",
+        "materials": [
+          "None"
+        ],
+        "normals": 62,
+        "positions": 354,
+        "texture_coordinates": 864
+      },
+      "license": "MIT",
+      "source_branch": "1.12",
+      "source_commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+      "source_path": "src/main/resources/assets/advancedrocketry/models/beacon.obj",
+      "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
+      "source_sha256": "77b135347c9420acd2f4af406fb0c3510c528521f7bd32796c3f3b9258c66d00",
+      "status": "UPSTREAM_AR_MIT",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/beacon.obj",
+      "target_sha256": "77b135347c9420acd2f4af406fb0c3510c528521f7bd32796c3f3b9258c66d00",
+      "transformation": [
+        "Byte copy into the mod namespace: assets/advancedrocketry/models/beacon.obj to assets/advancedrocketrycommunity/models/beacon.obj."
+      ],
+      "units": [
+        "block:beacon"
+      ],
+      "upstream_history": [
+        {
+          "author": "Silfryi Kalsandryn",
+          "authored_at": "2021-01-30T01:00:08-05:00",
+          "commit": "965e2df2a9056551f0502a6119a7905be6e4d579",
+          "subject": "Model update, part 1"
+        },
+        {
+          "author": "zmaster587",
+          "authored_at": "2017-05-09T19:16:52-04:00",
+          "commit": "48b638e711a357c888112eb502926dccb7c355ec",
+          "subject": "Add Beacon"
+        },
+        {
+          "author": "dmodoomsirius",
+          "authored_at": "2021-04-28T02:14:30-04:00",
+          "commit": "0c0017bcc06aa291e9d23cb0d6ceda56f7aff863",
+          "subject": "Merge branch '1.12' of https://github.com/zmaster587/AdvancedRocketry into 1.12"
+        }
+      ]
+    },
+    {
+      "asset_coverage_row": null,
+      "authoring_commit": "b44b6af9d11c602beb067f63be1eda5f052049d9",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "derivation": {
+        "related": [],
+        "verdicts": {
+          "source": "CLEAR"
+        }
+      },
+      "format_check": {
+        "format": "mtl",
+        "materials": [
+          "None"
+        ],
+        "textures": [
+          "advancedrocketrycommunity:models/observatory"
+        ]
+      },
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-w236",
+      "source_commit": "0f23b8ff558dea7219d7ba6588c6f19041b61331",
+      "source_path": "src/main/resources/assets/advancedrocketrycommunity/models/observatory.mtl",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "f9a3b5ae0d2ee91d289350795a9b0634026c6cab00c4d74e1b3cda8e8903ffb4",
+      "status": "NEW",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/observatory.mtl",
+      "target_sha256": "f9a3b5ae0d2ee91d289350795a9b0634026c6cab00c4d74e1b3cda8e8903ffb4",
+      "transformation": [
+        "Byte copy of the repository-owned file at its authoring commit."
+      ],
+      "units": [
+        "block:observatory"
+      ]
+    },
+    {
+      "asset_coverage_row": 20,
+      "copyright_notice": "Copyright (c) 2017",
+      "derivation": {
+        "related": [],
+        "verdicts": {
+          "recorded": "CLEAR",
+          "source": "CLEAR"
+        }
+      },
+      "format_check": {
+        "baked_vertices": 912,
+        "faces": 228,
+        "format": "obj",
+        "ignored_lines": 0,
+        "material_library": "observatory.mtl",
+        "materials": [
+          "None"
+        ],
+        "normals": 56,
+        "positions": 124,
+        "texture_coordinates": 316
+      },
+      "license": "MIT",
+      "source_branch": "1.12",
+      "source_commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+      "source_path": "src/main/resources/assets/advancedrocketry/models/observatory.obj",
+      "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
+      "source_sha256": "fb4015971f37b405e8c6d3a804652a1196d1e8bcfda65795763025123a2e3059",
+      "status": "UPSTREAM_AR_MIT",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/observatory.obj",
+      "target_sha256": "fb4015971f37b405e8c6d3a804652a1196d1e8bcfda65795763025123a2e3059",
+      "transformation": [
+        "Byte copy into the mod namespace: assets/advancedrocketry/models/observatory.obj to assets/advancedrocketrycommunity/models/observatory.obj."
+      ],
+      "units": [
+        "block:observatory"
+      ],
+      "upstream_history": [
+        {
+          "author": "Silfryi Kalsandryn",
+          "authored_at": "2021-01-30T01:00:08-05:00",
+          "commit": "965e2df2a9056551f0502a6119a7905be6e4d579",
+          "subject": "Model update, part 1"
+        },
+        {
+          "author": "zmaster587",
+          "authored_at": "2017-02-20T22:02:49-05:00",
+          "commit": "ac7f5d30277199d3905e02fb3c46e498d3b522cd",
+          "subject": "Trace Resources"
+        },
+        {
+          "author": "zmaster587",
+          "authored_at": "2017-02-20T22:02:49-05:00",
+          "commit": "a496d0df546d4a800febb6201c9e6b159d5b3164",
+          "subject": "Trace Resources"
+        },
+        {
+          "author": "zmaster587",
+          "authored_at": "2017-02-20T22:01:36-05:00",
+          "commit": "0631f3aba16f43463d10851d6b75a1b922807348",
+          "subject": "Keep track of assets"
+        },
+        {
+          "author": "dmodoomsirius",
+          "authored_at": "2021-04-28T02:14:30-04:00",
+          "commit": "0c0017bcc06aa291e9d23cb0d6ceda56f7aff863",
+          "subject": "Merge branch '1.12' of https://github.com/zmaster587/AdvancedRocketry into 1.12"
+        }
+      ]
+    },
+    {
+      "asset_coverage_row": null,
+      "authoring_commit": "b44b6af9d11c602beb067f63be1eda5f052049d9",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "derivation": {
+        "related": [],
+        "verdicts": {
+          "source": "CLEAR"
+        }
+      },
+      "format_check": {
+        "format": "mtl",
+        "materials": [
+          "None"
+        ],
+        "textures": [
+          "advancedrocketrycommunity:models/solararray"
+        ]
+      },
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-w236",
+      "source_commit": "0f23b8ff558dea7219d7ba6588c6f19041b61331",
+      "source_path": "src/main/resources/assets/advancedrocketrycommunity/models/solar_array.mtl",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "27f31f374ef5cef914bce0f96bbbcd9278bce8ed9612a348acdcbca9edd753d1",
+      "status": "NEW",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/solar_array.mtl",
+      "target_sha256": "27f31f374ef5cef914bce0f96bbbcd9278bce8ed9612a348acdcbca9edd753d1",
+      "transformation": [
+        "Byte copy of the repository-owned file at its authoring commit."
+      ],
+      "units": [
+        "block:solararray"
+      ]
+    },
+    {
+      "asset_coverage_row": 26,
+      "copyright_notice": "Copyright (c) 2017",
+      "derivation": {
+        "related": [],
+        "verdicts": {
+          "recorded": "CLEAR",
+          "source": "CLEAR"
+        }
+      },
+      "format_check": {
+        "baked_vertices": 204,
+        "faces": 51,
+        "format": "obj",
+        "ignored_lines": 0,
+        "material_library": "solar_array.mtl",
+        "materials": [
+          "None"
+        ],
+        "normals": 6,
+        "positions": 88,
+        "texture_coordinates": 160
+      },
+      "license": "MIT",
+      "source_branch": "1.12",
+      "source_commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+      "source_path": "src/main/resources/assets/advancedrocketry/models/solar_array.obj",
+      "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
+      "source_sha256": "016e831a02fbdfce28509530df165493aa8891fb842a1efb924ca83eed0bbf87",
+      "status": "UPSTREAM_AR_MIT",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/solar_array.obj",
+      "target_sha256": "016e831a02fbdfce28509530df165493aa8891fb842a1efb924ca83eed0bbf87",
+      "transformation": [
+        "Byte copy into the mod namespace: assets/advancedrocketry/models/solar_array.obj to assets/advancedrocketrycommunity/models/solar_array.obj."
+      ],
+      "units": [
+        "block:solararray"
+      ],
+      "upstream_history": [
+        {
+          "author": "Silfryi Kalsandryn",
+          "authored_at": "2021-03-28T15:21:03-04:00",
+          "commit": "9acd2ec648e2a87a0b85b8aec1c5fe0bfa401993",
+          "subject": "Add more model work"
+        },
+        {
+          "author": "dmodoomsirius",
+          "authored_at": "2021-04-28T02:14:30-04:00",
+          "commit": "0c0017bcc06aa291e9d23cb0d6ceda56f7aff863",
+          "subject": "Merge branch '1.12' of https://github.com/zmaster587/AdvancedRocketry into 1.12"
+        }
+      ]
+    },
+    {
+      "asset_coverage_row": 89,
+      "copyright_notice": "Copyright (c) 2017",
+      "derivation": {
+        "related": [
+          "textures/models/chemicalreactor.png",
+          "textures/models/crystalliser.png",
+          "textures/models/cuttingmachine.png",
+          "textures/models/electrolyser.png",
+          "textures/models/precisionlaseretcher.png"
+        ],
+        "verdicts": {
+          "recorded": "CLEAR",
+          "source": "CLEAR"
+        }
+      },
+      "license": "MIT",
+      "source_branch": "1.12",
+      "source_commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+      "source_path": "src/main/resources/assets/advancedrocketry/textures/models/astrobodydataprocessor.png",
+      "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
+      "source_sha256": "2d4a1c3da6902f2053ebde142393fc9a4196d6d5fe258d1f61f44c11427e13e8",
+      "status": "UPSTREAM_AR_MIT",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/models/astrobodydataprocessor.png",
+      "target_sha256": "2d4a1c3da6902f2053ebde142393fc9a4196d6d5fe258d1f61f44c11427e13e8",
+      "transformation": [
+        "Byte copy into the mod namespace: assets/advancedrocketry/textures/models/astrobodydataprocessor.png to assets/advancedrocketrycommunity/textures/models/astrobodydataprocessor.png."
+      ],
+      "units": [
+        "block:planetAnalyser"
+      ],
+      "upstream_history": [
+        {
+          "author": "Silfryi Kalsandryn",
+          "authored_at": "2021-02-02T14:17:01-05:00",
+          "commit": "40678c756051f322b39cdbeb5cbcebcd9c48b87c",
+          "subject": "Slight multiblock texture update"
+        },
+        {
+          "author": "Silfryi Kalsandryn",
+          "authored_at": "2021-01-30T01:00:08-05:00",
+          "commit": "965e2df2a9056551f0502a6119a7905be6e4d579",
+          "subject": "Model update, part 1"
+        },
+        {
+          "author": "dmodoomsirius",
+          "authored_at": "2021-04-28T02:14:30-04:00",
+          "commit": "0c0017bcc06aa291e9d23cb0d6ceda56f7aff863",
+          "subject": "Merge branch '1.12' of https://github.com/zmaster587/AdvancedRocketry into 1.12"
+        }
+      ]
+    },
+    {
+      "asset_coverage_row": null,
+      "authoring_commit": "b44b6af9d11c602beb067f63be1eda5f052049d9",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "derivation": {
+        "related": [],
+        "verdicts": {
+          "source": "CLEAR"
+        }
+      },
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-w236",
+      "source_commit": "0f23b8ff558dea7219d7ba6588c6f19041b61331",
+      "source_path": "src/main/resources/assets/advancedrocketrycommunity/textures/models/beacon_new.png",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "85ce837f19cf542dfd107bd0cf943bb5033d4fcefa45ba0cc056225e21485508",
+      "status": "NEW",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/models/beacon_new.png",
+      "target_sha256": "85ce837f19cf542dfd107bd0cf943bb5033d4fcefa45ba0cc056225e21485508",
+      "transformation": [
+        "Byte copy of the repository-owned file at its authoring commit."
+      ],
+      "units": [
+        "block:beacon"
+      ]
+    },
+    {
+      "asset_coverage_row": 102,
+      "copyright_notice": "Copyright (c) 2017",
+      "derivation": {
+        "related": [],
+        "verdicts": {
+          "recorded": "CLEAR",
+          "source": "CLEAR"
+        }
+      },
+      "license": "MIT",
+      "source_branch": "1.12",
+      "source_commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+      "source_path": "src/main/resources/assets/advancedrocketry/textures/models/observatory.png",
+      "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
+      "source_sha256": "bf569d80044094161e6cb7caab853a33e34cb7b4876370acc125467fcd8f0c0d",
+      "status": "UPSTREAM_AR_MIT",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/models/observatory.png",
+      "target_sha256": "bf569d80044094161e6cb7caab853a33e34cb7b4876370acc125467fcd8f0c0d",
+      "transformation": [
+        "Byte copy into the mod namespace: assets/advancedrocketry/textures/models/observatory.png to assets/advancedrocketrycommunity/textures/models/observatory.png."
+      ],
+      "units": [
+        "block:observatory"
+      ],
+      "upstream_history": [
+        {
+          "author": "Silfryi Kalsandryn",
+          "authored_at": "2021-01-30T01:00:08-05:00",
+          "commit": "965e2df2a9056551f0502a6119a7905be6e4d579",
+          "subject": "Model update, part 1"
+        },
+        {
+          "author": "dmodoomsirius",
+          "authored_at": "2021-04-28T02:14:30-04:00",
+          "commit": "0c0017bcc06aa291e9d23cb0d6ceda56f7aff863",
+          "subject": "Merge branch '1.12' of https://github.com/zmaster587/AdvancedRocketry into 1.12"
+        }
+      ]
+    },
+    {
+      "asset_coverage_row": 108,
+      "copyright_notice": "Copyright (c) 2017",
+      "derivation": {
+        "related": [
+          "textures/models/blackholegenerator.png",
+          "textures/models/lathe.png",
+          "textures/models/rollingmachine.png",
+          "textures/models/spaceelevator.png"
+        ],
+        "verdicts": {
+          "recorded": "CLEAR",
+          "source": "CLEAR"
+        }
+      },
+      "license": "MIT",
+      "source_branch": "1.12",
+      "source_commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+      "source_path": "src/main/resources/assets/advancedrocketry/textures/models/solararray.png",
+      "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
+      "source_sha256": "fa3fd692c12c730113b9a71cfaa5a6a080dc3dcb410d0d38a5de5979681b4356",
+      "status": "UPSTREAM_AR_MIT",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/models/solararray.png",
+      "target_sha256": "fa3fd692c12c730113b9a71cfaa5a6a080dc3dcb410d0d38a5de5979681b4356",
+      "transformation": [
+        "Byte copy into the mod namespace: assets/advancedrocketry/textures/models/solararray.png to assets/advancedrocketrycommunity/textures/models/solararray.png."
+      ],
+      "units": [
+        "block:solararray"
+      ],
+      "upstream_history": [
+        {
+          "author": "Silfryi Kalsandryn",
+          "authored_at": "2021-03-28T15:21:03-04:00",
+          "commit": "9acd2ec648e2a87a0b85b8aec1c5fe0bfa401993",
+          "subject": "Add more model work"
+        },
+        {
+          "author": "dmodoomsirius",
+          "authored_at": "2021-04-28T02:14:30-04:00",
+          "commit": "0c0017bcc06aa291e9d23cb0d6ceda56f7aff863",
+          "subject": "Merge branch '1.12' of https://github.com/zmaster587/AdvancedRocketry into 1.12"
+        }
+      ]
+    }
+  ],
+  "generator": "tools/import/import_v180_assets.py",
+  "license": "MIT",
+  "model_set": {
+    "bytes": 140484,
+    "vertices": 4012
+  },
+  "plan_sha256": "9e7ab1c337579323918d437ce5d745d1ab0df4f4afac6c02376c81db7636b072",
+  "review": {
+    "content_digest": "66d584f92b325a4eb1663695d4aaa2e2ebfdd261e3be83c725737febf51b3aba",
+    "findings": [],
+    "reviewed_at": null,
+    "reviewer": null,
+    "status": "PENDING_HUMAN_REVIEW"
+  },
+  "schema_version": 2,
+  "sources": [
+    {
+      "copyright_notice": "Copyright (c) 2017",
+      "license": "MIT",
+      "name": "ar",
+      "source_branch": "1.12",
+      "source_commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+      "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
+      "status": "UPSTREAM_AR_MIT"
+    },
+    {
+      "authoring_commit": "b44b6af9d11c602beb067f63be1eda5f052049d9",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "license": "MIT",
+      "name": "community",
+      "source_branch": "codex/v1.8.0-w236",
+      "source_commit": "0f23b8ff558dea7219d7ba6588c6f19041b61331",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "status": "NEW"
+    }
+  ],
+  "target_version": "v1.8.0",
+  "vanilla_client_sha256": {
+    "1.12.2": "8ada07da5ee77dad3527bd7278fbd05ee1fc8a597813b216a871a2d7d64cc64f",
+    "1.20.1": "56b71336d2b4fdffd197f56595b0da93e32a946f78f382a299b8f4b92758bb0f"
+  }
+}
