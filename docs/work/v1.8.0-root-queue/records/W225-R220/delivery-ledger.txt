@@ -1,0 +1,25 @@
+{
+  "assets": {
+    "EXCLUDE": 113,
+    "IMPORT": 170,
+    "IMPORTED": 17,
+    "REGENERATE": 444,
+    "REVIEW": 154
+  },
+  "dispositions": {
+    "DEFERRED": 25,
+    "IMPLEMENTED": 203,
+    "MERGED": 94,
+    "PLANNED": 17,
+    "REDESIGNED": 256,
+    "REJECTED": 58
+  },
+  "planned_by_batch": {
+    "C17a": 4,
+    "C17c": 1,
+    "C18a": 1,
+    "C18d": 11
+  },
+  "result": "PASS",
+  "units": 653
+}

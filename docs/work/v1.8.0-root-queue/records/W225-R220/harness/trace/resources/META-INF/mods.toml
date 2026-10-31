@@ -1,0 +1,7 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="MIT"
+[[mods]]
+modId="arce_journal_trace"
+version="1.0"
+displayName="Temporary journal provenance trace"

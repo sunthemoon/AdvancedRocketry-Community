@@ -102,6 +102,40 @@ AGENTS section 5, this note states one:
   runs since this note. A notice outside the run's first minutes, or a count above eight, is reviewed as a possible
   product regression, not absorbed by a higher ceiling.
 
+## Implementation note: host-lag ceilings in sharded runs (2026-11-01)
+
+Root decision R236 applies the existing `server-overloaded` ceiling to each GameTest server run in a sharded
+regression. Each shard launches its own server and checks its complete log with the unchanged strict checker:
+at most eight notices per run; nine in any one shard still fails. The aggregate reports the whole-suite total
+as information, not as a second ceiling across independent server runs. All other aggregate rules, including
+exact executed-test union, artifact identity, native and log-check failure propagation, and other warning
+ceilings and expectations, remain unchanged.
+
+In the fifth sharded regression, run 41223816244 on `82fd1d900bf6f4d1fe1cb21425bd3044f109258c`, shards 0 to 3
+logged 5, 3, 1 and 2 notices respectively, all in their first minutes. All four native runs and their log checks
+passed (1,557 of 1,557 tests). The aggregate failed only because it compared their total of 11 with one server
+run's ceiling of eight. Applying eight separately to those four runs preserves the per-run diagnostic limit;
+it does not raise that limit or define a pooled allowance that a noisy shard can borrow from another shard.
+
+The ceiling remains a diagnostic count, not a performance budget or a bound on delay duration, tick time or
+reliability. No assertion, timeout, performance budget or Required Gate is waived. A notice outside a run's
+first minutes is still reviewed as a possible product regression, even when the count is within eight.
+An exceeded per-run ceiling fails and needs review rather than an automatic increase.
+
+For the AGENTS section 5 exception fields:
+
+- Responsible: Root (Claude), under the owner's 2026-10-11 delegation (AGENTS section 13).
+- Reason: separate shards are separate server runs. Comparing their combined host-lag count with a single
+  run's ceiling was stricter than this ADR and rejected the measured run whose native tests and per-run log
+  checks all passed. This correction preserves the existing per-run ceiling and all other rules.
+- Expiry: the v1.8 release acceptance review, together with ADR-072; this note does not extend that expiry.
+- Recovery: at that review, the ceiling returns to five per server run unless the owner explicitly retains
+  eight per run after reviewing the precise source/rule inventory and recent hosted counts and phases.
+  The [owner's pending D14-log question](../work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261031.md)
+  (retain eight or restore five per run) remains open. Investigate late notices and exceeded ceilings as
+  possible regressions; do not absorb them by increasing a ceiling. Product code, persistence and protocol
+  are unaffected, and this note approves no Gate.
+
 ## Verification and operation
 
 Root independently reran the original 27 tests and audited seven positive and

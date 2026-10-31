@@ -8,6 +8,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.RocketPropulsionInteraction;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketManager;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketMarginGameTestSupport;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.*;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketFlightNbtCodec;
@@ -259,9 +260,20 @@ public final class RocketPropulsionGameTests {
             }
             helper.assertTrue(RocketFlightNbtCodec.decode(RocketFlightNbtCodec.encode(flight)).data().orElseThrow().equals(flight), "Native flight codec lost resources");
             helper.assertTrue(findLogicalRocket(earth, logical) == null, "Source retained duplicate authority");
-            helper.assertTrue(RocketTransferSavedData.get(earth.getServer()).find(request).orElseThrow().phase()
+            var journal = RocketTransferSavedData.get(earth.getServer());
+            var record = journal.find(request).orElseThrow();
+            helper.assertTrue(record.phase()
                     == RocketTransferPhase.COMMITTED, "Transfer not terminal");
-            arrived.discard(); helper.succeed(); return;
+            arrived.discard();
+            // Production retains a landed reservation; this fixture must retire its own record before another batch.
+            journal.remove(request);
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport.acknowledgeFixture(helper);
+            helper.assertTrue(journal.transferAbsenceAcknowledged(request), "Propulsion fixture transfer removal was not acknowledged");
+            // Removing T stops refreshes, not its existing timed tickets. Retire those before the next batch too.
+            RocketMarginGameTestSupport.removeFlightTickets(earth.getServer(), record);
+            helper.assertTrue(RocketMarginGameTestSupport.flightTicketColumns(earth.getServer(), request).isEmpty(),
+                    "Propulsion fixture left flight tickets after removing its transfer");
+            helper.succeed(); return;
         }
         helper.assertTrue(attempts < 350, "Propulsion flight did not land"); pacer.pace();
         driver.after(1, () -> awaitLanding(helper, driver, earth, moon, logical, request, mode, expected, pacer, attempts + 1));

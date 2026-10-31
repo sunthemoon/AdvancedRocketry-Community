@@ -37,7 +37,7 @@ public final class BeaconReloadGameTests {
             // Keep the entire pattern inside one isolated chunk, away from every player's view tickets.
             BlockPos at = new BlockPos((far.getX() & ~15) + 8, 210, (far.getZ() & ~15) + 8);
             helper.assertTrue(fixture.level.getWorldBorder().isWithinBounds(at), "The isolated fixture is outside the world border");
-            fixture.forceChunk(at, true);
+            fixture.prepareChunk(at);
             awaitTickReady(fixture, at, () -> lifecycle(fixture, owner, at));
         } catch (RuntimeException | Error failure) {
             fixture.close();
@@ -68,12 +68,22 @@ public final class BeaconReloadGameTests {
             BeaconRecord before = fixture.index().get(id).orElseThrow();
             fixture.index().setDirty(false);
             fixture.forceChunk(at, false);
-            fixture.await(300, "the isolated chunk to unload", () -> !fixture.level.hasChunkAt(at), () -> {
+            GameTestTickPacer unloadPacer = new GameTestTickPacer(fixture.server);
+            fixture.await(300, "the isolated chunk to unload", () -> {
+                // Early paced ticks can have no spare time for ChunkMap's ready unload callbacks.
+                GameTestChunkUnloadPump.drainReady(fixture.level);
+                // The chunk disappears from getChunkNow before its asynchronous unload removes the block entities.
+                boolean unloaded = !fixture.level.hasChunkAt(at) && original.isRemoved();
+                if (!unloaded) { unloadPacer.pace(); }
+                return unloaded;
+            }, () -> {
                 helper.assertTrue(original.isRemoved() && fixture.index().get(id).equals(Optional.of(before))
-                        && !fixture.index().isDirty(), "Unloading changed or rewrote the active index record");
+                        && !fixture.index().isDirty(), "Unloading changed or rewrote the active index record: removed="
+                        + original.isRemoved() + ", dirty=" + fixture.index().isDirty() + ", before=" + before
+                        + ", after=" + fixture.index().get(id));
                 marker(helper, finder.snapshot(owner), id, false);
                 helper.assertTrue(!fixture.level.hasChunkAt(at), "The finder loaded the beacon chunk");
-                fixture.forceChunk(at, true);
+                fixture.prepareChunk(at);
                 PlanetaryBeaconBlockEntity reloaded = (PlanetaryBeaconBlockEntity) fixture.level.getBlockEntity(at);
                 helper.assertTrue(reloaded != original && reloaded.beaconId().equals(Optional.of(id))
                         && reloaded.status() == BeaconStatus.PENDING, "The native reload did not restore a pending beacon");
@@ -117,8 +127,16 @@ public final class BeaconReloadGameTests {
         fixture.await(40, "the fixture chunk's native ticker readiness", () -> {
             boolean ready = tickReady(fixture, at);
             if (!ready) {
-                // Entity sections load asynchronously; give each unchanged tick the normal server's 50 ms.
+                // Request FULL first: directly requesting ENTITY_TICKING cancels FULL's status notification until
+                // the 5-by-5 entity-ticking future completes, leaving entity storage FRESH despite a FULL chunk.
+                // Pump the native load, then promote; keep the same 40 attempts and enclosing 600-tick timeout.
+                EntitySections.loadNow(fixture.level, new ChunkPos(at),
+                        System.nanoTime() + GameTestTickPacer.SERVER_TICK_NANOS);
+                if (fixture.level.areEntitiesLoaded(ChunkPos.asLong(at))) {
+                    fixture.forceChunk(at, true);
+                }
                 pacer.pace();
+                ready = tickReady(fixture, at);
             }
             if (--attempts[0] == 0 && !ready) {
                 fixture.helper.assertTrue(false, "Fixture chunk is not ticker-ready: status="

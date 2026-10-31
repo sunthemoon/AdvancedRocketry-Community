@@ -1,0 +1,33 @@
+// Opt-in CI support only. No build.gradle or production source-set changes.
+gradle.beforeProject { p ->
+    p.pluginManager.withPlugin('net.minecraftforge.gradle') {
+        def observer = p.sourceSets.create('ciGameTest') {
+            java.srcDir(p.file('scripts/ci_gametest/java'))
+            resources.srcDir(p.file('scripts/ci_gametest/resources'))
+            compileClasspath = p.files({ p.sourceSets.main.compileClasspath })
+            runtimeClasspath = output + compileClasspath
+        }
+        p.minecraft.runs.all { run ->
+            if (run.name == 'gameTestServer') {
+                run.mods.create('arce_ci_gametest') { source(observer) }
+                if (p.hasProperty('ciShard')) {
+                    run.property('arce.ci.shard', p.property('ciShard').toString())
+                    run.property('arce.ci.output', p.file('build/ci-gametest-result').absolutePath)
+                    run.property('arce.ci.bundle', p.file('build/ci-gametest/identity.json').absolutePath)
+                }
+            }
+        }
+        def jars = []
+        ['main', 'adapterTest', 'ciGameTest'].each { name ->
+            jars.add(p.tasks.register("ciGameTestJar_${name}", Jar) {
+                dependsOn(name == 'main' ? 'classes' : "${name}Classes")
+                from({ p.sourceSets.getByName(name).output })
+                archiveFileName = "${name}.jar"
+                destinationDirectory = p.layout.buildDirectory.dir('ci-gametest')
+                preserveFileTimestamps = false
+                reproducibleFileOrder = true
+            })
+        }
+        p.tasks.register('ciGameTestJars') { dependsOn(jars) }
+    }
+}

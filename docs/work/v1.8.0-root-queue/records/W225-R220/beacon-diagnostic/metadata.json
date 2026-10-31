@@ -1,0 +1,52 @@
+{
+  "source": "03f8926b6dc60f79380589b51ce936f840ffb603",
+  "source_status": "",
+  "command": ".\\gradlew.bat --offline --no-daemon --console=plain -I scripts/ci_gametest/init.gradle -I D:\\GitHub\\arce-v180-w225\\build\\w225-fix3\\trace.gradle -PciShard=1 -PtraceOrder=beacon_native_reload runGameTestServer",
+  "native_exit": 1,
+  "checker_exit": 1,
+  "disk_before": [
+    {
+      "Name": "C",
+      "Free": 53604188160
+    },
+    {
+      "Name": "D",
+      "Free": 294399946752
+    }
+  ],
+  "raw_log_sha256": "fceccc1f40f94b5b36cffd89a896625f7f9a026c4547205a9911849041214fec",
+  "retained_log_sha256": "21ff04a0ed336a7417757b9197b992abc0e3e80b6561a9b84345b35ca122168b",
+  "log_encoding": "Gzip of the original captured bytes; no content or newline normalization",
+  "inventory_sha256": "e4d4b6a6561be946e14337184949d4d0f5458ea31b911f699683e7080b0c4747",
+  "inventory_count": 1557,
+  "observer_receipt_without_inventory": {
+    "schema": 1,
+    "shard": 1,
+    "bundle_sha256": "86168ffff7892bcb1b50caa1eb4a04ac5892d2f19a4433146a2e2b033877a271",
+    "executed": [
+      {
+        "batch": "beacon_native_reload",
+        "name": "unloadandpendingreloadkeeptheactiverecordandfindermarker",
+        "structure": "advancedrocketrycommunity:empty",
+        "required": true,
+        "timeout_ticks": 600,
+        "setup_ticks": 0,
+        "max_attempts": 1,
+        "required_successes": 1
+      }
+    ],
+    "failed": [
+      {
+        "batch": "beacon_native_reload",
+        "name": "unloadandpendingreloadkeeptheactiverecordandfindermarker",
+        "structure": "advancedrocketrycommunity:empty",
+        "required": true,
+        "timeout_ticks": 600,
+        "setup_ticks": 0,
+        "max_attempts": 1,
+        "required_successes": 1
+      }
+    ],
+    "complete": true
+  }
+}

@@ -3,6 +3,8 @@ import gzip
 import io
 import json
 import os
+import re
+import shlex
 import tempfile
 import unittest
 from pathlib import Path
@@ -17,6 +19,7 @@ from scripts.check_gametest_log import (
     main,
     parse_log,
 )
+from scripts.validate_repository import parse_workflow_jobs
 
 
 BATCH_LOGGER = "net.minecraft.gametest.framework.GameTestBatchRunner/"
@@ -480,15 +483,142 @@ class ManifestValidationTests(unittest.TestCase):
 
 
 class WorkflowIntegrationTests(unittest.TestCase):
-    def test_hosted_checker_runs_after_native_command_under_pipefail(self) -> None:
+    def setUp(self) -> None:
         root = DEFAULT_MANIFEST.parent.parent
-        workflow = (root / ".github/workflows/v180-development.yml").read_text(encoding="utf-8")
-        step = workflow.split("- name: Run all Forge GameTests\n", 1)[1].split("\n      - name:", 1)[0]
-        self.assertLess(step.index("./gradlew runGameTestServer"),
-                        step.index("python -B scripts/check_gametest_log.py build/gametest/logs/latest.log"))
-        self.assertIn("shell: bash", workflow)
-        self.assertNotIn("continue-on-error", step)
-        self.assertIn("-p test_check_gametest_log.py", workflow)
+        self.workflow = (root / ".github/workflows/v180-development.yml").read_text(encoding="utf-8")
+        self.jobs = parse_workflow_jobs(self.workflow)
+        self.job_text = dict(re.findall(r"(?ms)^  ([\w-]+):\n(.*?)(?=^  [\w-]+:\n|\Z)", self.workflow))
+
+    def step(self, job: str, name: str) -> dict[str, str]:
+        matches = [step for step in self.jobs[job].steps if step.fields.get("name") == name]
+        self.assertEqual(1, len(matches), f"{job}: {name}")
+        return matches[0].fields
+
+    def assert_before(self, job: str, first: dict, second: dict) -> None:
+        steps = [step.fields for step in self.jobs[job].steps]
+        self.assertLess(steps.index(first), steps.index(second))
+
+    def test_hosted_pipelines_use_blocking_bash_in_every_job(self) -> None:
+        self.assertEqual({"build", "gametest", "regression"}, set(self.jobs))
+        for name, job in self.jobs.items():
+            with self.subTest(job=name):
+                self.assertTrue(job.structurally_safe)
+                self.assertNotIn("continue-on-error", job.fields)
+                # Explicit Bash uses GitHub's -e -o pipefail, so tee cannot mask a failure.
+                self.assertIn("    defaults:\n      run:\n        shell: bash\n", self.job_text[name])
+                for step in job.steps:
+                    self.assertTrue(step.structurally_safe)
+                    self.assertNotIn("continue-on-error", step.fields)
+                    if "run" in step.fields:
+                        self.assertEqual("bash", step.fields.get("shell", "bash"))
+                        self.assertNotRegex(step.fields["run"], r"set\s+\+[^\n]*|\|\|\s*true")
+
+    def test_hosted_discovery_runs_both_wiring_suites(self) -> None:
+        tooling = self.step("build", "Record toolchain and check tooling")
+        self.assertNotIn("if", tooling)
+        commands = [shlex.split(line.split("2>&1 |", 1)[0]) for line in tooling["run"].splitlines()
+                    if "-m unittest discover" in line]
+        self.assertEqual([
+            ["python", "-B", "-m", "unittest", "discover", "-s", "tests", "-p", "test_check_v180_ci_host.py", "-v"],
+            ["python", "-B", "-m", "unittest", "discover", "-s", "tests", "-p", "*gametest*.py", "-v"],
+        ], commands)
+
+    def test_native_execution_is_mandatory_in_all_four_shards(self) -> None:
+        shard = self.jobs["gametest"]
+        self.assertEqual("build", shard.fields["needs"])
+        self.assertNotIn("if", self.jobs["build"].fields)
+        self.assertNotIn("if", shard.fields)
+        self.assertRegex(self.job_text["gametest"], r"    strategy:\n      fail-fast: false\n      matrix:\n"
+                                                  r"        shard: \[0, 1, 2, 3\]\n")
+        native = self.step("gametest", "Run this shard in its own fresh Forge world")
+        self.assertNotIn("if", native)
+        command = next(line for line in native["run"].splitlines() if line.startswith("./gradlew "))
+        self.assertTrue(command.startswith("./gradlew -I scripts/ci_gametest/init.gradle "
+                                           "-PciShard=${{ matrix.shard }} runGameTestServer "))
+        arguments = shlex.split(command.split("runGameTestServer ", 1)[1])
+        self.assertNotIn("--dry-run", arguments)
+        self.assertIn("--no-build-cache", arguments)
+        self.assertEqual(["compileJava", "processResources", "compileAdapterTestJava",
+                          "processAdapterTestResources", "compileCiGameTestJava", "processCiGameTestResources"],
+                         re.findall(r"(?:^| )-x (\S+)", command))
+        self.assertIn('2>&1 | tee "$EVIDENCE_DIR/gametest.log"', command)
+        # Only a successful native pipeline may leave the receipt required by check-shard.
+        receipt = 'printf \'0\\n\' > "$EVIDENCE_DIR/native-exit.txt"'
+        self.assertIn(receipt, native["run"])
+        self.assertLess(native["run"].index(command), native["run"].index(receipt))
+
+    def test_runtime_identity_is_sealed_restored_and_verified_around_execution(self) -> None:
+        for name, job in self.jobs.items():
+            with self.subTest(job=name):
+                self.assertEqual("${{ github.sha }}", job.env["REVIEW_COMMIT"])
+                checkouts = [step.fields for step in job.steps
+                             if step.fields.get("uses", "").startswith("actions/checkout@")]
+                self.assertEqual(1, len(checkouts))
+                self.assertEqual("${{ env.REVIEW_COMMIT }}", checkouts[0]["with.ref"])
+        seal = self.step("build", "Build and seal the single GameTest runtime bundle")
+        restore = self.step("gametest", "Verify JAR identity and restore only the sealed runtime bytes")
+        native = self.step("gametest", "Run this shard in its own fresh Forge world")
+        check = self.step("gametest", "Verify unchanged runtime and check this shard's raw logs")
+        for step, command in ((seal, "seal"), (restore, "restore"), (check, "verify-runtime")):
+            with self.subTest(command=command):
+                self.assertIn(f'python -B scripts/ci_gametest_shards.py {command} '
+                              '--bundle build/ci-gametest --commit "$REVIEW_COMMIT"', step["run"])
+        self.assertNotIn("if", seal)
+        self.assertNotIn("if", restore)
+        self.assertEqual("always()", check["if"])
+        self.assert_before("gametest", restore, native)
+        self.assert_before("gametest", native, check)
+        upload = self.step("build", "Upload the immutable runtime bundle for every shard")
+        download = self.step("gametest", "Download the once-built runtime bundle")
+        identity = "v180-gametest-runtime-${{ github.sha }}-${{ github.run_attempt }}"
+        self.assertTrue(upload["uses"].startswith("actions/upload-artifact@"))
+        self.assertTrue(download["uses"].startswith("actions/download-artifact@"))
+        self.assertEqual(identity, upload["with.name"])
+        self.assertEqual(identity, download["with.name"])
+        self.assertEqual("build/ci-gametest/", upload["with.path"])
+        self.assertEqual("build/ci-gametest", download["with.path"])
+        self.assert_before("build", seal, upload)
+        self.assert_before("gametest", download, restore)
+
+    def test_hosted_checker_runs_after_native_command_under_pipefail(self) -> None:
+        native = self.step("gametest", "Run this shard in its own fresh Forge world")
+        check = self.step("gametest", "Verify unchanged runtime and check this shard's raw logs")
+        self.assert_before("gametest", native, check)
+        self.assertEqual("always()", check["if"])
+        raw_logs = 'cp -a build/gametest/logs "$EVIDENCE_DIR/logs"'
+        checker = 'python -B scripts/ci_gametest_shards.py check-shard --evidence "$EVIDENCE_DIR"'
+        # check-shard passes logs/latest.log and the per-shard manifest to the unchanged checker.
+        self.assertIn(raw_logs, check["run"])
+        self.assertIn(checker, check["run"])
+        self.assertIn("scripts/ci_gametest_shards.py verify-runtime", check["run"])
+        self.assertLess(check["run"].index(raw_logs), check["run"].index(checker))
+        self.assertLess(check["run"].index("scripts/ci_gametest_shards.py verify-runtime"),
+                        check["run"].index(checker))
+        self.assertIn(checker + ' 2>&1 | tee "$EVIDENCE_DIR/log-check.log"', check["run"])
+
+    def test_aggregate_requires_build_and_all_four_successful_shards(self) -> None:
+        aggregate = self.jobs["regression"]
+        self.assertEqual("[build, gametest]", aggregate.fields["needs"])
+        self.assertEqual("always()", aggregate.fields["if"])
+        build = self.step("regression", "Require the build and audit job")
+        self.assertNotIn("if", build)
+        self.assertEqual("test '${{ needs.build.result }}' = success", build["run"])
+        download = self.step("regression", "Download all shard evidence without merging filenames")
+        self.assertEqual("v180-shard-*-${{ github.sha }}-${{ github.run_attempt }}", download["with.pattern"])
+        self.assertEqual("false", download["with.merge-multiple"])
+        self.assertEqual("${{ env.EVIDENCE_DIR }}", download["with.path"])
+        union = self.step("regression", "Require every native shard, exact executed union and unchanged log budgets")
+        self.assertNotIn("if", union)
+        self.assertIn("for i in 0 1 2 3; do\n", union["run"])
+        self.assertIn('mv "$EVIDENCE_DIR/v180-shard-$i-$REVIEW_COMMIT-${{ github.run_attempt }}" '
+                      '"$EVIDENCE_DIR/shard-$i"', union["run"])
+        # The CLI rejects a non-success matrix result and rechecks every shard's native receipt and raw log.
+        self.assertIn('python -B scripts/ci_gametest_shards.py union --evidence "$EVIDENCE_DIR" '
+                      '--bundle build/ci-gametest --commit "$REVIEW_COMMIT" '
+                      "--job-result '${{ needs.gametest.result }}' 2>&1 | tee \"$EVIDENCE_DIR/union.log\"",
+                      union["run"])
+        self.assert_before("regression", build, download)
+        self.assert_before("regression", download, union)
 
 
 class CommandLineTests(unittest.TestCase):
