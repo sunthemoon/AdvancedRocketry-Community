@@ -112,8 +112,9 @@ class K2ObjModelTest {
         return parts;
     }
 
-    @Test void catalogContainsExactlyK1AndTheFourK2Kinds() {
-        assertEquals(Set.of("centrifuge", "chemical_reactor", "crystallizer", "cutting_machine", "lathe"),
+    @Test void catalogContainsExactlyK1K2AndK3Kinds() {
+        assertEquals(Set.of("centrifuge", "chemical_reactor", "crystallizer", "cutting_machine", "lathe",
+                "astrobody_data_processor", "observatory", "planetary_beacon", "solar_array"),
                 ObjModelFixture.CATALOG.stream().map(f -> f.kind().getPath()).collect(Collectors.toSet()));
     }
 
@@ -189,7 +190,8 @@ class K2ObjModelTest {
     }
 
     @Test void combinedK1K2SetRetainsTheExistingBudgets() throws Exception {
-        var result = ObjModelSet.check(ObjModelFixture.CATALOG, source(Set.of()));
+        var result = ObjModelSet.check(List.of(ObjModelFixture.CENTRIFUGE, ObjModelFixture.CHEMICAL_REACTOR,
+                ObjModelFixture.CRYSTALLIZER, ObjModelFixture.CUTTING_MACHINE, ObjModelFixture.LATHE), source(Set.of()));
         assertTrue(result.absent().isEmpty());
         assertEquals(5, result.models().size());
         assertEquals(7_688, result.vertices());

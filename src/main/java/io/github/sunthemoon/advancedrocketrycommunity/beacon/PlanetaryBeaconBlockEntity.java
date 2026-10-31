@@ -5,6 +5,9 @@ import io.github.sunthemoon.advancedrocketrycommunity.beacon.model.BeaconLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.beacon.model.BeaconRecord;
 import io.github.sunthemoon.advancedrocketrycommunity.beacon.persistence.BeaconIndexSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.beacon.persistence.BeaconStateCodec;
+import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.ClassicModelProjection;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.FormedModelController;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlockEntities;
 import java.util.Optional;
 import java.util.UUID;
@@ -12,11 +15,14 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 
 /**
  * The planetary beacon controller (ADR-065 section 7). It owns the beacon's identity, owner, name and enabled switch,
@@ -25,7 +31,7 @@ import net.minecraft.world.level.block.state.BlockState;
  * structure is formed, the beacon is enabled and it has an owner; unforming or disabling marks it inactive, and
  * unloading leaves the last known record. Removal deletes its own record only.
  */
-public final class PlanetaryBeaconBlockEntity extends BlockEntity {
+public final class PlanetaryBeaconBlockEntity extends BlockEntity implements FormedModelController {
     /** The outcome of the last index reconciliation. */
     enum Registration {
         PENDING, REGISTERED, NO_OWNER, INDEX_UNAVAILABLE, DUPLICATE, BODY_UNAVAILABLE, LIMIT
@@ -37,6 +43,28 @@ public final class PlanetaryBeaconBlockEntity extends BlockEntity {
     private final BeaconStructure structure;
     private Registration registration = Registration.PENDING;
     private boolean reconcile = true;
+    /** Server: last published formation. Client: received presentation flag. Never saved. */
+    private boolean modelFormed;
+
+    @Override public boolean modelFormed() { return modelFormed; }
+    private void updateModelProjection() {
+        boolean next = retained == null && formed();
+        if (modelFormed == next) { return; }
+        modelFormed = next;
+        if (level instanceof ServerLevel server && !isRemoved()) {
+            server.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+        }
+    }
+    @Override public CompoundTag getUpdateTag() {
+        var tag = new CompoundTag(); ClassicModelProjection.encode(tag, retained == null && formed()); return tag;
+    }
+    @Override public void handleUpdateTag(CompoundTag tag) { modelFormed = ClassicModelProjection.decode(tag); }
+    @Override public ClientboundBlockEntityDataPacket getUpdatePacket() { return ClientboundBlockEntityDataPacket.create(this); }
+    @Override public void onDataPacket(Connection connection, ClientboundBlockEntityDataPacket packet) { handleUpdateTag(packet.getTag()); }
+    @Override public AABB getRenderBoundingBox() {
+        return ClassicModelProjection.bounds(ModIdentity.id("planetary_beacon"),
+                getBlockState().getValue(PlanetaryBeaconBlock.FACING), worldPosition);
+    }
 
     public PlanetaryBeaconBlockEntity(BlockPos position, BlockState blockState) {
         super(ModBlockEntities.PLANETARY_BEACON.get(), position, blockState);
@@ -52,6 +80,7 @@ public final class PlanetaryBeaconBlockEntity extends BlockEntity {
 
     private void tick(ServerLevel level, BlockState blockState) {
         if (retained != null) {
+            updateModelProjection();
             return;
         }
         Optional<BeaconServices> services = BeaconRuntime.services();
@@ -61,6 +90,7 @@ public final class PlanetaryBeaconBlockEntity extends BlockEntity {
         boolean wasFormed = formed();
         structure.tick(level, worldPosition, blockState.getValue(PlanetaryBeaconBlock.FACING), state.beaconId(),
                 services.get(), level.getServer().getTickCount());
+        updateModelProjection();
         boolean validated = structure.consumeValidated();
         if (formed() && !wasFormed) {
             state = state.nextGeneration();
@@ -241,6 +271,7 @@ public final class PlanetaryBeaconBlockEntity extends BlockEntity {
     @Override
     public void load(CompoundTag tag) {
         super.load(tag);
+        modelFormed = false;
         retained = null;
         if (tag.contains(BeaconStateCodec.KEY)) {
             Tag raw = tag.get(BeaconStateCodec.KEY);
