@@ -30,4 +30,7 @@ gradlew.bat text eol=crlf
 *.jar binary
 *.nbt binary
 *.png binary
+# Preserve K1 byte-copy provenance when core.autocrlf is enabled.
+src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/centrifuge.obj -text
+src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/centrifuge.mtl -text
 LICENSE text eol=lf

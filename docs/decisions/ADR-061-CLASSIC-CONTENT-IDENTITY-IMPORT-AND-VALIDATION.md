@@ -414,6 +414,24 @@ must handle:
    an unmerged pull request or another project (for example the plate
    press textures added from issue #1527, whose author describes them as a
    filtered vanilla piston) puts the file under `REVIEW`.
+
+   **Reviewed upstream repository URLs (2026-10-31 additive revision).**
+   Under [owner decision D8](../work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261031.md),
+   an HTTP(S) URL exactly naming `github.com/Advanced-Rocketry/AdvancedRocketry`
+   or its earlier `github.com/zmaster587/AdvancedRocketry` address is not, by
+   itself, a link to another project. Only HTTP versus HTTPS, optional `www.`,
+   ASCII letter case, an optional trailing `.git` and an optional trailing
+   `/` may vary. Credentials, ports, other hosts/owners/repositories, subpaths,
+   queries, fragments and escaped spellings do not qualify. URL ends must be
+   explicit (end of message, ASCII whitespace, quotes, backticks or angle
+   brackets); no punctuation is stripped or URL normalization performed.
+   Every URL in the subject and body is checked independently. Other URLs
+   and all other history triggers, including material "taken from" another
+   source and the AR 16x set below, still require review. Every file retains
+   its complete history, derivation re-run, hashes, format budgets,
+   reference and licence checks; this grants no per-file origin clearance.
+   [W229](../work/v1.8.0-root-queue/records/W229.md) records the pinned-clone
+   evidence and its limits. D8 authorizes K1 first, not imports of K2 to K5.
    **The AR 16x texture set.** Pull requests #1809, #1811 and #1889 (2020)
    and the follow-up #1976 (2021) were merged by the contributor whose
    LibVulpes commit `984d6747`, two days before #1809, took its 16x textures
