@@ -43,3 +43,22 @@ GameTest. An independent review follows.
 
 The governed publication failure (W220), the ordinary N2 form, production changes, pad policy, budgets, timeouts,
 ADRs, status files and the ledger. W220 runs native cases under the same heavy-JVM lock; wait for it, never remove it.
+
+## Root decision R208 (2026-10-31 09:11): fix the raw reader and runner, then a fresh PREPARED budget
+
+The first session (08:17 to 09:10) delivered `4957e5129`: the committed cut design (seven rows), gated fixtures, the
+named-pad oracle and tests (5,871 unit tests and 32 selected GameTests pass). PREPARED reached its selected stop and
+its two restarts behaved as the live logs expect (one claim released after the acknowledged absence, no second
+release), but every independent raw read returned UNKNOWN with `Truncated native region header`; the reader kept no
+file name, header length or bytes, and the runner's cleanup removed the server copy, so the failure cannot be replayed.
+No production cause is shown. The other six rows have not run.
+
+**Decision.** Test-side harness fixes first, each with a test that fails first: the raw reader records, on any UNKNOWN,
+the file, its length, the header bytes and the reason; the runner copies the offending region files into the evidence
+before its cleanup and stops further restarts of an attempt after a raw read failure; if the cause is a legitimately
+short or empty region file, the reader handles it exactly as vanilla's `RegionFile` does (cite the vanilla code), never
+by loosening a check, and a truly truncated file stays UNKNOWN. Then PREPARED gets a fresh two-attempt budget on committed
+source (its failed attempt stays FAILED), followed by REFUSED, STOPPED, BEFORE, MOVED, UNKNOWN and RELEASED. R201's
+renewal rule applies from here; a production cause or an unexplained image stops for Root.
+
+A fresh session continues on the same branch and worktree from `4957e5129`. The rest of this TASK is unchanged.
