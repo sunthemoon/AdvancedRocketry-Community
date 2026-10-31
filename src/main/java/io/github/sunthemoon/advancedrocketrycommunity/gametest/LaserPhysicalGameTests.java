@@ -118,20 +118,24 @@ public final class LaserPhysicalGameTests {
     public static void aPhysicalShaftDigsWholeLayersPaysOnceAndEveryStopLeavesTheLayer(GameTestHelper helper) {
         OrbitalLaserDrillGameTests.Fixture fixture = new OrbitalLaserDrillGameTests.Fixture(helper,
                 io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds.EARTH_ID);
+        LaserPhysicalCleanup cleanup = new LaserPhysicalCleanup(helper, fixture);
         OrbitalLaserDrillBlockEntity drill = fixture.drill();
         drill.storage().lens().setStackInSlot(0, new ItemStack(ModItems.LASER_LENS.get()));
         drill.storage().setEnergy(200_000);
         ServerLevel overworld = helper.getLevel();
         BlockPos marker = markerPosition(helper);
+        cleanup.target(overworld, marker);
         overworld.setBlockAndUpdate(marker, ModBlocks.LASER_TARGET.get().defaultBlockState());
         LaserTargetBlockEntity target = (LaserTargetBlockEntity) overworld.getBlockEntity(marker);
         helper.assertTrue(target.assignOwner(fixture.owner), "The marker owner was not assigned");
         UUID markerId = target.deviceId().orElseThrow();
         List<BlockPos> layer1 = LaserShaft.layer(marker, marker.getY() - 1);
         List<BlockPos> layer2 = LaserShaft.layer(marker, marker.getY() - 2);
+        cleanup.layer(layer1);
+        cleanup.layer(layer2);
         fill(overworld, layer1, Blocks.STONE.defaultBlockState());
         fill(overworld, layer2, Blocks.STONE.defaultBlockState());
-        List<ServerPlayer> joined = new ArrayList<>();
+        List<ServerPlayer> joined = cleanup.joined;
         ServerPlayer owner = ConnectedTestPlayers.join(fixture.server, fixture.owner, "physicalOwner", fixture.space,
                 fixture.controller.south(4).above(2), new ArrayList<>());
         joined.add(owner);
@@ -249,7 +253,7 @@ public final class LaserPhysicalGameTests {
                 .thenExecuteAfter(11, () -> {
                     click(helper, menu, owner, OrbitalLaserDrillMenu.BUTTON_UNLINK, "unlink");
                     helper.assertTrue(drill.linkedMarker().isEmpty() && !drill.running(), "Unlink failed");
-                    cleanup(fixture, joined, overworld, marker, layer1, layer2, target);
+                    cleanup.close();
                 })
                 .thenSucceed();
     }
@@ -262,16 +266,20 @@ public final class LaserPhysicalGameTests {
     public static void blocksHangingOnTheirLayerAreCollectedOnce(GameTestHelper helper) {
         OrbitalLaserDrillGameTests.Fixture fixture = new OrbitalLaserDrillGameTests.Fixture(helper,
                 io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds.EARTH_ID);
+        LaserPhysicalCleanup cleanup = new LaserPhysicalCleanup(helper, fixture);
         OrbitalLaserDrillBlockEntity drill = fixture.drill();
         drill.storage().lens().setStackInSlot(0, new ItemStack(ModItems.LASER_LENS.get()));
         drill.storage().setEnergy(200_000);
         ServerLevel overworld = helper.getLevel();
         BlockPos marker = markerPosition(helper);
+        cleanup.target(overworld, marker);
         overworld.setBlockAndUpdate(marker, ModBlocks.LASER_TARGET.get().defaultBlockState());
         LaserTargetBlockEntity target = (LaserTargetBlockEntity) overworld.getBlockEntity(marker);
         helper.assertTrue(target.assignOwner(fixture.owner), "The marker owner was not assigned");
         List<BlockPos> layer1 = LaserShaft.layer(marker, marker.getY() - 1);
         List<BlockPos> layer2 = LaserShaft.layer(marker, marker.getY() - 2);
+        cleanup.layer(layer1);
+        cleanup.layer(layer2);
         fill(overworld, layer2, Blocks.STONE.defaultBlockState());
         fill(overworld, layer1, Blocks.STONE.defaultBlockState());
         // Cells are x = mx - 1 + i % 3, z = mz - 1 + i / 3. Each hanging block's support is an earlier cell.
@@ -284,7 +292,7 @@ public final class LaserPhysicalGameTests {
         helper.assertTrue(overworld.getBlockState(layer1.get(4)).is(Blocks.WALL_TORCH)
                 && overworld.getBlockState(layer1.get(5)).is(Blocks.LADDER)
                 && overworld.getBlockState(layer1.get(8)).is(Blocks.STONE_BUTTON), "The hanging blocks were not placed");
-        List<ServerPlayer> joined = new ArrayList<>();
+        List<ServerPlayer> joined = cleanup.joined;
         ServerPlayer owner = ConnectedTestPlayers.join(fixture.server, fixture.owner, "attachedOwner", fixture.space,
                 fixture.controller.south(4).above(2), new ArrayList<>());
         joined.add(owner);
@@ -320,7 +328,7 @@ public final class LaserPhysicalGameTests {
                     int buttons = count(target, Items.STONE_BUTTON);
                     int cobblestone = count(target, Items.COBBLESTONE);
                     overworld.getEntitiesOfClass(ItemEntity.class, around).forEach(ItemEntity::discard);
-                    cleanup(fixture, joined, overworld, marker, layer1, layer2, target);
+                    cleanup.close();
                     helper.assertTrue(entities == 0, entities + " items dropped into the world: " + dropped);
                     // Review C11R-L1: one break event per breakable cell of the layer, not one per planning.
                     helper.assertTrue(breakEvents == 9, breakEvents + " break events for 9 cells");
@@ -341,21 +349,24 @@ public final class LaserPhysicalGameTests {
     public static void debtAndCreditSettleOnTheEngine(GameTestHelper helper) {
         OrbitalLaserDrillGameTests.Fixture fixture = new OrbitalLaserDrillGameTests.Fixture(helper,
                 io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds.EARTH_ID);
+        LaserPhysicalCleanup cleanup = new LaserPhysicalCleanup(helper, fixture);
         OrbitalLaserDrillBlockEntity drill = fixture.drill();
         drill.storage().lens().setStackInSlot(0, new ItemStack(ModItems.LASER_LENS.get()));
         drill.storage().setEnergy(200_000);
         ServerLevel overworld = helper.getLevel();
         BlockPos marker = markerPosition(helper);
+        cleanup.target(overworld, marker);
         overworld.setBlockAndUpdate(marker, ModBlocks.LASER_TARGET.get().defaultBlockState());
         LaserTargetBlockEntity target = (LaserTargetBlockEntity) overworld.getBlockEntity(marker);
         helper.assertTrue(target.assignOwner(fixture.owner), "The marker owner was not assigned");
         List<List<BlockPos>> layers = new ArrayList<>();
         for (int depth = 1; depth <= 5; depth++) {
             List<BlockPos> layer = LaserShaft.layer(marker, marker.getY() - depth);
+            cleanup.layer(layer);
             fill(overworld, layer, Blocks.STONE.defaultBlockState());
             layers.add(layer);
         }
-        List<ServerPlayer> joined = new ArrayList<>();
+        List<ServerPlayer> joined = cleanup.joined;
         ServerPlayer owner = ConnectedTestPlayers.join(fixture.server, fixture.owner, "counterOwner", fixture.space,
                 fixture.controller.south(4).above(2), new ArrayList<>());
         joined.add(owner);
@@ -409,13 +420,7 @@ public final class LaserPhysicalGameTests {
                                     && layers.get(3).stream().allMatch(cell -> overworld.getBlockState(cell).isAir())
                                     && layers.get(4).stream().noneMatch(cell -> overworld.getBlockState(cell).isAir()),
                             "The credit did not dig exactly two layers");
-                    joined.forEach(player -> fixture.server.getPlayerList().remove(player));
-                    for (int slot = 0; slot < LaserTargetBlockEntity.BUFFER_SLOTS; slot++) {
-                        target.buffer().setStackInSlot(slot, ItemStack.EMPTY);
-                    }
-                    overworld.setBlockAndUpdate(marker, Blocks.AIR.defaultBlockState());
-                    layers.forEach(layer -> fill(overworld, layer, Blocks.AIR.defaultBlockState()));
-                    fixture.close();
+                    cleanup.close();
                 })
                 .thenSucceed();
     }
@@ -428,20 +433,23 @@ public final class LaserPhysicalGameTests {
     public static void anUnloadedTargetStopsTheDrillWithoutLoadingIt(GameTestHelper helper) {
         OrbitalLaserDrillGameTests.Fixture fixture = new OrbitalLaserDrillGameTests.Fixture(helper,
                 io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds.EARTH_ID);
+        LaserPhysicalCleanup cleanup = new LaserPhysicalCleanup(helper, fixture);
         OrbitalLaserDrillBlockEntity drill = fixture.drill();
         drill.storage().lens().setStackInSlot(0, new ItemStack(ModItems.LASER_LENS.get()));
         drill.storage().setEnergy(200_000);
         ServerLevel overworld = helper.getLevel();
         BlockPos far = helper.absolutePos(BlockPos.ZERO).offset(1024, 0, 0);
-        BlockPos marker = new BlockPos((far.getX() & ~15) + 8, 120, (far.getZ() & ~15) + 8);
+        // GameTest templates advance through +Z and retain their force tickets. A +X offset on the same row
+        // can land in an earlier template's FULL fringe; use a fixed negative-Z lane outside that grid.
+        BlockPos marker = new BlockPos((far.getX() & ~15) + 8, 120, -1024 + 8);
         ChunkPos chunk = new ChunkPos(marker);
-        overworld.setChunkForced(chunk.x, chunk.z, true);
+        cleanup.forceTargetChunk(overworld, marker);
         overworld.getChunkAt(marker); // Test setup only.
         overworld.setBlockAndUpdate(marker, ModBlocks.LASER_TARGET.get().defaultBlockState());
         LaserTargetBlockEntity target = (LaserTargetBlockEntity) overworld.getBlockEntity(marker);
         helper.assertTrue(target.assignOwner(fixture.owner), "The marker owner was not assigned");
         UUID markerId = target.deviceId().orElseThrow();
-        List<ServerPlayer> joined = new ArrayList<>();
+        List<ServerPlayer> joined = cleanup.joined;
         ServerPlayer owner = ConnectedTestPlayers.join(fixture.server, fixture.owner, "unloadedOwner", fixture.space,
                 fixture.controller.south(4).above(2), new ArrayList<>());
         joined.add(owner);
@@ -461,7 +469,7 @@ public final class LaserPhysicalGameTests {
                 .thenExecuteAfter(11, () -> click(helper, menu, owner, OrbitalLaserDrillMenu.BUTTON_START, "start"))
                 .thenExecuteAfter(11, () -> click(helper, menu, owner, OrbitalLaserDrillMenu.BUTTON_CONFIRM, "confirm"))
                 .thenWaitUntil(() -> helper.assertTrue(drill.running(), "Not running: " + drill.describe()))
-                .thenExecute(() -> overworld.setChunkForced(chunk.x, chunk.z, false))
+                .thenExecute(cleanup::releaseTargetChunk)
                 .thenWaitUntil(() -> helper.assertTrue(overworld.getChunkSource().getChunkNow(chunk.x, chunk.z) == null
                         && drill.status() == EndgameCode.TARGET_UNLOADED, "Not stopped as unloaded: "
                         + drill.describe()))
@@ -473,12 +481,7 @@ public final class LaserPhysicalGameTests {
                                     && service().root().orElseThrow().endpoint(markerId).orElseThrow().state()
                                     == io.github.sunthemoon.advancedrocketrycommunity.endgame.root.EndpointRecord.State
                                     .ACTIVE, "An unloaded target changed the link or the record: " + drill.describe());
-                    joined.forEach(player -> fixture.server.getPlayerList().remove(player));
-                    overworld.setChunkForced(chunk.x, chunk.z, true);
-                    overworld.getChunkAt(marker); // Test cleanup only.
-                    overworld.setBlockAndUpdate(marker, Blocks.AIR.defaultBlockState());
-                    overworld.setChunkForced(chunk.x, chunk.z, false);
-                    fixture.close();
+                    cleanup.close();
                 })
                 .thenSucceed();
     }
@@ -545,18 +548,5 @@ public final class LaserPhysicalGameTests {
 
     private static EndgameService service() {
         return EndgameRuntime.operational().orElseThrow();
-    }
-
-    private static void cleanup(OrbitalLaserDrillGameTests.Fixture fixture, List<ServerPlayer> joined,
-                                ServerLevel overworld, BlockPos marker, List<BlockPos> layer1, List<BlockPos> layer2,
-                                LaserTargetBlockEntity target) {
-        joined.forEach(player -> fixture.server.getPlayerList().remove(player));
-        for (int slot = 0; slot < LaserTargetBlockEntity.BUFFER_SLOTS; slot++) {
-            target.buffer().setStackInSlot(slot, ItemStack.EMPTY);
-        }
-        overworld.setBlockAndUpdate(marker, Blocks.AIR.defaultBlockState());
-        fill(overworld, layer1, Blocks.AIR.defaultBlockState());
-        fill(overworld, layer2, Blocks.AIR.defaultBlockState());
-        fixture.close();
     }
 }
