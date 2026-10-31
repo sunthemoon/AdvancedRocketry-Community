@@ -37,7 +37,7 @@ public final class BeaconReloadGameTests {
             // Keep the entire pattern inside one isolated chunk, away from every player's view tickets.
             BlockPos at = new BlockPos((far.getX() & ~15) + 8, 210, (far.getZ() & ~15) + 8);
             helper.assertTrue(fixture.level.getWorldBorder().isWithinBounds(at), "The isolated fixture is outside the world border");
-            fixture.forceChunk(at, true);
+            fixture.prepareChunk(at);
             awaitTickReady(fixture, at, () -> lifecycle(fixture, owner, at));
         } catch (RuntimeException | Error failure) {
             fixture.close();
@@ -83,7 +83,7 @@ public final class BeaconReloadGameTests {
                         + ", after=" + fixture.index().get(id));
                 marker(helper, finder.snapshot(owner), id, false);
                 helper.assertTrue(!fixture.level.hasChunkAt(at), "The finder loaded the beacon chunk");
-                fixture.forceChunk(at, true);
+                fixture.prepareChunk(at);
                 PlanetaryBeaconBlockEntity reloaded = (PlanetaryBeaconBlockEntity) fixture.level.getBlockEntity(at);
                 helper.assertTrue(reloaded != original && reloaded.beaconId().equals(Optional.of(id))
                         && reloaded.status() == BeaconStatus.PENDING, "The native reload did not restore a pending beacon");
@@ -127,10 +127,14 @@ public final class BeaconReloadGameTests {
         fixture.await(40, "the fixture chunk's native ticker readiness", () -> {
             boolean ready = tickReady(fixture, at);
             if (!ready) {
-                // Entity deserialization runs on the server's task queue, not the chunk-source queue paced below.
-                // Pump it within one normal tick; keep the same 40 attempts and the enclosing 600-tick timeout.
+                // Request FULL first: directly requesting ENTITY_TICKING cancels FULL's status notification until
+                // the 5-by-5 entity-ticking future completes, leaving entity storage FRESH despite a FULL chunk.
+                // Pump the native load, then promote; keep the same 40 attempts and enclosing 600-tick timeout.
                 EntitySections.loadNow(fixture.level, new ChunkPos(at),
                         System.nanoTime() + GameTestTickPacer.SERVER_TICK_NANOS);
+                if (fixture.level.areEntitiesLoaded(ChunkPos.asLong(at))) {
+                    fixture.forceChunk(at, true);
+                }
                 pacer.pace();
                 ready = tickReady(fixture, at);
             }
