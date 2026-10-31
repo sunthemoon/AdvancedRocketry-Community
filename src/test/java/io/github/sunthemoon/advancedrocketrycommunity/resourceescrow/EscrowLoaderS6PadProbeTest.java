@@ -30,4 +30,17 @@ class EscrowLoaderS6PadProbeTest {
             assertFalse(EscrowLoaderS6PadProbe.sameRefusal(before, after));
         }
     }
+    @Test void liveObservationDoesNotInvokeEntitySaveSerialization() throws Exception {
+        try (var stream = EscrowLoaderS6PadProbe.class.getResourceAsStream("EscrowLoaderS6PadProbe.class")) {
+            var type = new org.objectweb.asm.tree.ClassNode();
+            new org.objectweb.asm.ClassReader(stream).accept(type, 0);
+            var method = type.methods.stream().filter(value -> value.name.equals("tag")).findFirst().orElseThrow();
+            for (var instruction : method.instructions) {
+                if (instruction instanceof org.objectweb.asm.tree.MethodInsnNode call) {
+                    assertFalse(List.of("save", "saveWithoutId", "saveAsPassenger", "addAdditionalSaveData").contains(call.name),
+                            "Native save serialization invalidates the governed observation token: " + call.name);
+                }
+            }
+        }
+    }
 }

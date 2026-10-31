@@ -219,7 +219,19 @@ public final class EscrowLoaderS6PadProbe {
     private List<RocketEntity> arrivals() { return space().getEntitiesOfClass(RocketEntity.class, new AABB(padPos.above()).inflate(4, 200, 4)); }
     private List<RocketEntity> sources() { return server.overworld().getEntitiesOfClass(RocketEntity.class, new AABB(SOURCE).inflate(4, 200, 4)); }
     private static CompoundTag tag(RocketEntity rocket) {
-        var tag = rocket.saveWithoutId(new CompoundTag()); tag.putString("id", "advancedrocketrycommunity:rocket"); return tag;
+        // Entity serialization increments governedObservation and invalidates proofs. Capture by the
+        // existing read-only envelope, then project its complete domain data into the native field names.
+        var envelope = EscrowGovernedEnvelope.capture(rocket);
+        var tag = new CompoundTag(); tag.putUUID("UUID", envelope.getUUID("physical")); tag.putString("id", envelope.getString("type"));
+        tag.put("Pos", envelope.getList("pos", 6).copy()); tag.put("Motion", envelope.getList("motion", 6).copy());
+        var rotation = new ListTag(); rotation.add(net.minecraft.nbt.FloatTag.valueOf(envelope.getFloat("yaw")));
+        rotation.add(net.minecraft.nbt.FloatTag.valueOf(envelope.getFloat("pitch"))); tag.put("Rotation", rotation);
+        tag.putBoolean("NoGravity", envelope.getBoolean("no_gravity")); tag.putBoolean("OnGround", envelope.getBoolean("on_ground"));
+        tag.putBoolean("Invulnerable", envelope.getBoolean("invulnerable"));
+        var data = new CompoundTag(); data.putInt("schema_version", 3);
+        data.putUUID("assembly_transaction_id", envelope.getUUID("logical")); data.putUUID("owner_id", envelope.getUUID("owner"));
+        data.put("snapshot", envelope.getCompound("snapshot").copy()); data.put("flight_data", envelope.getCompound("flight").copy());
+        data.put("resource_escrow", envelope.getCompound("wrapper").copy()); tag.put("RocketEntityData", data); return tag;
     }
 
     private CompoundTag snapshot() {
