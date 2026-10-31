@@ -1,16 +1,26 @@
 # ADR-025 additive revision 1 (proposal) - Enchanted native armor eligibility
 
 ```yaml
-status: PROPOSED
+status: ACCEPTED
 revises: ADR-025
 revision: additive 1
 date: 2026-10-29
 owner: sunthemoon
-deciders: []
+deciders: [sunthemoon]
+accepted_by: sunthemoon
+accepted_at: 2026-10-31
+acceptance_basis: owner decision D16, "接受这八条规则（推荐）", in the Claude Code session on 2026-10-31
 target_version: v1.8.0
 source: ADR-066 section 5.1 (owner decision D1)
 supersedes: ""
 ```
+
+**Accepted on 2026-10-31.** The owner accepted the eight rules below as written (decision D16 in
+[OWNER-DECISIONS-20261031](../work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261031.md)). The
+2026-10-15 note at the end of ADR-025 now points here. No code changes: the rules describe the
+shipped behaviour. The acceptance approves no Required Gate, version or release. The file keeps
+its name so existing references stay valid. The next paragraph is the proposal's original
+preface, kept as it was written.
 
 This is a proposal for the owner. It changes nothing until the owner decides. It does not
 change the status of [ADR-025](ADR-025-SUIT-OXYGEN-PROVIDERS.md) or

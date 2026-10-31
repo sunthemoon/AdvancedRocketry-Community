@@ -157,6 +157,11 @@ not release acceptance or any Required Gate.
 
 ## Additive revision note: enchanted native armor (v1.8.0)
 
+**Superseded by [ADR-025 additive revision 1](PROPOSED-ADR-025-R1-ENCHANTED-NATIVE-ARMOR.md)**, which
+the owner accepted on 2026-10-31 (decision D16). The revision states the complete rule. That includes
+the `equipment.classicEnabled` condition, disabled providers and the shared canister target, which
+this note omits. Where the two differ, the revision applies. This note is kept as written.
+
 ADR-066 section 5.1 (owner decision D1) extends host eligibility and asks for the extension to be
 reviewed as an additive revision of this ADR. This note records it; it changes no status, public
 signature or external bound of this ADR.
