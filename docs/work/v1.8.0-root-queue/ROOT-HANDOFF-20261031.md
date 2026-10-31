@@ -24,7 +24,7 @@ unchanged.
 
 | Item | State | Next step |
 |---|---|---|
-| Shared regression 41165651590 on `3cf396a8` (W221 and W220 merged) | Running; Root cancelled the superseded run 41164250992 on `4d4de480` | When it passes, record it as `latest_hosted_regression` in CURRENT_VERSION. Recent jobs take 57 to 73 of their 75 minutes (owner question D18). |
+| Shared regression 41165651590 on `3cf396a8` (W221 and W220 merged) | Passed on its first attempt (71.0 minutes) and recorded in CURRENT_VERSION by the outgoing session | Nothing; recent jobs take 57 to 73 of their 75 minutes (owner question D18). |
 | Codex workers | None running | — |
 
 ## 4. What happened since the last handoff
