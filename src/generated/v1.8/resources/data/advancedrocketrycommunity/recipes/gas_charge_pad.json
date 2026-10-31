@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "c": {
+      "item": "advancedrocketrycommunity:empty_canister"
+    },
+    "i": {
+      "item": "advancedrocketrycommunity:user_interface"
+    },
+    "p": {
+      "tag": "forge:plates/steel"
+    }
+  },
+  "pattern": [
+    "ppp",
+    "cic",
+    "ppp"
+  ],
+  "result": {
+    "item": "advancedrocketrycommunity:gas_charge_pad"
+  }
+}

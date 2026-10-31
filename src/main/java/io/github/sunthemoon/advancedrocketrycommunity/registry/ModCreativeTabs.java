@@ -82,6 +82,7 @@ public final class ModCreativeTabs {
                         output.accept(ModItems.PRECISION_ASSEMBLER_ITEM_OUTPUT_PORT.get());
                         output.accept(ModItems.PRECISION_ASSEMBLER_ENERGY_INPUT_PORT.get());
                         output.accept(ModItems.EMPTY_CANISTER.get());
+                        output.accept(ModItems.GAS_CHARGE_PAD.get());
                         output.accept(ModItems.HYDROGEN_CANISTER.get());
                         output.accept(ModItems.OXYGEN_CANISTER.get());
                         output.accept(io.github.sunthemoon.advancedrocketrycommunity.fluid.ClassicFluids.NITROGEN_CANISTER.get());

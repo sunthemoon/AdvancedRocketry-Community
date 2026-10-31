@@ -39,4 +39,9 @@ public final class SuitEquipmentRuntime {
         SuitEquipmentService current = service;
         return current == null ? new OxygenTransferResult(false, 0, 0) : current.fillOneCanister(player, hand);
     }
+
+    public static boolean fillTankCanister(ServerPlayer player, InteractionHand hand) {
+        SuitEquipmentService current = service;
+        return current != null && current.fillTankCanister(player, hand);
+    }
 }

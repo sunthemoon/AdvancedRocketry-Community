@@ -108,7 +108,9 @@ public final class OperatorItemNbtGameTests {
             // W120: both item cargo roles keep owner, placement identity, binding, buffer and protected native roots.
             io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketItemCargoBlockEntity.class,
             // W82: the fluid fuel loader's owner, device identity, binding and escrow section.
-            io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderBlockEntity.class);
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderBlockEntity.class,
+            // W226: the gas charge pad's bank and canister slots in its guarded, retained root.
+            io.github.sunthemoon.advancedrocketrycommunity.atmosphere.device.GasChargePadBlockEntity.class);
     /** Block entities that save no root of their own, so item NBT reaches no server-decided state. */
     private static final Set<Class<? extends BlockEntity>> NO_ROOT = Set.of(
             WarpCoreBlockEntity.class, SolarArrayOutputBlockEntity.class, PipeSealBlockEntity.class);

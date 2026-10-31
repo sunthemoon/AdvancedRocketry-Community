@@ -65,6 +65,7 @@ public final class BootstrapDataGenerators {
         generator.addProvider(event.includeClient(), new V180MaterialModels(output, existingFiles));
         generator.addProvider(event.includeClient(), new V180LanguageProvider(output, "en_us"));
         generator.addProvider(event.includeClient(), new V180LanguageProvider(output, "zh_cn"));
+        generator.addProvider(event.includeClient() || event.includeServer(), new V180GasChargePadData(output, event.includeClient(), event.includeServer()));
         generator.addProvider(event.includeServer(), V180MaterialData.loot(output));
         V180MaterialData.Blocks blockTags = generator.addProvider(event.includeServer(),
                 new V180MaterialData.Blocks(output, event.getLookupProvider(), existingFiles));

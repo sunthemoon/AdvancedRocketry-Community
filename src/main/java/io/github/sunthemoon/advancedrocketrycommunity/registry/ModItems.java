@@ -89,6 +89,7 @@ public final class ModItems {
             "precision_assembler_energy_input_port",
             ModBlocks.PRECISION_ASSEMBLER_ENERGY_INPUT_PORT
     );
+    public static final RegistryObject<Item> GAS_CHARGE_PAD = blockItem("gas_charge_pad", ModBlocks.GAS_CHARGE_PAD);
     public static final RegistryObject<Item> EMPTY_CANISTER = ITEMS.register(
             "empty_canister",
             () -> new GasCanisterItem(new Item.Properties().stacksTo(16))

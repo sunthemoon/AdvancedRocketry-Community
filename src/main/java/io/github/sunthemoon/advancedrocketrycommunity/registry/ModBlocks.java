@@ -63,6 +63,8 @@ public final class ModBlocks {
             BLOCKS.register("co2_scrubber", () -> new io.github.sunthemoon.advancedrocketrycommunity.atmosphere.device.ScrubberBlock(metalProperties().pushReaction(PushReaction.BLOCK)));
     public static final RegistryObject<io.github.sunthemoon.advancedrocketrycommunity.atmosphere.device.PipeSealBlock> PIPE_SEAL =
             BLOCKS.register("pipe_seal", () -> new io.github.sunthemoon.advancedrocketrycommunity.atmosphere.device.PipeSealBlock(metalProperties().pushReaction(PushReaction.BLOCK)));
+    public static final RegistryObject<io.github.sunthemoon.advancedrocketrycommunity.atmosphere.device.GasChargePadBlock> GAS_CHARGE_PAD =
+            BLOCKS.register("gas_charge_pad", () -> new io.github.sunthemoon.advancedrocketrycommunity.atmosphere.device.GasChargePadBlock(metalProperties().pushReaction(PushReaction.BLOCK)));
     public static final RegistryObject<io.github.sunthemoon.advancedrocketrycommunity.atmosphere.device.AtmosphereDetectorBlock> ATMOSPHERE_DETECTOR =
             BLOCKS.register("atmosphere_detector", () -> new io.github.sunthemoon.advancedrocketrycommunity.atmosphere.device.AtmosphereDetectorBlock(metalProperties().pushReaction(PushReaction.BLOCK)));
 
