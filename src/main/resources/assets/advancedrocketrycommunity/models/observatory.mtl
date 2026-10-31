@@ -1,0 +1,5 @@
+# Copyright (c) 2026 Advanced Rocketry: Community Edition contributors. MIT.
+# NEW material binding for the upstream OBJ's missing library.
+newmtl None
+Kd 1.0 1.0 1.0
+map_Kd advancedrocketrycommunity:textures/models/observatory.png

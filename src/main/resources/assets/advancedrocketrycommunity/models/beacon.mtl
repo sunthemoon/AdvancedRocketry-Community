@@ -1,0 +1,5 @@
+# Copyright (c) 2026 Advanced Rocketry: Community Edition contributors. MIT.
+# NEW binding: existing NEW controller art substitutes the out-of-batch legacy texture.
+newmtl None
+Kd 1.0 1.0 1.0
+map_Kd advancedrocketrycommunity:textures/block/planetary_beacon.png
