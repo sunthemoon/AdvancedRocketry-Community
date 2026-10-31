@@ -102,6 +102,7 @@ resourceescrow.EscrowLedger
 resourceescrow.EscrowLedgerWriter
 resourceescrow.EscrowLedgerWriter$Request
 resourceescrow.EscrowLedgerWriter$Snapshot
+resourceescrow.EscrowLoaderS6JournalProbe
 resourceescrow.EscrowNativeBinding
 resourceescrow.EscrowOperation
 resourceescrow.EscrowOperation$Kind
