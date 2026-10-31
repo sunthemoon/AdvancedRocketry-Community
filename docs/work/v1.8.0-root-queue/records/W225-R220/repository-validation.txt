@@ -1,0 +1,112 @@
+[PHASE] check_required_paths begin
+[PHASE] check_required_paths returned elapsed_seconds=0.004 passed=1 pending=0 warnings=0 failed=0
+[PHASE] check_identity begin
+[PHASE] check_identity returned elapsed_seconds=0.001 passed=2 pending=0 warnings=0 failed=0
+[PHASE] check_public_statements begin
+[PHASE] check_public_statements returned elapsed_seconds=0.004 passed=3 pending=0 warnings=0 failed=0
+[PHASE] check_license_and_upstream begin
+[PHASE] check_license_and_upstream returned elapsed_seconds=0.002 passed=5 pending=0 warnings=0 failed=0
+[PHASE] check_markdown_links begin
+[PHASE] check_markdown_links returned elapsed_seconds=2.609 passed=6 pending=0 warnings=0 failed=0
+[PHASE] check_repository_contents begin
+[PHASE] check_repository_contents returned elapsed_seconds=1.785 passed=8 pending=0 warnings=0 failed=0
+[PHASE] check_forge_bootstrap begin
+[PHASE] check_forge_bootstrap returned elapsed_seconds=0.001 passed=8 pending=0 warnings=0 failed=0
+[PHASE] check_issue_templates begin
+[PHASE] check_issue_templates returned elapsed_seconds=0.004 passed=9 pending=0 warnings=0 failed=0
+[PHASE] check_workflow begin
+[PHASE] check_workflow returned elapsed_seconds=0.057 passed=11 pending=0 warnings=0 failed=0
+[PHASE] check_bootstrap_provenance begin
+[PHASE] check_bootstrap_provenance returned elapsed_seconds=1.021 passed=12 pending=0 warnings=0 failed=0
+[PHASE] check_v002_final_g0_review begin
+[PHASE] check_v002_final_g0_review returned elapsed_seconds=5.139 passed=13 pending=0 warnings=0 failed=0
+[PHASE] check_optional_v002_client_evidence begin
+[PHASE] check_optional_v002_client_evidence returned elapsed_seconds=7.459 passed=14 pending=0 warnings=0 failed=0
+[PHASE] check_v002_g4_applicability begin
+[PHASE] check_v002_g4_applicability returned elapsed_seconds=6.826 passed=15 pending=0 warnings=0 failed=0
+[PHASE] check_v002_gate_status begin
+[PHASE] check_v002_gate_status returned elapsed_seconds=11.655 passed=16 pending=0 warnings=0 failed=0
+[PHASE] check_release_checksums begin
+[PHASE] check_release_checksums returned elapsed_seconds=1.083 passed=17 pending=0 warnings=0 failed=0
+[PHASE] check_v010_asset_baseline begin
+[PHASE] check_v010_asset_baseline returned elapsed_seconds=0.123 passed=20 pending=0 warnings=0 failed=0
+[PHASE] check_v020_generated_resources begin
+[PHASE] check_v020_generated_resources returned elapsed_seconds=0.011 passed=21 pending=0 warnings=0 failed=0
+[PHASE] check_v030_generated_resources begin
+[PHASE] check_v030_generated_resources returned elapsed_seconds=0.006 passed=22 pending=0 warnings=0 failed=0
+[PHASE] check_v040_generated_resources begin
+[PHASE] check_v040_generated_resources returned elapsed_seconds=0.015 passed=23 pending=0 warnings=0 failed=0
+[PHASE] check_v050_generated_resources begin
+[PHASE] check_v050_generated_resources returned elapsed_seconds=0.017 passed=24 pending=0 warnings=0 failed=0
+[PHASE] check_v060_generated_resources begin
+[PHASE] check_v060_generated_resources returned elapsed_seconds=0.006 passed=25 pending=0 warnings=0 failed=0
+[PHASE] check_v070_generated_resources begin
+[PHASE] check_v070_generated_resources returned elapsed_seconds=0.004 passed=26 pending=0 warnings=0 failed=0
+[PHASE] check_v080_generated_resources begin
+[PHASE] check_v080_generated_resources returned elapsed_seconds=0.010 passed=27 pending=0 warnings=0 failed=0
+[PHASE] check_v090_migration_fixtures begin
+[PHASE] check_v090_migration_fixtures returned elapsed_seconds=0.002 passed=28 pending=0 warnings=0 failed=0
+[PHASE] check_v090_resources begin
+[PHASE] check_v090_resources returned elapsed_seconds=0.946 passed=29 pending=0 warnings=0 failed=0
+[PHASE] check_v020_gate_status begin
+[PHASE] check_v020_gate_status returned elapsed_seconds=0.061 passed=31 pending=0 warnings=0 failed=0
+[PHASE] check_v030_gate_status begin
+[PHASE] check_v030_gate_status returned elapsed_seconds=0.076 passed=33 pending=0 warnings=0 failed=0
+[PHASE] check_v040_gate_status begin
+[PHASE] check_v040_gate_status returned elapsed_seconds=0.146 passed=35 pending=0 warnings=0 failed=0
+[PHASE] check_v050_gate_status begin
+[PHASE] check_v050_gate_status returned elapsed_seconds=0.103 passed=37 pending=0 warnings=0 failed=0
+[PHASE] check_v060_gate_status begin
+[PHASE] check_v060_gate_status returned elapsed_seconds=0.086 passed=39 pending=0 warnings=0 failed=0
+[PHASE] check_v070_gate_status begin
+[PHASE] check_v070_gate_status returned elapsed_seconds=0.112 passed=41 pending=0 warnings=0 failed=0
+[PHASE] check_v080_gate_status begin
+[PHASE] check_v080_gate_status returned elapsed_seconds=0.111 passed=43 pending=0 warnings=0 failed=0
+[PHASE] check_v090_gate_status begin
+[PHASE] check_v090_gate_status returned elapsed_seconds=0.191 passed=45 pending=0 warnings=0 failed=0
+[PASS] Required governance files and 12 version plans exist
+[PASS] Project identity is APPROVED and expected values are present
+[PASS] README, NOTICE, branding, and issue intake state unofficial status
+[PASS] LICENSE preserves the original notice and community attribution
+[PASS] Exact upstream commit is recorded: c5cd5af62fc07cd4e0d24f06a16033f181c47c04
+[PASS] Markdown relative links resolve (7242 checked, 32 excused by correction files)
+[PASS] No forbidden legacy source or unapproved binary found; applicable source-resource allowlists match (1 wrapper JAR and 7 v0.0.1 evidence screenshots verified)
+[PASS] No case-insensitive path collisions found
+[PASS] Issue template files have the required dependency-free structure
+[PASS] Repository governance workflow invokes validators in enabled blocking run steps
+[PASS] Forge baseline and advisory latest-lane commands are in enabled blocking run steps
+[PASS] v0.0.2 bootstrap provenance validates 11 imported targets and 2 local resources
+[PASS] v0.0.2 final-G0 records are mechanically valid; source=APPROVED, README=APPROVED; Gate not computed
+[PASS] v0.0.2 client evidence bundle is structurally valid and mechanically READY_FOR_HUMAN_GATE_REVIEW
+[PASS] v0.0.2 ADR-005 is ACCEPTED and matches canonical client evidence
+[PASS] v0.0.2 Gate status does not overstate final-G0, G4, G8, or G9 evidence
+[PASS] v0.0.2 release checksums cover 36 evidence files and match the JAR manifest
+[PASS] v0.1.0 imported and generated resources have exact provenance, hashes, and references
+[PASS] v0.1.0 artifact, provenance, client, dedicated-server, and checksum evidence is valid
+[PASS] v0.1.0 Gate status does not overstate mechanical or human evidence
+[PASS] v0.2.0 DataGen resources match the bounded authored-resource inventory
+[PASS] v0.3.0 DataGen resources match the exact fixed-world inventory
+[PASS] v0.4.0 DataGen resources match the exact atmosphere inventory
+[PASS] v0.5.0 DataGen resources match the exact rocket inventory
+[PASS] v0.6.0 DataGen resources match the exact fuel inventory
+[PASS] v0.7.0 DataGen resources match the exact station inventory
+[PASS] v0.8.0 DataGen resources match the exact satellite inventory
+[PASS] v0.9.0 migration fixtures match the exact hash inventory
+[PASS] v0.9.0 resource and localization audit covers 1863 files and 1566 bilingual keys
+[PASS] v0.2.0 artifact, automated, persistence, client, server, and checksum evidence is valid
+[PASS] v0.2.0 Gate status does not overstate machine-slice evidence
+[PASS] v0.3.0 artifact, celestial, persistence, multiplayer, client, and checksum evidence is valid
+[PASS] v0.3.0 Gate status is evidence-bound in docs\releases\v0.3.0\GATE-STATUS.md
+[PASS] v0.4.0 artifact, atmosphere, persistence, performance, multiplayer, client, and checksum evidence is valid
+[PASS] v0.4.0 Gate status is evidence-bound in docs\releases\v0.4.0\GATE-STATUS.md
+[PASS] v0.5.0 artifact, rocket, persistence, performance, client, and checksum evidence is valid
+[PASS] v0.5.0 Gate status is evidence-bound in docs\releases\v0.5.0\GATE-STATUS.md
+[PASS] v0.6.0 artifact, flight, recovery, multiplayer, performance, and checksum evidence is valid
+[PASS] v0.6.0 Gate status is evidence-bound in docs\releases\v0.6.0\GATE-STATUS.md
+[PASS] v0.7.0 artifact, station, recovery, multiplayer, performance, and checksum evidence is valid
+[PASS] v0.7.0 Gate status is evidence-bound in docs\releases\v0.7.0\GATE-STATUS.md
+[PASS] v0.8.0 artifact, satellite, restart, multiplayer, performance, and checksum evidence is valid
+[PASS] v0.8.0 Gate status is evidence-bound in docs\releases\v0.8.0\GATE-STATUS.md
+[PASS] v0.9.0 artifact, migration, recovery, compatibility, soak, and checksum evidence is valid
+[PASS] v0.9.0 Gate status is evidence-bound in docs\releases\v0.9.0\GATE-STATUS.md
+Summary: 45 passed, 0 pending, 0 warnings, 0 failed

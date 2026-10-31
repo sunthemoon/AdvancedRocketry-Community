@@ -1,0 +1,201 @@
+{
+  "source": "ba789707fd538b6ffeafcb5f2dfce6fcc1654d34",
+  "runs": [
+    {
+      "name": "baseline",
+      "source": "18d7ad291e0137d046226ad57a8e23124c3d05fe",
+      "total": 42,
+      "native": 1,
+      "checker": 1,
+      "log_sha256": "cd9dbbe1bba09418afba5538a8ad0de62bc01c526bc560ae2a852bd54f0db189",
+      "complete_summary": [
+        "1 required tests failed"
+      ],
+      "unexpected_fixture_leftovers": false,
+      "retained_log": "baseline/latest.log.gz",
+      "retained_log_sha256": "b5f6f7b70a872b7a73f6e5772b5c4f7f5b0632c93253a0fdd2ec2fadf0cd3b5a"
+    },
+    {
+      "name": "green-1",
+      "source": "c2713f3a041e0744ef51a5e459e24df693b853a4",
+      "total": 47,
+      "native": 0,
+      "checker": 0,
+      "log_sha256": "b2a4b711ea01e14cbaf967c33ad89d641681156d328efab81ff0481fcba65ab8",
+      "complete_summary": [
+        "All 47 required tests passed"
+      ],
+      "unexpected_fixture_leftovers": false,
+      "retained_log": "green-1/latest.log.gz",
+      "retained_log_sha256": "2e3226c7cc733ae780fd03df829a7a96710f396b090fe1bfb0f02365e5b4b5ee"
+    },
+    {
+      "name": "green-2",
+      "source": "751b90c1b877f3377661d7cc0fa13d82ceabe3fe",
+      "total": 42,
+      "native": 0,
+      "checker": 0,
+      "log_sha256": "e70096ad6424556b0bdeab2031984917ccce343aea9e87f1372568c4ee916d00",
+      "complete_summary": [
+        "All 42 required tests passed"
+      ],
+      "unexpected_fixture_leftovers": false,
+      "retained_log": "green-2/latest.log.gz",
+      "retained_log_sha256": "f10c8fcc882c2dfc72f17c48fd54139451ad5fe33ab43268c3f0f53b144eb4e1"
+    },
+    {
+      "name": "green-3",
+      "source": "751b90c1b877f3377661d7cc0fa13d82ceabe3fe",
+      "total": 42,
+      "native": 0,
+      "checker": 0,
+      "log_sha256": "e57d28c238a54cd294755484f274a02443193c9f23266b4695a3d89a12f6cd0a",
+      "complete_summary": [
+        "All 42 required tests passed"
+      ],
+      "unexpected_fixture_leftovers": false,
+      "retained_log": "green-3/latest.log.gz",
+      "retained_log_sha256": "ca09016d28d61e17c299e89f942e869539f589943fd26fb8b58f1128c66a3bff"
+    },
+    {
+      "name": "green-4",
+      "source": "751b90c1b877f3377661d7cc0fa13d82ceabe3fe",
+      "total": 42,
+      "native": 0,
+      "checker": 0,
+      "log_sha256": "26ea7b68cb0e538841b360a89a379f1568d7b6a0290af055c243170872916334",
+      "complete_summary": [
+        "All 42 required tests passed"
+      ],
+      "unexpected_fixture_leftovers": false,
+      "retained_log": "green-4/latest.log.gz",
+      "retained_log_sha256": "56bbc0b69afc94cc21c875a395193b154cefc7dadfb4822ea9bb043ec7fa00fc"
+    },
+    {
+      "name": "alone",
+      "source": "751b90c1b877f3377661d7cc0fa13d82ceabe3fe",
+      "total": 13,
+      "native": 1,
+      "checker": 1,
+      "log_sha256": "7a04d8eee709c929bebccb24dd8ca945da13c517b1c50b78eb795159f09706ba",
+      "complete_summary": [
+        "1 required tests failed"
+      ],
+      "unexpected_fixture_leftovers": false,
+      "retained_log": "alone/latest.log.gz",
+      "retained_log_sha256": "37cea681d8d251dfd0c83243a7950680327f1b3d4afa58c9b38bc8f6f93029a6"
+    },
+    {
+      "name": "beacon-diagnostic",
+      "source": "03f8926b6dc60f79380589b51ce936f840ffb603",
+      "total": 1,
+      "native": 1,
+      "checker": 1,
+      "log_sha256": "fceccc1f40f94b5b36cffd89a896625f7f9a026c4547205a9911849041214fec",
+      "complete_summary": [
+        "1 required tests failed"
+      ],
+      "unexpected_fixture_leftovers": false,
+      "retained_log": "beacon-diagnostic/latest.log.gz",
+      "retained_log_sha256": "21ff04a0ed336a7417757b9197b992abc0e3e80b6561a9b84345b35ca122168b"
+    },
+    {
+      "name": "alone-final",
+      "source": "88125943994423fbb1d385ce76a7747c7304cbac",
+      "total": 13,
+      "native": 1,
+      "checker": 1,
+      "log_sha256": "7b77b0539f9aa222dc0608439b9f6c256d921eba5ab53b77aeddc3c95ae347c1",
+      "complete_summary": [
+        "1 required tests failed"
+      ],
+      "unexpected_fixture_leftovers": false,
+      "retained_log": "alone-final/latest.log.gz",
+      "retained_log_sha256": "443f5fceb3f7c8408cf196689bb1595748d32765689420ab57bb65e7ec8e9605"
+    },
+    {
+      "name": "alone-complete",
+      "source": "ba789707fd538b6ffeafcb5f2dfce6fcc1654d34",
+      "total": 13,
+      "native": 0,
+      "checker": 0,
+      "log_sha256": "be790c16c977b0983d6726924ff940a7e380d45cf9fd670636733f7521ba74fe",
+      "complete_summary": [
+        "All 13 required tests passed"
+      ],
+      "unexpected_fixture_leftovers": false,
+      "retained_log": "alone-complete/latest.log.gz",
+      "retained_log_sha256": "29f9bbc71e4078203bff23c27850430c51e34e212b10b166b64de5d5a0cfd1d2"
+    },
+    {
+      "name": "green-8",
+      "source": "ba789707fd538b6ffeafcb5f2dfce6fcc1654d34",
+      "total": 42,
+      "native": 0,
+      "checker": 0,
+      "log_sha256": "2045c4a7db20154a7a17ddb5c3f9d948c902be8cc4d3741016b1abf672f905b9",
+      "complete_summary": [
+        "All 42 required tests passed"
+      ],
+      "unexpected_fixture_leftovers": false,
+      "retained_log": "green-8/latest.log.gz",
+      "retained_log_sha256": "dd8444f94b68461454e5f05c17faace0f6bf674691b2932fee2d02164883722b"
+    },
+    {
+      "name": "green-9",
+      "source": "ba789707fd538b6ffeafcb5f2dfce6fcc1654d34",
+      "total": 42,
+      "native": 0,
+      "checker": 0,
+      "log_sha256": "fdf491ed21dbfe8c41f47dda1360e894e2c011a645a409e8345ed7b76906b083",
+      "complete_summary": [
+        "All 42 required tests passed"
+      ],
+      "unexpected_fixture_leftovers": false,
+      "retained_log": "green-9/latest.log.gz",
+      "retained_log_sha256": "64a98072d53852fd25996c4ff3c9860f6642c47f1191c7a238f1b219b89db2cb"
+    },
+    {
+      "name": "green-10",
+      "source": "ba789707fd538b6ffeafcb5f2dfce6fcc1654d34",
+      "total": 42,
+      "native": 0,
+      "checker": 0,
+      "log_sha256": "18b34caf4ad06db1d63b1cdd54ed713b19efd15f0a72ccaf6d96ba3e51a17507",
+      "complete_summary": [
+        "All 42 required tests passed"
+      ],
+      "unexpected_fixture_leftovers": false,
+      "retained_log": "green-10/latest.log.gz",
+      "retained_log_sha256": "5b7a04390585ad7b6df506d5bd67836417ac75ee9d755716bc34a4ed304a885c"
+    },
+    {
+      "name": "full-final",
+      "source": "ba789707fd538b6ffeafcb5f2dfce6fcc1654d34",
+      "total": 1557,
+      "native": 0,
+      "checker": 0,
+      "log_sha256": "ac11c024558afef2ebcb20ccef743a7958a42d01f52f4752671d3b2b43be066e",
+      "complete_summary": [
+        "All 1557 required tests passed"
+      ],
+      "unexpected_fixture_leftovers": false,
+      "retained_log": "full-final/latest.log.gz",
+      "retained_log_sha256": "6cb1e08a1b6bd8963f9fdc947a1ff5d05803be23d8c976b9e15210c11e808eba"
+    }
+  ],
+  "unit": {
+    "tests": 5879,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "unit_classes": 1073,
+  "registered_test_count": 1557,
+  "unit_command": ".\\gradlew.bat --offline --no-daemon --console=plain test --rerun -x compileJava",
+  "unit_source": "ba789707fd538b6ffeafcb5f2dfce6fcc1654d34",
+  "unit_source_status": "",
+  "unit_log": "accepted-unit.log.gz",
+  "unit_log_sha256": "e53d1cea3c9a6e72d464875c6d910e5a258c5616acfcbbe5baebcb5d4a744760",
+  "unit_log_uncompressed_sha256": "02d281f73890f41978711e8cbf563a3d064515a3cd265cea8a8b994c618b35ac"
+}
