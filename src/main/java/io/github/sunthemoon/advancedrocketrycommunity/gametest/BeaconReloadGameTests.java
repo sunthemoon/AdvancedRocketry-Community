@@ -70,7 +70,9 @@ public final class BeaconReloadGameTests {
             fixture.forceChunk(at, false);
             fixture.await(300, "the isolated chunk to unload", () -> !fixture.level.hasChunkAt(at), () -> {
                 helper.assertTrue(original.isRemoved() && fixture.index().get(id).equals(Optional.of(before))
-                        && !fixture.index().isDirty(), "Unloading changed or rewrote the active index record");
+                        && !fixture.index().isDirty(), "Unloading changed or rewrote the active index record: removed="
+                        + original.isRemoved() + ", dirty=" + fixture.index().isDirty() + ", before=" + before
+                        + ", after=" + fixture.index().get(id));
                 marker(helper, finder.snapshot(owner), id, false);
                 helper.assertTrue(!fixture.level.hasChunkAt(at), "The finder loaded the beacon chunk");
                 fixture.forceChunk(at, true);
