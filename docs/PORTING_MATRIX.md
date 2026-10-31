@@ -9,7 +9,7 @@
 | 注册系统 | `AdvancedRocketry.java:474–875`、`init/AdvancedRocketryBlocks.java`、`init/AdvancedRocketryItems.java` | `RegistryEvent`、`GameRegistry`、LibVulpes 注册和数字时代名称 | `registry/ModBlocks.java`、`ModItems.java`、`ModSounds.java`、`ModCreativeTabs.java` 的 DeferredRegister/RegistryObject | `v0.1.0` | build + 3 registry/content GameTests | PASSED |
 | 语言 | `assets/advancedrocketry/lang/en_US.lang`、`zh_CN.lang` | `.lang`、旧键名和旧 namespace | DataGen `assets/advancedrocketrycommunity/lang/en_us.json`、`zh_cn.json` | `v0.1.0` | JSON/key audit + 双语言客户端截图 | PASSED |
 | 方块/物品纹理 | provenance 清单中的 `textures/blocks/{machinewarning,machinestorage,machinevent}.png` 与 `textures/items/{siliconwafer,basiccircuit,advancedcircuit,datastorageunit}.png` | 路径复数、大小写、来源 | 单数目录、新 namespace、逐文件 source/target hash | `v0.1.0` | 37-resource validator + client no-missing-texture review | PASSED |
-| OBJ/MTL 模型 | `assets/advancedrocketry/models/**/*.obj`、`**/*.mtl`（43 OBJ / 20 MTL） | loader、引用、性能 | 按资产计划逐批导入（发动机/储罐 C17a、锯片 C16b、喷气背包与激光枪 C18b、机器模型 C18d），来源记录与视觉复核（ADR-061 §4） | `v1.8.0` | visual + ref validation | BLOCKED |
+| OBJ/MTL 模型 | `assets/advancedrocketry/models/**/*.obj`、`**/*.mtl`（43 OBJ / 20 MTL） | loader、引用、性能 | 按资产计划逐批导入（发动机/储罐 C17a、锯片 C16b、喷气背包与激光枪 C18b、机器模型 C18d），来源记录与视觉复核（ADR-061 §4）；ADR-062 修订 6 逐项排除 atmosphere 与单方块重设计等无消费者模型，其余导入与视觉要求不变 | `v1.8.0` | visual + ref validation | BLOCKED |
 | 声音 | `assets/advancedrocketry/sounds/buttonblipa.ogg`、`sounds.json` | 来源、旧事件 ID | `advancedrocketrycommunity:ui_select` + DeferredRegister/DataGen | `v0.1.0+` | OGG header/hash + packaged-client interaction | PASSED |
 | 普通配方 | `assets/advancedrocketry/recipes/*.json`（157 条已索引） | 旧格式、内容规模 | 当前五个最小配方由 DataGen 生成，其余按版本引入；v1.8 按配方图重平衡（C16d，ADR-061 §1.5） | `v0.1.0+` | runData clean + JSON/reference audit | PASSED |
 | 基础机器 | `tile/multiblock/machine/TileElectrolyser.java`、`recipe/RecipeElectrolyser.java`、`recipes/hydrogenoxygen.json` | 巨型 LibVulpes 多方块基类、隐式配方/能力状态 | 单方块 Electrolyzer；纯 Java tick model + 具体 BlockEntity/Menu/Screen | `v0.2.0` | item/fluid/FE process + 50-cycle conservation + restart/automation | PASSED |
@@ -55,7 +55,7 @@
 | 轨道打击/武器化轨道炮 | — | 破坏与 grief | 安全范围之外，拒绝（ADR-056） | never unless ADR | — | REJECTED |
 | 跨星系货运 | `TileRailgun.java` | 跨系统路线 | 推迟到 2.0 之后，与火箭航线一致（ADR-056、ADR-062 §3） | post-`v2.0.0` | 新 ADR | DEFERRED |
 | 黑洞发电机 | `tile/multiblock/energy/TileBlackHoleGenerator.java` | 恒星黑洞标志、任意物品燃料 | 独立奇点数据与示例黑洞系、燃料表、满时暂停、同一方块实体（ADR-057） | `v1.7.0` | C12 A0/A1 + C13 S1 | PLANNED |
-| 黑洞天空渲染 | `client/render/multiblocks/RenderBlackHoleGenerator.java` 等 | 渲染负载 | v1.8 视觉批次（ADR-057、ADR-062 §5） | `v1.8.0` | C18d 批次 ADR + V1 | IN_PROGRESS |
+| 黑洞天空渲染 | `client/render/multiblocks/RenderBlackHoleGenerator.java` 等 | 渲染负载 | v1.8 视觉批次（ADR-057、ADR-062 §5）；代码几何绘制黑洞、吸积盘及天体天空；45 条旧天空资产按 ADR-062 修订 6 排除，D4 外观方向仍待真实 GPU V1 确认 | `v1.8.0` | C18d 批次 ADR + V1 | IN_PROGRESS |
 | 区域重力控制器 | `tile/multiblock/TileAreaGravityController.java`、`util/GravityHandler.java` | 每 tick 全实体扫描、推力、静态 WeakHashMap | 玩家重力属性场（0.10–2.00 g，半径 2–16）与分区块索引（ADR-058） | `v1.7.0` | C11 A0/A1 | PLANNED |
 | 站点重力控制器方块 | `tile/station/TileStationGravityController.java` | 第二条站点写入路径 | 方块作为 v1.5 站点重力受控提交的前端（ADR-058、ADR-062 §5） | `v1.8.0` | C17b 批次 ADR | IN_PROGRESS |
 | 重力场作用于非玩家实体 | `GravityHandler.java` | 实体扫描、推力 | 推迟到 2.0 之后（ADR-058、ADR-062 §3） | post-`v2.0.0` | 新 ADR | DEFERRED |
@@ -65,7 +65,7 @@
 | 电梯舱实体与动画 | `entity/EntityElevatorCapsule.java` | 跨维度实体 | 仅客户端乘坐效果，乘坐仍在服务端（ADR-059、ADR-062 §5） | `v1.8.0` | C18d 批次 ADR + V1 | IN_PROGRESS |
 | 电梯芯片 | `item/ItemSpaceElevatorChip.java` | 无界位置列表 | 拒绝，由端点记录替代（ADR-059） | never unless ADR | — | REJECTED |
 | 力场投影器 | `tile/TileForceFieldProjector.java` | 方块延伸、无保护检查 | 有界力场，经保护链（ADR-054 §5、ADR-062 §5） | `v1.8.0` | C17b 批次 ADR + A1 | IN_PROGRESS |
-| 旧版逐项内容清单 | 全部注册方块/物品/变体/材料/流体/实体/生物群系/地物/声音/进度/命令/配置/按键/事件规则与依赖的 LibVulpes 部件 | 元数据变体、LibVulpes 身份 | 653 项逐项处置（[ledger](work/v1.8.0-content-ledger.csv)）与 898 个资产的处理规则（[asset plan](work/v1.8.0-asset-plan.csv)），由 `validate_v180_content_ledger.py` 校验（ADR-061、ADR-062） | `v1.8.0` | A0 校验器 | IN_PROGRESS |
+| 旧版逐项内容清单 | 全部注册方块/物品/变体/材料/流体/实体/生物群系/地物/声音/进度/命令/配置/按键/事件规则与依赖的 LibVulpes 部件 | 元数据变体、LibVulpes 身份 | 653 项逐项处置（[ledger](work/v1.8.0-content-ledger.csv)）与 898 个资产的处理规则（[asset plan](work/v1.8.0-asset-plan.csv)），由 `validate_v180_content_ledger.py` 校验（ADR-061、ADR-062）；ADR-062 修订 6 排除 98 个互不重复的旧文件（81 E、7 F、10 D），allowlist 重定 pin；内容单位与资产不混算，不关闭任何内容台账行 | `v1.8.0` | A0 校验器 | IN_PROGRESS |
 | 金属材料与矿石 | LibVulpes `MaterialRegistry`、`world/ore/OreGenerator.java`、`BlockSmallPlatePress.java` | 外部材料身份、矿物词典 | 钛/铝/钢/锡/硅/铱/二锂/钛铝/钛铱材料组、Forge 通用标签、矿石与小型压板机（ADR-061 §2）；C15a 交付 Overworld 部分，C15b 交付月球与火星矿石（开发完成，待版本 Gate） | `v1.8.0` | C15a/C15b 批次 ADR + A0/A1 | IN_PROGRESS |
 | 行星地表、生物群系与地物 | `world/biome/*`、`world/decoration/*`、`world/gen/*` | 随机行星、旧 GenLayer | 月球/火星/金星地表方块与生物群系、陨石坑/火山/晶洞与焦木（C15b 已交付）；鲸鱼座τ f 与 g 两个世界的六种生物群系、外星树、巨型沼泽树、倒悬石柱、水晶簇与电蘑菇（C15c 已交付） | `v1.8.0` | C15b/C15c 批次 ADR + A1/S1 | IN_PROGRESS |
 | 经典加工机器族与流体 | `tile/multiblock/machine/*`、`recipe/*`、`AdvancedRocketryFluids.java`、`TilePump.java`、`TileFluidTank.java` | LibVulpes 多方块、无预算抽液 | v1.2 内核上的共享机器族：电弧炉、车床、切割机、结晶器、化学反应器、激光蚀刻机、离心机；五种流体、储罐与泵（ADR-061 §3） | `v1.8.0` | C16 批次 ADR + 每机 happy/failure/restart | IN_PROGRESS |
@@ -76,7 +76,7 @@
 | 生命保障方块、工具与环境规则 | `tile/atmosphere/*`、`BlockTorchUnlit.java`、`ItemSealDetector.java`、`ItemAtmosphereAnalzer.java`、`event/PlanetEventHandler.java`、`atmosphere/AtmosphereHandler.java` | 火把配置列表、全实体大气效果 | CO2 洗涤器、充气台、大气探测器、气闸门、管道密封、真空熄火把与铝热火把、检测工具；无氧不可睡眠、按重力缩放摔落、非玩家实体的大气效果与刷怪、太空迷失返回（ADR-024/034 扩展） | `v1.8.0` | C18a 批次 ADR + A1 | IN_PROGRESS |
 | 宇航服装备与工具 | `item/components/*`、`TileSuitWorkStation.java`、`ItemJackHammer.java`、`ItemBasicLaserGun.java`、`EnchantmentSpaceBreathing.java` | 单例物品上的玩家表、无保护检查 | 宇航服工作台、压力罐、喷气背包、六种升级、电钻、激光枪（经破坏事件与保护链）、太空呼吸附魔（ADR-025 扩展） | `v1.8.0` | C18b 批次 ADR + A1 | IN_PROGRESS |
 | 研究、进度与科技树 | `advancements/*`、`TileObservatory.java`、`TileAstrobodyDataProcessor.java` | 数据网络 | 天文台与数据处理器、17 项进度以现代触发器重建、科技树报告 | `v1.8.0` | C18c 批次 ADR + 配方图 | IN_PROGRESS |
-| 声音、GUI 美术与语言 | `sounds/*`、`textures/gui/*`、`lang/*` | 静音占位、无署名、社区翻译 | 来源复核后导入声音；GUI 美术；DataGen 语言；占位静音事件拒绝（ADR-061 §4、ADR-062 §4） | `v1.8.0` | C18d 批次 ADR + V1 | IN_PROGRESS |
+| 声音、GUI 美术与语言 | `sounds/*`、`textures/gui/*`、`lang/*` | 静音占位、无署名、社区翻译 | 来源复核后导入声音；GUI 美术；DataGen 语言；占位静音事件拒绝（ADR-061 §4、ADR-062 §4）；声音与 GUI 原验收范围不变；v1.8 仅英中，七种旧译文排除、v1.9 可重议；八个机器面与两个太阳能图标保留 W49 NEW，旧 AR 16x 排除但 NEW 人工审核仍待 D7（ADR-062 修订 6） | `v1.8.0` | C18d 批次 ADR + V1 | IN_PROGRESS |
 | 悬浮车 | `entity/EntityHoverCraft.java`、`item/ItemHovercraft.java` | 载具实体、控制包 | 推迟到 2.0 之后（ADR-062 §3） | post-`v2.0.0` | 新 ADR | DEFERRED |
 | 着陆浮筒 | `block/BlockLandingFloat`（`landingfloat`） | 非水液体（如熔岩）着陆时垫在火箭下的浮筒 | 推迟到 2.0 之后，需修改着陆点规则（ADR-033、ADR-062 §3） | post-`v2.0.0` | 新 ADR | DEFERRED |
 | 洞穴行星、世界类型、月面着陆器、行星村庄 | `ChunkProviderCavePlanet.java`、`WorldTypePlanetGen.java`、`WorldTypeSpace.java`、`MapGenLander.java`、`MapGenSpaceVillage.java` | 动态地形、世界预设 | 推迟到 2.0 之后（ADR-062 §3） | post-`v2.0.0` | 新 ADR | DEFERRED |

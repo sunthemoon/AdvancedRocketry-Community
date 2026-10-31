@@ -1,13 +1,261 @@
 {
- "schema_version": 1,
- "findings": [
-  {
-   "asset": "textures/gui/buttons/tabtemplate.png",
-   "decision": "EXCLUDED",
-   "reviewer": "independent contract reviewer (C14 review rounds 2 to 4)",
-   "review_record": "docs/work/v1.8.0-preparation/reviews/REVIEW-02.md",
-   "reviewed_at": "2026-10-02",
-   "basis": "The vanilla creative-inventory tab with its bevel lines redrawn: 522 of its 570 opaque pixels equal 1.20.1 creative_inventory/tabs.png at (1, 34) and again at (157, 34), where the sheet repeats the tab; the equal pixels are the fill (456), all 41 white bevel pixels and 25 of the 32 dark ones (C14R2-H1, C14R3-H1, C14R4-L2; reports in docs/work/v1.8.0-preparation/reviews/). The derivation check scores it CLEAR: every 4 x 4 block of three or more colours touches a moved bevel line, so no block votes for the alignment (ADR-061 section 4.8, known limits). This finding keeps it excluded, and its tab-button derivatives inherit review (ADR-061 section 4.8)."
-  }
- ]
+  "schema_version": 1,
+  "findings": [
+    {
+      "asset": "textures/gui/buttons/tabtemplate.png",
+      "decision": "EXCLUDED",
+      "reviewer": "independent contract reviewer (C14 review rounds 2 to 4)",
+      "review_record": "docs/work/v1.8.0-preparation/reviews/REVIEW-02.md",
+      "reviewed_at": "2026-10-02",
+      "basis": "The vanilla creative-inventory tab with its bevel lines redrawn: 522 of its 570 opaque pixels equal 1.20.1 creative_inventory/tabs.png at (1, 34) and again at (157, 34), where the sheet repeats the tab; the equal pixels are the fill (456), all 41 white bevel pixels and 25 of the 32 dark ones (C14R2-H1, C14R3-H1, C14R4-L2; reports in docs/work/v1.8.0-preparation/reviews/). The derivation check scores it CLEAR: every 4 x 4 block of three or more colours touches a moved bevel line, so no block votes for the alignment (ADR-061 section 4.8, known limits). This finding keeps it excluded, and its tab-button derivatives inherit review (ADR-061 section 4.8)."
+    },
+    {
+      "asset": "textures/blocks/laserbottom.png",
+      "decision": "EXCLUDED",
+      "reviewer": "sunthemoon",
+      "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
+      "reviewed_at": "2026-10-31",
+      "basis": "Owner decision D3 in docs/work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261031.md, through the owner's Claude Code Root session on 2026-10-31, excludes this old AR 16x file without clearing its authorship or licence chain. Source SHA-256: 3fa3fb71f9de9d9ebc1949615f71111517088725648fefeca6cf713d6b12d3fa. Owner D3: exclude the old AR 16x source, retain the W49 NEW replacement at src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/orbital_laser_bottom.png; no authorship clearance or NEW art approval. Per-file evidence: docs/work/v1.8.0-c18d-asset-closure/AUDIT-01.csv, CSV line 44. ADR-061 section 4.9 remains unchanged; historical v0.1.0 imports and all other files are outside this finding."
+    },
+    {
+      "asset": "textures/blocks/laserfront.png",
+      "decision": "EXCLUDED",
+      "reviewer": "sunthemoon",
+      "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
+      "reviewed_at": "2026-10-31",
+      "basis": "Owner decision D3 in docs/work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261031.md, through the owner's Claude Code Root session on 2026-10-31, excludes this old AR 16x file without clearing its authorship or licence chain. Source SHA-256: ff12ed30f3651a5b845ad32435025b70436ba6b9c2ad54ac814b7645418f7780. Owner D3: exclude the old AR 16x source, retain the W49 NEW replacement at src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/orbital_laser_front.png; no authorship clearance or NEW art approval. Per-file evidence: docs/work/v1.8.0-c18d-asset-closure/AUDIT-01.csv, CSV line 45. ADR-061 section 4.9 remains unchanged; historical v0.1.0 imports and all other files are outside this finding."
+    },
+    {
+      "asset": "textures/blocks/machineelectrolyzer.png",
+      "decision": "EXCLUDED",
+      "reviewer": "sunthemoon",
+      "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
+      "reviewed_at": "2026-10-31",
+      "basis": "Owner decision D3 in docs/work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261031.md, through the owner's Claude Code Root session on 2026-10-31, excludes this old AR 16x file without clearing its authorship or licence chain. Source SHA-256: a513dcc2330bc4f17d0a7f12dffbd8a14ff319cbcbdf5c6e606a7ca0f0734e58. Owner D3: exclude the old AR 16x source, retain the W49 NEW replacement at src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/electrolyzer_front.png; no authorship clearance or NEW art approval. Per-file evidence: docs/work/v1.8.0-c18d-asset-closure/AUDIT-01.csv, CSV line 47. ADR-061 section 4.9 remains unchanged; historical v0.1.0 imports and all other files are outside this finding."
+    },
+    {
+      "asset": "textures/blocks/machineelectrolyzer_active.png",
+      "decision": "EXCLUDED",
+      "reviewer": "sunthemoon",
+      "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
+      "reviewed_at": "2026-10-31",
+      "basis": "Owner decision D3 in docs/work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261031.md, through the owner's Claude Code Root session on 2026-10-31, excludes this old AR 16x file without clearing its authorship or licence chain. Source SHA-256: d832efad1324e7415264a0fa1ea4ba53935b1e6274a4be542850456eb11de45f. Owner D3: exclude the old AR 16x source, retain the W49 NEW replacement at src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/electrolyzer_front_active.png; no authorship clearance or NEW art approval. Per-file evidence: docs/work/v1.8.0-c18d-asset-closure/AUDIT-01.csv, CSV line 48. ADR-061 section 4.9 remains unchanged; historical v0.1.0 imports and all other files are outside this finding."
+    },
+    {
+      "asset": "textures/blocks/precisionassemblerfront.png",
+      "decision": "EXCLUDED",
+      "reviewer": "sunthemoon",
+      "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
+      "reviewed_at": "2026-10-31",
+      "basis": "Owner decision D3 in docs/work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261031.md, through the owner's Claude Code Root session on 2026-10-31, excludes this old AR 16x file without clearing its authorship or licence chain. Source SHA-256: 900a254d681d43bc3b8426602d6d253717fa42234d2aa3c5d7168bb5f5e825e3. Owner D3: exclude the old AR 16x source, retain the W49 NEW replacement at src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/precision_assembler_front.png; no authorship clearance or NEW art approval. Per-file evidence: docs/work/v1.8.0-c18d-asset-closure/AUDIT-01.csv, CSV line 49. ADR-061 section 4.9 remains unchanged; historical v0.1.0 imports and all other files are outside this finding."
+    },
+    {
+      "asset": "textures/blocks/precisionassemblerfront_active.png",
+      "decision": "EXCLUDED",
+      "reviewer": "sunthemoon",
+      "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
+      "reviewed_at": "2026-10-31",
+      "basis": "Owner decision D3 in docs/work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261031.md, through the owner's Claude Code Root session on 2026-10-31, excludes this old AR 16x file without clearing its authorship or licence chain. Source SHA-256: d076c5b187ef8f205249e2bacae72ba440197b60aae971533f55bddf0fce6d94. Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D3 also excludes this old AR 16x source; its authorship remains unresolved. Per-file evidence: docs/work/v1.8.0-c18d-asset-closure/AUDIT-01.csv, CSV line 50. ADR-061 section 4.9 remains unchanged; historical v0.1.0 imports and all other files are outside this finding."
+    },
+    {
+      "asset": "textures/blocks/railgun.png",
+      "decision": "EXCLUDED",
+      "reviewer": "sunthemoon",
+      "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
+      "reviewed_at": "2026-10-31",
+      "basis": "Owner decision D3 in docs/work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261031.md, through the owner's Claude Code Root session on 2026-10-31, excludes this old AR 16x file without clearing its authorship or licence chain. Source SHA-256: 38e3913bc16000fae00213f07db9884a0a46e0880d394c27626effff82941751. Owner D3: exclude the old AR 16x source, retain the W49 NEW replacement at src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/railgun_front.png; no authorship clearance or NEW art approval. Per-file evidence: docs/work/v1.8.0-c18d-asset-closure/AUDIT-01.csv, CSV line 51. ADR-061 section 4.9 remains unchanged; historical v0.1.0 imports and all other files are outside this finding."
+    },
+    {
+      "asset": "textures/blocks/satelliteassembler.png",
+      "decision": "EXCLUDED",
+      "reviewer": "sunthemoon",
+      "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
+      "reviewed_at": "2026-10-31",
+      "basis": "Owner decision D3 in docs/work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261031.md, through the owner's Claude Code Root session on 2026-10-31, excludes this old AR 16x file without clearing its authorship or licence chain. Source SHA-256: fcd313eaa561a7ede57da7ef2f468e522f98fe6bfa688eb42ef6b033920912bc. Owner D3: exclude the old AR 16x source, retain the W49 NEW replacement at src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/satellite_builder_front.png; no authorship clearance or NEW art approval. Per-file evidence: docs/work/v1.8.0-c18d-asset-closure/AUDIT-01.csv, CSV line 52. ADR-061 section 4.9 remains unchanged; historical v0.1.0 imports and all other files are outside this finding."
+    },
+    {
+      "asset": "textures/blocks/warpcore.png",
+      "decision": "EXCLUDED",
+      "reviewer": "sunthemoon",
+      "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
+      "reviewed_at": "2026-10-31",
+      "basis": "Owner decision D3 in docs/work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261031.md, through the owner's Claude Code Root session on 2026-10-31, excludes this old AR 16x file without clearing its authorship or licence chain. Source SHA-256: 86047e72b36a23c141c3ad1a0f92f9038cc78e837c332cc5b86abd99182d5782. Owner D3: exclude the old AR 16x source, retain the W49 NEW replacement at src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/warp_core_side.png; no authorship clearance or NEW art approval. Per-file evidence: docs/work/v1.8.0-c18d-asset-closure/AUDIT-01.csv, CSV line 54. ADR-061 section 4.9 remains unchanged; historical v0.1.0 imports and all other files are outside this finding."
+    },
+    {
+      "asset": "textures/items/advancedsolarpanel.png",
+      "decision": "EXCLUDED",
+      "reviewer": "sunthemoon",
+      "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
+      "reviewed_at": "2026-10-31",
+      "basis": "Owner decision D3 in docs/work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261031.md, through the owner's Claude Code Root session on 2026-10-31, excludes this old AR 16x file without clearing its authorship or licence chain. Source SHA-256: 0dde8b0f88304f6e96fb73ae56437ab74537130ce2ec7393ed40147ca72bfd48. Owner D3: exclude the old AR 16x source, retain the W49 NEW replacement at src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/item/advanced_solar_panel.png; no authorship clearance or NEW art approval. Per-file evidence: docs/work/v1.8.0-c18d-asset-closure/AUDIT-01.csv, CSV line 64. ADR-061 section 4.9 remains unchanged; historical v0.1.0 imports and all other files are outside this finding."
+    },
+    {
+      "asset": "textures/items/basicsolarpanel.png",
+      "decision": "EXCLUDED",
+      "reviewer": "sunthemoon",
+      "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
+      "reviewed_at": "2026-10-31",
+      "basis": "Owner decision D3 in docs/work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261031.md, through the owner's Claude Code Root session on 2026-10-31, excludes this old AR 16x file without clearing its authorship or licence chain. Source SHA-256: 2d44a65d2e0f81fbe8c2b4ae5401848f0448c6d59c6f44e364c3d39e128d3ec6. Owner D3: exclude the old AR 16x source, retain the W49 NEW replacement at src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/item/satellite_solar_module.png; no authorship clearance or NEW art approval. Per-file evidence: docs/work/v1.8.0-c18d-asset-closure/AUDIT-01.csv, CSV line 66. ADR-061 section 4.9 remains unchanged; historical v0.1.0 imports and all other files are outside this finding."
+    },
+    {
+      "asset": "textures/items/satellitepowersource0.png",
+      "decision": "EXCLUDED",
+      "reviewer": "sunthemoon",
+      "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
+      "reviewed_at": "2026-10-31",
+      "basis": "Owner decision D3 in docs/work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261031.md, through the owner's Claude Code Root session on 2026-10-31, excludes this old AR 16x file without clearing its authorship or licence chain. Source SHA-256: 2d44a65d2e0f81fbe8c2b4ae5401848f0448c6d59c6f44e364c3d39e128d3ec6. Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D3 also excludes this old AR 16x source; its authorship remains unresolved. Per-file evidence: docs/work/v1.8.0-c18d-asset-closure/AUDIT-01.csv, CSV line 74. ADR-061 section 4.9 remains unchanged; historical v0.1.0 imports and all other files are outside this finding."
+    },
+    {
+      "asset": "textures/items/satellitepowersource1.png",
+      "decision": "EXCLUDED",
+      "reviewer": "sunthemoon",
+      "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
+      "reviewed_at": "2026-10-31",
+      "basis": "Owner decision D3 in docs/work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261031.md, through the owner's Claude Code Root session on 2026-10-31, excludes this old AR 16x file without clearing its authorship or licence chain. Source SHA-256: 0dde8b0f88304f6e96fb73ae56437ab74537130ce2ec7393ed40147ca72bfd48. Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D3 also excludes this old AR 16x source; its authorship remains unresolved. Per-file evidence: docs/work/v1.8.0-c18d-asset-closure/AUDIT-01.csv, CSV line 75. ADR-061 section 4.9 remains unchanged; historical v0.1.0 imports and all other files are outside this finding."
+    },
+    {
+      "asset": "textures/planets/asteroid.png",
+      "decision": "EXCLUDED",
+      "reviewer": "sunthemoon",
+      "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
+      "reviewed_at": "2026-10-31",
+      "basis": "Owner decision D3 in docs/work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261031.md, through the owner's Claude Code Root session on 2026-10-31, excludes this old AR 16x file without clearing its authorship or licence chain. Source SHA-256: 7d0f63744b03c6bf5e9ac531ede4c64efbf98adfcfa1a3f76af8ff4bb393cb35. Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D3 also excludes this old AR 16x source; its authorship remains unresolved. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation. Per-file evidence: docs/work/v1.8.0-c18d-asset-closure/AUDIT-01.csv, CSV line 119. ADR-061 section 4.9 remains unchanged; historical v0.1.0 imports and all other files are outside this finding."
+    },
+    {
+      "asset": "textures/planets/atmglow.png",
+      "decision": "EXCLUDED",
+      "reviewer": "sunthemoon",
+      "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
+      "reviewed_at": "2026-10-31",
+      "basis": "Owner decision D3 in docs/work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261031.md, through the owner's Claude Code Root session on 2026-10-31, excludes this old AR 16x file without clearing its authorship or licence chain. Source SHA-256: c2d567f266e27beebeb4d7f258fb66d221bdf2f3ac0c3548dfa0604db56aa14f. Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D3 also excludes this old AR 16x source; its authorship remains unresolved. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation. Per-file evidence: docs/work/v1.8.0-c18d-asset-closure/AUDIT-01.csv, CSV line 124. ADR-061 section 4.9 remains unchanged; historical v0.1.0 imports and all other files are outside this finding."
+    },
+    {
+      "asset": "textures/planets/atmosphere.png",
+      "decision": "EXCLUDED",
+      "reviewer": "sunthemoon",
+      "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
+      "reviewed_at": "2026-10-31",
+      "basis": "Owner decision D3 in docs/work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261031.md, through the owner's Claude Code Root session on 2026-10-31, excludes this old AR 16x file without clearing its authorship or licence chain. Source SHA-256: 5ebe141288d2f599a246f070df3a80c07c244d49189f8116e2d01f499d1ae68a. Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D3 also excludes this old AR 16x source; its authorship remains unresolved. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation. Per-file evidence: docs/work/v1.8.0-c18d-asset-closure/AUDIT-01.csv, CSV line 125. ADR-061 section 4.9 remains unchanged; historical v0.1.0 imports and all other files are outside this finding."
+    },
+    {
+      "asset": "textures/planets/atmosphere2.png",
+      "decision": "EXCLUDED",
+      "reviewer": "sunthemoon",
+      "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
+      "reviewed_at": "2026-10-31",
+      "basis": "Owner decision D3 in docs/work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261031.md, through the owner's Claude Code Root session on 2026-10-31, excludes this old AR 16x file without clearing its authorship or licence chain. Source SHA-256: 0820f015ea5437419bc2bcdb184f931f28fc9b08d71f12b7268edc3151fd6704. Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D3 also excludes this old AR 16x source; its authorship remains unresolved. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation. Per-file evidence: docs/work/v1.8.0-c18d-asset-closure/AUDIT-01.csv, CSV line 126. ADR-061 section 4.9 remains unchanged; historical v0.1.0 imports and all other files are outside this finding."
+    },
+    {
+      "asset": "textures/planets/carbonworld.png",
+      "decision": "EXCLUDED",
+      "reviewer": "sunthemoon",
+      "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
+      "reviewed_at": "2026-10-31",
+      "basis": "Owner decision D3 in docs/work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261031.md, through the owner's Claude Code Root session on 2026-10-31, excludes this old AR 16x file without clearing its authorship or licence chain. Source SHA-256: f7adac5033f2bbd6584338e399fd43d7151c8029b3e88d6985b240030239213a. Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D3 also excludes this old AR 16x source; its authorship remains unresolved. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation. Per-file evidence: docs/work/v1.8.0-c18d-asset-closure/AUDIT-01.csv, CSV line 128. ADR-061 section 4.9 remains unchanged; historical v0.1.0 imports and all other files are outside this finding."
+    },
+    {
+      "asset": "textures/planets/desertworld.png",
+      "decision": "EXCLUDED",
+      "reviewer": "sunthemoon",
+      "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
+      "reviewed_at": "2026-10-31",
+      "basis": "Owner decision D3 in docs/work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261031.md, through the owner's Claude Code Root session on 2026-10-31, excludes this old AR 16x file without clearing its authorship or licence chain. Source SHA-256: c5ccfbaddad8f27c99139ac9f45809778f2e93ea6ae0a0f23748033d1e12a7df. Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D3 also excludes this old AR 16x source; its authorship remains unresolved. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation. Per-file evidence: docs/work/v1.8.0-c18d-asset-closure/AUDIT-01.csv, CSV line 130. ADR-061 section 4.9 remains unchanged; historical v0.1.0 imports and all other files are outside this finding."
+    },
+    {
+      "asset": "textures/planets/earthlike.png",
+      "decision": "EXCLUDED",
+      "reviewer": "sunthemoon",
+      "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
+      "reviewed_at": "2026-10-31",
+      "basis": "Owner decision D3 in docs/work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261031.md, through the owner's Claude Code Root session on 2026-10-31, excludes this old AR 16x file without clearing its authorship or licence chain. Source SHA-256: b2863a27372fee5f51261af5d3fba693a423070def3bfb12e98fce657e2523a7. Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D3 also excludes this old AR 16x source; its authorship remains unresolved. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation. Per-file evidence: docs/work/v1.8.0-c18d-asset-closure/AUDIT-01.csv, CSV line 132. ADR-061 section 4.9 remains unchanged; historical v0.1.0 imports and all other files are outside this finding."
+    },
+    {
+      "asset": "textures/planets/gasgiantblue.png",
+      "decision": "EXCLUDED",
+      "reviewer": "sunthemoon",
+      "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
+      "reviewed_at": "2026-10-31",
+      "basis": "Owner decision D3 in docs/work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261031.md, through the owner's Claude Code Root session on 2026-10-31, excludes this old AR 16x file without clearing its authorship or licence chain. Source SHA-256: 532db78ca52ceeb8b44036cd952e134b9b222987a7ec33837a5561295d82b957. Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D3 also excludes this old AR 16x source; its authorship remains unresolved. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation. Per-file evidence: docs/work/v1.8.0-c18d-asset-closure/AUDIT-01.csv, CSV line 134. ADR-061 section 4.9 remains unchanged; historical v0.1.0 imports and all other files are outside this finding."
+    },
+    {
+      "asset": "textures/planets/gasgiantbrown.png",
+      "decision": "EXCLUDED",
+      "reviewer": "sunthemoon",
+      "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
+      "reviewed_at": "2026-10-31",
+      "basis": "Owner decision D3 in docs/work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261031.md, through the owner's Claude Code Root session on 2026-10-31, excludes this old AR 16x file without clearing its authorship or licence chain. Source SHA-256: 5646abdf7e6417d3e4a42a78894413579d68fe76f466fea2ce421881d956e521. Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D3 also excludes this old AR 16x source; its authorship remains unresolved. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation. Per-file evidence: docs/work/v1.8.0-c18d-asset-closure/AUDIT-01.csv, CSV line 136. ADR-061 section 4.9 remains unchanged; historical v0.1.0 imports and all other files are outside this finding."
+    },
+    {
+      "asset": "textures/planets/gasgiantred.png",
+      "decision": "EXCLUDED",
+      "reviewer": "sunthemoon",
+      "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
+      "reviewed_at": "2026-10-31",
+      "basis": "Owner decision D3 in docs/work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261031.md, through the owner's Claude Code Root session on 2026-10-31, excludes this old AR 16x file without clearing its authorship or licence chain. Source SHA-256: c9e95164b753f4efb27aa1e8c01446682e644eb711503317e67b38bd7aaabb03. Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D3 also excludes this old AR 16x source; its authorship remains unresolved. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation. Per-file evidence: docs/work/v1.8.0-c18d-asset-closure/AUDIT-01.csv, CSV line 138. ADR-061 section 4.9 remains unchanged; historical v0.1.0 imports and all other files are outside this finding."
+    },
+    {
+      "asset": "textures/planets/iceworld.png",
+      "decision": "EXCLUDED",
+      "reviewer": "sunthemoon",
+      "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
+      "reviewed_at": "2026-10-31",
+      "basis": "Owner decision D3 in docs/work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261031.md, through the owner's Claude Code Root session on 2026-10-31, excludes this old AR 16x file without clearing its authorship or licence chain. Source SHA-256: 7c026481e53fe8eb10b5d55fed6df3aa4451761f52a8f7ebf6cd4a606a406c88. Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D3 also excludes this old AR 16x source; its authorship remains unresolved. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation. Per-file evidence: docs/work/v1.8.0-c18d-asset-closure/AUDIT-01.csv, CSV line 140. ADR-061 section 4.9 remains unchanged; historical v0.1.0 imports and all other files are outside this finding."
+    },
+    {
+      "asset": "textures/planets/marslike.png",
+      "decision": "EXCLUDED",
+      "reviewer": "sunthemoon",
+      "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
+      "reviewed_at": "2026-10-31",
+      "basis": "Owner decision D3 in docs/work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261031.md, through the owner's Claude Code Root session on 2026-10-31, excludes this old AR 16x file without clearing its authorship or licence chain. Source SHA-256: 015743a23036bdf879ed49a33fef387757ed05061f7f7ea626c0d6539443832a. Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D3 also excludes this old AR 16x source; its authorship remains unresolved. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation. Per-file evidence: docs/work/v1.8.0-c18d-asset-closure/AUDIT-01.csv, CSV line 144. ADR-061 section 4.9 remains unchanged; historical v0.1.0 imports and all other files are outside this finding."
+    },
+    {
+      "asset": "textures/planets/moon.png",
+      "decision": "EXCLUDED",
+      "reviewer": "sunthemoon",
+      "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
+      "reviewed_at": "2026-10-31",
+      "basis": "Owner decision D3 in docs/work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261031.md, through the owner's Claude Code Root session on 2026-10-31, excludes this old AR 16x file without clearing its authorship or licence chain. Source SHA-256: 5e2e34035bc583ed5ec1d969d5cabb349e34ab37365dda94ca4ce7e09c7eda1b. Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D3 also excludes this old AR 16x source; its authorship remains unresolved. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation. Per-file evidence: docs/work/v1.8.0-c18d-asset-closure/AUDIT-01.csv, CSV line 146. ADR-061 section 4.9 remains unchanged; historical v0.1.0 imports and all other files are outside this finding."
+    },
+    {
+      "asset": "textures/planets/rings.png",
+      "decision": "EXCLUDED",
+      "reviewer": "sunthemoon",
+      "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
+      "reviewed_at": "2026-10-31",
+      "basis": "Owner decision D3 in docs/work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261031.md, through the owner's Claude Code Root session on 2026-10-31, excludes this old AR 16x file without clearing its authorship or licence chain. Source SHA-256: b54079aee062f4cced30aa1e0e89deadc0f6b35c19aa282fac2b7f732b8a8dad. Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D3 also excludes this old AR 16x source; its authorship remains unresolved. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation. Per-file evidence: docs/work/v1.8.0-c18d-asset-closure/AUDIT-01.csv, CSV line 148. ADR-061 section 4.9 remains unchanged; historical v0.1.0 imports and all other files are outside this finding."
+    },
+    {
+      "asset": "textures/planets/ringshadow.png",
+      "decision": "EXCLUDED",
+      "reviewer": "sunthemoon",
+      "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
+      "reviewed_at": "2026-10-31",
+      "basis": "Owner decision D3 in docs/work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261031.md, through the owner's Claude Code Root session on 2026-10-31, excludes this old AR 16x file without clearing its authorship or licence chain. Source SHA-256: ec27a1738d2b382ffcbdc3095c5005d5c6be3af929c8d157c15e97be363ca105. Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D3 also excludes this old AR 16x source; its authorship remains unresolved. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation. Per-file evidence: docs/work/v1.8.0-c18d-asset-closure/AUDIT-01.csv, CSV line 149. ADR-061 section 4.9 remains unchanged; historical v0.1.0 imports and all other files are outside this finding."
+    },
+    {
+      "asset": "textures/planets/shadow3.png",
+      "decision": "EXCLUDED",
+      "reviewer": "sunthemoon",
+      "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
+      "reviewed_at": "2026-10-31",
+      "basis": "Owner decision D3 in docs/work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261031.md, through the owner's Claude Code Root session on 2026-10-31, excludes this old AR 16x file without clearing its authorship or licence chain. Source SHA-256: 6714f39defed18a5bed5336b9d8e27f952ff17b0804b105078174cf76aceee4b. Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D3 also excludes this old AR 16x source; its authorship remains unresolved. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation. Per-file evidence: docs/work/v1.8.0-c18d-asset-closure/AUDIT-01.csv, CSV line 151. ADR-061 section 4.9 remains unchanged; historical v0.1.0 imports and all other files are outside this finding."
+    },
+    {
+      "asset": "textures/planets/venusian.png",
+      "decision": "EXCLUDED",
+      "reviewer": "sunthemoon",
+      "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
+      "reviewed_at": "2026-10-31",
+      "basis": "Owner decision D3 in docs/work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261031.md, through the owner's Claude Code Root session on 2026-10-31, excludes this old AR 16x file without clearing its authorship or licence chain. Source SHA-256: 145d5c0fd48aa29aebd947d52c39f51dabf407eba79e96a1093ca86489d57aab. Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D3 also excludes this old AR 16x source; its authorship remains unresolved. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation. Per-file evidence: docs/work/v1.8.0-c18d-asset-closure/AUDIT-01.csv, CSV line 153. ADR-061 section 4.9 remains unchanged; historical v0.1.0 imports and all other files are outside this finding."
+    },
+    {
+      "asset": "textures/planets/waterworld.png",
+      "decision": "EXCLUDED",
+      "reviewer": "sunthemoon",
+      "review_record": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
+      "reviewed_at": "2026-10-31",
+      "basis": "Owner decision D3 in docs/work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261031.md, through the owner's Claude Code Root session on 2026-10-31, excludes this old AR 16x file without clearing its authorship or licence chain. Source SHA-256: 9826c8d0573ceacb2a1bda39cf5205e1d1243ce23981fb6ed7015b3339147c6c. Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D3 also excludes this old AR 16x source; its authorship remains unresolved. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation. Per-file evidence: docs/work/v1.8.0-c18d-asset-closure/AUDIT-01.csv, CSV line 155. ADR-061 section 4.9 remains unchanged; historical v0.1.0 imports and all other files are outside this finding."
+    }
+  ]
 }

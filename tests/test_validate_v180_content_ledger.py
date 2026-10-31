@@ -224,8 +224,12 @@ class V180ContentLedgerTests(unittest.TestCase):
         self._set_rule("textures/blocks/beacon.png", handling="IMPORT")
         self.assertIn("asset plan: textures/blocks/beacon.png is IMPORT beyond its allowlist ceiling REVIEW",
                       self._errors())
+        # ADR-062 revision 6 excludes the old AR files this texture matches at HIT level, so the clearance names them.
+        released = [f"textures/blocks/{name}.png" for name in (
+            "laserfront", "machineelectrolyzer", "machineelectrolyzer_active", "precisionassemblerfront",
+            "precisionassemblerfront_active", "railgun", "satelliteassembler")]
         self._write_findings([{"asset": "textures/blocks/beacon.png", "decision": "CLEARED", "reviewer": "sunthemoon",
-                               "reviewed_at": "2026-10-02", "basis": "compared with vanilla"}])
+                               "reviewed_at": "2026-10-02", "basis": "compared with vanilla", "releases": released}])
         self.assertEqual([], self._errors())
 
     def test_cleared_needs_the_owner_or_a_recorded_independent_review(self) -> None:
@@ -445,7 +449,7 @@ class V180ContentLedgerTests(unittest.TestCase):
 
     def test_unmatched_asset_and_dead_rule_fail(self) -> None:
         rows = self._rows(ASSET_PLAN)
-        rows = [row for row in rows if row["pattern"] != "textures/particle/*"]
+        rows = [row for row in rows if row["pattern"] != "textures/particle/soft.png"]
         rows.append(dict(rows[-1], pattern="textures/nothing/*.png"))
         for order, row in enumerate(rows, start=1):
             row["order"] = str(order)
