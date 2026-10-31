@@ -1,10 +1,13 @@
 # ADR-076 - A docs/17 waiver for the data-pack reload entries that vanilla and Forge write
 
 ```yaml
-status: PROPOSED
+status: ACCEPTED
 date: 2026-10-29
 owner: sunthemoon
-deciders: []
+deciders: [sunthemoon]
+accepted_by: sunthemoon
+accepted_at: 2026-10-31
+acceptance_basis: owner decision D17, "接受精确站点的限期豁免（推荐）", reconfirmed for the text corrected after W228's review with "接受更正后的文本（推荐）", both in the Claude Code session on 2026-10-31
 target_version: v1.8.0
 slices: [W193]
 source: W179-F4, W192 option F4-D, Root decision R161
@@ -12,6 +15,14 @@ related: [ADR-064, ADR-072]
 expires: at the v1.9.0 Gate
 supersedes: ""
 ```
+
+**Accepted on 2026-10-31.** The owner accepted this waiver for exactly the sites listed below, expiring at the
+v1.9.0 Gate (decision D17 in
+[OWNER-DECISIONS-20261031](../work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261031.md)). The owner then
+reconfirmed it for the corrected text after W228's review and W228-recheck's confirmation
+(`ARCE-Task-Evidence/root-queue/W228-recheck/RECHECK.md`, SHA-256 `0c6f9c04…b26d936789`). The three messages of
+unbounded length remain a recorded risk. The acceptance approves no Required Gate, version or release. The next
+paragraph is the proposal's original preface, kept as it was written.
 
 This is a proposal for the owner. It changes nothing until the owner decides, and it accepts no Required Gate,
 version or release. Root decision R161 adopted the W192 recommendation to draft it. W193 wrote it and did not

@@ -25,6 +25,12 @@ own scope, approves a Gate or a version, or turns an admission switch on.
 | D12 | 月球目前固定为午夜外观。v1.8 要保留吗？ | "v1.8 保留固定午夜（推荐）" | The fixed-midnight Moon stays for v1.8 as a published appearance and time rule, confirmed on a real client. |
 | D4 | 不使用旧贴图、由代码绘制几何体的天空（星球、黑洞、地球圆盘），是否作为 v1.8 的正式外观方向？ | "接受代码绘制外观，V1 实机再确认（推荐）" | The code-drawn sky is v1.8's direction; the 45 sky rows are excluded under D6; the real-GPU session confirms the sky, black hole and Earth disc. |
 
+## Reconfirmation later on 2026-10-31
+
+| ID | Question (as asked) | Owner's choice (verbatim) | What it authorizes |
+|---|---|---|---|
+| D17-R | ADR-076（对 vanilla/Forge 数据包重载逐文件日志的限期豁免）独立审核发现原文有三处描述错误，Root 已更正并经第二次独立复核确认（W228-recheck APPROVE）。更正后站点与到期（v1.9.0 Gate）都不变，但多披露了一条长度无上限的消息：同一个已列站点 TagLoader:53/:64 的 tag 编解码错误会把一个文件里所有无效值拼在一起（100 个无效值约 12,000 字符），与原有两条拼接列表一起作为已记录风险，不算有界。你在 D17 的接受是否覆盖更正后的文本？ | "接受更正后的文本（推荐）" | ADR-076 is accepted as corrected; the three messages of unbounded length stay a recorded risk; the v1.9.0 Gate's re-measurement adds a tag file with many invalid values. |
+
 Not decided in this sitting (still open): D5 (the listen of the ten NEW sounds), D7 (the human provenance and licence
 review of the fourteen pending records), W203-Q4 and D14 (the per-interaction and release risk dispositions, after
 their evidence exists), D13 (a log sweep Root does first), D14-log (at release review), the final unified campaign
