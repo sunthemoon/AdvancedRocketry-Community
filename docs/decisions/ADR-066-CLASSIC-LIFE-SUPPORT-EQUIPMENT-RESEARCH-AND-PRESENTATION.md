@@ -573,6 +573,29 @@ without an approved lifecycle/AT exception, bring the owner a revised protocol
 with changed interaction and conservation claims. Do not ship automatic pad
 charging while describing it as crash atomic without evidence.
 
+### W226 finite canister alternative (PAD-D4, 2026-10-31)
+
+The owner's PAD-D4 choice, recorded verbatim in OWNER-DECISIONS-20261031, selects W174 O1 for the integrated owner.
+Root decision R217 implements its two finite operations for every player without implementing the separate
+dedicated/LAN-guest automatic protocol. The pad fills one empty output canister with exactly 1,000 mB of its bank
+in one root publication. The player-local refill uses the actual oxygen/hydrogen canister, adds exactly 1,000 units
+to one installed matching tank, or the first installed EMPTY tank by position, and returns one empty canister.
+Duplicate-gas layouts, unsupported roots, insufficient room and no return slot/merge refuse without debit. Native
+enchanted chests accept only oxygen active-buffer refill; external providers are not edited by this route. Normal
+oxygen use retains active-buffer refill; sneaking oxygen use requests tank refill, while hydrogen use requests tank
+refill directly. The finite route also consumes one canister in creative mode. Configuration is checked again at
+publication; the prepared chest and exact affected inventory slots publish without intervening callbacks or drops.
+
+The schema-1 pad owns a 16,000 mB oxygen/hydrogen bank and two single-canister slots. Filled input adds 1,000 mB and
+becomes empty; empty output removes 1,000 mB and becomes filled. Redstone/config pauses new work but not safe
+withdrawal. The fill-only fluid adapter never calls a foreign tank. There is no FE, new hook, AT, Mixin, receipt,
+readback or player prompt-save. Automatic charging remains absent, including for the integrated owner.
+
+Retained pad-root protection has the exact scope, duration, retry-log and offline recovery described in R-027's
+W226 addition. Pad/player transfers still have ADR-054 vanilla container tearing. Hosting-kind rollback remains
+W174-R13, including both loss and gain, and requires the stated pre-switch whole-world repair. Implementation,
+independent review and scoped native checks do not approve any Required Gate or accept these risks.
+
 ## 5. C18b - equipment and equipment schema
 
 ### 5.1 Slots, capacities, workstation and enchantment
