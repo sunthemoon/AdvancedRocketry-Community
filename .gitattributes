@@ -33,4 +33,13 @@ gradlew.bat text eol=crlf
 # Preserve K1 byte-copy provenance when core.autocrlf is enabled.
 src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/centrifuge.obj -text
 src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/centrifuge.mtl -text
+# Preserve K2 importer-written model bytes with core.autocrlf enabled.
+src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/chemical_reactor.mtl -text
+src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/chemicalreactor.obj -text
+src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/crystalliser.mtl -text
+src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/crystalliser.obj -text
+src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/cuttingmachine.mtl -text
+src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/cuttingmachine.obj -text
+src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/lathe.mtl -text
+src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/lathe.obj -text
 LICENSE text eol=lf
