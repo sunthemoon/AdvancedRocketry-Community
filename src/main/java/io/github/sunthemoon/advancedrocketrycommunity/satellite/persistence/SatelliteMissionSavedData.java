@@ -41,6 +41,7 @@ public final class SatelliteMissionSavedData extends SavedData {
     private io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayRegistryPermit scopedPermit;
     private boolean registering;
     private CompoundTag preservedBlockedData;
+    private SatelliteCanonicalBoundsException canonicalBoundsFailure;
     /** ADR-050 section 2: a state change waits here for the next coalesced flush (at most one per 100 ticks). */
     private boolean flushPending;
 
@@ -112,9 +113,15 @@ public final class SatelliteMissionSavedData extends SavedData {
             }
         } catch (RuntimeException exception) {
             data.preservedBlockedData = preserved;
+            data.canonicalBoundsFailure = SatelliteCanonicalBoundsException.find(exception).orElse(null);
         }
         data.writer.loaded();
         return data;
+    }
+
+    /** Startup validation needs the precise bounded reason rather than only the blocked/operational bit. */
+    public Optional<SatelliteCanonicalBoundsException> canonicalBoundsFailure() {
+        return Optional.ofNullable(canonicalBoundsFailure);
     }
 
     private void changed() {

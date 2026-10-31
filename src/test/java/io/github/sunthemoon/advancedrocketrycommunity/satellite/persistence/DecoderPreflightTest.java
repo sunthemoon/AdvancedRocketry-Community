@@ -75,13 +75,34 @@ final class DecoderPreflightTest {
     }
 
     private static SatelliteMissionRegistry loaded(boolean account, boolean job, boolean analysis) {
-        var loaded = SatelliteRegistryPayload.decodeCurrent(root(account, job, analysis, 4090));
+        CompoundTag raw = root(account, job, analysis, 4090);
+        assertThrows(SatelliteCanonicalBoundsException.class, () -> SatelliteRegistryPayload.decodeCurrent(raw));
+        var loaded = detached(raw);
         assertFalse(loaded.restoreReport().changed());
         MissionState mission = loaded.missions().get(0);
         assertEquals(138, mission.definitionId().toString().length());
         assertEquals(4096, CodecRecordSizer.INSTANCE.missionBytes(mission));
         assertThrows(IllegalArgumentException.class, () -> SatelliteNbtCodec.encodeMission(mission));
         return loaded;
+    }
+
+    /** Domain fallback remains covered with synthetic residents that D15 now refuses at the production load boundary. */
+    private static SatelliteMissionRegistry detached(CompoundTag raw) {
+        var registry = SatelliteMissionRegistry.restore(0, 0, 2, CodecRecordSizer.INSTANCE);
+        for (var tag : raw.getList("missions", Tag.TAG_COMPOUND)) {
+            registry.restoreMission(SatelliteNbtCodec.decodeMission((CompoundTag) tag));
+        }
+        for (var tag : raw.getList("research_accounts", Tag.TAG_COMPOUND)) {
+            registry.restoreAccount(SatelliteNbtCodec.decodeAccount((CompoundTag) tag));
+        }
+        for (var tag : raw.getList("instances", Tag.TAG_COMPOUND)) {
+            registry.restoreInstance(SatelliteNbtCodec.decodeInstance((CompoundTag) tag));
+        }
+        for (var tag : raw.getList("ground_surveys", Tag.TAG_COMPOUND)) {
+            registry.groundSurveys().restore(GroundSurveyCodec.decode((CompoundTag) tag));
+        }
+        registry.finishRestore();
+        return registry;
     }
 
     @ParameterizedTest @ValueSource(booleans = {false, true})
@@ -136,21 +157,25 @@ final class DecoderPreflightTest {
         assertEquals(before, snapshot(restored));
     }
 
-    @Test void savedDataAdapterKeepsLoadedRootOperationalButRefusesStart() {
-        var data = SatelliteMissionSavedData.load(root(true, false, false, 4090));
-        assertTrue(data.operational());
-        assertThrows(IllegalArgumentException.class, () -> data.save(new CompoundTag()));
+    @Test void savedDataAdapterBlocksUnencodableRootBeforeAnyStart() {
+        CompoundTag raw = root(true, false, false, 4090);
+        var data = SatelliteMissionSavedData.load(raw);
+        assertFalse(data.operational());
+        assertEquals(raw, data.save(new CompoundTag()));
         var capture = data.captureForTests();
-        var result = data.groundSurveys(jobs -> jobs.start(GroundPreflightBenchmark.start(), 0));
-        assertEquals(GroundSurveys.Code.STORAGE_BUDGET, result.code());
-        assertFalse(result.changed());
+        assertThrows(IllegalStateException.class,
+                () -> data.groundSurveys(jobs -> jobs.start(GroundPreflightBenchmark.start(), 0)));
         assertEquals(capture, data.captureForTests());
-        assertThrows(IllegalArgumentException.class, () -> data.save(new CompoundTag()));
+        assertEquals(raw, data.save(new CompoundTag()));
     }
 
     @ParameterizedTest @ValueSource(ints = {3906, 3907})
     void normalizedCanonicalEncodingAtAndOneByteOverTheLimit(int rawBytes) {
-        var registry = SatelliteRegistryPayload.decodeCurrent(root(true, false, false, rawBytes));
+        CompoundTag raw = root(true, false, false, rawBytes);
+        if (rawBytes > 3906) {
+            assertThrows(SatelliteCanonicalBoundsException.class, () -> SatelliteRegistryPayload.decodeCurrent(raw));
+        }
+        var registry = rawBytes == 3906 ? SatelliteRegistryPayload.decodeCurrent(raw) : detached(raw);
         assertFalse(registry.restoreReport().changed());
         MissionState mission = registry.missions().get(0);
         boolean fits = rawBytes == 3906;

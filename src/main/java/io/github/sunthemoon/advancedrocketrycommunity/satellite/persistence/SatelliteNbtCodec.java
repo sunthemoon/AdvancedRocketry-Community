@@ -61,7 +61,8 @@ final class SatelliteNbtCodec {
         state.orbitBody().ifPresent(body -> target.putString("orbit_body", body.toString()));
         target.put("blueprint", encodeBlueprint(state.blueprint()));
         target.put("kind_state", encodeKindState(state.kindState()));
-        requireBound(target, SatelliteLimits.MAX_SATELLITE_RECORD_NBT_BYTES);
+        SatelliteCanonicalBoundsException.check(SatelliteCanonicalBoundsException.Kind.SATELLITE,
+                state.satelliteId(), target, SatelliteLimits.MAX_SATELLITE_RECORD_NBT_BYTES);
         return target;
     }
 
@@ -122,7 +123,8 @@ final class SatelliteNbtCodec {
         state.instanceId().ifPresent(value -> target.putUUID("instance_id", value));
         state.quarantine().ifPresent(value -> target.put("quarantine", encodeQuarantine(value)));
         encodePayload(state.payload(), target);
-        requireBound(target, SatelliteLimits.MAX_MISSION_RECORD_NBT_BYTES);
+        SatelliteCanonicalBoundsException.check(SatelliteCanonicalBoundsException.Kind.MISSION,
+                state.missionId(), target, SatelliteLimits.MAX_MISSION_RECORD_NBT_BYTES);
         return target;
     }
 
@@ -190,7 +192,8 @@ final class SatelliteNbtCodec {
         target.putString("origin_kind", instance.origin().kind().name().toLowerCase(Locale.ROOT));
         target.putUUID("origin_id", instance.origin().id());
         instance.allocatedMission().ifPresent(value -> target.putUUID("allocated_mission", value));
-        requireBound(target, SatelliteLimits.MAX_INSTANCE_RECORD_NBT_BYTES);
+        SatelliteCanonicalBoundsException.check(SatelliteCanonicalBoundsException.Kind.INSTANCE,
+                instance.instanceId(), target, SatelliteLimits.MAX_INSTANCE_RECORD_NBT_BYTES);
         return target;
     }
 
@@ -246,7 +249,8 @@ final class SatelliteNbtCodec {
         target.putInt("balance", account.balance());
         target.putLong("lifetime_earned", account.lifetimeEarned());
         target.putLong("lifetime_spent", account.lifetimeSpent());
-        requireBound(target, SatelliteLimits.MAX_RECORD_NBT_BYTES);
+        SatelliteCanonicalBoundsException.check(SatelliteCanonicalBoundsException.Kind.ACCOUNT,
+                account.ownerId(), target, SatelliteLimits.MAX_RECORD_NBT_BYTES);
         return target;
     }
 

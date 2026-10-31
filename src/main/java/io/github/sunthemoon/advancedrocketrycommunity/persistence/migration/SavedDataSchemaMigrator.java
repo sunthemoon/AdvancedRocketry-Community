@@ -101,7 +101,9 @@ public final class SavedDataSchemaMigrator {
                 return new MigrationResult(MigrationStatus.MIGRATED, schema, migrated);
             } catch (RuntimeException exception) {
                 throw new SavedDataMigrationException(MigrationDiagnosticId.INVALID_SCHEMA,
-                        type.dataName() + " has invalid legacy satellite data", exception);
+                        io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence
+                                .SatelliteCanonicalBoundsException.find(exception).map(Throwable::getMessage)
+                                .orElse(type.dataName() + " has invalid legacy satellite data"), exception);
             }
         }
 

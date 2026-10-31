@@ -150,7 +150,10 @@ final class ResidentEncodingTest {
     @Test void unencodableDecodedResidentStillRefusesAndIsNotHiddenByCaching() {
         CompoundTag root = GroundSurveyFixtures.root(List.of(), List.of());
         root.getList("missions", Tag.TAG_COMPOUND).add(DecoderPreflightTest.rawMission(4090, true));
-        var registry = SatelliteRegistryPayload.decodeCurrent(root);
+        assertThrows(SatelliteCanonicalBoundsException.class, () -> SatelliteRegistryPayload.decodeCurrent(root));
+        // Retain the caching/fallback regression below the production load boundary that D15 now closes.
+        var registry = SatelliteMissionRegistry.create(0, CodecRecordSizer.INSTANCE);
+        registry.restoreMission(SatelliteNbtCodec.decodeMission(root.getList("missions", Tag.TAG_COMPOUND).getCompound(0)));
         assertFalse(registry.residentEncoding().known());
         assertFalse(GroundExactPreflightTest.equivalent(registry, active(0, OWNER),
                 GroundPreflightBenchmark.start().instance(), false, registry.account(OWNER), 0));

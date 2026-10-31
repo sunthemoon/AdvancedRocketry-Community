@@ -34,6 +34,7 @@ public final class BetaWorldMigrationEvents {
                     report.backupDirectory().orElse("none")
             );
         } catch (SavedDataMigrationException exception) {
+            if (logSatelliteBoundsRefusal(exception)) { throw exception; }
             if (exception.dataType().orElse(null) == ManagedSavedDataType.ROCKET_REJOINS
                     || recoveryHint(worldRoot).equals(REJOIN_HINT)) {
                 AdvancedRocketryCommunity.LOGGER.error("[{}] Beta world data check blocked startup; type={}; reason={}. {}",
@@ -54,6 +55,18 @@ public final class BetaWorldMigrationEvents {
             );
             throw exception;
         }
+    }
+
+    /** D15: one fixed-field diagnostic, before generic/whole-world hints could obscure the named record. */
+    static boolean logSatelliteBoundsRefusal(SavedDataMigrationException exception) {
+        var bounds = io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence
+                .SatelliteCanonicalBoundsException.find(exception);
+        if (bounds.isEmpty()) { return false; }
+        AdvancedRocketryCommunity.LOGGER.error("[{}] Beta world data check blocked startup: {}. "
+                        + "Keep the server stopped, back up the complete world, repair the named record and dependent "
+                        + "references offline until its canonical encoding fits, then restart; never restore isolated authority files.",
+                exception.diagnosticId().code(), bounds.orElseThrow().getMessage());
+        return true;
     }
 
     static void logEscrowRefusal(SavedDataMigrationException exception) {
