@@ -302,7 +302,7 @@ order,pattern,handling,plan,units,reason
 301,models/astrobodydataprocessor.obj,IMPORT,C18d,block:planetAnalyser,machine OBJ model for the visual batch
 302,models/beacon.obj,IMPORT,C18d,block:beacon,machine OBJ model for the visual batch
 303,models/blackholegenerator.obj,IMPORT,C18d,block:blackholegenerator,machine OBJ model for the visual batch
-304,models/centrifuge.obj,IMPORT,C18d,block:centrifuge,machine OBJ model for the visual batch
+304,models/centrifuge.obj,IMPORTED,v1.8.0,block:centrifuge,K1 byte copy; docs/provenance/v1.8.0-c18d-k1.json; W229 source checks; human review and V1 pending
 305,models/chemicalreactor.obj,IMPORT,C18d,block:chemicalReactor,machine OBJ model for the visual batch
 306,models/crystalliser.obj,IMPORT,C18d,block:crystallizer,machine OBJ model for the visual batch
 307,models/cuttingmachine.obj,IMPORT,C18d,block:cuttingMachine,machine OBJ model for the visual batch
@@ -328,7 +328,7 @@ order,pattern,handling,plan,units,reason
 327,textures/models/tubes.png,EXCLUDE,-,-,"used only by the terraformer renderer (deferred, ADR-062)"
 328,textures/models/astrobodydataprocessor.png,IMPORT,C18d,block:planetAnalyser,model texture for the visual batch
 329,textures/models/blackholegenerator.png,IMPORT,C18d,block:blackholegenerator,model texture for the visual batch
-330,textures/models/centrifuge.png,IMPORT,C18d,block:centrifuge,model texture for the visual batch
+330,textures/models/centrifuge.png,IMPORTED,v1.8.0,block:centrifuge,K1 byte copy; docs/provenance/v1.8.0-c18d-k1.json; W229 source checks; human review and V1 pending
 331,textures/models/chemicalreactor.png,IMPORT,C18d,block:chemicalReactor,model texture for the visual batch
 332,textures/models/crystalliser.png,IMPORT,C18d,block:crystallizer,model texture for the visual batch
 333,textures/models/cuttingmachine.png,IMPORT,C18d,block:cuttingMachine,model texture for the visual batch
