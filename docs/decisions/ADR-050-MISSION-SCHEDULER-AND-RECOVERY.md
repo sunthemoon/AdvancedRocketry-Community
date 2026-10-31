@@ -249,6 +249,38 @@ completed or paid automatically. A future root or record schema, an **unknown
 kind** or an over-bound file blocks the whole registry and preserves the original
 payload (ADR-010 behaviour; ADR-049 uses the same rule).
 
+**Implementation note (2026-10-31, W224; owner D15).** W173 option A applies
+the existing bounds to the decoded root's canonical representation, including
+repairs and the result of legacy migration. After each current-root decode,
+`encodeCurrent` runs once with the actual record encoders and the unchanged
+inclusive 16 MiB root bound. Existing count checks remain; section admission
+reservations are not additional load limits. `ServerAboutToStart` performs the
+detached check synchronously on the server startup thread before Levels/logins
+and before migration backups, staging or replacement. The later SavedData load
+checks its own decoded root; migrations can decode it more than once.
+
+An over-bound canonical record blocks the entire registry and world startup on
+every attempt until repaired, rather than allowing session changes that cannot
+be saved. One mod-owned bounded ERROR names the first failing kind, UUID (the
+fixed registry data name for a root-total failure), canonical bytes and bound,
+without a record list or attached stack. Platform exception/crash reporting is
+separate. Dedicated players cannot join; an integrated host sees the platform
+startup failure and consults the log. The original file is never rewritten,
+moved or deleted by this refusal. Keep the server stopped, back up the complete
+world, repair the named record and dependent references offline until its actual
+canonical encoding fits, then restart. Adding a namespace alone does not shrink
+that encoding; do not discard records or restore isolated authority files
+without reconciling dependencies.
+
+This adds a full startup encode, not an IO-writer change. W173's historical
+development-host near-bound encode median was about 106 ms; W216's eager restore
+sizing cost remains additional. Known resident measurements are not substituted
+for execution of the encoder and its precise failure diagnostic. These numbers
+do not qualify reference-node startup, concurrency or soak performance. This
+check does not prove later lifecycle growth, preserve foreign unknown keys, or
+change runtime admission. R-030 remains open; no risk or Required Gate is approved.
+
+
 Operator commands (permission level 2), each writing one bounded audit line:
 `mission inspect|verify|release|cancel|purge|rebind`, `satellite recover`,
 `instance inspect|release`.
