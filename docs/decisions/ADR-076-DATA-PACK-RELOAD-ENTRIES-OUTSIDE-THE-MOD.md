@@ -15,7 +15,10 @@ supersedes: ""
 
 This is a proposal for the owner. It changes nothing until the owner decides, and it accepts no Required Gate,
 version or release. Root decision R161 adopted the W192 recommendation to draft it. W193 wrote it and did not
-accept it.
+accept it. W228 reviewed it independently on 2026-10-31, as docs/17 section 10 item 6 requires
+(`ARCE-Task-Evidence/root-queue/W228/REVIEW.md`, SHA-256 `a3565808…0fcc943e5a2`), and Root corrected its three
+findings in the scope and bound sections below. The corrections add a third message of unbounded length: the raw
+tag-codec error at an already listed site. They add no site and do not change the expiry.
 
 ## Context
 
@@ -44,8 +47,8 @@ serializer or that is not the mod's. The mod cannot bound their number without c
   by the number of bad files.
 - **Failure.** Vanilla and Forge write one entry per refused file or tag, and some entries carry a stack trace.
 - **Real risk.** Log volume grows linearly with the number of bad files in the selected packs, on every reload. Only
-  the server operator selects packs. Each entry is a single message with at most one stack trace, except the two list
-  messages named below. There is no effect on gameplay, saved data or the network.
+  the server operator selects packs. Each entry is a single message with at most one stack trace. Three messages
+  named below can grow in length with the data itself. There is no effect on gameplay, saved data or the network.
 
 ## Decision (proposed)
 
@@ -58,13 +61,15 @@ directory, SHA-256 `bbce06a903f061b3ba781ce413f3fcf2fb6c0ff5a8e8da26d6ccbd317283
 1. `SimpleJsonResourceReloadListener:47`, "Couldn't parse data file", ERROR with a stack trace, for a file that is
    not JSON, in every JSON resource directory.
 2. `RecipeManager:63` (a Forge condition that cannot be evaluated), `RecipeManager:67` (a top-level element that is
-   not an object) and `RecipeManager:169` (an unknown or missing recipe type, including a mistyped type in the mod's
-   namespace), each logged at `RecipeManager:77`, "Parsing error loading recipe", ERROR with a stack trace.
+   not an object), `RecipeManager:168` (a missing `type` field) and `RecipeManager:169` (an unknown recipe type,
+   including a mistyped type in the mod's namespace), each logged at `RecipeManager:77`, "Parsing error loading
+   recipe", ERROR with a stack trace.
 3. `RecipeManager:77` for the serializers of vanilla and of other mods.
 4. `RecipeManager:69`, Forge's INFO line "Skipping loading recipe ... as it's serializer returned null", once for
    each recipe that a mod serializer refuses under W193.
-5. `TagLoader:53` and `TagLoader:64`, "Couldn't read tag list", ERROR with a stack trace (by reading, a tag codec
-   error logs at both lines), and `TagLoader:105`, "Couldn't load tag ... as it is missing following references".
+5. `TagLoader:53`, the raw tag-codec error, ERROR without a stack trace; `TagLoader:64`, "Couldn't read tag list",
+   ERROR with a stack trace that repeats that codec error (a tag codec error logs at both lines); and `TagLoader:105`,
+   "Couldn't load tag ... as it is missing following references".
 6. `NamespacedWrapper:386`, Forge's WARN "Not all defined tags for registry ... are present in data pack".
 
 It does not cover:
@@ -75,12 +80,25 @@ It does not cover:
 
 ### The bound that still holds
 
-- Each entry is one message with at most one stack trace. In W179's run the largest such entry was 3,088 bytes.
-- There is at most one entry per refused file and reload. For tags, it is one per pack resource, and two for a tag
-  codec error (from reading, not measured).
-- The number of entries is bounded by the files of the selected packs, which only the server operator installs.
-- Two messages join a list without a cap: missing tag references (`TagLoader:105`) and vanished tags
-  (`NamespacedWrapper:386`). Their length grows with the data, not only their number.
+- Each entry is one message with at most one stack trace. In W179's run the largest such entry was 3,088 bytes; this
+  is an observation, not a size cap.
+- The number of entries, per reload:
+  - recipe and JSON failures: one per refused resource and listener;
+  - tag read or decode failures: up to two per pack resource, at `TagLoader:53` and `:64`;
+  - missing references: one per tag build;
+  - vanished tags: up to one WARN per affected registry. It can appear on the reload that restores a pack selection,
+    after the offending pack was deselected, and its list reflects the tags the registry kept from earlier reloads
+    in the session, not only the selected packs.
+- Apart from the vanished-tag WARN, the number of entries is bounded by the files of the selected packs, which only
+  the server operator installs.
+- Three messages can grow in length with the data, not only in number:
+  - the raw tag-codec error at `TagLoader:53`, repeated in `:64`'s stack trace, which aggregates every invalid value
+    in one tag file without a cap (W228 measured 118, 1,198 and 12,178 characters for 1, 10 and 100 invalid
+    values);
+  - missing tag references (`TagLoader:105`);
+  - vanished tags (`NamespacedWrapper:386`).
+
+  These lengths are a recorded risk, not a waived bound.
 
 ### Data
 
@@ -104,7 +122,8 @@ INFO lines from `RecipeManager:69`; they replace 36 ERROR entries of 167,403 byt
 - **Owner:** sunthemoon (the project owner) decides acceptance. Root drafts and maintains the ADR.
 - **Temporary:** yes.
 - **Expiry:** at the v1.9.0 Gate.
-- **At that Gate,** re-measure with W179's pack and `DataPackOverLimitReloadGameTests`.
+- **At that Gate,** re-measure with W179's pack and `DataPackOverLimitReloadGameTests`, and add a tag file with many
+  invalid codec values (W228's finding F1).
   - The waiver ends when the platform offers bounded reload diagnostics, or when an accepted ADR allows a hook that
     bounds these entries without hiding other mods' errors.
   - Otherwise it may be renewed only by a new ADR revision with the new data.
