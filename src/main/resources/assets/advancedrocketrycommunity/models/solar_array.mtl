@@ -2,4 +2,4 @@
 # NEW material binding for the upstream OBJ's missing library.
 newmtl None
 Kd 1.0 1.0 1.0
-map_Kd advancedrocketrycommunity:textures/models/solararray.png
+map_Kd advancedrocketrycommunity:models/solararray
