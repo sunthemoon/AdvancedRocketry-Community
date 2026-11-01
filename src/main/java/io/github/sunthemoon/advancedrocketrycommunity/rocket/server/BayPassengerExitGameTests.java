@@ -12,6 +12,8 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 @PrefixGameTestTemplate(false)
 public final class BayPassengerExitGameTests {
     private BayPassengerExitGameTests() { }
+    @GameTest(template = "rocket_test", batch = "bay_exit_ambient_fluid", timeoutTicks = 400)
+    public static void externalWaterCannotReplaceTheOrdinaryLandingStimulus(GameTestHelper helper) { new BayPassengerExitGameTestFixture(helper, AMBIENT_FLUID).start(); }
     @GameTest(template = "rocket_test", batch = "bay_exit_early_continuous", timeoutTicks = 400)
     public static void oneEarlyContinuousRelativeCorrectionRetainsTheOriginalOffer(GameTestHelper helper) { new BayPassengerExitGameTestFixture(helper, EARLY_CONTINUOUS).start(); }
     @GameTest(template = "rocket_test", batch = "bay_exit_second_correction", timeoutTicks = 400)

@@ -33,7 +33,7 @@ final class BayPassengerExitGameTestFixture {
         CONTENTION, EXPIRY, UNLOADED, NON_FALL_LANDING, CANCELLED_FALL, FLUID, GANTRY, LOCAL_ONLY, REMOTE,
         HAZARD, HEADROOM, PARTIAL, BUDGET, REENTRANT_DAMAGE, AFTER_TELEPORT, RELEASED_SUCCESS, CLIMB,
         CONTENTION_REVERSE, ONE_BOX, ONE_BOX_REVERSE, LAST_UNIT, LAST_UNIT_REVERSE, DELAYED_ONE_BOX, DELAYED_LAST, FIFO,
-        EARLY_CONTINUOUS, SECOND_CORRECTION, EARLY_DISCONTINUITY }
+        EARLY_CONTINUOUS, SECOND_CORRECTION, EARLY_DISCONTINUITY, AMBIENT_FLUID }
     final GameTestHelper helper;
     final Case scenario;
     final List<ServerPlayer> players = new ArrayList<>();
@@ -198,6 +198,7 @@ final class BayPassengerExitGameTestFixture {
                         (scenario == Case.HAZARD ? Blocks.MAGMA_BLOCK : scenario == Case.PARTIAL ? Blocks.STONE_SLAB : Blocks.STONE).defaultBlockState());
             } }
         }
+        BayPassengerExitGameTestDescentAudit.enclose(this);
         joinedTick = server.getTickCount(); stage = 1;
     }
     void pad(BlockPos feet) {

@@ -2,14 +2,39 @@ package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
 import static io.github.sunthemoon.advancedrocketrycommunity.rocket.server.BayPassengerExitGameTestFixture.Case.*;
 import java.util.Set;
+import net.minecraft.core.Direction;
 import net.minecraft.network.protocol.game.ServerboundAcceptTeleportationPacket;
 import net.minecraft.world.entity.RelativeMovement;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
 
 /** Check that a negative landing/expiry test reaches its own stimulus with a live offer. */
 final class BayPassengerExitGameTestDescentAudit {
     private BayPassengerExitGameTestDescentAudit() { }
+
+    static void enclose(BayPassengerExitGameTestFixture fixture) {
+        if (!Set.of(ORDINARY, FIRST_TICK, DRIPSTONE, ZERO_LANDING, NON_FALL_LANDING, CANCELLED_FALL,
+                REENTRANT_DAMAGE, EXPIRY, TELEPORT, EARLY_CONTINUOUS, SECOND_CORRECTION,
+                EARLY_DISCONTINUITY, AMBIENT_FLUID).contains(fixture.scenario)) { return; }
+        var level = fixture.helper.getLevel();
+        if (fixture.scenario == AMBIENT_FLUID) {
+            var source = fixture.origin.offset(4, 48, 0);
+            for (var side : Direction.values()) {
+                if (side != Direction.WEST) { level.setBlockAndUpdate(source.relative(side), Blocks.GLASS.defaultBlockState()); }
+            }
+            level.setBlockAndUpdate(source, Blocks.WATER.defaultBlockState());
+        }
+        // Stay inside this fixture's horizontal footprint. Seal the collar before the warmup,
+        // not during the descent: outside fluid must not replace the named landing stimulus.
+        for (int x = -3; x <= 3; x++) { for (int z = -3; z <= 3; z++) {
+            for (int y = -2; y <= 55; y++) {
+                boolean wall = Math.abs(x) == 3 || Math.abs(z) == 3 || y == 55;
+                level.setBlockAndUpdate(fixture.origin.offset(x, y, z),
+                        (wall ? Blocks.GLASS : Blocks.AIR).defaultBlockState());
+            }
+        } }
+    }
 
     static void beforeStimulus(BayPassengerExitGameTestFixture fixture) {
         if (fixture.offer == null || fixture.offer.descent == null) { return; }
@@ -33,6 +58,10 @@ final class BayPassengerExitGameTestDescentAudit {
         if (fixture.stage == 4) {
             fixture.helper.assertTrue(fixture.attacks.stream().noneMatch(LivingAttackEvent::isCanceled),
                     "Expiry case consumed protection before its deadline");
+        }
+        if (fixture.scenario == AMBIENT_FLUID) {
+            fixture.helper.assertTrue(fixture.helper.getLevel().getBlockState(fixture.origin.offset(4, 48, 0)).is(Blocks.WATER),
+                    "Ambient-fluid fixture lost its external water source");
         }
     }
 
@@ -78,7 +107,7 @@ final class BayPassengerExitGameTestDescentAudit {
         int before = fixture.falls; boolean closedBefore = offer.descent.closed;
         player.doCheckFallDamage(0, -.25, 0, true);
         helper.assertTrue(fixture.falls > before, "Fixture did not traverse vanilla fall event");
-        if (fixture.scenario == ORDINARY) {
+        if (fixture.scenario == ORDINARY || fixture.scenario == AMBIENT_FLUID) {
             helper.assertTrue(player.getHealth() == 20 && fixture.attacks.stream().filter(LivingAttackEvent::isCanceled).count() == 1,
                     "Ordinary landing did not consume exactly one FALL cancellation: health=" + player.getHealth()
                             + "; closedBefore=" + closedBefore + "; closedAfter=" + offer.descent.closed + "; attacks="
