@@ -38,11 +38,12 @@ public final class BayExitSelector {
         private final BayExitSelector source = BayExitSelector.this;
         private final Request request;
         private final BooleanSupplier current;
+        private final Port safetyPort;
         private final long capture;
         private Result result;
         private Box reserved;
-        private Context(Request request, BooleanSupplier current, long capture) {
-            this.request = request; this.current = current; this.capture = capture;
+        private Context(Request request, BooleanSupplier current, Port safetyPort, long capture) {
+            this.request = request; this.current = current; this.safetyPort = safetyPort; this.capture = capture;
         }
         public Optional<Result> result() { budget.checkThread(); return Optional.ofNullable(result); }
         public long captureSequence() { return capture; }
@@ -65,8 +66,14 @@ public final class BayExitSelector {
 
     /** Capture allocates no attempt, candidate, block-read or entity-visit work. */
     public Context capture(Request request, BooleanSupplier current) {
+        return capture(request, current, safety);
+    }
+
+    /** Bind the exact passenger/Level read view without creating another arbitrator or budget. */
+    public Context capture(Request request, BooleanSupplier current, Port safetyPort) {
         budget.checkThread();
-        var context = new Context(Objects.requireNonNull(request), Objects.requireNonNull(current), ++captures);
+        var context = new Context(Objects.requireNonNull(request), Objects.requireNonNull(current),
+                Objects.requireNonNull(safetyPort), ++captures);
         if (live.size() == LIVE_LIMIT || draining) { context.result = refusal(context, Status.CAPACITY_REFUSED); }
         else { live.add(context); delayed.addLast(context); }
         return context;
@@ -108,7 +115,7 @@ public final class BayExitSelector {
                     Box box = new Box(position, r.width, r.height);
                     boolean[] checked = {false};
                     boolean[] clear = {false};
-                    Verdict verdict = box.valid() ? safety.inspect(box, probe, (query, allowanceProbe) -> {
+                    Verdict verdict = box.valid() ? context.safetyPort.inspect(box, probe, (query, allowanceProbe) -> {
                         if (!box.equals(query) || allowanceProbe != probe) { return false; }
                         if (!checked[0]) { clear[0] = clearReservations(box, probe); checked[0] = true; }
                         return clear[0];

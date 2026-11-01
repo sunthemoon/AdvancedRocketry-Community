@@ -290,4 +290,16 @@ final class BayExitSelectorTest {
         budget.advanceTick(1);
         assertEquals(new BayExitBudget.Usage(0, 0, 0), budget.usage());
     }
+
+    @Test void passengerSpecificSafetyPortsStillShareArbitrationReservationsAndBudget() {
+        var budget = new BayExitBudget(0); var first = new CountingPort(); var second = new CountingPort();
+        first.available.add(C.get(0)); second.available.addAll(C.subList(0, 2));
+        var selector = new BayExitSelector(budget, first);
+        var a = selector.capture(REQUEST, () -> true); var b = selector.capture(REQUEST, () -> true, second);
+        var order = new ArrayList<Context>(); selector.drain(order::add);
+        assertEquals(List.of(a, b), order);
+        assertResult(a.result().orElseThrow(), SAFE, 1, 1, 1, 1);
+        assertResult(b.result().orElseThrow(), SAFE, 2, 2, 2, 2);
+        assertEquals(new BayExitBudget.Usage(3, 3, 3), budget.usage());
+    }
 }
