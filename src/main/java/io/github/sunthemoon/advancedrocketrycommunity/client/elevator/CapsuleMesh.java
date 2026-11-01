@@ -11,6 +11,10 @@ import java.util.List;
  * the unchanged strict {@link ObjModelCheck#checkObj} first. V is flipped ({@code 1 - v}) as the legacy
  * {@code WavefrontObject} and the K4 fixture's {@code flipV} do. A triangle repeats its last corner, as Forge's OBJ
  * baker emits it, so every face is four vertices. No Minecraft client class is used here.
+ *
+ * This small reader is separate from Forge's hull baker because K4's idle geometry omits {@code Capsule}, its legacy
+ * texture is not named by the OBJ's MTL, and the countdown tint needs a colour on every vertex. A second catalog
+ * fixture would also change the pinned catalog totals; this group already counts in K4's geometry budget.
  */
 final class CapsuleMesh {
     static final String GROUP = "Capsule";

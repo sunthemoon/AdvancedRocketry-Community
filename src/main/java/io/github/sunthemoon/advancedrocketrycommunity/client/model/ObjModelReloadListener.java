@@ -1,10 +1,8 @@
 package io.github.sunthemoon.advancedrocketrycommunity.client.model;
 
-import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import net.minecraft.resources.ResourceLocation;
@@ -33,7 +31,6 @@ public final class ObjModelReloadListener<M> extends SimplePreparableReloadListe
 
     public record Rejected<M>(String message, Map<String, Map<ResourceLocation, ResourceLocation>> textures) implements Prepared<M> { }
 
-    private static final int MAX_DIAGNOSTIC = 512;
     private final List<ObjModelFixture> catalog;
     private final ObjModelCache<M> cache;
     private final Compiler<M> compiler;
@@ -54,15 +51,7 @@ public final class ObjModelReloadListener<M> extends SimplePreparableReloadListe
 
     @Override
     protected Prepared<M> prepare(ResourceManager resources, ProfilerFiller profiler) {
-        ObjModelSet.Source source = (location, limit) -> {
-            var resource = resources.getResource(location);
-            if (resource.isEmpty()) { return Optional.empty(); }
-            try (var input = resource.get().open()) {
-                return Optional.of(ObjModelCheck.readBounded(input, limit, location.toString()));
-            } catch (IOException failure) {
-                throw new ObjModelException(location + ": cannot be read");
-            }
-        };
+        ObjModelSet.Source source = ObjModelResources.source(resources);
         try {
             var set = ObjModelSet.check(catalog, source);
             var entries = new LinkedHashMap<String, ObjModelCache.Entry<M>>();
@@ -78,8 +67,7 @@ public final class ObjModelReloadListener<M> extends SimplePreparableReloadListe
         } catch (ObjModelException | RuntimeException failure) {
             var textures = new LinkedHashMap<String, Map<ResourceLocation, ResourceLocation>>();
             cache.entries().forEach((id, entry) -> textures.put(id, ObjModelSet.retexture(entry.fixture(), entry.textures(), source)));
-            String raw = String.valueOf(failure.getMessage()).replace('\n', ' ').replace('\r', ' ');
-            return new Rejected<>(raw.substring(0, Math.min(MAX_DIAGNOSTIC, raw.length())), Map.copyOf(textures));
+            return new Rejected<>(ObjModelResources.diagnostic(failure), Map.copyOf(textures));
         }
     }
 
