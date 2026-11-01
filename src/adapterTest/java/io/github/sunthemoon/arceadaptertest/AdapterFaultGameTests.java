@@ -201,6 +201,10 @@ public final class AdapterFaultGameTests {
                     if (!rocket.isRemoved()) {
                         helper.assertTrue(rockets(helper).size() == 1 && authority.equals(saveRocket(helper, rocket)),
                                 "Disassembly changed or duplicated D before its proved retirement");
+                        // B2 can end a queued request REJECTED at its 200-tick request age, before any restore
+                        // (hosted run 41261374700). Observe that terminal region_busy reply and request afresh,
+                        // as scanFailure does; an accepted pending operation is never refreshed.
+                        if (probe.calls == 0) { submission.advance(helper); }
                     }
                     if (probe.calls == 0) { return; }
                     reached(helper, probe);
@@ -239,6 +243,8 @@ public final class AdapterFaultGameTests {
                     if (submission.advance(helper)) { advance(RestoreStep.HEALTHY_DISASSEMBLY); }
                 }
                 case HEALTHY_DISASSEMBLY -> {
+                    // The healthy request can expire the same way; until D retires, observe a terminal refusal.
+                    if (!submission.rocket.isRemoved()) { submission.advance(helper); }
                     if (!(helper.getBlockEntity(CARGO) instanceof FixtureContainerBlockEntity)) { return; }
                     assertRestored(helper, fixture); close(); helper.succeed();
                 }
