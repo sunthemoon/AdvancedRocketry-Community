@@ -427,7 +427,8 @@ def _touching(repository: Path, commit: str, path: str, graph: tuple[list[str], 
 
 def upstream_history(repository: Path, commit: str, path: str) -> tuple[list[dict], list[str]]:
     """The commits that touched ``path`` up to ``commit`` (newest commit date first), then the first-parent merges
-    that brought them in, and the review triggers among them.
+    that brought them in, then any merge whose identical rename candidates appear only against a later parent, and
+    the review triggers among them.
 
     The walk is this tool's own, not ``git log --follow``: that one kept one followed path for the whole walk until
     git 2.55, so its result on non-linear history depended on the walk order, and from git 2.56 it follows a copy
@@ -437,6 +438,10 @@ def upstream_history(repository: Path, commit: str, path: str) -> tuple[list[dic
     with _Blobs(repository) as blobs:
         passes = [_touching(repository, commit, path, graph, blobs, first_parent, candidates)
                   for first_parent in (False, True)]
+    # Neither pass lists a merge whose candidates appear only against a later parent. List it after them, so every
+    # candidate is recorded in its change's rename_candidates and its message is checked like any other (W244-R2).
+    listed = {identifier for touched in passes for identifier in touched}
+    passes.append(sorted(identifier for identifier in candidates if identifier not in listed))
     found = sorted({identifier for touched in passes for identifier in touched})
     if not found or len(found) > MAX_HISTORY:
         raise ValueError(f"the history of {path} has {len(found)} commits, outside 1..{MAX_HISTORY}")

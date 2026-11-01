@@ -906,6 +906,63 @@ class IdenticalRenameCandidatesTests(unittest.TestCase):
         self.assertEqual({head, ids[0]}, {row["commit"] for row in history})
         self.assertTrue(all("rename_candidates" not in row for row in history))
 
+    def test_candidates_seen_only_against_a_merge_second_parent_are_recorded(self) -> None:
+        # W244-R2, the review's merge-edge.py: A adds two identical files; R (side) replaces both with new.png;
+        # C (main) adds a third identical file with a trigger message; M (on side) merges main and deletes all three.
+        # Against its second parent C, M renames three identical candidates to new.png. Neither graph pass lists M,
+        # yet ADR-061 says every candidate is listed in that change's rename_candidates.
+        for name in ("a", "b"):
+            _write(self.repository / f"old/{name}.png", b"picture\n")
+        a = self.commit("draw a and b")
+        _git(self.repository, "checkout", "-q", "-b", "side")
+        for name in ("a", "b"):
+            (self.repository / f"old/{name}.png").unlink()
+        _write(self.repository / "new.png", b"picture\n")
+        r = self.commit("move picture")
+        _git(self.repository, "checkout", "-q", "main")
+        _write(self.repository / "old/c.png", b"picture\n")
+        c = self.commit("copied from another project")
+        _git(self.repository, "checkout", "-q", "side")
+        # The merge conflicts on the moved directory; the resolution deletes every old picture.
+        subprocess.run(["git", "-C", str(self.repository), "merge", "--no-ff", "--no-commit", "main"],
+                       stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False)
+        _git(self.repository, "rm", "-q", "-f", "--ignore-unmatch", "old/a.png", "old/b.png", "old/c.png", "c.png")
+        m = self.commit("merge main")
+        self.assertEqual([r, c], _git(self.repository, "log", "-1", "--format=%P", m).split())
+        self.assertEqual(["new.png"], _git(self.repository, "ls-tree", "-r", "--name-only", m).split())
+        history, triggers = MODULE.checks.upstream_history(self.repository, m, "new.png")
+        self.assertEqual({a, r, c, m}, {row["commit"] for row in history})
+        self.assertEqual(1, len(triggers))
+        self.assertIn("material from another source", triggers[0])
+        self.assertIn(c[:12], triggers[0])
+        rows = {row["commit"]: row for row in history}
+        self.assertEqual([(a, "old/a.png"), (a, "old/b.png")],
+                         [(item["parent"], item["path"]) for item in rows[r]["rename_candidates"]])
+        self.assertEqual([(c, "old/a.png"), (c, "old/b.png"), (c, "old/c.png")],
+                         [(item["parent"], item["path"]) for item in rows[m]["rename_candidates"]])
+        self.assertEqual(1, len({item["blob"] for row in history for item in row.get("rename_candidates", [])}))
+        self.assertNotIn("rename_candidates", rows[a])
+        self.assertNotIn("rename_candidates", rows[c])
+
+    def test_candidates_count_toward_the_followed_path_budget(self) -> None:
+        # The review's budget-edge.py: the destination and its candidates share the unchanged 64-path budget, and
+        # an incomplete walk fails instead of truncating.
+        for count, fits in ((MODULE.checks.MAX_FOLLOWED_PATHS - 1, True), (MODULE.checks.MAX_FOLLOWED_PATHS, False)):
+            with self.subTest(count=count):
+                shutil.rmtree(self.repository / "old", ignore_errors=True)
+                for index in range(count):
+                    _write(self.repository / f"old/{index:03d}.png", b"budget picture\n")
+                self.commit(f"draw {count}")
+                shutil.rmtree(self.repository / "old")
+                _write(self.repository / f"new/{count}.png", b"budget picture\n")
+                head = self.commit(f"move {count}")
+                if fits:
+                    history, _ = MODULE.checks.upstream_history(self.repository, head, f"new/{count}.png")
+                    self.assertEqual(count, len(next(row for row in history if row["commit"] == head)["rename_candidates"]))
+                else:
+                    with self.assertRaisesRegex(ValueError, f"follows more than {MODULE.checks.MAX_FOLLOWED_PATHS} paths"):
+                        MODULE.checks.upstream_history(self.repository, head, f"new/{count}.png")
+
 
 class V010UnchangedTests(unittest.TestCase):
     """The v0.1.0 importer and its record format are untouched: a v0.1.0 record still verifies with its own tool."""
