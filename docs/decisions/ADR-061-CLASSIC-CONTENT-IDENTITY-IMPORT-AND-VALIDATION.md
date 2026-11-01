@@ -436,6 +436,7 @@ must handle:
    reference and licence checks; this grants no per-file origin clearance.
    [W229](../work/v1.8.0-root-queue/records/W229.md) records the pinned-clone
    evidence and its limits. D8 authorizes K1 first, not imports of K2 to K5.
+
    **Identical deleted rename candidates (Root decision R259, 2026-11-01, W244).**
    After the existing exact-path/name pairing, a single unpaired destination
    with multiple unpaired deleted byte-identical sources follows every such
