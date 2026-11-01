@@ -65,7 +65,7 @@ public final class BlackHoleGeneratorBlockEntity extends EndgameDeviceBlockEntit
     }
     @Override public boolean modelFormed() { return modelProjection.formed(); }
     @Override public void load(CompoundTag tag) {
-        modelProjection.read(null);
+        modelProjection.publish(this, false);
         super.load(tag);
     }
     private void updateModelProjection() { modelProjection.publish(this, sourceModelFormed()); }

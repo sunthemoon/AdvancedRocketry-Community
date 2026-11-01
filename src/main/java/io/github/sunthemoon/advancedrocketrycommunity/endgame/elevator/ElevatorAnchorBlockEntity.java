@@ -32,7 +32,7 @@ public final class ElevatorAnchorBlockEntity extends ElevatorEndpointBlockEntity
     void updateModelProjection() { modelProjection.publish(this, sourceModelFormed()); }
     @Override public boolean modelFormed() { return modelProjection.formed(); }
     @Override public void load(net.minecraft.nbt.CompoundTag tag) {
-        modelProjection.read(null);
+        modelProjection.publish(this, false);
         super.load(tag);
     }
     @Override public net.minecraft.nbt.CompoundTag getUpdateTag() {
