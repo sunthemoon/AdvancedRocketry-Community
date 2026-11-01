@@ -113,6 +113,8 @@ public final class V180FluidFuelLoaderData implements DataProvider {
                 {"READY", "Ready to fill.", "可以加注。"},
                 {"PREPARING", "Preparing escrow; no fuel has moved yet.", "正在准备托管；尚未移动燃料。"},
                 {"TRANSFERRING", "Transferring fuel.", "正在输送燃料。"}};
+        // FluidFuelLoaderStatus.OWNER_PENDING_FULL (R244) is deliberately absent: V180BayReceiptLanguage.entries emits
+        // its message, so the W82 provenance record's loader key set stays unchanged (W238-R7).
         for (String[] status : statuses) {
             entries.put(FluidFuelLoaderStatus.valueOf(status[0]).translationKey(), status[chinese ? 2 : 1]);
         }
