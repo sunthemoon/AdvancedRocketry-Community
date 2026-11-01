@@ -8,12 +8,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.SectionPos;
 import net.minecraft.server.level.DistanceManager;
 import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.ChunkStatus;
+import net.minecraft.world.level.gameevent.BlockPositionSource;
+import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.gameevent.GameEventListener;
+import net.minecraft.world.level.gameevent.PositionSource;
+import net.minecraft.world.phys.Vec3;
 
 /** Bounded fixture diagnostics; no production hooks or observer changes. */
 final class BayPassengerExitGameTestAudit {
@@ -104,23 +110,91 @@ final class BayPassengerExitGameTestAudit {
         var level = fixture.helper.getLevel();
         long column = rocket.chunkPosition().toLong();
         var mount = fixture.probeMount;
-        fixture.probeMount = null;
+        var dispatch = fixture.probeDispatch;
+        fixture.probeMount = null; fixture.probeDispatch = null;
         try {
             var prior = mount != null && mount.column() == column ? mount.tickets() : List.<String>of();
             var hook = tickets(level, column);
             boolean added = hook.stream().anyMatch(ticket -> ticket.startsWith(UNKNOWN_33) && !prior.contains(ticket));
             boolean preexisting = prior.stream().anyMatch(ticket -> ticket.startsWith(UNKNOWN_33));
+            // Cache stores between the dispatch's end and the hook: none, or exactly one store of this column.
+            String since = "none";
+            if (dispatch != null && dispatch.column() == column) {
+                var now = cache(level);
+                since = now.equals(dispatch.cache()) ? "unchanged" : now.get(0).equals(entry(column, ChunkStatus.FULL))
+                        && now.subList(1, now.size()).equals(dispatch.cache().subList(0, now.size() - 1)) ? "inserted" : "other";
+            }
+            boolean ended = dispatch != null && dispatch.column() == column;
             AdvancedRocketryCommunity.LOGGER.info(
-                    "ARCE_BAY_EXIT_PROBE case={} player={} column={} mountSlot={} hookSlot={} added={} preexisting={} mount={} hook={}",
+                    "ARCE_BAY_EXIT_PROBE case={} player={} column={} mountSlot={} hookSlot={} added={} preexisting={}"
+                            + " dispatchSlot={} dispatchFull={} sinceDispatch={} mount={} hook={}",
                     fixture.scenario, player.getUUID(), new ChunkPos(column),
-                    mount != null && mount.column() == column ? mount.slot() : "none", cacheSlot(level, column), added, preexisting, prior, hook);
+                    mount != null && mount.column() == column ? mount.slot() : "none", cacheSlot(level, column), added, preexisting,
+                    ended ? dispatch.slot() : "none", ended ? dispatch.full() : "none", since, prior, hook);
         } catch (ReflectiveOperationException | RuntimeException error) {
             AdvancedRocketryCommunity.LOGGER.info("ARCE_BAY_EXIT_PROBE case={} player={} error={}", fixture.scenario, player.getUUID(), error.toString());
         }
     }
 
+    /** W242-R1 supplement: the cache, the column's slot and its FULL readiness when the dismount dispatch has ended. */
+    record DispatchEnd(long column, List<String> cache, int slot, boolean full) { }
+
+    /**
+     * Registers, at setup and many ticks before any detach, one listener per fixture rocket in the column that the
+     * dismount game-event dispatch visits last (x outer, z inner, one getChunkNow per column before its listeners).
+     * It therefore runs after every dispatch lookup and before vanilla's portal read, and in the final source also before
+     * RocketEntity.removePassenger's getChunkNow. During the dispatch it only reads by reflection.
+     */
+    static Runnable observeDispatchEnd(BayPassengerExitGameTestFixture fixture, Runnable then) {
+        var cleanups = new ArrayList<Runnable>(List.of(then));
+        for (var flight : java.util.Arrays.asList(fixture.flight, fixture.otherFlight)) {
+            if (flight != null) { cleanups.add(observeDispatchEnd(fixture, flight.source())); }
+        }
+        return () -> cleanups.forEach(Runnable::run);
+    }
+    private static Runnable observeDispatchEnd(BayPassengerExitGameTestFixture fixture, RocketEntity rocket) {
+        var at = BlockPos.containing(rocket.position());
+        int radius = GameEvent.ENTITY_DISMOUNT.getNotificationRadius();
+        var chunk = fixture.helper.getLevel().getChunkSource().getChunkNow(SectionPos.blockToSectionCoord(at.getX() + radius),
+                SectionPos.blockToSectionCoord(at.getZ() + radius));
+        if (chunk == null) { return () -> { }; }
+        var registry = chunk.getListenerRegistry(SectionPos.blockToSectionCoord(at.getY()));
+        long column = rocket.chunkPosition().toLong();
+        var listener = new GameEventListener() {
+            @Override public PositionSource getListenerSource() { return new BlockPositionSource(at); }
+            @Override public int getListenerRadius() { return radius; }
+            @Override public boolean handleGameEvent(ServerLevel world, GameEvent event, GameEvent.Context context, Vec3 position) {
+                if (!fixture.closed && event == GameEvent.ENTITY_DISMOUNT && fixture.players.contains(context.sourceEntity())
+                        && position.distanceToSqr(rocket.position()) < 1e-6) {
+                    try { fixture.probeDispatch = new DispatchEnd(column, cache(world), cacheSlot(world, column), full(world, column)); }
+                    catch (ReflectiveOperationException | RuntimeException error) { fixture.probeDispatch = null; }
+                }
+                return false;
+            }
+        };
+        registry.register(listener);
+        return () -> registry.unregister(listener);
+    }
+
     private static Object field(Object target, Class<?> owner, String name) throws ReflectiveOperationException {
         Field field = owner.getDeclaredField(name); field.setAccessible(true); return field.get(target);
+    }
+    private static String entry(long column, ChunkStatus status) { return new ChunkPos(column) + ":" + status; }
+    private static List<String> cache(ServerLevel level) throws ReflectiveOperationException {
+        var cache = level.getChunkSource();
+        var positions = (long[]) field(cache, ServerChunkCache.class, "lastChunkPos");
+        var statuses = (ChunkStatus[]) field(cache, ServerChunkCache.class, "lastChunkStatus");
+        var entries = new ArrayList<String>();
+        for (int slot = 0; slot < positions.length; slot++) { entries.add(entry(positions[slot], statuses[slot])); }
+        return entries;
+    }
+    /** Whether the column's holder has completed FULL, which is when getChunkNow returns and caches it. */
+    private static boolean full(ServerLevel level, long column) throws ReflectiveOperationException {
+        var method = net.minecraft.server.level.ChunkMap.class.getDeclaredMethod("getVisibleChunkIfPresent", long.class);
+        method.setAccessible(true);
+        var holder = (net.minecraft.server.level.ChunkHolder) method.invoke(level.getChunkSource().chunkMap, column);
+        var either = holder == null ? null : holder.getFullChunkFuture().getNow(null);
+        return either != null && either.left().isPresent();
     }
     private static int cacheSlot(ServerLevel level, long column) throws ReflectiveOperationException {
         var cache = level.getChunkSource();

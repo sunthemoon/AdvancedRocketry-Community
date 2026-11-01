@@ -61,6 +61,7 @@ final class BayPassengerExitGameTestFixture {
     long firstDeadline;
     Runnable cacheListenerCleanup = () -> { };
     BayPassengerExitGameTestAudit.Mount probeMount;
+    BayPassengerExitGameTestAudit.DispatchEnd probeDispatch;
 
     BayPassengerExitGameTestFixture(GameTestHelper helper, Case scenario) { this.helper = helper; this.scenario = scenario; }
     // W242-R9: GameTest-thread fixtures that have not cleaned up; each batch's @AfterBatch hook closes its leftovers.
@@ -210,7 +211,7 @@ final class BayPassengerExitGameTestFixture {
             } }
         }
         BayPassengerExitGameTestDescentAudit.enclose(this);
-        cacheListenerCleanup = BayPassengerExitGameTestDescentAudit.evictOnDismount(this);
+        cacheListenerCleanup = BayPassengerExitGameTestAudit.observeDispatchEnd(this, BayPassengerExitGameTestDescentAudit.evictOnDismount(this));
         joinedTick = server.getTickCount(); stage = 1;
     }
     void pad(BlockPos feet) {
