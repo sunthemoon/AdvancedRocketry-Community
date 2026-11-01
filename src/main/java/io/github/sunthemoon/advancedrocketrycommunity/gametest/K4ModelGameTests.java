@@ -63,13 +63,16 @@ public final class K4ModelGameTests {
                 for (var f : fixtures) { f.tick(); }
                 boolean expected=stage[0]!=1;
                 if (fixtures.stream().anyMatch(f -> f.formed()!=expected
-                        || stage[0]==3 && ((FormedModelController)f.controller).modelFormed()!=!mirrored)) { return; }
+                        || stage[0]>=3 && ((FormedModelController)f.controller).modelFormed()!=!mirrored)) { return; }
                 for (var f : fixtures) { f.assertProjection(h,expected && !mirrored); }
                 if (stage[0]==0) { for(var f:fixtures){f.breakPart();} stage[0]=1; }
                 else if (stage[0]==1) { for(var f:fixtures){f.restorePart();} stage[0]=2; }
                 else if (stage[0]==2) {
                     for (var f : fixtures) { f.assertUnloadClearsProjection(h); f.dirty(); }
                     stage[0]=3;
+                } else if (stage[0]==3) {
+                    for (var f : fixtures) { f.reloadAndAssertProjectionCleared(h); f.dirty(); }
+                    stage[0]=4;
                 } else { fixtures.forEach(Fixture::close); h.succeed(); }
             });
         } catch (RuntimeException | Error failure) { fixtures.forEach(Fixture::close); throw failure; }
@@ -115,6 +118,7 @@ public final class K4ModelGameTests {
         private BlockState state(PatternMatcher matcher) {
             if(matcher instanceof PatternMatcher.ExactBlock exact){return Objects.requireNonNull(ForgeRegistries.BLOCKS.getValue(net.minecraft.resources.ResourceLocation.tryParse(exact.blockId()))).defaultBlockState();}
             if(matcher instanceof PatternMatcher.Air){return Blocks.AIR.defaultBlockState();}
+            if(matcher instanceof PatternMatcher.OptionalCell optional){return state(optional.matcher());}
             if(matcher instanceof PatternMatcher.Port port){return Objects.requireNonNull(ForgeRegistries.BLOCKS.getValue(ModIdentity.id(kind+"_"+port.channel()+"_port"))).defaultBlockState();}
             throw new IllegalArgumentException("Unsupported K4 fixture matcher "+matcher);
         }
@@ -143,7 +147,7 @@ public final class K4ModelGameTests {
             var tag=controller.getUpdateTag();var keys=new HashSet<String>();
             if(kind.equals("black_hole_generator")){keys.add("generating");}
             if(kind.equals("orbital_laser_drill")||kind.equals("rolling_machine")){keys.add("active");}
-            if(kind.equals("elevator_anchor")){keys.add("tether");}
+            if(kind.equals("elevator_anchor")){keys.add("tether"); keys.add(io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.ElevatorCapsuleCodec.KEY);}
             if(formed){keys.add("formed");}
             h.assertTrue(tag.getAllKeys().equals(keys),"K4 update exposed nonvisual state: "+tag);
             h.assertTrue(((FormedModelController)controller).modelFormed()==formed && ClassicModelProjection.decode(tag)==formed,"K4 formed projection differs");
@@ -158,11 +162,18 @@ public final class K4ModelGameTests {
                 var invalid=new CompoundTag();invalid.put("formed",bad);replica.handleUpdateTag(invalid);
                 h.assertTrue(!((FormedModelController)replica).modelFormed(),"K4 accepted malformed formed byte");
             }
-            replica.handleUpdateTag(good);replica.onDataPacket(null,ClientboundBlockEntityDataPacket.create(replica,unused->null));
+            replica.handleUpdateTag(good);replica.onDataPacket(null,ClientboundBlockEntityDataPacket.create(replica,unused->new CompoundTag()));
             h.assertTrue(!((FormedModelController)replica).modelFormed() && saved.equals(replica.saveWithoutMetadata()),"K4 null packet retained state or changed save");
             h.assertTrue(controller.onlyOpCanSetNbt(),"K4 controller permits nonoperator identity NBT");
             var expected=K4ModelProjection.bounds(kind,facing,origin);var actual=controller.getRenderBoundingBox();
             h.assertTrue(actual.equals(actual.minmax(expected)),"K4 render box clips hull");
+        }
+        void reloadAndAssertProjectionCleared(GameTestHelper h) {
+            var saved = controller.saveWithoutMetadata();
+            controller.load(saved);
+            h.assertTrue(!((FormedModelController)controller).modelFormed()
+                    && !ClassicModelProjection.decode(controller.getUpdateTag()), "K4 load trusted a saved formation for presentation");
+            h.assertTrue(!controller.saveWithoutMetadata().contains("formed"), "K4 presentation entered saved state");
         }
         void assertUnloadClearsProjection(GameTestHelper h) {
             controller.onChunkUnloaded();

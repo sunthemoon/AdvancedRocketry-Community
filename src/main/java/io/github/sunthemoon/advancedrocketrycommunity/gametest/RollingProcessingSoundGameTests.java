@@ -85,7 +85,7 @@ public final class RollingProcessingSoundGameTests {
                     var saved = controller.saveWithFullMetadata();
                     helper.assertTrue(!saved.contains("active"), "Processing flag entered disk persistence");
                     controller.load(saved);
-                    assertProjection(helper, controller, false);
+                    assertProjection(helper, controller, false, false);
                     RollingMachineRuntime.observeController(helper.getLevel(), controller); step[0]++;
                 }
                 case 7 -> {
@@ -117,10 +117,13 @@ public final class RollingProcessingSoundGameTests {
     }
 
     private static void assertProjection(GameTestHelper helper, RollingMachineBlockEntity controller, boolean active) {
+        assertProjection(helper, controller, active, controller.formationState() == MultiblockFormationState.FORMED);
+    }
+
+    private static void assertProjection(GameTestHelper helper, RollingMachineBlockEntity controller, boolean active, boolean formed) {
         helper.assertTrue(controller.processingActive() == active && ProcessingFlagCodec.decode(controller.getUpdateTag()) == active,
                 "Rolling projection differs from expected processing state: " + controller.processState());
         helper.assertTrue(controller.activeProcessingSound() == (active ? ClassicSound.ROLLING_MACHINE : null), "Rolling sound mapping differs");
-        boolean formed = controller.formationState() == MultiblockFormationState.FORMED;
         helper.assertTrue(controller.getUpdateTag().getAllKeys().equals(formed ? Set.of("active", "formed") : Set.of("active")), "Rolling update tag exposed saved roots");
         helper.assertTrue(controller.modelFormed() == formed
                 && io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.ClassicModelProjection.decode(controller.getUpdateTag()) == formed,
