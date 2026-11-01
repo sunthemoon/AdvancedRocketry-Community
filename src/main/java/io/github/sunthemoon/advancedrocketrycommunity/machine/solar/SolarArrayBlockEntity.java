@@ -1,5 +1,8 @@
 package io.github.sunthemoon.advancedrocketrycommunity.machine.solar;
 
+import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.ClassicModelProjection;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.FormedModelController;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.PatternPosition;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.PatternRotation;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.PatternTransform;
@@ -18,6 +21,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.MenuProvider;
@@ -29,11 +34,12 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.energy.IEnergyStorage;
 
 /** Controller-owned FE; formation, bindings, feedback and output quota are ephemeral. */
-public final class SolarArrayBlockEntity extends BlockEntity implements MenuProvider {
+public final class SolarArrayBlockEntity extends BlockEntity implements MenuProvider, FormedModelController {
     private final Supplier<MenuType<SolarArrayMenu>> menuType;
     private final BooleanSupplier enabled;
     private final IntSupplier multiplier;
@@ -50,6 +56,8 @@ public final class SolarArrayBlockEntity extends BlockEntity implements MenuProv
     private boolean operationLock;
     private long outputTick = Long.MIN_VALUE;
     private int outputThisTick;
+    /** Server: last published formation. Client: received presentation flag. Never saved. */
+    private boolean modelFormed;
     private SolarGeneration.Step feedback = SolarArrayRules.step(0, structure, 0, 1, true, false, null);
 
     public SolarArrayBlockEntity(BlockEntityType<?> type, BlockPos position, BlockState state,
@@ -60,6 +68,24 @@ public final class SolarArrayBlockEntity extends BlockEntity implements MenuProv
     }
 
     public int energyStored() { return energy; }
+    @Override public boolean modelFormed() { return modelFormed; }
+    private void updateModelProjection() {
+        boolean next = structure == SolarArrayRules.Structure.FORMED;
+        if (modelFormed == next) { return; }
+        modelFormed = next;
+        if (level instanceof ServerLevel server && !isRemoved()) {
+            server.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+        }
+    }
+    @Override public CompoundTag getUpdateTag() {
+        var tag = new CompoundTag(); ClassicModelProjection.encode(tag, structure == SolarArrayRules.Structure.FORMED); return tag;
+    }
+    @Override public void handleUpdateTag(CompoundTag tag) { modelFormed = ClassicModelProjection.decode(tag); }
+    @Override public ClientboundBlockEntityDataPacket getUpdatePacket() { return ClientboundBlockEntityDataPacket.create(this); }
+    @Override public void onDataPacket(Connection connection, ClientboundBlockEntityDataPacket packet) { handleUpdateTag(packet.getTag()); }
+    @Override public AABB getRenderBoundingBox() {
+        return ClassicModelProjection.bounds(ModIdentity.id("solar_array"), getBlockState().getValue(SolarArrayBlock.FACING), worldPosition);
+    }
     public int actualCredit() { return feedback.credit(); }
     public int collectors() { return collectors; }
     public SolarArrayRules.Structure structure() { return structure; }
@@ -107,6 +133,7 @@ public final class SolarArrayBlockEntity extends BlockEntity implements MenuProv
         var previous = outputs;
         var previousPanels = countedPanels;
         outputs = List.of(); countedPanels = Set.of(); token = new Object(); collectors = 0; structure = status;
+        updateModelProjection();
         feedback = SolarArrayRules.step(energy, status, 0, multiplier.getAsInt(), enabled(), repairRequired(), null);
         for (var output : previous) {
             output.release(this);
@@ -158,6 +185,7 @@ public final class SolarArrayBlockEntity extends BlockEntity implements MenuProv
         countedPanels = Set.copyOf(panels); collectors = result.collectors(); structure = SolarArrayRules.Structure.FORMED;
         outputs = List.copyOf(plugs);
         outputs.forEach(plug -> plug.bind(this, token));
+        updateModelProjection();
     }
 
     boolean bindingValid(SolarArrayOutputBlockEntity plug, Object observed) {

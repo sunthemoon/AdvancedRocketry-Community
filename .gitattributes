@@ -42,4 +42,13 @@ src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/cuttingmachi
 src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/cuttingmachine.obj -text
 src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/lathe.mtl -text
 src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/lathe.obj -text
+# Preserve K3 importer-written OBJ/MTL bytes on Windows.
+src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/astrobody_data_processor.mtl -text
+src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/astrobodydataprocessor.obj -text
+src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/beacon.mtl -text
+src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/beacon.obj -text
+src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/observatory.mtl -text
+src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/observatory.obj -text
+src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/solar_array.mtl -text
+src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/solar_array.obj -text
 LICENSE text eol=lf

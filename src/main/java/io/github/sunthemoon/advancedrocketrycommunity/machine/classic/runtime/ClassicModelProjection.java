@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.PatternRotation;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
@@ -21,8 +23,11 @@ public final class ClassicModelProjection {
     public static final String FORMED = "formed";
 
     /** The unchanged pattern dimensions/anchor and the visual height, including any detail above its cells. */
-    public record Footprint(int sizeX, int sizeY, int sizeZ, PatternPosition anchor, double renderHeight) {
-        public Footprint(int sizeX, int sizeY, int sizeZ, PatternPosition anchor) { this(sizeX, sizeY, sizeZ, anchor, sizeY); }
+    public record Footprint(int sizeX, int sizeY, int sizeZ, PatternPosition anchor, double renderHeight, double renderBelow) {
+        public Footprint(int sizeX, int sizeY, int sizeZ, PatternPosition anchor) { this(sizeX, sizeY, sizeZ, anchor, sizeY, 0); }
+        public Footprint(int sizeX, int sizeY, int sizeZ, PatternPosition anchor, double renderHeight) {
+            this(sizeX, sizeY, sizeZ, anchor, renderHeight, 0);
+        }
     }
 
     private static final Map<ResourceLocation, Footprint> FOOTPRINTS = Map.of(
@@ -30,13 +35,29 @@ public final class ClassicModelProjection {
             ModIdentity.id("chemical_reactor"), new Footprint(3, 2, 2, new PatternPosition(1, 1, 0)),
             ModIdentity.id("crystallizer"), new Footprint(3, 2, 2, new PatternPosition(1, 0, 0)),
             ModIdentity.id("cutting_machine"), new Footprint(3, 1, 2, new PatternPosition(1, 0, 0), 1.505879),
-            ModIdentity.id("lathe"), new Footprint(4, 2, 1, new PatternPosition(0, 1, 0)));
+            ModIdentity.id("lathe"), new Footprint(4, 2, 1, new PatternPosition(0, 1, 0)),
+            ModIdentity.id("astrobody_data_processor"), new Footprint(3, 2, 2, new PatternPosition(1, 1, 0)),
+            ModIdentity.id("observatory"), new Footprint(5, 5, 5, new PatternPosition(2, 1, 0), 5, 0.005001),
+            ModIdentity.id("planetary_beacon"), new Footprint(3, 5, 3, new PatternPosition(1, 0, 0)),
+            ModIdentity.id("solar_array"), new Footprint(3, 1, 22, new PatternPosition(1, 0, 0)));
 
     private ClassicModelProjection() { }
 
     public static boolean projects(ResourceLocation kind) { return FOOTPRINTS.containsKey(kind); }
 
     public static Optional<Footprint> footprint(ResourceLocation kind) { return Optional.ofNullable(FOOTPRINTS.get(kind)); }
+
+    public static PatternTransform transform(Direction facing) {
+        return new PatternTransform(switch (facing) {
+            case NORTH -> PatternRotation.ZERO; case EAST -> PatternRotation.CLOCKWISE_90;
+            case SOUTH -> PatternRotation.CLOCKWISE_180; case WEST -> PatternRotation.CLOCKWISE_270;
+            default -> throw new IllegalArgumentException("Model horizontal facing");
+        }, false);
+    }
+
+    public static AABB bounds(ResourceLocation kind, Direction facing, BlockPos controller) {
+        return bounds(footprint(kind).orElseThrow(), transform(facing), controller);
+    }
 
     public static void encode(CompoundTag tag, boolean formed) {
         if (formed) { tag.putBoolean(FORMED, true); }
@@ -61,6 +82,7 @@ public final class ClassicModelProjection {
                 }
             }
         }
-        return new AABB(minX, minY, minZ, maxX + 1, maxY + 1 + Math.max(0, footprint.renderHeight() - footprint.sizeY()), maxZ + 1);
+        return new AABB(minX, minY - footprint.renderBelow(), minZ,
+                maxX + 1, maxY + 1 + Math.max(0, footprint.renderHeight() - footprint.sizeY()), maxZ + 1);
     }
 }

@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "id": "solar_array",
+  "model": "advancedrocketrycommunity:models/solar_array.obj",
+  "mirror_x": true,
+  "flip_v": true,
+  "scale": 1,
+  "model_y_rotation_degrees": 270,
+  "offset_north": [
+    0,
+    0,
+    1
+  ],
+  "render_type": "entity_cutout",
+  "light_cell_above_controller": 1,
+  "fallback_texture": "advancedrocketrycommunity:textures/block/solar_array_front.png",
+  "model_bounds": [
+    0,
+    0,
+    -2,
+    1,
+    1,
+    1
+  ],
+  "render_bounds": {
+    "north": [
+      -1,
+      0,
+      0,
+      2,
+      1,
+      22
+    ],
+    "east": [
+      -21,
+      0,
+      -1,
+      1,
+      1,
+      2
+    ],
+    "south": [
+      -1,
+      0,
+      -21,
+      2,
+      1,
+      1
+    ],
+    "west": [
+      0,
+      0,
+      -1,
+      22,
+      1,
+      2
+    ]
+  },
+  "idle": {},
+  "imported": {
+    "obj_sha256": "016e831a02fbdfce28509530df165493aa8891fb842a1efb924ca83eed0bbf87",
+    "positions": 88,
+    "vertices": 204
+  },
+  "unchanged_layout": {
+    "size": [
+      3,
+      1,
+      22
+    ],
+    "anchor": [
+      1,
+      0,
+      0
+    ],
+    "cells": 66
+  }
+}

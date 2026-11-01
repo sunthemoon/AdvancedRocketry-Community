@@ -64,7 +64,26 @@ public record ObjModelFixture(String id, ResourceLocation kind, ResourceLocation
             ModIdentity.id("models/lathe.obj"), true, true, 1, 1, -1, 0,
             new ObjModelCheck.Bounds(-0.054134, -0.054134, -1, 1, 1.625, 3), ModIdentity.id("textures/block/lathe.png"), ENTITY_CUTOUT, 90);
 
-    public static final List<ObjModelFixture> CATALOG = List.of(CENTRIFUGE, CHEMICAL_REACTOR, CRYSTALLIZER, CUTTING_MACHINE, LATHE);
+    /*
+     * K3: each model is its 1.12 renderer's placement mirrored across the pattern's width, about the controller, like
+     * the K2 machines (Root decision R248, after review findings W236-R1 and W236-R2). K3ObjModelTest pins this per
+     * facing against the transcribed legacy transforms.
+     */
+    public static final ObjModelFixture ASTROBODY_DATA_PROCESSOR = new ObjModelFixture("astrobody_data_processor", ModIdentity.id("astrobody_data_processor"),
+            ModIdentity.id("models/astrobodydataprocessor.obj"), true, true, 1, -1, -1, 0,
+            new ObjModelCheck.Bounds(0, 0, 0, 2.000001, 1.625, 3), ModIdentity.id("textures/block/astrobody_data_processor.png"), ENTITY_CUTOUT, 90);
+    public static final ObjModelFixture OBSERVATORY = new ObjModelFixture("observatory", ModIdentity.id("observatory"),
+            ModIdentity.id("models/observatory.obj"), true, true, 1, 0.5, -1, 2.5,
+            new ObjModelCheck.Bounds(-2.5, -0.005001, -2.5, 2.5, 4.995, 2.5), ModIdentity.id("textures/block/observatory.png"), ENTITY_CUTOUT, 90, 4);
+    public static final ObjModelFixture PLANETARY_BEACON = new ObjModelFixture("planetary_beacon", ModIdentity.id("planetary_beacon"),
+            ModIdentity.id("models/beacon.obj"), true, true, 1, 0.5, 0, 0.5,
+            new ObjModelCheck.Bounds(-0.875, 0, -1.5, 2.5, 5, 1.5), ModIdentity.id("textures/block/planetary_beacon_front.png"), ENTITY_CUTOUT, 90, 5);
+    public static final ObjModelFixture SOLAR_ARRAY = new ObjModelFixture("solar_array", ModIdentity.id("solar_array"),
+            ModIdentity.id("models/solar_array.obj"), true, true, 1, 0, 0, 1,
+            new ObjModelCheck.Bounds(0, 0, -2, 1, 1, 1), ModIdentity.id("textures/block/solar_array_front.png"), ENTITY_CUTOUT, 270);
+
+    public static final List<ObjModelFixture> CATALOG = List.of(CENTRIFUGE, CHEMICAL_REACTOR, CRYSTALLIZER, CUTTING_MACHINE, LATHE,
+            ASTROBODY_DATA_PROCESSOR, OBSERVATORY, PLANETARY_BEACON, SOLAR_ARRAY);
 
     /** The rotation around +Y that matches the controller's pattern transform (clockwise viewed from above). */
     public static float yRotationDegrees(Direction facing) {
