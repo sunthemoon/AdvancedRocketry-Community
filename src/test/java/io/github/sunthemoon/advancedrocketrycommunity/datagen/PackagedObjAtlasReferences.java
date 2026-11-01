@@ -60,7 +60,10 @@ final class PackagedObjAtlasReferences {
             var mtl = ObjModelCheck.checkMtl(mtlBytes, library.toString());
             for (String material : obj.materials()) {
                 var maps = mtl.materials().get(material);
-                if (maps == null || !maps.containsKey("map_Kd")) {
+                if (maps == null) {
+                    // Forge's ObjMaterialLibrary.getMaterial throws on a name the library does not define.
+                    problems.add(mesh + " uses material " + material + ", which " + library + " does not define");
+                } else if (!maps.containsKey("map_Kd")) {
                     problems.add(mesh + " material " + material + " has no map_Kd in " + library);
                 }
             }

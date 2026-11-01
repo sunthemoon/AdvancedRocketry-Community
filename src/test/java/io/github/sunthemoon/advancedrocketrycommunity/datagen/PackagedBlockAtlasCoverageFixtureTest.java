@@ -157,6 +157,20 @@ class PackagedBlockAtlasCoverageFixtureTest {
         rejected(NS + "models/unstitched");
     }
 
+    @Test void objMaterialTheLibraryDoesNotDefineFails() throws IOException {
+        // W249-R7: Forge's ObjMaterialLibrary.getMaterial throws for a usemtl name that the MTL does not define.
+        objFixture("block/fixture");
+        write("models/block/fixture.obj", "mtllib fixture.mtl\nv 0 0 0\nv 1 0 0\nv 0 1 0\n"
+                + "vt 0 0\nvt 1 0\nvt 0 1\nusemtl Absent\nf 1/1 2/2 3/3\n");
+        rejected("fixture.obj uses material Absent, which " + NS + "models/block/fixture.mtl does not define");
+    }
+
+    @Test void usedObjMaterialWithoutDiffuseMapFails() throws IOException {
+        objFixture("block/fixture");
+        write("models/block/fixture.mtl", "newmtl Material\nmap_Ks " + NS + "block/fixture\n");
+        rejected("fixture.obj material Material has no map_Kd in " + NS + "models/block/fixture.mtl");
+    }
+
     @Test void malformedObjFails() throws IOException {
         objFixture("block/fixture");
         write("models/block/fixture.obj", "not_an_obj\n");
