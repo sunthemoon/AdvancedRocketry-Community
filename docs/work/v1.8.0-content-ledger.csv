@@ -408,7 +408,7 @@ event:CableTickHandler.chunkLoadedEvent(Load),REJECTED,-,-,ADR-062,cable and dat
 event:CableTickHandler.onBlockBroken(BreakEvent),REJECTED,-,-,ADR-062,cable and data networks are not revived,
 event:CableTickHandler.onTick(ServerTickEvent),REJECTED,-,-,ADR-062,cable and data networks are not revived,
 event:CapabilityProtectiveArmor.attachCapabilities(AttachCapabilitiesEvent),REDESIGNED,v1.3.0,suit oxygen providers,ADR-025,,
-event:ClientProxy.modelBakeEvent(ModelBakeEvent),REDESIGNED,v1.8.0,physical-client bounded OBJ reload and K1/K2/K3 formed machine renderers,ADR-062 ADR-066,"W51 loader, W229 K1, W233 K2 and W236 K3; source/unit checks only; Forge bake and V1 pending",docs/work/v1.8.0-c18d-k3/VERIFICATION.md
+event:ClientProxy.modelBakeEvent(ModelBakeEvent),REDESIGNED,v1.8.0,physical-client bounded OBJ reload and K1/K2/K3 formed machine renderers,ADR-062 ADR-066,"W51 loader, W229 K1, W233 K2 and W236 K3; source/unit checks only; Forge parse/bake and V1 pending",docs/work/v1.8.0-c18d-k3/VERIFICATION.md
 event:KeyBindings.onKeyInput(KeyInputEvent),MERGED,-,keybinding:toggleJetpack,ADR-062,key handler,
 event:MapGenLander.populateChunkPostEvent(Post),MERGED,-,worldgen:MapGenLander,ADR-062,lander placement,
 event:PlanetEventHandler.blockPlacedEvent(PlaceEvent),REDESIGNED,v1.8.0,torch conversion queue,ADR-062 ADR-066,torches turn unlit without combustion air; unsupported tagged torches refuse placement,docs/work/v1.8.0-c18a-life-support/VERIFICATION.md

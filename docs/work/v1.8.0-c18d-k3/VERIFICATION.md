@@ -31,6 +31,16 @@ adaptation. K3 contributes 4,012 budget vertices; the nine-model catalog has
 11,700. New GameTests use distant regions outside template force footprints,
 own their tickets and clean up on terminal outcomes without connected players.
 
+Root decision R248 applies the independent review's orientation corrections:
+fixture fix `09061ca5d7ff011ffcaaf74c26ea538d60671da7` and orientation test
+`5be49083e8eef2e8cfbf9b2c87da5cd4abdc1d60`. The solar array (W236-R1) and the
+observatory (W236-R2) now follow the analyser and beacon convention: each
+model is its 1.12 renderer's placement mirrored across the pattern's width.
+`K3ObjModelTest` compares every drawn position in all four facings with the
+legacy transforms transcribed from upstream `c5cd5af6`; against `2e90a59b2`'s
+fixtures it fails for exactly those two models. Model bounds, placed boxes and
+render bounds are unchanged; real-client texture orientation remains open.
+
 At the implementation commit, the unfiltered unit suite and clean build each
 pass 5,952 tests in 1,083 classes without failures, errors or skips. Datagen
 passes with no tracked changes. The full unfiltered GameTest run passes all
