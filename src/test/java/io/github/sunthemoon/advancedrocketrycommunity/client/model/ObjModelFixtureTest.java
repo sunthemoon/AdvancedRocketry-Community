@@ -107,7 +107,7 @@ class ObjModelFixtureTest {
         var bounds = CENTRIFUGE.modelBounds();
         assertEquals(model, new AABB(bounds.minX(), bounds.minY(), bounds.minZ(), bounds.maxX(), bounds.maxY(), bounds.maxZ()));
         assertEquals(List.of(CENTRIFUGE, ObjModelFixture.CHEMICAL_REACTOR, ObjModelFixture.CRYSTALLIZER,
-                ObjModelFixture.CUTTING_MACHINE, ObjModelFixture.LATHE, ObjModelFixture.ASTROBODY_DATA_PROCESSOR,
+                ObjModelFixture.CUTTING_MACHINE, ObjModelFixture.LATHE, ObjModelFixture.PRECISION_LASER_ETCHER, ObjModelFixture.ASTROBODY_DATA_PROCESSOR,
                 ObjModelFixture.OBSERVATORY, ObjModelFixture.PLANETARY_BEACON, ObjModelFixture.SOLAR_ARRAY,
                 ObjModelFixture.BLACK_HOLE_GENERATOR, ObjModelFixture.ORBITAL_LASER_DRILL, ObjModelFixture.PRECISION_ASSEMBLER,
                 ObjModelFixture.RAILGUN, ObjModelFixture.ROLLING_MACHINE, ObjModelFixture.ELEVATOR_ANCHOR), ObjModelFixture.CATALOG);
