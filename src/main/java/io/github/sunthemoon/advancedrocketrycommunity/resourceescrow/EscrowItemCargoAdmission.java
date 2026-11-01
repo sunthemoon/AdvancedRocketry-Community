@@ -136,6 +136,10 @@ public final class EscrowItemCargoAdmission implements AutoCloseable {
         }
         journal = RocketTransferSavedData.get(server).acknowledgedGuard(logical).orElse(null);
         if (journal == null) { return status = RocketCargoStatus.TRANSFER_JOURNAL_UNPROVED; }
+        var pending = EscrowTransferPreparation.preflight(server, rocket);
+        if (pending != EscrowAdmissionAuthority.Result.RESERVED) {
+            return status = EscrowCargoRefusals.status(EscrowCoordinator.Transfer.of(EscrowCoordinator.fill(pending)));
+        }
         if (kind().cargoLoad() && root.buffer().slots().stream().allMatch(CompoundTag::isEmpty)) {
             return status = RocketCargoStatus.DEVICE_EMPTY;
         }
@@ -167,6 +171,10 @@ public final class EscrowItemCargoAdmission implements AutoCloseable {
         var server = ticket.rocket().getServer();
         if (!EscrowCargoSwitches.enabled(server, kind(), before.device())) { refuse(RocketCargoStatus.ADMISSION_DISABLED); return; }
         if (!unchanged()) { refuse(RocketCargoStatus.STALE_BINDING); return; }
+        var pending = EscrowTransferPreparation.preflight(server, ticket.rocket());
+        if (pending != EscrowAdmissionAuthority.Result.RESERVED) {
+            refuse(EscrowCargoRefusals.status(EscrowCoordinator.Transfer.of(EscrowCoordinator.fill(pending)))); return;
+        }
         try {
             if (capture == null) {
                 boolean ready = ticket.advance();

@@ -15,6 +15,28 @@ final class EscrowSettlementOperator {
     private final EscrowOperatorRetry retries = new EscrowOperatorRetry();
     private static final org.slf4j.Logger LOGGER = com.mojang.logging.LogUtils.getLogger();
 
+    /** Preview only: does not observe endpoints, reserve a slot or cache a confirm digest. */
+    EscrowAdmissionAuthority.Result floorAdmission(MinecraftServer server, UUID selected) {
+        var data = existing(server);
+        var floor = data.ledger().floors().stream().filter(tag -> tag.hasUUID("transfer_id") && selected.equals(tag.getUUID("transfer_id")))
+                .findFirst().orElseThrow(() -> new IllegalArgumentException("Unknown transfer floor"));
+        var journal = io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData.get(server);
+        var guard = EscrowCodec.floorGuard(floor);
+        if (RocketEscrowAudit.journal(guard, journal.acknowledgedGuard(guard.rocket()).orElse(null)) != EscrowReason.NONE) {
+            return EscrowAdmissionAuthority.Result.UNAVAILABLE;
+        }
+        var record = journal.find(guard.transfer()).orElse(null);
+        if (record == null) { return EscrowAdmissionAuthority.Result.UNAVAILABLE; }
+        return floorAdmission(data.bind(server).admissionAuthority(), UUID.randomUUID(), record.ownerId(), guard.rocket());
+    }
+    static EscrowAdmissionAuthority.Result floorAdmission(EscrowAdmissionAuthority authority, UUID operation, UUID storedOwner, UUID logical) {
+        return authority.checkReserve(operation, storedOwner, logical, EscrowAdmissionAuthority.Consumer.PROPULSION);
+    }
+    private static UUID floorOwner(MinecraftServer server, net.minecraft.nbt.CompoundTag floor) {
+        return io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData.get(server)
+                .find(EscrowCodec.floorGuard(floor).transfer()).orElseThrow().ownerId();
+    }
+
     EscrowSettlementIntent preview(MinecraftServer server, UUID selected, EscrowSettlementIntent.Choice choice, UUID actor, String name) {
         var data = existing(server); long tick = server.getTickCount();
         EscrowTags.require(data.ledger().tombstones().size() < EscrowLimits.TOMBSTONES, EscrowSettlementIntent.RECEIPTS_FULL);
@@ -25,7 +47,7 @@ final class EscrowSettlementOperator {
             var observed = EscrowSettlementObserver.floor(server, floor, data.ledger().id());
             var intent = EscrowSettlementIntent.floorPreview(data.ledger(), UUID.randomUUID(), floor, actor, name, tick, observed);
             var confirmed = intent.confirm(actor, intent.digest(), tick + 200, observed);
-            EscrowSettlementCapacity.floorRetirement(data.ledger(), confirmed, data.bind(server).nextSequence(), tick);
+            EscrowSettlementCapacity.floorRetirement(data.ledger(), confirmed, data.bind(server).nextSequence(), tick, floorOwner(server, floor));
             previews.put(intent, tick); return intent;
         }
         var observed = EscrowSettlementObserver.component(server, data.ledger(), selected);
@@ -45,7 +67,8 @@ final class EscrowSettlementOperator {
                 ? EscrowSettlementObserver.floor(server, preview.floor(), data.ledger().id())
                 : EscrowSettlementObserver.component(server, data.ledger(), selected);
         var intent = preview.confirm(actor, digest, tick, observed);
-        boolean queued = data.bind(server).beginSettlement(intent, committed -> {
+        UUID owner = choice == EscrowSettlementIntent.Choice.TRANSFER_FLOOR_RETIRE ? floorOwner(server, intent.floor()) : actor;
+        boolean queued = data.bind(server).beginSettlement(intent, owner, committed -> {
             if (committed) {
                 previews.remove(actor, preview);
                 LOGGER.info("ARCE_ESCROW_O1 actor={} choice={} operations={} digest={} quantities={} release=awaiting-checkpoints",

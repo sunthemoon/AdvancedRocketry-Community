@@ -135,7 +135,7 @@ class EscrowItemCapacityTest {
                         var coordinator = new EscrowCoordinator(data, writer)) {
                     var admitted = new ArrayList<EscrowOperation>(); EscrowOperation refused = null;
                     for (int i = 0; i < 64; i++) {
-                        var op = operation(kind, coordinator.nextSequence(), 40_000 + i);
+                        var op = EscrowTestFixtures.distributedOwner(operation(kind, coordinator.nextSequence(), 40_000 + i));
                         var result = coordinator.prepareTransfer(EscrowCargoAdmissionTest.capture(op, 0), ignored -> { });
                         if (result == EscrowCoordinator.Transfer.QUEUED) { admitted.add(op); }
                         else { assertEquals(EscrowCoordinator.Transfer.ESCROW_FULL, result); refused = op; break; }

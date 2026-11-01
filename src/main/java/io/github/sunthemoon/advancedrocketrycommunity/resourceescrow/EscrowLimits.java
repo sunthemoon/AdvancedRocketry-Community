@@ -5,6 +5,8 @@ public final class EscrowLimits {
     public static final int ROOT_BYTES = 1_048_576;
     public static final int OPERATIONS = 64;
     public static final int PER_ROCKET = 8;
+    /** R244 admission policy only; never reject existing saved operations at this bound. */
+    public static final int PER_OWNER = 16;
     public static final int FLOORS = 256;
     public static final int TOMBSTONES = 64;
     public static final int OP_BYTES = 12_288;

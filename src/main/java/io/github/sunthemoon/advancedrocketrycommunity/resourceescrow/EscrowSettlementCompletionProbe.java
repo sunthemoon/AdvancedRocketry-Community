@@ -155,6 +155,7 @@ final class EscrowSettlementCompletionProbe {
                 if (!veto || floor || checkpointedVeto) { EscrowTags.require(server.saveEverything(false, true, true), "Completion fixture baseline save refused"); }
                 level.entityManager.permanentStorage.flush(true); level.getChunkSource().chunkMap.worker.synchronize(true).join();
                 if (checkpointedVeto) { installVeto(); }
+                if (floor) { EscrowFloorAdmissionGameProbe.verify(server, selected); }
                 preview = EscrowRuntime.of(server).settlement().preview(server, selected, choice(), ACTOR, "Server"); step = 4;
             }
             case 4 -> {

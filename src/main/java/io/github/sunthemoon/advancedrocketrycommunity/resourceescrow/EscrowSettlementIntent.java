@@ -160,10 +160,14 @@ public record EscrowSettlementIntent(Choice choice, UUID ledger, UUID actor, Str
         return frozen;
     }
     public EscrowOperation floorOperation(long sequence, long tick) {
+        return floorOperation(sequence, tick, actor);
+    }
+    /** The production caller supplies the checked transfer record's stored owner, not the command actor. */
+    EscrowOperation floorOperation(long sequence, long tick, UUID storedOwner) {
         requireConfirmed(); EscrowTags.require(choice == Choice.TRANSFER_FLOOR_RETIRE, "Not a floor intent");
         var endpoint = observations.stream().map(Observation::endpoint)
                 .filter(value -> value.identity().equals(floor.getUUID("entity_id"))).findFirst().orElseThrow();
-        return new EscrowOperation(members.get(0).id(), sequence, actor, tick, EscrowOperation.Phase.SETTLING_ABANDON,
+        return new EscrowOperation(members.get(0).id(), sequence, storedOwner, tick, EscrowOperation.Phase.SETTLING_ABANDON,
                 EscrowReason.FLOOR_CONFLICT, floor, RocketNativeResources.signature(floor), endpoint, endpoint,
                 EscrowCodec.floorGuard(floor), EscrowOperation.Kind.TRANSFER_FLOOR_RETIRE, encode());
     }

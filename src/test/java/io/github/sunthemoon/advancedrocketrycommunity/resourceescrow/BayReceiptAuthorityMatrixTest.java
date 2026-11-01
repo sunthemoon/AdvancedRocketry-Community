@@ -53,7 +53,9 @@ final class BayReceiptAuthorityMatrixTest {
         return EscrowTestFixtures.ledger(LongStream.rangeClosed(1, count)
                 .mapToObj(n -> EscrowTestFixtures.operation(n, 1_000 + n, 0)).toArray(EscrowOperation[]::new));
     }
-    private static BayReceipt intent(long n, UUID rocket) { return receipt(n, OWNER, rocket, BayReceipt.Phase.INTENT); }
+    private static BayReceipt intent(long n, UUID rocket) {
+        return receipt(n, n <= 16 ? OWNER : BayReceiptFixtures.id(9_900 + (n - 1) / 16), rocket, BayReceipt.Phase.INTENT);
+    }
     private static void queued(BayReceiptStore.Admission admission) { assertTrue(admission.queued(), admission::toString); }
 
     @Test void sixtyThreeOfOneConsumerPlusOneOfTheOtherFillTheSameSlotsAndBothRefuseTheNext() throws Exception {
