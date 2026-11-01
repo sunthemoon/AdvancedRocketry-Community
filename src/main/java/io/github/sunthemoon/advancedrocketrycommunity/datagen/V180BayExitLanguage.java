@@ -13,10 +13,11 @@ public final class V180BayExitLanguage extends LanguageProvider {
         chinese = locale.equals("zh_cn");
     }
     @Override protected void addTranslations() {
-        String seat = chinese ? " 已有座位分配保持不变，后续飞行或重连可能再次移动您。仍需生命保障。"
+        // W242-R10: Chinese sentences join without an ASCII space.
+        String seat = chinese ? "已有座位分配保持不变，后续飞行或重连可能再次移动您。仍需生命保障。"
                 : " Existing seat assignments are retained; later flight or reconnect may move you again. Life support is still required.";
         message("safe", (chinese ? "已下船，放置位置已检查。" : "Exited to a checked standing position.") + seat);
-        message("fall_offer", (chinese ? "未找到安全位置，已原地下船。仅本次下降的普通摔落可获得一次有限保护；最多 200 刻，移动、传送、掉线或未知接触可能提前终止。尖刺等其他伤害不受保护。"
+        message("fall_offer", (chinese ? "未找到安全位置，已原地下船。仅本次下降的普通摔落可获得一次有限保护；最多 200 刻，移动、传送、掉线或未知接触可能提前终止。滴水石锥等其他伤害不受保护。"
                 : "No safe position found; detached in place. One limited ordinary-fall safeguard is offered for this descent only, for less than 200 ticks; movement, teleport, disconnect or uncertain contact can end it early. Dripstone and other damage are not protected.") + seat);
         message("authority_unavailable", (chinese ? "退出权威不可用：未证明安全位置时原地下船，无摔落保护。"
                 : "Exit authority unavailable: detached without an unproved move or fall protection.") + seat);
@@ -26,6 +27,13 @@ public final class V180BayExitLanguage extends LanguageProvider {
                 : "Exit search budget exhausted; detached in place without fall protection.") + seat);
         message("no_safe_exit", (chinese ? "未找到安全位置，已原地下船；摔落保护不可用。"
                 : "No safe position found; detached in place. Fall protection is unavailable.") + seat);
+        // W242-R6: refusals that are not a completed search never say that no safe position was found.
+        String unchecked = chinese ? "已原地下船，无已检查位置或摔落保护。" : "detached in place without a checked position or fall protection.";
+        message("exit_capacity", (chinese ? "退出保护容量已满，" : "Exit safeguard capacity is full; ") + unchecked + seat);
+        message("capacity_refused", (chinese ? "安全位置检查容量已满，" : "Exit check capacity is full; ") + unchecked + seat);
+        message("reentrant_refused", (chinese ? "安全位置检查正被另一次退出占用，" : "Exit check was busy with another exit; ") + unchecked + seat);
+        message("stale", (chinese ? "安全位置检查已过期，" : "Exit check was out of date; ") + unchecked + seat);
+        message("pending", (chinese ? "安全位置检查尚未完成，" : "Exit check had not finished; ") + unchecked + seat);
     }
     private void message(String outcome, String text) { add("message.advancedrocketrycommunity.bay_exit." + outcome, text); }
     @Override public String getName() { return "v1.8 bay exit " + (chinese ? "zh_cn" : "en_us"); }

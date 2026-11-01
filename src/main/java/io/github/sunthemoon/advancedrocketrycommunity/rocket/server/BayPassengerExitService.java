@@ -43,11 +43,16 @@ final class BayPassengerExitService {
                 || !BayReceipts.holdsRocket(server, rocket.assemblyTransactionId().orElse(null))) { return; }
         var old = state.live.get(player);
         if (old != null && !old.completed && old.permit.rocket == rocket) { return; }
-        if (selecting > 0) { return; } // Do not allocate a second capability from a nested world callback.
+        // Do not allocate a second capability from a nested world callback.
+        if (selecting > 0) { refuse(player, rocket, BayPassengerExitFeedback.REENTRANT_REFUSED); return; }
         revoke(player);
-        if (state.live.size() == BayPassengerExitState.LIVE_LIMIT) { return; }
+        if (state.live.size() == BayPassengerExitState.LIVE_LIMIT) { refuse(player, rocket, BayPassengerExitFeedback.EXIT_CAPACITY); return; }
         var permit = BayPassengerExitPermit.capture(player, rocket, motion.generation(player));
-        if (permit == null) { return; }
+        if (permit == null) {
+            // A guarded rider's detach is the rejoin guard's own trusted pin, which reports through that guard.
+            if (!BayPassengerExitPermit.guarded(player)) { refuse(player, rocket, BayPassengerExitFeedback.AUTHORITY_UNAVAILABLE); }
+            return;
+        }
         var slot = new BayPassengerExitState.Slot(permit, new BayPassengerExitWorld(player));
         state.live.put(player, slot);
         var size = player.getDimensions(Pose.STANDING);
@@ -55,6 +60,11 @@ final class BayPassengerExitService {
                 permit.hint == null ? Optional.empty() : state.hint(permit.hint), Optional.ofNullable(permit.anchor), size.width, size.height);
         slot.context = selector.capture(request, () -> current(slot), BayExitSafety.loaded(slot.world));
         contexts.put(slot.context, slot);
+    }
+    private void refuse(ServerPlayer player, RocketEntity rocket, String outcome) {
+        if (state.refusals.size() < BayPassengerExitState.LIVE_LIMIT || state.refusals.containsKey(player)) {
+            state.refusals.put(player, new BayPassengerExitState.Refusal(rocket, outcome));
+        }
     }
     private boolean current(BayPassengerExitState.Slot slot) {
         return state.live.get(slot.permit.player) == slot && !slot.completed
@@ -70,8 +80,10 @@ final class BayPassengerExitService {
         if (!thread() || state.internal(player)) { return rocket.position().add(1.5, 0, 0); }
         var slot = state.live.get(player);
         if (slot == null || slot.permit.rocket != rocket) {
-            return BayReceipts.holdsRocket(server, rocket.assemblyTransactionId().orElse(null)) ? player.position()
-                    : rocket.position().add(1.5, 0, 0);
+            boolean held = BayReceipts.holdsRocket(server, rocket.assemblyTransactionId().orElse(null));
+            var refusal = state.refusals.remove(player);
+            if (held && refusal != null && refusal.rocket() == rocket) { BayPassengerExitFeedback.refused(player, rocket, refusal.outcome()); }
+            return held ? player.position() : rocket.position().add(1.5, 0, 0);
         }
         if (slot.completed) { return vector(slot.result.position()); }
         BayExitSelector.Result result;
@@ -106,14 +118,12 @@ final class BayPassengerExitService {
         selector.applied(slot.context);
         boolean safe = result.status() == BayExitSelector.Status.SAFE;
         if (safe && permit.hint != null) { state.hint(permit.hint, result.position()); }
-        if (!safe && result.status() != BayExitSelector.Status.EXIT_BUDGET_EXHAUSTED && row != null && landing.available()) {
+        if (BayPassengerExitFeedback.grants(result.status(), row != null, landing.available())) {
             slot.descent = new BayPassengerExitDescent(permit, after, row.deadline());
             state.issued(player.getUUID(), permit.transfer.transferId());
         }
-        String outcome = safe ? "safe" : slot.descent != null ? "fall_offer"
-                : permit.transfer == null ? "authority_unavailable" : row == null ? "capacity_or_used"
-                : result.status() == BayExitSelector.Status.EXIT_BUDGET_EXHAUSTED ? "budget_exhausted" : "no_safe_exit";
-        BayPassengerExitFeedback.completed(slot, outcome);
+        BayPassengerExitFeedback.completed(slot, BayPassengerExitFeedback.outcome(result.status(), permit.transfer != null,
+                row != null, slot.descent != null));
     }
     io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightRequestResult heldLeave(ServerPlayer player, RocketEntity rocket) {
         if (!thread() || !BayReceipts.holdsRocket(server, rocket.assemblyTransactionId().orElse(null))) { return null; }
@@ -154,6 +164,7 @@ final class BayPassengerExitService {
     }
     void revoke(ServerPlayer player) {
         if (!thread()) { return; }
+        state.refusals.remove(player);
         var slot = state.live.remove(player);
         if (slot != null) {
             if (slot.descent != null) { slot.descent.close(); }
@@ -183,6 +194,12 @@ final class BayPassengerExitService {
             if (!slot.completed || slot.descent == null) { revoke(entry.getKey()); }
             else { sample(entry.getKey()); }
         }
+        // A hook bypass detached without the location hook; a cancelled detach still rides and hears nothing.
+        for (var entry : List.copyOf(state.refusals.entrySet())) {
+            var refusal = entry.getValue();
+            if (entry.getKey().getVehicle() != refusal.rocket()) { BayPassengerExitFeedback.refused(entry.getKey(), refusal.rocket(), refusal.outcome()); }
+        }
+        state.refusals.clear();
         var active = new HashSet<UUID>();
         state.live.values().forEach(slot -> { if (slot.permit.transfer != null) { active.add(slot.permit.transfer.transferId()); } });
         var journal = RocketTransferSavedData.existing(server);

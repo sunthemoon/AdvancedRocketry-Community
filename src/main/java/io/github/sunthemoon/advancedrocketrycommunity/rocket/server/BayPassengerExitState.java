@@ -22,7 +22,11 @@ final class BayPassengerExitState {
         Slot(BayPassengerExitPermit permit, BayPassengerExitWorld world) { this.permit = permit; this.world = world; }
     }
     interface Scope extends AutoCloseable { @Override void close(); }
+    /** W242-R6: a capture refused before any slot exists, reported only once its detach is observed. */
+    record Refusal(io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity rocket, String outcome) { }
     final Map<ServerPlayer, Slot> live = new IdentityHashMap<>();
+    /** At most LIVE_LIMIT rows; emptied at every server-tick END. */
+    final Map<ServerPlayer, Refusal> refusals = new IdentityHashMap<>();
     private final Map<ServerPlayer, Integer> internal = new IdentityHashMap<>();
     private final Map<Pair, History> history = new LinkedHashMap<>();
     private final Map<UUID, UUID> transfers = new LinkedHashMap<>();
@@ -75,5 +79,5 @@ final class BayPassengerExitState {
         hints.keySet().removeIf(old -> old.endpoint.equals(key.endpoint) && !old.equals(key));
         if (hints.containsKey(key) || hints.size() < HINT_LIMIT) { hints.put(key, position); }
     }
-    void clear() { checkThread(); live.clear(); internal.clear(); history.clear(); transfers.clear(); hints.clear(); }
+    void clear() { checkThread(); live.clear(); refusals.clear(); internal.clear(); history.clear(); transfers.clear(); hints.clear(); }
 }
