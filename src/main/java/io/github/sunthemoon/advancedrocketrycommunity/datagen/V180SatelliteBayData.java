@@ -109,7 +109,6 @@ public final class V180SatelliteBayData implements DataProvider {
                 {"RECEIPT_PENDING", "An earlier deployment record of this satellite is still being written.",
                         "这颗卫星先前的部署记录仍在写入。"},
                 {"DEPLOYMENT_CAPACITY", "The server's pending deployments are full; try a later flight.", "服务器的待处理部署已满；请在之后的飞行中再试。"},
-                {"OWNER_PENDING_FULL", "Your pending operations are full; wait for earlier work to finish, or ask an administrator to inspect held operations.", "你的待处理操作已达上限；请等待已有操作完成，或请管理员检查仍被持有的操作。"},
                 {"ROCKET_PENDING_FULL", "This rocket's pending operations are full.", "这枚火箭的待处理操作已满。"},
                 {"RECEIPTS_FULL", "The server's deployment records are full; ask an administrator.", "服务器的部署记录已满；请联系管理员。"},
                 {"OWNER_RECEIPTS_FULL", "Your deployment records are full; ask an administrator to retire refused ones.",
@@ -133,7 +132,8 @@ public final class V180SatelliteBayData implements DataProvider {
                 {"OWNER_LIMIT", "Your satellite limit is reached.", "你的卫星数量已达上限。"},
                 {"STORAGE_BUDGET", "The satellite registry is full.", "卫星登记表已满。"},
                 {"INVALID_COMPONENTS", "The satellite's components are not valid.", "卫星的组件无效。"},
-                {"LAUNCH_REFUSED", "The satellite launch was refused.", "卫星发射被拒绝。"}};
+                {"LAUNCH_REFUSED", "The satellite launch was refused.", "卫星发射被拒绝。"},
+                {"OWNER_PENDING_FULL", "Your pending operations are full; wait for earlier work to finish, or ask an administrator to inspect held operations.", "你的待处理操作已达上限；请等待已有操作完成，或请管理员检查仍被持有的操作。"}};
         for (String[] reason : reasons) {
             entries.put(SatelliteBayStatus.Reason.valueOf(reason[0]).translationKey(), reason[chinese ? 2 : 1]);
         }
