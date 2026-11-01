@@ -16,6 +16,7 @@ import net.minecraft.nbt.CompoundTag;
 
 /** Own retained store -> same worker force -> stable disk read -> owner-thread confirmation. */
 public final class EscrowBarrier implements AutoCloseable {
+    private static final org.slf4j.Logger LOGGER = com.mojang.logging.LogUtils.getLogger();
     public record Proof(EscrowPrefix.State frontier, EscrowChunkStore.Capture capture, AtomicBoolean active,
                         AtomicBoolean lifetime) {
         public boolean valid() { return active.get() && lifetime.get() && capture.generation().get() == capture.capturedGeneration(); }
@@ -350,8 +351,11 @@ public final class EscrowBarrier implements AutoCloseable {
     }
     /** Design reason table: IO/force/unstable and superseding saves differ from veto/external/bounds refusals. */
     static EscrowReason captureReason(RuntimeException failure) {
-        return failure instanceof EscrowChunkStore.SupersededCapture ? EscrowReason.SUPERSEDING_SAVE
-                : failure instanceof EscrowChunkStore.CaptureBounds ? EscrowReason.BARRIER_BOUNDS : EscrowReason.BARRIER_VETO;
+        if (failure instanceof EscrowChunkStore.SupersededCapture) { return EscrowReason.SUPERSEDING_SAVE; }
+        if (failure instanceof EscrowChunkStore.CaptureBounds) { return EscrowReason.BARRIER_BOUNDS; }
+        // A retryable veto is not an IO error, but its cause must survive the generic persisted reason.
+        LOGGER.info("ARCE_ESCROW_CAPTURE_VETO reason=BARRIER_VETO", failure);
+        return EscrowReason.BARRIER_VETO;
     }
     static EscrowReason readbackReason(Exception failure) {
         return failure instanceof AnvilRecordReader.Refusal refusal ? refusal.reason() : EscrowReason.BARRIER_UNSTABLE;

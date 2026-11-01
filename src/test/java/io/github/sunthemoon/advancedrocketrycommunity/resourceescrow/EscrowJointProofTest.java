@@ -138,6 +138,28 @@ class EscrowJointProofTest {
             assertTrue(reason.retryableProofFailure() && !reason.manual()); // Same STALLED handling; distinct persisted reason.
         }
     }
+    @Test void barrierVetoDiagnosticKeepsTheOriginalExceptionWithoutLoggingKnownRefusals() {
+        var logger = (org.apache.logging.log4j.core.Logger) org.apache.logging.log4j.LogManager.getLogger(EscrowBarrier.class);
+        var events = new ArrayList<org.apache.logging.log4j.core.LogEvent>();
+        var appender = new org.apache.logging.log4j.core.appender.AbstractAppender("w251-capture-veto", null, null, true,
+                org.apache.logging.log4j.core.config.Property.EMPTY_ARRAY) {
+            @Override public void append(org.apache.logging.log4j.core.LogEvent event) { events.add(event.toImmutable()); }
+        };
+        var previous = logger.getLevel();
+        appender.start(); logger.addAppender(appender); logger.setLevel(org.apache.logging.log4j.Level.INFO);
+        try {
+            var failure = new IllegalArgumentException("Captured endpoint identity/frontier mismatch", new IllegalStateException("cause"));
+            assertEquals(EscrowReason.BARRIER_VETO, EscrowBarrier.captureReason(failure));
+            assertEquals(EscrowReason.SUPERSEDING_SAVE, EscrowBarrier.captureReason(new EscrowChunkStore.SupersededCapture()));
+            assertEquals(EscrowReason.BARRIER_BOUNDS, EscrowBarrier.captureReason(new EscrowChunkStore.CaptureBounds("bound")));
+            assertEquals(1, events.size());
+            assertEquals(org.apache.logging.log4j.Level.INFO, events.get(0).getLevel());
+            assertEquals("ARCE_ESCROW_CAPTURE_VETO reason=BARRIER_VETO", events.get(0).getMessage().getFormattedMessage());
+            assertSame(failure, events.get(0).getThrown());
+        } finally {
+            logger.removeAppender(appender); logger.setLevel(previous); appender.stop();
+        }
+    }
     private EscrowBarrier.Proof proof(EscrowPrefix.State state) {
         var capture = new EscrowChunkStore.Capture(CompletableFuture.completedFuture(null), null, directory,
                 new ChunkPos(0, 0), new AtomicLong(1), 1, 0, () -> { }, () -> { });
