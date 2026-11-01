@@ -351,11 +351,14 @@ def _changes(repository: Path, parent: str, commit: str, *options: str) -> list[
     return rows
 
 
-def _rename_source(repository: Path, commit: str, parent: str, path: str, blob: str) -> str | None:
-    """The path that ``path`` had in ``parent`` when ``commit`` renamed it, or None when the commit adds a new file.
+def _rename_source(repository: Path, commit: str, parent: str, path: str, blob: str) -> tuple[str, ...]:
+    """The predecessor paths, or an empty tuple when the commit adds a new file.
 
     A rename deletes its source. Deleted and added paths with the same bytes pair by the same path ignoring case, then
-    the same file name ignoring case, then a single pair left; a choice between several fails. Only when no unpaired
+    the same file name ignoring case, then a single pair left. For a single unpaired destination only, all remaining
+    byte-identical deleted candidates are followed, not chosen between. Their complete histories must all clear;
+    the caller records every candidate and propagates every trigger. Multiple unpaired destinations still fail.
+    Only when no unpaired
     deleted path has the same bytes is git's own pairing (``-M``, default similarity) asked for a rename that changed
     the bytes. A file with the same bytes that the commit keeps is a copy and is not followed."""
     rows = _changes(repository, parent, commit, "--no-renames")
@@ -372,22 +375,22 @@ def _rename_source(repository: Path, commit: str, parent: str, path: str, blob: 
             if len(matches) == 1 and sum(key(other) == key(target) for other in targets) == 1:
                 pairs[target] = matches[0]
     if path in pairs:
-        return pairs[path]
+        return (pairs[path],)
     sources = [source for source in deleted if source not in pairs.values()]
     targets = [target for target in added if target not in pairs]
-    if len(sources) == 1 and targets == [path]:
-        return sources[0]
+    if sources and targets == [path]:
+        return tuple(sources)
     if sources:
         raise ValueError(f"{commit[:12]} adds {path} with the bytes of the deleted {sources[:4]}; the rename "
                          f"source is ambiguous")
     for status, _, _, paths in _changes(repository, parent, commit, "-M", f"-l{RENAME_LIMIT}"):
         if status[:1] == "R" and paths[1] == path and status[1:].isdigit() and int(status[1:]) < 100:
-            return paths[0]
-    return None
+            return (paths[0],)
+    return ()
 
 
 def _touching(repository: Path, commit: str, path: str, graph: tuple[list[str], dict[str, list[str]]],
-              blobs: _Blobs, first_parent: bool) -> list[str]:
+              blobs: _Blobs, first_parent: bool, candidates: dict[str, set[tuple[str, str, str]]]) -> list[str]:
     """The commits that changed the file now at ``path``, following renames into each parent separately (only the
     first parent with ``first_parent``). Without ``first_parent`` a merge is not listed: the commits on its sides
     are; with it, a merge that changed the file against its first parent is."""
@@ -407,11 +410,12 @@ def _touching(repository: Path, commit: str, path: str, graph: tuple[list[str], 
                 raise ValueError(f"{identifier[:12]} has no file {current} to follow")
             for parent in own[:1] if first_parent else own:
                 before = blobs(parent, current)
-                earlier = current if before is not None else _rename_source(repository, identifier, parent,
-                                                                             current, blob)
-                if earlier is not None:
-                    followed.setdefault(parent, set()).add(earlier)
-                    names.add(earlier)
+                earlier = (current,) if before is not None else _rename_source(repository, identifier, parent,
+                                                                               current, blob)
+                followed.setdefault(parent, set()).update(earlier)
+                names.update(earlier)
+                if len(earlier) > 1:
+                    candidates.setdefault(identifier, set()).update((parent, source, blob) for source in earlier)
                 if before != blob and (first_parent or len(own) == 1):
                     listed = True
         if len(names) > MAX_FOLLOWED_PATHS:
@@ -421,7 +425,7 @@ def _touching(repository: Path, commit: str, path: str, graph: tuple[list[str], 
     return touched
 
 
-def upstream_history(repository: Path, commit: str, path: str) -> tuple[list[dict[str, str]], list[str]]:
+def upstream_history(repository: Path, commit: str, path: str) -> tuple[list[dict], list[str]]:
     """The commits that touched ``path`` up to ``commit`` (newest commit date first), then the first-parent merges
     that brought them in, and the review triggers among them.
 
@@ -429,8 +433,10 @@ def upstream_history(repository: Path, commit: str, path: str) -> tuple[list[dic
     git 2.55, so its result on non-linear history depended on the walk order, and from git 2.56 it follows a copy
     into a merge's side. The same upstream gave two different K6 records on the two versions (W169)."""
     graph = _graph(repository, commit)
+    candidates: dict[str, set[tuple[str, str, str]]] = {}
     with _Blobs(repository) as blobs:
-        passes = [_touching(repository, commit, path, graph, blobs, first_parent) for first_parent in (False, True)]
+        passes = [_touching(repository, commit, path, graph, blobs, first_parent, candidates)
+                  for first_parent in (False, True)]
     found = sorted({identifier for touched in passes for identifier in touched})
     if not found or len(found) > MAX_HISTORY:
         raise ValueError(f"the history of {path} has {len(found)} commits, outside 1..{MAX_HISTORY}")
@@ -448,7 +454,7 @@ def upstream_history(repository: Path, commit: str, path: str) -> tuple[list[dic
         details[fields[0]] = fields[1:]
     if sorted(details) != found:
         raise ValueError(f"git log did not describe every commit in the history of {path}")
-    history: list[dict[str, str]] = []
+    history: list[dict] = []
     triggers: list[str] = []
     seen: set[str] = set()
     for touched in passes:
@@ -456,6 +462,10 @@ def upstream_history(repository: Path, commit: str, path: str) -> tuple[list[dic
             seen.add(identifier)
             _, authored, author, subject, body = details[identifier]
             history.append({"commit": identifier, "authored_at": authored, "author": author, "subject": subject})
+            if identifier in candidates:
+                history[-1]["rename_candidates"] = [
+                    {"parent": parent, "path": source, "blob": blob}
+                    for parent, source, blob in sorted(candidates[identifier])]
             message = subject + "\n" + body
             where = f"{identifier[:12]} ({subject.strip()[:80]!r})"
             if identifier.startswith(SIXTEEN_SET_COMMITS) or SIXTEEN_SET_PULL_REQUESTS.search(message):
