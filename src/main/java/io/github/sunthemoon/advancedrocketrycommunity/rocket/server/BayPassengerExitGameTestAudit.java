@@ -1,12 +1,23 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
+import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.block.Blocks;
+import net.minecraft.server.level.DistanceManager;
+import net.minecraft.server.level.ServerChunkCache;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.chunk.ChunkStatus;
 
 /** Bounded fixture diagnostics; no production hooks or observer changes. */
 final class BayPassengerExitGameTestAudit {
+    private static final String UNKNOWN_33 = "Ticket[unknown 33 ";
     private BayPassengerExitGameTestAudit() { }
     static String difference(Object before, Object after) {
         var left = (Map<?, ?>) before; var right = (Map<?, ?>) after;
@@ -31,5 +42,59 @@ final class BayPassengerExitGameTestAudit {
                 "First-tick landing changed the source-less event or kept its capability");
         player.invulnerableTime = 0; player.causeFallDamage(distance, 1, player.damageSources().fall());
         helper.assertTrue(player.getHealth() < 20, "A second first-tick fall was protected");
+    }
+
+    /** W242-R1: the rocket column's cache slot and tickets at the fixture's own dismount event, before any W242 code. */
+    record Mount(long column, int slot, List<String> tickets) { }
+
+    static Mount mount(ServerLevel level, RocketEntity rocket) {
+        long column = rocket.chunkPosition().toLong();
+        try { return new Mount(column, cacheSlot(level, column), tickets(level, column)); }
+        catch (ReflectiveOperationException error) { return new Mount(column, -2, List.of(error.toString())); }
+    }
+
+    /**
+     * W242-R1 probe, called when the rocket's location hook is entered. Read-only: it reflects over the chunk cache and the
+     * ticket map, and makes no chunk lookup, ticket or write. Vanilla's dismount read precedes the hook, so the column is
+     * always cached here; whether that read missed shows as an added UNKNOWN level-33 ticket on the rocket's column.
+     */
+    static void probe(BayPassengerExitGameTestFixture fixture, ServerPlayer player, RocketEntity rocket) {
+        if (fixture.closed || !fixture.players.contains(player)) { return; }
+        var level = fixture.helper.getLevel();
+        long column = rocket.chunkPosition().toLong();
+        var mount = fixture.probeMount;
+        fixture.probeMount = null;
+        try {
+            var prior = mount != null && mount.column() == column ? mount.tickets() : List.<String>of();
+            var hook = tickets(level, column);
+            boolean added = hook.stream().anyMatch(ticket -> ticket.startsWith(UNKNOWN_33) && !prior.contains(ticket));
+            boolean preexisting = prior.stream().anyMatch(ticket -> ticket.startsWith(UNKNOWN_33));
+            AdvancedRocketryCommunity.LOGGER.info(
+                    "ARCE_BAY_EXIT_PROBE case={} player={} column={} mountSlot={} hookSlot={} added={} preexisting={} mount={} hook={}",
+                    fixture.scenario, player.getUUID(), new ChunkPos(column),
+                    mount != null && mount.column() == column ? mount.slot() : "none", cacheSlot(level, column), added, preexisting, prior, hook);
+        } catch (ReflectiveOperationException | RuntimeException error) {
+            AdvancedRocketryCommunity.LOGGER.info("ARCE_BAY_EXIT_PROBE case={} player={} error={}", fixture.scenario, player.getUUID(), error.toString());
+        }
+    }
+
+    private static Object field(Object target, Class<?> owner, String name) throws ReflectiveOperationException {
+        Field field = owner.getDeclaredField(name); field.setAccessible(true); return field.get(target);
+    }
+    private static int cacheSlot(ServerLevel level, long column) throws ReflectiveOperationException {
+        var cache = level.getChunkSource();
+        var positions = (long[]) field(cache, ServerChunkCache.class, "lastChunkPos");
+        var statuses = (ChunkStatus[]) field(cache, ServerChunkCache.class, "lastChunkStatus");
+        for (int slot = 0; slot < positions.length; slot++) {
+            if (positions[slot] == column && statuses[slot] == ChunkStatus.FULL) { return slot; }
+        }
+        return -1;
+    }
+    private static List<String> tickets(ServerLevel level, long column) throws ReflectiveOperationException {
+        var entries = (Map<?, ?>) field(level.getChunkSource().chunkMap.getDistanceManager(), DistanceManager.class, "tickets");
+        var set = (Iterable<?>) entries.get(column);
+        var strings = new ArrayList<String>();
+        if (set != null) { for (Object ticket : set) { strings.add(ticket.toString()); } }
+        return strings;
     }
 }

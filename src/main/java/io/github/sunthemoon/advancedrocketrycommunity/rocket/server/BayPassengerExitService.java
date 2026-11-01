@@ -26,6 +26,7 @@ final class BayPassengerExitService {
     private int selecting, observations;
     private long begunTick;
     private boolean stopped;
+    private java.util.function.BiConsumer<ServerPlayer, RocketEntity> locationProbe;
 
     BayPassengerExitService(MinecraftServer server) {
         this.server = server;
@@ -62,7 +63,13 @@ final class BayPassengerExitService {
         return state.live.get(slot.permit.player) == slot && !slot.completed
                 && slot.permit.current(motion, true) && slot.permit.player.position().equals(slot.permit.before);
     }
+    /** W242-R1: a gated, read-only GameTest observer of the location hook's entry; never set on an ordinary server. */
+    void probeLocationForTests(java.util.function.BiConsumer<ServerPlayer, RocketEntity> probe) {
+        io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowTestEndpoints.requireEnabled(server);
+        locationProbe = probe;
+    }
     Vec3 location(ServerPlayer player, RocketEntity rocket) {
+        if (locationProbe != null && thread()) { locationProbe.accept(player, rocket); }
         if (!thread() || state.internal(player)) { return rocket.position().add(1.5, 0, 0); }
         var slot = state.live.get(player);
         if (slot == null || slot.permit.rocket != rocket) {

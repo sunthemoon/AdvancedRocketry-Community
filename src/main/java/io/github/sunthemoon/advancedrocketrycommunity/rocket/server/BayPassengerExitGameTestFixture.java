@@ -61,6 +61,7 @@ final class BayPassengerExitGameTestFixture {
     String arbitrationAudit;
     long firstDeadline;
     Runnable cacheListenerCleanup = () -> { };
+    BayPassengerExitGameTestAudit.Mount probeMount;
 
     BayPassengerExitGameTestFixture(GameTestHelper helper, Case scenario) { this.helper = helper; this.scenario = scenario; }
     void start() { MinecraftForge.EVENT_BUS.register(this); helper.onEachTick(this::tick); }
@@ -102,6 +103,13 @@ final class BayPassengerExitGameTestFixture {
                     arbitrationAudit = "END drain loaded chunks or added tickets";
                 }
             } catch (Exception error) { arbitrationAudit = error.toString(); }
+        }
+    }
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public void probeMount(EntityMountEvent event) {
+        if (!closed && event.isDismounting() && players.contains(event.getEntityMounting())
+                && event.getEntityBeingMounted() instanceof io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity rocket) {
+            probeMount = BayPassengerExitGameTestAudit.mount(helper.getLevel(), rocket);
         }
     }
     @SubscribeEvent(priority = EventPriority.HIGH)
@@ -177,6 +185,7 @@ final class BayPassengerExitGameTestFixture {
         }
         helper.assertTrue(claim(helper, flight.record().logicalRocketId()).isPresent(), "D0 did not claim fixture");
         pause(); exits = RocketRuntime.passengerExits().orElseThrow();
+        exits.probeLocationForTests((rider, rocket) -> BayPassengerExitGameTestAudit.probe(this, rider, rocket));
         helper.assertTrue(exits.motion.generation(player) != null && exits.landing.available(), "Pinned mapped observers unavailable");
         for (int x = -3; x <= 3; x++) { for (int z = -3; z <= 3; z++) {
             for (int y = -2; y <= 54; y++) {
@@ -455,6 +464,7 @@ final class BayPassengerExitGameTestFixture {
     private void cleanup() {
         if (closed) { return; } closed = true; MinecraftForge.EVENT_BUS.unregister(this);
         cacheListenerCleanup.run();
+        if (exits != null) { exits.probeLocationForTests(null); }
         if (flight != null) { bays(helper).forgetForTests(flight.record().logicalRocketId()); }
         if (otherFlight != null) { bays(helper).forgetForTests(otherFlight.record().logicalRocketId()); }
         for (var joined : players) {
