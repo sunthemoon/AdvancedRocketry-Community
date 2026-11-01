@@ -25,25 +25,27 @@ import org.junit.jupiter.params.provider.ValueSource;
 class ClassicModelProjectionTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
 
-    @Test void onlyK1AndK2ProjectAModelFlag() {
-        for (String kind : new String[] {"centrifuge", "lathe", "crystallizer", "chemical_reactor", "cutting_machine"}) {
+    @Test void onlyK1K2AndK3ProjectAModelFlag() {
+        for (String kind : new String[] {"centrifuge", "lathe", "crystallizer", "chemical_reactor", "cutting_machine",
+                "observatory", "astrobody_data_processor", "planetary_beacon", "solar_array"}) {
             assertTrue(ClassicModelProjection.projects(ModIdentity.id(kind)), kind);
             assertTrue(ClassicModelProjection.footprint(ModIdentity.id(kind)).isPresent(), kind);
         }
-        for (String kind : new String[] {"precision_laser_etcher", "rolling_machine", "arc_furnace",
-                "observatory", "astrobody_data_processor"}) {
+        for (String kind : new String[] {"precision_laser_etcher", "rolling_machine", "arc_furnace"}) {
             assertFalse(ClassicModelProjection.projects(ModIdentity.id(kind)), kind);
             assertTrue(ClassicModelProjection.footprint(ModIdentity.id(kind)).isEmpty(), kind);
         }
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"chemical_reactor", "crystallizer", "cutting_machine", "lathe"})
+    @ValueSource(strings = {"chemical_reactor", "crystallizer", "cutting_machine", "lathe", "observatory", "astrobody_data_processor"})
     void clientProjectionIsStrictTransientAndNotAuthorityForEveryK2Kind(String kind) {
         var definition = switch (kind) {
             case "chemical_reactor" -> ClassicMachineDefinition.CHEMICAL_REACTOR;
             case "crystallizer" -> ClassicMachineDefinition.CRYSTALLIZER;
             case "cutting_machine" -> ClassicMachineDefinition.CUTTING;
+            case "observatory" -> ClassicMachineDefinition.OBSERVATORY;
+            case "astrobody_data_processor" -> ClassicMachineDefinition.ASTROBODY_DATA_PROCESSOR;
             default -> ClassicMachineDefinition.LATHE;
         };
         var state = new ClassicControllerBlock(BlockBehaviour.Properties.of()).defaultBlockState();

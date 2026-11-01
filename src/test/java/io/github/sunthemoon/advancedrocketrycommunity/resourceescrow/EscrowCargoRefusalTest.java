@@ -133,6 +133,6 @@ class EscrowCargoRefusalTest {
         assertEquals(io.github.sunthemoon.advancedrocketrycommunity.rocket.cargo.device.RocketCargoStatus.CARGO_TOO_LARGE,
                 EscrowCargoRefusals.status(EscrowCoordinator.Transfer.CARGO_TOO_LARGE));
         assertEquals(EscrowCoordinator.Fill.ESCROW_FULL, EscrowCoordinator.Transfer.CARGO_TOO_LARGE.fill());
-        assertEquals(10, EscrowCoordinator.Fill.values().length);
+        assertEquals(11, EscrowCoordinator.Fill.values().length); // R244 appends OWNER_PENDING_FULL.
     }
 }

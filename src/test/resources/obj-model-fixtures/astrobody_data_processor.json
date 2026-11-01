@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "id": "astrobody_data_processor",
+  "model": "advancedrocketrycommunity:models/astrobodydataprocessor.obj",
+  "mirror_x": true,
+  "flip_v": true,
+  "scale": 1,
+  "model_y_rotation_degrees": 90,
+  "offset_north": [
+    -1,
+    -1,
+    0
+  ],
+  "render_type": "entity_cutout",
+  "light_cell_above_controller": 1,
+  "fallback_texture": "advancedrocketrycommunity:textures/block/astrobody_data_processor.png",
+  "model_bounds": [
+    0,
+    0,
+    0,
+    2.000001,
+    1.625,
+    3
+  ],
+  "render_bounds": {
+    "north": [
+      -1,
+      -1,
+      0,
+      2,
+      1,
+      2
+    ],
+    "east": [
+      -1,
+      -1,
+      -1,
+      1,
+      1,
+      2
+    ],
+    "south": [
+      -1,
+      -1,
+      -1,
+      2,
+      1,
+      1
+    ],
+    "west": [
+      0,
+      -1,
+      -1,
+      2,
+      1,
+      2
+    ]
+  },
+  "idle": {},
+  "imported": {
+    "obj_sha256": "4f02c835d6aca49ec796e7d7253a4eec83a30c459acdb0df0c054a1b653e40d5",
+    "positions": 240,
+    "vertices": 1088
+  },
+  "unchanged_pattern": {
+    "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/machine_patterns/astrobody_data_processor.json",
+    "canonical_sha256": "9f0e9cce0bb2eceb5868512ac3efed0bb65a5c4620faccc0612680a8c664db9d"
+  }
+}

@@ -66,6 +66,7 @@ public final class EscrowLoaderAdmission {
             case INVALID -> FluidFuelLoaderStatus.INVALID_DATA;
             case STALE, ENDPOINT_BUSY -> FluidFuelLoaderStatus.ESCROW_PENDING;
             case ROCKET_LIMIT, ESCROW_FULL, SERVER_FULL, ROCKET_FULL -> FluidFuelLoaderStatus.ESCROW_FULL;
+            case OWNER_PENDING_FULL -> FluidFuelLoaderStatus.OWNER_PENDING_FULL;
         };
     }
     /** Cargo scheduling refusals are player-facing ROCKET_BUSY without changing the legacy fill dictionary. */
@@ -129,6 +130,8 @@ public final class EscrowLoaderAdmission {
             io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime.retireBeforeFill(rocket);
             return new Visit(FluidFuelLoaderStatus.TRANSFER_JOURNAL_UNPROVED, false);
         }
+        var capacity = EscrowTransferPreparation.preflight(server, rocket);
+        if (capacity != EscrowAdmissionAuthority.Result.RESERVED) { return new Visit(status(EscrowCoordinator.fill(capacity)), false); }
         // A first fill checks against a virtual empty root carrying the ID that the new ledger will carry.
         UUID ledger = coordinator == null ? UUID.randomUUID() : coordinator.ledger().id();
         Capture capture;
@@ -154,6 +157,9 @@ public final class EscrowLoaderAdmission {
     static EscrowCoordinator.Fill admitDetachedForTests(FluidFuelLoaderBlockEntity loader, RocketEntity rocket,
                                                         EscrowCoordinator coordinator, Consumer<Boolean> completion) {
         var level = (ServerLevel) loader.getLevel(); EscrowTestEndpoints.requireEnabled(level.getServer());
+        var capacity = coordinator.admissionAuthority().checkReserve(UUID.randomUUID(), rocket.ownerId().orElseThrow(),
+                rocket.assemblyTransactionId().orElseThrow(), EscrowAdmissionAuthority.Consumer.PROPULSION);
+        if (capacity != EscrowAdmissionAuthority.Result.RESERVED) { return EscrowCoordinator.fill(capacity); }
         var journal = RocketTransferSavedData.get(level.getServer()).acknowledgedGuard(rocket.assemblyTransactionId().orElseThrow()).orElseThrow();
         var capture = capture(level, loader, loader.root().orElseThrow(), rocket, coordinator, coordinator.ledger().id(),
                 coordinator.nextSequence(), journal);

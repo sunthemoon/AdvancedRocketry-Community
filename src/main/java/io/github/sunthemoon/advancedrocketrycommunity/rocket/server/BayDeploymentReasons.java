@@ -34,6 +34,7 @@ public final class BayDeploymentReasons {
         return switch (result) {
             case SERVER_FULL -> "DEPLOYMENT_CAPACITY";
             case ROCKET_FULL -> "ROCKET_PENDING_FULL";
+            case OWNER_PENDING_FULL -> "OWNER_PENDING_FULL";
             case IDENTITY_CONFLICT -> "RECEIPT_IDENTITY_CONFLICT";
             case UNAVAILABLE, RESERVED, ALREADY_HELD -> "BAY_RECEIPTS_UNAVAILABLE";
         };

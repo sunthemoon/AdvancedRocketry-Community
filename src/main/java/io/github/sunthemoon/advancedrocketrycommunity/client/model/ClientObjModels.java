@@ -46,14 +46,22 @@ public final class ClientObjModels {
     @SubscribeEvent
     public static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerBlockEntityRenderer(ModBlockEntities.CENTRIFUGE.get(),
-                context -> new ClassicObjModelRenderer(ObjModelFixture.CENTRIFUGE, CACHE));
+                context -> new ClassicObjModelRenderer<>(ObjModelFixture.CENTRIFUGE, CACHE));
         event.registerBlockEntityRenderer(ModBlockEntities.CHEMICAL_REACTOR.get(),
-                context -> new ClassicObjModelRenderer(ObjModelFixture.CHEMICAL_REACTOR, CACHE));
+                context -> new ClassicObjModelRenderer<>(ObjModelFixture.CHEMICAL_REACTOR, CACHE));
         event.registerBlockEntityRenderer(ModBlockEntities.CRYSTALLIZER.get(),
-                context -> new ClassicObjModelRenderer(ObjModelFixture.CRYSTALLIZER, CACHE));
+                context -> new ClassicObjModelRenderer<>(ObjModelFixture.CRYSTALLIZER, CACHE));
         event.registerBlockEntityRenderer(ModBlockEntities.CUTTING_MACHINE.get(),
-                context -> new ClassicObjModelRenderer(ObjModelFixture.CUTTING_MACHINE, CACHE));
+                context -> new ClassicObjModelRenderer<>(ObjModelFixture.CUTTING_MACHINE, CACHE));
         event.registerBlockEntityRenderer(ModBlockEntities.LATHE.get(),
-                context -> new ClassicObjModelRenderer(ObjModelFixture.LATHE, CACHE));
+                context -> new ClassicObjModelRenderer<>(ObjModelFixture.LATHE, CACHE));
+        event.registerBlockEntityRenderer(ModBlockEntities.ASTROBODY_DATA_PROCESSOR.get(),
+                context -> new ClassicObjModelRenderer<>(ObjModelFixture.ASTROBODY_DATA_PROCESSOR, CACHE));
+        event.registerBlockEntityRenderer(ModBlockEntities.OBSERVATORY.get(),
+                context -> new ClassicObjModelRenderer<>(ObjModelFixture.OBSERVATORY, CACHE));
+        event.registerBlockEntityRenderer(ModBlockEntities.PLANETARY_BEACON.get(),
+                context -> new ClassicObjModelRenderer<>(ObjModelFixture.PLANETARY_BEACON, CACHE));
+        event.registerBlockEntityRenderer(ModBlockEntities.SOLAR_ARRAY.get(),
+                context -> new ClassicObjModelRenderer<>(ObjModelFixture.SOLAR_ARRAY, CACHE));
     }
 }
