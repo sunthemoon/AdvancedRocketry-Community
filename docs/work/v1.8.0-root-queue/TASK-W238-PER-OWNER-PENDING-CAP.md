@@ -7,7 +7,7 @@ Root: Claude. Date: 2026-11-01. Read [WORKER-RULES](WORKER-RULES.md) first. You 
 | Worktree | `D:/GitHub/arce-v180-w238` (new; branch `codex/v1.8.0-w238` from the shared head named in your prompt) |
 | Record | `docs/work/v1.8.0-root-queue/records/W238.md`; logs under `D:/GitHub/ARCE-Task-Evidence/root-queue/W238/` |
 | Decision | Root decision R244 under the owner's delegation, in [OWNER-DECISIONS-20261101](records/OWNER-DECISIONS-20261101.md): 16 pending operations per owner, over the same unique pending union of loader, cargo and bay operations (PROPULSION and BAY), with no operator exemption |
-| Design | [W231](records/W231.md) section 4: the candidate rules, the OWNER_PENDING_FULL refusal, the exact English and Chinese messages, the restart and grandfathering rules, and the exact ADR-065 section 10 text; W231's measurement and fairness tests (`W231BayCapacityTest`, `W231BayFairnessTest`) are on branch `codex/v1.8.0-w231` at `986e11fa7` |
+| Design | W231's record `docs/work/v1.8.0-root-queue/records/W231.md` on branch `codex/v1.8.0-w231` at `986e11fa7` (not merged; read it with `git show 986e11fa7:docs/work/v1.8.0-root-queue/records/W231.md`), section 4: the candidate rules, the OWNER_PENDING_FULL refusal, the exact English and Chinese messages, the restart and grandfathering rules, and the exact ADR-065 section 10 text; W231's measurement and fairness tests (`W231BayCapacityTest`, `W231BayFairnessTest`) are on branch `codex/v1.8.0-w231` at `986e11fa7` |
 
 **Root decision R244.** Implement W231's per-owner cap with the value 16, exactly as W231 section 4 specifies:
 

@@ -3,7 +3,8 @@ package io.github.sunthemoon.advancedrocketrycommunity.client.model;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.ClassicControllerBlock;
-import io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.ClassicControllerBlockEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.FormedModelController;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -17,7 +18,7 @@ import net.minecraftforge.client.model.renderable.CompositeRenderable;
  * formed flag is set and the model is loaded; otherwise the controller keeps its JSON block model. It hides no block
  * and changes no collision or pattern.
  */
-public final class ClassicObjModelRenderer implements BlockEntityRenderer<ClassicControllerBlockEntity> {
+public final class ClassicObjModelRenderer<T extends BlockEntity & FormedModelController> implements BlockEntityRenderer<T> {
     private final ObjModelFixture fixture;
     private final ObjModelCache<CompositeRenderable> cache;
 
@@ -30,7 +31,7 @@ public final class ClassicObjModelRenderer implements BlockEntityRenderer<Classi
     }
 
     @Override
-    public void render(ClassicControllerBlockEntity controller, float partialTick, PoseStack pose, MultiBufferSource buffers,
+    public void render(T controller, float partialTick, PoseStack pose, MultiBufferSource buffers,
             int packedLight, int packedOverlay) {
         var level = controller.getLevel();
         var state = controller.getBlockState();

@@ -299,8 +299,8 @@ order,pattern,handling,plan,units,reason
 298,models/drill.obj,EXCLUDE,-,-,rocket drill redesigned (ADR-051)
 299,models/motor.obj,REVIEW,C16a,libvulpes:java/blockMotor,motor model resembling the LibVulpes motor; source not established
 300,models/areagravitycontroller.obj,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
-301,models/astrobodydataprocessor.obj,IMPORT,C18d,block:planetAnalyser,machine OBJ model for the visual batch
-302,models/beacon.obj,IMPORT,C18d,block:beacon,machine OBJ model for the visual batch
+301,models/astrobodydataprocessor.obj,IMPORTED,v1.8.0,block:planetAnalyser,K3 byte copy; docs/provenance/v1.8.0-c18d-k3.json; W236 source/unit checks; human review and V1 pending
+302,models/beacon.obj,IMPORTED,v1.8.0,block:beacon,K3 byte copy; docs/provenance/v1.8.0-c18d-k3.json; W236 source/unit checks; human review and V1 pending
 303,models/blackholegenerator.obj,IMPORT,C18d,block:blackholegenerator,machine OBJ model for the visual batch
 304,models/centrifuge.obj,IMPORTED,v1.8.0,block:centrifuge,K1 byte copy; docs/provenance/v1.8.0-c18d-k1.json; W229 source checks; human review and V1 pending
 305,models/chemicalreactor.obj,IMPORTED,v1.8.0,block:chemicalReactor,K2 byte copy; docs/provenance/v1.8.0-c18d-k2.json; W233 source/unit checks; human review and V1 pending
@@ -308,13 +308,13 @@ order,pattern,handling,plan,units,reason
 307,models/cuttingmachine.obj,IMPORTED,v1.8.0,block:cuttingMachine,K2 byte copy; docs/provenance/v1.8.0-c18d-k2.json; W233 source/unit checks; human review and V1 pending
 308,models/electrolyser.obj,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
 309,models/lathe.obj,IMPORTED,v1.8.0,block:lathe,K2 byte copy; docs/provenance/v1.8.0-c18d-k2.json; W233 source/unit checks; human review and V1 pending
-310,models/observatory.obj,IMPORT,C18d,block:observatory,machine OBJ model for the visual batch
+310,models/observatory.obj,IMPORTED,v1.8.0,block:observatory,K3 byte copy; docs/provenance/v1.8.0-c18d-k3.json; W236 source/unit checks; human review and V1 pending
 311,models/orbitallaserdrill.obj,IMPORT,C18d,block:spaceLaser,machine OBJ model for the visual batch
 312,models/precisionassembler.obj,IMPORT,C18d,block:precisionassemblingmachine,machine OBJ model for the visual batch
 313,models/precisionlaseretcher.obj,IMPORT,C18d,block:precisionlaseretcher,machine OBJ model for the visual batch
 314,models/railgun.obj,IMPORT,C18d,block:railgun,machine OBJ model for the visual batch
 315,models/rollingmachine.obj,IMPORT,C18d,block:rollingMachine,machine OBJ model for the visual batch
-316,models/solar_array.obj,IMPORT,C18d,block:solararray,machine OBJ model for the visual batch
+316,models/solar_array.obj,IMPORTED,v1.8.0,block:solararray,K3 byte copy; docs/provenance/v1.8.0-c18d-k3.json; W236 source/unit checks; human review and V1 pending
 317,models/spaceelevator.obj,IMPORT,C18d,block:spaceElevatorController,machine OBJ model for the visual batch
 318,models/warpcore.obj,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
 319,textures/models/beacon.png,REVIEW,C17c,block:beacon,shares a vanilla file name; origin review
@@ -326,7 +326,7 @@ order,pattern,handling,plan,units,reason
 325,textures/models/jetpack.png,IMPORT,C18b,item:jetPack,"jetpack model texture, with its model"
 326,textures/models/drill.png,EXCLUDE,-,-,"its only consumer, the rocket drill model, is excluded (ADR-051)"
 327,textures/models/tubes.png,EXCLUDE,-,-,"used only by the terraformer renderer (deferred, ADR-062)"
-328,textures/models/astrobodydataprocessor.png,IMPORT,C18d,block:planetAnalyser,model texture for the visual batch
+328,textures/models/astrobodydataprocessor.png,IMPORTED,v1.8.0,block:planetAnalyser,K3 byte copy; docs/provenance/v1.8.0-c18d-k3.json; W236 source/unit checks; human review and V1 pending
 329,textures/models/blackholegenerator.png,IMPORT,C18d,block:blackholegenerator,model texture for the visual batch
 330,textures/models/centrifuge.png,IMPORTED,v1.8.0,block:centrifuge,K1 byte copy; docs/provenance/v1.8.0-c18d-k1.json; W229 source checks; human review and V1 pending
 331,textures/models/chemicalreactor.png,IMPORTED,v1.8.0,block:chemicalReactor,K2 byte copy; docs/provenance/v1.8.0-c18d-k2.json; W233 source/unit checks; human review and V1 pending
@@ -339,13 +339,13 @@ order,pattern,handling,plan,units,reason
 338,textures/models/grid.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
 339,textures/models/lathe.png,IMPORTED,v1.8.0,block:lathe,K2 byte copy; docs/provenance/v1.8.0-c18d-k2.json; W233 source/unit checks; human review and V1 pending
 340,textures/models/metalplate.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
-341,textures/models/observatory.png,IMPORT,C18d,block:observatory,model texture for the visual batch
+341,textures/models/observatory.png,IMPORTED,v1.8.0,block:observatory,K3 byte copy; docs/provenance/v1.8.0-c18d-k3.json; W236 source/unit checks; human review and V1 pending
 342,textures/models/orbitallaserdrill.png,IMPORT,C18d,block:spaceLaser,model texture for the visual batch
 343,textures/models/precisionassembler.png,IMPORT,C18d,block:precisionassemblingmachine,model texture for the visual batch
 344,textures/models/precisionlaseretcher.png,IMPORT,C18d,block:precisionlaseretcher,model texture for the visual batch
 345,textures/models/railgun.png,IMPORT,C18d,block:railgun,model texture for the visual batch
 346,textures/models/rollingmachine.png,IMPORT,C18d,block:rollingMachine,model texture for the visual batch
-347,textures/models/solararray.png,IMPORT,C18d,block:solararray,model texture for the visual batch
+347,textures/models/solararray.png,IMPORTED,v1.8.0,block:solararray,K3 byte copy; docs/provenance/v1.8.0-c18d-k3.json; W236 source/unit checks; human review and V1 pending
 348,textures/models/spaceelevator.png,IMPORT,C18d,block:spaceElevatorController,model texture for the visual batch
 349,textures/models/spaceelevatorcapsule.png,IMPORT,C18d,entity:ARSpaceElevatorCapsule,model texture for the visual batch
 350,textures/models/warpcore.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
