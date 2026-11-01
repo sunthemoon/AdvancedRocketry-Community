@@ -309,9 +309,21 @@ def _check_new_source(root: Path, name: str, source: dict[str, str]) -> None:
         raise ValueError(f"NEW source {name!r} source_commit is not the parent of its authoring commit")
 
 
+def read_lf_input(path: Path, what: str) -> bytes:
+    """A plan or record exactly as committed. Git stores both with LF line endings, and JSON has no other place for a
+    raw CR byte, so a CR means a working copy converted to CRLF. Its SHA-256 would not reproduce on a clean checkout
+    (W249-R1)."""
+    data = checks.read_input(path, MAX_PLAN_BYTES)
+    if b"\r" in data:
+        line = data[:data.index(b"\r")].count(b"\n") + 1
+        raise ValueError(f"{what} {path} contains a CR byte (line {line}); restore its committed LF line endings, "
+                         "or its SHA-256 will not reproduce on a clean checkout")
+    return data
+
+
 def build(root: Path, upstream: Path, plan_path: Path, vanilla_specs: list[str]) -> tuple[dict, dict[str, bytes]]:
     """Run every check and return the record core and the target bytes; raise ImportFailure on any failure."""
-    plan_bytes = checks.read_input(plan_path, MAX_PLAN_BYTES)
+    plan_bytes = read_lf_input(plan_path, "import plan")
     plan = validate_plan(json.loads(plan_bytes.decode("utf-8")))
     inputs = checks.load_inputs(root)
     pin = inputs.upstream
@@ -465,7 +477,7 @@ def check_targets(root: Path, rendered: dict[str, bytes], record_path: Path) -> 
 
 
 def _load_previous(record_path: Path) -> object | None:
-    return json.loads(checks.read_input(record_path, MAX_PLAN_BYTES)) if record_path.exists() else None
+    return json.loads(read_lf_input(record_path, "provenance record")) if record_path.exists() else None
 
 
 def _write_all(files: dict[Path, bytes]) -> None:
@@ -563,7 +575,7 @@ def describe_difference(recorded: bytes, regenerated: bytes) -> str:
 def verify(root: Path, upstream: Path, plan_path: Path, record_path: Path, vanilla_specs: list[str]) -> list[str]:
     core, rendered = build(root, upstream, plan_path, vanilla_specs)
     errors = check_targets(root, rendered, record_path)
-    recorded = checks.read_input(record_path, MAX_PLAN_BYTES)
+    recorded = read_lf_input(record_path, "provenance record")
     regenerated = v010.pretty_json(v010.record_for(core, json.loads(recorded)))
     if recorded != regenerated:
         errors.append("provenance record does not reproduce byte for byte from the plan, upstream and targets")
