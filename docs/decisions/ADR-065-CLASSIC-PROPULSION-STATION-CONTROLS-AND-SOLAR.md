@@ -1013,8 +1013,11 @@ by `(logicalRocketId, bayRelativePosition, satelliteId)` and operation UUID. It
 also stores owner, definition/kind/orbit, frozen package signature, source revision
 and before/after snapshot hashes plus phase/durable acknowledgments. Reserve
 receipt capacity before registration: at most 4,096 retained deployment receipts,
-128 per owner, <=1 KiB each in a separately bounded 4 MiB schema-1 receipt section;
-the coordinator's 64/server, 8/rocket pending-operation limits additionally apply.
+128 per owner, <=1 KiB each in a separately bounded 4 MiB schema-1 receipt section.
+The coordinator's shared pending-operation limits additionally apply: 64/server,
+8/logical rocket and 16/stored owner across PROPULSION and BAY, including loader,
+cargo and bay operations; operators are not exempt. Valid existing over-owner-cap
+saves are preserved, with new admissions for that owner blocked until below 16.
 Full or quarantined receipt storage refuses admission with package intact. Never
 evict an unresolved receipt to deploy another package or reset it on decommission.
 
@@ -1356,6 +1359,53 @@ and materialization remain blocked until reconciliation. No claimant can withdra
 a tentative destination payload. Lost/unknown write outcomes retain resources
 and require repair instead of falling back to old snapshots. This is a scoped
 resource coordinator, not a clone of all LibVulpes or a generic distributed system.
+
+**R244 decision note (2026-11-01, W238).** Under the owner's delegation of 2026-11-01
+([OWNER-DECISIONS-20261101](../work/v1.8.0-root-queue/records/OWNER-DECISIONS-20261101.md)),
+Root decided D1c-N (R244): a pending limit of 16 per stored owner over the PROPULSION
+and BAY union, with no operator exemption. The normative paragraphs below supersede only
+the absence of an owner pending limit; historical implementation notes remain historical,
+and the D3-A bounds above (64/server, 8/rocket) are unchanged.
+
+The shared pending union permits at most 64 operations per server, 8 per logical
+rocket and 16 per owner across PROPULSION and BAY.
+
+Count each unique operation once across durable, queued, captured, successor and
+UNKNOWN states of both consumers, including every indexed escrow record and every
+INTENT, REGISTERED, REPAIR or released bay receipt. Derive the owner from
+server-validated operation authority, never the command actor. Operators are not
+exempt. Identity conflicts, unavailable indexes and an exactly already-held identity
+retain their existing handling. New admissions check SERVER_FULL, then ROCKET_FULL,
+then OWNER_PENDING_FULL before charging or mutating anything. The bay reports
+OWNER_PENDING_FULL with its readable menu message; loaders and cargo devices report
+their distinct same-named status and that no resources moved. Refusal neither writes
+INTENT nor changes a package, endpoint, sequence or reservation.
+
+The separate 128 retained receipts per owner, 4,096 per server and existing byte
+ceilings are unchanged. An exactly acknowledged REJECTED receipt retains its receipt
+allowance but not pending allowance. Re-arming it reacquires pending with the same
+operation ID. Idempotent existing pending work, recovery, phase changes and exact
+retirement are not new admissions. Per-bay admission remains per operation rather
+than all-or-nothing for a rocket group. Creating a new TRANSFER_FLOOR_RETIRE
+operation is a new admission; at the owner allowance its operator command returns
+OWNER_PENDING_FULL without writing or throwing an expected-capacity assertion.
+Existing floor-retirement operations continue recovery. This policy can delay a new
+floor retirement until other owned operations resolve.
+
+Startup rebuilds owner accounting from the complete indexes before admitting work;
+NOT_LOADED fails closed. Valid saves already over the owner allowance remain
+loadable and saveable with every operation preserved. Do not evict, truncate,
+convert, reassign or reject their existing data solely for this allowance. Continue
+bounded recovery and allow new work for that owner only when its count is below the
+allowance and all other checks permit it. Other owners can use remaining global
+space. No persisted counter, schema change, timeout, per-owner slot reservation or
+operator bypass is introduced. This prevents one owner monopolizing all pending
+slots but does not guarantee eventual service when several owners saturate the
+server or underlying work cannot progress.
+
+Before enabling bay admission, verify mixed-owner/mixed-consumer saturation,
+over-cap restart preservation, exact acknowledgement release, UNKNOWN/successor
+deduplication, rejected re-arm and refusal messaging under this policy.
 
 Exact disk authority (entity file/chunk writer vs separately forced ledger),
 save observer limitations and any torn-save residual need a focused implementation

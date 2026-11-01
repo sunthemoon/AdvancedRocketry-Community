@@ -50,8 +50,8 @@ class CargoPressureWorkloadTest {
         try (var writer = new EscrowLedgerWriter(directory.resolve("pressure"), 0);
                 var coordinator = new EscrowCoordinator(data, writer)) {
             for (int i = 0; i < 62; i++) {
-                coordinator.prepareTest(CargoNativePressureWorkload.operation(EscrowTestFixtures.operation(
-                        i + 1, CargoNativePressureWorkload.component(i) + 1, 0), i), ignored -> { });
+                coordinator.prepareTest(EscrowTestFixtures.distributedOwner(CargoNativePressureWorkload.operation(EscrowTestFixtures.operation(
+                        i + 1, CargoNativePressureWorkload.component(i) + 1, 0), i)), ignored -> { });
             }
             var before = EscrowCodec.encode(coordinator.ledger()); boolean dirty = data.isDirty();
             assertEquals(63, coordinator.nextSequence());

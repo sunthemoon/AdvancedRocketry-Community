@@ -23,6 +23,7 @@ class EscrowLoaderAdmissionTest {
         expected.put(EscrowCoordinator.Fill.INVALID, FluidFuelLoaderStatus.INVALID_DATA);
         expected.put(EscrowCoordinator.Fill.STALE, FluidFuelLoaderStatus.ESCROW_PENDING);
         expected.put(EscrowCoordinator.Fill.ENDPOINT_BUSY, FluidFuelLoaderStatus.ESCROW_PENDING);
+        expected.put(EscrowCoordinator.Fill.OWNER_PENDING_FULL, FluidFuelLoaderStatus.OWNER_PENDING_FULL);
         for (var full : List.of(EscrowCoordinator.Fill.ROCKET_LIMIT, EscrowCoordinator.Fill.ESCROW_FULL,
                 EscrowCoordinator.Fill.SERVER_FULL, EscrowCoordinator.Fill.ROCKET_FULL)) {
             expected.put(full, FluidFuelLoaderStatus.ESCROW_FULL);
@@ -39,6 +40,7 @@ class EscrowLoaderAdmissionTest {
         Map<EscrowAdmissionAuthority.Result, EscrowCoordinator.Fill> expected = Map.of(
                 EscrowAdmissionAuthority.Result.SERVER_FULL, EscrowCoordinator.Fill.SERVER_FULL,
                 EscrowAdmissionAuthority.Result.ROCKET_FULL, EscrowCoordinator.Fill.ROCKET_FULL,
+                EscrowAdmissionAuthority.Result.OWNER_PENDING_FULL, EscrowCoordinator.Fill.OWNER_PENDING_FULL,
                 EscrowAdmissionAuthority.Result.IDENTITY_CONFLICT, EscrowCoordinator.Fill.IDENTITY_CONFLICT,
                 EscrowAdmissionAuthority.Result.ALREADY_HELD, EscrowCoordinator.Fill.STALE,
                 EscrowAdmissionAuthority.Result.UNAVAILABLE, EscrowCoordinator.Fill.UNAVAILABLE,

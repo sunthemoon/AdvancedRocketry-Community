@@ -17,7 +17,7 @@ import java.util.function.Supplier;
  */
 public final class EscrowAdmissionAuthority {
     public enum Consumer { PROPULSION, BAY }
-    public enum Result { RESERVED, ALREADY_HELD, IDENTITY_CONFLICT, SERVER_FULL, ROCKET_FULL, UNAVAILABLE }
+    public enum Result { RESERVED, ALREADY_HELD, IDENTITY_CONFLICT, SERVER_FULL, ROCKET_FULL, UNAVAILABLE, OWNER_PENDING_FULL }
     /** The results of {@link #tryRetain} (W27A-DESIGN section 2's frozen admission contract). */
     public enum Retention { RESERVED, ALREADY_HELD, IDENTITY_CONFLICT, SERVER_FULL, OWNER_FULL, UNAVAILABLE }
     /** The bay's retained-receipt union: 4,096 per server, 128 per owner, each charged at its 1 KiB ceiling. */
@@ -130,6 +130,9 @@ public final class EscrowAdmissionAuthority {
         if (union.size() >= EscrowLimits.OPERATIONS) { return Result.SERVER_FULL; }
         if (union.values().stream().filter(entry -> request.rocket().equals(entry.rocket())).count() >= EscrowLimits.PER_ROCKET) {
             return Result.ROCKET_FULL;
+        }
+        if (union.values().stream().filter(entry -> request.owner().equals(entry.owner())).count() >= EscrowLimits.PER_OWNER) {
+            return Result.OWNER_PENDING_FULL;
         }
         return Result.RESERVED;
     }

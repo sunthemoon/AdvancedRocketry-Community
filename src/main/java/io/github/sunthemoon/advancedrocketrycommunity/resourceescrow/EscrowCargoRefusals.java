@@ -34,6 +34,7 @@ final class EscrowCargoRefusals {
             case QUEUED -> RocketCargoStatus.ESCROW_PENDING;
             case CARGO_TOO_LARGE -> RocketCargoStatus.CARGO_TOO_LARGE;
             case ROCKET_LIMIT, ESCROW_FULL, SERVER_FULL, ROCKET_FULL -> RocketCargoStatus.ESCROW_FULL;
+            case OWNER_PENDING_FULL -> RocketCargoStatus.OWNER_PENDING_FULL;
             case STALE -> RocketCargoStatus.STALE_BINDING;
             case ENDPOINT_BUSY -> RocketCargoStatus.ESCROW_PENDING;
             case UNAVAILABLE, IDENTITY_CONFLICT -> RocketCargoStatus.LEDGER_UNAVAILABLE;

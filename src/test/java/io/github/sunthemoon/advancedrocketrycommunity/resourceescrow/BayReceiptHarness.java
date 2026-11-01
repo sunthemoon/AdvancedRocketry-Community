@@ -35,6 +35,15 @@ final class BayReceiptHarness implements AutoCloseable {
         harness.receipts.createForAdmission(harness.file, 0);
         return harness;
     }
+    /** A valid pre-cap save, loaded through the production codec and startup index. */
+    static BayReceiptHarness grandfathered(Path directory, List<BayReceipt> rows) throws Exception {
+        var authority = new EscrowAdmissionAuthority(); var harness = new BayReceiptHarness(authority, directory);
+        authority.registerIndex(EscrowAdmissionAuthority.Consumer.PROPULSION, () -> new EscrowAdmissionAuthority.Index(true, harness.fluid));
+        CheckedSavedDataFile.replace(harness.file, ManagedSavedDataType.BAY_RECEIPTS, () -> BayReceiptCodec.encode(BayReceiptFixtures.root(rows)));
+        harness.receipts.start(BayReceiptSavedData.load(CheckedSavedDataFile.readPayload(harness.file, ManagedSavedDataType.BAY_RECEIPTS).orElseThrow()),
+                CheckedSavedDataFile.Presence.PRESENT, harness.file, 0);
+        return harness;
+    }
     /** Shares an authority whose PROPULSION delegate a real ledger coordinator fills. */
     BayReceiptHarness(EscrowAdmissionAuthority authority, Path directory) throws Exception {
         this.authority = authority;
