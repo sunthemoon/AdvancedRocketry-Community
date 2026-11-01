@@ -1,0 +1,25 @@
+// W247 diagnostic only, for focused local runs: adds the tick probe mod, an optional JFR recording and the existing
+// batch filter property to the gameTestServer run. No build.gradle, batch order or product change.
+gradle.beforeProject { p ->
+    p.pluginManager.withPlugin('net.minecraftforge.gradle') {
+        def probe = p.sourceSets.create('w247Probe') {
+            java.srcDir(p.file('scripts/w247_probe/java'))
+            resources.srcDir(p.file('scripts/w247_probe/resources'))
+            compileClasspath = p.files({ p.sourceSets.main.compileClasspath })
+            runtimeClasspath = output + compileClasspath
+        }
+        p.minecraft.runs.all { run ->
+            if (run.name == 'gameTestServer') {
+                run.mods.create('arce_w247_probe') { source(probe) }
+                run.property('arce.w247.output', p.property('w247Output').toString())
+                if (p.hasProperty('w247Batches')) {
+                    run.property('advancedrocketrycommunity.gameTestBatches', p.property('w247Batches').toString())
+                }
+                if (p.hasProperty('w247Jfr')) {
+                    run.jvmArg("-XX:StartFlightRecording=filename=${p.property('w247Jfr')},settings=profile,dumponexit=true,maxsize=256M".toString())
+                    run.jvmArg('-XX:FlightRecorderOptions=stackdepth=128')
+                }
+            }
+        }
+    }
+}
