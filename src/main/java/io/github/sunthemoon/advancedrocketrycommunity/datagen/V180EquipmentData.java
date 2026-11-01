@@ -16,7 +16,7 @@ import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
 
-/** Original pixel geometry and community recipes; no copied upstream or game art. */
+/** Original fallback art and community recipes, with provenance-bound legacy texture references. */
 public final class V180EquipmentData implements DataProvider {
     private static final String NS = "advancedrocketrycommunity";
     private static final String ASSETS = "assets/" + NS + "/";
@@ -32,12 +32,18 @@ public final class V180EquipmentData implements DataProvider {
     public static Map<String, JsonObject> clientFiles() {
         Map<String, JsonObject> files = new LinkedHashMap<>();
         for (String id : moduleIds()) {
-            files.put(ASSETS + "models/item/" + id + ".json", json("{\"parent\":\"minecraft:item/generated\",\"textures\":{\"layer0\":\"" + NS + ":item/" + id + "\"}}"));
+            String texture = switch (id) {
+                case "jetpack" -> "items/jetpack";
+                case "hover_upgrade" -> "items/hoverupgrade";
+                case "flight_speed_upgrade" -> "items/flightspeedupgrade";
+                default -> "item/" + id;
+            };
+            files.put(ASSETS + "models/item/" + id + ".json", json("{\"parent\":\"minecraft:item/generated\",\"textures\":{\"layer0\":\"" + NS + ":" + texture + "\"}}"));
         }
         files.put(ASSETS + "blockstates/suit_workstation.json", json("{\"variants\":{\"\":{\"model\":\"" + NS + ":block/suit_workstation\"}}}"));
         files.put(ASSETS + "models/item/suit_workstation.json", json("{\"parent\":\"" + NS + ":block/suit_workstation\"}"));
         files.put(ASSETS + "models/block/suit_workstation.json", json("{\"parent\":\"minecraft:block/cube_bottom_top\",\"textures\":{"
-                + "\"top\":\"" + NS + ":block/suit_workstation_top\",\"bottom\":\"" + NS + ":block/suit_workstation_bottom\","
+                + "\"top\":\"" + NS + ":blocks/suitworkstation\",\"bottom\":\"" + NS + ":block/suit_workstation_bottom\","
                 + "\"side\":\"" + NS + ":block/suit_workstation_side\"}}"));
         return files;
     }

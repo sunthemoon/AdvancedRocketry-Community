@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "advancedrocketrycommunity:item/jetpack"
+    "layer0": "advancedrocketrycommunity:items/jetpack"
   }
 }

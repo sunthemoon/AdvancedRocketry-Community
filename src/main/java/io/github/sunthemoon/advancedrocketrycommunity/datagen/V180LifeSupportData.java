@@ -15,7 +15,7 @@ import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
 
-/** NEW pixel geometry and device resources, with no external bitmap inputs. */
+/** Original fallback art and device resources, with a provenance-bound legacy cartridge reference. */
 public final class V180LifeSupportData implements DataProvider {
     public static final List<String> BLOCKS = List.of("co2_scrubber", "pipe_seal", "atmosphere_detector");
     public static final String CARTRIDGE = "carbon_scrubber_cartridge";
@@ -33,7 +33,7 @@ public final class V180LifeSupportData implements DataProvider {
             files.put(ASSETS + "models/block/" + id + ".json", json("{\"parent\":\"minecraft:block/cube_all\",\"textures\":{\"all\":\"" + NS + ":block/" + id + "\"}}"));
             files.put(ASSETS + "models/item/" + id + ".json", json("{\"parent\":\"" + NS + ":block/" + id + "\"}"));
         }
-        files.put(ASSETS + "models/item/" + CARTRIDGE + ".json", json("{\"parent\":\"minecraft:item/generated\",\"textures\":{\"layer0\":\"" + NS + ":item/" + CARTRIDGE + "\"}}"));
+        files.put(ASSETS + "models/item/" + CARTRIDGE + ".json", json("{\"parent\":\"minecraft:item/generated\",\"textures\":{\"layer0\":\"" + NS + ":items/carbonscrubbercartrige\"}}"));
         return files;
     }
     public static Map<String, JsonObject> serverFiles() {
