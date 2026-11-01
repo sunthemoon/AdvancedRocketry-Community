@@ -47,9 +47,6 @@ final class EscrowSettlementCapacity {
         }
     }
     /** Shared by operator preview and O1; all checks precede admission/writer mutation. */
-    static EscrowLedger floorRetirement(EscrowLedger root, EscrowSettlementIntent intent, long sequence, long tick) {
-        return floorRetirement(root, intent, sequence, tick, intent.actor());
-    }
     static EscrowLedger floorRetirement(EscrowLedger root, EscrowSettlementIntent intent, long sequence, long tick, java.util.UUID storedOwner) {
         EscrowSettlementIntent.requireReceiptRoom(root, intent.ids());
         var tombstones = root.tombstones();

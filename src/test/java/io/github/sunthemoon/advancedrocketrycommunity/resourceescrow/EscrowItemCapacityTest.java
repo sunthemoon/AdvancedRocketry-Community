@@ -159,15 +159,15 @@ class EscrowItemCapacityTest {
                             terminal = EscrowFlightAuthority.finish(terminal, arm, EscrowFlightTables.Outcome.CANCELLED,
                                     arm.source(), arm.epoch(), hash(2), hash(3));
                         }
-                        var beforeRetirement = EscrowSettlementCapacity.floorRetirement(terminal, intent, coordinator.nextSequence(), 220);
+                        var beforeRetirement = EscrowSettlementCapacity.floorRetirement(terminal, intent, coordinator.nextSequence(), 220, EscrowTestFixtures.FLOOR_OWNER);
                         long reservedBefore = EscrowSettlementCapacity.reservedBytes(terminal);
                         for (var arm : List.copyOf(terminal.armedFlights())) { terminal = EscrowFlightAuthority.prune(terminal, arm); }
                         assertEquals(reservedBefore, EscrowSettlementCapacity.reservedBytes(terminal));
-                        var afterRetirement = EscrowSettlementCapacity.floorRetirement(terminal, intent, coordinator.nextSequence(), 220);
+                        var afterRetirement = EscrowSettlementCapacity.floorRetirement(terminal, intent, coordinator.nextSequence(), 220, EscrowTestFixtures.FLOOR_OWNER);
                         assertEquals(EscrowSettlementCapacity.reservedBytes(beforeRetirement), EscrowSettlementCapacity.reservedBytes(afterRetirement));
                         System.out.println("ITEM_R9 kind=" + kind + " cargo=60 floors=29 terminal_slots=64 before_after=" + reservedBefore
                                 + " retirement_before_after=" + EscrowSettlementCapacity.reservedBytes(afterRetirement));
-                        coordinator.tick(220); assertTrue(coordinator.beginSettlement(intent, results::add));
+                        coordinator.tick(220); assertTrue(coordinator.beginSettlement(intent, EscrowTestFixtures.FLOOR_OWNER, results::add));
                         io.tickUntil(coordinator::tick, 221, writer::idle); assertEquals(List.of(true), results);
                         assertEquals(61, coordinator.ledger().records().size());
                     }

@@ -165,7 +165,7 @@ class EscrowSettlementCompletionTest {
         var observed = List.of(new EscrowSettlementIntent.Observation(endpoint, null, false, 0));
         var preview = EscrowSettlementIntent.floorPreview(root, EscrowTestFixtures.id(701), floor, EscrowTestFixtures.id(700), "operator", 10, observed);
         var intent = preview.confirm(preview.actor(), preview.digest(), 210, observed);
-        var installed = EscrowSettlementTombstones.install(root.append(List.of(intent.floorOperation(2, 210))), intent).generation(1);
+        var installed = EscrowSettlementTombstones.install(root.append(List.of(intent.floorOperation(2, 210, EscrowTestFixtures.FLOOR_OWNER))), intent).generation(1);
         var data = ResourceEscrowSavedData.load(EscrowCodec.encode(installed)); var proofs = proofs(intent); var calls = new java.util.ArrayList<Boolean>();
         try (var writer = new EscrowLedgerWriter(file(), 1, CheckedSavedDataFile::atomicMove,
                 cut -> proofs.values().forEach(proof -> proof.capture().generation().incrementAndGet())); var coordinator = new EscrowCoordinator(data, writer)) {
@@ -221,7 +221,7 @@ class EscrowSettlementCompletionTest {
                         EscrowEndpoint.Unit.PRIMARY, 1, floor.getString("signature"), floor.getString("signature")), null, false, 0)).toList();
         var preview = EscrowSettlementIntent.floorPreview(root, EscrowTestFixtures.id(701), floor, EscrowTestFixtures.id(700), "operator", 10, observed);
         var intent = preview.confirm(preview.actor(), preview.digest(), 210, observed);
-        var installed = EscrowSettlementTombstones.install(root.append(List.of(intent.floorOperation(2, 210))), intent);
+        var installed = EscrowSettlementTombstones.install(root.append(List.of(intent.floorOperation(2, 210, EscrowTestFixtures.FLOOR_OWNER))), intent);
         var released = EscrowSettlementTombstones.release(installed, intent);
         assertTrue(released.records().isEmpty()); assertTrue(released.floors().isEmpty()); assertTrue(released.rocketAuthorities().isEmpty());
         assertEquals(2, released.tombstones().get(0).getList("missing", 10).size());

@@ -81,16 +81,16 @@ class EscrowCombinedReservationTest {
             assertDoesNotThrow(() -> EscrowSettlementCapacity.preflight(root));
             tick += 210; coordinator.tick(tick);
             var intent = floorIntent(root, 0, tick); var second = floorIntent(root, 1, tick);
-            var candidate = root.append(List.of(intent.floorOperation(coordinator.nextSequence(), tick)));
+            var candidate = root.append(List.of(intent.floorOperation(coordinator.nextSequence(), tick, EscrowTestFixtures.FLOOR_OWNER)));
             assertDoesNotThrow(() -> EscrowFloors.preflight(candidate));
             assertEquals(candidate, EscrowCodec.decode(EscrowCodec.encode(candidate)));
             assertTrue(reservationBytes(candidate) > reservationBytes(root));
             assertDoesNotThrow(() -> EscrowSettlementCapacity.preflight(candidate));
             var results = new ArrayList<Boolean>();
-            assertTrue(coordinator.beginSettlement(intent, results::add));
+            assertTrue(coordinator.beginSettlement(intent, EscrowTestFixtures.FLOOR_OWNER, results::add));
             assertTrue(results.isEmpty()); assertEquals(root, coordinator.ledger());
             long next = coordinator.nextSequence(); var captured = writer.capturedOperations();
-            assertFalse(coordinator.beginSettlement(second, ignored -> fail()), "A concurrent checked write waits without mutation");
+            assertFalse(coordinator.beginSettlement(second, EscrowTestFixtures.FLOOR_OWNER, ignored -> fail()), "A concurrent checked write waits without mutation");
             assertEquals(next, coordinator.nextSequence()); assertEquals(captured, writer.capturedOperations());
             acknowledge(io, coordinator, ++tick); assertEquals(List.of(true), results);
             var acknowledged = coordinator.ledger();
@@ -101,14 +101,12 @@ class EscrowCombinedReservationTest {
             assertTrue(writer.idle()); assertTrue(writer.capturedOperations().isEmpty());
             if (settleFills) {
                 coordinator.tick(tick += 10);
+                // Both refusals apply; R258 keeps the permanent RECEIPTS_FULL before the transient pending refusal.
                 assertEquals(EscrowAdmissionAuthority.Result.SERVER_FULL, coordinator.admissionAuthority().checkReserve(
-                        second.members().get(0).id(), second.actor(), second.floor().getUUID("rocket_id"), EscrowAdmissionAuthority.Consumer.PROPULSION));
-                assertFalse(assertDoesNotThrow(() -> coordinator.beginSettlement(second, ignored -> fail())),
-                        "Expected pending-capacity refusal is not an assertion failure");
+                        second.members().get(0).id(), EscrowTestFixtures.FLOOR_OWNER, second.floor().getUUID("rocket_id"), EscrowAdmissionAuthority.Consumer.PROPULSION));
+                var refused = assertThrows(IllegalArgumentException.class, () -> coordinator.beginSettlement(second, EscrowTestFixtures.FLOOR_OWNER, ignored -> fail()));
                 // Design 2 F8: all 64 members have irrevocable O1 receipt reservations.
                 // Completing/pruning those decisions cannot reclaim a permanent receipt slot.
-                var refused = assertThrows(IllegalArgumentException.class,
-                        () -> EscrowSettlementIntent.requireReceiptRoom(acknowledged, second.ids()));
                 assertEquals(EscrowSettlementIntent.RECEIPTS_FULL, refused.getMessage());
                 assertEquals(acknowledged, coordinator.ledger()); assertEquals(next, coordinator.nextSequence());
                 assertFalse(data.isDirty()); assertEquals(capacity + 1, coordinator.admissionAuthority().pendingCount());
@@ -174,13 +172,13 @@ class EscrowCombinedReservationTest {
         var observations = List.of(new EscrowSettlementIntent.Observation(endpoint, null, false, 0));
         var preview = EscrowSettlementIntent.floorPreview(root, EscrowTestFixtures.id(30_000), floor, EscrowTestFixtures.id(700), "operator", 10, observations);
         var intent = preview.confirm(preview.actor(), preview.digest(), 210, observations);
-        var candidate = root.append(List.of(intent.floorOperation(64, 210)));
+        var candidate = root.append(List.of(intent.floorOperation(64, 210, EscrowTestFixtures.FLOOR_OWNER)));
         assertDoesNotThrow(() -> EscrowFloors.preflight(candidate));
         assertThrows(IllegalArgumentException.class, () -> EscrowSettlementCapacity.preflight(candidate));
         var data = ResourceEscrowSavedData.load(EscrowCodec.encode(root));
         try (var writer = new EscrowLedgerWriter(directory.resolve("refused"), 0); var coordinator = new EscrowCoordinator(data, writer)) {
             coordinator.tick(210);
-            var refused = assertThrows(IllegalArgumentException.class, () -> coordinator.beginSettlement(intent, ignored -> fail()));
+            var refused = assertThrows(IllegalArgumentException.class, () -> coordinator.beginSettlement(intent, EscrowTestFixtures.FLOOR_OWNER, ignored -> fail()));
             assertEquals("Escrow is full; retry floor retirement after other settlements or pruning.", refused.getMessage());
             assertEquals(root, coordinator.ledger()); assertTrue(writer.idle()); assertTrue(writer.capturedOperations().isEmpty());
         }

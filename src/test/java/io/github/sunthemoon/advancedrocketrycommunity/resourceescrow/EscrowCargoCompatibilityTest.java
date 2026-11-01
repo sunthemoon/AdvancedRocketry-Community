@@ -45,7 +45,7 @@ class EscrowCargoCompatibilityTest {
         var absent = List.of(new EscrowSettlementIntent.Observation(endpoint, null, false, 0));
         var floorPreview = EscrowSettlementIntent.floorPreview(floorRoot, id(701), floor, id(700), "operator", 10, absent);
         var floorIntent = floorPreview.confirm(floorPreview.actor(), floorPreview.digest(), 210, absent);
-        var o1 = floorRoot.append(List.of(floorIntent.floorOperation(2, 210)));
+        var o1 = floorRoot.append(List.of(floorIntent.floorOperation(2, 210, EscrowTestFixtures.FLOOR_OWNER)));
         var retired = EscrowSettlementTombstones.release(EscrowSettlementTombstones.install(o1, floorIntent), floorIntent);
         result.put("floor_receipt", bytes(retired.tombstones().get(0)));
         result.put("floor_inspect", text(String.join("\n", EscrowOperatorDiagnostics.inspect(retired, id(701), ignored -> fail(), ignored -> fail(), "ACKNOWLEDGED"))));

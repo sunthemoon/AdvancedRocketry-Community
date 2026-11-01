@@ -247,20 +247,22 @@ public final class EscrowCoordinator implements AutoCloseable {
         if (writer.request(() -> snapshot(true, null), this::acknowledge)) { lastStart = tick; return true; }
         return false;
     }
-    /** O1 only. This acknowledgement does not prove endpoints, remove journals or authorize unlock. */
+    /** O1 for an accept-current or abandon decision, whose members keep their held slots. */
     boolean beginSettlement(EscrowSettlementIntent intent, Consumer<Boolean> completion) {
-        return beginSettlement(intent, intent.actor(), completion);
+        EscrowTags.require(intent.choice() != EscrowSettlementIntent.Choice.TRANSFER_FLOOR_RETIRE,
+                "A floor retirement is charged to its checked journal owner");
+        return beginSettlement(intent, null, completion);
     }
-    /** A new floor intent is charged to its server-validated journal owner; other decisions reuse held slots. */
+    /**
+     * O1 only. This acknowledgement does not prove endpoints, remove journals or authorize unlock. A new floor intent is
+     * charged to its server-validated journal owner, never the command actor; other decisions ignore the owner.
+     */
     boolean beginSettlement(EscrowSettlementIntent intent, UUID floorOwner, Consumer<Boolean> completion) {
         owner();
         if (closed || !writer.idle() || writer.unavailable() || !queued.isEmpty() || !transitions.isEmpty()
                 || tick - lastStart < 10) { return false; }
         EscrowLedger candidate;
         if (intent.choice() == EscrowSettlementIntent.Choice.TRANSFER_FLOOR_RETIRE) {
-            var capacity = admission.checkReserve(intent.members().get(0).id(), floorOwner,
-                    intent.floor().getUUID("rocket_id"), EscrowAdmissionAuthority.Consumer.PROPULSION);
-            if (capacity != EscrowAdmissionAuthority.Result.RESERVED) { return false; }
             EscrowTags.require(intent.ledger().equals(data.ledger().id())
                     && data.ledger().floors().stream().anyMatch(intent.floor()::equals)
                     && data.ledger().records().stream().noneMatch(op -> op.guard().rocket().equals(intent.floor().getUUID("rocket_id"))),
@@ -273,6 +275,7 @@ public final class EscrowCoordinator implements AutoCloseable {
         candidate.records().stream().filter(op -> intent.ids().contains(op.id())).forEach(op -> EscrowSettlementTombstones.create(op, intent));
         var frozen = candidate.generation(Math.addExact(writer.lastGeneration(), 1));
         if (intent.choice() == EscrowSettlementIntent.Choice.TRANSFER_FLOOR_RETIRE) {
+            // R258: the transient pending refusal follows the permanent receipt, FLOOR_FULL and tombstone checks.
             var op = candidate.records().stream().filter(record -> intent.ids().contains(record.id())).findFirst().orElseThrow();
             var reservation = admission.tryReserve(op.id(), op.owner(), op.guard().rocket(), EscrowAdmissionAuthority.Consumer.PROPULSION);
             if (reservation != EscrowAdmissionAuthority.Result.RESERVED) { return false; }

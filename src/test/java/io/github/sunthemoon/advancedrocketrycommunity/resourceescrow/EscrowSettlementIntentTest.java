@@ -86,8 +86,8 @@ final class EscrowSettlementIntentTest {
                 "minecraft:armor_stand", 0, 0, 0, EscrowEndpoint.Unit.PRIMARY, 1, floor.getString("signature"), floor.getString("signature"));
         var observations = List.of(new EscrowSettlementIntent.Observation(endpoint, null, false, 0));
         var preview = EscrowSettlementIntent.floorPreview(root, EscrowTestFixtures.id(701), floor, ACTOR, "operator", 10, observations);
-        assertThrows(IllegalArgumentException.class, () -> preview.floorOperation(2, 210));
-        var intent = preview.confirm(ACTOR, preview.digest(), 210, observations); var op = intent.floorOperation(2, 210);
+        assertThrows(IllegalArgumentException.class, () -> preview.floorOperation(2, 210, EscrowTestFixtures.FLOOR_OWNER));
+        var intent = preview.confirm(ACTOR, preview.digest(), 210, observations); var op = intent.floorOperation(2, 210, EscrowTestFixtures.FLOOR_OWNER);
         assertEquals(EscrowOperation.Kind.TRANSFER_FLOOR_RETIRE, op.kind());
         assertTrue(EscrowPrefix.chains(List.of(op)).isEmpty());
         assertEquals(op, EscrowCodec.operation(EscrowCodec.operation(op)));

@@ -190,7 +190,7 @@ class EscrowPrepareFillTest {
             var root = coordinator.ledger(); assertEquals(admitted, root.records());
             tick += 210; coordinator.tick(tick);
             var results = new ArrayList<Boolean>();
-            assertTrue(coordinator.beginSettlement(floorIntent(root, 0, tick), results::add), "The reserved headroom admits one floor retirement");
+            assertTrue(coordinator.beginSettlement(floorIntent(root, 0, tick), EscrowTestFixtures.FLOOR_OWNER, results::add), "The reserved headroom admits one floor retirement");
             ledgerIo.tickUntil(coordinator::tick, tick + 1, writer::idle);
             assertEquals(List.of(true), results); assertEquals(61, coordinator.ledger().records().size());
             assertEquals(61, coordinator.admissionAuthority().pendingCount());

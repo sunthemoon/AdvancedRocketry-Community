@@ -7,6 +7,11 @@ import net.minecraft.nbt.CompoundTag;
 
 final class EscrowTestFixtures {
     static UUID id(long value) { return new UUID(11, value); }
+    /**
+     * The checked journal owner that floor-retirement fixtures pass explicitly (W238-R8). Their operator id(700) also owns
+     * the transfer, so the encoded operations, receipts and counts stay as they were.
+     */
+    static final UUID FLOOR_OWNER = id(700);
     static String hash(long value) { return RocketNativeResources.hash("test-" + value); }
     static EscrowOperation operation(long sequence) { return operation(sequence, sequence, 0); }
     static EscrowOperation operation(long sequence, long rocket, long epoch) {
