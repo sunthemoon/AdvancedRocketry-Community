@@ -1,0 +1,8 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="MIT"
+[[mods]]
+modId="arce_w247_probe"
+version="1"
+displayName="ARCE W247 tick probe"
+description="Development-only tick and chunk-event timing for focused local GameTest runs."

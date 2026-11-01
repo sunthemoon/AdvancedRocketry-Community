@@ -49,4 +49,14 @@ class FormedModelFacingTest {
         assertNull(ClassicObjModelRenderer.modelFacing(ObjModelFixture.ELEVATOR_ANCHOR, stone, false));
         assertNull(ClassicObjModelRenderer.modelFacing(ObjModelFixture.RAILGUN, stone, true));
     }
+
+    @Test void etcherClearedProjectionCannotDrawAtTheNewFacing() {
+        var block = new io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.ClassicControllerBlock(BlockBehaviour.Properties.of());
+        var fixture = ObjModelFixture.PRECISION_LASER_ETCHER;
+        for (Direction facing : Direction.Plane.HORIZONTAL) {
+            var state = block.defaultBlockState().setValue(RollingMachineBlock.FACING, facing);
+            assertEquals(facing, ClassicObjModelRenderer.modelFacing(fixture, state, true));
+            assertNull(ClassicObjModelRenderer.modelFacing(fixture, state.rotate(Rotation.CLOCKWISE_90), false));
+        }
+    }
 }
