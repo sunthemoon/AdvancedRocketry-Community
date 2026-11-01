@@ -1,0 +1,10 @@
+# Copyright (c) 2026 Advanced Rocketry: Community Edition contributors
+# SPDX-License-Identifier: MIT
+# Original material binding for the approved precision laser etcher model.
+newmtl None
+Ka 1.0 1.0 1.0
+Kd 1.0 1.0 1.0
+Ks 0.0 0.0 0.0
+d 1.0
+illum 1
+map_Kd advancedrocketrycommunity:models/precisionlaseretcher
