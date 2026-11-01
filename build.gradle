@@ -466,9 +466,12 @@ tasks.matching { it.name == 'runGameTestServer' }.configureEach {
         if (!latestLog.isFile() || latestLog.lastModified() < gameTestStartedAt - 2_000L) {
             throw new GradleException('Forge GameTest did not produce a fresh latest.log')
         }
-        String logText = latestLog.getText('UTF-8')
-        if (!(logText =~ /All \d+ required tests passed/).find()) {
-            throw new GradleException('Forge GameTest completion marker is missing from latest.log')
+        // Use the full checker's run reader so a midnight roll can move this run's marker,
+        // without accepting the previous session's log that Forge rolls at startup.
+        project.exec {
+            executable (project.findProperty('arcePythonExecutable') ?: 'python').toString()
+            args '-B', file('scripts/check_gametest_log.py').absolutePath,
+                    latestLog.absolutePath, '--completion-only'
         }
     }
 }

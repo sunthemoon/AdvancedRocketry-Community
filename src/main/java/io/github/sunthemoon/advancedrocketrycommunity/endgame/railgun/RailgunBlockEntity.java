@@ -1,5 +1,9 @@
 package io.github.sunthemoon.advancedrocketrycommunity.endgame.railgun;
 
+import io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.ClassicModelProjection;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.FormedModelController;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.K4ModelProjection;
+
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameTimings;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.client.sound.ClassicSoundClient;
@@ -41,7 +45,36 @@ import net.minecraftforge.fml.DistExecutor;
  * operator-selection flag) and the minimum stack size; it launches through {@link RailgunLauncher} once its 3 × 6 × 3
  * structure is formed, and shows a launch flash and streak and an arrival flash as block events.
  */
-public final class RailgunBlockEntity extends CargoEndpointBlockEntity implements MenuProvider {
+public final class RailgunBlockEntity extends CargoEndpointBlockEntity implements MenuProvider, FormedModelController {
+    private final K4ModelProjection modelProjection = new K4ModelProjection();
+    private boolean sourceModelFormed() {
+        return !isRemoved() && !quarantined()
+                && structure.formedForFacing(getBlockState().getValue(RailgunBlock.FACING))
+                && EndgameRuntime.operational().isPresent();
+    }
+    @Override public void setBlockState(BlockState state) {
+        super.setBlockState(state);
+        if (level instanceof ServerLevel) { modelProjection.publish(this, sourceModelFormed()); }
+    }
+    @Override public boolean modelFormed() { return modelProjection.formed(); }
+    @Override public void load(CompoundTag tag) {
+        modelProjection.publish(this, false);
+        super.load(tag);
+    }
+    @Override public CompoundTag getUpdateTag() {
+        var tag = new CompoundTag(); ClassicModelProjection.encode(tag, modelProjection.formed() && sourceModelFormed()); return tag;
+    }
+    @Override public void handleUpdateTag(CompoundTag tag) { modelProjection.read(tag); }
+    @Override public net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket getUpdatePacket() {
+        return net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket.create(this);
+    }
+    @Override public void onDataPacket(net.minecraft.network.Connection connection,
+            net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket packet) { handleUpdateTag(packet.getTag()); }
+    @Override public net.minecraft.world.phys.AABB getRenderBoundingBox() {
+        return K4ModelProjection.bounds("railgun", getBlockState().getValue(RailgunBlock.FACING), worldPosition);
+    }
+    @Override public void setRemoved() { modelProjection.publish(this, false); super.setRemoved(); }
+    @Override public void onChunkUnloaded() { modelProjection.publish(this, false); super.onChunkUnloaded(); }
     public static final ResourceLocation KIND = ModIdentity.id("railgun");
     public static final int ROOT_SCHEMA = 1;
     public static final String PATTERN_ID = "advancedrocketrycommunity:railgun";
@@ -115,6 +148,7 @@ public final class RailgunBlockEntity extends CargoEndpointBlockEntity implement
             try {
                 railgun.tickServer(server, state);
             } finally {
+                railgun.modelProjection.publish(railgun, railgun.sourceModelFormed());
                 EndgameRuntime.timings().add(EndgameTimings.Place.RAILGUN, System.nanoTime() - start);
             }
         }

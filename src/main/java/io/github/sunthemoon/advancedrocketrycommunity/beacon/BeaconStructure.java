@@ -43,6 +43,9 @@ public final class BeaconStructure {
     private BlockPos trackedController;
     @Nullable
     private Direction trackedFacing;
+    /** A queued facing is not evidence that its structure has been validated. */
+    @Nullable
+    private Direction validatedFacing;
     @Nullable
     private MultiblockPatternDefinition trackedDefinition;
 
@@ -52,6 +55,10 @@ public final class BeaconStructure {
 
     public Status status() {
         return status;
+    }
+
+    public boolean formedForFacing(Direction facing) {
+        return status == Status.FORMED && facing == validatedFacing;
     }
 
     /** True once, after each validation, so the beacon can reconcile its index record. */
@@ -106,6 +113,7 @@ public final class BeaconStructure {
             case WAITING_UNLOADED -> Status.UNLOADED;
             default -> Status.UNFORMED;
         };
+        validatedFacing = facing;
         pending = false;
         validated = true;
         lastValidation = now;
@@ -120,6 +128,7 @@ public final class BeaconStructure {
         trackedLevel = null;
         trackedController = null;
         trackedFacing = null;
+        validatedFacing = null;
         trackedDefinition = null;
         pending = true;
     }

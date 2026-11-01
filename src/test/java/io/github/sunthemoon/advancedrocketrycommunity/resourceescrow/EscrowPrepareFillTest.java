@@ -21,7 +21,7 @@ class EscrowPrepareFillTest {
     @TempDir Path directory;
 
     /** A native fill into a rocket's fuel vector, captured with the neutral marker section. */
-    private static EscrowOperation fill(long sequence, long rocket) { return EscrowSettlementCapacityTest.operation(sequence, rocket, 0, true); }
+    private static EscrowOperation fill(long sequence, long rocket) { return EscrowTestFixtures.distributedOwner(EscrowSettlementCapacityTest.operation(sequence, rocket, 0, true)); }
     private static EscrowNativeBinding.Admission capture(EscrowOperation op) { return new EscrowNativeBinding.Admission(op, RocketEscrowSection.neutral()); }
     private static ResourceEscrowSavedData loaded(EscrowLedger root) { return ResourceEscrowSavedData.load(EscrowCodec.encode(root)); }
     private Path file(String name) throws Exception {
@@ -190,7 +190,7 @@ class EscrowPrepareFillTest {
             var root = coordinator.ledger(); assertEquals(admitted, root.records());
             tick += 210; coordinator.tick(tick);
             var results = new ArrayList<Boolean>();
-            assertTrue(coordinator.beginSettlement(floorIntent(root, 0, tick), results::add), "The reserved headroom admits one floor retirement");
+            assertTrue(coordinator.beginSettlement(floorIntent(root, 0, tick), EscrowTestFixtures.FLOOR_OWNER, results::add), "The reserved headroom admits one floor retirement");
             ledgerIo.tickUntil(coordinator::tick, tick + 1, writer::idle);
             assertEquals(List.of(true), results); assertEquals(61, coordinator.ledger().records().size());
             assertEquals(61, coordinator.admissionAuthority().pendingCount());

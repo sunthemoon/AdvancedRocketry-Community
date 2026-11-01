@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "id": "rolling_machine",
+  "model": "advancedrocketrycommunity:models/rollingmachine.obj",
+  "mirror_x": true,
+  "flip_v": true,
+  "scale": 1,
+  "model_y_rotation_degrees": 90,
+  "offset_north": [
+    -1,
+    0,
+    0
+  ],
+  "render_type": "entity_cutout",
+  "light_cell_above_controller": 3,
+  "fallback_texture": "advancedrocketrycommunity:textures/block/lathe.png",
+  "model_bounds": [
+    -0.25,
+    -0.25,
+    0,
+    3,
+    1.5,
+    5
+  ],
+  "render_bounds": {
+    "north": [
+      -2,
+      0,
+      0,
+      4,
+      3,
+      3
+    ],
+    "east": [
+      -2,
+      0,
+      -2,
+      1,
+      3,
+      4
+    ],
+    "south": [
+      -3,
+      0,
+      -2,
+      3,
+      3,
+      1
+    ],
+    "west": [
+      0,
+      0,
+      -3,
+      3,
+      3,
+      3
+    ]
+  },
+  "imported": {
+    "obj_sha256": "939fd63bf0e5450b8e175bd2be522097bcbfcc370a1e109a0c76545c73f9cefc",
+    "positions": 232,
+    "vertices": 1160
+  },
+  "unchanged_pattern": {
+    "path": "src/main/resources/data/advancedrocketrycommunity/machine_patterns/rolling_machine.json",
+    "canonical_sha256": "ba26789a3a154b5a0b48524762c01734d084f10aa8ff485a72e184cacf8d4319"
+  }
+}

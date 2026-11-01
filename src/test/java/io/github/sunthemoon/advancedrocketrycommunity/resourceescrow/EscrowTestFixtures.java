@@ -7,6 +7,11 @@ import net.minecraft.nbt.CompoundTag;
 
 final class EscrowTestFixtures {
     static UUID id(long value) { return new UUID(11, value); }
+    /**
+     * The checked journal owner that floor-retirement fixtures pass explicitly (W238-R8). Their operator id(700) also owns
+     * the transfer, so the encoded operations, receipts and counts stay as they were.
+     */
+    static final UUID FLOOR_OWNER = id(700);
     static String hash(long value) { return RocketNativeResources.hash("test-" + value); }
     static EscrowOperation operation(long sequence) { return operation(sequence, sequence, 0); }
     static EscrowOperation operation(long sequence, long rocket, long epoch) {
@@ -22,6 +27,15 @@ final class EscrowTestFixtures {
     static EscrowLedger ledger(EscrowOperation... records) {
         return new EscrowLedger(id(500), java.util.Arrays.stream(records).mapToLong(EscrowOperation::sequence).max().orElse(0),
                 0, List.of(records), List.of(), List.of());
+    }
+    /** Keep global byte/count-pressure tests below R244's owner cap without changing their encoded sizes. */
+    static EscrowOperation distributedOwner(EscrowOperation op) {
+        var owner = id(99 + (op.sequence() - 1) / 16); var b = op.nativeBinding();
+        var binding = new EscrowNativeBinding(b.kind(), b.physical(), b.logical(), owner, b.snapshot(), b.snapshotHash(), b.invariant(),
+                b.sourceReference(), b.destinationReference(), b.beforeWrapper(), b.afterWrapper(), b.beforeFrontier(), b.afterFrontier(),
+                b.sourceBefore(), b.sourceAfter(), b.destinationBefore(), b.destinationAfter(), b.complete());
+        return new EscrowOperation(op.id(), op.sequence(), owner, op.createdTick(), op.phase(), op.reason(), op.payload(), op.payloadHash(),
+                op.source(), op.destination(), op.guard(), op.kind(), op.settlement(), binding);
     }
     /** Reconstruct a historical encoded decision without submitting its actor name as a new preview. */
     static EscrowSettlementIntent storedActor(EscrowSettlementIntent preview, String name) {

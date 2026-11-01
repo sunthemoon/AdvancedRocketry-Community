@@ -95,7 +95,8 @@ public final class SatelliteBayStatus {
         OWNER_LIMIT(31),
         STORAGE_BUDGET(32),
         INVALID_COMPONENTS(33),
-        LAUNCH_REFUSED(34);
+        LAUNCH_REFUSED(34),
+        OWNER_PENDING_FULL(35);
 
         private final int code;
 

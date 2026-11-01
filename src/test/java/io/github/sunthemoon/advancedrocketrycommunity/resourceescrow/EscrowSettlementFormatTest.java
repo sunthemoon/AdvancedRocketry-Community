@@ -87,7 +87,7 @@ class EscrowSettlementFormatTest {
         var observed = List.of(new EscrowSettlementIntent.Observation(endpoint, null, false, 0));
         var preview = EscrowSettlementIntent.floorPreview(root, EscrowTestFixtures.id(701), floor, EscrowTestFixtures.id(700), "operator", 10, observed);
         var intent = preview.confirm(preview.actor(), preview.digest(), 210, observed);
-        var receipt = EscrowSettlementTombstones.create(intent.floorOperation(2, 210), intent);
+        var receipt = EscrowSettlementTombstones.create(intent.floorOperation(2, 210, EscrowTestFixtures.FLOOR_OWNER), intent);
         assertEquals(0, receipt.getInt("payload_amount")); assertEquals("UNKNOWN", receipt.getString("accounting_status"));
         assertEquals(1, receipt.getList("missing", 10).size()); assertTrue(receipt.getList("survivors", 10).isEmpty());
         assertFalse(receipt.contains("audited_loss")); assertFalse(receipt.contains("loss_known"));

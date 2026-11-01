@@ -25,6 +25,10 @@ GameTest launch is the rest of a run that crossed midnight: the checker rebuilds
 from the rolled parts beside it, chosen by their content (launch header and event times),
 and checks the rebuilt text exactly as an unsplit log. When no single complete run can be
 rebuilt, it says why and checks ``latest.log`` alone, which fails as before.
+
+``--completion-only`` is Gradle's narrow completion-marker guard, using that same run
+reader without loading expectations or replacing the full log check. Gradle separately
+requires a fresh ``latest.log``. A refused rebuild fails even if its tail has a marker.
 """
 
 from __future__ import annotations
@@ -569,8 +573,11 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("log", nargs="?", type=Path, default=DEFAULT_LOG)
     parser.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
-    parser.add_argument("--inventory", action="store_true",
-                        help="list every ERROR, FATAL and WARN group instead of checking")
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--inventory", action="store_true",
+                      help="list every ERROR, FATAL and WARN group instead of checking")
+    mode.add_argument("--completion-only", action="store_true",
+                      help="only require Gradle's completion marker in the run; freshness is checked by Gradle")
     arguments = parser.parse_args(argv)
 
     try:
@@ -581,6 +588,18 @@ def main(argv: list[str] | None = None) -> int:
     if run.sources:
         print(f"[INFO] {arguments.log.name} continues a run that a midnight roll split; checking the run "
               f"rebuilt from {', '.join(run.sources)} in {arguments.log.parent}")
+    if arguments.completion_only:
+        if run.refusal:
+            print(f"[FAIL] {run.refusal}", file=sys.stderr)
+            return 1
+        # Keep Gradle's existing marker-only semantics; the full checker below
+        # independently validates headers, counts, shutdown and expectations.
+        if re.search(r"All \d+ required tests passed", run.text) is None:
+            print(f"[FAIL] Forge GameTest completion marker is missing from the run ending in {arguments.log}",
+                  file=sys.stderr)
+            return 1
+        print(f"[PASS] Forge GameTest completion marker found in the run ending in {arguments.log}")
+        return 0
     parsed = parse_log(run.text)
     if arguments.inventory:
         if run.refusal:

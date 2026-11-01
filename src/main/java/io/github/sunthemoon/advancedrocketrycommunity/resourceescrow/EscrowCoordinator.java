@@ -180,11 +180,11 @@ public final class EscrowCoordinator implements AutoCloseable {
         enqueue(op, completion);
     }
     /** prepareFill's typed outcome. Every member but QUEUED is a refusal that changed nothing. */
-    enum Fill { QUEUED, UNAVAILABLE, INVALID, STALE, ENDPOINT_BUSY, ROCKET_LIMIT, ESCROW_FULL, SERVER_FULL, ROCKET_FULL, IDENTITY_CONFLICT }
-    /** The generalized transfer result does not expand W11b3's closed fill result contract. */
+    enum Fill { QUEUED, UNAVAILABLE, INVALID, STALE, ENDPOINT_BUSY, ROCKET_LIMIT, ESCROW_FULL, SERVER_FULL, ROCKET_FULL, IDENTITY_CONFLICT, OWNER_PENDING_FULL }
+    /** Shared typed capacity outcomes, plus cargo scheduling diagnostics; R244 appends the owner refusal. */
     enum Transfer {
         QUEUED, UNAVAILABLE, INVALID, STALE, ENDPOINT_BUSY, ROCKET_LIMIT, ESCROW_FULL, SERVER_FULL, ROCKET_FULL,
-        IDENTITY_CONFLICT, ROCKET_BUSY, OTHER_TRANSFER_PENDING, RECEIPT_BACKED, CARGO_TOO_LARGE;
+        IDENTITY_CONFLICT, ROCKET_BUSY, OTHER_TRANSFER_PENDING, RECEIPT_BACKED, CARGO_TOO_LARGE, OWNER_PENDING_FULL;
         static Transfer of(Fill fill) { return valueOf(fill.name()); }
         Fill fill() {
             return switch (this) {
@@ -247,8 +247,17 @@ public final class EscrowCoordinator implements AutoCloseable {
         if (writer.request(() -> snapshot(true, null), this::acknowledge)) { lastStart = tick; return true; }
         return false;
     }
-    /** O1 only. This acknowledgement does not prove endpoints, remove journals or authorize unlock. */
+    /** O1 for an accept-current or abandon decision, whose members keep their held slots. */
     boolean beginSettlement(EscrowSettlementIntent intent, Consumer<Boolean> completion) {
+        EscrowTags.require(intent.choice() != EscrowSettlementIntent.Choice.TRANSFER_FLOOR_RETIRE,
+                "A floor retirement is charged to its checked journal owner");
+        return beginSettlement(intent, null, completion);
+    }
+    /**
+     * O1 only. This acknowledgement does not prove endpoints, remove journals or authorize unlock. A new floor intent is
+     * charged to its server-validated journal owner, never the command actor; other decisions ignore the owner.
+     */
+    boolean beginSettlement(EscrowSettlementIntent intent, UUID floorOwner, Consumer<Boolean> completion) {
         owner();
         if (closed || !writer.idle() || writer.unavailable() || !queued.isEmpty() || !transitions.isEmpty()
                 || tick - lastStart < 10) { return false; }
@@ -258,7 +267,7 @@ public final class EscrowCoordinator implements AutoCloseable {
                     && data.ledger().floors().stream().anyMatch(intent.floor()::equals)
                     && data.ledger().records().stream().noneMatch(op -> op.guard().rocket().equals(intent.floor().getUUID("rocket_id"))),
                     "Floor changed since preview");
-            candidate = EscrowSettlementCapacity.floorRetirement(data.ledger(), intent, nextSequence(), tick);
+            candidate = EscrowSettlementCapacity.floorRetirement(data.ledger(), intent, nextSequence(), tick, floorOwner);
         } else {
             candidate = intent.freeze(data.ledger());
             EscrowSettlementCapacity.preflight(candidate);
@@ -266,9 +275,10 @@ public final class EscrowCoordinator implements AutoCloseable {
         candidate.records().stream().filter(op -> intent.ids().contains(op.id())).forEach(op -> EscrowSettlementTombstones.create(op, intent));
         var frozen = candidate.generation(Math.addExact(writer.lastGeneration(), 1));
         if (intent.choice() == EscrowSettlementIntent.Choice.TRANSFER_FLOOR_RETIRE) {
+            // R258: the transient pending refusal follows the permanent receipt, FLOOR_FULL and tombstone checks.
             var op = candidate.records().stream().filter(record -> intent.ids().contains(record.id())).findFirst().orElseThrow();
             var reservation = admission.tryReserve(op.id(), op.owner(), op.guard().rocket(), EscrowAdmissionAuthority.Consumer.PROPULSION);
-            EscrowTags.require(reservation == EscrowAdmissionAuthority.Result.RESERVED, "Shared floor-intent admission refused: " + reservation);
+            if (reservation != EscrowAdmissionAuthority.Result.RESERVED) { return false; }
         }
         boolean accepted = writer.request(() -> writer.snapshot(frozen, Set.of()), result -> {
             acknowledge(result);

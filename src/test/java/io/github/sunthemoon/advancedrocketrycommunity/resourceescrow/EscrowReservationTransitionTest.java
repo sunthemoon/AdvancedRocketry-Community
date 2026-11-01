@@ -138,7 +138,7 @@ class EscrowReservationTransitionTest {
     }
 
     private static EscrowOperation operation(long sequence, boolean guarded) {
-        var op = EscrowTestFixtures.operation(sequence);
+        var op = EscrowTestFixtures.distributedOwner(EscrowTestFixtures.operation(sequence));
         return !guarded ? op : new EscrowOperation(op.id(), op.sequence(), op.owner(), op.createdTick(), op.phase(), op.reason(),
                 op.payload(), op.payloadHash(), op.source(), op.destination(),
                 new EscrowGuard(op.guard().rocket(), EscrowTestFixtures.id(9_000 + sequence), 1, op.guard().journalDigest()));

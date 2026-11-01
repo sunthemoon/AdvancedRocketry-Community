@@ -44,14 +44,14 @@ class EscrowFlightTableReservationTest {
             committed(results, 64); results.clear();
             assertTrue(coordinator.ledger().armedFlights().stream().allMatch(arm -> arm.outcome() == EscrowFlightTables.Outcome.CANCELLED));
 
-            for (int i = 30; i <= 89; i++) { coordinator.prepareTest(EscrowTestFixtures.operation(i), results::add); }
+            for (int i = 30; i <= 89; i++) { coordinator.prepareTest(EscrowTestFixtures.distributedOwner(EscrowTestFixtures.operation(i)), results::add); }
             assertThrows(IllegalArgumentException.class,
                     () -> coordinator.prepareTest(EscrowTestFixtures.operation(90), ignored -> fail()));
             coordinator.tick(20); assertTrue(coordinator.commitPreparations());
             acknowledge(io, coordinator, file, 3, 21); committed(results, 60); results.clear();
             var before = coordinator.ledger(); var intent = floorIntent(before);
             assertEquals(60, before.records().size()); assertEquals(64, before.armedFlights().size());
-            var retirementBefore = assertDoesNotThrow(() -> EscrowSettlementCapacity.floorRetirement(before, intent, coordinator.nextSequence(), 220));
+            var retirementBefore = assertDoesNotThrow(() -> EscrowSettlementCapacity.floorRetirement(before, intent, coordinator.nextSequence(), 220, EscrowTestFixtures.FLOOR_OWNER));
             // An independently assembled all-ceiling total includes root framing once.
             assertEquals(bytes(EscrowTestFixtures.ledger()) + 128 * 1_024L + 29 * 1_024L + 60 * 14_336L, reserved(before));
 
@@ -68,12 +68,12 @@ class EscrowFlightTableReservationTest {
             assertEquals(before.issuedLaunchSerial(), after.issuedLaunchSerial());
             assertTrue(bytes(after) < bytes(before), "Cleanup shrinks the actual encoded root");
             assertEquals(reserved(before), reserved(after));
-            var retirementAfter = after.append(List.of(intent.floorOperation(coordinator.nextSequence(), 220)));
+            var retirementAfter = after.append(List.of(intent.floorOperation(coordinator.nextSequence(), 220, EscrowTestFixtures.FLOOR_OWNER)));
             assertEquals(reserved(retirementBefore), reserved(retirementAfter));
             assertTrue(reserved(retirementAfter) <= EscrowLimits.ROOT_BYTES);
 
             coordinator.tick(220);
-            assertTrue(coordinator.beginSettlement(intent, results::add));
+            assertTrue(coordinator.beginSettlement(intent, EscrowTestFixtures.FLOOR_OWNER, results::add));
             assertTrue(results.isEmpty()); assertEquals(after, coordinator.ledger());
             acknowledge(io, coordinator, file, 5, 221); committed(results, 1);
             assertEquals(retirementAfter.records(), coordinator.ledger().records());

@@ -55,6 +55,12 @@ public final class EscrowCommands {
         try {
             var actor = EscrowCommandActor.require(source);
             var server = source.getServer(); var operator = EscrowRuntime.of(server).settlement();
+            if (choice == EscrowSettlementIntent.Choice.TRANSFER_FLOOR_RETIRE) {
+                var admission = operator.floorAdmission(server, selected);
+                if (admission != EscrowAdmissionAuthority.Result.RESERVED) {
+                    source.sendFailure(floorRefusal(admission)); return 0;
+                }
+            }
             if (digest == null) {
                 var preview = operator.preview(server, selected, choice, actor.id(), actor.name());
                 source.sendSuccess(() -> Component.literal(EscrowOperatorDiagnostics.preview(preview)), false);
@@ -70,5 +76,14 @@ public final class EscrowCommands {
         } catch (IllegalArgumentException refused) {
             source.sendFailure(Component.literal("Settlement intent refused: " + refused.getMessage())); return 0;
         }
+    }
+    static final String FLOOR_OWNER_PENDING_FULL = "message.advancedrocketrycommunity.escrow.floor_owner_pending_full";
+    /** W231's English text: a dedicated-server console or RCON has no mod language, so it reads this fallback. */
+    static final String FLOOR_OWNER_PENDING_FULL_ENGLISH =
+            "The owner's pending operations are full; finish existing work before starting a new floor retirement.";
+    static Component floorRefusal(EscrowAdmissionAuthority.Result admission) {
+        return admission == EscrowAdmissionAuthority.Result.OWNER_PENDING_FULL
+                ? Component.literal("OWNER_PENDING_FULL: ").append(Component.translatableWithFallback(FLOOR_OWNER_PENDING_FULL, FLOOR_OWNER_PENDING_FULL_ENGLISH))
+                : Component.literal("Shared floor-intent admission refused: " + admission);
     }
 }

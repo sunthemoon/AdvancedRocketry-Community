@@ -28,7 +28,9 @@ final class BayDeploymentAdmissionTest {
             UUID rocket = id(80);
             for (long n = 1; n <= 8; n++) { assertTrue(harness.put(intent(n, rocket)).queued()); }
             assertEquals("ROCKET_PENDING_FULL", reason(harness.put(intent(9, rocket))), "8 per rocket");
-            for (long n = 9; n <= 64; n++) { assertTrue(harness.put(intent(n, id(100 + n / 8))).queued()); }
+            for (long n = 9; n <= 64; n++) {
+                assertTrue(harness.put(receipt(n, n <= 16 ? OWNER : id(9_900 + (n - 1) / 16), id(100 + n / 8), BayReceipt.Phase.INTENT)).queued());
+            }
             assertEquals(64, harness.authority.pendingCount());
             assertEquals("DEPLOYMENT_CAPACITY", reason(harness.put(intent(65, id(999)))), "64 per server");
             harness.settle();

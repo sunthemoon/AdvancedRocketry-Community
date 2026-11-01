@@ -1,5 +1,8 @@
 package io.github.sunthemoon.advancedrocketrycommunity.client;
 
+import io.github.sunthemoon.advancedrocketrycommunity.client.model.ClassicObjModelRenderer;
+import io.github.sunthemoon.advancedrocketrycommunity.client.model.ObjModelFixture;
+import io.github.sunthemoon.advancedrocketrycommunity.client.model.ClientObjModels;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
@@ -22,12 +25,16 @@ public final class AccretionDiscRenderer implements BlockEntityRenderer<BlackHol
     private static final float INNER = 1.2F;
     private static final float OUTER = 2.6F;
 
+    private final ClassicObjModelRenderer<BlackHoleGeneratorBlockEntity> hull =
+            new ClassicObjModelRenderer<>(ObjModelFixture.BLACK_HOLE_GENERATOR, ClientObjModels.CACHE);
+
     public AccretionDiscRenderer(BlockEntityRendererProvider.Context context) {
     }
 
     @Override
     public void render(BlackHoleGeneratorBlockEntity generator, float partialTick, PoseStack pose,
                        MultiBufferSource buffers, int light, int overlay) {
+        hull.render(generator, partialTick, pose, buffers, light, overlay);
         if (!generator.generatingForRender() || generator.getLevel() == null) {
             return;
         }

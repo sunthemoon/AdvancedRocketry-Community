@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "id": "elevator_anchor",
+  "model": "advancedrocketrycommunity:models/spaceelevator.obj",
+  "mirror_x": true,
+  "flip_v": true,
+  "scale": 1,
+  "model_y_rotation_degrees": 90,
+  "offset_north": [
+    1,
+    0,
+    5
+  ],
+  "render_type": "entity_cutout",
+  "light_cell_above_controller": 2,
+  "fallback_texture": "advancedrocketrycommunity:textures/block/railgun_front.png",
+  "model_bounds": [
+    -5,
+    -1,
+    -4.999871,
+    4.999871,
+    508,
+    3.999871
+  ],
+  "render_bounds": {
+    "north": [
+      -4,
+      -1,
+      -2,
+      5,
+      1.5,
+      10
+    ],
+    "east": [
+      -9,
+      -1,
+      -4,
+      3,
+      1.5,
+      5
+    ],
+    "south": [
+      -4,
+      -1,
+      -9,
+      5,
+      1.5,
+      3
+    ],
+    "west": [
+      -2,
+      -1,
+      -4,
+      10,
+      1.5,
+      5
+    ]
+  },
+  "imported": {
+    "obj_sha256": "8b0d31bd7b88820b7984f84a2afe429fbc27610cde1ebc6207b02bc8c130cfb5",
+    "positions": 1632,
+    "vertices": 8776
+  },
+  "unchanged_pattern": {
+    "path": "src/main/resources/data/advancedrocketrycommunity/machine_patterns/elevator_anchor.json",
+    "canonical_sha256": "67c31fe1e42d0693ca29fdc5e88886d4c7f95684d4c1cc21f9b91cc335b32c85"
+  }
+}

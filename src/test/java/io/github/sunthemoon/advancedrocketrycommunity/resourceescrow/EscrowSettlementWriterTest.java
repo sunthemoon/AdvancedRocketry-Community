@@ -72,7 +72,7 @@ final class EscrowSettlementWriterTest {
         var data = ResourceEscrowSavedData.load(EscrowCodec.encode(root));
         try (var writer = new EscrowLedgerWriter(file(), 0); var coordinator = new EscrowCoordinator(data, writer)) {
             coordinator.tick(210); assertFalse(coordinator.logicalLocked(endpoint.logicalRocket()));
-            assertTrue(coordinator.beginSettlement(intent, committed -> assertTrue(committed)));
+            assertTrue(coordinator.beginSettlement(intent, EscrowTestFixtures.FLOOR_OWNER, committed -> assertTrue(committed)));
             assertTrue(coordinator.logicalLocked(endpoint.logicalRocket())); assertTrue(coordinator.locked(endpoint.key()));
             assertTrue(data.ledger().records().isEmpty()); assertEquals(1, data.ledger().floors().size());
             tickUntil(coordinator, writer::idle, 211);

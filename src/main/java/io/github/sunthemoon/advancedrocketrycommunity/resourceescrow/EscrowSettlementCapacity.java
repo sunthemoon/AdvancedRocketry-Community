@@ -47,7 +47,7 @@ final class EscrowSettlementCapacity {
         }
     }
     /** Shared by operator preview and O1; all checks precede admission/writer mutation. */
-    static EscrowLedger floorRetirement(EscrowLedger root, EscrowSettlementIntent intent, long sequence, long tick) {
+    static EscrowLedger floorRetirement(EscrowLedger root, EscrowSettlementIntent intent, long sequence, long tick, java.util.UUID storedOwner) {
         EscrowSettlementIntent.requireReceiptRoom(root, intent.ids());
         var tombstones = root.tombstones();
         long receipts = tombstones.size() + root.records().stream().filter(op -> tombstones.stream()
@@ -55,7 +55,7 @@ final class EscrowSettlementCapacity {
         if (root.records().size() >= EscrowLimits.OPERATIONS || receipts >= EscrowLimits.TOMBSTONES) {
             throw new ReservationFull(FLOOR_FULL);
         }
-        var candidate = root.append(List.of(intent.floorOperation(sequence, tick)));
+        var candidate = root.append(List.of(intent.floorOperation(sequence, tick, storedOwner)));
         try { preflight(candidate); }
         catch (ReservationFull full) { throw new ReservationFull(FLOOR_FULL); }
         return candidate;

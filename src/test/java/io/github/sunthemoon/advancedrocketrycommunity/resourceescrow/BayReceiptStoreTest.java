@@ -23,6 +23,7 @@ final class BayReceiptStoreTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
     private static final UUID OWNER = id(9);
     private static BayReceipt intent(long n, UUID rocket) { return receipt(n, OWNER, rocket, BayReceipt.Phase.INTENT); }
+    private static UUID capacityOwner(long n) { return n <= 16 ? OWNER : id(9_900 + (n - 1) / 16); }
     private static BayReceipt rejected(long n, UUID owner) { return receipt(n, owner, id(70_000 + n), BayReceipt.Phase.REJECTED); }
     private static BayReceipt reKeyed(BayReceipt receipt, UUID rocket, RocketPosition bay) { return receipt.withKey(rocket, bay); }
     private static void assertQueued(BayReceiptStore.Admission admission) { assertEquals(BayReceiptStore.Status.QUEUED, admission.status(), admission::toString); }
@@ -62,9 +63,9 @@ final class BayReceiptStoreTest {
             assertEquals(BayReceiptStore.Status.RESERVE_REFUSED, refused.status());
             assertEquals(EscrowAdmissionAuthority.Result.ROCKET_FULL, refused.reservation());
             assertEquals(8, harness.authority.retainedCount(), "the checked retained slot was never charged");
-            for (long n = 9; n <= 56; n++) { assertQueued(harness.put(intent(n, id(100 + n / 8)))); }
-            harness.fluid.add(new EscrowAdmissionAuthority.Pending(id(900_001), OWNER, id(500), EscrowAdmissionAuthority.Consumer.PROPULSION));
-            for (long n = 57; n <= 63; n++) { assertQueued(harness.put(intent(n, id(200)))); }
+            for (long n = 9; n <= 56; n++) { assertQueued(harness.put(receipt(n, capacityOwner(n), id(100 + n / 8), BayReceipt.Phase.INTENT))); }
+            harness.fluid.add(new EscrowAdmissionAuthority.Pending(id(900_001), capacityOwner(64), id(500), EscrowAdmissionAuthority.Consumer.PROPULSION));
+            for (long n = 57; n <= 63; n++) { assertQueued(harness.put(receipt(n, capacityOwner(n), id(200), BayReceipt.Phase.INTENT))); }
             assertEquals(64, harness.authority.pendingCount());
             assertEquals(EscrowAdmissionAuthority.Result.SERVER_FULL, harness.put(intent(64, id(300))).reservation());
             assertEquals(EscrowAdmissionAuthority.Result.SERVER_FULL, harness.authority.checkReserve(id(900_002), OWNER, id(400),
@@ -163,7 +164,7 @@ final class BayReceiptStoreTest {
             harness.settle();
             assertEquals(0, harness.authority.pendingCount()); assertEquals(1, harness.authority.retainedCount());
             for (int i = 0; i < 64; i++) {
-                harness.fluid.add(new EscrowAdmissionAuthority.Pending(id(10_000 + i), OWNER, id(20_000 + i / 8), EscrowAdmissionAuthority.Consumer.PROPULSION));
+                harness.fluid.add(new EscrowAdmissionAuthority.Pending(id(10_000 + i), capacityOwner(i + 1), id(20_000 + i / 8), EscrowAdmissionAuthority.Consumer.PROPULSION));
             }
             var reArm = reKeyed(refused, id(31), new RocketPosition(4, 4, 4)).withPhase(BayReceipt.Phase.INTENT, "NONE", 5);
             assertEquals(EscrowAdmissionAuthority.Result.SERVER_FULL, harness.put(reArm).reservation());

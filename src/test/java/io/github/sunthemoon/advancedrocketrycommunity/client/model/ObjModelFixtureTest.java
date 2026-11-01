@@ -108,7 +108,9 @@ class ObjModelFixtureTest {
         assertEquals(model, new AABB(bounds.minX(), bounds.minY(), bounds.minZ(), bounds.maxX(), bounds.maxY(), bounds.maxZ()));
         assertEquals(List.of(CENTRIFUGE, ObjModelFixture.CHEMICAL_REACTOR, ObjModelFixture.CRYSTALLIZER,
                 ObjModelFixture.CUTTING_MACHINE, ObjModelFixture.LATHE, ObjModelFixture.ASTROBODY_DATA_PROCESSOR,
-                ObjModelFixture.OBSERVATORY, ObjModelFixture.PLANETARY_BEACON, ObjModelFixture.SOLAR_ARRAY), ObjModelFixture.CATALOG);
+                ObjModelFixture.OBSERVATORY, ObjModelFixture.PLANETARY_BEACON, ObjModelFixture.SOLAR_ARRAY,
+                ObjModelFixture.BLACK_HOLE_GENERATOR, ObjModelFixture.ORBITAL_LASER_DRILL, ObjModelFixture.PRECISION_ASSEMBLER,
+                ObjModelFixture.RAILGUN, ObjModelFixture.ROLLING_MACHINE, ObjModelFixture.ELEVATOR_ANCHOR), ObjModelFixture.CATALOG);
     }
 
     @Test void catalogLocationsAreCompiledResourcesInTheModNamespace() throws Exception {
@@ -119,7 +121,8 @@ class ObjModelFixtureTest {
             ObjModelCheck.checkReference(entry.fallbackTexture().toString(), false, "catalog");
             assertTrue(Files.isRegularFile(Path.of("src/generated/v1.8/resources/assets", entry.fallbackTexture().getNamespace(),
                     entry.fallbackTexture().getPath())), "fallback texture is not a NEW generated texture: " + entry.fallbackTexture());
-            assertTrue(ClassicModelProjection.projects(entry.kind()), "catalogued model without a formed projection");
+            assertTrue(ClassicModelProjection.projects(entry.kind())
+                    || io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.K4ModelProjection.projects(entry.kind()), "catalogued model without a formed projection");
         }
     }
 

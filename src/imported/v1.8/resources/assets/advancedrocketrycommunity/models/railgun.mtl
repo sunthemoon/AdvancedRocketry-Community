@@ -1,0 +1,5 @@
+# NEW material bindings; Copyright (c) 2026 Advanced Rocketry: Community Edition contributors; MIT.
+newmtl None
+Kd 1 1 1
+d 1
+map_Kd advancedrocketrycommunity:models/railgun

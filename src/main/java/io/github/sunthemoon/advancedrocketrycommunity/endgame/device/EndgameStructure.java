@@ -43,6 +43,9 @@ public final class EndgameStructure {
     private BlockPos trackedController;
     @Nullable
     private Direction trackedFacing;
+    /** Presentation metadata for the completed validation, not the facing merely queued for a budget grant. */
+    @Nullable
+    private Direction validatedFacing;
     @Nullable
     private MultiblockPatternDefinition trackedDefinition;
 
@@ -53,6 +56,10 @@ public final class EndgameStructure {
 
     public EndgameCode code() {
         return code;
+    }
+
+    public boolean formedForFacing(Direction facing) {
+        return code == EndgameCode.OK && facing == validatedFacing;
     }
 
     /** False until the first validation since the controller loaded; nothing operates before it. */
@@ -103,6 +110,7 @@ public final class EndgameStructure {
             case WAITING_UNLOADED -> EndgameCode.STRUCTURE_UNLOADED;
             default -> EndgameCode.UNFORMED;
         };
+        validatedFacing = facing;
         pending = false;
         known = true;
         lastValidation = now;
@@ -117,6 +125,7 @@ public final class EndgameStructure {
         trackedLevel = null;
         trackedController = null;
         trackedFacing = null;
+        validatedFacing = null;
         trackedDefinition = null;
         code = EndgameCode.UNFORMED;
         known = false;

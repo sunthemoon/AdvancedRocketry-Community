@@ -3,7 +3,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader;
 import java.util.Locale;
 
 /**
- * The fluid loader's player status, in a fixed order: the refusal members, then the progress members. The text comes
+ * The fluid loader's player status: original refusals and progress keep their order; later codes append. The text comes
  * with the data leaf; it never shows tentative credit or calls a held operation complete.
  */
 public enum FluidFuelLoaderStatus {
@@ -30,11 +30,12 @@ public enum FluidFuelLoaderStatus {
     /** A queued operation whose creation baseline or L1 is not yet acknowledged, UNKNOWN included; nothing has moved. */
     PREPARING,
     /** An applied operation progressing through its proofs and L2. */
-    TRANSFERRING;
+    TRANSFERRING,
+    OWNER_PENDING_FULL;
 
     public static final String KEY_PREFIX = "message.advancedrocketrycommunity.fluid_fuel_loader.";
 
-    public boolean refusal() { return ordinal() < READY.ordinal(); }
+    public boolean refusal() { return ordinal() < READY.ordinal() || this == OWNER_PENDING_FULL; }
 
     public String translationKey() { return KEY_PREFIX + name().toLowerCase(Locale.ROOT); }
 }
