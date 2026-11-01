@@ -12,6 +12,8 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 @PrefixGameTestTemplate(false)
 public final class BayPassengerExitGameTests {
     private BayPassengerExitGameTests() { }
+    @GameTest(template = "rocket_test", batch = "bay_exit_first_tick", timeoutTicks = 400)
+    public static void ordinaryLandingWithinTheInitialTickConsumesOnlyOneFall(GameTestHelper helper) { new BayPassengerExitGameTestFixture(helper, FIRST_TICK).start(); }
     @GameTest(template = "rocket_test", batch = "bay_exit_climb", timeoutTicks = 400)
     public static void climbContactUsesOnlyTheChargedSnapshot(GameTestHelper helper) { new BayPassengerExitGameTestFixture(helper, CLIMB).start(); }
     @GameTest(template = "rocket_test", batch = "bay_exit_contention_reverse", timeoutTicks = 400)

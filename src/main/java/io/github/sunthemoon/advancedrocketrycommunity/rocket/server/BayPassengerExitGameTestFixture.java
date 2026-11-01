@@ -28,7 +28,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 /** Real service and vanilla landing fixture; pause only this test's D0 queue, never another rocket. */
 final class BayPassengerExitGameTestFixture {
-    enum Case { SAFE, MENU, CREW, CANCELLED, BYPASS, STALE_BYPASS, ORDINARY, DRIPSTONE, NON_FALL, DIRECT_FALL,
+    enum Case { SAFE, MENU, CREW, CANCELLED, BYPASS, STALE_BYPASS, ORDINARY, FIRST_TICK, DRIPSTONE, NON_FALL, DIRECT_FALL,
         AIRBORNE_CAUSE, ZERO_LANDING, TELEPORT, UPWARD, FAILED_MOVE, RELEASED_MOVE, HISTORY, LOGOUT, DEATH,
         CONTENTION, EXPIRY, UNLOADED, NON_FALL_LANDING, CANCELLED_FALL, FLUID, GANTRY, LOCAL_ONLY, REMOTE,
         HAZARD, HEADROOM, PARTIAL, BUDGET, REENTRANT_DAMAGE, AFTER_TELEPORT, RELEASED_SUCCESS, CLIMB,
@@ -137,8 +137,7 @@ final class BayPassengerExitGameTestFixture {
     }
     ServerPlayer join(UUID id) {
         var level = helper.getLevel();
-        var joined = new BayPassengerExitGameTestAudit.Player(level.getServer(), level, new GameProfile(id, "exit" + id.toString().substring(0, 8)));
-        joined.tracing = scenario == Case.ORDINARY;
+        var joined = new ServerPlayer(level.getServer(), level, new GameProfile(id, "exit" + id.toString().substring(0, 8)));
         var connection = new Connection(PacketFlow.SERVERBOUND); channels.add(new EmbeddedChannel(connection));
         level.getServer().getPlayerList().placeNewPlayer(connection, joined);
         joined.setGameMode(GameType.SURVIVAL);
@@ -296,6 +295,7 @@ final class BayPassengerExitGameTestFixture {
         player.connection.handleAcceptTeleportPacket(new net.minecraft.network.protocol.game.ServerboundAcceptTeleportationPacket(
                 exits.motion.generation(player).counter())); // The embedded client accepts the actual server correction.
         switch (scenario) {
+            case FIRST_TICK -> { BayPassengerExitGameTestAudit.firstTickLanding(this); done(); }
             case HAZARD, HEADROOM, PARTIAL -> { helper.assertTrue(offer.result.status() != io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.exit.BayExitSelector.Status.SAFE,
                     "Unsafe contact geometry passed selection"); done(); }
             case TELEPORT -> { var at = player.position(); player.connection.teleport(at.x + .1, at.y, at.z, 25, 10); exits.sample(player); expectRevoked(); done(); }
