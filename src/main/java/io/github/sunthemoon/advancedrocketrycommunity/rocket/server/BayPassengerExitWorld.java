@@ -15,7 +15,6 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.AABB;
@@ -36,9 +35,14 @@ final class BayPassengerExitWorld implements BayExitSafety.LoadedState {
         return new Bounds(level.getMinBuildHeight(), level.getMaxBuildHeight(), border.getMinX(), border.getMaxX(),
                 border.getMinZ(), border.getMaxZ());
     }
+    /**
+     * W242-R5: getChunkNow never waits for a pending future, unlike getChunk(..., FULL, false). A column whose FULL load
+     * has not completed is absent. Forge's in-load chunk, which getChunkNow can also return, is not yet entity-ticking,
+     * so the entity checks below refuse it: an unfinished column fails closed.
+     */
     @Override public boolean loadedColumn(int x, int z) {
         columnChecks++;
-        return level.getChunkSource().getChunk(x, z, ChunkStatus.FULL, false) != null
+        return level.getChunkSource().getChunkNow(x, z) != null
                 && level.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(x, z))
                 && level.isPositionEntityTicking(new BlockPos(x * 16, level.getMinBuildHeight(), z * 16));
     }
@@ -50,7 +54,7 @@ final class BayPassengerExitWorld implements BayExitSafety.LoadedState {
         var view = new View(window, level.getMinBuildHeight(), level.getHeight());
         for (int x = window.minX(); x < window.maxX(); x++) {
             for (int z = window.minZ(); z < window.maxZ(); z++) {
-                var chunk = level.getChunkSource().getChunk(x >> 4, z >> 4, ChunkStatus.FULL, false);
+                var chunk = level.getChunkSource().getChunkNow(x >> 4, z >> 4); // only columns loadedColumn accepted
                 if (chunk == null) { return null; }
                 for (int y = window.minY(); y < window.maxY(); y++) {
                     reads++;
