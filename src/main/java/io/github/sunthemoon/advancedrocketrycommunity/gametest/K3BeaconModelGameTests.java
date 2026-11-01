@@ -18,10 +18,13 @@ public final class K3BeaconModelGameTests {
 
     @GameTest(template = "empty", batch = "w236_beacon_model", timeoutTicks = 120)
     public static void beaconProjectsFormationNotOwnershipOrEnabledStateInEveryFacing(GameTestHelper helper) {
+        var layout = K3ModelTestLayout.BEACON;
+        var region = new K3ModelTestRegion(helper, layout.center(), layout.radius());
+        var pattern = BeaconRuntime.services().orElseThrow().pattern().orElseThrow();
+        layout.assertIsolated(helper, region, pattern.cells().keySet(), pattern.controllerAnchor());
         var fixtures = new ArrayList<Fixture>(); int index = 0;
         for (Direction facing : Direction.Plane.HORIZONTAL) {
-            var origin = new BlockPos(-2_360_000 + index++ * 128, 100, -2_363_000);
-            var region = new K3ModelTestRegion(helper, origin);
+            var origin = layout.origin(index++);
             var transform = ClassicModelProjection.transform(facing);
             for (int x = -1; x <= 1; x++) { for (int z = 0; z < 3; z++) { for (int y = 0; y < 5; y++) {
                 var offset = transform.applyOffset(new io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.PatternPosition(x, y, z));
@@ -64,7 +67,7 @@ public final class K3BeaconModelGameTests {
                 stage[0] = 2;
             } else if (stage[0] == 2 && fixtures.stream().allMatch(f -> f.beacon.formed())) {
                 for (var f : fixtures) { K3ModelTestRegion.assertProjection(helper, f.beacon, true); }
-                fixtures.forEach(f -> f.region.close()); helper.succeed();
+                region.close(); helper.succeed();
             }
         });
     }
