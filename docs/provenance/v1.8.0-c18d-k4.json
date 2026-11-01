@@ -1,0 +1,988 @@
+{
+  "batch_id": "v1.8.0-c18d-k4",
+  "copyright_notice": "Copyright (c) 2017; Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+  "derivation_results_sha256": "97aaee71137312d535d129e5b7b42acd07609cb61fa717b27e5cbcd7d4bb882b",
+  "entries": [
+    {
+      "asset_coverage_row": null,
+      "authoring_commit": "b32cbf4302bcdf525a81bfc50b3dfd4af100f136",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "derivation": {
+        "related": [],
+        "verdicts": {
+          "source": "CLEAR"
+        }
+      },
+      "format_check": {
+        "format": "mtl",
+        "materials": [
+          "None"
+        ],
+        "textures": [
+          "advancedrocketrycommunity:models/blackholegenerator"
+        ]
+      },
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-w241",
+      "source_commit": "db3ce4c62fe2385c6d21153cb864a4740378b5f6",
+      "source_path": "src/main/resources/assets/advancedrocketrycommunity/models/black_hole_generator.mtl",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "186b10d8439b06ef2cdb103421867f8010fd929ec336d81e6b134588416de0e6",
+      "status": "NEW",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/black_hole_generator.mtl",
+      "target_sha256": "186b10d8439b06ef2cdb103421867f8010fd929ec336d81e6b134588416de0e6",
+      "transformation": [
+        "Byte copy of the repository-owned file at its authoring commit."
+      ],
+      "units": [
+        "block:blackholegenerator"
+      ]
+    },
+    {
+      "asset_coverage_row": 13,
+      "copyright_notice": "Copyright (c) 2017",
+      "derivation": {
+        "related": [],
+        "verdicts": {
+          "recorded": "CLEAR",
+          "source": "CLEAR"
+        }
+      },
+      "format_check": {
+        "baked_vertices": 1536,
+        "faces": 384,
+        "format": "obj",
+        "ignored_lines": 0,
+        "material_library": "black_hole_generator.mtl",
+        "materials": [
+          "None"
+        ],
+        "normals": 18,
+        "positions": 312,
+        "texture_coordinates": 593
+      },
+      "license": "MIT",
+      "source_branch": "1.12",
+      "source_commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+      "source_path": "src/main/resources/assets/advancedrocketry/models/blackholegenerator.obj",
+      "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
+      "source_sha256": "68d82772eee9c8821cf1399781dfdf2cd308e30c8602cc3dae0b75ce05032d06",
+      "status": "UPSTREAM_AR_MIT",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/blackholegenerator.obj",
+      "target_sha256": "68d82772eee9c8821cf1399781dfdf2cd308e30c8602cc3dae0b75ce05032d06",
+      "transformation": [
+        "Byte copy into the mod namespace: assets/advancedrocketry/models/blackholegenerator.obj to assets/advancedrocketrycommunity/models/blackholegenerator.obj."
+      ],
+      "units": [
+        "block:blackholegenerator"
+      ],
+      "upstream_history": [
+        {
+          "author": "Silfryi Kalsandryn",
+          "authored_at": "2021-01-31T23:50:40-05:00",
+          "commit": "5dbe08accc53672641400a5a2311dcffd654e091",
+          "subject": "Add chemical reactor and black hole generator models"
+        },
+        {
+          "author": "dmodoomsirius",
+          "authored_at": "2021-04-28T02:14:30-04:00",
+          "commit": "0c0017bcc06aa291e9d23cb0d6ceda56f7aff863",
+          "subject": "Merge branch '1.12' of https://github.com/zmaster587/AdvancedRocketry into 1.12"
+        }
+      ]
+    },
+    {
+      "asset_coverage_row": null,
+      "authoring_commit": "b32cbf4302bcdf525a81bfc50b3dfd4af100f136",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "derivation": {
+        "related": [],
+        "verdicts": {
+          "source": "CLEAR"
+        }
+      },
+      "format_check": {
+        "format": "mtl",
+        "materials": [
+          "None"
+        ],
+        "textures": [
+          "advancedrocketrycommunity:models/orbitallaserdrill"
+        ]
+      },
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-w241",
+      "source_commit": "db3ce4c62fe2385c6d21153cb864a4740378b5f6",
+      "source_path": "src/main/resources/assets/advancedrocketrycommunity/models/orbital_laser_drill.mtl",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "d6b8441a03e63cbb1c234425f224a9519ce63b4eae19fe40032c4b9ca756ce73",
+      "status": "NEW",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/orbital_laser_drill.mtl",
+      "target_sha256": "d6b8441a03e63cbb1c234425f224a9519ce63b4eae19fe40032c4b9ca756ce73",
+      "transformation": [
+        "Byte copy of the repository-owned file at its authoring commit."
+      ],
+      "units": [
+        "block:spaceLaser"
+      ]
+    },
+    {
+      "asset_coverage_row": 21,
+      "copyright_notice": "Copyright (c) 2017",
+      "derivation": {
+        "related": [],
+        "verdicts": {
+          "recorded": "CLEAR",
+          "source": "CLEAR"
+        }
+      },
+      "format_check": {
+        "baked_vertices": 5656,
+        "faces": 1414,
+        "format": "obj",
+        "ignored_lines": 0,
+        "material_library": "orbital_laser_drill.mtl",
+        "materials": [
+          "None"
+        ],
+        "normals": 18,
+        "positions": 1740,
+        "texture_coordinates": 2725
+      },
+      "license": "MIT",
+      "source_branch": "1.12",
+      "source_commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+      "source_path": "src/main/resources/assets/advancedrocketry/models/orbitallaserdrill.obj",
+      "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
+      "source_sha256": "3145e58e26fd248f094d8d16c35e4f17da96c238c63399ca290317484211571e",
+      "status": "UPSTREAM_AR_MIT",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/orbitallaserdrill.obj",
+      "target_sha256": "3145e58e26fd248f094d8d16c35e4f17da96c238c63399ca290317484211571e",
+      "transformation": [
+        "Byte copy into the mod namespace: assets/advancedrocketry/models/orbitallaserdrill.obj to assets/advancedrocketrycommunity/models/orbitallaserdrill.obj."
+      ],
+      "units": [
+        "block:spaceLaser"
+      ],
+      "upstream_history": [
+        {
+          "author": "Silfryi Kalsandryn",
+          "authored_at": "2021-01-30T01:00:08-05:00",
+          "commit": "965e2df2a9056551f0502a6119a7905be6e4d579",
+          "subject": "Model update, part 1"
+        },
+        {
+          "author": "dmodoomsirius",
+          "authored_at": "2021-04-28T02:14:30-04:00",
+          "commit": "0c0017bcc06aa291e9d23cb0d6ceda56f7aff863",
+          "subject": "Merge branch '1.12' of https://github.com/zmaster587/AdvancedRocketry into 1.12"
+        }
+      ]
+    },
+    {
+      "asset_coverage_row": null,
+      "authoring_commit": "b32cbf4302bcdf525a81bfc50b3dfd4af100f136",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "derivation": {
+        "related": [],
+        "verdicts": {
+          "source": "CLEAR"
+        }
+      },
+      "format_check": {
+        "format": "mtl",
+        "materials": [
+          "None"
+        ],
+        "textures": [
+          "advancedrocketrycommunity:models/precisionassembler"
+        ]
+      },
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-w241",
+      "source_commit": "db3ce4c62fe2385c6d21153cb864a4740378b5f6",
+      "source_path": "src/main/resources/assets/advancedrocketrycommunity/models/precision_assembler.mtl",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "8da0a1ad4d351bdbbba8bdabab37aaee2c8945fdadf7ea5715ce0bd8b24ab04c",
+      "status": "NEW",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/precision_assembler.mtl",
+      "target_sha256": "8da0a1ad4d351bdbbba8bdabab37aaee2c8945fdadf7ea5715ce0bd8b24ab04c",
+      "transformation": [
+        "Byte copy of the repository-owned file at its authoring commit."
+      ],
+      "units": [
+        "block:precisionassemblingmachine"
+      ]
+    },
+    {
+      "asset_coverage_row": 22,
+      "copyright_notice": "Copyright (c) 2017",
+      "derivation": {
+        "related": [],
+        "verdicts": {
+          "recorded": "CLEAR",
+          "source": "CLEAR"
+        }
+      },
+      "format_check": {
+        "baked_vertices": 2952,
+        "faces": 738,
+        "format": "obj",
+        "ignored_lines": 0,
+        "material_library": "precision_assembler.mtl",
+        "materials": [
+          "None"
+        ],
+        "normals": 81,
+        "positions": 581,
+        "texture_coordinates": 1301
+      },
+      "license": "MIT",
+      "source_branch": "1.12",
+      "source_commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+      "source_path": "src/main/resources/assets/advancedrocketry/models/precisionassembler.obj",
+      "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
+      "source_sha256": "6893ae239f1c51f011d17cd6fb441bf0e68b5deb5726237765ee5479a07738f0",
+      "status": "UPSTREAM_AR_MIT",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/precisionassembler.obj",
+      "target_sha256": "6893ae239f1c51f011d17cd6fb441bf0e68b5deb5726237765ee5479a07738f0",
+      "transformation": [
+        "Byte copy into the mod namespace: assets/advancedrocketry/models/precisionassembler.obj to assets/advancedrocketrycommunity/models/precisionassembler.obj."
+      ],
+      "units": [
+        "block:precisionassemblingmachine"
+      ],
+      "upstream_history": [
+        {
+          "author": "Silfryi Kalsandryn",
+          "authored_at": "2021-01-30T01:00:08-05:00",
+          "commit": "965e2df2a9056551f0502a6119a7905be6e4d579",
+          "subject": "Model update, part 1"
+        },
+        {
+          "author": "dmodoomsirius",
+          "authored_at": "2021-04-28T02:14:30-04:00",
+          "commit": "0c0017bcc06aa291e9d23cb0d6ceda56f7aff863",
+          "subject": "Merge branch '1.12' of https://github.com/zmaster587/AdvancedRocketry into 1.12"
+        }
+      ]
+    },
+    {
+      "asset_coverage_row": null,
+      "authoring_commit": "b32cbf4302bcdf525a81bfc50b3dfd4af100f136",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "derivation": {
+        "related": [],
+        "verdicts": {
+          "source": "CLEAR"
+        }
+      },
+      "format_check": {
+        "format": "mtl",
+        "materials": [
+          "None"
+        ],
+        "textures": [
+          "advancedrocketrycommunity:models/railgun"
+        ]
+      },
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-w241",
+      "source_commit": "db3ce4c62fe2385c6d21153cb864a4740378b5f6",
+      "source_path": "src/main/resources/assets/advancedrocketrycommunity/models/railgun.mtl",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "0251d336f0fb39339e1deade40d37ef960fdb7849de18fdde0c7a25083034c22",
+      "status": "NEW",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/railgun.mtl",
+      "target_sha256": "0251d336f0fb39339e1deade40d37ef960fdb7849de18fdde0c7a25083034c22",
+      "transformation": [
+        "Byte copy of the repository-owned file at its authoring commit."
+      ],
+      "units": [
+        "block:railgun"
+      ]
+    },
+    {
+      "asset_coverage_row": 24,
+      "copyright_notice": "Copyright (c) 2017",
+      "derivation": {
+        "related": [],
+        "verdicts": {
+          "recorded": "CLEAR",
+          "source": "CLEAR"
+        }
+      },
+      "format_check": {
+        "baked_vertices": 2520,
+        "faces": 630,
+        "format": "obj",
+        "ignored_lines": 0,
+        "material_library": "railgun.mtl",
+        "materials": [
+          "None"
+        ],
+        "normals": 23,
+        "positions": 448,
+        "texture_coordinates": 894
+      },
+      "license": "MIT",
+      "source_branch": "1.12",
+      "source_commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+      "source_path": "src/main/resources/assets/advancedrocketry/models/railgun.obj",
+      "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
+      "source_sha256": "9fc0583647cc27df5ff9d16ce4af93fad528a1bf9e89c768f3a9e8fb76daa528",
+      "status": "UPSTREAM_AR_MIT",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/railgun.obj",
+      "target_sha256": "9fc0583647cc27df5ff9d16ce4af93fad528a1bf9e89c768f3a9e8fb76daa528",
+      "transformation": [
+        "Byte copy into the mod namespace: assets/advancedrocketry/models/railgun.obj to assets/advancedrocketrycommunity/models/railgun.obj."
+      ],
+      "units": [
+        "block:railgun"
+      ],
+      "upstream_history": [
+        {
+          "author": "Zack Emmert",
+          "authored_at": "2021-03-20T22:29:57-04:00",
+          "commit": "c0e4d0da01c732270ca8346eb2804540a1adc05c",
+          "subject": "Resolved merge conflict for PR #1"
+        },
+        {
+          "author": "Silfryi Kalsandryn",
+          "authored_at": "2021-03-19T22:47:00-04:00",
+          "commit": "227018f6f3f5320ca5124b10149e070833a211d8",
+          "subject": "Update railgun model and structure"
+        },
+        {
+          "author": "zmaster587",
+          "authored_at": "2017-02-20T22:02:49-05:00",
+          "commit": "ac7f5d30277199d3905e02fb3c46e498d3b522cd",
+          "subject": "Trace Resources"
+        },
+        {
+          "author": "zmaster587",
+          "authored_at": "2017-02-20T22:02:49-05:00",
+          "commit": "a496d0df546d4a800febb6201c9e6b159d5b3164",
+          "subject": "Trace Resources"
+        },
+        {
+          "author": "zmaster587",
+          "authored_at": "2017-02-20T22:01:36-05:00",
+          "commit": "0631f3aba16f43463d10851d6b75a1b922807348",
+          "subject": "Keep track of assets"
+        },
+        {
+          "author": "dmodoomsirius",
+          "authored_at": "2021-04-28T02:14:30-04:00",
+          "commit": "0c0017bcc06aa291e9d23cb0d6ceda56f7aff863",
+          "subject": "Merge branch '1.12' of https://github.com/zmaster587/AdvancedRocketry into 1.12"
+        }
+      ]
+    },
+    {
+      "asset_coverage_row": null,
+      "authoring_commit": "b32cbf4302bcdf525a81bfc50b3dfd4af100f136",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "derivation": {
+        "related": [],
+        "verdicts": {
+          "source": "CLEAR"
+        }
+      },
+      "format_check": {
+        "format": "mtl",
+        "materials": [
+          "Hull",
+          "None"
+        ],
+        "textures": [
+          "advancedrocketrycommunity:models/rollingmachine"
+        ]
+      },
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-w241",
+      "source_commit": "db3ce4c62fe2385c6d21153cb864a4740378b5f6",
+      "source_path": "src/main/resources/assets/advancedrocketrycommunity/models/rolling_machine.mtl",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "6c27686cfe05a5f6f2c43b88b98f4b69eb311c8a7b82d9d9903045b5e8a12cd2",
+      "status": "NEW",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/rolling_machine.mtl",
+      "target_sha256": "6c27686cfe05a5f6f2c43b88b98f4b69eb311c8a7b82d9d9903045b5e8a12cd2",
+      "transformation": [
+        "Byte copy of the repository-owned file at its authoring commit."
+      ],
+      "units": [
+        "block:rollingMachine"
+      ]
+    },
+    {
+      "asset_coverage_row": 25,
+      "copyright_notice": "Copyright (c) 2017",
+      "derivation": {
+        "related": [],
+        "verdicts": {
+          "recorded": "CLEAR",
+          "source": "CLEAR"
+        }
+      },
+      "format_check": {
+        "baked_vertices": 1160,
+        "faces": 290,
+        "format": "obj",
+        "ignored_lines": 2,
+        "material_library": "rolling_machine.mtl",
+        "materials": [
+          "Hull",
+          "None"
+        ],
+        "normals": 38,
+        "positions": 232,
+        "texture_coordinates": 536
+      },
+      "license": "MIT",
+      "source_branch": "1.12",
+      "source_commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+      "source_path": "src/main/resources/assets/advancedrocketry/models/rollingmachine.obj",
+      "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
+      "source_sha256": "939fd63bf0e5450b8e175bd2be522097bcbfcc370a1e109a0c76545c73f9cefc",
+      "status": "UPSTREAM_AR_MIT",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/rollingmachine.obj",
+      "target_sha256": "939fd63bf0e5450b8e175bd2be522097bcbfcc370a1e109a0c76545c73f9cefc",
+      "transformation": [
+        "Byte copy into the mod namespace: assets/advancedrocketry/models/rollingmachine.obj to assets/advancedrocketrycommunity/models/rollingmachine.obj."
+      ],
+      "units": [
+        "block:rollingMachine"
+      ],
+      "upstream_history": [
+        {
+          "author": "Silfryi Kalsandryn",
+          "authored_at": "2021-01-30T01:00:08-05:00",
+          "commit": "965e2df2a9056551f0502a6119a7905be6e4d579",
+          "subject": "Model update, part 1"
+        },
+        {
+          "author": "zmaster587",
+          "authored_at": "2017-05-20T13:33:15-04:00",
+          "commit": "b3b5f83abb01166d93e3c72844de52238c633160",
+          "subject": "fix resources, fluid handling"
+        },
+        {
+          "author": "zmaster587",
+          "authored_at": "2017-02-20T22:02:49-05:00",
+          "commit": "ac7f5d30277199d3905e02fb3c46e498d3b522cd",
+          "subject": "Trace Resources"
+        },
+        {
+          "author": "zmaster587",
+          "authored_at": "2017-02-20T22:02:49-05:00",
+          "commit": "a496d0df546d4a800febb6201c9e6b159d5b3164",
+          "subject": "Trace Resources"
+        },
+        {
+          "author": "zmaster587",
+          "authored_at": "2017-02-20T22:01:36-05:00",
+          "commit": "0631f3aba16f43463d10851d6b75a1b922807348",
+          "subject": "Keep track of assets"
+        },
+        {
+          "author": "dmodoomsirius",
+          "authored_at": "2021-04-28T02:14:30-04:00",
+          "commit": "0c0017bcc06aa291e9d23cb0d6ceda56f7aff863",
+          "subject": "Merge branch '1.12' of https://github.com/zmaster587/AdvancedRocketry into 1.12"
+        }
+      ]
+    },
+    {
+      "asset_coverage_row": null,
+      "authoring_commit": "b32cbf4302bcdf525a81bfc50b3dfd4af100f136",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "derivation": {
+        "related": [],
+        "verdicts": {
+          "source": "CLEAR"
+        }
+      },
+      "format_check": {
+        "format": "mtl",
+        "materials": [
+          "Hull",
+          "None",
+          "None_spaceelevator.png"
+        ],
+        "textures": [
+          "advancedrocketrycommunity:models/spaceelevator"
+        ]
+      },
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-w241",
+      "source_commit": "db3ce4c62fe2385c6d21153cb864a4740378b5f6",
+      "source_path": "src/main/resources/assets/advancedrocketrycommunity/models/spaceelevator.mtl",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "49a16f2ca683f5f9b428ba8e86ac611c2fe8d654480378b0fc6b61039450edd0",
+      "status": "NEW",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/spaceelevator.mtl",
+      "target_sha256": "49a16f2ca683f5f9b428ba8e86ac611c2fe8d654480378b0fc6b61039450edd0",
+      "transformation": [
+        "Byte copy of the repository-owned file at its authoring commit."
+      ],
+      "units": [
+        "block:spaceElevatorController"
+      ]
+    },
+    {
+      "asset_coverage_row": 27,
+      "copyright_notice": "Copyright (c) 2017",
+      "derivation": {
+        "related": [],
+        "verdicts": {
+          "recorded": "CLEAR",
+          "source": "CLEAR"
+        }
+      },
+      "format_check": {
+        "baked_vertices": 8776,
+        "faces": 2194,
+        "format": "obj",
+        "ignored_lines": 0,
+        "material_library": "spaceelevator.mtl",
+        "materials": [
+          "Hull",
+          "None",
+          "None_spaceelevator.png"
+        ],
+        "normals": 52,
+        "positions": 1632,
+        "texture_coordinates": 3493
+      },
+      "license": "MIT",
+      "source_branch": "1.12",
+      "source_commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+      "source_path": "src/main/resources/assets/advancedrocketry/models/spaceelevator.obj",
+      "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
+      "source_sha256": "8b0d31bd7b88820b7984f84a2afe429fbc27610cde1ebc6207b02bc8c130cfb5",
+      "status": "UPSTREAM_AR_MIT",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/spaceelevator.obj",
+      "target_sha256": "8b0d31bd7b88820b7984f84a2afe429fbc27610cde1ebc6207b02bc8c130cfb5",
+      "transformation": [
+        "Byte copy into the mod namespace: assets/advancedrocketry/models/spaceelevator.obj to assets/advancedrocketrycommunity/models/spaceelevator.obj."
+      ],
+      "units": [
+        "block:spaceElevatorController"
+      ],
+      "upstream_history": [
+        {
+          "author": "Silfryi Kalsandryn",
+          "authored_at": "2021-03-28T15:21:03-04:00",
+          "commit": "9acd2ec648e2a87a0b85b8aec1c5fe0bfa401993",
+          "subject": "Add more model work"
+        },
+        {
+          "author": "Silfryi Kalsandryn",
+          "authored_at": "2021-01-31T13:53:15-05:00",
+          "commit": "ee23dd362b7b180c2c97050ab360dcf12b2be13f",
+          "subject": "Finish up space elevator work"
+        },
+        {
+          "author": "Silfryi Kalsandryn",
+          "authored_at": "2021-01-31T04:09:50-05:00",
+          "commit": "6e340d6f14e8302ad0959cd4fb9eb0dc0d1f4a02",
+          "subject": "Space elevator and multiblock work"
+        },
+        {
+          "author": "zmaster587",
+          "authored_at": "2017-05-20T13:33:15-04:00",
+          "commit": "b3b5f83abb01166d93e3c72844de52238c633160",
+          "subject": "fix resources, fluid handling"
+        },
+        {
+          "author": "zmaster587",
+          "authored_at": "2017-05-08T23:15:37-04:00",
+          "commit": "1a47450324753acb2998c8eff30a89c65ad1d375",
+          "subject": "Add space Elevator"
+        },
+        {
+          "author": "dmodoomsirius",
+          "authored_at": "2021-04-28T02:14:30-04:00",
+          "commit": "0c0017bcc06aa291e9d23cb0d6ceda56f7aff863",
+          "subject": "Merge branch '1.12' of https://github.com/zmaster587/AdvancedRocketry into 1.12"
+        }
+      ]
+    },
+    {
+      "asset_coverage_row": 90,
+      "copyright_notice": "Copyright (c) 2017",
+      "derivation": {
+        "related": [
+          "textures/models/chemicalreactor.png",
+          "textures/models/crystalliser.png",
+          "textures/models/cuttingmachine.png",
+          "textures/models/electrolyser.png",
+          "textures/models/solararray.png"
+        ],
+        "verdicts": {
+          "recorded": "CLEAR",
+          "source": "CLEAR"
+        }
+      },
+      "license": "MIT",
+      "source_branch": "1.12",
+      "source_commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+      "source_path": "src/main/resources/assets/advancedrocketry/textures/models/blackholegenerator.png",
+      "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
+      "source_sha256": "e414c53688d68ef724b117db2014d9839e27ca4241b7e1ef4f3c1c6224a2d448",
+      "status": "UPSTREAM_AR_MIT",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/models/blackholegenerator.png",
+      "target_sha256": "e414c53688d68ef724b117db2014d9839e27ca4241b7e1ef4f3c1c6224a2d448",
+      "transformation": [
+        "Byte copy into the mod namespace: assets/advancedrocketry/textures/models/blackholegenerator.png to assets/advancedrocketrycommunity/textures/models/blackholegenerator.png."
+      ],
+      "units": [
+        "block:blackholegenerator"
+      ],
+      "upstream_history": [
+        {
+          "author": "Silfryi Kalsandryn",
+          "authored_at": "2021-02-02T14:17:01-05:00",
+          "commit": "40678c756051f322b39cdbeb5cbcebcd9c48b87c",
+          "subject": "Slight multiblock texture update"
+        },
+        {
+          "author": "Silfryi Kalsandryn",
+          "authored_at": "2021-01-31T23:50:40-05:00",
+          "commit": "5dbe08accc53672641400a5a2311dcffd654e091",
+          "subject": "Add chemical reactor and black hole generator models"
+        },
+        {
+          "author": "dmodoomsirius",
+          "authored_at": "2021-04-28T02:14:30-04:00",
+          "commit": "0c0017bcc06aa291e9d23cb0d6ceda56f7aff863",
+          "subject": "Merge branch '1.12' of https://github.com/zmaster587/AdvancedRocketry into 1.12"
+        }
+      ]
+    },
+    {
+      "asset_coverage_row": 103,
+      "copyright_notice": "Copyright (c) 2017",
+      "derivation": {
+        "related": [
+          "textures/models/precisionlaseretcher.png"
+        ],
+        "verdicts": {
+          "recorded": "CLEAR",
+          "source": "CLEAR"
+        }
+      },
+      "license": "MIT",
+      "source_branch": "1.12",
+      "source_commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+      "source_path": "src/main/resources/assets/advancedrocketry/textures/models/orbitallaserdrill.png",
+      "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
+      "source_sha256": "bd9ffa2ec3dc4c1df28edcb02ab8764620ff02241a2cab2f8b14e780b1e56c67",
+      "status": "UPSTREAM_AR_MIT",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/models/orbitallaserdrill.png",
+      "target_sha256": "bd9ffa2ec3dc4c1df28edcb02ab8764620ff02241a2cab2f8b14e780b1e56c67",
+      "transformation": [
+        "Byte copy into the mod namespace: assets/advancedrocketry/textures/models/orbitallaserdrill.png to assets/advancedrocketrycommunity/textures/models/orbitallaserdrill.png."
+      ],
+      "units": [
+        "block:spaceLaser"
+      ],
+      "upstream_history": [
+        {
+          "author": "Silfryi Kalsandryn",
+          "authored_at": "2021-02-02T14:17:01-05:00",
+          "commit": "40678c756051f322b39cdbeb5cbcebcd9c48b87c",
+          "subject": "Slight multiblock texture update"
+        },
+        {
+          "author": "Silfryi Kalsandryn",
+          "authored_at": "2021-01-30T01:00:08-05:00",
+          "commit": "965e2df2a9056551f0502a6119a7905be6e4d579",
+          "subject": "Model update, part 1"
+        },
+        {
+          "author": "dmodoomsirius",
+          "authored_at": "2021-04-28T02:14:30-04:00",
+          "commit": "0c0017bcc06aa291e9d23cb0d6ceda56f7aff863",
+          "subject": "Merge branch '1.12' of https://github.com/zmaster587/AdvancedRocketry into 1.12"
+        }
+      ]
+    },
+    {
+      "asset_coverage_row": 104,
+      "copyright_notice": "Copyright (c) 2017",
+      "derivation": {
+        "related": [],
+        "verdicts": {
+          "recorded": "CLEAR",
+          "source": "CLEAR"
+        }
+      },
+      "license": "MIT",
+      "source_branch": "1.12",
+      "source_commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+      "source_path": "src/main/resources/assets/advancedrocketry/textures/models/precisionassembler.png",
+      "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
+      "source_sha256": "fe217ca349dee59981f4b1576b91c1c83aca13a35b2ec11f7ebd77abd14a93fa",
+      "status": "UPSTREAM_AR_MIT",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/models/precisionassembler.png",
+      "target_sha256": "fe217ca349dee59981f4b1576b91c1c83aca13a35b2ec11f7ebd77abd14a93fa",
+      "transformation": [
+        "Byte copy into the mod namespace: assets/advancedrocketry/textures/models/precisionassembler.png to assets/advancedrocketrycommunity/textures/models/precisionassembler.png."
+      ],
+      "units": [
+        "block:precisionassemblingmachine"
+      ],
+      "upstream_history": [
+        {
+          "author": "Silfryi Kalsandryn",
+          "authored_at": "2021-02-02T14:17:01-05:00",
+          "commit": "40678c756051f322b39cdbeb5cbcebcd9c48b87c",
+          "subject": "Slight multiblock texture update"
+        },
+        {
+          "author": "Silfryi Kalsandryn",
+          "authored_at": "2021-01-30T01:00:08-05:00",
+          "commit": "965e2df2a9056551f0502a6119a7905be6e4d579",
+          "subject": "Model update, part 1"
+        },
+        {
+          "author": "dmodoomsirius",
+          "authored_at": "2021-04-28T02:14:30-04:00",
+          "commit": "0c0017bcc06aa291e9d23cb0d6ceda56f7aff863",
+          "subject": "Merge branch '1.12' of https://github.com/zmaster587/AdvancedRocketry into 1.12"
+        }
+      ]
+    },
+    {
+      "asset_coverage_row": 106,
+      "copyright_notice": "Copyright (c) 2017",
+      "derivation": {
+        "related": [
+          "textures/models/precisionlaseretcher.png",
+          "textures/models/spaceelevator.png"
+        ],
+        "verdicts": {
+          "recorded": "CLEAR",
+          "source": "CLEAR"
+        }
+      },
+      "license": "MIT",
+      "source_branch": "1.12",
+      "source_commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+      "source_path": "src/main/resources/assets/advancedrocketry/textures/models/railgun.png",
+      "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
+      "source_sha256": "de608002d204110de0fb342f669654cd40ccfc7eb07aca25ea9ab9dd31359fb1",
+      "status": "UPSTREAM_AR_MIT",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/models/railgun.png",
+      "target_sha256": "de608002d204110de0fb342f669654cd40ccfc7eb07aca25ea9ab9dd31359fb1",
+      "transformation": [
+        "Byte copy into the mod namespace: assets/advancedrocketry/textures/models/railgun.png to assets/advancedrocketrycommunity/textures/models/railgun.png."
+      ],
+      "units": [
+        "block:railgun"
+      ],
+      "upstream_history": [
+        {
+          "author": "Zack Emmert",
+          "authored_at": "2021-03-20T22:29:57-04:00",
+          "commit": "c0e4d0da01c732270ca8346eb2804540a1adc05c",
+          "subject": "Resolved merge conflict for PR #1"
+        },
+        {
+          "author": "Silfryi Kalsandryn",
+          "authored_at": "2021-03-19T22:47:00-04:00",
+          "commit": "227018f6f3f5320ca5124b10149e070833a211d8",
+          "subject": "Update railgun model and structure"
+        },
+        {
+          "author": "zmaster587",
+          "authored_at": "2017-02-20T22:02:49-05:00",
+          "commit": "ac7f5d30277199d3905e02fb3c46e498d3b522cd",
+          "subject": "Trace Resources"
+        },
+        {
+          "author": "zmaster587",
+          "authored_at": "2017-02-20T22:02:49-05:00",
+          "commit": "a496d0df546d4a800febb6201c9e6b159d5b3164",
+          "subject": "Trace Resources"
+        },
+        {
+          "author": "zmaster587",
+          "authored_at": "2017-02-20T22:01:36-05:00",
+          "commit": "0631f3aba16f43463d10851d6b75a1b922807348",
+          "subject": "Keep track of assets"
+        },
+        {
+          "author": "dmodoomsirius",
+          "authored_at": "2021-04-28T02:14:30-04:00",
+          "commit": "0c0017bcc06aa291e9d23cb0d6ceda56f7aff863",
+          "subject": "Merge branch '1.12' of https://github.com/zmaster587/AdvancedRocketry into 1.12"
+        }
+      ]
+    },
+    {
+      "asset_coverage_row": 107,
+      "copyright_notice": "Copyright (c) 2017",
+      "derivation": {
+        "related": [
+          "textures/models/solararray.png"
+        ],
+        "verdicts": {
+          "recorded": "CLEAR",
+          "source": "CLEAR"
+        }
+      },
+      "license": "MIT",
+      "source_branch": "1.12",
+      "source_commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+      "source_path": "src/main/resources/assets/advancedrocketry/textures/models/rollingmachine.png",
+      "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
+      "source_sha256": "3d6e85c620156c40956dac5783c32dfeeabe59cb1553d6ecd42c143b994de9ac",
+      "status": "UPSTREAM_AR_MIT",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/models/rollingmachine.png",
+      "target_sha256": "3d6e85c620156c40956dac5783c32dfeeabe59cb1553d6ecd42c143b994de9ac",
+      "transformation": [
+        "Byte copy into the mod namespace: assets/advancedrocketry/textures/models/rollingmachine.png to assets/advancedrocketrycommunity/textures/models/rollingmachine.png."
+      ],
+      "units": [
+        "block:rollingMachine"
+      ],
+      "upstream_history": [
+        {
+          "author": "Silfryi Kalsandryn",
+          "authored_at": "2021-02-02T14:17:01-05:00",
+          "commit": "40678c756051f322b39cdbeb5cbcebcd9c48b87c",
+          "subject": "Slight multiblock texture update"
+        },
+        {
+          "author": "Silfryi Kalsandryn",
+          "authored_at": "2021-01-30T01:00:08-05:00",
+          "commit": "965e2df2a9056551f0502a6119a7905be6e4d579",
+          "subject": "Model update, part 1"
+        },
+        {
+          "author": "zmaster587",
+          "authored_at": "2017-05-20T13:33:15-04:00",
+          "commit": "b3b5f83abb01166d93e3c72844de52238c633160",
+          "subject": "fix resources, fluid handling"
+        },
+        {
+          "author": "zmaster587",
+          "authored_at": "2017-02-20T22:02:49-05:00",
+          "commit": "ac7f5d30277199d3905e02fb3c46e498d3b522cd",
+          "subject": "Trace Resources"
+        },
+        {
+          "author": "zmaster587",
+          "authored_at": "2017-02-20T22:02:49-05:00",
+          "commit": "a496d0df546d4a800febb6201c9e6b159d5b3164",
+          "subject": "Trace Resources"
+        },
+        {
+          "author": "zmaster587",
+          "authored_at": "2017-02-20T22:01:36-05:00",
+          "commit": "0631f3aba16f43463d10851d6b75a1b922807348",
+          "subject": "Keep track of assets"
+        },
+        {
+          "author": "dmodoomsirius",
+          "authored_at": "2021-04-28T02:14:30-04:00",
+          "commit": "0c0017bcc06aa291e9d23cb0d6ceda56f7aff863",
+          "subject": "Merge branch '1.12' of https://github.com/zmaster587/AdvancedRocketry into 1.12"
+        }
+      ]
+    },
+    {
+      "asset_coverage_row": 109,
+      "copyright_notice": "Copyright (c) 2017",
+      "derivation": {
+        "related": [
+          "textures/models/railgun.png",
+          "textures/models/solararray.png"
+        ],
+        "verdicts": {
+          "recorded": "CLEAR",
+          "source": "CLEAR"
+        }
+      },
+      "license": "MIT",
+      "source_branch": "1.12",
+      "source_commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+      "source_path": "src/main/resources/assets/advancedrocketry/textures/models/spaceelevator.png",
+      "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
+      "source_sha256": "4f7432267f11e5f17e642c7d1c3950752952691773d85f7e1da25e70ea6cf68d",
+      "status": "UPSTREAM_AR_MIT",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/models/spaceelevator.png",
+      "target_sha256": "4f7432267f11e5f17e642c7d1c3950752952691773d85f7e1da25e70ea6cf68d",
+      "transformation": [
+        "Byte copy into the mod namespace: assets/advancedrocketry/textures/models/spaceelevator.png to assets/advancedrocketrycommunity/textures/models/spaceelevator.png."
+      ],
+      "units": [
+        "block:spaceElevatorController"
+      ],
+      "upstream_history": [
+        {
+          "author": "Silfryi Kalsandryn",
+          "authored_at": "2021-03-28T15:21:03-04:00",
+          "commit": "9acd2ec648e2a87a0b85b8aec1c5fe0bfa401993",
+          "subject": "Add more model work"
+        },
+        {
+          "author": "Silfryi Kalsandryn",
+          "authored_at": "2021-01-31T04:09:50-05:00",
+          "commit": "6e340d6f14e8302ad0959cd4fb9eb0dc0d1f4a02",
+          "subject": "Space elevator and multiblock work"
+        },
+        {
+          "author": "dmodoomsirius",
+          "authored_at": "2021-04-28T02:14:30-04:00",
+          "commit": "0c0017bcc06aa291e9d23cb0d6ceda56f7aff863",
+          "subject": "Merge branch '1.12' of https://github.com/zmaster587/AdvancedRocketry into 1.12"
+        }
+      ]
+    }
+  ],
+  "generator": "tools/import/import_v180_assets.py",
+  "license": "MIT",
+  "model_set": {
+    "bytes": 722830,
+    "vertices": 22600
+  },
+  "plan_sha256": "a2ba1d1f2844409f431affe7d1a85139aaf5f0105f01152e50dd3723cd7e54a8",
+  "review": {
+    "content_digest": "494265da079707b9b48d38cf2ffd8e040a5ecaaa2842457ef2424e44ef3b6cf0",
+    "findings": [],
+    "reviewed_at": null,
+    "reviewer": null,
+    "status": "PENDING_HUMAN_REVIEW"
+  },
+  "schema_version": 2,
+  "sources": [
+    {
+      "copyright_notice": "Copyright (c) 2017",
+      "license": "MIT",
+      "name": "ar",
+      "source_branch": "1.12",
+      "source_commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+      "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
+      "status": "UPSTREAM_AR_MIT"
+    },
+    {
+      "authoring_commit": "b32cbf4302bcdf525a81bfc50b3dfd4af100f136",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "license": "MIT",
+      "name": "community",
+      "source_branch": "codex/v1.8.0-w241",
+      "source_commit": "db3ce4c62fe2385c6d21153cb864a4740378b5f6",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "status": "NEW"
+    }
+  ],
+  "target_version": "v1.8.0",
+  "vanilla_client_sha256": {
+    "1.12.2": "8ada07da5ee77dad3527bd7278fbd05ee1fc8a597813b216a871a2d7d64cc64f",
+    "1.20.1": "56b71336d2b4fdffd197f56595b0da93e32a946f78f382a299b8f4b92758bb0f"
+  }
+}
