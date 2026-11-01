@@ -12,6 +12,8 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 @PrefixGameTestTemplate(false)
 public final class BayPassengerExitGameTests {
     private BayPassengerExitGameTests() { }
+    @GameTest(template = "rocket_test", batch = "bay_exit_trusted_travel", timeoutTicks = 400)
+    public static void trustedTravelFromAHeldRocketCreatesNoExitRow(GameTestHelper helper) { new BayPassengerExitGameTestFixture(helper, TRUSTED_TRAVEL).start(); }
     @GameTest(template = "rocket_test", batch = "bay_exit_cache_eviction", timeoutTicks = 400)
     public static void dismountGameEventCannotMakeThePortalCheckAcquireATicket(GameTestHelper helper) { new BayPassengerExitGameTestFixture(helper, CACHE_EVICTION).start(); }
     @GameTest(template = "rocket_test", batch = "bay_exit_ambient_fluid", timeoutTicks = 400)

@@ -44,6 +44,20 @@ final class BayPassengerExitGameTestAudit {
         helper.assertTrue(player.getHealth() < 20, "A second first-tick fall was protected");
     }
 
+    /** W242-R3: the operator/space-safety travel move detaches a bay-held rider as a trusted move, never as an exit. */
+    static void trustedTravel(BayPassengerExitGameTestFixture fixture) {
+        var player = fixture.player; var target = fixture.origin.offset(0, 1, 3);
+        var destination = new io.github.sunthemoon.advancedrocketrycommunity.celestial.service.SafeCelestialTravel.Destination(
+                target.getX() + .5, target.getY(), target.getZ() + .5);
+        new io.github.sunthemoon.advancedrocketrycommunity.celestial.service.SafeCelestialTravel()
+                .teleport(player, fixture.helper.getLevel(), destination);
+        fixture.helper.assertTrue(!player.isPassenger() && player.getX() == destination.x() && player.getY() == destination.y()
+                && player.getZ() == destination.z(), "Trusted travel did not move the rider: " + player.position());
+        fixture.helper.assertTrue(fixture.exits.state.live.get(player) == null
+                && fixture.exits.state.history(player.getUUID(), fixture.flight.record().transferId()) == null,
+                "Trusted travel from a held rocket created an exit row");
+    }
+
     /** W242-R1: the rocket column's cache slot and tickets at the fixture's own dismount event, before any W242 code. */
     record Mount(long column, int slot, List<String> tickets) { }
 

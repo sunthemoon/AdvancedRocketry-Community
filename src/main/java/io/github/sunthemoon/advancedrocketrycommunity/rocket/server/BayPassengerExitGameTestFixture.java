@@ -33,7 +33,7 @@ final class BayPassengerExitGameTestFixture {
         CONTENTION, EXPIRY, UNLOADED, NON_FALL_LANDING, CANCELLED_FALL, FLUID, GANTRY, LOCAL_ONLY, REMOTE,
         HAZARD, HEADROOM, PARTIAL, BUDGET, REENTRANT_DAMAGE, AFTER_TELEPORT, RELEASED_SUCCESS, CLIMB,
         CONTENTION_REVERSE, ONE_BOX, ONE_BOX_REVERSE, LAST_UNIT, LAST_UNIT_REVERSE, DELAYED_ONE_BOX, DELAYED_LAST, FIFO,
-        EARLY_CONTINUOUS, SECOND_CORRECTION, EARLY_DISCONTINUITY, AMBIENT_FLUID, CACHE_EVICTION }
+        EARLY_CONTINUOUS, SECOND_CORRECTION, EARLY_DISCONTINUITY, AMBIENT_FLUID, CACHE_EVICTION, TRUSTED_TRAVEL }
     final GameTestHelper helper;
     final Case scenario;
     final List<ServerPlayer> players = new ArrayList<>();
@@ -251,6 +251,7 @@ final class BayPassengerExitGameTestFixture {
                     && local.result.ordinal() == 1 && local.descent == null
                     && exits.state.history(player.getUUID(), flight.record().transferId()) == null, "Unassigned rider gained checked-anchor authority"); done(); return;
         }
+        if (scenario == Case.TRUSTED_TRAVEL) { BayPassengerExitGameTestAudit.trustedTravel(this); done(); return; }
         if (scenario == Case.BUDGET) {
             while (exits.budget.usage().candidates() < 128) { exits.budget.openProbe().orElseThrow().close(); }
         }
