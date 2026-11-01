@@ -118,7 +118,10 @@ public final class ElevatorCapsuleGameTests {
             flush();
             helper.assertTrue(sent.size() == 1, "The add did not send exactly one vanilla departure packet: " + sent);
             CompoundTag update = sent.get(0);
-            helper.assertTrue(update.getBoolean("tether") && update.size() == 2, "Tether changed or private data leaked");
+            helper.assertTrue(update.getBoolean("tether")
+                            && update.getAllKeys().equals(java.util.Set.of("tether", ElevatorCapsuleCodec.KEY, "formed"))
+                            && io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.ClassicModelProjection.decode(update),
+                    "Tether/formation changed or private data leaked");
             helper.assertTrue(ElevatorCapsuleCodec.decode(update).equals(List.of(
                     new ElevatorCapsuleCodec.Entry(rider.getId(), ElevatorRules.RIDE_COUNTDOWN_TICKS))),
                     "The pending rider/countdown was not projected: " + update);

@@ -11,6 +11,8 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.state.BlockState;
+import javax.annotation.Nullable;
 import net.minecraftforge.client.model.renderable.CompositeRenderable;
 
 /**
@@ -36,14 +38,23 @@ public final class ClassicObjModelRenderer<T extends BlockEntity & FormedModelCo
         var level = controller.getLevel();
         var state = controller.getBlockState();
         var entry = cache.get(fixture.id()).orElse(null);
-        if (level == null || entry == null || !controller.modelFormed() || !state.hasProperty(ClassicControllerBlock.FACING)) { return; }
+        Direction facing = modelFacing(fixture, state, controller.modelFormed());
+        if (level == null || entry == null || facing == null) { return; }
         // The fixture samples outside occupied pattern cells; the controller block itself is unlit.
         int light = LevelRenderer.getLightColor(level, controller.getBlockPos().above(fixture.lightCellAboveController()));
         pose.pushPose();
-        place(pose, fixture, state.getValue(ClassicControllerBlock.FACING));
+        place(pose, fixture, facing);
         entry.model().render(pose, buffers, texture -> RenderType.entityCutout(entry.texture(texture)), light,
                 OverlayTexture.NO_OVERLAY, partialTick, CompositeRenderable.Transforms.EMPTY);
         pose.popPose();
+    }
+
+    /** The exact draw gate: a cleared vanilla projection draws no hull, including at a newly rotated facing. */
+    @Nullable
+    static Direction modelFacing(ObjModelFixture fixture, BlockState state, boolean formed) {
+        if (!formed) { return null; }
+        if (fixture == ObjModelFixture.ELEVATOR_ANCHOR) { return Direction.NORTH; }
+        return state.hasProperty(ClassicControllerBlock.FACING) ? state.getValue(ClassicControllerBlock.FACING) : null;
     }
 
     /** Places the mirrored model on the controller: the rotation of its pattern transform, then offset and scale. */

@@ -96,6 +96,7 @@ public abstract class ElevatorEndpointBlockEntity extends CargoEndpointBlockEnti
             try {
                 endpoint.tickServer(server, state);
             } finally {
+                if (endpoint instanceof ElevatorAnchorBlockEntity anchor) { anchor.updateModelProjection(); }
                 EndgameRuntime.timings().add(EndgameTimings.Place.SPACE_ELEVATOR, System.nanoTime() - start);
             }
         }

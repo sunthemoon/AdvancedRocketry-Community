@@ -44,6 +44,10 @@ public final class K3BeaconModelGameTests {
             if (stage[0] == 0 && fixtures.stream().allMatch(f -> f.beacon.formed())) {
                 for (var f : fixtures) {
                     K3ModelTestRegion.assertProjection(helper, f.beacon, true);
+                    var original = FormedModelRotationProbe.rotate(helper, f.beacon);
+                    FormedModelRotationProbe.assertPresentation(helper, f.beacon, false);
+                    FormedModelRotationProbe.set(helper, f.beacon, original);
+                    FormedModelRotationProbe.assertPresentation(helper, f.beacon, true);
                     helper.assertTrue(!f.beacon.live(), "Unowned K3 beacon became live");
                     helper.assertTrue(f.beacon.getRenderBoundingBox().equals(ClassicModelProjection.bounds(ModIdentity.id("planetary_beacon"),
                             f.beacon.getBlockState().getValue(PlanetaryBeaconBlock.FACING), f.beacon.getBlockPos())), "Beacon render bounds differ");

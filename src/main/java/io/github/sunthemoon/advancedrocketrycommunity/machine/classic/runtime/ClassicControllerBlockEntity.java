@@ -95,17 +95,25 @@ public class ClassicControllerBlockEntity extends BlockEntity implements MenuPro
     }
     /** ADR-066 section 7.1: a catalogued client model follows the formed flag, sent only when it changes. */
     private void updateModelProjection() {
-        if (!ClassicModelProjection.projects(definition.kind()) || modelFormed == formed()) { return; }
-        modelFormed = formed();
+        boolean next = sourceModelFormed();
+        if (!ClassicModelProjection.projects(definition.kind()) || modelFormed == next) { return; }
+        modelFormed = next;
         if (level instanceof ServerLevel server && !isRemoved()) {
             server.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
         }
+    }
+    private boolean sourceModelFormed() {
+        return formed() && checkpoint.structure().selectedTransform().rotation() == transform(getBlockState()).rotation();
+    }
+    @Override public void setBlockState(BlockState state) {
+        super.setBlockState(state);
+        if (level instanceof ServerLevel) { updateModelProjection(); }
     }
     public boolean modelFormed() { return modelFormed; }
     @Override public CompoundTag getUpdateTag() {
         CompoundTag tag = MachineSoundProfile.loop(definition.kind().getPath(), true) == null
                 ? new CompoundTag() : ProcessingFlagCodec.encode(processingActive);
-        if (ClassicModelProjection.projects(definition.kind())) { ClassicModelProjection.encode(tag, formed()); }
+        if (ClassicModelProjection.projects(definition.kind())) { ClassicModelProjection.encode(tag, sourceModelFormed()); }
         return tag;
     }
     @Override public void handleUpdateTag(CompoundTag tag) {

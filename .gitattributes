@@ -51,4 +51,17 @@ src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/observatory.
 src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/observatory.obj -text
 src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/solar_array.mtl -text
 src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/solar_array.obj -text
+# Preserve K4 importer-written OBJ/MTL bytes on Windows.
+src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/black_hole_generator.mtl -text
+src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/blackholegenerator.obj -text
+src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/orbital_laser_drill.mtl -text
+src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/orbitallaserdrill.obj -text
+src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/precision_assembler.mtl -text
+src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/precisionassembler.obj -text
+src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/railgun.mtl -text
+src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/railgun.obj -text
+src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/rolling_machine.mtl -text
+src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/rollingmachine.obj -text
+src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/spaceelevator.mtl -text
+src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/spaceelevator.obj -text
 LICENSE text eol=lf

@@ -1,5 +1,9 @@
 package io.github.sunthemoon.advancedrocketrycommunity.endgame.laser;
 
+import io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.ClassicModelProjection;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.FormedModelController;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.K4ModelProjection;
+
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameTimings;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.model.CelestialBodyDefinition;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.authority.EndgameAuthority;
@@ -53,7 +57,23 @@ import net.minecraftforge.registries.ForgeRegistries;
  * keeps its side of the link ({@link LaserLink}) and {@link LaserPhysicalDrill} digs one layer per operation at the
  * linked laser target. Button effects are in {@link LaserDrillIntents}.
  */
-public final class OrbitalLaserDrillBlockEntity extends EndgameDeviceBlockEntity implements MenuProvider {
+public final class OrbitalLaserDrillBlockEntity extends EndgameDeviceBlockEntity implements MenuProvider, FormedModelController {
+    private final K4ModelProjection modelProjection = new K4ModelProjection();
+    private boolean sourceModelFormed() {
+        return !isRemoved() && !quarantined()
+                && structure.formedForFacing(getBlockState().getValue(OrbitalLaserDrillBlock.FACING))
+                && EndgameRuntime.operational().isPresent();
+    }
+    @Override public void setBlockState(BlockState state) {
+        super.setBlockState(state);
+        if (level instanceof ServerLevel) { updateModelProjection(); }
+    }
+    @Override public boolean modelFormed() { return modelProjection.formed(); }
+    @Override public void load(CompoundTag tag) {
+        modelProjection.publish(this, false);
+        super.load(tag);
+    }
+    private void updateModelProjection() { modelProjection.publish(this, sourceModelFormed()); }
     public static final int ROOT_SCHEMA = 1;
     public static final String PATTERN_ID = "advancedrocketrycommunity:orbital_laser_drill";
     private static final int STATUS_RECHECK_TICKS = 20;
@@ -170,6 +190,7 @@ public final class OrbitalLaserDrillBlockEntity extends EndgameDeviceBlockEntity
             try {
                 drill.tick(server, state);
             } finally {
+                drill.updateModelProjection();
                 EndgameRuntime.timings().add(EndgameTimings.Place.LASER_DRILL, System.nanoTime() - start);
             }
         }
@@ -416,6 +437,7 @@ public final class OrbitalLaserDrillBlockEntity extends EndgameDeviceBlockEntity
 
     @Override
     public void setRemoved() {
+        modelProjection.publish(this, false);
         super.setRemoved();
         if (level != null && !level.isClientSide) {
             unloadRuntime();
@@ -424,6 +446,7 @@ public final class OrbitalLaserDrillBlockEntity extends EndgameDeviceBlockEntity
 
     @Override
     public void onChunkUnloaded() {
+        modelProjection.publish(this, false);
         super.onChunkUnloaded();
         if (level != null && !level.isClientSide) {
             unloadRuntime();
@@ -529,12 +552,14 @@ public final class OrbitalLaserDrillBlockEntity extends EndgameDeviceBlockEntity
     public CompoundTag getUpdateTag() {
         CompoundTag tag = new CompoundTag();
         tag.putBoolean("active", renderActive);
+        ClassicModelProjection.encode(tag, modelProjection.formed() && sourceModelFormed());
         return tag;
     }
 
     @Override
     public void handleUpdateTag(CompoundTag tag) {
-        renderActive = tag.getBoolean("active");
+        renderActive = tag != null && tag.getBoolean("active");
+        modelProjection.read(tag);
     }
 
     @Nullable
@@ -543,13 +568,19 @@ public final class OrbitalLaserDrillBlockEntity extends EndgameDeviceBlockEntity
         return ClientboundBlockEntityDataPacket.create(this);
     }
 
+    @Override public void onDataPacket(net.minecraft.network.Connection connection, ClientboundBlockEntityDataPacket packet) {
+        handleUpdateTag(packet.getTag());
+    }
+
+
     public boolean activeForRender() {
         return renderActive;
     }
 
     @Override
     public AABB getRenderBoundingBox() {
-        return new AABB(worldPosition).expandTowards(0.0D, -(2.0D + LaserBeam.EMITTER_LENGTH), 0.0D);
+        return new AABB(worldPosition).expandTowards(0.0D, -(2.0D + LaserBeam.EMITTER_LENGTH), 0.0D)
+                .minmax(K4ModelProjection.bounds("orbital_laser_drill", getBlockState().getValue(OrbitalLaserDrillBlock.FACING), worldPosition));
     }
 
     @Override

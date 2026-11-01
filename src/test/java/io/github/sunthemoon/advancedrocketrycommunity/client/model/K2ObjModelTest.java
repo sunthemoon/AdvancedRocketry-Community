@@ -112,9 +112,10 @@ class K2ObjModelTest {
         return parts;
     }
 
-    @Test void catalogContainsExactlyK1K2AndK3Kinds() {
+    @Test void catalogContainsExactlyK1ThroughK4Kinds() {
         assertEquals(Set.of("centrifuge", "chemical_reactor", "crystallizer", "cutting_machine", "lathe",
-                "astrobody_data_processor", "observatory", "planetary_beacon", "solar_array"),
+                "astrobody_data_processor", "observatory", "planetary_beacon", "solar_array",
+                "black_hole_generator", "orbital_laser_drill", "precision_assembler", "railgun", "rolling_machine", "elevator_anchor"),
                 ObjModelFixture.CATALOG.stream().map(f -> f.kind().getPath()).collect(Collectors.toSet()));
     }
 
