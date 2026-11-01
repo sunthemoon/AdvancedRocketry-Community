@@ -24,6 +24,22 @@ Root: Claude. Date: 2026-11-01. Read [WORKER-RULES](WORKER-RULES.md) first. You 
   `ObfuscationReflectionHelper` as `f_9767_` is) or compare the player's position across the correction; say which
   and why. No reflective write, ASM, Access Transformer, teleport allowlist or deferred grant.
 
+**Root decision R264 (2026-11-01, 19:50) replaces R260's acceptance test**, after W242-fix showed that the pending
+target equals the new server position even for a moving correction and that relative flags leave no trace in the
+allowed observations:
+
+- Accept at most one teleport-counter step beyond the exit's own correction, within the first two server ticks after
+  detach, on the same connection, **only if the next position sample still satisfies every existing continuity
+  limit against the previous sample** (no upward move, at most 1 block horizontal and 4 down per tick, within 8
+  blocks of the exit's origin, finite, ordinary state). Relative flags do not matter: only the resulting server
+  position is judged, and it is judged by the limits ordinary movement already has.
+- It never rebaselines: origin, radius, allowance and deadline stay the exit's own. A second extra step, a step
+  after the two ticks, a step other than one, another connection, or a sample that fails continuity revokes as R2
+  says.
+- No new observation is needed (the existing counter and position samples), and none of the forbidden mechanisms.
+  Vanilla's removed-passenger correction (`ServerEntity.sendChanges` teleports the passenger to its own current
+  position) passes by construction.
+
 ## Steps
 
 1. **The R2 boundary.** Implement R260 with unit tests for each accepting and revoking case above (failing first where
