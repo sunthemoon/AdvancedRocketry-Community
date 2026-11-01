@@ -160,6 +160,89 @@ final class W238OwnerPendingTest {
         }
     }
 
+    /** W231 test list item 2: with both limits reached, ROCKET_FULL wins over OWNER_PENDING_FULL and changes nothing. */
+    @Test void rocketFullTakesPrecedenceOverOwnerPendingFullWhenBothApply() throws Exception {
+        try (var h = BayReceiptHarness.empty(temp)) {
+            for (int n = 1; n <= 16; n++) {
+                assertTrue(h.put(receipt(n, A, id(240_000 + (n - 1) / 8), BayReceipt.Phase.INTENT)).queued());
+            }
+            assertEquals(16, h.authority.pendingCount()); assertEquals(8, h.authority.pendingFor(id(240_001)));
+            assertEquals(Result.OWNER_PENDING_FULL, h.authority.checkReserve(id(990_000), A, id(240_002), Consumer.PROPULSION));
+            assertEquals(Result.ROCKET_FULL, h.authority.checkReserve(id(990_000), B, id(240_001), Consumer.PROPULSION));
+            assertEquals(Result.ROCKET_FULL, h.authority.checkReserve(id(990_000), A, id(240_001), Consumer.PROPULSION));
+            var before = BayReceiptCodec.encode(h.store().durable()); long sequence = h.store().issuedThrough();
+            var refused = h.put(receipt(20, A, id(240_001), BayReceipt.Phase.INTENT));
+            assertFalse(refused.queued()); assertEquals(Result.ROCKET_FULL, refused.reservation());
+            assertEquals("ROCKET_PENDING_FULL", BayDeploymentReasons.admission(refused));
+            assertEquals(Result.ROCKET_FULL, h.authority.tryReserve(id(990_000), A, id(240_001), Consumer.PROPULSION));
+            assertEquals(16, h.authority.pendingCount()); assertEquals(sequence, h.store().issuedThrough());
+            assertEquals(before, BayReceiptCodec.encode(h.store().durable()));
+        }
+    }
+
+    /**
+     * W231 test list item 6: a written escrow ledger with 24 PROPULSION records for one owner loads after a restart and
+     * refuses only that owner's new work. A decision moves one held record to SETTLING_ACCEPT and an exact retirement
+     * removes another; neither asks for a slot, and the saved file loads again with the same counts.
+     */
+    @Test void restartWithAnOverCapEscrowLedgerRefusesOnlyThatOwnerAndRecoversWithoutANewSlot() throws Exception {
+        var ops = java.util.stream.LongStream.rangeClosed(1, 24).mapToObj(EscrowTestFixtures::operation).toList();
+        UUID owner = ops.get(0).owner(); assertTrue(ops.stream().allMatch(op -> op.owner().equals(owner)));
+        var file = temp.resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName());
+        CheckedSavedDataFile.replace(file, ManagedSavedDataType.RESOURCE_ESCROW,
+                () -> EscrowCodec.encode(EscrowTestFixtures.ledger(ops.toArray(EscrowOperation[]::new))));
+        var authority = new EscrowAdmissionAuthority(); var propulsion = authority.register(Consumer.PROPULSION);
+        assertEquals(Result.UNAVAILABLE, check(authority, B));
+        var data = ResourceEscrowSavedData.load(CheckedSavedDataFile.readPayload(file, ManagedSavedDataType.RESOURCE_ESCROW).orElseThrow());
+        var io = new AwaitedLedgerIo(); var decided = ops.get(0); var retired = ops.get(1);
+        try (var writer = io.writer(file, 0, CheckedSavedDataFile::atomicMove);
+                var coordinator = new EscrowCoordinator(data, writer, propulsion)) {
+            assertEquals(ops, coordinator.ledger().records()); assertEquals(24, authority.pendingCount());
+            assertEquals(Result.OWNER_PENDING_FULL, check(authority, owner)); assertEquals(Result.RESERVED, check(authority, B));
+            assertEquals(Result.ALREADY_HELD, reserve(authority, Pending.of(decided)));
+            long tick = 10;
+            coordinator.transition(decided.id(), EscrowReason.OTHER_STATE);
+            coordinator.tick(tick); coordinator.autosave(); io.awaitWrites(); coordinator.tick(++tick);
+            assertEquals(EscrowReason.OTHER_STATE, coordinator.ledger().records().get(0).reason());
+            var observed = EscrowSettlementIntentTest.observations(EscrowTestFixtures.ledger(decided), false);
+            var preview = EscrowSettlementIntent.preview(coordinator.ledger(), decided.id(), EscrowSettlementIntent.Choice.ACCEPT_CURRENT,
+                    B, "operator", tick, observed);
+            var decisions = new ArrayList<Boolean>(); coordinator.tick(tick += 10);
+            assertTrue(coordinator.beginSettlement(preview.confirm(B, preview.digest(), tick, observed), decisions::add));
+            io.awaitWrites(); coordinator.tick(++tick); assertEquals(List.of(true), decisions);
+            assertEquals(EscrowOperation.Phase.SETTLING_ACCEPT, coordinator.ledger().records().get(0).phase());
+            assertEquals(24, authority.pendingCount()); assertEquals(Result.OWNER_PENDING_FULL, check(authority, owner));
+            var proofs = new java.util.HashMap<EscrowEndpoint.Key, EscrowBarrier.Proof>();
+            for (var chain : EscrowPrefix.chains(coordinator.ledger().records()).entrySet()) {
+                if (!chain.getKey().equals(retired.source().key()) && !chain.getKey().equals(retired.destination().key())) { continue; }
+                var last = chain.getValue().get(chain.getValue().size() - 1).endpoint();
+                var state = new EscrowPrefix.State(coordinator.ledger().id(), last.afterEpoch(), last.afterSignature(),
+                        chain.getValue().stream().map(EscrowPrefix.Link::marker).toList());
+                coordinator.freeze(chain.getKey(), state);
+                var capture = new EscrowChunkStore.Capture(java.util.concurrent.CompletableFuture.completedFuture(null), null, temp,
+                        new net.minecraft.world.level.ChunkPos(0, 0), new java.util.concurrent.atomic.AtomicLong(1), 1, 0, () -> { }, () -> { });
+                proofs.put(chain.getKey(), new EscrowBarrier.Proof(state, capture, new java.util.concurrent.atomic.AtomicBoolean(true),
+                        new java.util.concurrent.atomic.AtomicBoolean(true)));
+            }
+            assertEquals(2, proofs.size());
+            var retirements = new ArrayList<Boolean>(); coordinator.tick(tick += 10);
+            assertTrue(coordinator.retire(java.util.Set.of(retired.id()), proofs, retirements::add));
+            io.awaitWrites(); coordinator.tick(++tick); assertEquals(List.of(true), retirements);
+            assertEquals(23, coordinator.ledger().records().size()); assertEquals(23, authority.pendingCount());
+            assertEquals(Result.OWNER_PENDING_FULL, check(authority, owner)); assertEquals(Result.RESERVED, check(authority, B));
+            assertEquals(coordinator.ledger(), EscrowCodec.decode(CheckedSavedDataFile.readPayload(file, ManagedSavedDataType.RESOURCE_ESCROW).orElseThrow()));
+        }
+        var restarted = new EscrowAdmissionAuthority(); var again = restarted.register(Consumer.PROPULSION);
+        var reloaded = ResourceEscrowSavedData.load(CheckedSavedDataFile.readPayload(file, ManagedSavedDataType.RESOURCE_ESCROW).orElseThrow());
+        try (var writer = new EscrowLedgerWriter(file, reloaded.ledger().writerGeneration());
+                var coordinator = new EscrowCoordinator(reloaded, writer, again)) {
+            assertEquals(23, restarted.pendingCount()); assertEquals(Result.OWNER_PENDING_FULL, check(restarted, owner));
+            assertEquals(Result.RESERVED, check(restarted, B));
+            assertEquals(EscrowOperation.Phase.SETTLING_ACCEPT, coordinator.ledger().records().get(0).phase());
+            assertTrue(coordinator.ledger().records().stream().noneMatch(op -> op.id().equals(retired.id())));
+        }
+    }
+
     private static Result check(EscrowAdmissionAuthority authority, UUID owner) {
         return authority.checkReserve(id(990_000), owner, id(990_001), Consumer.PROPULSION);
     }
