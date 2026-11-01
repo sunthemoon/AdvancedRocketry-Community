@@ -62,14 +62,25 @@ public final class K4ModelGameTests {
     @GameTest(template="empty",batch="w241_railgun_rotation",timeoutTicks=240)
     public static void railgunRotationWithholdsCachedHull(GameTestHelper h) { exerciseRotation(h,"railgun",11); }
 
+    /**
+     * W247: every facing of one test shares one ticketed chunk in the test's own row, its controller 8 blocks from the
+     * next, instead of a 5x5-chunk region per facing 160 blocks apart. Each row stays 1,000 blocks from the next.
+     */
+    private static BlockPos origin(int row, int index) {
+        int z = Math.floorDiv(-2_410_000 - row * 1000, 16) * 16;
+        return new BlockPos(-2_410_000 + 4 + index % 2 * 8, 100, z + 4 + index / 2 * 8);
+    }
+
     private static void exerciseRotation(GameTestHelper h, String kind, int row) {
+        var region = new K3ModelTestRegion(h, origin(row, 0), 0);
+        var claimed = new HashSet<BlockPos>();
         var fixtures = new ArrayList<Fixture>();
         var states = new ArrayList<BlockState>();
         var roots = new ArrayList<Object>();
         var validations = new ArrayList<Object>();
         int[] stage = {0};
         for (Direction facing : Direction.Plane.HORIZONTAL) {
-            fixtures.add(new Fixture(h, kind, new BlockPos(-2_410_000 + fixtures.size()*160,100,-2_410_000-row*1000),facing,false));
+            fixtures.add(new Fixture(h, region, claimed, kind, origin(row, fixtures.size()), facing, false));
         }
         h.onEachTick(() -> {
             fixtures.forEach(Fixture::tick);
@@ -110,10 +121,12 @@ public final class K4ModelGameTests {
     private static void exercise(GameTestHelper h,String kind,int row,boolean mirrored) {
         var fixtures = new ArrayList<Fixture>();
         int[] stage={0};
+        var region=new K3ModelTestRegion(h,origin(row,0),0);
+        var claimed=new HashSet<BlockPos>();
         try {
             int index=0;
             for (Direction facing : kind.equals("elevator_anchor") ? List.of(Direction.NORTH) : Direction.Plane.HORIZONTAL) {
-                fixtures.add(new Fixture(h,kind,new BlockPos(-2_410_000 + index++*160,100,-2_410_000-row*1000),facing,mirrored));
+                fixtures.add(new Fixture(h,region,claimed,kind,origin(row,index++),facing,mirrored));
             }
             h.onEachTick(() -> {
                 for (var f : fixtures) { f.tick(); }
@@ -131,7 +144,7 @@ public final class K4ModelGameTests {
                     stage[0]=4;
                 } else { fixtures.forEach(Fixture::close); h.succeed(); }
             });
-        } catch (RuntimeException | Error failure) { fixtures.forEach(Fixture::close); throw failure; }
+        } catch (RuntimeException | Error failure) { region.close(); throw failure; }
     }
 
     private static final class Fixture implements AutoCloseable {
@@ -144,16 +157,27 @@ public final class K4ModelGameTests {
         private final BlockPos broken;
         private final BlockState brokenState;
 
-        Fixture(GameTestHelper helper,String kind,BlockPos origin,Direction facing,boolean mirrored) {
-            this.helper=helper; this.kind=kind; this.origin=origin; this.facing=facing;
-            region=new K3ModelTestRegion(helper,origin);
+        Fixture(GameTestHelper helper,K3ModelTestRegion region,Set<BlockPos> claimed,String kind,BlockPos origin,Direction facing,boolean mirrored) {
+            this.helper=helper; this.kind=kind; this.origin=origin; this.facing=facing; this.region=region;
             try {
                 MultiblockPatternDefinition pattern;
                 try(var in=K4ModelGameTests.class.getResourceAsStream("/data/advancedrocketrycommunity/machine_patterns/"+kind+".json")) {
                     pattern=MultiblockPatternJsonCodec.decode(Objects.requireNonNull(in).readAllBytes());
                 }
-                var transform=new PatternTransform(ClassicModelProjection.transform(facing).rotation(),mirrored);
                 var world=new PatternPosition(origin.getX(),origin.getY(),origin.getZ());
+                // The facings share one chunk: every cell that any facing or mirror of this controller could validate
+                // stays in the ticketed chunk and apart from the cells of the test's other facings.
+                var reach=new HashSet<BlockPos>();
+                for(Direction any:Direction.Plane.HORIZONTAL){ for(boolean mirror:new boolean[]{false,true}){
+                    var anyTransform=new PatternTransform(ClassicModelProjection.transform(any).rotation(),mirror);
+                    for(var local:pattern.cells().keySet()){
+                        var p=anyTransform.localToWorld(local,pattern.controllerAnchor(),world); reach.add(new BlockPos(p.x(),p.y(),p.z()));
+                    }
+                } }
+                helper.assertTrue(reach.stream().allMatch(p->region.ticketed(p) && !claimed.contains(p)),
+                        "K4 fixture leaves its shared chunk or overlaps another facing");
+                claimed.addAll(reach);
+                var transform=new PatternTransform(ClassicModelProjection.transform(facing).rotation(),mirrored);
                 for(var cell:pattern.cells().entrySet()) {
                     if(cell.getValue() instanceof PatternMatcher.Controller){continue;}
                     var p=transform.localToWorld(cell.getKey(),pattern.controllerAnchor(),world);
