@@ -452,6 +452,13 @@ must handle:
    checks remain unchanged. This is not human origin sign-off or a general
    ambiguous-rename exemption. W244 records both etcher predecessor histories.
 
+   **Ordinary baked OBJ block models (Root decision R271, 2026-11-02, W249).** A block that has no formed
+   state may bind an imported OBJ through Forge's `forge:obj` block-model loader, so placed blocks, block items
+   and assembled rockets share one baked mesh. Its MTL textures are block-atlas sprites under `textures/block/`,
+   not the directly bound `textures/models/` route of the formed hull renderers, and the importer records each
+   namespace and folder rewrite of a `map_Kd` reference. Exact source rows take precedence over the broader
+   wildcard rules they leave unchanged. This adds no allowlist entry and is not human provenance approval.
+
    **The AR 16x texture set.** Pull requests #1809, #1811 and #1889 (2020)
    and the follow-up #1976 (2021) were merged by the contributor whose
    LibVulpes commit `984d6747`, two days before #1809, took its 16x textures

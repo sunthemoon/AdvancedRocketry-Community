@@ -48,7 +48,7 @@ biome:volcanicbarren,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:volcanic_lowla
 biome_unregistered:BiomeGenPumpkin,REJECTED,-,-,ADR-062,never registered in the legacy build,
 biome_unregistered:BiomeGenWatermelon,REJECTED,-,-,ADR-062,never registered in the legacy build,
 block:advbipropellantRocketmotor,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:advanced_bipropellant_rocket_motor,ADR-062 ADR-065,propulsion tier with fuel and oxidizer,docs/work/v1.8.0-c17a-propulsion/VERIFICATION.md
-block:advRocketmotor,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:advanced_rocket_motor,ADR-062 ADR-065,propulsion tier,docs/work/v1.8.0-c17a-propulsion/VERIFICATION.md
+block:advRocketmotor,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:advanced_rocket_motor,ADR-062 ADR-065,propulsion tier; W249 P1 ordinary baked OBJ mono motor and shared block item; human provenance/V1 pending,docs/work/v1.8.0-c17a-propulsion/VERIFICATION.md
 block:airlock_door,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:airlock_door,ADR-062 ADR-066,sealing door; block half of the small airlock; W246 flat texture references; docs/provenance/v1.8.0-w246-flat-textures.json; human review and V1 pending,docs/work/v1.8.0-c18a-life-support/VERIFICATION.md
 block:alienLeaves,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:lightwood_leaves,ADR-063,"alien forest flora; light 8, a sapling in 1 of 100 drops",docs/work/v1.8.0-c15c-worlds/VERIFICATION.md
 block:alienSapling,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:lightwood_sapling,ADR-063,alien forest flora; grows the lightwood tree,docs/work/v1.8.0-c15c-worlds/VERIFICATION.md
@@ -124,7 +124,7 @@ block:railgun,IMPLEMENTED,v1.7.0,advancedrocketrycommunity:railgun,ADR-056,,
 block:rocketBuilder,IMPLEMENTED,v0.5.0,advancedrocketrycommunity:rocket_assembler,V0.5.0,,
 block:rocketfire,REJECTED,-,-,ADR-062,technical fire block; launch effects are client particles,
 block:rocketFuel,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:rocket_fuel,ADR-062 ADR-064,source and flowing liquid fuel block,docs/work/v1.8.0-c16a-fluids/VERIFICATION.md
-block:rocketmotor,IMPLEMENTED,v0.5.0,advancedrocketrycommunity:rocket_motor,ADR-026,,
+block:rocketmotor,IMPLEMENTED,v0.5.0,advancedrocketrycommunity:rocket_motor,ADR-026,W249 P1 ordinary baked OBJ mono motor and shared block item; human provenance/V1 pending,
 block:rollingMachine,IMPLEMENTED,v1.2.0,advancedrocketrycommunity:rolling_machine,ADR-016,,
 block:satelliteBuilder,IMPLEMENTED,v1.6.0,advancedrocketrycommunity:satellite_builder,ADR-049,,
 block:satelliteControlCenter,IMPLEMENTED,v0.8.0,advancedrocketrycommunity:satellite_terminal,ADR-049,,
