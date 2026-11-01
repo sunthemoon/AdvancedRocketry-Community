@@ -53,7 +53,13 @@ public final class PrecisionAssemblerBlockEntity extends BlockEntity implements 
     private boolean sourceModelFormed() {
         return !isRemoved() && persistenceStatus == MultiblockNbtStatus.SUPPORTED
                 && controllerState.formationState() == MultiblockFormationState.FORMED
-                && !controllerState.selectedTransform().mirroredLocalX();
+                && !controllerState.selectedTransform().mirroredLocalX()
+                && controllerState.selectedTransform().rotation() == ClassicModelProjection.transform(
+                        getBlockState().getValue(PrecisionAssemblerBlock.FACING)).rotation();
+    }
+    @Override public void setBlockState(BlockState state) {
+        super.setBlockState(state);
+        if (level instanceof ServerLevel) { modelProjection.publish(this, sourceModelFormed()); }
     }
     @Override public boolean modelFormed() { return modelProjection.formed(); }
     @Override public CompoundTag getUpdateTag() {

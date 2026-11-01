@@ -60,7 +60,13 @@ import net.minecraftforge.registries.ForgeRegistries;
 public final class OrbitalLaserDrillBlockEntity extends EndgameDeviceBlockEntity implements MenuProvider, FormedModelController {
     private final K4ModelProjection modelProjection = new K4ModelProjection();
     private boolean sourceModelFormed() {
-        return !isRemoved() && !quarantined() && structure.code() == EndgameCode.OK && EndgameRuntime.operational().isPresent();
+        return !isRemoved() && !quarantined()
+                && structure.formedForFacing(getBlockState().getValue(OrbitalLaserDrillBlock.FACING))
+                && EndgameRuntime.operational().isPresent();
+    }
+    @Override public void setBlockState(BlockState state) {
+        super.setBlockState(state);
+        if (level instanceof ServerLevel) { updateModelProjection(); }
     }
     @Override public boolean modelFormed() { return modelProjection.formed(); }
     @Override public void load(CompoundTag tag) {

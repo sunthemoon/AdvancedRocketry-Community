@@ -48,7 +48,13 @@ import net.minecraftforge.fml.DistExecutor;
 public final class RailgunBlockEntity extends CargoEndpointBlockEntity implements MenuProvider, FormedModelController {
     private final K4ModelProjection modelProjection = new K4ModelProjection();
     private boolean sourceModelFormed() {
-        return !isRemoved() && !quarantined() && structure.code() == EndgameCode.OK && EndgameRuntime.operational().isPresent();
+        return !isRemoved() && !quarantined()
+                && structure.formedForFacing(getBlockState().getValue(RailgunBlock.FACING))
+                && EndgameRuntime.operational().isPresent();
+    }
+    @Override public void setBlockState(BlockState state) {
+        super.setBlockState(state);
+        if (level instanceof ServerLevel) { modelProjection.publish(this, sourceModelFormed()); }
     }
     @Override public boolean modelFormed() { return modelProjection.formed(); }
     @Override public void load(CompoundTag tag) {

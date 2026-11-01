@@ -49,7 +49,13 @@ public final class RollingMachineBlockEntity extends BlockEntity implements Menu
     private final K4ModelProjection modelProjection = new K4ModelProjection();
     private boolean sourceModelFormed() {
         return !isRemoved() && persistenceStatus == MultiblockNbtStatus.SUPPORTED
-                && controllerState.formationState() == MultiblockFormationState.FORMED;
+                && controllerState.formationState() == MultiblockFormationState.FORMED
+                && controllerState.selectedTransform().rotation() == ClassicModelProjection.transform(
+                        getBlockState().getValue(RollingMachineBlock.FACING)).rotation();
+    }
+    @Override public void setBlockState(BlockState state) {
+        super.setBlockState(state);
+        if (level instanceof ServerLevel) { modelProjection.publish(this, sourceModelFormed()); }
     }
     @Override public boolean modelFormed() { return modelProjection.formed(); }
     @Override public net.minecraft.world.phys.AABB getRenderBoundingBox() {

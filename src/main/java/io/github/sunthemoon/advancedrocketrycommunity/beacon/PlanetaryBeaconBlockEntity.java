@@ -47,16 +47,23 @@ public final class PlanetaryBeaconBlockEntity extends BlockEntity implements For
     private boolean modelFormed;
 
     @Override public boolean modelFormed() { return modelFormed; }
+    private boolean sourceModelFormed() {
+        return retained == null && structure.formedForFacing(getBlockState().getValue(PlanetaryBeaconBlock.FACING));
+    }
     private void updateModelProjection() {
-        boolean next = retained == null && formed();
+        boolean next = sourceModelFormed();
         if (modelFormed == next) { return; }
         modelFormed = next;
         if (level instanceof ServerLevel server && !isRemoved()) {
             server.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
         }
     }
+    @Override public void setBlockState(BlockState state) {
+        super.setBlockState(state);
+        if (level instanceof ServerLevel) { updateModelProjection(); }
+    }
     @Override public CompoundTag getUpdateTag() {
-        var tag = new CompoundTag(); ClassicModelProjection.encode(tag, retained == null && formed()); return tag;
+        var tag = new CompoundTag(); ClassicModelProjection.encode(tag, sourceModelFormed()); return tag;
     }
     @Override public void handleUpdateTag(CompoundTag tag) { modelFormed = ClassicModelProjection.decode(tag); }
     @Override public ClientboundBlockEntityDataPacket getUpdatePacket() { return ClientboundBlockEntityDataPacket.create(this); }
