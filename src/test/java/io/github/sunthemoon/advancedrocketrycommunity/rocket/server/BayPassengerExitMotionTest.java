@@ -60,4 +60,27 @@ final class BayPassengerExitMotionTest {
         var observer = new BayPassengerExitMotion();
         assertNull(observer.generation(player));
     }
+    @Test void motionSamplingDoesNotInvokeBlockReadingEntityConveniences() {
+        var player = io.github.sunthemoon.advancedrocketrycommunity.testsupport.UnstartedServer.allocate(ProbePlayer.class);
+        var observed = BayPassengerExitMotion.sample(player, 5);
+        assertEquals(new Vec3(1, 80, 2), observed.position());
+        assertTrue(observed.ordinary());
+        assertTrue(observed.airborne());
+    }
+    /** No Level exists: block-reading conveniences must never be part of pure motion observation. */
+    private static final class ProbePlayer extends net.minecraft.server.level.ServerPlayer {
+        private ProbePlayer() { super(null, null, null); }
+        @Override public Vec3 position() { return new Vec3(1, 80, 2); }
+        @Override public Vec3 getDeltaMovement() { return new Vec3(0, -.2, 0); }
+        @Override public boolean isPassenger() { return false; }
+        @Override public net.minecraft.world.entity.player.Abilities getAbilities() { return new net.minecraft.world.entity.player.Abilities(); }
+        @Override public boolean isFallFlying() { return false; }
+        @Override public boolean hasEffect(net.minecraft.world.effect.MobEffect effect) { return false; }
+        @Override public boolean isSwimming() { return false; }
+        @Override public boolean isInWater() { return false; }
+        @Override public boolean isInLava() { return false; }
+        @Override public boolean onGround() { return false; }
+        @Override public boolean onClimbable() { throw new AssertionError("Uncharged climb world read"); }
+        @Override public boolean isInWaterOrBubble() { throw new AssertionError("Uncharged bubble world read"); }
+    }
 }

@@ -36,8 +36,9 @@ final class BayPassengerExitMotion {
     static Sample sample(ServerPlayer player, long tick) {
         return new Sample(player.position(), player.getDeltaMovement(), tick,
                 !player.isPassenger() && !player.getAbilities().flying && !player.isFallFlying()
-                        && !player.hasEffect(MobEffects.LEVITATION) && !player.onClimbable()
-                        && !player.isSwimming() && !player.isInWaterOrBubble() && !player.isInLava(), !player.onGround());
+                        && !player.hasEffect(MobEffects.LEVITATION)
+                        // Climb/bubble contact is checked only inside the precharged world snapshot.
+                        && !player.isSwimming() && !player.isInWater() && !player.isInLava(), !player.onGround());
     }
     /** Accumulate displacement within a tick; multiple callbacks cannot replenish movement allowance. */
     static final class Continuity {

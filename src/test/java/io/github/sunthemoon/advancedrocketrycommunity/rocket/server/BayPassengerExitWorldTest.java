@@ -19,7 +19,10 @@ final class BayPassengerExitWorldTest {
                 Map.entry(Blocks.MAGMA_BLOCK, Hazard.MAGMA), Map.entry(Blocks.SWEET_BERRY_BUSH, Hazard.BERRY_BUSH),
                 Map.entry(Blocks.POWDER_SNOW, Hazard.POWDER_SNOW), Map.entry(Blocks.WITHER_ROSE, Hazard.WITHER_ROSE),
                 Map.entry(Blocks.POINTED_DRIPSTONE, Hazard.POINTED_DRIPSTONE), Map.entry(Blocks.NETHER_PORTAL, Hazard.PORTAL),
-                Map.entry(Blocks.END_PORTAL, Hazard.PORTAL), Map.entry(Blocks.END_GATEWAY, Hazard.GATEWAY))
+                Map.entry(Blocks.END_PORTAL, Hazard.PORTAL), Map.entry(Blocks.END_GATEWAY, Hazard.GATEWAY),
+                Map.entry(Blocks.LADDER, Hazard.UNKNOWN), Map.entry(Blocks.VINE, Hazard.UNKNOWN), Map.entry(Blocks.SCAFFOLDING, Hazard.UNKNOWN),
+                Map.entry(Blocks.WEEPING_VINES, Hazard.UNKNOWN), Map.entry(Blocks.WEEPING_VINES_PLANT, Hazard.UNKNOWN),
+                Map.entry(Blocks.TWISTING_VINES, Hazard.UNKNOWN), Map.entry(Blocks.TWISTING_VINES_PLANT, Hazard.UNKNOWN))
                 .forEach((block, expected) -> assertEquals(expected, BayPassengerExitWorld.hazard(block.defaultBlockState()), block.toString()));
         assertEquals(Hazard.NONE, BayPassengerExitWorld.hazard(Blocks.AIR.defaultBlockState()));
         assertEquals(Hazard.NONE, BayPassengerExitWorld.hazard(Blocks.STONE.defaultBlockState()));

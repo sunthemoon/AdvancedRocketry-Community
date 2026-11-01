@@ -12,6 +12,24 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 @PrefixGameTestTemplate(false)
 public final class BayPassengerExitGameTests {
     private BayPassengerExitGameTests() { }
+    @GameTest(template = "rocket_test", batch = "bay_exit_climb", timeoutTicks = 400)
+    public static void climbContactUsesOnlyTheChargedSnapshot(GameTestHelper helper) { new BayPassengerExitGameTestFixture(helper, CLIMB).start(); }
+    @GameTest(template = "rocket_test", batch = "bay_exit_contention_reverse", timeoutTicks = 400)
+    public static void reversedRealExitOrderSwapsTheWinner(GameTestHelper helper) { new BayPassengerExitGameTestFixture(helper, CONTENTION_REVERSE).start(); }
+    @GameTest(template = "rocket_test", batch = "bay_exit_one_box", timeoutTicks = 400)
+    public static void onlyGroundBoxLeavesTheSecondExitWithoutSafeSpace(GameTestHelper helper) { new BayPassengerExitGameTestFixture(helper, ONE_BOX).start(); }
+    @GameTest(template = "rocket_test", batch = "bay_exit_one_box_reverse", timeoutTicks = 400)
+    public static void reversedOnlyBoxOrderSwapsTheWinner(GameTestHelper helper) { new BayPassengerExitGameTestFixture(helper, ONE_BOX_REVERSE).start(); }
+    @GameTest(template = "rocket_test", batch = "bay_exit_last_unit", timeoutTicks = 400)
+    public static void lastCandidateUnitLeavesTheSecondExitZeroWork(GameTestHelper helper) { new BayPassengerExitGameTestFixture(helper, LAST_UNIT).start(); }
+    @GameTest(template = "rocket_test", batch = "bay_exit_last_unit_reverse", timeoutTicks = 400)
+    public static void reversedLastUnitOrderSwapsTheWinner(GameTestHelper helper) { new BayPassengerExitGameTestFixture(helper, LAST_UNIT_REVERSE).start(); }
+    @GameTest(template = "rocket_test", batch = "bay_exit_delayed_one_box", timeoutTicks = 400)
+    public static void earlierDelayedCaptureDoesNotPreemptTheImmediateExit(GameTestHelper helper) { new BayPassengerExitGameTestFixture(helper, DELAYED_ONE_BOX).start(); }
+    @GameTest(template = "rocket_test", batch = "bay_exit_delayed_last", timeoutTicks = 400)
+    public static void delayedCaptureGetsZeroWorkAfterTheLastUnitWasUsed(GameTestHelper helper) { new BayPassengerExitGameTestFixture(helper, DELAYED_LAST).start(); }
+    @GameTest(template = "rocket_test", batch = "bay_exit_fifo", timeoutTicks = 400)
+    public static void twoHookBypassesDrainInCaptureOrder(GameTestHelper helper) { new BayPassengerExitGameTestFixture(helper, FIFO).start(); }
     @GameTest(template = "rocket_test", batch = "bay_exit_after_teleport", timeoutTicks = 400)
     public static void failedMountAfterRealTrustedTeleportNeverRestoresGrant(GameTestHelper helper) { new BayPassengerExitGameTestFixture(helper, AFTER_TELEPORT).start(); }
     @GameTest(template = "rocket_test", batch = "bay_exit_released_success", timeoutTicks = 400)

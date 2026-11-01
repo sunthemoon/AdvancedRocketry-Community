@@ -98,6 +98,9 @@ final class BayPassengerExitWorld implements BayExitSafety.LoadedState {
     static Hazard hazard(BlockState state) {
         if (!BuiltInRegistries.BLOCK.getKey(state.getBlock()).getNamespace().equals("minecraft")
                 || !state.getBlock().getClass().getPackageName().equals("net.minecraft.world.level.block")) { return Hazard.UNKNOWN; }
+        if (state.is(net.minecraft.tags.BlockTags.CLIMBABLE) || state.is(Blocks.LADDER) || state.is(Blocks.VINE)
+                || state.is(Blocks.SCAFFOLDING) || state.is(Blocks.WEEPING_VINES) || state.is(Blocks.WEEPING_VINES_PLANT)
+                || state.is(Blocks.TWISTING_VINES) || state.is(Blocks.TWISTING_VINES_PLANT)) { return Hazard.UNKNOWN; }
         if (state.is(Blocks.FIRE)) { return Hazard.FIRE; }
         if (state.is(Blocks.SOUL_FIRE)) { return Hazard.SOUL_FIRE; }
         if (state.getBlock() instanceof CampfireBlock) { return Hazard.CAMPFIRE; }

@@ -99,7 +99,7 @@ final class BayPassengerExitService {
         selector.applied(slot.context);
         boolean safe = result.status() == BayExitSelector.Status.SAFE;
         if (safe && permit.hint != null) { state.hint(permit.hint, result.position()); }
-        if (!safe && row != null && landing.available()) {
+        if (!safe && result.status() != BayExitSelector.Status.EXIT_BUDGET_EXHAUSTED && row != null && landing.available()) {
             slot.descent = new BayPassengerExitDescent(permit, after, row.deadline());
             state.issued(player.getUUID(), permit.transfer.transferId());
         }
