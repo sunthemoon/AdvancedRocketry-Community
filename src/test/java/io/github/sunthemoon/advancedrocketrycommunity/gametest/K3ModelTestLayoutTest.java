@@ -2,11 +2,13 @@ package io.github.sunthemoon.advancedrocketrycommunity.gametest;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import io.github.sunthemoon.advancedrocketrycommunity.datagen.V180C16cMachineData;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.MultiblockPatternJsonCodec;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.PatternPosition;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.research.ResearchPatterns;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.solar.SolarArrayLayout;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -24,6 +26,11 @@ class K3ModelTestLayoutTest {
     private record Pattern(Collection<PatternPosition> cells, PatternPosition anchor) { }
 
     private static Pattern pattern(K3ModelTestLayout layout) throws Exception {
+        if (layout == K3ModelTestLayout.ETCHER) {
+            var definition = MultiblockPatternJsonCodec.decode(V180C16cMachineData.pattern("precision_laser_etcher")
+                    .toString().getBytes(StandardCharsets.UTF_8));
+            return new Pattern(definition.cells().keySet(), definition.controllerAnchor());
+        }
         if (layout == K3ModelTestLayout.SOLAR) {
             return new Pattern(SolarArrayLayout.cells().stream().map(SolarArrayLayout.Cell::local).toList(), SolarArrayLayout.ANCHOR);
         }
@@ -43,7 +50,9 @@ class K3ModelTestLayoutTest {
         var pattern = pattern(layout);
         var center = new ChunkPos(layout.center());
         var claimed = new HashSet<BlockPos>();
-        int expected = switch (layout) { case ANALYSER -> 18; case OBSERVATORY -> 325; case SOLAR -> 249; case BEACON -> 105; };
+        int expected = switch (layout) {
+            case ANALYSER -> 18; case OBSERVATORY -> 325; case SOLAR -> 249; case BEACON -> 105; case ETCHER -> 63;
+        };
         for (int index = 0; index < 4; index++) {
             var reach = layout.reach(index, pattern.cells(), pattern.anchor());
             int height = switch (layout) { case OBSERVATORY -> index * 8; case SOLAR -> index * 4; default -> 0; };
@@ -77,9 +86,13 @@ class K3ModelTestLayoutTest {
         assertTrue(maxX - minX + 1 > smallerWidth && maxZ - minZ + 1 > smallerWidth);
     }
 
-    @Test void keepsTheFourOriginalRowsAndTheirFullFringesApart() {
+    @Test void keepsTheFourOriginalRowsAndTheEtcherRowAndTheirFullFringesApart() {
         for (var a : K3ModelTestLayout.values()) {
-            assertEquals(Math.floorDiv(-2_360_000 - a.ordinal() * 1000, 16) * 16, a.center().getZ());
+            if (a == K3ModelTestLayout.ETCHER) {
+                assertEquals(new BlockPos(-2_440_000, 100, -2_440_000), a.center());
+            } else {
+                assertEquals(Math.floorDiv(-2_360_000 - a.ordinal() * 1000, 16) * 16, a.center().getZ());
+            }
             for (var b : K3ModelTestLayout.values()) {
                 if (a == b) { continue; }
                 assertTrue(Math.abs(new ChunkPos(a.center()).z - new ChunkPos(b.center()).z) > a.radius() + b.radius() + 4);

@@ -12,7 +12,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 
 /** W248: four isolated facings sharing the smallest square of ticketed chunks. */
 public enum K3ModelTestLayout {
-    ANALYSER(0, 0), OBSERVATORY(1, 0), SOLAR(2, 1), BEACON(3, 0);
+    ANALYSER(0, 0), OBSERVATORY(1, 0), SOLAR(2, 1), BEACON(3, 0), ETCHER(4, 0);
 
     private final int row;
     private final int radius;
@@ -22,13 +22,14 @@ public enum K3ModelTestLayout {
     public int radius() { return radius; }
 
     public BlockPos center() {
+        if (this == ETCHER) { return new BlockPos(-2_440_000, 100, -2_440_000); }
         return new BlockPos(-2_360_000, 100, Math.floorDiv(-2_360_000 - row * 1000, 16) * 16);
     }
 
     public BlockPos origin(int index) {
         if (index < 0 || index >= 4) { throw new IllegalArgumentException("K3 facing index must be 0 to 3"); }
         return switch (this) {
-            case ANALYSER, BEACON -> center().offset(4 + index % 2 * 8, 0, 4 + index / 2 * 8);
+            case ANALYSER, BEACON, ETCHER -> center().offset(4 + index % 2 * 8, 0, 4 + index / 2 * 8);
             // These fixtures run sequentially. Separate their full validation reaches vertically to avoid
             // extra chunks without allowing a rotation to read another facing's cells (or casting shadows).
             case OBSERVATORY -> center().offset(8, index * 8, 8);
