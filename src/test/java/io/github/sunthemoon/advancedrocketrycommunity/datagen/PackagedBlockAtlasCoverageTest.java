@@ -8,6 +8,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
+import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
@@ -18,6 +19,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -29,6 +31,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -49,6 +52,9 @@ import org.junit.jupiter.api.Test;
  * modelled, so either fails this test until it is. OBJ materials are not checked: the mod's OBJ renderers bind their
  * {@code textures/models/} files directly ({@code ClassicObjModelRenderer}), not through the block atlas. Every check
  * runs before the assertions, and the result is written to {@code build/reports/block-atlas-coverage.md}.
+ *
+ * <p>W246-fix3 (R270): blockstate model references, registered item models (the shared registration capture) and all
+ * parent chains must resolve too. Checking only the packaged models would accept a partial tree.
  */
 class PackagedBlockAtlasCoverageTest {
     private static final String NAMESPACE = ModIdentity.MOD_ID;
@@ -62,12 +68,10 @@ class PackagedBlockAtlasCoverageTest {
     private final Map<String, Boolean> dependencyFiles = new HashMap<>();
     private Set<String> packaged;
 
-    @Test void everyPackagedModelTextureIsStitchedIntoTheBlockAtlas() throws IOException {
+    @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
+
+    @Test void everyPackagedModelTextureIsStitchedIntoTheBlockAtlas() throws IOException, ReflectiveOperationException {
         Path root = packagedRoot();
-        packaged = new TreeSet<>();
-        try (Stream<Path> walk = Files.walk(root)) {
-            walk.filter(Files::isRegularFile).forEach(file -> packaged.add(root.relativize(file).toString().replace('\\', '/')));
-        }
         List<String> problems = new ArrayList<>();
         List<JsonObject> sources = new ArrayList<>();
         List<String> stack = new ArrayList<>();
@@ -87,8 +91,19 @@ class PackagedBlockAtlasCoverageTest {
         if (vanilla != 1) {
             problems.add("The atlas stack holds " + vanilla + " copies of the pinned vanilla 1.20.1 sources, not one: " + stack);
         }
-        if (packaged.contains(ATLAS) && !packagedInStack) {
+        if (Files.isRegularFile(root.resolve(ATLAS)) && !packagedInStack) {
             problems.add("The packaged " + ATLAS + " is not in the atlas stack on the test classpath");
+        }
+        checkModels(root, RegisteredContentResourcesTest.requiredItemModels(), sources, stack, problems, REPORT);
+    }
+
+    /** Shared packaged-tree check; fixtures supply their own model roots and atlas sources. */
+    void checkModels(Path root, Set<String> requiredItemModels, List<JsonObject> sources, List<String> stack,
+            List<String> problems, Path report) throws IOException {
+        dependencyFiles.clear();
+        packaged = new TreeSet<>();
+        try (Stream<Path> walk = Files.walk(root)) {
+            walk.filter(Files::isRegularFile).forEach(file -> packaged.add(root.relativize(file).toString().replace('\\', '/')));
         }
         for (JsonObject source : sources) {
             String type = string(source, "type").replaceFirst("^minecraft:", "");
@@ -97,6 +112,7 @@ class PackagedBlockAtlasCoverageTest {
             }
         }
 
+        int requiredModels = requiredModels(root, requiredItemModels, problems);
         Map<String, List<String>> uncovered = new TreeMap<>();
         int models = 0;
         int references = 0;
@@ -130,7 +146,7 @@ class PackagedBlockAtlasCoverageTest {
                 }
             }
         }
-        writeReport(stack, models, references, uncovered, problems);
+        writeReport(report, stack, models, requiredModels, references, uncovered, problems);
 
         assertTrue(models > 0 && references > 0, "No packaged model or texture reference was found under " + root);
         assertEquals(List.of(), problems);
@@ -140,6 +156,88 @@ class PackagedBlockAtlasCoverageTest {
                 .append(") <- ").append(String.join(", ", uses)));
         assertTrue(uncovered.isEmpty(), uncovered.size() + " sprites of " + references + " texture references in " + models
                 + " packaged models are in no block-atlas source:" + message);
+    }
+
+    /** Resolve roots and parents before the texture walk; missing roots cannot shrink the set being checked. */
+    private int requiredModels(Path root, Set<String> requiredItemModels, List<String> problems) throws IOException {
+        Map<String, List<String>> expected = new TreeMap<>();
+        for (String item : requiredItemModels) {
+            expected.computeIfAbsent(item, key -> new ArrayList<>()).add("registered item");
+        }
+        for (String file : packaged) {
+            if (file.startsWith("assets/" + NAMESPACE + "/blockstates/") && file.endsWith(".json")) {
+                blockstateModels(JsonParser.parseString(Files.readString(root.resolve(file))), file, expected, problems);
+            }
+            if (MODEL.matcher(file).matches()) {
+                String namespace = file.substring("assets/".length(), file.indexOf("/models/"));
+                String model = file.substring(file.indexOf("/models/") + "/models/".length(), file.length() - 5);
+                expected.computeIfAbsent(namespace + ":" + model, key -> new ArrayList<>()).add("packaged model");
+            }
+        }
+        Set<String> visited = new TreeSet<>();
+        var pending = new ArrayDeque<>(expected.keySet());
+        while (!pending.isEmpty()) {
+            String model = pending.removeFirst();
+            if (!visited.add(model)) { continue; }
+            // ModelBakery synthesizes this marker; minecraft:item/generated inherits it, but no JSON file exists.
+            // Only this exact built-in is exempt, not arbitrary minecraft:builtin/* parents.
+            if (model.equals("minecraft:builtin/generated")) { continue; }
+            String file = "assets/" + namespace(model) + "/models/" + path(model) + ".json";
+            JsonObject definition;
+            if (namespace(model).equals(NAMESPACE)) {
+                if (!packaged.contains(file)) {
+                    problems.add("Missing packaged model " + model + " <- " + expected.get(model));
+                    continue;
+                }
+                definition = JsonParser.parseString(Files.readString(root.resolve(file))).getAsJsonObject();
+            } else {
+                URL url = getClass().getClassLoader().getResource(file);
+                if (url == null) {
+                    problems.add("Missing classpath model " + model + " <- " + expected.get(model));
+                    continue;
+                }
+                definition = JsonParser.parseString(new String(read(url), StandardCharsets.UTF_8)).getAsJsonObject();
+            }
+            if (definition.has("parent")) {
+                String parent = modelLocation(definition.get("parent"), model + "#parent", problems);
+                if (parent != null) {
+                    expected.computeIfAbsent(parent, key -> new ArrayList<>()).add(model + "#parent");
+                    pending.addLast(parent);
+                }
+            }
+        }
+        return visited.size();
+    }
+
+    /** Both variant and multipart forms may contain arrays. Inspect every model value, not just the first one. */
+    private static void blockstateModels(JsonElement value, String use, Map<String, List<String>> expected,
+            List<String> problems) {
+        if (value.isJsonArray()) {
+            for (int index = 0; index < value.getAsJsonArray().size(); index++) {
+                blockstateModels(value.getAsJsonArray().get(index), use + "[" + index + "]", expected, problems);
+            }
+        } else if (value.isJsonObject()) {
+            for (var entry : value.getAsJsonObject().entrySet()) {
+                String field = use + "/" + entry.getKey();
+                if (entry.getKey().equals("model")) {
+                    String model = modelLocation(entry.getValue(), field, problems);
+                    if (model != null) {
+                        expected.computeIfAbsent(model, key -> new ArrayList<>()).add(field);
+                    }
+                } else {
+                    blockstateModels(entry.getValue(), field, expected, problems);
+                }
+            }
+        }
+    }
+
+    private static String modelLocation(JsonElement value, String use, List<String> problems) {
+        if (!value.isJsonPrimitive() || !value.getAsJsonPrimitive().isString()
+                || !LOCATION.matcher(value.getAsString()).matches()) {
+            problems.add(use + " names " + value + ", which is not a model resource location");
+            return null;
+        }
+        return location(value.getAsString());
     }
 
     /** Whether a source of the stack adds {@code sprite}, following the 1.20.1 sprite-source rules. */
@@ -253,11 +351,13 @@ class PackagedBlockAtlasCoverageTest {
         }
     }
 
-    private void writeReport(List<String> stack, int models, int references, Map<String, List<String>> uncovered,
+    private void writeReport(Path output, List<String> stack, int models, int requiredModels, int references,
+            Map<String, List<String>> uncovered,
             List<String> problems) throws IOException {
         StringBuilder report = new StringBuilder("# Block atlas coverage\n\n")
-                .append("W246-fix2 (R268). Packaged block and item models against the 1.20.1 block-atlas sources.\n\n")
+                .append("W246-fix2 (R268), fix3 (R270). Model references and the 1.20.1 block-atlas sources.\n\n")
                 .append("- Model files: ").append(models).append('\n')
+                .append("- Required/referenced models checked (including built-in marker): ").append(requiredModels).append('\n')
                 .append("- Texture references checked: ").append(references).append('\n')
                 .append("- Uncovered sprites: ").append(uncovered.size()).append('\n')
                 .append("- Other problems: ").append(problems.size()).append("\n\n## Atlas stack\n\n");
@@ -267,7 +367,7 @@ class PackagedBlockAtlasCoverageTest {
                 .append(String.join(", ", uses)).append('\n'));
         report.append("\n## Other problems\n\n");
         problems.forEach(problem -> report.append("- ").append(problem).append('\n'));
-        Files.createDirectories(REPORT.getParent());
-        Files.writeString(REPORT, report.toString(), StandardCharsets.UTF_8);
+        Files.createDirectories(output.getParent());
+        Files.writeString(output, report.toString(), StandardCharsets.UTF_8);
     }
 }

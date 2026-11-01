@@ -105,6 +105,7 @@ class RegisteredContentResourcesTest {
     private static final Map<String, Integer> unresolvedFields = new TreeMap<>();
     private static int optionalForeignTagEntries;
     private static Path root;
+    private static boolean registrationsRecorded;
 
     @BeforeAll
     static void check() throws IOException, ReflectiveOperationException {
@@ -173,8 +174,23 @@ class RegisteredContentResourcesTest {
 
     // Registrations --------------------------------------------------------------------------------------------
 
+    /** The atlas check shares this capture, including items without blockstates, rather than walking registries again. */
+    static Set<String> requiredItemModels() throws ReflectiveOperationException {
+        record();
+        Set<String> models = new TreeSet<>();
+        for (String id : ids(ITEMS).keySet()) {
+            ResourceLocation location = ResourceLocation.tryParse(id);
+            models.add(location.getNamespace() + ":item/" + location.getPath());
+        }
+        return Set.copyOf(models);
+    }
+
     /** Runs the central registration boundary on a bus that records each deferred register it installs. */
-    private static void record() throws ReflectiveOperationException {
+    private static synchronized void record() throws ReflectiveOperationException {
+        if (registrationsRecorded) { return; }
+        MinecraftBootstrap.initialize();
+        Class.forName("net.minecraft.world.item.enchantment.Enchantments");
+        Class.forName("net.minecraft.world.entity.EntityType");
         IEventBus bus = (IEventBus) Proxy.newProxyInstance(IEventBus.class.getClassLoader(),
                 new Class<?>[] {IEventBus.class}, (proxy, method, arguments) -> switch (method.getName()) {
                     case "register" -> {
@@ -199,6 +215,7 @@ class RegisteredContentResourcesTest {
         } finally {
             enabled.set(null, previous);
         }
+        registrationsRecorded = true;
     }
 
     private static void install(Object listener) throws IllegalAccessException {
