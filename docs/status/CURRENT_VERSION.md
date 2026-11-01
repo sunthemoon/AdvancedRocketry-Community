@@ -101,10 +101,10 @@ It does not run:
 
 What is still open:
 
-- **Ledger.** 17 units are still PLANNED: C17a 4 and C17c 1
+- **Ledger.** 16 units are still PLANNED: C17a 4 and C17c 1
   (the five loader variants, which wait for the escrow chain's admission and the bay; W153 delivered
-  the monitoring station and the linker), C18a 1 (the oxygen charger, owner decision D4) and C18d 11 (the ten sounds,
-  which wait for the owner's listen, and `modelBakeEvent`, which waits for an OBJ import). The
+  the monitoring station and the linker), C18a 1 (the oxygen charger, owner decision D4) and C18d 10 (the ten sounds,
+  which wait for the owner's listen). `modelBakeEvent` is REDESIGNED since the K1 to K4 imports. The
   backlog is in QUEUE.md.
 - **Assets.** 154 legacy assets are still under REVIEW (ADR-066 section 7.3).
 - **S1.** W11b1 and W44 have native dedicated-server restart evidence as development evidence.
