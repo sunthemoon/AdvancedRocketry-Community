@@ -3,8 +3,8 @@ package io.github.sunthemoon.advancedrocketrycommunity.client.elevator;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.client.model.ObjModelCheck;
 import io.github.sunthemoon.advancedrocketrycommunity.client.model.ObjModelException;
+import io.github.sunthemoon.advancedrocketrycommunity.client.model.ObjModelResources;
 import io.github.sunthemoon.advancedrocketrycommunity.client.model.ObjModelSet;
-import java.io.IOException;
 import java.util.Optional;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
@@ -21,7 +21,6 @@ import net.minecraft.util.profiling.ProfilerFiller;
 final class CapsuleResources extends SimplePreparableReloadListener<Optional<CapsuleMesh>> {
     static final ResourceLocation MODEL = ModIdentity.id("models/spaceelevator.obj");
     static final ResourceLocation TEXTURE = ModIdentity.id("textures/models/spaceelevatorcapsule.png");
-    private static final int MAX_DIAGNOSTIC = 512;
 
     private final Consumer<String> diagnostic;
     @Nullable private volatile CapsuleMesh mesh;
@@ -51,15 +50,14 @@ final class CapsuleResources extends SimplePreparableReloadListener<Optional<Cap
 
     @Override
     protected Optional<CapsuleMesh> prepare(ResourceManager resources, ProfilerFiller profiler) {
-        return prepare(source(resources));
+        return prepare(ObjModelResources.source(resources));
     }
 
     Optional<CapsuleMesh> prepare(ObjModelSet.Source source) {
         try {
             return Optional.of(load(source));
         } catch (ObjModelException | RuntimeException failure) {
-            String raw = String.valueOf(failure.getMessage()).replace('\n', ' ').replace('\r', ' ');
-            diagnostic.accept("The elevator capsule draws its line cage: " + raw.substring(0, Math.min(MAX_DIAGNOSTIC, raw.length())));
+            diagnostic.accept("The elevator capsule draws its line cage: " + ObjModelResources.diagnostic(failure));
             return Optional.empty();
         }
     }
@@ -71,17 +69,5 @@ final class CapsuleResources extends SimplePreparableReloadListener<Optional<Cap
 
     void apply(Optional<CapsuleMesh> prepared) {
         mesh = prepared.orElse(null);
-    }
-
-    private static ObjModelSet.Source source(ResourceManager resources) {
-        return (location, limit) -> {
-            var resource = resources.getResource(location);
-            if (resource.isEmpty()) { return Optional.empty(); }
-            try (var input = resource.get().open()) {
-                return Optional.of(ObjModelCheck.readBounded(input, limit, location.toString()));
-            } catch (IOException failure) {
-                throw new ObjModelException(location + ": cannot be read");
-            }
-        };
     }
 }

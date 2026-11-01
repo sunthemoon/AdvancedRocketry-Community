@@ -21,6 +21,12 @@ Root: Claude. Date: 2026-11-02. Read [WORKER-RULES](WORKER-RULES.md) first. You 
 
 No change to the host-lag ceiling, ADR-072, any timeout, the batch order mechanism, K4's tests or product code.
 
+**Root decision R273 (2026-11-02, 04:00) adds one batch.** W246's branch run 41341199945 failed shard 2's ceiling
+with 9 warnings, every test passing; besides 13.7 seconds after `w236_observatory_model`, an 8.4-second stall follows
+`w244_etcher_model` (`machine/classic/runtime/ClassicModelProjectionGameTests.java`), whose four facings also build one
+25-chunk `K3ModelTestRegion` each. Apply the same fix there, with the same reach assertion and nothing else in that
+class changed, and add it to the before and after comparison (focused runs are enough for this batch).
+
 ## Verification
 
 - The K-model unit tests and the whole unit suite.
