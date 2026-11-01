@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "id": "orbital_laser_drill",
+  "model": "advancedrocketrycommunity:models/orbitallaserdrill.obj",
+  "mirror_x": true,
+  "flip_v": true,
+  "scale": 1,
+  "model_y_rotation_degrees": 90,
+  "offset_north": [
+    5,
+    0,
+    3
+  ],
+  "render_type": "entity_cutout",
+  "light_cell_above_controller": 4,
+  "fallback_texture": "advancedrocketrycommunity:textures/block/orbital_laser_front.png",
+  "model_bounds": [
+    -5.000025,
+    -2.5e-05,
+    -6.00005,
+    4.000025,
+    3.25,
+    5
+  ],
+  "render_bounds": {
+    "north": [
+      -2,
+      -1,
+      -2.00005,
+      10,
+      3.25,
+      7.00005
+    ],
+    "east": [
+      -6.00005,
+      -1,
+      -2,
+      3.00005,
+      3.25,
+      10
+    ],
+    "south": [
+      -9,
+      -1,
+      -6.00005,
+      3,
+      3.25,
+      3.00005
+    ],
+    "west": [
+      -2.00005,
+      -1,
+      -9,
+      7.00005,
+      3.25,
+      3
+    ]
+  },
+  "imported": {
+    "obj_sha256": "3145e58e26fd248f094d8d16c35e4f17da96c238c63399ca290317484211571e",
+    "positions": 1740,
+    "vertices": 5656
+  },
+  "unchanged_pattern": {
+    "path": "src/main/resources/data/advancedrocketrycommunity/machine_patterns/orbital_laser_drill.json",
+    "canonical_sha256": "2719522f9c6d2f705838abe22eda35bc104c7f62edd092c13404a4fad7c502f7"
+  }
+}

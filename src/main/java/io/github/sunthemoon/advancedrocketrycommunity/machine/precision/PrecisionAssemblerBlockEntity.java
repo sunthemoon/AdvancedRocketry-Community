@@ -1,5 +1,9 @@
 package io.github.sunthemoon.advancedrocketrycommunity.machine.precision;
 
+import io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.ClassicModelProjection;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.FormedModelController;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.K4ModelProjection;
+
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecycle.ControllerBindingView;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecycle.MultiblockBindingGateway;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecycle.MultiblockControllerState;
@@ -44,7 +48,28 @@ import net.minecraft.world.level.block.state.BlockState;
 
 /** Minecraft lifecycle adapter around the structure and process state owners. */
 public final class PrecisionAssemblerBlockEntity extends BlockEntity implements MenuProvider,
-        io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtected {
+        io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtected, FormedModelController {
+    private final K4ModelProjection modelProjection = new K4ModelProjection();
+    private boolean sourceModelFormed() {
+        return !isRemoved() && persistenceStatus == MultiblockNbtStatus.SUPPORTED
+                && controllerState.formationState() == MultiblockFormationState.FORMED
+                && !controllerState.selectedTransform().mirroredLocalX();
+    }
+    @Override public boolean modelFormed() { return modelProjection.formed(); }
+    @Override public CompoundTag getUpdateTag() {
+        var tag = new CompoundTag(); ClassicModelProjection.encode(tag, modelProjection.formed() && sourceModelFormed()); return tag;
+    }
+    @Override public void handleUpdateTag(CompoundTag tag) { modelProjection.read(tag); }
+    @Override public net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket getUpdatePacket() {
+        return net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket.create(this);
+    }
+    @Override public void onDataPacket(net.minecraft.network.Connection connection,
+            net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket packet) { handleUpdateTag(packet.getTag()); }
+    @Override public net.minecraft.world.phys.AABB getRenderBoundingBox() {
+        return K4ModelProjection.bounds("precision_assembler", getBlockState().getValue(PrecisionAssemblerBlock.FACING), worldPosition);
+    }
+    @Override public void setRemoved() { modelProjection.publish(this, false); super.setRemoved(); }
+    @Override public void onChunkUnloaded() { modelProjection.publish(this, false); super.onChunkUnloaded(); }
     private MultiblockControllerState controllerState;
     private final PrecisionAssemblerProcessController process;
     private final PrecisionAssemblerItemBank items;
@@ -430,6 +455,7 @@ public final class PrecisionAssemblerBlockEntity extends BlockEntity implements 
         }
         Set<BlockPos> oldParts = controllerState.partPositions();
         controllerState = replacement;
+        modelProjection.publish(this, sourceModelFormed());
         setChanged();
         for (BlockPos position : oldParts) {
             notifyLoadedPort(level, position);
@@ -475,6 +501,7 @@ public final class PrecisionAssemblerBlockEntity extends BlockEntity implements 
 
     @Override
     public void load(CompoundTag parent) {
+        modelProjection.publish(this, false);
         super.load(parent);
         lastValidation = null;
         preservedControllerRoot = null;

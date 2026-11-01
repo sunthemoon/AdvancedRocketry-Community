@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "id": "railgun",
+  "model": "advancedrocketrycommunity:models/railgun.obj",
+  "mirror_x": true,
+  "flip_v": true,
+  "scale": 1,
+  "model_y_rotation_degrees": 90,
+  "offset_north": [
+    0.5,
+    0,
+    3.5
+  ],
+  "render_type": "entity_cutout",
+  "light_cell_above_controller": 12,
+  "fallback_texture": "advancedrocketrycommunity:textures/block/railgun_front.png",
+  "model_bounds": [
+    -4.49987,
+    0,
+    -4.49987,
+    4.499871,
+    11,
+    4.49987
+  ],
+  "render_bounds": {
+    "north": [
+      -4,
+      0,
+      -1,
+      5,
+      11,
+      8
+    ],
+    "east": [
+      -7,
+      0,
+      -4,
+      2,
+      11,
+      5
+    ],
+    "south": [
+      -4,
+      0,
+      -7,
+      5,
+      11,
+      2
+    ],
+    "west": [
+      -1,
+      0,
+      -4,
+      8,
+      11,
+      5
+    ]
+  },
+  "imported": {
+    "obj_sha256": "9fc0583647cc27df5ff9d16ce4af93fad528a1bf9e89c768f3a9e8fb76daa528",
+    "positions": 448,
+    "vertices": 2520
+  },
+  "unchanged_pattern": {
+    "path": "src/main/resources/data/advancedrocketrycommunity/machine_patterns/railgun.json",
+    "canonical_sha256": "8c4df0e5ee074b2b9a6cd00150c704dd22dd6334ade3bb40b1544ebf0124b3ef"
+  }
+}

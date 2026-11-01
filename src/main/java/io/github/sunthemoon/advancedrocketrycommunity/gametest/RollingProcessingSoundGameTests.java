@@ -120,7 +120,11 @@ public final class RollingProcessingSoundGameTests {
         helper.assertTrue(controller.processingActive() == active && ProcessingFlagCodec.decode(controller.getUpdateTag()) == active,
                 "Rolling projection differs from expected processing state: " + controller.processState());
         helper.assertTrue(controller.activeProcessingSound() == (active ? ClassicSound.ROLLING_MACHINE : null), "Rolling sound mapping differs");
-        helper.assertTrue(controller.getUpdateTag().getAllKeys().equals(Set.of("active")), "Rolling update tag exposed saved roots");
+        boolean formed = controller.formationState() == MultiblockFormationState.FORMED;
+        helper.assertTrue(controller.getUpdateTag().getAllKeys().equals(formed ? Set.of("active", "formed") : Set.of("active")), "Rolling update tag exposed saved roots");
+        helper.assertTrue(controller.modelFormed() == formed
+                && io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.ClassicModelProjection.decode(controller.getUpdateTag()) == formed,
+                "Rolling sound update lost the authoritative formed projection");
         var packet = controller.getUpdatePacket();
         helper.assertTrue(packet.getPos().equals(controller.getBlockPos()) && packet.getTag().equals(controller.getUpdateTag()),
                 "Rolling update packet differs from update tag");

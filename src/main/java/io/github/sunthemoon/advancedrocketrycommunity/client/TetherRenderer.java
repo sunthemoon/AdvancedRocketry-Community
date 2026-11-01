@@ -1,5 +1,9 @@
 package io.github.sunthemoon.advancedrocketrycommunity.client;
 
+import io.github.sunthemoon.advancedrocketrycommunity.client.model.ClassicObjModelRenderer;
+import io.github.sunthemoon.advancedrocketrycommunity.client.model.ObjModelFixture;
+import io.github.sunthemoon.advancedrocketrycommunity.client.model.ClientObjModels;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.ElevatorAnchorBlockEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import io.github.sunthemoon.advancedrocketrycommunity.client.elevator.ElevatorCapsuleClient;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.ElevatorEndpointBlockEntity;
@@ -18,12 +22,16 @@ import net.minecraft.world.phys.Vec3;
 public final class TetherRenderer<T extends ElevatorEndpointBlockEntity> implements BlockEntityRenderer<T> {
     private static final float[] COLOR = {0.85F, 0.9F, 1.0F};
 
+    private final ClassicObjModelRenderer<ElevatorAnchorBlockEntity> hull =
+            new ClassicObjModelRenderer<>(ObjModelFixture.ELEVATOR_ANCHOR, ClientObjModels.CACHE);
+
     public TetherRenderer(BlockEntityRendererProvider.Context context) {
     }
 
     @Override
     public void render(T endpoint, float partialTick, PoseStack pose, MultiBufferSource buffers, int light,
                        int overlay) {
+        if (endpoint instanceof ElevatorAnchorBlockEntity anchor) { hull.render(anchor, partialTick, pose, buffers, light, overlay); }
         ElevatorCapsuleClient.offer(endpoint);
         if (endpoint.getLevel() == null || !endpoint.tetherForRender()) {
             return;

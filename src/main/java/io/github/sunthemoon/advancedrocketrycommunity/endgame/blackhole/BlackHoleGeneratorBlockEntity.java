@@ -1,5 +1,9 @@
 package io.github.sunthemoon.advancedrocketrycommunity.endgame.blackhole;
 
+import io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.ClassicModelProjection;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.FormedModelController;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.K4ModelProjection;
+
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.authority.EndgameAuthority;
 import io.github.sunthemoon.advancedrocketrycommunity.config.ClientConfig;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameDeviceBlockEntity;
@@ -54,7 +58,17 @@ import net.minecraftforge.registries.ForgeRegistries;
  * save covers consumption and generation. It works only in a committed station whose live orbit body has a
  * singularity profile; it pushes at most 20,000 FE per tick to loaded neighbours and never loads a chunk.
  */
-public final class BlackHoleGeneratorBlockEntity extends EndgameDeviceBlockEntity implements MenuProvider {
+public final class BlackHoleGeneratorBlockEntity extends EndgameDeviceBlockEntity implements MenuProvider, FormedModelController {
+    private final K4ModelProjection modelProjection = new K4ModelProjection();
+    private boolean sourceModelFormed() {
+        return !isRemoved() && !quarantined() && structure.code() == EndgameCode.OK && EndgameRuntime.operational().isPresent();
+    }
+    @Override public boolean modelFormed() { return modelProjection.formed(); }
+    @Override public void load(CompoundTag tag) {
+        modelProjection.read(null);
+        super.load(tag);
+    }
+    private void updateModelProjection() { modelProjection.publish(this, sourceModelFormed()); }
     public static final int ROOT_SCHEMA = 1;
     public static final String PATTERN_ID = "advancedrocketrycommunity:black_hole_generator";
     public static final int FUEL_SLOTS = 9;
@@ -174,6 +188,7 @@ public final class BlackHoleGeneratorBlockEntity extends EndgameDeviceBlockEntit
             try {
                 generator.tick(server, state);
             } finally {
+                generator.updateModelProjection();
                 EndgameRuntime.timings().add(EndgameTimings.Place.BLACK_HOLE_GENERATOR, System.nanoTime() - start);
             }
         }
@@ -385,6 +400,7 @@ public final class BlackHoleGeneratorBlockEntity extends EndgameDeviceBlockEntit
 
     @Override
     public void setRemoved() {
+        modelProjection.publish(this, false);
         super.setRemoved();
         if (level != null && !level.isClientSide) {
             unloadRuntime();
@@ -393,6 +409,7 @@ public final class BlackHoleGeneratorBlockEntity extends EndgameDeviceBlockEntit
 
     @Override
     public void onChunkUnloaded() {
+        modelProjection.publish(this, false);
         super.onChunkUnloaded();
         if (level != null && !level.isClientSide) {
             unloadRuntime();
@@ -463,12 +480,14 @@ public final class BlackHoleGeneratorBlockEntity extends EndgameDeviceBlockEntit
     public CompoundTag getUpdateTag() {
         CompoundTag tag = new CompoundTag();
         tag.putBoolean("generating", generating);
+        ClassicModelProjection.encode(tag, modelProjection.formed() && sourceModelFormed());
         return tag;
     }
 
     @Override
     public void handleUpdateTag(CompoundTag tag) {
-        generating = tag.getBoolean("generating");
+        generating = tag != null && tag.getBoolean("generating");
+        modelProjection.read(tag);
     }
 
     @Nullable
@@ -477,13 +496,19 @@ public final class BlackHoleGeneratorBlockEntity extends EndgameDeviceBlockEntit
         return ClientboundBlockEntityDataPacket.create(this);
     }
 
+    @Override public void onDataPacket(net.minecraft.network.Connection connection, ClientboundBlockEntityDataPacket packet) {
+        handleUpdateTag(packet.getTag());
+    }
+
+
     public boolean generatingForRender() {
         return generating;
     }
 
     @Override
     public AABB getRenderBoundingBox() {
-        return new AABB(worldPosition).inflate(4.0D);
+        return new AABB(worldPosition).inflate(4.0D)
+                .minmax(K4ModelProjection.bounds("black_hole_generator", getBlockState().getValue(BlackHoleGeneratorBlock.FACING), worldPosition));
     }
 
     @Override

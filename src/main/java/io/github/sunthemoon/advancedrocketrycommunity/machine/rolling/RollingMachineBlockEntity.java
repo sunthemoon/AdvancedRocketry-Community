@@ -1,5 +1,9 @@
 package io.github.sunthemoon.advancedrocketrycommunity.machine.rolling;
 
+import io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.ClassicModelProjection;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.FormedModelController;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.K4ModelProjection;
+
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecycle.ControllerBindingView;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecycle.MultiblockControllerState;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecycle.MultiblockFormationState;
@@ -41,7 +45,16 @@ import net.minecraft.world.level.block.state.BlockState;
 
 /** Thin Minecraft lifecycle adapter around the immutable multiblock controller state. */
 public final class RollingMachineBlockEntity extends BlockEntity implements MenuProvider,
-        io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtected, ProcessingSoundSource {
+        io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtected, ProcessingSoundSource, FormedModelController {
+    private final K4ModelProjection modelProjection = new K4ModelProjection();
+    private boolean sourceModelFormed() {
+        return !isRemoved() && persistenceStatus == MultiblockNbtStatus.SUPPORTED
+                && controllerState.formationState() == MultiblockFormationState.FORMED;
+    }
+    @Override public boolean modelFormed() { return modelProjection.formed(); }
+    @Override public net.minecraft.world.phys.AABB getRenderBoundingBox() {
+        return K4ModelProjection.bounds("rolling_machine", getBlockState().getValue(RollingMachineBlock.FACING), worldPosition);
+    }
     private MultiblockControllerState controllerState;
     private final RollingMachineProcessController process;
     private final RollingMachineMenuData menuData;
@@ -94,6 +107,7 @@ public final class RollingMachineBlockEntity extends BlockEntity implements Menu
         long generation = controllerState.generation();
         if (!controllerState.equals(result.controllerState())) {
             controllerState = result.controllerState();
+            modelProjection.publish(this, sourceModelFormed());
             setChanged();
         }
         // ADR-066 §6.2: a new binding generation is an actual formation; resuming the same one is not.
@@ -125,6 +139,7 @@ public final class RollingMachineBlockEntity extends BlockEntity implements Menu
         );
         if (!invalid.equals(controllerState)) {
             controllerState = invalid;
+            modelProjection.publish(this, sourceModelFormed());
             setChanged();
         }
     }
@@ -142,6 +157,7 @@ public final class RollingMachineBlockEntity extends BlockEntity implements Menu
         );
         if (!waiting.equals(controllerState)) {
             controllerState = waiting;
+            modelProjection.publish(this, sourceModelFormed());
             setChanged();
         }
     }
@@ -215,14 +231,18 @@ public final class RollingMachineBlockEntity extends BlockEntity implements Menu
             server.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
         }
     }
-    @Override public CompoundTag getUpdateTag() { return ProcessingFlagCodec.encode(processingActive); }
-    @Override public void handleUpdateTag(CompoundTag tag) { processingActive = ProcessingFlagCodec.decode(tag); }
+    @Override public CompoundTag getUpdateTag() {
+        var tag = ProcessingFlagCodec.encode(processingActive); ClassicModelProjection.encode(tag, modelProjection.formed() && sourceModelFormed()); return tag;
+    }
+    @Override public void handleUpdateTag(CompoundTag tag) {
+        processingActive = ProcessingFlagCodec.decode(tag); modelProjection.read(tag);
+    }
     @Override public ClientboundBlockEntityDataPacket getUpdatePacket() { return ClientboundBlockEntityDataPacket.create(this); }
     @Override public void onDataPacket(Connection connection, ClientboundBlockEntityDataPacket packet) {
         handleUpdateTag(packet.getTag());
     }
-    @Override public void onChunkUnloaded() { updateProcessingState(false); super.onChunkUnloaded(); }
-    @Override public void setRemoved() { updateProcessingState(false); super.setRemoved(); }
+    @Override public void onChunkUnloaded() { modelProjection.publish(this, false); updateProcessingState(false); super.onChunkUnloaded(); }
+    @Override public void setRemoved() { modelProjection.publish(this, false); updateProcessingState(false); super.setRemoved(); }
 
     void recordExternalResourceMutation(ServerLevel level) {
         process.recordExternalMutation(level, this);
@@ -307,6 +327,7 @@ public final class RollingMachineBlockEntity extends BlockEntity implements Menu
 
     @Override
     public void load(CompoundTag parent) {
+        modelProjection.publish(this, false);
         updateProcessingState(false);
         super.load(parent);
         lastValidation = null;

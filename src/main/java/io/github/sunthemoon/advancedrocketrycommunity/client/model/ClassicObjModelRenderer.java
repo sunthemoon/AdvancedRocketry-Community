@@ -36,11 +36,13 @@ public final class ClassicObjModelRenderer<T extends BlockEntity & FormedModelCo
         var level = controller.getLevel();
         var state = controller.getBlockState();
         var entry = cache.get(fixture.id()).orElse(null);
-        if (level == null || entry == null || !controller.modelFormed() || !state.hasProperty(ClassicControllerBlock.FACING)) { return; }
+        boolean groundAnchor = fixture == ObjModelFixture.ELEVATOR_ANCHOR;
+        if (level == null || entry == null || !controller.modelFormed()
+                || !groundAnchor && !state.hasProperty(ClassicControllerBlock.FACING)) { return; }
         // The fixture samples outside occupied pattern cells; the controller block itself is unlit.
         int light = LevelRenderer.getLightColor(level, controller.getBlockPos().above(fixture.lightCellAboveController()));
         pose.pushPose();
-        place(pose, fixture, state.getValue(ClassicControllerBlock.FACING));
+        place(pose, fixture, groundAnchor ? Direction.NORTH : state.getValue(ClassicControllerBlock.FACING));
         entry.model().render(pose, buffers, texture -> RenderType.entityCutout(entry.texture(texture)), light,
                 OverlayTexture.NO_OVERLAY, partialTick, CompositeRenderable.Transforms.EMPTY);
         pose.popPose();

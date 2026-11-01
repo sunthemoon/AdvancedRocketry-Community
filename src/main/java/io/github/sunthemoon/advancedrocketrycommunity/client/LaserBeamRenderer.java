@@ -1,5 +1,8 @@
 package io.github.sunthemoon.advancedrocketrycommunity.client;
 
+import io.github.sunthemoon.advancedrocketrycommunity.client.model.ClassicObjModelRenderer;
+import io.github.sunthemoon.advancedrocketrycommunity.client.model.ObjModelFixture;
+import io.github.sunthemoon.advancedrocketrycommunity.client.model.ClientObjModels;
 import com.mojang.blaze3d.vertex.PoseStack;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.LaserBeam;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.LaserTargetBlockEntity;
@@ -19,6 +22,9 @@ import net.minecraft.world.phys.Vec3;
 public final class LaserBeamRenderer<T extends BlockEntity> implements BlockEntityRenderer<T> {
     private static final float[] COLOR = {0.45F, 0.85F, 1.0F};
 
+    private final ClassicObjModelRenderer<OrbitalLaserDrillBlockEntity> hull =
+            new ClassicObjModelRenderer<>(ObjModelFixture.ORBITAL_LASER_DRILL, ClientObjModels.CACHE);
+
     private LaserBeamRenderer(BlockEntityRendererProvider.Context context) {
     }
 
@@ -33,6 +39,7 @@ public final class LaserBeamRenderer<T extends BlockEntity> implements BlockEnti
     @Override
     public void render(T blockEntity, float partialTick, PoseStack pose, MultiBufferSource buffers, int light,
                        int overlay) {
+        if (blockEntity instanceof OrbitalLaserDrillBlockEntity drill) { hull.render(drill, partialTick, pose, buffers, light, overlay); }
         if (blockEntity.getLevel() == null) {
             return;
         }

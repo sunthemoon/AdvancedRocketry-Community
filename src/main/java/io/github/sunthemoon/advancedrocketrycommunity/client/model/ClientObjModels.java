@@ -45,6 +45,12 @@ public final class ClientObjModels {
 
     @SubscribeEvent
     public static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
+        event.registerBlockEntityRenderer(ModBlockEntities.PRECISION_ASSEMBLER.get(),
+                context -> new ClassicObjModelRenderer<>(ObjModelFixture.PRECISION_ASSEMBLER, CACHE));
+        event.registerBlockEntityRenderer(ModBlockEntities.ROLLING_MACHINE.get(),
+                context -> new ClassicObjModelRenderer<>(ObjModelFixture.ROLLING_MACHINE, CACHE));
+        event.registerBlockEntityRenderer(ModBlockEntities.RAILGUN.get(),
+                context -> new ClassicObjModelRenderer<>(ObjModelFixture.RAILGUN, CACHE));
         event.registerBlockEntityRenderer(ModBlockEntities.CENTRIFUGE.get(),
                 context -> new ClassicObjModelRenderer<>(ObjModelFixture.CENTRIFUGE, CACHE));
         event.registerBlockEntityRenderer(ModBlockEntities.CHEMICAL_REACTOR.get(),
