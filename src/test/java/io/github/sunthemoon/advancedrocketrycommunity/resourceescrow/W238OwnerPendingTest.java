@@ -205,7 +205,7 @@ final class W238OwnerPendingTest {
         try (var writer = io.writer(temp.resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName()), 0, CheckedSavedDataFile::atomicMove);
                 var coordinator = new EscrowCoordinator(data, writer)) {
             var authority = coordinator.admissionAuthority(); authority.registerIndex(Consumer.BAY, () -> new Index(true, bays));
-            var refusal = assertDoesNotThrow(() -> EscrowSettlementOperator.floorAdmission(authority, preview.members().get(0).id(), A, endpoint.logicalRocket()));
+            var refusal = assertDoesNotThrow(() -> EscrowSettlementOperator.floorAdmission(root, authority, preview.members().get(0).id(), A, endpoint.logicalRocket()));
             assertEquals(Result.OWNER_PENDING_FULL, refusal);
             // W238-R1: a console or RCON operator, with no mod language loaded, reads W231's English sentence.
             var message = EscrowCommands.floorRefusal(refusal);
@@ -218,7 +218,7 @@ final class W238OwnerPendingTest {
             assertFalse(assertDoesNotThrow(() -> coordinator.beginSettlement(confirmed, A, ignored -> fail())));
             assertEquals(root, coordinator.ledger()); assertEquals(2, coordinator.nextSequence()); assertFalse(data.isDirty());
             assertEquals(16, authority.pendingCount()); assertTrue(writer.idle()); assertTrue(writer.capturedOperations().isEmpty());
-            bays.remove(0); assertEquals(Result.RESERVED, EscrowSettlementOperator.floorAdmission(authority, preview.members().get(0).id(), A, endpoint.logicalRocket()));
+            bays.remove(0); assertEquals(Result.RESERVED, EscrowSettlementOperator.floorAdmission(root, authority, preview.members().get(0).id(), A, endpoint.logicalRocket()));
             var results = new ArrayList<Boolean>();
             assertTrue(coordinator.beginSettlement(confirmed, A, results::add));
             io.tickUntil(coordinator::tick, 201, writer::idle); assertEquals(List.of(true), results);
@@ -226,6 +226,35 @@ final class W238OwnerPendingTest {
             assertEquals(A, stored.owner()); assertEquals(B, EscrowSettlementIntent.decode(stored.settlement()).actor());
             assertEquals(Result.ALREADY_HELD, reserve(authority, Pending.of(stored)));
             assertEquals(coordinator.ledger(), EscrowCodec.decode(EscrowCodec.encode(coordinator.ledger())));
+        }
+    }
+
+    /** W238-R2: the command's floor admission keeps O1's order, so waiting is never suggested for full receipts. */
+    @Test void floorAdmissionReportsPermanentReceiptsFullBeforeTheTransientOwnerRefusal() {
+        var floor = EscrowTestFixtures.floor(300); floor.putUUID("transfer_id", EscrowTestFixtures.id(301));
+        var receipts = new ArrayList<net.minecraft.nbt.CompoundTag>();
+        for (int n = 0; n < 63; n++) { receipts.add(EscrowTestFixtures.receipt(n)); }
+        // A decided record holds the 64th permanent receipt, so the preview's tombstone-count check alone would pass.
+        var decided = EscrowTestFixtures.operation(1).withReason(EscrowReason.OTHER_STATE);
+        var undecided = EscrowTestFixtures.ledger(decided).replace(List.of(decided), List.of(floor), receipts);
+        var observed = EscrowSettlementIntentTest.observations(EscrowTestFixtures.ledger(decided), false);
+        var decision = EscrowSettlementIntent.preview(undecided, decided.id(), EscrowSettlementIntent.Choice.ACCEPT_CURRENT, B, "operator", 10, observed);
+        var oneDecided = decision.confirm(B, decision.digest(), 11, observed).freeze(undecided);
+        receipts.add(EscrowTestFixtures.receipt(63));
+        var tombstones = new EscrowLedger(EscrowTestFixtures.id(500), 1, 0, List.of(), List.of(floor), receipts);
+        var authority = new EscrowAdmissionAuthority(); authority.register(Consumer.PROPULSION).noFile();
+        var bays = new ArrayList<Pending>();
+        for (int n = 0; n < 16; n++) { bays.add(new Pending(id(200 + n), A, id(400 + n / 8), Consumer.BAY)); }
+        authority.registerIndex(Consumer.BAY, () -> new Index(true, bays));
+        UUID operation = id(10_000), logical = floor.getUUID("rocket_id");
+        assertEquals(Result.OWNER_PENDING_FULL, EscrowSettlementOperator.floorAdmission(EscrowTestFixtures.ledger(), authority, operation, A, logical));
+        assertEquals(63, oneDecided.tombstones().size()); assertEquals(64, tombstones.tombstones().size());
+        for (var root : List.of(oneDecided, tombstones)) {
+            assertEquals(64, EscrowSettlementIntent.reservedReceipts(root) + root.tombstones().size());
+            var refused = assertThrows(IllegalArgumentException.class,
+                    () -> EscrowSettlementOperator.floorAdmission(root, authority, operation, A, logical));
+            assertEquals(EscrowSettlementIntent.RECEIPTS_FULL, refused.getMessage());
+            assertEquals(16, authority.pendingCount());
         }
     }
 

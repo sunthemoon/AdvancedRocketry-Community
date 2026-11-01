@@ -17,7 +17,7 @@ final class EscrowSettlementOperator {
 
     /** Preview only: does not observe endpoints, reserve a slot or cache a confirm digest. */
     EscrowAdmissionAuthority.Result floorAdmission(MinecraftServer server, UUID selected) {
-        var data = existing(server);
+        var data = existing(server); requireReceiptHeadroom(data.ledger());
         var floor = data.ledger().floors().stream().filter(tag -> tag.hasUUID("transfer_id") && selected.equals(tag.getUUID("transfer_id")))
                 .findFirst().orElseThrow(() -> new IllegalArgumentException("Unknown transfer floor"));
         var journal = io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData.get(server);
@@ -27,10 +27,19 @@ final class EscrowSettlementOperator {
         }
         var record = journal.find(guard.transfer()).orElse(null);
         if (record == null) { return EscrowAdmissionAuthority.Result.UNAVAILABLE; }
-        return floorAdmission(data.bind(server).admissionAuthority(), UUID.randomUUID(), record.ownerId(), guard.rocket());
+        return floorAdmission(data.ledger(), data.bind(server).admissionAuthority(), UUID.randomUUID(), record.ownerId(), guard.rocket());
     }
-    static EscrowAdmissionAuthority.Result floorAdmission(EscrowAdmissionAuthority authority, UUID operation, UUID storedOwner, UUID logical) {
+    /**
+     * R258 keeps O1's order: the permanent RECEIPTS_FULL refusal, which waiting cannot clear, precedes the transient
+     * pending-capacity result. The receipt check is floorPreview's own, for one new member.
+     */
+    static EscrowAdmissionAuthority.Result floorAdmission(EscrowLedger root, EscrowAdmissionAuthority authority, UUID operation,
+                                                          UUID storedOwner, UUID logical) {
+        EscrowSettlementIntent.requireReceiptRoom(root, List.of(operation));
         return authority.checkReserve(operation, storedOwner, logical, EscrowAdmissionAuthority.Consumer.PROPULSION);
+    }
+    private static void requireReceiptHeadroom(EscrowLedger root) {
+        EscrowTags.require(root.tombstones().size() < EscrowLimits.TOMBSTONES, EscrowSettlementIntent.RECEIPTS_FULL);
     }
     private static UUID floorOwner(MinecraftServer server, net.minecraft.nbt.CompoundTag floor) {
         return io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData.get(server)
@@ -39,7 +48,7 @@ final class EscrowSettlementOperator {
 
     EscrowSettlementIntent preview(MinecraftServer server, UUID selected, EscrowSettlementIntent.Choice choice, UUID actor, String name) {
         var data = existing(server); long tick = server.getTickCount();
-        EscrowTags.require(data.ledger().tombstones().size() < EscrowLimits.TOMBSTONES, EscrowSettlementIntent.RECEIPTS_FULL);
+        requireReceiptHeadroom(data.ledger());
         previews.requireCapacity(actor, tick);
         if (choice == EscrowSettlementIntent.Choice.TRANSFER_FLOOR_RETIRE) {
             var floor = data.ledger().floors().stream().filter(tag -> tag.hasUUID("transfer_id") && selected.equals(tag.getUUID("transfer_id")))

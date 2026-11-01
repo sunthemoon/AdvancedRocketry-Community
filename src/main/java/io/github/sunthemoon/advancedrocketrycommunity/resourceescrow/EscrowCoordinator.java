@@ -258,9 +258,6 @@ public final class EscrowCoordinator implements AutoCloseable {
                 || tick - lastStart < 10) { return false; }
         EscrowLedger candidate;
         if (intent.choice() == EscrowSettlementIntent.Choice.TRANSFER_FLOOR_RETIRE) {
-            var capacity = admission.checkReserve(intent.members().get(0).id(), floorOwner,
-                    intent.floor().getUUID("rocket_id"), EscrowAdmissionAuthority.Consumer.PROPULSION);
-            if (capacity != EscrowAdmissionAuthority.Result.RESERVED) { return false; }
             EscrowTags.require(intent.ledger().equals(data.ledger().id())
                     && data.ledger().floors().stream().anyMatch(intent.floor()::equals)
                     && data.ledger().records().stream().noneMatch(op -> op.guard().rocket().equals(intent.floor().getUUID("rocket_id"))),
@@ -273,6 +270,7 @@ public final class EscrowCoordinator implements AutoCloseable {
         candidate.records().stream().filter(op -> intent.ids().contains(op.id())).forEach(op -> EscrowSettlementTombstones.create(op, intent));
         var frozen = candidate.generation(Math.addExact(writer.lastGeneration(), 1));
         if (intent.choice() == EscrowSettlementIntent.Choice.TRANSFER_FLOOR_RETIRE) {
+            // R258: the transient pending refusal follows the permanent receipt, FLOOR_FULL and tombstone checks.
             var op = candidate.records().stream().filter(record -> intent.ids().contains(record.id())).findFirst().orElseThrow();
             var reservation = admission.tryReserve(op.id(), op.owner(), op.guard().rocket(), EscrowAdmissionAuthority.Consumer.PROPULSION);
             if (reservation != EscrowAdmissionAuthority.Result.RESERVED) { return false; }

@@ -101,14 +101,12 @@ class EscrowCombinedReservationTest {
             assertTrue(writer.idle()); assertTrue(writer.capturedOperations().isEmpty());
             if (settleFills) {
                 coordinator.tick(tick += 10);
+                // Both refusals apply; R258 keeps the permanent RECEIPTS_FULL before the transient pending refusal.
                 assertEquals(EscrowAdmissionAuthority.Result.SERVER_FULL, coordinator.admissionAuthority().checkReserve(
                         second.members().get(0).id(), second.actor(), second.floor().getUUID("rocket_id"), EscrowAdmissionAuthority.Consumer.PROPULSION));
-                assertFalse(assertDoesNotThrow(() -> coordinator.beginSettlement(second, ignored -> fail())),
-                        "Expected pending-capacity refusal is not an assertion failure");
+                var refused = assertThrows(IllegalArgumentException.class, () -> coordinator.beginSettlement(second, ignored -> fail()));
                 // Design 2 F8: all 64 members have irrevocable O1 receipt reservations.
                 // Completing/pruning those decisions cannot reclaim a permanent receipt slot.
-                var refused = assertThrows(IllegalArgumentException.class,
-                        () -> EscrowSettlementIntent.requireReceiptRoom(acknowledged, second.ids()));
                 assertEquals(EscrowSettlementIntent.RECEIPTS_FULL, refused.getMessage());
                 assertEquals(acknowledged, coordinator.ledger()); assertEquals(next, coordinator.nextSequence());
                 assertFalse(data.isDirty()); assertEquals(capacity + 1, coordinator.admissionAuthority().pendingCount());
