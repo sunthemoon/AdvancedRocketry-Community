@@ -52,7 +52,7 @@ class JackhammerDataTest {
         var model = V180JackhammerData.clientFiles().get("assets/advancedrocketrycommunity/models/item/jackhammer.json");
         assertEquals(1, V180JackhammerData.clientFiles().size());
         assertEquals("minecraft:item/handheld", model.get("parent").getAsString());
-        assertEquals("advancedrocketrycommunity:item/jackhammer", model.getAsJsonObject("textures").get("layer0").getAsString());
+        assertEquals("advancedrocketrycommunity:item/jackhammer_classic", model.getAsJsonObject("textures").get("layer0").getAsString());
         var tag = V180JackhammerData.serverFiles().get("data/minecraft/tags/items/pickaxes.json");
         assertFalse(tag.get("replace").getAsBoolean());
         assertEquals("[\"advancedrocketrycommunity:jackhammer\"]", tag.get("values").toString());

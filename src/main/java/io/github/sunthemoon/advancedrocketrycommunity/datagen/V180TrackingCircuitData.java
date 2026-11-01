@@ -12,7 +12,10 @@ import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
 
-/** Original resources; recipe facts follow the audited 1.12.2 trackingcircuit.json. */
+/**
+ * A model that names the provenance-bound imported icon; recipe facts follow the audited 1.12.2 trackingcircuit.json.
+ * The retained NEW icon is still generated but not referenced at runtime; its disposition is pending.
+ */
 public final class V180TrackingCircuitData implements DataProvider {
     public static final String ITEM_ID = "advancedrocketrycommunity:tracking_circuit";
     public static final String RECIPE_ID = "advancedrocketrycommunity:precision_tracking_circuit";
@@ -26,7 +29,7 @@ public final class V180TrackingCircuitData implements DataProvider {
 
     public static Map<String, JsonObject> clientFiles() {
         return Map.of("assets/advancedrocketrycommunity/models/item/tracking_circuit.json", json("""
-                {"parent":"minecraft:item/generated","textures":{"layer0":"advancedrocketrycommunity:item/tracking_circuit"}}
+                {"parent":"minecraft:item/generated","textures":{"layer0":"advancedrocketrycommunity:item/trackingcircuit"}}
                 """));
     }
 

@@ -13,7 +13,10 @@ import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
 
-/** Registered MIT recipe conversion and a new community-authored development icon. */
+/**
+ * Registered MIT recipe conversion, and a model that names the provenance-bound imported icon. The retained NEW icon is
+ * still generated but not referenced at runtime; its disposition is pending.
+ */
 public final class V180JackhammerData implements DataProvider {
     public static final String ID = "advancedrocketrycommunity:jackhammer";
     public static final String TEXTURE = "assets/advancedrocketrycommunity/textures/item/jackhammer.png";
@@ -29,7 +32,7 @@ public final class V180JackhammerData implements DataProvider {
 
     public static Map<String, JsonObject> clientFiles() {
         return Map.of("assets/advancedrocketrycommunity/models/item/jackhammer.json", json("""
-                {"parent":"minecraft:item/handheld","textures":{"layer0":"advancedrocketrycommunity:item/jackhammer"}}
+                {"parent":"minecraft:item/handheld","textures":{"layer0":"advancedrocketrycommunity:item/jackhammer_classic"}}
                 """));
     }
 

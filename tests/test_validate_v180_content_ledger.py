@@ -1,4 +1,5 @@
 import csv
+import fnmatch
 import hashlib
 import io
 import json
@@ -279,13 +280,14 @@ class V180ContentLedgerTests(unittest.TestCase):
         path.write_text(json.dumps(data), encoding="utf-8")
 
     def test_vanilla_derived_assets_cannot_be_imported(self) -> None:
-        self._set_verdict("textures/blocks/blastbrick.png", "HIT")
-        self.assertIn("asset plan: textures/blocks/blastbrick.png is vanilla-derived (HIT) but handled as IMPORT",
+        # W246 imports the static faces; the active face remains an unimported IMPORT fixture.
+        self._set_verdict("textures/blocks/blastbrickfront_active.png", "HIT")
+        self.assertIn("asset plan: textures/blocks/blastbrickfront_active.png is vanilla-derived (HIT) but handled as IMPORT",
                       self._errors())
 
     def test_suspect_assets_need_a_cleared_finding(self) -> None:
-        self._set_verdict("textures/blocks/blastbrick.png", "SUSPECT")
-        self.assertIn("asset plan: textures/blocks/blastbrick.png has derivation verdict SUSPECT and no CLEARED "
+        self._set_verdict("textures/blocks/blastbrickfront_active.png", "SUSPECT")
+        self.assertIn("asset plan: textures/blocks/blastbrickfront_active.png has derivation verdict SUSPECT and no CLEARED "
                       "origin finding", self._errors())
 
     def _repin_derivation(self, data: dict) -> None:
@@ -459,12 +461,17 @@ class V180ContentLedgerTests(unittest.TestCase):
         self.assertTrue(any("pattern 'textures/nothing/*.png' matches no asset" in error for error in errors))
 
     def test_imported_handling_needs_a_record(self) -> None:
+        asset = "textures/blocks/blastbrickfront_active.png"
         rows = self._rows(ASSET_PLAN)
         for row in rows:
-            if row["pattern"] == "textures/blocks/blastbrick*.png":
+            if fnmatch.fnmatchcase(asset, row["pattern"]):
+                self.assertEqual("IMPORT", row["handling"])
                 row.update(handling="IMPORTED", plan="v1.8.0")
+                break
+        else:
+            self.fail("the unimported active-face fixture matches no asset-plan rule")
         self._write_rows(ASSET_PLAN, rows)
-        self.assertIn("asset plan: textures/blocks/blastbrick.png is handled as IMPORTED without a provenance record",
+        self.assertIn("asset plan: textures/blocks/blastbrickfront_active.png is handled as IMPORTED without a provenance record",
                       self._errors())
 
     def test_recorded_import_must_be_handled_as_imported(self) -> None:
