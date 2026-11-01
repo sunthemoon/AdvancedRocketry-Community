@@ -27,6 +27,7 @@ final class BayPassengerExitWorld implements BayExitSafety.LoadedState {
     private final ServerPlayer player;
     int reads, columnChecks, entityVisits;
     boolean contact, inspected;
+    String firstContact;
 
     BayPassengerExitWorld(ServerPlayer player) { this.player = player; level = player.serverLevel(); }
     @Override public String level() { return level.dimension().location().toString(); }
@@ -45,7 +46,7 @@ final class BayPassengerExitWorld implements BayExitSafety.LoadedState {
         return new AABB(box.minX(), box.minY(), box.minZ(), box.maxX(), box.maxY(), box.maxZ());
     }
     @Override public Snapshot readWindow(Box box, Window window) {
-        contact = false; inspected = false;
+        contact = false; inspected = false; firstContact = null;
         var view = new View(window, level.getMinBuildHeight(), level.getHeight());
         for (int x = window.minX(); x < window.maxX(); x++) {
             for (int z = window.minZ(); z < window.maxZ(); z++) {
@@ -67,14 +68,17 @@ final class BayPassengerExitWorld implements BayExitSafety.LoadedState {
                         var state = view.getBlockState(pos);
                         if (hazard(state) == Hazard.UNKNOWN) {
                             contact = true;
+                            if (firstContact == null) { firstContact = pos + " " + state + " unknown"; }
                             cells[view.index(x, y, z)] = new Cell(true, Support.UNKNOWN, Hazard.UNKNOWN, false);
                             continue;
                         }
                         var shape = state.getCollisionShape(view, pos, CollisionContext.of(player));
                         boolean collision = Shapes.joinIsNotEmpty(body, shape.move(x, y, z), BooleanOp.AND);
                         boolean footprint = x < box.maxX() && x + 1 > box.minX() && z < box.maxZ() && z + 1 > box.minZ();
-                        contact |= collision || footprint && !shape.isEmpty() && Math.abs(box.minY() - y - shape.max(Direction.Axis.Y)) <= .01
+                        boolean touching = collision || footprint && !shape.isEmpty() && Math.abs(box.minY() - y - shape.max(Direction.Axis.Y)) <= .01
                                 || hazard(state) != Hazard.NONE || !state.getFluidState().isEmpty();
+                        contact |= touching;
+                        if (touching && firstContact == null) { firstContact = pos + " " + state + " collision=" + collision + " fluid=" + !state.getFluidState().isEmpty(); }
                         Support support = support(state, shape);
                         if (Math.abs(box.minY() - (y + 1.0)) > .01) { support = Support.NONE; }
                         cells[view.index(x, y, z)] = new Cell(collision, support, hazard(state), !state.getFluidState().isEmpty());
