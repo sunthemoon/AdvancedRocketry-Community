@@ -20,7 +20,8 @@ Unit tests compare all 200 positions in four facings against the independent
 legacy transform with width reflection. Pattern, collision and save schemas
 are unchanged. The complete sixteen-model catalog has 35,268 budget vertices.
 
-After review finding W244-R1, Root decision R263 replaces that cage with the
+After review finding W244-R1, Root decision R263 replaces W244's first design,
+a cage of thin texture strips, with the
 legacy Capsule group of the imported K4 spaceelevator.obj, drawn with the
 capsule texture through the group's own UVs. One stationary capsule stands at
 each endpoint with a pending ride, on the platform centre, placed by the
@@ -34,7 +35,8 @@ texture are checked once per resource reload; a missing or unreadable one
 keeps the original line cage (W244-R4). It adds no field, entity, packet,
 ride action or persisted state. Existing endpoint/rider limits, lease and
 lifecycle cleanup remain. V1 must judge the capsule's look, its countdown
-tint, lighting and rider visibility.
+tint, the doorway facing north at every endpoint, a rider at a platform corner
+standing partly outside (R265), lighting and rider visibility.
 
 Focused native model/capsule tests are not a full/sharded regression or an
 actual tracking-client visual result. Root retains the sharded branch run,
