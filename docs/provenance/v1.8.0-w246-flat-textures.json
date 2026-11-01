@@ -23,10 +23,10 @@
       "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
       "source_sha256": "7db0ce11ea80ecd2cc6c26404615f0069027f5ee7bbf98224a6e155d7e0e7d1b",
       "status": "UPSTREAM_AR_MIT",
-      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/blocks/blastbrick.png",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/block/blastbrick.png",
       "target_sha256": "7db0ce11ea80ecd2cc6c26404615f0069027f5ee7bbf98224a6e155d7e0e7d1b",
       "transformation": [
-        "Byte copy into the mod namespace: assets/advancedrocketry/textures/blocks/blastbrick.png to assets/advancedrocketrycommunity/textures/blocks/blastbrick.png."
+        "Byte copy renamed from textures/blocks/blastbrick.png to assets/advancedrocketrycommunity/textures/block/blastbrick.png."
       ],
       "units": [
         "block:arcfurnace",
@@ -79,10 +79,10 @@
       "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
       "source_sha256": "32ab52f356e3f5fc1eb300aaed5f7bb7a825a656ac8ee81789e9c6a84e76671b",
       "status": "UPSTREAM_AR_MIT",
-      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/blocks/blastbrickfront.png",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/block/blastbrickfront.png",
       "target_sha256": "32ab52f356e3f5fc1eb300aaed5f7bb7a825a656ac8ee81789e9c6a84e76671b",
       "transformation": [
-        "Byte copy into the mod namespace: assets/advancedrocketry/textures/blocks/blastbrickfront.png to assets/advancedrocketrycommunity/textures/blocks/blastbrickfront.png."
+        "Byte copy renamed from textures/blocks/blastbrickfront.png to assets/advancedrocketrycommunity/textures/block/blastbrickfront.png."
       ],
       "units": [
         "block:arcfurnace",
@@ -132,10 +132,10 @@
       "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
       "source_sha256": "e24329ce8a7f61ed0b5fc2e0518288142e1296f9facbac969a5aa40b2ba146a4",
       "status": "UPSTREAM_AR_MIT",
-      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/blocks/qcrucible_bottom.png",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/block/qcrucible_bottom.png",
       "target_sha256": "e24329ce8a7f61ed0b5fc2e0518288142e1296f9facbac969a5aa40b2ba146a4",
       "transformation": [
-        "Byte copy into the mod namespace: assets/advancedrocketry/textures/blocks/qcrucible_bottom.png to assets/advancedrocketrycommunity/textures/blocks/qcrucible_bottom.png."
+        "Byte copy renamed from textures/blocks/qcrucible_bottom.png to assets/advancedrocketrycommunity/textures/block/qcrucible_bottom.png."
       ],
       "units": [
         "block:quartzcrucible"
@@ -180,10 +180,10 @@
       "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
       "source_sha256": "7f37a8bbedd46144f8a3e909feaafa7d2d158d752f258395a91756b570f72735",
       "status": "UPSTREAM_AR_MIT",
-      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/blocks/smallairlockdoor_lower.png",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/block/smallairlockdoor_lower.png",
       "target_sha256": "7f37a8bbedd46144f8a3e909feaafa7d2d158d752f258395a91756b570f72735",
       "transformation": [
-        "Byte copy into the mod namespace: assets/advancedrocketry/textures/blocks/smallairlockdoor_lower.png to assets/advancedrocketrycommunity/textures/blocks/smallairlockdoor_lower.png."
+        "Byte copy renamed from textures/blocks/smallairlockdoor_lower.png to assets/advancedrocketrycommunity/textures/block/smallairlockdoor_lower.png."
       ],
       "units": [
         "block:airlock_door"
@@ -234,10 +234,10 @@
       "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
       "source_sha256": "d4dc5d11a244d5c50e995831e888594c474addaa229cd4553f91f5fbf0566d41",
       "status": "UPSTREAM_AR_MIT",
-      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/blocks/smallairlockdoor_upper.png",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/block/smallairlockdoor_upper.png",
       "target_sha256": "d4dc5d11a244d5c50e995831e888594c474addaa229cd4553f91f5fbf0566d41",
       "transformation": [
-        "Byte copy into the mod namespace: assets/advancedrocketry/textures/blocks/smallairlockdoor_upper.png to assets/advancedrocketrycommunity/textures/blocks/smallairlockdoor_upper.png."
+        "Byte copy renamed from textures/blocks/smallairlockdoor_upper.png to assets/advancedrocketrycommunity/textures/block/smallairlockdoor_upper.png."
       ],
       "units": [
         "block:airlock_door"
@@ -286,10 +286,10 @@
       "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
       "source_sha256": "f0f9284d2c8c529a85f1b819fd2e015c53bae60711e3908985d78cfc29e1ba1d",
       "status": "UPSTREAM_AR_MIT",
-      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/blocks/suitworkstation.png",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/block/suitworkstation.png",
       "target_sha256": "f0f9284d2c8c529a85f1b819fd2e015c53bae60711e3908985d78cfc29e1ba1d",
       "transformation": [
-        "Byte copy into the mod namespace: assets/advancedrocketry/textures/blocks/suitworkstation.png to assets/advancedrocketrycommunity/textures/blocks/suitworkstation.png."
+        "Byte copy renamed from textures/blocks/suitworkstation.png to assets/advancedrocketrycommunity/textures/block/suitworkstation.png."
       ],
       "units": [
         "block:suitWorkStation"
@@ -338,10 +338,10 @@
       "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
       "source_sha256": "dcc370095de4fbaaab6b470742e53f17f416417a8ff76e8b2b4b44bc7f964366",
       "status": "UPSTREAM_AR_MIT",
-      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/blocks/thermitetorch.png",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/block/thermitetorch.png",
       "target_sha256": "dcc370095de4fbaaab6b470742e53f17f416417a8ff76e8b2b4b44bc7f964366",
       "transformation": [
-        "Byte copy into the mod namespace: assets/advancedrocketry/textures/blocks/thermitetorch.png to assets/advancedrocketrycommunity/textures/blocks/thermitetorch.png."
+        "Byte copy renamed from textures/blocks/thermitetorch.png to assets/advancedrocketrycommunity/textures/block/thermitetorch.png."
       ],
       "units": [
         "block:thermiteTorch"
@@ -372,10 +372,10 @@
       "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
       "source_sha256": "9ac8d77c9598c33378f8f8d0fedf145b4e7bcd3a8b9d6a4fdaa745f303e59405",
       "status": "UPSTREAM_AR_MIT",
-      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/items/carbonscrubbercartrige.png",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/item/carbonscrubbercartrige.png",
       "target_sha256": "9ac8d77c9598c33378f8f8d0fedf145b4e7bcd3a8b9d6a4fdaa745f303e59405",
       "transformation": [
-        "Byte copy into the mod namespace: assets/advancedrocketry/textures/items/carbonscrubbercartrige.png to assets/advancedrocketrycommunity/textures/items/carbonscrubbercartrige.png."
+        "Byte copy renamed from textures/items/carbonscrubbercartrige.png to assets/advancedrocketrycommunity/textures/item/carbonscrubbercartrige.png."
       ],
       "units": [
         "item:carbonScrubberCartridge"
@@ -420,10 +420,10 @@
       "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
       "source_sha256": "c27b90782251277302441eafa0e5c366896de9e7f0598fa8824c1e6d4dc6039f",
       "status": "UPSTREAM_AR_MIT",
-      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/items/flightspeedupgrade.png",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/item/flightspeedupgrade.png",
       "target_sha256": "c27b90782251277302441eafa0e5c366896de9e7f0598fa8824c1e6d4dc6039f",
       "transformation": [
-        "Byte copy into the mod namespace: assets/advancedrocketry/textures/items/flightspeedupgrade.png to assets/advancedrocketrycommunity/textures/items/flightspeedupgrade.png."
+        "Byte copy renamed from textures/items/flightspeedupgrade.png to assets/advancedrocketrycommunity/textures/item/flightspeedupgrade.png."
       ],
       "units": [
         "item_variant:itemUpgrade/1"
@@ -468,10 +468,10 @@
       "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
       "source_sha256": "38bef72328c6c48b276c067abece4892e442a29be212bfb5d3ef66ac00f459b3",
       "status": "UPSTREAM_AR_MIT",
-      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/items/hoverupgrade.png",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/item/hoverupgrade.png",
       "target_sha256": "38bef72328c6c48b276c067abece4892e442a29be212bfb5d3ef66ac00f459b3",
       "transformation": [
-        "Byte copy into the mod namespace: assets/advancedrocketry/textures/items/hoverupgrade.png to assets/advancedrocketrycommunity/textures/items/hoverupgrade.png."
+        "Byte copy renamed from textures/items/hoverupgrade.png to assets/advancedrocketrycommunity/textures/item/hoverupgrade.png."
       ],
       "units": [
         "item_variant:itemUpgrade/0"
@@ -514,10 +514,10 @@
       "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
       "source_sha256": "7ad17ef2b2bd7d17a6e4af0f6e52caf326cb28403d492d2abcb2a519846dc4bd",
       "status": "UPSTREAM_AR_MIT",
-      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/items/jackhammer.png",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/item/jackhammer_classic.png",
       "target_sha256": "7ad17ef2b2bd7d17a6e4af0f6e52caf326cb28403d492d2abcb2a519846dc4bd",
       "transformation": [
-        "Byte copy into the mod namespace: assets/advancedrocketry/textures/items/jackhammer.png to assets/advancedrocketrycommunity/textures/items/jackhammer.png."
+        "Byte copy renamed from textures/items/jackhammer.png to assets/advancedrocketrycommunity/textures/item/jackhammer_classic.png."
       ],
       "units": [
         "item:jackHammer"
@@ -566,10 +566,10 @@
       "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
       "source_sha256": "7538742837d3ccdd784d9928bc502c1ee6eaa35339ee3d667d0c43aaf7fe4681",
       "status": "UPSTREAM_AR_MIT",
-      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/items/jetpack.png",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/item/jetpack_classic.png",
       "target_sha256": "7538742837d3ccdd784d9928bc502c1ee6eaa35339ee3d667d0c43aaf7fe4681",
       "transformation": [
-        "Byte copy into the mod namespace: assets/advancedrocketry/textures/items/jetpack.png to assets/advancedrocketrycommunity/textures/items/jetpack.png."
+        "Byte copy renamed from textures/items/jetpack.png to assets/advancedrocketrycommunity/textures/item/jetpack_classic.png."
       ],
       "units": [
         "item:jetPack"
@@ -614,10 +614,10 @@
       "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
       "source_sha256": "9b16e4b5070fda9d5c55cfb406695c65018f968c066846c6842bb42d2aec71f0",
       "status": "UPSTREAM_AR_MIT",
-      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/items/sealdetector.png",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/item/sealdetector.png",
       "target_sha256": "9b16e4b5070fda9d5c55cfb406695c65018f968c066846c6842bb42d2aec71f0",
       "transformation": [
-        "Byte copy into the mod namespace: assets/advancedrocketry/textures/items/sealdetector.png to assets/advancedrocketrycommunity/textures/items/sealdetector.png."
+        "Byte copy renamed from textures/items/sealdetector.png to assets/advancedrocketrycommunity/textures/item/sealdetector.png."
       ],
       "units": [
         "item:sealDetector"
@@ -660,10 +660,10 @@
       "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
       "source_sha256": "f6140eccecfaac2f1e74e994353b0acc0c07a387723d677bc495e854647e6a3c",
       "status": "UPSTREAM_AR_MIT",
-      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/items/smallairlock.png",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/item/smallairlock.png",
       "target_sha256": "f6140eccecfaac2f1e74e994353b0acc0c07a387723d677bc495e854647e6a3c",
       "transformation": [
-        "Byte copy into the mod namespace: assets/advancedrocketry/textures/items/smallairlock.png to assets/advancedrocketrycommunity/textures/items/smallairlock.png."
+        "Byte copy renamed from textures/items/smallairlock.png to assets/advancedrocketrycommunity/textures/item/smallairlock.png."
       ],
       "units": [
         "item:smallAirlockDoor"
@@ -712,10 +712,10 @@
       "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
       "source_sha256": "a2c797788a41f1ccd6640e8757f43de7334a5b81faec6c3213634ccf3cabe8f0",
       "status": "UPSTREAM_AR_MIT",
-      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/items/thermite.png",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/item/thermite_classic.png",
       "target_sha256": "a2c797788a41f1ccd6640e8757f43de7334a5b81faec6c3213634ccf3cabe8f0",
       "transformation": [
-        "Byte copy into the mod namespace: assets/advancedrocketry/textures/items/thermite.png to assets/advancedrocketrycommunity/textures/items/thermite.png."
+        "Byte copy renamed from textures/items/thermite.png to assets/advancedrocketrycommunity/textures/item/thermite_classic.png."
       ],
       "units": [
         "item:thermite"
@@ -750,10 +750,10 @@
       "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
       "source_sha256": "6eda370b2efb8eca718348b54ce5b3e035ffdf69a91d76e95ac7674fc773b0fd",
       "status": "UPSTREAM_AR_MIT",
-      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/items/trackingcircuit.png",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/item/trackingcircuit.png",
       "target_sha256": "6eda370b2efb8eca718348b54ce5b3e035ffdf69a91d76e95ac7674fc773b0fd",
       "transformation": [
-        "Byte copy into the mod namespace: assets/advancedrocketry/textures/items/trackingcircuit.png to assets/advancedrocketrycommunity/textures/items/trackingcircuit.png."
+        "Byte copy renamed from textures/items/trackingcircuit.png to assets/advancedrocketrycommunity/textures/item/trackingcircuit.png."
       ],
       "units": [
         "item_variant:ic/1"
@@ -786,9 +786,9 @@
     "bytes": 0,
     "vertices": 0
   },
-  "plan_sha256": "2487ce88601d1234dfccffaa9184fe96234286dac13488d5e46b11828c467366",
+  "plan_sha256": "00af031b340cb6f1e7962a0fdeb4b660a12c2a611d1cc2d2e68ef4cd4bb197f6",
   "review": {
-    "content_digest": "e4fddb7b5999524a79100bc852c04712a4b1d4eaa1a29c6305fd6e19c0c778ed",
+    "content_digest": "c79acd4b33b75d80d75002fdeebf6516cf28e139153a10deef656c056f337813",
     "findings": [],
     "reviewed_at": null,
     "reviewer": null,

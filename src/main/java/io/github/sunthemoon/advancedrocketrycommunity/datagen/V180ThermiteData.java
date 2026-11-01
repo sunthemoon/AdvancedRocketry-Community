@@ -14,8 +14,9 @@ import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
 
 /**
- * Thermite material and standing/wall torch resources with provenance-bound legacy references and two retained
- * original fallback grids. No asset import, tag or language writer.
+ * Thermite material and standing/wall torch resources whose models name provenance-bound imported textures. The two
+ * retained NEW grids are still generated but not referenced at runtime; their disposition is pending. No asset
+ * import, tag or language writer.
  */
 public final class V180ThermiteData implements DataProvider {
     private static final String DUST_TEXTURE = "assets/advancedrocketrycommunity/textures/item/thermite.png";
@@ -46,19 +47,19 @@ public final class V180ThermiteData implements DataProvider {
                         """),
                 "assets/advancedrocketrycommunity/models/block/thermite_torch.json", json("""
                         {"parent":"minecraft:block/template_torch","render_type":"minecraft:cutout",
-                         "textures":{"torch":"advancedrocketrycommunity:blocks/thermitetorch"}}
+                         "textures":{"torch":"advancedrocketrycommunity:block/thermitetorch"}}
                         """),
                 "assets/advancedrocketrycommunity/models/block/thermite_wall_torch.json", json("""
                         {"parent":"minecraft:block/template_torch_wall","render_type":"minecraft:cutout",
-                         "textures":{"torch":"advancedrocketrycommunity:blocks/thermitetorch"}}
+                         "textures":{"torch":"advancedrocketrycommunity:block/thermitetorch"}}
                         """),
                 "assets/advancedrocketrycommunity/models/item/thermite.json", json("""
                         {"parent":"minecraft:item/generated",
-                         "textures":{"layer0":"advancedrocketrycommunity:items/thermite"}}
+                         "textures":{"layer0":"advancedrocketrycommunity:item/thermite_classic"}}
                         """),
                 "assets/advancedrocketrycommunity/models/item/thermite_torch.json", json("""
                         {"parent":"minecraft:item/generated",
-                         "textures":{"layer0":"advancedrocketrycommunity:blocks/thermitetorch"}}
+                         "textures":{"layer0":"advancedrocketrycommunity:block/thermitetorch"}}
                         """));
     }
 

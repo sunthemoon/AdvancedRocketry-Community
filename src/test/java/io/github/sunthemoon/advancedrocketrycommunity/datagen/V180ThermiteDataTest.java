@@ -33,8 +33,8 @@ class V180ThermiteDataTest {
     private static final String DATA = "data/advancedrocketrycommunity/";
     private static final String DUST_PNG = ASSETS + "textures/item/thermite.png";
     private static final String TORCH_PNG = ASSETS + "textures/block/thermite_torch.png";
-    private static final String DUST_REFERENCE = ASSETS + "textures/items/thermite.png";
-    private static final String TORCH_REFERENCE = ASSETS + "textures/blocks/thermitetorch.png";
+    private static final String DUST_REFERENCE = ASSETS + "textures/item/thermite_classic.png";
+    private static final String TORCH_REFERENCE = ASSETS + "textures/block/thermitetorch.png";
     private static final Set<String> CLIENT = Set.of(ASSETS + "blockstates/thermite_torch.json",
             ASSETS + "blockstates/thermite_wall_torch.json", ASSETS + "models/block/thermite_torch.json",
             ASSETS + "models/block/thermite_wall_torch.json", ASSETS + "models/item/thermite.json",

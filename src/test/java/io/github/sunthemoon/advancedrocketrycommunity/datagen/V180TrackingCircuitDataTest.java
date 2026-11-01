@@ -51,7 +51,7 @@ class V180TrackingCircuitDataTest {
 
     @Test void modelUsesOnlyTheImportedTrackingTexture() {
         assertEquals(JsonParser.parseString("""
-                {"parent":"minecraft:item/generated","textures":{"layer0":"advancedrocketrycommunity:items/trackingcircuit"}}
+                {"parent":"minecraft:item/generated","textures":{"layer0":"advancedrocketrycommunity:item/trackingcircuit"}}
                 """), V180TrackingCircuitData.clientFiles().get(MODEL));
     }
 

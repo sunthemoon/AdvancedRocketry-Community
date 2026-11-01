@@ -41,7 +41,7 @@ class V180AirlockDataTest {
                     used.add(name);
                     JsonObject model = files.get(A + "models/block/" + name + ".json");
                     assertEquals("minecraft:block/" + name.substring("airlock_".length()), model.get("parent").getAsString());
-                    assertEquals(json("{\"bottom\":\"advancedrocketrycommunity:blocks/smallairlockdoor_lower\",\"top\":\"advancedrocketrycommunity:blocks/smallairlockdoor_upper\"}"), model.getAsJsonObject("textures"));
+                    assertEquals(json("{\"bottom\":\"advancedrocketrycommunity:block/smallairlockdoor_lower\",\"top\":\"advancedrocketrycommunity:block/smallairlockdoor_upper\"}"), model.getAsJsonObject("textures"));
                     for (int i = 0; i < directions.length; i++) {
                         String key = "facing=" + directions[i] + ",half=" + half + ",hinge=" + hinge + ",open=" + open;
                         JsonObject variant = variants.getAsJsonObject(key);
@@ -54,7 +54,7 @@ class V180AirlockDataTest {
             }
         }
         assertEquals(8, used.size());
-        assertEquals(json("{\"parent\":\"minecraft:item/generated\",\"textures\":{\"layer0\":\"advancedrocketrycommunity:items/smallairlock\"}}"),
+        assertEquals(json("{\"parent\":\"minecraft:item/generated\",\"textures\":{\"layer0\":\"advancedrocketrycommunity:item/smallairlock\"}}"),
                 files.get(A + "models/item/airlock_door.json"));
     }
 

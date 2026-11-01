@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "advancedrocketrycommunity:items/trackingcircuit"
+    "layer0": "advancedrocketrycommunity:item/trackingcircuit"
   }
 }

@@ -34,7 +34,7 @@ public final class V180C16cMachineData implements DataProvider {
             } else {
                 textures.addProperty("all", NS + ":block/" + block);
                 // Override only the inherited underside; REVIEW/EXCLUDE legacy faces remain unused.
-                textures.addProperty("down", NS + ":blocks/qcrucible_bottom");
+                textures.addProperty("down", NS + ":block/qcrucible_bottom");
             }
             model.add("textures", textures); files.put(asset("models/block/" + block), model);
             files.put(asset("models/item/" + block), object("parent", NS + ":block/" + block));

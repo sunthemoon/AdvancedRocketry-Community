@@ -7,9 +7,9 @@
       "source": "ar",
       "source_path": "src/main/resources/assets/advancedrocketry/textures/blocks/blastbrick.png",
       "source_sha256": "7db0ce11ea80ecd2cc6c26404615f0069027f5ee7bbf98224a6e155d7e0e7d1b",
-      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/blocks/blastbrick.png",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/block/blastbrick.png",
       "transformation": {
-        "kind": "copy"
+        "kind": "rename"
       },
       "units": [
         "block:blastbrick",
@@ -21,9 +21,9 @@
       "source": "ar",
       "source_path": "src/main/resources/assets/advancedrocketry/textures/blocks/blastbrickfront.png",
       "source_sha256": "32ab52f356e3f5fc1eb300aaed5f7bb7a825a656ac8ee81789e9c6a84e76671b",
-      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/blocks/blastbrickfront.png",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/block/blastbrickfront.png",
       "transformation": {
-        "kind": "copy"
+        "kind": "rename"
       },
       "units": [
         "block:blastbrick",
@@ -35,9 +35,9 @@
       "source": "ar",
       "source_path": "src/main/resources/assets/advancedrocketry/textures/blocks/qcrucible_bottom.png",
       "source_sha256": "e24329ce8a7f61ed0b5fc2e0518288142e1296f9facbac969a5aa40b2ba146a4",
-      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/blocks/qcrucible_bottom.png",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/block/qcrucible_bottom.png",
       "transformation": {
-        "kind": "copy"
+        "kind": "rename"
       },
       "units": [
         "block:quartzcrucible"
@@ -48,9 +48,9 @@
       "source": "ar",
       "source_path": "src/main/resources/assets/advancedrocketry/textures/blocks/smallairlockdoor_lower.png",
       "source_sha256": "7f37a8bbedd46144f8a3e909feaafa7d2d158d752f258395a91756b570f72735",
-      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/blocks/smallairlockdoor_lower.png",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/block/smallairlockdoor_lower.png",
       "transformation": {
-        "kind": "copy"
+        "kind": "rename"
       },
       "units": [
         "block:airlock_door"
@@ -61,9 +61,9 @@
       "source": "ar",
       "source_path": "src/main/resources/assets/advancedrocketry/textures/blocks/smallairlockdoor_upper.png",
       "source_sha256": "d4dc5d11a244d5c50e995831e888594c474addaa229cd4553f91f5fbf0566d41",
-      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/blocks/smallairlockdoor_upper.png",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/block/smallairlockdoor_upper.png",
       "transformation": {
-        "kind": "copy"
+        "kind": "rename"
       },
       "units": [
         "block:airlock_door"
@@ -74,9 +74,9 @@
       "source": "ar",
       "source_path": "src/main/resources/assets/advancedrocketry/textures/blocks/suitworkstation.png",
       "source_sha256": "f0f9284d2c8c529a85f1b819fd2e015c53bae60711e3908985d78cfc29e1ba1d",
-      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/blocks/suitworkstation.png",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/block/suitworkstation.png",
       "transformation": {
-        "kind": "copy"
+        "kind": "rename"
       },
       "units": [
         "block:suitWorkStation"
@@ -87,9 +87,9 @@
       "source": "ar",
       "source_path": "src/main/resources/assets/advancedrocketry/textures/blocks/thermitetorch.png",
       "source_sha256": "dcc370095de4fbaaab6b470742e53f17f416417a8ff76e8b2b4b44bc7f964366",
-      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/blocks/thermitetorch.png",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/block/thermitetorch.png",
       "transformation": {
-        "kind": "copy"
+        "kind": "rename"
       },
       "units": [
         "block:thermiteTorch"
@@ -100,9 +100,9 @@
       "source": "ar",
       "source_path": "src/main/resources/assets/advancedrocketry/textures/items/carbonscrubbercartrige.png",
       "source_sha256": "9ac8d77c9598c33378f8f8d0fedf145b4e7bcd3a8b9d6a4fdaa745f303e59405",
-      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/items/carbonscrubbercartrige.png",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/item/carbonscrubbercartrige.png",
       "transformation": {
-        "kind": "copy"
+        "kind": "rename"
       },
       "units": [
         "item:carbonScrubberCartridge"
@@ -113,9 +113,9 @@
       "source": "ar",
       "source_path": "src/main/resources/assets/advancedrocketry/textures/items/flightspeedupgrade.png",
       "source_sha256": "c27b90782251277302441eafa0e5c366896de9e7f0598fa8824c1e6d4dc6039f",
-      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/items/flightspeedupgrade.png",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/item/flightspeedupgrade.png",
       "transformation": {
-        "kind": "copy"
+        "kind": "rename"
       },
       "units": [
         "item_variant:itemUpgrade/1"
@@ -126,9 +126,9 @@
       "source": "ar",
       "source_path": "src/main/resources/assets/advancedrocketry/textures/items/hoverupgrade.png",
       "source_sha256": "38bef72328c6c48b276c067abece4892e442a29be212bfb5d3ef66ac00f459b3",
-      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/items/hoverupgrade.png",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/item/hoverupgrade.png",
       "transformation": {
-        "kind": "copy"
+        "kind": "rename"
       },
       "units": [
         "item_variant:itemUpgrade/0"
@@ -139,9 +139,9 @@
       "source": "ar",
       "source_path": "src/main/resources/assets/advancedrocketry/textures/items/jackhammer.png",
       "source_sha256": "7ad17ef2b2bd7d17a6e4af0f6e52caf326cb28403d492d2abcb2a519846dc4bd",
-      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/items/jackhammer.png",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/item/jackhammer_classic.png",
       "transformation": {
-        "kind": "copy"
+        "kind": "rename"
       },
       "units": [
         "item:jackHammer"
@@ -152,9 +152,9 @@
       "source": "ar",
       "source_path": "src/main/resources/assets/advancedrocketry/textures/items/jetpack.png",
       "source_sha256": "7538742837d3ccdd784d9928bc502c1ee6eaa35339ee3d667d0c43aaf7fe4681",
-      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/items/jetpack.png",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/item/jetpack_classic.png",
       "transformation": {
-        "kind": "copy"
+        "kind": "rename"
       },
       "units": [
         "item:jetPack"
@@ -165,9 +165,9 @@
       "source": "ar",
       "source_path": "src/main/resources/assets/advancedrocketry/textures/items/sealdetector.png",
       "source_sha256": "9b16e4b5070fda9d5c55cfb406695c65018f968c066846c6842bb42d2aec71f0",
-      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/items/sealdetector.png",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/item/sealdetector.png",
       "transformation": {
-        "kind": "copy"
+        "kind": "rename"
       },
       "units": [
         "item:sealDetector"
@@ -178,9 +178,9 @@
       "source": "ar",
       "source_path": "src/main/resources/assets/advancedrocketry/textures/items/smallairlock.png",
       "source_sha256": "f6140eccecfaac2f1e74e994353b0acc0c07a387723d677bc495e854647e6a3c",
-      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/items/smallairlock.png",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/item/smallairlock.png",
       "transformation": {
-        "kind": "copy"
+        "kind": "rename"
       },
       "units": [
         "item:smallAirlockDoor"
@@ -191,9 +191,9 @@
       "source": "ar",
       "source_path": "src/main/resources/assets/advancedrocketry/textures/items/thermite.png",
       "source_sha256": "a2c797788a41f1ccd6640e8757f43de7334a5b81faec6c3213634ccf3cabe8f0",
-      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/items/thermite.png",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/item/thermite_classic.png",
       "transformation": {
-        "kind": "copy"
+        "kind": "rename"
       },
       "units": [
         "item:thermite"
@@ -204,9 +204,9 @@
       "source": "ar",
       "source_path": "src/main/resources/assets/advancedrocketry/textures/items/trackingcircuit.png",
       "source_sha256": "6eda370b2efb8eca718348b54ce5b3e035ffdf69a91d76e95ac7674fc773b0fd",
-      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/items/trackingcircuit.png",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/item/trackingcircuit.png",
       "transformation": {
-        "kind": "copy"
+        "kind": "rename"
       },
       "units": [
         "item_variant:ic/1"

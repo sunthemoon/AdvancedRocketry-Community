@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "advancedrocketrycommunity:items/carbonscrubbercartrige"
+    "layer0": "advancedrocketrycommunity:item/carbonscrubbercartrige"
   }
 }

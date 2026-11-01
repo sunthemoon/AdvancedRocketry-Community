@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "advancedrocketrycommunity:items/thermite"
+    "layer0": "advancedrocketrycommunity:item/thermite_classic"
   }
 }

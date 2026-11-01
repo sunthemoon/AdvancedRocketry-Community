@@ -1,7 +1,7 @@
 {
   "parent": "minecraft:block/door_bottom_right",
   "textures": {
-    "bottom": "advancedrocketrycommunity:blocks/smallairlockdoor_lower",
-    "top": "advancedrocketrycommunity:blocks/smallairlockdoor_upper"
+    "bottom": "advancedrocketrycommunity:block/smallairlockdoor_lower",
+    "top": "advancedrocketrycommunity:block/smallairlockdoor_upper"
   }
 }

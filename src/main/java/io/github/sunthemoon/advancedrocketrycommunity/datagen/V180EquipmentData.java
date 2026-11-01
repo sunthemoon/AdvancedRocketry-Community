@@ -16,7 +16,11 @@ import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
 
-/** Original fallback art and community recipes, with provenance-bound legacy texture references. */
+/**
+ * Original art and community recipes. The jetpack, hover upgrade, flight speed upgrade and workstation-top models name
+ * provenance-bound imported textures; the retained NEW art they replaced is still generated but not referenced at
+ * runtime, and its disposition is pending.
+ */
 public final class V180EquipmentData implements DataProvider {
     private static final String NS = "advancedrocketrycommunity";
     private static final String ASSETS = "assets/" + NS + "/";
@@ -33,9 +37,9 @@ public final class V180EquipmentData implements DataProvider {
         Map<String, JsonObject> files = new LinkedHashMap<>();
         for (String id : moduleIds()) {
             String texture = switch (id) {
-                case "jetpack" -> "items/jetpack";
-                case "hover_upgrade" -> "items/hoverupgrade";
-                case "flight_speed_upgrade" -> "items/flightspeedupgrade";
+                case "jetpack" -> "item/jetpack_classic";
+                case "hover_upgrade" -> "item/hoverupgrade";
+                case "flight_speed_upgrade" -> "item/flightspeedupgrade";
                 default -> "item/" + id;
             };
             files.put(ASSETS + "models/item/" + id + ".json", json("{\"parent\":\"minecraft:item/generated\",\"textures\":{\"layer0\":\"" + NS + ":" + texture + "\"}}"));
@@ -43,7 +47,7 @@ public final class V180EquipmentData implements DataProvider {
         files.put(ASSETS + "blockstates/suit_workstation.json", json("{\"variants\":{\"\":{\"model\":\"" + NS + ":block/suit_workstation\"}}}"));
         files.put(ASSETS + "models/item/suit_workstation.json", json("{\"parent\":\"" + NS + ":block/suit_workstation\"}"));
         files.put(ASSETS + "models/block/suit_workstation.json", json("{\"parent\":\"minecraft:block/cube_bottom_top\",\"textures\":{"
-                + "\"top\":\"" + NS + ":blocks/suitworkstation\",\"bottom\":\"" + NS + ":block/suit_workstation_bottom\","
+                + "\"top\":\"" + NS + ":block/suitworkstation\",\"bottom\":\"" + NS + ":block/suit_workstation_bottom\","
                 + "\"side\":\"" + NS + ":block/suit_workstation_side\"}}"));
         return files;
     }

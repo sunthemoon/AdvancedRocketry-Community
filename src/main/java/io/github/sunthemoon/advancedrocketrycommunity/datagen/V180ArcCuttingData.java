@@ -46,12 +46,12 @@ public final class V180ArcCuttingData implements DataProvider {
             if (controller) {
                 // The controller has facing only; no active state selects the legacy lit front.
                 String shell = block.equals("arc_furnace") ? "blast_brick" : "machine_casing";
-                textures.addProperty("front", NS + (block.equals("arc_furnace") ? ":blocks/blastbrickfront" : ":block/" + block));
+                textures.addProperty("front", NS + (block.equals("arc_furnace") ? ":block/blastbrickfront" : ":block/" + block));
                 // The machine casing ships separate side and top textures; blast brick has one texture.
                 for (String face : List.of("side", "top")) {
-                    textures.addProperty(face, NS + (shell.equals("machine_casing") ? ":block/" + shell + "_" + face : ":blocks/blastbrick"));
+                    textures.addProperty(face, NS + (shell.equals("machine_casing") ? ":block/" + shell + "_" + face : ":block/blastbrick"));
                 }
-            } else { textures.addProperty("all", NS + (block.equals("blast_brick") ? ":blocks/blastbrick" : ":block/" + block)); }
+            } else { textures.addProperty("all", NS + (block.equals("blast_brick") ? ":block/blastbrick" : ":block/" + block)); }
             model.add("textures", textures); files.put(asset("models/block/" + block), model);
             files.put(asset("models/item/" + block), object("parent", NS + ":block/" + block));
             var variants = new JsonObject();

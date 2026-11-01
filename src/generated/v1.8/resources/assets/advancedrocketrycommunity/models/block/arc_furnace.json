@@ -1,8 +1,8 @@
 {
   "parent": "minecraft:block/orientable",
   "textures": {
-    "front": "advancedrocketrycommunity:blocks/blastbrickfront",
-    "side": "advancedrocketrycommunity:blocks/blastbrick",
-    "top": "advancedrocketrycommunity:blocks/blastbrick"
+    "front": "advancedrocketrycommunity:block/blastbrickfront",
+    "side": "advancedrocketrycommunity:block/blastbrick",
+    "top": "advancedrocketrycommunity:block/blastbrick"
   }
 }

@@ -15,7 +15,10 @@ import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
 
-/** Original fallback grids and door data; legacy faces are provenance-bound and native templates referenced by ID. */
+/**
+ * Door data, with the provenance-bound imported faces and icon and the native templates referenced by ID. The retained
+ * NEW door grids are still generated but not referenced at runtime; their disposition is pending.
+ */
 public final class V180AirlockData implements DataProvider {
     public static final String ID = "advancedrocketrycommunity:airlock_door";
     public static final String BOTTOM_TEXTURE = "assets/advancedrocketrycommunity/textures/block/airlock_door_bottom.png";
@@ -43,8 +46,8 @@ public final class V180AirlockData implements DataProvider {
                     String name = "airlock_door_" + part + "_" + hinge + (open ? "_open" : "");
                     JsonObject model = new JsonObject();
                     model.addProperty("parent", "minecraft:block/door_" + part + "_" + hinge + (open ? "_open" : ""));
-                    model.add("textures", json("{\"bottom\":\"advancedrocketrycommunity:blocks/smallairlockdoor_lower\","
-                            + "\"top\":\"advancedrocketrycommunity:blocks/smallairlockdoor_upper\"}"));
+                    model.add("textures", json("{\"bottom\":\"advancedrocketrycommunity:block/smallairlockdoor_lower\","
+                            + "\"top\":\"advancedrocketrycommunity:block/smallairlockdoor_upper\"}"));
                     files.put("assets/advancedrocketrycommunity/models/block/" + name + ".json", model);
                     for (int index = 0; index < facing.length; index++) {
                         JsonObject variant = new JsonObject();
@@ -59,7 +62,7 @@ public final class V180AirlockData implements DataProvider {
         JsonObject state = new JsonObject(); state.add("variants", variants);
         files.put("assets/advancedrocketrycommunity/blockstates/airlock_door.json", state);
         files.put("assets/advancedrocketrycommunity/models/item/airlock_door.json", json("""
-                {"parent":"minecraft:item/generated","textures":{"layer0":"advancedrocketrycommunity:items/smallairlock"}}
+                {"parent":"minecraft:item/generated","textures":{"layer0":"advancedrocketrycommunity:item/smallairlock"}}
                 """));
         return Map.copyOf(files);
     }

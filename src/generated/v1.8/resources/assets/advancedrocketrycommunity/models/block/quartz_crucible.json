@@ -2,6 +2,6 @@
   "parent": "minecraft:block/cube_all",
   "textures": {
     "all": "advancedrocketrycommunity:block/quartz_crucible",
-    "down": "advancedrocketrycommunity:blocks/qcrucible_bottom"
+    "down": "advancedrocketrycommunity:block/qcrucible_bottom"
   }
 }
