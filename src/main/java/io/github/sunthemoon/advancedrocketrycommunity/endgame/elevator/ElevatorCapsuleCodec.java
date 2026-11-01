@@ -1,5 +1,6 @@
 package io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator;
 
+import io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.ClassicModelProjection;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -14,7 +15,8 @@ public final class ElevatorCapsuleCodec {
     public static final String KEY = "capsule_rides";
     public static final int MAX_RIDES = Math.min(8, ElevatorRules.PENDING_RIDES_PER_ENDPOINT);
     private static final Set<String> ENTRY_KEYS = Set.of("entity_id", "remaining_ticks");
-    private static final Set<String> UPDATE_KEYS = Set.of("tether", KEY);
+    // The ground anchor composes its canonical K4 formed flag with this existing visual packet.
+    private static final Set<String> UPDATE_KEYS = Set.of("tether", KEY, ClassicModelProjection.FORMED);
 
     public record Entry(int entityId, int remainingTicks) {
         public Entry {
@@ -48,6 +50,9 @@ public final class ElevatorCapsuleCodec {
     /** Reject the entire projection, without copying or traversing oversized/foreign payloads. */
     public static List<Entry> decode(@Nullable CompoundTag update) {
         if (update == null || update.size() > UPDATE_KEYS.size()
+                || update.contains(ClassicModelProjection.FORMED)
+                    && (!(update.get(ClassicModelProjection.FORMED) instanceof net.minecraft.nbt.ByteTag formed)
+                        || formed.getAsByte() != 0 && formed.getAsByte() != 1)
                 || !UPDATE_KEYS.containsAll(update.getAllKeys()) || !(update.get(KEY) instanceof ListTag list)
                 || list.size() > MAX_RIDES || !list.isEmpty() && list.getElementType() != Tag.TAG_COMPOUND) {
             return List.of();

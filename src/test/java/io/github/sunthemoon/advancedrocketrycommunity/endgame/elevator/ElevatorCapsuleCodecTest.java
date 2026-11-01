@@ -41,6 +41,27 @@ final class ElevatorCapsuleCodecTest {
     }
 
     @Test
+    void anchorFormationComposesWithoutDiscardingCapsulesOrAllowingOtherKeys() {
+        var rides = List.of(new Entry(2, 100));
+        for (boolean formed : List.of(false, true)) {
+            var update = tag(rides);
+            io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.ClassicModelProjection.encode(update, formed);
+            assertEquals(rides, ElevatorCapsuleCodec.decode(update));
+            assertEquals(formed ? 3 : 2, update.size());
+            update.putInt("unknown", 1);
+            assertTrue(ElevatorCapsuleCodec.decode(update).isEmpty());
+        }
+        var explicitFalse = tag(rides); explicitFalse.putBoolean("formed", false);
+        assertEquals(rides, ElevatorCapsuleCodec.decode(explicitFalse));
+        for (net.minecraft.nbt.Tag bad : List.of(IntTag.valueOf(1), net.minecraft.nbt.ByteTag.valueOf((byte)2),
+                net.minecraft.nbt.ByteTag.valueOf((byte)-1), new CompoundTag())) {
+            var update = tag(rides);
+            update.put("formed", bad);
+            assertTrue(ElevatorCapsuleCodec.decode(update).isEmpty());
+        }
+    }
+
+    @Test
     void limitUsesTheRealPerEndpointLimitAndNeverExceedsEight() {
         assertEquals(Math.min(8, ElevatorRules.PENDING_RIDES_PER_ENDPOINT), ElevatorCapsuleCodec.MAX_RIDES);
         List<Entry> rides = new ArrayList<>();
