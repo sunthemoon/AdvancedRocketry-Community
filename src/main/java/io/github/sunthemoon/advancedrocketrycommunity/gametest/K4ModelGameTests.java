@@ -51,6 +51,62 @@ public final class K4ModelGameTests {
     @GameTest(template="empty",batch="w241_precision_mirrored",timeoutTicks=240)
     public static void mirroredPrecisionKeepsFormationButUsesJsonFallback(GameTestHelper h) { exercise(h,"precision_assembler",6,true); }
 
+    @GameTest(template="empty",batch="w241_rolling_rotation",timeoutTicks=240)
+    public static void rollingRotationWithholdsHullAfterRevalidation(GameTestHelper h) { exerciseRotation(h,"rolling_machine",7); }
+    @GameTest(template="empty",batch="w241_precision_rotation",timeoutTicks=240)
+    public static void precisionRotationWithholdsHullAfterRevalidation(GameTestHelper h) { exerciseRotation(h,"precision_assembler",8); }
+    @GameTest(template="empty",batch="w241_black_hole_rotation",timeoutTicks=240)
+    public static void blackHoleRotationWithholdsCachedHull(GameTestHelper h) { exerciseRotation(h,"black_hole_generator",9); }
+    @GameTest(template="empty",batch="w241_orbital_rotation",timeoutTicks=240)
+    public static void orbitalRotationWithholdsCachedHull(GameTestHelper h) { exerciseRotation(h,"orbital_laser_drill",10); }
+    @GameTest(template="empty",batch="w241_railgun_rotation",timeoutTicks=240)
+    public static void railgunRotationWithholdsCachedHull(GameTestHelper h) { exerciseRotation(h,"railgun",11); }
+
+    private static void exerciseRotation(GameTestHelper h, String kind, int row) {
+        var fixtures = new ArrayList<Fixture>();
+        var states = new ArrayList<BlockState>();
+        var roots = new ArrayList<Object>();
+        var validations = new ArrayList<Object>();
+        int[] stage = {0};
+        for (Direction facing : Direction.Plane.HORIZONTAL) {
+            fixtures.add(new Fixture(h, kind, new BlockPos(-2_410_000 + fixtures.size()*160,100,-2_410_000-row*1000),facing,false));
+        }
+        h.onEachTick(() -> {
+            fixtures.forEach(Fixture::tick);
+            if (stage[0] == 0) {
+                if (fixtures.stream().anyMatch(f -> !f.formed() || !((FormedModelController)f.controller).modelFormed())) { return; }
+                for (var f : fixtures) {
+                    roots.add(f.controllerState()); validations.add(f.validation());
+                    states.add(FormedModelRotationProbe.rotate(h, f.controller));
+                    if (f.controller instanceof EndgameDeviceBlockEntity) {
+                        // Before a budget grant/tick, code() may still describe the previous facing.
+                        FormedModelRotationProbe.assertPresentation(h, f.controller, false);
+                        FormedModelRotationProbe.set(h, f.controller, states.get(states.size()-1));
+                        FormedModelRotationProbe.assertPresentation(h, f.controller, true);
+                    } else { f.dirty(); }
+                }
+                if (fixtures.get(0).controller instanceof EndgameDeviceBlockEntity) {
+                    fixtures.forEach(Fixture::close); h.succeed(); return;
+                }
+                stage[0] = 1;
+            } else {
+                for (int i=0; i<fixtures.size(); i++) {
+                    if (fixtures.get(i).validation() == validations.get(i)) { return; }
+                }
+                for (int i=0; i<fixtures.size(); i++) {
+                    var f = fixtures.get(i);
+                    h.assertTrue(f.formed() && roots.get(i).equals(f.controllerState()), "Rotation changed retained formation/bindings");
+                    FormedModelRotationProbe.assertPresentation(h, f.controller, stage[0] == 2);
+                    if (stage[0] == 1) {
+                        validations.set(i, f.validation());
+                        FormedModelRotationProbe.set(h, f.controller, states.get(i)); f.dirty();
+                    }
+                }
+                if (stage[0] == 2) { fixtures.forEach(Fixture::close); h.succeed(); } else { stage[0] = 2; }
+            }
+        });
+    }
+
     private static void exercise(GameTestHelper h,String kind,int row,boolean mirrored) {
         var fixtures = new ArrayList<Fixture>();
         int[] stage={0};
@@ -136,6 +192,16 @@ public final class K4ModelGameTests {
             if(controller instanceof OrbitalLaserDrillBlockEntity b){return b.structureCode()==EndgameCode.OK;}
             if(controller instanceof RailgunBlockEntity b){return b.structureCode()==EndgameCode.OK;}
             return ((ElevatorAnchorBlockEntity)controller).placement()==EndgameCode.OK;
+        }
+        Object controllerState() {
+            if (controller instanceof RollingMachineBlockEntity b) { return b.controllerState(); }
+            if (controller instanceof PrecisionAssemblerBlockEntity b) { return b.controllerState(); }
+            return null;
+        }
+        Object validation() {
+            if (controller instanceof RollingMachineBlockEntity b) { return b.lastValidation().orElse(null); }
+            if (controller instanceof PrecisionAssemblerBlockEntity b) { return b.lastValidation().orElse(null); }
+            return null;
         }
         void breakPart(){region.set(broken,Blocks.AIR.defaultBlockState());dirty();}
         void restorePart(){region.set(broken,brokenState);dirty();}

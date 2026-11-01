@@ -26,6 +26,7 @@ public final class K3ResearchModelGameTests {
                  var f = new ResearchFixture(helper.getLevel(), origin, processor, facing, UUID.randomUUID())) {
                 helper.assertTrue(f.controller.formed(), "K3 research fixture did not form: " + f.controller.reason());
                 K3ModelTestRegion.assertProjection(helper, f.controller, true);
+                ClassicModelProjectionGameTests.exerciseRotation(helper, f.controller, f::revalidate);
                 helper.assertTrue(f.controller.getRenderBoundingBox().equals(ClassicModelProjection.bounds(f.controller.definition().kind(), facing, origin)),
                         "K3 research render bounds differ");
                 var part = f.world(f.pattern.cells().entrySet().stream()

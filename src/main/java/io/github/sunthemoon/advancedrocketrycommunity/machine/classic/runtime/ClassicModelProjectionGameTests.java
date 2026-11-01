@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime;
 
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.FormedModelRotationProbe;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.PatternMatcher;
 import java.util.Objects;
 import java.util.Set;
@@ -28,6 +29,7 @@ public final class ClassicModelProjectionGameTests {
         for (Direction facing : Direction.Plane.HORIZONTAL) {
             try (var f = new C16cMachineFixture(helper, "centrifuge", facing)) {
                 assertProjection(helper, f.controller, true);
+                exerciseRotation(helper, f.controller, () -> f.controller.revalidate(helper.getLevel(), f.pattern));
                 helper.assertTrue(f.controller.getRenderBoundingBox().equals(footprint(f)),
                         "Centrifuge render volume differs from its pattern footprint facing " + facing);
                 var motor = f.world(f.pattern.cells().entrySet().stream()
@@ -108,6 +110,7 @@ public final class ClassicModelProjectionGameTests {
     private static void exerciseTransition(GameTestHelper helper, ClassicControllerBlockEntity controller,
             ClassicMachineManager manager, BlockPos part, IntConsumer tick, AABB volume) {
         assertProjection(helper, controller, true);
+        exerciseRotation(helper, controller, () -> { manager.changed(controller.getBlockPos()); tick.accept(1); });
         helper.assertTrue(controller.getRenderBoundingBox().equals(volume), "Formed model render volume differs");
         var state = helper.getLevel().getBlockState(part);
         helper.getLevel().setBlock(part, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
@@ -123,6 +126,19 @@ public final class ClassicModelProjectionGameTests {
         var box = new AABB(f.positions.get(0));
         for (BlockPos position : f.positions) { box = box.minmax(new AABB(position)); }
         return box;
+    }
+
+    static void exerciseRotation(GameTestHelper helper, ClassicControllerBlockEntity controller, Runnable revalidate) {
+        var root = controller.controllerState();
+        var before = FormedModelRotationProbe.rotate(helper, controller);
+        revalidate.run();
+        helper.assertTrue(controller.formed() && root.equals(controller.controllerState()),
+                "Rotation changed classic formation or retained bindings");
+        FormedModelRotationProbe.assertPresentation(helper, controller, false);
+        FormedModelRotationProbe.set(helper, controller, before);
+        revalidate.run();
+        FormedModelRotationProbe.assertPresentation(helper, controller, true);
+        helper.assertTrue(root.equals(controller.controllerState()), "Restoring facing changed retained bindings");
     }
 
     private static void assertProjection(GameTestHelper helper, ClassicControllerBlockEntity controller, boolean formed) {
