@@ -1,6 +1,7 @@
 import json
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 
 from scripts.validate_v090_resources import (
@@ -13,6 +14,44 @@ from scripts.validate_v090_resources import (
 
 
 class V090ResourceAuditTests(unittest.TestCase):
+    def _obj_fixture(self, model: dict, mesh: str | None = "motor.obj") -> list[str]:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            assets = root / "src/generated/v1.8/resources/assets/advancedrocketrycommunity"
+            (assets / "models/block").mkdir(parents=True)
+            (assets / "models/block/motor.json").write_text(json.dumps(model), encoding="utf-8")
+            if mesh is not None:
+                (assets / f"models/block/{mesh}").write_text("fixture existence only", encoding="utf-8")
+            # UI source contracts are a separate concern from these minimal resource fixtures.
+            with mock.patch("scripts.validate_v090_resources.ACCESSIBILITY_CONTRACTS", {}):
+                return audit_resources(root)[1]
+
+    def test_obj_loader_metadata_and_mesh_are_not_texture_ids(self) -> None:
+        self.assertEqual([], self._obj_fixture({"loader": "forge:obj",
+                         "model": "advancedrocketrycommunity:models/block/motor.obj"}))
+
+    def test_obj_loader_requires_the_actual_mesh_file(self) -> None:
+        errors = self._obj_fixture({"loader": "forge:obj",
+                                   "model": "advancedrocketrycommunity:models/block/motor.obj"}, None)
+        self.assertEqual(["missing asset reference assets/advancedrocketrycommunity/models/block/motor.obj "
+                          "from assets/advancedrocketrycommunity/models/block/motor.json"], errors)
+
+    def test_obj_loader_keeps_texture_and_case_checks(self) -> None:
+        errors = self._obj_fixture({"loader": "forge:obj",
+                                   "model": "advancedrocketrycommunity:models/block/motor.obj",
+                                   "textures": {"particle": "advancedrocketrycommunity:block/missing"}}, "Motor.obj")
+        self.assertTrue(any("case-mismatched asset reference" in error and "motor.obj" in error for error in errors))
+        self.assertTrue(any("missing asset reference assets/advancedrocketrycommunity/textures/block/missing.png"
+                            in error for error in errors))
+
+    def test_unknown_model_loaders_are_not_silently_skipped(self) -> None:
+        errors = self._obj_fixture({"loader": "fixture:unknown"})
+        self.assertTrue(any("unsupported model loader" in error for error in errors))
+
+    def test_obj_loader_requires_an_obj_model_location(self) -> None:
+        for model in ({"loader": "forge:obj"}, {"loader": "forge:obj", "model": "minecraft:block/cube_all"}):
+            self.assertTrue(any("requires an OBJ model resource location" in error for error in self._obj_fixture(model)))
+
     def test_repository_resource_contract_passes(self) -> None:
         summary, errors = audit_resources(ROOT)
 

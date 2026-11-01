@@ -213,11 +213,28 @@ def audit_resources(repository_root: Path = ROOT) -> tuple[dict[str, object], li
         if len(parts) < 3:
             continue
         namespace = parts[1]
+        is_model = "/models/" in relative
+        is_obj = is_model and isinstance(value, dict) and value.get("loader") == "forge:obj"
+        if is_model and isinstance(value, dict) and "loader" in value:
+            if not is_obj:
+                errors.append(f"unsupported model loader {value['loader']!r} from {relative}")
+            elif not isinstance(value.get("model"), str) or not re.fullmatch(
+                r"(?:[a-z0-9_.-]+:)?[a-z0-9/._-]+\.obj", value["model"]
+            ) or any(part in ("", ".", "..") for part in value["model"].split(":")[-1].split("/")):
+                errors.append(f"forge:obj requires an OBJ model resource location from {relative}")
         for key, target in _walk_strings(value, ""):
             required: str | None = None
             target_namespace = namespace
             target_path = target
-            if "/models/" in relative and key == "parent" and target != "builtin/entity":
+            if is_model and key == "loader":
+                # Loader IDs select code; they are not atlas texture IDs. Unknown loaders fail above.
+                continue
+            elif is_obj and key == "model":
+                # Forge's OBJ path already includes models/ and its extension. MTL/atlas dependencies
+                # are checked by the importer and PackagedBlockAtlasCoverageTest, not as JSON textures.
+                target_namespace, target_path = _resource_location(target, "minecraft")
+                required = f"assets/{target_namespace}/{target_path}"
+            elif "/models/" in relative and key == "parent" and target != "builtin/entity":
                 target_namespace, target_path = _resource_location(target, "minecraft")
                 if target_namespace != "minecraft":
                     required = f"assets/{target_namespace}/models/{target_path}.json"
