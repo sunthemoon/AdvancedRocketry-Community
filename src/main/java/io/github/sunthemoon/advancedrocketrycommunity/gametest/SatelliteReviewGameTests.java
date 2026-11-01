@@ -33,6 +33,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.satellite.terminal.Satelli
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.terminal.SatelliteTerminalMenu;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.terminal.SatelliteTerminalViews;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -87,6 +88,10 @@ public final class SatelliteReviewGameTests {
         Path data = server.getWorldPath(LevelResource.ROOT).resolve("data");
         Path obstacle = data.resolve(SatelliteMissionSavedData.DATA_NAME + ".dat.arce-pending");
         try {
+            // Finish runtime writes before the fixture takes ownership of their staging path.
+            SatelliteMissionSavedData.get(server).awaitForTests(server);
+            helper.assertTrue(Files.notExists(obstacle, LinkOption.NOFOLLOW_LINKS),
+                    "Registry staging path is occupied or inaccessible after draining its writer: " + obstacle);
             Files.createDirectory(obstacle);
             try {
                 AdvancedRocketryCommunity.LOGGER.info("ARCE_SATELLITE_EXPECTED_SAVE_FAILURE testing the idle-launch barrier");

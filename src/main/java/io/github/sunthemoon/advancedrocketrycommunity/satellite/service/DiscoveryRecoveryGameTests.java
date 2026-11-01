@@ -14,6 +14,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.MissionS
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteOperationCode;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteMissionSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteRegistryProof;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -67,7 +69,11 @@ public final class DiscoveryRecoveryGameTests {
             var identity = new SatelliteIdentity(UUID.randomUUID(), owner.getUUID(), SatelliteIds.DATA_SATELLITE);
             var disk = server.getWorldPath(LevelResource.ROOT).resolve("data");
             var obstacle = disk.resolve(SatelliteMissionSavedData.DATA_NAME + ".dat.arce-pending");
-            java.nio.file.Files.createDirectory(obstacle);
+            // Replay can request another off-thread write after the earlier flush; finish it before taking this path.
+            missions.awaitForTests(server);
+            helper.assertTrue(Files.notExists(obstacle, LinkOption.NOFOLLOW_LINKS),
+                    "Registry staging path is occupied or inaccessible after draining its writer: " + obstacle);
+            Files.createDirectory(obstacle);
             SatelliteRegistryProof.Token launched;
             try {
                 AdvancedRocketryCommunity.LOGGER.info("ARCE_DISCOVERY_EXPECTED_SAVE_FAILURE testing launch acknowledgment");
@@ -79,7 +85,7 @@ public final class DiscoveryRecoveryGameTests {
                 helper.assertTrue(!missions.covers(launched) && SatelliteMissionSavedData.load(NbtIo.readCompressed(
                         disk.resolve(SatelliteMissionSavedData.DATA_NAME + ".dat").toFile()).getCompound("data"))
                         .satellite(identity.satelliteId()).isEmpty(), "A failed write acknowledged the launch");
-            } finally { java.nio.file.Files.delete(obstacle); }
+            } finally { Files.delete(obstacle); }
             helper.assertTrue(manager.launch(owner, identity, PlanetaryContent.VENUS).code() == SatelliteOperationCode.IDEMPOTENT,
                     "Second mission did not launch");
             missions.awaitForTests(server);
