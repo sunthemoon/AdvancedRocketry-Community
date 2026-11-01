@@ -33,7 +33,7 @@ final class BayPassengerExitGameTestFixture {
         CONTENTION, EXPIRY, UNLOADED, NON_FALL_LANDING, CANCELLED_FALL, FLUID, GANTRY, LOCAL_ONLY, REMOTE,
         HAZARD, HEADROOM, PARTIAL, BUDGET, REENTRANT_DAMAGE, AFTER_TELEPORT, RELEASED_SUCCESS, CLIMB,
         CONTENTION_REVERSE, ONE_BOX, ONE_BOX_REVERSE, LAST_UNIT, LAST_UNIT_REVERSE, DELAYED_ONE_BOX, DELAYED_LAST, FIFO,
-        EARLY_CONTINUOUS, SECOND_CORRECTION, EARLY_DISCONTINUITY, AMBIENT_FLUID }
+        EARLY_CONTINUOUS, SECOND_CORRECTION, EARLY_DISCONTINUITY, AMBIENT_FLUID, CACHE_EVICTION }
     final GameTestHelper helper;
     final Case scenario;
     final List<ServerPlayer> players = new ArrayList<>();
@@ -60,6 +60,7 @@ final class BayPassengerExitGameTestFixture {
     int arbitrationLoaded;
     String arbitrationAudit;
     long firstDeadline;
+    Runnable cacheListenerCleanup = () -> { };
 
     BayPassengerExitGameTestFixture(GameTestHelper helper, Case scenario) { this.helper = helper; this.scenario = scenario; }
     void start() { MinecraftForge.EVENT_BUS.register(this); helper.onEachTick(this::tick); }
@@ -199,6 +200,7 @@ final class BayPassengerExitGameTestFixture {
             } }
         }
         BayPassengerExitGameTestDescentAudit.enclose(this);
+        cacheListenerCleanup = BayPassengerExitGameTestDescentAudit.evictOnDismount(this);
         joinedTick = server.getTickCount(); stage = 1;
     }
     void pad(BlockPos feet) {
@@ -297,6 +299,7 @@ final class BayPassengerExitGameTestFixture {
         helper.assertTrue(offer.descent != null && !offer.descent.closed && history.issued(), "Fallback did not offer one descent: " + offer.result);
         BayPassengerExitGameTestDescentAudit.acknowledge(this);
         switch (scenario) {
+            case CACHE_EVICTION -> { helper.assertTrue(injected, "Dismount listener did not run"); done(); }
             case FIRST_TICK -> { BayPassengerExitGameTestAudit.firstTickLanding(this); done(); }
             case HAZARD, HEADROOM, PARTIAL -> { helper.assertTrue(offer.result.status() != io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.exit.BayExitSelector.Status.SAFE,
                     "Unsafe contact geometry passed selection"); done(); }
@@ -451,6 +454,7 @@ final class BayPassengerExitGameTestFixture {
     void done() { cleanup(); helper.succeed(); }
     private void cleanup() {
         if (closed) { return; } closed = true; MinecraftForge.EVENT_BUS.unregister(this);
+        cacheListenerCleanup.run();
         if (flight != null) { bays(helper).forgetForTests(flight.record().logicalRocketId()); }
         if (otherFlight != null) { bays(helper).forgetForTests(otherFlight.record().logicalRocketId()); }
         for (var joined : players) {

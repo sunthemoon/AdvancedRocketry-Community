@@ -12,6 +12,8 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 @PrefixGameTestTemplate(false)
 public final class BayPassengerExitGameTests {
     private BayPassengerExitGameTests() { }
+    @GameTest(template = "rocket_test", batch = "bay_exit_cache_eviction", timeoutTicks = 400)
+    public static void dismountGameEventCannotMakeThePortalCheckAcquireATicket(GameTestHelper helper) { new BayPassengerExitGameTestFixture(helper, CACHE_EVICTION).start(); }
     @GameTest(template = "rocket_test", batch = "bay_exit_ambient_fluid", timeoutTicks = 400)
     public static void externalWaterCannotReplaceTheOrdinaryLandingStimulus(GameTestHelper helper) { new BayPassengerExitGameTestFixture(helper, AMBIENT_FLUID).start(); }
     @GameTest(template = "rocket_test", batch = "bay_exit_early_continuous", timeoutTicks = 400)

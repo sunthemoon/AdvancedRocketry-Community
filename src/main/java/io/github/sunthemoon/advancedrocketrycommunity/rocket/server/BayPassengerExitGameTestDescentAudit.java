@@ -6,12 +6,38 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.protocol.game.ServerboundAcceptTeleportationPacket;
 import net.minecraft.world.entity.RelativeMovement;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.gameevent.*;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
 
 /** Check that a negative landing/expiry test reaches its own stimulus with a live offer. */
 final class BayPassengerExitGameTestDescentAudit {
     private BayPassengerExitGameTestDescentAudit() { }
+
+    static Runnable evictOnDismount(BayPassengerExitGameTestFixture fixture) {
+        if (fixture.scenario != CACHE_EVICTION) { return () -> { }; }
+        var source = fixture.flight.source().blockPosition();
+        var level = fixture.helper.getLevel();
+        var registry = level.getChunkSource().getChunkNow(source.getX() >> 4, source.getZ() >> 4)
+                .getListenerRegistry(net.minecraft.core.SectionPos.blockToSectionCoord(source.getY()));
+        var listener = new GameEventListener() {
+            @Override public PositionSource getListenerSource() { return new BlockPositionSource(source); }
+            @Override public int getListenerRadius() { return 16; }
+            @Override public boolean handleGameEvent(net.minecraft.server.level.ServerLevel world,
+                    GameEvent event, GameEvent.Context context, Vec3 position) {
+                if (fixture.closed || event != GameEvent.ENTITY_DISMOUNT || context.sourceEntity() != fixture.player) { return false; }
+                fixture.injected = true;
+                // The four-entry vanilla cache must not be relied on across game-event dispatch.
+                for (int x = -1; x <= 1; x++) { for (int z = -1; z <= 1; z++) {
+                    fixture.helper.assertTrue(world.getChunkSource().getChunkNow((source.getX() >> 4) + x,
+                            (source.getZ() >> 4) + z) != null, "Fixture cache eviction encountered a missing column");
+                } }
+                return true;
+            }
+        };
+        registry.register(listener);
+        return () -> registry.unregister(listener);
+    }
 
     static void enclose(BayPassengerExitGameTestFixture fixture) {
         if (!Set.of(ORDINARY, FIRST_TICK, DRIPSTONE, ZERO_LANDING, NON_FALL_LANDING, CANCELLED_FALL,

@@ -92,11 +92,6 @@ final class BayPassengerExitService {
         player.setDeltaMovement(Vec3.ZERO); player.fallDistance = 0;
         var before = motion.generation(player);
         var target = vector(result.position());
-        // Selection may evict capture's cache entry. Prime only the already loaded target
-        // immediately before vanilla's creating lookup; never acquire a missing column.
-        var targetBlock = net.minecraft.core.BlockPos.containing(target);
-        if (player.serverLevel().getChunkSource().getChunk(targetBlock.getX() >> 4, targetBlock.getZ() >> 4,
-                net.minecraft.world.level.chunk.ChunkStatus.FULL, false) == null) { revoke(player); return; }
         player.connection.teleport(target.x, target.y, target.z, player.getYRot(), player.getXRot());
         var after = motion.generation(player);
         if (state.live.get(player) != slot || !permit.authority() || player.isPassenger()
