@@ -5,11 +5,11 @@
   "mirror_x": true,
   "flip_v": true,
   "scale": 1,
-  "model_y_rotation_degrees": 90,
+  "model_y_rotation_degrees": 270,
   "offset_north": [
-    1,
     0,
-    0
+    0,
+    1
   ],
   "render_type": "entity_cutout",
   "light_cell_above_controller": 1,
