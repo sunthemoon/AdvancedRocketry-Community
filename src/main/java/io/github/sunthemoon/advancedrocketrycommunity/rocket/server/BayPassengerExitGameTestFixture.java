@@ -32,7 +32,8 @@ final class BayPassengerExitGameTestFixture {
         AIRBORNE_CAUSE, ZERO_LANDING, TELEPORT, UPWARD, FAILED_MOVE, RELEASED_MOVE, HISTORY, LOGOUT, DEATH,
         CONTENTION, EXPIRY, UNLOADED, NON_FALL_LANDING, CANCELLED_FALL, FLUID, GANTRY, LOCAL_ONLY, REMOTE,
         HAZARD, HEADROOM, PARTIAL, BUDGET, REENTRANT_DAMAGE, AFTER_TELEPORT, RELEASED_SUCCESS, CLIMB,
-        CONTENTION_REVERSE, ONE_BOX, ONE_BOX_REVERSE, LAST_UNIT, LAST_UNIT_REVERSE, DELAYED_ONE_BOX, DELAYED_LAST, FIFO }
+        CONTENTION_REVERSE, ONE_BOX, ONE_BOX_REVERSE, LAST_UNIT, LAST_UNIT_REVERSE, DELAYED_ONE_BOX, DELAYED_LAST, FIFO,
+        EARLY_CONTINUOUS, SECOND_CORRECTION, EARLY_DISCONTINUITY }
     final GameTestHelper helper;
     final Case scenario;
     final List<ServerPlayer> players = new ArrayList<>();
@@ -47,6 +48,7 @@ final class BayPassengerExitGameTestFixture {
     BlockPos origin;
     BlockPos gantry;
     int ticks, stage, falls, joinedTick;
+    int acknowledgedCorrection = -1;
     float fallDistance, multiplier;
     boolean closed, injected;
     boolean diagnosed;
@@ -88,7 +90,7 @@ final class BayPassengerExitGameTestFixture {
             diagnosed = true;
             io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity.LOGGER.info(
                     "ARCE_BAY_EXIT_CLOSED authority={} generation={} tick={} previous={} sample={} contact={} inspected={} usage={} cause={}",
-                    offer.permit.authority(), offer.descent.generation.equals(exits.motion.generation(player)), player.getServer().getTickCount(),
+                    offer.permit.authority(), offer.descent.corrections.current.equals(exits.motion.generation(player)), player.getServer().getTickCount(),
                     offer.descent.continuity.last, BayPassengerExitMotion.sample(player, player.getServer().getTickCount()),
                     offer.world.contact, offer.world.inspected, exits.budget.usage(), offer.world.firstContact);
         }
@@ -292,13 +294,13 @@ final class BayPassengerExitGameTestFixture {
                     && offer.descent == null && !history.issued(), "Exhaustion spent extra work or offered unprovable protection"); done(); return;
         }
         helper.assertTrue(offer.descent != null && !offer.descent.closed && history.issued(), "Fallback did not offer one descent: " + offer.result);
-        player.connection.handleAcceptTeleportPacket(new net.minecraft.network.protocol.game.ServerboundAcceptTeleportationPacket(
-                exits.motion.generation(player).counter())); // The embedded client accepts the actual server correction.
+        BayPassengerExitGameTestDescentAudit.acknowledge(this);
         switch (scenario) {
             case FIRST_TICK -> { BayPassengerExitGameTestAudit.firstTickLanding(this); done(); }
             case HAZARD, HEADROOM, PARTIAL -> { helper.assertTrue(offer.result.status() != io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.exit.BayExitSelector.Status.SAFE,
                     "Unsafe contact geometry passed selection"); done(); }
-            case TELEPORT -> { var at = player.position(); player.connection.teleport(at.x + .1, at.y, at.z, 25, 10); exits.sample(player); expectRevoked(); done(); }
+            case TELEPORT -> stage = 6;
+            case EARLY_CONTINUOUS, SECOND_CORRECTION, EARLY_DISCONTINUITY -> { BayPassengerExitGameTestDescentAudit.correction(this); done(); }
             case UPWARD -> { player.setPos(player.getX(), player.getY() - 1, player.getZ()); exits.sample(player);
                 player.setPos(player.getX(), player.getY() + .1, player.getZ()); exits.sample(player); expectRevoked(); done(); }
             case FAILED_MOVE -> { RocketTransferEntities.movePassenger(player, flight.source(), position(origin)); expectRevoked();
@@ -340,7 +342,7 @@ final class BayPassengerExitGameTestFixture {
                 stage = 2; }
         }
     }
-    private void expectRevoked() {
+    void expectRevoked() {
         helper.assertTrue(!exits.state.live.containsKey(player) || exits.state.live.get(player).descent == null
                 || exits.state.live.get(player).descent.closed, "Old live capability survived invalidation");
         helper.assertTrue(exits.state.history(player.getUUID(), flight.record().transferId()).deadline() == firstDeadline, "Invalidation refreshed history");
@@ -424,41 +426,6 @@ final class BayPassengerExitGameTestFixture {
                 "ARCE_BAY_EXIT_ARBITRATION case={} first={} second={} total={}", scenario, first, second, total);
         done();
     }
-    private void land() {
-        if (!injected && falls == 0 && player.getY() == offer.permit.before.y) {
-            helper.assertTrue(exits.state.live.get(player) == offer && !offer.descent.closed, "Offer ended before simulated descent");
-        }
-        player.setOnGround(false); // The simulated incoming movement is airborne until the final vanilla check.
-        double next = Math.max(origin.getY() + .25, player.getY() - 3);
-        player.setPos(player.getX(), next, player.getZ()); player.setDeltaMovement(new Vec3(0, -.2, 0));
-        exits.sample(player);
-        if (next > origin.getY() + .25) { return; }
-        player.setPos(player.getX(), origin.getY(), player.getZ()); player.fallDistance = scenario == Case.ZERO_LANDING ? 1 : 10;
-        int before = falls; boolean closedBefore = offer.descent.closed;
-        player.doCheckFallDamage(0, -.25, 0, true);
-        helper.assertTrue(falls > before, "Fixture did not traverse vanilla fall event");
-        if (scenario == Case.ORDINARY) {
-            helper.assertTrue(player.getHealth() == 20 && attacks.stream().filter(LivingAttackEvent::isCanceled).count() == 1,
-                    "Ordinary landing did not consume exactly one FALL cancellation: health=" + player.getHealth()
-                            + "; closedBefore=" + closedBefore + "; closedAfter=" + offer.descent.closed + "; attacks="
-                            + attacks.stream().map(event -> event.getSource().type().msgId() + ":" + event.isCanceled()).toList());
-            helper.assertTrue(fallDistance == 10 && multiplier == 1, "Exit altered source-less fall distance/multiplier");
-            player.invulnerableTime = 0; player.causeFallDamage(10, 1, player.damageSources().fall());
-            helper.assertTrue(player.getHealth() < 20, "Second fall was protected");
-        } else if (scenario == Case.ZERO_LANDING || scenario == Case.CANCELLED_FALL) {
-            player.hurt(player.damageSources().fall(), 4);
-            helper.assertTrue(player.getHealth() < 20 && attacks.stream().noneMatch(LivingAttackEvent::isCanceled), "Zero landing leaked a token");
-        } else if (scenario == Case.REENTRANT_DAMAGE) {
-            helper.assertTrue(player.getHealth() < 20 && attacks.stream().noneMatch(LivingAttackEvent::isCanceled), "Reentrant attack consumed landing authority");
-        } else if (scenario == Case.NON_FALL_LANDING) {
-            helper.assertTrue(player.getHealth() < 20 && attacks.stream().noneMatch(LivingAttackEvent::isCanceled)
-                    && attacks.stream().anyMatch(event -> event.getSource().is(net.minecraft.world.damagesource.DamageTypes.FLY_INTO_WALL)), "Non-FALL landing call was protected");
-        } else {
-            helper.assertTrue(player.getHealth() < 20 && attacks.stream().noneMatch(LivingAttackEvent::isCanceled)
-                    && attacks.stream().anyMatch(event -> event.getSource().is(net.minecraft.world.damagesource.DamageTypes.STALAGMITE)), "Dripstone damage changed");
-        }
-        done();
-    }
     private void tick() {
         if (closed) { return; }
         try {
@@ -467,16 +434,20 @@ final class BayPassengerExitGameTestFixture {
             if (stage == 0) { setup(); }
             else if (stage == 1 && player.getServer().getTickCount() - joinedTick > 70 && RocketTransferSavedData.get(player.getServer()).actionable(flight.record().logicalRocketId())
                     && (otherFlight == null || RocketTransferSavedData.get(player.getServer()).actionable(otherFlight.record().logicalRocketId()))) { detach(); }
-            else if (stage == 2) { land(); }
+            else if (stage == 2) { BayPassengerExitGameTestDescentAudit.land(this); }
             else if (stage == 3) {
                 if (scenario == Case.BYPASS) { helper.assertTrue(exits.state.history(player.getUUID(), flight.record().transferId()) != null, "END bypass did not complete"); }
                 else { helper.assertTrue(exits.state.history(player.getUUID(), flight.record().transferId()) == null, "Newer teleport did not discard delayed placement"); }
                 done();
             } else if (stage == 4 && player.getServer().getTickCount() >= firstDeadline) { exits.sample(player); expectRevoked(); done(); }
             else if (stage == 5) { checkArbitration(); }
+            else if (stage == 6 && player.getServer().getTickCount() - offer.descent.corrections.start > 2) {
+                var at = player.position(); player.connection.teleport(at.x + .1, at.y, at.z, 25, 10);
+                exits.sample(player); expectRevoked(); done();
+            }
         } catch (Throwable error) { cleanup(); helper.fail("Bay exit " + scenario + ": " + error); }
     }
-    private void done() { cleanup(); helper.succeed(); }
+    void done() { cleanup(); helper.succeed(); }
     private void cleanup() {
         if (closed) { return; } closed = true; MinecraftForge.EVENT_BUS.unregister(this);
         if (flight != null) { bays(helper).forgetForTests(flight.record().logicalRocketId()); }

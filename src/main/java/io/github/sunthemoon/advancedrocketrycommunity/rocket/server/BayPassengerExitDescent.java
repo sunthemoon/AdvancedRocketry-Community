@@ -15,6 +15,7 @@ final class BayPassengerExitDescent {
     final BayPassengerExitPermit permit;
     final BayPassengerExitMotion.Generation generation;
     final BayPassengerExitMotion.Continuity continuity;
+    final BayPassengerExitMotion.CorrectionWindow corrections;
     final long deadline;
     boolean closed, token;
     long landingTick;
@@ -22,11 +23,12 @@ final class BayPassengerExitDescent {
     BayPassengerExitDescent(BayPassengerExitPermit permit, BayPassengerExitMotion.Generation generation, long deadline) {
         this.permit = permit; this.generation = generation; this.deadline = deadline;
         continuity = new BayPassengerExitMotion.Continuity(BayPassengerExitMotion.sample(permit.player, permit.server.getTickCount()));
+        corrections = new BayPassengerExitMotion.CorrectionWindow(generation, continuity, deadline);
     }
     boolean valid(BayPassengerExitMotion observer) {
         return !closed && permit.authority() && permit.server.getTickCount() < deadline
-                && generation.equals(observer.generation(permit.player))
-                && continuity.observe(BayPassengerExitMotion.sample(permit.player, permit.server.getTickCount()));
+                && corrections.observe(observer.generation(permit.player),
+                        BayPassengerExitMotion.sample(permit.player, permit.server.getTickCount()));
     }
     Contact contact(BayExitBudget budget, BayPassengerExitWorld world) {
         var allowance = budget.openProbe();

@@ -12,6 +12,12 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 @PrefixGameTestTemplate(false)
 public final class BayPassengerExitGameTests {
     private BayPassengerExitGameTests() { }
+    @GameTest(template = "rocket_test", batch = "bay_exit_early_continuous", timeoutTicks = 400)
+    public static void oneEarlyContinuousRelativeCorrectionRetainsTheOriginalOffer(GameTestHelper helper) { new BayPassengerExitGameTestFixture(helper, EARLY_CONTINUOUS).start(); }
+    @GameTest(template = "rocket_test", batch = "bay_exit_second_correction", timeoutTicks = 400)
+    public static void secondEarlyCorrectionRevokesEvenWithoutDisplacement(GameTestHelper helper) { new BayPassengerExitGameTestFixture(helper, SECOND_CORRECTION).start(); }
+    @GameTest(template = "rocket_test", batch = "bay_exit_early_discontinuity", timeoutTicks = 400)
+    public static void earlyCorrectionCannotExceedTheOriginalMovementAllowance(GameTestHelper helper) { new BayPassengerExitGameTestFixture(helper, EARLY_DISCONTINUITY).start(); }
     @GameTest(template = "rocket_test", batch = "bay_exit_first_tick", timeoutTicks = 400)
     public static void ordinaryLandingWithinTheInitialTickConsumesOnlyOneFall(GameTestHelper helper) { new BayPassengerExitGameTestFixture(helper, FIRST_TICK).start(); }
     @GameTest(template = "rocket_test", batch = "bay_exit_climb", timeoutTicks = 400)

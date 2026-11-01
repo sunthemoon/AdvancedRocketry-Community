@@ -33,6 +33,28 @@ final class BayPassengerExitMotion {
     static boolean ownCorrection(Generation before, Generation after) {
         return before != null && after != null && before.connection == after.connection && after.counter == before.counter + 1;
     }
+    /** R264: one early counter step, not a new descent or movement baseline. */
+    static final class CorrectionWindow {
+        final Continuity continuity;
+        final long start, deadline;
+        Generation current;
+        boolean accepted, closed;
+        CorrectionWindow(Generation initial, Continuity continuity, long deadline) {
+            this.current = initial; this.continuity = continuity;
+            this.start = continuity.last.tick; this.deadline = deadline;
+        }
+        boolean observe(Generation next, Sample sample) {
+            if (closed || current == null || next == null || sample == null || sample.tick >= deadline
+                    || current.connection != next.connection) { closed = true; return false; }
+            boolean changed = current.counter != next.counter;
+            if (changed && (accepted || sample.tick < start || sample.tick - start > 2 || !ownCorrection(current, next))) {
+                closed = true; return false;
+            }
+            if (!continuity.observe(sample)) { closed = true; return false; }
+            if (changed) { accepted = true; current = next; }
+            return true;
+        }
+    }
     static Sample sample(ServerPlayer player, long tick) {
         return new Sample(player.position(), player.getDeltaMovement(), tick,
                 !player.isPassenger() && !player.getAbilities().flying && !player.isFallFlying()
@@ -59,5 +81,5 @@ final class BayPassengerExitMotion {
             return true;
         }
     }
-    static boolean finite(Vec3 point) { return Double.isFinite(point.x) && Double.isFinite(point.y) && Double.isFinite(point.z); }
+    static boolean finite(Vec3 point) { return point != null && Double.isFinite(point.x) && Double.isFinite(point.y) && Double.isFinite(point.z); }
 }
