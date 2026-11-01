@@ -1,0 +1,183 @@
+{
+  "asset_coverage": "docs/work/v1.8.0-c18-contract/proposals/revision-03/asset-coverage.csv",
+  "batch_id": "v1.8.0-c18d-k3",
+  "entries": [
+    {
+      "asset_coverage_row": null,
+      "source": "community",
+      "source_path": "src/main/resources/assets/advancedrocketrycommunity/models/astrobody_data_processor.mtl",
+      "source_sha256": "4e29ab08e26911609c6f4f5a8de86a543de0e1a8f2bcf3722a12d953ddf12def",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/astrobody_data_processor.mtl",
+      "transformation": {
+        "kind": "copy"
+      },
+      "units": [
+        "block:planetAnalyser"
+      ]
+    },
+    {
+      "asset_coverage_row": 9,
+      "source": "ar",
+      "source_path": "src/main/resources/assets/advancedrocketry/models/astrobodydataprocessor.obj",
+      "source_sha256": "4f02c835d6aca49ec796e7d7253a4eec83a30c459acdb0df0c054a1b653e40d5",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/astrobodydataprocessor.obj",
+      "transformation": {
+        "kind": "copy"
+      },
+      "units": [
+        "block:planetAnalyser"
+      ]
+    },
+    {
+      "asset_coverage_row": null,
+      "source": "community",
+      "source_path": "src/main/resources/assets/advancedrocketrycommunity/models/beacon.mtl",
+      "source_sha256": "8c766153dcd5a5caff20bdd5b6f4c8deec77f29a1ef525cd8bddfdce286a78d3",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/beacon.mtl",
+      "transformation": {
+        "kind": "copy"
+      },
+      "units": [
+        "block:beacon"
+      ]
+    },
+    {
+      "asset_coverage_row": 12,
+      "source": "ar",
+      "source_path": "src/main/resources/assets/advancedrocketry/models/beacon.obj",
+      "source_sha256": "77b135347c9420acd2f4af406fb0c3510c528521f7bd32796c3f3b9258c66d00",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/beacon.obj",
+      "transformation": {
+        "kind": "copy"
+      },
+      "units": [
+        "block:beacon"
+      ]
+    },
+    {
+      "asset_coverage_row": null,
+      "source": "community",
+      "source_path": "src/main/resources/assets/advancedrocketrycommunity/models/observatory.mtl",
+      "source_sha256": "f9a3b5ae0d2ee91d289350795a9b0634026c6cab00c4d74e1b3cda8e8903ffb4",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/observatory.mtl",
+      "transformation": {
+        "kind": "copy"
+      },
+      "units": [
+        "block:observatory"
+      ]
+    },
+    {
+      "asset_coverage_row": 20,
+      "source": "ar",
+      "source_path": "src/main/resources/assets/advancedrocketry/models/observatory.obj",
+      "source_sha256": "fb4015971f37b405e8c6d3a804652a1196d1e8bcfda65795763025123a2e3059",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/observatory.obj",
+      "transformation": {
+        "kind": "copy"
+      },
+      "units": [
+        "block:observatory"
+      ]
+    },
+    {
+      "asset_coverage_row": null,
+      "source": "community",
+      "source_path": "src/main/resources/assets/advancedrocketrycommunity/models/solar_array.mtl",
+      "source_sha256": "27f31f374ef5cef914bce0f96bbbcd9278bce8ed9612a348acdcbca9edd753d1",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/solar_array.mtl",
+      "transformation": {
+        "kind": "copy"
+      },
+      "units": [
+        "block:solararray"
+      ]
+    },
+    {
+      "asset_coverage_row": 26,
+      "source": "ar",
+      "source_path": "src/main/resources/assets/advancedrocketry/models/solar_array.obj",
+      "source_sha256": "016e831a02fbdfce28509530df165493aa8891fb842a1efb924ca83eed0bbf87",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/solar_array.obj",
+      "transformation": {
+        "kind": "copy"
+      },
+      "units": [
+        "block:solararray"
+      ]
+    },
+    {
+      "asset_coverage_row": 89,
+      "source": "ar",
+      "source_path": "src/main/resources/assets/advancedrocketry/textures/models/astrobodydataprocessor.png",
+      "source_sha256": "2d4a1c3da6902f2053ebde142393fc9a4196d6d5fe258d1f61f44c11427e13e8",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/models/astrobodydataprocessor.png",
+      "transformation": {
+        "kind": "copy"
+      },
+      "units": [
+        "block:planetAnalyser"
+      ]
+    },
+    {
+      "asset_coverage_row": null,
+      "source": "community",
+      "source_path": "src/main/resources/assets/advancedrocketrycommunity/textures/models/beacon_new.png",
+      "source_sha256": "85ce837f19cf542dfd107bd0cf943bb5033d4fcefa45ba0cc056225e21485508",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/models/beacon_new.png",
+      "transformation": {
+        "kind": "copy"
+      },
+      "units": [
+        "block:beacon"
+      ]
+    },
+    {
+      "asset_coverage_row": 102,
+      "source": "ar",
+      "source_path": "src/main/resources/assets/advancedrocketry/textures/models/observatory.png",
+      "source_sha256": "bf569d80044094161e6cb7caab853a33e34cb7b4876370acc125467fcd8f0c0d",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/models/observatory.png",
+      "transformation": {
+        "kind": "copy"
+      },
+      "units": [
+        "block:observatory"
+      ]
+    },
+    {
+      "asset_coverage_row": 108,
+      "source": "ar",
+      "source_path": "src/main/resources/assets/advancedrocketry/textures/models/solararray.png",
+      "source_sha256": "fa3fd692c12c730113b9a71cfaa5a6a080dc3dcb410d0d38a5de5979681b4356",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/models/solararray.png",
+      "transformation": {
+        "kind": "copy"
+      },
+      "units": [
+        "block:solararray"
+      ]
+    }
+  ],
+  "schema_version": 1,
+  "sources": {
+    "ar": {
+      "copyright_notice": "Copyright (c) 2017",
+      "license": "MIT",
+      "source_branch": "1.12",
+      "source_commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+      "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
+      "status": "UPSTREAM_AR_MIT"
+    },
+    "community": {
+      "authoring_commit": "b44b6af9d11c602beb067f63be1eda5f052049d9",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-w236",
+      "source_commit": "0f23b8ff558dea7219d7ba6588c6f19041b61331",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "status": "NEW"
+    }
+  },
+  "target_version": "v1.8.0"
+}

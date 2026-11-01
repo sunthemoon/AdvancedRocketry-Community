@@ -41,7 +41,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 
 /** Forge lifetime adapter. Immutable controller checkpoints own every Item/Fluid and active job. */
-public class ClassicControllerBlockEntity extends BlockEntity implements MenuProvider, ProcessingSoundSource {
+public class ClassicControllerBlockEntity extends BlockEntity implements MenuProvider, ProcessingSoundSource, FormedModelController {
     private final ClassicMachineDefinition definition;
     private ClassicCheckpoint checkpoint;
     private CompoundTag retained;

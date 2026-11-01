@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "id": "observatory",
+  "model": "advancedrocketrycommunity:models/observatory.obj",
+  "mirror_x": true,
+  "flip_v": true,
+  "scale": 1,
+  "model_y_rotation_degrees": 90,
+  "offset_north": [
+    0.5,
+    -1,
+    2.5
+  ],
+  "render_type": "entity_cutout",
+  "light_cell_above_controller": 4,
+  "fallback_texture": "advancedrocketrycommunity:textures/block/observatory.png",
+  "model_bounds": [
+    -2.5,
+    -0.005001,
+    -2.5,
+    2.5,
+    4.995,
+    2.5
+  ],
+  "render_bounds": {
+    "north": [
+      -2,
+      -1.005001,
+      0,
+      3,
+      4,
+      5
+    ],
+    "east": [
+      -4,
+      -1.005001,
+      -2,
+      1,
+      4,
+      3
+    ],
+    "south": [
+      -2,
+      -1.005001,
+      -4,
+      3,
+      4,
+      1
+    ],
+    "west": [
+      0,
+      -1.005001,
+      -2,
+      5,
+      4,
+      3
+    ]
+  },
+  "idle": {
+    "hidden": [
+      "Scope",
+      "Axis"
+    ]
+  },
+  "imported": {
+    "obj_sha256": "fb4015971f37b405e8c6d3a804652a1196d1e8bcfda65795763025123a2e3059",
+    "positions": 124,
+    "vertices": 912
+  },
+  "unchanged_pattern": {
+    "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/machine_patterns/observatory.json",
+    "canonical_sha256": "b282020ff6e63d1823047223fd70977acb54ef27ac42f9400b73fff07c30f3ba"
+  }
+}

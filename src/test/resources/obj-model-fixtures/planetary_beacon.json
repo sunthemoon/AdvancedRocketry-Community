@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "id": "planetary_beacon",
+  "model": "advancedrocketrycommunity:models/beacon.obj",
+  "mirror_x": true,
+  "flip_v": true,
+  "scale": 1,
+  "model_y_rotation_degrees": 90,
+  "offset_north": [
+    0.5,
+    0,
+    0.5
+  ],
+  "render_type": "entity_cutout",
+  "light_cell_above_controller": 5,
+  "fallback_texture": "advancedrocketrycommunity:textures/block/planetary_beacon_front.png",
+  "model_bounds": [
+    -0.875,
+    0,
+    -1.5,
+    2.5,
+    5,
+    1.5
+  ],
+  "render_bounds": {
+    "north": [
+      -1,
+      0,
+      0,
+      2,
+      5,
+      3
+    ],
+    "east": [
+      -2,
+      0,
+      -1,
+      1,
+      5,
+      2
+    ],
+    "south": [
+      -1,
+      0,
+      -2,
+      2,
+      5,
+      1
+    ],
+    "west": [
+      0,
+      0,
+      -1,
+      3,
+      5,
+      2
+    ]
+  },
+  "idle": {
+    "translated": [
+      "InnerSpin",
+      "OuterSpin"
+    ],
+    "translation": [
+      1,
+      0,
+      0
+    ]
+  },
+  "imported": {
+    "obj_sha256": "77b135347c9420acd2f4af406fb0c3510c528521f7bd32796c3f3b9258c66d00",
+    "positions": 354,
+    "vertices": 1808
+  },
+  "unchanged_pattern": {
+    "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/machine_patterns/planetary_beacon.json",
+    "canonical_sha256": "d4b5a05560c556464a63f004acf24d9f86b586bb78e5d76962db7eebaaa1cc28"
+  }
+}
