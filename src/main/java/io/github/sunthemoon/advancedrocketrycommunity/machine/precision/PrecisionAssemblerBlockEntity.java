@@ -451,6 +451,7 @@ public final class PrecisionAssemblerBlockEntity extends BlockEntity implements 
 
     private void updateState(ServerLevel level, MultiblockControllerState replacement) {
         if (controllerState.equals(replacement)) {
+            modelProjection.publish(this, sourceModelFormed());
             return;
         }
         Set<BlockPos> oldParts = controllerState.partPositions();

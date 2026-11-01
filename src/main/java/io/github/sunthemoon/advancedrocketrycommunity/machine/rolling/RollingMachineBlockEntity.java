@@ -107,9 +107,9 @@ public final class RollingMachineBlockEntity extends BlockEntity implements Menu
         long generation = controllerState.generation();
         if (!controllerState.equals(result.controllerState())) {
             controllerState = result.controllerState();
-            modelProjection.publish(this, sourceModelFormed());
             setChanged();
         }
+        modelProjection.publish(this, sourceModelFormed());
         // ADR-066 §6.2: a new binding generation is an actual formation; resuming the same one is not.
         if (controllerState.formationState() == MultiblockFormationState.FORMED
                 && controllerState.generation() > generation) {

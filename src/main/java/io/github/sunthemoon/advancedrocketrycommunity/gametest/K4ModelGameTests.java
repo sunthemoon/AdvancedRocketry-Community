@@ -62,14 +62,15 @@ public final class K4ModelGameTests {
             h.onEachTick(() -> {
                 for (var f : fixtures) { f.tick(); }
                 boolean expected=stage[0]!=1;
-                if (fixtures.stream().anyMatch(f -> f.formed()!=expected)) { return; }
+                if (fixtures.stream().anyMatch(f -> f.formed()!=expected
+                        || stage[0]==3 && ((FormedModelController)f.controller).modelFormed()!=!mirrored)) { return; }
                 for (var f : fixtures) { f.assertProjection(h,expected && !mirrored); }
                 if (stage[0]==0) { for(var f:fixtures){f.breakPart();} stage[0]=1; }
                 else if (stage[0]==1) { for(var f:fixtures){f.restorePart();} stage[0]=2; }
-                else {
-                    for (var f : fixtures) { f.assertUnloadClearsProjection(h); }
-                    fixtures.forEach(Fixture::close); h.succeed();
-                }
+                else if (stage[0]==2) {
+                    for (var f : fixtures) { f.assertUnloadClearsProjection(h); f.dirty(); }
+                    stage[0]=3;
+                } else { fixtures.forEach(Fixture::close); h.succeed(); }
             });
         } catch (RuntimeException | Error failure) { fixtures.forEach(Fixture::close); throw failure; }
     }
