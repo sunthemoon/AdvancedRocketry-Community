@@ -137,7 +137,8 @@ final class BayPassengerExitGameTestFixture {
     }
     ServerPlayer join(UUID id) {
         var level = helper.getLevel();
-        var joined = new ServerPlayer(level.getServer(), level, new GameProfile(id, "exit" + id.toString().substring(0, 8)));
+        var joined = new BayPassengerExitGameTestAudit.Player(level.getServer(), level, new GameProfile(id, "exit" + id.toString().substring(0, 8)));
+        joined.tracing = scenario == Case.ORDINARY;
         var connection = new Connection(PacketFlow.SERVERBOUND); channels.add(new EmbeddedChannel(connection));
         level.getServer().getPlayerList().placeNewPlayer(connection, joined);
         joined.setGameMode(GameType.SURVIVAL);
@@ -263,7 +264,7 @@ final class BayPassengerExitGameTestFixture {
         helper.assertTrue(RocketTransferSavedData.get(player.getServer()).find(flight.record().transferId()).orElseThrow() == flight.record(), "Exit rewrote T");
         int afterLoaded = helper.getLevel().getChunkSource().getLoadedChunksCount(); Object afterTickets = ticketSnapshot();
         helper.assertTrue(loaded == afterLoaded && tickets.equals(afterTickets), "Exit loaded a chunk or added a ticket: chunks "
-                + loaded + " -> " + afterLoaded + "; tickets " + tickets + " -> " + afterTickets);
+                + loaded + " -> " + afterLoaded + "; tickets " + BayPassengerExitGameTestAudit.difference(tickets, afterTickets));
         helper.assertTrue(bays(helper).sessionForTests().receipts().stream().noneMatch(row -> row.rocket().equals(flight.record().logicalRocketId())), "Exit wrote a receipt");
         offer = exits.state.live.get(player);
         helper.assertTrue(offer != null && offer.completed, "Detach hook did not complete a permit");
@@ -292,6 +293,8 @@ final class BayPassengerExitGameTestFixture {
                     && offer.descent == null && !history.issued(), "Exhaustion spent extra work or offered unprovable protection"); done(); return;
         }
         helper.assertTrue(offer.descent != null && !offer.descent.closed && history.issued(), "Fallback did not offer one descent: " + offer.result);
+        player.connection.handleAcceptTeleportPacket(new net.minecraft.network.protocol.game.ServerboundAcceptTeleportationPacket(
+                exits.motion.generation(player).counter())); // The embedded client accepts the actual server correction.
         switch (scenario) {
             case HAZARD, HEADROOM, PARTIAL -> { helper.assertTrue(offer.result.status() != io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.exit.BayExitSelector.Status.SAFE,
                     "Unsafe contact geometry passed selection"); done(); }
@@ -414,7 +417,8 @@ final class BayPassengerExitGameTestFixture {
         // Delayed cases use the END before/after snapshots rather than unrelated work across the next tick.
         if (stage != 5) {
             helper.assertTrue(arbitrationLoaded == helper.getLevel().getChunkSource().getLoadedChunksCount()
-                    && arbitrationTickets.equals(ticketSnapshot()), "Ordered synchronous exits loaded chunks or added tickets");
+                    && arbitrationTickets.equals(ticketSnapshot()), "Ordered synchronous exits loaded chunks or added tickets: "
+                            + BayPassengerExitGameTestAudit.difference(arbitrationTickets, ticketSnapshot()));
         }
         io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity.LOGGER.info(
                 "ARCE_BAY_EXIT_ARBITRATION case={} first={} second={} total={}", scenario, first, second, total);

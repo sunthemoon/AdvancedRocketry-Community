@@ -47,6 +47,9 @@ final class BayPassengerExitService {
         if (state.live.size() == BayPassengerExitState.LIVE_LIMIT) { return; }
         var permit = BayPassengerExitPermit.capture(player, rocket, motion.generation(player));
         if (permit == null) { return; }
+        // Vanilla's subsequent portal check uses a creating lookup. Cache only an already loaded FULL column.
+        if (player.serverLevel().getChunkSource().getChunk(rocket.chunkPosition().x, rocket.chunkPosition().z,
+                net.minecraft.world.level.chunk.ChunkStatus.FULL, false) == null) { return; }
         var slot = new BayPassengerExitState.Slot(permit, new BayPassengerExitWorld(player));
         state.live.put(player, slot);
         var size = player.getDimensions(Pose.STANDING);
