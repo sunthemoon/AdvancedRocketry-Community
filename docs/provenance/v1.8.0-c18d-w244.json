@@ -1,0 +1,260 @@
+{
+  "batch_id": "v1.8.0-c18d-w244",
+  "copyright_notice": "Copyright (c) 2017; Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+  "derivation_results_sha256": "97aaee71137312d535d129e5b7b42acd07609cb61fa717b27e5cbcd7d4bb882b",
+  "entries": [
+    {
+      "asset_coverage_row": null,
+      "authoring_commit": "a6b90e9cf115a859ce9aefb4e894dfd28bebf49f",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "derivation": {
+        "related": [],
+        "verdicts": {
+          "source": "CLEAR"
+        }
+      },
+      "format_check": {
+        "format": "mtl",
+        "materials": [
+          "None"
+        ],
+        "textures": [
+          "advancedrocketrycommunity:models/precisionlaseretcher"
+        ]
+      },
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-w244",
+      "source_commit": "8cea37e840ad3de09fb7e5536d401ef471f6665e",
+      "source_path": "src/main/resources/assets/advancedrocketrycommunity/models/precision_laser_engraver.mtl",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "655477feefac0a64c661254636c6fa34b39e65207401abdf79ea0114fca50188",
+      "status": "NEW",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/precision_laser_engraver.mtl",
+      "target_sha256": "655477feefac0a64c661254636c6fa34b39e65207401abdf79ea0114fca50188",
+      "transformation": [
+        "Byte copy of the repository-owned file at its authoring commit."
+      ],
+      "units": [
+        "block:precisionlaseretcher"
+      ]
+    },
+    {
+      "asset_coverage_row": 23,
+      "copyright_notice": "Copyright (c) 2017",
+      "derivation": {
+        "related": [],
+        "verdicts": {
+          "recorded": "CLEAR",
+          "source": "CLEAR"
+        }
+      },
+      "format_check": {
+        "baked_vertices": 968,
+        "faces": 242,
+        "format": "obj",
+        "ignored_lines": 0,
+        "material_library": "precision_laser_engraver.mtl",
+        "materials": [
+          "None"
+        ],
+        "normals": 18,
+        "positions": 200,
+        "texture_coordinates": 410
+      },
+      "license": "MIT",
+      "source_branch": "1.12",
+      "source_commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+      "source_path": "src/main/resources/assets/advancedrocketry/models/precisionlaseretcher.obj",
+      "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
+      "source_sha256": "b302204d0f8b4abbbf2912fd50a15252029a0e68483ecf911f05d141673d5176",
+      "status": "UPSTREAM_AR_MIT",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/precisionlaseretcher.obj",
+      "target_sha256": "b302204d0f8b4abbbf2912fd50a15252029a0e68483ecf911f05d141673d5176",
+      "transformation": [
+        "Byte copy into the mod namespace: assets/advancedrocketry/models/precisionlaseretcher.obj to assets/advancedrocketrycommunity/models/precisionlaseretcher.obj."
+      ],
+      "units": [
+        "block:precisionlaseretcher"
+      ],
+      "upstream_history": [
+        {
+          "author": "Silfryi Kalsandryn",
+          "authored_at": "2021-02-17T16:34:58-05:00",
+          "commit": "636e309d2661025b42d496e45d477bedc79df879",
+          "subject": "Precision Laser Engraver to Etcher because it's closer to IRL"
+        },
+        {
+          "author": "Silfryi Kalsandryn",
+          "authored_at": "2021-02-16T01:26:38-05:00",
+          "commit": "3199cac0b38f87c438246777f16b43e108b78d80",
+          "subject": "First precision laser engraver pass"
+        },
+        {
+          "author": "dmodoomsirius",
+          "authored_at": "2021-04-28T02:14:30-04:00",
+          "commit": "0c0017bcc06aa291e9d23cb0d6ceda56f7aff863",
+          "subject": "Merge branch '1.12' of https://github.com/zmaster587/AdvancedRocketry into 1.12"
+        }
+      ]
+    },
+    {
+      "asset_coverage_row": 105,
+      "copyright_notice": "Copyright (c) 2017",
+      "derivation": {
+        "related": [
+          "textures/models/astrobodydataprocessor.png",
+          "textures/models/chemicalreactor.png",
+          "textures/models/crystalliser.png",
+          "textures/models/cuttingmachine.png",
+          "textures/models/electrolyser.png",
+          "textures/models/orbitallaserdrill.png",
+          "textures/models/railgun.png"
+        ],
+        "verdicts": {
+          "recorded": "CLEAR",
+          "source": "CLEAR"
+        }
+      },
+      "license": "MIT",
+      "source_branch": "1.12",
+      "source_commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+      "source_path": "src/main/resources/assets/advancedrocketry/textures/models/precisionlaseretcher.png",
+      "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
+      "source_sha256": "9a482e80ea7be628895ff36a00ea63e9d0150e09f49304495304d3e3d3eb18e0",
+      "status": "UPSTREAM_AR_MIT",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/models/precisionlaseretcher.png",
+      "target_sha256": "9a482e80ea7be628895ff36a00ea63e9d0150e09f49304495304d3e3d3eb18e0",
+      "transformation": [
+        "Byte copy into the mod namespace: assets/advancedrocketry/textures/models/precisionlaseretcher.png to assets/advancedrocketrycommunity/textures/models/precisionlaseretcher.png."
+      ],
+      "units": [
+        "block:precisionlaseretcher"
+      ],
+      "upstream_history": [
+        {
+          "author": "Silfryi Kalsandryn",
+          "authored_at": "2021-02-17T16:34:58-05:00",
+          "commit": "636e309d2661025b42d496e45d477bedc79df879",
+          "rename_candidates": [
+            {
+              "blob": "5117a39d07eb45ac51de7aa9adaffde36ec822dc",
+              "parent": "14198817ed7882b4df1efc7bcf1a23ed812fc73a",
+              "path": "src/main/resources/assets/advancedrocketry/models/precisionlaserengraver.png"
+            },
+            {
+              "blob": "5117a39d07eb45ac51de7aa9adaffde36ec822dc",
+              "parent": "14198817ed7882b4df1efc7bcf1a23ed812fc73a",
+              "path": "src/main/resources/assets/advancedrocketry/textures/models/precisionlaserengraver.png"
+            }
+          ],
+          "subject": "Precision Laser Engraver to Etcher because it's closer to IRL"
+        },
+        {
+          "author": "Silfryi Kalsandryn",
+          "authored_at": "2021-02-16T01:26:38-05:00",
+          "commit": "3199cac0b38f87c438246777f16b43e108b78d80",
+          "subject": "First precision laser engraver pass"
+        },
+        {
+          "author": "dmodoomsirius",
+          "authored_at": "2021-04-28T02:14:30-04:00",
+          "commit": "0c0017bcc06aa291e9d23cb0d6ceda56f7aff863",
+          "subject": "Merge branch '1.12' of https://github.com/zmaster587/AdvancedRocketry into 1.12"
+        }
+      ]
+    },
+    {
+      "asset_coverage_row": 110,
+      "copyright_notice": "Copyright (c) 2017",
+      "derivation": {
+        "related": [],
+        "verdicts": {
+          "recorded": "CLEAR",
+          "source": "CLEAR"
+        }
+      },
+      "license": "MIT",
+      "source_branch": "1.12",
+      "source_commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+      "source_path": "src/main/resources/assets/advancedrocketry/textures/models/spaceelevatorcapsule.png",
+      "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
+      "source_sha256": "12c6ccc1aaed6d7135321d6299cb292d9da4ecd09cde462f33797b931b5dfcaa",
+      "status": "UPSTREAM_AR_MIT",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/models/spaceelevatorcapsule.png",
+      "target_sha256": "12c6ccc1aaed6d7135321d6299cb292d9da4ecd09cde462f33797b931b5dfcaa",
+      "transformation": [
+        "Byte copy into the mod namespace: assets/advancedrocketry/textures/models/spaceelevatorcapsule.png to assets/advancedrocketrycommunity/textures/models/spaceelevatorcapsule.png."
+      ],
+      "units": [
+        "entity:ARSpaceElevatorCapsule"
+      ],
+      "upstream_history": [
+        {
+          "author": "Silfryi Kalsandryn",
+          "authored_at": "2021-01-31T13:53:15-05:00",
+          "commit": "ee23dd362b7b180c2c97050ab360dcf12b2be13f",
+          "subject": "Finish up space elevator work"
+        },
+        {
+          "author": "zmaster587",
+          "authored_at": "2017-05-20T13:33:15-04:00",
+          "commit": "b3b5f83abb01166d93e3c72844de52238c633160",
+          "subject": "fix resources, fluid handling"
+        },
+        {
+          "author": "zmaster587",
+          "authored_at": "2017-05-08T23:15:37-04:00",
+          "commit": "1a47450324753acb2998c8eff30a89c65ad1d375",
+          "subject": "Add space Elevator"
+        },
+        {
+          "author": "dmodoomsirius",
+          "authored_at": "2021-04-28T02:14:30-04:00",
+          "commit": "0c0017bcc06aa291e9d23cb0d6ceda56f7aff863",
+          "subject": "Merge branch '1.12' of https://github.com/zmaster587/AdvancedRocketry into 1.12"
+        }
+      ]
+    }
+  ],
+  "generator": "tools/import/import_v180_assets.py",
+  "license": "MIT",
+  "model_set": {
+    "bytes": 42238,
+    "vertices": 968
+  },
+  "plan_sha256": "6c74e59da4b8d1d8a23b42d75dc99ec000a55e911cea60b9c4370b54f3eaa181",
+  "review": {
+    "content_digest": "abd8e14d8d2e3b1bd88c23c864f9e77edc77f6fd8027ac2758f065a78757bede",
+    "findings": [],
+    "reviewed_at": null,
+    "reviewer": null,
+    "status": "PENDING_HUMAN_REVIEW"
+  },
+  "schema_version": 2,
+  "sources": [
+    {
+      "copyright_notice": "Copyright (c) 2017",
+      "license": "MIT",
+      "name": "ar",
+      "source_branch": "1.12",
+      "source_commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+      "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
+      "status": "UPSTREAM_AR_MIT"
+    },
+    {
+      "authoring_commit": "a6b90e9cf115a859ce9aefb4e894dfd28bebf49f",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "license": "MIT",
+      "name": "community",
+      "source_branch": "codex/v1.8.0-w244",
+      "source_commit": "8cea37e840ad3de09fb7e5536d401ef471f6665e",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "status": "NEW"
+    }
+  ],
+  "target_version": "v1.8.0",
+  "vanilla_client_sha256": {
+    "1.12.2": "8ada07da5ee77dad3527bd7278fbd05ee1fc8a597813b216a871a2d7d64cc64f",
+    "1.20.1": "56b71336d2b4fdffd197f56595b0da93e32a946f78f382a299b8f4b92758bb0f"
+  }
+}
