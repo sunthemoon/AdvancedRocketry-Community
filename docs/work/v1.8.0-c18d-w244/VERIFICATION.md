@@ -1,6 +1,6 @@
 # C18d W244: etcher pair and K5 capsule texture
 
-Tested implementation source: `a61cbd985d6815cca60d7dc40ab9e3532ee3035b`. Root decision R259 under owner D8.
+Tested implementation source: `a61cbd985d6815cca60d7dc40ab9e3532ee3035b`, with W244-fix `a18ef8621` (R263). Root decision R259 under owner D8.
 See [W244](../v1.8.0-root-queue/records/W244.md) for actual command results,
 the pre-implementation design, external evidence identities and remaining work.
 
@@ -20,12 +20,21 @@ Unit tests compare all 200 positions in four facings against the independent
 legacy transform with width reflection. Pattern, collision and save schemas
 are unchanged. The complete sixteen-model catalog has 35,268 budget vertices.
 
-The capsule texture decorates the existing stationary countdown cage, not
-the legacy moving Capsule/Door mesh. It adds no field, entity or ride action.
-Two thin rings and four uprights use 112 vertices per rider; missing texture
-retains the original line fallback. Existing culling, endpoint/rider limits,
-lease and lifecycle cleanup remain. This is deliberately redesigned geometry
-and UV mapping; V1 must judge it, including lighting and rider visibility.
+After review finding W244-R1, Root decision R263 replaces that cage with the
+legacy Capsule group of the imported K4 spaceelevator.obj, drawn with the
+capsule texture through the group's own UVs. One stationary capsule stands at
+each endpoint with a pending ride, on the platform centre, placed by the
+transcribed RenderElevatorCapsule transform (one block up, yaw 270 for the
+north-facing anchor). Unit tests pin all 416 drawn corners against that
+transform, and every UV-mapped face samples only texels the cutout keeps; six
+unmapped contact faces lie against opaque faces. The doorway stays open, as
+legacy drew Door only in motion, so riders stay visible through it. A frame
+draws at most 64 capsules, and the catalog total is unchanged. The model and
+texture are checked once per resource reload; a missing or unreadable one
+keeps the original line cage (W244-R4). It adds no field, entity, packet,
+ride action or persisted state. Existing endpoint/rider limits, lease and
+lifecycle cleanup remain. V1 must judge the capsule's look, its countdown
+tint, lighting and rider visibility.
 
 Focused native model/capsule tests are not a full/sharded regression or an
 actual tracking-client visual result. Root retains the sharded branch run,
