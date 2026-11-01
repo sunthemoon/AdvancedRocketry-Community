@@ -159,12 +159,13 @@ public record EscrowSettlementIntent(Choice choice, UUID ledger, UUID actor, Str
         frozen.records().stream().filter(op -> ids().contains(op.id())).forEach(op -> EscrowSettlementTombstones.create(op, this));
         return frozen;
     }
-    public EscrowOperation floorOperation(long sequence, long tick) {
-        return floorOperation(sequence, tick, actor);
-    }
-    /** The production caller supplies the checked transfer record's stored owner, not the command actor. */
+    /**
+     * Every caller supplies the checked transfer record's stored owner; there is no overload that would default to the
+     * command actor (W238-R8).
+     */
     EscrowOperation floorOperation(long sequence, long tick, UUID storedOwner) {
         requireConfirmed(); EscrowTags.require(choice == Choice.TRANSFER_FLOOR_RETIRE, "Not a floor intent");
+        java.util.Objects.requireNonNull(storedOwner, "A floor retirement needs its checked journal owner");
         var endpoint = observations.stream().map(Observation::endpoint)
                 .filter(value -> value.identity().equals(floor.getUUID("entity_id"))).findFirst().orElseThrow();
         return new EscrowOperation(members.get(0).id(), sequence, storedOwner, tick, EscrowOperation.Phase.SETTLING_ABANDON,

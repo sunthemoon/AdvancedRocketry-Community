@@ -76,7 +76,7 @@ final class EscrowSettlementOperator {
                 ? EscrowSettlementObserver.floor(server, preview.floor(), data.ledger().id())
                 : EscrowSettlementObserver.component(server, data.ledger(), selected);
         var intent = preview.confirm(actor, digest, tick, observed);
-        UUID owner = choice == EscrowSettlementIntent.Choice.TRANSFER_FLOOR_RETIRE ? floorOwner(server, intent.floor()) : actor;
+        UUID owner = choice == EscrowSettlementIntent.Choice.TRANSFER_FLOOR_RETIRE ? floorOwner(server, intent.floor()) : null;
         boolean queued = data.bind(server).beginSettlement(intent, owner, committed -> {
             if (committed) {
                 previews.remove(actor, preview);

@@ -298,6 +298,10 @@ final class W238OwnerPendingTest {
             assertEquals("message.advancedrocketrycommunity.escrow.floor_owner_pending_full", translated.getKey());
             assertEquals(english("message.advancedrocketrycommunity.escrow.floor_owner_pending_full"), translated.getFallback());
             coordinator.tick(200);
+            // W238-R8: no overload defaults a new floor operation's owner to the command actor.
+            var actorOwned = assertThrows(IllegalArgumentException.class, () -> coordinator.beginSettlement(confirmed, ignored -> fail()));
+            assertEquals("A floor retirement is charged to its checked journal owner", actorOwned.getMessage());
+            assertTrue(java.util.Arrays.stream(EscrowSettlementIntent.class.getMethods()).noneMatch(method -> method.getName().equals("floorOperation")));
             assertFalse(assertDoesNotThrow(() -> coordinator.beginSettlement(confirmed, A, ignored -> fail())));
             assertEquals(root, coordinator.ledger()); assertEquals(2, coordinator.nextSequence()); assertFalse(data.isDirty());
             assertEquals(16, authority.pendingCount()); assertTrue(writer.idle()); assertTrue(writer.capturedOperations().isEmpty());

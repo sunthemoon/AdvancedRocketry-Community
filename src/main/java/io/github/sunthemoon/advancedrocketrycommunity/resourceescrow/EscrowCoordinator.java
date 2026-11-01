@@ -247,11 +247,16 @@ public final class EscrowCoordinator implements AutoCloseable {
         if (writer.request(() -> snapshot(true, null), this::acknowledge)) { lastStart = tick; return true; }
         return false;
     }
-    /** O1 only. This acknowledgement does not prove endpoints, remove journals or authorize unlock. */
+    /** O1 for an accept-current or abandon decision, whose members keep their held slots. */
     boolean beginSettlement(EscrowSettlementIntent intent, Consumer<Boolean> completion) {
-        return beginSettlement(intent, intent.actor(), completion);
+        EscrowTags.require(intent.choice() != EscrowSettlementIntent.Choice.TRANSFER_FLOOR_RETIRE,
+                "A floor retirement is charged to its checked journal owner");
+        return beginSettlement(intent, null, completion);
     }
-    /** A new floor intent is charged to its server-validated journal owner; other decisions reuse held slots. */
+    /**
+     * O1 only. This acknowledgement does not prove endpoints, remove journals or authorize unlock. A new floor intent is
+     * charged to its server-validated journal owner, never the command actor; other decisions ignore the owner.
+     */
     boolean beginSettlement(EscrowSettlementIntent intent, UUID floorOwner, Consumer<Boolean> completion) {
         owner();
         if (closed || !writer.idle() || writer.unavailable() || !queued.isEmpty() || !transitions.isEmpty()
