@@ -1,0 +1,111 @@
+{
+  "authoring_commit": "5bcd56046bef38c6748b972ace32084849e66b9a",
+  "batch_id": "v1.8.0-w246-rebound-item-models",
+  "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+  "declaration": "W246-fix, Root decision R267: a superseding record for the two generated item models that W246 rebound to imported upstream textures. Each entry names the model's new SHA-256 and the earlier record entry it supersedes. The earlier records are not edited and remain history. This record is not a review approval.",
+  "entries": [
+    {
+      "authoring_commit": "5bcd56046bef38c6748b972ace32084849e66b9a",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180JackhammerData",
+      "license": "MIT",
+      "reason": "W246, Root decision R262, rebound this item to its imported upstream texture through V180JackhammerData. That changed the model's layer0 reference, and so its SHA-256 from b4e4a60f67e091f80a76e187db854286429b176dde3c521d40be5eb8097fa8fa to 9f117498dd56e60ce60ed2f8b06199c1beb76af9edab23d134b86ba13cd116a1. The provenance audit compares a target with its latest record, so this entry supersedes v1.8.0-c18b-jackhammer.json entries[0], which stays unchanged as history (W246-fix, Root decision R267). The model is still newly authored DataGen output; the texture it names is recorded by v1.8.0-w246-flat-textures.json entries[10].",
+      "replaced_texture": {
+        "entry": "entries[1]",
+        "note": "Kept with its original bytes; no runtime model names it after W246.",
+        "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/item/jackhammer.png",
+        "record": "docs/provenance/v1.8.0-c18b-jackhammer.json",
+        "resource_id": "advancedrocketrycommunity:item/jackhammer",
+        "sha256": "771eaebb41fcc90c4d9622f8c807705cca67d51ca3b64784e7ee4057cfb53563"
+      },
+      "source_branch": "codex/v1.8.0-w246",
+      "source_commit": "5bcd56046bef38c6748b972ace32084849e66b9a",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180JackhammerData.java",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "8721c818f35db77d6e499fdd20b9c5dffe4c48edef2b20bbfd9661a24eb10699",
+      "status": "NEW",
+      "supersedes": {
+        "entry": "entries[0]",
+        "record": "docs/provenance/v1.8.0-c18b-jackhammer.json",
+        "target_bytes": 120,
+        "target_sha256": "b4e4a60f67e091f80a76e187db854286429b176dde3c521d40be5eb8097fa8fa"
+      },
+      "target_bytes": 121,
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/jackhammer.json",
+      "target_sha256": "9f117498dd56e60ce60ed2f8b06199c1beb76af9edab23d134b86ba13cd116a1",
+      "texture": {
+        "entry": "entries[10]",
+        "path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/items/jackhammer.png",
+        "record": "docs/provenance/v1.8.0-w246-flat-textures.json",
+        "resource_id": "advancedrocketrycommunity:items/jackhammer",
+        "sha256": "7ad17ef2b2bd7d17a6e4af0f6e52caf326cb28403d492d2abcb2a519846dc4bd",
+        "status": "UPSTREAM_AR_MIT"
+      },
+      "transformation": [
+        "Generate the newly authored item model from V180JackhammerData: parent minecraft:item/handheld, referenced by resource ID, and one layer0 texture.",
+        "Change only layer0, from the generated advancedrocketrycommunity:item/jackhammer to the imported upstream advancedrocketrycommunity:items/jackhammer. The parent and the rest of the file are unchanged; no model or bitmap is copied."
+      ]
+    },
+    {
+      "authoring_commit": "5bcd56046bef38c6748b972ace32084849e66b9a",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180TrackingCircuitData",
+      "license": "MIT",
+      "reason": "W246, Root decision R262, rebound this item to its imported upstream texture through V180TrackingCircuitData. That changed the model's layer0 reference, and so its SHA-256 from 6b99797ba80358442b9f3cc82e21f204dac1e9b988090e2bb3f44677aaca90cd to 04d591a535f080ee87a555042e43de17f9cf87b8aae05f5f71e9493bba54bdd1. The provenance audit compares a target with its latest record, so this entry supersedes v1.8.0-tracking-circuit-and-rebalance.json entries[0], which stays unchanged as history (W246-fix, Root decision R267). The model is still newly authored DataGen output; the texture it names is recorded by v1.8.0-w246-flat-textures.json entries[15].",
+      "replaced_texture": {
+        "entry": "entries[1]",
+        "note": "Kept with its original bytes; no runtime model names it after W246.",
+        "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/item/tracking_circuit.png",
+        "record": "docs/provenance/v1.8.0-tracking-circuit-and-rebalance.json",
+        "resource_id": "advancedrocketrycommunity:item/tracking_circuit",
+        "sha256": "e78f2712e9cc2ad6de13c4ffd35906adbda6480da407f13f7741c1b39e8b0884"
+      },
+      "source_branch": "codex/v1.8.0-w246",
+      "source_commit": "5bcd56046bef38c6748b972ace32084849e66b9a",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180TrackingCircuitData.java",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "0bb5478e26aa2201972c17fd1f9a3809cf48f7771313384f742ada6fb725a0dc",
+      "status": "NEW",
+      "supersedes": {
+        "entry": "entries[0]",
+        "record": "docs/provenance/v1.8.0-tracking-circuit-and-rebalance.json",
+        "target_bytes": 127,
+        "target_sha256": "6b99797ba80358442b9f3cc82e21f204dac1e9b988090e2bb3f44677aaca90cd"
+      },
+      "target_bytes": 127,
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/tracking_circuit.json",
+      "target_sha256": "04d591a535f080ee87a555042e43de17f9cf87b8aae05f5f71e9493bba54bdd1",
+      "texture": {
+        "entry": "entries[15]",
+        "path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/items/trackingcircuit.png",
+        "record": "docs/provenance/v1.8.0-w246-flat-textures.json",
+        "resource_id": "advancedrocketrycommunity:items/trackingcircuit",
+        "sha256": "6eda370b2efb8eca718348b54ce5b3e035ffdf69a91d76e95ac7674fc773b0fd",
+        "status": "UPSTREAM_AR_MIT"
+      },
+      "transformation": [
+        "Generate the newly authored item model from V180TrackingCircuitData: parent minecraft:item/generated, referenced by resource ID, and one layer0 texture.",
+        "Change only layer0, from the generated advancedrocketrycommunity:item/tracking_circuit to the imported upstream advancedrocketrycommunity:items/trackingcircuit. The parent and the rest of the file are unchanged; no model or bitmap is copied."
+      ]
+    }
+  ],
+  "license": "MIT",
+  "outstanding_review": [
+    "Human provenance review of W246's imported textures and of this rebinding remains outstanding.",
+    "True-client V1 presentation of the two rebound items remains outstanding; this record approves no art and no Gate."
+  ],
+  "recorded_at": "2026-11-01",
+  "review": {
+    "content_digest": "b21fa4f78fba4854cbb600d4a1501751074b715dc6bc227712f291f6a0d2e906",
+    "findings": [],
+    "reviewed_at": null,
+    "reviewer": null,
+    "status": "PENDING_HUMAN_REVIEW"
+  },
+  "schema_version": 2,
+  "scope": "W246's provider commit changed 24 generated models: 14 block models and 10 item models. Only these two were named by a provenance record. No JSON record names the other 22, and no tracked file pins their earlier or current SHA-256, so they remain DataGen output that the provenance audit's rule 1 places by source root.",
+  "source_branch": "codex/v1.8.0-w246",
+  "source_commit": "5bcd56046bef38c6748b972ace32084849e66b9a",
+  "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+  "target_version": "v1.8.0"
+}
