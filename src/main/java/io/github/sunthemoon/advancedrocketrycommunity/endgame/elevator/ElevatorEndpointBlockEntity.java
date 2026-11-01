@@ -256,8 +256,12 @@ public abstract class ElevatorEndpointBlockEntity extends CargoEndpointBlockEnti
 
     @Override
     public AABB getRenderBoundingBox() {
-        return anchor() ? new AABB(worldPosition).expandTowards(0.0D, ElevatorRules.MAX_TETHER_BLOCKS, 0.0D)
+        AABB tetherBox = anchor() ? new AABB(worldPosition).expandTowards(0.0D, ElevatorRules.MAX_TETHER_BLOCKS, 0.0D)
                 : new AABB(worldPosition).expandTowards(0.0D, -ElevatorRules.MAX_TETHER_BLOCKS, 0.0D);
+        // A four-block horizontal radius covers the capsule's +/-2.5 model box at any yaw, with roof headroom.
+        // Forge must select this renderer before it can offer the capsule, including above a terminal's platform.
+        AABB capsuleBox = new AABB(worldPosition).inflate(3.5D, 0.0D, 3.5D).expandTowards(0.0D, 5.0D, 0.0D);
+        return tetherBox.minmax(capsuleBox);
     }
 
     /** W182: vanilla opens a spectator's menu here directly, without the block's use; a spectator gets none. */
