@@ -207,7 +207,13 @@ final class W238OwnerPendingTest {
             var authority = coordinator.admissionAuthority(); authority.registerIndex(Consumer.BAY, () -> new Index(true, bays));
             var refusal = assertDoesNotThrow(() -> EscrowSettlementOperator.floorAdmission(authority, preview.members().get(0).id(), A, endpoint.logicalRocket()));
             assertEquals(Result.OWNER_PENDING_FULL, refusal);
-            assertTrue(EscrowCommands.floorRefusal(refusal).getString().startsWith("OWNER_PENDING_FULL: "));
+            // W238-R1: a console or RCON operator, with no mod language loaded, reads W231's English sentence.
+            var message = EscrowCommands.floorRefusal(refusal);
+            assertEquals("OWNER_PENDING_FULL: The owner's pending operations are full; finish existing work before starting a new floor retirement.",
+                    message.getString());
+            var translated = assertInstanceOf(net.minecraft.network.chat.contents.TranslatableContents.class, message.getSiblings().get(0).getContents());
+            assertEquals("message.advancedrocketrycommunity.escrow.floor_owner_pending_full", translated.getKey());
+            assertEquals(english("message.advancedrocketrycommunity.escrow.floor_owner_pending_full"), translated.getFallback());
             coordinator.tick(200);
             assertFalse(assertDoesNotThrow(() -> coordinator.beginSettlement(confirmed, A, ignored -> fail())));
             assertEquals(root, coordinator.ledger()); assertEquals(2, coordinator.nextSequence()); assertFalse(data.isDirty());
@@ -246,6 +252,10 @@ final class W238OwnerPendingTest {
                             : "The owner's pending operations are full; finish existing work before starting a new floor retirement.");
             messages.forEach((key, value) -> { assertTrue(language.has(key), key); assertEquals(value, language.get(key).getAsString()); });
         }
+    }
+    private static String english(String key) throws java.io.IOException {
+        return com.google.gson.JsonParser.parseString(java.nio.file.Files.readString(Path.of(
+                "src/generated/v1.8/resources/assets/advancedrocketrycommunity_v180/lang/en_us.json"))).getAsJsonObject().get(key).getAsString();
     }
     private static Result reserve(EscrowAdmissionAuthority authority, Pending p) {
         return authority.tryReserve(p.op(), p.owner(), p.rocket(), p.consumer());
