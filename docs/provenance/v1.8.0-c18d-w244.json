@@ -222,9 +222,9 @@
     "bytes": 42238,
     "vertices": 968
   },
-  "plan_sha256": "6c74e59da4b8d1d8a23b42d75dc99ec000a55e911cea60b9c4370b54f3eaa181",
+  "plan_sha256": "56c8ad3537c7a42487d942c4463e3e0dcec35a520a23503c0f2cce3ddfd79cfa",
   "review": {
-    "content_digest": "abd8e14d8d2e3b1bd88c23c864f9e77edc77f6fd8027ac2758f065a78757bede",
+    "content_digest": "95a57a45eefeaec81e39151137e672f80aeb8b92eee8401545c9288e653bba31",
     "findings": [],
     "reviewed_at": null,
     "reviewer": null,
