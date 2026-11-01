@@ -12,6 +12,9 @@ import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -27,10 +30,11 @@ import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
-/** ADR-066 elevator_capsule: stationary countdown cage, no entity, texture, movement or server action. */
+/** ADR-066 elevator_capsule: stationary textured countdown cage, no entity, movement or server action. */
 @Mod.EventBusSubscriber(modid = ModIdentity.MOD_ID, value = Dist.CLIENT)
 public final class ElevatorCapsuleClient {
     public static final String EFFECT_ID = "elevator_capsule";
+    static final ResourceLocation TEXTURE = ModIdentity.id("textures/models/spaceelevatorcapsule.png");
     private static final double RANGE_SQUARED = 64.0D * 64.0D;
     private static final int SIDES = 12;
     private static final ElevatorCapsuleClientState STATE = new ElevatorCapsuleClientState();
@@ -82,6 +86,9 @@ public final class ElevatorCapsuleClient {
             return;
         }
         var buffers = minecraft.renderBuffers().bufferSource();
+        // Query the live resource manager, so a resource reload cannot leave a stale availability cache.
+        boolean textured = minecraft.getResourceManager().getResource(TEXTURE).isPresent();
+        var renderType = textured ? RenderType.entityCutoutNoCull(TEXTURE) : RenderType.lines();
         try {
             for (var effect : STATE.effects()) {
                 BlockPos position = BlockPos.of(effect.endpoint());
@@ -97,10 +104,11 @@ public final class ElevatorCapsuleClient {
                 if (rider == null || !event.getFrustum().isVisible(rider.getBoundingBox().inflate(0.5D))) {
                     continue;
                 }
-                draw(event.getPoseStack(), buffers.getBuffer(RenderType.lines()), rider, live.remainingTicks(),
-                        event.getPartialTick(), event.getCamera().getPosition());
+                draw(event.getPoseStack(), buffers.getBuffer(renderType), rider, live.remainingTicks(),
+                        event.getPartialTick(), event.getCamera().getPosition(), textured,
+                        LevelRenderer.getLightColor(current, rider.blockPosition().above()));
             }
-            buffers.endBatch(RenderType.lines());
+            buffers.endBatch(renderType);
         } finally {
             STATE.clear();
         }
@@ -112,16 +120,27 @@ public final class ElevatorCapsuleClient {
                 ? rider : null;
     }
 
-    /** Two fixed rings and four uprights (56 vertices per rider). Only brightness changes with the countdown. */
+    /** Two fixed rings and four uprights: 112 textured vertices, or the original 56-line-vertex fallback. */
     private static void draw(PoseStack pose, VertexConsumer vertices, Player rider, int remaining, float partialTick,
-                             Vec3 camera) {
+                             Vec3 camera, boolean textured, int light) {
         pose.pushPose();
         pose.translate(Mth.lerp(partialTick, rider.xo, rider.getX()) - camera.x,
                 Mth.lerp(partialTick, rider.yo, rider.getY()) - camera.y,
                 Mth.lerp(partialTick, rider.zo, rider.getZ()) - camera.z);
         float progress = 1.0F - remaining / (float) ElevatorRules.RIDE_COUNTDOWN_TICKS;
         float red = 0.25F + 0.7F * progress;
-        double top = rider.getBbHeight() + 0.25D;
+        double top = Mth.clamp(rider.getBbHeight() + 0.25D, 0.5D, 3.0D);
+        if (textured) {
+            for (var strip : CapsuleCageGeometry.strips(top)) {
+                for (var point : List.of(strip.a(), strip.b(), strip.c(), strip.d())) {
+                    vertices.vertex(pose.last().pose(), (float)point.x(), (float)point.y(), (float)point.z())
+                            .color(red, 0.9F, 1.0F, 1.0F).uv(point.u(), point.v()).overlayCoords(OverlayTexture.NO_OVERLAY)
+                            .uv2(light).normal(pose.last().normal(), strip.nx(), 0, strip.nz()).endVertex();
+                }
+            }
+            pose.popPose();
+            return;
+        }
         for (int side = 0; side < SIDES; side++) {
             double a = side * Math.PI * 2 / SIDES;
             double b = (side + 1) * Math.PI * 2 / SIDES;
