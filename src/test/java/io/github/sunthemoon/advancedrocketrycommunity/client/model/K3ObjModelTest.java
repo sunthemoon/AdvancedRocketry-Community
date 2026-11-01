@@ -152,6 +152,81 @@ class K3ObjModelTest {
         }
     }
 
+    /** Each face's part and the zero-based position indices its faces reference, in file order. */
+    private static Map<String, Set<Integer>> faceIndices(byte[] bytes) {
+        var result = new LinkedHashMap<String, Set<Integer>>(); String part = "";
+        for (String line : new String(bytes, StandardCharsets.UTF_8).split("\n")) {
+            var t = line.strip().split("\\s+");
+            if (t[0].equals("o") || t[0].equals("g")) { part = t[1]; }
+            if (t[0].equals("f")) { for (int i = 1; i < t.length; i++) {
+                result.computeIfAbsent(part, unused -> new TreeSet<>()).add(Integer.parseInt(t[i].split("/")[0]) - 1);
+            } }
+        }
+        return result;
+    }
+
+    /** The parts the 1.12 renderers draw while the machine is closed or disabled; the others call renderAll(). */
+    private static final Map<String, Set<String>> LEGACY_IDLE_PARTS = Map.of(
+            "observatory", Set.of("Base", "CasingXMinus", "CasingXPlus"),   // RendererObservatory.java:75-79, closed branch
+            "planetary_beacon", Set.of("Base", "OuterSpin", "InnerSpin"));  // RenderBeacon.java:48, 54 and 60
+
+    /**
+     * The 1.12 placement of one source position relative to the controller block's corner, transcribed from upstream
+     * {@code c5cd5af62fc07cd4e0d24f06a16033f181c47c04} {@code client/render/multiblocks}: {@code glTranslated(x + .5, y, z + .5)},
+     * {@code glRotatef(turn, 0, 1, 0)}, then the renderer's own translation. EnumFacing's front offsets equal Direction's steps.
+     */
+    private static double[] legacy(String id, Direction front, String part, double[] p) {
+        int fx = front.getStepX(), fz = front.getStepZ(); double turn; double[] t;
+        switch (id) {
+            // RendererSolarArray.java:39-42
+            case "solar_array" -> { turn = (fx == 1 ? 0 : 180) + fz * 90; t = new double[] {-0.5, 0, 0.5}; }
+            // RenderAstrobodyDataProcessor.java:39-42
+            case "astrobody_data_processor" -> { turn = (fx == 1 ? 180 : 0) + fz * 90; t = new double[] {-0.5, -1, -1.5}; }
+            // RendererObservatory.java:49-52
+            case "observatory" -> { turn = (fx == 1 ? 180 : 0) + fz * 90; t = new double[] {2, -1, 0}; }
+            // RenderBeacon.java:42-45 and 50: the spin groups sit one block over and do not turn while disabled
+            case "planetary_beacon" -> { turn = (fx == 1 ? 180 : 0) + fz * 90;
+                t = part.equals("Base") ? new double[] {0, 0, 0} : new double[] {1, 0, 0}; }
+            default -> throw new AssertionError("No legacy renderer for " + id);
+        }
+        double r = Math.toRadians(turn), x = p[0] + t[0], z = p[2] + t[2];
+        return new double[] {Math.cos(r) * x + Math.sin(r) * z + 0.5, p[1] + t[1], -Math.sin(r) * x + Math.cos(r) * z + 0.5};
+    }
+
+    /** The modern patterns are the 1.12 structures mirrored in local x: across the pattern's width, about the controller. */
+    private static double[] acrossPatternWidth(Direction facing, double[] p) {
+        return facing.getAxis() == Direction.Axis.Z ? new double[] {1 - p[0], p[1], p[2]} : new double[] {p[0], p[1], 1 - p[2]};
+    }
+
+    /**
+     * W236-R1 and W236-R2 (Root decision R248) pin orientation, not only containment. Every drawn source position,
+     * prepared and placed by the real fixture and pose, must equal its 1.12 renderer's placement mirrored across the
+     * pattern's width. A model turned or mirrored front to back stays inside its render box but fails here.
+     */
+    @ParameterizedTest @ValueSource(strings = {"astrobody_data_processor", "observatory", "planetary_beacon", "solar_array"})
+    void everyFacingEqualsTheLegacyRendererMirroredAcrossThePatternWidth(String id) throws Exception {
+        var f = model(id); byte[] raw = resource(f.model());
+        var checked = ObjModelSet.check(List.of(f), source(Set.of())).models().get(id);
+        var sourcePoints = positions(raw); var parserPoints = positions(checked.parserInput());
+        assertEquals(sourcePoints.size(), parserPoints.size());
+        var drawn = faceIndices(checked.parserInput());
+        assertEquals(LEGACY_IDLE_PARTS.getOrDefault(id, faceIndices(raw).keySet()), drawn.keySet(), id + " draws the legacy idle parts");
+        int compared = 0;
+        for (Direction facing : Direction.Plane.HORIZONTAL) {
+            var pose = new PoseStack(); ClassicObjModelRenderer.place(pose, f, facing);
+            for (var part : drawn.entrySet()) { for (int index : part.getValue()) {
+                var p = parserPoints.get(index);
+                var placed = pose.last().pose().transformPosition(new Vector3f((float) p[0], (float) p[1], (float) p[2]));
+                var expected = acrossPatternWidth(facing, legacy(id, facing, part.getKey(), sourcePoints.get(index)));
+                assertArrayEquals(expected, new double[] {placed.x, placed.y, placed.z}, 1.0E-5,
+                        id + " " + facing.getName() + " " + part.getKey() + " position " + (index + 1) + " leaves the legacy orientation");
+                compared++;
+            } }
+        }
+        // The observatory's closed shell is the smallest drawn set: 33 distinct positions in each facing.
+        assertTrue(compared >= 4 * 33, id + " compares too few positions: " + compared);
+    }
+
     @ParameterizedTest @ValueSource(strings = {"astrobody_data_processor", "observatory", "planetary_beacon", "solar_array"})
     void explicitFallbackAndMissingModelKeepTheExistingFailurePolicy(String id) throws Exception {
         var f = model(id); var loaded = ObjModelSet.check(List.of(f), source(Set.of())).models().get(id);
