@@ -37,6 +37,7 @@ final class BayPassengerExitGameTestFixture {
     final Case scenario;
     final List<ServerPlayer> players = new ArrayList<>();
     final List<EmbeddedChannel> channels = new ArrayList<>();
+    final Set<Long> forcedColumns = new HashSet<>();
     final List<LivingAttackEvent> attacks = new ArrayList<>();
     Flight flight;
     Flight otherFlight;
@@ -48,6 +49,7 @@ final class BayPassengerExitGameTestFixture {
     int ticks, stage, falls;
     float fallDistance, multiplier;
     boolean closed, injected;
+    boolean diagnosed;
     BayPassengerExitState.Slot offer;
     BayPassengerExitState.Slot arbitrationA, arbitrationB;
     io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.exit.BayExitBudget.Usage arbitrationBefore;
@@ -82,6 +84,14 @@ final class BayPassengerExitGameTestFixture {
     }
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void afterDrain(TickEvent.ServerTickEvent event) {
+        if (!closed && scenario == Case.ORDINARY && offer != null && offer.descent.closed && !diagnosed) {
+            diagnosed = true;
+            io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity.LOGGER.info(
+                    "ARCE_BAY_EXIT_CLOSED authority={} generation={} tick={} previous={} sample={} contact={} inspected={} usage={}",
+                    offer.permit.authority(), offer.descent.generation.equals(exits.motion.generation(player)), player.getServer().getTickCount(),
+                    offer.descent.continuity.last, BayPassengerExitMotion.sample(player, player.getServer().getTickCount()),
+                    offer.world.contact, offer.world.inspected, exits.budget.usage());
+        }
         if (!closed && stage == 5 && event.phase == TickEvent.Phase.END && arbitrationA.completed && arbitrationB.completed) {
             arbitrationAfter = exits.budget.usage();
             try {
@@ -137,7 +147,15 @@ final class BayPassengerExitGameTestFixture {
     private void setup() {
         var level = helper.getLevel(); var server = level.getServer();
         origin = helper.absolutePos(new BlockPos(3, 4, 3));
-        if (!level.isPositionEntityTicking(origin)) { return; }
+        boolean ready = true;
+        for (int x = (origin.getX() >> 4) - 1; x <= (origin.getX() >> 4) + 1; x++) {
+            for (int z = (origin.getZ() >> 4) - 1; z <= (origin.getZ() >> 4) + 1; z++) {
+                long key = net.minecraft.world.level.ChunkPos.asLong(x, z);
+                if (!level.getForcedChunks().contains(key)) { level.setChunkForced(x, z, true); forcedColumns.add(key); }
+                ready &= level.areEntitiesLoaded(key) && level.isPositionEntityTicking(new BlockPos(x * 16, origin.getY(), z * 16));
+            }
+        }
+        if (!ready) { return; } // Fixture tickets precede the measured exit; production never requests them.
         player = join(UUID.randomUUID());
         UUID owner = scenario == Case.CREW ? UUID.randomUUID() : player.getUUID();
         var pkg = dataPackage(owner);
@@ -165,11 +183,7 @@ final class BayPassengerExitGameTestFixture {
             level.setBlockAndUpdate(origin.below(), Blocks.STONE.defaultBlockState());
         }
         if (Set.of(Case.LAST_UNIT, Case.LAST_UNIT_REVERSE, Case.DELAYED_LAST, Case.GANTRY, Case.LOCAL_ONLY).contains(scenario)) {
-            gantry = flight.source().blockPosition().offset(2, 0, 0);
-            for (int x = -2; x <= 2; x++) { for (int z = -2; z <= 2; z++) { for (int y = -2; y <= 3; y++) {
-                level.setBlockAndUpdate(gantry.offset(x, y, z), Blocks.AIR.defaultBlockState());
-            } } }
-            pad(gantry);
+            buildGantry();
         }
         if (Set.of(Case.HAZARD, Case.HEADROOM, Case.PARTIAL).contains(scenario)) {
             pad(origin);
@@ -184,6 +198,13 @@ final class BayPassengerExitGameTestFixture {
         for (int x = -1; x <= 1; x++) { for (int z = -1; z <= 1; z++) {
             helper.getLevel().setBlockAndUpdate(feet.offset(x, -1, z), Blocks.STONE.defaultBlockState());
         } }
+    }
+    private void buildGantry() {
+        gantry = flight.source().blockPosition().offset(2, 0, 0);
+        for (int x = -2; x <= 2; x++) { for (int z = -2; z <= 2; z++) { for (int y = -2; y <= 3; y++) {
+            helper.getLevel().setBlockAndUpdate(gantry.offset(x, y, z), Blocks.AIR.defaultBlockState());
+        } } }
+        pad(gantry);
     }
     private Object ticketSnapshot() throws ReflectiveOperationException {
         Object manager = helper.getLevel().getChunkSource().chunkMap.getDistanceManager();
@@ -266,7 +287,7 @@ final class BayPassengerExitGameTestFixture {
                     && offer.result.work().candidates() == 0 && offer.result.work().reads() == 0 && offer.result.work().visits() == 0
                     && offer.descent == null && !history.issued(), "Exhaustion spent extra work or offered unprovable protection"); done(); return;
         }
-        helper.assertTrue(offer.descent != null && history.issued(), "Fallback did not offer one descent");
+        helper.assertTrue(offer.descent != null && !offer.descent.closed && history.issued(), "Fallback did not offer one descent: " + offer.result);
         switch (scenario) {
             case HAZARD, HEADROOM, PARTIAL -> { helper.assertTrue(offer.result.status() != io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.exit.BayExitSelector.Status.SAFE,
                     "Unsafe contact geometry passed selection"); done(); }
@@ -329,6 +350,7 @@ final class BayPassengerExitGameTestFixture {
             var previous = player; player = otherPlayer; otherPlayer = previous;
             var previousFlight = flight; flight = otherFlight; otherFlight = previousFlight;
         }
+        if (lastUnit()) { buildGantry(); }
         for (var entry : List.of(Map.entry(player, flight), Map.entry(otherPlayer, otherFlight))) {
             helper.assertTrue(exits.state.admit(entry.getKey().getUUID(), entry.getValue().record().transferId(),
                     entry.getValue().record().logicalRocketId(), player.getServer().getTickCount()) != null, "Closed history could not be seeded");
@@ -395,6 +417,9 @@ final class BayPassengerExitGameTestFixture {
         done();
     }
     private void land() {
+        if (!injected && falls == 0 && player.getY() == offer.permit.before.y) {
+            helper.assertTrue(exits.state.live.get(player) == offer && !offer.descent.closed, "Offer ended before simulated descent");
+        }
         player.setOnGround(false); // The simulated incoming movement is airborne until the final vanilla check.
         double next = Math.max(origin.getY() + .25, player.getY() - 3);
         player.setPos(player.getX(), next, player.getZ()); player.setDeltaMovement(new Vec3(0, -.2, 0));
@@ -453,6 +478,9 @@ final class BayPassengerExitGameTestFixture {
             joined.getServer().getPlayerList().remove(joined);
         }
         channels.forEach(EmbeddedChannel::finishAndReleaseAll);
+        for (long column : forcedColumns) {
+            var pos = new net.minecraft.world.level.ChunkPos(column); helper.getLevel().setChunkForced(pos.x, pos.z, false);
+        }
         if (flight != null) {
             flight.source().discard(); var journal = RocketTransferSavedData.get(helper.getLevel().getServer()); journal.remove(flight.record().transferId());
             RocketTransferEntities.releaseFlightTickets(helper.getLevel().getServer(), flight.record());
