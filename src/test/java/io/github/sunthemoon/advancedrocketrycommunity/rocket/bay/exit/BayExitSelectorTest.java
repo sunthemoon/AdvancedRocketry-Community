@@ -278,4 +278,16 @@ final class BayExitSelectorTest {
         assertThrows(IllegalArgumentException.class, () -> new Request(REQUEST.rocket(),
                 pos(Double.NaN, 100, 0), Optional.empty(), Optional.empty(), .6, 1.8));
     }
+
+    @Test void completionCallbackCannotReplenishTheTickBeforeTheRestOfTheDrain() {
+        var budget = new BayExitBudget(0); var port = new CountingPort(); port.available.add(C.get(0));
+        var selector = new BayExitSelector(budget, port);
+        var a = selector.capture(REQUEST, () -> true); var b = selector.capture(REQUEST, () -> true);
+        selector.drain(context -> assertThrows(IllegalStateException.class, () -> budget.advanceTick(1)));
+        assertResult(a.result().orElseThrow(), SAFE, 1, 1, 1, 1);
+        assertResult(b.result().orElseThrow(), NO_SAFE_EXIT, 0, 2, 2, 31);
+        assertEquals(new BayExitBudget.Usage(32, 32, 32), budget.usage());
+        budget.advanceTick(1);
+        assertEquals(new BayExitBudget.Usage(0, 0, 0), budget.usage());
+    }
 }

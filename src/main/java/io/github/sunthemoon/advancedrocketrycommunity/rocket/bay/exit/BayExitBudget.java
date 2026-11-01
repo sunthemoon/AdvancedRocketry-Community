@@ -23,6 +23,7 @@ public final class BayExitBudget {
     private int reads;
     private int visits;
     private int open;
+    private int workScopes;
 
     public BayExitBudget(long tick) { this.tick = tick; }
 
@@ -30,10 +31,15 @@ public final class BayExitBudget {
         if (Thread.currentThread() != owner) { throw new IllegalStateException("Exit budget is owner-thread only"); }
     }
 
+    void enterWork() { checkThread(); workScopes++; }
+    void leaveWork() { checkThread(); workScopes--; }
+
     /** The adapter advances only after the old tick's END drain. Same-tick calls never replenish work. */
     public void advanceTick(long next) {
         checkThread();
-        if (next < tick || open != 0) { throw new IllegalStateException("Cannot reset active or older exit budget"); }
+        if (next < tick || open != 0 || workScopes != 0) {
+            throw new IllegalStateException("Cannot reset active or older exit budget");
+        }
         if (next > tick) { tick = next; candidates = 0; reads = 0; visits = 0; }
     }
 

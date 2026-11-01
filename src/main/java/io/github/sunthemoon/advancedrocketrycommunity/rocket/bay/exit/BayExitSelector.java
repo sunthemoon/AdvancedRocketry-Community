@@ -75,6 +75,12 @@ public final class BayExitSelector {
     public Result select(Context context) {
         budget.checkThread();
         requireOwn(context);
+        budget.enterWork();
+        try { return selectOwned(context); }
+        finally { budget.leaveWork(); }
+    }
+
+    private Result selectOwned(Context context) {
         if (context.result != null) { return context.result; }
         if (!live.contains(context) || !context.current.getAsBoolean()) {
             context.result = refusal(context, Status.STALE);
@@ -176,6 +182,7 @@ public final class BayExitSelector {
         if (active != null || draining) { throw new IllegalStateException("Cannot nest exit END drains"); }
         draining = true;
         var batch = new ArrayList<>(delayed);
+        budget.enterWork();
         try {
             for (Context context : batch) {
                 if (!context.current.getAsBoolean()) { release(context); }
@@ -183,8 +190,8 @@ public final class BayExitSelector {
             }
         } finally {
             // Keep not-yet-applied reservations through the entire drain, independent of capture order.
-            for (Context context : batch) { release(context); }
-            draining = false;
+            try { for (Context context : batch) { release(context); } }
+            finally { draining = false; budget.leaveWork(); }
         }
     }
 
