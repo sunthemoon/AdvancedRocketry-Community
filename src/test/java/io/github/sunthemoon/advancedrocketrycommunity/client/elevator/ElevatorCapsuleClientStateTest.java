@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.github.sunthemoon.advancedrocketrycommunity.client.elevator.ElevatorCapsuleClientState.Candidate;
+import io.github.sunthemoon.advancedrocketrycommunity.client.elevator.ElevatorCapsuleClientState.Capsule;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.ElevatorCapsuleCodec;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.ElevatorCapsuleCodec.Entry;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
 import java.util.List;
@@ -57,6 +59,33 @@ final class ElevatorCapsuleClientStateTest {
         assertEquals(1, state.effects().get(0).endpoint());
         assertEquals(2, state.effects().get(1).endpoint());
         assertEquals(42, state.effects().get(1).ride().entityId());
+    }
+
+    @Test
+    void oneCapsulePerEndpointHoweverManyRidersArePending() {
+        ElevatorCapsuleClientState state = new ElevatorCapsuleClientState();
+        List<Entry> full = new java.util.ArrayList<>();
+        for (int rider = 0; rider < ElevatorCapsuleCodec.MAX_RIDES; rider++) {
+            full.add(new Entry(40 + rider, 100 - rider * 10));
+        }
+        state.offer(new Candidate(1, 5, full));
+        // Rider 40 belongs to its nearest endpoint, so endpoint 2 has no capsule of its own; an expired ride shows none.
+        state.offer(new Candidate(2, 10, List.of(new Entry(40, 50))));
+        state.offer(new Candidate(3, 20, List.of(new Entry(99, 0))));
+        assertEquals(List.of(new Capsule(1, full)), state.capsules());
+        state.clear();
+        for (long endpoint = 10; endpoint < 1_000; endpoint++) {
+            List<Entry> rides = new java.util.ArrayList<>();
+            for (int rider = 0; rider < ElevatorCapsuleCodec.MAX_RIDES; rider++) {
+                rides.add(new Entry((int) endpoint * 10 + rider, 100));
+            }
+            state.offer(new Candidate(endpoint, endpoint, rides));
+        }
+        assertEquals(ElevatorCapsuleClientState.MAX_ENDPOINTS, state.capsules().size());
+        assertTrue(state.capsules().stream().allMatch(capsule -> capsule.rides().size() <= ElevatorCapsuleCodec.MAX_RIDES));
+        assertEquals(10, state.capsules().get(0).endpoint());
+        state.clear();
+        assertTrue(state.capsules().isEmpty());
     }
 
     @Test

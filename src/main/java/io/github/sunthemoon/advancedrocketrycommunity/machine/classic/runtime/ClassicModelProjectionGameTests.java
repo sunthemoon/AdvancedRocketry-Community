@@ -52,12 +52,37 @@ public final class ClassicModelProjectionGameTests {
 
     @GameTest(template = "empty", batch = "w51_uncatalogued_model", timeoutTicks = 30)
     public static void uncataloguedControllerKeepsItsUpdateTagAndVolume(GameTestHelper helper) {
-        try (var f = new C16cMachineFixture(helper, "precision_laser_etcher", Direction.NORTH)) {
-            helper.assertTrue(f.controller.getUpdateTag().getAllKeys().equals(Set.of("active")) && !f.controller.modelFormed(),
+        try (var f = new ArcCuttingGameTests.Fixture(helper, true, Direction.NORTH)) {
+            helper.assertTrue(f.controller.getUpdateTag().getAllKeys().isEmpty() && !f.controller.modelFormed(),
                     "An uncatalogued controller projected a model flag");
             BlockPos origin = f.controller.getBlockPos();
             helper.assertTrue(f.controller.getRenderBoundingBox().equals(new AABB(origin)),
                     "An uncatalogued controller changed its render volume");
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", batch = "w244_etcher_model", timeoutTicks = 60)
+    public static void etcherProjectsOnlyValidatedFacingOutsideTemplateChunks(GameTestHelper helper) {
+        for (Direction facing : Direction.Plane.HORIZONTAL) {
+            var origin = new BlockPos(-2_440_000 + facing.get2DDataValue() * 256, 100, -2_440_000);
+            try (var region = new io.github.sunthemoon.advancedrocketrycommunity.gametest.K3ModelTestRegion(helper, origin);
+                    var f = new C16cMachineFixture(helper, "precision_laser_etcher", facing, origin)) {
+                var part = f.world(f.pattern.cells().entrySet().stream()
+                        .filter(cell -> cell.getValue() instanceof PatternMatcher.BlockTag tag && tag.tagId().endsWith(":motors"))
+                        .findFirst().orElseThrow().getKey());
+                exerciseTransition(helper, f.controller, f.manager, part, f::tick, footprint(f));
+                f.controller.onChunkUnloaded();
+                helper.assertTrue(!f.controller.modelFormed(), "Unloaded etcher retained model");
+                f.controller.revalidate(helper.getLevel(), f.pattern);
+                assertProjection(helper, f.controller, true);
+                var saved = f.controller.saveWithFullMetadata();
+                helper.assertTrue(!saved.contains("formed"), "Etcher persisted its presentation");
+                f.controller.load(saved);
+                helper.assertTrue(!f.controller.modelFormed(), "Loaded etcher retained stale model");
+                f.controller.revalidate(helper.getLevel(), f.pattern);
+                assertProjection(helper, f.controller, true);
+            }
         }
         helper.succeed();
     }

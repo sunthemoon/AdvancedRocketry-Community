@@ -36,6 +36,7 @@ public final class ClassicModelProjection {
             ModIdentity.id("crystallizer"), new Footprint(3, 2, 2, new PatternPosition(1, 0, 0)),
             ModIdentity.id("cutting_machine"), new Footprint(3, 1, 2, new PatternPosition(1, 0, 0), 1.505879),
             ModIdentity.id("lathe"), new Footprint(4, 2, 1, new PatternPosition(0, 1, 0)),
+            ModIdentity.id("precision_laser_etcher"), new Footprint(3, 3, 3, new PatternPosition(1, 0, 0)),
             ModIdentity.id("astrobody_data_processor"), new Footprint(3, 2, 2, new PatternPosition(1, 1, 0)),
             ModIdentity.id("observatory"), new Footprint(5, 5, 5, new PatternPosition(2, 1, 0), 5, 0.005001),
             ModIdentity.id("planetary_beacon"), new Footprint(3, 5, 3, new PatternPosition(1, 0, 0)),
