@@ -463,6 +463,7 @@ final class BayPassengerExitGameTestFixture {
         if (closed) { return; }
         try {
             ticks++;
+            BayPassengerExitGameTestDescentAudit.beforeStimulus(this);
             if (stage == 0) { setup(); }
             else if (stage == 1 && player.getServer().getTickCount() - joinedTick > 70 && RocketTransferSavedData.get(player.getServer()).actionable(flight.record().logicalRocketId())
                     && (otherFlight == null || RocketTransferSavedData.get(player.getServer()).actionable(otherFlight.record().logicalRocketId()))) { detach(); }
