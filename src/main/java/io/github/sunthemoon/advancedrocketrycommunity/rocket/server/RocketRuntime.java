@@ -28,9 +28,10 @@ public final class RocketRuntime {
     static Optional<BayPassengerExitService> passengerExits() {
         return service instanceof RocketManager manager ? Optional.ofNullable(manager.passengerExits()) : Optional.empty();
     }
+    /** W242-R8: without the exit service (before ServerStarting, after ServerStopped) every rider keeps the old offset. */
     public static net.minecraft.world.phys.Vec3 bayPassengerExitLocation(RocketEntity rocket, net.minecraft.world.entity.LivingEntity rider) {
         return rider instanceof ServerPlayer player ? passengerExits().map(exits -> exits.location(player, rocket))
-                .orElse(rocket.position()) : rocket.position().add(1.5, 0, 0);
+                .orElseGet(() -> rocket.position().add(1.5, 0, 0)) : rocket.position().add(1.5, 0, 0);
     }
     /**
      * W242-R1: called after vanilla's dismount game event, whose dispatch can push this column out of the four-entry
