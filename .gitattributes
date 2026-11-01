@@ -64,4 +64,7 @@ src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/rolling_mach
 src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/rollingmachine.obj -text
 src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/spaceelevator.mtl -text
 src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/spaceelevator.obj -text
+# Preserve W244 importer-written OBJ/MTL bytes on Windows.
+src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/precisionlaseretcher.obj -text
+src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/precision_laser_engraver.mtl -text
 LICENSE text eol=lf

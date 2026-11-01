@@ -311,7 +311,7 @@ order,pattern,handling,plan,units,reason
 310,models/observatory.obj,IMPORTED,v1.8.0,block:observatory,K3 byte copy; docs/provenance/v1.8.0-c18d-k3.json; W236 source/unit checks; human review and V1 pending
 311,models/orbitallaserdrill.obj,IMPORTED,v1.8.0,block:spaceLaser,K4 byte copy; docs/provenance/v1.8.0-c18d-k4.json; W241 source/unit checks; human review and V1 pending
 312,models/precisionassembler.obj,IMPORTED,v1.8.0,block:precisionassemblingmachine,K4 byte copy; docs/provenance/v1.8.0-c18d-k4.json; W241 source/unit checks; human review and V1 pending
-313,models/precisionlaseretcher.obj,IMPORT,C18d,block:precisionlaseretcher,machine OBJ model for the visual batch
+313,models/precisionlaseretcher.obj,IMPORTED,v1.8.0,block:precisionlaseretcher,"W244 audited byte copy; docs/provenance/v1.8.0-c18d-w244.json; human review, Forge parse/bake and V1 pending"
 314,models/railgun.obj,IMPORTED,v1.8.0,block:railgun,K4 byte copy; docs/provenance/v1.8.0-c18d-k4.json; W241 source/unit checks; human review and V1 pending
 315,models/rollingmachine.obj,IMPORTED,v1.8.0,block:rollingMachine,K4 byte copy; docs/provenance/v1.8.0-c18d-k4.json; W241 source/unit checks; human review and V1 pending
 316,models/solar_array.obj,IMPORTED,v1.8.0,block:solararray,K3 byte copy; docs/provenance/v1.8.0-c18d-k3.json; W236 source/unit checks; human review and V1 pending
@@ -342,12 +342,12 @@ order,pattern,handling,plan,units,reason
 341,textures/models/observatory.png,IMPORTED,v1.8.0,block:observatory,K3 byte copy; docs/provenance/v1.8.0-c18d-k3.json; W236 source/unit checks; human review and V1 pending
 342,textures/models/orbitallaserdrill.png,IMPORTED,v1.8.0,block:spaceLaser,K4 byte copy; docs/provenance/v1.8.0-c18d-k4.json; W241 source/unit checks; human review and V1 pending
 343,textures/models/precisionassembler.png,IMPORTED,v1.8.0,block:precisionassemblingmachine,K4 byte copy; docs/provenance/v1.8.0-c18d-k4.json; W241 source/unit checks; human review and V1 pending
-344,textures/models/precisionlaseretcher.png,IMPORT,C18d,block:precisionlaseretcher,model texture for the visual batch
+344,textures/models/precisionlaseretcher.png,IMPORTED,v1.8.0,block:precisionlaseretcher,"W244 audited byte copy; docs/provenance/v1.8.0-c18d-w244.json; human review, Forge parse/bake and V1 pending"
 345,textures/models/railgun.png,IMPORTED,v1.8.0,block:railgun,K4 byte copy; docs/provenance/v1.8.0-c18d-k4.json; W241 source/unit checks; human review and V1 pending
 346,textures/models/rollingmachine.png,IMPORTED,v1.8.0,block:rollingMachine,K4 byte copy; docs/provenance/v1.8.0-c18d-k4.json; W241 source/unit checks; human review and V1 pending
 347,textures/models/solararray.png,IMPORTED,v1.8.0,block:solararray,K3 byte copy; docs/provenance/v1.8.0-c18d-k3.json; W236 source/unit checks; human review and V1 pending
 348,textures/models/spaceelevator.png,IMPORTED,v1.8.0,block:spaceElevatorController,K4 byte copy; docs/provenance/v1.8.0-c18d-k4.json; W241 source/unit checks; human review and V1 pending
-349,textures/models/spaceelevatorcapsule.png,IMPORT,C18d,entity:ARSpaceElevatorCapsule,model texture for the visual batch
+349,textures/models/spaceelevatorcapsule.png,IMPORTED,v1.8.0,entity:ARSpaceElevatorCapsule,"W244 audited byte copy; docs/provenance/v1.8.0-c18d-w244.json; human review, Forge parse/bake and V1 pending"
 350,textures/models/warpcore.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
 351,textures/env/accretiondisk.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
 352,textures/env/blackhole.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
