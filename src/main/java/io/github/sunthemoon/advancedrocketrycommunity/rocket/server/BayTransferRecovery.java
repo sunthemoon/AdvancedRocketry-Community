@@ -542,6 +542,12 @@ final class BayTransferRecovery implements RocketTransferBayRecoveryGate {
         checkpointRefusedForTests.add(logical);
     }
 
+    /** W242-R9: drops L's queued D0 step, so a bay-exit fixture can hold only its own rockets still; L's claim stays. */
+    void unqueueForTests(UUID logical) {
+        EscrowTestEndpoints.requireEnabled(server);
+        queue.remove(logical);
+    }
+
     /** Cleanup of a claim that this slice holds until offline repair; it reports no handoff. */
     void forgetForTests(UUID logical) {
         EscrowTestEndpoints.requireEnabled(server);

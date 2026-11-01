@@ -2,7 +2,6 @@ package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
 import static io.github.sunthemoon.advancedrocketrycommunity.rocket.server.BayDeploymentGameTestSupport.*;
 import com.mojang.authlib.GameProfile;
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.deployment.BayStepQueue;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.*;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition;
@@ -64,18 +63,20 @@ final class BayPassengerExitGameTestFixture {
     BayPassengerExitGameTestAudit.Mount probeMount;
 
     BayPassengerExitGameTestFixture(GameTestHelper helper, Case scenario) { this.helper = helper; this.scenario = scenario; }
-    void start() { MinecraftForge.EVENT_BUS.register(this); helper.onEachTick(this::tick); }
+    // W242-R9: GameTest-thread fixtures that have not cleaned up; each batch's @AfterBatch hook closes its leftovers.
+    private static final Set<BayPassengerExitGameTestFixture> OPEN = Collections.newSetFromMap(new IdentityHashMap<>());
+    void start() { OPEN.add(this); MinecraftForge.EVENT_BUS.register(this); helper.onEachTick(this::tick); }
+    /** A timed-out case runs no cleanup of its own: release its columns, players, listeners, record and claim here. */
+    static void closeOpen(net.minecraft.server.level.ServerLevel level) {
+        for (var fixture : List.copyOf(OPEN)) { if (fixture.helper.getLevel() == level) { fixture.cleanup(); } }
+    }
     private static Object field(Object target, Class<?> owner, String name) throws ReflectiveOperationException {
         Field field = owner.getDeclaredField(name); field.setAccessible(true); return field.get(target);
     }
     private void pause() {
         if (flight == null) { return; }
-        try {
-            var queue = (BayStepQueue) field(bays(helper), BayTransferRecovery.class, "queue");
-            queue.remove(flight.record().logicalRocketId());
-            if (otherFlight != null) { queue.remove(otherFlight.record().logicalRocketId()); }
-        }
-        catch (ReflectiveOperationException error) { throw new IllegalStateException(error); }
+        bays(helper).unqueueForTests(flight.record().logicalRocketId());
+        if (otherFlight != null) { bays(helper).unqueueForTests(otherFlight.record().logicalRocketId()); }
     }
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void beforeTick(TickEvent.ServerTickEvent event) { if (!closed) { pause(); } }
@@ -465,7 +466,7 @@ final class BayPassengerExitGameTestFixture {
     }
     void done() { cleanup(); helper.succeed(); }
     private void cleanup() {
-        if (closed) { return; } closed = true; MinecraftForge.EVENT_BUS.unregister(this);
+        if (closed) { return; } closed = true; OPEN.remove(this); MinecraftForge.EVENT_BUS.unregister(this);
         cacheListenerCleanup.run();
         if (exits != null) { exits.probeLocationForTests(null); }
         if (flight != null) { bays(helper).forgetForTests(flight.record().logicalRocketId()); }
