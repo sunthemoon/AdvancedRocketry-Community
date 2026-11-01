@@ -61,6 +61,8 @@ public final class ClientObjModels {
                 context -> new ClassicObjModelRenderer<>(ObjModelFixture.CUTTING_MACHINE, CACHE));
         event.registerBlockEntityRenderer(ModBlockEntities.LATHE.get(),
                 context -> new ClassicObjModelRenderer<>(ObjModelFixture.LATHE, CACHE));
+        event.registerBlockEntityRenderer(ModBlockEntities.PRECISION_LASER_ETCHER.get(),
+                context -> new ClassicObjModelRenderer<>(ObjModelFixture.PRECISION_LASER_ETCHER, CACHE));
         event.registerBlockEntityRenderer(ModBlockEntities.ASTROBODY_DATA_PROCESSOR.get(),
                 context -> new ClassicObjModelRenderer<>(ObjModelFixture.ASTROBODY_DATA_PROCESSOR, CACHE));
         event.registerBlockEntityRenderer(ModBlockEntities.OBSERVATORY.get(),

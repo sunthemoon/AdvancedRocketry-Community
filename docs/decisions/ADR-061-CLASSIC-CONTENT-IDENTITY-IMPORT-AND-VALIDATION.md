@@ -436,6 +436,22 @@ must handle:
    reference and licence checks; this grants no per-file origin clearance.
    [W229](../work/v1.8.0-root-queue/records/W229.md) records the pinned-clone
    evidence and its limits. D8 authorizes K1 first, not imports of K2 to K5.
+
+   **Identical deleted rename candidates (Root decision R259, 2026-11-01, W244).**
+   After the existing exact-path/name pairing, a single unpaired destination
+   with multiple unpaired deleted byte-identical sources follows every such
+   source into that parent. No candidate is selected or discarded. Each
+   candidate must have the destination's exact Git blob identity, and all
+   candidate histories must clear the unchanged checks, including both graph
+   passes and message triggers. Every candidate path, parent commit and blob
+   is listed in that change's `rename_candidates` history field. A trigger
+   from any candidate retains REVIEW; an incomplete walk fails. Differing
+   bytes do not qualify for this rule; ordinary unique rename handling is
+   unchanged. Multiple unpaired destinations remain an error. Existing
+   history/path/commit bounds, derivation, format, reference and licence
+   checks remain unchanged. This is not human origin sign-off or a general
+   ambiguous-rename exemption. W244 records both etcher predecessor histories.
+
    **The AR 16x texture set.** Pull requests #1809, #1811 and #1889 (2020)
    and the follow-up #1976 (2021) were merged by the contributor whose
    LibVulpes commit `984d6747`, two days before #1809, took its 16x textures

@@ -842,6 +842,128 @@ class UpstreamHistoryWalkTests(unittest.TestCase):
             MODULE.checks.upstream_history(self.repository, self.head, "x/first.png")
 
 
+class IdenticalRenameCandidatesTests(unittest.TestCase):
+    """A single destination can retain all identical deleted origins, not choose one."""
+
+    def setUp(self) -> None:
+        self.temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temporary.cleanup)
+        self.repository = Path(self.temporary.name)
+        _git(self.repository, "init", "-q", "-b", "main")
+        _git(self.repository, "config", "user.name", "Candidate Fixture")
+        _git(self.repository, "config", "user.email", "candidate@example.invalid")
+        _git(self.repository, "config", "core.autocrlf", "false")
+
+    def commit(self, message: str) -> str:
+        _git(self.repository, "add", "--all")
+        _git(self.repository, "commit", "-q", "-m", message)
+        return _git(self.repository, "rev-parse", "HEAD").strip()
+
+    def fixture(self, count: int = 2, unclear: bool = False, different: bool = False):
+        names = [f"old/{index}/picture.png" for index in range(count)]
+        ids = []
+        for index, name in enumerate(names):
+            _write(self.repository / name, b"picture\n" if not different or index == 0 else b"picturf\n")
+            ids.append(self.commit("copied from another project" if unclear and index == 1 else f"draw {index}"))
+        parent = ids[-1]
+        for name in names:
+            (self.repository / name).unlink()
+        _write(self.repository / "new/renamed.png", b"picture\n")
+        head = self.commit("move picture")
+        return names, ids, parent, head
+
+    def test_two_identical_candidates_keep_both_complete_histories(self) -> None:
+        names, ids, parent, head = self.fixture()
+        history, triggers = MODULE.checks.upstream_history(self.repository, head, "new/renamed.png")
+        self.assertEqual([], triggers)
+        self.assertEqual(set(ids + [head]), {row["commit"] for row in history})
+        candidates = next(row for row in history if row["commit"] == head)["rename_candidates"]
+        self.assertEqual(names, [row["path"] for row in candidates])
+        self.assertEqual({parent}, {row["parent"] for row in candidates})
+        self.assertEqual(1, len({row["blob"] for row in candidates}))
+
+    def test_one_unclear_candidate_blocks_clearance(self) -> None:
+        names, ids, _, head = self.fixture(unclear=True)
+        history, triggers = MODULE.checks.upstream_history(self.repository, head, "new/renamed.png")
+        self.assertEqual(set(ids + [head]), {row["commit"] for row in history})
+        self.assertTrue(any("material from another source" in trigger for trigger in triggers))
+        renamed = next(row for row in history if row["commit"] == head)
+        self.assertEqual(names, [row["path"] for row in renamed["rename_candidates"]])
+
+    def test_three_identical_candidates_are_all_followed_and_recorded(self) -> None:
+        names, ids, _, head = self.fixture(count=3)
+        history, triggers = MODULE.checks.upstream_history(self.repository, head, "new/renamed.png")
+        self.assertEqual([], triggers)
+        self.assertEqual(set(ids + [head]), {row["commit"] for row in history})
+        renamed = next(row for row in history if row["commit"] == head)
+        self.assertEqual(names, [row["path"] for row in renamed["rename_candidates"]])
+
+    def test_a_different_byte_does_not_gain_the_identical_candidate_rule(self) -> None:
+        _, ids, _, head = self.fixture(different=True)
+        history, triggers = MODULE.checks.upstream_history(self.repository, head, "new/renamed.png")
+        self.assertEqual([], triggers)
+        # Ordinary unique exact rename: the differing file is not an identical origin.
+        self.assertEqual({head, ids[0]}, {row["commit"] for row in history})
+        self.assertTrue(all("rename_candidates" not in row for row in history))
+
+    def test_candidates_seen_only_against_a_merge_second_parent_are_recorded(self) -> None:
+        # W244-R2, the review's merge-edge.py: A adds two identical files; R (side) replaces both with new.png;
+        # C (main) adds a third identical file with a trigger message; M (on side) merges main and deletes all three.
+        # Against its second parent C, M renames three identical candidates to new.png. Neither graph pass lists M,
+        # yet ADR-061 says every candidate is listed in that change's rename_candidates.
+        for name in ("a", "b"):
+            _write(self.repository / f"old/{name}.png", b"picture\n")
+        a = self.commit("draw a and b")
+        _git(self.repository, "checkout", "-q", "-b", "side")
+        for name in ("a", "b"):
+            (self.repository / f"old/{name}.png").unlink()
+        _write(self.repository / "new.png", b"picture\n")
+        r = self.commit("move picture")
+        _git(self.repository, "checkout", "-q", "main")
+        _write(self.repository / "old/c.png", b"picture\n")
+        c = self.commit("copied from another project")
+        _git(self.repository, "checkout", "-q", "side")
+        # The merge conflicts on the moved directory; the resolution deletes every old picture.
+        subprocess.run(["git", "-C", str(self.repository), "merge", "--no-ff", "--no-commit", "main"],
+                       stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False)
+        _git(self.repository, "rm", "-q", "-f", "--ignore-unmatch", "old/a.png", "old/b.png", "old/c.png", "c.png")
+        m = self.commit("merge main")
+        self.assertEqual([r, c], _git(self.repository, "log", "-1", "--format=%P", m).split())
+        self.assertEqual(["new.png"], _git(self.repository, "ls-tree", "-r", "--name-only", m).split())
+        history, triggers = MODULE.checks.upstream_history(self.repository, m, "new.png")
+        self.assertEqual({a, r, c, m}, {row["commit"] for row in history})
+        self.assertEqual(1, len(triggers))
+        self.assertIn("material from another source", triggers[0])
+        self.assertIn(c[:12], triggers[0])
+        rows = {row["commit"]: row for row in history}
+        self.assertEqual([(a, "old/a.png"), (a, "old/b.png")],
+                         [(item["parent"], item["path"]) for item in rows[r]["rename_candidates"]])
+        self.assertEqual([(c, "old/a.png"), (c, "old/b.png"), (c, "old/c.png")],
+                         [(item["parent"], item["path"]) for item in rows[m]["rename_candidates"]])
+        self.assertEqual(1, len({item["blob"] for row in history for item in row.get("rename_candidates", [])}))
+        self.assertNotIn("rename_candidates", rows[a])
+        self.assertNotIn("rename_candidates", rows[c])
+
+    def test_candidates_count_toward_the_followed_path_budget(self) -> None:
+        # The review's budget-edge.py: the destination and its candidates share the unchanged 64-path budget, and
+        # an incomplete walk fails instead of truncating.
+        for count, fits in ((MODULE.checks.MAX_FOLLOWED_PATHS - 1, True), (MODULE.checks.MAX_FOLLOWED_PATHS, False)):
+            with self.subTest(count=count):
+                shutil.rmtree(self.repository / "old", ignore_errors=True)
+                for index in range(count):
+                    _write(self.repository / f"old/{index:03d}.png", b"budget picture\n")
+                self.commit(f"draw {count}")
+                shutil.rmtree(self.repository / "old")
+                _write(self.repository / f"new/{count}.png", b"budget picture\n")
+                head = self.commit(f"move {count}")
+                if fits:
+                    history, _ = MODULE.checks.upstream_history(self.repository, head, f"new/{count}.png")
+                    self.assertEqual(count, len(next(row for row in history if row["commit"] == head)["rename_candidates"]))
+                else:
+                    with self.assertRaisesRegex(ValueError, f"follows more than {MODULE.checks.MAX_FOLLOWED_PATHS} paths"):
+                        MODULE.checks.upstream_history(self.repository, head, f"new/{count}.png")
+
+
 class V010UnchangedTests(unittest.TestCase):
     """The v0.1.0 importer and its record format are untouched: a v0.1.0 record still verifies with its own tool."""
 

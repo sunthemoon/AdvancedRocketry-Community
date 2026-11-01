@@ -2,6 +2,8 @@ package io.github.sunthemoon.advancedrocketrycommunity.client.elevator;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.math.Axis;
+import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.ElevatorCapsuleCodec.Entry;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.ElevatorEndpointBlockEntity;
@@ -9,9 +11,13 @@ import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.ElevatorR
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -21,16 +27,27 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
+import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
-/** ADR-066 elevator_capsule: stationary countdown cage, no entity, texture, movement or server action. */
+/**
+ * ADR-066 elevator_capsule: one stationary legacy capsule per endpoint with a pending ride (Root decision R263), or
+ * the per-rider line cage when its model or texture is unusable. No entity, movement or server action.
+ */
 @Mod.EventBusSubscriber(modid = ModIdentity.MOD_ID, value = Dist.CLIENT)
 public final class ElevatorCapsuleClient {
     public static final String EFFECT_ID = "elevator_capsule";
+    static final ResourceLocation TEXTURE = CapsuleResources.TEXTURE;
+    /**
+     * The capsule's yaw: upstream {@code TileSpaceElevator} (c5cd5af6) gives the capsule 270 for a north-facing
+     * controller. The modern endpoints have no facing, and the K4 anchor hull is drawn as the north-facing elevator.
+     */
+    static final float CAPSULE_YAW_DEGREES = 270;
+    static final CapsuleResources RESOURCES = new CapsuleResources(AdvancedRocketryCommunity.LOGGER::warn);
     private static final double RANGE_SQUARED = 64.0D * 64.0D;
     private static final int SIDES = 12;
     private static final ElevatorCapsuleClientState STATE = new ElevatorCapsuleClientState();
@@ -60,8 +77,12 @@ public final class ElevatorCapsuleClient {
                 endpoint.discardCapsule(entry.entityId());
             }
         }
-        if (!rides.isEmpty() && minecraft.levelRenderer.getFrustum()
-                .isVisible(new AABB(endpoint.getBlockPos()).inflate(1.5D).expandTowards(0, 2, 0))) {
+        AABB visible = new AABB(endpoint.getBlockPos()).inflate(1.5D).expandTowards(0, 2, 0);
+        CapsuleMesh mesh = RESOURCES.mesh().orElse(null);
+        if (mesh != null) {
+            visible = visible.minmax(capsuleBox(mesh, endpoint.getBlockPos()));
+        }
+        if (!rides.isEmpty() && minecraft.levelRenderer.getFrustum().isVisible(visible)) {
             STATE.offer(new ElevatorCapsuleClientState.Candidate(endpoint.getBlockPos().asLong(), distance, rides));
         }
     }
@@ -82,28 +103,58 @@ public final class ElevatorCapsuleClient {
             return;
         }
         var buffers = minecraft.renderBuffers().bufferSource();
+        // Checked once per resource reload (W244-R4); a missing or unusable model or texture keeps the line cage.
+        CapsuleMesh mesh = RESOURCES.mesh().orElse(null);
+        var renderType = mesh != null ? RenderType.entityCutoutNoCull(TEXTURE) : RenderType.lines();
+        Vec3 camera = event.getCamera().getPosition();
         try {
-            for (var effect : STATE.effects()) {
-                BlockPos position = BlockPos.of(effect.endpoint());
-                // CHECK does not create a missing block entity; false never loads a chunk.
-                LevelChunk chunk = current.getChunkSource().getChunk(position.getX() >> 4, position.getZ() >> 4, false);
-                if (chunk == null || !(chunk.getBlockEntity(position, LevelChunk.EntityCreationType.CHECK)
-                        instanceof ElevatorEndpointBlockEntity endpoint) || endpoint.isRemoved()) {
-                    continue;
+            if (mesh != null) {
+                for (var capsule : STATE.capsules()) {
+                    BlockPos position = BlockPos.of(capsule.endpoint());
+                    ElevatorEndpointBlockEntity endpoint = endpoint(current, position);
+                    int remaining = -1;
+                    for (Entry ride : endpoint == null ? List.<Entry>of() : capsule.rides()) {
+                        Entry live = live(endpoint, ride.entityId());
+                        if (live != null && player(current, endpoint, live.entityId()) != null
+                                && (remaining < 0 || live.remainingTicks() < remaining)) {
+                            remaining = live.remainingTicks();
+                        }
+                    }
+                    if (remaining < 0 || !event.getFrustum().isVisible(capsuleBox(mesh, position))) {
+                        continue;
+                    }
+                    drawCapsule(event.getPoseStack(), buffers.getBuffer(renderType), mesh, position, camera, remaining,
+                            LevelRenderer.getLightColor(current, position.above(2)));
                 }
-                Entry live = endpoint.capsulesForRender().stream()
-                        .filter(entry -> entry.entityId() == effect.ride().entityId()).findFirst().orElse(null);
-                Player rider = live == null ? null : player(current, endpoint, live.entityId());
-                if (rider == null || !event.getFrustum().isVisible(rider.getBoundingBox().inflate(0.5D))) {
-                    continue;
+            } else {
+                for (var effect : STATE.effects()) {
+                    ElevatorEndpointBlockEntity endpoint = endpoint(current, BlockPos.of(effect.endpoint()));
+                    Entry live = endpoint == null ? null : live(endpoint, effect.ride().entityId());
+                    Player rider = live == null ? null : player(current, endpoint, live.entityId());
+                    if (rider == null || !event.getFrustum().isVisible(rider.getBoundingBox().inflate(0.5D))) {
+                        continue;
+                    }
+                    drawCage(event.getPoseStack(), buffers.getBuffer(renderType), rider, live.remainingTicks(),
+                            event.getPartialTick(), camera);
                 }
-                draw(event.getPoseStack(), buffers.getBuffer(RenderType.lines()), rider, live.remainingTicks(),
-                        event.getPartialTick(), event.getCamera().getPosition());
             }
-            buffers.endBatch(RenderType.lines());
+            buffers.endBatch(renderType);
         } finally {
             STATE.clear();
         }
+    }
+
+    @Nullable
+    private static ElevatorEndpointBlockEntity endpoint(ClientLevel current, BlockPos position) {
+        // CHECK does not create a missing block entity; false never loads a chunk.
+        LevelChunk chunk = current.getChunkSource().getChunk(position.getX() >> 4, position.getZ() >> 4, false);
+        return chunk != null && chunk.getBlockEntity(position, LevelChunk.EntityCreationType.CHECK)
+                instanceof ElevatorEndpointBlockEntity endpoint && !endpoint.isRemoved() ? endpoint : null;
+    }
+
+    @Nullable
+    private static Entry live(ElevatorEndpointBlockEntity endpoint, int entityId) {
+        return endpoint.capsulesForRender().stream().filter(entry -> entry.entityId() == entityId).findFirst().orElse(null);
     }
 
     private static Player player(ClientLevel current, ElevatorEndpointBlockEntity endpoint, int id) {
@@ -112,16 +163,66 @@ public final class ElevatorCapsuleClient {
                 ? rider : null;
     }
 
-    /** Two fixed rings and four uprights (56 vertices per rider). Only brightness changes with the countdown. */
-    private static void draw(PoseStack pose, VertexConsumer vertices, Player rider, int remaining, float partialTick,
-                             Vec3 camera) {
+    /** The countdown tint of the cage, kept on the capsule: cyan at the request, near white at departure. */
+    private static float red(int remaining) {
+        return 0.25F + 0.7F * (1.0F - remaining / (float) ElevatorRules.RIDE_COUNTDOWN_TICKS);
+    }
+
+    /**
+     * Upstream {@code RenderElevatorCapsule.doRender} (c5cd5af6): translate to the capsule entity's position plus
+     * (0, 1, 0), then rotate by its yaw about +Y. The entity position's modern counterpart is the endpoint's arrival
+     * point, the platform centre where riders board and arrive.
+     */
+    static void place(PoseStack pose, BlockPos endpoint, Vec3 camera) {
+        Vec3 capsule = ElevatorEndpointBlockEntity.arrival(endpoint);
+        pose.translate(capsule.x - camera.x, capsule.y + 1 - camera.y, capsule.z - camera.z);
+        pose.mulPose(Axis.YP.rotationDegrees(CAPSULE_YAW_DEGREES));
+    }
+
+    /** The world box of the placed capsule: its model box's corners turned by the same yaw. */
+    static AABB capsuleBox(CapsuleMesh mesh, BlockPos endpoint) {
+        var b = mesh.bounds();
+        double radians = Math.toRadians(CAPSULE_YAW_DEGREES), cos = Math.cos(radians), sin = Math.sin(radians);
+        double minX = Double.MAX_VALUE, minZ = Double.MAX_VALUE, maxX = -Double.MAX_VALUE, maxZ = -Double.MAX_VALUE;
+        for (double x : new double[] {b.minX(), b.maxX()}) {
+            for (double z : new double[] {b.minZ(), b.maxZ()}) {
+                double turnedX = cos * x + sin * z, turnedZ = -sin * x + cos * z;
+                minX = Math.min(minX, turnedX); maxX = Math.max(maxX, turnedX);
+                minZ = Math.min(minZ, turnedZ); maxZ = Math.max(maxZ, turnedZ);
+            }
+        }
+        Vec3 capsule = ElevatorEndpointBlockEntity.arrival(endpoint).add(0, 1, 0);
+        return new AABB(capsule.x + minX, capsule.y + b.minY(), capsule.z + minZ,
+                capsule.x + maxX, capsule.y + b.maxY(), capsule.z + maxZ).inflate(1.0E-3);
+    }
+
+    /** One legacy Capsule group: four vertices per face, at most {@link CapsuleMesh#MAX_FACES} faces. */
+    private static void drawCapsule(PoseStack pose, VertexConsumer vertices, CapsuleMesh mesh, BlockPos endpoint,
+                                    Vec3 camera, int remaining, int light) {
+        pose.pushPose();
+        place(pose, endpoint, camera);
+        float red = red(remaining);
+        var matrix = pose.last().pose();
+        var normal = pose.last().normal();
+        for (var face : mesh.faces()) {
+            for (var corner : face.corners()) {
+                vertices.vertex(matrix, corner.x(), corner.y(), corner.z()).color(red, 0.9F, 1.0F, 1.0F)
+                        .uv(corner.u(), corner.v()).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(light)
+                        .normal(normal, corner.nx(), corner.ny(), corner.nz()).endVertex();
+            }
+        }
+        pose.popPose();
+    }
+
+    /** The original fallback: two rings and four uprights of lines, 56 vertices per rider. */
+    private static void drawCage(PoseStack pose, VertexConsumer vertices, Player rider, int remaining, float partialTick,
+                                 Vec3 camera) {
         pose.pushPose();
         pose.translate(Mth.lerp(partialTick, rider.xo, rider.getX()) - camera.x,
                 Mth.lerp(partialTick, rider.yo, rider.getY()) - camera.y,
                 Mth.lerp(partialTick, rider.zo, rider.getZ()) - camera.z);
-        float progress = 1.0F - remaining / (float) ElevatorRules.RIDE_COUNTDOWN_TICKS;
-        float red = 0.25F + 0.7F * progress;
-        double top = rider.getBbHeight() + 0.25D;
+        float red = red(remaining);
+        double top = Mth.clamp(rider.getBbHeight() + 0.25D, 0.5D, 3.0D);
         for (int side = 0; side < SIDES; side++) {
             double a = side * Math.PI * 2 / SIDES;
             double b = (side + 1) * Math.PI * 2 / SIDES;
@@ -184,5 +285,17 @@ public final class ElevatorCapsuleClient {
     private static void clear() {
         STATE.clear();
         level = new WeakReference<>(null);
+    }
+
+    /** Registers the once-per-reload capsule check on the mod bus. */
+    @Mod.EventBusSubscriber(modid = ModIdentity.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+    public static final class Setup {
+        private Setup() {
+        }
+
+        @SubscribeEvent
+        public static void reload(RegisterClientReloadListenersEvent event) {
+            event.registerReloadListener(RESOURCES);
+        }
     }
 }

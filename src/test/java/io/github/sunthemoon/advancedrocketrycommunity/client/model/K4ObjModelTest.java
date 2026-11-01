@@ -218,7 +218,7 @@ class K4ObjModelTest {
 
     @Test void completeCatalogStaysWithinOriginalBudgetsIncludingHiddenElevatorTether() throws Exception {
         var set = ObjModelSet.check(ObjModelFixture.CATALOG, source(Set.of()));
-        assertEquals(15, set.models().size()); assertTrue(set.absent().isEmpty()); assertEquals(34_300, set.vertices());
+        assertEquals(16, set.models().size()); assertTrue(set.absent().isEmpty()); assertEquals(35_268, set.vertices());
         assertTrue(set.vertices() < ObjModelCheck.MAX_SET_VERTICES); assertTrue(set.bytes() < ObjModelCheck.MAX_SET_BYTES);
         var elevator = set.models().get("elevator_anchor"); assertEquals(8_776, elevator.summary().budgetVertices());
         assertTrue(ObjModelCheck.checkObj(elevator.parserInput(), "idle elevator").budgetVertices() < 8_776);

@@ -64,6 +64,11 @@ public record ObjModelFixture(String id, ResourceLocation kind, ResourceLocation
             ModIdentity.id("models/lathe.obj"), true, true, 1, 1, -1, 0,
             new ObjModelCheck.Bounds(-0.054134, -0.054134, -1, 1, 1.625, 3), ModIdentity.id("textures/block/lathe.png"), ENTITY_CUTOUT, 90);
 
+    // RendererPrecisionLaserEtcher's idle transform, reflected across the modern pattern width.
+    public static final ObjModelFixture PRECISION_LASER_ETCHER = new ObjModelFixture("precision_laser_etcher", ModIdentity.id("precision_laser_etcher"),
+            ModIdentity.id("models/precisionlaseretcher.obj"), true, true, 1, -1, 0, 0,
+            new ObjModelCheck.Bounds(-3, 0, -3, 0, 2.25, 0), ModIdentity.id("textures/block/precision_laser_etcher.png"), ENTITY_CUTOUT, 270, 3);
+
     /*
      * K3: each model is its 1.12 renderer's placement mirrored across the pattern's width, about the controller, like
      * the K2 machines (Root decision R248, after review findings W236-R1 and W236-R2). K3ObjModelTest pins this per
@@ -107,7 +112,7 @@ public record ObjModelFixture(String id, ResourceLocation kind, ResourceLocation
             ModIdentity.id("models/spaceelevator.obj"), true, true, 1, 1, 0, 5,
             new ObjModelCheck.Bounds(-5, -1, -4.999871, 4.999871, 508, 3.999871), ModIdentity.id("textures/block/railgun_front.png"), ENTITY_CUTOUT, 90, 2);
 
-    public static final List<ObjModelFixture> CATALOG = List.of(CENTRIFUGE, CHEMICAL_REACTOR, CRYSTALLIZER, CUTTING_MACHINE, LATHE,
+    public static final List<ObjModelFixture> CATALOG = List.of(CENTRIFUGE, CHEMICAL_REACTOR, CRYSTALLIZER, CUTTING_MACHINE, LATHE, PRECISION_LASER_ETCHER,
             ASTROBODY_DATA_PROCESSOR, OBSERVATORY, PLANETARY_BEACON, SOLAR_ARRAY,
             BLACK_HOLE_GENERATOR, ORBITAL_LASER_DRILL, PRECISION_ASSEMBLER, RAILGUN, ROLLING_MACHINE, ELEVATOR_ANCHOR);
 

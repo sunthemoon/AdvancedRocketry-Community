@@ -258,8 +258,8 @@ class K3ObjModelTest {
 
     @Test void completeCatalogRemainsWithinUnchangedBudgets() throws Exception {
         var result = ObjModelSet.check(ObjModelFixture.CATALOG, source(Set.of()));
-        assertEquals(15, result.models().size()); assertTrue(result.absent().isEmpty());
-        assertEquals(34_300, result.vertices());
+        assertEquals(16, result.models().size()); assertTrue(result.absent().isEmpty());
+        assertEquals(35_268, result.vertices());
         assertTrue(result.vertices() < ObjModelCheck.MAX_SET_VERTICES); assertTrue(result.bytes() < ObjModelCheck.MAX_SET_BYTES);
     }
     @Test void beaconTextureIsExactlyTheExistingNewControllerArt() throws Exception {

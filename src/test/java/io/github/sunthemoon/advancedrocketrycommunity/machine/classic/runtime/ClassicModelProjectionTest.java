@@ -31,14 +31,14 @@ class ClassicModelProjectionTest {
             assertTrue(ClassicModelProjection.projects(ModIdentity.id(kind)), kind);
             assertTrue(ClassicModelProjection.footprint(ModIdentity.id(kind)).isPresent(), kind);
         }
-        for (String kind : new String[] {"precision_laser_etcher", "rolling_machine", "arc_furnace"}) {
+        for (String kind : new String[] {"rolling_machine", "arc_furnace"}) {
             assertFalse(ClassicModelProjection.projects(ModIdentity.id(kind)), kind);
             assertTrue(ClassicModelProjection.footprint(ModIdentity.id(kind)).isEmpty(), kind);
         }
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"chemical_reactor", "crystallizer", "cutting_machine", "lathe", "observatory", "astrobody_data_processor"})
+    @ValueSource(strings = {"chemical_reactor", "crystallizer", "cutting_machine", "lathe", "observatory", "astrobody_data_processor", "precision_laser_etcher"})
     void clientProjectionIsStrictTransientAndNotAuthorityForEveryK2Kind(String kind) {
         var definition = switch (kind) {
             case "chemical_reactor" -> ClassicMachineDefinition.CHEMICAL_REACTOR;
@@ -46,6 +46,7 @@ class ClassicModelProjectionTest {
             case "cutting_machine" -> ClassicMachineDefinition.CUTTING;
             case "observatory" -> ClassicMachineDefinition.OBSERVATORY;
             case "astrobody_data_processor" -> ClassicMachineDefinition.ASTROBODY_DATA_PROCESSOR;
+            case "precision_laser_etcher" -> ClassicMachineDefinition.PRECISION_LASER_ETCHER;
             default -> ClassicMachineDefinition.LATHE;
         };
         var state = new ClassicControllerBlock(BlockBehaviour.Properties.of()).defaultBlockState();
@@ -67,6 +68,8 @@ class ClassicModelProjectionTest {
     }
 
     @Test void encodesOneCanonicalByteAndDecodesNothingElse() {
+        assertTrue(ClassicModelProjection.projects(ModIdentity.id("precision_laser_etcher")));
+        assertTrue(ClassicModelProjection.footprint(ModIdentity.id("precision_laser_etcher")).isPresent());
         var tag = new CompoundTag();
         ClassicModelProjection.encode(tag, false);
         assertTrue(tag.isEmpty());

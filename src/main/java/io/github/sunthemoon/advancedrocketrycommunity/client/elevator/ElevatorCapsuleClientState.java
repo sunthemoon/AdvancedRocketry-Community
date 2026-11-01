@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -28,6 +29,13 @@ public final class ElevatorCapsuleClientState {
     }
 
     public record Effect(long endpoint, Entry ride) { }
+
+    /** One stationary capsule at an endpoint, with the rides it shows (R263). */
+    public record Capsule(long endpoint, List<Entry> rides) {
+        public Capsule {
+            rides = List.copyOf(rides);
+        }
+    }
 
     public void offer(Candidate candidate) {
         if (candidate.rides().isEmpty()) {
@@ -58,6 +66,20 @@ public final class ElevatorCapsuleClientState {
                 }
             }
         }
+        return List.copyOf(result);
+    }
+
+    /**
+     * One capsule per endpoint that keeps at least one effect, nearest first, however many riders it has: at most
+     * {@link #MAX_ENDPOINTS}. Each rider still belongs to its nearest endpoint only.
+     */
+    public List<Capsule> capsules() {
+        Map<Long, List<Entry>> grouped = new LinkedHashMap<>();
+        for (Effect effect : effects()) {
+            grouped.computeIfAbsent(effect.endpoint(), endpoint -> new ArrayList<>()).add(effect.ride());
+        }
+        List<Capsule> result = new ArrayList<>(grouped.size());
+        grouped.forEach((endpoint, rides) -> result.add(new Capsule(endpoint, rides)));
         return List.copyOf(result);
     }
 
