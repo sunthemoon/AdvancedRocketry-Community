@@ -43,8 +43,11 @@ public final class RocketRuntime {
             level.getChunkSource().getChunkNow(position.getX() >> 4, position.getZ() >> 4);
         }
     }
-    static BayPassengerExitState.Scope internalPassengerMove(ServerPlayer player) {
-        return passengerExits().map(exits -> exits.internal(player)).orElse(() -> { });
+    /** A trusted synchronous passenger move (W230 section 5). Close it in the move's finally, as try-with-resources does. */
+    public interface PassengerMoveScope extends AutoCloseable { @Override void close(); }
+    /** Entering revokes the player's live exit; until closed, a detach is never a voluntary bay exit. */
+    public static PassengerMoveScope internalPassengerMove(ServerPlayer player) {
+        return passengerExits().<PassengerMoveScope>map(exits -> exits.internal(player)::close).orElse(() -> { });
     }
     static void passengerTransition(ServerPlayer player) { passengerExits().ifPresent(exits -> exits.revoke(player)); }
 
