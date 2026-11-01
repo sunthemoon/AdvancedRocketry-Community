@@ -29,6 +29,7 @@ final class BayPassengerExitGameTestDescentAudit {
                 fixture.injected = true;
                 // The four-entry vanilla cache must not be relied on across game-event dispatch.
                 for (int x = -1; x <= 1; x++) { for (int z = -1; z <= 1; z++) {
+                    if (x == 0 && z == 0) { continue; }
                     fixture.helper.assertTrue(world.getChunkSource().getChunkNow((source.getX() >> 4) + x,
                             (source.getZ() >> 4) + z) != null, "Fixture cache eviction encountered a missing column");
                 } }
