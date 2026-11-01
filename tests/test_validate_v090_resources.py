@@ -61,6 +61,25 @@ class V090ResourceAuditTests(unittest.TestCase):
         for name in ("loader_sprite", "model_sprite"):
             self.assertTrue(any(f"textures/block/{name}.png" in error for error in errors), errors)
 
+    def test_obj_loader_keys_are_metadata_and_mtl_override_is_refused_clearly(self) -> None:
+        # W249-R9: Forge's ObjLoader reads these top-level keys; none of them names a texture.
+        errors = self._obj_fixture({"loader": "forge:obj",
+                                   "model": "advancedrocketrycommunity:models/block/motor.obj",
+                                   "mtl_override": "advancedrocketrycommunity:models/block/other.mtl",
+                                   "flip_v": "advancedrocketrycommunity:block/flip_v",
+                                   "automatic_culling": False, "shade_quads": True, "emissive_ambient": True})
+        self.assertEqual(["forge:obj mtl_override is not supported; the atlas test does not follow it either, from "
+                          "assets/advancedrocketrycommunity/models/block/motor.json"], errors)
+
+    def test_obj_texture_slots_named_like_loader_keys_still_require_pngs(self) -> None:
+        errors = self._obj_fixture({"loader": "forge:obj",
+                                   "model": "advancedrocketrycommunity:models/block/motor.obj",
+                                   "textures": {"mtl_override": "advancedrocketrycommunity:block/override_sprite",
+                                                "flip_v": "advancedrocketrycommunity:block/flip_sprite"}})
+        self.assertEqual(2, len(errors))
+        for name in ("override_sprite", "flip_sprite"):
+            self.assertTrue(any(f"textures/block/{name}.png" in error for error in errors), errors)
+
     def test_repository_resource_contract_passes(self) -> None:
         summary, errors = audit_resources(ROOT)
 
