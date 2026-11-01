@@ -3,7 +3,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.datagen;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/** W27c1: the messages of {@code /arce bay receipt retire-rejected} (W27A-DESIGN section 5, N5), in English and Chinese. */
+/** Bay receipt commands and later shared-admission messages, in English and Chinese. */
 public final class V180BayReceiptLanguage {
     private static final String KEY = "message.advancedrocketrycommunity.bay_receipt.";
     private V180BayReceiptLanguage() { }
@@ -13,6 +13,10 @@ public final class V180BayReceiptLanguage {
         entries.put("message.advancedrocketrycommunity.escrow.floor_owner_pending_full", chinese
                 ? "该所有者的待处理操作已达上限；请先完成已有操作，再创建新的下限退役操作。"
                 : "The owner's pending operations are full; finish existing work before starting a new floor retirement.");
+        // R244 extends the live language without changing the W82 provenance record's original key set.
+        entries.put("message.advancedrocketrycommunity.fluid_fuel_loader.owner_pending_full", chinese
+                ? "你的待处理操作已达上限；未移动燃料。请等待已有操作完成，或联系管理员。"
+                : "Your pending operations are full; no fuel moved. Wait for earlier work or ask an administrator.");
         entries.put(KEY + "requested", chinese ? "正在退役已拒绝收据 %s（卫星 %s）；结果将在确切确认后报告"
                 : "Retiring rejected receipt %s for satellite %s; the result follows its exact acknowledgement");
         entries.put(KEY + "retired", chinese ? "已退役已拒绝收据 %s（卫星 %s）" : "Retired rejected receipt %s for satellite %s");

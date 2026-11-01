@@ -100,8 +100,11 @@ class V180FluidFuelLoaderDataTest {
 
     @Test
     void everyStatusAndMessageExistsInBothLanguagesAndTheOutputIsCommitted() throws Exception {
-        Map<String, String> english = V180FluidFuelLoaderData.language(false);
-        Map<String, String> chinese = V180FluidFuelLoaderData.language(true);
+        Map<String, String> english = new java.util.LinkedHashMap<>(V180FluidFuelLoaderData.language(false));
+        Map<String, String> chinese = new java.util.LinkedHashMap<>(V180FluidFuelLoaderData.language(true));
+        // Later admission keys are separate from W82's provenance-pinned original language set.
+        english.putAll(V180BayReceiptLanguage.entries(false));
+        chinese.putAll(V180BayReceiptLanguage.entries(true));
         assertEquals(english.keySet(), chinese.keySet());
         for (FluidFuelLoaderStatus status : FluidFuelLoaderStatus.values()) {
             assertFalse(english.getOrDefault(status.translationKey(), "").isBlank(), status.name());
