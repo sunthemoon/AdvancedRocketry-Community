@@ -125,6 +125,10 @@ final class BayPassengerExitService {
         BayPassengerExitFeedback.completed(slot, BayPassengerExitFeedback.outcome(result.status(), permit.transfer != null,
                 row != null, slot.descent != null));
     }
+    /** W242-R10: a held self-exit's own exit message replaces the flight request's "accepted" action-bar line. */
+    static final io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightRequestResult HELD_EXIT =
+            new io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightRequestResult(
+                    io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightRequestCode.SUCCESS, 0);
     io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightRequestResult heldLeave(ServerPlayer player, RocketEntity rocket) {
         if (!thread() || !BayReceipts.holdsRocket(server, rocket.assemblyTransactionId().orElse(null))) { return null; }
         var code = io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightRequestCode.NOT_BOARDED;
@@ -132,7 +136,7 @@ final class BayPassengerExitService {
             code = io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightRequestCode.TRANSFER_JOURNAL_BLOCKED;
             if (!BayPassengerExitPermit.guarded(player) && !RocketReleaseAccess.fenced(rocket)) {
                 player.stopRiding();
-                if (player.getVehicle() != rocket) { code = io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightRequestCode.SUCCESS; }
+                if (player.getVehicle() != rocket) { return HELD_EXIT; }
             }
         }
         return new io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightRequestResult(code, 0);

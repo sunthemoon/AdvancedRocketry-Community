@@ -58,6 +58,33 @@ final class BayPassengerExitGameTestAudit {
                 "Trusted travel from a held rocket created an exit row");
     }
 
+    /** The rider's chat lines since the last drain, as "chat:key" or "overlay:key"; at most 65,536 packets. */
+    static List<String> chat(BayPassengerExitGameTestFixture fixture, ServerPlayer player) {
+        var channel = fixture.channels.get(fixture.players.indexOf(player));
+        channel.runPendingTasks();
+        var lines = new ArrayList<String>();
+        for (int count = 0; count < 1 << 16; count++) {
+            Object packet = channel.readOutbound();
+            if (packet == null) { return lines; }
+            try {
+                if (packet instanceof net.minecraft.network.protocol.game.ClientboundSystemChatPacket line
+                        && line.content().getContents() instanceof net.minecraft.network.chat.contents.TranslatableContents text) {
+                    lines.add((line.overlay() ? "overlay:" : "chat:") + text.getKey());
+                }
+            } finally { io.netty.util.ReferenceCountUtil.release(packet); }
+        }
+        throw new IllegalStateException("Bay-exit packet drain reached its bound");
+    }
+
+    /** W242-R10: a held menu LEAVE reports only its exit message, not "Flight request accepted". */
+    static void heldLeaveFeedback(BayPassengerExitGameTestFixture fixture) {
+        var lines = chat(fixture, fixture.player);
+        fixture.helper.assertTrue(lines.stream().filter(line -> line.contains(".bay_exit.")).toList()
+                        .equals(List.of("chat:message.advancedrocketrycommunity.bay_exit.safe"))
+                && !lines.contains("overlay:" + io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightRequestCode.SUCCESS.translationKey()),
+                "Held LEAVE feedback was not exactly the exit message: " + lines);
+    }
+
     /** W242-R1: the rocket column's cache slot and tickets at the fixture's own dismount event, before any W242 code. */
     record Mount(long column, int slot, List<String> tickets) { }
 

@@ -261,9 +261,11 @@ final class BayPassengerExitGameTestFixture {
             done(); return;
         }
         if (scenario == Case.MENU) {
+            BayPassengerExitGameTestAudit.chat(this, player);
             RocketRuntime.openFlightMenu(player, flight.source());
             RocketRuntime.requestFlightIntent(player, flight.source().getId(), RocketFlightAction.LEAVE,
                     flight.record().sourceFlightData().currentTarget().orElseThrow(), UUID.randomUUID());
+            BayPassengerExitGameTestAudit.heldLeaveFeedback(this);
         } else if (scenario == Case.BYPASS || scenario == Case.STALE_BYPASS) {
             player.removeVehicle();
             if (scenario == Case.STALE_BYPASS) {
