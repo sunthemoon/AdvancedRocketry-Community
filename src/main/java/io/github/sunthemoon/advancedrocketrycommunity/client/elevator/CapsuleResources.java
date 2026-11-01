@@ -14,8 +14,8 @@ import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
 
 /**
- * The capsule's model and texture, read once per client resource reload, off the render thread. A good pair publishes
- * the mesh; a missing or unusable model or group, or a missing texture, publishes nothing, and the countdown keeps the
+ * The capsule's model and texture, checked once per client resource reload (W244-R4), off the render thread. A good
+ * pair publishes the mesh; a missing or unusable model, group or texture publishes nothing, and the countdown keeps the
  * line cage. Rendering only reads the published mesh.
  */
 final class CapsuleResources extends SimplePreparableReloadListener<Optional<CapsuleMesh>> {
@@ -35,7 +35,7 @@ final class CapsuleResources extends SimplePreparableReloadListener<Optional<Cap
         return Optional.ofNullable(mesh);
     }
 
-    /** Reads each resource once, within the model set's byte limit, before anything is published. */
+    /** Reads each resource once, within the model set's byte limit, and checks both before anything is published. */
     static CapsuleMesh load(ObjModelSet.Source source) throws ObjModelException {
         var obj = source.read(MODEL, ObjModelCheck.MAX_SET_BYTES)
                 .orElseThrow(() -> new ObjModelException(MODEL + " is missing"));
@@ -44,6 +44,8 @@ final class CapsuleResources extends SimplePreparableReloadListener<Optional<Cap
         var png = source.read(TEXTURE, ObjModelCheck.MAX_SET_BYTES)
                 .orElseThrow(() -> new ObjModelException(TEXTURE + " is missing"));
         if (png.length > ObjModelCheck.MAX_SET_BYTES) { throw new ObjModelException(TEXTURE + ": more than " + ObjModelCheck.MAX_SET_BYTES + " bytes"); }
+        // W244-R4: an unreadable texture keeps the line cage too, not only a missing one.
+        ObjModelCheck.checkPng(png, TEXTURE.toString());
         return mesh;
     }
 

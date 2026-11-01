@@ -103,7 +103,7 @@ public final class ElevatorCapsuleClient {
             return;
         }
         var buffers = minecraft.renderBuffers().bufferSource();
-        // Read once per resource reload; a missing or unusable model, or a missing texture, keeps the line cage.
+        // Checked once per resource reload (W244-R4); a missing or unusable model or texture keeps the line cage.
         CapsuleMesh mesh = RESOURCES.mesh().orElse(null);
         var renderType = mesh != null ? RenderType.entityCutoutNoCull(TEXTURE) : RenderType.lines();
         Vec3 camera = event.getCamera().getPosition();
