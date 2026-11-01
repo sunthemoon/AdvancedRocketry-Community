@@ -32,6 +32,17 @@ public final class RocketRuntime {
         return rider instanceof ServerPlayer player ? passengerExits().map(exits -> exits.location(player, rocket))
                 .orElse(rocket.position()) : rocket.position().add(1.5, 0, 0);
     }
+    /**
+     * W242-R1: called after vanilla's dismount game event, whose dispatch can push this column out of the four-entry
+     * recent-chunk cache. Vanilla's next step, the dismount portal read, is a creating lookup that adds an UNKNOWN ticket
+     * on a cache miss. {@code getChunkNow} never creates, waits or adds a ticket; it only re-caches an already FULL column.
+     */
+    public static void passengerRemoved(RocketEntity rocket) {
+        if (rocket.level() instanceof ServerLevel level) {
+            var position = rocket.blockPosition();
+            level.getChunkSource().getChunkNow(position.getX() >> 4, position.getZ() >> 4);
+        }
+    }
     static BayPassengerExitState.Scope internalPassengerMove(ServerPlayer player) {
         return passengerExits().map(exits -> exits.internal(player)).orElse(() -> { });
     }

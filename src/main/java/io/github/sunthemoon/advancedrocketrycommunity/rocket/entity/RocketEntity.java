@@ -624,6 +624,13 @@ public final class RocketEntity extends Entity implements MenuProvider {
         return RocketRuntime.bayPassengerExitLocation(this, passenger);
     }
 
+    /** W242-R1: super dispatches the dismount game event; the server then re-caches this rocket's own loaded column. */
+    @Override
+    protected void removePassenger(Entity passenger) {
+        super.removePassenger(passenger);
+        if (!level().isClientSide) { RocketRuntime.passengerRemoved(this); }
+    }
+
     @Override
     public boolean hurt(DamageSource source, float amount) {
         return false;
