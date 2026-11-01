@@ -89,20 +89,22 @@ public final class BayExitSelector {
 
     private Result selectOwned(Context context) {
         if (context.result != null) { return context.result; }
-        if (!live.contains(context) || !context.current.getAsBoolean()) {
-            context.result = refusal(context, Status.STALE);
-            return context.result;
-        }
         if (active != null) {
             // The same in-flight decision has no position yet. PENDING is not a placement/fallback instruction.
             if (active == context) { return refusal(context, Status.PENDING); }
             context.result = refusal(context, Status.REENTRANT_REFUSED);
             return context.result;
         }
+        // Validity is external code: guard even the preflight that allocates no attempt or probe.
         active = context;
-        long sequence = ++attempts;
+        long sequence = 0;
         var before = budget.usage();
         try {
+            if (!live.contains(context) || !context.current.getAsBoolean()) {
+                context.result = refusal(context, Status.STALE);
+                return context.result;
+            }
+            sequence = ++attempts;
             Request r = context.request;
             List<Position> candidates = BayExitCandidates.ordered(r.rocket, r.hint, r.anchor);
             boolean exhausted = false;
@@ -192,7 +194,12 @@ public final class BayExitSelector {
         budget.enterWork();
         try {
             for (Context context : batch) {
-                if (!context.current.getAsBoolean()) { release(context); }
+                boolean current;
+                // The END preflight has the same callback boundary as synchronous selection.
+                active = context;
+                try { current = context.current.getAsBoolean(); }
+                finally { active = null; }
+                if (!current) { release(context); }
                 else if (context.result == null && select(context).status != Status.STALE) { completion.accept(context); }
             }
         } finally {

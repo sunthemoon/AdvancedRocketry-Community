@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.exit.BayExitCandidates.*;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.exit.BayExitSafety.*;
@@ -131,6 +132,81 @@ final class BayExitSelectorTest {
         holder[0] = selector; contexts[0] = selector.capture(REQUEST, () -> true); contexts[1] = selector.capture(REQUEST, () -> true);
         assertResult(selector.select(contexts[0]), SAFE, 1, 1, 1, 1);
         assertEquals(new BayExitBudget.Usage(1, 1, 1), budget.usage());
+    }
+
+    // Check the initial preflight, the post-probe validation, and the END preflight separately.
+    @ParameterizedTest @CsvSource({"false, 1", "true, 1", "false, 2", "true, 2", "false, 0", "true, 0"})
+    void validityReentryCannotDuplicateDecisionsOrLeaveReservations(boolean different, int checkpoint) {
+        var budget = new BayExitBudget(0); var contexts = new Context[2]; var nested = new Result[1];
+        var atReentry = new BayExitBudget.Usage[2]; var once = new AtomicBoolean(); int[] validations = {0};
+        Port port = (box, probe, reservations) -> {
+            if (!probe.reserveReads(1)) { return Verdict.UNPROVED; }
+            if (!reservations.clear(box, probe)) { return Verdict.UNSAFE; }
+            return probe.visit() ? Verdict.SAFE : Verdict.UNPROVED;
+        };
+        var selector = new BayExitSelector(budget, port);
+        contexts[0] = selector.capture(REQUEST, () -> {
+            if (++validations[0] == Math.max(1, checkpoint) && once.compareAndSet(false, true)) {
+                atReentry[0] = budget.usage(); nested[0] = selector.select(contexts[different ? 1 : 0]);
+                atReentry[1] = budget.usage();
+                assertThrows(IllegalStateException.class, () -> budget.advanceTick(1));
+                assertThrows(IllegalStateException.class, () -> selector.applied(contexts[0]));
+                assertThrows(IllegalStateException.class, () -> selector.release(contexts[0]));
+                assertThrows(IllegalStateException.class, () -> selector.drain(c -> fail("Nested drain")));
+            }
+            return true;
+        });
+        if (different) {
+            contexts[1] = selector.capture(REQUEST, () -> { assertNotNull(nested[0], "Nested validity must not run"); return true; });
+        }
+        var completed = new ArrayList<Context>();
+        if (checkpoint == 0) { selector.drain(completed::add); }
+        else { selector.select(contexts[0]); }
+        var outer = contexts[0].result().orElseThrow();
+        selector.release(contexts[0]);
+        assertAll(
+                () -> assertResult(nested[0], different ? REENTRANT_REFUSED : PENDING, 0, 0, different ? 2 : 1, 0),
+                () -> assertEquals(atReentry[0], atReentry[1]),
+                () -> assertResult(outer, SAFE, 1, 1, 1, 1),
+                () -> assertSame(outer, selector.select(contexts[0])),
+                () -> assertEquals(checkpoint == 0 ? List.of(contexts[0]) : List.of(), completed),
+                () -> {
+                    if (different) { assertSame(nested[0], selector.select(contexts[1])); }
+                    assertResult(selector.select(selector.capture(REQUEST, () -> true)), SAFE, 1, 2, different ? 3 : 2, 1);
+                    assertEquals(new BayExitBudget.Usage(2, 2, 2), budget.usage());
+                });
+    }
+
+    @ParameterizedTest @ValueSource(booleans = {false, true})
+    void failedPreflightReleasesDecisionAndBudgetGuardsWithoutStartingAnAttempt(boolean exceptional) {
+        var budget = new BayExitBudget(0); var port = new CountingPort(); port.available.add(C.get(0));
+        var selector = new BayExitSelector(budget, port);
+        var context = selector.capture(REQUEST, () -> {
+            assertThrows(IllegalStateException.class, () -> budget.advanceTick(1));
+            if (exceptional) { throw new IllegalStateException("validation fixture"); }
+            return false;
+        });
+        if (exceptional) { assertThrows(IllegalStateException.class, () -> selector.select(context)); }
+        assertResult(selector.select(context), exceptional ? NO_SAFE_EXIT : STALE, 0, 0, 1, 0);
+        assertEquals(new BayExitBudget.Usage(0, 0, 0), budget.usage());
+        selector.release(context); budget.advanceTick(1);
+        assertResult(selector.select(selector.capture(REQUEST, () -> true)), SAFE, 1, 1, 2, 1);
+    }
+
+    @ParameterizedTest @ValueSource(booleans = {false, true})
+    void failedEndPreflightReleasesAllGuardsWithoutStartingAnAttempt(boolean exceptional) {
+        var budget = new BayExitBudget(0); var port = new CountingPort(); port.available.add(C.get(0));
+        var selector = new BayExitSelector(budget, port);
+        var context = selector.capture(REQUEST, () -> {
+            if (exceptional) { throw new IllegalStateException("END validation fixture"); }
+            return false;
+        });
+        if (exceptional) { assertThrows(IllegalStateException.class, () -> selector.drain(c -> fail("Stale completion"))); }
+        else { selector.drain(c -> fail("Stale completion")); }
+        assertResult(selector.select(context), STALE, 0, 0, 1, 0);
+        assertEquals(new BayExitBudget.Usage(0, 0, 0), budget.usage());
+        selector.release(context); budget.advanceTick(1);
+        assertResult(selector.select(selector.capture(REQUEST, () -> true)), SAFE, 1, 1, 2, 1);
     }
 
     @Test void hintIsRevalidatedAndAllUnsafeHasNoUncheckedAltitudePlacement() {
