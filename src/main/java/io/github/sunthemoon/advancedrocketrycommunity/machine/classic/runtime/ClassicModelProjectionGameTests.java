@@ -1,8 +1,13 @@
 package io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime;
 
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
+import io.github.sunthemoon.advancedrocketrycommunity.datagen.V180C16cMachineData;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.FormedModelRotationProbe;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.K3ModelTestLayout;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.K3ModelTestRegion;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.MultiblockPatternJsonCodec;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.PatternMatcher;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.IntConsumer;
@@ -64,24 +69,30 @@ public final class ClassicModelProjectionGameTests {
 
     @GameTest(template = "empty", batch = "w244_etcher_model", timeoutTicks = 60)
     public static void etcherProjectsOnlyValidatedFacingOutsideTemplateChunks(GameTestHelper helper) {
-        for (Direction facing : Direction.Plane.HORIZONTAL) {
-            var origin = new BlockPos(-2_440_000 + facing.get2DDataValue() * 256, 100, -2_440_000);
-            try (var region = new io.github.sunthemoon.advancedrocketrycommunity.gametest.K3ModelTestRegion(helper, origin);
-                    var f = new C16cMachineFixture(helper, "precision_laser_etcher", facing, origin)) {
-                var part = f.world(f.pattern.cells().entrySet().stream()
-                        .filter(cell -> cell.getValue() instanceof PatternMatcher.BlockTag tag && tag.tagId().endsWith(":motors"))
-                        .findFirst().orElseThrow().getKey());
-                exerciseTransition(helper, f.controller, f.manager, part, f::tick, footprint(f));
-                f.controller.onChunkUnloaded();
-                helper.assertTrue(!f.controller.modelFormed(), "Unloaded etcher retained model");
-                f.controller.revalidate(helper.getLevel(), f.pattern);
-                assertProjection(helper, f.controller, true);
-                var saved = f.controller.saveWithFullMetadata();
-                helper.assertTrue(!saved.contains("formed"), "Etcher persisted its presentation");
-                f.controller.load(saved);
-                helper.assertTrue(!f.controller.modelFormed(), "Loaded etcher retained stale model");
-                f.controller.revalidate(helper.getLevel(), f.pattern);
-                assertProjection(helper, f.controller, true);
+        var layout = K3ModelTestLayout.ETCHER;
+        try (var region = new K3ModelTestRegion(helper, layout.center(), layout.radius())) {
+            var pattern = MultiblockPatternJsonCodec.decode(V180C16cMachineData.pattern("precision_laser_etcher")
+                    .toString().getBytes(StandardCharsets.UTF_8));
+            layout.assertIsolated(helper, region, pattern.cells().keySet(), pattern.controllerAnchor());
+            int index = 0;
+            for (Direction facing : Direction.Plane.HORIZONTAL) {
+                var origin = layout.origin(index++);
+                try (var f = new C16cMachineFixture(helper, "precision_laser_etcher", facing, origin)) {
+                    var part = f.world(f.pattern.cells().entrySet().stream()
+                            .filter(cell -> cell.getValue() instanceof PatternMatcher.BlockTag tag && tag.tagId().endsWith(":motors"))
+                            .findFirst().orElseThrow().getKey());
+                    exerciseTransition(helper, f.controller, f.manager, part, f::tick, footprint(f));
+                    f.controller.onChunkUnloaded();
+                    helper.assertTrue(!f.controller.modelFormed(), "Unloaded etcher retained model");
+                    f.controller.revalidate(helper.getLevel(), f.pattern);
+                    assertProjection(helper, f.controller, true);
+                    var saved = f.controller.saveWithFullMetadata();
+                    helper.assertTrue(!saved.contains("formed"), "Etcher persisted its presentation");
+                    f.controller.load(saved);
+                    helper.assertTrue(!f.controller.modelFormed(), "Loaded etcher retained stale model");
+                    f.controller.revalidate(helper.getLevel(), f.pattern);
+                    assertProjection(helper, f.controller, true);
+                }
             }
         }
         helper.succeed();
