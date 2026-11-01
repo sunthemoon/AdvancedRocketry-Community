@@ -1,4 +1,4 @@
-# Root handoff, 2026-11-01 14:00
+# Root handoff, 2026-11-01 14:00 (sections 1 to 4 refreshed at 19:55)
 
 Written by the Root session (Claude) that took over from [ROOT-HANDOFF-20261031](ROOT-HANDOFF-20261031.md), for the
 next one. [QUEUE.md](QUEUE.md) and [CURRENT_VERSION](../../status/CURRENT_VERSION.md) stay the sources of truth; this
@@ -14,40 +14,34 @@ sections 5 and 6 are unchanged, except where section 5 below says otherwise.
   ([OWNER-DECISIONS-20261101](records/OWNER-DECISIONS-20261101.md)). It excludes Gate, version and release approval;
   tags, main merges and force pushes; the D5 and D7 human reviews; the real-client and reference-node campaign; and
   accepting any risk a design choice does not itself state.
-- The last Root decision is **R254**; the next is **R255**.
+- The last Root decision is **R264**; the next is **R265**.
 
 ## 2. In flight
 
 | Item | State | Next step |
 |---|---|---|
-| W238, per-owner pending cap of 16 (Codex) | Run `W238/run-20261101-091508`; commits `1fd100e91` and `2c372190f`, waiting for the heavy-JVM lock for its final build | Independent review on Claude, apply its ADR-065 section 10 and risk drafts, sharded branch run, merge |
-| W241, K4 models (Codex) | Run `W241/run-20261101-111356`; corrected source `6e310c287`, Python checks and both validators pass with the drafts applied; its final Java build holds the lock | Apply its drafts on its branch, merge the shared head in, push for a sharded run, independent review |
-| W240, adapter restore stall (Claude) | Run `W240/run-20261101-101341`; reproducing shard 0's `mismatchedRestoreCleansPartialInventoryAndRetries` stall locally in measured groups; both hosted logs are in `W240/hosted-shard0-attempt{1,2}.log` | Sharded run of the fixture fix, merge; then re-run W237 and merge it |
-| W237, midnight log rollover | Held at `10f50015c` with the `build.gradle` patch applied on its branch; its branch run hit W240's stall twice | Re-run after W240 merges |
-| W242, bay safe exit S2 | Queued (R254) | Start when a Codex slot frees; design note first, independent review of the diff |
+| W242-fix, bay safe exit S2 (Codex, thread `01a1969e-9cb4-79d0-97fa-fb910b900352`) | Run `W242-fix/run-20261101-181859`; showed that R260's test cannot be observed and kept strict R2 (branch at `43d4d28c6`); still running a full GameTest on W242's base | When it exits, resume that thread (`codex-resume`) on R264 in TASK-W242-FIX; then a sharded run and an independent review of W242's whole diff on Claude (TASK-W242-REVIEW to write) |
+| W244-fix, the capsule and importer follow-ups (Claude) | Run `W244-fix/run-20261101-190441` on R263 (the legacy `Capsule` group with its own UVs); W244's review approved the rest and its branch run passed at `96e4925c9` | Root reviews the diff, sharded run, a recheck by a fresh Codex session, apply the VERIFICATION draft, merge |
+| W246, flat textures T1 to T3 (Codex) | Run `W246/run-20261101-185204` (R262) | Apply its drafts on its branch, merge the shared head, sharded run, independent review |
+| Later import batches | W245's `INVENTORY.md` proposes S1 (saw block), P0 (landing pad), P1 to P4 (motors and tanks, a model contract first), H1 (laser gun), U1 (slot icons) and the exclusions X1 to X3 and J0 | Dispatch one by one under R262's pattern |
 
 All run directories are under `D:/GitHub/ARCE-Task-Evidence/root-queue/`. A background `wait_workers.ps1` per run
-reports each exit.
+reports each exit; `ci_wait.py` or `ci_wait_head.py` waits on CI.
 
 ## 3. What happened since the last handoff
 
-Merged on the shared branch, each with its review and branch run recorded in its QUEUE row: W222, W224 (D15 option A),
-W226 (PAD-D4 O1), W229 (D8 upstream-URL rule and K1), W232 (pad top art), W225 (four GameTest shards, D18), W233 (K2),
-W236 (K3), W239 (bay exit S1), and the records of W234, W235 and W230's reviewed design. W227's drafts created
-[KNOWN-ISSUES](../../releases/v1.8.0/KNOWN-ISSUES.md); W228's review and recheck preceded the owner's ADR-076
-acceptance (D17, D17-R). The owner decided D2, D3, D4, D6, D8, D9, D11, D12, D15, D16 and D17 on 2026-10-31; D13 was
-closed by [D13-BOUNDARY-SWEEP](records/D13-BOUNDARY-SWEEP.md). Under the delegation Root decided Q1 = A (R243), D1c-N
-= 16 per owner over the loader, cargo and bay union with no operator exemption (R244) and W235-D (R245, recorded as
-KI-V180-SAVE-01). The last shared regression recorded is at `dec02149` (sharded, about 30 minutes); governance is
-green.
+Merged on the shared branch, each with its review and branch run recorded in its QUEUE row: W238 (16 pending per owner,
+with the ADR-065 and risk text corrected by its review), W240 (the adapter restore stall, test only), W237 (the
+completion check's midnight rebuild), W241 (K4, with W241-fix's rotation rule R257 for every K1 to K4 owner) and W243
+(W238's follow-ups, R258). The last shared regression recorded is at `e1bf12dbb` (second attempt; the first failed
+only on host lag in shard 2); governance is green. Root decisions R255 to R264 are in their QUEUE rows.
 
 ## 4. Next work
 
 1. The in-flight items in section 2.
 2. W230-S3, the two-client and restart evidence for the bay safe exit, after W242.
-3. K5 (the `spaceelevatorcapsule` texture) after K4, and the etcher pair once its origin finding exists.
-4. Owner-only: D5, D7 (fifteen records), W203-Q4, D14, the final campaign and the release.
-
+3. The remaining import batches from W245.
+4. Owner-only: D5 (the ten sounds), D7 (fifteen records), W203-Q4, D14, the final campaign and the release.
 ## 5. Lessons from this session
 
 - **Sharded CI.** The shards download the build artifact named with `github.run_attempt`, so re-running only the failed
