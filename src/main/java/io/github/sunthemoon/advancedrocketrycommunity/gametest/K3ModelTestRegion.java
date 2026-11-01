@@ -22,13 +22,20 @@ public final class K3ModelTestRegion implements AutoCloseable, GameTestListener 
     private final Map<BlockPos, BlockState> before = new LinkedHashMap<>();
     private boolean closed;
 
-    public K3ModelTestRegion(GameTestHelper helper, BlockPos center) {
+    public K3ModelTestRegion(GameTestHelper helper, BlockPos center) { this(helper, center, 2); }
+
+    /**
+     * Tickets the square of chunks within {@code radius} of the center's chunk (K3's fixtures use 2). W247: K4 puts
+     * all facings of one test in one chunk and passes 0, so far fewer distant chunks are generated, loaded and saved.
+     */
+    public K3ModelTestRegion(GameTestHelper helper, BlockPos center, int radius) {
         level = helper.getLevel();
+        if (radius < 0 || radius > 2) { throw new IllegalArgumentException("K3 region radius must be 0 to 2"); }
         try {
             var field = GameTestHelper.class.getDeclaredField("testInfo"); field.setAccessible(true);
             ((GameTestInfo) field.get(helper)).addListener(this);
             ChunkPos c = new ChunkPos(center);
-            for (int x = c.x - 2; x <= c.x + 2; x++) { for (int z = c.z - 2; z <= c.z + 2; z++) {
+            for (int x = c.x - radius; x <= c.x + radius; x++) { for (int z = c.z - radius; z <= c.z + radius; z++) {
                 // Check the FULL fringe too, not just the exact template force ticket.
                 for (int dx = -2; dx <= 2; dx++) { for (int dz = -2; dz <= 2; dz++) {
                     helper.assertTrue(!level.getForcedChunks().contains(ChunkPos.asLong(x + dx, z + dz)),
@@ -41,6 +48,8 @@ public final class K3ModelTestRegion implements AutoCloseable, GameTestListener 
             close(); throw new IllegalStateException("Could not install isolated K3 model region", failure);
         }
     }
+    /** Whether the position lies in one of this region's ticketed chunks. */
+    public boolean ticketed(BlockPos position) { return chunks.contains(new ChunkPos(position)); }
     public void set(BlockPos position, BlockState state) {
         if (!before.containsKey(position)) {
             if (level.getBlockEntity(position) != null) { throw new IllegalStateException("K3 test cannot replace native data"); }
