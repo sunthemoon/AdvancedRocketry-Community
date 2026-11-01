@@ -66,6 +66,7 @@ public final class V180RocketCargoData implements DataProvider {
         String[][] statuses = {
             {"ADMISSION_DISABLED", "Cargo transfer is not enabled; no cargo moved.", "货物转移尚未启用；未移动货物。"},
             {"ESCROW_FULL", "Escrow capacity is full; no cargo moved.", "托管容量已满；未移动货物。"},
+            {"OWNER_PENDING_FULL", "Your pending operations are full; no cargo moved. Wait for earlier work or ask an administrator.", "你的待处理操作已达上限；未移动货物。请等待已有操作完成，或联系管理员。"},
             {"LEDGER_UNAVAILABLE", "The escrow ledger is unavailable; no cargo moved.", "托管账本不可用；未移动货物。"},
             {"TRANSFER_JOURNAL_UNPROVED", "The rocket's transfer record is not confirmed; no cargo moved.", "火箭的转移记录尚未确认；未移动货物。"},
             {"ESCROW_PENDING", "Resources are locked pending durable escrow confirmation.", "资源已锁定，等待托管的持久确认。"},

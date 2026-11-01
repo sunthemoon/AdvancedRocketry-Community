@@ -23,6 +23,15 @@ final class EscrowTestFixtures {
         return new EscrowLedger(id(500), java.util.Arrays.stream(records).mapToLong(EscrowOperation::sequence).max().orElse(0),
                 0, List.of(records), List.of(), List.of());
     }
+    /** Keep global byte/count-pressure tests below R244's owner cap without changing their encoded sizes. */
+    static EscrowOperation distributedOwner(EscrowOperation op) {
+        var owner = id(99 + (op.sequence() - 1) / 16); var b = op.nativeBinding();
+        var binding = new EscrowNativeBinding(b.kind(), b.physical(), b.logical(), owner, b.snapshot(), b.snapshotHash(), b.invariant(),
+                b.sourceReference(), b.destinationReference(), b.beforeWrapper(), b.afterWrapper(), b.beforeFrontier(), b.afterFrontier(),
+                b.sourceBefore(), b.sourceAfter(), b.destinationBefore(), b.destinationAfter(), b.complete());
+        return new EscrowOperation(op.id(), op.sequence(), owner, op.createdTick(), op.phase(), op.reason(), op.payload(), op.payloadHash(),
+                op.source(), op.destination(), op.guard(), op.kind(), op.settlement(), binding);
+    }
     /** Reconstruct a historical encoded decision without submitting its actor name as a new preview. */
     static EscrowSettlementIntent storedActor(EscrowSettlementIntent preview, String name) {
         var encoded = preview.encode(); encoded.putString("actor_name", name);

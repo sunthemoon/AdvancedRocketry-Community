@@ -88,6 +88,7 @@ public final class V180FluidFuelLoaderData implements DataProvider {
                 {"ADMISSION_DISABLED", "Rocket filling is not enabled in this version; no fuel moved.",
                         "本版本尚未启用火箭加注；未移动燃料。"},
                 {"ESCROW_FULL", "Escrow capacity full; no fuel moved.", "托管容量已满；未移动燃料。"},
+                {"OWNER_PENDING_FULL", "Your pending operations are full; no fuel moved. Wait for earlier work or ask an administrator.", "你的待处理操作已达上限；未移动燃料。请等待已有操作完成，或联系管理员。"},
                 {"LEDGER_UNAVAILABLE", "The escrow ledger is unavailable; no fuel moved.", "托管账本不可用；未移动燃料。"},
                 {"TRANSFER_JOURNAL_UNPROVED", "The rocket's transfer record is not confirmed yet; no fuel moved.",
                         "火箭的转移记录尚未确认；未移动燃料。"},

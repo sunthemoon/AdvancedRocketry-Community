@@ -14,7 +14,8 @@ import org.junit.jupiter.api.Test;
 final class EscrowAdmissionAuthorityTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
     private static Pending pending(int op, int rocket, Consumer consumer) {
-        return new Pending(EscrowTestFixtures.id(op), EscrowTestFixtures.id(900), EscrowTestFixtures.id(10_000 + rocket), consumer);
+        // Global saturation fixtures use four owners, two full rockets each, under R244's independent owner cap.
+        return new Pending(EscrowTestFixtures.id(op), EscrowTestFixtures.id(900 + rocket / 2), EscrowTestFixtures.id(10_000 + rocket), consumer);
     }
     private static Result reserve(EscrowAdmissionAuthority authority, Pending pending) {
         return authority.tryReserve(pending.op(), pending.owner(), pending.rocket(), pending.consumer());

@@ -8,6 +8,12 @@ import java.util.function.Consumer;
 /** Owner-thread admission and pure capacity checks, separate from the ledger writer lifecycle. */
 final class EscrowTransferPreparation {
     private EscrowTransferPreparation() { }
+    /** Non-reserving owner-thread preflight before native capture; final admission still decides. */
+    static EscrowAdmissionAuthority.Result preflight(net.minecraft.server.MinecraftServer server,
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity rocket) {
+        return EscrowRuntime.of(server).propulsion(server).authority().checkReserve(java.util.UUID.randomUUID(),
+                rocket.ownerId().orElseThrow(), rocket.assemblyTransactionId().orElseThrow(), EscrowAdmissionAuthority.Consumer.PROPULSION);
+    }
     /** C-P capture entry for C-E: all eligibility passes finish before issuing a sequence or reserving anything. */
     static Transfer prepareCargo(EscrowCoordinator coordinator, EscrowCargoPreparedCapture prepared,
                           java.util.function.BooleanSupplier unchanged,
@@ -79,6 +85,7 @@ final class EscrowTransferPreparation {
         return switch (reservation) {
             case SERVER_FULL -> Fill.SERVER_FULL;
             case ROCKET_FULL -> Fill.ROCKET_FULL;
+            case OWNER_PENDING_FULL -> Fill.OWNER_PENDING_FULL;
             case IDENTITY_CONFLICT -> Fill.IDENTITY_CONFLICT;
             case ALREADY_HELD -> Fill.STALE;
             case UNAVAILABLE -> Fill.UNAVAILABLE;

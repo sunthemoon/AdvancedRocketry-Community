@@ -36,13 +36,18 @@ public final class BayLoaderSaturationGameTests {
 
     @GameTest(template = "empty", batch = BATCH, timeoutTicks = 2_400)
     public static void bayIntentsFillingTheSharedPendingSlotsStopALoaderUntilTheyResolve(GameTestHelper helper) {
-        new Saturation(helper).start();
+        new Saturation(helper, false).start();
+    }
+    @GameTest(template = "empty", batch = "bay_owner_pending_cap", timeoutTicks = 2_400)
+    public static void sixteenOwnedBaysRefuseBeforeLoaderCaptureAndLeaveOtherOwnersCapacity(GameTestHelper helper) {
+        new Saturation(helper, true).start();
     }
 
     private static final class Saturation {
         final GameTestHelper helper;
         final ServerLevel level;
         final Area area;
+        final boolean ownerBound;
         final UUID owner = UUID.randomUUID();
         final List<BayReceipt> fills = new ArrayList<>();
         RocketEntity rocket;
@@ -50,8 +55,8 @@ public final class BayLoaderSaturationGameTests {
         int step, waits, baseline;
         boolean done;
 
-        Saturation(GameTestHelper helper) {
-            this.helper = helper; level = helper.getLevel(); area = new Area(level, 47_128, 47_000);
+        Saturation(GameTestHelper helper, boolean ownerBound) {
+            this.helper = helper; this.ownerBound = ownerBound; level = helper.getLevel(); area = new Area(level, 47_128, 47_000);
         }
         void start() { area.hold(); helper.onEachTick(this::tick); }
 
@@ -69,20 +74,25 @@ public final class BayLoaderSaturationGameTests {
                         rocket = FluidFuelLoaderEscrowFixtures.rocket(level, area.at(8, 100, 8), owner, mono(2_000));
                         helper.assertTrue(level.addFreshEntity(rocket), "Native rocket publication failed");
                         loader = FluidFuelLoaderEscrowFixtures.loader(level, area.at(6, 100, 8), owner, tank(ROCKET_FUEL, 1_000), binding(rocket));
-                        fill(server, EscrowLimits.OPERATIONS - baseline);
+                        fill(server, ownerBound ? EscrowLimits.PER_OWNER : EscrowLimits.OPERATIONS - baseline);
                         step = 1;
                     }
                     case 1 -> {
                         if (!idle(server)) { return; }
-                        helper.assertTrue(authority.pendingCount() == EscrowLimits.OPERATIONS, "The bay receipts did not fill the shared slots: "
+                        helper.assertTrue(authority.pendingCount() == (ownerBound ? baseline + EscrowLimits.PER_OWNER : EscrowLimits.OPERATIONS), "The bay receipts did not fill the expected slots: "
                                 + authority.pendingCount());
                         var logical = rocket.assemblyTransactionId().orElseThrow();
                         var envelope = loader.saveWithFullMetadata(); var native_ = rocket.saveWithoutId(new CompoundTag());
                         var before = counts(server, logical);
                         gate(server, true);
-                        loader.admitFromQueue();
+                        boolean captured = loader.admitFromQueue();
                         gate(server, false);
-                        helper.assertTrue(loader.lastAttempt() == FluidFuelLoaderStatus.ESCROW_FULL, "Saturated loader: " + loader.lastAttempt());
+                        helper.assertTrue(!captured && loader.lastAttempt() == (ownerBound ? FluidFuelLoaderStatus.OWNER_PENDING_FULL : FluidFuelLoaderStatus.ESCROW_FULL),
+                                "Saturated loader captured or reported " + loader.lastAttempt());
+                        if (ownerBound) {
+                            helper.assertTrue(authority.checkReserve(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), EscrowAdmissionAuthority.Consumer.PROPULSION)
+                                    == EscrowAdmissionAuthority.Result.RESERVED, "Other owners must still have capacity");
+                        }
                         helper.assertTrue(envelope.equals(loader.saveWithFullMetadata()) && native_.equals(rocket.saveWithoutId(new CompoundTag()))
                                 && before.equals(counts(server, logical)) && !loader.escrowLocked(),
                                 "The refused loader changed an envelope, the queue or a count");
@@ -123,7 +133,8 @@ public final class BayLoaderSaturationGameTests {
             for (int n = 0; n < count; n++) {
                 if (n % 8 == 0) { invented = UUID.randomUUID(); }
                 var receipt = new BayReceipt(UUID.randomUUID(), BayReceiptTestHooks.nextSequence(server), invented,
-                        new RocketPosition(0, n % 8, 0), UUID.randomUUID(), FILL_OWNER, ModIdentity.id("data_satellite").toString(),
+                        new RocketPosition(0, n % 8, 0), UUID.randomUUID(), ownerBound ? owner
+                                : new UUID(FILL_OWNER.getMostSignificantBits(), FILL_OWNER.getLeastSignificantBits() + n / 16), ModIdentity.id("data_satellite").toString(),
                         SatelliteKind.DATA, ModIdentity.id("earth").toString(), hash, UUID.randomUUID(), hash, null, hash, null,
                         BayReceipt.Phase.INTENT, "NONE", false, false, 0, tick, tick, 0);
                 helper.assertTrue(BayReceiptTestHooks.put(server, receipt, outcome -> { }).queued(), "Fill " + n + " was refused");

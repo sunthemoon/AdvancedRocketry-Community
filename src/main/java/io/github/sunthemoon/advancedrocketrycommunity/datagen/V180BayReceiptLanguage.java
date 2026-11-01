@@ -10,6 +10,9 @@ public final class V180BayReceiptLanguage {
 
     public static Map<String, String> entries(boolean chinese) {
         var entries = new LinkedHashMap<String, String>();
+        entries.put("message.advancedrocketrycommunity.escrow.floor_owner_pending_full", chinese
+                ? "该所有者的待处理操作已达上限；请先完成已有操作，再创建新的下限退役操作。"
+                : "The owner's pending operations are full; finish existing work before starting a new floor retirement.");
         entries.put(KEY + "requested", chinese ? "正在退役已拒绝收据 %s（卫星 %s）；结果将在确切确认后报告"
                 : "Retiring rejected receipt %s for satellite %s; the result follows its exact acknowledgement");
         entries.put(KEY + "retired", chinese ? "已退役已拒绝收据 %s（卫星 %s）" : "Retired rejected receipt %s for satellite %s");

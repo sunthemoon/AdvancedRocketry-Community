@@ -44,7 +44,7 @@ class EscrowFlightTableReservationTest {
             committed(results, 64); results.clear();
             assertTrue(coordinator.ledger().armedFlights().stream().allMatch(arm -> arm.outcome() == EscrowFlightTables.Outcome.CANCELLED));
 
-            for (int i = 30; i <= 89; i++) { coordinator.prepareTest(EscrowTestFixtures.operation(i), results::add); }
+            for (int i = 30; i <= 89; i++) { coordinator.prepareTest(EscrowTestFixtures.distributedOwner(EscrowTestFixtures.operation(i)), results::add); }
             assertThrows(IllegalArgumentException.class,
                     () -> coordinator.prepareTest(EscrowTestFixtures.operation(90), ignored -> fail()));
             coordinator.tick(20); assertTrue(coordinator.commitPreparations());

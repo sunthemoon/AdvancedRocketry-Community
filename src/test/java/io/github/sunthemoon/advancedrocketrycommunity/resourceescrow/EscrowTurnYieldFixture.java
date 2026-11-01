@@ -82,7 +82,10 @@ final class EscrowTurnYieldFixture {
         level.chunks.chunk = UnstartedServer.allocate(TestChunk.class);
         level.chunks.chunk.entities = new HashMap<>(); level.chunks.chunk.states = new HashMap<>();
         writer = new EscrowLedgerWriter(directory.resolve("escrow"), 0);
-        coordinator = new EscrowCoordinator(data, writer); data.attach(coordinator, () -> true);
+        coordinator = new EscrowCoordinator(data, writer, runtime.propulsion(server)); data.attach(coordinator, () -> true);
+        runtime.bayReceipts(server).start(null,
+                io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile.Presence.ABSENT,
+                directory.resolve(ManagedSavedDataType.BAY_RECEIPTS.fileName()), 0);
         level.storage.set(ManagedSavedDataType.RESOURCE_ESCROW.dataName(), data);
         EscrowArmedRestartBoundaryTest.acknowledge(journal, directory.resolve(ManagedSavedDataType.ROCKET_TRANSFERS.fileName()));
         level.storage.set(ManagedSavedDataType.ROCKET_TRANSFERS.dataName(), journal);
