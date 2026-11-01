@@ -52,6 +52,15 @@ class V090ResourceAuditTests(unittest.TestCase):
         for model in ({"loader": "forge:obj"}, {"loader": "forge:obj", "model": "minecraft:block/cube_all"}):
             self.assertTrue(any("requires an OBJ model resource location" in error for error in self._obj_fixture(model)))
 
+    def test_obj_texture_slots_named_loader_and_model_still_require_pngs(self) -> None:
+        errors = self._obj_fixture({"loader": "forge:obj",
+                                   "model": "advancedrocketrycommunity:models/block/motor.obj",
+                                   "textures": {"loader": "advancedrocketrycommunity:block/loader_sprite",
+                                                "model": "advancedrocketrycommunity:block/model_sprite"}})
+        self.assertEqual(2, len(errors))
+        for name in ("loader_sprite", "model_sprite"):
+            self.assertTrue(any(f"textures/block/{name}.png" in error for error in errors), errors)
+
     def test_repository_resource_contract_passes(self) -> None:
         summary, errors = audit_resources(ROOT)
 
