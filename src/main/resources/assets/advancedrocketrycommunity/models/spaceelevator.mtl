@@ -2,14 +2,14 @@
 newmtl None
 Kd 1 1 1
 d 1
-map_Kd advancedrocketrycommunity:textures/models/spaceelevator.png
+map_Kd advancedrocketrycommunity:models/spaceelevator
 
 newmtl Hull
 Kd 1 1 1
 d 1
-map_Kd advancedrocketrycommunity:textures/models/spaceelevator.png
+map_Kd advancedrocketrycommunity:models/spaceelevator
 
 newmtl None_spaceelevator.png
 Kd 1 1 1
 d 1
-map_Kd advancedrocketrycommunity:textures/models/spaceelevator.png
+map_Kd advancedrocketrycommunity:models/spaceelevator

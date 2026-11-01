@@ -2,9 +2,9 @@
 newmtl None
 Kd 1 1 1
 d 1
-map_Kd advancedrocketrycommunity:textures/models/rollingmachine.png
+map_Kd advancedrocketrycommunity:models/rollingmachine
 
 newmtl Hull
 Kd 1 1 1
 d 1
-map_Kd advancedrocketrycommunity:textures/models/rollingmachine.png
+map_Kd advancedrocketrycommunity:models/rollingmachine
