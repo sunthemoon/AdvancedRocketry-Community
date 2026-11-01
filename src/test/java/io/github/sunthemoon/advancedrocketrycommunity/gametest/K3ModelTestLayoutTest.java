@@ -7,12 +7,10 @@ import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern
 import io.github.sunthemoon.advancedrocketrycommunity.machine.research.ResearchPatterns;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.solar.SolarArrayLayout;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
-import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.ChunkPos;
 import org.junit.jupiter.api.BeforeAll;
@@ -48,7 +46,8 @@ class K3ModelTestLayoutTest {
         int expected = switch (layout) { case ANALYSER -> 18; case OBSERVATORY -> 325; case SOLAR -> 249; case BEACON -> 105; };
         for (int index = 0; index < 4; index++) {
             var reach = layout.reach(index, pattern.cells(), pattern.anchor());
-            assertEquals(100, layout.origin(index).getY());
+            int height = switch (layout) { case OBSERVATORY -> index * 8; case SOLAR -> index * 4; default -> 0; };
+            assertEquals(100 + height, layout.origin(index).getY());
             assertEquals(expected, reach.size(), "All optional/air cells and transforms must be included");
             assertTrue(reach.contains(layout.origin(index)));
             for (var position : reach) {
@@ -62,8 +61,8 @@ class K3ModelTestLayoutTest {
     }
 
     @ParameterizedTest @EnumSource(K3ModelTestLayout.class)
-    void usesTheSmallestSquareRadiusAtTheExistingHeight(K3ModelTestLayout layout) throws Exception {
-        int expectedRadius = switch (layout) { case ANALYSER, BEACON -> 0; case OBSERVATORY -> 1; case SOLAR -> 2; };
+    void usesTheSmallestSquareRadiusEvenWithVerticalSeparation(K3ModelTestLayout layout) throws Exception {
+        int expectedRadius = layout == K3ModelTestLayout.SOLAR ? 1 : 0;
         assertEquals(expectedRadius, layout.radius());
         if (layout.radius() == 0) { return; }
         var pattern = pattern(layout);
@@ -74,26 +73,8 @@ class K3ModelTestLayoutTest {
         int maxX = offsets.stream().mapToInt(BlockPos::getX).max().orElseThrow();
         int minZ = offsets.stream().mapToInt(BlockPos::getZ).min().orElseThrow();
         int maxZ = offsets.stream().mapToInt(BlockPos::getZ).max().orElseThrow();
-        var candidates = new ArrayList<Set<BlockPos>>();
-        // Enumerate every possible controller placement in the smaller square, without moving it vertically.
-        for (int x = -minX; x < smallerWidth - maxX; x++) { for (int z = -minZ; z < smallerWidth - maxZ; z++) {
-            var candidate = new HashSet<BlockPos>();
-            for (var offset : offsets) { candidate.add(offset.offset(x, 0, z)); }
-            candidates.add(candidate);
-        } }
-        boolean[][] apart = new boolean[candidates.size()][candidates.size()];
-        for (int a = 0; a < candidates.size(); a++) { for (int b = a + 1; b < candidates.size(); b++) {
-            apart[a][b] = Collections.disjoint(candidates.get(a), candidates.get(b));
-        } }
-        for (int a = 0; a < candidates.size(); a++) { for (int b = a + 1; b < candidates.size(); b++) {
-            if (!apart[a][b]) { continue; }
-            for (int c = b + 1; c < candidates.size(); c++) {
-                if (!apart[a][c] || !apart[b][c]) { continue; }
-                for (int d = c + 1; d < candidates.size(); d++) {
-                    assertFalse(apart[a][d] && apart[b][d] && apart[c][d], "Four facings fit a smaller radius");
-                }
-            }
-        } }
+        // Even one solar controller's complete rotated reach is wider than a radius-0 chunk.
+        assertTrue(maxX - minX + 1 > smallerWidth && maxZ - minZ + 1 > smallerWidth);
     }
 
     @Test void keepsTheFourOriginalRowsAndTheirFullFringesApart() {

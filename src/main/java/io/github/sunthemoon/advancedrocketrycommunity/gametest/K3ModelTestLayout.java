@@ -10,9 +10,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 
-/** W248: four isolated facings at the original height, sharing the smallest square of ticketed chunks. */
+/** W248: four isolated facings sharing the smallest square of ticketed chunks. */
 public enum K3ModelTestLayout {
-    ANALYSER(0, 0), OBSERVATORY(1, 1), SOLAR(2, 2), BEACON(3, 0);
+    ANALYSER(0, 0), OBSERVATORY(1, 0), SOLAR(2, 1), BEACON(3, 0);
 
     private final int row;
     private final int radius;
@@ -27,15 +27,12 @@ public enum K3ModelTestLayout {
 
     public BlockPos origin(int index) {
         if (index < 0 || index >= 4) { throw new IllegalArgumentException("K3 facing index must be 0 to 3"); }
-        return switch (radius) {
-            case 0 -> center().offset(4 + index % 2 * 8, 0, 4 + index / 2 * 8);
-            case 1 -> center().offset(index % 2 * 16, 0, index / 2 * 16);
-            // Each solar reach is a 43-wide cross. Offset its arms, rather than overlapping parallel rows.
-            case 2 -> {
-                int[][] offsets = {{-10, -10}, {25, -6}, {21, 25}, {-6, 21}};
-                yield center().offset(offsets[index][0], 0, offsets[index][1]);
-            }
-            default -> throw new IllegalStateException("Unexpected K3 region radius");
+        return switch (this) {
+            case ANALYSER, BEACON -> center().offset(4 + index % 2 * 8, 0, 4 + index / 2 * 8);
+            // These fixtures run sequentially. Separate their full validation reaches vertically to avoid
+            // extra chunks without allowing a rotation to read another facing's cells (or casting shadows).
+            case OBSERVATORY -> center().offset(8, index * 8, 8);
+            case SOLAR -> center().offset(8, index * 4, 8);
         };
     }
 
