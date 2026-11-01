@@ -25,6 +25,18 @@ public final class RocketRuntime {
     private RocketRuntime() {
     }
 
+    static Optional<BayPassengerExitService> passengerExits() {
+        return service instanceof RocketManager manager ? Optional.ofNullable(manager.passengerExits()) : Optional.empty();
+    }
+    public static net.minecraft.world.phys.Vec3 bayPassengerExitLocation(RocketEntity rocket, net.minecraft.world.entity.LivingEntity rider) {
+        return rider instanceof ServerPlayer player ? passengerExits().map(exits -> exits.location(player, rocket))
+                .orElse(rocket.position()) : rocket.position().add(1.5, 0, 0);
+    }
+    static BayPassengerExitState.Scope internalPassengerMove(ServerPlayer player) {
+        return passengerExits().map(exits -> exits.internal(player)).orElse(() -> { });
+    }
+    static void passengerTransition(ServerPlayer player) { passengerExits().ifPresent(exits -> exits.revoke(player)); }
+
     public static Optional<RocketMonitorFlights> monitorFlights() {
         return service instanceof RocketManager manager ? Optional.of(manager.monitorFlights()) : Optional.empty();
     }

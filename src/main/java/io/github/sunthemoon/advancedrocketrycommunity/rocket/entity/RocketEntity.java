@@ -621,7 +621,7 @@ public final class RocketEntity extends Entity implements MenuProvider {
 
     @Override
     public Vec3 getDismountLocationForPassenger(LivingEntity passenger) {
-        return position().add(1.5D, 0.0D, 0.0D);
+        return RocketRuntime.bayPassengerExitLocation(this, passenger);
     }
 
     @Override

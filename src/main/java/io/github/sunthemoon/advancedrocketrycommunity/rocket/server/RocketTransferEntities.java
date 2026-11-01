@@ -380,6 +380,10 @@ final class RocketTransferEntities {
             RocketEntity destination,
             RocketPosition safeOrigin
     ) {
+        try (var ignored = RocketRuntime.internalPassengerMove(passenger)) { movePassengerScoped(passenger, destination, safeOrigin); }
+    }
+
+    private static void movePassengerScoped(ServerPlayer passenger, RocketEntity destination, RocketPosition safeOrigin) {
         if (!passengerMoveAllowed(passenger, destination)) { return; }
         passenger.stopRiding();
         if (!passengerMoveAllowed(passenger, destination)) { return; }

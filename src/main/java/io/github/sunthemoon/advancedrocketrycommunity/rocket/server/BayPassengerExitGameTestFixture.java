@@ -1,0 +1,328 @@
+package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
+
+import static io.github.sunthemoon.advancedrocketrycommunity.rocket.server.BayDeploymentGameTestSupport.*;
+import com.mojang.authlib.GameProfile;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.deployment.BayStepQueue;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.*;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition;
+import io.netty.channel.embedded.EmbeddedChannel;
+import java.lang.reflect.Field;
+import java.util.*;
+import net.minecraft.core.BlockPos;
+import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.PacketFlow;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.DistanceManager;
+import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.EntityMountEvent;
+import net.minecraftforge.event.entity.living.LivingAttackEvent;
+import net.minecraftforge.event.entity.living.LivingFallEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+
+/** Real service and vanilla landing fixture; pause only this test's D0 queue, never another rocket. */
+final class BayPassengerExitGameTestFixture {
+    enum Case { SAFE, MENU, CREW, CANCELLED, BYPASS, STALE_BYPASS, ORDINARY, DRIPSTONE, NON_FALL, DIRECT_FALL,
+        AIRBORNE_CAUSE, ZERO_LANDING, TELEPORT, UPWARD, FAILED_MOVE, RELEASED_MOVE, HISTORY, LOGOUT, DEATH,
+        CONTENTION, EXPIRY, UNLOADED, NON_FALL_LANDING, CANCELLED_FALL, FLUID, GANTRY, LOCAL_ONLY, REMOTE,
+        HAZARD, HEADROOM, PARTIAL, BUDGET, REENTRANT_DAMAGE, AFTER_TELEPORT, RELEASED_SUCCESS }
+    final GameTestHelper helper;
+    final Case scenario;
+    final List<ServerPlayer> players = new ArrayList<>();
+    final List<LivingAttackEvent> attacks = new ArrayList<>();
+    Flight flight;
+    Flight otherFlight;
+    ServerPlayer otherPlayer;
+    ServerPlayer player;
+    BayPassengerExitService exits;
+    BlockPos origin;
+    int ticks, stage, falls;
+    float fallDistance, multiplier;
+    boolean closed, injected;
+    BayPassengerExitState.Slot offer;
+    long firstDeadline;
+
+    BayPassengerExitGameTestFixture(GameTestHelper helper, Case scenario) { this.helper = helper; this.scenario = scenario; }
+    void start() { MinecraftForge.EVENT_BUS.register(this); helper.onEachTick(this::tick); }
+    private static Object field(Object target, Class<?> owner, String name) throws ReflectiveOperationException {
+        Field field = owner.getDeclaredField(name); field.setAccessible(true); return field.get(target);
+    }
+    private void pause() {
+        if (flight == null) { return; }
+        try {
+            var queue = (BayStepQueue) field(bays(helper), BayTransferRecovery.class, "queue");
+            queue.remove(flight.record().logicalRocketId());
+            if (otherFlight != null) { queue.remove(otherFlight.record().logicalRocketId()); }
+        }
+        catch (ReflectiveOperationException error) { throw new IllegalStateException(error); }
+    }
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public void beforeTick(TickEvent.ServerTickEvent event) { if (!closed && event.phase == TickEvent.Phase.START) { pause(); } }
+    @SubscribeEvent(priority = EventPriority.LOWEST, receiveCanceled = true)
+    public void attack(LivingAttackEvent event) { if (event.getEntity() == player) { attacks.add(event); } }
+    @SubscribeEvent(priority = EventPriority.HIGH)
+    public void nestedAttack(LivingAttackEvent event) {
+        if (event.getEntity() == player && scenario == Case.REENTRANT_DAMAGE && !injected) {
+            injected = true; player.hurt(player.damageSources().fall(), 1);
+        }
+    }
+    @SubscribeEvent(priority = EventPriority.LOWEST, receiveCanceled = true)
+    public void fall(LivingFallEvent event) {
+        if (event.getEntity() == player) { falls++; fallDistance = event.getDistance(); multiplier = event.getDamageMultiplier(); }
+        if (event.getEntity() == player && scenario == Case.NON_FALL_LANDING && stage == 2 && !injected) {
+            injected = true; player.causeFallDamage(6, 1, player.damageSources().flyIntoWall());
+        }
+    }
+    @SubscribeEvent(priority = EventPriority.HIGH)
+    public void cancelFall(LivingFallEvent event) { if (event.getEntity() == player && scenario == Case.CANCELLED_FALL) { event.setCanceled(true); } }
+    ServerPlayer join(UUID id) {
+        var level = helper.getLevel();
+        var joined = new ServerPlayer(level.getServer(), level, new GameProfile(id, "exit" + id.toString().substring(0, 8)));
+        var connection = new Connection(PacketFlow.SERVERBOUND); new EmbeddedChannel(connection);
+        level.getServer().getPlayerList().placeNewPlayer(connection, joined);
+        joined.setGameMode(GameType.SURVIVAL);
+        joined.connection.teleport(origin.getX() + .5, origin.getY(), origin.getZ() + .5, 25, 10);
+        players.add(joined); return joined;
+    }
+    private void setup() {
+        var level = helper.getLevel(); var server = level.getServer();
+        origin = helper.absolutePos(new BlockPos(3, 4, 3));
+        if (!level.isPositionEntityTicking(origin)) { return; }
+        player = join(UUID.randomUUID());
+        UUID owner = scenario == Case.CREW ? UUID.randomUUID() : player.getUUID();
+        var pkg = dataPackage(owner);
+        flight = transit(helper, origin, level.dimension().location(), position(helper.absolutePos(new BlockPos(12, 4, 3))),
+                owner, List.of(pkg), RocketEscrowSectionPatch.NEUTRAL, RocketFlightPlanner.EARTH.bodyId(), player.getUUID());
+        helper.assertTrue(player.startRiding(flight.source(), true), "Fixture rider could not board before hold");
+        RocketTransferSavedData.get(server).put(flight.record());
+        bays(helper).ascentComplete(server, RocketTransferSavedData.get(server), flight.record(), flight.source());
+        if (scenario == Case.CONTENTION) {
+            otherPlayer = join(UUID.randomUUID());
+            otherFlight = transit(helper, origin, level.dimension().location(), position(origin.offset(10, 0, 0)), otherPlayer.getUUID(),
+                    List.of(dataPackage(otherPlayer.getUUID())), RocketEscrowSectionPatch.NEUTRAL, RocketFlightPlanner.EARTH.bodyId(), otherPlayer.getUUID());
+            helper.assertTrue(otherPlayer.startRiding(otherFlight.source(), true), "Second rider could not board");
+            RocketTransferSavedData.get(server).put(otherFlight.record());
+            bays(helper).ascentComplete(server, RocketTransferSavedData.get(server), otherFlight.record(), otherFlight.source());
+        }
+        helper.assertTrue(claim(helper, flight.record().logicalRocketId()).isPresent(), "D0 did not claim fixture");
+        pause(); exits = RocketRuntime.passengerExits().orElseThrow();
+        helper.assertTrue(exits.motion.generation(player) != null && exits.landing.available(), "Pinned mapped observers unavailable");
+        for (int x = -2; x <= 2; x++) { for (int z = -2; z <= 2; z++) {
+            for (int y = -2; y <= 3; y++) { level.setBlockAndUpdate(origin.offset(x, y, z), Blocks.AIR.defaultBlockState()); }
+        } }
+        if (Set.of(Case.SAFE, Case.MENU, Case.CREW, Case.CONTENTION).contains(scenario)) { pad(origin); }
+        if (scenario == Case.GANTRY || scenario == Case.LOCAL_ONLY) { pad(flight.source().blockPosition().offset(2, 0, 0)); }
+        if (Set.of(Case.HAZARD, Case.HEADROOM, Case.PARTIAL).contains(scenario)) {
+            pad(origin);
+            for (int x = -1; x <= 1; x++) { for (int z = -1; z <= 1; z++) {
+                level.setBlockAndUpdate(origin.offset(x, scenario == Case.HEADROOM ? 1 : -1, z),
+                        (scenario == Case.HAZARD ? Blocks.MAGMA_BLOCK : scenario == Case.PARTIAL ? Blocks.STONE_SLAB : Blocks.STONE).defaultBlockState());
+            } }
+        }
+        stage = 1;
+    }
+    void pad(BlockPos feet) {
+        for (int x = -1; x <= 1; x++) { for (int z = -1; z <= 1; z++) {
+            helper.getLevel().setBlockAndUpdate(feet.offset(x, -1, z), Blocks.STONE.defaultBlockState());
+        } }
+    }
+    private Object ticketSnapshot() throws ReflectiveOperationException {
+        Object manager = helper.getLevel().getChunkSource().chunkMap.getDistanceManager();
+        var entries = (Map<?, ?>) field(manager, DistanceManager.class, "tickets");
+        var snapshot = new TreeMap<String, String>();
+        entries.forEach((key, value) -> snapshot.put(key.toString(), value.toString())); return snapshot;
+    }
+    private void detach() throws Exception {
+        int loaded = helper.getLevel().getChunkSource().getLoadedChunksCount(); Object tickets = ticketSnapshot();
+        var manifest = flight.source().flightData().orElseThrow().passengers();
+        var snapshot = flight.source().snapshot().orElseThrow(); var fuel = flight.source().flightData().orElseThrow().fuel();
+        if (scenario == Case.REMOTE) {
+            var bystander = join(UUID.randomUUID());
+            bystander.setPos(flight.source().getX() + 1, flight.source().getY(), flight.source().getZ());
+            var at = bystander.position(); RocketRuntime.openFlightMenu(bystander, flight.source());
+            RocketRuntime.requestFlightIntent(bystander, flight.source().getId(), RocketFlightAction.LEAVE,
+                    flight.record().sourceFlightData().currentTarget().orElseThrow(), UUID.randomUUID());
+            helper.assertTrue(at.equals(bystander.position()) && player.getVehicle() == flight.source()
+                    && exits.state.history(bystander.getUUID(), flight.record().transferId()) == null, "Non-rider acquired an exit effect"); done(); return;
+        }
+        if (scenario == Case.LOCAL_ONLY) {
+            flight.source().updateFlightData(flight.source().flightData().orElseThrow().withPassengers(manifest.remove(player.getUUID())));
+            player.stopRiding(); var local = exits.state.live.get(player);
+            helper.assertTrue(local != null && local.permit.transfer == null && local.permit.anchor == null
+                    && local.result.ordinal() == 1 && local.descent == null
+                    && exits.state.history(player.getUUID(), flight.record().transferId()) == null, "Unassigned rider gained checked-anchor authority"); done(); return;
+        }
+        if (scenario == Case.BUDGET) {
+            while (exits.budget.usage().candidates() < 128) { exits.budget.openProbe().orElseThrow().close(); }
+        }
+        if (scenario == Case.CANCELLED) {
+            Object cancel = new Object() { @SubscribeEvent(priority = EventPriority.HIGH)
+                public void mount(EntityMountEvent event) { if (event.getEntityMounting() == player && event.isDismounting()) { event.setCanceled(true); } } };
+            MinecraftForge.EVENT_BUS.register(cancel);
+            try { player.stopRiding(); } finally { MinecraftForge.EVENT_BUS.unregister(cancel); }
+            helper.assertTrue(player.getVehicle() == flight.source() && exits.state.history(player.getUUID(), flight.record().transferId()) == null, "Cancelled detach had effects");
+            done(); return;
+        }
+        if (scenario == Case.MENU) {
+            RocketRuntime.openFlightMenu(player, flight.source());
+            RocketRuntime.requestFlightIntent(player, flight.source().getId(), RocketFlightAction.LEAVE,
+                    flight.record().sourceFlightData().currentTarget().orElseThrow(), UUID.randomUUID());
+        } else if (scenario == Case.BYPASS || scenario == Case.STALE_BYPASS) {
+            player.removeVehicle();
+            if (scenario == Case.STALE_BYPASS) {
+                var next = player.position().add(0, -.1, 0);
+                player.connection.teleport(next.x, next.y, next.z, 25, 10);
+            }
+            stage = 3; return;
+        } else { player.stopRiding(); }
+        helper.assertTrue(!player.isPassenger(), "Physical exit was cancelled");
+        helper.assertTrue(flight.source().snapshot().orElseThrow() == snapshot && flight.source().flightData().orElseThrow().fuel().equals(fuel)
+                && flight.source().flightData().orElseThrow().passengers().equals(manifest), "Exit mutated rocket authority");
+        helper.assertTrue(RocketTransferSavedData.get(player.getServer()).find(flight.record().transferId()).orElseThrow() == flight.record(), "Exit rewrote T");
+        helper.assertTrue(loaded == helper.getLevel().getChunkSource().getLoadedChunksCount() && tickets.equals(ticketSnapshot()), "Exit loaded a chunk or added a ticket");
+        helper.assertTrue(bays(helper).sessionForTests().receipts().stream().noneMatch(row -> row.rocket().equals(flight.record().logicalRocketId())), "Exit wrote a receipt");
+        offer = exits.state.live.get(player);
+        helper.assertTrue(offer != null && offer.completed, "Detach hook did not complete a permit");
+        var history = exits.state.history(player.getUUID(), flight.record().transferId());
+        helper.assertTrue(history != null, "Checked first exit did not close history"); firstDeadline = history.deadline();
+        if (scenario == Case.GANTRY) {
+            helper.assertTrue(offer.result.ordinal() == 1 && player.getY() == flight.source().getY() && !history.issued(), "Loaded gantry did not precede anchor search"); done(); return;
+        }
+        if (Set.of(Case.SAFE, Case.MENU, Case.CREW, Case.CONTENTION).contains(scenario)) {
+            helper.assertTrue(offer.result.status() == io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.exit.BayExitSelector.Status.SAFE
+                    && player.getY() == origin.getY() && player.getHealth() == 20 && !history.issued(), "Checked ground placement failed");
+            helper.assertTrue(player.getYRot() == 25 && player.getXRot() == 10, "Exit changed view direction");
+            if (scenario == Case.CONTENTION) {
+                otherPlayer.stopRiding(); var second = exits.state.live.get(otherPlayer);
+                helper.assertTrue(second != null && second.result.ordinal() == 8 && offer.result.ordinal() == 5
+                        && second.result.attemptSequence() > offer.result.attemptSequence()
+                        && offer.result.work().candidates() == 5 && second.result.work().candidates() == 8
+                        && !player.getBoundingBox().intersects(otherPlayer.getBoundingBox()), "Ordered real arbitration did not choose exact next anchor");
+            }
+            done(); return;
+        }
+        helper.assertTrue(offer.descent != null && history.issued(), "Fallback did not offer one descent");
+        switch (scenario) {
+            case HAZARD, HEADROOM, PARTIAL -> { helper.assertTrue(offer.result.status() != io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.exit.BayExitSelector.Status.SAFE,
+                    "Unsafe contact geometry passed selection"); done(); }
+            case BUDGET -> { helper.assertTrue(offer.result.status() == io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.exit.BayExitSelector.Status.EXIT_BUDGET_EXHAUSTED
+                    && offer.result.work().candidates() == 0 && offer.result.work().reads() == 0 && offer.result.work().visits() == 0, "Exhaustion spent extra work"); done(); }
+            case TELEPORT -> { var at = player.position(); player.connection.teleport(at.x + .1, at.y, at.z, 25, 10); exits.sample(player); expectRevoked(); done(); }
+            case UPWARD -> { player.setPos(player.getX(), player.getY() - 1, player.getZ()); exits.sample(player);
+                player.setPos(player.getX(), player.getY() + .1, player.getZ()); exits.sample(player); expectRevoked(); done(); }
+            case FAILED_MOVE -> { RocketTransferEntities.movePassenger(player, flight.source(), position(origin)); expectRevoked();
+                helper.assertTrue(!player.isPassenger(), "Held ordinary move unexpectedly mounted"); done(); }
+            case AFTER_TELEPORT, RELEASED_SUCCESS -> {
+                otherFlight = transit(helper, origin.offset(5, 0, 0), helper.getLevel().dimension().location(), position(origin.offset(10, 0, 0)),
+                        player.getUUID(), List.of(dataPackage(player.getUUID())), RocketEscrowSectionPatch.NEUTRAL,
+                        RocketFlightPlanner.EARTH.bodyId(), player.getUUID());
+                var generation = exits.motion.generation(player);
+                Object deny = new Object() { @SubscribeEvent(priority = EventPriority.HIGH)
+                    public void mount(EntityMountEvent event) { if (scenario == Case.AFTER_TELEPORT && event.getEntityMounting() == player && event.isMounting()) { event.setCanceled(true); } } };
+                MinecraftForge.EVENT_BUS.register(deny);
+                try {
+                    if (scenario == Case.AFTER_TELEPORT) { RocketTransferEntities.movePassenger(player, otherFlight.source(), position(origin.offset(5, 0, 0))); }
+                    else { helper.assertTrue(new BayReleasedResume(player.getServer()).move(player, otherFlight.source(), otherFlight.record(), () -> true), "Released helper did not move assignment"); }
+                } finally { MinecraftForge.EVENT_BUS.unregister(deny); }
+                expectRevoked();
+                helper.assertTrue(!generation.equals(exits.motion.generation(player)) && !exits.state.internal(player)
+                        && (scenario == Case.AFTER_TELEPORT ? !player.isPassenger() : player.getVehicle() == otherFlight.source()), "Move did not traverse teleport/mount/finally"); done();
+            }
+            case RELEASED_MOVE -> { boolean moved = new BayReleasedResume(player.getServer()).move(player, flight.source(), flight.record(), () -> false);
+                helper.assertTrue(!moved, "Refused released move succeeded"); expectRevoked(); done(); }
+            case DIRECT_FALL -> { player.hurt(player.damageSources().fall(), 4); helper.assertTrue(player.getHealth() < 20, "Direct FALL was protected"); done(); }
+            case AIRBORNE_CAUSE -> { player.causeFallDamage(10, 1, player.damageSources().fall()); helper.assertTrue(player.getHealth() < 20, "Airborne causeFallDamage was protected"); done(); }
+            case NON_FALL -> { player.causeFallDamage(10, 1, player.damageSources().flyIntoWall()); helper.assertTrue(player.getHealth() < 20
+                    && attacks.stream().noneMatch(LivingAttackEvent::isCanceled), "Non-FALL was protected"); done(); }
+            case LOGOUT -> { var id = player.getUUID();
+                player.getServer().getPlayerList().remove(player); players.remove(player); player = join(id); expectRevoked();
+                helper.assertTrue(exits.state.admit(id, flight.record().transferId(), flight.record().logicalRocketId(), ticks) == null, "Relogin renewed history"); done(); }
+            case DEATH -> { var previous = player; player.hurt(player.damageSources().genericKill(), Float.MAX_VALUE);
+                helper.assertTrue(player.isDeadOrDying(), "Fixture death did not occur");
+                player = player.getServer().getPlayerList().respawn(player, false); players.remove(previous); players.add(player);
+                helper.assertTrue(player != previous && player.getUUID().equals(previous.getUUID()), "Respawn did not replace incarnation");
+                expectRevoked(); helper.assertTrue(exits.state.admit(player.getUUID(), flight.record().transferId(), flight.record().logicalRocketId(), ticks) == null, "Death renewed history"); done(); }
+            case HISTORY -> { UUID b = UUID.randomUUID(); exits.state.admit(player.getUUID(), b, UUID.randomUUID(), ticks);
+                helper.assertTrue(exits.state.admit(player.getUUID(), flight.record().transferId(), flight.record().logicalRocketId(), ticks) == null
+                        && exits.state.history(player.getUUID(), flight.record().transferId()).deadline() == firstDeadline, "T-A/B/A refreshed offer"); done(); }
+            case UNLOADED -> { int reads = offer.world.reads; helper.assertTrue(!offer.world.loadedColumn(1_000_000, 1_000_000)
+                    && offer.world.reads == reads, "Missing column caused reads/loads"); done(); }
+            case FLUID -> { helper.getLevel().setBlockAndUpdate(player.blockPosition(), Blocks.WATER.defaultBlockState()); exits.sample(player); expectRevoked(); done(); }
+            case EXPIRY -> stage = 4;
+            default -> { pad(origin); if (scenario == Case.DRIPSTONE) { helper.getLevel().setBlockAndUpdate(origin.below(), Blocks.POINTED_DRIPSTONE.defaultBlockState()); }
+                stage = 2; }
+        }
+    }
+    private void expectRevoked() {
+        helper.assertTrue(!exits.state.live.containsKey(player) || exits.state.live.get(player).descent == null
+                || exits.state.live.get(player).descent.closed, "Old live capability survived invalidation");
+        helper.assertTrue(exits.state.history(player.getUUID(), flight.record().transferId()).deadline() == firstDeadline, "Invalidation refreshed history");
+    }
+    private void land() {
+        double next = Math.max(origin.getY() + .25, player.getY() - 3);
+        player.setPos(player.getX(), next, player.getZ()); player.setDeltaMovement(new Vec3(0, -.2, 0));
+        exits.sample(player);
+        if (next > origin.getY() + .25) { return; }
+        player.setPos(player.getX(), origin.getY(), player.getZ()); player.fallDistance = scenario == Case.ZERO_LANDING ? 1 : 10;
+        int before = falls;
+        player.doCheckFallDamage(0, -.25, 0, true);
+        helper.assertTrue(falls > before, "Fixture did not traverse vanilla fall event");
+        if (scenario == Case.ORDINARY) {
+            helper.assertTrue(player.getHealth() == 20 && attacks.stream().filter(LivingAttackEvent::isCanceled).count() == 1,
+                    "Ordinary landing did not consume exactly one FALL cancellation");
+            helper.assertTrue(fallDistance == 10 && multiplier == 1, "Exit altered source-less fall distance/multiplier");
+            player.invulnerableTime = 0; player.causeFallDamage(10, 1, player.damageSources().fall());
+            helper.assertTrue(player.getHealth() < 20, "Second fall was protected");
+        } else if (scenario == Case.ZERO_LANDING || scenario == Case.CANCELLED_FALL) {
+            player.hurt(player.damageSources().fall(), 4);
+            helper.assertTrue(player.getHealth() < 20 && attacks.stream().noneMatch(LivingAttackEvent::isCanceled), "Zero landing leaked a token");
+        } else if (scenario == Case.REENTRANT_DAMAGE) {
+            helper.assertTrue(player.getHealth() < 20 && attacks.stream().noneMatch(LivingAttackEvent::isCanceled), "Reentrant attack consumed landing authority");
+        } else if (scenario == Case.NON_FALL_LANDING) {
+            helper.assertTrue(player.getHealth() < 20 && attacks.stream().noneMatch(LivingAttackEvent::isCanceled)
+                    && attacks.stream().anyMatch(event -> event.getSource().is(net.minecraft.world.damagesource.DamageTypes.FLY_INTO_WALL)), "Non-FALL landing call was protected");
+        } else {
+            helper.assertTrue(player.getHealth() < 20 && attacks.stream().noneMatch(LivingAttackEvent::isCanceled)
+                    && attacks.stream().anyMatch(event -> event.getSource().is(net.minecraft.world.damagesource.DamageTypes.STALAGMITE)), "Dripstone damage changed");
+        }
+        done();
+    }
+    private void tick() {
+        if (closed) { return; }
+        try {
+            ticks++;
+            if (stage == 0) { setup(); }
+            else if (stage == 1 && ticks > 70 && RocketTransferSavedData.get(player.getServer()).actionable(flight.record().logicalRocketId())
+                    && (otherFlight == null || RocketTransferSavedData.get(player.getServer()).actionable(otherFlight.record().logicalRocketId()))) { detach(); }
+            else if (stage == 2) { land(); }
+            else if (stage == 3) {
+                if (scenario == Case.BYPASS) { helper.assertTrue(exits.state.history(player.getUUID(), flight.record().transferId()) != null, "END bypass did not complete"); }
+                else { helper.assertTrue(exits.state.history(player.getUUID(), flight.record().transferId()) == null, "Newer teleport did not discard delayed placement"); }
+                done();
+            } else if (stage == 4 && player.getServer().getTickCount() >= firstDeadline) { exits.sample(player); expectRevoked(); done(); }
+        } catch (Throwable error) { cleanup(); helper.fail("Bay exit " + scenario + ": " + error); }
+    }
+    private void done() { cleanup(); helper.succeed(); }
+    private void cleanup() {
+        if (closed) { return; } closed = true; MinecraftForge.EVENT_BUS.unregister(this);
+        if (flight != null) { bays(helper).forgetForTests(flight.record().logicalRocketId()); }
+        if (otherFlight != null) { bays(helper).forgetForTests(otherFlight.record().logicalRocketId()); }
+        for (var joined : players) {
+            if (exits != null) { exits.revoke(joined); }
+            try (var ignored = RocketRuntime.internalPassengerMove(joined)) { joined.stopRiding(); }
+            joined.getServer().getPlayerList().remove(joined);
+        }
+        if (flight != null) {
+            flight.source().discard(); var journal = RocketTransferSavedData.get(helper.getLevel().getServer()); journal.remove(flight.record().transferId());
+            RocketTransferEntities.releaseFlightTickets(helper.getLevel().getServer(), flight.record());
+            if (otherFlight != null) { otherFlight.source().discard(); journal.remove(otherFlight.record().transferId());
+                RocketTransferEntities.releaseFlightTickets(helper.getLevel().getServer(), otherFlight.record()); }
+        }
+    }
+}
