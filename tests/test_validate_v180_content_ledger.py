@@ -257,7 +257,8 @@ class V180ContentLedgerTests(unittest.TestCase):
                                            "rule's batch C16a") for error in self._errors()))
 
     def test_model_textures_do_not_land_after_their_model(self) -> None:
-        self._set_rule("textures/models/nuclearengine.png", plan="C18d")
+        # W258 imports this texture; restore planned handling to exercise the batch-order rejection.
+        self._set_rule("textures/models/nuclearengine.png", handling="IMPORT", plan="C18d")
         self.assertTrue(any(error.endswith("model texture for block:nuclearrocketmotor lands in C18d, after its "
                                            "model (C17a)") for error in self._errors()))
 
