@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "advancedrocketrycommunity:item/hover_upgrade"
+    "layer0": "advancedrocketrycommunity:item/hoverupgrade"
   }
 }

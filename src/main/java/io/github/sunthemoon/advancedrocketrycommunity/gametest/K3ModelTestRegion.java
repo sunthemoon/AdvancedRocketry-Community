@@ -25,8 +25,8 @@ public final class K3ModelTestRegion implements AutoCloseable, GameTestListener 
     public K3ModelTestRegion(GameTestHelper helper, BlockPos center) { this(helper, center, 2); }
 
     /**
-     * Tickets the square of chunks within {@code radius} of the center's chunk (K3's fixtures use 2). W247: K4 puts
-     * all facings of one test in one chunk and passes 0, so far fewer distant chunks are generated, loaded and saved.
+     * Tickets the square of chunks within {@code radius} of the center's chunk. K3 sizes its shared region to the
+     * fixture's validation reach; W247's K4 fixtures share one chunk and pass 0. The legacy default remains 2.
      */
     public K3ModelTestRegion(GameTestHelper helper, BlockPos center, int radius) {
         level = helper.getLevel();

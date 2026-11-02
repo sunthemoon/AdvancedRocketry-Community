@@ -1,7 +1,7 @@
 {
   "parent": "minecraft:block/door_bottom_left_open",
   "textures": {
-    "bottom": "advancedrocketrycommunity:block/airlock_door_bottom",
-    "top": "advancedrocketrycommunity:block/airlock_door_top"
+    "bottom": "advancedrocketrycommunity:block/smallairlockdoor_lower",
+    "top": "advancedrocketrycommunity:block/smallairlockdoor_upper"
   }
 }

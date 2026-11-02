@@ -33,6 +33,8 @@ class V180ThermiteDataTest {
     private static final String DATA = "data/advancedrocketrycommunity/";
     private static final String DUST_PNG = ASSETS + "textures/item/thermite.png";
     private static final String TORCH_PNG = ASSETS + "textures/block/thermite_torch.png";
+    private static final String DUST_REFERENCE = ASSETS + "textures/item/thermite_classic.png";
+    private static final String TORCH_REFERENCE = ASSETS + "textures/block/thermitetorch.png";
     private static final Set<String> CLIENT = Set.of(ASSETS + "blockstates/thermite_torch.json",
             ASSETS + "blockstates/thermite_wall_torch.json", ASSETS + "models/block/thermite_torch.json",
             ASSETS + "models/block/thermite_wall_torch.json", ASSETS + "models/item/thermite.json",
@@ -73,7 +75,7 @@ class V180ThermiteDataTest {
                 NS + "thermite_torch", Set.of("forge:dusts/thermite"));
     }
 
-    @Test void modelsUseOrdinaryParentsCutoutAndResolveOnlyToPartitionResources() {
+    @Test void modelsKeepOrdinaryParentsAndCutoutWhileReferencingImportedSprites() {
         var client = V180ThermiteData.clientFiles();
         assertEquals(element("{\"variants\":{\"\":{\"model\":\"" + NS + "block/thermite_torch\"}}}"),
                 client.get(ASSETS + "blockstates/thermite_torch.json"));
@@ -84,9 +86,9 @@ class V180ThermiteDataTest {
             assertEquals(model.getValue(), json.get("parent").getAsString());
             assertEquals("minecraft:cutout", json.get("render_type").getAsString());
             assertEquals(Set.of("torch"), json.getAsJsonObject("textures").keySet());
-            assertEquals(TORCH_PNG, texture(json.getAsJsonObject("textures").get("torch").getAsString()));
+            assertEquals(TORCH_REFERENCE, texture(json.getAsJsonObject("textures").get("torch").getAsString()));
         }
-        for (var item : Map.of("thermite", DUST_PNG, "thermite_torch", TORCH_PNG).entrySet()) {
+        for (var item : Map.of("thermite", DUST_REFERENCE, "thermite_torch", TORCH_REFERENCE).entrySet()) {
             JsonObject json = client.get(ASSETS + "models/item/" + item.getKey() + ".json");
             assertEquals(Set.of("parent", "textures"), json.keySet());
             assertEquals("minecraft:item/generated", json.get("parent").getAsString());
