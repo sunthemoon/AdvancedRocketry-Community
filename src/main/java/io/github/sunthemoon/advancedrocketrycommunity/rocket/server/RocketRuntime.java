@@ -25,6 +25,33 @@ public final class RocketRuntime {
     private RocketRuntime() {
     }
 
+    static Optional<BayPassengerExitService> passengerExits() {
+        return service instanceof RocketManager manager ? Optional.ofNullable(manager.passengerExits()) : Optional.empty();
+    }
+    /** W242-R8: without the exit service (before ServerStarting, after ServerStopped) every rider keeps the old offset. */
+    public static net.minecraft.world.phys.Vec3 bayPassengerExitLocation(RocketEntity rocket, net.minecraft.world.entity.LivingEntity rider) {
+        return rider instanceof ServerPlayer player ? passengerExits().map(exits -> exits.location(player, rocket))
+                .orElseGet(() -> rocket.position().add(1.5, 0, 0)) : rocket.position().add(1.5, 0, 0);
+    }
+    /**
+     * W242-R1: called after vanilla's dismount game event, whose dispatch can push this column out of the four-entry
+     * recent-chunk cache. Vanilla's next step, the dismount portal read, is a creating lookup that adds an UNKNOWN ticket
+     * on a cache miss. {@code getChunkNow} never creates, waits or adds a ticket; it only re-caches an already FULL column.
+     */
+    public static void passengerRemoved(RocketEntity rocket) {
+        if (rocket.level() instanceof ServerLevel level) {
+            var position = rocket.blockPosition();
+            level.getChunkSource().getChunkNow(position.getX() >> 4, position.getZ() >> 4);
+        }
+    }
+    /** A trusted synchronous passenger move (W230 section 5). Close it in the move's finally, as try-with-resources does. */
+    public interface PassengerMoveScope extends AutoCloseable { @Override void close(); }
+    /** Entering revokes the player's live exit; until closed, a detach is never a voluntary bay exit. */
+    public static PassengerMoveScope internalPassengerMove(ServerPlayer player) {
+        return passengerExits().<PassengerMoveScope>map(exits -> exits.internal(player)::close).orElse(() -> { });
+    }
+    static void passengerTransition(ServerPlayer player) { passengerExits().ifPresent(exits -> exits.revoke(player)); }
+
     public static Optional<RocketMonitorFlights> monitorFlights() {
         return service instanceof RocketManager manager ? Optional.of(manager.monitorFlights()) : Optional.empty();
     }

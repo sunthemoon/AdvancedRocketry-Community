@@ -50,6 +50,7 @@ final class BayPassengerRouting {
 
     private boolean move(BayClaim claim, RocketTransferRecord record, ServerPlayer player, RocketEntity survivor,
                          java.util.function.BooleanSupplier allowed) {
+        RocketRuntime.passengerTransition(player);
         var journal = RocketTransferSavedData.get(server);
         if (!server.isSameThread() || permittedPlayer != null || claim.hold() == BayClaim.Hold.REPAIR
                 || !player.isAlive() || server.getPlayerList().getPlayer(player.getUUID()) != player

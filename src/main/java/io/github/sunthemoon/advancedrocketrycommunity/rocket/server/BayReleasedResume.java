@@ -131,6 +131,7 @@ final class BayReleasedResume {
     }
 
     boolean move(net.minecraft.server.level.ServerPlayer player, RocketEntity rocket, RocketTransferRecord record, BooleanSupplier allowed) {
+        RocketRuntime.passengerTransition(player);
         if (!allowed.getAsBoolean() || permittedPlayer != null || !assigned(player, record) || !RocketTransferEntities.loadedEntity(rocket)
                 || !RocketEscrowGate.bayNeutral(rocket, record.transferId()) || RocketReleaseAccess.fenced(rocket)
                 || !RocketTransferEntities.currentEntity(rocket, record, record.phase().destinationAuthoritative())) { return false; }

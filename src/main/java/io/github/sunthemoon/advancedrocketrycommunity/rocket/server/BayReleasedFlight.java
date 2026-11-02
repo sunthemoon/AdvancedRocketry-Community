@@ -252,6 +252,7 @@ final class BayReleasedFlight {
 
     /** The released login path routes only the retained assignment; no ordinary election or source settlement runs. */
     boolean reconnect(RocketTransferSavedData journal, RocketTransferRecord record, ServerPlayer player) {
+        RocketRuntime.passengerTransition(player);
         var state = states.get(record.logicalRocketId());
         if (state == null || !valid(state, journal, record, RocketTransferBayRecoveryGate.Action.TICK_SOURCE)
                 || journal.find(record.transferId()).orElse(null) != record || !journal.actionable(record.logicalRocketId())
