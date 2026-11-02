@@ -1,5 +1,9 @@
 # W268-fix - rebased draft verification
 
+The W268-fix2 section below supersedes the adoption-fixture advice and generated
+output hashes in this historical W268-fix report. Its execution results remain
+historical; the earlier controlpanel-only release advice was incomplete.
+
 Date: 2026-11-03. This supersedes W268's earlier scratch results for the
 owner-facing proposal. Earlier logs remain under the original W268 evidence
 directory; no sealed review or evidence file was changed.
@@ -127,3 +131,59 @@ The first development generation stopped on a misnamed star-map class;
 that mapping was corrected before the successful builds and candidate
 commit. The committed-source regeneration succeeds. Earlier unsuccessful
 development output is not represented as acceptance evidence.
+
+## W268-fix2 - corrected adoption fixtures and guard (2026-11-03)
+
+Tested source: `015cf09cc1c3d1080ee3d116b39cf68c2816043f`, still generated
+from `0cae612d2ec986bfb67d8f6ac3bbe547a0e6d54d`. No tracked central file,
+test module, Java or resource changed. The plan/allowlist previews and all
+proposed dispositions, counts and attestation fields are unchanged.
+
+The clearance fixture needs all five newly excluded HIT relations in its
+existing `releases`, not only controlpanel:
+
+- `textures/blocks/controlpanel.png`;
+- `textures/blocks/cuttingmachine.png`;
+- `textures/blocks/cuttingmachine_active.png`;
+- `textures/blocks/fuelingmachine.png`;
+- `textures/blocks/machineprecisionlaseretcher.png`.
+
+The builder computes that list from both directions of the derivation relations
+and the proposed exclusions. Its inert `ledger-fixtures.patch.draft` restores
+the three fixture baselines described in adoption step 5. The proposal test
+applies that patch in a new disposable copy using `git apply --unidiff-zero`,
+checks that every existing assertion's AST is unchanged, simulates revision 7
+as ACCEPTED there, and runs the entire ledger module. It does not accept an
+ADR, install findings, or supply a human decision.
+
+| Actual command/check at the tested source | Result |
+|---|---|
+| Builder on the named base, repeated in a fresh LF clone | Seven generated files and the full scan reproduce byte for byte; clone status is clean. |
+| `test_proposal.py -v`, normal and `-O` | 18/18 pass in each mode; each includes the 58/58 ledger-module simulation. |
+| Adoption guard tests | Reject draft wording, retained preparation date, ADR-062 in place of a decision record, placeholders and draft status; refusal preserves existing outputs and creates no new output. Existing baseline findings still pass. |
+| Full `verify_scratch.py`, without the fixture patch or acceptance simulation | All 15 import verifies pass; importer 63/63, provenance 32/32 and resources 13/13 pass. Ledger 54/58 passes with the same four draft/baseline failures described above. |
+| Draft ledger normal / accepted / closure modes | Exit 0 / 1 / 1; 417 rows depend on PROPOSED ADR-062; closure also reports 16 PLANNED units and ten REVIEW files. |
+| Repository validator, draft scratch and branch | Each passes 45 checks, with no pending checks, warnings or failures. |
+| First-match and scope audits | 898 files, 85 changed, 813 unchanged; the allowlist remains 247 -> 162. Central files match the base; semantic operations and finding identities/decisions/attestation fields match the preceding proposal. |
+
+All command vectors, exit codes and log hashes are under
+`D:/GitHub/ARCE-Task-Evidence/root-queue/W268-fix2/`. The full runner reports
+`completed: true` and `scratch_removed: true`. Its owned `sa018768b` export,
+the reproduction clone and both test-owned scratch copies were removed.
+Only logs, results, helpers and the full scan remain (about 5.3 MB, excluding
+the launcher's own files); no duplicate source tree is retained.
+
+| Evidence file in that external directory | SHA-256 |
+|---|---|
+| `verification/verification.json` | `dfde493d59b950207e47cba55aac11ec1fc7f6b4ab20d0462087d9387548b057` |
+| `verification/first-match-audit.json` | `335bfed02216cfecbe652106f00b12c3cffa7289281d017b579dded4e79e99f9` |
+| `reproduction.json` | `47de099f09ee2b1b36571f626326b18661310f1eca297db1814710d20b421229` |
+| `proposal-tests.json` | `a90358ba98915e02f64ea18d51bc730d95b680c3d5ee9d4ea9234684220dc842` |
+| `scope-and-evidence.json` | `9fe0439d5ddf151c426f30d45d04f1b45d272c67bff880e40563216390061c15` |
+| `REVIEW-EVIDENCE-full.json` | `0499601d956fcefc5643242b1b71e15f65f96589c5aefaa78f8c11cb8b18a8b8` |
+
+The trimmed evidence is now 1,444,843 bytes and the full scan 5,099,413 bytes.
+The separate future validator hardening remains required: the normal tracked
+validator has not acquired the adoption helper's checks. Human acceptance,
+D5/D7, V1/V2 and all version Required Gates remain unclaimed. No Gradle,
+GameTest, server or client command was run for this proposal-only correction.
