@@ -7,23 +7,38 @@ players, GameTests and Xvfb runs are not V2 evidence.
 
 ## 0. Before the campaign
 
-### 0.1 A decision Root must take first
+### 0.1 Dedicated campaign selection: Root decision R298
 
-The design says to test "through the existing fully gated fixture while admission is disabled". That fixture
-(`arce bay release-test fixture` and W254's `exit fixture`) passes only the complete release-test gate,
-`EscrowTestEndpoints.enabled`, which requires that **every connected player was created by the release-test facility**.
-A real client closes that gate, so the fixture cannot launch a held rocket with real clients aboard, and owner
-decision Q1 (R243) keeps bay admission off until the V2 evidence exists. The campaign therefore needs one of these,
-decided by Root (and the owner where it touches admission):
+Root chose option 1 on 2026-11-03 in [TASK-W269](../TASK-W269-V2-CAMPAIGN-GATE.md), under the owner's standing
+delegation for design points. Use the existing fully gated fixture on a disposable copy, with the two real client
+UUIDs selected as follows. Option 2 (enabling admission on the campaign world) is not used. Bay admission stays off
+under owner decision Q1 (R243); campaign execution and scheduling remain the owner's decision. Record R298's date
+and task source at the top of the campaign record. [W269-DESIGN](W269-DESIGN.md) defines the implementation boundary.
 
-1. **Recommended:** a campaign-only gate variant, on a disposable world only, that also admits the two named real
-   client UUIDs, with its own property, its own log line at startup and a test like `BayReleaseTestGateTest`. It needs
-   a short ADR note, because it widens a release-test gate.
-2. Enable bay admission on a disposable campaign world only. The design warns that changing an admission property is
-   not evidence of production approval; the record must say so.
+- Set both JVM properties before the Forge argument file:
+  `-Dadvancedrocketrycommunity.releaseTestHooks=true` and
+  `-Dadvancedrocketrycommunity.bayV2CampaignPlayers=<client-A-uuid>,<client-B-uuid>`.
+  Use exactly two distinct, full hyphenated UUIDs, with no spaces. Empty, duplicate, abbreviated, extra or malformed
+  values refuse dedicated-server startup, including with hooks off; the bounded error names the property and format.
+- After copying the world, create `<world-root>/.arce-bay-v2-campaign` with exactly the ASCII bytes
+  `ARCE_BAY_V2_DISPOSABLE_WORLD_V1\n` (LF, no BOM). Never create it in the source world. It must be a regular file,
+  not a symlink. Startup samples it once; changing the marker or selected clients requires a restart. Absence,
+  unreadability or different bytes leave the ordinary connection policy unchanged. The marker is an explicit operator
+  acknowledgment, not proof of copying; archive its bytes and hash with the campaign configuration.
+- Use a dedicated server, `enable-rcon=false`, and no other real clients. The gate still checks the server thread,
+  hooks, RCON and every connection. Exact facility-owned test players may coexist with either or both named clients;
+  a third real client's connection closes it. Selection does not adopt clients into the test-player facility.
+- Check these exact INFO message shapes (the UUID list is lowercase and lexically sorted):
+  `ARCE_BAY_V2_CAMPAIGN startup property=advancedrocketrycommunity.bayV2CampaignPlayers clients=<uuid1>,<uuid2> world=<absolute-world-root> marker=true`
+  and, once for each named UUID login,
+  `ARCE_BAY_V2_CAMPAIGN connect property=advancedrocketrycommunity.bayV2CampaignPlayers clients=<uuid1>,<uuid2> world=<absolute-world-root> marker=true player=<uuid>`.
+  An unmarked selection logs `marker=false`; neither line appears when the property is unset. These lines describe
+  selection, not proof that all the other gate conditions hold. Unset preserves the existing facility-only policy.
 
-Until one is decided, sections 1 to 6 cannot start. Record the decision (ID, date, channel) at the top of the
-campaign record.
+W269 changes only the connection policy, not fixture commands or their behavior, admission, packets, saved data or
+GameTest. Integrated/LAN servers ignore this property; it does not provide the LAN fixture route needed by section 5.
+The LAN procedure remains a separate campaign prerequisite for Root. Root must apply the drafted ADR-065 section 10
+note and finish review/integration before using the new selection; this checklist is not a V2 result or Gate approval.
 
 A second prerequisite is the source under test. Use a commit that contains W257's committed samples (R283) and W262's
 real-client landing rules (R288); record its SHA. On older sources the fall offer ends on a real client before it lands:

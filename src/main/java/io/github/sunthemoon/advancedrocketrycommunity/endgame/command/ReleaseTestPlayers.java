@@ -106,10 +106,15 @@ public final class ReleaseTestPlayers {
 
     /** Only this server's exact facility-created player/connection pairs may enter escrow fixtures. */
     public static boolean ownsAllConnectedPlayers(MinecraftServer server) {
+        return ownsAllConnectedPlayersOr(server, java.util.Set.of());
+    }
+
+    /** Connection policy only: selected campaign UUIDs do not become facility-owned players or channels. */
+    public static boolean ownsAllConnectedPlayersOr(MinecraftServer server, java.util.Set<UUID> campaignClients) {
         if (!Boolean.getBoolean(HOOKS) || !server.isSameThread()) { return false; }
         var channels = CHANNELS.get(server);
         return server.getPlayerList().getPlayers().stream().allMatch(player ->
-                owned(channels, player, player.connection));
+                campaignClients.contains(player.getUUID()) || owned(channels, player, player.connection));
     }
 
     /** Records the exact player, connection and channel that {@link #place} created; the wiring test uses it too. */

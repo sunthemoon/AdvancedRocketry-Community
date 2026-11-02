@@ -6,6 +6,10 @@
 # Do not auto-regenerate to approve a change: investigate the path, re-audit the
 # initializer, and remeasure first use before changing the production preload list.
 # Established from 826a46398cc4ab018ee131330a04e8891ef0df41 by W217, not runtime discovery.
+# W269: EscrowTestEndpoints -> BayV2Campaign.allowedClients -> Selection accessors.
+# The Forge subscriber initializes its logger and empty lifecycle map before server startup;
+# Selection is an immutable record constructed only during opt-in startup, with no static initializer.
+# No first-use preload entry or safety assertion is removed or changed.
 AdvancedRocketryCommunity
 ModIdentity
 celestial.CelestialIds
@@ -131,6 +135,8 @@ resourceescrow.EscrowTags$TooLarge
 resourceescrow.EscrowTerminalProbe
 resourceescrow.EscrowTerminalSuccessor
 resourceescrow.EscrowTestEndpoints
+resourceescrow.BayV2Campaign
+resourceescrow.BayV2Campaign$Selection
 resourceescrow.EscrowTimingSink
 resourceescrow.ResourceEscrowSavedData
 resourceescrow.RocketEscrowAudit
