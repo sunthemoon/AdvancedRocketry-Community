@@ -22,7 +22,5 @@ grid, every face, particles, inventory/hand views, assembled snapshots and
 resource reload on a real client. No Gate or version approval is asserted.
 
 The [task record](../v1.8.0-root-queue/records/W261.md) reports commands,
-results and limitations. These central-file drafts use branch base
-`7e9b9c15bf753a1ca507063f6ff842299501fa52`. W260 changes the same files in
-parallel: Root must integrate the W261-specific edits, not overwrite
-W260 or later shared changes with these complete snapshots.
+results and limitations. Root integrated the central-file changes on the
+W261 branch and merged them with W260's by a row-level merge of the asset plan.

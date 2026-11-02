@@ -1,5 +1,7 @@
 # W261: static landing-pad tile
 
+> Superseded by R289 ([TASK-W261-FIX](../TASK-W261-FIX.md), 2026-11-02): the landing pad uses upstream's own `rocketpad_` on every face, and the fifteen other tiles are excluded as the redesigned launch pad's (and, for `rocketpad_noedge`, the redesigned concrete block's) textures. See the W261-fix section of [W261.md](W261.md). Note added by Root after the independent review (W261-R2).
+
 R287 assigns P0 to the clean `codex/v1.8.0-w261` worktree at
 `7e9b9c15bf753a1ca507063f6ff842299501fa52`. This implementer may write
 only the W261 import plan, coverage, pending provenance, pad provider and
