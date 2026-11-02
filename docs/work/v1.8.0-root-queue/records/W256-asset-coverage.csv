@@ -1,0 +1,5 @@
+source_path,source_sha256,owning_units
+src/main/resources/assets/advancedrocketry/models/block/models/sawblade.obj,a6b5625bb572dd325018b20d904d768f97c75305a2f33961cff35a93486a5dd3,block:sawBlade
+src/main/resources/assets/advancedrocketry/models/block/models/sawblade.mtl,e7f48d5ea4e888c8c9e10d4a34822e8e9ea00bb134c37e6a89bf1bae5dfea2cb,block:sawBlade
+src/main/resources/assets/advancedrocketry/textures/models/cuttingmachine2.png,6d1ae75adb72e808ee83d04e253827f3110c73b950e5d6f8ee92e1156a5ddcb7,block:sawBlade
+src/main/resources/assets/advancedrocketry/textures/items/sawbladeassembly.png,ae2dc9225d8704f946d3a6900269fb9750e8a92c8bed86d51240880c3041e9f0,block:sawBlade
