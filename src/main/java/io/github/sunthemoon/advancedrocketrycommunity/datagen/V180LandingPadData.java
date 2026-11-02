@@ -12,7 +12,7 @@ import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
 
-/** Original landing tile; concrete is a registry reference, never a copied vanilla bitmap. */
+/** Static classic landing-pad tile on every face; concrete is a registry reference only. */
 public final class V180LandingPadData implements DataProvider {
     public static final String TEXTURE = "assets/advancedrocketrycommunity/textures/block/landing_pad.png";
     private final PackOutput output;
@@ -27,7 +27,7 @@ public final class V180LandingPadData implements DataProvider {
                         {"variants":{"":{"model":"advancedrocketrycommunity:block/landing_pad"}}}
                         """),
                 "assets/advancedrocketrycommunity/models/block/landing_pad.json", json("""
-                        {"parent":"minecraft:block/cube_all","textures":{"all":"advancedrocketrycommunity:block/landing_pad"}}
+                        {"parent":"minecraft:block/cube_all","textures":{"all":"advancedrocketrycommunity:block/rocketpad_"}}
                         """),
                 "assets/advancedrocketrycommunity/models/item/landing_pad.json", json("""
                         {"parent":"advancedrocketrycommunity:block/landing_pad"}
@@ -105,6 +105,6 @@ public final class V180LandingPadData implements DataProvider {
         if (server) { serverFiles().forEach((path, value) -> writes.add(DataProvider.saveStable(cache, value, output.getOutputFolder().resolve(path)))); }
         return CompletableFuture.allOf(writes.toArray(CompletableFuture[]::new));
     }
-    @Override public String getName() { return "v1.8 original named landing-pad resources"; }
+    @Override public String getName() { return "v1.8 named landing-pad resources"; }
     private static JsonObject json(String source) { return JsonParser.parseString(source).getAsJsonObject(); }
 }
