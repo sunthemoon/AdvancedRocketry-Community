@@ -141,16 +141,25 @@ def check_landed(landed: dict, case: str, granted: bool) -> None:
     require(landed["offer"] in ("closed", "none"), f"{case}: a landing left a live offer: {landed}")
 
 
-def check_real_timing(landed: dict, case: str) -> None:
+def check_real_timing(landed: dict, case: str, staged_contact: bool = True) -> None:
     """W262 (R288): a descent lands the way a real client does. Its last airborne packet stays at most 0.25 above the pad,
-    less than one server fall step; vanilla's temporary step then reaches the pad at PlayerTick END in one full server tick;
-    the landing packet follows at the next tick. Two packets bunched into one tick are not this case's stimulus."""
-    staged, landed_tick = int(landed["staged"]), int(landed["tick"])
+    and the landing packet follows a full server tick later; two packets bunched into one tick are not this stimulus.
+
+    With ``staged_contact`` (X4, R288's timing) the last airborne packet is less than one server fall step above the pad:
+    vanilla's temporary step first reaches the pad at PlayerTick END in that very tick. Otherwise (X7, whose descent starts
+    about sixteen ticks after the exit) the step must reach the pad in that tick or earlier: once the server falls faster
+    than the second-to-last packet's height above the pad, about 1.15 blocks, the earlier step lands and resets the
+    velocity, so the step in the last tick is short."""
+    staged, landed_tick, contact = int(landed["staged"]), int(landed["tick"]), int(landed["padContact"])
     pad, staged_y, physics_y = (float(landed[key]) for key in ("padY", "stagedY", "physicsY"))
     require(staged >= 0 and landed_tick == staged + 1,
             f"{case}: the landing packet did not follow the last airborne packet by one full server tick: {landed}")
     require(0.01 < staged_y - pad <= 0.25 + 1e-6, f"{case}: the last airborne packet was not just above the pad: {landed}")
-    require(physics_y == pad, f"{case}: vanilla's temporary step did not reach the pad between the two packets: {landed}")
+    if staged_contact:
+        require(contact == staged and physics_y == pad,
+                f"{case}: vanilla's temporary step did not first reach the pad between the last two packets: {landed}")
+    else:
+        require(0 <= contact <= staged, f"{case}: vanilla's temporary step did not reach the pad before the landing packet: {landed}")
 
 
 def check_counts(before: dict, after: dict, case: str, what: str) -> dict:
@@ -421,7 +430,7 @@ def phase(run: Run, case: str, fixture: dict) -> dict:
         run.exit(f"descend {logical} 0", "DESCEND")
         landed = fields(run.wait(re.compile(r"ARCE_RELEASE_BAY_EXIT_LANDED "), 30), "LANDED")
         observed["landed"] = landed
-        check_real_timing(landed, case)
+        check_real_timing(landed, case, staged_contact=False)
         check_landed(landed, case, False)
     elif spec["phase"] == "OFFER":
         observed["after"] = require_live(run, logical, case)

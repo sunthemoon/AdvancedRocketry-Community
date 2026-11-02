@@ -39,7 +39,8 @@ def left_line(mode="sneak", **overrides) -> dict:
 
 def landed_line(**overrides) -> dict:
     head = dict(fall="10.25", landingHealth="20.0>20.0", attacks="[fall:true]", cancelled="1", landedY="41.0", onGround="true",
-                chunks="121>121", tickets="same", authority="same", staged="399", stagedY="41.25", physicsY="41.0", padY="41.0")
+                chunks="121>121", tickets="same", authority="same", staged="399", stagedY="41.25", physicsY="41.0", padContact="399",
+                padY="41.0")
     head.update({key: overrides.pop(key) for key in list(overrides) if key in head})
     line = (f"ARCE_RELEASE_BAY_EXIT_LANDED logical={LOGICAL} " + " ".join(f"{key}={value}" for key, value in head.items())
             + " " + describe(**dict(dict(offer="closed", y="41.0"), **overrides)))
@@ -146,9 +147,18 @@ class LandingChecks(unittest.TestCase):
         runner.check_real_timing(landed_line(), "X4_LANDING")
         runner.check_real_timing(landed_line(stagedY="41.02"), "X4_LANDING")
         for change in (dict(staged="400"), dict(staged="398"), dict(staged="-1"), dict(stagedY="41.0"), dict(stagedY="41.01"),
-                       dict(stagedY="41.26"), dict(physicsY="41.25"), dict(physicsY="NaN"), dict(padY="40.0")):
+                       dict(stagedY="41.26"), dict(physicsY="41.25"), dict(physicsY="NaN"), dict(padY="40.0"),
+                       dict(padContact="398", physicsY="41.1716"), dict(padContact="-1")):
             with self.subTest(change=change), self.assertRaises(SmokeError):
                 runner.check_real_timing(landed_line(**change), "X4_LANDING")
+
+    def test_a_late_descent_may_reach_the_pad_one_tick_before_its_last_airborne_packet(self):
+        early = dict(padContact="398", physicsY="41.1716")  # W262's X7 at 9270be8f2: contact at the second-to-last packet
+        runner.check_real_timing(landed_line(**early), "X7_REVOKED", staged_contact=False)
+        runner.check_real_timing(landed_line(), "X7_REVOKED", staged_contact=False)
+        for change in (dict(padContact="-1"), dict(padContact="400"), dict(staged="400"), dict(stagedY="41.3")):
+            with self.subTest(change=change), self.assertRaises(SmokeError):
+                runner.check_real_timing(landed_line(**dict(early, **change)), "X7_REVOKED", staged_contact=False)
 
 
 class ClosedAndRestartChecks(unittest.TestCase):
