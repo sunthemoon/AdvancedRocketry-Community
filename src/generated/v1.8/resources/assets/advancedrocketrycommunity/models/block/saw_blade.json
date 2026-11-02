@@ -1,6 +1,9 @@
 {
-  "parent": "minecraft:block/cube_all",
+  "automatic_culling": false,
+  "flip_v": false,
+  "loader": "forge:obj",
+  "model": "advancedrocketrycommunity:models/block/models/sawblade.obj",
   "textures": {
-    "all": "advancedrocketrycommunity:block/saw_blade"
+    "particle": "advancedrocketrycommunity:block/cuttingmachine2"
   }
 }

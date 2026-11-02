@@ -258,7 +258,7 @@ order,pattern,handling,plan,units,reason
 257,textures/items/flightspeedupgrade.png,IMPORTED,v1.8.0,item_variant:itemUpgrade/1,W246 byte copy; docs/provenance/v1.8.0-w246-flat-textures.json; human review and V1 pending
 258,textures/items/holoprojector.png,EXCLUDE,-,-,holographic selector redesigned (ADR-035)
 259,textures/items/basiclens.png,IMPORTED,v1.8.0,item_variant:lens/0,recorded in docs/provenance/v1.8.0-c18d-k6.json
-260,textures/items/sawblade*.png,IMPORT,C16b,item_variant:sawBladeIron/0 block:sawBlade,saw blade
+260,textures/items/sawbladeassembly.png,IMPORTED,v1.8.0,block:sawBlade,"W256 S1 R282 R285; docs/provenance/v1.8.0-w256-saw-model.json; target textures/item/saw_blade_classic.png, bound only as the shared saw item model's particle (the legacy flat item look is replaced on purpose, as in P1); human provenance review pending"
 261,textures/items/*circuitplate.png,REGENERATE,C16d,item_variant:itemCircuitPlate/0 item_variant:itemCircuitPlate/1,circuit plates
 262,textures/items/trackingcircuit.png,IMPORTED,v1.8.0,item_variant:ic/1,W246 byte copy; docs/provenance/v1.8.0-w246-flat-textures.json; human review and V1 pending
 263,textures/items/controliocircuit.png,REGENERATE,C16d,item_variant:ic/3,components
@@ -290,7 +290,7 @@ order,pattern,handling,plan,units,reason
 289,textures/gui/buttons/*asteroid*.png,EXCLUDE,-,-,observatory asteroid tabs redesigned (C18c contract)
 290,textures/gui/buttons/*.png,IMPORT,C16a,-,shared screen buttons
 291,textures/gui/*.png,IMPORT,C16a,-,shared screen frames
-292,models/block/models/sawblade.*,IMPORT,C16b,block:sawBlade,saw blade OBJ/MTL
+292,models/block/models/sawblade.*,IMPORTED,v1.8.0,block:sawBlade,"W256 S1 R282; docs/provenance/v1.8.0-w256-saw-model.json; targets models/block/models/sawblade.obj and .mtl, the ordinary shared saw block/item mesh; human provenance and V1 review pending"
 293,models/block/models/advrocketmotor.mtl,IMPORTED,v1.8.0,block:advRocketmotor,W249 P1; docs/provenance/v1.8.0-w249-motor-models.json; target src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/block/models/advrocketmotor.mtl
 294,models/block/models/advrocketmotor.obj,IMPORTED,v1.8.0,block:advRocketmotor,W249 P1; docs/provenance/v1.8.0-w249-motor-models.json; target src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/block/models/advrocketmotor.obj
 295,models/block/models/rocketmotor.mtl,IMPORTED,v1.8.0,block:rocketmotor,W249 P1; docs/provenance/v1.8.0-w249-motor-models.json; target src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/block/models/rocketmotor.mtl
@@ -334,7 +334,7 @@ order,pattern,handling,plan,units,reason
 333,textures/models/combustion.png,IMPORTED,v1.8.0,block:rocketmotor,W249 P1; docs/provenance/v1.8.0-w249-motor-models.json; target src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/block/combustion_classic.png
 334,textures/models/nuclearengine.png,IMPORT,C17a,block:nuclearrocketmotor,"nuclear engine model texture, with its model"
 335,textures/models/tank.png,IMPORT,C17a,block:fuelTank block:bipropellantfueltank block:oxidizerfueltank,"fuel tank model texture, with its models"
-336,textures/models/cuttingmachine2.png,IMPORT,C16b,block:sawBlade,"saw blade model texture, with its model"
+336,textures/models/cuttingmachine2.png,IMPORTED,v1.8.0,block:sawBlade,"W256 S1 R282; docs/provenance/v1.8.0-w256-saw-model.json; target textures/block/cuttingmachine2.png, the saw mesh's stitched texture; human provenance and V1 review pending"
 337,textures/models/basiclasergun.png,IMPORT,C18b,item:basicLaserGun,"laser gun model texture, with its model"
 338,textures/models/jetpack.png,IMPORT,C18b,item:jetPack,"jetpack model texture, with its model"
 339,textures/models/drill.png,EXCLUDE,-,-,"its only consumer, the rocket drill model, is excluded (ADR-051)"

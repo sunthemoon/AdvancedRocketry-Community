@@ -80,3 +80,7 @@ src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/block/models
 src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/block/models/bipropellantrocketmotor.mtl -text
 src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/block/models/advbipropellantrocketmotor.obj -text
 src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/block/models/advbipropellantrocketmotor.mtl -text
+
+# W256 S1: preserve importer-written mesh and material bytes.
+src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/block/models/sawblade.obj -text
+src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/block/models/sawblade.mtl -text
