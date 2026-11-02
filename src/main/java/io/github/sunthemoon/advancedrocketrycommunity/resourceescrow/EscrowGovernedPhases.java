@@ -149,8 +149,16 @@ public final class EscrowGovernedPhases {
         return Result.HELD;
     }
 
+    /** A trusted F5 move (W230 section 5, W242-R3): its detach from the source is never a voluntary bay exit. */
     private boolean move(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
                          RocketEntity source, RocketEntity destination, ServerPlayer player, BooleanSupplier boundary) {
+        try (var ignored = io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime.internalPassengerMove(player)) {
+            return moveScoped(server, journal, record, source, destination, player, boundary);
+        }
+    }
+
+    private boolean moveScoped(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
+                               RocketEntity source, RocketEntity destination, ServerPlayer player, BooleanSupplier boundary) {
         if (!online(server, player) || player.getVehicle() != null && player.getVehicle() != source) { return false; }
         var beforeSource = envelope(source); var beforeDestination = envelope(destination);
         var permit = permit(server, journal, record, source, destination, () -> boundary.getAsBoolean() && online(server, player));

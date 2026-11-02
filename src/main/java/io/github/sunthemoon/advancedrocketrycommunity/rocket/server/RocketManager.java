@@ -42,6 +42,8 @@ public final class RocketManager implements RocketOperationService {
     private final RocketFlightLifecycleController flightLifecycle = new RocketFlightLifecycleController();
     /** W27d1: the bay coordinator of the running server session, created at ServerStartingEvent. */
     private BayTransferRecovery bays;
+    private BayPassengerExitService passengerExits;
+    BayPassengerExitService passengerExits() { return passengerExits; }
 
     public RocketManager() {
         this(RocketBlockEntityAdapters.defaults(), null, null);
@@ -277,6 +279,7 @@ public final class RocketManager implements RocketOperationService {
      */
     public void onServerStarting(net.minecraftforge.event.server.ServerStartingEvent event) {
         bays = BayTransferRecovery.start(event.getServer());
+        passengerExits = new BayPassengerExitService(event.getServer());
         flights.installBayRecoveryGate(bays);
     }
 
@@ -367,6 +370,7 @@ public final class RocketManager implements RocketOperationService {
     }
 
     public void clear() {
+        if (passengerExits != null) { passengerExits.clear(); passengerExits = null; }
         bays = null; // the crash path has no ServerStoppingEvent; the dispatch's gate is cleared with the flights below
         sealed.clear();
         recovery.clear();

@@ -1,0 +1,13 @@
+{
+  "message.advancedrocketrycommunity.bay_exit.authority_unavailable": "退出权威不可用：未证明安全位置时原地下船，无摔落保护。已有座位分配保持不变，后续飞行或重连可能再次移动您。仍需生命保障。",
+  "message.advancedrocketrycommunity.bay_exit.budget_exhausted": "安全位置检查预算已用尽，已原地下船，无摔落保护。已有座位分配保持不变，后续飞行或重连可能再次移动您。仍需生命保障。",
+  "message.advancedrocketrycommunity.bay_exit.capacity_or_used": "未找到安全位置，已原地下船。保护容量已满或本次转移的首次退出机会已使用；无新增摔落保护。已有座位分配保持不变，后续飞行或重连可能再次移动您。仍需生命保障。",
+  "message.advancedrocketrycommunity.bay_exit.capacity_refused": "安全位置检查容量已满，已原地下船，无已检查位置或摔落保护。已有座位分配保持不变，后续飞行或重连可能再次移动您。仍需生命保障。",
+  "message.advancedrocketrycommunity.bay_exit.exit_capacity": "退出保护容量已满，已原地下船，无已检查位置或摔落保护。已有座位分配保持不变，后续飞行或重连可能再次移动您。仍需生命保障。",
+  "message.advancedrocketrycommunity.bay_exit.fall_offer": "未找到安全位置，已原地下船。仅本次下降的普通摔落可获得一次有限保护；最多 200 刻，移动、传送、掉线或未知接触可能提前终止。滴水石锥等其他伤害不受保护。已有座位分配保持不变，后续飞行或重连可能再次移动您。仍需生命保障。",
+  "message.advancedrocketrycommunity.bay_exit.no_safe_exit": "未找到安全位置，已原地下船；摔落保护不可用。已有座位分配保持不变，后续飞行或重连可能再次移动您。仍需生命保障。",
+  "message.advancedrocketrycommunity.bay_exit.pending": "安全位置检查尚未完成，已原地下船，无已检查位置或摔落保护。已有座位分配保持不变，后续飞行或重连可能再次移动您。仍需生命保障。",
+  "message.advancedrocketrycommunity.bay_exit.reentrant_refused": "安全位置检查正被另一次退出占用，已原地下船，无已检查位置或摔落保护。已有座位分配保持不变，后续飞行或重连可能再次移动您。仍需生命保障。",
+  "message.advancedrocketrycommunity.bay_exit.safe": "已下船，放置位置已检查。已有座位分配保持不变，后续飞行或重连可能再次移动您。仍需生命保障。",
+  "message.advancedrocketrycommunity.bay_exit.stale": "安全位置检查已过期，已原地下船，无已检查位置或摔落保护。已有座位分配保持不变，后续飞行或重连可能再次移动您。仍需生命保障。"
+}

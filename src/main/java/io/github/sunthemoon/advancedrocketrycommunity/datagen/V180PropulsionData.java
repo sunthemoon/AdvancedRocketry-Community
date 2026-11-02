@@ -30,6 +30,10 @@ public final class V180PropulsionData implements DataProvider {
                 }
                 files.put(asset("models/block/" + id), model);
                 files.put(asset("models/item/" + id), json("{\"parent\":\"" + NS + ":block/" + id + "\"}"));
+                if (id.equals("advanced_rocket_motor")) {
+                    files.put(asset("models/block/" + id), V180MotorModelData.block(id));
+                    files.put(asset("models/item/" + id), V180MotorModelData.item(id));
+                }
                 JsonObject state = json("{\"variants\":{}}");
                 if (id.equals("nuclear_rocket_motor")) {
                     for (String facing : List.of("down", "up", "north", "south", "east", "west")) {

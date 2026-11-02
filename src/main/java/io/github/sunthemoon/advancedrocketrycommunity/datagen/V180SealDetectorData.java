@@ -13,7 +13,10 @@ import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
 
-/** NEW task-frozen probe grid and ordinary recipe; provenance was published before authoring. */
+/**
+ * Ordinary recipe, and a model that names the provenance-bound imported icon. The retained NEW probe grid is still
+ * generated but not referenced at runtime; its disposition is pending.
+ */
 public final class V180SealDetectorData implements DataProvider {
     public static final String ID = "advancedrocketrycommunity:seal_detector";
     public static final String TEXTURE = "assets/advancedrocketrycommunity/textures/item/seal_detector.png";
@@ -29,7 +32,7 @@ public final class V180SealDetectorData implements DataProvider {
 
     public static Map<String, JsonObject> clientFiles() {
         return Map.of("assets/advancedrocketrycommunity/models/item/seal_detector.json", json("""
-                {"parent":"minecraft:item/generated","textures":{"layer0":"advancedrocketrycommunity:item/seal_detector"}}
+                {"parent":"minecraft:item/generated","textures":{"layer0":"advancedrocketrycommunity:item/sealdetector"}}
                 """));
     }
 

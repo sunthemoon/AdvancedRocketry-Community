@@ -42,7 +42,7 @@ class V180SealDetectorDataTest {
         var model = V180SealDetectorData.clientFiles().get("assets/advancedrocketrycommunity/models/item/seal_detector.json");
         assertEquals(1, V180SealDetectorData.clientFiles().size());
         assertEquals("minecraft:item/generated", model.get("parent").getAsString());
-        assertEquals("advancedrocketrycommunity:item/seal_detector", model.getAsJsonObject("textures").get("layer0").getAsString());
+        assertEquals("advancedrocketrycommunity:item/sealdetector", model.getAsJsonObject("textures").get("layer0").getAsString());
         model.addProperty("mutation", true);
         assertFalse(V180SealDetectorData.clientFiles().values().iterator().next().has("mutation"));
         assertEquals("assets/advancedrocketrycommunity/textures/item/seal_detector.png", V180SealDetectorData.TEXTURE);

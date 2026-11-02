@@ -3,6 +3,6 @@
   "textures": {
     "bottom": "advancedrocketrycommunity:block/suit_workstation_bottom",
     "side": "advancedrocketrycommunity:block/suit_workstation_side",
-    "top": "advancedrocketrycommunity:block/suit_workstation_top"
+    "top": "advancedrocketrycommunity:block/suitworkstation"
   }
 }

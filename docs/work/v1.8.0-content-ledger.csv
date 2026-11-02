@@ -48,20 +48,20 @@ biome:volcanicbarren,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:volcanic_lowla
 biome_unregistered:BiomeGenPumpkin,REJECTED,-,-,ADR-062,never registered in the legacy build,
 biome_unregistered:BiomeGenWatermelon,REJECTED,-,-,ADR-062,never registered in the legacy build,
 block:advbipropellantRocketmotor,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:advanced_bipropellant_rocket_motor,ADR-062 ADR-065,propulsion tier with fuel and oxidizer,docs/work/v1.8.0-c17a-propulsion/VERIFICATION.md
-block:advRocketmotor,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:advanced_rocket_motor,ADR-062 ADR-065,propulsion tier,docs/work/v1.8.0-c17a-propulsion/VERIFICATION.md
-block:airlock_door,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:airlock_door,ADR-062 ADR-066,sealing door; block half of the small airlock,docs/work/v1.8.0-c18a-life-support/VERIFICATION.md
+block:advRocketmotor,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:advanced_rocket_motor,ADR-062 ADR-065,propulsion tier; W249 P1 ordinary baked OBJ mono motor and shared block item; human provenance/V1 pending,docs/work/v1.8.0-c17a-propulsion/VERIFICATION.md
+block:airlock_door,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:airlock_door,ADR-062 ADR-066,sealing door; block half of the small airlock; W246 flat texture references; docs/provenance/v1.8.0-w246-flat-textures.json; human review and V1 pending,docs/work/v1.8.0-c18a-life-support/VERIFICATION.md
 block:alienLeaves,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:lightwood_leaves,ADR-063,"alien forest flora; light 8, a sapling in 1 of 100 drops",docs/work/v1.8.0-c15c-worlds/VERIFICATION.md
 block:alienSapling,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:lightwood_sapling,ADR-063,alien forest flora; grows the lightwood tree,docs/work/v1.8.0-c15c-worlds/VERIFICATION.md
 block:alienWood,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:lightwood_log,ADR-063,"alien forest flora; burns, hardness 3",docs/work/v1.8.0-c15c-worlds/VERIFICATION.md
 block:altitudeController,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:station_altitude_controller,ADR-062 ADR-065,station orbital distance through the checked station commit,docs/work/v1.8.0-c17b-station/VERIFICATION.md
-block:arcfurnace,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:arc_furnace,ADR-062 ADR-064,legacy 5 x 5 x 5 layout on the classic kernel; alloys and silicon,docs/work/v1.8.0-c16b-machines/VERIFICATION.md
+block:arcfurnace,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:arc_furnace,ADR-062 ADR-064,legacy 5 x 5 x 5 layout on the classic kernel; alloys and silicon; W246 flat texture references; docs/provenance/v1.8.0-w246-flat-textures.json; human review and V1 pending,docs/work/v1.8.0-c16b-machines/VERIFICATION.md
 block:basalt,REDESIGNED,v1.8.0,vanilla basalt in the Venus surface,ADR-063,vanilla basalt replaces the legacy block,docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
 block:beacon,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:planetary_beacon,ADR-062 ADR-065,bounded navigation marker per body,docs/work/v1.8.0-c17c-solar-beacon/VERIFICATION.md
 block:biomeScanner,DEFERRED,post-2.0,-,ADR-062,terraforming family,
 block:bipropellantfueltank,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:bipropellant_fuel_tank,ADR-062 ADR-065,propulsion tier,docs/work/v1.8.0-c17a-propulsion/VERIFICATION.md
 block:bipropellantrocketmotor,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:bipropellant_rocket_motor,ADR-062 ADR-065,propulsion tier,docs/work/v1.8.0-c17a-propulsion/VERIFICATION.md
 block:blackholegenerator,IMPLEMENTED,v1.7.0,advancedrocketrycommunity:black_hole_generator,ADR-057,,
-block:blastbrick,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:blast_brick,ADR-062 ADR-064,arc furnace structure,docs/work/v1.8.0-c16b-machines/VERIFICATION.md
+block:blastbrick,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:blast_brick,ADR-062 ADR-064,arc furnace structure; W246 flat texture references; docs/provenance/v1.8.0-w246-flat-textures.json; human review and V1 pending,docs/work/v1.8.0-c16b-machines/VERIFICATION.md
 block:blockLens,REDESIGNED,v1.7.0,advancedrocketrycommunity:laser_lens,ADR-055,"lens is a laser drill component item, not a block",
 block:blockPump,REDESIGNED,v1.8.0,advancedrocketrycommunity:pump,ADR-062 ADR-064,owner-bound loaded-only source drain with bounded search and protection checks,docs/work/v1.8.0-c16a-pump/VERIFICATION.md
 block:centrifuge,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:centrifuge,ADR-062 ADR-064,enriched lava separation with seeded retained chance outcomes,docs/work/v1.8.0-c16c-machines/VERIFICATION.md
@@ -119,12 +119,12 @@ block:planks,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:lightwood_planks,ADR-0
 block:platepress,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:small_plate_press,ADR-063,redstone-powered press over obsidian; early plates,docs/work/v1.8.0-c15a-materials/VERIFICATION.md
 block:precisionassemblingmachine,IMPLEMENTED,v1.2.0,advancedrocketrycommunity:precision_assembler,ADR-016 ADR-019,,
 block:precisionlaseretcher,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:precision_laser_etcher,ADR-062 ADR-064,circuit plates; the lens is retained,docs/work/v1.8.0-c16c-machines/VERIFICATION.md
-block:quartzcrucible,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:quartz_crucible,ADR-062 ADR-064,crystallizer structure,docs/work/v1.8.0-c16c-machines/VERIFICATION.md
+block:quartzcrucible,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:quartz_crucible,ADR-062 ADR-064,crystallizer structure; W246 flat texture references; docs/provenance/v1.8.0-w246-flat-textures.json; human review and V1 pending,docs/work/v1.8.0-c16c-machines/VERIFICATION.md
 block:railgun,IMPLEMENTED,v1.7.0,advancedrocketrycommunity:railgun,ADR-056,,
 block:rocketBuilder,IMPLEMENTED,v0.5.0,advancedrocketrycommunity:rocket_assembler,V0.5.0,,
 block:rocketfire,REJECTED,-,-,ADR-062,technical fire block; launch effects are client particles,
 block:rocketFuel,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:rocket_fuel,ADR-062 ADR-064,source and flowing liquid fuel block,docs/work/v1.8.0-c16a-fluids/VERIFICATION.md
-block:rocketmotor,IMPLEMENTED,v0.5.0,advancedrocketrycommunity:rocket_motor,ADR-026,,
+block:rocketmotor,IMPLEMENTED,v0.5.0,advancedrocketrycommunity:rocket_motor,ADR-026,W249 P1 ordinary baked OBJ mono motor and shared block item; human provenance/V1 pending,
 block:rollingMachine,IMPLEMENTED,v1.2.0,advancedrocketrycommunity:rolling_machine,ADR-016,,
 block:satelliteBuilder,IMPLEMENTED,v1.6.0,advancedrocketrycommunity:satellite_builder,ADR-049,,
 block:satelliteControlCenter,IMPLEMENTED,v0.8.0,advancedrocketrycommunity:satellite_terminal,ADR-049,,
@@ -139,9 +139,9 @@ block:spaceLaser,IMPLEMENTED,v1.7.0,advancedrocketrycommunity:orbital_laser_dril
 block:stationBuilder,REDESIGNED,v0.7.0,advancedrocketrycommunity:station_deployment_kit,V0.7.0 ADR-062,stations are deployed from a kit,
 block:stationMarker,REDESIGNED,v1.5.0,station expansion commit,ADR-040 ADR-062,no station module docking,
 block:structureTower,REDESIGNED,v0.5.0,advancedrocketrycommunity:rocket_assembler,V0.5.0 ADR-062,no tower bounds for assembly,
-block:suitWorkStation,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:suit_workstation,ADR-062 ADR-066,installs suit upgrades and tanks,docs/work/v1.8.0-c18b-equipment/VERIFICATION.md
+block:suitWorkStation,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:suit_workstation,ADR-062 ADR-066,installs suit upgrades and tanks; W246 flat texture references; docs/provenance/v1.8.0-w246-flat-textures.json; human review and V1 pending,docs/work/v1.8.0-c18b-equipment/VERIFICATION.md
 block:terraformer,DEFERRED,post-2.0,-,ADR-062,terraforming family,
-block:thermiteTorch,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:thermite_torch,ADR-062 ADR-066,light that works in vacuum,docs/work/v1.8.0-c18a-life-support/VERIFICATION.md
+block:thermiteTorch,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:thermite_torch,ADR-062 ADR-066,light that works in vacuum; W246 flat texture references; docs/provenance/v1.8.0-w246-flat-textures.json; human review and V1 pending,docs/work/v1.8.0-c18a-life-support/VERIFICATION.md
 block:unlitTorch,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:unlit_torch,ADR-062 ADR-066,with unlit_wall_torch; bounded root keeps the source pair; quarantine per R-034,docs/work/v1.8.0-c18a-life-support/VERIFICATION.md
 block:vacuumLaser,REDESIGNED,v1.7.0,advancedrocketrycommunity:endgame_casing advancedrocketrycommunity:laser_lens,ADR-055,laser drill structure is casing plus lens,
 block:vitrifiedSand,REJECTED,-,-,ADR-062,"no recipe, generation or producer in the legacy build",
@@ -465,7 +465,7 @@ item:atmAnalyser,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:atmosphere_analyze
 item:basicLaserGun,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:basic_laser_gun,ADR-062 ADR-066,ranged mining through break events and protection,docs/work/v1.8.0-c18b-equipment/VERIFICATION.md
 item:beaconFinder,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:beacon_finder,ADR-062 ADR-065,points to owned beacons; installs in the helmet,docs/work/v1.8.0-c17c-solar-beacon/VERIFICATION.md
 item:biomeChanger,DEFERRED,post-2.0,-,ADR-062,terraforming family,
-item:carbonScrubberCartridge,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:carbon_scrubber_cartridge,ADR-062 ADR-066,CO2 scrubber consumable; the chemical reactor refreshes a fully spent cartridge (W32 merge 58ca2269),docs/work/v1.8.0-c18a-life-support/VERIFICATION.md
+item:carbonScrubberCartridge,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:carbon_scrubber_cartridge,ADR-062 ADR-066,CO2 scrubber consumable; the chemical reactor refreshes a fully spent cartridge (W32 merge 58ca2269); W246 flat texture references; docs/provenance/v1.8.0-w246-flat-textures.json; human review and V1 pending,docs/work/v1.8.0-c18a-life-support/VERIFICATION.md
 item:dataUnit,MERGED,-,item_variant:dataUnit/0,ADR-062,,
 item:elevatorChip,REJECTED,-,-,ADR-059 ADR-062,endpoint records replace the unbounded chip,
 item:hoverCraft,DEFERRED,post-2.0,-,ADR-062,"vehicle entity, rendering and control packets",
@@ -473,8 +473,8 @@ item:ic,MERGED,-,item_variant:ic/*,ADR-062,,
 item:iquartzcrucible,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:quartz_crucible_shell,ADR-062 ADR-064,crafting part of the crucible,docs/work/v1.8.0-c16c-machines/VERIFICATION.md
 item:itemCircuitPlate,MERGED,-,item_variant:itemCircuitPlate/*,ADR-062,,
 item:itemUpgrade,MERGED,-,item_variant:itemUpgrade/*,ADR-062,,
-item:jackHammer,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:jackhammer,ADR-062 ADR-066,fast mining tool,docs/work/v1.8.0-c18b-equipment/VERIFICATION.md
-item:jetPack,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:jetpack,ADR-062 ADR-066,chest attachment using suit hydrogen,docs/work/v1.8.0-c18b-equipment/VERIFICATION.md
+item:jackHammer,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:jackhammer,ADR-062 ADR-066,fast mining tool; W246 flat texture references; docs/provenance/v1.8.0-w246-flat-textures.json; human review and V1 pending,docs/work/v1.8.0-c18b-equipment/VERIFICATION.md
+item:jetPack,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:jetpack,ADR-062 ADR-066,chest attachment using suit hydrogen; W246 flat texture references; docs/provenance/v1.8.0-w246-flat-textures.json; human review and V1 pending,docs/work/v1.8.0-c18b-equipment/VERIFICATION.md
 item:lens,MERGED,-,item_variant:lens/0,ADR-062,,
 item:misc,MERGED,-,item_variant:misc/*,ADR-062,,
 item:oreScanner,REDESIGNED,v1.6.0,survey scan terminal view,ADR-049,handheld readout of survey data,
@@ -485,27 +485,27 @@ item:satelliteIdChip,REDESIGNED,v1.6.0,advancedrocketrycommunity:satellite_contr
 item:satellitePowerSource,MERGED,-,item_variant:satellitePowerSource/*,ADR-062,,
 item:satellitePrimaryFunction,MERGED,-,item_variant:satellitePrimaryFunction/*,ADR-062,,
 item:sawBladeIron,MERGED,-,item_variant:sawBladeIron/0,ADR-062,,
-item:sealDetector,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:seal_detector,ADR-062 ADR-066 ADR-067,reports the seal state of a block,docs/work/v1.8.0-c18a-life-support/VERIFICATION.md
-item:smallAirlockDoor,MERGED,-,block:airlock_door,ADR-062 ADR-066,the airlock door block item,
+item:sealDetector,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:seal_detector,ADR-062 ADR-066 ADR-067,reports the seal state of a block; W246 flat texture references; docs/provenance/v1.8.0-w246-flat-textures.json; human review and V1 pending,docs/work/v1.8.0-c18a-life-support/VERIFICATION.md
+item:smallAirlockDoor,MERGED,-,block:airlock_door,ADR-062 ADR-066,the airlock door block item; W246 flat texture references; docs/provenance/v1.8.0-w246-flat-textures.json; human review and V1 pending,
 item:spaceBoots,IMPLEMENTED,v0.4.0,advancedrocketrycommunity:space_suit_boots,ADR-025,,
 item:spaceChestplate,IMPLEMENTED,v0.4.0,advancedrocketrycommunity:space_suit_chestplate,ADR-025,,
 item:spaceHelmet,IMPLEMENTED,v0.4.0,advancedrocketrycommunity:space_suit_helmet,ADR-025,,
 item:spaceLeggings,IMPLEMENTED,v0.4.0,advancedrocketrycommunity:space_suit_leggings,ADR-025,,
 item:spaceStation,REDESIGNED,v0.7.0,advancedrocketrycommunity:station_deployment_kit,V0.7.0 ADR-062,packed station container replaced by the kit,
 item:spaceStationChip,REDESIGNED,v1.5.0,station commands and star map,ADR-046 ADR-062,station identity is server-side,
-item:thermite,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:thermite,ADR-062 ADR-066,thermite torch ingredient,docs/work/v1.8.0-c18a-life-support/VERIFICATION.md
+item:thermite,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:thermite,ADR-062 ADR-066,thermite torch ingredient; W246 flat texture references; docs/provenance/v1.8.0-w246-flat-textures.json; human review and V1 pending,docs/work/v1.8.0-c18a-life-support/VERIFICATION.md
 item:wafer,MERGED,-,item_variant:wafer/0,ADR-062,,
 item_variant:dataUnit/0,IMPLEMENTED,v0.8.0,advancedrocketrycommunity:data_storage_unit,V0.8.0,,
 item_variant:ic/0,IMPLEMENTED,v0.1.0,advancedrocketrycommunity:basic_circuit,V0.1.0,,
-item_variant:ic/1,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:tracking_circuit,ADR-062 ADR-064,component,docs/work/v1.8.0-c16d-components-graph/VERIFICATION.md
+item_variant:ic/1,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:tracking_circuit,ADR-062 ADR-064,component; W246 flat texture references; docs/provenance/v1.8.0-w246-flat-textures.json; human review and V1 pending,docs/work/v1.8.0-c16d-components-graph/VERIFICATION.md
 item_variant:ic/2,IMPLEMENTED,v0.1.0,advancedrocketrycommunity:advanced_circuit,V0.1.0,,
 item_variant:ic/3,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:control_board,ADR-062 ADR-064,component,docs/work/v1.8.0-c16d-components-graph/VERIFICATION.md
 item_variant:ic/4,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:item_io_board,ADR-062 ADR-064,component,docs/work/v1.8.0-c16d-components-graph/VERIFICATION.md
 item_variant:ic/5,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:liquid_io_board,ADR-062 ADR-064,component,docs/work/v1.8.0-c16d-components-graph/VERIFICATION.md
 item_variant:itemCircuitPlate/0,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:basic_circuit_plate,ADR-062 ADR-064,laser etcher output,docs/work/v1.8.0-c16d-components-graph/VERIFICATION.md
 item_variant:itemCircuitPlate/1,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:advanced_circuit_plate,ADR-062 ADR-064,laser etcher output,docs/work/v1.8.0-c16d-components-graph/VERIFICATION.md
-item_variant:itemUpgrade/0,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:hover_upgrade,ADR-062 ADR-066,jetpack mode,docs/work/v1.8.0-c18b-equipment/VERIFICATION.md
-item_variant:itemUpgrade/1,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:flight_speed_upgrade,ADR-062 ADR-066,jetpack speed,docs/work/v1.8.0-c18b-equipment/VERIFICATION.md
+item_variant:itemUpgrade/0,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:hover_upgrade,ADR-062 ADR-066,jetpack mode; W246 flat texture references; docs/provenance/v1.8.0-w246-flat-textures.json; human review and V1 pending,docs/work/v1.8.0-c18b-equipment/VERIFICATION.md
+item_variant:itemUpgrade/1,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:flight_speed_upgrade,ADR-062 ADR-066,jetpack speed; W246 flat texture references; docs/provenance/v1.8.0-w246-flat-textures.json; human review and V1 pending,docs/work/v1.8.0-c18b-equipment/VERIFICATION.md
 item_variant:itemUpgrade/2,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:bionic_leg_upgrade,ADR-062 ADR-066,movement speed,docs/work/v1.8.0-c18b-equipment/VERIFICATION.md
 item_variant:itemUpgrade/3,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:padded_landing_boots,ADR-062 ADR-066,fall protection,docs/work/v1.8.0-c18b-equipment/VERIFICATION.md
 item_variant:itemUpgrade/4,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:anti_fog_visor,ADR-062 ADR-066,removes atmospheric nausea,docs/work/v1.8.0-c18b-equipment/VERIFICATION.md

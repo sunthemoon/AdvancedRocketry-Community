@@ -621,7 +621,14 @@ public final class RocketEntity extends Entity implements MenuProvider {
 
     @Override
     public Vec3 getDismountLocationForPassenger(LivingEntity passenger) {
-        return position().add(1.5D, 0.0D, 0.0D);
+        return RocketRuntime.bayPassengerExitLocation(this, passenger);
+    }
+
+    /** W242-R1: super dispatches the dismount game event; the server then re-caches this rocket's own loaded column. */
+    @Override
+    protected void removePassenger(Entity passenger) {
+        super.removePassenger(passenger);
+        if (!level().isClientSide) { RocketRuntime.passengerRemoved(this); }
     }
 
     @Override

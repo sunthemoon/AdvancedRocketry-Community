@@ -31,7 +31,11 @@ public final class V180C16cMachineData implements DataProvider {
                 textures.addProperty("front", NS + ":block/" + block);
                 // The machine casing ships separate side and top textures (see V180ArcCuttingData).
                 for (String face : List.of("side", "top")) { textures.addProperty(face, NS + ":block/machine_casing_" + face); }
-            } else { textures.addProperty("all", NS + ":block/" + block); }
+            } else {
+                textures.addProperty("all", NS + ":block/" + block);
+                // Override only the inherited underside; REVIEW/EXCLUDE legacy faces remain unused.
+                textures.addProperty("down", NS + ":block/qcrucible_bottom");
+            }
             model.add("textures", textures); files.put(asset("models/block/" + block), model);
             files.put(asset("models/item/" + block), object("parent", NS + ":block/" + block));
             var variants = new JsonObject();

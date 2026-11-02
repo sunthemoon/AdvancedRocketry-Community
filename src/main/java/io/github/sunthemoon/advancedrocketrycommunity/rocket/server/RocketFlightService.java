@@ -560,6 +560,8 @@ final class RocketFlightService {
     }
 
     private RocketFlightRequestResult leave(ServerPlayer player, RocketEntity rocket) {
+        var physicalExit = RocketRuntime.passengerExits().map(exits -> exits.heldLeave(player, rocket)).orElse(null);
+        if (physicalExit != null) { return physicalExit; }
         if (RocketReleaseAccess.fenced(rocket) ? !RocketReleaseAccess.retainedRiderMayLeave(rocket, player.getUUID())
                 : !passengerMutationAllowed(rocket)) {
             return RocketFlightRequestResult.failure(RocketFlightRequestCode.TRANSFER_JOURNAL_BLOCKED);
@@ -626,7 +628,8 @@ final class RocketFlightService {
             UUID requestId,
             RocketFlightRequestResult result
     ) {
-        notify(player, result.code(), result.requiredFuel());
+        // W242-R10: identity marks the held self-exit, whose bay-exit message is its only feedback.
+        if (result != BayPassengerExitService.HELD_EXIT) { notify(player, result.code(), result.requiredFuel()); }
         if (result.detailKey() != null && player.connection != null) {
             player.sendSystemMessage(Component.translatable("message.advancedrocketrycommunity.pad.landing_refused",
                     Component.translatable(result.detailKey())));
