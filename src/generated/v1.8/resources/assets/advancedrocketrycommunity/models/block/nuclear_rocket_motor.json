@@ -1,8 +1,9 @@
 {
-  "parent": "minecraft:block/cube_bottom_top",
+  "automatic_culling": false,
+  "flip_v": false,
+  "loader": "forge:obj",
+  "model": "advancedrocketrycommunity:models/block/models/nuclearrocketmotor.obj",
   "textures": {
-    "bottom": "advancedrocketrycommunity:block/nuclear_rocket_motor_bottom",
-    "side": "advancedrocketrycommunity:block/nuclear_rocket_motor_side",
-    "top": "advancedrocketrycommunity:block/nuclear_rocket_motor_top"
+    "particle": "advancedrocketrycommunity:block/nuclearengine"
   }
 }

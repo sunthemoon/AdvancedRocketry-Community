@@ -74,3 +74,17 @@ src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/block/models
 src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/block/models/rocketmotor.mtl -text
 src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/block/models/advrocketmotor.obj -text
 src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/block/models/advrocketmotor.mtl -text
+
+# W255 P2: preserve importer-written OBJ/MTL bytes on Windows.
+src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/block/models/bipropellantrocketmotor.obj -text
+src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/block/models/bipropellantrocketmotor.mtl -text
+src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/block/models/advbipropellantrocketmotor.obj -text
+src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/block/models/advbipropellantrocketmotor.mtl -text
+
+# W256 S1: preserve importer-written mesh and material bytes.
+src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/block/models/sawblade.obj -text
+src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/block/models/sawblade.mtl -text
+
+# W258 P3: preserve importer-written nuclear OBJ/MTL bytes.
+src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/block/models/nuclearrocketmotor.obj -text
+src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/block/models/nuclearrocketmotor.mtl -text

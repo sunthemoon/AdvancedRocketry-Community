@@ -47,7 +47,7 @@ biome:volcanic,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:volcanic biome,ADR-0
 biome:volcanicbarren,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:volcanic_lowlands biome,ADR-063,Venus,docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
 biome_unregistered:BiomeGenPumpkin,REJECTED,-,-,ADR-062,never registered in the legacy build,
 biome_unregistered:BiomeGenWatermelon,REJECTED,-,-,ADR-062,never registered in the legacy build,
-block:advbipropellantRocketmotor,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:advanced_bipropellant_rocket_motor,ADR-062 ADR-065,propulsion tier with fuel and oxidizer,docs/work/v1.8.0-c17a-propulsion/VERIFICATION.md
+block:advbipropellantRocketmotor,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:advanced_bipropellant_rocket_motor,ADR-062 ADR-065,propulsion tier with fuel and oxidizer; W255 P2 ordinary shared block/item/assembled OBJ model; docs/provenance/v1.8.0-w255-bipropellant-motor-models.json; human provenance and V1 review pending,docs/work/v1.8.0-c17a-propulsion/VERIFICATION.md
 block:advRocketmotor,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:advanced_rocket_motor,ADR-062 ADR-065,propulsion tier; W249 P1 ordinary baked OBJ mono motor and shared block item; human provenance/V1 pending,docs/work/v1.8.0-c17a-propulsion/VERIFICATION.md
 block:airlock_door,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:airlock_door,ADR-062 ADR-066,sealing door; block half of the small airlock; W246 flat texture references; docs/provenance/v1.8.0-w246-flat-textures.json; human review and V1 pending,docs/work/v1.8.0-c18a-life-support/VERIFICATION.md
 block:alienLeaves,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:lightwood_leaves,ADR-063,"alien forest flora; light 8, a sapling in 1 of 100 drops",docs/work/v1.8.0-c15c-worlds/VERIFICATION.md
@@ -59,7 +59,7 @@ block:basalt,REDESIGNED,v1.8.0,vanilla basalt in the Venus surface,ADR-063,vanil
 block:beacon,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:planetary_beacon,ADR-062 ADR-065,bounded navigation marker per body,docs/work/v1.8.0-c17c-solar-beacon/VERIFICATION.md
 block:biomeScanner,DEFERRED,post-2.0,-,ADR-062,terraforming family,
 block:bipropellantfueltank,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:bipropellant_fuel_tank,ADR-062 ADR-065,propulsion tier,docs/work/v1.8.0-c17a-propulsion/VERIFICATION.md
-block:bipropellantrocketmotor,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:bipropellant_rocket_motor,ADR-062 ADR-065,propulsion tier,docs/work/v1.8.0-c17a-propulsion/VERIFICATION.md
+block:bipropellantrocketmotor,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:bipropellant_rocket_motor,ADR-062 ADR-065,propulsion tier; W255 P2 ordinary shared block/item/assembled OBJ model; docs/provenance/v1.8.0-w255-bipropellant-motor-models.json; human provenance and V1 review pending,docs/work/v1.8.0-c17a-propulsion/VERIFICATION.md
 block:blackholegenerator,IMPLEMENTED,v1.7.0,advancedrocketrycommunity:black_hole_generator,ADR-057,,
 block:blastbrick,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:blast_brick,ADR-062 ADR-064,arc furnace structure; W246 flat texture references; docs/provenance/v1.8.0-w246-flat-textures.json; human review and V1 pending,docs/work/v1.8.0-c16b-machines/VERIFICATION.md
 block:blockLens,REDESIGNED,v1.7.0,advancedrocketrycommunity:laser_lens,ADR-055,"lens is a laser drill component item, not a block",
@@ -102,7 +102,7 @@ block:moonTurf_dark,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:dark_moon_turf,
 block:nitrogenFluid,REDESIGNED,v1.8.0,advancedrocketrycommunity:nitrogen,ADR-062 ADR-064,container-only Forge gas with no world block or bucket,docs/work/v1.8.0-c16a-fluids/VERIFICATION.md
 block:nuclearcore,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:nuclear_core,ADR-062 ADR-065,propulsion tier,docs/work/v1.8.0-c17a-propulsion/VERIFICATION.md
 block:nuclearfueltank,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:nuclear_fuel_tank,ADR-062 ADR-065,propulsion tier,docs/work/v1.8.0-c17a-propulsion/VERIFICATION.md
-block:nuclearrocketmotor,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:nuclear_rocket_motor,ADR-062 ADR-065,propulsion tier,docs/work/v1.8.0-c17a-propulsion/VERIFICATION.md
+block:nuclearrocketmotor,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:nuclear_rocket_motor,ADR-062 ADR-065,propulsion tier; W258 P3 baked OBJ nozzle and shared block item with six existing facings; human provenance/V1 pending,docs/work/v1.8.0-c17a-propulsion/VERIFICATION.md
 block:observatory,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:observatory,ADR-051 ADR-062 ADR-066,ground survey creating ADR-051 asteroid instances,docs/work/v1.8.0-c18c-research/VERIFICATION.md
 block:orientationController,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:station_orientation_controller,ADR-062 ADR-065,station orientation (sky) through the checked station commit,docs/work/v1.8.0-c17b-station/VERIFICATION.md
 block:oxidizerfueltank,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:oxidizer_fuel_tank,ADR-062 ADR-065,propulsion tier,docs/work/v1.8.0-c17a-propulsion/VERIFICATION.md
@@ -128,7 +128,7 @@ block:rocketmotor,IMPLEMENTED,v0.5.0,advancedrocketrycommunity:rocket_motor,ADR-
 block:rollingMachine,IMPLEMENTED,v1.2.0,advancedrocketrycommunity:rolling_machine,ADR-016,,
 block:satelliteBuilder,IMPLEMENTED,v1.6.0,advancedrocketrycommunity:satellite_builder,ADR-049,,
 block:satelliteControlCenter,IMPLEMENTED,v0.8.0,advancedrocketrycommunity:satellite_terminal,ADR-049,,
-block:sawBlade,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:saw_blade,ADR-062 ADR-064,cutting machine structure,docs/work/v1.8.0-c16b-machines/VERIFICATION.md
+block:sawBlade,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:saw_blade,ADR-062 ADR-064,"cutting machine structure; R282 W256 S1 imported block/item mesh, material/assembly sprites; provenance and V1 review pending",docs/work/v1.8.0-c16b-machines/VERIFICATION.md
 block:seat,IMPLEMENTED,v0.5.0,advancedrocketrycommunity:rocket_seat,V0.5.0,,
 block:solararray,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:solar_array,ADR-062 ADR-065,controller-owned multiblock generator,docs/work/v1.8.0-c17c-solar-beacon/VERIFICATION.md
 block:solararraypanel,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:solar_array_panel,ADR-062 ADR-065,solar array structure,docs/work/v1.8.0-c17c-solar-beacon/VERIFICATION.md

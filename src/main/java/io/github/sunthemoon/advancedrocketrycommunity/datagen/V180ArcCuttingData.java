@@ -63,7 +63,34 @@ public final class V180ArcCuttingData implements DataProvider {
         }
         var saw = object("parent", "minecraft:item/generated"); saw.add("textures", object("layer0", NS + ":item/iron_saw_blade"));
         files.put(asset("models/item/iron_saw_blade"), saw);
+        // R282: the stateless structure part and its block item share the ordinary baked mesh, not the K2 hull.
+        var sawBlock = object("loader", "forge:obj");
+        sawBlock.addProperty("model", NS + ":models/block/models/sawblade.obj");
+        sawBlock.addProperty("flip_v", false);
+        sawBlock.addProperty("automatic_culling", false);
+        sawBlock.add("textures", object("particle", NS + ":block/cuttingmachine2"));
+        files.put(asset("models/block/saw_blade"), sawBlock);
+        files.put(asset("models/item/saw_blade"), sawItem());
         return files;
+    }
+
+    private static JsonObject sawItem() {
+        var item = com.google.gson.JsonParser.parseString("""
+                {"display": {
+                  "gui": {"rotation":[30,225,0],"translation":[0,0,0],"scale":[0.625,0.625,0.625]},
+                  "ground": {"rotation":[0,0,0],"translation":[0,3,0],"scale":[0.25,0.25,0.25]},
+                  "fixed": {"rotation":[0,0,0],"translation":[0,0,0],"scale":[0.5,0.5,0.5]},
+                  "thirdperson_righthand": {"rotation":[75,45,0],"translation":[0,2.5,0],"scale":[0.375,0.375,0.375]},
+                  "thirdperson_lefthand": {"rotation":[75,45,0],"translation":[0,2.5,0],"scale":[0.375,0.375,0.375]},
+                  "firstperson_righthand": {"rotation":[0,45,0],"translation":[0,0,0],"scale":[0.4,0.4,0.4]},
+                  "firstperson_lefthand": {"rotation":[0,225,0],"translation":[0,0,0],"scale":[0.4,0.4,0.4]},
+                  "head": {"rotation":[0,0,0],"translation":[0,0,0],"scale":[1,1,1]}
+                }}
+                """).getAsJsonObject();
+        item.addProperty("parent", NS + ":block/saw_blade");
+        // The legacy assembly icon is a stitched particle sprite, never a replacement GUI mesh or fallback.
+        item.add("textures", object("particle", NS + ":item/saw_blade_classic"));
+        return item;
     }
     public static Map<String, JsonObject> serverFiles() {
         var files = new LinkedHashMap<String, JsonObject>();
