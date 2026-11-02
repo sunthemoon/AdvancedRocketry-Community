@@ -47,7 +47,8 @@ def audit(scratch: Path, before: list[dict], expected: set[str]) -> dict:
         if old != new:
             assert asset in expected, ("out-of-scope first-match change", asset)
             assert old["handling"] == "REVIEW" and new["handling"] == "EXCLUDE", asset
-            assert all(old[k] == new[k] for k in old if k not in ("handling", "reason")), asset
+            assert new["plan"] == "-", asset
+            assert all(old[k] == new[k] for k in old if k not in ("handling", "reason", "plan")), asset
             changes.append(dict(asset=asset, before=old, after=new))
     assert {c["asset"] for c in changes} == expected
     assert all(any(fnmatch.fnmatchcase(a, r["pattern"]) for a in assets) for r in after)

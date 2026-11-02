@@ -1,20 +1,20 @@
 order,pattern,handling,plan,units,reason
-1,textures/armor/spacesuit_layer1.png,EXCLUDE,C18d,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+1,textures/armor/spacesuit_layer1.png,EXCLUDE,-,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
 2,textures/armor/spacesuit_layer2.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/models/armor/iron_layer_1.png, orientation 0 (overlap 0.32 over 42 colours, mask 0.61, rank 0.00)"
-3,textures/blocks/atmospheredetector.png,EXCLUDE,C18a,block:oxygenDetection,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-4,textures/blocks/atmospheredetector_active.png,EXCLUDE,C18a,block:oxygenDetection,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-5,textures/blocks/controlpanel.png,EXCLUDE,C17b,block:altitudeController block:gravityController,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-6,textures/blocks/crystallizer.png,EXCLUDE,C16c,block:crystallizer,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-7,textures/blocks/crystallizer_active.png,EXCLUDE,C16c,block:crystallizer,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-8,textures/blocks/cuttingmachine.png,EXCLUDE,C16b,block:cuttingMachine,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-9,textures/blocks/cuttingmachine_active.png,EXCLUDE,C16b,block:cuttingMachine,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+3,textures/blocks/atmospheredetector.png,EXCLUDE,-,block:oxygenDetection,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+4,textures/blocks/atmospheredetector_active.png,EXCLUDE,-,block:oxygenDetection,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+5,textures/blocks/controlpanel.png,EXCLUDE,-,block:altitudeController block:gravityController,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+6,textures/blocks/crystallizer.png,EXCLUDE,-,block:crystallizer,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+7,textures/blocks/crystallizer_active.png,EXCLUDE,-,block:crystallizer,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+8,textures/blocks/cuttingmachine.png,EXCLUDE,-,block:cuttingMachine,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+9,textures/blocks/cuttingmachine_active.png,EXCLUDE,-,block:cuttingMachine,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
 10,textures/blocks/fluid/oxygen_flow.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/water_flow.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 0.94)"
 11,textures/blocks/fluid/oxygen_still.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/water_still.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 0.93)"
-12,textures/blocks/forcefieldprojector.png,EXCLUDE,C17b,block:forceField block:forceFieldProjector,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-13,textures/blocks/forcefieldprojector_off.png,EXCLUDE,C17b,block:forceField block:forceFieldProjector,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-14,textures/blocks/forcefieldprojectorfront.png,EXCLUDE,C17b,block:forceField block:forceFieldProjector,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-15,textures/blocks/gaschargertop.png,EXCLUDE,C18a,block:oxygenCharger,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-16,textures/blocks/guidancecomputeraccesshatch.png,EXCLUDE,C17a,block:guidanceComputer,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+12,textures/blocks/forcefieldprojector.png,EXCLUDE,-,block:forceField block:forceFieldProjector,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+13,textures/blocks/forcefieldprojector_off.png,EXCLUDE,-,block:forceField block:forceFieldProjector,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+14,textures/blocks/forcefieldprojectorfront.png,EXCLUDE,-,block:forceField block:forceFieldProjector,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+15,textures/blocks/gaschargertop.png,EXCLUDE,-,block:oxygenCharger,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+16,textures/blocks/guidancecomputeraccesshatch.png,EXCLUDE,-,block:guidanceComputer,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
 17,textures/blocks/hotdry_turf.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/grass_top.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 1.00)"
 18,textures/blocks/laserbottom.png,EXCLUDE,-,-,"excluded by an origin finding; ADR-062 revision 6 (2026-10-31), owner D3; AUDIT-01.csv D; Owner D3: exclude the old AR 16x source, retain the W49 NEW replacement at src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/orbital_laser_bottom.png; no authorship clearance or NEW art approval."
 19,textures/blocks/laserfront.png,EXCLUDE,-,-,"excluded by an origin finding; ADR-062 revision 6 (2026-10-31), owner D3; AUDIT-01.csv D; Owner D3: exclude the old AR 16x source, retain the W49 NEW replacement at src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/orbital_laser_front.png; no authorship clearance or NEW art approval."
@@ -25,19 +25,19 @@ order,pattern,handling,plan,units,reason
 24,textures/blocks/log_charcoal_top.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/log_oak_top.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 1.00)"
 25,textures/blocks/machineelectrolyzer.png,EXCLUDE,-,-,"excluded by an origin finding; ADR-062 revision 6 (2026-10-31), owner D3; AUDIT-01.csv D; Owner D3: exclude the old AR 16x source, retain the W49 NEW replacement at src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/electrolyzer_front.png; no authorship clearance or NEW art approval."
 26,textures/blocks/machineelectrolyzer_active.png,EXCLUDE,-,-,"excluded by an origin finding; ADR-062 revision 6 (2026-10-31), owner D3; AUDIT-01.csv D; Owner D3: exclude the old AR 16x source, retain the W49 NEW replacement at src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/electrolyzer_front_active.png; no authorship clearance or NEW art approval."
-27,textures/blocks/machineorientationcontrol.png,EXCLUDE,C17b,block:orientationController,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-28,textures/blocks/machinescrubber.png,EXCLUDE,C18a,block:oxygenScrubber,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-29,textures/blocks/machinescrubber_active.png,EXCLUDE,C18a,block:oxygenScrubber,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-30,textures/blocks/monitorfrontleft.png,EXCLUDE,C17a,block:monitoringStation,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-31,textures/blocks/monitorfrontmid.png,EXCLUDE,C17a,block:monitoringStation,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-32,textures/blocks/monitorfrontright.png,EXCLUDE,C17a,block:monitoringStation,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-33,textures/blocks/monitormoon.png,EXCLUDE,C17a,block:monitoringStation,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-34,textures/blocks/monitorplanet.png,EXCLUDE,C17a,block:monitoringStation,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-35,textures/blocks/monitorplanet_active.png,EXCLUDE,C17a,block:monitoringStation,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-36,textures/blocks/monitorside.png,EXCLUDE,C17a,block:monitoringStation,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+27,textures/blocks/machineorientationcontrol.png,EXCLUDE,-,block:orientationController,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+28,textures/blocks/machinescrubber.png,EXCLUDE,-,block:oxygenScrubber,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+29,textures/blocks/machinescrubber_active.png,EXCLUDE,-,block:oxygenScrubber,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+30,textures/blocks/monitorfrontleft.png,EXCLUDE,-,block:monitoringStation,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+31,textures/blocks/monitorfrontmid.png,EXCLUDE,-,block:monitoringStation,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+32,textures/blocks/monitorfrontright.png,EXCLUDE,-,block:monitoringStation,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+33,textures/blocks/monitormoon.png,EXCLUDE,-,block:monitoringStation,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+34,textures/blocks/monitorplanet.png,EXCLUDE,-,block:monitoringStation,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+35,textures/blocks/monitorplanet_active.png,EXCLUDE,-,block:monitoringStation,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+36,textures/blocks/monitorside.png,EXCLUDE,-,block:monitoringStation,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
 37,textures/blocks/moon_turf.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/grass_top.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 1.00)"
 38,textures/blocks/moon_turf_dark.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/grass_top.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 1.00)"
-39,textures/blocks/panelside.png,EXCLUDE,C18b,block:suitWorkStation,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+39,textures/blocks/panelside.png,EXCLUDE,-,block:suitWorkStation,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
 40,textures/blocks/plank_blue.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/planks_big_oak.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 1.00)"
 41,textures/blocks/platepresser_bottom.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/piston_top_sticky.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 0.98)"
 42,textures/blocks/platepresser_internal.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/piston_inner.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 0.99)"
@@ -49,19 +49,19 @@ order,pattern,handling,plan,units,reason
 48,textures/blocks/pumpside.png,REGENERATE,C16a,block:blockPump,NEW community pump faces under ADR-064 section 12; legacy bitmap not imported
 49,textures/blocks/qcrucible_inner.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/cauldron_inner.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 1.00)"
 50,textures/blocks/qcrucible_side.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/cauldron_side.png, orientation 0 (overlap 0.00 over 0 colours, mask 0.97, rank 0.98)"
-51,textures/blocks/qcrucible_top.png,EXCLUDE,C16c,block:quartzcrucible,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+51,textures/blocks/qcrucible_top.png,EXCLUDE,-,block:quartzcrucible,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
 52,textures/blocks/railgun.png,EXCLUDE,-,-,"excluded by an origin finding; ADR-062 revision 6 (2026-10-31), owner D3; AUDIT-01.csv D; Owner D3: exclude the old AR 16x source, retain the W49 NEW replacement at src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/railgun_front.png; no authorship clearance or NEW art approval."
 53,textures/blocks/satelliteassembler.png,EXCLUDE,-,-,"excluded by an origin finding; ADR-062 revision 6 (2026-10-31), owner D3; AUDIT-01.csv D; Owner D3: exclude the old AR 16x source, retain the W49 NEW replacement at src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/satellite_builder_front.png; no authorship clearance or NEW art approval."
-54,textures/blocks/satellitebay.png,EXCLUDE,C17c,block_variant:loader/1,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-55,textures/blocks/seal.png,EXCLUDE,C18a,block:pipeSealer,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-56,textures/blocks/solar.png,EXCLUDE,C17c,block:solarGenerator,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-57,textures/blocks/starshipcontrolpanel.png,EXCLUDE,C17b,block:warpMonitor,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+54,textures/blocks/satellitebay.png,EXCLUDE,-,block_variant:loader/1,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+55,textures/blocks/seal.png,EXCLUDE,-,block:pipeSealer,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+56,textures/blocks/solar.png,EXCLUDE,-,block:solarGenerator,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+57,textures/blocks/starshipcontrolpanel.png,EXCLUDE,-,block:warpMonitor,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
 58,textures/blocks/stationlight.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/environment/sun.png, scale -2 (overlap 0.00 over 0 colours, mask 1.00, rank 0.93)"
 59,textures/blocks/warpcore.png,EXCLUDE,-,-,"excluded by an origin finding; ADR-062 revision 6 (2026-10-31), owner D3; AUDIT-01.csv D; Owner D3: exclude the old AR 16x source, retain the W49 NEW replacement at src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/warp_core_side.png; no authorship clearance or NEW art approval."
 60,textures/env/earth_phases.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/environment/moon_phases.png, orientation 0 (overlap 0.95 over 42 colours, mask 1.00, rank 1.00)"
 61,textures/env/sun2.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/environment/sun.png, scale 4 (overlap 0.00 over 0 colours, mask 0.90, rank 0.98)"
 62,textures/gui/blastfurnace.png,EXCLUDE,-,-,"vanilla-derived: 1.20.1:assets/minecraft/textures/gui/container/brewing_stand.png, orientation 0 (overlap 0.56 over 4 colours, mask 0.94, rank 0.39)"
-63,textures/gui/buttons/buttonautoeject.png,EXCLUDE,C16a,-,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+63,textures/gui/buttons/buttonautoeject.png,EXCLUDE,-,-,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
 64,textures/gui/containerprogrammer.png,EXCLUDE,-,-,"vanilla-derived: 1.20.1:assets/minecraft/textures/gui/container/horse.png, orientation 7 (overlap 0.48 over 3 colours, mask 0.82, rank 0.00)"
 65,textures/gui/crystallizer.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/gui/container/hopper.png, region of 23895 px at offset (0, -38) (orientation 0, scale 1/1; exact 0.77 over 5 colours, near 0.00, mapped 0.00)"
 66,textures/gui/cuttingmachine.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/gui/container/hopper.png, region of 23895 px at offset (0, -38) (orientation 0, scale 1/1; exact 0.78 over 5 colours, near 0.00, mapped 0.00)"
@@ -71,28 +71,28 @@ order,pattern,handling,plan,units,reason
 70,textures/gui/progressbars/progressbars.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/obsidian.png, region of 256 px at offset (0, -140) (orientation 0, scale 1/1; exact 1.00 over 72 colours, near 0.00, mapped 0.00)"
 71,textures/gui/rocketbuilder.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/gui/container/crafting_table.png, orientation 7 (overlap 0.39 over 4 colours, mask 0.90, rank 0.28)"
 72,textures/items/advancedsolarpanel.png,EXCLUDE,-,-,"excluded by an origin finding; ADR-062 revision 6 (2026-10-31), owner D3; AUDIT-01.csv D; Owner D3: exclude the old AR 16x source, retain the W49 NEW replacement at src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/item/advanced_solar_panel.png; no authorship clearance or NEW art approval."
-73,textures/items/antifogvisor.png,EXCLUDE,C18b,item_variant:itemUpgrade/4,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-74,textures/items/atmanalyzer.png,EXCLUDE,C18a,item:atmAnalyser,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+73,textures/items/antifogvisor.png,EXCLUDE,-,item_variant:itemUpgrade/4,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+74,textures/items/atmanalyzer.png,EXCLUDE,-,item:atmAnalyser,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
 75,textures/items/basicsolarpanel.png,EXCLUDE,-,-,"excluded by an origin finding; ADR-062 revision 6 (2026-10-31), owner D3; AUDIT-01.csv D; Owner D3: exclude the old AR 16x source, retain the W49 NEW replacement at src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/item/satellite_solar_module.png; no authorship clearance or NEW art approval."
-76,textures/items/beaconfinder.png,EXCLUDE,C17c,item:beaconFinder,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-77,textures/items/bioniclegs.png,EXCLUDE,C18b,item_variant:itemUpgrade/2,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+76,textures/items/beaconfinder.png,EXCLUDE,-,item:beaconFinder,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+77,textures/items/bioniclegs.png,EXCLUDE,-,item_variant:itemUpgrade/2,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
 78,textures/items/carbonbrick.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/items/iron_ingot.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 1.00)"
-79,textures/items/earthbrightvisor.png,EXCLUDE,C18b,item_variant:itemUpgrade/5,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-80,textures/items/landingboots.png,EXCLUDE,C18b,item_variant:itemUpgrade/3,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-81,textures/items/pressuretank0.png,EXCLUDE,C18b,item_variant:pressureTank/0 item_variant:pressureTank/1 item_variant:pressureTank/2 item_variant:pressureTank/3,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-82,textures/items/pressuretank1.png,EXCLUDE,C18b,item_variant:pressureTank/0 item_variant:pressureTank/1 item_variant:pressureTank/2 item_variant:pressureTank/3,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-83,textures/items/pressuretank2.png,EXCLUDE,C18b,item_variant:pressureTank/0 item_variant:pressureTank/1 item_variant:pressureTank/2 item_variant:pressureTank/3,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-84,textures/items/pressuretank3.png,EXCLUDE,C18b,item_variant:pressureTank/0 item_variant:pressureTank/1 item_variant:pressureTank/2 item_variant:pressureTank/3,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+79,textures/items/earthbrightvisor.png,EXCLUDE,-,item_variant:itemUpgrade/5,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+80,textures/items/landingboots.png,EXCLUDE,-,item_variant:itemUpgrade/3,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+81,textures/items/pressuretank0.png,EXCLUDE,-,item_variant:pressureTank/0 item_variant:pressureTank/1 item_variant:pressureTank/2 item_variant:pressureTank/3,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+82,textures/items/pressuretank1.png,EXCLUDE,-,item_variant:pressureTank/0 item_variant:pressureTank/1 item_variant:pressureTank/2 item_variant:pressureTank/3,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+83,textures/items/pressuretank2.png,EXCLUDE,-,item_variant:pressureTank/0 item_variant:pressureTank/1 item_variant:pressureTank/2 item_variant:pressureTank/3,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+84,textures/items/pressuretank3.png,EXCLUDE,-,item_variant:pressureTank/0 item_variant:pressureTank/1 item_variant:pressureTank/2 item_variant:pressureTank/3,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
 85,textures/items/qcrucible.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/items/cauldron.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 1.00)"
 86,textures/items/satellitepowersource0.png,EXCLUDE,-,-,"excluded by an origin finding; ADR-062 revision 6 (2026-10-31), owner D3 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D3 also excludes this old AR 16x source; its authorship remains unresolved."
 87,textures/items/satellitepowersource1.png,EXCLUDE,-,-,"excluded by an origin finding; ADR-062 revision 6 (2026-10-31), owner D3 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D3 also excludes this old AR 16x source; its authorship remains unresolved."
-88,textures/items/sawbladeiron.png,EXCLUDE,C16b,item_variant:sawBladeIron/0 block:sawBlade,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+88,textures/items/sawbladeiron.png,EXCLUDE,-,item_variant:sawBladeIron/0 block:sawBlade,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
 89,textures/items/space_boots.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
 90,textures/items/space_chestplate.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
 91,textures/items/space_helmet.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/items/iron_chestplate.png, orientation 0 (overlap 0.41 over 3 colours, mask 0.82, rank 0.00)"
 92,textures/items/space_leggings.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/items/iron_leggings.png, orientation 0 (overlap 0.68 over 3 colours, mask 0.90, rank 0.84)"
-93,textures/items/spaceboots.png,EXCLUDE,C18d,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-94,textures/items/spacechestplate.png,EXCLUDE,C18d,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+93,textures/items/spaceboots.png,EXCLUDE,-,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+94,textures/items/spacechestplate.png,EXCLUDE,-,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
 95,textures/items/spacehelmet.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/items/iron_chestplate.png, orientation 0 (overlap 0.41 over 3 colours, mask 0.82, rank 0.00)"
 96,textures/items/spaceleggings.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/items/iron_leggings.png, orientation 0 (overlap 0.68 over 3 colours, mask 0.90, rank 0.84)"
 97,textures/models/round_h.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/bone_block_side.png, orientation 6 (overlap 0.00 over 0 colours, mask 1.00, rank 0.92)"
@@ -115,38 +115,38 @@ order,pattern,handling,plan,units,reason
 114,textures/planets/venusian.png,EXCLUDE,-,-,"excluded by an origin finding; ADR-062 revision 6 (2026-10-31), owner D3 D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D3 also excludes this old AR 16x source; its authorship remains unresolved. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
 115,textures/planets/waterworld.png,EXCLUDE,-,-,"excluded by an origin finding; ADR-062 revision 6 (2026-10-31), owner D3 D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D3 also excludes this old AR 16x source; its authorship remains unresolved. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
 116,textures/gui/buttons/tabtemplate.png,EXCLUDE,-,-,excluded by an origin finding (docs/provenance/v1.8.0-origin-findings.json)
-117,textures/armor/spacesuit_layer2_overlay.png,EXCLUDE,C18d,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-118,textures/blocks/fuelingmachine.png,EXCLUDE,C17a,block:fuelingStation,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-119,textures/blocks/guidancecomputer.png,EXCLUDE,C17a,block:guidanceComputer,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-120,textures/blocks/machinenuclear.png,EXCLUDE,C17a,block:nuclearcore,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-121,textures/blocks/machineprecisionlaseretcher.png,EXCLUDE,C16c,block:precisionlaseretcher,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-122,textures/blocks/monitorfront.png,EXCLUDE,C17a,block:monitoringStation,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-123,textures/blocks/monitorrear.png,EXCLUDE,C17a,block:monitoringStation,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-124,textures/blocks/monitorrocket.png,EXCLUDE,C17a,block:monitoringStation,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-125,textures/blocks/monitorsatellite.png,EXCLUDE,C17a,block:monitoringStation,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-126,textures/blocks/panelsideworkstation.png,EXCLUDE,C18b,block:suitWorkStation,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+117,textures/armor/spacesuit_layer2_overlay.png,EXCLUDE,-,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+118,textures/blocks/fuelingmachine.png,EXCLUDE,-,block:fuelingStation,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+119,textures/blocks/guidancecomputer.png,EXCLUDE,-,block:guidanceComputer,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+120,textures/blocks/machinenuclear.png,EXCLUDE,-,block:nuclearcore,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+121,textures/blocks/machineprecisionlaseretcher.png,EXCLUDE,-,block:precisionlaseretcher,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+122,textures/blocks/monitorfront.png,EXCLUDE,-,block:monitoringStation,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+123,textures/blocks/monitorrear.png,EXCLUDE,-,block:monitoringStation,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+124,textures/blocks/monitorrocket.png,EXCLUDE,-,block:monitoringStation,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+125,textures/blocks/monitorsatellite.png,EXCLUDE,-,block:monitoringStation,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+126,textures/blocks/panelsideworkstation.png,EXCLUDE,-,block:suitWorkStation,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
 127,textures/blocks/vacuumlaserfront.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
-128,textures/gui/buttons/buttonautoeject_hover.png,EXCLUDE,C16a,-,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-129,textures/gui/buttons/buttonautoeject_pressed.png,EXCLUDE,C16a,-,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-130,textures/gui/buttons/buttonredstoneinverted.png,EXCLUDE,C16a,-,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-131,textures/gui/buttons/copy.png,EXCLUDE,C16a,-,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-132,textures/gui/buttons/copy_hover.png,EXCLUDE,C16a,-,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-133,textures/gui/buttons/kill.png,EXCLUDE,C16a,-,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-134,textures/gui/buttons/kill_hover.png,EXCLUDE,C16a,-,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-135,textures/gui/buttons/tabdata.png,EXCLUDE,C16a,-,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-136,textures/gui/buttons/tabdata_hover.png,EXCLUDE,C16a,-,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-137,textures/gui/buttons/tabguidance.png,EXCLUDE,C16a,-,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-138,textures/gui/buttons/tabguidance_hover.png,EXCLUDE,C16a,-,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-139,textures/gui/buttons/tabplanet.png,EXCLUDE,C17b,block:warpMonitor,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-140,textures/gui/buttons/tabplanet_hover.png,EXCLUDE,C17b,block:warpMonitor,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-141,textures/gui/buttons/tabwarp.png,EXCLUDE,C17b,block:warpMonitor,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-142,textures/gui/buttons/tabwarp_hover.png,EXCLUDE,C17b,block:warpMonitor,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-143,textures/gui/warning.png,EXCLUDE,C16a,-,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-144,textures/items/spaceboots_overlay.png,EXCLUDE,C18d,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-145,textures/items/spacechestplate_overlay.png,EXCLUDE,C18d,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-146,textures/items/spacehelmet_overlay.png,EXCLUDE,C18d,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+128,textures/gui/buttons/buttonautoeject_hover.png,EXCLUDE,-,-,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+129,textures/gui/buttons/buttonautoeject_pressed.png,EXCLUDE,-,-,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+130,textures/gui/buttons/buttonredstoneinverted.png,EXCLUDE,-,-,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+131,textures/gui/buttons/copy.png,EXCLUDE,-,-,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+132,textures/gui/buttons/copy_hover.png,EXCLUDE,-,-,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+133,textures/gui/buttons/kill.png,EXCLUDE,-,-,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+134,textures/gui/buttons/kill_hover.png,EXCLUDE,-,-,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+135,textures/gui/buttons/tabdata.png,EXCLUDE,-,-,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+136,textures/gui/buttons/tabdata_hover.png,EXCLUDE,-,-,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+137,textures/gui/buttons/tabguidance.png,EXCLUDE,-,-,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+138,textures/gui/buttons/tabguidance_hover.png,EXCLUDE,-,-,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+139,textures/gui/buttons/tabplanet.png,EXCLUDE,-,block:warpMonitor,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+140,textures/gui/buttons/tabplanet_hover.png,EXCLUDE,-,block:warpMonitor,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+141,textures/gui/buttons/tabwarp.png,EXCLUDE,-,block:warpMonitor,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+142,textures/gui/buttons/tabwarp_hover.png,EXCLUDE,-,block:warpMonitor,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+143,textures/gui/warning.png,EXCLUDE,-,-,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+144,textures/items/spaceboots_overlay.png,EXCLUDE,-,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+145,textures/items/spacechestplate_overlay.png,EXCLUDE,-,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+146,textures/items/spacehelmet_overlay.png,EXCLUDE,-,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
 147,textures/models/areagravitycontroller.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
-148,textures/armor/spacesuit_layer1_overlay.png,EXCLUDE,C18d,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+148,textures/armor/spacesuit_layer1_overlay.png,EXCLUDE,-,item:spaceHelmet item:spaceChestplate item:spaceLeggings item:spaceBoots,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
 149,textures/blocks/fluid/oxygen_flow.png.mcmeta,EXCLUDE,-,-,"animation metadata of oxygen_flow.png, which is EXCLUDE for its pixels"
 150,textures/blocks/fluid/oxygen_still.png.mcmeta,EXCLUDE,-,-,"animation metadata of oxygen_still.png, which is EXCLUDE for its pixels"
 151,textures/blocks/machinestorage.png,IMPORTED,v0.1.0,-,recorded in docs/provenance/v0.1.0-minimal-content.json
@@ -169,7 +169,7 @@ order,pattern,handling,plan,units,reason
 168,generateFiles_*.sh,EXCLUDE,-,-,legacy build helper scripts
 169,models/block/orientablebottom.json,EXCLUDE,-,-,byte-identical to a vanilla model file
 170,textures/armor/iron_layer_*.png,EXCLUDE,-,-,identical pixels to the vanilla 1.12.2 iron armor layers
-171,textures/blocks/fluid/lava_*,EXCLUDE,C16a,-,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+171,textures/blocks/fluid/lava_*,EXCLUDE,-,-,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
 172,textures/font.png,EXCLUDE,-,-,no planned consumer
 173,textures/env/sun.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
 174,textures/planets/shadow.png,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
@@ -198,8 +198,8 @@ order,pattern,handling,plan,units,reason
 197,models/terraformeratm.obj,EXCLUDE,-,-,terraforming family deferred (ADR-062)
 198,textures/models/biomescanner.png,EXCLUDE,-,-,terraforming family deferred (ADR-062)
 199,textures/models/distillationtower.png,EXCLUDE,-,-,no legacy block uses it
-200,textures/blocks/machinegeneric.png,EXCLUDE,C16a,libvulpes:java/blockAdvStructureBlock,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-201,models/item/models/motor.*,EXCLUDE,C16a,libvulpes:java/blockMotor,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+200,textures/blocks/machinegeneric.png,EXCLUDE,-,libvulpes:java/blockAdvStructureBlock,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+201,models/item/models/motor.*,EXCLUDE,-,libvulpes:java/blockMotor,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
 202,blockstates/*.json,REGENERATE,batch of the owning unit,-,1.12 Forge blockstate format; DataGen writes modern files
 203,models/block/*.json,REGENERATE,batch of the owning unit,-,1.12 model JSON; DataGen writes modern models
 204,models/item/*.json,REGENERATE,batch of the owning unit,-,1.12 model JSON; DataGen writes modern models
@@ -253,8 +253,8 @@ order,pattern,handling,plan,units,reason
 252,textures/blocks/rocketpad_xcross.png,EXCLUDE,-,block:launchpad,launch pad connected texture; block:launchpad was redesigned into the rocket assembler with no pad block (R289)
 253,textures/blocks/rocketpad_ycross.png,EXCLUDE,-,block:launchpad,launch pad connected texture; block:launchpad was redesigned into the rocket assembler with no pad block (R289)
 254,textures/blocks/structuretower.png,EXCLUDE,-,-,structure tower redesigned (ADR-062)
-255,textures/blocks/forcefield.png*,EXCLUDE,C17b,-,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
-256,textures/blocks/beacon.png,EXCLUDE,C17c,block:beacon,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+255,textures/blocks/forcefield.png*,EXCLUDE,-,-,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+256,textures/blocks/beacon.png,EXCLUDE,-,block:beacon,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
 257,textures/blocks/hololamp.png,EXCLUDE,-,-,holographic selector redesigned (ADR-035)
 258,textures/blocks/suitworkstation.png,IMPORTED,v1.8.0,block:suitWorkStation,W246 byte copy; docs/provenance/v1.8.0-w246-flat-textures.json; human review and V1 pending
 259,textures/blocks/smallconnector.png,IMPORT,C17c,block:solararray,solar array connector
@@ -328,7 +328,7 @@ order,pattern,handling,plan,units,reason
 327,models/atmosphere.mtl,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
 328,models/atmosphere.obj,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D4 D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer. D4 accepts the code-drawn sky direction, pending real-GPU V1 confirmation."
 329,models/drill.obj,EXCLUDE,-,-,rocket drill redesigned (ADR-051)
-330,models/motor.obj,EXCLUDE,C16a,libvulpes:java/blockMotor,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+330,models/motor.obj,EXCLUDE,-,libvulpes:java/blockMotor,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
 331,models/areagravitycontroller.obj,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
 332,models/astrobodydataprocessor.obj,IMPORTED,v1.8.0,block:planetAnalyser,K3 byte copy; docs/provenance/v1.8.0-c18d-k3.json; W236 source/unit checks; human review and V1 pending
 333,models/beacon.obj,IMPORTED,v1.8.0,block:beacon,K3 byte copy; docs/provenance/v1.8.0-c18d-k3.json; W236 source/unit checks; human review and V1 pending
@@ -348,7 +348,7 @@ order,pattern,handling,plan,units,reason
 347,models/solar_array.obj,IMPORTED,v1.8.0,block:solararray,K3 byte copy; docs/provenance/v1.8.0-c18d-k3.json; W236 source/unit checks; human review and V1 pending
 348,models/spaceelevator.obj,IMPORTED,v1.8.0,block:spaceElevatorController,K4 byte copy; docs/provenance/v1.8.0-c18d-k4.json; W241 source/unit checks; human review and V1 pending
 349,models/warpcore.obj,EXCLUDE,-,-,"ADR-062 revision 6 (2026-10-31), owner D6; AUDIT-01.csv E; Owner D6: exclude the audited class E file with no runtime or accepted planned consumer."
-350,textures/models/beacon.png,EXCLUDE,C17c,block:beacon,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
+350,textures/models/beacon.png,EXCLUDE,-,block:beacon,excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)
 351,textures/models/advcombustion.png,IMPORTED,v1.8.0,block:advRocketmotor,W249 P1; docs/provenance/v1.8.0-w249-motor-models.json; target src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/block/advcombustion_classic.png
 352,textures/models/combustion.png,IMPORTED,v1.8.0,block:rocketmotor,W249 P1; docs/provenance/v1.8.0-w249-motor-models.json; target src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/block/combustion_classic.png
 353,textures/models/nuclearengine.png,IMPORTED,v1.8.0,block:nuclearrocketmotor,W258 P3 real MTL image; byte-identical textures/block/nuclearengine.png; provenance v1.8.0-w258-nuclear-motor.json; human review pending

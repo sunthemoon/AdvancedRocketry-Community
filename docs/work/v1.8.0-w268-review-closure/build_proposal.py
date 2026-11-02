@@ -312,7 +312,7 @@ def build(upstream: Path) -> None:
         effective = [e for e in evidence if e["rule"]["pattern"] == rule["pattern"]]
         if effective and effective[0]["proposed"] == "EXCLUDE":
             assert all(e["proposed"] == "EXCLUDE" for e in effective)
-            new = dict(rule, handling="EXCLUDE", reason="excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)")
+            new = dict(rule, handling="EXCLUDE", plan="-", reason="excluded by an origin finding (DRAFT W268 / ADR-062 revision 7; pending owner; not authorship clearance)")
             changes.append(dict(pattern=rule["pattern"], before=rule, after=new, assets=[e["asset"] for e in effective]))
     changed = {c["pattern"]: c["after"] for c in changes}
     after_plan = [changed.get(r["pattern"], r) for r in plan]
@@ -364,7 +364,7 @@ def proposal(evidence: list[dict], before: Counter, after: Counter, pin: str, ru
               "| Handling | Before | After (draft) |", "|---|---:|---:|"]
     for h in ("IMPORT", "REVIEW", "REGENERATE", "EXCLUDE", "IMPORTED"):
         lines.append(f"| {h} | {before[h]} | {after[h]} |")
-    lines += ["", f"Total 898 files. Exactly 85 REVIEW files in {rules} existing rules become EXCLUDE; no row order, plan or owner is changed. Ten legacy OGGs remain REVIEW. The allowlist drops exactly 85 REVIEW entries, 247 -> 162; all other ceilings are unchanged. New draft allowlist SHA-256: `{pin}` (UTF-8, LF, final newline). These counts apply only to the assigned shared head, not later W265/W267 integration.", "",
+    lines += ["", f"Total 898 files. Exactly 85 REVIEW files in {rules} existing rules become EXCLUDE, with their plan set to `-` as the validator requires. No row order or owner is changed. Ten legacy OGGs remain REVIEW. The allowlist drops exactly 85 REVIEW entries, 247 -> 162; all other ceilings are unchanged. New draft allowlist SHA-256: `{pin}` (UTF-8, LF, final newline). These counts apply only to the assigned shared head, not later W265/W267 integration.", "",
               "W265/W267 have no REVIEW-row overlap. The script refuses changed central input hashes; Root must rebase these semantic changes onto any later shared head and rerun the 898-file audit, rather than overwrite their rows. Their exclusion/import decisions and the 35 retained NEW textures are not altered or approved here.", "",
               "Each row below has an exact source identity and an evidence ID into `REVIEW-EVIDENCE.json`. The JSON contains the current rule, ceiling, complete derivation entry, every ledger owner (including PLANNED), named live files/classes, and every candidate reference with file and line in the tracked baseline and pinned upstream tree. Paths in this table are relative to `assets/advancedrocketry/`.", "",
               "| Legacy asset | Source SHA-256 | Group / proposed | Per-file evidence and disposition |", "|---|---|---|---|"]

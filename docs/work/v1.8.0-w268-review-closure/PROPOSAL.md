@@ -45,7 +45,7 @@ Retain the named modern machine faces, tier icons, code/native-widget GUI, NEW c
 | EXCLUDE | 226 | 311 |
 | IMPORTED | 88 | 88 |
 
-Total 898 files. Exactly 85 REVIEW files in 80 existing rules become EXCLUDE; no row order, plan or owner is changed. Ten legacy OGGs remain REVIEW. The allowlist drops exactly 85 REVIEW entries, 247 -> 162; all other ceilings are unchanged. New draft allowlist SHA-256: `aba84a60d93bf847e2a84ded5829c0447140d5a0902e6b69e13d41b0515e5f8d` (UTF-8, LF, final newline). These counts apply only to the assigned shared head, not later W265/W267 integration.
+Total 898 files. Exactly 85 REVIEW files in 80 existing rules become EXCLUDE, with their plan set to `-` as the validator requires. No row order or owner is changed. Ten legacy OGGs remain REVIEW. The allowlist drops exactly 85 REVIEW entries, 247 -> 162; all other ceilings are unchanged. New draft allowlist SHA-256: `aba84a60d93bf847e2a84ded5829c0447140d5a0902e6b69e13d41b0515e5f8d` (UTF-8, LF, final newline). These counts apply only to the assigned shared head, not later W265/W267 integration.
 
 W265/W267 have no REVIEW-row overlap. The script refuses changed central input hashes; Root must rebase these semantic changes onto any later shared head and rerun the 898-file audit, rather than overwrite their rows. Their exclusion/import decisions and the 35 retained NEW textures are not altered or approved here.
 
