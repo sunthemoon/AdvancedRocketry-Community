@@ -74,3 +74,7 @@ src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/block/models
 src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/block/models/rocketmotor.mtl -text
 src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/block/models/advrocketmotor.obj -text
 src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/block/models/advrocketmotor.mtl -text
+
+# W258 P3: preserve importer-written nuclear OBJ/MTL bytes.
+src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/block/models/nuclearrocketmotor.obj -text
+src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/block/models/nuclearrocketmotor.mtl -text

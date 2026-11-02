@@ -76,7 +76,8 @@ jobs:
         run: |
           set -e
           for pair in k1:v1.8.0-c18d-k1 k2:v1.8.0-c18d-k2 k3:v1.8.0-c18d-k3 k4:v1.8.0-c18d-k4 k6:v1.8.0-c18d-k6 \
-                      w244:v1.8.0-c18d-w244 w246:v1.8.0-w246-flat-textures w249:v1.8.0-w249-motor-models; do
+                      w244:v1.8.0-c18d-w244 w246:v1.8.0-w246-flat-textures w249:v1.8.0-w249-motor-models \
+                      w258:v1.8.0-w258-nuclear-motor; do
             python tools/import/import_v180_assets.py verify --upstream build/upstream/AdvancedRocketry --plan "tools/import/v180-${pair%%:*}-plan.json" --record "docs/provenance/${pair#*:}.json" --vanilla 1.12.2="$RUNNER_TEMP/vanilla-clients/client-1.12.2.jar" --vanilla 1.20.1="$RUNNER_TEMP/vanilla-clients/client-1.20.1.jar"
           done
 

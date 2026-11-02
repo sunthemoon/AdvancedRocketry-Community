@@ -102,7 +102,7 @@ block:moonTurf_dark,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:dark_moon_turf,
 block:nitrogenFluid,REDESIGNED,v1.8.0,advancedrocketrycommunity:nitrogen,ADR-062 ADR-064,container-only Forge gas with no world block or bucket,docs/work/v1.8.0-c16a-fluids/VERIFICATION.md
 block:nuclearcore,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:nuclear_core,ADR-062 ADR-065,propulsion tier,docs/work/v1.8.0-c17a-propulsion/VERIFICATION.md
 block:nuclearfueltank,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:nuclear_fuel_tank,ADR-062 ADR-065,propulsion tier,docs/work/v1.8.0-c17a-propulsion/VERIFICATION.md
-block:nuclearrocketmotor,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:nuclear_rocket_motor,ADR-062 ADR-065,propulsion tier,docs/work/v1.8.0-c17a-propulsion/VERIFICATION.md
+block:nuclearrocketmotor,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:nuclear_rocket_motor,ADR-062 ADR-065,propulsion tier; W258 P3 baked OBJ nozzle and shared block item with six existing facings; human provenance/V1 pending,docs/work/v1.8.0-c17a-propulsion/VERIFICATION.md
 block:observatory,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:observatory,ADR-051 ADR-062 ADR-066,ground survey creating ADR-051 asteroid instances,docs/work/v1.8.0-c18c-research/VERIFICATION.md
 block:orientationController,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:station_orientation_controller,ADR-062 ADR-065,station orientation (sky) through the checked station commit,docs/work/v1.8.0-c17b-station/VERIFICATION.md
 block:oxidizerfueltank,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:oxidizer_fuel_tank,ADR-062 ADR-065,propulsion tier,docs/work/v1.8.0-c17a-propulsion/VERIFICATION.md
