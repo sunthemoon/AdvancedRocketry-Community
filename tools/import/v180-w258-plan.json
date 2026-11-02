@@ -1,0 +1,60 @@
+{
+  "asset_coverage": "docs/work/v1.8.0-root-queue/records/W258-asset-coverage.csv",
+  "batch_id": "v1.8.0-w258-nuclear-motor",
+  "entries": [
+    {
+      "asset_coverage_row": 1,
+      "source": "ar",
+      "source_path": "src/main/resources/assets/advancedrocketry/models/block/models/nuclearrocketmotor.obj",
+      "source_sha256": "a63f14c723b6f937574695d6c050f50cfe94887c464edc38388ac454609e7691",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/block/models/nuclearrocketmotor.obj",
+      "transformation": {
+        "kind": "copy"
+      },
+      "units": [
+        "block:nuclearrocketmotor"
+      ]
+    },
+    {
+      "asset_coverage_row": 2,
+      "source": "ar",
+      "source_path": "src/main/resources/assets/advancedrocketry/models/block/models/nuclearrocketmotor.mtl",
+      "source_sha256": "0e5533d2b4379f3c3dfe7e45b4dd782778a0242463e16e7f33db80cde1f1ff01",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/block/models/nuclearrocketmotor.mtl",
+      "transformation": {
+        "kind": "mtl",
+        "textures": {
+          "advancedrocketry:models/nuclearengine": "advancedrocketrycommunity:block/nuclearengine"
+        }
+      },
+      "units": [
+        "block:nuclearrocketmotor"
+      ]
+    },
+    {
+      "asset_coverage_row": 3,
+      "source": "ar",
+      "source_path": "src/main/resources/assets/advancedrocketry/textures/models/nuclearengine.png",
+      "source_sha256": "545c6a2fe812af3410c67d5d8c345c6a63ee0414c53350eaa4d3b5050762e8e9",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/block/nuclearengine.png",
+      "transformation": {
+        "kind": "rename"
+      },
+      "units": [
+        "block:nuclearrocketmotor"
+      ]
+    }
+  ],
+  "schema_version": 1,
+  "sources": {
+    "ar": {
+      "copyright_notice": "Copyright (c) 2017",
+      "license": "MIT",
+      "source_branch": "1.12",
+      "source_commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+      "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
+      "status": "UPSTREAM_AR_MIT"
+    }
+  },
+  "target_version": "v1.8.0"
+}

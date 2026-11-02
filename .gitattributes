@@ -84,3 +84,7 @@ src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/block/models
 # W256 S1: preserve importer-written mesh and material bytes.
 src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/block/models/sawblade.obj -text
 src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/block/models/sawblade.mtl -text
+
+# W258 P3: preserve importer-written nuclear OBJ/MTL bytes.
+src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/block/models/nuclearrocketmotor.obj -text
+src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/block/models/nuclearrocketmotor.mtl -text
