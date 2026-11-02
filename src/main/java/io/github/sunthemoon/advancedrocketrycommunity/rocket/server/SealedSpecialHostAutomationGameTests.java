@@ -48,6 +48,7 @@ public final class SealedSpecialHostAutomationGameTests {
 
     private static void run(GameTestHelper helper, boolean resourceHosts) {
         var level = helper.getLevel(); var origin = helper.absolutePos(new BlockPos(2, 3, 2));
+        isolateAutomationFixture(helper, origin);
         var targets = List.of(origin, origin.east(4)); var fence = origin.south(3); var owner = UUID.randomUUID();
         var water = new FluidStack(Fluids.WATER, 1000); water.getOrCreateTag().putString("W152", "original-fluid");
         var originalPackage = pkg(owner, "original"); var foreignPackage = pkg(owner, "pipe");
@@ -172,6 +173,23 @@ public final class SealedSpecialHostAutomationGameTests {
                 if (level.getGameTime() - published[0] >= 20) { done[0] = true; helper.succeed(); }
             }
         });
+    }
+    private static void isolateAutomationFixture(GameTestHelper helper, BlockPos origin) {
+        // The noise world's fluids can refill the deliberately cleared third member while PREPARE retries.
+        // Enclose the existing automation cells before clearing them; do not change the proof or its retry budget.
+        var level = helper.getLevel();
+        var minimum = origin.offset(-2, -2, -3); var maximum = origin.offset(6, 3, 5);
+        for (var at : BlockPos.betweenClosed(minimum, maximum)) {
+            if (at.getX() == minimum.getX() || at.getX() == maximum.getX()
+                    || at.getY() == minimum.getY() || at.getY() == maximum.getY()
+                    || at.getZ() == minimum.getZ() || at.getZ() == maximum.getZ()) {
+                level.setBlock(at, Blocks.GLASS.defaultBlockState(), Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
+            }
+        }
+        // Both loops have the fixed 9 * 6 * 9 envelope, wholly around this fixture rather than its native proof columns.
+        for (var at : BlockPos.betweenClosed(minimum.offset(1, 1, 1), maximum.offset(-1, -1, -1))) {
+            level.setBlock(at, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
+        }
     }
     private static int count(net.minecraft.server.level.ServerLevel level, List<BlockPos> positions, AABB bounds, Container recipient, String label) {
         int total = 0;
