@@ -268,7 +268,9 @@ def build(upstream: Path) -> None:
     tracked = git("ls-tree", "-r", "--name-only", BASE).decode().splitlines()
     # Current source tree is unchanged from BASE; read it without a per-file git process.
     assert not git("diff", BASE, "--", "src", "tools", "scripts", "tests", "legacy-manifest").strip()
-    files = {p: (ROOT / p).read_bytes() for p in tracked if (ROOT / p).is_file()}
+    with tarfile.open(fileobj=io.BytesIO(git("archive", "--format=tar", BASE))) as tar:
+        files = {m.name: tar.extractfile(m).read() for m in tar.getmembers() if m.isfile()}
+    assert set(files) == set(tracked), "The Git archive must include every baseline file."
     # Pin-specific Git archive is read in memory; upstream working-tree state is irrelevant.
     archive = git("archive", "--format=tar", PIN, "src", root=upstream)
     with tarfile.open(fileobj=io.BytesIO(archive)) as tar:

@@ -18,7 +18,11 @@ from apply_scratch import apply, ROOT
 def verify(upstream: Path, clients: Path, output: Path) -> None:
     output = output.resolve()
     output.mkdir(parents=True, exist_ok=True)
-    scratch = output / ("scratch-" + uuid.uuid4().hex[:12])
+    # A short sibling path keeps the repository's long historical JUnit filenames
+    # below Windows' non-extended 260-character file API limit.
+    scratch = output.parent / ("s" + uuid.uuid4().hex[:8])
+    if scratch.exists():
+        raise FileExistsError(scratch)
     report = dict(commands=[], source_commit=subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT).decode().strip())
     prefix = [sys.executable, "-X", "utf8", "-B"]
     env = dict(os.environ, PYTHONDONTWRITEBYTECODE="1", PYTHONUTF8="1", GIT_OPTIONAL_LOCKS="0")
@@ -64,9 +68,12 @@ def verify(upstream: Path, clients: Path, output: Path) -> None:
         run("scratch-repository", prefix + ["scripts/validate_repository.py", "--require-approved-identity"])
         run("branch-repository", prefix + ["scripts/validate_repository.py", "--require-approved-identity"], ROOT)
         report["completed"] = True
+    except Exception as error:
+        report["error"] = repr(error)
+        raise
     finally:
         if scratch.exists():
-            assert scratch.parent == output and scratch.name.startswith("scratch-")
+            assert scratch.parent == output.parent and scratch.name.startswith("s")
             assert not scratch.resolve().is_relative_to(ROOT.resolve())
             shutil.rmtree(scratch)
         report["scratch_removed"] = not scratch.exists()
