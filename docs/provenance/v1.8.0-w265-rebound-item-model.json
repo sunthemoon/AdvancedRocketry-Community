@@ -1,16 +1,16 @@
 {
-  "authoring_commit": "6c9862e7e6bc872c5a381aaab740f0a35a1ea5e0",
+  "authoring_commit": "9beaf9fca616ea95388898fa19896cd847b0a021",
   "batch_id": "v1.8.0-w265-rebound-item-model",
   "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
-  "declaration": "Superseding provenance for newly authored generated presentation only. Imported upstream mesh/material/texture retain UPSTREAM_AR_MIT in their own record. This is not human approval.",
+  "declaration": "Regenerated pending, unsealed W265 presentation provenance for R293. The imported upstream flat icon retains UPSTREAM_AR_MIT in its own record. This is not human approval.",
   "entries": [
     {
-      "authoring_commit": "6c9862e7e6bc872c5a381aaab740f0a35a1ea5e0",
+      "authoring_commit": "9beaf9fca616ea95388898fa19896cd847b0a021",
       "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
       "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180LaserGunData",
       "imported_assets_record": "docs/provenance/v1.8.0-w265-laser-gun.json",
       "license": "MIT",
-      "reason": "R291 / W265 replaces the former flat handheld model in all views. The earlier provenance and NEW PNG are unchanged.",
+      "reason": "R293 replaces R291: upstream never rendered the laser gun mesh; the item used its flat icon. Historical C18b provenance and the NEW PNG remain unchanged.",
       "reference_data": {
         "source_commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
         "source_path": "src/main/resources/assets/advancedrocketry/models/item/basiclasergun.json",
@@ -18,35 +18,35 @@
       },
       "replaced_texture": {
         "entry": "entries[1]",
-        "note": "Retained with its original bytes and provider; no runtime model uses this icon after W265.",
+        "note": "Proposed disposition: retained, unbound compatibility art pending Root decision, never deleted; original bytes and provider remain unchanged.",
         "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/item/basic_laser_gun.png",
         "record": "docs/provenance/v1.8.0-c18b-laser-gun.json",
         "sha256": "f885eff929ef551e80d340e5612f89a0e41c8567af0ae70c036966848b0d116f"
       },
       "source_branch": "codex/v1.8.0-w265",
-      "source_commit": "6c9862e7e6bc872c5a381aaab740f0a35a1ea5e0",
+      "source_commit": "9beaf9fca616ea95388898fa19896cd847b0a021",
       "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180LaserGunData.java",
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
-      "source_sha256": "ee2b9c147076b9d92524475098915c91488f2041cb2a309199025b49a8a4ffdd",
+      "source_sha256": "80c5c7f1c2778c6c9f87a8b6110fdb789f86e38a1206750872bd1da05d714c2f",
       "status": "NEW",
       "supersedes": {
         "entry": "entries[0]",
         "record": "docs/provenance/v1.8.0-c18b-laser-gun.json",
         "target_sha256": "a59acb363641806d44dc6041761c9d8359acca20adee50989ba524457f87593d"
       },
-      "target_bytes": 2294,
+      "target_bytes": 1090,
       "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/basic_laser_gun.json",
-      "target_sha256": "473bab1cdcb6ad46a021b3fc9bd98ced8b28b1d0bec971f22a42075f734edd49",
+      "target_sha256": "1e8f9e7655f16d886f704f5109e2127aa9436984318b4205bf7450517c6b77aa",
       "transformation": [
-        "Generate modern forge:obj item presentation JSON from newly authored V180LaserGunData. Reference the separately imported upstream mesh and block-atlas sprite; no upstream JSON file is copied.",
-        "Transcribe numeric hand display settings from the pinned upstream basiclasergun.json; derive a centered 0.3-scale root matrix from OBJ bounds with Forge center-to-corner conversion. GUI, ground, fixed and head settings are new presentation choices."
+        "Generate modern item/generated presentation JSON from V180LaserGunData; bind the separately imported byte-identical upstream flat icon as layer0. No upstream JSON file is copied.",
+        "Transcribe the four numeric hand display transforms from the pinned upstream basiclasergun.json. Omit its unused model key; other views inherit vanilla generated-item defaults."
       ]
     }
   ],
   "license": "MIT",
-  "pending_acceptance": "Human provenance review and real-GPU V1 of both hands, muzzle alignment, every display view, UV orientation and reload remain open.",
+  "pending_acceptance": "Human provenance review and real-GPU V1 of hands, all display views, beam alignment and resource reload remain open.",
   "review": {
-    "content_digest": "b9dd2c18e3cab64ea46d600996a0d6d6d4c17eea61f62753bc574af5cf78bb77",
+    "content_digest": "eaf09f2541dfb1cb1ae27d57a55120df51d4daf30e3ae75c347271cc935cfc97",
     "findings": [],
     "reviewed_at": null,
     "reviewer": null,
