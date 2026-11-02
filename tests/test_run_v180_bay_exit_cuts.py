@@ -6,6 +6,7 @@ import sys
 import tempfile
 import unittest
 import zipfile
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 import run_v180_bay_exit_cuts as runner
@@ -51,6 +52,28 @@ class CaseTable(unittest.TestCase):
         self.assertLessEqual(len(runner.CASES) * runner.STARTS_PER_CASE, 60)
         self.assertEqual({"GRANTED", "REVOKED"}, {spec["smoke"] for spec in runner.CASES.values() if "smoke" in spec})
         self.assertEqual({"sneak", "input", "menu"}, {spec["mode"] for spec in runner.CASES.values() if "mode" in spec})
+
+
+class SessionRoot(unittest.TestCase):
+    def test_explicit_existing_directory_is_resolved(self):
+        with tempfile.TemporaryDirectory() as root:
+            self.assertEqual(Path(root).resolve(), runner.session_root(Path(root)))
+
+    def test_missing_directory_and_file_are_refused(self):
+        with tempfile.TemporaryDirectory() as root:
+            parent = Path(root)
+            file = parent / "file"
+            file.write_text("not a directory", encoding="ascii")
+            for path in (parent / "missing", file):
+                with self.subTest(path=path), self.assertRaises(SmokeError):
+                    runner.session_root(path)
+
+    def test_linked_parent_is_refused_before_resolution(self):
+        with tempfile.TemporaryDirectory() as root:
+            parent = Path(root)
+            with patch.object(runner.smoke, "is_link_or_junction", side_effect=lambda path: path == parent.parent):
+                with self.assertRaises(SmokeError):
+                    runner.session_root(parent)
 
 
 class Fields(unittest.TestCase):

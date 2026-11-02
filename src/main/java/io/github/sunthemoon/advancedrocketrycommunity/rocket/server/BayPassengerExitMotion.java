@@ -44,13 +44,16 @@ final class BayPassengerExitMotion {
             this.start = continuity.last.tick; this.deadline = deadline;
         }
         boolean observe(Generation next, Sample sample) {
+            return observe(next, sample, true);
+        }
+        boolean observe(Generation next, Sample sample, boolean committed) {
             if (closed || current == null || next == null || sample == null || sample.tick >= deadline
                     || current.connection != next.connection) { closed = true; return false; }
             boolean changed = current.counter != next.counter;
             if (changed && (accepted || sample.tick < start || sample.tick - start > 2 || !ownCorrection(current, next))) {
                 closed = true; return false;
             }
-            if (!continuity.observe(sample)) { closed = true; return false; }
+            if (!continuity.observe(sample, committed)) { closed = true; return false; }
             if (changed) { accepted = true; current = next; }
             return true;
         }
@@ -62,22 +65,25 @@ final class BayPassengerExitMotion {
                         // Climb/bubble contact is checked only inside the precharged world snapshot.
                         && !player.isSwimming() && !player.isInWater() && !player.isInLava(), !player.onGround());
     }
-    /** Accumulate displacement within a tick; multiple callbacks cannot replenish movement allowance. */
+    /** Only committed samples accumulate motion; check-only physics/callback samples project from that baseline. */
     static final class Continuity {
         final Vec3 origin;
         Sample last;
         double horizontal, downward;
         Continuity(Sample initial) { origin = initial.position; last = initial; }
         boolean observe(Sample next) {
-            if (!finite(next.position) || !finite(next.velocity) || !next.ordinary || next.velocity.y > 1e-6
+            return observe(next, true);
+        }
+        boolean observe(Sample next, boolean committed) {
+            if (next == null || !finite(next.position) || !finite(next.velocity) || !next.ordinary || next.velocity.y > 1e-6
                     || next.tick < last.tick || next.tick - last.tick > 1
                     || next.position.y - last.position.y > 1e-6 || next.position.y > origin.y + 1
                     || Math.hypot(next.position.x - origin.x, next.position.z - origin.z) > 8) { return false; }
-            if (next.tick != last.tick) { horizontal = 0; downward = 0; }
-            horizontal += Math.hypot(next.position.x - last.position.x, next.position.z - last.position.z);
-            downward += Math.max(0, last.position.y - next.position.y);
-            if (horizontal > 1 || downward > 4) { return false; }
-            last = next;
+            double projectedHorizontal = (next.tick == last.tick ? horizontal : 0)
+                    + Math.hypot(next.position.x - last.position.x, next.position.z - last.position.z);
+            double projectedDownward = (next.tick == last.tick ? downward : 0) + Math.max(0, last.position.y - next.position.y);
+            if (projectedHorizontal > 1 || projectedDownward > 4) { return false; }
+            if (committed) { last = next; horizontal = projectedHorizontal; downward = projectedDownward; }
             return true;
         }
     }

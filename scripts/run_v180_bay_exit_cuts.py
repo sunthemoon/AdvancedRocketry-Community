@@ -482,10 +482,17 @@ def run_case(run: Run, case: str) -> dict:
     return row
 
 
+def session_root(root: Path) -> Path:
+    """An explicit existing, non-linked parent confines this run's disposable server and its cleanup."""
+    if any(smoke.is_link_or_junction(path) for path in [root, *root.parents]) or not root.is_dir():
+        raise smoke.SmokeError("Missing or linked disposable session root")
+    return root.resolve()
+
+
 def run(args) -> dict:
     bay.assert_pin(args.source_commit)
     session, evidence = args.session_dir.resolve(), args.evidence_dir.resolve()
-    intended = Path("D:/GitHub/ARCE-Task-Evidence/Temp").resolve()
+    intended = session_root(args.session_root)
     if session.parent != intended or session.exists() or smoke.is_link_or_junction(session):
         raise smoke.SmokeError("Unsafe or occupied disposable native directory")
     if evidence.exists() or evidence == session or session in evidence.parents:
@@ -544,6 +551,8 @@ def main() -> int:
     parser.add_argument("source_server", type=Path)
     for key in ("jar", "session-dir", "evidence-dir"):
         parser.add_argument("--" + key, type=Path, required=True)
+    parser.add_argument("--session-root", type=Path, default=Path("D:/GitHub/ARCE-Task-Evidence/Temp"),
+                        help="Existing non-linked parent for the new disposable session directory")
     for key in ("source-commit", "java", "lock-owner"):
         parser.add_argument("--" + key, required=True)
     parser.add_argument("--case", action="append", choices=list(CASES))

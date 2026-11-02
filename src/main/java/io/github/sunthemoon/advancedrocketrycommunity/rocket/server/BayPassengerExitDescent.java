@@ -26,9 +26,12 @@ final class BayPassengerExitDescent {
         corrections = new BayPassengerExitMotion.CorrectionWindow(generation, continuity, deadline);
     }
     boolean valid(BayPassengerExitMotion observer) {
+        return valid(observer, false);
+    }
+    private boolean valid(BayPassengerExitMotion observer, boolean committed) {
         return !closed && permit.authority() && permit.server.getTickCount() < deadline
                 && corrections.observe(observer.generation(permit.player),
-                        BayPassengerExitMotion.sample(permit.player, permit.server.getTickCount()));
+                        BayPassengerExitMotion.sample(permit.player, permit.server.getTickCount()), committed);
     }
     Contact contact(BayExitBudget budget, BayPassengerExitWorld world) {
         var allowance = budget.openProbe();
@@ -46,8 +49,8 @@ final class BayPassengerExitDescent {
                     : world.contact ? Contact.UNSAFE : Contact.AIR;
         }
     }
-    void sample(BayPassengerExitMotion observer, BayExitBudget budget, BayPassengerExitWorld world) {
-        if (token || !valid(observer) || contact(budget, world) != Contact.AIR) { close(); }
+    void sample(BayPassengerExitMotion observer, BayExitBudget budget, BayPassengerExitWorld world, boolean committed) {
+        if (token || !valid(observer, committed) || contact(budget, world) != Contact.AIR) { close(); }
     }
     void fall(LivingFallEvent event, BayPassengerExitMotion observer, BayPassengerExitLanding landing,
               BayExitBudget budget, BayPassengerExitWorld world) {
