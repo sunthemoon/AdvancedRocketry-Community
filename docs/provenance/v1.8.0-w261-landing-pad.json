@@ -8,13 +8,13 @@
       "copyright_notice": "Copyright (c) 2017",
       "derivation": {
         "related": [
-          "textures/blocks/rocketpad_.png",
           "textures/blocks/rocketpad_blcorner.png",
           "textures/blocks/rocketpad_bottomedge.png",
           "textures/blocks/rocketpad_brcorner.png",
           "textures/blocks/rocketpad_leftedge.png",
           "textures/blocks/rocketpad_nbedge.png",
           "textures/blocks/rocketpad_nledge.png",
+          "textures/blocks/rocketpad_noedge.png",
           "textures/blocks/rocketpad_nredge.png",
           "textures/blocks/rocketpad_ntedge.png",
           "textures/blocks/rocketpad_rightedge.png",
@@ -32,14 +32,14 @@
       "license": "MIT",
       "source_branch": "1.12",
       "source_commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
-      "source_path": "src/main/resources/assets/advancedrocketry/textures/blocks/rocketpad_noedge.png",
+      "source_path": "src/main/resources/assets/advancedrocketry/textures/blocks/rocketpad_.png",
       "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
-      "source_sha256": "06b1ed723649858c4e21003f4fb92ecd3422ad49706e86570bc201b1f6f57320",
+      "source_sha256": "8293011124c1d6e61c078dcb53c49d847c24ad46709d0d500023e105efb85f3a",
       "status": "UPSTREAM_AR_MIT",
-      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/block/rocketpad_noedge.png",
-      "target_sha256": "06b1ed723649858c4e21003f4fb92ecd3422ad49706e86570bc201b1f6f57320",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/block/rocketpad_.png",
+      "target_sha256": "8293011124c1d6e61c078dcb53c49d847c24ad46709d0d500023e105efb85f3a",
       "transformation": [
-        "Byte copy renamed from textures/blocks/rocketpad_noedge.png to assets/advancedrocketrycommunity/textures/block/rocketpad_noedge.png."
+        "Byte copy renamed from textures/blocks/rocketpad_.png to assets/advancedrocketrycommunity/textures/block/rocketpad_.png."
       ],
       "units": [
         "block:landingPad"
@@ -78,9 +78,9 @@
     "bytes": 0,
     "vertices": 0
   },
-  "plan_sha256": "04a3dd7754ca127f8bc89cab5815f17ab78f8ca73fb80ba02396e591fa0a6398",
+  "plan_sha256": "1f29009dc6447796dd78c79a5dcc789057e32abfa2a755a36cdb35f0c950af3b",
   "review": {
-    "content_digest": "92c0c0040f8f4e98585a23b2924cde901717269d7d360d92c085553392a39c06",
+    "content_digest": "9d99f8123550c2253731e099fc3cb1e407d884f3f05b389c2fe8b033b0012b81",
     "findings": [],
     "reviewed_at": null,
     "reviewer": null,

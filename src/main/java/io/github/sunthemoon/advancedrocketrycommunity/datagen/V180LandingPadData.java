@@ -12,7 +12,7 @@ import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
 
-/** Static classic pad top/bottom with retained original sides; concrete is a registry reference only. */
+/** Static classic landing-pad tile on every face; concrete is a registry reference only. */
 public final class V180LandingPadData implements DataProvider {
     public static final String TEXTURE = "assets/advancedrocketrycommunity/textures/block/landing_pad.png";
     private final PackOutput output;
@@ -27,8 +27,7 @@ public final class V180LandingPadData implements DataProvider {
                         {"variants":{"":{"model":"advancedrocketrycommunity:block/landing_pad"}}}
                         """),
                 "assets/advancedrocketrycommunity/models/block/landing_pad.json", json("""
-                        {"parent":"minecraft:block/cube_all","textures":{"all":"advancedrocketrycommunity:block/landing_pad",
-                         "up":"advancedrocketrycommunity:block/rocketpad_noedge","down":"advancedrocketrycommunity:block/rocketpad_noedge"}}
+                        {"parent":"minecraft:block/cube_all","textures":{"all":"advancedrocketrycommunity:block/rocketpad_"}}
                         """),
                 "assets/advancedrocketrycommunity/models/item/landing_pad.json", json("""
                         {"parent":"advancedrocketrycommunity:block/landing_pad"}

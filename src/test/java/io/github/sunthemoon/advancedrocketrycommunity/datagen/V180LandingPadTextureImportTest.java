@@ -14,26 +14,24 @@ import java.util.Set;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-/** Static R287 composition and provenance checks, not human origin or real-GPU approval. */
+/** Static R289 composition and provenance checks, not human origin or real-GPU approval. */
 class V180LandingPadTextureImportTest {
     private static final String ASSETS = "assets/advancedrocketrycommunity/";
     private static final Path GENERATED = Path.of("src/generated/v1.8/resources");
     private static final Path IMPORTED = Path.of("src/imported/v1.8/resources");
-    private static final String SOURCE = "src/main/resources/assets/advancedrocketry/textures/blocks/rocketpad_noedge.png";
-    private static final String TARGET = "src/imported/v1.8/resources/" + ASSETS + "textures/block/rocketpad_noedge.png";
-    private static final String HASH = "06b1ed723649858c4e21003f4fb92ecd3422ad49706e86570bc201b1f6f57320";
+    private static final String SOURCE = "src/main/resources/assets/advancedrocketry/textures/blocks/rocketpad_.png";
+    private static final String TARGET = "src/imported/v1.8/resources/" + ASSETS + "textures/block/rocketpad_.png";
+    private static final String HASH = "8293011124c1d6e61c078dcb53c49d847c24ad46709d0d500023e105efb85f3a";
 
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
 
-    @Test void surroundedCellTileCoversTopAndBottomWithoutChangingSidesGeometryOrStates() {
+    @Test void landingPadsOwnTileCoversEveryFaceWithoutChangingGeometryOrStates() {
         var files = V180LandingPadData.clientFiles();
         var model = files.get(ASSETS + "models/block/landing_pad.json");
         assertEquals(Set.of("parent", "textures"), model.keySet());
         assertEquals("minecraft:block/cube_all", model.get("parent").getAsString());
         assertEquals(JsonParser.parseString("""
-                {"all":"advancedrocketrycommunity:block/landing_pad",
-                 "up":"advancedrocketrycommunity:block/rocketpad_noedge",
-                 "down":"advancedrocketrycommunity:block/rocketpad_noedge"}
+                {"all":"advancedrocketrycommunity:block/rocketpad_"}
                 """), model.getAsJsonObject("textures"));
         assertEquals(JsonParser.parseString("""
                 {"variants":{"":{"model":"advancedrocketrycommunity:block/landing_pad"}}}
@@ -83,12 +81,12 @@ class V180LandingPadTextureImportTest {
         assertEquals("UPSTREAM_AR_MIT", entry.get("status").getAsString());
         assertEquals("c5cd5af62fc07cd4e0d24f06a16033f181c47c04", entry.get("source_commit").getAsString());
         // The original source name is free in every non-imported root; no _classic suffix is needed.
-        assertFalse(Files.exists(GENERATED.resolve(ASSETS + "textures/block/rocketpad_noedge.png")));
-        assertFalse(Files.exists(Path.of("src/main/resources").resolve(ASSETS + "textures/block/rocketpad_noedge.png")));
+        assertFalse(Files.exists(GENERATED.resolve(ASSETS + "textures/block/rocketpad_.png")));
+        assertFalse(Files.exists(Path.of("src/main/resources").resolve(ASSETS + "textures/block/rocketpad_.png")));
     }
 
     @Test void otherFifteenConnectedVariantsAreNotImported() throws Exception {
-        var excluded = List.of("", "blcorner", "bottomedge", "brcorner", "leftedge", "nbedge", "nledge",
+        var excluded = List.of("noedge", "blcorner", "bottomedge", "brcorner", "leftedge", "nbedge", "nledge",
                 "nredge", "ntedge", "rightedge", "tlcorner", "topedge", "trcorner", "xcross", "ycross");
         assertEquals(15, Set.copyOf(excluded).size());
         for (String suffix : excluded) {
