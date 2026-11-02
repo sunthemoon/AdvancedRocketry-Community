@@ -18,7 +18,6 @@ import net.minecraft.nbt.CompoundTag;
 public final class EscrowBarrier implements AutoCloseable {
     private static final org.slf4j.Logger LOGGER = com.mojang.logging.LogUtils.getLogger();
     private static final int CAPTURE_VETO_DIAGNOSTIC_LIMIT = 64;
-    private record CaptureVeto(Class<?> type, String message) { }
     public record Proof(EscrowPrefix.State frontier, EscrowChunkStore.Capture capture, AtomicBoolean active,
                         AtomicBoolean lifetime) {
         public boolean valid() { return active.get() && lifetime.get() && capture.generation().get() == capture.capturedGeneration(); }
@@ -49,7 +48,7 @@ public final class EscrowBarrier implements AutoCloseable {
     private final java.util.Set<EscrowChunkStore.Capture> outstanding = new java.util.HashSet<>();
     private final java.util.Set<Runnable> ordinaryRetries = new java.util.LinkedHashSet<>();
     // One barrier belongs to one server runtime; retain keys, never the exceptions or their stacks.
-    private final java.util.Set<CaptureVeto> captureVetoes = new java.util.HashSet<>();
+    private final java.util.Set<Map.Entry<Class<?>, String>> captureVetoes = new java.util.HashSet<>();
     private boolean captureVetoLimitLogged;
     private int ioFailures;
     private int supersedingSaves;
@@ -360,7 +359,7 @@ public final class EscrowBarrier implements AutoCloseable {
         if (failure instanceof EscrowChunkStore.SupersededCapture) { return EscrowReason.SUPERSEDING_SAVE; }
         if (failure instanceof EscrowChunkStore.CaptureBounds) { return EscrowReason.BARRIER_BOUNDS; }
         if (!working.get()) { return EscrowReason.BARRIER_VETO; }
-        var key = new CaptureVeto(failure.getClass(), failure.getMessage());
+        var key = new java.util.AbstractMap.SimpleImmutableEntry<Class<?>, String>(failure.getClass(), failure.getMessage());
         if (!captureVetoes.contains(key)) {
             if (captureVetoes.size() < CAPTURE_VETO_DIAGNOSTIC_LIMIT) {
                 captureVetoes.add(key);
