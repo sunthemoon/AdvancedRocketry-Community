@@ -57,6 +57,11 @@ final class BayPassengerExitReleaseDrive {
                 BayPassengerExitReleaseDrive::tick);
         MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, true, LivingAttackEvent.class, BayPassengerExitReleaseDrive::attack);
         MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, true, LivingFallEvent.class, BayPassengerExitReleaseDrive::fall);
+        // Read-only trace of the exit service's own observation points: after its player-tick and server-END samples.
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, false, TickEvent.PlayerTickEvent.class,
+                BayPassengerExitReleaseDrive::afterPlayerSample);
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, false, TickEvent.ServerTickEvent.class,
+                BayPassengerExitReleaseDrive::afterServerSample);
         MinecraftForge.EVENT_BUS.addListener((ServerStoppedEvent stopped) -> forget(stopped.getServer()));
         listening = true;
     }
@@ -73,6 +78,8 @@ final class BayPassengerExitReleaseDrive {
         RocketEntity inputRocket;
         Measure inputBefore;
         long inputTick;
+        BayPassengerExitState.Slot tracked;
+        int trace;
         float fall = -1;
         final List<String> attacks = new ArrayList<>();
         Drive(ServerPlayer player, UUID logical) { this.player = player; this.logical = logical; }
@@ -167,14 +174,74 @@ final class BayPassengerExitReleaseDrive {
             } catch (InterruptedException interrupted) { Thread.currentThread().interrupt(); }
             LOGGER.info("ARCE_RELEASE_BAY_EXIT_THAWED logical={}", view.logical());
         } else if (detached) {
-            acknowledge(drive(player, view.logical()), view.exits());
+            var drive = drive(player, view.logical());
+            acknowledge(drive, view.exits());
+            var slot = view.exits() == null ? null : view.exits().state.live.get(player);
+            if (slot != null && slot.descent != null) { drive.tracked = slot; drive.trace = TRACE_TICKS; }
         }
     }
 
-    /** The vanilla sneak input detaches in this tick's passenger tick; report it at this tick's END. */
+    /**
+     * A dedicated server runs console commands after the Level tick, so the sneak input is honoured by the next tick's
+     * passenger tick ({@code Player.rideTick}); report at the first END that sees the rider detached, or give up.
+     */
     static void awaitInput(BayPassengerExitReleaseTest.View view, Measure before) {
         var drive = drive(view.rider(), view.logical());
         drive.inputRocket = view.rocket(); drive.inputBefore = before; drive.inputTick = view.server().getTickCount();
+    }
+
+    /** Ticks after an exit whose exit-service observations are traced; the closing observation is always reported. */
+    static final int TRACE_TICKS = 6;
+    static final int INPUT_TICKS = 5;
+
+    private static void afterPlayerSample(TickEvent.PlayerTickEvent event) {
+        if (event.player instanceof ServerPlayer player && player.getServer() != null) {
+            observe(player.getServer(), player, "PLAYER_" + event.phase.name());
+        }
+    }
+
+    private static void afterServerSample(TickEvent.ServerTickEvent event) {
+        if (event.phase != TickEvent.Phase.END || event.getServer() == null) { return; }
+        Drive drive;
+        synchronized (BayPassengerExitReleaseDrive.class) { drive = DRIVES.get(event.getServer()); }
+        if (drive != null) {
+            observe(event.getServer(), drive.player, "SERVER_END");
+            if (drive.trace > 0) { drive.trace--; }
+        }
+    }
+
+    /** Read-only: the rider's sample at this point, and why the tracked offer ended once it ends. */
+    private static void observe(MinecraftServer server, ServerPlayer player, String point) {
+        Drive drive;
+        synchronized (BayPassengerExitReleaseDrive.class) { drive = DRIVES.get(server); }
+        if (drive == null || drive.player != player || drive.tracked == null || !EscrowTestEndpoints.enabled(server)) { return; }
+        var exits = RocketRuntime.passengerExits().orElse(null);
+        if (exits == null) { return; }
+        var slot = drive.tracked;
+        long tick = server.getTickCount();
+        var now = BayPassengerExitMotion.sample(player, tick);
+        var generation = exits.motion.generation(player);
+        boolean open = exits.state.live.get(player) == slot && !slot.descent.closed;
+        if (drive.trace > 0) {
+            LOGGER.info("ARCE_RELEASE_BAY_EXIT_TRACE logical={} point={} tick={} now={} counter={} open={}", drive.logical, point, tick,
+                    sample(now), generation == null ? -1 : generation.counter(), open);
+        }
+        if (!open) {
+            var descent = slot.descent;
+            LOGGER.info("ARCE_RELEASE_BAY_EXIT_CLOSED logical={} point={} tick={} slot={} closed={} authority={} lease={} deadline={} "
+                            + "counter={} window={}:{}:{} last={} now={} contact={} inspected={} first={} usage={}", drive.logical, point,
+                    tick, exits.state.live.get(player) == slot ? "same" : "removed", descent.closed, slot.permit.authority(),
+                    slot.permit.lease.getAsBoolean(), descent.deadline, generation == null ? -1 : generation.counter(),
+                    descent.corrections.current == null ? -1 : descent.corrections.current.counter(), descent.corrections.accepted,
+                    descent.corrections.closed, sample(descent.continuity.last), sample(now), slot.world.contact, slot.world.inspected,
+                    String.valueOf(slot.world.firstContact).replace(' ', '_'), String.valueOf(exits.budget.usage()).replace(' ', '_'));
+            drive.tracked = null;
+        }
+    }
+
+    private static String sample(BayPassengerExitMotion.Sample sample) {
+        return sample == null ? "none" : String.format(java.util.Locale.ROOT, "%d:%.4f:%.4f:%.4f:%.4f:%s:%s", sample.tick(),
+                sample.position().x, sample.position().y, sample.position().z, sample.velocity().y, sample.ordinary(), sample.airborne());
     }
 
     /** Arms a descent of {@code steps} packets, or to the recorded pad when {@code steps} is zero. */
@@ -193,6 +260,8 @@ final class BayPassengerExitReleaseDrive {
         if (drive == null || !EscrowTestEndpoints.enabled(server)) { return; }
         var view = BayPassengerExitReleaseTest.View.of(server, drive.logical);
         if (drive.inputRocket != null) {
+            if (view.rider() == drive.player && drive.player.getVehicle() == drive.inputRocket
+                    && server.getTickCount() - drive.inputTick < INPUT_TICKS) { return; }
             var before = drive.inputBefore;
             drive.inputRocket = null; drive.inputBefore = null;
             left(view, "input", before, Measure.take(view), false);
@@ -241,7 +310,7 @@ final class BayPassengerExitReleaseDrive {
                 BayPassengerExitReleaseTest.View.of(view.server(), drive.logical).describe());
     }
 
-    /** Records a landing's damage attempts only while the landing packet is being handled. */
+    /** The pad top that a zero-step descent lands on; damage attempts are recorded only while that landing packet runs. */
     static void landAt(ServerPlayer player, UUID logical, double landY) { drive(player, logical).landY = landY; }
 
     private static void attack(LivingAttackEvent event) {
