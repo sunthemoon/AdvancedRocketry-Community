@@ -284,13 +284,19 @@ class V180ContentLedgerTests(unittest.TestCase):
                 entry["verdict"] = verdict
         path.write_text(json.dumps(data), encoding="utf-8")
 
+    def _restore_active_face_import(self) -> None:
+        # W246 imports the static faces and R295 (W267) excludes the unimported active face; these fixtures restore
+        # its former IMPORT row, as the nuclear rows are restored above (no-op while the plan still says IMPORT).
+        self._set_rule("textures/blocks/blastbrickfront_active.png", handling="IMPORT", plan="C16b")
+
     def test_vanilla_derived_assets_cannot_be_imported(self) -> None:
-        # W246 imports the static faces; the active face remains an unimported IMPORT fixture.
+        self._restore_active_face_import()
         self._set_verdict("textures/blocks/blastbrickfront_active.png", "HIT")
         self.assertIn("asset plan: textures/blocks/blastbrickfront_active.png is vanilla-derived (HIT) but handled as IMPORT",
                       self._errors())
 
     def test_suspect_assets_need_a_cleared_finding(self) -> None:
+        self._restore_active_face_import()
         self._set_verdict("textures/blocks/blastbrickfront_active.png", "SUSPECT")
         self.assertIn("asset plan: textures/blocks/blastbrickfront_active.png has derivation verdict SUSPECT and no CLEARED "
                       "origin finding", self._errors())
@@ -467,6 +473,7 @@ class V180ContentLedgerTests(unittest.TestCase):
 
     def test_imported_handling_needs_a_record(self) -> None:
         asset = "textures/blocks/blastbrickfront_active.png"
+        self._restore_active_face_import()
         rows = self._rows(ASSET_PLAN)
         for row in rows:
             if fnmatch.fnmatchcase(asset, row["pattern"]):
