@@ -1,0 +1,64 @@
+{
+  "asset_coverage": "docs/work/v1.8.0-root-queue/records/W265-asset-coverage.csv",
+  "batch_id": "v1.8.0-w265-laser-gun",
+  "entries": [
+    {
+      "asset_coverage_row": 1,
+      "source": "ar",
+      "source_path": "src/main/resources/assets/advancedrocketry/models/item/models/basicLaserGun.obj",
+      "source_sha256": "3d4962cb5ae38311920a66700c8d3f68784a76980e4d484116641b6e80233167",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/item/models/basiclasergun.obj",
+      "transformation": {
+        "kind": "obj",
+        "mtllib": {
+          "basicLaserGun.mtl": "basiclasergun.mtl"
+        },
+        "usemtl": {}
+      },
+      "units": [
+        "item:basicLaserGun"
+      ]
+    },
+    {
+      "asset_coverage_row": 2,
+      "source": "ar",
+      "source_path": "src/main/resources/assets/advancedrocketry/models/item/models/basicLaserGun.mtl",
+      "source_sha256": "62a2f5a0b24113e33fefb118fd8cd1f61d626d4b0f51bf80fcfd93f50c4c8b59",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/item/models/basiclasergun.mtl",
+      "transformation": {
+        "kind": "mtl",
+        "textures": {
+          "advancedrocketry:models/basicLaserGun": "advancedrocketrycommunity:block/basiclasergun"
+        }
+      },
+      "units": [
+        "item:basicLaserGun"
+      ]
+    },
+    {
+      "asset_coverage_row": 3,
+      "source": "ar",
+      "source_path": "src/main/resources/assets/advancedrocketry/textures/models/basiclasergun.png",
+      "source_sha256": "4395dea9f7cfe09d466cb957aca7d6787ae97e8174d9c5bd4455b24313b709ad",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/block/basiclasergun.png",
+      "transformation": {
+        "kind": "rename"
+      },
+      "units": [
+        "item:basicLaserGun"
+      ]
+    }
+  ],
+  "schema_version": 1,
+  "sources": {
+    "ar": {
+      "copyright_notice": "Copyright (c) 2017",
+      "license": "MIT",
+      "source_branch": "1.12",
+      "source_commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+      "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
+      "status": "UPSTREAM_AR_MIT"
+    }
+  },
+  "target_version": "v1.8.0"
+}

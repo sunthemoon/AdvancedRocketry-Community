@@ -1,0 +1,4 @@
+source_path,source_sha256,owning_units
+src/main/resources/assets/advancedrocketry/models/item/models/basicLaserGun.obj,3d4962cb5ae38311920a66700c8d3f68784a76980e4d484116641b6e80233167,item:basicLaserGun
+src/main/resources/assets/advancedrocketry/models/item/models/basicLaserGun.mtl,62a2f5a0b24113e33fefb118fd8cd1f61d626d4b0f51bf80fcfd93f50c4c8b59,item:basicLaserGun
+src/main/resources/assets/advancedrocketry/textures/models/basiclasergun.png,4395dea9f7cfe09d466cb957aca7d6787ae97e8174d9c5bd4455b24313b709ad,item:basicLaserGun
