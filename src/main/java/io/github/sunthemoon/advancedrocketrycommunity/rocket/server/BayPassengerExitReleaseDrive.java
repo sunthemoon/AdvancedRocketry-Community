@@ -332,6 +332,9 @@ final class BayPassengerExitReleaseDrive {
         double next = drive.landY == null ? player.getY() - STEP : Math.max(drive.landY + .25D, player.getY() - STEP);
         player.connection.handleMovePlayer(new ServerboundMovePlayerPacket.Pos(player.getX(), next, player.getZ(), false));
         drive.sent++;
+        // Finish the final packet pair before doTick can turn the staging point into an earlier contact.
+        // The exit's contact rules still see every physics sample; the drive must not manufacture a spare landing.
+        if (drive.landY != null && next <= drive.landY + .25D + 1e-6) { land(drive, view); return; }
         if (drive.landY == null && drive.sent >= drive.steps) {
             drive.descending = false;
             LOGGER.info("ARCE_RELEASE_BAY_EXIT_DESCENT logical={} stopped=steps sent={} airborne={} {}", drive.logical, drive.sent,

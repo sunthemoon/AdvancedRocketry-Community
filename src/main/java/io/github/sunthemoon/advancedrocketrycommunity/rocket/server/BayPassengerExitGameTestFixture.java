@@ -32,7 +32,7 @@ final class BayPassengerExitGameTestFixture {
         CONTENTION, EXPIRY, UNLOADED, NON_FALL_LANDING, CANCELLED_FALL, FLUID, GANTRY, LOCAL_ONLY, REMOTE,
         HAZARD, HEADROOM, PARTIAL, BUDGET, REENTRANT_DAMAGE, AFTER_TELEPORT, RELEASED_SUCCESS, CLIMB,
         CONTENTION_REVERSE, ONE_BOX, ONE_BOX_REVERSE, LAST_UNIT, LAST_UNIT_REVERSE, DELAYED_ONE_BOX, DELAYED_LAST, FIFO,
-        EARLY_CONTINUOUS, SECOND_CORRECTION, EARLY_DISCONTINUITY, AMBIENT_FLUID, CACHE_EVICTION, TRUSTED_TRAVEL, DESCENT }
+        EARLY_CONTINUOUS, SECOND_CORRECTION, EARLY_DISCONTINUITY, AMBIENT_FLUID, CACHE_EVICTION, TRUSTED_TRAVEL, DESCENT, PACKET_LANDING }
     final GameTestHelper helper;
     final Case scenario;
     final boolean tickConnection;
@@ -174,7 +174,7 @@ final class BayPassengerExitGameTestFixture {
             }
         }
         if (!ready) { return; } // Fixture tickets precede the measured exit; production never requests them.
-        player = join(UUID.randomUUID());
+        player = join(scenario == Case.PACKET_LANDING ? BayPassengerExitReleaseTest.RIDER : UUID.randomUUID());
         UUID owner = scenario == Case.CREW ? UUID.randomUUID() : player.getUUID();
         var pkg = dataPackage(owner);
         flight = transit(helper, origin, level.dimension().location(), position(helper.absolutePos(new BlockPos(12, 4, 3))),
@@ -324,6 +324,7 @@ final class BayPassengerExitGameTestFixture {
                     "Unsafe contact geometry passed selection"); done(); }
             case TELEPORT -> stage = 6;
             case DESCENT -> stage = 7;
+            case PACKET_LANDING -> { pad(origin); BayPassengerExitTickedGameTests.startPacketLanding(this); stage = 8; }
             case EARLY_CONTINUOUS, SECOND_CORRECTION, EARLY_DISCONTINUITY -> { BayPassengerExitGameTestDescentAudit.correction(this); done(); }
             case UPWARD -> { player.setPos(player.getX(), player.getY() - 1, player.getZ()); exits.sample(player);
                 player.setPos(player.getX(), player.getY() + .1, player.getZ()); exits.sample(player); expectRevoked(); done(); }
@@ -465,6 +466,7 @@ final class BayPassengerExitGameTestFixture {
                 done();
             } else if (stage == 4 && player.getServer().getTickCount() >= firstDeadline) { exits.sample(player); expectRevoked(); done(); }
             else if (stage == 7 && player.getServer().getTickCount() - offer.descent.corrections.start >= 5) { done(); }
+            else if (stage == 8) { BayPassengerExitTickedGameTests.checkPacketLanding(this); }
             else if (stage == 5) { checkArbitration(); }
             else if (stage == 6 && player.getServer().getTickCount() - offer.descent.corrections.start > 2) {
                 var at = player.position(); player.connection.teleport(at.x + .1, at.y, at.z, 25, 10);
