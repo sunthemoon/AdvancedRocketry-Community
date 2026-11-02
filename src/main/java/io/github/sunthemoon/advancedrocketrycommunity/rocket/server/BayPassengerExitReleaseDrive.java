@@ -1,0 +1,263 @@
+package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
+
+import com.mojang.logging.LogUtils;
+import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceiptTestHooks;
+import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowTestEndpoints;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.TreeMap;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+import net.minecraft.network.protocol.game.ServerboundAcceptTeleportationPacket;
+import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.DistanceManager;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.living.LivingAttackEvent;
+import net.minecraftforge.event.entity.living.LivingFallEvent;
+import net.minecraftforge.event.server.ServerStoppedEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
+import org.slf4j.Logger;
+
+/**
+ * W254's client stand-in for one facility-owned rider: what a real client sends after a held exit (teleport acceptance,
+ * one move packet per tick, the landing packet), plus the read-only measurements the native harness checks. It runs only
+ * for a drive that a gated {@link BayPassengerExitReleaseTest} command armed, on a release-test dedicated server whose
+ * players are all facility-owned; it never touches the exit service's state, budgets or decisions.
+ */
+final class BayPassengerExitReleaseDrive {
+    private static final Logger LOGGER = LogUtils.getLogger();
+    /** Descent packets are three blocks apart, as W242's fixture used; a drive never sends more than this many. */
+    static final double STEP = 3.0D;
+    static final int MAX_PACKETS = 64;
+    /** A frozen server thread lets the harness kill the process at an exact point; never longer than this. */
+    static final long FREEZE_MILLIS = 30_000L;
+    private static final Map<MinecraftServer, Drive> DRIVES = new IdentityHashMap<>();
+    private static Field tickets;
+    private static boolean listening;
+
+    private BayPassengerExitReleaseDrive() { }
+
+    /**
+     * Called by a gated command once it passed the release-test gate, so an ordinary server never gets these listeners.
+     * They are added long after the exit service's own subscribers at the same priority, so they see the final outcome.
+     */
+    static synchronized void listen() {
+        if (listening) { return; }
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGH, false, TickEvent.ServerTickEvent.class,
+                BayPassengerExitReleaseDrive::tick);
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, true, LivingAttackEvent.class, BayPassengerExitReleaseDrive::attack);
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, true, LivingFallEvent.class, BayPassengerExitReleaseDrive::fall);
+        MinecraftForge.EVENT_BUS.addListener((ServerStoppedEvent stopped) -> forget(stopped.getServer()));
+        listening = true;
+    }
+
+    private static synchronized void forget(MinecraftServer server) { DRIVES.remove(server); }
+
+    static final class Drive {
+        final ServerPlayer player;
+        final UUID logical;
+        int acked = Integer.MIN_VALUE;
+        Double landY;
+        int steps, sent;
+        boolean descending, capturing;
+        RocketEntity inputRocket;
+        Measure inputBefore;
+        long inputTick;
+        float fall = -1;
+        final List<String> attacks = new ArrayList<>();
+        Drive(ServerPlayer player, UUID logical) { this.player = player; this.logical = logical; }
+    }
+
+    /** The drive of this rider and rocket, created on first use; a different rider instance starts a new one. */
+    static synchronized Drive drive(ServerPlayer player, UUID logical) {
+        var server = Objects.requireNonNull(player.getServer());
+        var drive = DRIVES.get(server);
+        if (drive == null || drive.player != player || !drive.logical.equals(logical)) {
+            drive = new Drive(player, logical);
+            DRIVES.put(server, drive);
+        }
+        return drive;
+    }
+
+    /** One read-only observation: chunks, tickets, the authority stores the exit must not change, and the rider. */
+    record Measure(int chunks, Map<String, String> tickets, Object transfer, String digest, Object snapshot, Object passengers,
+                   Object fuel, List<?> receipts, int pending, int counter, double y, float health) {
+        static Measure take(BayPassengerExitReleaseTest.View view) {
+            var level = view.server().overworld();
+            var rocket = view.rocket();
+            var journal = view.journal();
+            var generation = view.exits() == null || view.rider() == null ? null : view.exits().motion.generation(view.rider());
+            return new Measure(level.getChunkSource().getLoadedChunksCount(), BayPassengerExitReleaseDrive.tickets(level),
+                    journal == null || view.record() == null ? null : journal.find(view.record().transferId()).orElse(null),
+                    journal == null ? null : journal.logicalGuard(view.logical()).map(guard -> guard.recordDigest()).orElse(null),
+                    rocket == null ? null : rocket.snapshot().orElse(null),
+                    rocket == null ? null : rocket.flightData().map(data -> data.passengers()).orElse(null),
+                    rocket == null ? null : rocket.flightData().map(data -> data.fuel()).orElse(null),
+                    RocketRuntime.installedBays().map(bays -> bays.sessionForTests().receipts().stream()
+                            .filter(receipt -> receipt.rocket().equals(view.logical())).toList()).orElse(List.of()),
+                    BayReceiptTestHooks.authority(view.server()).pendingCount(),
+                    generation == null ? -1 : generation.counter(),
+                    view.rider() == null ? Double.NaN : view.rider().getY(), view.rider() == null ? -1 : view.rider().getHealth());
+        }
+        /** Identity for the stored record and snapshot, equality for the rest: an exit replaces or rewrites none of them. */
+        boolean sameAuthority(Measure after) {
+            return transfer == after.transfer && Objects.equals(digest, after.digest) && snapshot == after.snapshot
+                    && Objects.equals(passengers, after.passengers) && Objects.equals(fuel, after.fuel)
+                    && receipts.equals(after.receipts) && pending == after.pending;
+        }
+        String ticketChange(Measure after) {
+            if (tickets.equals(after.tickets)) { return "same"; }
+            var changed = new TreeMap<String, String>();
+            tickets.forEach((key, value) -> { if (!value.equals(after.tickets.get(key))) { changed.put(key, value + "->" + after.tickets.get(key)); } });
+            after.tickets.forEach((key, value) -> { if (!tickets.containsKey(key)) { changed.put(key, "absent->" + value); } });
+            String detail = changed.toString().replace(' ', '_');
+            return "changed:" + changed.size() + ":" + (detail.length() > 400 ? detail.substring(0, 400) + "..." : detail);
+        }
+    }
+
+    /** DistanceManager.tickets, read-only and resolved through Forge's name remapping in both dev and packaged runs. */
+    static synchronized Map<String, String> tickets(ServerLevel level) {
+        try {
+            if (tickets == null) { tickets = ObfuscationReflectionHelper.findField(DistanceManager.class, "f_140761_"); }
+            var map = (Map<?, ?>) tickets.get(level.getChunkSource().chunkMap.getDistanceManager());
+            var snapshot = new TreeMap<String, String>();
+            map.forEach((key, value) -> snapshot.put(String.valueOf(key), String.valueOf(value)));
+            return snapshot;
+        } catch (ReflectiveOperationException | RuntimeException failure) {
+            throw new IllegalStateException("Ticket observation unavailable", failure);
+        }
+    }
+
+    /** Like a client, accept the newest teleport once; every teleport since the last acceptance left one awaited. */
+    static void acknowledge(Drive drive, BayPassengerExitService exits) {
+        var generation = exits.motion.generation(drive.player);
+        if (generation != null && generation.counter() != drive.acked) {
+            drive.player.connection.handleAcceptTeleportPacket(new ServerboundAcceptTeleportationPacket(generation.counter()));
+            drive.acked = generation.counter();
+        }
+    }
+
+    /** Reports a completed exit command; a frozen exit then holds the server thread so the harness can kill it there. */
+    static void left(BayPassengerExitReleaseTest.View view, String mode, Measure before, Measure after, boolean freeze) {
+        var player = view.rider();
+        boolean detached = player != null && player.getVehicle() == null;
+        LOGGER.info("ARCE_RELEASE_BAY_EXIT_LEFT logical={} mode={} detached={} counter={}>{} chunks={}>{} tickets={} authority={} "
+                        + "riderY={}>{} riderHealth={}>{} {}", view.logical(), mode, detached, before.counter(), after.counter(), before.chunks(),
+                after.chunks(), before.ticketChange(after), before.sameAuthority(after) ? "same" : "changed", before.y(), after.y(),
+                before.health(), after.health(), view.describe());
+        if (freeze) {
+            var slot = view.exits() == null ? null : view.exits().state.live.get(player);
+            var descent = slot == null ? null : slot.descent;
+            LOGGER.info("ARCE_RELEASE_BAY_EXIT_FROZEN logical={} window={} accepted={} counter={} tick={}", view.logical(),
+                    descent == null ? "none" : descent.closed ? "closed" : "open", descent != null && descent.corrections.accepted,
+                    after.counter(), view.server().getTickCount());
+            long until = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(FREEZE_MILLIS);
+            try {
+                while (System.nanoTime() < until) { Thread.sleep(100); }
+            } catch (InterruptedException interrupted) { Thread.currentThread().interrupt(); }
+            LOGGER.info("ARCE_RELEASE_BAY_EXIT_THAWED logical={}", view.logical());
+        } else if (detached) {
+            acknowledge(drive(player, view.logical()), view.exits());
+        }
+    }
+
+    /** The vanilla sneak input detaches in this tick's passenger tick; report it at this tick's END. */
+    static void awaitInput(BayPassengerExitReleaseTest.View view, Measure before) {
+        var drive = drive(view.rider(), view.logical());
+        drive.inputRocket = view.rocket(); drive.inputBefore = before; drive.inputTick = view.server().getTickCount();
+    }
+
+    /** Arms a descent of {@code steps} packets, or to the recorded pad when {@code steps} is zero. */
+    static void descend(ServerPlayer player, UUID logical, int steps) {
+        var drive = drive(player, logical);
+        if (steps == 0 && drive.landY == null) { throw new IllegalStateException("No landing pad recorded for this drive"); }
+        drive.steps = steps; drive.sent = 0; drive.descending = true;
+        if (steps > 0) { drive.landY = null; }
+    }
+
+    private static void tick(TickEvent.ServerTickEvent event) {
+        if (event.phase != TickEvent.Phase.END || event.getServer() == null) { return; }
+        var server = event.getServer();
+        Drive drive;
+        synchronized (BayPassengerExitReleaseDrive.class) { drive = DRIVES.get(server); }
+        if (drive == null || !EscrowTestEndpoints.enabled(server)) { return; }
+        var view = BayPassengerExitReleaseTest.View.of(server, drive.logical);
+        if (drive.inputRocket != null) {
+            var before = drive.inputBefore;
+            drive.inputRocket = null; drive.inputBefore = null;
+            left(view, "input", before, Measure.take(view), false);
+            return;
+        }
+        if (drive.descending) { step(drive, view); }
+    }
+
+    private static void step(Drive drive, BayPassengerExitReleaseTest.View view) {
+        var player = drive.player;
+        if (view.rider() != player || !player.isAlive() || view.exits() == null) {
+            drive.descending = false;
+            LOGGER.info("ARCE_RELEASE_BAY_EXIT_DESCENT logical={} stopped=rider sent={} {}", drive.logical, drive.sent, view.describe());
+            return;
+        }
+        acknowledge(drive, view.exits());
+        if (drive.landY != null && player.getY() <= drive.landY + .25D + 1e-6) { land(drive, view); return; }
+        if (drive.sent >= MAX_PACKETS) {
+            drive.descending = false;
+            LOGGER.info("ARCE_RELEASE_BAY_EXIT_DESCENT logical={} stopped=packets sent={} {}", drive.logical, drive.sent, view.describe());
+            return;
+        }
+        double next = drive.landY == null ? player.getY() - STEP : Math.max(drive.landY + .25D, player.getY() - STEP);
+        player.connection.handleMovePlayer(new ServerboundMovePlayerPacket.Pos(player.getX(), next, player.getZ(), false));
+        drive.sent++;
+        if (drive.landY == null && drive.sent >= drive.steps) {
+            drive.descending = false;
+            LOGGER.info("ARCE_RELEASE_BAY_EXIT_DESCENT logical={} stopped=steps sent={} airborne={} {}", drive.logical, drive.sent,
+                    !player.onGround(), view.describe());
+        }
+    }
+
+    private static void land(Drive drive, BayPassengerExitReleaseTest.View view) {
+        var player = drive.player;
+        var before = Measure.take(view);
+        drive.attacks.clear(); drive.fall = -1; drive.capturing = true;
+        try {
+            player.connection.handleMovePlayer(new ServerboundMovePlayerPacket.Pos(player.getX(), drive.landY, player.getZ(), true));
+        } finally { drive.capturing = false; drive.descending = false; }
+        var after = Measure.take(view);
+        long cancelled = drive.attacks.stream().filter(attack -> attack.endsWith(":true")).count();
+        LOGGER.info("ARCE_RELEASE_BAY_EXIT_LANDED logical={} fall={} landingHealth={}>{} attacks=[{}] cancelled={} landedY={} onGround={} chunks={}>{} "
+                        + "tickets={} authority={} {}", drive.logical, drive.fall, before.health(), after.health(),
+                String.join(",", drive.attacks), cancelled, player.getY(), player.onGround(), before.chunks(), after.chunks(),
+                before.ticketChange(after), before.sameAuthority(after) ? "same" : "changed",
+                BayPassengerExitReleaseTest.View.of(view.server(), drive.logical).describe());
+    }
+
+    /** Records a landing's damage attempts only while the landing packet is being handled. */
+    static void landAt(ServerPlayer player, UUID logical, double landY) { drive(player, logical).landY = landY; }
+
+    private static void attack(LivingAttackEvent event) {
+        var drive = capturing(event.getEntity());
+        if (drive != null) { drive.attacks.add(event.getSource().type().msgId() + ":" + event.isCanceled()); }
+    }
+
+    private static void fall(LivingFallEvent event) {
+        var drive = capturing(event.getEntity());
+        if (drive != null) { drive.fall = event.getDistance(); }
+    }
+
+    private static Drive capturing(net.minecraft.world.entity.Entity entity) {
+        if (!(entity instanceof ServerPlayer player) || player.getServer() == null) { return null; }
+        Drive drive;
+        synchronized (BayPassengerExitReleaseDrive.class) { drive = DRIVES.get(player.getServer()); }
+        return drive != null && drive.capturing && drive.player == player ? drive : null;
+    }
+}
