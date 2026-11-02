@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.resourceescrow;
 
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.EscrowFixtureAreas;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
@@ -27,7 +28,10 @@ public final class EscrowReconciliationGameTests {
     public static final int FIXTURES = 6;
     private EscrowReconciliationGameTests() { }
 
-    public static BlockPos fixture(int missing) { return new BlockPos(681_008 + missing * 32, 100, 681_008); }
+    public static BlockPos fixture(int missing) {
+        if (missing < 0 || missing >= FIXTURES) { throw new IllegalArgumentException("No reconciliation fixture " + missing); }
+        return EscrowFixtureAreas.coreFixture(2 + missing);
+    }
 
     @GameTest(template = "empty", batch = "escrow_core", timeoutTicks = 400)
     public static void nativeL1AppliesEachEndpointOnceWithoutReportingProof(GameTestHelper helper) throws Exception {

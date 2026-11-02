@@ -12,6 +12,7 @@ import java.util.Queue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
 import java.util.function.BooleanSupplier;
+import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.AfterBatch;
 import net.minecraft.gametest.framework.BeforeBatch;
 import net.minecraft.server.level.ChunkMap;
@@ -53,6 +54,17 @@ public final class EscrowFixtureAreas {
     private static Batch active;
 
     private EscrowFixtureAreas() { }
+
+    /**
+     * Eight independent save slots in a remote 4-by-2 rectangle. Their START tickets share generation fringes,
+     * never the terrain/entity slot under proof. Local x/z 8 also keeps the joint test's second chest in its slot.
+     */
+    public static BlockPos coreFixture(int index) {
+        if (index < 0 || index >= 2 + EscrowReconciliationGameTests.FIXTURES) {
+            throw new IllegalArgumentException("No escrow core fixture " + index);
+        }
+        return new BlockPos(681_016 + (index % 4) * 16, 100, 681_016 + (index / 4) * 16);
+    }
 
     /** Every fixture chunk of the batch whose test holds a START ticket of {@link #RADIUS}. */
     static List<ChunkPos> centres(String batch) {
@@ -129,6 +141,11 @@ public final class EscrowFixtureAreas {
     private static Batch prepare(ServerLevel level, String name, List<ChunkPos> centres, boolean hold) {
         long started = System.nanoTime(), deadline = started + PREPARE_NANOS;
         var chunks = level.getChunkSource();
+        for (ChunkPos centre : centres) {
+            if (!isolated(centre, level.getForcedChunks())) {
+                throw new IllegalStateException("Escrow fixture overlaps a template/other forced-chunk footprint: " + centre);
+            }
+        }
         if (hold) { centres.forEach(centre -> chunks.addRegionTicket(Native.HOLD, centre, RADIUS, centre)); }
         centres.forEach(centre -> level.getChunk(centre.x, centre.z)); // FULL now, as each test's own setup asks.
         boolean generated = await(level, () -> centres.stream().allMatch(centre -> generated(level, centre)), deadline);
@@ -161,6 +178,17 @@ public final class EscrowFixtureAreas {
             for (int dz = -RADIUS; dz <= RADIUS; dz++) { area.add(new ChunkPos(centre.x + dx, centre.z + dz)); }
         }
         return area;
+    }
+
+    /** W233: include both our START ticket's FULL area and another force ticket's two-chunk FULL fringe. */
+    static boolean isolated(ChunkPos centre, LongSet forced) {
+        int reach = RADIUS + 2;
+        for (int dx = -reach; dx <= reach; dx++) {
+            for (int dz = -reach; dz <= reach; dz++) {
+                if (forced.contains(ChunkPos.asLong(centre.x + dx, centre.z + dz))) { return false; }
+            }
+        }
+        return true;
     }
 
     /** Runs the chunk source's main-thread tasks, as a blocking chunk load does, until done or the deadline. */
