@@ -138,8 +138,14 @@ public final class BayPassengerExitTickedGameTests {
     @AfterBatch(batch = "bay_exit_ticked_landing") public static void afterLanding(ServerLevel level) { BayPassengerExitGameTestFixture.closeOpen(level); }
     @AfterBatch(batch = "bay_exit_ticked_expiry") public static void afterExpiry(ServerLevel level) { BayPassengerExitGameTestFixture.closeOpen(level); }
     @AfterBatch(batch = "bay_exit_ticked_correction") public static void afterCorrection(ServerLevel level) { BayPassengerExitGameTestFixture.closeOpen(level); }
-    @AfterBatch(batch = "bay_exit_ticked_packet_landing") public static void afterPacketLanding(ServerLevel level) { BayPassengerExitGameTestFixture.closeOpen(level); }
-    @AfterBatch(batch = "bay_exit_ticked_packet_pair") public static void afterPacketPair(ServerLevel level) { BayPassengerExitGameTestFixture.closeOpen(level); }
-    @AfterBatch(batch = "bay_exit_ticked_fall_2_1") public static void afterFall21(ServerLevel level) { BayPassengerExitGameTestFixture.closeOpen(level); }
-    @AfterBatch(batch = "bay_exit_ticked_fall_3_9") public static void afterFall39(ServerLevel level) { BayPassengerExitGameTestFixture.closeOpen(level); }
+    @AfterBatch(batch = "bay_exit_ticked_packet_landing") public static void afterPacketLanding(ServerLevel level) { afterDrive(level); }
+    @AfterBatch(batch = "bay_exit_ticked_packet_pair") public static void afterPacketPair(ServerLevel level) { afterDrive(level); }
+    @AfterBatch(batch = "bay_exit_ticked_fall_2_1") public static void afterFall21(ServerLevel level) { afterDrive(level); }
+    @AfterBatch(batch = "bay_exit_ticked_fall_3_9") public static void afterFall39(ServerLevel level) { afterDrive(level); }
+
+    /** W257-R6: a drive batch also forgets its release drive, so no later GameTest tick does the drive's work. */
+    static void afterDrive(ServerLevel level) {
+        BayPassengerExitGameTestFixture.closeOpen(level);
+        BayPassengerExitReleaseDrive.forget(level.getServer());
+    }
 }

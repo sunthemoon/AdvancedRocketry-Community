@@ -66,7 +66,8 @@ final class BayPassengerExitReleaseDrive {
         listening = true;
     }
 
-    private static synchronized void forget(MinecraftServer server) { DRIVES.remove(server); }
+    /** Forgets this server's drive: when it stops, or after a GameTest batch that used one (W257-R6). */
+    static synchronized void forget(MinecraftServer server) { DRIVES.remove(server); }
 
     static final class Drive {
         final ServerPlayer player;
@@ -282,7 +283,9 @@ final class BayPassengerExitReleaseDrive {
         var server = event.getServer();
         Drive drive;
         synchronized (BayPassengerExitReleaseDrive.class) { drive = DRIVES.get(server); }
-        if (drive == null || !EscrowTestEndpoints.enabled(server)) { return; }
+        // W257-R6: no lookups or entity scans unless an input exit, a stimulus or a descent is armed.
+        if (drive == null || drive.inputRocket == null && drive.then == null && !drive.descending
+                || !EscrowTestEndpoints.enabled(server)) { return; }
         var view = BayPassengerExitReleaseTest.View.of(server, drive.logical);
         if (drive.inputRocket != null) {
             if (view.rider() == drive.player && drive.player.getVehicle() == drive.inputRocket
