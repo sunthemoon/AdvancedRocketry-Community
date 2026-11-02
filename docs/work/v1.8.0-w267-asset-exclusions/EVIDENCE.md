@@ -309,5 +309,9 @@ no failure, error or skip (553 seconds); the targeted run is in section 4.
   `python -X utf8 -B docs/work/v1.8.0-w267-asset-exclusions/audit_w267.py --base <the commit just before the R295 plan
   change> --upstream <pinned upstream checkout>`. If W265-fix's plan change lands first, use a base after it, or the
   first-match comparison will also report the laser-gun files.
+- Correction after the independent review (W267-R1, Root): W265 binds the laser gun to its imported flat icon, so the
+  NEW `item/basic_laser_gun` layer is no longer a live-art control. The audit's item-layer control is now
+  `item/iron_saw_blade` (the NEW layer of `models/item/iron_saw_blade.json`, pinned by `V180SawModelDataTest`).
+  `audit-draft.json` and the section 5 sentence above keep the result at `4b26e5a5d`, before W265.
 - No REVIEW row, allowlist entry, ADR, import, status file or ledger row is changed. ADR-062's allowlist pin stays
   valid because the allowlist is untouched; an IMPORT ceiling is not an import obligation.

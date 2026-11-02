@@ -561,9 +561,10 @@ def new_texture_checks(files: list[str], failures: list[str]) -> dict:
         if bindings:
             failures.append(f"{path} is bound by {bindings}")
     # W263's live-art controls: the same binding search must find these (a model slot, an MTL-free item layer and a
-    # runtime Java literal).
+    # runtime Java literal). W267-R1: W265 (R293) binds the laser gun to its imported flat icon, so the item-layer
+    # control is the iron saw blade's NEW layer, pinned by V180SawModelDataTest, instead of item/basic_laser_gun.
     controls = {}
-    for name in ("block/quartz_crucible", "block/suit_workstation_side", "item/basic_laser_gun",
+    for name in ("block/quartz_crucible", "block/suit_workstation_side", "item/iron_saw_blade",
                  "entity/suit_components"):
         sprite = {f"textures/{name}.png"}
         controls[name] = sorted({f"{source}: {value}" for source, value in slots + literals if named(value) & sprite})
