@@ -173,7 +173,7 @@ public final class ModBlocks {
     public static final RegistryObject<Block> BIPROPELLANT_FUEL_TANK = metalBlock("bipropellant_fuel_tank");
     public static final RegistryObject<Block> OXIDIZER_FUEL_TANK = metalBlock("oxidizer_fuel_tank");
     public static final RegistryObject<Block> NUCLEAR_ROCKET_MOTOR = BLOCKS.register("nuclear_rocket_motor", () ->
-            new io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.RocketNuclearNozzleBlock(metalProperties()));
+            new io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.RocketNuclearNozzleBlock(metalProperties().noOcclusion()));
     public static final RegistryObject<Block> NUCLEAR_FUEL_TANK = metalBlock("nuclear_fuel_tank");
     public static final RegistryObject<Block> NUCLEAR_CORE = metalBlock("nuclear_core");
     public static final RegistryObject<Block> ROCKET_SEAT = metalBlock("rocket_seat");
