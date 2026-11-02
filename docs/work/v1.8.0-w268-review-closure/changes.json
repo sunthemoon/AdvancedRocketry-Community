@@ -1,23 +1,21 @@
 {
-  "source_commit": "a65465138adca914d61d492d940fca015b86c9c6",
+  "source_commit": "0cae612d2ec986bfb67d8f6ac3bbe547a0e6d54d",
   "before_counts": {
     "REGENERATE": 444,
-    "EXCLUDE": 226,
-    "IMPORTED": 88,
-    "IMPORT": 45,
+    "EXCLUDE": 270,
+    "IMPORTED": 89,
     "REVIEW": 95
   },
   "after_counts": {
     "REGENERATE": 444,
-    "EXCLUDE": 311,
-    "IMPORTED": 88,
-    "IMPORT": 45,
+    "EXCLUDE": 355,
+    "IMPORTED": 89,
     "REVIEW": 10
   },
   "allowlist_before_sha256": "c993991a48017d444dcc1172a952ff54a9daed925d5dd2d2099788fafe74e8fe",
   "allowlist_after_sha256": "aba84a60d93bf847e2a84ded5829c0447140d5a0902e6b69e13d41b0515e5f8d",
   "source_sha256": {
-    "docs/work/v1.8.0-asset-plan.csv": "58cd525677d92192ff89f64d33b17bcb7b99cf4b310c7211d574ac19245e8f24",
+    "docs/work/v1.8.0-asset-plan.csv": "7505a4c4962f6bfaa29f3cdaa63c97f4b2678a2ae35f5b0e14388f329cdb0973",
     "docs/work/v1.8.0-asset-import-allowlist.txt": "c993991a48017d444dcc1172a952ff54a9daed925d5dd2d2099788fafe74e8fe",
     "docs/provenance/v1.8.0-origin-findings.json": "bbfdf27b7c74ad89206ae063eaa6cd3f9225683e59c70a65e1a589a7a2fdce5c",
     "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md": "c07e0a5057729530db6e670052f92869020b7f923cf296018a42d3c3df230963"
@@ -1747,7 +1745,7 @@
     {
       "pattern": "models/motor.obj",
       "before": {
-        "order": "330",
+        "order": "352",
         "pattern": "models/motor.obj",
         "handling": "REVIEW",
         "plan": "C16a",
@@ -1755,7 +1753,7 @@
         "reason": "motor model resembling the LibVulpes motor; source not established"
       },
       "after": {
-        "order": "330",
+        "order": "352",
         "pattern": "models/motor.obj",
         "handling": "EXCLUDE",
         "plan": "-",
@@ -1769,7 +1767,7 @@
     {
       "pattern": "textures/models/beacon.png",
       "before": {
-        "order": "350",
+        "order": "372",
         "pattern": "textures/models/beacon.png",
         "handling": "REVIEW",
         "plan": "C17c",
@@ -1777,7 +1775,7 @@
         "reason": "shares a vanilla file name; origin review"
       },
       "after": {
-        "order": "350",
+        "order": "372",
         "pattern": "textures/models/beacon.png",
         "handling": "EXCLUDE",
         "plan": "-",
