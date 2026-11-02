@@ -1,11 +1,15 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
+import com.google.gson.Gson;
 import com.mojang.logging.LogUtils;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.BayReceiptTestHooks;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowTestEndpoints;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import java.lang.reflect.Field;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Comparator;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +23,8 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.DistanceManager;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.Ticket;
+import net.minecraft.server.level.TicketType;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
@@ -43,6 +49,8 @@ final class BayPassengerExitReleaseDrive {
     static final long FREEZE_MILLIS = 30_000L;
     private static final Map<MinecraftServer, Drive> DRIVES = new IdentityHashMap<>();
     private static Field tickets;
+    private static Field ticketKey;
+    private static final Gson TICKET_JSON = new Gson();
     private static boolean listening;
 
     private BayPassengerExitReleaseDrive() { }
@@ -160,39 +168,46 @@ final class BayPassengerExitReleaseDrive {
         }
     }
 
-    /**
-     * W262 (W257-R3): this Level's chunk tickets by type, read-only, or {@code null} when they cannot be observed. A type
-     * with a timeout releases its own tickets: vanilla adds a one-tick {@code unknown} ticket on every loading chunk lookup,
-     * even of a loaded chunk, so their number depends on the point in the tick and on unrelated activity.
-     */
-    static synchronized Map<String, int[]> ticketTypes(ServerLevel level) {
+    /** Read-only gated evidence; an unavailable observation fails the harness instead of dropping tickets. */
+    static synchronized String ticketCensus(ServerLevel level) {
         try {
             if (tickets == null) { tickets = ObfuscationReflectionHelper.findField(DistanceManager.class, "f_140761_"); }
-            var types = new TreeMap<String, int[]>();
-            for (Object set : ((Map<?, ?>) tickets.get(level.getChunkSource().chunkMap.getDistanceManager())).values()) {
-                for (Object ticket : (java.util.Collection<?>) set) {
-                    var type = ((net.minecraft.server.level.Ticket<?>) ticket).getType();
-                    // {count, 1 when the type has a timeout}
-                    types.computeIfAbsent(type.toString(), ignored -> new int[] {0, type.timeout() > 0 ? 1 : 0})[0]++;
-                }
-            }
-            return types;
+            if (ticketKey == null) { ticketKey = ObfuscationReflectionHelper.findField(Ticket.class, "f_9422_"); }
+            return ticketCensus((Map<?, ?>) tickets.get(level.getChunkSource().chunkMap.getDistanceManager()), ticketKey);
         } catch (ReflectiveOperationException | RuntimeException failure) {
-            return null;
+            return "heldTickets=-1 timedTickets=-1 ticketTypes=none ticketIdentities=unavailable";
         }
     }
 
-    /** The counts a report shares: tickets without a timeout, self-releasing timed tickets, and the counts by type. */
-    static String ticketCensus(ServerLevel level) {
-        var types = ticketTypes(level);
-        if (types == null) { return "heldTickets=-1 timedTickets=-1 ticketTypes=none"; }
+    /**
+     * W266 (R294): compare all identities except the actual vanilla UNKNOWN with timeout 1. Keep chunk, type, level,
+     * key and force flag, but not createdTick: refreshing an existing ticket must not look like a different identity.
+     * The compact base64 JSON is whitespace-safe for the harness's key=value reports and preserves duplicate identities.
+     * This does not replace {@link #tickets}, whose synchronous full-map assertions remain timestamp-sensitive.
+     */
+    static String ticketCensus(Map<?, ?> map, Field keyField) throws IllegalAccessException {
+        var types = new TreeMap<String, Integer>();
+        var identities = new ArrayList<List<Object>>();
         int held = 0, timed = 0;
+        for (var entry : map.entrySet()) {
+            for (Object value : (java.util.Collection<?>) entry.getValue()) {
+                var ticket = (Ticket<?>) value;
+                var type = ticket.getType();
+                types.merge(type.toString(), 1, Integer::sum);
+                if (type.timeout() == 0) { held++; } else { timed++; }
+                if (type == TicketType.UNKNOWN && type.timeout() == 1) { continue; }
+                identities.add(List.of(String.valueOf(entry.getKey()), type.toString(), ticket.getTicketLevel(),
+                        String.valueOf(keyField.get(ticket)), ticket.isForceTicks()));
+            }
+        }
+        identities.sort(Comparator.comparing(TICKET_JSON::toJson));
         var byType = new StringBuilder();
         for (var entry : types.entrySet()) {
-            if (entry.getValue()[1] == 0) { held += entry.getValue()[0]; } else { timed += entry.getValue()[0]; }
-            byType.append(byType.length() == 0 ? "" : ",").append(entry.getKey()).append(':').append(entry.getValue()[0]);
+            byType.append(byType.length() == 0 ? "" : ",").append(entry.getKey()).append(':').append(entry.getValue());
         }
-        return "heldTickets=" + held + " timedTickets=" + timed + " ticketTypes=" + (byType.length() == 0 ? "none" : byType);
+        String encoded = Base64.getUrlEncoder().withoutPadding().encodeToString(TICKET_JSON.toJson(identities).getBytes(StandardCharsets.UTF_8));
+        return "heldTickets=" + held + " timedTickets=" + timed + " ticketTypes=" + (byType.length() == 0 ? "none" : byType)
+                + " ticketIdentities=" + encoded;
     }
 
     /** Like a client, accept the newest teleport once; every teleport since the last acceptance left one awaited. */
