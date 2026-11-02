@@ -1,4 +1,38 @@
-# W265: laser gun baked item model
+# W265: laser gun presentation
+
+## W265-fix (R293), 2026-11-03
+
+R293 in the dispatched TASK-W265-FIX replaces the R291 mesh choice below.
+The earlier sections are historical reasoning, not the implementation contract.
+Work starts at `075bebd2133b1e136d7a03ab087071b91f276293`; shared head supplied
+by Root is `653eba8d8`. The write scope remains the W265 files and external
+`D:/GitHub/ARCE-Task-Evidence/root-queue/W265-fix/` only.
+
+Import only the byte-identical `textures/items/basiclasergun.png` to
+`textures/item/basiclasergun.png`. That name is free in every packaged root;
+the retained NEW `basic_laser_gun.png` is a different name, so no `_classic`
+suffix is necessary. Bind `minecraft:item/generated`, transcribe exactly the
+four upstream hand transforms, and inherit other views from vanilla.
+Deliberately remove the three unused mesh assets from the plan, coverage,
+pending unsealed provenance and imported tree. Regenerate both pending W265
+records; preserve historical C18b provenance and the NEW 16-pixel icon.
+Proposed disposition for that NEW icon is retained, unbound compatibility art
+pending Root's decision, never deletion. Generic item OBJ atlas fixtures still
+exercise the supported walker and missing dependency/unknown loader rejection;
+retain them and add generated-item layer fixtures for the actual binding.
+
+No gameplay, sound, renderer, ID, recipe, authority, networking or persistence
+changes. Central files receive drafts only, based on this branch, with parallel
+batches explicitly left to Root's semantic integration. No new `.gitattributes`
+rule is needed for PNG: `*.png binary` already preserves the imported bytes.
+
+Verify the changed model contract fails against the mesh first, then run the
+isolated classes, client/data/laser unit tests, whole unit suite, two identical
+runData outputs, Python asset checks, clean-export import verification and
+CI-argument provenance/repository validators. Real-GPU V1, independent review,
+human provenance acceptance and Root's integration/regression remain open.
+
+## Original W265 design (superseded by R293)
 
 This note implements R291 in [TASK W265](../TASK-W265-H1-LASER-GUN.md),
 starting at `baaf12456abe922864aa942078f5f7530bc34925` on

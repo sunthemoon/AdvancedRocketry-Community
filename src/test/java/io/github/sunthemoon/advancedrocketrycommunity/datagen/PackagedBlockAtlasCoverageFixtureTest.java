@@ -87,6 +87,29 @@ class PackagedBlockAtlasCoverageFixtureTest {
         assertDoesNotThrow(this::check);
     }
 
+    @Test void generatedItemLayerIsStitchedFromItemDirectory() throws IOException {
+        generatedItemFixture();
+        assertDoesNotThrow(this::check);
+    }
+
+    @Test void generatedItemMissingLayerFails() throws IOException {
+        generatedItemFixture();
+        missing("textures/item/flat.png", NS + "item/flat");
+    }
+
+    @Test void generatedItemLayerOutsideAtlasFailsEvenWhenPresent() throws IOException {
+        generatedItemFixture();
+        sources.remove(sources.size() - 1);
+        rejected(NS + "item/flat");
+    }
+
+    private void generatedItemFixture() throws IOException {
+        sources.add(json("{\"type\":\"directory\",\"source\":\"item\",\"prefix\":\"item/\"}"));
+        write("models/item/fixture.json", "{\"parent\":\"minecraft:item/generated\",\"textures\":{\"layer0\":\""
+                + NS + "item/flat\"}}");
+        write("textures/item/flat.png", "fixture existence only; no PNG decoding in the atlas check");
+    }
+
     @Test void otherBuiltInNamesAreNotExempt() throws IOException {
         write("models/item/fixture.json", "{\"parent\":\"minecraft:builtin/not_a_real_model\"}");
         rejected("Missing classpath model minecraft:builtin/not_a_real_model");

@@ -4,15 +4,14 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.mojang.math.Transformation;
-import io.github.sunthemoon.advancedrocketrycommunity.client.model.ObjModelCheck;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.MessageDigest;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.Set;
-import net.minecraftforge.common.util.TransformationHelper;
-import org.joml.Vector4f;
+import javax.imageio.ImageIO;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -25,68 +24,46 @@ class V180LaserGunModelDataTest {
 
     private static JsonObject model() { return V180LaserGunData.clientFiles().get(MODEL); }
 
-    @Test void everyViewUsesOneBakedMeshAndStitchedParticleWithoutOverrides() {
+    @Test void everyViewUsesUpstreamFlatIconWithoutMeshOrOverrides() {
         JsonObject model = model();
-        assertEquals("forge:obj", model.get("loader").getAsString());
-        assertEquals(NS + "models/item/models/basiclasergun.obj", model.get("model").getAsString());
-        assertFalse(model.get("flip_v").getAsBoolean());
-        assertFalse(model.get("automatic_culling").getAsBoolean());
-        assertEquals("{\"particle\":\"" + NS + "block/basiclasergun\"}", model.get("textures").toString());
-        for (String key : List.of("parent", "elements", "overrides", "mtl_override", "base", "perspectives")) {
-            assertFalse(model.has(key), key);
-        }
+        assertFalse(model.has("loader"), "R293 uses vanilla generated items, not the unused upstream mesh");
+        assertEquals("minecraft:item/generated", model.get("parent").getAsString());
+        assertEquals("{\"layer0\":\"" + NS + "item/basiclasergun\"}", model.get("textures").toString());
+        assertEquals(Set.of("parent", "textures", "display"), model.keySet());
     }
 
-    @Test void everyDisplayTransformIsExplicitAndPinnedIncludingBothHands() {
+    @Test void upstreamFourHandTransformsAreExactAndOtherViewsInheritVanillaDefaults() {
         JsonObject display = model().getAsJsonObject("display");
         assertNotNull(display);
-        assertEquals(Set.of("gui", "ground", "fixed", "head", "firstperson_righthand", "firstperson_lefthand",
+        assertEquals(Set.of("firstperson_righthand", "firstperson_lefthand",
                 "thirdperson_righthand", "thirdperson_lefthand"), display.keySet());
         transform(display, "firstperson_righthand", "[0,-90,0]", "[1.13,3.2,1.13]", "[0.68,0.68,0.68]");
         transform(display, "firstperson_lefthand", "[0,90,0]", "[1.13,3.2,1.13]", "[0.68,0.68,0.68]");
         transform(display, "thirdperson_righthand", "[-80,260,-150]", "[-1,5,2.5]", "[0.9,0.9,0.9]");
         transform(display, "thirdperson_lefthand", "[-80,-280,150]", "[-1,5,2.5]", "[0.9,0.9,0.9]");
-        transform(display, "gui", "[30,135,0]", "[0,0,0]", "[0.8,0.8,0.8]");
-        transform(display, "ground", "[0,0,0]", "[0,3,0]", "[0.5,0.5,0.5]");
-        transform(display, "fixed", "[0,90,0]", "[0,0,0]", "[0.75,0.75,0.75]");
-        transform(display, "head", "[0,0,0]", "[0,0,0]", "[1,1,1]");
     }
 
-    @Test void importedMeshMaterialsAndNormalizationAreBoundedAndResolve() throws Exception {
-        Path mesh = IMPORTED.resolve("models/item/models/basiclasergun.obj");
-        var obj = ObjModelCheck.checkObj(Files.readAllBytes(mesh), mesh.toString());
-        assertEquals(206, obj.positions());
-        assertEquals(398, obj.faces());
-        assertEquals(1592, obj.budgetVertices());
-        assertTrue(obj.budgetVertices() <= ObjModelCheck.MAX_BAKED_OBJECT_VERTICES);
-        assertEquals(new ObjModelCheck.Bounds(-0.6, -0.416498, -0.4, 0.6, 1.576, 2.899999), obj.bounds());
-        assertEquals("basiclasergun.mtl", obj.materialLibrary());
-        assertEquals(Set.of("Diff", "spec"), obj.materials());
-        Path library = mesh.resolveSibling(obj.materialLibrary());
-        var mtl = ObjModelCheck.checkMtl(Files.readAllBytes(library), library.toString());
-        assertEquals(obj.materials(), mtl.materials().keySet());
-        for (String material : obj.materials()) {
-            assertEquals(NS + "block/basiclasergun", mtl.materials().get(material).get("map_Kd"));
+    @Test void importedIconIsByteIdenticalAndUnusedMeshAssetsAreAbsent() throws Exception {
+        Path png = IMPORTED.resolve("textures/item/basiclasergun.png");
+        assertEquals("bf4f99b9b44f4028c48f08e8a39eb424457c26b0ef174b936e4dde6e9de1d888",
+                HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(png))));
+        var image = ImageIO.read(png.toFile());
+        assertNotNull(image);
+        assertEquals(64, image.getWidth());
+        assertEquals(64, image.getHeight());
+        for (String obsolete : List.of("models/item/models/basiclasergun.obj",
+                "models/item/models/basiclasergun.mtl", "textures/block/basiclasergun.png")) {
+            assertFalse(Files.exists(IMPORTED.resolve(obsolete)), obsolete);
         }
-        Path png = IMPORTED.resolve("textures/block/basiclasergun.png");
-        ObjModelCheck.checkPng(Files.readAllBytes(png), png.toString());
+    }
 
-        var transform = new TransformationHelper.Deserializer().deserialize(model().get("transform"), Transformation.class, null);
-        // Forge ObjModel.makeQuad converts the centered root transform to the OBJ's corner coordinates.
-        var matrix = transform.blockCenterToCorner().getMatrix();
-        Vector4f center = matrix.transform(new Vector4f(0, 0.579751F, 1.2499995F, 1));
-        assertEquals(0.5F, center.x, 0.000001F);
-        assertEquals(0.5F, center.y, 0.000001F);
-        assertEquals(0.5F, center.z, 0.000001F);
-        for (float x : new float[] {-0.6F, 0.6F}) {
-            for (float y : new float[] {-0.416498F, 1.576F}) {
-                for (float z : new float[] {-0.4F, 2.899999F}) {
-                    Vector4f corner = matrix.transform(new Vector4f(x, y, z, 1));
-                    assertTrue(corner.x >= 0 && corner.x <= 1 && corner.y >= 0 && corner.y <= 1
-                            && corner.z >= 0 && corner.z <= 1, corner::toString);
-                }
-            }
-        }
+    @Test void retainedNewIconRemainsUnchangedAndUnbound() throws Exception {
+        byte[] retained = Files.readAllBytes(Path.of("src/generated/v1.8/resources/" + V180LaserGunData.TEXTURE));
+        assertArrayEquals(V180LaserGunData.texture(), retained);
+        assertEquals("f885eff929ef551e80d340e5612f89a0e41c8567af0ae70c036966848b0d116f",
+                HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(retained)));
+        assertFalse(model().getAsJsonObject("textures").has("particle"));
+        assertNotEquals(NS + "item/basic_laser_gun", model().getAsJsonObject("textures").get("layer0").getAsString());
     }
 
     @Test void generatedModelReproducesProvider() throws Exception {
