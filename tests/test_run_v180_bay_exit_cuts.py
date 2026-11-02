@@ -22,7 +22,8 @@ def describe(**overrides) -> str:
                   y="51.5", health="20.0", gameMode="survival", slot="NO_SAFE_EXIT", ordinal="0", offer="live",
                   accepted="false", history="issued", first="390", deadline="590", transfer="PREPARED", seat="0",
                   rocket="33333333-3333-4333-8333-333333333333", rocketY="50.0", rocketSeat="0", claim="OUTCOMES",
-                  hold="NONE", reason="NONE", observer="true", landing="true", loadedChunks="2209", ticketCount="317")
+                  hold="NONE", reason="NONE", observer="true", landing="true", loadedChunks="2209", heldTickets="301",
+                  timedTickets="9", ticketTypes="forced:9,player:289,start:1,unknown:9")
     values.update(overrides)
     return " ".join(f"{key}={value}" for key, value in values.items())
 
@@ -215,13 +216,16 @@ class SavedRiderAndCounts(unittest.TestCase):
 
     def test_counts_must_stay_the_same_across_a_descent_or_a_wait(self):
         state = lambda **values: runner.fields("ARCE_RELEASE_BAY_EXIT_STATE logical=x " + describe(**values), "STATE")
-        self.assertEqual({"loadedChunks": ["2209", "2209"], "ticketCount": ["317", "317"]},
-                         runner.check_counts(state(), state(tick="600"), "X5_EXPIRY", "the wait"))
-        for change in (dict(loadedChunks="2210"), dict(ticketCount="318"), dict(ticketCount="316")):
+        self.assertEqual(["2209", "2209"], runner.check_counts(state(), state(tick="600"), "X5_EXPIRY", "the wait")["loadedChunks"])
+        # Self-releasing timed tickets are recorded, not compared.
+        timed = runner.check_counts(state(), state(timedTickets="21", ticketTypes="forced:9,player:289,start:1,unknown:21"),
+                                    "X5_EXPIRY", "the wait")
+        self.assertEqual(["9", "21"], timed["timedTickets"])
+        for change in (dict(loadedChunks="2210"), dict(heldTickets="302"), dict(heldTickets="300")):
             with self.subTest(change=change), self.assertRaises(SmokeError):
                 runner.check_counts(state(), state(**change), "X5_EXPIRY", "the wait")
         with self.assertRaises(SmokeError):
-            runner.check_counts(state(ticketCount="-1"), state(ticketCount="-1"), "X2_DESCENT", "the descent")
+            runner.check_counts(state(heldTickets="-1"), state(heldTickets="-1"), "X2_DESCENT", "the descent")
 
 
 class HoldAndControl(unittest.TestCase):

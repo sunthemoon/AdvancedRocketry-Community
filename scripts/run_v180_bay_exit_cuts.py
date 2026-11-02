@@ -154,10 +154,12 @@ def check_real_timing(landed: dict, case: str) -> None:
 
 
 def check_counts(before: dict, after: dict, case: str, what: str) -> dict:
-    """W257-R3: the loaded-chunk and ticket counts stay the same across a descent or a wait in which the probe runs."""
-    counts = {key: [before[key], after[key]] for key in ("loadedChunks", "ticketCount")}
-    require(all(int(old) >= 0 and old == new for old, new in counts.values()),
-            f"{case}: {what} changed the loaded-chunk or ticket count: {counts}")
+    """W257-R3: across a descent or a wait in which the probe runs, the loaded-chunk count and the number of tickets
+    without a timeout stay the same. Timed tickets release themselves (vanilla adds a one-tick ``unknown`` ticket on every
+    loading chunk lookup, loaded or not), so their number depends on the point in the tick; it is recorded, not compared."""
+    counts = {key: [before[key], after[key]] for key in ("loadedChunks", "heldTickets", "timedTickets", "ticketTypes")}
+    require(all(int(counts[key][0]) >= 0 and counts[key][0] == counts[key][1] for key in ("loadedChunks", "heldTickets")),
+            f"{case}: {what} changed the loaded-chunk count or the tickets without a timeout: {counts}")
     return counts
 
 

@@ -157,18 +157,39 @@ final class BayPassengerExitReleaseDrive {
         }
     }
 
-    /** W262 (W257-R3): the number of chunk tickets in this Level, read-only; -1 when they cannot be observed. */
-    static synchronized int ticketCount(ServerLevel level) {
+    /**
+     * W262 (W257-R3): this Level's chunk tickets by type, read-only, or {@code null} when they cannot be observed. A type
+     * with a timeout releases its own tickets: vanilla adds a one-tick {@code unknown} ticket on every loading chunk lookup,
+     * even of a loaded chunk, so their number depends on the point in the tick and on unrelated activity.
+     */
+    static synchronized Map<String, int[]> ticketTypes(ServerLevel level) {
         try {
             if (tickets == null) { tickets = ObfuscationReflectionHelper.findField(DistanceManager.class, "f_140761_"); }
-            int count = 0;
+            var types = new TreeMap<String, int[]>();
             for (Object set : ((Map<?, ?>) tickets.get(level.getChunkSource().chunkMap.getDistanceManager())).values()) {
-                count += ((java.util.Collection<?>) set).size();
+                for (Object ticket : (java.util.Collection<?>) set) {
+                    var type = ((net.minecraft.server.level.Ticket<?>) ticket).getType();
+                    // {count, 1 when the type has a timeout}
+                    types.computeIfAbsent(type.toString(), ignored -> new int[] {0, type.timeout() > 0 ? 1 : 0})[0]++;
+                }
             }
-            return count;
+            return types;
         } catch (ReflectiveOperationException | RuntimeException failure) {
-            return -1;
+            return null;
         }
+    }
+
+    /** The counts a report shares: tickets without a timeout, self-releasing timed tickets, and the counts by type. */
+    static String ticketCensus(ServerLevel level) {
+        var types = ticketTypes(level);
+        if (types == null) { return "heldTickets=-1 timedTickets=-1 ticketTypes=none"; }
+        int held = 0, timed = 0;
+        var byType = new StringBuilder();
+        for (var entry : types.entrySet()) {
+            if (entry.getValue()[1] == 0) { held += entry.getValue()[0]; } else { timed += entry.getValue()[0]; }
+            byType.append(byType.length() == 0 ? "" : ",").append(entry.getKey()).append(':').append(entry.getValue()[0]);
+        }
+        return "heldTickets=" + held + " timedTickets=" + timed + " ticketTypes=" + (byType.length() == 0 ? "none" : byType);
     }
 
     /** Like a client, accept the newest teleport once; every teleport since the last acceptance left one awaited. */
