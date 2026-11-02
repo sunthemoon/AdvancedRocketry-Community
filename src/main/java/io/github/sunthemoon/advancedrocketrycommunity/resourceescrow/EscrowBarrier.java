@@ -17,6 +17,8 @@ import net.minecraft.nbt.CompoundTag;
 /** Own retained store -> same worker force -> stable disk read -> owner-thread confirmation. */
 public final class EscrowBarrier implements AutoCloseable {
     private static final org.slf4j.Logger LOGGER = com.mojang.logging.LogUtils.getLogger();
+    private static final int CAPTURE_VETO_DIAGNOSTIC_LIMIT = 64;
+    private record CaptureVeto(Class<?> type, String message) { }
     public record Proof(EscrowPrefix.State frontier, EscrowChunkStore.Capture capture, AtomicBoolean active,
                         AtomicBoolean lifetime) {
         public boolean valid() { return active.get() && lifetime.get() && capture.generation().get() == capture.capturedGeneration(); }
@@ -46,6 +48,9 @@ public final class EscrowBarrier implements AutoCloseable {
     private final Map<String, Long> nextForce = new HashMap<>();
     private final java.util.Set<EscrowChunkStore.Capture> outstanding = new java.util.HashSet<>();
     private final java.util.Set<Runnable> ordinaryRetries = new java.util.LinkedHashSet<>();
+    // One barrier belongs to one server runtime; retain keys, never the exceptions or their stacks.
+    private final java.util.Set<CaptureVeto> captureVetoes = new java.util.HashSet<>();
+    private boolean captureVetoLimitLogged;
     private int ioFailures;
     private int supersedingSaves;
     private int refusals;
@@ -350,11 +355,22 @@ public final class EscrowBarrier implements AutoCloseable {
         return false;
     }
     /** Design reason table: IO/force/unstable and superseding saves differ from veto/external/bounds refusals. */
-    static EscrowReason captureReason(RuntimeException failure) {
+    EscrowReason captureReason(RuntimeException failure) {
+        owner();
         if (failure instanceof EscrowChunkStore.SupersededCapture) { return EscrowReason.SUPERSEDING_SAVE; }
         if (failure instanceof EscrowChunkStore.CaptureBounds) { return EscrowReason.BARRIER_BOUNDS; }
-        // A retryable veto is not an IO error, but its cause must survive the generic persisted reason.
-        LOGGER.info("ARCE_ESCROW_CAPTURE_VETO reason=BARRIER_VETO", failure);
+        if (!working.get()) { return EscrowReason.BARRIER_VETO; }
+        var key = new CaptureVeto(failure.getClass(), failure.getMessage());
+        if (!captureVetoes.contains(key)) {
+            if (captureVetoes.size() < CAPTURE_VETO_DIAGNOSTIC_LIMIT) {
+                captureVetoes.add(key);
+                // A retryable veto is not an IO error, but its first cause survives the generic persisted reason.
+                LOGGER.info("ARCE_ESCROW_CAPTURE_VETO reason=BARRIER_VETO", failure);
+            } else if (!captureVetoLimitLogged) {
+                captureVetoLimitLogged = true;
+                LOGGER.info("ARCE_ESCROW_CAPTURE_VETO_LIMIT distinct_limit={} further_diagnostics=suppressed", CAPTURE_VETO_DIAGNOSTIC_LIMIT);
+            }
+        }
         return EscrowReason.BARRIER_VETO;
     }
     static EscrowReason readbackReason(Exception failure) {
@@ -374,6 +390,7 @@ public final class EscrowBarrier implements AutoCloseable {
     public void quiesce() {
         owner(); synchronized (lifecycle) {
             working.set(false); completions.clear(); staged.clear(); reader.shutdown(); ordinaryRetries.clear();
+            captureVetoes.clear(); captureVetoLimitLogged = false;
             outstanding.forEach(capture -> { capture.restoreDirty().run(); capture.releaseWatch().run(); }); outstanding.clear();
         }
     }
