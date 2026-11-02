@@ -28,8 +28,8 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 @PrefixGameTestTemplate(false)
 public final class EscrowCoreGameTests {
     // Remote fixture chunks; EscrowFixtureAreas generates, saves and holds their areas for the whole batch (W111).
-    static final BlockPos JOINT_FIXTURE = new BlockPos(530_001, 100, 530_001);
-    static final BlockPos OWN_FIXTURE = new BlockPos(520_001, 100, 520_001);
+    static final BlockPos JOINT_FIXTURE = EscrowFixtureAreas.coreFixture(0);
+    static final BlockPos OWN_FIXTURE = EscrowFixtureAreas.coreFixture(1);
     private EscrowCoreGameTests() { }
     @GameTest(template = "empty", batch = "escrow_core", timeoutTicks = 200)
     public static void jointTerrainSlotProofRetainsTheOtherEndpointLease(GameTestHelper helper) {

@@ -236,6 +236,12 @@ public final class BayDeploymentLockGameTests {
     public static void aKilledRocketLeaksItsRejectedReceiptUntilTheOperatorRetiresIt(GameTestHelper helper) {
         var level = helper.getLevel();
         var server = level.getServer();
+        // Retirement intentionally refuses any disassembly record. Attribute a prior fixture's leak before N5 starts.
+        var foreignDisassemblies = RocketTransactionSavedData.get(server).entries().stream().map(entry -> entry.record())
+                .filter(record -> record.type().isDisassembly())
+                .map(record -> record.transactionId() + ":" + record.type() + ":" + record.phase()).toList();
+        helper.assertTrue(foreignDisassemblies.isEmpty(),
+                "The N5 fixture has foreign disassembly records (TRANSACTION_RECORD): " + foreignDisassemblies);
         UUID owner = UUID.randomUUID();
         ItemStack pkg = dataPackage(owner);
         UUID satellite = satellite(pkg);
