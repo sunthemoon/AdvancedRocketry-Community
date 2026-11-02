@@ -21,7 +21,7 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 import net.minecraftforge.registries.ForgeRegistries;
 
 /**
- * W249-R2: the mono motors' baked OBJ meshes do not fill their cube, so the blocks must not occlude, as upstream's
+ * W249-R2/W255: the chemical motors' baked OBJ meshes do not fill their cube, so the blocks must not occlude, as upstream's
  * {@code isOpaqueCube} returned false. Block light passes through a motor into the cell beneath it. Collision, the
  * sturdy top face and atmosphere sealing stay a full cube, and sky light is still attenuated by one level, so the
  * server rules that read those properties see no change.
@@ -37,11 +37,21 @@ public final class MonoMotorOcclusionGameTests {
 
     @GameTest(template = "empty", batch = "motor_occlusion", timeoutTicks = 100)
     public static void monoMotorsDoNotOccludeAndPassLightToTheCellBeneath(GameTestHelper helper) {
+        verifyMotors(helper, ModBlocks.ROCKET_MOTOR.get(), ModBlocks.ADVANCED_ROCKET_MOTOR.get());
+    }
+
+    @GameTest(template = "empty", batch = "bipropellant_motor_occlusion", timeoutTicks = 100)
+    public static void bipropellantMotorsDoNotOccludeAndPassLightToTheCellBeneath(GameTestHelper helper) {
+        verifyMotors(helper, ModBlocks.BIPROPELLANT_ROCKET_MOTOR.get(),
+                ModBlocks.ADVANCED_BIPROPELLANT_ROCKET_MOTOR.get());
+    }
+
+    private static void verifyMotors(GameTestHelper helper, Block basic, Block advanced) {
         var driver = new GameTestTickDriver(helper);
         ServerLevel level = helper.getLevel();
         List<Column> columns = List.of(
-                new Column(helper, ModBlocks.ROCKET_MOTOR.get(), -2, true),
-                new Column(helper, ModBlocks.ADVANCED_ROCKET_MOTOR.get(), 0, true),
+                new Column(helper, basic, -2, true),
+                new Column(helper, advanced, 0, true),
                 new Column(helper, Blocks.IRON_BLOCK, 2, false));
         Runnable clear = () -> columns.forEach(column -> column.clear(helper));
         try {
