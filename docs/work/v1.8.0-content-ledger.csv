@@ -47,7 +47,7 @@ biome:volcanic,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:volcanic biome,ADR-0
 biome:volcanicbarren,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:volcanic_lowlands biome,ADR-063,Venus,docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
 biome_unregistered:BiomeGenPumpkin,REJECTED,-,-,ADR-062,never registered in the legacy build,
 biome_unregistered:BiomeGenWatermelon,REJECTED,-,-,ADR-062,never registered in the legacy build,
-block:advbipropellantRocketmotor,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:advanced_bipropellant_rocket_motor,ADR-062 ADR-065,propulsion tier with fuel and oxidizer,docs/work/v1.8.0-c17a-propulsion/VERIFICATION.md
+block:advbipropellantRocketmotor,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:advanced_bipropellant_rocket_motor,ADR-062 ADR-065,propulsion tier with fuel and oxidizer; W255 P2 ordinary shared block/item/assembled OBJ model; docs/provenance/v1.8.0-w255-bipropellant-motor-models.json; human provenance and V1 review pending,docs/work/v1.8.0-c17a-propulsion/VERIFICATION.md
 block:advRocketmotor,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:advanced_rocket_motor,ADR-062 ADR-065,propulsion tier; W249 P1 ordinary baked OBJ mono motor and shared block item; human provenance/V1 pending,docs/work/v1.8.0-c17a-propulsion/VERIFICATION.md
 block:airlock_door,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:airlock_door,ADR-062 ADR-066,sealing door; block half of the small airlock; W246 flat texture references; docs/provenance/v1.8.0-w246-flat-textures.json; human review and V1 pending,docs/work/v1.8.0-c18a-life-support/VERIFICATION.md
 block:alienLeaves,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:lightwood_leaves,ADR-063,"alien forest flora; light 8, a sapling in 1 of 100 drops",docs/work/v1.8.0-c15c-worlds/VERIFICATION.md
@@ -59,7 +59,7 @@ block:basalt,REDESIGNED,v1.8.0,vanilla basalt in the Venus surface,ADR-063,vanil
 block:beacon,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:planetary_beacon,ADR-062 ADR-065,bounded navigation marker per body,docs/work/v1.8.0-c17c-solar-beacon/VERIFICATION.md
 block:biomeScanner,DEFERRED,post-2.0,-,ADR-062,terraforming family,
 block:bipropellantfueltank,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:bipropellant_fuel_tank,ADR-062 ADR-065,propulsion tier,docs/work/v1.8.0-c17a-propulsion/VERIFICATION.md
-block:bipropellantrocketmotor,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:bipropellant_rocket_motor,ADR-062 ADR-065,propulsion tier,docs/work/v1.8.0-c17a-propulsion/VERIFICATION.md
+block:bipropellantrocketmotor,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:bipropellant_rocket_motor,ADR-062 ADR-065,propulsion tier; W255 P2 ordinary shared block/item/assembled OBJ model; docs/provenance/v1.8.0-w255-bipropellant-motor-models.json; human provenance and V1 review pending,docs/work/v1.8.0-c17a-propulsion/VERIFICATION.md
 block:blackholegenerator,IMPLEMENTED,v1.7.0,advancedrocketrycommunity:black_hole_generator,ADR-057,,
 block:blastbrick,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:blast_brick,ADR-062 ADR-064,arc furnace structure; W246 flat texture references; docs/provenance/v1.8.0-w246-flat-textures.json; human review and V1 pending,docs/work/v1.8.0-c16b-machines/VERIFICATION.md
 block:blockLens,REDESIGNED,v1.7.0,advancedrocketrycommunity:laser_lens,ADR-055,"lens is a laser drill component item, not a block",
