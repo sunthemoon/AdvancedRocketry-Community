@@ -88,7 +88,7 @@ is an anchor candidate (`BayExitCandidates.ordered`) and turns the exit into a s
 | 3.2 | B falls onto the floor placed before 3.1, without moving sideways. | B takes no fall damage on that first landing. Vanilla's server-side step reaches the floor one tick before B's landing packet arrives; since W262 (R288) that no longer ends the offer (W257-R1). | B's health before and after, the time from exit to landing, the server's `ARCE_BAY_EXIT` line. |
 | 3.3 | B climbs and falls again. | The second fall hurts: there is no second safeguard. | Health before and after. |
 | 3.4 | Not reachable by a real client: from 48 blocks a client lands in about 40 ticks, and fluid, levitation, flight and climbing all end the offer before the 200-tick deadline. | Mark it "not run; covered natively by X5" (W254's client that sends no moves). | Nothing. |
-| 3.5 | Repeat 3.1 in a new world, then, before B lands, let an operator teleport B a little (for example `/tp <B> ~0.1 ~ ~`) or let B throw an ender pearl. | The landing hurts: the offer ended. | Which of the two was used, what ended the offer (the server log), health. |
+| 3.5 | Repeat 3.1 in a new world, then, before B lands, let an operator teleport B a little (for example `/execute at <B> run tp <B> ~0.1 ~ ~`, relative to B, above the same floor) or let B throw an ender pearl. | The landing hurts: the offer ended. | Which of the two was used, B's actual coordinates before and after, what ended the offer (the server log), health. |
 | 3.6 | Repeat 3.1 onto pointed dripstone. | Dripstone damage is not prevented. | Health and the death or damage message. |
 
 W254 and W262 show the packaged mechanism natively: a landing in the exit's own tick (X9) and a ten-block landing with a
