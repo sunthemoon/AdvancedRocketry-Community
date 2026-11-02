@@ -1,8 +1,9 @@
 {
-  "parent": "minecraft:block/cube_bottom_top",
+  "automatic_culling": false,
+  "flip_v": false,
+  "loader": "forge:obj",
+  "model": "advancedrocketrycommunity:models/block/models/advbipropellantrocketmotor.obj",
   "textures": {
-    "bottom": "advancedrocketrycommunity:block/advanced_bipropellant_rocket_motor_bottom",
-    "side": "advancedrocketrycommunity:block/advanced_bipropellant_rocket_motor_side",
-    "top": "advancedrocketrycommunity:block/advanced_bipropellant_rocket_motor_top"
+    "particle": "advancedrocketrycommunity:block/advbipropellantcombustion_classic"
   }
 }
