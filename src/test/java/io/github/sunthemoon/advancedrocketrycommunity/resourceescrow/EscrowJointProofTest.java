@@ -126,16 +126,40 @@ class EscrowJointProofTest {
     }
     /** Review W11b1 finding 7: veto and bounds refusals are not IO failures, and a full monitor is a bound. */
     @Test void barrierCaptureReasonsSeparateRefusalsFromSupersession() {
-        assertEquals(EscrowReason.SUPERSEDING_SAVE, EscrowBarrier.captureReason(new EscrowChunkStore.SupersededCapture()));
-        assertEquals(EscrowReason.BARRIER_BOUNDS, EscrowBarrier.captureReason(new EscrowChunkStore.CaptureBounds("Entity capture limit exceeded")));
-        assertEquals(EscrowReason.BARRIER_VETO, EscrowBarrier.captureReason(new IllegalArgumentException("Captured endpoint identity/frontier mismatch")));
-        assertEquals(EscrowReason.BARRIER_UNSTABLE, EscrowBarrier.readbackReason(new java.io.IOException("Anvil record changed during readback")));
-        var monitor = new EscrowSaveMonitor();
-        for (int i = 0; i < 128; i++) { monitor.watch("minecraft:overworld", false, new ChunkPos(i, 0)); }
-        var full = assertThrows(EscrowChunkStore.CaptureBounds.class, () -> monitor.watch("minecraft:overworld", false, new ChunkPos(128, 0)));
-        assertEquals(EscrowReason.BARRIER_BOUNDS, EscrowBarrier.captureReason(full));
-        for (EscrowReason reason : List.of(EscrowReason.BARRIER_VETO, EscrowReason.BARRIER_EXTERNAL, EscrowReason.BARRIER_BOUNDS)) {
-            assertTrue(reason.retryableProofFailure() && !reason.manual()); // Same STALLED handling; distinct persisted reason.
+        try (var barrier = new EscrowBarrier()) {
+            assertEquals(EscrowReason.SUPERSEDING_SAVE, barrier.captureReason(new EscrowChunkStore.SupersededCapture()));
+            assertEquals(EscrowReason.BARRIER_BOUNDS, barrier.captureReason(new EscrowChunkStore.CaptureBounds("Entity capture limit exceeded")));
+            assertEquals(EscrowReason.BARRIER_VETO, barrier.captureReason(new IllegalArgumentException("Captured endpoint identity/frontier mismatch")));
+            assertEquals(EscrowReason.BARRIER_UNSTABLE, EscrowBarrier.readbackReason(new java.io.IOException("Anvil record changed during readback")));
+            var monitor = new EscrowSaveMonitor();
+            for (int i = 0; i < 128; i++) { monitor.watch("minecraft:overworld", false, new ChunkPos(i, 0)); }
+            var full = assertThrows(EscrowChunkStore.CaptureBounds.class, () -> monitor.watch("minecraft:overworld", false, new ChunkPos(128, 0)));
+            assertEquals(EscrowReason.BARRIER_BOUNDS, barrier.captureReason(full));
+            for (EscrowReason reason : List.of(EscrowReason.BARRIER_VETO, EscrowReason.BARRIER_EXTERNAL, EscrowReason.BARRIER_BOUNDS)) {
+                assertTrue(reason.retryableProofFailure() && !reason.manual()); // Same STALLED handling; distinct persisted reason.
+            }
+        }
+    }
+    @Test void barrierVetoDiagnosticKeepsTheOriginalExceptionWithoutLoggingKnownRefusals() {
+        var logger = (org.apache.logging.log4j.core.Logger) org.apache.logging.log4j.LogManager.getLogger(EscrowBarrier.class);
+        var events = new ArrayList<org.apache.logging.log4j.core.LogEvent>();
+        var appender = new org.apache.logging.log4j.core.appender.AbstractAppender("w251-capture-veto", null, null, true,
+                org.apache.logging.log4j.core.config.Property.EMPTY_ARRAY) {
+            @Override public void append(org.apache.logging.log4j.core.LogEvent event) { events.add(event.toImmutable()); }
+        };
+        var previous = logger.getLevel();
+        appender.start(); logger.addAppender(appender); logger.setLevel(org.apache.logging.log4j.Level.INFO);
+        try (var barrier = new EscrowBarrier()) {
+            var failure = new IllegalArgumentException("Captured endpoint identity/frontier mismatch", new IllegalStateException("cause"));
+            assertEquals(EscrowReason.BARRIER_VETO, barrier.captureReason(failure));
+            assertEquals(EscrowReason.SUPERSEDING_SAVE, barrier.captureReason(new EscrowChunkStore.SupersededCapture()));
+            assertEquals(EscrowReason.BARRIER_BOUNDS, barrier.captureReason(new EscrowChunkStore.CaptureBounds("bound")));
+            assertEquals(1, events.size());
+            assertEquals(org.apache.logging.log4j.Level.INFO, events.get(0).getLevel());
+            assertEquals("ARCE_ESCROW_CAPTURE_VETO reason=BARRIER_VETO", events.get(0).getMessage().getFormattedMessage());
+            assertSame(failure, events.get(0).getThrown());
+        } finally {
+            logger.removeAppender(appender); logger.setLevel(previous); appender.stop();
         }
     }
     private EscrowBarrier.Proof proof(EscrowPrefix.State state) {
